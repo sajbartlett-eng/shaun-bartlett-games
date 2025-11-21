@@ -3,82 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inheritance | Game Details</title>
+    <title>INHERITANCE: Estate Edition | Game Details</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); }
-        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
-        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
+        :root { 
+            --bg: #1a1a1a; 
+            --text: #e0e0e0; 
+            --accent: #7Cb342; /* Game Grass Color */
+            --dark-accent: #2E7D32; /* Game UI Color */
+            --gold: #FFD700; /* Game Bonus Color */
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Outfit', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            line-height: 1.7; 
+        }
+
+        h1 { 
+            font-family: 'Space Grotesk', sans-serif; 
+            font-size: 3rem; 
+            color: #fff; 
+            line-height: 1; 
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--accent);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 40px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        h2, h3 { 
+            font-family: 'Space Grotesk', sans-serif; 
+            color: var(--accent); 
+            margin-top: 40px; 
+            margin-bottom: 15px; 
+        }
+
         .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
         .back-link:hover { color: var(--accent); }
-        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+
+        .game-stats { 
+            display: flex; 
+            gap: 30px; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+            color: var(--dark-accent); 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            border-bottom: 1px solid #333; 
+            text-transform: uppercase;
+        }
+
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
-        .highlight-box { background: rgba(102, 187, 106, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .play-btn { display: inline-block; background: var(--accent); color: #000; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 800; margin-top: 40px; box-shadow: 0 4px 0 #2E7D32; transition: all 0.2s; text-transform: uppercase; }
-        .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #2E7D32; }
+
+        .highlight-box { 
+            background: rgba(46, 125, 50, 0.2); 
+            border-left: 4px solid var(--dark-accent); 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 30px 0; 
+        }
+
+        .tech-box {
+            background: #222;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-size: 0.95rem;
+        }
+
+        .play-btn { 
+            display: inline-block; 
+            background: var(--accent); 
+            color: #000; 
+            padding: 16px 40px; 
+            text-decoration: none; 
+            border-radius: 50px; 
+            font-weight: 800; 
+            margin-top: 40px; 
+            box-shadow: 0 4px 0 var(--dark-accent); 
+            transition: all 0.2s; 
+            text-transform: uppercase; 
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--dark-accent); }
         .play-btn:active { transform: translateY(2px); box-shadow: none; }
-        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+
         .asset-list { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .asset-tag { background: #222; padding: 5px 12px; border-radius: 4px; font-size: 0.9rem; border: 1px solid #444; }
+        .asset-tag { 
+            background: #222; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            font-size: 0.95rem; 
+            border: 1px solid #444; 
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .gold-text { color: var(--gold); font-weight: bold; }
+        
+        .footer-credits {
+            margin-top: 80px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
-    <h1>INHERITANCE</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Estate Edition</p>
+    <h1>Inheritance</h1>
+    <div class="subtitle">Estate Edition</div>
     
     <div class="game-stats">
-        <span>2 Players</span>
-        <span>5 Minutes</span>
-        <span>Age 10+</span>
-        <span>Browser / Mobile</span>
+        <span>2 Players (Local)</span>
+        <span>~3 Mins</span>
+        <span>HTML5 Canvas</span>
+        <span>Touch Optimized</span>
     </div>
 
     <div class="content">
-        <p>Two siblings. One Estate. A battle of wits using the classic "Cut and Choose" protocol. You must divide the land fairly—or trick your opponent into taking the lesser share.</p>
+        <p>Two siblings. One Estate. A battle of wits using the classic "Cut and Choose" protocol. This is a digital implementation of the fair division problem, forcing players to confront the mathematical difficulty of partitioning value in real-time.</p>
 
-        <h2>The Three-Phase Game</h2>
+        <h2>The Three-Phase Loop</h2>
         
-        <h3>Phase 1: Develop</h3>
-        <p>Players take turns placing assets from a shared pool onto a <strong>6×6 grid</strong>. The goal is to create clusters of value that are difficult to separate. Every empty square is worth 1 point (Land Value).</p>
+        <h3>Phase 1: Develop (Unknown Roles)</h3>
+        <p>Players <strong>alternate turns</strong> placing assets from a limited shared pool onto a 6×6 grid. Crucially, <strong>neither player knows their role yet</strong>. You must build value without knowing if you will be the one dividing it or the one choosing it.</p>
         <div class="asset-list">
-            <span class="asset-tag">🏡 Manor: 5 pts</span>
-            <span class="asset-tag">🚜 Barn: 2 pts</span>
-            <span class="asset-tag">🪵 Shed: 1 pt</span>
+            <span class="asset-tag">🏡 Manor (x2) — <strong>5 pts</strong></span>
+            <span class="asset-tag">🚜 Barn (x4) — <strong>2 pts</strong></span>
+            <span class="asset-tag">🪵 Shed (x4) — <strong>1 pt</strong></span>
         </div>
 
         <h3>Phase 2: The Cut</h3>
-        <p>One player is assigned the role of <strong>Cutter</strong> (via Rock, Paper, Scissors). Under a 60-second timer, the Cutter must draw a fence line from edge-to-edge, dividing the estate into two distinct plots. The goal is to make the split as equal as possible (a tie), or to set a trap.</p>
+        <p>Once the estate is fully built, roles are assigned via <strong>Rock, Paper, Scissors</strong>. The loser becomes the <strong>Cutter</strong>. Under a 60-second timer, they must draw a fence line from edge-to-edge, dividing the estate into two distinct plots. The goal is to make the split as equal as possible to prevent the opponent from getting a better deal.</p>
 
         <h3>Phase 3: The Choice</h3>
-        <p>The other player, the <strong>Chooser</strong>, selects which of the two plots they want to keep. The Cutter gets whatever is left.</p>
+        <p>The winner of RPS becomes the <strong>Chooser</strong>. They survey the two plots and select the one with the highest total value (Area + Assets). The Cutter is left with the remainder.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">Mechanic: The Fairness Award</h3>
-            <p style="margin-bottom: 0;">If the Chooser wins by a significant margin (>1 point), the game challenges them to prove their skill. They are given 30 seconds to redraw the fence to make the game perfectly even (≤1 point difference). Success grants the <strong>"Fair Sibling"</strong> accolade.</p>
-        </div>
-
-        <div class="image-placeholder">
-            [Game Board Screenshot - Split Estate]
+            <h3 style="margin-top: 0; color: #fff;">Mechanic: The Fairness Challenge</h3>
+            <p style="margin-bottom: 0;">If the Chooser exploits a bad cut and wins by >1 point, the game offers a redemption challenge. They must redraw the fence to make the plots perfectly even (≤1 point difference) within 30 seconds to win the <strong>"Fair Sibling"</strong> award.</p>
         </div>
 
         <h2>House Rules (Variants)</h2>
-        <p>The digital version includes toggles for advanced play:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li><strong>🪨 Broken Ground:</strong> Four random Rocks (0 pts) appear on the grid, blocking construction and lowering land value.</li>
-            <li><strong>🏙️ Prime Bonus:</strong> Constructing two Manors adjacent to one another grants a <strong>+2 Point Bonus</strong>, incentivizing risky clustering.</li>
-            <li><strong>👁️ Open Roles:</strong> Players know who will Cut and who will Choose <em>during</em> the placement phase, allowing for aggressive counter-play.</li>
+        <ul style="color: #ccc; margin-left: 20px; list-style-type: none; padding: 0;">
+            <li style="margin-bottom: 10px;"><strong>🪨 Broken Ground:</strong> 4 random Rocks (0 pts) block the grid, lowering land value.</li>
+            <li style="margin-bottom: 10px;"><strong>🏙️ Prime Bonus:</strong> Two adjacent Manors grant a <span class="gold-text">+2 Point Bonus</span>.</li>
+            <li style="margin-bottom: 10px;"><strong>👁️ Open Roles:</strong> Players know their role (Cutter/Chooser) <em>during</em> placement, allowing for aggressive counter-play.</li>
         </ul>
 
-        <h2>Design Philosophy</h2>
-        <p>Inheritance gamifies the mathematical concept of <strong>Fair Division</strong>. It forces players to confront the computational difficulty of the Partition Problem in real-time. When you are the Cutter, you are fighting against your own greed; create a split that is too uneven, and your opponent will simply take the better half.</p>
+        <div class="tech-box">
+            <h3 style="margin-top: 0; font-size: 1.2rem;">Technical Highlight: Deterministic Solver</h3>
+            <p>The game features a "Show Ideal Cut" button at the end of the match. This triggers a depth-first search algorithm (`performSmartSearch`) that analyzes the grid state to find the mathematically optimal fence line that minimizes the difference between the two plots, proving whether a fair cut was possible.</p>
+        </div>
 
         <div style="text-align: center; margin-top: 60px;">
             <a href="Inheritance.html" class="play-btn">▶ Play Prototype</a>
+        </div>
+
+        <div class="footer-credits">
+            Game Design by Shaun Bartlett © 2025
         </div>
     </div>
 
