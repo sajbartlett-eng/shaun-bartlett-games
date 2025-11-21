@@ -20,6 +20,8 @@
         .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
         .dl-btn:hover { background: #A52A2A; transform: translateY(-2px); }
         .image-placeholder { background: #1a1a1a; height: 350px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        ul li { margin-bottom: 10px; color: #ccc; }
+        strong { color: #fff; }
     </style>
 </head>
 <body>
@@ -27,7 +29,7 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>LEVERAGE</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Power, Gold, and Betrayal</p>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A Card Game of Power, Gold, and Betrayal</p>
     
     <div class="game-stats">
         <span>4-10 Players</span>
@@ -37,62 +39,54 @@
     </div>
 
     <div class="content">
-        <p>The old King is dead. Using only a standard deck of playing cards, form kingdoms, forge alliances, and betray your way to victory. Game of Thrones in 20 minutes.</p>
+        <p>The old King is dead. The Realm lies scattered and in chaos. Using only a standard deck of playing cards, players must use diplomacy, warfare, and betrayal to rise from the ashes. It is Game of Thrones in 20 minutes.</p>
 
-        <h2>Setup</h2>
-        <p>Each player receives cards representing their power and gold. Kings are public, Nobles are hidden. Gold is secret. The game begins.</p>
+        <h2>Setup & The Rise to Power</h2>
+        <p>There are no permanent rulers at the start. Every player begins the game as a <strong>Mercenary</strong> with a hand of only 3 cards. To gain power, you must navigate the <strong>Political Phase</strong> to become a Noble or seize a crown to become a King.</p>
 
         <div class="highlight-box">
             <h3 style="margin-top: 0; color: #fff;">Three Victory Paths</h3>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">King Victory</h4>
-                <p style="margin: 0;">Be the last King standing. Eliminate all other Kings through warfare or assassination.</p>
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Winning King</h4>
+                <p style="margin: 0;">Be the final ruler crowned. Survive the "War of Kings" or politically unify the realm by holding the allegiance of all other players.</p>
             </div>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">Wealth Victory</h4>
-                <p style="margin: 0;">Accumulate the most gold when the game ends. Kings and Nobles compete for this.</p>
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Wealthiest Individual</h4>
+                <p style="margin: 0;">Accumulate the most Gold cards (2-10) in your hand when the game ends. Even a Mercenary can win if they are rich enough.</p>
             </div>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">Loyalty Victory</h4>
-                <p style="margin: 0;">As a Noble, be allied to the winning King when they claim the throne.</p>
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Loyal Noble</h4>
+                <p style="margin: 0;">Be a Noble holding Allegiance to the Winning King when the game ends. Sometimes the smartest play is to serve the strongest master.</p>
             </div>
         </div>
 
-        <h2>The Core Tension</h2>
-        <p>Kings need Nobles for military strength. Nobles need Kings for protection and legitimacy. But Nobles can betray at any moment—switching allegiances to whichever King offers more gold or looks more likely to win.</p>
+        <h2>Core Mechanics</h2>
+        
+        <h3>Status & Treasury</h3>
+        <p>Your power is defined by your <strong>Treasury</strong>—the maximum number of cards you can hold in your hand. If you exceed this limit, you must discard immediately.</p>
+        <ul>
+            <li><strong>Mercenary (Treasury 3):</strong> You serve no one. Your goal is to be hired or seize power.</li>
+            <li><strong>Noble (Treasury 5):</strong> You have pledged Allegiance to a King. You provide them military strength.</li>
+            <li><strong>King (Treasury 7):</strong> You hold the loyalty of others, but you are the target of every Challenger.</li>
+        </ul>
 
-        <p>Kings must balance:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li><strong>Military aggression</strong> (eliminate rivals quickly)</li>
-            <li><strong>Economic investment</strong> (accumulate wealth for endgame)</li>
-            <li><strong>Noble loyalty</strong> (pay enough to keep them, but not too much)</li>
+        <h3>Leverage Cards</h3>
+        <p>During the Political Phase, players use face cards to manipulate the game:</p>
+        <ul>
+            <li><strong>Jacks (The Threat):</strong> Initiate a Challenge against a King to steal their crown.</li>
+            <li><strong>Red Queens (Cunning):</strong> Draw 4 cards to rapidly cycle through the deck and find Gold.</li>
+            <li><strong>Black Queens (Blackmail):</strong> Force a target player to hand over their highest value Gold card.</li>
         </ul>
 
         <div class="image-placeholder">
-            [Card Layout Photo]
+            [Image: Card Layout showing King, Noble, and Mercenary Treasury limits]
         </div>
 
-        <h2>Key Mechanics</h2>
-        
-        <h3>Kingdoms & Allegiances</h3>
-        <p>Nobles publicly declare which King they serve. This determines military strength. But allegiances can break—Nobles can switch sides, taking their power with them.</p>
-
-        <h3>War & Assassination</h3>
-        <p>Kings declare war by revealing their total military strength (personal cards + Noble cards). Loser is eliminated. Alternatively, Nobles can assassinate their own King—a risky betrayal that can swing the entire game.</p>
-
-        <h3>Gold Economy</h3>
-        <p>Gold changes hands through tributes, bribes, and war spoils. Hidden information creates paranoia—who's actually richest? When should you strike?</p>
+        <h3>Battle & The War of Kings</h3>
+        <p>Conflict is resolved through bidding hidden Gold. Players may <strong>Yield</strong> before cards are revealed to save their Gold, or fight to the death. In the endgame <strong>War of Kings</strong>, diplomacy ends. Kingdoms clash until only one remains, and Nobles must decide: support their King with gold, or watch them die to trigger a succession crisis.</p>
 
         <h2>What Emerges</h2>
-        <p>The three victory paths create impossible tensions. A King focused on military dominance neglects wealth accumulation. A Noble hoarding gold has weak allegiances. Every choice sacrifices another path.</p>
-
-        <p>Players learn:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li>Power requires legitimacy—authority without trust collapses</li>
-            <li>Multiple victory conditions make every alliance conditional</li>
-            <li>Betrayal isn't moral failure—it's rational strategy</li>
-            <li>Systems reward whoever best navigates competing incentives</li>
-        </ul>
+        <p>The game creates a distinct tension between the three victory paths. To be the <strong>Winning King</strong>, you must spend Gold to win battles. To be the <strong>Wealthiest Individual</strong>, you must hoard Gold and avoid conflict. To be a <strong>loyal Noble</strong>, you must bet on the right horse—and be willing to betray them if they stumble.</p>
 
         <div style="text-align: center; margin-top: 60px;">
             <a href="leverage_rules.pdf" class="dl-btn" download>📄 Download Rules</a>

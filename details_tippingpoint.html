@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #1565C0; --accent-glow: rgba(21, 101, 192, 0.5); }
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #1565C0; --accent-glow: rgba(21, 101, 192, 0.5); --green: #4caf50; --red: #ef5350; --gold: #ffb300; }
         body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
         h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
         h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
@@ -16,11 +16,22 @@
         .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
         .highlight-box { background: rgba(21, 101, 192, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .role-card { background: #1a1a1a; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #333; }
-        .role-card h4 { color: #fff; margin: 0 0 10px 0; }
+        
+        .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+        .role-card { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; }
+        .role-card h4 { color: #fff; margin: 0 0 5px 0; font-size: 1.1rem; }
+        .role-sub { font-size: 0.85rem; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .mech-list li { margin-bottom: 10px; color: #ccc; }
+        .mech-list strong { color: #fff; }
+        
         .play-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
         .play-btn:hover { background: #64B5F6; transform: translateY(-2px); }
-        .image-placeholder { background: #1a1a1a; height: 400px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; vertical-align: middle; }
+        .tag-red { background: rgba(239, 83, 80, 0.2); color: var(--red); border: 1px solid var(--red); }
+        .tag-green { background: rgba(76, 175, 80, 0.2); color: var(--green); border: 1px solid var(--green); }
     </style>
 </head>
 <body>
@@ -28,71 +39,83 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>THE TIPPING POINT</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Climate Crisis as Push-Your-Luck</p>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Profit, Policy & Planetary Collapse</p>
     
     <div class="game-stats">
-        <span>3-6 Players</span>
+        <span>4-6 Players</span>
         <span>15-30 Minutes</span>
-        <span>Age 14+</span>
-        <span>Digital</span>
+        <span>Semi-Cooperative</span>
+        <span>Digital Hybrid</span>
     </div>
 
     <div class="content">
-        <p>You're a CEO. Every turn, you invest in one of three sectors. Deregulation pays the most but pushes the planet toward collapse. Green tech pays the least but saves everyone. Can you profit without triggering extinction?</p>
+        <p>You are an industry titan. Every turn, you must invest in one of three sectors using a 2d6 rolling system. Your goal is to be the richest player, but if the group fails to save the environment, <strong>everyone loses</strong>.</p>
 
-        <h2>The Three Investment Sectors</h2>
+        <h2>The Three Markets</h2>
+        <p>Success relies on rolling 2d6 against dynamic target numbers.</p>
         
-        <div class="role-card">
-            <h4>DEREGULATION (Roll ≤ Market Value)</h4>
-            <p style="margin-bottom: 0;">Highest profit ($5-7 depending on role) but adds +1-2 Crisis points. Once Crisis ≥5, deregulation adds +2 instead of +1. The system accelerates.</p>
+        <div class="role-card" style="margin-bottom: 10px; border-left: 4px solid var(--red);">
+            <h4>DEREGULATION (Target: ≤ 5)</h4>
+            <p style="margin-bottom: 0; font-size: 0.9rem;"><strong>High Risk, High Reward.</strong> Pays massively ($4-$6) but increases Crisis. If Crisis is high (5+), it accelerates (+2 Crisis). Success increases the Dereg market value, making it harder for everyone else.</p>
         </div>
 
-        <div class="role-card">
-            <h4>CONVENTIONAL (Roll Between Dereg-Green Range)</h4>
-            <p style="margin-bottom: 0;">Moderate profit ($3-5), adds +1 Crisis. Business as usual.</p>
+        <div class="role-card" style="margin-bottom: 10px; border-left: 4px solid #757575;">
+            <h4>CONVENTIONAL (Target: Between 5 and 9)</h4>
+            <p style="margin-bottom: 0; font-size: 0.9rem;"><strong>Safe Bet.</strong> Moderate pay ($3-$4). Still generates +1 Crisis. The safe middle ground.</p>
         </div>
 
-        <div class="role-card">
-            <h4>GREEN TECH (Roll ≥ Market Value)</h4>
-            <p style="margin-bottom: 0;">Lowest profit ($2-4) but adds +1 Environment Health. Win condition: reach Environment 5.</p>
+        <div class="role-card" style="margin-bottom: 10px; border-left: 4px solid var(--green);">
+            <h4>GREEN TECH (Target: ≥ 9)</h4>
+            <p style="margin-bottom: 0; font-size: 0.9rem;"><strong>The Only Way Out.</strong> Low pay ($2), but increases Environment Health. <strong>Win Condition:</strong> Reach 5 Environment Health before the Crisis Limit hits.</p>
+        </div>
+
+        <h2>Asymmetric Roles</h2>
+        <div class="role-grid">
+            <div class="role-card">
+                <h4>Energy Sector</h4>
+                <div class="role-sub">Industry</div>
+                <p style="font-size:0.9rem; margin:0">Heavy hitter. Huge payout ($5) for Deregulation, but high risk profile.</p>
+            </div>
+            <div class="role-card">
+                <h4>Mining Corp</h4>
+                <div class="role-sub">Industry</div>
+                <p style="font-size:0.9rem; margin:0">The villain? Earns a massive $6 from Deregulation. Heavily incentivized to pollute.</p>
+            </div>
+            <div class="role-card">
+                <h4>Tech Startup</h4>
+                <div class="role-sub">Industry (Special)</div>
+                <p style="font-size:0.9rem; margin:0"><strong>Ability: Breakthrough.</strong> Earns $5 from Green Tech. Success lowers the Green target, making it easier for others to help.</p>
+            </div>
+            <div class="role-card">
+                <h4>Agriculture</h4>
+                <div class="role-sub">Industry</div>
+                <p style="font-size:0.9rem; margin:0">Reliable. Strong returns on Conventional markets. Less volatile.</p>
+            </div>
+            <div class="role-card" style="grid-column: 1 / -1; border-color: var(--gold);">
+                <h4 style="color:var(--gold)">The Finance Sector</h4>
+                <div class="role-sub">Special Role</div>
+                <p style="font-size:0.9rem; margin:0"><strong>Does not roll dice.</strong> Instead, Finance bets on other players' success.
+                <br><br><strong>Predatory Lending:</strong> Can issue a VC Loan (give $1) to a poor player. The borrower takes the <strong>Debt Token</strong>. If the borrower succeeds, Finance automatically garnishes $2 from their profit.</p>
+            </div>
         </div>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">The Race Against Collapse</h3>
-            <p><strong>Win:</strong> Environment reaches 5 (planet saved)</p>
-            <p style="margin-bottom: 0;"><strong>Lose:</strong> Crisis reaches 10-14 depending on difficulty (planetary collapse)</p>
+            <h3 style="margin-top: 0; color: #fff;">The "Secure" Mechanic</h3>
+            <p>Markets are volatile, but money buys certainty. Players can spend Wealth to shift the Target Number in their favor. Costs scale exponentially, forcing tough choices.</p>
+            <ul class="mech-list">
+                <li><strong>Level 0 ($0):</strong> Base Odds (e.g., Need 9+ to succeed)</li>
+                <li><strong>Level 1 ($1):</strong> Improve Target by 1 (Need 8+)</li>
+                <li><strong>Level 2 ($3):</strong> Improve Target by 2 (Need 7+)</li>
+                <li><strong>Level 3 ($6):</strong> Improve Target by 3 (Need 6+)</li>
+            </ul>
         </div>
 
-        <h2>Secured Investments</h2>
-        <p>You don't just roll dice and hope. Players "secure" their investments by paying more:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li><strong>$1 - Unsecured:</strong> Pure dice roll</li>
-            <li><strong>$2 - Light:</strong> ±1 to target range</li>
-            <li><strong>$3 - Moderate:</strong> ±2 to target range</li>
-            <li><strong>$4 - Heavy:</strong> ±3 to target range</li>
+        <h2>Win & Loss Conditions</h2>
+        <ul class="mech-list">
+            <li><span class="tag tag-green">WIN</span> <strong>Planet Saved:</strong> FIll the Environment Track to <strong>5</strong>.</li>
+            <li><span class="tag tag-red">LOSE</span> <strong>Collapse:</strong> The Crisis Track hits the limit (10, 12, or 14 depending on difficulty).</li>
         </ul>
-        <p>This creates risk/reward decisions: cheap and risky vs. expensive and safe.</p>
-
-        <div class="image-placeholder">
-            [Crisis Track Screenshot]
-        </div>
-
-        <h2>The Finance Player</h2>
-        <p>One player has a completely different role—pure speculation:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li><strong>Bet on a Sector:</strong> Predict what others will choose, profit if correct</li>
-            <li><strong>Offer Loans:</strong> Give $1, receive $2 if they succeed (predatory lending)</li>
-        </ul>
-        <p>Finance profits from others' risk without directly affecting Crisis or Environment.</p>
-
-        <h2>Why It Works</h2>
-        <p>The game embodies the tragedy of the commons. Individual rational choices (maximize profit) create collective catastrophe (planetary collapse). Players experience:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li>Why climate action fails when profit drives decisions</li>
-            <li>How positive feedback loops accelerate crisis</li>
-            <li>The gap between individual rationality and collective survival</li>
-            <li>Path dependency—early choices constrain future options</li>
-        </ul>
+        <p>If the group wins, the player with the <strong>Highest Wealth</strong> is the individual winner. If the group loses, everyone fails.</p>
 
         <div style="text-align: center; margin-top: 60px;">
             <a href="TheTippingPoint.html" class="play-btn">▶ Play Now</a>

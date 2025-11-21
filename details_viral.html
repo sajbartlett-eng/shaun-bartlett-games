@@ -20,6 +20,8 @@
         .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
         .dl-btn:hover { background: #E53935; transform: translateY(-2px); }
         .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        ul { color: #ccc; margin-left: 20px; }
+        li { margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -27,7 +29,7 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>VIRAL</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Truth vs. Attention Economy</p>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A 5-Minute Game of Truth vs. Attention</p>
     
     <div class="game-stats">
         <span>4-10 Players</span>
@@ -37,38 +39,41 @@
     </div>
 
     <div class="content">
-        <p>Start with a true fact. Pass it around the table. Each person can Pass (ignore it), Share (amplify it), or Update (rewrite it to be "more interesting"). Watch truth degrade into viral fiction in real time.</p>
+        <p>Start with a true fact. Pass it around the table simultaneously. Each person can Pass (ignore it), Share (amplify it), or Update (rewrite it). Watch truth degrade into viral fiction under the pressure of a 45-second timer.</p>
 
         <h2>The Rules</h2>
-        <p>One player writes a true, verifiable fact. The paper circulates. On your turn, choose one action:</p>
+        <p>Each player writes a true fact at the top of their page (the "Post"). Everyone passes their sheet to the left at the same time. When you receive a sheet, you read <strong>only the most recent entry</strong> and choose one action:</p>
 
         <div class="action-box">
-            <h4 style="color: var(--accent); margin: 0 0 10px 0;">PASS</h4>
-            <p style="margin: 0;">Ignore the content. No engagement. Three consecutive passes bury the content permanently—it's dead.</p>
+            <h4 style="color: var(--accent); margin: 0 0 10px 0;">PASS (P)</h4>
+            <p style="margin: 0;">You do not support this content. <strong>Three consecutive Pass actions</strong> bury (cancel) the latest Post or Update. A buried post is crossed out and cannot generate points.</p>
         </div>
 
         <div class="action-box">
-            <h4 style="color: var(--accent); margin: 0 0 10px 0;">SHARE</h4>
-            <p style="margin: 0;">Amplify the content as-is. Add your name to the "shares" list. Content stays alive.</p>
+            <h4 style="color: var(--accent); margin: 0 0 10px 0;">SHARE (✓)</h4>
+            <p style="margin: 0;">Amplify the content as-is. This guarantees you <strong>+1 Point</strong>, provided the Post isn't buried later by consecutive passes.</p>
         </div>
 
         <div class="action-box">
             <h4 style="color: var(--accent); margin: 0 0 10px 0;">UPDATE</h4>
-            <p style="margin: 0;">Rewrite the content to make it more engaging, dramatic, or clickable. Add your name as editor. The truth mutates.</p>
+            <p style="margin: 0;">Rewrite the previous version to be more interesting. You can shift the tone, narrative, or perspective, but you cannot change the subject entirely. Illegal updates are treated as Buried.</p>
         </div>
 
         <div class="highlight-box">
             <h3 style="margin-top: 0; color: #fff;">Victory Condition</h3>
-            <p style="margin-bottom: 0;">After 5 minutes, whoever has the most shares across all content wins. Not "who shared the most truth"—just who accumulated the most engagement.</p>
+            <p style="margin-bottom: 0;">The game lasts for <strong>two full rotations</strong> (everyone sees every sheet twice). At the end, players total their points:</p>
+            <ul style="margin-top: 10px; margin-bottom: 0;">
+                <li><strong>+1 Point</strong> for every "Share" you made on any sheet.</li>
+                <li><strong>+3 Points</strong> if your original sheet is "Trending" (has the highest total shares).</li>
+            </ul>
         </div>
 
         <h2>What Happens</h2>
-        <p>Round 1: Someone writes "Global temperatures rose 1.2°C since 1880."</p>
-        <p>Round 2: Player passes. "Boring."</p>
-        <p>Round 3: Another player Updates: "Scientists shocked: Earth hotter than ever!"</p>
-        <p>Round 4-6: Multiple shares. The updated version goes viral.</p>
-        <p>Round 7: Someone Updates again: "Your city could be underwater in 10 years!"</p>
-        <p>Round 10: Original fact is unrecognizable.</p>
+        <p><strong>Original Post (True):</strong> "Wombat poop is cube-shaped."</p>
+        <p><strong>Rotation 1 (Pass):</strong> Player writes "P". (Boring).</p>
+        <p><strong>Rotation 2 (Update):</strong> Player writes: "Wombat poop is cube-shaped and used as dice by Australian gamblers."</p>
+        <p><strong>Rotation 3-5 (Shares):</strong> Players see the amusing update and write "✓". The fiction goes viral.</p>
+        <p><strong>Result:</strong> The truth was ignored. The lie scored points.</p>
 
         <div class="image-placeholder">
             [Content Mutation Example Photo]
@@ -76,25 +81,14 @@
 
         <h2>The Mechanics of Misinformation</h2>
         
-        <h3>Why Truth Dies</h3>
-        <p>Boring facts get passed. Three passes = buried. To keep content alive, you must make it engaging. Accuracy becomes secondary to shareability.</p>
+        <h3>Information Cascades</h3>
+        <p>Players are only allowed to read the <strong>most recent entry</strong> on the sheet. There is no time to check the original source. You react only to what is immediately in front of you, simulating how misinformation spreads without context.</p>
 
-        <h3>The Update Incentive</h3>
-        <p>Updating content gives you credit for shares. Even if others shared the original, your updated version can steal engagement. The system rewards mutation.</p>
+        <h3>The Timer Pressure</h3>
+        <p>With only 30-60 seconds per turn, fact-checking is impossible. If you don't finish writing an Update before the timer ends, it is crossed out. This pressure forces rapid, emotional reactions over critical thinking.</p>
 
-        <h3>The Cascade Effect</h3>
-        <p>Once content gets shares, players pile on—not because they verified it, but because "everyone else is sharing it." Social proof overrides fact-checking.</p>
-
-        <h2>What Emerges</h2>
-        <p>Players discover that platforms don't reward truth—they reward engagement. The game teaches:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li>Why fact-checking is costly (takes time, loses shares)</li>
-            <li>How misinformation spreads faster than corrections</li>
-            <li>Why platform incentives (maximize engagement) conflict with accuracy</li>
-            <li>How "virality" selects for sensationalism over substance</li>
-        </ul>
-
-        <p>No one starts intending to spread lies. But the scoring system (most shares wins) makes lying the rational strategy. The structure creates the behavior.</p>
+        <h3>The Incentive Structure</h3>
+        <p>To win, you need your sheet to get the most shares (Trending Bonus). This incentivizes Authors and Updaters to make content sensational rather than accurate. Truth is permissible, but only if it's interesting enough to survive.</p>
 
         <div style="text-align: center; margin-top: 60px;">
             <a href="viral_rules.pdf" class="dl-btn" download>📄 Download Rules</a>

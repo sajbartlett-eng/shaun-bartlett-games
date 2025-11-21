@@ -20,6 +20,8 @@
         .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
         .dl-btn:hover { background: #FF5722; transform: translateY(-2px); }
         .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        ul li { margin-bottom: 10px; color: #ccc; }
+        strong { color: #fff; }
     </style>
 </head>
 <body>
@@ -27,65 +29,60 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>BURNOUT</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Workplace Toxicity in 5 Minutes</p>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A Semi-Cooperative Game of Collective Pressure</p>
     
     <div class="game-stats">
         <span>2-5 Players</span>
         <span>3-5 Minutes</span>
         <span>Age 12+</span>
-        <span>Bag + Cubes</span>
+        <span>Bag Building</span>
     </div>
 
     <div class="content">
-        <p>Your team has one deadline: complete a project before time runs out. Everyone draws from a shared bag containing work tokens and stress tokens. Work too hard and you burn out—destroying your progress. Rest too much and the clock hits zero.</p>
-
-        <h2>The Setup</h2>
-        <p>Shared bag contains:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li><strong>Work tokens</strong> (complete the project)</li>
-            <li><strong>Stress tokens</strong> (accumulate toward burnout)</li>
-        </ul>
-        <p>Team needs a minimum number of work tokens to succeed. Each player starts with a personal stress threshold—reach it and you burn out.</p>
+        <p><strong>Collaboration is mandatory. Success is individual.</strong></p>
+        <p>You are a team working to complete a project before a tight deadline. Everyone draws from the same shared bag of tokens. Work too hard, and you burn out. Rest too much, and the project fails.</p>
+        <p>But there is a twist: <strong>Only the highest scoring player gets the Promotion.</strong> However, if the team fails to meet the minimum Project Quality (Grade C), <em>no one</em> gets the promotion.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">The Core Dilemma</h3>
-            <p style="margin-bottom: 0;"><strong>Draw tokens:</strong> Make progress but risk stress accumulation<br>
-            <strong>Rest:</strong> Recover stress but waste precious time<br><br>
-            The system rewards ambition—until it doesn't.</p>
+            <h3 style="margin-top: 0; color: #fff;">The Corporate Dilemma</h3>
+            <p style="margin-bottom: 0;">You must work hard enough to beat your teammates for the promotion, but not so hard that you burn out—and you must ensure your teammates work hard enough to pass the group grade, but not so hard that <em>they</em> burn out and drag you down with them.</p>
         </div>
 
-        <h2>How Burnout Works</h2>
-        
-        <div class="mechanic-box">
-            <h4 style="color: #fff; margin: 0 0 15px 0;">When You Burn Out</h4>
-            <p>Your accumulated work tokens are destroyed. Your stress resets. You've just set the team back significantly.</p>
-            <p style="margin-bottom: 0;">But you can draw again next turn. The system doesn't give you time to recover—it just resets your counter and expects you to keep working.</p>
-        </div>
-
-        <h3>The Cascading Effect</h3>
-        <p>One burnt-out worker doesn't just lose their own progress—they increase the burden on everyone else. Remaining players must draw more aggressively to compensate, raising their burnout risk.</p>
-
-        <p>This creates a death spiral: burnout → increased pressure → more burnout → project failure.</p>
-
-        <div class="image-placeholder">
-            [Bag + Token Photo]
-        </div>
-
-        <h2>Why 5 Minutes Matters</h2>
-        <p>The timer creates genuine urgency. Players feel the pressure viscerally. There's no time for careful risk analysis—you must decide immediately: push harder or rest?</p>
-
-        <p>This mirrors real workplace dynamics where:</p>
-        <ul style="color: #ccc; margin-left: 20px;">
-            <li>Deadlines override health considerations</li>
-            <li>Individual pacing becomes collective coordination problem</li>
-            <li>System punishes rest (lost productivity) but also punishes overwork (burnout)</li>
-            <li>Optimal individual strategy (moderate pace) conflicts with collective urgency</li>
+        <h2>Five Actions</h2>
+        <p>On your turn, you must choose one:</p>
+        <ul style="margin-left: 20px;">
+            <li><strong>Work:</strong> Draw from the bag. Green/Yellow tokens score points. Red tokens increase Stress.</li>
+            <li><strong>Rest:</strong> Remove 2 Stress tokens (one is removed from the game, one returns to the bag to pollute it).</li>
+            <li><strong>Delegate:</strong> Transfer 1 Stress token from your area to another player's area. (Protection at others' expense).</li>
+            <li><strong>Support:</strong> Remove 1 Stress token from another player and discard it permanently. (Requires you to have low stress).</li>
+            <li><strong>Overtime:</strong> Take two "Work" actions in a row. High risk, high reward.</li>
         </ul>
 
-        <h2>What Emerges</h2>
-        <p>Players discover that the system itself is toxic—not the people in it. Everyone starts with good intentions. But structural incentives (deadline + shared workload + burnout penalty) create the conditions for collective failure.</p>
+        <h2>Stress & Burnout Mechanics</h2>
+        
+        <div class="mechanic-box">
+            <h4 style="color: #fff; margin: 0 0 15px 0;">The Stressed State (3-4 Tokens)</h4>
+            <p style="margin-bottom: 0;">If you have 3 or 4 stress tokens, you are <strong>Stressed</strong>. You cannot keep any new work tokens you draw (they are discarded), and you lose the emotional capacity to <strong>Support</strong> others.</p>
+        </div>
 
-        <p>The game teaches: you can't fix toxic systems by telling individuals to "manage their stress better." The incentive structure must change.</p>
+        <div class="mechanic-box">
+            <h4 style="color: #fff; margin: 0 0 15px 0;">The Burnout State (5+ Tokens)</h4>
+            <p>If you hit 5 stress tokens, you <strong>Burn Out</strong> immediately.</p>
+            <ul style="margin-bottom: 0;">
+                <li><strong>Penalty:</strong> You must discard 3 Work tokens from your score pile.</li>
+                <li><strong>Restriction:</strong> You cannot Work or Support. You can only Rest or Delegate until your stress drops below 5.</li>
+            </ul>
+        </div>
+
+        <h2>Why It Works</h2>
+        <p>The game is structurally designed to create three outcomes:</p>
+        <ol style="color: #ccc; margin-left: 20px; margin-bottom: 20px;">
+            <li><strong>Success + Success:</strong> The team passes, and a high achiever wins.</li>
+            <li><strong>Sacrifice + Promotion:</strong> Some players sacrifice their score to ensure the project passes, allowing a "selfish" player to win.</li>
+            <li><strong>Failure + Failure:</strong> Greed causes the team to crash; nobody wins.</li>
+        </ol>
+
+        <p>The inclusion of the <strong>Delegate</strong> action allows players to actively push colleagues toward burnout to save themselves, turning a cooperative puzzle into a social deduction battleground over a span of just 5 minutes.</p>
 
         <div style="text-align: center; margin-top: 60px;">
             <a href="burnout_rules.pdf" class="dl-btn" download>📄 Download Rules</a>

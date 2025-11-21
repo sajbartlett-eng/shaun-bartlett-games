@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #2E7D32; --accent-glow: rgba(46, 125, 50, 0.5); }
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); }
         body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
         h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
         h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
@@ -15,10 +15,13 @@
         .back-link:hover { color: var(--accent); }
         .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
-        .highlight-box { background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .play-btn { display: inline-block; background: var(--accent); color: #000; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
-        .play-btn:hover { background: #fff; transform: translateY(-2px); }
-        .image-placeholder { background: #1a1a1a; height: 400px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        .highlight-box { background: rgba(102, 187, 106, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
+        .play-btn { display: inline-block; background: var(--accent); color: #000; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 800; margin-top: 40px; box-shadow: 0 4px 0 #2E7D32; transition: all 0.2s; text-transform: uppercase; }
+        .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #2E7D32; }
+        .play-btn:active { transform: translateY(2px); box-shadow: none; }
+        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        .asset-list { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .asset-tag { background: #222; padding: 5px 12px; border-radius: 4px; font-size: 0.9rem; border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -26,57 +29,56 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>INHERITANCE</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Fair Division & Game Theory</p>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Estate Edition</p>
     
     <div class="game-stats">
         <span>2 Players</span>
-        <span>10-15 Minutes</span>
-        <span>Age 12+</span>
-        <span>Digital</span>
+        <span>5 Minutes</span>
+        <span>Age 10+</span>
+        <span>Browser / Mobile</span>
     </div>
 
     <div class="content">
-        <p>Two players inherit an estate filled with valuable assets. The catch? You must divide it fairly—or prove that fair division is impossible.</p>
+        <p>Two siblings. One Estate. A battle of wits using the classic "Cut and Choose" protocol. You must divide the land fairly—or trick your opponent into taking the lesser share.</p>
 
         <h2>The Three-Phase Game</h2>
         
-        <h3>Phase 1: Placement</h3>
-        <p>Player 1 (the Placer) strategically places assets—Gold (5 pts), Silver (3 pts), Green (2 pts), Red (1 pt)—and Rocks (obstacles) onto a 5×5 grid. The goal: make equal division as difficult as possible.</p>
+        <h3>Phase 1: Develop</h3>
+        <p>Players take turns placing assets from a shared pool onto a <strong>6×6 grid</strong>. The goal is to create clusters of value that are difficult to separate. Every empty square is worth 1 point (Land Value).</p>
+        <div class="asset-list">
+            <span class="asset-tag">🏡 Manor: 5 pts</span>
+            <span class="asset-tag">🚜 Barn: 2 pts</span>
+            <span class="asset-tag">🪵 Shed: 1 pt</span>
+        </div>
 
-        <h3>Phase 2: Division</h3>
-        <p>Player 2 (the Divider) must draw a fence line that splits the estate into exactly two plots. The fence must run edge-to-edge and create valid partitions. Under time pressure, find the most equitable split you can.</p>
+        <h3>Phase 2: The Cut</h3>
+        <p>One player is assigned the role of <strong>Cutter</strong> (via Rock, Paper, Scissors). Under a 60-second timer, the Cutter must draw a fence line from edge-to-edge, dividing the estate into two distinct plots. The goal is to make the split as equal as possible (a tie), or to set a trap.</p>
 
-        <h3>Phase 3: Choice</h3>
-        <p>The Divider chooses their preferred plot. Scores are calculated. Winner determined... unless.</p>
+        <h3>Phase 3: The Choice</h3>
+        <p>The other player, the <strong>Chooser</strong>, selects which of the two plots they want to keep. The Cutter gets whatever is left.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">The Fairness Challenge</h3>
-            <p style="margin-bottom: 0;">If the score difference exceeds 1 point, the Placer can challenge. They get 60 seconds to find a MORE fair division (≤1 point difference). If they succeed, <strong>the Placer wins</strong>. If they fail or time expires, the original winner stands.</p>
+            <h3 style="margin-top: 0; color: #fff;">Mechanic: The Fairness Award</h3>
+            <p style="margin-bottom: 0;">If the Chooser wins by a significant margin (>1 point), the game challenges them to prove their skill. They are given 30 seconds to redraw the fence to make the game perfectly even (≤1 point difference). Success grants the <strong>"Fair Sibling"</strong> accolade.</p>
         </div>
 
         <div class="image-placeholder">
-            [Game Board Screenshot - Placement Phase]
+            [Game Board Screenshot - Split Estate]
         </div>
 
-        <h2>What Makes It Work</h2>
-        <p>The Fairness Challenge mechanic embodies a simple principle: <strong>if you claim a problem is unfair, you must demonstrate a fairer solution.</strong></p>
-
-        <p>This isn't just clever game design—it's teaching the <strong>Partition Problem</strong> (NP-complete in computer science) through play. Players viscerally experience why finding optimal fair divisions is computationally hard.</p>
-
-        <h3>Optional: Prime Bonus</h3>
-        <p>Adjacent Green tiles get +3 bonus points each. This creates spatial synergy and makes asymmetric value clusters more powerful—forcing the Divider to choose between connected high-value zones.</p>
-
-        <h2>Learning Through Failure</h2>
-        <p>The game teaches:</p>
+        <h2>House Rules (Variants)</h2>
+        <p>The digital version includes toggles for advanced play:</p>
         <ul style="color: #ccc; margin-left: 20px;">
-            <li>Fair division requires constructive proof, not just complaints</li>
-            <li>Optimal solutions exist but are hard to find under pressure</li>
-            <li>Strategic problem design can make "fair" nearly impossible</li>
-            <li>Approximation algorithms matter when perfect solutions are expensive</li>
+            <li><strong>🪨 Broken Ground:</strong> Four random Rocks (0 pts) appear on the grid, blocking construction and lowering land value.</li>
+            <li><strong>🏙️ Prime Bonus:</strong> Constructing two Manors adjacent to one another grants a <strong>+2 Point Bonus</strong>, incentivizing risky clustering.</li>
+            <li><strong>👁️ Open Roles:</strong> Players know who will Cut and who will Choose <em>during</em> the placement phase, allowing for aggressive counter-play.</li>
         </ul>
 
+        <h2>Design Philosophy</h2>
+        <p>Inheritance gamifies the mathematical concept of <strong>Fair Division</strong>. It forces players to confront the computational difficulty of the Partition Problem in real-time. When you are the Cutter, you are fighting against your own greed; create a split that is too uneven, and your opponent will simply take the better half.</p>
+
         <div style="text-align: center; margin-top: 60px;">
-            <a href="Inheritance.html" class="play-btn">▶ Play Now</a>
+            <a href="Inheritance.html" class="play-btn">▶ Play Prototype</a>
         </div>
     </div>
 
