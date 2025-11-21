@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Tipping Point</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-green: #4caf50;
+            --accent-red: #ef5350;
+            --accent-gold: #ffb300;
+            --accent-blue: #42a5f5;
+            --accent-grey: #757575;
+            --border: #333;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER & TRACKS --- */
+        #game-header {
+            background: #181818;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 20;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .mini-btn {
+            background: #333; border: 1px solid #555; color: #ccc;
+            width: 28px; height: 28px; border-radius: 50%; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .track-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .track {
+            display: flex;
+            align-items: center;
+            background: #2a2a2a;
+            border-radius: 4px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+
+        .track-fill { height: 100%; transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+        
+        .track-label {
+            position: absolute; left: 8px; z-index: 2;
+            font-size: 0.7rem; font-weight: 900; text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            letter-spacing: 0.5px;
+        }
+        .track-value {
+            position: absolute; right: 8px; z-index: 2;
+            font-size: 0.75rem; font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+        }
+
+        /* --- MARKET ZONES --- */
+        .market-track { display: flex; gap: 4px; }
+        .market-zone {
+            flex: 1;
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 6px 2px;
+            border-radius: 4px;
+            line-height: 1.3;
+            background: #252525;
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+        }
+        .market-zone.active-target { border-color: var(--accent-gold); transform: translateY(-2px); box-shadow: 0 0 10px rgba(255, 179, 0, 0.2); }
+
+        /* --- SCROLL AREA --- */
+        #game-area {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+        }
+
+        .player-card { border-left: 6px solid var(--accent-blue); transition: border-color 0.3s; }
+        .player-card.bankrupt { border-left-color: var(--accent-red); }
+        .player-card.finance { border-left-color: var(--accent-gold); }
+
+        h2 { font-size: 1.4rem; margin: 0 0 4px 0; font-weight: 800; }
+        h3 { font-size: 1rem; margin: 0 0 12px 0; font-weight: 700; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.1s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.4; filter: grayscale(100%); cursor: not-allowed; }
+
+        .btn-content { display: flex; justify-content: space-between; align-items: center; }
+        .btn-main-text { display: flex; flex-direction: column; }
+        .btn-reward { 
+            background: rgba(0,0,0,0.4); padding: 6px 10px; border-radius: 6px; 
+            color: var(--accent-gold); font-weight: 900; font-size: 1.2rem;
+            min-width: 60px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-target { font-size: 0.75rem; opacity: 0.9; font-weight: normal; margin-top: 2px; color: rgba(255,255,255,0.8); }
+
+        .btn-green { background: linear-gradient(145deg, #4caf50, #2e7d32); }
+        .btn-red { background: linear-gradient(145deg, #ef5350, #c62828); }
+        .btn-blue { background: linear-gradient(145deg, #42a5f5, #1565c0); }
+        .btn-grey { background: linear-gradient(145deg, #757575, #424242); }
+        .btn-gold { background: linear-gradient(145deg, #ffb300, #ff8f00); color: #1a1a1a; text-align: center; }
+
+        /* --- ACTION FEED --- */
+        #recent-actions { background: #151515; border: 1px solid #333; padding: 10px; }
+        .log-entry { font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid #2a2a2a; color: #888; display: flex; gap: 8px; }
+        .log-entry:first-child { color: #ddd; border-bottom: 1px solid #444; }
+
+        /* --- DICE & ANIMATION --- */
+        #dice-container { display: flex; justify-content: center; gap: 15px; margin: 20px 0; height: 80px; }
+        .die {
+            width: 60px; height: 60px; background: #eee; color: #111;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            font-size: 3rem; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+        @keyframes tumble { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .tumbling { animation: tumble 0.2s linear infinite; background: #ccc; color: transparent; font-size: 0; }
+
+        /* --- SECURE SLIDER --- */
+        .secure-panel { background: #252525; padding: 15px; border-radius: 8px; border: 1px solid #444; }
+        .secure-slider { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .prob-meter { height: 4px; background: #444; width: 100%; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .prob-fill { height: 100%; background: var(--accent-gold); transition: width 0.3s; }
+
+        /* --- OVERLAYS --- */
+        #overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.96);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; flex-direction: column; padding: 20px; text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        .hidden { display: none !important; }
+        .modal-content { width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; text-align: left; }
+        .modal-center { text-align: center; }
+
+        /* --- ABILITY BOX --- */
+        .ability-box {
+            background: rgba(66, 165, 245, 0.1); border-left: 3px solid var(--accent-blue);
+            padding: 10px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 0.85rem; color: #ddd;
+        }
+
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.4); } 100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0); } }
+        .crisis-alert { animation: pulse-red 2s infinite; border: 1px solid var(--accent-red); }
+        .rules-list li { margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
+        .rules-list strong { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now+0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05); osc.start(now); osc.stop(now+0.05);
+            } else if (type === 'roll') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(200+Math.random()*100, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now+0.1); osc.start(now); osc.stop(now+0.1);
+            } else if (type === 'success') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.exponentialRampToValueAtTime(880, now+0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.3); osc.start(now); osc.stop(now+0.3);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now+0.4);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.4); osc.start(now); osc.stop(now+0.4);
+            }
+        }
+        function vibrate(p) { if(navigator.vibrate) navigator.vibrate(p); }
+    </script>
+
+    <!-- OVERLAYS -->
+    <div id="overlay">
+        
+        <!-- 1. SETUP SCREEN -->
+        <div id="setup-screen" class="modal-content modal-center card">
+            <h1 style="color:var(--accent-green); margin-bottom:5px">THE TIPPING POINT</h1>
+            <p style="font-size:0.9rem">Profit, Policy & Planetary Collapse</p>
+            <hr style="border-color: #444; margin: 20px 0;">
+            
+            <button class="btn btn-grey" style="background:#333; border:1px solid #555; margin-bottom:20px; text-align:center" onclick="showRules()">📖 How to Play / Rules</button>
+
+            <h3>Select Difficulty</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px">
+                <button class="btn btn-green" id="diff-easy" onclick="selectDifficulty('EASY')">
+                    <strong>Easy</strong> (Crisis Limit: 14)
+                    <div style="font-size:0.75rem; opacity:0.8; margin-top:3px">Standard. Forgiving.</div>
+                </button>
+                <button class="btn btn-grey" id="diff-normal" onclick="selectDifficulty('NORMAL')">
+                    <strong>Moderate</strong> (Crisis Limit: 12)
+                    <div style="font-size:0.75rem; opacity:0.8; margin-top:3px">Tighter margins. Strategic green needed.</div>
+                </button>
+                <button class="btn btn-grey" id="diff-hard" onclick="selectDifficulty('HARD')">
+                    <strong>Hard</strong> (Crisis Limit: 10)
+                    <div style="font-size:0.75rem; opacity:0.8; margin-top:3px">Expert mode. Early green essential.</div>
+                </button>
+            </div>
+
+            <h3>Select Player Count</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px">
+                <button class="btn btn-blue" style="text-align:center" onclick="startGame(4)">4</button>
+                <button class="btn btn-blue" style="text-align:center" onclick="startGame(5)">5</button>
+                <button class="btn btn-blue" style="text-align:center" onclick="startGame(6)">6</button>
+            </div>
+            <div style="margin-top:20px; font-size:0.85rem; color:#888; text-align:left; padding:10px; background:#252525; border-radius:6px">
+                <strong>👤 Solo Mode:</strong> You are the World Planner. Control all industries.<br><br>
+                <strong>👥 Group Mode:</strong> Assign roles. Pass the device to the active player.
+            </div>
+        </div>
+
+        <!-- 2. RULES SCREEN -->
+        <div id="rules-screen" class="hidden modal-content card">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h2 style="color:var(--accent-gold)">HOW TO PLAY</h2>
+                <button class="mini-btn" onclick="hideRules()">✕</button>
+            </div>
+            <hr style="border-color:#444">
+            <div style="max-height:60vh; overflow-y:auto; padding-right:10px">
+                <p><strong>Goal:</strong> Cooperatively fill the <span style="color:var(--accent-green)">Green Track</span> to 5 before the <span style="color:var(--accent-red)">Crisis Track</span> hits the Limit. But individually, you want to be the richest.</p>
+                <ol class="rules-list">
+                    <li><strong>Choose Investment:</strong> 
+                        <br>• <span style="color:var(--accent-red)">Deregulation:</span> High Profit, Raises Crisis.
+                        <br>• <span style="color:#aaa">Conventional:</span> Safe Profit, Moderate Crisis.
+                        <br>• <span style="color:var(--accent-green)">Green Tech:</span> Low Profit, Saves Planet.
+                    </li>
+                    <li><strong>Secure (Optional):</strong> Spend wealth to improve your dice target. Costs scale exponentially: $1, $3, $6.</li>
+                    <li><strong>Roll (2d6):</strong> Dereg (≤ Target), Green (≥ Target), Conv (Between).</li>
+                </ol>
+            </div>
+            <button class="btn btn-blue" style="margin-top:15px; text-align:center" onclick="hideRules()">Close Rules</button>
+        </div>
+
+        <!-- 3. PASS SCREEN -->
+        <div id="pass-screen" class="hidden modal-content modal-center card">
+            <h3 style="color:var(--accent-blue)">NEXT PLAYER</h3>
+            <h1 id="pass-title" style="font-size: 2.5rem; margin: 20px 0; color: white">Player Name</h1>
+            <div id="pass-crisis-warning" class="hidden" style="color:var(--accent-red); font-weight:bold; margin-bottom:15px; animation: pulse-red 1s infinite">⚠️ CRISIS CRITICAL ⚠️</div>
+            <p id="pass-desc">Pass the device.</p>
+            <button class="btn btn-gold" style="margin-top: 30px" onclick="beginTurn()">START TURN</button>
+        </div>
+
+        <!-- 4. WARNING POPUP -->
+        <div id="warning-modal" class="hidden modal-content modal-center card" style="border: 2px solid var(--accent-red)">
+            <h2 style="color:var(--accent-red)">⚠️ CRITICAL WARNING</h2>
+            <p id="warning-text"></p>
+            <button class="btn btn-grey" style="text-align:center" onclick="document.getElementById('warning-modal').classList.add('hidden')">UNDERSTOOD</button>
+        </div>
+
+        <!-- 5. END SCREEN -->
+        <div id="end-screen" class="hidden modal-content modal-center card">
+            <h1 id="end-title">GAME OVER</h1>
+            <div id="end-reason" style="font-size:1.1rem; color:#fff; margin-bottom:15px"></div>
+            <div id="end-stats" style="text-align:left"></div>
+            <div style="display:flex; gap:10px; margin-top:20px">
+                <button class="btn btn-blue" style="text-align:center; flex:1" onclick="showShareModal()">📱 Share Results</button>
+                <button class="btn btn-grey" style="text-align:center; flex:1" onclick="location.reload()">New Game</button>
+            </div>
+        </div>
+
+        <!-- 6. SHARE MODAL -->
+        <div id="share-modal" class="hidden modal-content card" style="text-align:left">
+            <h2 style="margin-top:0">Share Your Game</h2>
+            <p style="font-size:0.9rem; color:#aaa">Optional: Add your reaction</p>
+            <textarea id="share-feedback" placeholder="What did you learn? How did your group react?" style="width:100%; height:100px; background:#2a2a2a; border:1px solid #444; border-radius:6px; color:#fff; padding:10px; font-family:inherit; font-size:0.9rem; resize:vertical" maxlength="200"></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px">
+                <button class="btn btn-grey" style="flex:1; text-align:center" onclick="document.getElementById('share-modal').classList.add('hidden')">Cancel</button>
+                <button class="btn btn-green" style="flex:2; text-align:center" onclick="submitShare()">📱 Share / Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN UI -->
+    <div id="game-header">
+        <div class="top-bar">
+            <div style="font-size:0.8rem; font-weight:bold; color:#888">THE TIPPING POINT</div>
+            <div class="mini-btn" onclick="showRules()">?</div>
+        </div>
+        <div class="track-container">
+            <div class="track">
+                <div class="track-label" style="color:var(--accent-green)">ENV HEALTH</div>
+                <div id="track-env-fill" class="track-fill" style="width: 0%; background: var(--accent-green);"></div>
+                <div id="track-env-val" class="track-value">0/5</div>
+            </div>
+            <div class="track">
+                <div class="track-label" style="color:var(--accent-red)">CRISIS (Limit <span id="crisis-limit-display">14</span>)</div>
+                <div id="track-crisis-fill" class="track-fill" style="width: 0%; background: var(--accent-red);"></div>
+                <div id="track-crisis-val" class="track-value">0/14</div>
+            </div>
+        </div>
+        <div class="market-track">
+            <div id="zone-dereg" class="market-zone">
+                <span style="color:var(--accent-red); font-weight:bold">DEREG</span><br>≤ <span id="mark-dereg">5</span>
+            </div>
+            <div id="zone-conv" class="market-zone">
+                <span style="color:#bbb; font-weight:bold">CONV</span><br><span id="mark-conv-range">5-9</span>
+            </div>
+            <div id="zone-green" class="market-zone">
+                <span style="color:var(--accent-green); font-weight:bold">GREEN</span><br>≥ <span id="mark-green">9</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-area">
+        <div id="recent-actions" class="card" style="padding: 10px;">
+            <h3 style="font-size:0.75rem; margin:0 0 5px 0; color:#666">LIVE FEED</h3>
+            <div id="action-feed" style="font-size:0.8rem;"></div>
+        </div>
+
+        <div id="active-player-ui" class="card player-card">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <div>
+                    <h2 id="p-name">Player</h2>
+                    <div class="sub-stat" style="font-size:0.85rem; color:#aaa" id="p-role-name">Role</div>
+                </div>
+                <div style="text-align:right"><h2 style="color:var(--accent-gold); font-size:2rem">$<span id="p-wealth">0</span></h2></div>
+            </div>
+
+            <div id="p-ability-box" class="ability-box"><strong style="color:var(--accent-blue)">ABILITY:</strong> <span id="p-ability-text"></span></div>
+            <div id="p-debt-status" style="color:var(--accent-red); font-weight:bold; font-size:0.8rem; margin-bottom:10px"></div>
+            <hr style="border-color: #333; margin: 15px 0;">
+
+            <div id="finance-actions" class="hidden">
+                <h3 style="color:var(--accent-gold)">Market Bets</h3>
+                <p style="font-size:0.85rem">Place $1. If successful this round, get $2 back.</p>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px">
+                    <button class="btn btn-red" style="font-size:0.9rem; text-align:center" onclick="financeBet('DEREG')">Bet Dereg</button>
+                    <button class="btn btn-grey" style="font-size:0.9rem; text-align:center" onclick="financeBet('CONV')">Bet Conv</button>
+                    <button class="btn btn-green" style="font-size:0.9rem; text-align:center" onclick="financeBet('GREEN')">Bet Green</button>
+                </div>
+                <button class="btn btn-gold" style="margin-top:15px" onclick="showLoanModal()">Offer VC Loan ($1 + Debt)</button>
+                <div id="finance-bankrupt" class="hidden" style="margin-top:15px; border:1px solid var(--accent-red); padding:10px; border-radius:6px">
+                    <strong style="color:var(--accent-red)">BANKRUPT</strong><br>Scavenge for $1 (no stake required).
+                </div>
+            </div>
+
+            <div id="industry-choice">
+                <h3>Select Investment</h3>
+                <button id="btn-inv-dereg" class="btn btn-red" onclick="selectInvestment('DEREG')">
+                    <div class="btn-content"><div class="btn-main-text"><span>Deregulation</span> <span class="btn-target">Target ≤ <span class="val-dereg"></span></span></div><div class="btn-reward" id="reward-dereg"></div></div>
+                </button>
+                <button id="btn-inv-conv" class="btn btn-grey" onclick="selectInvestment('CONV')">
+                    <div class="btn-content"><div class="btn-main-text"><span>Conventional</span> <span class="btn-target">Target <span class="val-conv-range"></span></span></div><div class="btn-reward" id="reward-conv"></div></div>
+                </button>
+                <button id="btn-inv-green" class="btn btn-green" onclick="selectInvestment('GREEN')">
+                    <div class="btn-content"><div class="btn-main-text"><span>Green Tech</span> <span class="btn-target">Target ≥ <span class="val-green"></span></span></div><div class="btn-reward" id="reward-green"></div></div>
+                </button>
+            </div>
+
+            <div id="industry-secure" class="hidden">
+                <h3 id="sec-title">Secure Investment</h3>
+                <div id="consequence-preview" style="background:#111; padding:10px; border-radius:6px; font-size:0.8rem; color:#ccc; border-left: 3px solid #666;"></div>
+                
+                <div class="secure-panel">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                        <span>Your Wealth:</span><strong style="color:var(--accent-gold);">$<span id="sec-wealth-display"></span></strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                        <span>Secure Cost:</span><strong id="sec-cost" style="color:var(--accent-red)">$0</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+                        <span>New Target:</span><strong id="sec-new" style="color:var(--accent-blue)"></strong>
+                    </div>
+
+                    <div class="secure-slider">
+                        <button class="btn btn-grey" style="width:50px; margin:0; font-size:1.5rem; text-align:center" onclick="modSecure(-1)">-</button>
+                        <div style="flex:1; text-align:center;">
+                            <div style="font-size:0.75rem; color:#888">LEVEL</div>
+                            <div style="font-size:1.8rem; font-weight:900"><span id="sec-level">0</span>/3</div>
+                        </div>
+                        <button class="btn btn-grey" style="width:50px; margin:0; font-size:1.5rem; text-align:center" onclick="modSecure(1)">+</button>
+                    </div>
+                    <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:10px">Costs: $0 → $1 → $3 → $6</div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:5px; color:#aaa">
+                        <span>Success Chance:</span><strong id="sec-prob-text" style="color:var(--accent-gold)">0%</strong>
+                    </div>
+                    <div class="prob-meter"><div id="sec-prob-bar" class="prob-fill" style="width:0%"></div></div>
+                </div>
+                <button class="btn btn-gold" style="margin-top:15px" onclick="rollDice()">COMMIT & ROLL</button>
+                <button class="btn btn-grey" style="background:transparent; border:1px solid #444; text-align:center" onclick="cancelSecure()">Cancel</button>
+            </div>
+
+            <div id="industry-result" class="hidden" style="text-align:center">
+                <div id="dice-container"><div id="die1" class="die"></div><div id="die2" class="die"></div></div>
+                <div id="roll-total" style="font-size:1.5rem; font-weight:bold; margin-bottom:10px; color:var(--accent-gold); opacity:0">Total: 0</div>
+                <h2 id="result-msg" style="font-size:2rem; margin:10px 0"></h2>
+                <div id="result-details" style="font-size:0.9rem; line-height:1.5; color:#ccc; margin-bottom:20px"></div>
+                <button class="btn btn-blue" style="text-align:center" onclick="finishTurn()">Next Turn</button>
+            </div>
+        </div>
+
+        <div id="player-list"></div>
+    </div>
+
+    <div id="loan-modal" class="hidden modal-content card">
+        <h3>Select Loan Recipient</h3>
+        <p>They gain $1. You give them the Debt Token.</p>
+        <div id="loan-buttons"></div>
+        <button class="btn btn-grey" style="text-align:center" onclick="document.getElementById('loan-modal').classList.add('hidden')">Cancel</button>
+    </div>
+
+<script>
+    /* --- GAME STATE --- */
+    const ROLES = {
+        ENERGY: { name: "Energy Sector", start: 4, rewards: {D:5, C:3, G:2}, type: 'industry', desc: "High rewards from Deregulation. High Risk." },
+        MINING: { name: "Mining Corp", start: 3, rewards: {D:6, C:2, G:2}, type: 'industry', desc: "Massive Deregulation payout. Biased against Green." },
+        AGRI:   { name: "Agriculture", start: 2, rewards: {D:4, C:3, G:2}, type: 'industry', desc: "Steady Conventional Earner." },
+        MANU:   { name: "Manufacturing", start: 3, rewards: {D:4, C:3, G:2}, type: 'industry', desc: "Balanced industry portfolio." },
+        TECH:   { name: "Tech Startup", start: 3, rewards: {D:2, C:1, G:5}, type: 'industry', ability: 'breakthrough', desc: "Green Tech pays $5. Success lowers Green marker." },
+        FINANCE:{ name: "Finance", start: 5, type: 'finance', desc: "Does not roll. Bets on others. Issues Debt." }
+    };
+    
+    const DIE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    const PROBS = { 2:2.78, 3:5.56, 4:8.33, 5:11.11, 6:13.89, 7:16.67, 8:13.89, 9:11.11, 10:8.33, 11:5.56, 12:2.78 };
+    const SECURE_COSTS = [0, 1, 3, 6]; // Exponential Cost Scaling
+    const DIFFICULTY_SETTINGS = {
+        EASY: { limit: 14, label: "Easy" },
+        NORMAL: { limit: 12, label: "Moderate" },
+        HARD: { limit: 10, label: "Hard" }
+    };
+
+    let state = {
+        players: [], turnIndex: 0, round: 1,
+        tracks: { env: 0, crisis: 0, dereg: 5, green: 9 },
+        financeBet: null, debtHolder: -1, gameOver: false,
+        currentInvestment: null, secureLevel: 0, crisisWarned: false,
+        difficulty: 'EASY', crisisLimit: 14
+    };
+
+    /* --- INIT & RULES --- */
+    function selectDifficulty(level) {
+        playSound('click'); state.difficulty = level; state.crisisLimit = DIFFICULTY_SETTINGS[level].limit;
+        ['diff-easy', 'diff-normal', 'diff-hard'].forEach(id => { document.getElementById(id).classList.remove('btn-green'); document.getElementById(id).classList.add('btn-grey'); });
+        document.getElementById('diff-' + level.toLowerCase()).classList.remove('btn-grey'); document.getElementById('diff-' + level.toLowerCase()).classList.add('btn-green');
+    }
+
+    function startGame(count) {
+        playSound('click');
+        if(!state.difficulty) state.difficulty = 'EASY'; state.crisisLimit = DIFFICULTY_SETTINGS[state.difficulty].limit;
+        state.tracks = { env: 0, crisis: (count===6?3:count===5?1:0), dereg: 5, green: 9 };
+        state.round = 1; state.crisisWarned = false;
+
+        let keys = ['ENERGY', 'MINING'];
+        if(count===6) keys.push('AGRI'); if(count>=5) keys.push('MANU'); keys.push('TECH', 'FINANCE');
+        state.players = keys.map((k, i) => ({ id: i, roleKey: k, name: ROLES[k].name, wealth: ROLES[k].start, type: ROLES[k].type, def: ROLES[k], bankrupt: false, history: { success:0, fail:0, crisis:0, green:0 } }));
+
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('overlay').classList.add('hidden');
+        document.getElementById('crisis-limit-display').innerText = state.crisisLimit;
+        log("Game Started."); prepTurn();
+    }
+
+    function showRules() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('rules-screen').classList.remove('hidden'); }
+    function hideRules() { document.getElementById('rules-screen').classList.add('hidden'); if(!state.players.length) document.getElementById('setup-screen').classList.remove('hidden'); else document.getElementById('overlay').classList.add('hidden'); }
+    
+    function log(msg) {
+        const feed = document.getElementById('action-feed'); const div = document.createElement('div'); div.className = 'log-entry';
+        const t = new Date(); const ts = `${t.getHours()}:${t.getMinutes()<10?'0':''}${t.getMinutes()}`;
+        div.innerHTML = `<span style="font-size:0.7rem; opacity:0.5; min-width:35px">${ts}</span> <span>${msg}</span>`;
+        feed.insertBefore(div, feed.firstChild); if(feed.children.length > 8) feed.removeChild(feed.lastChild);
+    }
+
+    /* --- TURN FLOW --- */
+    function prepTurn() {
+        const p = state.players[state.turnIndex];
+        if(p.type === 'finance' && state.financeBet) { log(`Finance bet expired.`); state.financeBet = null; }
+        
+        document.getElementById('pass-title').innerText = p.name; document.getElementById('pass-desc').innerText = `Pass to ${p.name}`;
+        document.getElementById('overlay').classList.remove('hidden'); document.getElementById('pass-screen').classList.remove('hidden');
+        
+        if(state.tracks.crisis >= state.crisisLimit - 3 && !state.crisisWarned) {
+            state.crisisWarned = true;
+            document.getElementById('pass-crisis-warning').classList.remove('hidden');
+            document.getElementById('warning-text').innerText = `Crisis is at ${state.tracks.crisis}. ${state.crisisLimit - state.tracks.crisis} more points means collapse.`;
+            document.getElementById('warning-modal').classList.remove('hidden'); playSound('fail');
+        } else { document.getElementById('pass-crisis-warning').classList.add('hidden'); }
+    }
+
+    function beginTurn() {
+        playSound('click'); document.getElementById('overlay').classList.add('hidden'); document.getElementById('pass-screen').classList.add('hidden');
+        ['industry-choice', 'industry-secure', 'industry-result', 'finance-actions'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        document.getElementById('roll-total').style.opacity = 0; document.getElementById('consequence-preview').innerHTML = '';
+
+        const p = state.players[state.turnIndex]; document.getElementById('p-ability-text').innerText = p.def.desc;
+        const ui = document.getElementById('active-player-ui'); ui.className = 'card player-card'; 
+        if(p.type === 'finance') ui.classList.add('finance'); if(p.bankrupt) ui.classList.add('bankrupt');
+
+        if(p.type === 'finance') setupFinance(p); else setupIndustry(p);
+        updateUI();
+    }
+
+    /* --- INDUSTRY LOGIC --- */
+    function setupIndustry(p) {
+        document.getElementById('industry-choice').classList.remove('hidden');
+        document.getElementById('reward-dereg').innerText = `+$${p.def.rewards.D}`; document.getElementById('reward-conv').innerText = `+$${p.def.rewards.C}`; document.getElementById('reward-green').innerText = `+$${p.def.rewards.G}`;
+        document.querySelectorAll('.val-dereg').forEach(e=>e.innerText=state.tracks.dereg); document.querySelectorAll('.val-green').forEach(e=>e.innerText=state.tracks.green); document.querySelectorAll('.val-conv-range').forEach(e=>e.innerText=`${state.tracks.dereg}-${state.tracks.green}`);
+        const btnGreen = document.getElementById('btn-inv-green');
+        if(p.bankrupt) { btnGreen.disabled = true; document.getElementById('p-debt-status').innerText = "🚫 BANKRUPT: ACTIONS RESTRICTED"; } else { btnGreen.disabled = false; }
+    }
+
+    function selectInvestment(type) {
+        playSound('click'); state.currentInvestment = type; const p = state.players[state.turnIndex];
+        let html = `<strong>If Successful:</strong> `;
+        if(type === 'DEREG') html += `<span style="color:var(--accent-gold)">Gain $${p.def.rewards.D}</span>, <span style="color:var(--accent-red)">Crisis +${state.tracks.crisis>=5?2:1}</span>`;
+        else if(type === 'CONV') html += `<span style="color:var(--accent-gold)">Gain $${p.def.rewards.C}</span>, <span style="color:var(--accent-red)">Crisis +1</span>`;
+        else if(type === 'GREEN') html += `<span style="color:var(--accent-gold)">Gain $${p.def.rewards.G}</span>, <span style="color:var(--accent-green)">Env +1</span>`;
+        if(p.roleKey === 'TECH' && type === 'GREEN') html += ` | Ability: Green -1`;
+        document.getElementById('consequence-preview').innerHTML = html;
+
+        if(type === 'CONV' || p.bankrupt) { state.secureLevel = 0; rollDice(); } 
+        else { state.secureLevel = 0; document.getElementById('industry-choice').classList.add('hidden'); document.getElementById('industry-secure').classList.remove('hidden'); updateSecureUI(); }
+    }
+
+    function modSecure(delta) {
+        const p = state.players[state.turnIndex]; let newLevel = state.secureLevel + delta;
+        if(newLevel < 0 || newLevel > 3) return; 
+        if(SECURE_COSTS[newLevel] > p.wealth) return;
+
+        let tD = state.tracks.dereg; let tG = state.tracks.green;
+        if(state.currentInvestment === 'DEREG') { if(tD + newLevel >= tG) return; } else { if(tG - newLevel <= tD) return; }
+        playSound('click'); state.secureLevel = newLevel; updateSecureUI();
+    }
+
+    function updateSecureUI() {
+        const p = state.players[state.turnIndex]; const type = state.currentInvestment;
+        const cost = SECURE_COSTS[state.secureLevel];
+        let base = (type === 'DEREG') ? state.tracks.dereg : state.tracks.green; let target = (type === 'DEREG') ? base + state.secureLevel : base - state.secureLevel; let op = (type === 'DEREG') ? '≤' : '≥';
+        
+        document.getElementById('sec-title').innerText = `Secure ${type}`; 
+        document.getElementById('sec-cost').innerText = `$${cost}`;
+        document.getElementById('sec-level').innerText = state.secureLevel;
+        document.getElementById('sec-wealth-display').innerText = p.wealth; document.getElementById('sec-new').innerText = `${op} ${target}`;
+        
+        let chance = 0;
+        if(type === 'DEREG') { for(let i=2; i<=12; i++) if(i <= target) chance += PROBS[i]; } else { for(let i=2; i<=12; i++) if(i >= target) chance += PROBS[i]; }
+        chance = Math.round(chance);
+        document.getElementById('sec-prob-text').innerText = `${chance}%`; document.getElementById('sec-prob-bar').style.width = `${chance}%`; document.getElementById('sec-prob-bar').style.backgroundColor = chance > 60 ? 'var(--accent-green)' : (chance < 30 ? 'var(--accent-red)' : 'var(--accent-gold)');
+    }
+
+    function cancelSecure() { document.getElementById('industry-secure').classList.add('hidden'); document.getElementById('industry-choice').classList.remove('hidden'); }
+
+    /* --- DICE --- */
+    function rollDice() {
+        document.getElementById('industry-choice').classList.add('hidden'); document.getElementById('industry-secure').classList.add('hidden'); document.getElementById('industry-result').classList.remove('hidden');
+        document.getElementById('roll-total').innerText = "Rolling..."; document.getElementById('roll-total').style.opacity = 0.5;
+        const d1El = document.getElementById('die1'); const d2El = document.getElementById('die2');
+        d1El.classList.add('tumbling'); d2El.classList.add('tumbling'); d1El.innerText = ''; d2El.innerText = '';
+        playSound('roll'); vibrate(50);
+        let rolls = 0; const interval = setInterval(() => { rolls++; if(rolls > 12) { clearInterval(interval); finishRoll(); } }, 80);
+    }
+
+    function finishRoll() {
+        const d1 = Math.ceil(Math.random()*6); const d2 = Math.ceil(Math.random()*6); const total = d1 + d2;
+        const d1El = document.getElementById('die1'); const d2El = document.getElementById('die2');
+        d1El.classList.remove('tumbling'); d2El.classList.remove('tumbling'); d1El.innerText = DIE_FACES[d1-1]; d2El.innerText = DIE_FACES[d2-1];
+        const totEl = document.getElementById('roll-total'); totEl.innerText = `Total: ${total}`; totEl.style.opacity = 1;
+        setTimeout(() => resolveResult(total), 400);
+    }
+
+    function resolveResult(total) {
+        const p = state.players[state.turnIndex]; const type = state.currentInvestment;
+        const cost = SECURE_COSTS[state.secureLevel];
+        p.wealth -= cost;
+        
+        let success = false;
+        if(type === 'DEREG') success = total <= (state.tracks.dereg + state.secureLevel);
+        else if(type === 'GREEN') success = total >= (state.tracks.green - state.secureLevel);
+        else success = (total >= state.tracks.dereg && total <= state.tracks.green);
+
+        const msgEl = document.getElementById('result-msg'); const detEl = document.getElementById('result-details'); let effects = [];
+        if(success) {
+            playSound('success'); vibrate([50, 50, 100]); msgEl.innerText = "SUCCESS!"; msgEl.style.color = "var(--accent-green)"; p.history.success++;
+            let r = p.def.rewards[type[0]]; p.wealth += r; effects.push(`Gained <b style="color:var(--accent-gold)">$${r}</b>`);
+            if(type === 'DEREG') {
+                let c = state.tracks.crisis >= 5 ? 2 : 1; state.tracks.crisis += c; state.tracks.dereg++; effects.push(`Crisis +${c}`); p.history.crisis += c;
+            } else if(type === 'CONV') { state.tracks.crisis++; effects.push(`Crisis +1`); p.history.crisis++; } 
+            else if(type === 'GREEN') { state.tracks.env++; effects.push(`Env Health +1`); p.history.green++; if(p.roleKey === 'TECH') { state.tracks.green--; effects.push("Ability: Green -1"); } }
+            if(state.debtHolder === p.id) { let pay = Math.min(p.wealth, 2); p.wealth -= pay; const fin = state.players.find(x => x.type==='finance'); if(fin) fin.wealth += pay; state.debtHolder = -1; effects.push(`Paid Debt (-$${pay})`); }
+            if(state.financeBet && state.financeBet.type === type) { const fin = state.players.find(x => x.type==='finance'); let profit = state.financeBet.amount > 0 ? 2 : 1; fin.wealth += profit; log(`Finance won bet on ${type}`); }
+            log(`${p.name} succeeded on ${type}.`);
+        } else {
+            playSound('fail'); vibrate(300); msgEl.innerText = "FAILURE"; msgEl.style.color = "var(--accent-red)"; p.history.fail++;
+            let loss = p.wealth > 0 ? 1 : 0; p.wealth -= loss; effects.push(`Lost $${loss}`);
+            if(state.debtHolder === p.id) { state.debtHolder = -1; effects.push("Debt returned unpaid"); }
+            log(`${p.name} failed on ${type}.`);
+        }
+        detEl.innerHTML = effects.join(" • ");
+    }
+
+    /* --- FINANCE & GLOBAL --- */
+    function setupFinance(p) {
+        document.getElementById('finance-actions').classList.remove('hidden');
+        if(p.wealth <= 0) document.getElementById('finance-bankrupt').classList.remove('hidden'); else document.getElementById('finance-bankrupt').classList.add('hidden');
+    }
+    function financeBet(zone) { playSound('click'); const p = state.players[state.turnIndex]; let amt = p.wealth > 0 ? 1 : 0; p.wealth -= amt; state.financeBet = { type: zone, amount: amt }; log(`Finance bet on ${zone}`); finishTurn(); }
+    function showLoanModal() {
+        const p = state.players[state.turnIndex]; if(p.wealth < 1) { alert("Need $1"); return; } if(state.debtHolder !== -1) { alert("Debt Token is busy."); return; }
+        const div = document.getElementById('loan-buttons'); div.innerHTML = '';
+        state.players.forEach(pl => {
+            if(pl.id !== p.id && pl.type !== 'finance') {
+                let btn = document.createElement('button'); btn.className = 'btn btn-blue'; btn.innerText = `${pl.name} ($${pl.wealth})`;
+                btn.onclick = () => { p.wealth--; pl.wealth++; state.debtHolder = pl.id; log(`Loan to ${pl.name}`); document.getElementById('loan-modal').classList.add('hidden'); finishTurn(); };
+                div.appendChild(btn);
+            }
+        }); document.getElementById('loan-modal').classList.remove('hidden');
+    }
+
+    function finishTurn() {
+        const p = state.players[state.turnIndex]; p.bankrupt = p.wealth <= 0;
+        if(state.tracks.env >= 5) return endGame(true);
+        if(state.tracks.crisis >= state.crisisLimit) return endGame(false);
+        state.turnIndex++; if(state.turnIndex >= state.players.length) { state.turnIndex = 0; endRound(); } prepTurn();
+    }
+    function endRound() { state.round++; state.tracks.crisis++; playSound('fail'); log("End Round: Crisis +1"); if(state.tracks.crisis >= state.crisisLimit) endGame(false); }
+
+    function endGame(won) {
+        state.gameOver = true; document.getElementById('overlay').classList.remove('hidden');
+        ['setup-screen','pass-screen','warning-modal'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+        document.getElementById('end-screen').classList.remove('hidden');
+        
+        const title = document.getElementById('end-title'); const reason = document.getElementById('end-reason'); const stats = document.getElementById('end-stats');
+        if(won) { title.innerText = "🌍 PLANET SAVED"; title.style.color = "var(--accent-green)"; reason.innerHTML = `Environment Health reached <strong>5</strong>.<br>Green technology stabilized the climate.`; playSound('success'); vibrate([100, 50, 100]); } 
+        else { title.innerText = "☠️ PLANETARY COLLAPSE"; title.style.color = "var(--accent-red)"; reason.innerHTML = `Crisis reached <strong>${state.crisisLimit}</strong>.<br>The system passed the point of no return.`; playSound('fail'); vibrate([300, 100, 300]); }
+
+        let html = `<div style="margin:15px 0; padding:10px; background:#333; border-radius:6px"><strong>Difficulty:</strong> ${DIFFICULTY_SETTINGS[state.difficulty].label}<br>Final Crisis: ${state.tracks.crisis}/${state.crisisLimit} • Rounds: ${state.round}</div><h3>Final Standings</h3>`;
+        let sorted = [...state.players].sort((a,b) => b.wealth - a.wealth);
+        sorted.forEach((p, i) => { html += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #444; ${i===0?'color:var(--accent-gold); font-weight:bold':''}"><span>${i+1}. ${p.name}</span><span>$${p.wealth}</span></div>`; });
+
+        const richest = sorted[0]; const greenest = state.players.sort((a,b) => b.history.green - a.history.green)[0]; const dirtiest = state.players.sort((a,b) => b.history.crisis - a.history.crisis)[0];
+        html += `<div style="margin-top:20px; padding:10px; background:#252525; font-size:0.85rem; font-style:italic; color:#aaa">Most Profitable: <span style="color:#fff">${richest.name}</span><br>Most Polluting: <span style="color:#fff">${dirtiest.name}</span> (${dirtiest.history.crisis} pts)<br>Most Sustainable: <span style="color:#fff">${greenest.name}</span> (${greenest.history.green} pts)</div>`;
+        stats.innerHTML = html;
+    }
+    
+    function showShareModal() { document.getElementById('share-modal').classList.remove('hidden'); document.getElementById('overlay').classList.remove('hidden'); }
+    function submitShare() {
+        const feedback = document.getElementById('share-feedback').value.trim(); const won = state.tracks.env >= 5;
+        let text = won ? `🌍 We saved the planet in The Tipping Point! (Crisis: ${state.tracks.crisis}/${state.crisisLimit})\n` : `☠️ Planetary collapse in The Tipping Point. (Crisis: ${state.tracks.crisis}/${state.crisisLimit})\n`;
+        if(feedback) text += `\n"${feedback}"`;
+        text += `\n\nPlay: ${window.location.href}`;
+        if (navigator.share) { navigator.share({ text: text }).then(() => { document.getElementById('share-modal').classList.add('hidden'); }).catch(() => {}); } 
+        else { navigator.clipboard.writeText(text); alert("Results copied to clipboard!"); document.getElementById('share-modal').classList.add('hidden'); }
+    }
+
+    function updateUI() {
+        document.getElementById('track-env-fill').style.width = (state.tracks.env/5)*100 + '%'; document.getElementById('track-env-val').innerText = state.tracks.env + '/5';
+        document.getElementById('track-crisis-fill').style.width = (state.tracks.crisis/state.crisisLimit)*100 + '%'; document.getElementById('track-crisis-val').innerText = state.tracks.crisis + '/' + state.crisisLimit;
+        document.getElementById('crisis-limit-display').innerText = state.crisisLimit;
+        if(state.tracks.crisis >= state.crisisLimit - 3) document.querySelector('.track:nth-child(2)').classList.add('crisis-alert');
+
+        document.getElementById('mark-dereg').innerText = state.tracks.dereg; document.getElementById('mark-green').innerText = state.tracks.green; document.getElementById('mark-conv-range').innerText = `${state.tracks.dereg}-${state.tracks.green}`;
+        const p = state.players[state.turnIndex]; document.getElementById('p-name').innerText = p.name; document.getElementById('p-role-name').innerText = p.type === 'finance' ? 'Finance' : 'Industry'; document.getElementById('p-wealth').innerText = p.wealth;
+        let dStat = document.getElementById('p-debt-status'); dStat.innerText = ''; if(p.bankrupt) dStat.innerText = "🚫 BANKRUPT"; if(state.debtHolder === p.id) dStat.innerText += (dStat.innerText ? " | " : "") + "HAS DEBT";
+        const list = document.getElementById('player-list'); list.innerHTML = '';
+        state.players.forEach(pl => {
+            let div = document.createElement('div'); div.style = `display:flex; justify-content:space-between; padding:10px; margin-top:6px; background:#252525; border-radius:6px; border:1px solid ${pl.id===state.turnIndex?'var(--accent-gold)':'transparent'}`;
+            let extra = state.debtHolder===pl.id ? '<span style="color:var(--accent-red);font-size:0.7rem">DEBT</span>' : '';
+            div.innerHTML = `<span style="color:${pl.id===state.turnIndex?'#fff':'#999'}">${pl.name}</span><div style="display:flex; gap:10px; align-items:center">${extra}<strong style="color:${pl.bankrupt?'var(--accent-red)':'var(--accent-gold)'}">$${pl.wealth}</strong></div>`; list.appendChild(div);
+        });
+        document.getElementById('zone-dereg').classList.remove('active-target'); document.getElementById('zone-conv').classList.remove('active-target'); document.getElementById('zone-green').classList.remove('active-target');
+        if(state.currentInvestment) document.getElementById('zone-'+state.currentInvestment.toLowerCase()).classList.add('active-target');
+    }
+</script>
+</body>
+</html>

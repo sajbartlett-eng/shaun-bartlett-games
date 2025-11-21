@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>INHERITANCE: Estate Edition</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* HEADER SECTION */
+        #game-header {
+            width: 95vw;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 5px;
+            margin-top: 10px;
+            z-index: 5;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 22px;
+            color: #2E7D32;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 800;
+        }
+
+        /* Help & Mute Buttons */
+        .header-icons {
+            position: absolute;
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: #2E7D32;
+            color: #fff;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .icon-btn:active { transform: scale(0.95); }
+
+        #stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #statusText { font-weight: bold; font-size: 16px; }
+        #active-rules { font-size: 16px; letter-spacing: 2px; }
+        #timerText { font-family: monospace; font-size: 22px; font-weight: bold; color: #ddd; }
+
+        #time-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #444;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        #time-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #66BB6A;
+            transition: width 1s linear, background 0.5s;
+        }
+        
+        #instructionText {
+            background: #fff;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            min-height: 21px;
+            transition: all 0.2s;
+            border: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        /* GAME CONTAINER */
+        #game-container {
+            position: relative;
+            width: 95vw;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
+            border-radius: 4px;
+            overflow: hidden;
+            transition: box-shadow 0.5s;
+            margin-bottom: 10px;
+        }
+        
+        .urgent-border {
+            box-shadow: 0 0 0 4px #EF5350, 0 15px 35px rgba(0,0,0,0.15) !important;
+            animation: pulse-border 1s infinite;
+        }
+        @keyframes pulse-border { 
+            0% { box-shadow: 0 0 0 4px #EF5350; } 
+            50% { box-shadow: 0 0 0 8px rgba(239, 83, 80, 0.5); } 
+            100% { box-shadow: 0 0 0 4px #EF5350; } 
+        }
+
+        canvas {
+            background-color: #7Cb342; 
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* LEGEND BAR */
+        #legend-bar {
+            width: 95vw;
+            max-width: 600px;
+            background: #333;
+            color: #eee;
+            border-radius: 8px;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #444;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-square { 
+            width: 14px; height: 14px; 
+            background: #7Cb342; 
+            border: 1px solid #aaa; 
+            display: inline-block; 
+        }
+
+        /* ACTION BAR */
+        #action-bar {
+            width: 95vw;
+            max-width: 600px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            gap: 15px;
+        }
+
+        /* BUTTONS */
+        .undo-btn {
+            background: #e53935; color: white;
+            border: none; width: 50px; height: 50px;
+            border-radius: 50%; font-size: 24px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center; justify-content: center;
+            transition: transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .undo-btn:active { transform: scale(0.9); background: #c62828; }
+
+        .return-btn {
+            background: #2E7D32; color: white;
+            border: none; padding: 12px 30px;
+            border-radius: 30px; font-size: 16px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-weight: bold;
+            display: none;
+        }
+        .return-btn:active { transform: translateY(2px); }
+
+        /* OVERLAYS */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 25, 20, 0.96);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            overflow-y: auto;
+        }
+        
+        .overlay h2 { 
+            margin-top: 0; 
+            color: #81C784; 
+            font-size: 28px; 
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .overlay-content { 
+            font-size: 15px; 
+            line-height: 1.5; 
+            margin-bottom: 20px; 
+            color: #ccc;
+            max-width: 600px;
+        }
+
+        /* RULES OVERLAY */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            text-align: left;
+            margin-bottom: 15px;
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .rule-item { display: flex; align-items: center; gap: 10px; color: #ddd; font-size: 14px; }
+        
+        .rules-box {
+            text-align:left; background:#222; padding:15px; 
+            border-radius:8px; margin-bottom:10px; font-size:0.95em;
+            border: 1px solid #333;
+        }
+
+        /* INPUT FIELDS */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 85%;
+            max-width: 400px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .name-input {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        .name-input:focus { border-color: #81C784; }
+
+        /* SETTINGS TOGGLES */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .toggle-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #aaa;
+            padding: 12px 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .toggle-btn.active {
+            background: #2E7D32;
+            color: white;
+            border-color: #66BB6A;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        .toggle-icon { font-size: 20px; }
+        
+        #setting-desc {
+            font-size: 13px;
+            color: #888;
+            min-height: 40px;
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* BUTTONS */
+        button.std-btn {
+            background: #66BB6A; color: #000; border: none;
+            padding: 16px 40px; font-size: 18px; cursor: pointer;
+            border-radius: 50px; font-weight: 800;
+            box-shadow: 0 4px 0 #2E7D32;
+            outline: none;
+            margin-bottom: 15px;
+            margin-top: 10px;
+            -webkit-tap-highlight-color: transparent;
+            text-transform: uppercase;
+        }
+        button.std-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        button.sec-btn {
+            background: #333; color: #FFD700; border: 1px solid #FFD700;
+            padding: 12px 30px;
+            font-size: 14px; cursor: pointer;
+            border-radius: 50px; font-weight: bold;
+            outline: none;
+            margin-bottom: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button.sec-btn:active { background: #444; }
+        
+        button.small-btn {
+            background: transparent; color: #aaa; border: 1px solid #555;
+            padding: 8px 20px; font-size: 13px; border-radius: 20px;
+            margin-bottom: 10px; cursor: pointer;
+        }
+        
+        /* Challenge Buttons Container */
+        #challenge-buttons {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            width: 80%;
+        }
+
+        #rps-buttons {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            align-items: center;
+        }
+        .rps-btn {
+            border: none; padding: 15px 0; width: 100%;
+            font-size: 16px; font-weight: bold; color: white;
+            border-radius: 8px; cursor: pointer;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+        }
+        .rps-btn:active { transform: translateY(3px); box-shadow: none; }
+        .p1-btn { background-color: #42A5F5; } 
+        .p2-btn { background-color: #AB47BC; } 
+
+        .timer-urgent { color: #EF5350 !important; animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            100% { transform: translate(1px, 1px); }
+        }
+
+        .p1-text { color: #1565C0; font-weight: bold; }
+        .p2-text { color: #7B1FA2; font-weight: bold; }
+        
+        .prime-pulse { animation: glow 1s infinite alternate; color: #F57F17 !important; font-weight: 800; }
+        @keyframes glow { from { opacity: 0.7; } to { opacity: 1; } }
+
+        /* CREDITS */
+        .credits {
+            margin-top: 25px;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-header">
+        <div class="header-top">
+            <h1>Inheritance</h1>
+            <div class="header-icons">
+                <div id="muteBtn" class="icon-btn">🔊</div>
+                <div id="helpBtn" class="icon-btn">?</div>
+            </div>
+        </div>
+        <div id="stats-bar">
+            <span id="statusText">Phase 1</span>
+            <span id="active-rules"></span>
+            <span id="timerText">60</span>
+        </div>
+        <div id="time-bar-container">
+            <div id="time-bar-fill"></div>
+        </div>
+        <div id="instructionText">Initializing...</div>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+
+        <!-- MAIN OVERLAY -->
+        <div id="overlay" class="overlay">
+            <h2 id="overlayTitle">Welcome</h2>
+            <div id="overlayContent" class="overlay-content"></div>
+            
+            <!-- Setup Panel -->
+            <div id="setupPanel" class="input-group">
+                <input type="text" id="inputP1" class="name-input" placeholder="Sibling 1 Name" value="Player 1" maxlength="12">
+                <input type="text" id="inputP2" class="name-input" placeholder="Sibling 2 Name" value="Player 2" maxlength="12">
+                
+                <div style="text-align:center; color:#888; margin-top:5px; font-size:0.8em; text-transform:uppercase;">House Rules</div>
+                <div class="settings-grid">
+                    <div class="toggle-btn" id="togRocks" onclick="toggleSetting('rocks')">
+                        <span class="toggle-icon">🪨</span>Broken Ground
+                    </div>
+                    <div class="toggle-btn" id="togPrime" onclick="toggleSetting('prime')">
+                        <span class="toggle-icon">🏙️</span>Prime Bonus
+                    </div>
+                    <div class="toggle-btn" id="togOpen" onclick="toggleSetting('open')" style="grid-column: span 2;">
+                        <span class="toggle-icon">👁️</span>Open Roles
+                    </div>
+                </div>
+                <div id="setting-desc">Classic Rules.</div>
+            </div>
+
+            <button id="overlayBtn" class="std-btn">Start Game</button>
+            <button id="rulesBtn" class="small-btn" onclick="showRules()">How to Play</button>
+            
+            <!-- Challenge Buttons -->
+            <div id="challenge-buttons">
+                <button class="std-btn" onclick="acceptChallenge()">Accept Challenge</button>
+                <button class="small-btn" onclick="finishGame(false)">Skip (Keep Win)</button>
+            </div>
+
+            <button id="solveBtn" class="sec-btn" style="display:none;">Show Ideal Cut</button>
+            
+            <div id="rps-buttons">
+                <div style="margin-bottom:10px; font-size: 0.9em; color:#ccc;">Who won Rock, Paper, Scissors?</div>
+                <button class="rps-btn p1-btn" id="p1WinBtn">Player 1 Won</button>
+                <button class="rps-btn p2-btn" id="p2WinBtn">Player 2 Won</button>
+            </div>
+
+            <div class="credits">Game Design by Shaun Bartlett © 2025</div>
+        </div>
+
+        <!-- RULES OVERLAY -->
+        <div id="rulesOverlay" class="overlay" style="z-index:200;">
+            <h2>How to Play</h2>
+            <div class="overlay-content">
+                <div style="margin-bottom:15px;"><strong>Goal:</strong> Own the plot with the highest value.</div>
+                
+                <div class="rules-grid">
+                    <div class="rule-item">🏡 Manor (Green) = 5</div>
+                    <div class="rule-item">🚜 Barn (Yellow) = 2</div>
+                    <div class="rule-item">🪵 Shed (Red) = 1</div>
+                    <div class="rule-item"><span class="dot" style="background:#7Cb342; border:1px solid #aaa"></span> Land (Empty) = 1</div>
+                </div>
+
+                <div class="rules-box">
+                    <strong>1. Phase 1:</strong> Place assets to build value.<br>
+                    <strong>2. Roles:</strong> Winner of RPS Chooses role.<br>
+                    <strong>3. Cut:</strong> Cutter divides. <em style="color:#4CAF50">(Goal: Tie)</em><br>
+                    <strong>4. Choose:</strong> Chooser picks. <em style="color:#AB47BC">(Goal: Big Half)</em>
+                </div>
+
+                <div class="rules-box">
+                    <strong>Variants:</strong><br>
+                    🪨 <strong>Broken Ground:</strong> Rocks (0 pts) block placement.<br>
+                    🏙️ <strong>Prime Bonus:</strong> Adjacent Manors (🏡) = +2 pts.<br>
+                    👁️ <strong>Open Roles:</strong> Roles are known in Phase 1.
+                </div>
+
+                <div class="credits">Game Design by Shaun Bartlett © 2025</div>
+            </div>
+            <button class="std-btn" onclick="closeRules()">Close</button>
+        </div>
+
+    </div>
+
+    <!-- LEGEND BAR -->
+    <div id="legend-bar">
+        <div class="legend-item">🏡 5</div>
+        <div class="legend-item">🚜 2</div>
+        <div class="legend-item">🪵 1</div>
+        <div class="legend-item"><span class="legend-square"></span> 1</div>
+    </div>
+    
+    <!-- ACTION BAR -->
+    <div id="action-bar">
+        <button id="undoBtn" class="undo-btn">↺</button>
+        <button id="returnBtn" class="return-btn">Back to Scores</button>
+    </div>
+
+<script>
+/** 
+ * INHERITANCE - Estate Edition (v29 - Signed)
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- CONFIG ---
+const INTERNAL_SIZE = 600;
+const GRID_SIZE = 6;
+const CELL_SIZE = 80;
+const MARGIN = 60; 
+
+const COLORS = {
+    grass: '#7Cb342', 
+    grassDark: '#689F38',
+    gridLines: 'rgba(255, 255, 255, 0.35)',
+    fence: '#4E342E',
+    
+    p1: '#42A5F5', p2: '#AB47BC', 
+    highlightA: 'rgba(66, 165, 245, 0.4)', highlightB: 'rgba(171, 71, 188, 0.4)',
+    
+    bonus: '#FFD700', solution: '#FBC02D', rock: '#555'
+};
+
+// ASSETS WITH EMOJIS
+const ASSETS = { 'G': 5, 'Y': 2, 'R': 1 };
+const ASSET_DATA = {
+    'G': { color: '#2E7D32', icon: '🏡' }, 
+    'Y': { color: '#F9A825', icon: '🚜' }, 
+    'R': { color: '#C62828', icon: '🪵' }  
+};
+
+const STATE = { MENU: 0, ROLES_PRE: 1, PHASE1: 2, ROLES_POST: 3, PHASE2: 4, PHASE3: 5, SCORING: 6, INFO_PAUSE: 99, FAIRNESS_CHALLENGE: 100 };
+let gameState = STATE.MENU;
+let savedNextState = null; 
+let descTimer = null;
+
+let grid = [], pool = [], timer = 0, lastTime = 0, turn = 0;
+let maxPhaseTime = 60; 
+let roles = { cutter: '', chooser: '' };
+let pNames = ["Player 1", "Player 2"];
+let settings = { rocks: false, prime: false, open: false };
+
+let cutNodes = [], cutEdges = [], isCutComplete = false;
+let plotA = [], plotB = [];
+let solutionEdges = []; 
+let fairnessData = { active: false, originalCut: [], wonAward: false, tempScores: null };
+
+// Audio
+let audioCtx = null;
+let isMuted = false;
+
+// Confetti
+let particles = [];
+
+// --- AUDIO SYSTEM ---
+function initAudio() {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playSound(type) {
+    if (isMuted || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+    
+    if (type === 'pop') { 
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'click') { 
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'snap') { 
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+    } else if (type === 'win') { 
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.setValueAtTime(600, now + 0.1);
+        osc.frequency.setValueAtTime(1000, now + 0.3);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.6);
+        osc.start(now); osc.stop(now + 0.6);
+    }
+}
+
+document.getElementById('muteBtn').addEventListener('click', () => {
+    isMuted = !isMuted;
+    document.getElementById('muteBtn').innerText = isMuted ? '🔇' : '🔊';
+});
+
+// --- INIT ---
+function initGame() {
+    gameState = STATE.MENU;
+    grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+    pool = ['G','G', 'Y','Y','Y','Y', 'R','R','R','R'];
+    turn = 0;
+    cutNodes = []; cutEdges = []; isCutComplete = false;
+    plotA = []; plotB = [];
+    solutionEdges = []; 
+    fairnessData = { active: false, originalCut: [], wonAward: false, tempScores: null };
+    particles = [];
+    document.getElementById('returnBtn').style.display = 'none';
+    document.getElementById('undoBtn').style.display = 'none';
+    
+    startGameLoop();
+    updateHUD();
+    
+    const hook = `
+        Two siblings. One Estate.<br>
+        A battle of wits.<br><br>
+        <strong>GOAL:</strong> Own the most valuable plot.<br>
+        (Assets + Area)<br><br>
+        This is a <strong style="color:#EF5350">TIMED GAME</strong>.
+    `;
+    showOverlay("The Inheritance", hook, "Begin Setup", true);
+}
+
+// --- SETTINGS & HELP ---
+window.toggleSetting = function(key) {
+    settings[key] = !settings[key];
+    const btn = document.getElementById(key === 'rocks' ? 'togRocks' : key === 'prime' ? 'togPrime' : 'togOpen');
+    btn.className = settings[key] ? 'toggle-btn active' : 'toggle-btn';
+    
+    const descEl = document.getElementById('setting-desc');
+    if(settings[key]) {
+        if(key === 'rocks') descEl.innerHTML = "<strong>Broken Ground:</strong><br>4 random Rocks will block placement.";
+        if(key === 'prime') descEl.innerHTML = "<strong>Prime Bonus:</strong><br>Adjacent Manors (🏡) grant +2 Points.";
+        if(key === 'open') descEl.innerHTML = "<strong>Open Roles:</strong><br>Roles (Cutter/Chooser) are known during placement.";
+    } else {
+        descEl.innerHTML = "Rule disabled.";
+    }
+    
+    if(descTimer) clearTimeout(descTimer);
+    descTimer = setTimeout(() => { 
+        let active = [];
+        if(settings.rocks) active.push("Rocks");
+        if(settings.prime) active.push("Prime");
+        if(settings.open) active.push("Open Roles");
+        descEl.innerHTML = active.length > 0 ? "Active: " + active.join(", ") : "Classic Rules.";
+    }, 4000);
+};
+
+window.showRules = function() { document.getElementById('rulesOverlay').style.display = 'flex'; };
+window.closeRules = function() { document.getElementById('rulesOverlay').style.display = 'none'; };
+document.getElementById('helpBtn').addEventListener('click', window.showRules);
+
+// --- UI HELPERS ---
+function showOverlay(title, content, btnText, showInputs = false) {
+    const ov = document.getElementById('overlay');
+    document.getElementById('overlayTitle').innerHTML = title;
+    document.getElementById('overlayContent').innerHTML = content;
+    document.getElementById('setupPanel').style.display = showInputs ? 'flex' : 'none';
+    document.getElementById('overlayBtn').style.display = 'inline-block';
+    document.getElementById('rulesBtn').style.display = showInputs ? 'inline-block' : 'none';
+    document.getElementById('rps-buttons').style.display = 'none';
+    document.getElementById('solveBtn').style.display = 'none'; 
+    document.getElementById('challenge-buttons').style.display = 'none'; 
+    document.getElementById('overlayBtn').innerText = btnText;
+    ov.style.display = 'flex';
+}
+
+function showRPSOverlay() {
+    const ov = document.getElementById('overlay');
+    document.getElementById('overlayTitle').innerHTML = "Determine Roles";
+    document.getElementById('overlayContent').innerHTML = "<strong>Play Rock, Paper, Scissors off-screen.</strong><br><br>Winner is the <strong>CHOOSER</strong>.<br>Loser is the <strong>CUTTER</strong>.";
+    document.getElementById('setupPanel').style.display = 'none';
+    document.getElementById('overlayBtn').style.display = 'none';
+    document.getElementById('solveBtn').style.display = 'none';
+    document.getElementById('rulesBtn').style.display = 'none';
+    document.getElementById('challenge-buttons').style.display = 'none';
+    document.getElementById('rps-buttons').style.display = 'flex';
+    document.getElementById('p1WinBtn').innerText = `${pNames[0]} Won`;
+    document.getElementById('p2WinBtn').innerText = `${pNames[1]} Won`;
+    ov.style.display = 'flex';
+}
+
+function updateHUD() {
+    const tEl = document.getElementById('timerText');
+    const sEl = document.getElementById('statusText');
+    const iEl = document.getElementById('instructionText');
+    const rEl = document.getElementById('active-rules');
+    const barFill = document.getElementById('time-bar-fill');
+    const gameCont = document.getElementById('game-container');
+
+    let rules = '';
+    if (settings.rocks) rules += '🪨 ';
+    if (settings.prime) rules += '🏙️ ';
+    if (settings.open) rules += '👁️ ';
+    rEl.innerHTML = rules;
+    
+    // TIMER LOGIC
+    if(gameState === STATE.PHASE1 || gameState === STATE.PHASE2 || gameState === STATE.PHASE3 || gameState === STATE.FAIRNESS_CHALLENGE) {
+        tEl.innerText = Math.ceil(timer);
+        let pct = (timer / maxPhaseTime) * 100;
+        barFill.style.width = pct + "%";
+        
+        if (timer < 10) {
+            tEl.className = 'timer-urgent';
+            barFill.style.backgroundColor = "#EF5350"; 
+            gameCont.classList.add('urgent-border');
+        } else if (timer < 20) {
+            tEl.className = '';
+            barFill.style.backgroundColor = "#FBC02D"; 
+            gameCont.classList.remove('urgent-border');
+        } else {
+            tEl.className = '';
+            barFill.style.backgroundColor = "#66BB6A"; 
+            gameCont.classList.remove('urgent-border');
+        }
+    } else { 
+        tEl.innerText = "--"; tEl.className = ""; 
+        barFill.style.width = "100%"; barFill.style.backgroundColor = "#444";
+        gameCont.classList.remove('urgent-border');
+    }
+    
+    if (gameState === STATE.MENU || gameState === STATE.ROLES_PRE || gameState === STATE.INFO_PAUSE) {
+        sEl.innerText = "Setup"; iEl.innerText = "Game Setup...";
+    }
+    else if(gameState===STATE.PHASE1) {
+        sEl.innerText = "Phase 1: Develop";
+        const pClass = turn===0 ? "p1-text" : "p2-text";
+        let roleHint = settings.open ? (pNames[turn] === roles.cutter ? "(Cutter)" : "(Chooser)") : "";
+        let primeMsg = "";
+        if (settings.prime) {
+            let greens = [];
+            for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) if(grid[r][c]==='G') greens.push({c,r});
+            if (greens.length === 2 && (Math.abs(greens[0].c-greens[1].c)+Math.abs(greens[0].r-greens[1].r)===1)) {
+                primeMsg = ' <span class="prime-pulse">🏙️ PRIME!</span>';
+            }
+        }
+        const nextAsset = pool[0] || '-';
+        const icon = ASSET_DATA[nextAsset] ? ASSET_DATA[nextAsset].icon : '';
+        iEl.innerHTML = `<span class="${pClass}">${pNames[turn]}</span> ${roleHint} Place: <strong>${icon}</strong>${primeMsg}`;
+    }
+    else if(gameState===STATE.PHASE2) {
+        sEl.innerText = "Phase 2: The Cut";
+        const pClass = roles.cutter===pNames[0] ? "p1-text" : "p2-text";
+        iEl.innerHTML = `<span class="${pClass}">${roles.cutter}</span>: Tap dots to build fence.`;
+    }
+    else if(gameState===STATE.PHASE3) {
+        sEl.innerText = "Phase 3: The Choice";
+        const pClass = roles.chooser===pNames[0] ? "p1-text" : "p2-text";
+        iEl.innerHTML = `<span class="${pClass}">${roles.chooser}</span>: Tap land to keep.`;
+    }
+    else if(gameState===STATE.FAIRNESS_CHALLENGE) {
+        sEl.innerText = "Bonus: Fairness";
+        const pClass = roles.chooser===pNames[0] ? "p1-text" : "p2-text";
+        iEl.innerHTML = `<span class="${pClass}">${roles.chooser}</span>: Re-draw fence to make it EVEN.`;
+    }
+
+    // Show/Hide Undo
+    const undoBtn = document.getElementById('undoBtn');
+    if ((gameState === STATE.PHASE2 || gameState === STATE.FAIRNESS_CHALLENGE) && cutEdges.length > 0 && !isCutComplete) {
+        undoBtn.style.display = 'flex';
+    } else {
+        undoBtn.style.display = 'none';
+    }
+}
+
+// --- INTERACTION ---
+document.getElementById('overlayBtn').addEventListener('click', handleOverlayClick);
+document.getElementById('solveBtn').addEventListener('click', runSolver);
+document.getElementById('returnBtn').addEventListener('click', returnToScore);
+document.getElementById('undoBtn').addEventListener('click', undoLastCut);
+document.getElementById('p1WinBtn').addEventListener('click', () => setRoles(0));
+document.getElementById('p2WinBtn').addEventListener('click', () => setRoles(1));
+
+function handleOverlayClick(e) {
+    e.preventDefault();
+    initAudio();
+
+    if (gameState === STATE.SCORING) { initGame(); return; }
+
+    if(gameState === STATE.MENU) {
+        const n1 = document.getElementById('inputP1').value.trim();
+        const n2 = document.getElementById('inputP2').value.trim();
+        pNames[0] = n1 || "Player 1"; pNames[1] = n2 || "Player 2";
+        
+        if(settings.rocks) applyBrokenGround();
+        if(settings.open) {
+            gameState = STATE.ROLES_PRE; showRPSOverlay(); return;
+        } else {
+            document.getElementById('overlay').style.display = 'none';
+            startPhase1(); return;
+        }
+    }
+    if(gameState === STATE.INFO_PAUSE) {
+        document.getElementById('overlay').style.display = 'none';
+        if (savedNextState === STATE.PHASE2) {
+            gameState = STATE.PHASE2; timer = 60; maxPhaseTime = 60; lastTime = performance.now(); updateHUD();
+        }
+        else if (savedNextState === STATE.PHASE3) {
+            startPhase3();
+        }
+        return;
+    }
+}
+
+function undoLastCut() {
+    if (cutNodes.length > 0) {
+        cutNodes.pop();
+        cutEdges.pop();
+        updateHUD();
+    }
+}
+
+function applyBrokenGround() {
+    let rocksPlaced = 0;
+    while (rocksPlaced < 4) {
+        let r = Math.floor(Math.random() * GRID_SIZE);
+        let c = Math.floor(Math.random() * GRID_SIZE);
+        if (grid[r][c] === null) { grid[r][c] = 'X'; rocksPlaced++; }
+    }
+}
+
+function returnToScore() {
+    document.getElementById('returnBtn').style.display = 'none';
+    document.getElementById('overlay').style.display = 'flex';
+}
+
+function setRoles(winnerIndex) {
+    document.getElementById('overlay').style.display = 'none';
+    roles.chooser = pNames[winnerIndex];
+    roles.cutter = pNames[1 - winnerIndex];
+    if (gameState === STATE.ROLES_PRE) startPhase1();
+    else prepPhase2();
+}
+
+// --- LOGIC ---
+function startPhase1() {
+    gameState = STATE.PHASE1; timer = 60; maxPhaseTime = 60; lastTime = performance.now(); updateHUD();
+}
+function endPhase1() {
+    if (settings.open) prepPhase2();
+    else { gameState = STATE.ROLES_POST; showRPSOverlay(); }
+}
+
+function prepPhase2() {
+    gameState = STATE.INFO_PAUSE;
+    savedNextState = STATE.PHASE2;
+    cutNodes = []; cutEdges = []; isCutComplete = false; solutionEdges = [];
+    
+    const pClass = roles.cutter===pNames[0] ? "p1-text" : "p2-text";
+    let msg = `<span class="${pClass}">${roles.cutter}</span> takes the phone.<br>Draw a fence from edge to edge.`;
+    
+    let rulesList = [];
+    if(settings.prime) rulesList.push("🏙️ Split Manors (🏡) to break Bonus");
+    if(settings.rocks) rulesList.push("🪨 Rocks are dead land (0 pts)");
+    if(rulesList.length > 0) {
+        msg += "<br><div style='margin-top:15px; font-size:0.9em; color:#aaa; border-top:1px solid #333; padding-top:10px;'><strong>Active Rules:</strong><br>" + rulesList.join("<br>") + "</div>";
+    }
+    
+    showOverlay("Phase 2: The Cut", msg, "Start Cutting");
+}
+
+function prepPhase3() {
+    gameState = STATE.INFO_PAUSE;
+    savedNextState = STATE.PHASE3;
+    const pClass = roles.chooser===pNames[0] ? "p1-text" : "p2-text";
+    showOverlay("Survey Complete", 
+        `The land is divided.<br><br>Pass the device to <span class="${pClass}">${roles.chooser}</span>.<br>It is time to <strong>Choose</strong>.`,
+        "Start Phase 3");
+}
+
+function startPhase3() {
+    gameState = STATE.PHASE3; timer = 30; maxPhaseTime = 30; lastTime = performance.now(); updateHUD();
+}
+
+// --- FAIRNESS CHALLENGE ---
+function checkFairnessTrigger(chosenCells, autoPick) {
+    let result = calculateResult(chosenCells, autoPick);
+    fairnessData.tempScores = result; 
+
+    let scoreDiff = Math.abs(result.scoreA.total - result.scoreB.total);
+    
+    if (!autoPick && result.winnerRole === roles.chooser && scoreDiff > 1) {
+        const ov = document.getElementById('overlay');
+        document.getElementById('overlayTitle').innerHTML = "🌟 Fairness Challenge";
+        const pClass = roles.chooser===pNames[0] ? "p1-text" : "p2-text";
+        let content = `
+            <span class="${pClass}">${roles.chooser}</span>, you won by <strong>${scoreDiff} points</strong>.<br><br>
+            Can you redraw the fence to make it perfectly even (within 1 point)?<br><br>
+            <strong>Reward:</strong> "Fair Sibling" Award
+        `;
+        document.getElementById('overlayContent').innerHTML = content;
+        document.getElementById('overlayBtn').style.display = 'none';
+        document.getElementById('challenge-buttons').style.display = 'flex';
+        ov.style.display = 'flex';
+    } else {
+        playSound('win');
+        triggerConfetti();
+        showFinalScoreboard(result);
+    }
+}
+
+window.acceptChallenge = function() {
+    document.getElementById('overlay').style.display = 'none';
+    gameState = STATE.FAIRNESS_CHALLENGE;
+    fairnessData.originalCut = [...cutEdges];
+    cutNodes = []; cutEdges = []; isCutComplete = false;
+    timer = 30; maxPhaseTime = 30; lastTime = performance.now();
+    updateHUD();
+};
+
+window.finishGame = function(completedChallenge) {
+    playSound('win');
+    triggerConfetti();
+    showFinalScoreboard(fairnessData.tempScores);
+};
+
+// --- SCORING LOGIC ---
+function calculateResult(chosenCells, autoPick) {
+    const sA = getScore(plotA);
+    const sB = getScore(plotB);
+    let winnerName = "", reason = "", winnerRole = "";
+    let fCutter = 0, fChooser = 0;
+    if (autoPick) {
+        winnerRole = roles.cutter; winnerName = roles.cutter; reason = "Chooser ran out of time!";
+    } else {
+        let pickedA = (chosenCells.length === plotA.length && chosenCells[0].c === plotA[0].c);
+        if (pickedA) { fChooser = sA.total; fCutter = sB.total; } else { fChooser = sB.total; fCutter = sA.total; }
+        if (fChooser > fCutter) { winnerRole = roles.chooser; winnerName = roles.chooser; reason = "Found the better plot."; } 
+        else if (fCutter > fChooser) { winnerRole = roles.cutter; winnerName = roles.cutter; reason = "Created a perfect trap."; } 
+        else { winnerRole = roles.cutter; winnerName = roles.cutter; reason = "Tiebreaker (Cutter Wins)."; }
+    }
+    return { scoreA: sA, scoreB: sB, winnerName, winnerRole, reason };
+}
+
+function showFinalScoreboard(data) {
+    const { scoreA, scoreB, winnerName, reason } = data;
+    const bA = scoreA.bonus ? ` <span style="color:#FFD700;">(+${scoreA.bonus})</span>` : "";
+    const bB = scoreB.bonus ? ` <span style="color:#FFD700;">(+${scoreB.bonus})</span>` : "";
+    const wClass = winnerName === pNames[0] ? "p1-text" : "p2-text";
+    let html = `
+        <div style="font-size:14px; text-align:left; background:#222; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #444;">
+            <strong style="color:${COLORS.p1}">Blue Plot:</strong> ${scoreA.area} Area + ${scoreA.assets} Assets${bA} = <strong>${scoreA.total}</strong><br>
+            <strong style="color:${COLORS.p2}">Purple Plot:</strong> ${scoreB.area} Area + ${scoreB.assets} Assets${bB} = <strong>${scoreB.total}</strong>
+        </div>
+        <h2 class="${wClass}" style="margin:0 0 5px 0;">${winnerName} Wins!</h2>
+        <div style="color:#aaa;">${reason}</div>
+    `;
+    if (fairnessData.wonAward) {
+        html += `<div style="background:#1B5E20; padding:10px; border-radius:8px; border:1px solid #66BB6A; margin-top:15px;"><div style="font-size:1.5rem">🌟</div><strong>FAIR SIBLING</strong><br><span style="font-size:0.8rem; color:#ccc">Achieved perfect balance.</span></div>`;
+    }
+    gameState = STATE.SCORING;
+    document.getElementById('overlayTitle').innerHTML = "Probate Closed";
+    document.getElementById('overlayContent').innerHTML = html;
+    document.getElementById('setupPanel').style.display = 'none';
+    document.getElementById('overlayBtn').style.display = 'inline-block';
+    document.getElementById('overlayBtn').innerText = "Play Again";
+    document.getElementById('rulesBtn').style.display = 'none';
+    document.getElementById('challenge-buttons').style.display = 'none';
+    document.getElementById('solveBtn').innerText = "Show Ideal Cut";
+    document.getElementById('solveBtn').style.display = 'inline-block';
+    document.getElementById('overlay').style.display = 'flex';
+}
+
+function calculateScores(chosenCells, autoPick = false) { checkFairnessTrigger(chosenCells, autoPick); }
+
+function getScore(cells) {
+    let area = 0; let assets = 0; let greenCoords = [];
+    cells.forEach(p => { 
+        let val = grid[p.r][p.c];
+        if (val !== 'X') { area++;
+            if(val && ASSETS[val]) { assets += ASSETS[val]; if(val === 'G') greenCoords.push(p); }
+        }
+    });
+    let bonus = 0;
+    if (settings.prime && greenCoords.length === 2) {
+        let g1 = greenCoords[0], g2 = greenCoords[1];
+        if (Math.abs(g1.c - g2.c) + Math.abs(g1.r - g2.r) === 1) bonus = 2;
+    }
+    return { area, assets, bonus, total: area + assets + bonus };
+}
+
+// --- CONFETTI ---
+function triggerConfetti() {
+    for(let i=0; i<50; i++) {
+        particles.push({
+            x: canvas.width/2, y: canvas.height/2,
+            vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20,
+            color: `hsl(${Math.random()*360}, 100%, 50%)`, life: 60
+        });
+    }
+}
+function drawConfetti() {
+    for(let i=particles.length-1; i>=0; i--) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life--;
+        ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 6, 6);
+        if(p.life<=0) particles.splice(i,1);
+    }
+}
+
+// --- SOLVER (Deterministic) ---
+function runSolver() {
+    const btn = document.getElementById('solveBtn');
+    btn.innerText = "Calculating...";
+    setTimeout(() => {
+        try {
+            fairnessData.originalCut = []; 
+            const foundPath = performSmartSearch();
+            if (foundPath) {
+                solutionEdges = foundPath;
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('returnBtn').style.display = 'block';
+            } else { btn.innerText = "No valid cut found."; }
+        } catch (e) { console.error(e); btn.innerText = "Solver Error"; }
+    }, 50);
+}
+
+function performSmartSearch() {
+    let bestDiff = 999;
+    let bestPath = null;
+    
+    for (let c = 1; c < GRID_SIZE; c++) {
+        let path = []; for (let r = 0; r < GRID_SIZE; r++) path.push(makeKey({c:c,r:r}, {c:c,r:r+1}));
+        let diff = evaluatePath(path);
+        if (diff !== null) { if (diff === 0) return path; if (diff < bestDiff) { bestDiff = diff; bestPath = path; } }
+    }
+    for (let r = 1; r < GRID_SIZE; r++) {
+        let path = []; for (let c = 0; c < GRID_SIZE; c++) path.push(makeKey({c:c,r:r}, {c:c+1,r:r}));
+        let diff = evaluatePath(path);
+        if (diff !== null) { if (diff === 0) return path; if (diff < bestDiff) { bestDiff = diff; bestPath = path; } }
+    }
+    for (let c = 1; c < GRID_SIZE; c++) for (let r = 1; r < GRID_SIZE; r++) {
+        let path = [];
+        for(let i=0; i<r; i++) path.push(makeKey({c:c,r:i}, {c:c,r:i+1})); 
+        for(let i=c; i<GRID_SIZE; i++) path.push(makeKey({c:i,r:r}, {c:i+1,r:r})); 
+        let diff = evaluatePath(path);
+        if (diff !== null) { if (diff === 0) return path; if (diff < bestDiff) { bestDiff = diff; bestPath = path; } }
+    }
+    
+    // Deep Search
+    const MAX_ITER = 40000;
+    let boundaries = [];
+    for(let r=0; r<=GRID_SIZE; r++) for(let c=0; c<=GRID_SIZE; c++) if(r===0||r===GRID_SIZE||c===0||c===GRID_SIZE) boundaries.push({c,r});
+    boundaries.sort(() => Math.random() - 0.5);
+    
+    let stack = [];
+    boundaries.forEach(start => stack.push({curr: start, path:[], visited:new Set([`${start.c},${start.r}`])}));
+    let iterations = 0;
+
+    while(stack.length > 0) {
+        iterations++; if(iterations > MAX_ITER) break;
+        let { curr, path, visited } = stack.pop();
+        if (path.length > 0 && (curr.c===0||curr.c===GRID_SIZE||curr.r===0||curr.r===GRID_SIZE)) {
+            let diff = evaluatePath(path);
+            if (diff !== null) { if (diff === 0) return path; if (diff < bestDiff) { bestDiff = diff; bestPath = path; } }
+            continue;
+        }
+        if (path.length >= 24) continue;
+        let moves = [{c:curr.c+1, r:curr.r}, {c:curr.c-1, r:curr.r}, {c:curr.c, r:curr.r+1}, {c:curr.c, r:curr.r-1}];
+        moves.sort(() => Math.random() - 0.5);
+        for (let m of moves) {
+            if (m.c>=0 && m.c<=GRID_SIZE && m.r>=0 && m.r<=GRID_SIZE) {
+                let key = `${m.c},${m.r}`;
+                if (!visited.has(key)) {
+                    let newVisited = new Set(visited); newVisited.add(key);
+                    stack.push({ curr: m, path: [...path, makeKey(curr, m)], visited: newVisited });
+                }
+            }
+        }
+    }
+    return bestPath;
+}
+
+function evaluatePath(path) {
+    let wallSet = new Set(path);
+    let visited = new Set();
+    let groupA = null;
+    for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) {
+        if(!visited.has(`${c},${r}`)) { groupA = fill(c, r, wallSet); break; }
+    }
+    if (!groupA) return null;
+    let allCells = [];
+    for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) allCells.push({c,r});
+    let setA = new Set(groupA.map(p=>`${p.c},${p.r}`));
+    let groupB = allCells.filter(p => !setA.has(`${p.c},${p.r}`));
+    let scores = { sA: getScore(groupA), sB: getScore(groupB) };
+    return Math.abs(scores.sA.total - scores.sB.total);
+}
+
+// --- DRAWING & INPUT ---
+function handleInput(e) {
+    if(e.type === 'touchstart' || e.type === 'touchmove') e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height;
+    let cx = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
+    let cy = (e.changedTouches ? e.changedTouches[0].clientY : e.clientY);
+    const x = (cx - rect.left) * scaleX; const y = (cy - rect.top) * scaleY;
+
+    if (gameState === STATE.PHASE1) phase1Tap(x, y);
+    else if (gameState === STATE.PHASE2 || gameState === STATE.FAIRNESS_CHALLENGE) phase2Tap(x, y);
+    else if (gameState === STATE.PHASE3) phase3Tap(x, y);
+}
+canvas.addEventListener('mousedown', handleInput);
+canvas.addEventListener('touchstart', handleInput, {passive: false});
+
+function getGridPos(x, y) {
+    if (x < MARGIN || x > MARGIN + GRID_SIZE*CELL_SIZE) return null;
+    if (y < MARGIN || y > MARGIN + GRID_SIZE*CELL_SIZE) return null;
+    return { c: Math.floor((x - MARGIN) / CELL_SIZE), r: Math.floor((y - MARGIN) / CELL_SIZE) };
+}
+function getNodePos(x, y) {
+    const SNAP = 35; 
+    for(let r=0; r<=GRID_SIZE; r++) for(let c=0; c<=GRID_SIZE; c++) {
+        let px = MARGIN + c * CELL_SIZE; let py = MARGIN + r * CELL_SIZE;
+        if (Math.abs(x - px) < SNAP && Math.abs(y - py) < SNAP) return { c, r };
+    }
+    return null;
+}
+function phase1Tap(x, y) {
+    let pos = getGridPos(x, y);
+    if (pos && grid[pos.r][pos.c] === null && pool.length > 0) {
+        grid[pos.r][pos.c] = pool.shift(); turn = 1 - turn;
+        playSound('pop');
+        if (pool.length === 0) endPhase1();
+    }
+}
+function phase2Tap(x, y) {
+    if (isCutComplete) return;
+    let node = getNodePos(x, y);
+    if (!node) return;
+    if (cutNodes.length === 0) {
+        if (node.c===0 || node.c===GRID_SIZE || node.r===0 || node.r===GRID_SIZE) {
+            cutNodes.push(node); playSound('click');
+        }
+    } else {
+        let last = cutNodes[cutNodes.length - 1];
+        if (Math.abs(node.c-last.c) + Math.abs(node.r-last.r) === 1) {
+            let k = makeKey(last, node);
+            if (!cutEdges.includes(k)) {
+                cutNodes.push(node); cutEdges.push(k); playSound('click');
+                if (node.c===0 || node.c===GRID_SIZE || node.r===0 || node.r===GRID_SIZE) validateCut();
+            }
+        }
+    }
+}
+function makeKey(n1, n2) {
+    let s1 = `${n1.c},${n1.r}`, s2 = `${n2.c},${n2.r}`;
+    return s1 < s2 ? `${s1}-${s2}` : `${s2}-${s1}`;
+}
+function validateCut() {
+    let walls = new Set(cutEdges);
+    let visited = new Set(), groups = [];
+    for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) {
+        if(!visited.has(`${c},${r}`)){
+            let grp = fill(c, r, walls);
+            if(grp.length>0) { groups.push(grp); grp.forEach(p=>visited.add(`${p.c},${p.r}`)); }
+        }
+    }
+    if (groups.length === 2) {
+        isCutComplete = true; plotA = groups[0]; plotB = groups[1];
+        playSound('snap');
+        if (gameState === STATE.FAIRNESS_CHALLENGE) {
+            let sA = getScore(plotA);
+            let sB = getScore(plotB);
+            if (Math.abs(sA.total - sB.total) <= 1) {
+                fairnessData.wonAward = true;
+                fairnessData.tempScores = { scoreA: sA, scoreB: sB, winnerName: roles.chooser, reason: "Found the better plot... and fixed it!" };
+                playSound('win'); triggerConfetti();
+                setTimeout(() => showFinalScoreboard(fairnessData.tempScores), 600);
+            } else {
+                cutNodes = []; cutEdges = []; isCutComplete = false;
+            }
+        } else {
+            prepPhase3();
+        }
+    } else { cutNodes = []; cutEdges = []; }
+}
+function fill(sc, sr, walls) {
+    let stack = [{c:sc, r:sr}], group = [], seen = new Set([`${sc},${sr}`]);
+    while(stack.length > 0) {
+        let curr = stack.pop(); group.push(curr);
+        let moves = [
+            {dc:0,dr:-1,w:[{c:curr.c,r:curr.r},{c:curr.c+1,r:curr.r}]},
+            {dc:0,dr:1, w:[{c:curr.c,r:curr.r+1},{c:curr.c+1,r:curr.r+1}]},
+            {dc:-1,dr:0,w:[{c:curr.c,r:curr.r},{c:curr.c,r:curr.r+1}]},
+            {dc:1,dr:0, w:[{c:curr.c+1,r:curr.r},{c:curr.c+1,r:curr.r+1}]} 
+        ];
+        for(let m of moves) {
+            let nc = curr.c+m.dc, nr = curr.r+m.dr;
+            if(nc>=0 && nc<GRID_SIZE && nr>=0 && nr<GRID_SIZE) {
+                let wKey = makeKey(m.w[0], m.w[1]);
+                if(!walls.has(wKey) && !seen.has(`${nc},${nr}`)) {
+                    seen.add(`${nc},${nr}`); stack.push({c:nc, r:nr});
+                }
+            }
+        }
+    }
+    return group;
+}
+function phase3Tap(x, y) {
+    let pos = getGridPos(x, y);
+    if (!pos) return;
+    if (plotA.some(p => p.c===pos.c && p.r===pos.r)) calculateScores(plotA);
+    else if (plotB.some(p => p.c===pos.c && p.r===pos.r)) calculateScores(plotB);
+}
+
+// --- DRAWING ---
+function startGameLoop() { requestAnimationFrame(loop); }
+function loop(ts) {
+    let dt = (ts - lastTime) / 1000; lastTime = ts;
+    if ([STATE.PHASE1, STATE.PHASE2, STATE.PHASE3, STATE.FAIRNESS_CHALLENGE].includes(gameState)) {
+        timer -= dt; 
+        if (timer <= 0) { 
+            timer=0; 
+            if(gameState === STATE.FAIRNESS_CHALLENGE) finishGame(false);
+            else handleTimeout(); 
+        }
+    }
+    updateHUD(); draw(); requestAnimationFrame(loop);
+}
+function handleTimeout() {
+    if(gameState === STATE.PHASE1) endPhase1();
+    else if(gameState === STATE.PHASE2) { cutNodes=[]; cutEdges=[]; prepPhase2(); } 
+    else if(gameState === STATE.PHASE3) calculateScores(null, true);
+}
+
+function draw() {
+    // Draw Background
+    ctx.fillStyle = COLORS.grass; 
+    ctx.fillRect(0,0,INTERNAL_SIZE,INTERNAL_SIZE);
+    
+    // Draw Survey Lines (Grid)
+    ctx.strokeStyle = COLORS.gridLines; 
+    ctx.lineWidth = 1;
+    for(let i=0; i<=GRID_SIZE; i++) {
+        ctx.beginPath(); ctx.moveTo(MARGIN, MARGIN+i*CELL_SIZE); ctx.lineTo(MARGIN+GRID_SIZE*CELL_SIZE, MARGIN+i*CELL_SIZE); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(MARGIN+i*CELL_SIZE, MARGIN); ctx.lineTo(MARGIN+i*CELL_SIZE, MARGIN+GRID_SIZE*CELL_SIZE); ctx.stroke();
+    }
+
+    // Draw Perimeter Fence
+    ctx.strokeStyle = COLORS.fence;
+    ctx.lineWidth = 8;
+    ctx.lineJoin = "round";
+    ctx.strokeRect(MARGIN, MARGIN, GRID_SIZE*CELL_SIZE, GRID_SIZE*CELL_SIZE);
+
+    // Plots Highlight
+    if ((gameState===STATE.PHASE3 || gameState===STATE.SCORING) && plotA.length>0) {
+        ctx.fillStyle=COLORS.highlightA; plotA.forEach(p=>ctx.fillRect(MARGIN+p.c*CELL_SIZE, MARGIN+p.r*CELL_SIZE, CELL_SIZE, CELL_SIZE));
+        ctx.fillStyle=COLORS.highlightB; plotB.forEach(p=>ctx.fillRect(MARGIN+p.c*CELL_SIZE, MARGIN+p.r*CELL_SIZE, CELL_SIZE, CELL_SIZE));
+    }
+    
+    // Prime Bonus Lines
+    let greens = [];
+    if (settings.prime) {
+        for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) if(grid[r][c]==='G') greens.push({c,r});
+        if (greens.length === 2 && (Math.abs(greens[0].c-greens[1].c)+Math.abs(greens[0].r-greens[1].r)===1)) {
+            let x1 = MARGIN + greens[0].c*CELL_SIZE + CELL_SIZE/2, y1 = MARGIN + greens[0].r*CELL_SIZE + CELL_SIZE/2;
+            let x2 = MARGIN + greens[1].c*CELL_SIZE + CELL_SIZE/2, y2 = MARGIN + greens[1].r*CELL_SIZE + CELL_SIZE/2;
+            ctx.lineWidth = 8; ctx.strokeStyle = COLORS.bonus;
+            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        }
+    }
+
+    // Assets & Rocks
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    for(let r=0; r<GRID_SIZE; r++) for(let c=0; c<GRID_SIZE; c++) {
+        let val=grid[r][c];
+        let cx = MARGIN+c*CELL_SIZE+CELL_SIZE/2, cy = MARGIN+r*CELL_SIZE+CELL_SIZE/2;
+        if(val === 'X') {
+            ctx.font="32px Arial"; ctx.fillText('🪨', cx, cy);
+        } else if(val) {
+            // Token Circle Background
+            ctx.beginPath(); ctx.arc(cx, cy, 32, 0, Math.PI*2); 
+            ctx.fillStyle=ASSET_DATA[val].color; ctx.fill();
+            // Inner Shadow
+            ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=2; ctx.stroke();
+            // Emoji Icon
+            ctx.font="32px Arial"; ctx.fillStyle='#fff'; ctx.fillText(ASSET_DATA[val].icon, cx, cy);
+            
+            // VALUE BADGE
+            ctx.beginPath(); ctx.arc(cx + 20, cy + 20, 10, 0, Math.PI*2);
+            ctx.fillStyle = '#222'; ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+            
+            ctx.font="bold 12px Arial"; ctx.fillStyle = '#fff'; 
+            ctx.fillText(ASSETS[val], cx + 20, cy + 20);
+        }
+    }
+
+    // Fairness Challenge Ghost Cut
+    if (gameState === STATE.FAIRNESS_CHALLENGE && fairnessData.originalCut.length > 0) {
+        ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; 
+        ctx.setLineDash([10, 6]);
+        fairnessData.originalCut.forEach(k => {
+            let p = k.split('-').map(s=>s.split(',').map(Number));
+            ctx.beginPath(); ctx.moveTo(MARGIN+p[0][0]*CELL_SIZE, MARGIN+p[0][1]*CELL_SIZE);
+            ctx.lineTo(MARGIN+p[1][0]*CELL_SIZE, MARGIN+p[1][1]*CELL_SIZE); ctx.stroke();
+        });
+        ctx.setLineDash([]);
+    }
+
+    // Fence (Cuts) - Draw Lines FIRST
+    if(gameState>=STATE.PHASE2) {
+        ctx.lineWidth = 8; ctx.lineCap="round"; ctx.strokeStyle = COLORS.fence;
+        cutEdges.forEach(k => {
+            let p = k.split('-').map(s=>s.split(',').map(Number));
+            ctx.beginPath(); ctx.moveTo(MARGIN+p[0][0]*CELL_SIZE, MARGIN+p[0][1]*CELL_SIZE);
+            ctx.lineTo(MARGIN+p[1][0]*CELL_SIZE, MARGIN+p[1][1]*CELL_SIZE); ctx.stroke();
+        });
+    }
+
+    // Solution Line - Draw ON TOP
+    if (solutionEdges.length > 0) {
+        ctx.lineWidth = 5; ctx.lineCap="round"; ctx.strokeStyle = COLORS.solution;
+        ctx.setLineDash([10, 10]);
+        solutionEdges.forEach(k => {
+            let p = k.split('-').map(s=>s.split(',').map(Number));
+            ctx.beginPath(); ctx.moveTo(MARGIN+p[0][0]*CELL_SIZE, MARGIN+p[0][1]*CELL_SIZE);
+            ctx.lineTo(MARGIN+p[1][0]*CELL_SIZE, MARGIN+p[1][1]*CELL_SIZE); ctx.stroke();
+        });
+        ctx.setLineDash([]);
+    }
+
+    // Fence (Nodes) - Draw LAST
+    if(gameState===STATE.PHASE2 || gameState === STATE.FAIRNESS_CHALLENGE) {
+        for(let r=0; r<=GRID_SIZE; r++) for(let c=0; c<=GRID_SIZE; c++) {
+            let active = cutNodes.some(n=>n.c===c && n.r===r);
+            ctx.beginPath(); ctx.arc(MARGIN+c*CELL_SIZE, MARGIN+r*CELL_SIZE, active?9:5, 0, Math.PI*2);
+            ctx.fillStyle = active ? '#fff' : '#444'; ctx.fill();
+            if (active) { ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke(); }
+        }
+    }
+    
+    drawConfetti();
+}
+
+initGame();
+</script>
+</body>
+</html>
