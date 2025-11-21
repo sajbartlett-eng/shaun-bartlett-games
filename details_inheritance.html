@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inheritance | Game Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #2E7D32; --accent-glow: rgba(46, 125, 50, 0.5); }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
+        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        .back-link:hover { color: var(--accent); }
+        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+        p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
+        .highlight-box { background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
+        .play-btn { display: inline-block; background: var(--accent); color: #000; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
+        .play-btn:hover { background: #fff; transform: translateY(-2px); }
+        .image-placeholder { background: #1a1a1a; height: 400px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Back to Portfolio</a>
+
+    <h1>INHERITANCE</h1>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">Fair Division & Game Theory</p>
+    
+    <div class="game-stats">
+        <span>2 Players</span>
+        <span>10-15 Minutes</span>
+        <span>Age 12+</span>
+        <span>Digital</span>
+    </div>
+
+    <div class="content">
+        <p>Two players inherit an estate filled with valuable assets. The catch? You must divide it fairly—or prove that fair division is impossible.</p>
+
+        <h2>The Three-Phase Game</h2>
+        
+        <h3>Phase 1: Placement</h3>
+        <p>Player 1 (the Placer) strategically places assets—Gold (5 pts), Silver (3 pts), Green (2 pts), Red (1 pt)—and Rocks (obstacles) onto a 5×5 grid. The goal: make equal division as difficult as possible.</p>
+
+        <h3>Phase 2: Division</h3>
+        <p>Player 2 (the Divider) must draw a fence line that splits the estate into exactly two plots. The fence must run edge-to-edge and create valid partitions. Under time pressure, find the most equitable split you can.</p>
+
+        <h3>Phase 3: Choice</h3>
+        <p>The Divider chooses their preferred plot. Scores are calculated. Winner determined... unless.</p>
+
+        <div class="highlight-box">
+            <h3 style="margin-top: 0; color: #fff;">The Fairness Challenge</h3>
+            <p style="margin-bottom: 0;">If the score difference exceeds 1 point, the Placer can challenge. They get 60 seconds to find a MORE fair division (≤1 point difference). If they succeed, <strong>the Placer wins</strong>. If they fail or time expires, the original winner stands.</p>
+        </div>
+
+        <div class="image-placeholder">
+            [Game Board Screenshot - Placement Phase]
+        </div>
+
+        <h2>What Makes It Work</h2>
+        <p>The Fairness Challenge mechanic embodies a simple principle: <strong>if you claim a problem is unfair, you must demonstrate a fairer solution.</strong></p>
+
+        <p>This isn't just clever game design—it's teaching the <strong>Partition Problem</strong> (NP-complete in computer science) through play. Players viscerally experience why finding optimal fair divisions is computationally hard.</p>
+
+        <h3>Optional: Prime Bonus</h3>
+        <p>Adjacent Green tiles get +3 bonus points each. This creates spatial synergy and makes asymmetric value clusters more powerful—forcing the Divider to choose between connected high-value zones.</p>
+
+        <h2>Learning Through Failure</h2>
+        <p>The game teaches:</p>
+        <ul style="color: #ccc; margin-left: 20px;">
+            <li>Fair division requires constructive proof, not just complaints</li>
+            <li>Optimal solutions exist but are hard to find under pressure</li>
+            <li>Strategic problem design can make "fair" nearly impossible</li>
+            <li>Approximation algorithms matter when perfect solutions are expensive</li>
+        </ul>
+
+        <div style="text-align: center; margin-top: 60px;">
+            <a href="Inheritance.html" class="play-btn">▶ Play Now</a>
+        </div>
+    </div>
+
+</body>
+</html>
