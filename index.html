@@ -1,471 +1,1093 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaun Bartlett | Systems Literacy Through Play</title>
-    <meta name="description" content="Board games that teach complex systems thinking. From fair division to climate crisis, each game reveals how human systems actually work.">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg: #0f0f0f;
-            --card-bg: #181818;
-            --text: #e0e0e0;
-            --text-muted: #9ca3af;
-            --accent: #66BB6A;
-            --accent-glow: rgba(102, 187, 106, 0.5);
-            --border: #333;
-            --den-gold: #FFD54F;
-        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+<meta charset="UTF-8">
 
-        body {
-            font-family: 'Outfit', sans-serif; /* Cleaner, modern body font */
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%); /* Subtle global lighting */
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        h1, h2, h3, h4, .logo, .tag {
-            font-family: 'Space Grotesk', sans-serif; /* Tech/Systems header font */
-        }
+<title>Shaun Bartlett | Systems Fluency Through Play</title>
 
-        /* NAVIGATION */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 5%;
-            background: rgba(15, 15, 15, 0.8);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(15px);
-        }
-        
-        .logo { 
-            font-size: 1.3rem; 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-            color: #fff;
-        }
-        
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            font-size: 0.95rem; 
-            font-weight: 500; 
-            transition: color 0.2s; 
-        }
-        .nav-links a:hover { color: var(--accent); }
+<meta name="description" content="Board games that reveal how human systems actually work. From climate crisis to workplace burnout, each game makes complex systems experiential.">
 
-        /* HERO */
-        .hero {
-            text-align: center;
-            padding: 100px 20px 80px 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .hero h1 { 
-            font-size: clamp(3rem, 6vw, 5rem); 
-            margin-bottom: 20px; 
-            line-height: 1;
-            letter-spacing: -2px;
-            background: linear-gradient(180deg, #fff, #aaa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .hero .tagline { 
-            font-size: clamp(1.2rem, 2vw, 1.5rem); 
-            color: var(--accent); 
-            margin-bottom: 20px; 
-            font-weight: 600;
-        }
-        
-        .hero p { 
-            font-size: 1.1rem; 
-            color: var(--text-muted); 
-            margin-bottom: 40px; 
-            max-width: 600px; 
-            margin-left: auto; 
-            margin-right: auto;
-        }
 
-        .btn {
-            display: inline-block;
-            padding: 16px 40px;
-            background: var(--accent);
-            color: #000;
-            text-decoration: none;
-            border-radius: 8px; /* Slightly squarer for tech feel */
-            font-weight: 700;
-            transition: all 0.2s;
-            font-size: 1rem;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-        
-        .btn:hover { 
-            transform: translateY(-2px); 
-            background: #fff;
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-        /* SECTIONS */
-        .section { padding: 80px 5% 40px 5%; max-width: 1400px; margin: 0 auto; }
-        .section-header { margin-bottom: 50px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .section-title { font-size: 2rem; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
-        .section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-        /* CARDS - IMPROVED */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
-        .grid-2col { grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); }
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        
-        .card:hover:not(.coming-soon) { 
-            transform: translateY(-8px); 
-            border-color: var(--accent); 
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
-        }
 
-        .card-img {
-            height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 5rem;
-            position: relative;
-        }
-        
-        /* Gradients */
-        .tipping-point-bg { background: radial-gradient(circle at top right, #1565C0, #000); }
-        .inheritance-bg { background: radial-gradient(circle at top right, #2E7D32, #000); }
-        .leverage-bg { background: radial-gradient(circle at top right, #8B0000, #000); }
-        .burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
-        .viral-bg { background: radial-gradient(circle at top right, #C62828, #000); }
-        .winter-den-bg { background: radial-gradient(circle at top right, #37474F, #000); }
-        .summer-den-bg { background: radial-gradient(circle at top right, #F57C00, #000); }
-        .spring-den-bg { background: radial-gradient(circle at top right, #43A047, #000); }
-        .autumn-den-bg { background: radial-gradient(circle at top right, #8D6E63, #000); }
-        .playmaker-bg { background: radial-gradient(circle at top right, #E65100, #000); }
+<style>
 
-        .card-content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+:root {
 
-        .tags { display: flex; gap: 8px; margin-bottom: 15px; }
-        .tag { 
-            font-size: 0.75rem; padding: 6px 12px; border-radius: 4px; 
-            text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
-        }
-        .tag.digital { color: #64B5F6; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.2); }
-        .tag.pnp { color: #FFB74D; background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.2); }
-        .tag.coming { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+--bg: #0f0f0f;
 
-        .card h3 { font-size: 1.6rem; color: #fff; margin-bottom: 5px; line-height: 1.1; }
-        .card-subtitle { font-size: 1rem; color: #888; margin-bottom: 20px; font-family: 'Outfit', sans-serif; }
-        
-        .card-meta {
-            display: flex; gap: 15px; font-size: 0.9rem; color: #aaa;
-            padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+--card-bg: #181818;
 
-        .card-learning {
-            background: rgba(102, 187, 106, 0.05); 
-            border: 1px solid rgba(102, 187, 106, 0.2);
-            padding: 15px; border-radius: 8px; margin-bottom: 25px;
-            font-size: 0.9rem; color: #ccc;
-        }
+--text: #e0e0e0;
 
-        /* NEW BUTTON SYSTEM */
-        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: auto; }
-        
-        .action-btn {
-            padding: 12px 0; border-radius: 6px; font-weight: 600; font-size: 0.95rem;
-            text-align: center; text-decoration: none; transition: all 0.2s; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
+--text-muted: #9ca3af;
 
-        /* Primary Button (Play/Download) */
-        .btn-primary {
-            background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(102, 187, 106, 0.3);
-            border: 1px solid var(--accent);
-        }
-        .btn-primary:hover { background: #fff; border-color: #fff; transform: translateY(-2px); }
-        
-        /* Secondary Button (Learn More) */
-        .btn-secondary {
-            background: transparent; color: #fff; border: 1px solid #444;
-        }
-        .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+--accent: #66BB6A;
 
-        /* Disabled Button */
-        .btn-disabled {
-            background: #222; color: #555; border: 1px solid #333; pointer-events: none; grid-column: span 2;
-        }
+--accent-glow: rgba(102, 187, 106, 0.5);
 
-        /* Framework Cards */
-        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 40px; }
-        .framework-card { 
-            background: #181818; padding: 25px; border-radius: 12px; border-left: 3px solid var(--accent);
-        }
-        .framework-card h4 { color: var(--accent); font-size: 1.2rem; margin-bottom: 10px; }
+--border: #333;
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .card-actions { grid-template-columns: 1fr; } /* Stack buttons on mobile */
-            .nav-links { display: none; } /* Hide nav links on mobile for simplicity */
-        }
-    </style>
+--den-gold: #FFD54F;
+
+}
+
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+
+
+body {
+
+font-family: 'Outfit', sans-serif;
+
+background-color: var(--bg);
+
+color: var(--text);
+
+line-height: 1.6;
+
+background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%);
+
+}
+
+
+
+h1, h2, h3, h4, .logo, .tag {
+
+font-family: 'Space Grotesk', sans-serif;
+
+}
+
+
+
+/* NAVIGATION */
+
+nav {
+
+display: flex;
+
+justify-content: space-between;
+
+align-items: center;
+
+padding: 20px 5%;
+
+background: rgba(15, 15, 15, 0.8);
+
+position: sticky;
+
+top: 0;
+
+z-index: 100;
+
+border-bottom: 1px solid rgba(255,255,255,0.1);
+
+backdrop-filter: blur(15px);
+
+}
+
+
+.logo {
+
+font-size: 1.3rem;
+
+font-weight: 700;
+
+letter-spacing: -0.5px;
+
+color: #fff;
+
+}
+
+
+.nav-links { display: flex; gap: 30px; }
+
+.nav-links a {
+
+color: var(--text-muted);
+
+text-decoration: none;
+
+font-size: 0.95rem;
+
+font-weight: 500;
+
+transition: color 0.2s;
+
+}
+
+.nav-links a:hover { color: var(--accent); }
+
+
+
+/* HERO */
+
+.hero {
+
+text-align: center;
+
+padding: 100px 20px 60px 20px;
+
+max-width: 900px;
+
+margin: 0 auto;
+
+}
+
+
+.hero h1 {
+
+font-size: clamp(3rem, 6vw, 5rem);
+
+margin-bottom: 20px;
+
+line-height: 1;
+
+letter-spacing: -2px;
+
+background: linear-gradient(180deg, #fff, #aaa);
+
+-webkit-background-clip: text;
+
+-webkit-text-fill-color: transparent;
+
+background-clip: text;
+
+}
+
+
+.hero .tagline {
+
+font-size: clamp(1.2rem, 2vw, 1.5rem);
+
+color: var(--accent);
+
+margin-bottom: 20px;
+
+font-weight: 600;
+
+}
+
+
+.hero p {
+
+font-size: 1.1rem;
+
+color: var(--text-muted);
+
+margin-bottom: 40px;
+
+max-width: 700px;
+
+margin-left: auto;
+
+margin-right: auto;
+
+}
+
+
+
+.btn {
+
+display: inline-block;
+
+padding: 16px 40px;
+
+background: var(--accent);
+
+color: #000;
+
+text-decoration: none;
+
+border-radius: 8px;
+
+font-weight: 700;
+
+transition: all 0.2s;
+
+font-size: 1rem;
+
+box-shadow: 0 0 20px var(--accent-glow);
+
+}
+
+
+.btn:hover {
+
+transform: translateY(-2px);
+
+background: #fff;
+
+box-shadow: 0 0 30px var(--accent-glow);
+
+}
+
+
+
+/* SECTIONS */
+
+.section { padding: 80px 5% 40px 5%; max-width: 1400px; margin: 0 auto; }
+
+.section-header { margin-bottom: 50px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+
+.section-title { font-size: 2rem; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
+
+.section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
+
+
+
+/* FRAMEWORK SECTION (8 cards with details) */
+
+.framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 40px; }
+
+.framework-card {
+
+background: #181818;
+
+padding: 25px;
+
+border-radius: 12px;
+
+border-left: 3px solid var(--accent);
+
+height: 100%;
+
+}
+
+.framework-card h4 {
+
+color: var(--accent);
+
+font-size: 1.15rem;
+
+margin-bottom: 15px;
+
+line-height: 1.3;
+
+}
+
+.framework-card ul {
+
+list-style: none;
+
+padding-left: 0;
+
+margin: 0 0 15px 0;
+
+color: #ccc;
+
+}
+
+.framework-card ul li {
+
+margin-bottom: 6px;
+
+font-size: 0.9rem;
+
+line-height: 1.5;
+
+}
+
+.framework-card .examples {
+
+font-size: 0.85rem;
+
+color: #888;
+
+border-top: 1px solid #2a2a2a;
+
+padding-top: 12px;
+
+margin-top: 12px;
+
+}
+
+.framework-card .examples strong {
+
+color: var(--accent);
+
+}
+
+
+
+/* CARDS */
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
+
+.grid-2col { grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); }
+
+
+
+.card {
+
+background: var(--card-bg);
+
+border-radius: 16px;
+
+overflow: hidden;
+
+border: 1px solid rgba(255,255,255,0.05);
+
+display: flex;
+
+flex-direction: column;
+
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+position: relative;
+
+}
+
+
+.card:hover:not(.coming-soon) {
+
+transform: translateY(-8px);
+
+border-color: var(--accent);
+
+box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+
+}
+
+
+
+.card-img {
+
+height: 180px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+font-size: 5rem;
+
+position: relative;
+
+}
+
+
+/* Gradients */
+
+.tipping-point-bg { background: radial-gradient(circle at top right, #1565C0, #000); }
+
+.inheritance-bg { background: radial-gradient(circle at top right, #2E7D32, #000); }
+
+.leverage-bg { background: radial-gradient(circle at top right, #8B0000, #000); }
+
+.burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
+
+.viral-bg { background: radial-gradient(circle at top right, #C62828, #000); }
+
+.winter-den-bg { background: radial-gradient(circle at top right, #37474F, #000); }
+
+.summer-den-bg { background: radial-gradient(circle at top right, #F57C00, #000); }
+
+.spring-den-bg { background: radial-gradient(circle at top right, #43A047, #000); }
+
+.autumn-den-bg { background: radial-gradient(circle at top right, #8D6E63, #000); }
+
+.playmaker-bg { background: radial-gradient(circle at top right, #E65100, #000); }
+
+
+
+.card-content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+
+
+
+.tags { display: flex; gap: 8px; margin-bottom: 15px; }
+
+.tag { font-size: 0.75rem; padding: 6px 12px; border-radius: 4px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+.tag.digital { color: #64B5F6; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.2); }
+
+.tag.pnp { color: #FFB74D; background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.2); }
+
+.tag.coming { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+
+
+.card h3 { font-size: 1.6rem; color: #fff; margin-bottom: 5px; line-height: 1.1; }
+
+.card-subtitle { font-size: 1rem; color: #888; margin-bottom: 20px; font-family: 'Outfit', sans-serif; }
+
+.card-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #aaa; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+
+.card-learning { background: rgba(102, 187, 106, 0.05); border: 1px solid rgba(102, 187, 106, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 0.9rem; color: #ccc; }
+
+
+
+/* BUTTONS */
+
+.card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: auto; }
+
+.action-btn { padding: 12px 0; border-radius: 6px; font-weight: 600; font-size: 0.95rem; text-align: center; text-decoration: none; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(102, 187, 106, 0.3); border: 1px solid var(--accent); }
+
+.btn-primary:hover { background: #fff; border-color: #fff; transform: translateY(-2px); }
+
+.btn-secondary { background: transparent; color: #fff; border: 1px solid #444; }
+
+.btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+.btn-disabled { background: #222; color: #555; border: 1px solid #333; pointer-events: none; grid-column: span 2; }
+
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+.hero h1 { font-size: 2.5rem; }
+
+.card-actions { grid-template-columns: 1fr; }
+
+.nav-links { display: none; }
+
+.framework-grid { grid-template-columns: 1fr; }
+
+}
+
+</style>
+
 </head>
+
 <body>
 
-    <nav>
-        <div class="logo">SHAUN BARTLETT</div>
-        <div class="nav-links">
-            <a href="#play-now">Play Now</a>
-            <a href="#den-series">The Den</a>
-            <a href="#games">All Games</a>
-            <a href="#framework">Framework</a>
-            <a href="#contact">Contact</a>
-        </div>
-    </nav>
 
-    <div class="hero">
-        <h1>Systems Literacy<br>Through Play</h1>
-        <p class="tagline">Board games that reveal how human systems actually work</p>
-        <p>From climate crisis to workplace burnout, each game makes complex systems tangible. No lectures. Just play, experience, understand.</p>
-        <a href="#play-now" class="btn">Start Playing</a>
-    </div>
 
-    <section class="section" id="play-now">
-        <div class="section-header">
-            <h2 class="section-title">Play Now (Digital)</h2>
-            <p class="section-desc">Browser-based games. No download. No setup.</p>
-        </div>
-        
-        <div class="grid grid-2col">
-            <div class="card">
-                <div class="card-img inheritance-bg">💎</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag digital">Browser Game</span></div>
-                    <h3>INHERITANCE</h3>
-                    <div class="card-subtitle">Fair Division & Game Theory</div>
-                    <div class="card-meta">2 Players • 10 Mins • Age 12+</div>
-                    <p class="card-learning"><strong>Concept:</strong> Fair division is computationally hard. Claiming unfairness requires proving a better solution exists.</p>
-                    <div class="card-actions">
-                        <a href="Inheritance.html" class="action-btn btn-primary">▶ Play Game</a>
-                        <a href="details_inheritance.html" class="action-btn btn-secondary">Learn More</a>
-                    </div>
-                </div>
-            </div>
+<nav>
 
-            <div class="card">
-                <div class="card-img tipping-point-bg">🌍</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag digital">Browser Game</span></div>
-                    <h3>THE TIPPING POINT</h3>
-                    <div class="card-subtitle">Climate Crisis Push-Your-Luck</div>
-                    <div class="card-meta">3-6 Players • 20 Mins • Age 14+</div>
-                    <p class="card-learning"><strong>Concept:</strong> Why rational individual choices create collective catastrophe. Managing profit vs. collapse.</p>
-                    <div class="card-actions">
-                        <a href="TheTippingPoint.html" class="action-btn btn-primary">▶ Play Game</a>
-                        <a href="details_tippingpoint.html" class="action-btn btn-secondary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="logo">SHAUN BARTLETT</div>
 
-    <section class="section den-section" id="den-series">
-        <div class="section-header">
-            <h2 class="section-title" style="color: var(--den-gold);">The Den Quadrilogy</h2>
-            <p class="section-desc">Four seasons. Four domains of human experience.</p>
-        </div>
+<div class="nav-links">
 
-        <div class="grid">
-            <div class="card coming-soon">
-                <div class="card-img winter-den-bg">❄️</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag coming">Coming Soon</span></div>
-                    <h3>WINTER DEN</h3>
-                    <div class="card-subtitle">Book 1: The Body</div>
-                    <div class="card-meta">5 Players • Survival • Age 12+</div>
-                    <p class="card-learning"><strong>Concept:</strong> The survival paradox. If everyone lives, hoarding helps you. If anyone dies, hoarding destroys you.</p>
-                    <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">Join Waitlist</a>
-                    </div>
-                </div>
-            </div>
-            
-             <div class="card coming-soon">
-                <div class="card-img summer-den-bg">☀️</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag coming">Coming Soon</span></div>
-                    <h3>SUMMER DEN</h3>
-                    <div class="card-subtitle">Book 2: The Heart</div>
-                    <div class="card-meta">5 Players • Social • Age 10+</div>
-                    <p class="card-learning"><strong>Concept:</strong> Neurodiversity is biology. The same social event feels completely different to different nervous systems.</p>
-                    <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card coming-soon">
-                <div class="card-img spring-den-bg">🌸</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag coming">Concept</span></div>
-                    <h3>SPRING DEN</h3>
-                    <div class="card-subtitle">Book 3: The Mind</div>
-                    <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
-                    </div>
-                </div>
-            </div>
+<a href="#play-now">Play Now</a>
 
-            <div class="card coming-soon">
-                <div class="card-img autumn-den-bg">🍂</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag coming">Concept</span></div>
-                    <h3>AUTUMN DEN</h3>
-                    <div class="card-subtitle">Book 4: The Soul</div>
-                    <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<a href="#den-series">The Den</a>
 
-    <section class="section" id="games">
-        <div class="section-header">
-            <h2 class="section-title">Quick Games</h2>
-            <p class="section-desc">Minimal components. Maximum depth.</p>
-        </div>
-        
-        <div class="grid">
-            <div class="card">
-                <div class="card-img leverage-bg">👑</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>LEVERAGE</h3>
-                    <div class="card-subtitle">Power & Betrayal</div>
-                    <div class="card-meta">4-10 Players • 20 Mins • Age 12+</div>
-                    <p class="card-learning"><strong>Concept:</strong> Power requires legitimacy. Multiple victory paths create inevitable betrayal.</p>
-                    <div class="card-actions">
-                        <a href="leverage_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
-                        <a href="details_leverage.html" class="action-btn btn-secondary">Learn More</a>
-                    </div>
-                </div>
-            </div>
+<a href="#games">All Games</a>
 
-            <div class="card">
-                <div class="card-img burnout-bg">🔥</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>BURNOUT</h3>
-                    <div class="card-subtitle">Workplace Toxicity</div>
-                    <div class="card-meta">2-5 Players • 5 Mins • Age 12+</div>
-                    <p class="card-learning"><strong>Concept:</strong> How structural incentives punish health and reward toxic ambition.</p>
-                    <div class="card-actions">
-                        <a href="burnout_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
-                        <a href="details_burnout.html" class="action-btn btn-secondary">Learn More</a>
-                    </div>
-                </div>
-            </div>
+<a href="#framework">Framework</a>
 
-            <div class="card">
-                <div class="card-img viral-bg">📈</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>VIRAL</h3>
-                    <div class="card-subtitle">Truth vs. Attention</div>
-                    <div class="card-meta">4-10 Players • 5 Mins • Age 10+</div>
-                    <p class="card-learning"><strong>Concept:</strong> Why misinformation spreads faster than truth. The mechanics of the attention economy.</p>
-                    <div class="card-actions">
-                        <a href="viral_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
-                        <a href="details_viral.html" class="action-btn btn-secondary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<a href="#contact">Contact</a>
 
-    <section class="section" id="framework">
-        <div class="section-header">
-            <h2 class="section-title">The Framework</h2>
-        </div>
-        <div class="framework-grid">
-            <div class="framework-card">
-                <h4>Asymmetric Interdependence</h4>
-                <p>Different abilities, shared fate. The Bear hoards easily while the Rabbit struggles—but they survive or die together. Unequal power meets mutual vulnerability.</p>
-            </div>
-            <div class="framework-card">
-                <h4>Mechanical Honesty</h4>
-                <p>The rules mirror reality: individual optimization works until the system breaks. Scoring rewards excess unless someone dies—then it destroys you.</p>
-            </div>
-            <div class="framework-card">
-                <h4>Cascading Consequences</h4>
-                <p>Choices compound. One deregulation or one burnt-out worker affects the whole system. Events in the game ripple out just like in the real world.</p>
-            </div>
-            <div class="framework-card">
-                <h4>Emergence Over Instruction</h4>
-                <p>No lectures. You learn the lesson by failing, adapting, and experiencing the result. The game teaches you through consequences, not text.</p>
-            </div>
-            <div class="framework-card">
-                <h4>Narrative Engines</h4>
-                <p>Mechanics generate stories, not scripts. The Rabbit's death isn't predetermined—it emerges from the Fox hoarding, the Bear barricading, the Mole hiding. Every game writes its own fable.</p>
-            </div>
-            <div class="framework-card">
-                <h4>Maximum Accessibility</h4>
-                <p>Minimal components, intuitive rules, plays in minutes. Viral needs paper and pen. Leverage uses a standard deck. Digital games run in browsers. No barriers to entry.</p>
-            </div>
-        </div>
-    </section>
+</div>
 
-    <section class="contact-section" id="contact" style="background: #111; padding: 60px 5%; margin-top: 80px;">
-        <div class="contact-container" style="max-width: 800px; margin: 0 auto;">
-            <div class="contact-intro" style="text-align: center; margin-bottom: 40px;">
-                <h2 style="color: var(--accent); margin-bottom: 10px;">Get in Touch</h2>
-                <p style="color: #aaa;">Feedback? Collaboration? Let's talk.</p>
-            </div>
-            
-            <div class="google-form-container" style="background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333;">
-                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAYf5I0lRjX2TT4I__fHLDku7QrPqrN8BNVn4_WpEugsFgRQ/viewform?embedded=true" width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-            </div>
+</nav>
 
-            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333;">
-                <p style="color: #666;">Or email directly: <a href="mailto:shaun.aj.bartlett@gmail.com" style="color: var(--accent); text-decoration: none;">shaun.aj.bartlett@gmail.com</a></p>
-            </div>
-        </div>
-    </section>
 
-    <footer>
-        <div class="copyright" style="text-align: center; padding: 40px; color: #555; font-size: 0.8rem;">
-            &copy; 2025 Shaun Bartlett. <br>All games released under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: #777;">CC BY-NC-SA 4.0</a>.
-        </div>
-    </footer>
+
+<div class="hero">
+
+<h1>Systems Fluency<br>Through Play</h1>
+
+<p class="tagline">Board games that reveal how human systems actually work</p>
+
+<p>From climate crisis to workplace burnout, each game makes complex systems experiential. No lectures. Just play, experience, understand.</p>
+
+<a href="#play-now" class="btn">Start Playing</a>
+
+</div>
+
+
+
+<section class="section" id="play-now">
+
+<div class="section-header">
+
+<h2 class="section-title">Play Now (Digital)</h2>
+
+<p class="section-desc">Browser-based games. No download. No setup.</p>
+
+</div>
+
+
+<div class="grid grid-2col">
+
+<div class="card">
+
+<div class="card-img inheritance-bg">💎</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag digital">Browser Game</span></div>
+
+<h3>INHERITANCE</h3>
+
+<div class="card-subtitle">Fair Division & Game Theory</div>
+
+<div class="card-meta">2 Players • 10 Mins • Age 12+</div>
+
+<p class="card-learning"><strong>Concept:</strong> Fair division is computationally hard. Claiming unfairness means proving a better solution exists—and claiming victory.</p>
+
+<div class="card-actions">
+
+<a href="Inheritance.html" class="action-btn btn-primary">▶ Play Game</a>
+
+<a href="details_inheritance.html" class="action-btn btn-secondary">Learn More</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<div class="card-img tipping-point-bg">🌍</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag digital">Browser Game</span></div>
+
+<h3>THE TIPPING POINT</h3>
+
+<div class="card-subtitle">Climate Crisis Push-Your-Luck</div>
+
+<div class="card-meta">3-6 Players • 20 Mins • Age 14+</div>
+
+<p class="card-learning"><strong>Concept:</strong> Why rational individual choices create collective catastrophe. The planet collapses at Crisis 10-14 depending on difficulty.</p>
+
+<div class="card-actions">
+
+<a href="TheTippingPoint.html" class="action-btn btn-primary">▶ Play Game</a>
+
+<a href="details_tippingpoint.html" class="action-btn btn-secondary">Learn More</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="section den-section" id="den-series">
+
+<div class="section-header">
+
+<h2 class="section-title" style="color: var(--den-gold);">The Den Quadrilogy</h2>
+
+<p class="section-desc">Four seasons. Four domains of human experience.</p>
+
+</div>
+
+
+
+<div class="grid">
+
+<div class="card coming-soon">
+
+<div class="card-img winter-den-bg">❄️</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag coming">Coming Soon</span></div>
+
+<h3>WINTER DEN</h3>
+
+<div class="card-subtitle">Book 1: The Body</div>
+
+<div class="card-meta">5 Players • Survival • Age 12+</div>
+
+<p class="card-learning"><strong>Concept:</strong> The survival paradox. If everyone lives, excess helps you. If anyone dies, excess destroys you.</p>
+
+<div class="card-actions">
+
+<a href="#" class="action-btn btn-disabled">Join Waitlist</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card coming-soon">
+
+<div class="card-img summer-den-bg">☀️</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag coming">Coming Soon</span></div>
+
+<h3>SUMMER DEN</h3>
+
+<div class="card-subtitle">Book 2: The Heart</div>
+
+<div class="card-meta">5 Players • Social • Age 10+</div>
+
+<p class="card-learning"><strong>Concept:</strong> Neurodiversity is biology. The same social event feels completely different to different nervous systems.</p>
+
+<div class="card-actions">
+
+<a href="#" class="action-btn btn-disabled">In Development</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card coming-soon">
+
+<div class="card-img spring-den-bg">🌸</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag coming">Concept</span></div>
+
+<h3>SPRING DEN</h3>
+
+<div class="card-subtitle">Book 3: The Mind</div>
+
+<div class="card-actions">
+
+<a href="#" class="action-btn btn-disabled">In Development</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card coming-soon">
+
+<div class="card-img autumn-den-bg">🍂</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag coming">Concept</span></div>
+
+<h3>AUTUMN DEN</h3>
+
+<div class="card-subtitle">Book 4: The Soul</div>
+
+<div class="card-actions">
+
+<a href="#" class="action-btn btn-disabled">In Development</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="section" id="games">
+
+<div class="section-header">
+
+<h2 class="section-title">Quick Games</h2>
+
+<p class="section-desc">Minimal components. Maximum depth.</p>
+
+</div>
+
+
+<div class="grid">
+
+<div class="card">
+
+<div class="card-img leverage-bg">👑</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag pnp">Print & Play</span></div>
+
+<h3>LEVERAGE</h3>
+
+<div class="card-subtitle">Power & Betrayal</div>
+
+<div class="card-meta">4-10 Players • 20 Mins • Age 12+</div>
+
+<p class="card-learning"><strong>Concept:</strong> Power requires legitimacy. Multiple victory paths create inevitable betrayal.</p>
+
+<div class="card-actions">
+
+<a href="leverage_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
+
+<a href="details_leverage.html" class="action-btn btn-secondary">Learn More</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<div class="card-img burnout-bg">🔥</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag pnp">Print & Play</span></div>
+
+<h3>BURNOUT</h3>
+
+<div class="card-subtitle">Workplace Toxicity</div>
+
+<div class="card-meta">2-5 Players • 5 Mins • Age 12+</div>
+
+<p class="card-learning"><strong>Concept:</strong> How structural incentives punish health and reward toxic ambition. Burnout destroys your progress.</p>
+
+<div class="card-actions">
+
+<a href="burnout_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
+
+<a href="details_burnout.html" class="action-btn btn-secondary">Learn More</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<div class="card-img viral-bg">📈</div>
+
+<div class="card-content">
+
+<div class="tags"><span class="tag pnp">Print & Play</span></div>
+
+<h3>VIRAL</h3>
+
+<div class="card-subtitle">Truth vs. Attention</div>
+
+<div class="card-meta">4-10 Players • 5 Mins • Age 10+</div>
+
+<p class="card-learning"><strong>Concept:</strong> Three consecutive passes bury truth. Platform incentives reward engagement over accuracy.</p>
+
+<div class="card-actions">
+
+<a href="viral_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
+
+<a href="details_viral.html" class="action-btn btn-secondary">Learn More</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="section" id="framework">
+
+<div class="section-header">
+
+<h2 class="section-title">The Systems Fluency Framework</h2>
+
+<p class="section-desc">Eight core principles that translate any complex human system into experiential learning. Developed through basketball IQ training, expanded to human psychology and organizational dynamics.</p>
+
+</div>
+
+
+<div class="framework-grid">
+
+<div class="framework-card">
+
+<h4>1. Asymmetric Interdependence</h4>
+
+<ul>
+
+<li>• Different abilities/constraints per role</li>
+
+<li>• Shared fate despite unequal power</li>
+
+<li>• Individual success depends on system health</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Winter Den (Bear vs Rabbit capacities), Tipping Point (CEO role differences), Summer Den (same events, different ME costs), Leverage (King vs Noble treasuries)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>2. Mechanical Honesty</h4>
+
+<ul>
+
+<li>• Scoring encodes the real incentive structure</li>
+
+<li>• Rules mirror reality, not idealized version</li>
+
+<li>• The math teaches the lesson</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Winter Den (±1 flips based on survival), Tipping Point (Crisis accelerates at threshold 5), Burnout (promotion only if team passes)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>3. Cascading Consequences</h4>
+
+<ul>
+
+<li>• Choices compound over time</li>
+
+<li>• One action ripples through system</li>
+
+<li>• Path dependency matters</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Tipping Point (deregulation gets worse), Viral (updates build on updates), Burnout (one burnout increases others' pressure), Winter Den (early excess creates late scarcity)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>4. Pacing Creates Pressure</h4>
+
+<ul>
+
+<li>• Urgency forces real-time decisions</li>
+
+<li>• No time for perfect optimization</li>
+
+<li>• Constraint reveals authentic choice patterns</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Burnout (3-5 min timer), Viral (30-60 sec turns), Inheritance (60 sec challenge), Tipping Point (bankruptcy risk), Winter Den (8 rounds)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>5. Emergence Over Instruction</h4>
+
+<ul>
+
+<li>• Players discover the lesson through play</li>
+
+<li>• No explanation of "the point"</li>
+
+<li>• System teaches itself via consequences</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Winter Den (never says "excess bad"), Tipping Point (feel collapse approaching), Viral (watch truth degrade), Burnout (experience toxic incentives)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>6. Narrative Engines</h4>
+
+<ul>
+
+<li>• Mechanics generate stories, not scripts</li>
+
+<li>• Each playthrough creates unique arc</li>
+
+<li>• Player choices write the narrative</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Winter Den (Rabbit's fate emerges), Leverage (betrayal timing matters), Tipping Point (who triggers collapse varies)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>7. Multiple Valid Strategies</h4>
+
+<ul>
+
+<li>• Different approaches can work</li>
+
+<li>• "Optimal" play varies by context</li>
+
+<li>• Reflects real-world strategic diversity</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Inheritance (cluster vs spread assets), Tipping Point (cooperation vs calculated risk vs aggressive gambling), Leverage (three victory paths), Winter Den (efficiency vs collaboration vs isolation)
+
+</div>
+
+</div>
+
+
+
+<div class="framework-card">
+
+<h4>8. Maximum Accessibility</h4>
+
+<ul>
+
+<li>• Minimal components</li>
+
+<li>• Quick to learn, quick to play</li>
+
+<li>• Low barrier to entry</li>
+
+</ul>
+
+<div class="examples">
+
+<strong>Examples:</strong> Viral (paper + pen), Leverage (standard deck), Burnout (bag + cubes), digital games (browser, no download)
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div style="margin-top: 50px; padding: 30px; background: #1a1a1a; border-radius: 12px; border-left: 4px solid var(--accent);">
+
+<h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.4rem;">Core Innovation</h3>
+
+<p style="color: #ccc; line-height: 1.8; font-size: 1.05rem;">
+
+The same methodology that teaches basketball court awareness also teaches empathy, moral reasoning, and systems thinking. <strong>Any complex human skill can be translated into experiential learning.</strong>
+
+</p>
+
+</div>
+
+</section>
+
+
+
+<section class="contact-section" id="contact" style="background: #111; padding: 80px 5%; margin-top: 60px;">
+
+<div class="contact-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
+
+
+<h2 style="color: var(--accent); font-size: 2.5rem; margin-bottom: 15px;">Let's Collaborate</h2>
+
+<p style="color: #aaa; font-size: 1.1rem; margin-bottom: 40px;">
+
+Interested in playtesting, educational licenses, or system design workshops?
+
+</p>
+
+
+
+<a href="contact.html" class="action-btn btn-primary" style="font-size: 1.1rem; padding: 18px 40px; display: inline-block; max-width: 300px;">
+
+Open Contact Form
+
+</a>
+
+
+
+<div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #333;">
+
+<p style="color: #666; margin-bottom: 10px;">Direct Email</p>
+
+<a href="mailto:shaun.aj.bartlett@gmail.com" style="color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: 600; transition: color 0.2s;">
+
+shaun.aj.bartlett@gmail.com
+
+</a>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<footer>
+
+<div class="copyright" style="text-align: center; padding: 40px; color: #555; font-size: 0.8rem;">
+
+&copy; 2025 Shaun Bartlett. <br>All games released under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: #777;">CC BY-NC-SA 4.0</a>.
+
+</div>
+
+</footer>
+
+
 
 </body>
+
 </html>
