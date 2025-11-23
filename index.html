@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shaun Bartlett | Systems Literacy Through Play</title>
-    <meta name="description" content="The framework generates games about systems thinking. Some reveal systemic failures. Some teach systemic coordination.">
+    <meta name="description" content="An architect of social friction. Games that position individual incentives at war with system stability to teach systems literacy.">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,34 +128,41 @@
         .section-title { font-size: 2rem; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
         .section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
 
-        /* FRAMEWORK SECTION (Now 9 cards) */
-        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 40px; }
+        /* FRAMEWORK SECTION - UPDATED LAYOUT */
+        .framework-header-sub { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 30px; border-left: 4px solid var(--accent); padding-left: 15px; }
+        
+        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 60px; }
+        
         .framework-card { 
             background: #181818; 
             padding: 25px; 
             border-radius: 12px; 
             border-left: 3px solid var(--accent);
             height: 100%;
-        }
-        .framework-card h4 { 
-            color: var(--accent); 
-            font-size: 1.15rem; 
-            margin-bottom: 15px; 
-            line-height: 1.3;
+            display: flex;
+            flex-direction: column;
         }
         
-        /* Styled Emojis for Framework */
-        .framework-icon {
-            font-size: 1.4rem;
-            margin-right: 10px;
-            vertical-align: text-bottom;
-            filter: saturate(0.8);
+        .framework-card h4 { color: #fff; font-size: 1.25rem; margin-bottom: 15px; line-height: 1.3; }
+        
+        .framework-card p { color: #aaa; font-size: 0.95rem; margin-bottom: 12px; line-height: 1.6; }
+        .framework-card strong { color: var(--accent); font-weight: 600; }
+        
+        .examples {
+            font-size: 0.85rem;
+            color: #888;
+            border-top: 1px solid #2a2a2a;
+            padding-top: 12px;
+            margin-top: auto; /* Pushes to bottom */
         }
 
-        .framework-card ul { list-style: none; padding-left: 0; margin: 0 0 15px 0; color: #ccc; }
-        .framework-card ul li { margin-bottom: 6px; font-size: 0.9rem; line-height: 1.5; }
-        .framework-card .examples { font-size: 0.85rem; color: #888; border-top: 1px solid #2a2a2a; padding-top: 12px; margin-top: 12px; }
-        .framework-card .examples strong { color: var(--accent); }
+        /* Outcome Cards (Slightly distinct style) */
+        .outcome-card {
+            background: linear-gradient(145deg, #1e1e1e, #121212);
+            border-left: 3px solid var(--den-gold);
+        }
+        .outcome-card h4 { color: var(--den-gold); }
+        .outcome-card strong { color: var(--den-gold); }
 
         /* CARDS */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
@@ -268,124 +275,87 @@
     <section class="section" id="framework">
         <div class="section-header">
             <h2 class="section-title">The Systems Literacy Framework</h2>
-            <p class="section-desc">Nine core principles that translate any complex human system into experiential learning.</p>
+            <p class="section-desc">Eight core principles that translate any complex human system into experiential learning.</p>
         </div>
         
+        <h3 class="framework-header-sub">Part 1: Six Core Design Engines</h3>
+        
         <div class="framework-grid">
+            
             <div class="framework-card">
-                <h4><span class="framework-icon">🔗</span>1. Asymmetric Interdependence</h4>
-                <ul>
-                    <li>• Different abilities/constraints per role</li>
-                    <li>• Shared fate despite unequal power</li>
-                    <li>• Individual success depends on system health</li>
-                </ul>
+                <h4>⚖️ 1. Structural Tension</h4>
+                <p><strong>The Principle:</strong> The game explicitly places individual incentives at war with system stability. It weaponizes self-interest to reveal why "good people" create "bad systems."</p>
+                <p><strong>The Design:</strong> Victory conditions that require selfish acts which degrade the shared environment.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Winter Den (Bear vs Rabbit capacities), Tipping Point (CEO role differences), Leverage (King vs Noble treasuries)
+                    <strong>Examples:</strong> Burnout (Delegate vs Team), Tipping Point (Profit vs Crisis), Winter Den (Hoarding vs Survival)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4><span class="framework-icon">⚙️</span>2. Mechanical Honesty</h4>
-                <ul>
-                    <li>• Scoring encodes the real incentive structure</li>
-                    <li>• Rules mirror reality, not idealized version</li>
-                    <li>• The math teaches the lesson</li>
-                </ul>
+                <h4>⚙️ 2. Mechanical Honesty</h4>
+                <p><strong>The Principle:</strong> The scoring system and math must mirror the harsh reality of the subject, not an idealized version. The math teaches the lesson.</p>
+                <p><strong>The Design:</strong> Rules that punish altruism or reward exploitation if that is how the real-world system functions.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Winter Den (±1 flips based on survival), Tipping Point (Crisis accelerates at threshold 5), Burnout (promotion only if team passes)
+                    <strong>Examples:</strong> Tipping Point (Green Tech is harder), Winter Den (Strict resource math)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4><span class="framework-icon">🌊</span>3. Cascading Consequences</h4>
-                <ul>
-                    <li>• Choices compound over time</li>
-                    <li>• One action ripples through system</li>
-                    <li>• Path dependency matters</li>
-                </ul>
+                <h4>🔗 3. Asymmetric Interdependence</h4>
+                <p><strong>The Principle:</strong> Players have different abilities, constraints, or information, yet share a common fate.</p>
+                <p><strong>The Design:</strong> Unique roles that force negotiation and reliance on others.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Tipping Point (deregulation gets worse), Viral (updates build on updates), Winter Den (early excess creates late scarcity)
+                    <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4><span class="framework-icon">⏳</span>4. Scarcity Creates Pressure</h4>
-                <ul>
-                    <li>• Scarcity of time, turns, or resources</li>
-                    <li>• Limits force imperfect decisions</li>
-                    <li>• Constraints reveal authentic priorities</li>
-                </ul>
+                <h4>🌊 4. Cascading Consequences</h4>
+                <p><strong>The Principle:</strong> Decisions define future probabilities. The game state "remembers" actions, creating feedback loops.</p>
+                <p><strong>The Design:</strong> Mechanics where an action now makes the same action easier (or harder) later.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Burnout (Time Scarcity), Winter Den (Turn Scarcity), Leverage (Hand Size Scarcity)
+                    <strong>Examples:</strong> Viral (Passing buries truth), Tipping Point (Deregulation track accelerates)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4><span class="framework-icon">🌱</span>5. Emergence Over Instruction</h4>
-                <ul>
-                    <li>• Players discover the lesson through play</li>
-                    <li>• No explanation of "the point"</li>
-                    <li>• System teaches itself via consequences</li>
-                </ul>
+                <h4>⏳ 5. Scarcity Creates Pressure</h4>
+                <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to use heuristics rather than perfect calculation.</p>
+                <p><strong>The Design:</strong> Hard limits on time, turns, or resources.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Winter Den (never says "excess bad"), Tipping Point (feel collapse approaching), Viral (watch truth degrade)
+                    <strong>Examples:</strong> Burnout (3 min timer), Winter Den (7 rounds), Leverage (Hand size limits)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4><span class="framework-icon">📖</span>6. Narrative Engines</h4>
-                <ul>
-                    <li>• Mechanics generate stories, not scripts</li>
-                    <li>• Each playthrough creates unique arc</li>
-                    <li>• Player choices write the narrative</li>
-                </ul>
+                <h4>⚡ 6. Accessible Complexity</h4>
+                <p><strong>The Principle:</strong> Complexity should emerge from human interaction, not the rulebook. Low barrier to entry, high social ceiling.</p>
+                <p><strong>The Design:</strong> Using familiar interfaces (talking, drawing lines, passing paper) to model complex dynamics.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Winter Den (Rabbit's fate emerges), Leverage (betrayal timing matters), Tipping Point (who triggers collapse varies)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4><span class="framework-icon">♟️</span>7. Multiple Valid Strategies</h4>
-                <ul>
-                    <li>• Different approaches can work</li>
-                    <li>• "Optimal" play varies by context</li>
-                    <li>• Reflects real-world strategic diversity</li>
-                </ul>
-                <div class="examples">
-                    <strong>Examples:</strong> Inheritance (cluster vs spread assets), Tipping Point (cooperation vs calculated risk), Winter Den (efficiency vs collaboration)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4><span class="framework-icon">⚡</span>8. Accessible Complexity</h4>
-                <ul>
-                    <li>• Complexity comes from interaction, not rules</li>
-                    <li>• Low barrier to entry/understanding</li>
-                    <li>• High depth ceiling</li>
-                </ul>
-                <div class="examples">
-                    <strong>Examples:</strong> Viral (Pen/Paper), Leverage (Standard Deck), Winter Den (Intuitive Turn Order)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4><span class="framework-icon">⚖️</span>9. Structural Tension</h4>
-                <ul>
-                    <li>• Individual victory conflicts with system stability</li>
-                    <li>• Weaponizes self-interest</li>
-                    <li>• Good people in bad systems</li>
-                </ul>
-                <div class="examples">
-                    <strong>Examples:</strong> Burnout (Delegate mechanic), Winter Den (Prisoner's Dilemma scoring), Leverage (Renounce mechanic)
+                    <strong>Examples:</strong> Inheritance (I Cut You Choose), Viral (Telephone game)
                 </div>
             </div>
         </div>
 
-        <div style="margin-top: 50px; padding: 30px; background: #1a1a1a; border-radius: 12px; border-left: 4px solid var(--accent);">
-            <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.4rem;">Core Innovation</h3>
-            <p style="color: #ccc; line-height: 1.8; font-size: 1.05rem;">
-                The same methodology that teaches basketball court awareness also teaches empathy, moral reasoning, and systems thinking. <strong>Any complex human skill can be translated into experiential learning.</strong>
-            </p>
+        <h3 class="framework-header-sub" style="border-color: var(--den-gold);">Part 2: The Player Outcomes</h3>
+        
+        <div class="framework-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            
+            <div class="framework-card outcome-card">
+                <h4>💡 1. Emergent Insight</h4>
+                <p>There are no lectures. The realization (e.g., "I became a liar to win") emerges naturally from the collision of Structural Tension and Mechanical Honesty. The player discovers the lesson by doing it.</p>
+            </div>
+
+            <div class="framework-card outcome-card">
+                <h4>📖 2. Narrative Ownership</h4>
+                <p>Because the systems are open, players write the story. Leverage isn't a script about betrayal; it's a toolbox that causes betrayal. The story belongs to the table, not the designer.</p>
+            </div>
+
+            <div class="framework-card outcome-card">
+                <h4>🧠 3. Strategic Empathy</h4>
+                <p>By inhabiting the "bad guy" role (e.g., the polluting CEO in The Tipping Point), players learn that systemic failures are often caused by rational actors making logical choices within bad incentive structures.</p>
+            </div>
+
         </div>
     </section>
 
@@ -504,7 +474,7 @@
                         <span class="learning-tag">Moral Reasoning</span>
                     </div>
                     <div class="card-actions">
-                        <a href="details_winter.html" class="action-btn btn-secondary">View Concept</a>
+                        <a href="#" class="action-btn btn-disabled">Join Waitlist</a>
                     </div>
                 </div>
             </div>
@@ -525,7 +495,7 @@
                         <span class="learning-tag">Identity</span>
                     </div>
                     <div class="card-actions">
-                        <a href="details_summer.html" class="action-btn btn-secondary">Read Concept</a>
+                        <a href="#" class="action-btn btn-disabled">In Development</a>
                     </div>
                 </div>
             </div>
