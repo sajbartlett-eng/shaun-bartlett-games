@@ -226,6 +226,7 @@
         .tag.pnp { color: #FFB74D; background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.2); }
         .tag.coming { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
 
+        /* Learning Tags */
         .learning-tag {
             font-size: 0.7rem;
             padding: 4px 10px;
@@ -244,6 +245,7 @@
         .card-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #aaa; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .card-learning { background: rgba(102, 187, 106, 0.05); border: 1px solid rgba(102, 187, 106, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; color: #ccc; }
 
+        /* BUTTONS */
         .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: auto; }
         .action-btn { padding: 12px 0; border-radius: 6px; font-weight: 600; font-size: 0.95rem; text-align: center; text-decoration: none; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(102, 187, 106, 0.3); border: 1px solid var(--accent); }
@@ -252,6 +254,7 @@
         .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
         .btn-disabled { background: #222; color: #555; border: 1px solid #333; pointer-events: none; grid-column: span 2; }
 
+        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .card-actions { grid-template-columns: 1fr; }
@@ -284,10 +287,10 @@
     <section class="section" id="framework">
         <div class="section-header">
             <h2 class="section-title">The Systems Literacy Framework</h2>
-            <p class="section-desc">Seven Design Engines and Three Learning Outcomes that translate any complex human system into experiential learning.</p>
+            <p class="section-desc">A methodology for translating any complex human system into experiential learning.</p>
         </div>
         
-        <h3 class="framework-header-sub">Part 1: The Seven Design Engines</h3>
+        <h3 class="framework-header-sub">Part 1: The Eight Design Engines</h3>
         
         <div class="framework-grid">
             
@@ -310,7 +313,16 @@
             </div>
 
             <div class="framework-card">
-                <h4>⏳ 3. Scarcity Creates Pressure</h4>
+                <h4>🔥 3. Compressed Agency</h4>
+                <p><strong>The Principle:</strong> Maximum freedom, minimum mental tax. Players feel they can do anything, but only need to think about one simple decision at a time. Complexity belongs to the players, not the rules.</p>
+                <p><strong>The Design:</strong> Tiny action sets with huge systemic ripples.</p>
+                <div class="examples">
+                    <strong>Examples:</strong> Leverage (Playing one Jack topples a Kingdom), The Tipping Point (One investment shifts global probabilities)
+                </div>
+            </div>
+
+            <div class="framework-card">
+                <h4>⏳ 4. Scarcity Creates Pressure</h4>
                 <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to abandon optimization and rely on imperfect heuristics.</p>
                 <p><strong>The Design:</strong> Hard limits on Time (Panic), Opportunity (Turns), or Capacity (Slots).</p>
                 <div class="examples">
@@ -319,7 +331,7 @@
             </div>
 
             <div class="framework-card">
-                <h4>⚖️ 4. Structural Tension</h4>
+                <h4>⚖️ 5. Structural Tension</h4>
                 <p><strong>The Principle:</strong> The game explicitly places individual incentives at war with system stability. It weaponizes self-interest to reveal why "good people" create "bad systems."</p>
                 <p><strong>The Design:</strong> Victory conditions that require selfish acts which degrade the shared environment.</p>
                 <div class="examples">
@@ -328,8 +340,8 @@
             </div>
 
             <div class="framework-card">
-                <h4>🔗 5. Asymmetric Interdependence</h4>
-                <p><strong>The Principle:</strong> Equal Agency, Unequal Stakes. Players share the same "verbs" but carry different risks, capacities, and costs. This disparity breeds resentment and necessitates negotiation.</p>
+                <h4>🔗 6. Asymmetric Interdependence</h4>
+                <p><strong>The Principle:</strong> Asymmetric Stakes, Symmetric Agency. Players share the same "verbs" but carry different risks, capacities, and costs. This disparity breeds resentment and necessitates negotiation.</p>
                 <p><strong>The Design:</strong> Universal action lists where costs and impacts scale by role.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
@@ -337,18 +349,17 @@
             </div>
 
             <div class="framework-card">
-                <h4>🌊 6. Cascading Consequences</h4>
+                <h4>🌊 7. Cascading Consequences</h4>
                 <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. Current actions permanently alter future probabilities, often creating a "race to the bottom."</p>
                 <p><strong>The Design:</strong> Mechanics where an action now makes the same action easier (or harder) later.</p>
-                
                 <div class="examples">
                     <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Deregulation track raises future rewards)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4>⚙️ 7. Mechanical Honesty</h4>
-                <p><strong>The Principle:</strong> The simulation must be indifferent to the player's feelings. Every mechanic must truthfully model the constraints and perversity of the real-world system. No "fun" buffers.</p>
+                <h4>⚙️ 8. Mechanical Honesty</h4>
+                <p><strong>The Principle:</strong> Systemic Truthfulness. The simulation must be indifferent to the player's feelings. Every mechanic must truthfully model real incentives, not invented abstractions. No "fun" buffers.</p>
                 <p><strong>The Design:</strong> Rules that punish altruism or reward exploitation if that is how the real-world system functions.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Viral (Update mechanic forces sensationalism), Burnout (Delegate transfers stress)
