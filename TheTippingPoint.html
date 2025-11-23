@@ -15,13 +15,14 @@
             --accent-blue: #42a5f5;
             --accent-grey: #757575;
             --border: #333;
+            --app-max-width: 500px; /* NEW: Global constraint variable */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            background-color: #000; /* Darker background for desktop border effect */
             color: var(--text-color);
             margin: 0;
             padding: 0;
@@ -29,7 +30,28 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
+            align-items: center; /* Centers the app on desktop */
             overflow: hidden;
+        }
+
+        /* --- NEW: APP CONTAINER --- */
+        /* This simulates the phone screen on a desktop */
+        #app-container {
+            width: 100%;
+            height: 100%;
+            max-width: var(--app-max-width);
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Shadow for desktop depth */
+        }
+        
+        @media (min-width: 501px) {
+            #app-container {
+                border-left: 1px solid #333;
+                border-right: 1px solid #333;
+            }
         }
 
         /* --- HEADER & TRACKS --- */
@@ -183,11 +205,13 @@
 
         /* --- OVERLAYS --- */
         #overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            position: absolute; /* Changed from fixed to absolute so it stays inside app-container */
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.96);
             display: flex; justify-content: center; align-items: center;
             z-index: 100; flex-direction: column; padding: 20px; text-align: center;
             backdrop-filter: blur(5px);
+            border-radius: inherit; /* Matches container corners if needed */
         }
         .hidden { display: none !important; }
         .modal-content { width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; text-align: left; }
@@ -207,6 +231,7 @@
 </head>
 <body>
 
+<div id="app-container">
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -230,10 +255,8 @@
         function vibrate(p) { if(navigator.vibrate) navigator.vibrate(p); }
     </script>
 
-    <!-- OVERLAYS -->
     <div id="overlay">
         
-        <!-- 1. SETUP SCREEN -->
         <div id="setup-screen" class="modal-content modal-center card">
             <h1 style="color:var(--accent-green); margin-bottom:5px">THE TIPPING POINT</h1>
             <p style="font-size:0.9rem">Profit, Policy & Planetary Collapse</p>
@@ -269,7 +292,6 @@
             </div>
         </div>
 
-        <!-- 2. RULES SCREEN -->
         <div id="rules-screen" class="hidden modal-content card">
             <div style="display:flex; justify-content:space-between; align-items:center">
                 <h2 style="color:var(--accent-gold)">HOW TO PLAY</h2>
@@ -291,7 +313,6 @@
             <button class="btn btn-blue" style="margin-top:15px; text-align:center" onclick="hideRules()">Close Rules</button>
         </div>
 
-        <!-- 3. PASS SCREEN -->
         <div id="pass-screen" class="hidden modal-content modal-center card">
             <h3 style="color:var(--accent-blue)">NEXT PLAYER</h3>
             <h1 id="pass-title" style="font-size: 2.5rem; margin: 20px 0; color: white">Player Name</h1>
@@ -300,14 +321,12 @@
             <button class="btn btn-gold" style="margin-top: 30px" onclick="beginTurn()">START TURN</button>
         </div>
 
-        <!-- 4. WARNING POPUP -->
         <div id="warning-modal" class="hidden modal-content modal-center card" style="border: 2px solid var(--accent-red)">
             <h2 style="color:var(--accent-red)">⚠️ CRITICAL WARNING</h2>
             <p id="warning-text"></p>
             <button class="btn btn-grey" style="text-align:center" onclick="document.getElementById('warning-modal').classList.add('hidden')">UNDERSTOOD</button>
         </div>
 
-        <!-- 5. END SCREEN -->
         <div id="end-screen" class="hidden modal-content modal-center card">
             <h1 id="end-title">GAME OVER</h1>
             <div id="end-reason" style="font-size:1.1rem; color:#fff; margin-bottom:15px"></div>
@@ -318,7 +337,6 @@
             </div>
         </div>
 
-        <!-- 6. SHARE MODAL -->
         <div id="share-modal" class="hidden modal-content card" style="text-align:left">
             <h2 style="margin-top:0">Share Your Game</h2>
             <p style="font-size:0.9rem; color:#aaa">Optional: Add your reaction</p>
@@ -330,7 +348,6 @@
         </div>
     </div>
 
-    <!-- MAIN UI -->
     <div id="game-header">
         <div class="top-bar">
             <div style="font-size:0.8rem; font-weight:bold; color:#888">THE TIPPING POINT</div>
@@ -459,8 +476,7 @@
         <div id="loan-buttons"></div>
         <button class="btn btn-grey" style="text-align:center" onclick="document.getElementById('loan-modal').classList.add('hidden')">Cancel</button>
     </div>
-
-<script>
+</div> <script>
     /* --- GAME STATE --- */
     const ROLES = {
         ENERGY: { name: "Energy Sector", start: 4, rewards: {D:5, C:3, G:2}, type: 'industry', desc: "High rewards from Deregulation. High Risk." },
