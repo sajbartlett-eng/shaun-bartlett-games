@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Den | Game Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #7CB342; --accent-glow: rgba(124, 179, 66, 0.5); --summer: #98FB98; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
+        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        .back-link:hover { color: var(--accent); }
+        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+        p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
+        .highlight-box { background: rgba(124, 179, 66, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
+        
+        .animal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .animal-card { background: #1a1a1a; padding: 18px; border-radius: 8px; border: 1px solid #333; transition: border-color 0.2s; }
+        .animal-card:hover { border-color: var(--accent); }
+        .animal-card h4 { color: #fff; margin: 0 0 5px 0; font-size: 1.2rem; }
+        .animal-sub { font-size: 0.85rem; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .event-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin: 20px 0; }
+        .event-card { background: #1a1a1a; padding: 18px; border-radius: 8px; border-left: 3px solid var(--accent); }
+        
+        .dl-btn { display: inline-block; background: var(--accent); color: #000; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
+        .dl-btn:hover { background: #8BC34A; transform: translateY(-2px); }
+        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
+        
+        ul li { margin-bottom: 10px; color: #ccc; }
+        strong { color: #fff; }
+        .emoji { font-size: 1.3em; vertical-align: middle; }
+        
+        .goals-box { background: rgba(152, 251, 152, 0.05); border: 2px solid var(--summer); padding: 20px; border-radius: 8px; margin: 30px 0; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
+        .tag-social { background: rgba(255, 152, 0, 0.2); color: #FF9800; border: 1px solid #FF9800; }
+        .tag-quiet { background: rgba(33, 150, 243, 0.2); color: #2196F3; border: 1px solid #2196F3; }
+        .tag-chaos { background: rgba(233, 30, 99, 0.2); color: #E91E63; border: 1px solid #E91E63; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Back to Portfolio</a>
+
+    <h1>SUMMER DEN</h1>
+    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A Social Dynamics Game Where Different Personalities Experience Events Differently</p>
+    
+    <div class="game-stats">
+        <span>2-5 Players</span>
+        <span>20-30 Minutes</span>
+        <span>Age 8+</span>
+        <span>Print & Play</span>
+    </div>
+
+    <div class="content">
+        <p>Five animals navigate summer in a shared community, moving between rooms to join activities. The same event affects each animal completely differently based on their personality, group size, and social preferences. The goal is to meet your animal's unique <strong>Flourishing Goals</strong> while managing your <strong>Mental Energy</strong>.</p>
+
+        <div class="highlight-box">
+            <h3 style="margin-top: 0; color: #fff;">The Core Challenge</h3>
+            <p style="margin-bottom: 0;">Over <strong>5 rounds</strong>, each animal needs to collect specific amounts of three token types (🎨 Joy, 🫂 Connection, 🌿 Growth) to flourish—but events cost or restore Mental Energy based on who you are and group size. If <strong>any animal ends in Burnout (ME below minimum), everyone loses their bonus points.</strong> Success depends on recognizing what different personalities need—and using Host Tokens to make large gatherings work for everyone.</p>
+        </div>
+
+        <h2>The Five Personalities</h2>
+        <p>Each animal thrives in different social situations and has asymmetric costs for arguing and moving.</p>
+
+        <div class="animal-grid">
+            <div class="animal-card" style="border-color: #8B4513;">
+                <h4><span class="emoji">🐻</span> THE BEAR</h4>
+                <div class="animal-sub">The Community Leader</div>
+                <p style="font-size: 0.9rem; margin-bottom: 12px;">"I thrive organizing others toward shared goals—frustrated by chaos and indecision."</p>
+                <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <strong>Starting ME:</strong> 8<br>
+                    <strong>Goals:</strong> 3🎨 6🫂 6🌿<br>
+                    <strong>Survive with:</strong> 6+ ME
+                </div>
+                <div style="margin-top: 10px;">
+                    <span class="tag tag-social">Cheap Arguments (1 ME)</span>
+                    <span class="tag tag-quiet">Expensive Moves (3 ME)</span>
+                </div>
+            </div>
+
+            <div class="animal-card" style="border-color: #654321;">
+                <h4><span class="emoji">🦡</span> THE MOLE</h4>
+                <div class="animal-sub">The Quiet Stabilizer</div>
+                <p style="font-size: 0.9rem; margin-bottom: 12px;">"I find joy supporting others through struggles—drained by conflict and attention."</p>
+                <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <strong>Starting ME:</strong> 7<br>
+                    <strong>Goals:</strong> 5🎨 6🫂 3🌿<br>
+                    <strong>Survive with:</strong> 4+ ME
+                </div>
+                <div style="margin-top: 10px;">
+                    <span class="tag tag-quiet">Avoids Conflict (3 ME)</span>
+                    <span class="tag tag-social">Mobile Support (1 ME)</span>
+                </div>
+            </div>
+
+            <div class="animal-card" style="border-color: #4B0082;">
+                <h4><span class="emoji">🦝</span> THE RACCOON</h4>
+                <div class="animal-sub">The Energetic Spark</div>
+                <p style="font-size: 0.9rem; margin-bottom: 12px;">"I come alive with energy, creativity, and chaos—bored by isolation and routine."</p>
+                <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <strong>Starting ME:</strong> 9<br>
+                    <strong>Goals:</strong> 7🎨 6🫂 3🌿<br>
+                    <strong>Survive with:</strong> 6+ ME
+                </div>
+                <div style="margin-top: 10px;">
+                    <span class="tag tag-chaos">Maximum Flexibility (1 ME for both)</span>
+                </div>
+            </div>
+
+            <div class="animal-card" style="border-color: #CD853F;">
+                <h4><span class="emoji">🐰</span> THE RABBIT</h4>
+                <div class="animal-sub">The Gentle Seeker</div>
+                <p style="font-size: 0.9rem; margin-bottom: 12px;">"I need creative expression more than social connection—overwhelmed by crowds and rush."</p>
+                <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <strong>Starting ME:</strong> 7<br>
+                    <strong>Goals:</strong> 6🎨 2🫂 5🌿<br>
+                    <strong>Survive with:</strong> 3+ ME
+                </div>
+                <div style="margin-top: 10px;">
+                    <span class="tag tag-quiet">Very Hard to Argue (4 ME)</span>
+                    <span class="tag tag-social">Moderate Move (2 ME)</span>
+                </div>
+            </div>
+
+            <div class="animal-card" style="border-color: #2F4F4F;">
+                <h4><span class="emoji">🦊</span> THE FOX</h4>
+                <div class="animal-sub">The Strategic Observer</div>
+                <p style="font-size: 0.9rem; margin-bottom: 12px;">"I prefer to analyze and master systems—drained by interruptions and emotional chaos."</p>
+                <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem;">
+                    <strong>Starting ME:</strong> 7<br>
+                    <strong>Goals:</strong> 2🎨 4🫂 8🌿<br>
+                    <strong>Survive with:</strong> 6+ ME
+                </div>
+                <div style="margin-top: 10px;">
+                    <span class="tag tag-social">Balanced Costs (2 ME each)</span>
+                    <span class="tag tag-quiet">Growth Focused (8🌿)</span>
+                </div>
+            </div>
+        </div>
+
+        <h2>The Six Events</h2>
+        <p>Events affect animals differently based on group size. The Bear gains energy from large gatherings. The Mole loses energy in crowds. The Raccoon thrives in chaos. Players can spend ME to add <strong>Host Tokens (🍪)</strong> that reduce negative effects and unlock bonus rewards—but only for Large events (3+ animals).</p>
+
+        <div class="event-grid">
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🧘</span> Reflection</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Quiet | <strong>Favors:</strong> Solo (1)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Peaceful alone, draining in crowds. Introverts recover energy solo; extroverts need others to reflect meaningfully.</p>
+            </div>
+
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🎨</span> Arts & Crafts</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Creative | <strong>Favors:</strong> Small (2)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Creative expression. Calm creativity thrives in duos. Generates Joy tokens.</p>
+            </div>
+
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🫂</span> Support Circle</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Intimate | <strong>Favors:</strong> Small (2)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Deep sharing works best small. Generates Connection tokens. Too many people makes it shallow.</p>
+            </div>
+
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🎉</span> Party</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Energetic | <strong>Favors:</strong> Large (3+)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Uplifting in big groups, loud for some. Extroverts thrive; introverts deplete. Maximum Joy with crowds.</p>
+            </div>
+
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🧠</span> Problem Solving</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Structured | <strong>Favors:</strong> Large (3+)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Benefits from diverse perspectives. Generates Growth tokens. Fox and Bear excel.</p>
+            </div>
+
+            <div class="event-card">
+                <h4 style="color: var(--accent); margin: 0 0 10px 0;"><span class="emoji">🌍</span> Exploration</h4>
+                <p style="font-size: 0.85rem; margin: 0 0 5px 0;"><strong>Mood:</strong> Adventure | <strong>Favors:</strong> Large (3+)</p>
+                <p style="font-size: 0.9rem; margin: 0;">Exciting discoveries with companions. Raccoon loves it. Mole finds large groups exhausting.</p>
+            </div>
+        </div>
+
+        <h2>Core Mechanics</h2>
+        
+        <h3>Mental Energy Management</h3>
+        <p>Every action costs or restores Mental Energy. Participating in events, arguing to change them, or moving to different rooms all have costs that vary by personality. If your final ME drops below your minimum threshold, you're in <strong>Burnout</strong>—and everyone loses bonus points.</p>
+
+        <h3>Host Tokens (🍪)</h3>
+        <p>A new mechanic for making large gatherings work. After placing or joining an event, players can spend ME to add Host Tokens—but only if 3+ animals are expected. Each Host Token:</p>
+        <ul style="margin-left: 20px;">
+            <li>Reduces negative ME impact by 1</li>
+            <li>Unlocks bonus tokens marked with (*) on animal cards</li>
+            <li>Represents emotional labor—making large gatherings welcoming to different temperaments</li>
+            <li>Disappears if the event is replaced via ARGUE action</li>
+        </ul>
+
+        <h3>Override & Move Actions</h3>
+        <p>On your turn during Social Dynamics phase, you can:</p>
+        <ul style="margin-left: 20px;">
+            <li><strong>Argue (Replace Event):</strong> Pay ME to swap the event card with a different one. Bear argues cheaply (1 ME), Rabbit struggles (4 ME). All Host Tokens vanish when an event is replaced.</li>
+            <li><strong>Argue (Prepare to Counter):</strong> Pay ME now to stay active, anticipating someone might change your event. Keeps you in the round.</li>
+            <li><strong>Move:</strong> Pay ME to relocate to a different room with a different event. Mole moves easily (1 ME), Bear is anchored (3 ME).</li>
+            <li><strong>Host:</strong> Spend any amount of ME to add that many Host Tokens to your current event (only works if 3+ animals expected).</li>
+            <li><strong>Pass:</strong> Accept the event as-is. You're satisfied and can't take more actions this round.</li>
+        </ul>
+
+        <h3>Group Size Effects</h3>
+        <p>Events resolve differently based on how many animals participate:</p>
+        <ul style="margin-left: 20px;">
+            <li><strong>Solo (1):</strong> Alone. Some personalities thrive (Fox, Mole on Reflection), others struggle (Bear, Raccoon).</li>
+            <li><strong>Small (2):</strong> Intimate gathering. Ideal for Arts & Crafts and Support Circle. Balanced outcomes for most.</li>
+            <li><strong>Large (3+):</strong> Community event. Extroverts gain massive benefits; introverts deplete. Host Tokens become essential for protecting introverts.</li>
+        </ul>
+
+        <div class="image-placeholder">
+            [Image: Summer Den board showing rooms with different events and animal tokens]
+        </div>
+
+        <h2>Victory Conditions</h2>
+        <p><strong>Individual Win:</strong> After 5 rounds, meet all three of your Flourishing Goals (token requirements) while maintaining minimum ME threshold. Each goal met = +3 points.</p>
+        
+        <p><strong>Excess Tokens:</strong> Any tokens beyond your requirements count as +1 point each—but only if no one burned out.</p>
+        
+        <p><strong>Community Burnout Penalty:</strong> If any animal ends with ME below their minimum (Burnout), all surviving animals <strong>subtract</strong> their excess tokens instead of adding them. Hoarding while others suffer costs you.</p>
+
+        <h2>What Emerges</h2>
+        
+        <h3>Personality Recognition</h3>
+        <p>The game teaches empathy mechanically. The Bear learns that pushing for large group events exhausts the Mole—unless someone hosts. The Raccoon discovers that constant event-changing stresses the Rabbit. Success requires noticing what different personalities actually need.</p>
+
+        <h3>The Hosting Dilemma</h3>
+        <p>Host Tokens represent emotional labor. When you host a Party or Exploration, you spend your own ME to make the event welcoming for introverts. Multiple animals can co-host, sharing the cost and creating protection. But hosting requires sacrifice—and not everyone can afford it.</p>
+
+        <h3>Accommodation Decisions</h3>
+        <p>Do you spend precious ME moving to accommodate someone else's needs? The Mole can easily relocate (1 ME) to support others. The Bear must choose whether paying 3 ME to move is worth helping someone else flourish. Or do you argue for what you need and force others to adapt?</p>
+
+        <h3>The Burnout Threat</h3>
+        <p>The shared penalty for burnout creates collective responsibility without removing individual goals. You can't force others to rest, but you benefit from noticing when someone is depleting and adjusting your actions—hosting events, moving to join them, or arguing less—to keep everyone above their threshold.</p>
+
+        <div style="text-align: center; margin-top: 60px; padding: 30px; background: #1a1a1a; border-radius: 8px;">
+            <h3 style="color: var(--accent); margin: 0 0 10px 0;">Coming Soon</h3>
+            <p style="margin: 0; color: #888;">Print & Play version in development</p>
+        </div>
+    </div>
+
+</body>
+</html>
