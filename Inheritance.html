@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>INHERITANCE: Estate Edition</title>
     <style>
+        /* --- RESPONSIVE LOGIC --- */
+        :root {
+            /* Default: Mobile Portrait (Width is the limiting factor) */
+            --game-size: 95vw;
+        }
+
+        @media (min-aspect-ratio: 11/10) {
+            /* Desktop/Landscape (Height is the limiting factor) */
+            :root {
+                --game-size: 68vh; /* Leaves room for UI top/bottom */
+            }
+        }
+
         body {
             background-color: #ffffff;
             color: #333;
@@ -12,16 +25,21 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: flex-start; /* Default for mobile (top align) */
             height: 100vh;
             margin: 0;
             overflow: hidden;
             touch-action: none;
         }
 
+        /* Center vertically on desktop to look cleaner */
+        @media (min-aspect-ratio: 11/10) {
+            body { justify-content: center; }
+        }
+
         /* HEADER SECTION */
         #game-header {
-            width: 95vw;
+            width: var(--game-size);
             max-width: 600px;
             display: flex;
             flex-direction: column;
@@ -126,9 +144,13 @@
         /* GAME CONTAINER */
         #game-container {
             position: relative;
-            width: 95vw;
+            
+            /* Responsive Width/Height Logic */
+            width: var(--game-size);
+            height: var(--game-size); /* Forces square aspect ratio based on the variable */
             max-width: 600px;
-            aspect-ratio: 1 / 1;
+            max-height: 600px;
+            
             box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
             border-radius: 4px;
             overflow: hidden;
@@ -155,7 +177,7 @@
 
         /* LEGEND BAR */
         #legend-bar {
-            width: 95vw;
+            width: var(--game-size);
             max-width: 600px;
             background: #333;
             color: #eee;
@@ -179,7 +201,7 @@
 
         /* ACTION BAR */
         #action-bar {
-            width: 95vw;
+            width: var(--game-size);
             max-width: 600px;
             height: 60px;
             display: flex;
@@ -437,12 +459,10 @@
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-        <!-- MAIN OVERLAY -->
         <div id="overlay" class="overlay">
             <h2 id="overlayTitle">Welcome</h2>
             <div id="overlayContent" class="overlay-content"></div>
             
-            <!-- Setup Panel -->
             <div id="setupPanel" class="input-group">
                 <input type="text" id="inputP1" class="name-input" placeholder="Sibling 1 Name" value="Player 1" maxlength="12">
                 <input type="text" id="inputP2" class="name-input" placeholder="Sibling 2 Name" value="Player 2" maxlength="12">
@@ -465,7 +485,6 @@
             <button id="overlayBtn" class="std-btn">Start Game</button>
             <button id="rulesBtn" class="small-btn" onclick="showRules()">How to Play</button>
             
-            <!-- Challenge Buttons -->
             <div id="challenge-buttons">
                 <button class="std-btn" onclick="acceptChallenge()">Accept Challenge</button>
                 <button class="small-btn" onclick="finishGame(false)">Skip (Keep Win)</button>
@@ -482,7 +501,6 @@
             <div class="credits">Game Design by Shaun Bartlett © 2025</div>
         </div>
 
-        <!-- RULES OVERLAY -->
         <div id="rulesOverlay" class="overlay" style="z-index:200;">
             <h2>How to Play</h2>
             <div class="overlay-content">
@@ -516,7 +534,6 @@
 
     </div>
 
-    <!-- LEGEND BAR -->
     <div id="legend-bar">
         <div class="legend-item">🏡 5</div>
         <div class="legend-item">🚜 2</div>
@@ -524,15 +541,13 @@
         <div class="legend-item"><span class="legend-square"></span> 1</div>
     </div>
     
-    <!-- ACTION BAR -->
     <div id="action-bar">
         <button id="undoBtn" class="undo-btn">↺</button>
         <button id="returnBtn" class="return-btn">Back to Scores</button>
     </div>
 
 <script>
-/** 
- * INHERITANCE - Estate Edition (v29 - Signed)
+/** * INHERITANCE - Estate Edition (v29 - Signed)
  */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
