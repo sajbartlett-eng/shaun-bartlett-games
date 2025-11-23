@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapeutic Practice | Systems Literacy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --accent: #9370DB; /* Purple for Therapy */ --border: #333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        h1, h2, h3, .tag { font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Header */
+        .header { padding: 40px 5%; border-bottom: 1px solid var(--border); margin-bottom: 60px; background: radial-gradient(circle at 50% 0%, rgba(147, 112, 219, 0.15) 0%, #0f0f0f 70%); }
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+        .back-link:hover { color: #fff; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin: 20px 0 10px 0; color: #fff; line-height: 1.1; }
+        .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 15px; font-weight: 600; }
+        .desc { max-width: 600px; color: #aaa; font-size: 1.1rem; }
+
+        .container { padding: 0 5%; max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
+        
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card h3 { font-size: 1.5rem; color: #fff; margin: 0 0 5px 0; }
+        .card-subtitle { color: #888; font-size: 0.95rem; margin-bottom: 15px; }
+        .card-meta { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .learning-tag { font-size: 0.7rem; padding: 4px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--accent); border: 1px solid rgba(147, 112, 219, 0.3); display: inline-block; margin-right: 5px; margin-top: 10px; font-weight: 600; }
+        
+        .winter-den-bg { background: radial-gradient(circle at top right, #37474F, #000); }
+        .summer-den-bg { background: radial-gradient(circle at top right, #F57C00, #000); }
+        .burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
+
+        .action-btn { display: block; width: 100%; padding: 12px 0; margin-top: 20px; text-align: center; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+        .action-btn:hover { background: var(--accent); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="container">
+            <a href="index.html" class="back-link">← Back to Home</a>
+            <h1>Therapeutic Tools</h1>
+            <p class="subtitle">Safe Spaces for Processing Complex Dynamics</p>
+            <p class="desc">Games designed for counselors, therapists, and social workers. Clients experience systemic pressures and moral complexity in contained environments, then process insights in session.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            
+            <div class="card">
+                <div class="card-img winter-den-bg">❄️</div>
+                <div class="card-content">
+                    <h3>WINTER DEN</h3>
+                    <div class="card-subtitle">Empathy & Moral Reasoning</div>
+                    <div class="card-meta">5 Players • Cooperative/Competitive</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">A tool for exploring resource scarcity and group dynamics. Useful for family therapy or group counseling sessions.</p>
+                    <div>
+                        <span class="learning-tag">Empathy</span>
+                        <span class="learning-tag">Scarcity Mindset</span>
+                        <span class="learning-tag">Group Dynamics</span>
+                    </div>
+                    <a href="#" class="action-btn" style="opacity: 0.6; cursor: default;">Join Waitlist</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img summer-den-bg">☀️</div>
+                <div class="card-content">
+                    <h3>SUMMER DEN</h3>
+                    <div class="card-subtitle">Neurodiversity & Identity</div>
+                    <div class="card-meta">5 Players • Social Simulation</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">A powerful tool for exploring how different nervous systems process the same social events. Builds vocabulary for sensory needs.</p>
+                    <div>
+                        <span class="learning-tag">Neurodiversity</span>
+                        <span class="learning-tag">Self-Advocacy</span>
+                        <span class="learning-tag">Identity</span>
+                    </div>
+                    <a href="#" class="action-btn" style="opacity: 0.6; cursor: default;">In Development</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img burnout-bg">🔥</div>
+                <div class="card-content">
+                    <h3>BURNOUT</h3>
+                    <div class="card-subtitle">Stress & Self-Regulation</div>
+                    <div class="card-meta">2-5 Players • High Pressure</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">Allows clients to experience and observe their own reactions to external pressure and toxic incentive structures.</p>
+                    <div>
+                        <span class="learning-tag">Self-Regulation</span>
+                        <span class="learning-tag">Boundary Setting</span>
+                    </div>
+                    <a href="details_burnout.html" class="action-btn">View Details</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 80px; background: #111; padding: 40px; border-radius: 12px;">
+            <h2 style="color: #fff; margin-bottom: 10px;">Questions about clinical application?</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Reach out to discuss how these tools integrate into practice.</p>
+            <a href="contact.html" style="display: inline-block; padding: 12px 30px; background: var(--accent); color: #000; text-decoration: none; border-radius: 6px; font-weight: bold;">Get in Touch</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

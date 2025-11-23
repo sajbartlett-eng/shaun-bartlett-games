@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family & Classroom Games | Systems Literacy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Same Base CSS as Index */
+        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --accent: #FFB74D; /* Orange for Family/Classroom */ --border: #333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        h1, h2, h3, .tag { font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Header */
+        .header { padding: 40px 5%; border-bottom: 1px solid var(--border); margin-bottom: 60px; background: radial-gradient(circle at 50% 0%, rgba(255, 183, 77, 0.15) 0%, #0f0f0f 70%); }
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+        .back-link:hover { color: #fff; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin: 20px 0 10px 0; color: #fff; line-height: 1.1; }
+        .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 15px; font-weight: 600; }
+        .desc { max-width: 600px; color: #aaa; font-size: 1.1rem; }
+
+        /* Grid */
+        .container { padding: 0 5%; max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
+        
+        /* Cards */
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card h3 { font-size: 1.5rem; color: #fff; margin: 0 0 5px 0; }
+        .card-subtitle { color: #888; font-size: 0.95rem; margin-bottom: 15px; }
+        .card-meta { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .learning-tag { font-size: 0.7rem; padding: 4px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--accent); border: 1px solid rgba(255, 183, 77, 0.3); display: inline-block; margin-right: 5px; margin-top: 10px; font-weight: 600; }
+        
+        /* Gradients */
+        .inheritance-bg { background: radial-gradient(circle at top right, #2E7D32, #000); }
+        .burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
+        .viral-bg { background: radial-gradient(circle at top right, #C62828, #000); }
+        .winter-den-bg { background: radial-gradient(circle at top right, #37474F, #000); }
+        .summer-den-bg { background: radial-gradient(circle at top right, #F57C00, #000); }
+
+        /* Callout */
+        .callout { background: rgba(255, 213, 79, 0.1); border: 1px solid rgba(255, 213, 79, 0.3); border-radius: 12px; padding: 25px; margin-bottom: 40px; }
+        .callout h3 { color: #FFD54F; margin-bottom: 10px; font-size: 1.2rem; }
+        .callout p { color: #ccc; margin: 0; }
+
+        .action-btn { display: block; width: 100%; padding: 12px 0; margin-top: 20px; text-align: center; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+        .action-btn:hover { background: var(--accent); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="container">
+            <a href="index.html" class="back-link">← Back to Home</a>
+            <h1>Family & Classroom Games</h1>
+            <p class="subtitle">Ages 10+ | Experiential Learning Through Play</p>
+            <p class="desc">Games designed for family game nights, K-8 classrooms, and youth programs. Each game teaches complex systems thinking through direct experience, without complex rules.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="callout">
+            <h3>📘 The Den Series</h3>
+            <p>We recommend starting with <strong>Winter Den</strong>. Summer Den builds on concepts and mechanics from Winter Den. Playing Winter Den first helps students understand the animal system and core framework.</p>
+        </div>
+
+        <div class="grid">
+            
+            <div class="card">
+                <div class="card-img winter-den-bg">❄️</div>
+                <div class="card-content">
+                    <h3>WINTER DEN</h3>
+                    <div class="card-subtitle">Book 1: The Body</div>
+                    <div class="card-meta">5 Players • Survival • Age 12+</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">The survival paradox. If everyone lives, hoarding helps you. If anyone dies, hoarding destroys you.</p>
+                    <div>
+                        <span class="learning-tag">Empathy</span>
+                        <span class="learning-tag">Resource Scarcity</span>
+                    </div>
+                    <a href="#" class="action-btn" style="opacity: 0.6; cursor: default;">Join Waitlist</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img summer-den-bg">☀️</div>
+                <div class="card-content">
+                    <h3>SUMMER DEN</h3>
+                    <div class="card-subtitle">Book 2: The Heart</div>
+                    <div class="card-meta">5 Players • Social • Age 10+</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">Neurodiversity is biology. The same social event feels completely different to different nervous systems.</p>
+                    <div>
+                        <span class="learning-tag">Neurodiversity</span>
+                        <span class="learning-tag">Identity</span>
+                    </div>
+                    <a href="#" class="action-btn" style="opacity: 0.6; cursor: default;">In Development</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img inheritance-bg">💎</div>
+                <div class="card-content">
+                    <h3>INHERITANCE</h3>
+                    <div class="card-subtitle">Fair Division & Game Theory</div>
+                    <div class="card-meta">2 Players • 10 Mins • Age 12+</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">Claiming unfairness means proving a better solution exists. A fast lesson in critical thinking.</p>
+                    <div>
+                        <span class="learning-tag">Conflict Resolution</span>
+                        <span class="learning-tag">Fairness</span>
+                    </div>
+                    <a href="details_inheritance.html" class="action-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img viral-bg">📈</div>
+                <div class="card-content">
+                    <h3>VIRAL</h3>
+                    <div class="card-subtitle">Truth vs. Attention</div>
+                    <div class="card-meta">4-10 Players • 5 Mins • Age 10+</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">Why misinformation spreads faster than truth. A "Telephone" game for the social media age.</p>
+                    <div>
+                        <span class="learning-tag">Media Literacy</span>
+                        <span class="learning-tag">Misinformation</span>
+                    </div>
+                    <a href="details_viral.html" class="action-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-img burnout-bg">🔥</div>
+                <div class="card-content">
+                    <h3>BURNOUT</h3>
+                    <div class="card-subtitle">Managing Pressure</div>
+                    <div class="card-meta">2-5 Players • 5 Mins • Age 12+</div>
+                    <p style="color: #ccc; font-size: 0.95rem;">A fast-paced game about managing stress and expectations in a group project.</p>
+                    <div>
+                        <span class="learning-tag">Self-Regulation</span>
+                        <span class="learning-tag">Cooperation</span>
+                    </div>
+                    <a href="details_burnout.html" class="action-btn">View Details</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 80px; background: #111; padding: 40px; border-radius: 12px;">
+            <h2 style="color: #fff; margin-bottom: 10px;">Using these in your classroom?</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">We offer educational support and facilitator guides.</p>
+            <a href="contact.html" style="display: inline-block; padding: 12px 30px; background: var(--accent); color: #000; text-decoration: none; border-radius: 6px; font-weight: bold;">Get in Touch</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
