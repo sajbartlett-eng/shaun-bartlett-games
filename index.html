@@ -129,9 +129,15 @@
         .section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
 
         /* FRAMEWORK SECTION - UPDATED LAYOUT */
-        .framework-header-sub { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 30px; border-left: 4px solid var(--accent); padding-left: 15px; }
+        .framework-header-sub { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 30px; border-left: 4px solid var(--accent); padding-left: 15px; margin-top: 40px;}
         
-        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 60px; }
+        /* Grid for 7 Items */
+        .framework-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 60px; 
+        }
         
         .framework-card { 
             background: #181818; 
@@ -278,7 +284,7 @@
             <p class="section-desc">A methodology for translating any complex human system into experiential learning.</p>
         </div>
         
-        <h3 class="framework-header-sub">Part 1: Six Core Design Engines</h3>
+        <h3 class="framework-header-sub">Part 1: The Seven Design Engines</h3>
         
         <div class="framework-grid">
             
@@ -293,67 +299,77 @@
 
             <div class="framework-card">
                 <h4>⚙️ 2. Mechanical Honesty</h4>
-                <p><strong>The Principle:</strong> The scoring system and math must mirror the harsh reality of the subject, not an idealized version. The math teaches the lesson.</p>
-                <p><strong>The Design:</strong> Rules that punish altruism or reward exploitation if that is how the real-world system functions.</p>
+                <p><strong>The Principle:</strong> The simulation must be indifferent to the player's feelings. Every mechanic must truthfully model the constraints and perversity of the real-world system.</p>
+                <p><strong>The Design:</strong> Rules that punish altruism or reward exploitation if that is how the real-world system functions. No "fun" buffers.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> The Tipping Point (Green Tech is harder), Winter Den (Strict resource math)
+                    <strong>Examples:</strong> Viral (Update mechanic forces sensationalism), The Tipping Point (Green Tech is statistically harder)
                 </div>
             </div>
 
             <div class="framework-card">
                 <h4>🔗 3. Asymmetric Interdependence</h4>
-                <p><strong>The Principle:</strong> Players have different abilities, constraints, or information, yet share a common fate.</p>
-                <p><strong>The Design:</strong> Unique roles that force negotiation and reliance on others.</p>
+                <p><strong>The Principle:</strong> Players share the same "verbs" but carry different risks, capacities, and costs. This disparity breeds resentment and necessitates negotiation.</p>
+                <p><strong>The Design:</strong> Universal action lists where costs and impacts scale by role.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4>🌊 4. Cascading Consequences</h4>
-                <p><strong>The Principle:</strong> Decisions define future probabilities. The game state "remembers" actions, creating feedback loops.</p>
+                <h4>🧠 4. Lean Decision Architecture</h4>
+                <p><strong>The Principle:</strong> High Agency, Zero Administrative Lag. The "Cognitive Budget" is spent on social calculation, not rule upkeep.</p>
+                <p><strong>The Design:</strong> Immediate resolution loops (Choose → Resolve) with no procedural overhead.</p>
+                <div class="examples">
+                    <strong>Examples:</strong> The Tipping Point (Invest → Roll), Inheritance (Draw line → Choose side)
+                </div>
+            </div>
+
+            <div class="framework-card">
+                <h4>🌊 5. Cascading Consequences</h4>
+                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. Current actions permanently alter future probabilities, often creating a "race to the bottom."</p>
                 <p><strong>The Design:</strong> Mechanics where an action now makes the same action easier (or harder) later.</p>
+                
                 <div class="examples">
-                    <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Deregulation track accelerates)
+                    <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Deregulation track raises future rewards)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4>⏳ 5. Scarcity Creates Pressure</h4>
-                <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to use heuristics rather than perfect calculation.</p>
-                <p><strong>The Design:</strong> Hard limits on time, turns, or resources.</p>
+                <h4>⏳ 6. Scarcity Creates Pressure</h4>
+                <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to abandon optimization and rely on imperfect heuristics.</p>
+                <p><strong>The Design:</strong> Hard limits on Time (Panic), Opportunity (Turns), or Capacity (Slots).</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Burnout (3 min timer), Winter Den (7 rounds), Leverage (Hand size limits)
+                    <strong>Examples:</strong> Burnout (3 min timer), Leverage (Hand size limit), Winter Den (7 rounds)
                 </div>
             </div>
 
             <div class="framework-card">
-                <h4>⚡ 6. Accessible Complexity</h4>
-                <p><strong>The Principle:</strong> Complexity should emerge from human interaction, not the rulebook. Low barrier to entry, high social ceiling.</p>
-                <p><strong>The Design:</strong> Using familiar interfaces (talking, drawing lines, passing paper) to model complex dynamics.</p>
+                <h4>⚡ 7. Accessible Complexity</h4>
+                <p><strong>The Principle:</strong> The Interface is the Trojan Horse. Use familiar, low-barrier tools to smuggle in deep systems modeling.</p>
+                <p><strong>The Design:</strong> Using analog or intuitive interfaces to hide the math.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Inheritance (I Cut You Choose), Viral (Telephone game)
+                    <strong>Examples:</strong> Inheritance (Nursery rhyme logic), Viral (Paper and pen)
                 </div>
             </div>
         </div>
 
-        <h3 class="framework-header-sub" style="border-color: var(--den-gold);">Part 2: The Player Outcomes</h3>
+        <h3 class="framework-header-sub" style="border-color: var(--den-gold);">Part 2: The Pedagogical Outcomes</h3>
         
         <div class="framework-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
             
             <div class="framework-card outcome-card">
                 <h4>💡 1. Emergent Insight</h4>
-                <p>There are no lectures. The realization (e.g., "I became a liar to win") emerges naturally from the collision of Structural Tension and Mechanical Honesty. The player discovers the lesson by doing it.</p>
+                <p>There are no lectures. The realization (e.g., "I became a liar to win") creates a moment of shock. It emerges naturally from the friction of the mechanics. The player discovers the lesson by committing the error.</p>
             </div>
 
             <div class="framework-card outcome-card">
-                <h4>📖 2. Narrative Ownership</h4>
-                <p>Because the systems are open, players write the story. Leverage isn't a script about betrayal; it's a toolbox that causes betrayal. The story belongs to the table, not the designer.</p>
+                <h4>📖 2. Narrative Culpability</h4>
+                <p>Because the systems are open, players don't just watch the story; they are responsible for it. Leverage isn't a story about a Kingdom falling; it's a simulation where you let it fall to save your gold. The story belongs to the table.</p>
             </div>
 
             <div class="framework-card outcome-card">
-                <h4>🧠 3. Strategic Empathy</h4>
-                <p>By inhabiting the "bad guy" role (e.g., the polluting CEO in The Tipping Point), players learn that systemic failures are often caused by rational actors making logical choices within bad incentive structures.</p>
+                <h4>🤝 3. Strategic Empathy</h4>
+                <p>By inhabiting the "bad guy" role, players learn that systemic failures are rarely caused by villains. They are caused by rational actors making logical choices within broken incentive structures.</p>
             </div>
 
         </div>
