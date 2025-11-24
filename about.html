@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Shaun Bartlett</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #66BB6A; --card-bg: #181818; --border: #333; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.8; }
+        
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #fff; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; margin-top: 50px; margin-bottom: 20px; color: var(--accent); }
+        
+        .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
+        
+        p { margin-bottom: 25px; font-size: 1.1rem; color: #ccc; }
+        strong { color: #fff; font-weight: 600; }
+        
+        .bio-grid { display: grid; grid-template-columns: 1fr; gap: 50px; margin-top: 40px; }
+        @media(min-width: 768px) { .bio-grid { grid-template-columns: 2fr 1fr; } }
+        
+        .stat-card { background: var(--card-bg); padding: 20px; border-left: 3px solid var(--accent); margin-bottom: 15px; border-radius: 0 8px 8px 0; }
+        .stat-num { font-family: 'Space Grotesk'; font-size: 2.5rem; color: #fff; line-height: 1; }
+        .stat-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
+        .back-link:hover { color: var(--accent); }
+        
+        /* Image Placeholder - Replace src with real photo later */
+        .profile-img { 
+            width: 100%; 
+            aspect-ratio: 1/1; 
+            background: #222; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #555; 
+            margin-bottom: 30px; 
+            object-fit: cover; 
+            border: 1px solid var(--border);
+        }
+
+        .quote-box {
+            border-left: 4px solid var(--accent);
+            padding-left: 25px;
+            margin: 40px 0;
+            font-style: italic;
+            color: #fff;
+            font-size: 1.25rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .timeline-item {
+            margin-bottom: 30px;
+            padding-left: 20px;
+            border-left: 1px solid var(--border);
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            width: 12px; height: 12px;
+            background: var(--accent);
+            position: absolute;
+            left: -6px; top: 6px;
+            border-radius: 50%;
+        }
+        .timeline-year { color: var(--accent); font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+        
+        .contact-btn {
+            display: inline-block;
+            background: var(--accent);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .contact-btn:hover { transform: translateY(-2px); background: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Back to Framework</a>
+
+    <h1>SHAUN BARTLETT</h1>
+    <div class="subtitle">Systems Engineer & Game Designer</div>
+
+    <div class="bio-grid">
+        <div>
+            <div class="quote-box">
+                "I was told basketball intelligence was impossible to teach—that it was a gift you either had or you didn't. I spent the next 15 years proving that wrong."
+            </div>
+
+            <p>
+                My journey into game design didn't start with a love of board games. It started with a rejection. At 17, a national tournament coach cut me from the squad, telling me I "wasn't smart enough" to play at higher levels.
+            </p>
+            <p>
+                That moment sparked an obsession: <strong>Is intuition teachable?</strong>
+            </p>
+            <p>
+                I became an engineer specializing in risk-based systems strategy. For years, I fixed broken corporate systems—identifying where complexity was too high, where incentives were misaligned, and where "human error" was actually just bad design. I realized that the root cause of systemic collapse is rarely incompetence; it is <strong>poor systems literacy</strong>.
+            </p>
+
+            <h2>The Epiphany</h2>
+            <p>
+                One day, the two worlds collided. I realized that the spatial navigation of basketball and the risk management of engineering were the same problem. And if they were systems, they could be modeled.
+            </p>
+            <p>
+                I spent three years developing <em>Playmaker</em>, a tool to make basketball IQ experiential. In doing so, I uncovered the <strong>Systems Literacy Framework</strong>—a set of 8 design engines that can translate complex human friction into playable simulations.
+            </p>
+
+            <h2>From Theory to Generative Engine</h2>
+            <p>
+                Once the framework existed, the applications exploded. I turned my attention to my own children. My daughter needed to understand fairness, so <em>Winter Den</em> emerged to model survival ethics. She needed to navigate neurodiversity at school, so <em>Summer Den</em> was born to model mental energy costs.
+            </p>
+            <p>
+                From there, the framework proved it was platform-agnostic. A standard deck of cards became a feudal power simulation (*Leverage*). Two dice became a climate economy model (*The Tipping Point*). A piece of paper became a lesson in algorithmic bias (*Viral*).
+            </p>
+            <p>
+                I am now mapping a full curriculum of human systems. My goal is to hand these tools to educators, parents, and leaders to make the invisible mechanics of our world visible, playable, and solvable.
+            </p>
+        </div>
+
+        <div>
+            <img src="assets/images/profile.jpg" alt="Shaun Bartlett" class="profile-img">
+            
+            <div class="stat-card">
+                <div class="stat-num">34</div>
+                <div class="stat-label">Based in Perth, AU</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">8</div>
+                <div class="stat-label">Design Engines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">7</div>
+                <div class="stat-label">Playable Systems</div>
+            </div>
+            
+            <div style="margin-top: 40px; background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid var(--border);">
+                <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: #fff;">Connect</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 20px;">
+                    I actively encourage other designers to use the framework. Let's map the world together.
+                </p>
+                <a href="mailto:shaun.aj.bartlett@gmail.com" class="contact-btn">Get in Touch</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
