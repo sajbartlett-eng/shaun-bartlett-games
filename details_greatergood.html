@@ -106,13 +106,13 @@
 
     <div class="content">
         <p class="intro"><strong>Freedom is expensive.</strong></p>
-        <p>Five survivors are stranded on an island. To survive the journey home, the group needs to stockpile 34 resource cards. [cite_start]The deck only contains 40[cite: 5, 6]. With such a razor-thin margin for error, hoarding is fatal.</p>
+        <p>Five survivors are stranded on an island. To survive the journey home, the group needs to stockpile 34 resource cards. The deck only contains 40. With such a razor-thin margin for error, hoarding is fatal.</p>
         <p>This is a game about the origins of government. You start as individuals, but you quickly realize that you cannot carry enough food to survive on your own. You must surrender your autonomy to a Leader to gain the capacity to survive.</p>
 
         <div class="highlight-box">
             <h3>The Math of Starvation</h3>
-            <p style="margin-bottom: 0;"><strong>Total Needs:</strong> 34 Cards. [cite_start]<strong>Total Supply:</strong> 40 Cards[cite: 5, 6].<br>
-            There is a surplus of only 6 cards in the entire deck. [cite_start]If players act selfishly and hoard resources they don't need, the math guarantees that someone will starve[cite: 7, 9]. Cooperation isn't a moral choice; it's a mathematical necessity.</p>
+            <p style="margin-bottom: 0;"><strong>Total Needs:</strong> 34 Cards. <strong>Total Supply:</strong> 40 Cards.<br>
+            There is a surplus of only 6 cards in the entire deck. If players act selfishly and hoard resources they don't need, the math guarantees that someone will starve. Cooperation isn't a moral choice; it's a mathematical necessity.</p>
         </div>
 
         <h2>System Design Analysis</h2>
@@ -122,20 +122,20 @@
             
             <div class="analysis-card">
                 <h4>⚖️ Structural Tension</h4>
-                <p><strong>The Mechanic:</strong> <em>The Hand Limit Hierarchy.</em> An Independent player can only hold 3 cards. [cite_start]A Leader can hold 7[cite: 31, 33].</p>
+                <p><strong>The Mechanic:</strong> <em>The Hand Limit Hierarchy.</em> An Independent player can only hold 3 cards. A Leader can hold 7.</p>
                 <p><strong>The Insight:</strong> Autonomy causes poverty. To "carry" enough food to survive, you must join a coalition. You trade your vote (Allegiance card) for the inventory space needed to live.</p>
                 <div class="analysis-meta">The "State" is a tool for resource management.</div>
             </div>
 
             <div class="analysis-card">
                 <h4>🔗 Asymmetric Interdependence</h4>
-                <p><strong>The Mechanic:</strong> <em>The Death Penalty.</em> If a survivor dies, the Dominant Leader loses -10 VP. [cite_start]The Followers only lose -3 VP[cite: 92, 93].</p>
+                <p><strong>The Mechanic:</strong> <em>The Death Penalty.</em> If a survivor dies, the Dominant Leader loses -10 VP. The Followers only lose -3 VP.</p>
                 <p><strong>The Insight:</strong> The Leader is hostage to the People. A Leader cannot win if their followers starve. This forces the "rich" player to redistribute wealth, not out of kindness, but to protect their own victory points.</p>
             </div>
 
             <div class="analysis-card">
                 <h4>⚙️ Mechanical Honesty</h4>
-                [cite_start]<p><strong>The Mechanic:</strong> <em>Personal Agendas.</em> Victory points are physical cards that take up hand space[cite: 21].</p>
+                <p><strong>The Mechanic:</strong> <em>Personal Agendas.</em> Victory points are physical cards that take up hand space.</p>
                 <p><strong>The Insight:</strong> Ambition has a weight. Every "Victory Point" you hold is one less slot you have for Food or Water. You literally have to decide if winning is worth the risk of dying.</p>
             </div>
 
@@ -148,22 +148,22 @@
         <ul class="mechanic-list">
             <li>
                 <strong>Independent (Limit: 3)</strong>
-                You hold your own Allegiance card. [cite_start]You are free, but you cannot hold enough supplies to survive on your own[cite: 31].
+                You hold your own Allegiance card. You are free, but you cannot hold enough supplies to survive on your own.
             </li>
             <li>
                 <strong>Follower (Limit: 5)</strong>
-                You give your Allegiance card to another player. [cite_start]You gain inventory space, but you have given someone else the power to negotiate for you[cite: 32].
+                You give your Allegiance card to another player. You gain inventory space, but you have given someone else the power to negotiate for you.
             </li>
             <li>
                 <strong>Leader (Limit: 7)</strong>
-                You hold your own Allegiance plus at least one other. [cite_start]You have massive capacity, but you are now responsible for keeping your followers alive[cite: 33].
+                You hold your own Allegiance plus at least one other. You have massive capacity, but you are now responsible for keeping your followers alive.
             </li>
         </ul>
 
         <h3>The Core Loop</h3>
-        <p><strong>1. [cite_start]Explore:</strong> Survivors visit locations (Wreckage, Jungle, Beach) to draw resources[cite: 38].<br>
-        <strong>2. Negotiate:</strong> Players trade resources and offer Allegiance. [cite_start]"I will give you my vote if you promise to feed me at the end."[cite: 48]<br>
-        <strong>3. The Reckoning:</strong> At the end of Day 5, the group pools their resources. [cite_start]If you don't have enough Food/Water/Warmth, you die and score 0[cite: 87].</p>
+        <p><strong>1. Explore:</strong> Survivors visit locations (Wreckage, Jungle, Beach) to draw resources.<br>
+        <strong>2. Negotiate:</strong> Players trade resources and offer Allegiance. "I will give you my vote if you promise to feed me at the end."<br>
+        <strong>3. The Reckoning:</strong> At the end of Day 5, the group pools their resources. If you don't have enough Food/Water/Warmth, you die and score 0.</p>
 
         <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
             <div class="status-btn">🚧 In Development</div>
