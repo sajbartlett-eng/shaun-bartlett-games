@@ -43,7 +43,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 5%;
-            background: rgba(15, 15, 15, 0.8);
+            background: rgba(15, 15, 15, 0.95);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -56,6 +56,7 @@
             font-weight: 700; 
             letter-spacing: -0.5px;
             color: #fff;
+            text-decoration: none;
         }
         
         .nav-links { display: flex; gap: 30px; }
@@ -77,9 +78,9 @@
         }
         
         .hero h1 { 
-            font-size: clamp(3rem, 6vw, 5rem); 
+            font-size: clamp(2.8rem, 6vw, 5rem); 
             margin-bottom: 20px; 
-            line-height: 1;
+            line-height: 1.1;
             letter-spacing: -2px;
             background: linear-gradient(180deg, #fff, #aaa);
             -webkit-background-clip: text;
@@ -88,7 +89,7 @@
         }
         
         .hero .tagline { 
-            font-size: clamp(1.2rem, 2vw, 1.5rem); 
+            font-size: clamp(1.1rem, 2vw, 1.5rem); 
             color: var(--accent); 
             margin-bottom: 20px; 
             font-weight: 600;
@@ -141,7 +142,7 @@
         
         .framework-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
             gap: 25px; 
             margin-bottom: 60px; 
         }
@@ -177,8 +178,8 @@
         .outcome-card strong { color: var(--den-gold); }
 
         /* CARDS */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
-        .grid-2col { grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .grid-2col { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 
         .card {
             background: var(--card-bg);
@@ -191,7 +192,7 @@
             position: relative;
         }
         
-        .card:hover:not(.coming-soon) { 
+        .card:hover:not(.disabled-card) { 
             transform: translateY(-8px); 
             border-color: var(--accent); 
             box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
@@ -224,7 +225,8 @@
         .tag { font-size: 0.75rem; padding: 6px 12px; border-radius: 4px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         .tag.digital { color: #64B5F6; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.2); }
         .tag.pnp { color: #FFB74D; background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.2); }
-        .tag.coming { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .tag.concept { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .tag.dev { color: #FF5252; background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.2); }
 
         /* Learning Tags */
         .learning-tag {
@@ -252,21 +254,25 @@
         .btn-primary:hover { background: #fff; border-color: #fff; transform: translateY(-2px); }
         .btn-secondary { background: transparent; color: #fff; border: 1px solid #444; }
         .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+        
+        /* Disabled State */
         .btn-disabled { background: #222; color: #555; border: 1px solid #333; pointer-events: none; grid-column: span 2; }
+        .disabled-card { opacity: 0.8; }
 
-        /* Responsive */
+        /* RESPONSIVE NAV FIX */
         @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 15px; padding: 15px; }
+            .logo { margin-bottom: 5px; }
+            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; }
             .hero h1 { font-size: 2.5rem; }
             .card-actions { grid-template-columns: 1fr; }
-            .nav-links { display: none; }
-            .framework-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="logo">SHAUN BARTLETT</div>
+        <a href="#" class="logo">SHAUN BARTLETT</a>
         <div class="nav-links">
             <a href="#framework">Framework</a>
             <a href="#applications">Browse by Use</a>
@@ -297,7 +303,6 @@
             <div class="framework-card">
                 <h4>⚡ 1. Accessible Complexity</h4>
                 <p><strong>The Principle:</strong> The Interface is the Trojan Horse. Use familiar, low-barrier tools to smuggle in deep systems modeling. Complexity comes from the collision of players, not the rulebook.</p>
-                <p><strong>The Design:</strong> Using analog or intuitive interfaces to hide the math.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Inheritance (Nursery rhyme logic), Viral (Paper and pen)
                 </div>
@@ -306,7 +311,6 @@
             <div class="framework-card">
                 <h4>🧠 2. Lean Decision Architecture</h4>
                 <p><strong>The Principle:</strong> High Agency, Zero Administrative Lag. The "Cognitive Budget" is spent on social calculation, not rule upkeep.</p>
-                <p><strong>The Design:</strong> Immediate resolution loops (Choose → Resolve) with no procedural overhead.</p>
                 <div class="examples">
                     <strong>Examples:</strong> The Tipping Point (Invest → Roll), Inheritance (Draw line → Choose side)
                 </div>
@@ -314,17 +318,15 @@
 
             <div class="framework-card">
                 <h4>🔥 3. Compressed Agency</h4>
-                <p><strong>The Principle:</strong> Maximum freedom, minimum mental tax. Players feel they can do anything, but only need to think about one simple decision at a time. Complexity belongs to the players, not the rules.</p>
-                <p><strong>The Design:</strong> Tiny action sets with huge systemic ripples.</p>
+                <p><strong>The Principle:</strong> Maximum freedom, minimum mental tax. Players feel they can do anything, but only need to think about one simple decision at a time.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Leverage (Playing one Jack topples a Kingdom), The Tipping Point (One investment shifts global probabilities)
+                    <strong>Examples:</strong> Leverage (Playing one Jack topples a Kingdom), The Tipping Point (One investment)
                 </div>
             </div>
 
             <div class="framework-card">
                 <h4>⏳ 4. Scarcity Creates Pressure</h4>
                 <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to abandon optimization and rely on imperfect heuristics.</p>
-                <p><strong>The Design:</strong> Hard limits on Time (Panic), Opportunity (Turns), or Capacity (Slots).</p>
                 <div class="examples">
                     <strong>Examples:</strong> Burnout (3 min timer), Leverage (Hand size limit), Winter Den (7 rounds)
                 </div>
@@ -333,16 +335,14 @@
             <div class="framework-card">
                 <h4>⚖️ 5. Structural Tension</h4>
                 <p><strong>The Principle:</strong> The game explicitly places individual incentives at war with system stability. It weaponizes self-interest to reveal why "good people" create "bad systems."</p>
-                <p><strong>The Design:</strong> Victory conditions that require selfish acts which degrade the shared environment.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Burnout (Delegate vs Team), The Tipping Point (Profit vs Crisis), Winter Den (Excess vs Collective Survival)
+                    <strong>Examples:</strong> Burnout (Delegate vs Team), The Tipping Point (Profit vs Crisis)
                 </div>
             </div>
 
             <div class="framework-card">
                 <h4>🔗 6. Asymmetric Interdependence</h4>
-                <p><strong>The Principle:</strong> Asymmetric Stakes, Symmetric Agency. Players share the same "verbs" but carry different risks, capacities, and costs. This disparity breeds resentment and necessitates negotiation.</p>
-                <p><strong>The Design:</strong> Universal action lists where costs and impacts scale by role.</p>
+                <p><strong>The Principle:</strong> Asymmetric Stakes, Symmetric Agency. Players share the same "verbs" but carry different risks, capacities, and costs.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
                 </div>
@@ -350,17 +350,15 @@
 
             <div class="framework-card">
                 <h4>🌊 7. Cascading Consequences</h4>
-                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. Current actions permanently alter future probabilities, often creating a "race to the bottom."</p>
-                <p><strong>The Design:</strong> Mechanics where an action now makes the same action easier (or harder) later.</p>
+                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. Current actions permanently alter future probabilities.</p>
                 <div class="examples">
-                    <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Deregulation track raises future rewards)
+                    <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Crisis Track)
                 </div>
             </div>
 
             <div class="framework-card">
                 <h4>⚙️ 8. Mechanical Honesty</h4>
-                <p><strong>The Principle:</strong> Systemic Truthfulness. The simulation must be indifferent to the player's feelings. Every mechanic must truthfully model real incentives, not invented abstractions. No "fun" buffers.</p>
-                <p><strong>The Design:</strong> Rules that punish altruism or reward exploitation if that is how the real-world system functions.</p>
+                <p><strong>The Principle:</strong> Systemic Indifference. The system is indifferent to your intent. It allows you to be a team player or a saboteur using the exact same action.</p>
                 <div class="examples">
                     <strong>Examples:</strong> Viral (Update mechanic forces sensationalism), Burnout (Delegate transfers stress)
                 </div>
@@ -374,17 +372,17 @@
             
             <div class="framework-card outcome-card">
                 <h4>💡 1. Emergent Insight</h4>
-                <p>There are no lectures. The realization (e.g., "I became a liar to win") creates a moment of shock. It emerges naturally from the friction of the mechanics. The player discovers the lesson by committing the error.</p>
+                <p>There are no lectures. The realization (e.g., "I became a liar to win") creates a moment of shock. It emerges naturally from the friction of the mechanics.</p>
             </div>
 
             <div class="framework-card outcome-card">
                 <h4>📖 2. Narrative Culpability</h4>
-                <p>Because the systems are open, players don't just watch the story; they are responsible for it. Leverage isn't a story about a Kingdom falling; it's a simulation where you let it fall to save your gold. The story—and the guilt—belongs to the table.</p>
+                <p>Because the systems are open, players don't just watch the story; they are responsible for it. The story—and the guilt—belongs to the table.</p>
             </div>
 
             <div class="framework-card outcome-card">
                 <h4>🤝 3. Strategic Empathy</h4>
-                <p>By inhabiting the "bad guy" role (e.g., the polluting CEO in The Tipping Point), players learn that systemic failures are rarely caused by villains. They are caused by rational actors making logical choices within broken incentive structures.</p>
+                <p>By inhabiting the "bad guy" role, players learn that systemic failures are rarely caused by villains. They are caused by rational actors making logical choices within broken structures.</p>
             </div>
 
         </div>
@@ -444,7 +442,7 @@
                     <div class="card-subtitle">Fair Division & Game Theory</div>
                     <div class="card-meta">2 Players • 10 Mins • Age 12+</div>
                     <p class="card-learning">
-                        <strong>Concept:</strong> Fair division is computationally hard. Claiming unfairness means proving a better solution exists—and claiming victory.
+                        <strong>Concept:</strong> Fair division is computationally hard. Claiming unfairness means proving a better solution exists.
                     </p>
                     <div>
                         <span class="learning-tag">Conflict Resolution</span>
@@ -466,7 +464,7 @@
                     <div class="card-subtitle">Climate Crisis Push-Your-Luck</div>
                     <div class="card-meta">3-6 Players • 20 Mins • Age 14+</div>
                     <p class="card-learning">
-                        <strong>Concept:</strong> Why rational individual choices create collective catastrophe. The planet collapses at Crisis 10-14 depending on difficulty.
+                        <strong>Concept:</strong> Why rational individual choices create collective catastrophe.
                     </p>
                     <div>
                         <span class="learning-tag">Climate Systems</span>
@@ -489,10 +487,11 @@
         </div>
 
         <div class="grid">
-            <div class="card coming-soon">
+            
+            <div class="card">
                 <div class="card-img winter-den-bg">❄️</div>
                 <div class="card-content">
-                    <div class="tags"><span class="tag coming">Coming Soon</span></div>
+                    <div class="tags"><span class="tag dev">In Development</span></div>
                     <h3>WINTER DEN</h3>
                     <div class="card-subtitle">Book 1: The Body</div>
                     <div class="card-meta">5 Players • Survival • Age 12+</div>
@@ -505,15 +504,15 @@
                         <span class="learning-tag">Moral Reasoning</span>
                     </div>
                     <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">Join Waitlist</a>
+                        <a href="details_winter.html" class="action-btn btn-secondary" style="grid-column: span 2;">View Details</a>
                     </div>
                 </div>
             </div>
             
-             <div class="card coming-soon">
+             <div class="card">
                 <div class="card-img summer-den-bg">☀️</div>
                 <div class="card-content">
-                    <div class="tags"><span class="tag coming">Coming Soon</span></div>
+                    <div class="tags"><span class="tag dev">In Development</span></div>
                     <h3>SUMMER DEN</h3>
                     <div class="card-subtitle">Book 2: The Heart</div>
                     <div class="card-meta">5 Players • Social • Age 10+</div>
@@ -526,15 +525,15 @@
                         <span class="learning-tag">Identity</span>
                     </div>
                     <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
+                         <a href="details_summer.html" class="action-btn btn-secondary" style="grid-column: span 2;">View Details</a>
                     </div>
                 </div>
             </div>
             
-            <div class="card coming-soon">
+            <div class="card disabled-card">
                 <div class="card-img spring-den-bg">🌸</div>
                 <div class="card-content">
-                    <div class="tags"><span class="tag coming">Concept</span></div>
+                    <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>SPRING DEN</h3>
                     <div class="card-subtitle">Book 3: The Mind</div>
                     <div class="card-meta">5 Players • Communication • Age 12+</div>
@@ -544,18 +543,17 @@
                     <div>
                         <span class="learning-tag">Communication</span>
                         <span class="learning-tag">Accessibility</span>
-                        <span class="learning-tag">System Design</span>
                     </div>
                     <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
+                        <a href="#" class="action-btn btn-disabled">Coming Soon</a>
                     </div>
                 </div>
             </div>
 
-            <div class="card coming-soon">
+            <div class="card disabled-card">
                 <div class="card-img autumn-den-bg">🍂</div>
                 <div class="card-content">
-                    <div class="tags"><span class="tag coming">Concept</span></div>
+                    <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>AUTUMN DEN</h3>
                     <div class="card-subtitle">Book 4: The Soul</div>
                     <div class="card-meta">5 Players • Legacy • Age 14+</div>
@@ -565,10 +563,9 @@
                     <div>
                         <span class="learning-tag">Legacy</span>
                         <span class="learning-tag">Mortality</span>
-                        <span class="learning-tag">Meaning Making</span>
                     </div>
                     <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">In Development</a>
+                        <a href="#" class="action-btn btn-disabled">Coming Soon</a>
                     </div>
                 </div>
             </div>
@@ -595,7 +592,6 @@
                     <div>
                         <span class="learning-tag">Power Dynamics</span>
                         <span class="learning-tag">Strategic Thinking</span>
-                        <span class="learning-tag">Trust</span>
                     </div>
                     <div class="card-actions">
                         <a href="leverage_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
@@ -612,10 +608,9 @@
                     <div class="card-subtitle">Workplace Toxicity</div>
                     <div class="card-meta">2-5 Players • 5 Mins • Age 12+</div>
                     <p class="card-learning">
-                        <strong>Concept:</strong> How structural incentives punish health and reward toxic ambition. Burnout destroys your progress.
+                        <strong>Concept:</strong> How structural incentives punish health and reward toxic ambition.
                     </p>
                     <div>
-                        <span class="learning-tag">Self-Regulation</span>
                         <span class="learning-tag">Systemic Pressure</span>
                         <span class="learning-tag">Workplace Culture</span>
                     </div>
@@ -634,12 +629,11 @@
                     <div class="card-subtitle">Truth vs. Attention</div>
                     <div class="card-meta">4-10 Players • 5 Mins • Age 10+</div>
                     <p class="card-learning">
-                        <strong>Concept:</strong> Three consecutive passes bury truth. Platform incentives reward engagement over accuracy.
+                        <strong>Concept:</strong> Platform incentives reward engagement over accuracy.
                     </p>
                     <div>
                         <span class="learning-tag">Media Literacy</span>
                         <span class="learning-tag">Critical Thinking</span>
-                        <span class="learning-tag">Misinformation</span>
                     </div>
                     <div class="card-actions">
                         <a href="viral_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
@@ -657,10 +651,10 @@
         </div>
         
         <div class="grid grid-2col">
-            <div class="card coming-soon">
+            <div class="card disabled-card">
                 <div class="card-img playmaker-bg">🏀</div>
                 <div class="card-content">
-                    <div class="tags"><span class="tag coming">Coming Soon</span></div>
+                    <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>PLAYMAKER</h3>
                     <div class="card-subtitle">Basketball IQ Development</div>
                     <div class="card-meta">2-5 Players • Variable • Age 10+</div>
@@ -670,10 +664,9 @@
                     <div>
                         <span class="learning-tag">Spatial Reasoning</span>
                         <span class="learning-tag">Pattern Recognition</span>
-                        <span class="learning-tag">Team Strategy</span>
                     </div>
                     <div class="card-actions">
-                        <a href="#" class="action-btn btn-disabled">Rules: Coming Soon</a>
+                        <a href="#" class="action-btn btn-disabled">Coming Soon</a>
                     </div>
                 </div>
             </div>
