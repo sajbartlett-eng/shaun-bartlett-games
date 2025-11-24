@@ -198,26 +198,14 @@
             box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
         }
 
+        /* UPDATED FOR IMAGES */
         .card-img {
             height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 5rem;
-            position: relative;
+            width: 100%;
+            object-fit: cover; /* This ensures the image fills the box smartly */
+            display: block;
+            background-color: #222; /* Fallback color while loading */
         }
-        
-        /* Gradients - Replace these div classes with <img> tags when you have photos */
-        .tipping-point-bg { background: radial-gradient(circle at top right, #1565C0, #000); }
-        .inheritance-bg { background: radial-gradient(circle at top right, #2E7D32, #000); }
-        .leverage-bg { background: radial-gradient(circle at top right, #8B0000, #000); }
-        .burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
-        .viral-bg { background: radial-gradient(circle at top right, #C62828, #000); }
-        .winter-den-bg { background: radial-gradient(circle at top right, #37474F, #000); }
-        .summer-den-bg { background: radial-gradient(circle at top right, #F57C00, #000); }
-        .spring-den-bg { background: radial-gradient(circle at top right, #43A047, #000); }
-        .autumn-den-bg { background: radial-gradient(circle at top right, #8D6E63, #000); }
-        .playmaker-bg { background: radial-gradient(circle at top right, #E65100, #000); }
 
         .card-content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
 
@@ -327,7 +315,7 @@
 
             <div class="framework-card">
                 <h4>🌊 4. Cascading Consequences</h4>
-                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. Current actions permanently alter future probabilities, often creating a "race to the bottom."</p>
+                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. A small error now permanently alters future probabilities, often creating a "race to the bottom."</p>
                 <div class="examples">
                     <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Crisis Track), Playmaker (Defensive rotations)
                 </div>
@@ -436,7 +424,7 @@
         
         <div class="grid grid-2col">
             <div class="card">
-                <div class="card-img inheritance-bg">💎</div>
+                <img src="assets/images/inheritance-thumb.jpg" alt="Inheritance Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag digital">Browser Game</span></div>
                     <h3>INHERITANCE</h3>
@@ -458,7 +446,7 @@
             </div>
 
             <div class="card">
-                <div class="card-img tipping-point-bg">🌍</div>
+                <img src="assets/images/tippingpoint-thumb.jpg" alt="The Tipping Point Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag digital">Browser Game</span></div>
                     <h3>THE TIPPING POINT</h3>
@@ -490,7 +478,7 @@
         <div class="grid">
             
             <div class="card">
-                <div class="card-img winter-den-bg">❄️</div>
+                <img src="assets/images/winterden-thumb.jpg" alt="Winter Den Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag dev">In Development</span></div>
                     <h3>WINTER DEN</h3>
@@ -511,7 +499,7 @@
             </div>
             
              <div class="card">
-                <div class="card-img summer-den-bg">☀️</div>
+                <img src="assets/images/summerden-thumb.jpg" alt="Summer Den Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag dev">In Development</span></div>
                     <h3>SUMMER DEN</h3>
@@ -532,7 +520,7 @@
             </div>
             
             <div class="card disabled-card">
-                <div class="card-img spring-den-bg">🌸</div>
+                <img src="assets/images/springden-thumb.jpg" alt="Spring Den Concept" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>SPRING DEN</h3>
@@ -552,7 +540,7 @@
             </div>
 
             <div class="card disabled-card">
-                <div class="card-img autumn-den-bg">🍂</div>
+                <img src="assets/images/autumnden-thumb.jpg" alt="Autumn Den Concept" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>AUTUMN DEN</h3>
@@ -581,7 +569,7 @@
         
         <div class="grid">
             <div class="card">
-                <div class="card-img leverage-bg">👑</div>
+                <img src="assets/images/leverage-thumb.jpg" alt="Leverage Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag pnp">Print & Play</span></div>
                     <h3>LEVERAGE</h3>
@@ -602,7 +590,7 @@
             </div>
 
             <div class="card">
-                <div class="card-img burnout-bg">🔥</div>
+                <img src="assets/images/burnout-thumb.jpg" alt="Burnout Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag pnp">Print & Play</span></div>
                     <h3>BURNOUT</h3>
@@ -623,7 +611,7 @@
             </div>
 
             <div class="card">
-                <div class="card-img viral-bg">📈</div>
+                <img src="assets/images/viral-thumb.jpg" alt="Viral Gameplay" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag pnp">Print & Play</span></div>
                     <h3>VIRAL</h3>
@@ -653,7 +641,7 @@
         
         <div class="grid grid-2col">
             <div class="card disabled-card">
-                <div class="card-img playmaker-bg">🏀</div>
+                <img src="assets/images/playmaker-thumb.jpg" alt="Playmaker Concept" class="card-img">
                 <div class="card-content">
                     <div class="tags"><span class="tag concept">Concept</span></div>
                     <h3>PLAYMAKER</h3>
