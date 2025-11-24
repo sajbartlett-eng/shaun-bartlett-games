@@ -7,21 +7,87 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #D84315; --accent-glow: rgba(216, 67, 21, 0.5); }
-        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
-        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
-        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        :root { 
+            --bg: #0f0f0f; 
+            --text: #e0e0e0; 
+            --accent: #D84315; 
+            --accent-dim: rgba(216, 67, 21, 0.1);
+            --accent-glow: rgba(216, 67, 21, 0.5); 
+            --card-bg: #181818;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Outfit', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            line-height: 1.7; 
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h3 { color: var(--accent); margin-top: 0; }
+        
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+        
+        .game-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            padding: 20px 0; 
+            margin-bottom: 40px; 
+            color: var(--accent); 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333; 
+        }
+        
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
-        .highlight-box { background: rgba(216, 67, 21, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .mechanic-box { background: #1a1a1a; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #333; }
-        .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
-        .dl-btn:hover { background: #FF5722; transform: translateY(-2px); }
-        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
-        ul li { margin-bottom: 10px; color: #ccc; }
         strong { color: #fff; }
+
+        /* ANALYSIS GRID */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+        
+        .analysis-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-left: 3px solid var(--accent); 
+            border-radius: 8px;
+        }
+        
+        .analysis-card h4 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .analysis-card p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.6; }
+        .analysis-meta { font-size: 0.85rem; color: #888; font-style: italic; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* MECHANICS & RULES */
+        .highlight-box { background: var(--accent-dim); border-left: 4px solid var(--accent); padding: 25px; border-radius: 8px; margin: 30px 0; }
+        .mechanic-list { list-style: none; padding: 0; }
+        .mechanic-list li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; }
+        .mechanic-list strong { color: var(--accent); display: block; margin-bottom: 5px; }
+
+        .dl-btn { 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            background: var(--accent); 
+            color: #fff; 
+            padding: 18px 50px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            box-shadow: 0 0 20px var(--accent-glow); 
+            transition: all 0.2s; 
+        }
+        .dl-btn:hover { background: #FF5722; transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-glow); }
+
     </style>
 </head>
 <body>
@@ -29,63 +95,89 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>BURNOUT</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A Semi-Cooperative Game of Collective Pressure</p>
+    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A Semi-Cooperative Game of Collective Pressure</p>
     
     <div class="game-stats">
-        <span>2-5 Players</span>
-        <span>3-5 Minutes</span>
-        <span>Age 12+</span>
-        <span>Bag Building</span>
+        <span>👥 2-5 Players</span>
+        <span>⏱️ 3-5 Minutes</span>
+        <span>🧠 Age 12+</span>
+        <span>🎲 Bag Building</span>
     </div>
 
     <div class="content">
-        <p><strong>Collaboration is mandatory. Success is individual.</strong></p>
-        <p>You are a team working to complete a project before a tight deadline. Everyone draws from the same shared bag of tokens. Work too hard, and you burn out. Rest too much, and the project fails.</p>
-        <p>But there is a twist: <strong>Only the highest scoring player gets the Promotion.</strong> However, if the team fails to meet the minimum Project Quality (Grade C), <em>no one</em> gets the promotion.</p>
+        <p class="intro"><strong>Collaboration is mandatory. Success is individual.</strong></p>
+        <p>You are a team working to complete a project. Everyone draws from the same shared bag. Work too hard, and you burn out. Rest too much, and the project fails.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">The Corporate Dilemma</h3>
-            <p style="margin-bottom: 0;">You must work hard enough to beat your teammates for the promotion, but not so hard that you burn out—and you must ensure your teammates work hard enough to pass the group grade, but not so hard that <em>they</em> burn out and drag you down with them.</p>
+            <h3>The Corporate Dilemma</h3>
+            <p style="margin-bottom: 0;">You must work hard enough to beat your teammates for the Promotion, but ensure they work hard enough to pass the Group Grade. If the group fails, the promotion is cancelled. You are trapped between individual ambition and collective survival.</p>
         </div>
 
-        <h2>Five Actions</h2>
+        <h2>System Design Analysis</h2>
+        <p>How the <strong>Systems Literacy Framework</strong> is applied to model workplace friction.</p>
+
+        <div class="analysis-grid">
+            
+            <div class="analysis-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                <p><strong>The Mechanic:</strong> <em>Delegate.</em> You can move stress from your plate to a colleague's.</p>
+                <p><strong>The Insight:</strong> This isn't inherently an attack; it's a transfer of burden. Used well, it saves the team by moving load to someone with capacity. Used selfishly, it pushes a rival into burnout.</p>
+                <div class="analysis-meta">The system is indifferent to your intent. It allows you to be a team player or a saboteur using the exact same action.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚖️ Structural Tension</h4>
+                <p><strong>The Mechanic:</strong> <em>Rest vs. The Commons.</em> When you Rest, you return stress tokens to the shared bag.</p>
+                <p><strong>The Insight:</strong> To save yourself, you must pollute the shared environment. Your personal relief increases the statistical probability of everyone else failing on future turns.</p>
+                <div class="analysis-meta">Individual stability comes at the cost of environmental degradation.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>🔋 Resource Limits</h4>
+                <p><strong>The Mechanic:</strong> <em>Support.</em> You can remove a colleague's stress permanently, but only if your own stress is low.</p>
+                <p><strong>The Insight:</strong> You cannot pour from an empty cup. The game strictly enforces the idea that empathy is a resource that requires emotional surplus.</p>
+                <div class="analysis-meta">Altruism is structurally impossible when you are in survival mode.</div>
+            </div>
+
+        </div>
+
+        <h2>Rules Overview</h2>
+        
+        <h3>Five Actions</h3>
         <p>On your turn, you must choose one:</p>
-        <ul style="margin-left: 20px;">
-            <li><strong>Work:</strong> Draw from the bag. Green/Yellow tokens score points. Red tokens increase Stress.</li>
-            <li><strong>Rest:</strong> Remove 2 Stress tokens (one is removed from the game, one returns to the bag to pollute it).</li>
-            <li><strong>Delegate:</strong> Transfer 1 Stress token from your area to another player's area. (Protection at others' expense).</li>
-            <li><strong>Support:</strong> Remove 1 Stress token from another player and discard it permanently. (Requires you to have low stress).</li>
-            <li><strong>Overtime:</strong> Take two "Work" actions in a row. High risk, high reward.</li>
+        <ul class="mechanic-list">
+            <li>
+                <strong>Work (Draw)</strong>
+                Draw from the bag. Score points or accumulate Stress.
+            </li>
+            <li>
+                <strong>Rest (Pollute)</strong>
+                Remove 2 Stress from yourself. One is removed permanently; the other is returned to the bag, making the remaining work harder for everyone.
+            </li>
+            <li>
+                <strong>Delegate (Transfer)</strong>
+                Move 1 Stress token from you to another player. Safe for the bag, dangerous for the recipient.
+            </li>
+            <li>
+                <strong>Support (Sacrifice)</strong>
+                Remove 1 Stress token from another player and discard it permanently. Requires you to have low stress (<3).
+            </li>
+            <li>
+                <strong>Overtime (Risk)</strong>
+                Take two "Work" actions in a row. High efficiency, massive risk of instant burnout.
+            </li>
         </ul>
 
-        <h2>Stress & Burnout Mechanics</h2>
-        
-        <div class="mechanic-box">
-            <h4 style="color: #fff; margin: 0 0 15px 0;">The Stressed State (3-4 Tokens)</h4>
-            <p style="margin-bottom: 0;">If you have 3 or 4 stress tokens, you are <strong>Stressed</strong>. You cannot keep any new work tokens you draw (they are discarded), and you lose the emotional capacity to <strong>Support</strong> others.</p>
-        </div>
+        <h3>The Burnout State</h3>
+        <p>If you hit <strong>5 Stress Tokens</strong>, you Burn Out immediately.</p>
+        <ul>
+            <li><strong>The Penalty:</strong> You must discard 3 Work tokens (your score).</li>
+            <li><strong>The Restriction:</strong> You lose the ability to Work or Support. You become a drain on the team until you recover.</li>
+        </ul>
 
-        <div class="mechanic-box">
-            <h4 style="color: #fff; margin: 0 0 15px 0;">The Burnout State (5+ Tokens)</h4>
-            <p>If you hit 5 stress tokens, you <strong>Burn Out</strong> immediately.</p>
-            <ul style="margin-bottom: 0;">
-                <li><strong>Penalty:</strong> You must discard 3 Work tokens from your score pile.</li>
-                <li><strong>Restriction:</strong> You cannot Work or Support. You can only Rest or Delegate until your stress drops below 5.</li>
-            </ul>
-        </div>
-
-        <h2>Why It Works</h2>
-        <p>The game is structurally designed to create three outcomes:</p>
-        <ol style="color: #ccc; margin-left: 20px; margin-bottom: 20px;">
-            <li><strong>Success + Success:</strong> The team passes, and a high achiever wins.</li>
-            <li><strong>Sacrifice + Promotion:</strong> Some players sacrifice their score to ensure the project passes, allowing a "selfish" player to win.</li>
-            <li><strong>Failure + Failure:</strong> Greed causes the team to crash; nobody wins.</li>
-        </ol>
-
-        <p>The inclusion of the <strong>Delegate</strong> action allows players to actively push colleagues toward burnout to save themselves, turning a cooperative puzzle into a social deduction battleground over a span of just 5 minutes.</p>
-
-        <div style="text-align: center; margin-top: 60px;">
-            <a href="burnout_rules.pdf" class="dl-btn" download>📄 Download Rules</a>
+        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
+            <a href="burnout_rules.pdf" class="dl-btn" download>📄 Download Rules PDF</a>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Print & Play • 2 Pages • A4/Letter</p>
         </div>
     </div>
 
