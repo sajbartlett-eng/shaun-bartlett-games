@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INHERITANCE: Estate Edition | Game Details</title>
+    <title>Inheritance | Game Details</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root { 
-            --bg: #1a1a1a; 
+            --bg: #0f0f0f; 
             --text: #e0e0e0; 
-            --accent: #7Cb342; /* Game Grass Color */
-            --dark-accent: #2E7D32; /* Game UI Color */
-            --gold: #FFD700; /* Game Bonus Color */
+            --accent: #2E7D32; 
+            --accent-dim: rgba(46, 125, 50, 0.1);
+            --accent-glow: rgba(46, 125, 50, 0.5); 
+            --card-bg: #181818;
         }
+        
+        * { box-sizing: border-box; }
         
         body { 
             background: var(--bg); 
@@ -25,164 +28,153 @@
             line-height: 1.7; 
         }
 
-        h1 { 
-            font-family: 'Space Grotesk', sans-serif; 
-            font-size: 3rem; 
-            color: #fff; 
-            line-height: 1; 
-            margin-bottom: 5px; 
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            color: var(--accent);
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 40px;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        h2, h3 { 
-            font-family: 'Space Grotesk', sans-serif; 
-            color: var(--accent); 
-            margin-top: 40px; 
-            margin-bottom: 15px; 
-        }
-
-        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h3 { color: var(--accent); margin-top: 0; }
+        
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-
+        
         .game-stats { 
-            display: flex; 
-            gap: 30px; 
-            padding-bottom: 20px; 
-            margin-bottom: 30px; 
-            color: var(--dark-accent); 
-            font-weight: 700; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            padding: 20px 0; 
+            margin-bottom: 40px; 
+            color: var(--accent); 
+            font-weight: 600; 
             font-size: 1.1rem; 
+            border-top: 1px solid #333;
             border-bottom: 1px solid #333; 
-            text-transform: uppercase;
         }
-
+        
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
+        strong { color: #fff; }
 
-        .highlight-box { 
-            background: rgba(46, 125, 50, 0.2); 
-            border-left: 4px solid var(--dark-accent); 
-            padding: 20px; 
-            border-radius: 8px; 
-            margin: 30px 0; 
+        /* ANALYSIS GRID */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+        
+        .analysis-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-left: 3px solid var(--accent); 
+            border-radius: 8px;
         }
+        
+        .analysis-card h4 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .analysis-card p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.6; }
+        .analysis-meta { font-size: 0.85rem; color: #888; font-style: italic; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* MECHANICS & RULES */
+        .highlight-box { background: var(--accent-dim); border-left: 4px solid var(--accent); padding: 25px; border-radius: 8px; margin: 30px 0; }
+        
+        .mechanic-list { list-style: none; padding: 0; }
+        .mechanic-list li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; }
+        .mechanic-list strong { color: var(--accent); display: block; margin-bottom: 5px; }
+
+        .play-btn { 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            background: var(--accent); 
+            color: #fff; 
+            padding: 18px 50px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            box-shadow: 0 0 20px var(--accent-glow); 
+            transition: all 0.2s; 
+        }
+        .play-btn:hover { background: #43A047; transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-glow); }
 
         .tech-box {
-            background: #222;
+            background: #151515;
             border: 1px solid #333;
             padding: 20px;
             border-radius: 8px;
-            margin: 30px 0;
-            font-size: 0.95rem;
-        }
-
-        .play-btn { 
-            display: inline-block; 
-            background: var(--accent); 
-            color: #000; 
-            padding: 16px 40px; 
-            text-decoration: none; 
-            border-radius: 50px; 
-            font-weight: 800; 
-            margin-top: 40px; 
-            box-shadow: 0 4px 0 var(--dark-accent); 
-            transition: all 0.2s; 
-            text-transform: uppercase; 
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--dark-accent); }
-        .play-btn:active { transform: translateY(2px); box-shadow: none; }
-
-        .asset-list { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .asset-tag { 
-            background: #222; 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-            font-size: 0.95rem; 
-            border: 1px solid #444; 
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .gold-text { color: var(--gold); font-weight: bold; }
-        
-        .footer-credits {
-            margin-top: 80px;
-            border-top: 1px solid #333;
-            padding-top: 20px;
+            margin-top: 40px;
             font-size: 0.9rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
+            color: #888;
         }
+
     </style>
 </head>
 <body>
 
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
-    <h1>Inheritance</h1>
-    <div class="subtitle">Estate Edition</div>
+    <h1>INHERITANCE</h1>
+    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">The Estate Edition</p>
     
     <div class="game-stats">
-        <span>2 Players (Local)</span>
-        <span>~3 Mins</span>
-        <span>HTML5 Canvas</span>
-        <span>Touch Optimized</span>
+        <span>👥 2 Players</span>
+        <span>⏱️ 3 Minutes</span>
+        <span>🧠 Age 10+</span>
+        <span>🎮 Browser Game</span>
     </div>
 
     <div class="content">
-        <p>Two siblings. One Estate. A battle of wits using the classic "Cut and Choose" protocol. This is a digital implementation of the fair division problem, forcing players to confront the mathematical difficulty of partitioning value in real-time.</p>
-
-        <h2>The Three-Phase Loop</h2>
-        
-        <h3>Phase 1: Develop (Unknown Roles)</h3>
-        <p>Players <strong>alternate turns</strong> placing assets from a limited shared pool onto a 6×6 grid. Crucially, <strong>neither player knows their role yet</strong>. You must build value without knowing if you will be the one dividing it or the one choosing it.</p>
-        <div class="asset-list">
-            <span class="asset-tag">🏡 Manor (x2) — <strong>5 pts</strong></span>
-            <span class="asset-tag">🚜 Barn (x4) — <strong>2 pts</strong></span>
-            <span class="asset-tag">🪵 Shed (x4) — <strong>1 pt</strong></span>
-        </div>
-
-        <h3>Phase 2: The Cut</h3>
-        <p>Once the estate is fully built, roles are assigned via <strong>Rock, Paper, Scissors</strong>. The loser becomes the <strong>Cutter</strong>. Under a 60-second timer, they must draw a fence line from edge-to-edge, dividing the estate into two distinct plots. The goal is to make the split as equal as possible to prevent the opponent from getting a better deal.</p>
-
-        <h3>Phase 3: The Choice</h3>
-        <p>The winner of RPS becomes the <strong>Chooser</strong>. They survey the two plots and select the one with the highest total value (Area + Assets). The Cutter is left with the remainder.</p>
+        <p class="intro"><strong>Fair division is mathematically hard.</strong></p>
+        <p>Two siblings. One Estate. A battle of wits using the classic "Cut and Choose" protocol. This is a digital implementation of the fair division problem, forcing players to confront the difficulty of partitioning value in real-time.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">Mechanic: The Fairness Challenge</h3>
-            <p style="margin-bottom: 0;">If the Chooser exploits a bad cut and wins by >1 point, the game offers a redemption challenge. They must redraw the fence to make the plots perfectly even (≤1 point difference) within 30 seconds to win the <strong>"Fair Sibling"</strong> award.</p>
+            <h3>The Fairness Challenge</h3>
+            <p style="margin-bottom: 0;">If the Chooser exploits a bad cut and wins by a large margin, the game offers a redemption arc: <strong>The Fairness Challenge.</strong> The winner must redraw the fence to make the plots perfectly even (≤1 point difference). It proves that winning isn't about greed; it's about precision.</p>
         </div>
 
-        <h2>House Rules (Variants)</h2>
-        <ul style="color: #ccc; margin-left: 20px; list-style-type: none; padding: 0;">
-            <li style="margin-bottom: 10px;"><strong>🪨 Broken Ground:</strong> 4 random Rocks (0 pts) block the grid, lowering land value.</li>
-            <li style="margin-bottom: 10px;"><strong>🏙️ Prime Bonus:</strong> Two adjacent Manors grant a <span class="gold-text">+2 Point Bonus</span>.</li>
-            <li style="margin-bottom: 10px;"><strong>👁️ Open Roles:</strong> Players know their role (Cutter/Chooser) <em>during</em> placement, allowing for aggressive counter-play.</li>
+        <h2>System Design Analysis</h2>
+        <p>How the <strong>Systems Literacy Framework</strong> is applied to game theory.</p>
+        
+        <div class="analysis-grid">
+            
+            <div class="analysis-card">
+                <h4>⚡ Accessible Complexity</h4>
+                <p><strong>The Mechanic:</strong> <em>Cut and Choose.</em> One player draws the line; the other chooses the side.</p>
+                <p><strong>The Insight:</strong> We learn this rule as children sharing cake. Here, it is applied to a complex spatial grid. It creates a perfect Nash Equilibrium without explaining a single rule of math. The complex behavior emerges from a simple interface.</p>
+            </div>
+
+            <div class="analysis-card">
+                <h4>🧠 Lean Decision Architecture</h4>
+                <p><strong>The Mechanic:</strong> <em>The 60-Second Cut.</em> Players have no inventory, no stats, and no dice.</p>
+                <p><strong>The Insight:</strong> The game removes all administrative lag. The "Cognitive Budget" is spent entirely on spatial valuation and predicting the opponent's greed.</p>
+                <div class="analysis-meta">High Agency, Zero Maintenance.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                <p><strong>The Mechanic:</strong> <em>The Ideal Cut Algorithm.</em> At the end of the match, players can click "Show Ideal Cut."</p>
+                <p><strong>The Insight:</strong> The game runs a depth-first search to prove that a fair cut <em>was</em> possible. If the players failed to find it, the system reveals that human error—not the game design—was the limiting factor.</p>
+            </div>
+
+        </div>
+
+        <h2>Rules Overview</h2>
+        
+        <h3>The Three-Phase Loop</h3>
+        <ul class="mechanic-list">
+            <li>
+                <strong>Phase 1: Develop (Blind)</strong>
+                Players alternate placing assets (Manors, Barns, Sheds) onto the grid. <strong>Crucially, you do not know your role yet.</strong> You must build value without knowing if you will be the one dividing it or the one choosing it.
+            </li>
+            <li>
+                <strong>Phase 2: The Cut</strong>
+                Roles are assigned via Rock, Paper, Scissors. The <strong>Cutter</strong> draws a single line across the estate. They want to make the piles equal to prevent the opponent from getting a better deal.
+            </li>
+            <li>
+                <strong>Phase 3: The Choice</strong>
+                The <strong>Chooser</strong> picks the most valuable plot. The Cutter is left with the remainder.
+            </li>
         </ul>
 
-        <div class="tech-box">
-            <h3 style="margin-top: 0; font-size: 1.2rem;">Technical Highlight: Deterministic Solver</h3>
-            <p>The game features a "Show Ideal Cut" button at the end of the match. This triggers a depth-first search algorithm (`performSmartSearch`) that analyzes the grid state to find the mathematically optimal fence line that minimizes the difference between the two plots, proving whether a fair cut was possible.</p>
-        </div>
-
-        <div style="text-align: center; margin-top: 60px;">
+        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
             <a href="Inheritance.html" class="play-btn">▶ Play Prototype</a>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Works on Mobile & Desktop</p>
         </div>
 
-        <div class="footer-credits">
-            Game Design by Shaun Bartlett © 2025
+        <div class="tech-box">
+            <strong>Technical Note:</strong> The game uses a custom flood-fill algorithm to validate the "Cut" in real-time and a depth-first search solver to calculate the "Ideal Cut" post-game.
         </div>
     </div>
 

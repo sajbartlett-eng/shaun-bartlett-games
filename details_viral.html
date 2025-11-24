@@ -7,21 +7,88 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #C62828; --accent-glow: rgba(198, 40, 40, 0.5); }
-        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
-        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
-        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        :root { 
+            --bg: #0f0f0f; 
+            --text: #e0e0e0; 
+            --accent: #C62828; 
+            --accent-dim: rgba(198, 40, 40, 0.1);
+            --accent-glow: rgba(198, 40, 40, 0.5); 
+            --card-bg: #181818;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Outfit', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            line-height: 1.7; 
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h3 { color: var(--accent); margin-top: 0; }
+        
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+        
+        .game-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            padding: 20px 0; 
+            margin-bottom: 40px; 
+            color: var(--accent); 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333; 
+        }
+        
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
-        .highlight-box { background: rgba(198, 40, 40, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .action-box { background: #1a1a1a; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 3px solid var(--accent); }
-        .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
-        .dl-btn:hover { background: #E53935; transform: translateY(-2px); }
-        .image-placeholder { background: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
-        ul { color: #ccc; margin-left: 20px; }
-        li { margin-bottom: 10px; }
+        strong { color: #fff; }
+
+        /* ANALYSIS GRID */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+        
+        .analysis-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-left: 3px solid var(--accent); 
+            border-radius: 8px;
+        }
+        
+        .analysis-card h4 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .analysis-card p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.6; }
+        .analysis-meta { font-size: 0.85rem; color: #888; font-style: italic; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* MECHANICS & RULES */
+        .highlight-box { background: var(--accent-dim); border-left: 4px solid var(--accent); padding: 25px; border-radius: 8px; margin: 30px 0; }
+        
+        .mechanic-list { list-style: none; padding: 0; }
+        .mechanic-list li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; }
+        .mechanic-list strong { color: var(--accent); display: block; margin-bottom: 5px; }
+
+        .dl-btn { 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            background: var(--accent); 
+            color: #fff; 
+            padding: 18px 50px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            box-shadow: 0 0 20px var(--accent-glow); 
+            transition: all 0.2s; 
+        }
+        .dl-btn:hover { background: #E53935; transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-glow); }
+
     </style>
 </head>
 <body>
@@ -29,69 +96,81 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>VIRAL</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A 5-Minute Game of Truth vs. Attention</p>
+    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A 5-Minute Game of Truth vs. Attention</p>
     
     <div class="game-stats">
-        <span>4-10 Players</span>
-        <span>5 Minutes</span>
-        <span>Age 10+</span>
-        <span>Paper + Pen</span>
+        <span>👥 4-10 Players</span>
+        <span>⏱️ 5 Minutes</span>
+        <span>🧠 Age 10+</span>
+        <span>📝 Paper + Pen</span>
     </div>
 
     <div class="content">
-        <p>Start with a true fact. Pass it around the table simultaneously. Each person can Pass (ignore it), Share (amplify it), or Update (rewrite it). Watch truth degrade into viral fiction under the pressure of a 45-second timer.</p>
-
-        <h2>The Rules</h2>
-        <p>Each player writes a true fact at the top of their page (the "Post"). Everyone passes their sheet to the left at the same time. When you receive a sheet, you read <strong>only the most recent entry</strong> and choose one action:</p>
-
-        <div class="action-box">
-            <h4 style="color: var(--accent); margin: 0 0 10px 0;">PASS (P)</h4>
-            <p style="margin: 0;">You do not support this content. <strong>Three consecutive Pass actions</strong> bury (cancel) the latest Post or Update. A buried post is crossed out and cannot generate points.</p>
-        </div>
-
-        <div class="action-box">
-            <h4 style="color: var(--accent); margin: 0 0 10px 0;">SHARE (✓)</h4>
-            <p style="margin: 0;">Amplify the content as-is. This guarantees you <strong>+1 Point</strong>, provided the Post isn't buried later by consecutive passes.</p>
-        </div>
-
-        <div class="action-box">
-            <h4 style="color: var(--accent); margin: 0 0 10px 0;">UPDATE</h4>
-            <p style="margin: 0;">Rewrite the previous version to be more interesting. You can shift the tone, narrative, or perspective, but you cannot change the subject entirely. Illegal updates are treated as Buried.</p>
-        </div>
+        <p class="intro"><strong>Watch truth degrade into fiction in real time.</strong></p>
+        <p>Start with a true fact. Pass it around the table. Each player can Pass (ignore it), Share (amplify it), or Update (rewrite it). Under the pressure of a 45-second timer, "boring" truth dies and sensational fiction goes viral.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">Victory Condition</h3>
-            <p style="margin-bottom: 0;">The game lasts for <strong>two full rotations</strong> (everyone sees every sheet twice). At the end, players total their points:</p>
-            <ul style="margin-top: 10px; margin-bottom: 0;">
-                <li><strong>+1 Point</strong> for every "Share" you made on any sheet.</li>
-                <li><strong>+3 Points</strong> if your original sheet is "Trending" (has the highest total shares).</li>
-            </ul>
+            <h3>The Victory Condition</h3>
+            <p style="margin-bottom: 0;">The game isn't about being right; it's about being <strong>Trending</strong>. The player whose sheet gets the most "Shares" wins +3 Bonus Points. Truth is permissible, but only if it's interesting enough to survive the algorithm.</p>
         </div>
 
-        <h2>What Happens</h2>
-        <p><strong>Original Post (True):</strong> "Wombat poop is cube-shaped."</p>
-        <p><strong>Rotation 1 (Pass):</strong> Player writes "P". (Boring).</p>
-        <p><strong>Rotation 2 (Update):</strong> Player writes: "Wombat poop is cube-shaped and used as dice by Australian gamblers."</p>
-        <p><strong>Rotation 3-5 (Shares):</strong> Players see the amusing update and write "✓". The fiction goes viral.</p>
-        <p><strong>Result:</strong> The truth was ignored. The lie scored points.</p>
+        <h2>System Design Analysis</h2>
+        <p>How the <strong>Systems Literacy Framework</strong> is applied to model misinformation.</p>
 
-        <div class="image-placeholder">
-            [Content Mutation Example Photo]
+        <div class="analysis-grid">
+            
+            <div class="analysis-card">
+                <h4>🌊 Cascading Consequences</h4>
+                <p><strong>The Mechanic:</strong> <em>Limited Visibility.</em> You fold the paper so you can only read the most recent entry, never the original.</p>
+                <p><strong>The Insight:</strong> Context is structurally erased. Players react to the simulation of the truth, not the truth itself. One "Update" permanently alters the baseline reality for all future players.</p>
+                <div class="analysis-meta">Errors and sensationalism compound over time.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                <p><strong>The Mechanic:</strong> <em>The Trending Bonus.</em> The scoring system rewards engagement (Shares), not accuracy.</p>
+                <p><strong>The Insight:</strong> The game forces you to realize that "lying" is often the rational choice in an attention economy. You become a sensationalist not because you are evil, but because you want to win.</p>
+                <div class="analysis-meta">Incentives drive behavior. If you reward attention, you get fiction.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚡ Accessible Complexity</h4>
+                <p><strong>The Mechanic:</strong> <em>The "Pass" Pile.</em> If three people "Pass" consecutively, the post is Buried (crossed out).</p>
+                <p><strong>The Insight:</strong> This functions exactly like a social media downranking algorithm. You don't need code to teach how algorithms suppress low-engagement content; you just need a pen and a rule about boredom.</p>
+                <div class="analysis-meta">Modeling complex algorithmic bias using analog tools.</div>
+            </div>
+
         </div>
 
-        <h2>The Mechanics of Misinformation</h2>
+        <h2>Rules Overview</h2>
         
-        <h3>Information Cascades</h3>
-        <p>Players are only allowed to read the <strong>most recent entry</strong> on the sheet. There is no time to check the original source. You react only to what is immediately in front of you, simulating how misinformation spreads without context.</p>
+        <h3>The Core Loop</h3>
+        <p>Each player writes a true fact at the top of their page. Everyone passes their sheet to the left simultaneously. When you receive a sheet, you read <strong>only the most recent entry</strong> and choose one action:</p>
+        
+        <ul class="mechanic-list">
+            <li>
+                <strong>PASS (P)</strong>
+                You do not support this content. <strong>Three consecutive Pass actions</strong> bury (cancel) the latest Post. A buried post generates zero points.
+            </li>
+            <li>
+                <strong>SHARE (✓)</strong>
+                Amplify the content as-is. This guarantees you <strong>+1 Point</strong>, provided the Post isn't buried later by consecutive passes.
+            </li>
+            <li>
+                <strong>UPDATE</strong>
+                Rewrite the previous version to be more interesting. You can shift the tone, narrative, or perspective, but you cannot change the subject entirely.
+            </li>
+        </ul>
 
-        <h3>The Timer Pressure</h3>
-        <p>With only 30-60 seconds per turn, fact-checking is impossible. If you don't finish writing an Update before the timer ends, it is crossed out. This pressure forces rapid, emotional reactions over critical thinking.</p>
+        <h3>The Outcome</h3>
+        <p><strong>Original Post (True):</strong> "Wombat poop is cube-shaped."<br>
+        <strong>Rotation 1 (Pass):</strong> Player writes "P". (Boring).<br>
+        <strong>Rotation 2 (Update):</strong> Player writes: "Wombat poop is cube-shaped and used as dice by Australian gamblers."<br>
+        <strong>Rotation 3-5 (Shares):</strong> Players see the amusing update and write "✓". The fiction goes viral.</p>
 
-        <h3>The Incentive Structure</h3>
-        <p>To win, you need your sheet to get the most shares (Trending Bonus). This incentivizes Authors and Updaters to make content sensational rather than accurate. Truth is permissible, but only if it's interesting enough to survive.</p>
-
-        <div style="text-align: center; margin-top: 60px;">
-            <a href="viral_rules.pdf" class="dl-btn" download>📄 Download Rules</a>
+        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
+            <a href="viral_rules.pdf" class="dl-btn" download>📄 Download Rules PDF</a>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Print & Play • 1 Page • A4/Letter</p>
         </div>
     </div>
 

@@ -7,21 +7,89 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #8B0000; --accent-glow: rgba(139, 0, 0, 0.5); }
-        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 40px 20px; max-width: 900px; margin: 0 auto; line-height: 1.7; }
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; color: #fff; line-height: 1; margin-bottom: 10px; }
-        h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--accent); margin-top: 40px; margin-bottom: 15px; }
-        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; }
+        :root { 
+            --bg: #0f0f0f; 
+            --text: #e0e0e0; 
+            --accent: #8B0000; 
+            --accent-dim: rgba(139, 0, 0, 0.1);
+            --accent-glow: rgba(139, 0, 0, 0.5); 
+            --card-bg: #181818;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Outfit', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            line-height: 1.7; 
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h3 { color: var(--accent); margin-top: 0; }
+        
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
         .back-link:hover { color: var(--accent); }
-        .game-stats { display: flex; gap: 30px; padding-bottom: 20px; margin-bottom: 30px; color: var(--accent); font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #333; }
+        
+        .game-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            padding: 20px 0; 
+            margin-bottom: 40px; 
+            color: var(--accent); 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333; 
+        }
+        
         p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
-        .highlight-box { background: rgba(139, 0, 0, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin: 30px 0; }
-        .win-condition { background: #1a1a1a; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid var(--accent); }
-        .dl-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 40px; box-shadow: 0 0 20px var(--accent-glow); transition: all 0.2s; }
-        .dl-btn:hover { background: #A52A2A; transform: translateY(-2px); }
-        .image-placeholder { background: #1a1a1a; height: 350px; display: flex; align-items: center; justify-content: center; margin: 40px 0; border-radius: 12px; color: #555; font-size: 1.2rem; border: 1px solid #333; }
-        ul li { margin-bottom: 10px; color: #ccc; }
         strong { color: #fff; }
+
+        /* ANALYSIS GRID */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+        
+        .analysis-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-left: 3px solid var(--accent); 
+            border-radius: 8px;
+        }
+        
+        .analysis-card h4 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .analysis-card p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.6; }
+        .analysis-meta { font-size: 0.85rem; color: #888; font-style: italic; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* MECHANICS & RULES */
+        .highlight-box { background: var(--accent-dim); border-left: 4px solid var(--accent); padding: 25px; border-radius: 8px; margin: 30px 0; }
+        .win-condition { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 2px solid #555; }
+        
+        .mechanic-list { list-style: none; padding: 0; }
+        .mechanic-list li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; }
+        .mechanic-list strong { color: var(--accent); display: block; margin-bottom: 5px; }
+
+        .dl-btn { 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            background: var(--accent); 
+            color: #fff; 
+            padding: 18px 50px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            box-shadow: 0 0 20px var(--accent-glow); 
+            transition: all 0.2s; 
+        }
+        .dl-btn:hover { background: #A52A2A; transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-glow); }
+
     </style>
 </head>
 <body>
@@ -29,67 +97,87 @@
     <a href="index.html" class="back-link">← Back to Portfolio</a>
 
     <h1>LEVERAGE</h1>
-    <p style="color: #888; font-size: 1.1rem; margin-bottom: 30px;">A Card Game of Power, Gold, and Betrayal</p>
+    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A Card Game of Power, Gold, and Betrayal</p>
     
     <div class="game-stats">
-        <span>4-10 Players</span>
-        <span>15-30 Minutes</span>
-        <span>Age 12+</span>
-        <span>Standard Deck</span>
+        <span>👥 4-10 Players</span>
+        <span>⏱️ 20 Minutes</span>
+        <span>🧠 Age 12+</span>
+        <span>🃏 Standard Deck</span>
     </div>
 
     <div class="content">
-        <p>The old King is dead. The Realm lies scattered and in chaos. Using only a standard deck of playing cards, players must use diplomacy, warfare, and betrayal to rise from the ashes. It is Game of Thrones in 20 minutes.</p>
-
-        <h2>Setup & The Rise to Power</h2>
-        <p>There are no permanent rulers at the start. Every player begins the game as a <strong>Mercenary</strong> with a hand of only 3 cards. To gain power, you must navigate the <strong>Political Phase</strong> to become a Noble or seize a crown to become a King.</p>
+        <p class="intro"><strong>The old King is dead. The Realm lies scattered.</strong></p>
+        <p>Using only a standard deck of cards, <em>Leverage</em> models the fragility of feudal power. It is a game where the "strongest" player is often the most vulnerable, and where loyalty is simply a transaction waiting for a better offer.</p>
 
         <div class="highlight-box">
-            <h3 style="margin-top: 0; color: #fff;">Three Victory Paths</h3>
+            <h3>Three Victory Paths</h3>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Winning King</h4>
-                <p style="margin: 0;">Be the final ruler crowned. Survive the "War of Kings" or politically unify the realm by holding the allegiance of all other players.</p>
+                <strong style="color: var(--accent);">👑 The Winning King</strong>
+                Be the final ruler crowned. Requires spending gold to destroy rivals.
             </div>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Wealthiest Individual</h4>
-                <p style="margin: 0;">Accumulate the most Gold cards (2-10) in your hand when the game ends. Even a Mercenary can win if they are rich enough.</p>
+                <strong style="color: var(--accent);">💰 The Wealthiest Individual</strong>
+                Have the most Gold when the game ends. Requires hoarding gold and avoiding conflict.
             </div>
             <div class="win-condition">
-                <h4 style="color: var(--accent); margin: 0 0 10px 0;">The Loyal Noble</h4>
-                <p style="margin: 0;">Be a Noble holding Allegiance to the Winning King when the game ends. Sometimes the smartest play is to serve the strongest master.</p>
+                <strong style="color: var(--accent);">⚔️ The Loyal Noble</strong>
+                Be a sworn protector of the Winning King. Requires betting on the right horse.
             </div>
         </div>
 
-        <h2>Core Mechanics</h2>
+        <h2>System Design Analysis</h2>
+        <p>How the <strong>Systems Literacy Framework</strong> is applied to model political instability.</p>
+
+        <div class="analysis-grid">
+            
+            <div class="analysis-card">
+                <h4>⚖️ Structural Tension</h4>
+                <p><strong>The Mechanic:</strong> <em>Gold is Ammo vs. Gold is Victory.</em> To defend your crown, you must spend Gold in battles. To win the "Wealthiest" victory, you must hoard it.</p>
+                <p><strong>The Insight:</strong> Power is expensive. The game creates a "Winner's Curse" where fighting for the throne often bankrupts you, handing victory to the Mercenary who stayed out of the fight.</p>
+                <div class="analysis-meta">The incentives for <em>holding</em> power are at war with the incentives for <em>winning</em>.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>🔗 Asymmetric Interdependence</h4>
+                <p><strong>The Mechanic:</strong> <em>Crown Collapse.</em> A King has a larger hand size (7) than a Noble (5), but if a King ever loses their last Noble, they lose the game immediately.</p>
+                <p><strong>The Insight:</strong> The powerful are held hostage by the weak. A Noble can "Renounce" their King, stripping them of legitimacy. This gives the "weaker" player immense leverage over the ruler.</p>
+                <div class="analysis-meta">Power is not a trait of the leader; it is a resource granted by the followers.</div>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                <p><strong>The Mechanic:</strong> <em>The Yield.</em> In any battle, you can concede before cards are revealed to keep your Gold.</p>
+                <p><strong>The Insight:</strong> Honor is a luxury. The system incentivizes rational cowardice. It is often mathematically optimal to surrender and stay rich than to fight and be right.</p>
+                <div class="analysis-meta">The game rewards survival instincts over heroism.</div>
+            </div>
+
+        </div>
+
+        <h2>Rules Overview</h2>
         
         <h3>Status & Treasury</h3>
-        <p>Your power is defined by your <strong>Treasury</strong>—the maximum number of cards you can hold in your hand. If you exceed this limit, you must discard immediately.</p>
-        <ul>
-            <li><strong>Mercenary (Treasury 3):</strong> You serve no one. Your goal is to be hired or seize power.</li>
-            <li><strong>Noble (Treasury 5):</strong> You have pledged Allegiance to a King. You provide them military strength.</li>
-            <li><strong>King (Treasury 7):</strong> You hold the loyalty of others, but you are the target of every Challenger.</li>
+        <p>Your political status dictates your <strong>Treasury</strong> (Hand Size Limit). If you exceed it, you must discard immediately.</p>
+        <ul class="mechanic-list">
+            <li><strong>Mercenary (3 Cards):</strong> The default state. Flexible but weak.</li>
+            <li><strong>Noble (5 Cards):</strong> Sworn to a King. Protected, but subservient.</li>
+            <li><strong>King (7 Cards):</strong> The ruler. High capacity, but fragile.</li>
         </ul>
 
-        <h3>Leverage Cards</h3>
-        <p>During the Political Phase, players use face cards to manipulate the game:</p>
-        <ul>
-            <li><strong>Jacks (The Threat):</strong> Initiate a Challenge against a King to steal their crown.</li>
-            <li><strong>Red Queens (Cunning):</strong> Draw 4 cards to rapidly cycle through the deck and find Gold.</li>
-            <li><strong>Black Queens (Blackmail):</strong> Force a target player to hand over their highest value Gold card.</li>
+        <h3>The Political Phase</h3>
+        <p>Players use face cards to manipulate the board state:</p>
+        <ul class="mechanic-list">
+            <li><strong>Jacks (The Threat):</strong> Challenge a King. If you win, you steal their crown.</li>
+            <li><strong>Red Queens (Cunning):</strong> Draw 4 cards. A rapid influx of resources.</li>
+            <li><strong>Black Queens (Blackmail):</strong> Force a player to give you their highest Gold card.</li>
         </ul>
 
-        <div class="image-placeholder">
-            [Image: Card Layout showing King, Noble, and Mercenary Treasury limits]
-        </div>
+        <h3>The War of Kings</h3>
+        <p>When the deck runs out, diplomacy ends. The remaining Kingdoms must battle until only one remains. Nobles must decide whether to fund their King's war with their own gold or let them fall.</p>
 
-        <h3>Battle & The War of Kings</h3>
-        <p>Conflict is resolved through bidding hidden Gold. Players may <strong>Yield</strong> before cards are revealed to save their Gold, or fight to the death. In the endgame <strong>War of Kings</strong>, diplomacy ends. Kingdoms clash until only one remains, and Nobles must decide: support their King with gold, or watch them die to trigger a succession crisis.</p>
-
-        <h2>What Emerges</h2>
-        <p>The game creates a distinct tension between the three victory paths. To be the <strong>Winning King</strong>, you must spend Gold to win battles. To be the <strong>Wealthiest Individual</strong>, you must hoard Gold and avoid conflict. To be a <strong>loyal Noble</strong>, you must bet on the right horse—and be willing to betray them if they stumble.</p>
-
-        <div style="text-align: center; margin-top: 60px;">
-            <a href="leverage_rules.pdf" class="dl-btn" download>📄 Download Rules</a>
+        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
+            <a href="leverage_rules.pdf" class="dl-btn" download>📄 Download Rules PDF</a>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Print & Play • 4-10 Players • Standard Deck</p>
         </div>
     </div>
 
