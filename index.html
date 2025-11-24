@@ -167,7 +167,7 @@
         .section-title { font-size: 2rem; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
         .section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
 
-        /* FRAMEWORK GRID (Reordered) */
+        /* FRAMEWORK GRID */
         .framework-header-sub { 
             color: var(--text-muted); 
             font-family: 'Space Grotesk', sans-serif; 
@@ -237,9 +237,9 @@
 
         /* UPDATED IMAGE STYLES: Taller & Zoom */
         .card-img-wrapper {
-            height: 260px; /* Increased height to show more art */
+            height: 260px; 
             width: 100%;
-            overflow: hidden; /* Vital for the zoom effect */
+            overflow: hidden; 
             position: relative;
         }
 
@@ -249,11 +249,11 @@
             object-fit: cover;
             display: block;
             background-color: #222;
-            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth zoom */
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .card:hover .card-img {
-            transform: scale(1.05); /* Gentle zoom on hover */
+            transform: scale(1.05);
         }
 
         /* EMOJI FALLBACK STYLES */
@@ -443,6 +443,45 @@
                 <p>By inhabiting the "bad guy" role, players learn that systemic failures are rarely caused by villains. They are caused by rational actors making logical choices within broken structures.</p>
             </div>
 
+        </div>
+    </section>
+
+    <section class="section" id="applications">
+        <div class="section-header">
+            <h2 class="section-title">Browse by Application</h2>
+            <p class="section-desc">Find games designed for your specific context.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
+            
+            <a href="family-classroom.html" style="text-decoration: none;">
+                <div class="framework-card" style="cursor: pointer; transition: transform 0.2s; border-left: 3px solid #FFB74D;">
+                    <h4 style="color: #FFB74D;">Family & Classroom</h4>
+                    <p style="color: #aaa; margin: 0;">Ages 10+ | Home game nights and K-8 education.</p>
+                </div>
+            </a>
+            
+            <a href="high-school-college.html" style="text-decoration: none;">
+                <div class="framework-card" style="cursor: pointer; transition: transform 0.2s; border-left: 3px solid #64B5F6;">
+                    <h4 style="color: #64B5F6;">High School & College</h4>
+                    <p style="color: #aaa; margin: 0;">Ages 14+ | Civic literacy, ethics, systems thinking.</p>
+                </div>
+            </a>
+            
+            <a href="professional.html" style="text-decoration: none;">
+                <div class="framework-card" style="cursor: pointer; transition: transform 0.2s; border-left: 3px solid var(--accent);">
+                    <h4 style="color: var(--accent);">Professional Development</h4>
+                    <p style="color: #aaa; margin: 0;">Corporate training, leadership, organizational dynamics.</p>
+                </div>
+            </a>
+            
+            <a href="therapeutic.html" style="text-decoration: none;">
+                <div class="framework-card" style="cursor: pointer; transition: transform 0.2s; border-left: 3px solid #9370DB;">
+                    <h4 style="color: #9370DB;">Therapeutic Practice</h4>
+                    <p style="color: #aaa; margin: 0;">Tools for counselors, therapists, social workers.</p>
+                </div>
+            </a>
+            
         </div>
     </section>
 
