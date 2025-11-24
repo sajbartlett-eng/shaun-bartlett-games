@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancelled | Game Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --bg: #0f0f0f; 
+            --text: #e0e0e0; 
+            --accent: #D500F9; /* Neon Purple */
+            --accent-dim: rgba(213, 0, 249, 0.1);
+            --accent-glow: rgba(213, 0, 249, 0.5); 
+            --card-bg: #181818;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Outfit', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            line-height: 1.7; 
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h3 { color: var(--accent); margin-top: 0; }
+        
+        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 30px; display: inline-block; transition: color 0.2s; }
+        .back-link:hover { color: var(--accent); }
+        
+        .game-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            padding: 20px 0; 
+            margin-bottom: 40px; 
+            color: var(--accent); 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333; 
+        }
+        
+        p { margin-bottom: 20px; font-size: 1.05rem; color: #ccc; }
+        strong { color: #fff; }
+
+        /* ANALYSIS GRID */
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+        
+        .analysis-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-left: 3px solid var(--accent); 
+            border-radius: 8px;
+        }
+        
+        .analysis-card h4 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .analysis-card p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.6; }
+        .analysis-meta { font-size: 0.85rem; color: #888; font-style: italic; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* ROLE GRID */
+        .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 20px 0; }
+        .role-card { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; transition: border-color 0.2s; }
+        .role-card:hover { border-color: var(--accent); }
+        .role-card h4 { color: #fff; margin: 0 0 5px 0; font-size: 1.1rem; }
+        .role-sub { font-size: 0.8rem; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* HIGHLIGHTS & BUTTONS */
+        .highlight-box { background: var(--accent-dim); border-left: 4px solid var(--accent); padding: 25px; border-radius: 8px; margin: 30px 0; }
+        
+        .mechanic-list { list-style: none; padding: 0; }
+        .mechanic-list li { margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #333; }
+        .mechanic-list strong { color: var(--accent); display: block; margin-bottom: 5px; }
+
+        .status-btn { 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            background: #333; 
+            color: #aaa; 
+            padding: 18px 50px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            cursor: default;
+            border: 1px solid #444;
+        }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Back to Portfolio</a>
+
+    <h1>CANCELLED</h1>
+    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A Game of Manufactured Truth</p>
+    
+    <div class="game-stats">
+        <span>👥 4-6 Players</span>
+        <span>⏱️ 45 Minutes</span>
+        <span>🧠 Age 12+</span>
+        <span>📸 Social Deduction</span>
+    </div>
+
+    <div class="content">
+        <p class="intro"><strong>You are the Rising Star. They are the Parasites.</strong></p>
+        <p>To your face, the Media players are all smiles and flashbulbs. But one of them is <strong>The Tabloid</strong>. They don't just want to use you; they want to end you. However, the Tabloid has a problem: if they destroy you too quickly, they might not have sold enough papers to win.</p>
+        <p>They need to fatten you up before the slaughter. Can you survive the news cycle long enough to figure out who is holding the knife?</p>
+
+        <div class="highlight-box">
+            <h3>The Predator's Dilemma</h3>
+            [cite_start]<p style="margin-bottom: 0;"><strong>The Kill Shot:</strong> The Tabloid only wins if they play the 3rd Scandal card <em>AND</em> have the highest score at the table[cite: 116]. [cite_start]If they kill the Star while another player (like the Paparazzi) is richer, the Tabloid loses[cite: 117]. This forces the killer to protect the victim during the early game.</p>
+        </div>
+
+        <h2>System Design Analysis</h2>
+        <p>How the <strong>Systems Literacy Framework</strong> is applied to media incentives.</p>
+
+        <div class="analysis-grid">
+            
+            <div class="analysis-card">
+                <h4>⚖️ Structural Tension</h4>
+                <p><strong>The Mechanic:</strong> <em>The Fattening Phase.</em> The "Assassin" (Tabloid) behaves exactly like an ally in the early game.</p>
+                <p><strong>The Insight:</strong> Predatory systems often look like supportive ones initially. The Tabloid needs the Star to generate content (points) before the cancellation is profitable. You are not a person; you are an asset class to be liquidated at the peak of the market.</p>
+            </div>
+
+            <div class="analysis-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                [cite_start]<p><strong>The Mechanic:</strong> <em>Silence as a Weapon.</em> When called upon, a player can Publish (Score Points) or Pass (Score 0)[cite: 167, 173].</p>
+                <p><strong>The Insight:</strong> A "Pass" is not just inaction; it is a calculated burial of the truth. You might Pass to save the Star from a Scandal, or you might Pass to deny the Star a Puff Piece. [cite_start]The system rewards silence as much as noise[cite: 178, 180].</p>
+            </div>
+
+            <div class="analysis-card">
+                <h4>🔗 Asymmetric Interdependence</h4>
+                <p><strong>The Mechanic:</strong> <em>The Interview.</em> The Star has no cards. [cite_start]Their only power is choosing <em>who</em> gets to speak[cite: 163].</p>
+                <p><strong>The Insight:</strong> The subject of the news has no voice, only the power to grant access. By choosing a Media player to "interview," the Star inadvertently hands them the weapon used to destroy them.</p>
+            </div>
+
+        </div>
+
+        <h2>The Press Pool (Hidden Roles)</h2>
+        <p>Every player has a secret agenda that dictates how they score points.</p>
+
+        <div class="role-grid">
+            <div class="role-card" style="border-left: 4px solid var(--accent);">
+                <h4>🔪 The Tabloid</h4>
+                <div class="role-sub">The Assassin</div>
+                <p style="font-size: 0.9rem; margin: 0;">Wants to end the game with a Kill Shot. [cite_start]Must have the High Score to win[cite: 116].</p>
+            </div>
+            
+            <div class="role-card" style="border-left: 4px solid #FFD700;">
+                <h4>✨ The Publicist</h4>
+                <div class="role-sub">The Handler</div>
+                <p style="font-size: 0.9rem; margin: 0;">Scores high on Praise and Puff Pieces. [cite_start]Needs the Star to survive[cite: 121].</p>
+            </div>
+
+            <div class="role-card" style="border-left: 4px solid #FF3D00;">
+                <h4>📸 The Paparazzi</h4>
+                <div class="role-sub">The Vulture</div>
+                <p style="font-size: 0.9rem; margin: 0;">Scores high on Scandals and Rumors. [cite_start]Needs the Star alive to keep taking photos[cite: 134].</p>
+            </div>
+
+            <div class="role-card" style="border-left: 4px solid #2979FF;">
+                <h4>🧐 The Critic</h4>
+                <div class="role-sub">The Intellectual</div>
+                <p style="font-size: 0.9rem; margin: 0;">Scores on Rumors and Scandals. [cite_start]Hates Puff Pieces[cite: 131].</p>
+            </div>
+            
+             <div class="role-card" style="border-left: 4px solid #00E676;">
+                <h4>😍 The Superfan</h4>
+                <div class="role-sub">The Stan</div>
+                <p style="font-size: 0.9rem; margin: 0;">Wants the Star worshipped. [cite_start]Loses points if Rumors are published[cite: 125].</p>
+            </div>
+        </div>
+
+        <h2>Rules Overview</h2>
+        
+        <h3>1. The Draft (Editorial Meeting)</h3>
+        [cite_start]<p>Players are dealt 7 cards but must cut down to a <strong>Personal Draw Stack</strong> of 5[cite: 153]. [cite_start]This creates a tension between "The Hand You Were Dealt" and "The Hand You Chose"[cite: 155]. You are complicit in the cards you hold.</p>
+
+        <h3>2. The Choice: Publish or Pass</h3>
+        <p>When the Star chooses you for an Interview, you look at the top card of your stack and make a choice:</p>
+        <ul class="mechanic-list">
+            <li><strong>PUBLISH:</strong> Flip the card. [cite_start]You score the points, and the effect applies to the Star[cite: 171].</li>
+            <li><strong>PASS:</strong> Discard the card unseen. You score 0 points. [cite_start]You sacrifice profit to control the timing[cite: 177, 178].</li>
+        </ul>
+
+        <h3>3. The End Game</h3>
+        [cite_start]<p>If the Star survives 10 rounds, they must guess the role of every player[cite: 192].</p>
+        <ul>
+            [cite_start]<li><strong>All Correct:</strong> The Star Wins[cite: 194].</li>
+            <li><strong>Any Wrong:</strong> The game enters <strong>OVERTIME</strong> (Sudden Death). [cite_start]The Tabloid gets another chance to kill the Star every turn[cite: 196, 200].</li>
+        </ul>
+
+        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
+            <div class="status-btn">🚧 In Development</div>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Playtesting Phase • 4-6 Players</p>
+        </div>
+    </div>
+
+</body>
+</html>
