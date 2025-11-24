@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --accent: #66BB6A; /* Green for Professional */ --border: #333; }
+        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --accent: #66BB6A; --border: #333; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
         h1, h2, h3, .tag { font-family: 'Space Grotesk', sans-serif; }
@@ -23,19 +23,20 @@
         .container { padding: 0 5%; max-width: 1400px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; }
         
-        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: transform 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); }
-        .card-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+        
+        /* Image Styles */
+        .card-img-wrapper { height: 200px; width: 100%; overflow: hidden; position: relative; }
+        .card-img { height: 100%; width: 100%; object-fit: cover; display: block; transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .card:hover .card-img { transform: scale(1.05); }
+        
         .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
         .card h3 { font-size: 1.5rem; color: #fff; margin: 0 0 5px 0; }
         .card-subtitle { color: #888; font-size: 0.95rem; margin-bottom: 15px; }
         .card-meta { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; }
         .learning-tag { font-size: 0.7rem; padding: 4px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--accent); border: 1px solid rgba(102, 187, 106, 0.3); display: inline-block; margin-right: 5px; margin-top: 10px; font-weight: 600; }
         
-        .burnout-bg { background: radial-gradient(circle at top right, #D84315, #000); }
-        .leverage-bg { background: radial-gradient(circle at top right, #8B0000, #000); }
-        .tipping-point-bg { background: radial-gradient(circle at top right, #1565C0, #000); }
-
         .action-btn { display: block; width: 100%; padding: 12px 0; margin-top: 20px; text-align: center; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
         .action-btn:hover { background: var(--accent); color: #000; }
     </style>
@@ -55,7 +56,9 @@
         <div class="grid">
             
             <div class="card">
-                <div class="card-img burnout-bg">🔥</div>
+                <div class="card-img-wrapper">
+                    <img src="assets/images/burnout-thumb.jpg" alt="Burnout" class="card-img">
+                </div>
                 <div class="card-content">
                     <h3>BURNOUT</h3>
                     <div class="card-subtitle">Workplace Culture Simulation</div>
@@ -71,7 +74,9 @@
             </div>
 
             <div class="card">
-                <div class="card-img leverage-bg">👑</div>
+                <div class="card-img-wrapper">
+                    <img src="assets/images/leverage-thumb.jpg" alt="Leverage" class="card-img">
+                </div>
                 <div class="card-content">
                     <h3>LEVERAGE</h3>
                     <div class="card-subtitle">Negotiation & Strategy</div>
@@ -87,7 +92,9 @@
             </div>
 
             <div class="card">
-                <div class="card-img tipping-point-bg">🌍</div>
+                <div class="card-img-wrapper">
+                    <img src="assets/images/tippingpoint-thumb.jpg" alt="The Tipping Point" class="card-img">
+                </div>
                 <div class="card-content">
                     <h3>THE TIPPING POINT</h3>
                     <div class="card-subtitle">Risk Management & ESG</div>
