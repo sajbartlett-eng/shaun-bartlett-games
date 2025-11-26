@@ -10,23 +10,62 @@
         :root { 
             --bg: #0f0f0f; 
             --text: #e0e0e0; 
+            --text-muted: #9ca3af;
             --accent: #8B0000; 
             --accent-dim: rgba(139, 0, 0, 0.1);
             --accent-glow: rgba(139, 0, 0, 0.5); 
             --card-bg: #181818;
+            --border: #333;
         }
         
-        * { box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
             background: var(--bg); 
             color: var(--text); 
             font-family: 'Outfit', sans-serif; 
-            padding: 40px 20px; 
-            max-width: 900px; 
-            margin: 0 auto; 
             line-height: 1.7; 
+            background-image: radial-gradient(circle at 50% 0%, #2b1111 0%, #0f0f0f 60%);
         }
+
+        /* NAVIGATION & DROPDOWN */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 15, 15, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+        
+        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; text-decoration: none; font-family: 'Space Grotesk', sans-serif; }
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links > a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links > a:hover { color: var(--accent); }
+
+        /* Dropdown CSS */
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background-color: transparent; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; font-family: 'Outfit', sans-serif; padding: 10px 0; transition: color 0.2s; }
+        .dropdown:hover .dropbtn { color: var(--accent); }
+        .dropdown-content { display: none; position: absolute; background-color: #1a1a1a; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 1001; border-radius: 8px; border: 1px solid #333; top: 100%; left: 50%; transform: translateX(-50%); padding: 5px 0; }
+        .dropdown-content a { color: #ccc; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; transition: background 0.2s; }
+        .dropdown-content a:hover { background-color: #333; color: #fff; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 15px; padding: 15px; }
+            .nav-links { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+            .dropdown { width: 100%; text-align: center; }
+            .dropdown-content { position: relative; width: 100%; top: 0; left: 0; transform: none; box-shadow: none; border: none; background: rgba(255,255,255,0.03); margin-top: 5px; }
+            .dropbtn { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 4px; }
+        }
+
+        /* PAGE CONTENT */
+        .content-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
         h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; line-height: 1.2; }
         h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); color: #fff; margin-bottom: 10px; }
@@ -94,92 +133,119 @@
 </head>
 <body>
 
-    <a href="index.html" class="back-link">← Back to Portfolio</a>
-
-    <h1>LEVERAGE</h1>
-    <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A Card Game of Power, Gold, and Betrayal</p>
-    
-    <div class="game-stats">
-        <span>👥 4-10 Players</span>
-        <span>⏱️ 20 Minutes</span>
-        <span>🧠 Age 12+</span>
-        <span>🃏 Standard Deck</span>
-    </div>
-
-    <div class="content">
-        <p class="intro"><strong>The old King is dead. The Realm lies scattered.</strong></p>
-        <p>Using only a standard deck of cards, <em>Leverage</em> models the fragility of feudal power. It is a game where the "strongest" player is often the most vulnerable, and where loyalty is simply a transaction waiting for a better offer.</p>
-
-        <div class="highlight-box">
-            <h3>Three Victory Paths</h3>
-            <div class="win-condition">
-                <strong style="color: var(--accent);">👑 The Winning King</strong>
-                Be the final ruler crowned. Requires spending gold to destroy rivals.
-            </div>
-            <div class="win-condition">
-                <strong style="color: var(--accent);">💰 The Wealthiest Individual</strong>
-                Have the most Gold when the game ends. Requires hoarding gold and avoiding conflict.
-            </div>
-            <div class="win-condition">
-                <strong style="color: var(--accent);">⚔️ The Loyal Noble</strong>
-                Be a sworn protector of the Winning King. Requires betting on the right horse.
-            </div>
-        </div>
-
-        <h2>System Design Analysis</h2>
-        <p>How the <strong>Systems Literacy Framework</strong> is applied to model political instability.</p>
-
-        <div class="analysis-grid">
+    <nav>
+        <a href="index.html" class="logo">SHAUN BARTLETT</a>
+        <div class="nav-links">
+            <a href="about.html">About Me</a>
+            <a href="index.html#framework">Framework</a>
+            <a href="index.html#applications">Browse by Use</a>
             
-            <div class="analysis-card">
-                <h4>⚖️ Structural Tension</h4>
-                <p><strong>The Mechanic:</strong> <em>Gold is Ammo vs. Gold is Victory.</em> To defend your crown, you must spend Gold in battles. To win the "Wealthiest" victory, you must hoard it.</p>
-                <p><strong>The Insight:</strong> Power is expensive. The game creates a "Winner's Curse" where fighting for the throne often bankrupts you, handing victory to the Mercenary who stayed out of the fight.</p>
-                <div class="analysis-meta">The incentives for <em>holding</em> power are at war with the incentives for <em>winning</em>.</div>
+            <div class="dropdown">
+                <button class="dropbtn">Game Library ▾</button>
+                <div class="dropdown-content">
+                    <a href="index.html#play-now">Digital Games</a>
+                    <a href="index.html#den-series">The Den Series</a>
+                    <a href="index.html#games">Quick Hit Games</a>
+                    <a href="index.html#sports-iq">Sports IQ</a>
+                    <a href="concepts.html">Concept Lab</a>
+                </div>
             </div>
 
-            <div class="analysis-card">
-                <h4>🔗 Asymmetric Interdependence</h4>
-                <p><strong>The Mechanic:</strong> <em>Crown Collapse.</em> A King has a larger hand size (7) than a Noble (5), but if a King ever loses their last Noble, they lose the game immediately.</p>
-                <p><strong>The Insight:</strong> The powerful are held hostage by the weak. A Noble can "Renounce" their King, stripping them of legitimacy. This gives the "weaker" player immense leverage over the ruler.</p>
-                <div class="analysis-meta">Power is not a trait of the leader; it is a resource granted by the followers.</div>
-            </div>
+            <a href="index.html#contact">Contact</a>
+        </div>
+    </nav>
 
-            <div class="analysis-card">
-                <h4>⚙️ Mechanical Honesty</h4>
-                <p><strong>The Mechanic:</strong> <em>The Yield.</em> In any battle, you can concede before cards are revealed to keep your Gold.</p>
-                <p><strong>The Insight:</strong> Honor is a luxury. The system incentivizes rational cowardice. It is often mathematically optimal to surrender and stay rich than to fight and be right.</p>
-                <div class="analysis-meta">The game rewards survival instincts over heroism.</div>
-            </div>
+    <div class="content-container">
+        <a href="index.html" class="back-link">← Back to Portfolio</a>
 
+        <h1>LEVERAGE</h1>
+        <p style="color: #888; font-size: 1.2rem; margin-top: -10px;">A Card Game of Power, Gold, and Betrayal</p>
+        
+        <div class="game-stats">
+            <span>👥 4-10 Players</span>
+            <span>⏱️ 20 Minutes</span>
+            <span>🧠 Age 12+</span>
+            <span>🃏 Standard Deck</span>
         </div>
 
-        <h2>Rules Overview</h2>
-        
-        <h3>Status & Treasury</h3>
-        <p>Your political status dictates your <strong>Treasury</strong> (Hand Size Limit). If you exceed it, you must discard immediately.</p>
-        <ul class="mechanic-list">
-            <li><strong>Mercenary (3 Cards):</strong> The default state. Flexible but weak.</li>
-            <li><strong>Noble (5 Cards):</strong> Sworn to a King. Protected, but subservient.</li>
-            <li><strong>King (7 Cards):</strong> The ruler. High capacity, but fragile.</li>
-        </ul>
+        <div class="content">
+            <p class="intro"><strong>The old King is dead. The Realm lies scattered.</strong></p>
+            <p>Using only a standard deck of cards, <em>Leverage</em> models the fragility of feudal power. It is a game where the "strongest" player is often the most vulnerable, and where loyalty is simply a transaction waiting for a better offer.</p>
 
-        <h3>The Political Phase</h3>
-        <p>Players use face cards to manipulate the board state:</p>
-        <ul class="mechanic-list">
-            <li><strong>Jacks (The Threat):</strong> Challenge a King. If you win, you steal their crown.</li>
-            <li><strong>Red Queens (Cunning):</strong> Draw 4 cards. A rapid influx of resources.</li>
-            <li><strong>Black Queens (Blackmail):</strong> Force a player to give you their highest Gold card.</li>
-        </ul>
+            <div class="highlight-box">
+                <h3>Three Victory Paths</h3>
+                <div class="win-condition">
+                    <strong style="color: var(--accent);">👑 The Winning King</strong>
+                    Be the final ruler crowned. Requires spending gold to destroy rivals.
+                </div>
+                <div class="win-condition">
+                    <strong style="color: var(--accent);">💰 The Wealthiest Individual</strong>
+                    Have the most Gold when the game ends. Requires hoarding gold and avoiding conflict.
+                </div>
+                <div class="win-condition">
+                    <strong style="color: var(--accent);">⚔️ The Loyal Noble</strong>
+                    Be a sworn protector of the Winning King. Requires betting on the right horse.
+                </div>
+            </div>
 
-        <h3>The War of Kings</h3>
-        <p>When the deck runs out, diplomacy ends. The remaining Kingdoms must battle until only one remains. Nobles must decide whether to fund their King's war with their own gold or let them fall.</p>
+            <h2>System Design Analysis</h2>
+            <p>How the <strong>Systems Literacy Framework</strong> is applied to model political instability.</p>
 
-        <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
-            <a href="leverage_rules.pdf" class="dl-btn" download>📄 Download Rules PDF</a>
-            <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Print & Play • 4-10 Players • Standard Deck</p>
+            <div class="analysis-grid">
+                
+                <div class="analysis-card">
+                    <h4>⚖️ Structural Tension (1)</h4>
+                    <p><strong>The Mechanic:</strong> <em>Gold is Ammo vs. Gold is Victory.</em> To defend your crown, you must spend Gold in battles. [cite_start]To win the "Wealthiest" victory, you must hoard it [cite: 106-107].</p>
+                    <p><strong>The Insight:</strong> Power is expensive. The game creates a "Winner's Curse" where fighting for the throne often bankrupts you, handing victory to the Mercenary who stayed out of the fight.</p>
+                </div>
+
+                <div class="analysis-card">
+                    <h4>🔗 Asymmetric Interdependence (2)</h4>
+                    [cite_start]<p><strong>The Mechanic:</strong> <em>Crown Collapse.</em> A King has a larger hand size (7) than a Noble (5), but if a King ever loses their last Noble, they lose the game immediately [cite: 17-22].</p>
+                    <p><strong>The Insight:</strong> The powerful are held hostage by the weak. A Noble can "Renounce" their King, stripping them of legitimacy. This gives the "weaker" player immense leverage over the ruler.</p>
+                </div>
+
+                <div class="analysis-card">
+                    <h4>⚙️ Mechanical Honesty (3)</h4>
+                    [cite_start]<p><strong>The Mechanic:</strong> <em>The Yield.</em> In any battle, you can concede before cards are revealed to keep your Gold [cite: 26-27].</p>
+                    <p><strong>The Insight:</strong> Honor is a luxury. The system incentivizes rational cowardice. It is often mathematically optimal to surrender and stay rich than to fight and be right.</p>
+                </div>
+
+            </div>
+
+            <h2>Rules Overview</h2>
+            
+            <h3>Status & Treasury</h3>
+            <p>Your political status dictates your <strong>Treasury</strong> (Hand Size Limit). [cite_start]If you exceed it, you must discard immediately [cite: 16-19].</p>
+            <ul class="mechanic-list">
+                <li><strong>Mercenary (3 Cards):</strong> The default state. Flexible but weak.</li>
+                <li><strong>Noble (5 Cards):</strong> Sworn to a King. Protected, but subservient.</li>
+                <li><strong>King (7 Cards):</strong> The ruler. High capacity, but fragile.</li>
+            </ul>
+
+            <h3>The Political Phase</h3>
+            <p>Players use face cards to manipulate the board state:</p>
+            <ul class="mechanic-list">
+                <li><strong>Jacks (The Threat):</strong> Challenge a King. If you win, you steal their crown.</li>
+                <li><strong>Red Queens (Cunning):</strong> Draw 4 cards. A rapid influx of resources.</li>
+                <li><strong>Black Queens (Blackmail):</strong> Force a player to give you their highest Gold card.</li>
+            </ul>
+
+            <h3>The War of Kings</h3>
+            <p>When the deck runs out, diplomacy ends. The remaining Kingdoms must battle until only one remains. [cite_start]Nobles must decide whether to fund their King's war with their own gold or let them fall [cite: 81-97].</p>
+
+            <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
+                <a href="leverage_rules.pdf" class="dl-btn" download>📄 Download Rules PDF</a>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Print & Play • 4-10 Players • Standard Deck</p>
+            </div>
         </div>
     </div>
+
+    <footer>
+        <div style="text-align: center; padding: 40px; color: #555; font-size: 0.8rem; border-top: 1px solid #222;">
+            &copy; 2025 Shaun Bartlett. <br>All games released under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: #777;">CC BY-NC-SA 4.0</a>.
+        </div>
+    </footer>
 
 </body>
 </html>

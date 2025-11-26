@@ -128,7 +128,7 @@
             font-weight: 700; 
             margin-top: 40px; 
             transition: transform 0.2s;
-            box-shadow: 0 0 20px var(--accent-glow);
+            box-shadow: 0 0 20px var(--accent-glow); 
         }
         .status-btn:hover { transform: translateY(-2px); background: #fff; }
 
@@ -155,15 +155,6 @@
             flex-shrink: 0;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
         }
-
-        /* DESIGNER LOG STYLES */
-        .toolkit-section { margin: 60px 0; border-top: 1px solid #333; padding-top: 40px; }
-        .toolkit-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-        .toolkit-icon { font-size: 1.8rem; background: #222; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--accent); }
-        .toolkit-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
-        @media(min-width: 768px) { .toolkit-grid { grid-template-columns: 1fr 1fr; } }
-        .log-entry { background: rgba(255,255,255,0.03); border: 1px dashed #444; padding: 25px; border-radius: 8px; }
-        .log-title { color: var(--accent); font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; display: block; }
 
     </style>
 </head>
@@ -219,19 +210,19 @@
             <div class="analysis-grid">
                 
                 <div class="analysis-card">
-                    <h4>⚖️ Structural Tension</h4>
+                    <h4>⚖️ Structural Tension (1)</h4>
                     <p><strong>The Mechanic:</strong> <em>The Budget Cliff.</em> Each Quarter must hit exactly 20. If you are under, the group continues. If you go over, the Quarter closes, and you (the player who played the last card) are now the Scapegoat.</p>
                     <p><strong>The Insight:</strong> The system forces you to push your luck. You want to contribute to the budget to empty your hand (mandatory), but you never want to be the one who finishes it. Rational individual survival creates collective anxiety.</p>
                 </div>
 
                 <div class="analysis-card">
-                    <h4>⚙️ Mechanical Honesty</h4>
+                    <h4>⚙️ Mechanical Honesty (3)</h4>
                     <p><strong>The Mechanic:</strong> <em>Face Down Fraud.</em> Players can play cards "Face Down" to count as 10. If the card is actually Red, it is Fraud. If it is Black, it is padding. The system accepts the input regardless of its truth.</p>
                     <div class="analysis-meta">The mechanic does not judge the lie. It only provides an Audit mechanism to reveal it later.</div>
                 </div>
 
                 <div class="analysis-card">
-                    <h4>🌊 Cascading Consequences</h4>
+                    <h4>🌊 Cascading Consequences (4)</h4>
                     <p><strong>The Mechanic:</strong> <em>The Memory.</em> Fraud cards (Red Face Down) stay on the table until the End of Year Audit. A shortcut taken in Quarter 1 remains a liability in Quarter 4.</p>
                     <p><strong>The Insight:</strong> A small lie to close a budget early seems efficient now, but it permanently increases the "Audit Risk" for the entire group later. The system accumulates risk over time.</p>
                 </div>
@@ -269,53 +260,6 @@
             
             <h2>The Pit</h2>
             <p>There is no elimination in Scapegoat, only humiliation. If you are Demoted below Hand Size 4, you drop to <strong>Hand Size 1</strong>. You have zero choices. You must play whatever card you draw. You are entirely at the mercy of the system until you can claw your way back.</p>
-
-            <div class="toolkit-section">
-                <div class="toolkit-header">
-                    <div class="toolkit-icon">🛠️</div>
-                    <div>
-                        <h2 style="margin: 0; border: none; padding: 0; font-size: 1.8rem;">Designer's Log</h2>
-                        <p style="margin: 0; font-size: 0.9rem; color: #888;">System notes and mechanical intent.</p>
-                    </div>
-                </div>
-
-                <div class="toolkit-grid">
-                    
-                    <div class="log-entry">
-                        <span class="log-title">📓 System Architecture: The Ace Paradox</span>
-                        <p style="font-size: 0.9rem; color: #aaa;">
-                            <strong>The Intent:</strong> In most card games, an Ace is good. In Scapegoat, the value of the Ace relies entirely on context.
-                        </p>
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: #aaa;">
-                            <li><strong>Spending:</strong> Worth 1 (The safest card to play).</li>
-                            <li><strong>Promotion:</strong> Beats King (The only way to win instantly).</li>
-                            <li><strong>Underspend:</strong> High Value (Saves you from being cut).</li>
-                        </ul>
-                        <p style="font-size: 0.9rem; color: #aaa; margin-top:10px;">
-                            This forces a painful choice: Do you spend the Ace now to stay safe, or hoard it to win later? You cannot do both.
-                        </p>
-                    </div>
-
-                    <div class="log-entry">
-                        <span class="log-title">🪞 The Reflection</span>
-                        <ul style="list-style: none; padding: 0; margin: 0;">
-                            <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #ccc; font-size: 0.95rem;">
-                                <span style="position: absolute; left: 0; color: var(--accent);">→</span>
-                                <strong>The Illusion of Villainy:</strong> You likely felt anger toward the player who played Fraud cards. But ask yourself: did the system give them a "safe" way to close the budget?
-                            </li>
-                            <li style="margin-bottom: 15px; padding-left: 20px; position: relative; color: #ccc; font-size: 0.95rem;">
-                                <span style="position: absolute; left: 0; color: var(--accent);">→</span>
-                                <strong>The Safety Trap:</strong> The higher you climbed, the safer you became. Did your empathy for the "Junior Staff" increase or decrease as your hand size grew?
-                            </li>
-                            <li style="margin-bottom: 0; padding-left: 20px; position: relative; color: #ccc; font-size: 0.95rem;">
-                                <span style="position: absolute; left: 0; color: var(--accent);">→</span>
-                                <strong>Compliance vs. Truth:</strong> Did you find yourself hoping the Audit wouldn't happen, even though you knew the budget was full of lies?
-                            </li>
-                        </ul>
-                    </div>
-
-                </div>
-            </div>
 
             <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
                 <a href="scapegoat_rules.pdf" download class="status-btn">📄 Download Rules (PDF)</a>
