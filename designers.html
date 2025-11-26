@@ -6,13 +6,41 @@
     <title>For Designers | The Framework</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* ... Copy CSS from index.html ... */
-        /* Add specific overrides for this page */
-        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        /* --- SHARED CSS --- */
+        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --text-muted: #9ca3af; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); --border: #333; --den-gold: #FFD54F; --engage-orange: #FFB74D; --lab-blue: #42A5F5; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%); }
+        h1, h2, h3, h4, .logo, .tag { font-family: 'Space Grotesk', sans-serif; }
+        a { text-decoration: none; color: inherit; }
+        
+        /* NAV */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(15, 15, 15, 0.95); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); }
+        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+        .nav-cta { color: var(--accent) !important; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 4px; }
+        .nav-cta:hover { background: rgba(102, 187, 106, 0.1); }
+
+        /* HERO */
+        .hero { text-align: center; padding: 100px 20px 60px 20px; max-width: 1000px; margin: 0 auto; }
+        .hero h1 { font-size: clamp(3rem, 7vw, 5.5rem); margin-bottom: 20px; line-height: 1; letter-spacing: -2px; color: #fff; }
+        .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto; }
+
+        /* GRID */
+        .section { padding: 0 5% 80px 5%; max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
         .engine-card { background: #181818; padding: 30px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
         .trap-card { background: #181818; padding: 30px; border-left: 3px solid var(--engage-orange); border-radius: 0 8px 8px 0; }
         h4 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; }
         p { color: #ccc; font-size: 1rem; }
+        
+        /* FOOTER */
+        .feedback-section { background: #111; padding: 60px 5%; text-align: center; border-top: 1px solid #333; margin-top: 60px; }
+        .feedback-btn { display: inline-block; background: var(--lab-blue); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 700; margin-top: 20px; }
+
+        @media (max-width: 768px) { .hero h1 { font-size: 3rem; } nav { flex-direction: column; gap: 15px; } }
     </style>
 </head>
 <body>
@@ -23,13 +51,13 @@
             <a href="index.html">The Sandbox</a>
             <a href="designers.html" class="active">For Designers</a>
             <a href="educators.html">For Educators</a>
-            <a href="mailto:shaun.aj.bartlett@gmail.com" class="nav-cta">Contact</a>
+            <a href="mailto:shaun.aj.bartlett@gmail.com" class="nav-cta">Share Results</a>
         </div>
     </nav>
 
     <div class="hero">
         <h1>BUILD YOUR OWN ENGINES</h1>
-        <p>This framework translates complex systems into playable experiences. <br>It is open source. Use it to map your own world.</p>
+        <p>If you don't feel the pressure, you won't learn the lesson. <br>Here is how we engineer the friction.</p>
     </div>
 
     <section class="section">
@@ -67,27 +95,33 @@
     </section>
 
     <section class="section">
-        <h2 style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 40px; color: #fff;">Part 2: The Methodology Gap</h2>
-        <p style="color: #888; margin-bottom: 30px;">Why most educational design fails to engage.</p>
+        <h2 style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 40px; color: #fff;">Part 2: The Engagement Strategy</h2>
+        <p style="color: #888; margin-bottom: 30px;">How to avoid the common traps of educational design.</p>
         
         <div class="grid">
             <div class="trap-card">
-                <h4 style="color: var(--engage-orange);">🚫 The Entertainment Trap</h4>
+                <h4 style="color: var(--engage-orange);">🚫 Navigating The Entertainment Trap</h4>
                 <p><strong>The Conflict:</strong> Artificial balance kills the lesson.</p>
                 <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Lean into unfairness. The fun comes from the primal struggle against a rigged system.</p>
             </div>
             <div class="trap-card">
-                <h4 style="color: var(--engage-orange);">🚫 The Virtue Trap</h4>
+                <h4 style="color: var(--engage-orange);">🚫 Navigating The Virtue Trap</h4>
                 <p><strong>The Conflict:</strong> Preaching triggers defensiveness.</p>
                 <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Neutrality. When the game doesn't judge, the player judges themselves.</p>
             </div>
             <div class="trap-card">
-                <h4 style="color: var(--engage-orange);">🚫 The Fidelity Trap</h4>
+                <h4 style="color: var(--engage-orange);">🚫 Navigating The Fidelity Trap</h4>
                 <p><strong>The Conflict:</strong> Complexity blocks access.</p>
                 <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Folk Mechanics. Use tools people already know (cards, dice, words).</p>
             </div>
         </div>
     </section>
+
+    <div class="feedback-section">
+        <h2 style="color: #fff; margin-bottom: 15px;">Use This Framework</h2>
+        <p style="color: #aaa; margin-bottom: 30px;">It is open source for a reason. Map your own world.</p>
+        <a href="mailto:shaun.aj.bartlett@gmail.com" class="feedback-btn">Connect with Shaun</a>
+    </div>
 
 </body>
 </html>
