@@ -10,12 +10,42 @@
         :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --accent: #FFB74D; --border: #333; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
-        h1, h2, h3, .tag { font-family: 'Space Grotesk', sans-serif; }
+        h1, h2, h3, .tag, .logo { font-family: 'Space Grotesk', sans-serif; }
         
+        /* NAVIGATION */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 15, 15, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+        
+        .logo { 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { 
+            color: #9ca3af; 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: color 0.2s; 
+        }
+        .nav-links a:hover { color: var(--accent); }
+
         /* Header */
         .header { padding: 40px 5%; border-bottom: 1px solid var(--border); margin-bottom: 60px; background: radial-gradient(circle at 50% 0%, rgba(255, 183, 77, 0.15) 0%, #0f0f0f 70%); }
-        .back-link { color: #888; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
-        .back-link:hover { color: #fff; }
         h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin: 20px 0 10px 0; color: #fff; line-height: 1.1; }
         .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 15px; font-weight: 600; }
         .desc { max-width: 600px; color: #aaa; font-size: 1.1rem; }
@@ -49,13 +79,32 @@
 
         .action-btn { display: block; width: 100%; padding: 12px 0; margin-top: 20px; text-align: center; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
         .action-btn:hover { background: var(--accent); color: #000; }
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 15px; padding: 15px; }
+            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; }
+        }
     </style>
 </head>
 <body>
 
+    <nav>
+        <a href="index.html" class="logo">SHAUN BARTLETT</a>
+        <div class="nav-links">
+            <a href="about.html">About Me</a>
+            <a href="index.html#applications">Browse by Use</a>
+            <a href="index.html#framework">Framework</a>
+            <a href="index.html#play-now">Digital Games</a>
+            <a href="index.html#den-series">The Den Series</a>
+            <a href="index.html#games">Quick Hit Games</a>
+            <a href="index.html#sports-iq">Sports IQ</a>
+            <a href="concepts.html">Concept Lab</a>
+            <a href="index.html#contact">Contact</a>
+        </div>
+    </nav>
+
     <div class="header">
         <div class="container">
-            <a href="index.html" class="back-link">← Back to Home</a>
             <h1>Family & Classroom Games</h1>
             <p class="subtitle">Ages 10+ | Experiential Learning Through Play</p>
             <p class="desc">Games designed for family game nights, K-8 classrooms, and youth programs. Each game teaches complex systems thinking through direct experience, without complex rules.</p>

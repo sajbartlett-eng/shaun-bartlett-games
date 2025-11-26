@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept Lab | Shaun Bartlett</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --card-bg: #181818;
+            --text: #e0e0e0;
+            --text-muted: #9ca3af;
+            --accent: #9E9E9E; /* Grey for Concepts */
+            --border: #333;
+            --den-gold: #FFD54F;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #0f0f0f 60%);
+        }
+
+        h1, h2, h3, h4, .logo, .tag { font-family: 'Space Grotesk', sans-serif; }
+
+        /* NAVIGATION */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 15, 15, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+        
+        .logo { 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { 
+            color: var(--text-muted); 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            transition: color 0.2s; 
+        }
+        .nav-links a:hover { color: #fff; }
+        .nav-links a.active { color: #fff; border-bottom: 2px solid #fff; }
+
+        /* HEADER */
+        .page-header {
+            padding: 80px 5% 40px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+        }
+        .page-title { font-size: 3rem; margin-bottom: 15px; color: #fff; }
+        .page-desc { max-width: 700px; font-size: 1.1rem; color: var(--text-muted); }
+
+        /* GRID */
+        .section { padding: 60px 5%; max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+        /* CARD STYLES */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+        
+        .card:hover { transform: translateY(-5px); border-color: #555; }
+
+        .card-img-wrapper { height: 240px; width: 100%; overflow: hidden; position: relative; }
+        .card-img { height: 100%; width: 100%; object-fit: cover; background-color: #222; }
+
+        .emoji-bg {
+            height: 240px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        .spring-den-bg { background: radial-gradient(circle at top right, #43A047, #000); }
+        .autumn-den-bg { background: radial-gradient(circle at top right, #8D6E63, #000); }
+
+        .card-content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+
+        .tags { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tag { font-size: 0.75rem; padding: 6px 12px; border-radius: 4px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .tag.concept { color: #9E9E9E; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+        .learning-tag {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            border: 1px solid #333;
+            display: inline-block;
+            margin-right: 6px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .card h3 { font-size: 1.6rem; color: #fff; margin-bottom: 5px; line-height: 1.1; }
+        .card-subtitle { font-size: 1rem; color: #888; margin-bottom: 20px; font-family: 'Outfit', sans-serif; }
+        .card-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #aaa; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .card-learning { background: rgba(0,0,0,0.2); border: 1px dashed #333; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; color: #ccc; }
+
+        .card-actions { margin-top: auto; }
+        .btn-secondary { 
+            display: block; width: 100%; padding: 12px 0; 
+            background: transparent; color: #fff; border: 1px solid #444; 
+            border-radius: 6px; font-weight: 600; text-align: center; text-decoration: none; 
+            transition: all 0.2s; 
+        }
+        .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #888;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover { color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">SHAUN BARTLETT</a>
+        <div class="nav-links">
+            <a href="about.html">About Me</a>
+            <a href="index.html#applications">Browse by Use</a>
+            <a href="index.html#framework">Framework</a>
+            <a href="index.html#play-now">Digital Games</a>
+            <a href="index.html#den-series">The Den Series</a>
+            <a href="index.html#games">Quick Hit Games</a>
+            <a href="index.html#sports-iq">Sports IQ</a>
+            <a href="concepts.html" class="active">Concept Lab</a>
+            <a href="index.html#contact">Contact</a>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <a href="index.html" class="back-link">← Back to Main Portfolio</a>
+        <h1 class="page-title">Concept Lab</h1>
+        <p class="page-desc">The proving ground. These are experimental designs, early prototypes, and mechanics currently in the "incubation" phase. They may be broken, unbalanced, or simply waiting for the right context.</p>
+    </div>
+
+    <section class="section">
+        <div class="grid">
+            
+            <div class="card">
+                <div class="card-img-wrapper">
+                      <div class="emoji-bg" style="background: radial-gradient(circle at top right, #006064, #000); font-size: 4rem;">🏝️</div>
+                </div>
+                <div class="card-content">
+                    <div class="tags"><span class="tag concept">Concept</span></div>
+                    <h3>THE GREATER GOOD</h3>
+                    <div class="card-subtitle">The Political Economy of Survival</div>
+                    <div class="card-meta">5 Players • 45 Minutes • Age 14+</div>
+                    <p class="card-learning">
+                        <strong>Concept:</strong> The "Razor-Thin Surplus." The group needs 34 resources to survive; the deck holds only 40. Hoarding by one player mathematically guarantees death for another.
+                    </p>
+                    <div>
+                        <span class="learning-tag">Political Economy</span>
+                        <span class="learning-tag">Scarcity</span>
+                        <span class="learning-tag">Ethics</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="details_greatergood.html" class="btn-secondary">View Concept Notes</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-img-wrapper">
+                      <div class="emoji-bg" style="background: radial-gradient(circle at top right, #D500F9, #000); font-size: 4rem;">📸</div>
+                </div>
+                <div class="card-content">
+                    <div class="tags"><span class="tag concept">Concept</span></div>
+                    <h3>CANCELLED</h3>
+                    <div class="card-subtitle">A Game of Manufactured Truth</div>
+                    <div class="card-meta">4-6 Players • 45 Minutes • Age 12+</div>
+                    <p class="card-learning">
+                        <strong>Concept:</strong> The "Fattening Phase." The Tabloid wants to destroy the Star, but must wait until the Star generates enough value to make the kill profitable.
+                    </p>
+                    <div>
+                        <span class="learning-tag">Media Incentives</span>
+                        <span class="learning-tag">Social Deduction</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="details_cancelled.html" class="btn-secondary">View Concept Notes</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="emoji-bg spring-den-bg">🌸</div>
+                <div class="card-content">
+                    <div class="tags"><span class="tag concept">Concept</span></div>
+                    <h3>SPRING DEN</h3>
+                    <div class="card-subtitle">The Mind</div>
+                    <div class="card-meta">5 Players • Communication • Age 12+</div>
+                    <p class="card-learning">
+                        <strong>Concept:</strong> Communication barriers are design choices. We accommodate some differences but not others.
+                    </p>
+                    <div>
+                        <span class="learning-tag">Communication</span>
+                        <span class="learning-tag">Accessibility</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="#" class="btn-secondary" style="opacity: 0.5; cursor: not-allowed;">Early Prototyping</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="emoji-bg autumn-den-bg">🍂</div>
+                <div class="card-content">
+                    <div class="tags"><span class="tag concept">Concept</span></div>
+                    <h3>AUTUMN DEN</h3>
+                    <div class="card-subtitle">The Soul</div>
+                    <div class="card-meta">5 Players • Legacy • Age 14+</div>
+                    <p class="card-learning">
+                        <strong>Concept:</strong> The gap between how you see your life and how others see it. What makes a life meaningful?
+                    </p>
+                    <div>
+                        <span class="learning-tag">Legacy</span>
+                        <span class="learning-tag">Mortality</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="#" class="btn-secondary" style="opacity: 0.5; cursor: not-allowed;">Early Prototyping</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <div style="text-align: center; padding: 40px; color: #555; font-size: 0.8rem; border-top: 1px solid #222;">
+            &copy; 2025 Shaun Bartlett. 
+        </div>
+    </footer>
+
+</body>
+</html>
