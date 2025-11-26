@@ -167,7 +167,76 @@
         .section-title { font-size: 2rem; color: #fff; letter-spacing: -1px; margin-bottom: 10px; }
         .section-desc { color: var(--text-muted); max-width: 700px; font-size: 1.1rem; }
 
-        /* FRAMEWORK GRID */
+        /* ACCORDION STYLES (New) */
+        .accordion-container {
+            max-width: 900px;
+            margin: 0 auto 60px auto;
+        }
+
+        .accordion-item {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .accordion-item:hover {
+            border-color: rgba(102, 187, 106, 0.4);
+        }
+
+        .accordion-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #fff;
+            background: rgba(255,255,255,0.02);
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .accordion-icon {
+            font-size: 1.2rem;
+            color: var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #111;
+        }
+
+        .accordion-body {
+            padding: 25px 25px 30px 25px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .accordion-body p {
+            color: #ccc;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .accordion-body strong {
+            color: var(--accent);
+        }
+
+        /* FRAMEWORK GRID (For Part 2 only now) */
         .framework-header-sub { 
             color: var(--text-muted); 
             font-family: 'Space Grotesk', sans-serif; 
@@ -194,22 +263,23 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* Special style for full-width framework cards */
-        .framework-card.full-width {
-            grid-column: 1 / -1;
-        }
         
         .framework-card h4 { color: #fff; font-size: 1.25rem; margin-bottom: 15px; line-height: 1.3; }
         .framework-card p { color: #aaa; font-size: 0.95rem; margin-bottom: 12px; line-height: 1.6; }
-        .framework-card strong { color: var(--accent); font-weight: 600; }
+        
+        .sub-strategy-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin-top: 20px;
+        }
 
         .sub-strategy {
             background: rgba(255,255,255,0.03);
             padding: 15px;
             border-radius: 8px;
-            margin-top: 15px;
             font-size: 0.9rem;
+            border: 1px solid #222;
         }
         .sub-strategy strong { display: block; margin-bottom: 4px; color: #fff; }
         
@@ -423,75 +493,124 @@
         
         <h3 class="framework-header-sub">Part 1: The Design Engines</h3>
         
-        <div class="framework-grid">
+        <div class="accordion-container">
             
-            <div class="framework-card">
-                <h4>⚖️ 1. Structural Tension</h4>
-                <p><strong>The Principle:</strong> Incentives in Tension. The game creates incentive structures where individually rational choices lead to collectively irrational outcomes—mirroring real-world coordination failures.</p>
-                <div class="examples">
-                    <strong>Examples:</strong> Burnout (Promotion vs Team), The Tipping Point (Profit vs Crisis)
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>⚖️ 1. Structural Tension</span>
+                    <span class="accordion-icon">➕</span>
                 </div>
-            </div>
-
-            <div class="framework-card">
-                <h4>🔗 2. Asymmetric Interdependence</h4>
-                <p><strong>The Principle:</strong> Different Risks, Shared Fate. Players share the same goal but carry different capacities and costs. This disparity breeds resentment and necessitates negotiation.</p>
-                <div class="examples">
-                    <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4>⚙️ 3. Mechanical Honesty</h4>
-                <p><strong>The Principle:</strong> Systemic Indifference. The mechanics don't protect players from their choices. The same action can be cooperative or exploitative depending on context and intent.</p>
-                <div class="examples">
-                    <strong>Examples:</strong> Viral (Update mechanic forces sensationalism), Burnout (Delegate transfers stress)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4>🌊 4. Cascading Consequences</h4>
-                <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. A small error now permanently alters future probabilities, often creating a "race to the bottom."</p>
-                <div class="examples">
-                    <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Crisis Track)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4>⏳ 5. Scarcity Creates Pressure</h4>
-                <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to abandon optimization and rely on imperfect heuristics.</p>
-                <div class="examples">
-                    <strong>Examples:</strong> Burnout (3 min timer), Leverage (Hand size limit)
-                </div>
-            </div>
-
-            <div class="framework-card">
-                <h4>🟥 6. Neutrality</h4>
-                <p><strong>The Principle:</strong> The System Must Reveal Reality, Not Preach It. A system should enable outcomes—not endorse them.</p>
-                <div class="examples">
-                    <strong>The Test:</strong> Can more than one moral path win? Does the system allow outcomes the designer dislikes? If yes, the system is honest.
-                </div>
-            </div>
-
-            <div class="framework-card full-width">
-                <h4>⚡ 7. Cognitive Economy</h4>
-                <p><strong>The Principle:</strong> Maximum strategic depth through minimum interface complexity. The "Cognitive Budget" is spent on calculation and negotiation, not rule upkeep.</p>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-                    <div class="sub-strategy">
-                        <strong>a) Lean Decision Architecture</strong>
-                        Minimize administrative friction. One turn = one choice. No bookkeeping or phase management.
-                        <br><em style="color:#888;">Example: The Tipping Point (Invest → Roll)</em>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Incentives in Tension. The game creates incentive structures where individually rational choices lead to collectively irrational outcomes—mirroring real-world coordination failures.</p>
+                        <div class="examples">
+                            <strong>Examples:</strong> Burnout (Promotion vs Team), The Tipping Point (Profit vs Crisis)
+                        </div>
                     </div>
-                    <div class="sub-strategy">
-                        <strong>b) Compressed Agency</strong>
-                        Players feel they can do anything, but only need to process one thing at a time. High perceived freedom, low load.
-                        <br><em style="color:#888;">Example: Leverage (One card topples Kingdoms)</em>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>🔗 2. Asymmetric Interdependence</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Different Risks, Shared Fate. Players share the same goal but carry different capacities and costs. This disparity breeds resentment and necessitates negotiation.</p>
+                        <div class="examples">
+                            <strong>Examples:</strong> Leverage (King vs Mercenaries), Winter Den (Bear strength vs Rabbit efficiency)
+                        </div>
                     </div>
-                    <div class="sub-strategy">
-                        <strong>c) Familiar Interface</strong>
-                        Use tools (cards, pens, rhymes) people already know. Complexity emerges from player collision, not rule density.
-                        <br><em style="color:#888;">Example: Inheritance (Nursery rhyme logic)</em>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>⚙️ 3. Mechanical Honesty</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Systemic Indifference. The mechanics don't protect players from their choices. The same action can be cooperative or exploitative depending on context and intent.</p>
+                        <div class="examples">
+                            <strong>Examples:</strong> Viral (Update mechanic forces sensationalism), Burnout (Delegate transfers stress)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>🌊 4. Cascading Consequences</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Inevitability and Entropy. The system remembers your choices. A small error now permanently alters future probabilities, often creating a "race to the bottom."</p>
+                        <div class="examples">
+                            <strong>Examples:</strong> Viral (Passing buries truth), The Tipping Point (Crisis Track)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>⏳ 5. Scarcity Creates Pressure</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Systems thinking collapses under pressure. Constraints force players to abandon optimization and rely on imperfect heuristics.</p>
+                        <div class="examples">
+                            <strong>Examples:</strong> Burnout (3 min timer), Leverage (Hand size limit)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>🟥 6. Neutrality</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> The System Must Reveal Reality, Not Preach It. A system should enable outcomes—not endorse them.</p>
+                        <div class="examples">
+                            <strong>The Test:</strong> Can more than one moral path win? Does the system allow outcomes the designer dislikes? If yes, the system is honest.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>⚡ 7. Cognitive Economy</span>
+                    <span class="accordion-icon">➕</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <p><strong>The Principle:</strong> Maximum strategic depth through minimum interface complexity. The "Cognitive Budget" is spent on calculation and negotiation, not rule upkeep.</p>
+                        
+                        <div class="sub-strategy-grid">
+                            <div class="sub-strategy">
+                                <strong>a) Lean Decision Architecture</strong>
+                                Minimize administrative friction. One turn = one choice. No bookkeeping or phase management.
+                                <br><em style="color:#888;">Example: The Tipping Point (Invest → Roll)</em>
+                            </div>
+                            <div class="sub-strategy">
+                                <strong>b) Compressed Agency</strong>
+                                Players feel they can do anything, but only need to process one thing at a time. High perceived freedom, low load.
+                                <br><em style="color:#888;">Example: Leverage (One card topples Kingdoms)</em>
+                            </div>
+                            <div class="sub-strategy">
+                                <strong>c) Familiar Interface</strong>
+                                Use tools (cards, pens, rhymes) people already know. Complexity emerges from player collision, not rule density.
+                                <br><em style="color:#888;">Example: Inheritance (Nursery rhyme logic)</em>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -798,6 +917,32 @@
             &copy; 2025 Shaun Bartlett. <br>All games released under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: #777;">CC BY-NC-SA 4.0</a>.
         </div>
     </footer>
+
+    <script>
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.parentElement;
+                
+                // Toggle active class
+                item.classList.toggle('active');
+                
+                // Toggle max-height for smooth animation
+                const content = item.querySelector('.accordion-content');
+                if (item.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    // Reset others
+                    document.querySelectorAll('.accordion-item').forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                        }
+                    });
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
