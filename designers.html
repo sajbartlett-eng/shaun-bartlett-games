@@ -6,7 +6,6 @@
     <title>For Designers | The Framework</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* --- SHARED CSS --- */
         :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --text-muted: #9ca3af; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); --border: #333; --den-gold: #FFD54F; --engage-orange: #FFB74D; --lab-blue: #42A5F5; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%); }
@@ -27,18 +26,15 @@
         .hero h1 { font-size: clamp(3rem, 7vw, 5.5rem); margin-bottom: 20px; line-height: 1; letter-spacing: -2px; color: #fff; }
         .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto; }
 
-        /* GRID */
+        /* LAYOUT */
         .section { padding: 0 5% 80px 5%; max-width: 1400px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
         
+        /* DESIGNER SPECIFIC CARDS */
         .engine-card { background: #181818; padding: 30px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
         .trap-card { background: #181818; padding: 30px; border-left: 3px solid var(--engage-orange); border-radius: 0 8px 8px 0; }
         h4 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; }
         p { color: #ccc; font-size: 1rem; }
-        
-        /* FOOTER */
-        .feedback-section { background: #111; padding: 60px 5%; text-align: center; border-top: 1px solid #333; margin-top: 60px; }
-        .feedback-btn { display: inline-block; background: var(--lab-blue); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 700; margin-top: 20px; }
 
         @media (max-width: 768px) { .hero h1 { font-size: 3rem; } nav { flex-direction: column; gap: 15px; } }
     </style>
@@ -51,13 +47,14 @@
             <a href="index.html">The Sandbox</a>
             <a href="designers.html" class="active">For Designers</a>
             <a href="educators.html">For Educators</a>
-            <a href="mailto:shaun.aj.bartlett@gmail.com" class="nav-cta">Share Results</a>
+            <a href="about.html">About</a>
+            <a href="contact.html" class="nav-cta">Contact</a>
         </div>
     </nav>
 
     <div class="hero">
         <h1>BUILD YOUR OWN ENGINES</h1>
-        <p>If you don't feel the pressure, you won't learn the lesson. <br>Here is how we engineer the friction.</p>
+        <p>This framework translates complex systems into playable experiences. <br>It is open source. Use it to map your own world.</p>
     </div>
 
     <section class="section">
@@ -116,12 +113,6 @@
             </div>
         </div>
     </section>
-
-    <div class="feedback-section">
-        <h2 style="color: #fff; margin-bottom: 15px;">Use This Framework</h2>
-        <p style="color: #aaa; margin-bottom: 30px;">It is open source for a reason. Map your own world.</p>
-        <a href="mailto:shaun.aj.bartlett@gmail.com" class="feedback-btn">Connect with Shaun</a>
-    </div>
 
 </body>
 </html>
