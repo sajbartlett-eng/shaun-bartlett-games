@@ -12,7 +12,7 @@
         
         body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; line-height: 1.8; }
         
-        /* NAVIGATION */
+        /* NAVIGATION & DROPDOWN */
         nav {
             display: flex;
             justify-content: space-between;
@@ -21,45 +21,30 @@
             background: rgba(15, 15, 15, 0.95);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(15px);
         }
         
-        .logo { 
-            font-size: 1.3rem; 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-            color: #fff;
-            text-decoration: none;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        
-        .nav-links { display: flex; gap: 25px; }
-        .nav-links a { 
-            color: #9ca3af; 
-            text-decoration: none; 
-            font-size: 0.9rem; 
-            font-weight: 500; 
-            transition: color 0.2s; 
-            font-family: 'Outfit', sans-serif;
-        }
-        .nav-links a:hover { color: var(--accent); }
-        .nav-links a.active { color: #fff; border-bottom: 2px solid var(--accent); }
+        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; text-decoration: none; font-family: 'Space Grotesk', sans-serif; }
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links > a { color: #9ca3af; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; font-family: 'Outfit', sans-serif; }
+        .nav-links > a:hover, .nav-links > a.active { color: var(--accent); }
 
-        /* CONTENT CONTAINER */
-        .content-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        
+        /* Dropdown CSS */
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background-color: transparent; color: #9ca3af; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; font-family: 'Outfit', sans-serif; padding: 10px 0; transition: color 0.2s; }
+        .dropdown:hover .dropbtn { color: var(--accent); }
+        .dropdown-content { display: none; position: absolute; background-color: #1a1a1a; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 1001; border-radius: 8px; border: 1px solid #333; top: 100%; left: 50%; transform: translateX(-50%); padding: 5px 0; }
+        .dropdown-content a { color: #ccc; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; transition: background 0.2s; }
+        .dropdown-content a:hover { background-color: #333; color: #fff; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .content-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
         h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #fff; line-height: 1.2; }
         h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 10px; }
         h2 { font-size: 1.8rem; margin-top: 50px; margin-bottom: 20px; color: var(--accent); }
-        
         .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
-        
         p { margin-bottom: 25px; font-size: 1.1rem; color: #ccc; }
         strong { color: #fff; font-weight: 600; }
         
@@ -69,48 +54,17 @@
         .stat-card { background: var(--card-bg); padding: 20px; border-left: 3px solid var(--accent); margin-bottom: 15px; border-radius: 0 8px 8px 0; }
         .stat-num { font-family: 'Space Grotesk'; font-size: 2.5rem; color: #fff; line-height: 1; }
         .stat-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-
-        /* Image Placeholder */
-        .profile-img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            background: #222; 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: #555; 
-            margin-bottom: 30px; 
-            object-fit: cover; 
-            border: 1px solid var(--border);
-        }
-
-        .quote-box {
-            border-left: 4px solid var(--accent);
-            padding-left: 25px;
-            margin: 40px 0;
-            font-style: italic;
-            color: #fff;
-            font-size: 1.25rem;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .contact-btn {
-            display: inline-block;
-            background: var(--accent);
-            color: #000;
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            margin-top: 20px;
-            transition: transform 0.2s;
-        }
+        .profile-img { width: 100%; aspect-ratio: 1/1; background: #222; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #555; margin-bottom: 30px; object-fit: cover; border: 1px solid var(--border); }
+        .quote-box { border-left: 4px solid var(--accent); padding-left: 25px; margin: 40px 0; font-style: italic; color: #fff; font-size: 1.25rem; font-family: 'Space Grotesk', sans-serif; }
+        .contact-btn { display: inline-block; background: var(--accent); color: #000; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 20px; transition: transform 0.2s; }
         .contact-btn:hover { transform: translateY(-2px); background: #fff; }
 
         @media (max-width: 768px) {
             nav { flex-direction: column; gap: 15px; padding: 15px; }
-            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; }
+            .nav-links { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+            .dropdown { width: 100%; text-align: center; }
+            .dropdown-content { position: relative; width: 100%; top: 0; left: 0; transform: none; box-shadow: none; border: none; background: rgba(255,255,255,0.03); margin-top: 5px; }
+            .dropbtn { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 4px; }
         }
     </style>
 </head>
@@ -120,13 +74,20 @@
         <a href="index.html" class="logo">SHAUN BARTLETT</a>
         <div class="nav-links">
             <a href="about.html" class="active">About Me</a>
+            <a href="index.html#framework">The Framework</a>
             <a href="index.html#applications">Browse by Use</a>
-            <a href="index.html#framework">Framework</a>
-            <a href="index.html#play-now">Digital Games</a>
-            <a href="index.html#den-series">The Den Series</a>
-            <a href="index.html#games">Quick Hit Games</a>
-            <a href="index.html#sports-iq">Sports IQ</a>
-            <a href="concepts.html">Concept Lab</a>
+            
+            <div class="dropdown">
+                <button class="dropbtn">Game Library ▾</button>
+                <div class="dropdown-content">
+                    <a href="index.html#play-now">Digital Games</a>
+                    <a href="index.html#den-series">The Den Series</a>
+                    <a href="index.html#games">Quick Hit Games</a>
+                    <a href="index.html#sports-iq">Sports IQ</a>
+                    <a href="concepts.html">Concept Lab</a>
+                </div>
+            </div>
+
             <a href="index.html#contact">Contact</a>
         </div>
     </nav>
