@@ -77,8 +77,37 @@
         .callout h3 { color: #FFD54F; margin-bottom: 10px; font-size: 1.2rem; }
         .callout p { color: #ccc; margin: 0; }
 
-        .action-btn { display: block; width: 100%; padding: 12px 0; margin-top: 20px; text-align: center; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
-        .action-btn:hover { background: var(--accent); color: #000; }
+        /* UPDATED BUTTON STYLES */
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; }
+        
+        .action-btn { 
+            padding: 10px 0; 
+            text-align: center; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            transition: all 0.2s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary { 
+            background: var(--accent); 
+            color: #000; 
+            border: 1px solid var(--accent);
+        }
+        .btn-primary:hover { background: #fff; border-color: #fff; transform: translateY(-2px); }
+
+        .btn-secondary { 
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid #444; 
+        }
+        .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+        .btn-full { grid-column: span 2; }
 
         @media (max-width: 768px) {
             nav { flex-direction: column; gap: 15px; padding: 15px; }
@@ -133,7 +162,9 @@
                         <span class="learning-tag">Empathy</span>
                         <span class="learning-tag">Resource Scarcity</span>
                     </div>
-                    <a href="details_winter.html" class="action-btn">View Concept</a>
+                    <div class="card-actions">
+                        <a href="details_winter.html" class="action-btn btn-secondary btn-full">View Details</a>
+                    </div>
                 </div>
             </div>
 
@@ -150,7 +181,9 @@
                         <span class="learning-tag">Neurodiversity</span>
                         <span class="learning-tag">Identity</span>
                     </div>
-                    <a href="details_summer.html" class="action-btn">Read Concept</a>
+                    <div class="card-actions">
+                        <a href="details_summer.html" class="action-btn btn-secondary btn-full">View Details</a>
+                    </div>
                 </div>
             </div>
 
@@ -167,7 +200,10 @@
                         <span class="learning-tag">Conflict Resolution</span>
                         <span class="learning-tag">Fairness</span>
                     </div>
-                    <a href="details_inheritance.html" class="action-btn">View Details</a>
+                    <div class="card-actions">
+                        <a href="Inheritance.html" class="action-btn btn-primary">▶ Play Game</a>
+                        <a href="details_inheritance.html" class="action-btn btn-secondary">View Details</a>
+                    </div>
                 </div>
             </div>
 
@@ -182,7 +218,10 @@
                         <span class="learning-tag">Media Literacy</span>
                         <span class="learning-tag">Misinformation</span>
                     </div>
-                    <a href="details_viral.html" class="action-btn">View Details</a>
+                    <div class="card-actions">
+                        <a href="viral_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
+                        <a href="details_viral.html" class="action-btn btn-secondary">View Details</a>
+                    </div>
                 </div>
             </div>
 
@@ -199,7 +238,10 @@
                         <span class="learning-tag">Self-Regulation</span>
                         <span class="learning-tag">Cooperation</span>
                     </div>
-                    <a href="details_burnout.html" class="action-btn">View Details</a>
+                    <div class="card-actions">
+                        <a href="burnout_rules.pdf" download class="action-btn btn-primary">📄 Rules</a>
+                        <a href="details_burnout.html" class="action-btn btn-secondary">View Details</a>
+                    </div>
                 </div>
             </div>
 
