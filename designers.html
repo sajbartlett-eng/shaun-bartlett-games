@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Designers | The Framework</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ... Copy CSS from index.html ... */
+        /* Add specific overrides for this page */
+        .framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        .engine-card { background: #181818; padding: 30px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
+        .trap-card { background: #181818; padding: 30px; border-left: 3px solid var(--engage-orange); border-radius: 0 8px 8px 0; }
+        h4 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; }
+        p { color: #ccc; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">SHAUN BARTLETT</a>
+        <div class="nav-links">
+            <a href="index.html">The Sandbox</a>
+            <a href="designers.html" class="active">For Designers</a>
+            <a href="educators.html">For Educators</a>
+            <a href="mailto:shaun.aj.bartlett@gmail.com" class="nav-cta">Contact</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>BUILD YOUR OWN ENGINES</h1>
+        <p>This framework translates complex systems into playable experiences. <br>It is open source. Use it to map your own world.</p>
+    </div>
+
+    <section class="section">
+        <h2 style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 40px; color: #fff;">Part 1: The 7 Design Engines</h2>
+        <div class="grid">
+            <div class="engine-card">
+                <h4>⚖️ Structural Tension</h4>
+                <p>Create incentive structures where individually rational choices lead to collectively irrational outcomes. (e.g. Tragedy of the Commons)</p>
+            </div>
+            <div class="engine-card">
+                <h4>🔗 Asymmetric Interdependence</h4>
+                <p>Give players different risks and capacities. Shared fate + unequal power = necessary negotiation.</p>
+            </div>
+            <div class="engine-card">
+                <h4>⚙️ Mechanical Honesty</h4>
+                <p>The system must not judge. Allow exploitation. If the mechanic permits it, the player owns the guilt.</p>
+            </div>
+            <div class="engine-card">
+                <h4>🌊 Cascading Consequences</h4>
+                <p>Entropy is built-in. Small errors must compound into large disasters.</p>
+            </div>
+            <div class="engine-card">
+                <h4>⏳ Scarcity Creates Pressure</h4>
+                <p>Systems thinking collapses under load. Constraints force players to use imperfect heuristics.</p>
+            </div>
+            <div class="engine-card">
+                <h4>🟥 Neutrality</h4>
+                <p>Reveal reality, don't preach it. The system must allow outcomes the designer dislikes.</p>
+            </div>
+            <div class="engine-card">
+                <h4>⚡ Cognitive Economy</h4>
+                <p>One turn = one choice. Strip the interface so the mental budget is spent on the moral dilemma.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 40px; color: #fff;">Part 2: The Methodology Gap</h2>
+        <p style="color: #888; margin-bottom: 30px;">Why most educational design fails to engage.</p>
+        
+        <div class="grid">
+            <div class="trap-card">
+                <h4 style="color: var(--engage-orange);">🚫 The Entertainment Trap</h4>
+                <p><strong>The Conflict:</strong> Artificial balance kills the lesson.</p>
+                <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Lean into unfairness. The fun comes from the primal struggle against a rigged system.</p>
+            </div>
+            <div class="trap-card">
+                <h4 style="color: var(--engage-orange);">🚫 The Virtue Trap</h4>
+                <p><strong>The Conflict:</strong> Preaching triggers defensiveness.</p>
+                <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Neutrality. When the game doesn't judge, the player judges themselves.</p>
+            </div>
+            <div class="trap-card">
+                <h4 style="color: var(--engage-orange);">🚫 The Fidelity Trap</h4>
+                <p><strong>The Conflict:</strong> Complexity blocks access.</p>
+                <p style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;"><strong>Solution:</strong> Folk Mechanics. Use tools people already know (cards, dice, words).</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
