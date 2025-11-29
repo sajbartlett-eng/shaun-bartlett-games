@@ -3,52 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact | The Friction Lab</title>
+    <title>Contact | Shaun Bartlett</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- SHARED CSS --- */
-        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --text-muted: #9ca3af; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); --border: #333; --den-gold: #FFD54F; --engage-orange: #FFB74D; --lab-blue: #42A5F5; }
+        :root {
+            --bg: #0f0f0f;
+            --card-bg: #181818;
+            --text: #e0e0e0;
+            --text-muted: #9ca3af;
+            --accent: #66BB6A;
+            --accent-glow: rgba(102, 187, 106, 0.5);
+            --border: #333;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%); }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%);
+        }
+
         h1, h2, h3, h4, .logo, .tag { font-family: 'Space Grotesk', sans-serif; }
         a { text-decoration: none; color: inherit; }
-        
+
         /* NAV */
         nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(15, 15, 15, 0.95); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); }
         .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
         .nav-links { display: flex; gap: 25px; align-items: center; }
         .nav-links a { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+        .nav-links a:hover { color: var(--accent); }
         .nav-cta { color: var(--accent) !important; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 4px; }
         .nav-cta:hover { background: rgba(102, 187, 106, 0.1); }
 
-        /* LAYOUT */
-        .container { max-width: 900px; margin: 0 auto; padding: 80px 20px; text-align: center; }
-        h1 { font-size: clamp(2.5rem, 5vw, 4rem); color: #fff; margin-bottom: 15px; line-height: 1; }
-        p.intro { font-size: 1.2rem; color: #888; margin-bottom: 60px; }
-
-        /* SPLIT GRID */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; text-align: left; }
-        .option-card { background: #181818; padding: 40px; border-radius: 12px; border: 1px solid #333; transition: transform 0.2s; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        .option-card:hover { transform: translateY(-5px); border-color: #555; }
+        /* CONTENT */
+        .container { max-width: 800px; margin: 60px auto; padding: 0 20px; }
         
-        .btn { display: block; text-align: center; padding: 18px; border-radius: 8px; font-weight: 700; margin-top: auto; transition: all 0.2s; }
-        
-        /* Data Button (Blue) */
-        .btn-data { background: var(--lab-blue); color: #000; box-shadow: 0 0 20px rgba(66, 165, 245, 0.3); }
-        .btn-data:hover { background: #fff; }
-        
-        /* Business Button (Green) */
-        .btn-biz { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); }
-        .btn-biz:hover { background: #fff; }
+        .header-text { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 3rem; color: #fff; margin-bottom: 10px; }
+        p { font-size: 1.1rem; color: #888; }
 
-        .email-display { margin-top: 80px; padding-top: 40px; border-top: 1px solid #333; color: #666; font-size: 0.9rem; }
-        .email-link { color: #fff; font-weight: 600; font-size: 1.1rem; transition: color 0.2s; }
-        .email-link:hover { color: var(--accent); }
+        /* FORM WRAPPER */
+        .form-wrapper {
+            background: #181818;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+            height: 1100px; /* Taller to fit Google Form */
+        }
 
-        @media (max-width: 768px) { 
-            .grid { grid-template-columns: 1fr; } 
+        iframe { width: 100%; height: 100%; border: none; }
+
+        @media (max-width: 768px) {
             nav { flex-direction: column; gap: 15px; }
+            h1 { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -57,39 +71,25 @@
     <nav>
         <a href="index.html" class="logo">SHAUN BARTLETT</a>
         <div class="nav-links">
-            <a href="index.html">The Sandbox</a>
-            <a href="designers.html">For Designers</a>
-            <a href="educators.html">For Educators</a>
-            <a href="about.html">About</a>
-            <a href="contact.html" class="nav-cta active">Contact</a>
+            <a href="index.html#games">The Games</a>
+            <a href="index.html#framework">The Framework</a>
+            <a href="index.html#about">The Architect</a>
+            <a href="contact.html" class="nav-cta">Contact</a>
         </div>
     </nav>
 
     <div class="container">
-        <h1>OPEN CHANNELS</h1>
-        <p class="intro">Choose your objective.</p>
+        <div class="header-text">
+            <h1>OPEN CHANNELS</h1>
+            <p>Report data, request workshops, or discuss system design.</p>
+        </div>
 
-        <div class="grid">
-            <div class="option-card" style="border-top: 4px solid var(--lab-blue);">
-                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.5rem;">🧪 Report Data</h3>
-                <p style="font-size: 1rem; color: #aaa; margin-bottom: 30px; line-height: 1.6;">
-                    You played a simulation and have feedback. Tell me how you broke the system, what surprised you, or where the friction felt wrong.
-                </p>
-                <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: [Game Name]&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="btn btn-data">Send 3-Question Report</a>
-            </div>
-
-            <div class="option-card" style="border-top: 4px solid var(--accent);">
-                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.5rem;">💼 Deploy Systems</h3>
-                <p style="font-size: 1rem; color: #aaa; margin-bottom: 30px; line-height: 1.6;">
-                    You want to bring these tools into your classroom, boardroom, or design studio. Available for workshops, speaking, and system modeling.
-                </p>
-                <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Inquiry: Deployment / Workshop" class="btn btn-biz">Business Inquiry</a>
-            </div>
+        <div class="form-wrapper">
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfAYf5I0lRjX2TT4I__fHLDku7QrPqrN8BNVn4_WpEugsFgRQ/viewform?embedded=true">Loading…</iframe>
         </div>
         
-        <div class="email-display">
-            <p style="margin-bottom: 10px;">Direct Email Channel</p>
-            <a href="mailto:shaun.aj.bartlett@gmail.com" class="email-link">shaun.aj.bartlett@gmail.com</a>
+        <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
+            Direct Email: <a href="mailto:shaun.aj.bartlett@gmail.com" style="color: #888; text-decoration: underline;">shaun.aj.bartlett@gmail.com</a>
         </div>
     </div>
 
