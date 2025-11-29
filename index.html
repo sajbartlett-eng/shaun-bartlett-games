@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Systems Sandbox | Shaun Bartlett</title>
+    <title>Contact | The Friction Lab</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* --- SHARED CSS --- */
@@ -22,53 +22,34 @@
         .nav-cta { color: var(--accent) !important; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 4px; }
         .nav-cta:hover { background: rgba(102, 187, 106, 0.1); }
 
-        /* HERO */
-        .hero { text-align: center; padding: 100px 20px 60px 20px; max-width: 1000px; margin: 0 auto; }
-        .hero h1 { font-size: clamp(3rem, 7vw, 5.5rem); margin-bottom: 20px; line-height: 1; letter-spacing: -2px; color: #fff; }
-        .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto; }
-        .hero-urgency { font-size: 0.9rem !important; color: var(--accent) !important; margin-top: 20px !important; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; }
+        /* LAYOUT */
+        .container { max-width: 800px; margin: 0 auto; padding: 80px 20px; text-align: center; }
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); color: #fff; margin-bottom: 15px; line-height: 1; }
+        p.intro { font-size: 1.2rem; color: #888; margin-bottom: 60px; }
 
-        /* FILTER BAR */
-        .filter-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 60px; flex-wrap: wrap; }
-        .filter-btn { background: transparent; border: 1px solid #333; color: #888; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-weight: 600; transition: all 0.2s; }
-        .filter-btn:hover { border-color: #666; color: #fff; }
-        .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-        /* GRID & CARDS */
-        .section { padding: 0 5% 80px 5%; max-width: 1400px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        /* SPLIT GRID */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; text-align: left; }
+        .option-card { background: #181818; padding: 40px; border-radius: 12px; border: 1px solid #333; transition: transform 0.2s; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .option-card:hover { transform: translateY(-5px); border-color: #555; }
         
-        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: all 0.3s; }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
-        .card-img-wrapper { height: 220px; width: 100%; overflow: hidden; background: #222; position: relative; }
-        .card-img { height: 100%; width: 100%; object-fit: cover; transition: transform 0.5s; }
-        .card:hover .card-img { transform: scale(1.05); }
-        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .btn { display: block; text-align: center; padding: 18px; border-radius: 8px; font-weight: 700; margin-top: auto; transition: all 0.2s; }
         
-        /* TAGS */
-        .tags { display: flex; gap: 8px; margin-bottom: 15px; }
-        .tag { font-size: 0.7rem; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; font-weight: 700; }
-        .tag.digital { color: #64B5F6; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.2); }
-        .tag.pnp { color: var(--engage-orange); background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.2); }
-        .tag.dev { color: #FF5252; background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.2); }
-
-        /* BUTTONS */
-        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 20px; }
-        .action-btn { padding: 10px 0; border-radius: 6px; font-weight: 600; font-size: 0.9rem; text-align: center; transition: all 0.2s; display: block; }
-        .btn { display: inline-block; padding: 16px 40px; background: var(--accent); color: #000; border-radius: 8px; font-weight: 700; transition: all 0.2s; font-size: 1rem; box-shadow: 0 0 20px var(--accent-glow); }
-        .btn:hover { transform: translateY(-2px); background: #fff; }
+        /* Data Button (Blue) */
+        .btn-data { background: var(--lab-blue); color: #000; box-shadow: 0 0 20px rgba(66, 165, 245, 0.3); }
+        .btn-data:hover { background: #fff; }
         
-        .btn-primary { background: var(--accent); color: #000; border: 1px solid var(--accent); }
-        .btn-primary:hover { background: #fff; border-color: #fff; }
-        .btn-secondary { background: transparent; color: #aaa; border: 1px solid #444; }
-        .btn-secondary:hover { color: var(--lab-blue); border-color: var(--lab-blue); background: rgba(66, 165, 245, 0.05); }
+        /* Business Button (Green) */
+        .btn-biz { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-biz:hover { background: #fff; }
 
-        /* FOOTER */
-        .feedback-section { background: #111; padding: 60px 5%; text-align: center; border-top: 1px solid #333; margin-top: 60px; }
-        .feedback-btn { display: inline-block; background: var(--lab-blue); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 700; margin-top: 20px; box-shadow: 0 0 15px rgba(66, 165, 245, 0.3); }
-        .feedback-btn:hover { background: #fff; transform: translateY(-2px); }
+        .email-display { margin-top: 80px; padding-top: 40px; border-top: 1px solid #333; color: #666; font-size: 0.9rem; }
+        .email-link { color: #fff; font-weight: 600; font-size: 1.1rem; transition: color 0.2s; }
+        .email-link:hover { color: var(--accent); }
 
-        @media (max-width: 768px) { .hero h1 { font-size: 3rem; } nav { flex-direction: column; gap: 15px; } }
+        @media (max-width: 768px) { 
+            .grid { grid-template-columns: 1fr; } 
+            nav { flex-direction: column; gap: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -76,160 +57,41 @@
     <nav>
         <a href="index.html" class="logo">SHAUN BARTLETT</a>
         <div class="nav-links">
-            <a href="index.html" class="active">The Sandbox</a>
+            <a href="index.html">The Sandbox</a>
             <a href="designers.html">For Designers</a>
             <a href="educators.html">For Educators</a>
-            <a href="mailto:shaun.aj.bartlett@gmail.com" class="nav-cta">Share Results</a>
+            <a href="about.html">About</a>
+            <a href="contact.html" class="nav-cta active">Contact</a>
         </div>
     </nav>
 
-    <div class="hero">
-        <h1>THE SYSTEMS SANDBOX</h1>
-        <p>This is a living laboratory. I build games that simulate failure to teach wisdom. <br>Come play, experiment, and break things.</p>
-        <a href="#games" class="btn">Enter the Lab</a>
-        <p class="hero-urgency">The simulations change based on player outcomes.<br>Early data shapes the system.</p>
-    </div>
-
-    <section class="section" id="games">
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterGames('all')">All Systems</button>
-            <button class="filter-btn" onclick="filterGames('digital')">Digital (Browser)</button>
-            <button class="filter-btn" onclick="filterGames('pnp')">Tabletop (PnP)</button>
-            <button class="filter-btn" onclick="filterGames('dev')">In Development</button>
-        </div>
+    <div class="container">
+        <h1>OPEN CHANNELS</h1>
+        <p class="intro">Choose your objective.</p>
 
         <div class="grid">
-            
-            <div class="card game-card digital">
-                <div class="card-img-wrapper"><img src="assets/images/inheritance-thumb.jpg" class="card-img" alt="Inheritance"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag digital">Digital</span></div>
-                    <h3>INHERITANCE</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Fair division is computationally hard. A spatial puzzle about moral compromise.</p>
-                    <div class="card-actions">
-                        <a href="Inheritance.html" class="action-btn btn-primary">▶ Play Now</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Inheritance&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
+            <div class="option-card" style="border-top: 4px solid var(--lab-blue);">
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.5rem;">🧪 Report Data</h3>
+                <p style="font-size: 1rem; color: #aaa; margin-bottom: 30px; line-height: 1.6;">
+                    You played a simulation and have feedback. Tell me how you broke the system, what surprised you, or where the friction felt wrong.
+                </p>
+                <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: [Game Name]&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="btn btn-data">Send 3-Question Report</a>
             </div>
 
-            <div class="card game-card digital">
-                <div class="card-img-wrapper"><img src="assets/images/tippingpoint-thumb.jpg" class="card-img" alt="Tipping Point"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag digital">Digital</span></div>
-                    <h3>THE TIPPING POINT</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Climate crisis push-your-luck. Rational individual choices create collective collapse.</p>
-                    <div class="card-actions">
-                        <a href="TheTippingPoint.html" class="action-btn btn-primary">▶ Play Now</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Tipping Point&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
+            <div class="option-card" style="border-top: 4px solid var(--accent);">
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.5rem;">💼 Deploy Systems</h3>
+                <p style="font-size: 1rem; color: #aaa; margin-bottom: 30px; line-height: 1.6;">
+                    You want to bring these tools into your classroom, boardroom, or design studio. Available for workshops, speaking, and system modeling.
+                </p>
+                <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Inquiry: Deployment / Workshop" class="btn btn-biz">Business Inquiry</a>
             </div>
-
-            <div class="card game-card pnp">
-                <div class="card-img-wrapper" style="display:flex; align-items:center; justify-content:center; font-size:4rem; background:#222;">📉</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>SCAPEGOAT</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Corporate accountability simulator. Underspend and you're fired. Overspend and you face the audit alone.</p>
-                    <div class="card-actions">
-                        <a href="scapegoat_rules.pdf" class="action-btn btn-primary">📄 Rules</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Scapegoat&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card game-card pnp">
-                <div class="card-img-wrapper"><img src="assets/images/burnout-thumb.jpg" class="card-img" alt="Burnout"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>BURNOUT</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Workplace toxicity. Individual ambition forces you to poison the team's environment.</p>
-                    <div class="card-actions">
-                        <a href="burnout_rules.pdf" class="action-btn btn-primary">📄 Rules</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Burnout&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card game-card pnp">
-                <div class="card-img-wrapper"><img src="assets/images/leverage-thumb.jpg" class="card-img" alt="Leverage"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>LEVERAGE</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Feudal power dynamics using a standard deck of cards. Wealth vs Status.</p>
-                    <div class="card-actions">
-                        <a href="leverage_rules.pdf" class="action-btn btn-primary">📄 Rules</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Leverage&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card game-card pnp">
-                <div class="card-img-wrapper" style="display:flex; align-items:center; justify-content:center; font-size:4rem; background:#222;">📈</div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag pnp">Print & Play</span></div>
-                    <h3>VIRAL</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Truth vs Attention. Platform incentives reward engagement over accuracy.</p>
-                    <div class="card-actions">
-                        <a href="viral_rules.pdf" class="action-btn btn-primary">📄 Rules</a>
-                        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report: Viral&body=1. What did you do?%0D%0A%0D%0A2. What did the system do back?%0D%0A%0D%0A3. What surprised you?" class="action-btn btn-secondary">Report Outcome</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card game-card dev">
-                <div class="card-img-wrapper"><img src="assets/images/winterden-thumb.jpg" class="card-img" alt="Winter Den"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag dev">In Development</span></div>
-                    <h3>THE DEN SERIES</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Survival, Neurodiversity, and Communication. A trilogy of animal-based system models.</p>
-                    <div class="card-actions">
-                        <a href="details_winter.html" class="action-btn btn-secondary" style="grid-column: span 2; border-color: #666; color: #fff;">View Concept</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card game-card dev">
-                <div class="card-img-wrapper"><img src="assets/images/playmaker-thumb.jpg" class="card-img" alt="Playmaker"></div>
-                <div class="card-content">
-                    <div class="tags"><span class="tag dev">In Development</span></div>
-                    <h3>PLAYMAKER</h3>
-                    <p style="color:#ccc; font-size:0.95rem;">Basketball IQ & Spatial Strategy. Trusting the rotation vs Hero Ball.</p>
-                    <div class="card-actions">
-                        <a href="#" class="action-btn btn-secondary" style="grid-column: span 2; border-color: #333; color: #555; cursor: default;">Coming Soon</a>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </section>
-
-    <div class="feedback-section">
-        <h2 style="color: #fff; margin-bottom: 15px;">Tell Me What Happened</h2>
-        <p style="color: #aaa; margin-bottom: 30px;">Don't let your chaos go to waste. Report your outcome to shape the next version.</p>
-        <a href="mailto:shaun.aj.bartlett@gmail.com?subject=Lab Report" class="feedback-btn">Send 3-Question Report</a>
+        
+        <div class="email-display">
+            <p style="margin-bottom: 10px;">Direct Email Channel</p>
+            <a href="mailto:shaun.aj.bartlett@gmail.com" class="email-link">shaun.aj.bartlett@gmail.com</a>
+        </div>
     </div>
-
-    <script>
-        function filterGames(category) {
-            const cards = document.querySelectorAll('.game-card');
-            const btns = document.querySelectorAll('.filter-btn');
-            
-            // Update buttons
-            btns.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Filter cards
-            cards.forEach(card => {
-                if (category === 'all' || card.classList.contains(category)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-    </script>
 
 </body>
 </html>
