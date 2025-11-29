@@ -3,52 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Shaun Bartlett | The Friction Lab</title>
+    <title>About Shaun Bartlett</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- SHARED CSS --- */
-        :root { --bg: #0f0f0f; --card-bg: #181818; --text: #e0e0e0; --text-muted: #9ca3af; --accent: #66BB6A; --accent-glow: rgba(102, 187, 106, 0.5); --border: #333; --den-gold: #FFD54F; --engage-orange: #FFB74D; --lab-blue: #42A5F5; }
+        :root { --bg: #0f0f0f; --text: #e0e0e0; --accent: #66BB6A; --card-bg: #181818; --border: #333; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; background-image: radial-gradient(circle at 50% 0%, #1a2e1b 0%, #0f0f0f 60%); }
-        h1, h2, h3, h4, .logo, .tag { font-family: 'Space Grotesk', sans-serif; }
-        a { text-decoration: none; color: inherit; }
         
-        /* NAV */
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(15, 15, 15, 0.95); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); }
-        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; line-height: 1.8; }
+        
+        /* NAVIGATION & DROPDOWN */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 15, 15, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+        
+        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; color: #fff; text-decoration: none; font-family: 'Space Grotesk', sans-serif; }
         .nav-links { display: flex; gap: 25px; align-items: center; }
-        .nav-links a { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-        .nav-cta { color: var(--accent) !important; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 4px; }
-        .nav-cta:hover { background: rgba(102, 187, 106, 0.1); }
+        .nav-links > a { color: #9ca3af; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; font-family: 'Outfit', sans-serif; }
+        .nav-links > a:hover, .nav-links > a.active { color: var(--accent); }
 
-        /* CONTENT LAYOUT */
-        .content-container { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
-        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 10px; color: #fff; line-height: 1.1; }
-        .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 60px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .bio-grid { display: grid; grid-template-columns: 1fr; gap: 60px; margin-top: 40px; }
-        
-        /* TEXT STYLING */
+        /* Dropdown CSS */
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background-color: transparent; color: #9ca3af; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; font-family: 'Outfit', sans-serif; padding: 10px 0; transition: color 0.2s; }
+        .dropdown:hover .dropbtn { color: var(--accent); }
+        .dropdown-content { display: none; position: absolute; background-color: #1a1a1a; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 1001; border-radius: 8px; border: 1px solid #333; top: 100%; left: 50%; transform: translateX(-50%); padding: 5px 0; }
+        .dropdown-content a { color: #ccc; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; transition: background 0.2s; }
+        .dropdown-content a:hover { background-color: #333; color: #fff; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .content-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #fff; line-height: 1.2; }
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; margin-top: 50px; margin-bottom: 20px; color: var(--accent); }
+        .subtitle { color: var(--accent); font-size: 1.2rem; margin-bottom: 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
         p { margin-bottom: 25px; font-size: 1.1rem; color: #ccc; }
-        h2 { color: #fff; margin-top: 50px; margin-bottom: 20px; font-size: 1.8rem; }
-        strong { color: #fff; }
+        strong { color: #fff; font-weight: 600; }
         
-        /* PROFILE ELEMENTS */
-        .quote-box { border-left: 4px solid var(--accent); padding-left: 25px; margin: 0 0 40px 0; font-style: italic; color: #fff; font-size: 1.25rem; line-height: 1.5; }
-        .profile-img { width: 100%; aspect-ratio: 1/1; background: #222; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 30px; filter: grayscale(20%); transition: filter 0.3s; }
-        .profile-img:hover { filter: grayscale(0%); }
+        .bio-grid { display: grid; grid-template-columns: 1fr; gap: 50px; margin-top: 40px; }
+        @media(min-width: 768px) { .bio-grid { grid-template-columns: 2fr 1fr; } }
         
         .stat-card { background: var(--card-bg); padding: 20px; border-left: 3px solid var(--accent); margin-bottom: 15px; border-radius: 0 8px 8px 0; }
-        .stat-num { font-family: 'Space Grotesk'; font-size: 1.5rem; color: #fff; font-weight: 700; }
-        .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-        
-        .connect-box { margin-top: 40px; background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
-        .connect-btn { display: block; text-align: center; background: var(--accent); color: #000; padding: 15px; border-radius: 8px; font-weight: 700; margin-top: 20px; transition: all 0.2s; }
-        .connect-btn:hover { background: #fff; transform: translateY(-2px); }
+        .stat-num { font-family: 'Space Grotesk'; font-size: 2.5rem; color: #fff; line-height: 1; }
+        .stat-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+        .profile-img { width: 100%; aspect-ratio: 1/1; background: #222; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #555; margin-bottom: 30px; object-fit: cover; border: 1px solid var(--border); }
+        .quote-box { border-left: 4px solid var(--accent); padding-left: 25px; margin: 40px 0; font-style: italic; color: #fff; font-size: 1.25rem; font-family: 'Space Grotesk', sans-serif; }
+        .contact-btn { display: inline-block; background: var(--accent); color: #000; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 20px; transition: transform 0.2s; }
+        .contact-btn:hover { transform: translateY(-2px); background: #fff; }
 
-        @media(min-width: 768px) { .bio-grid { grid-template-columns: 2fr 1fr; } }
-        @media (max-width: 768px) { nav { flex-direction: column; gap: 15px; } }
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 15px; padding: 15px; }
+            .nav-links { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+            .dropdown { width: 100%; text-align: center; }
+            .dropdown-content { position: relative; width: 100%; top: 0; left: 0; transform: none; box-shadow: none; border: none; background: rgba(255,255,255,0.03); margin-top: 5px; }
+            .dropbtn { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 4px; }
+        }
     </style>
 </head>
 <body>
@@ -56,11 +73,22 @@
     <nav>
         <a href="index.html" class="logo">SHAUN BARTLETT</a>
         <div class="nav-links">
-            <a href="index.html">The Sandbox</a>
-            <a href="designers.html">For Designers</a>
-            <a href="educators.html">For Educators</a>
-            <a href="about.html" class="active">About</a>
-            <a href="contact.html" class="nav-cta">Contact</a>
+            <a href="about.html" class="active">About Me</a>
+            <a href="index.html#framework">The Framework</a>
+            <a href="index.html#applications">Browse by Use</a>
+            
+            <div class="dropdown">
+                <button class="dropbtn">Game Library ▾</button>
+                <div class="dropdown-content">
+                    <a href="index.html#play-now">Digital Games</a>
+                    <a href="index.html#den-series">The Den Series</a>
+                    <a href="index.html#games">Quick Hit Games</a>
+                    <a href="index.html#sports-iq">Sports IQ</a>
+                    <a href="concepts.html">Concept Lab</a>
+                </div>
+            </div>
+
+            <a href="index.html#contact">Contact</a>
         </div>
     </nav>
 
@@ -71,7 +99,7 @@
         <div class="bio-grid">
             <div>
                 <div class="quote-box">
-                    "I was told basketball intelligence was impossible to teach—that it was a gift you either had or you didn't. I spent the last 15 years proving that wrong."
+                    "I was told basketball intelligence was impossible to teach—that it was a gift you either had or you didn't. I spent the last 15 years processing that, and the last 3 years proving it wrong."
                 </div>
 
                 <p>
@@ -89,15 +117,18 @@
                     One day, the two worlds collided. I realized that the spatial navigation of basketball and the risk management of engineering were the same problem. And if they were systems, they could be modeled.
                 </p>
                 <p>
-                    I developed the <strong>Systems Literacy Framework</strong> to translate complex human friction into playable simulations. From corporate toxicity (<em>Burnout</em>) to climate economics (<em>The Tipping Point</em>), I map the invisible mechanics of our world to make them visible, playable, and solvable.
+                    I spent three years developing <em>Playmaker</em>, a tool to make basketball IQ experiential. In doing so, I uncovered the <strong>Systems Literacy Framework</strong>—a set of 8 design engines that can translate complex human friction into playable simulations.
                 </p>
 
                 <h2>From Theory to Generative Engine</h2>
                 <p>
-                    Once the framework existed, the applications exploded. My daughter needed to understand fairness, so <em>Winter Den</em> emerged to model survival ethics. She needed to navigate neurodiversity at school, so <em>Summer Den</em> was born to model mental energy costs.
+                    Once the framework existed, the applications exploded. I turned my attention to my own children. My daughter needed to understand fairness, so <em>Winter Den</em> emerged to model survival ethics. She needed to navigate neurodiversity at school, so <em>Summer Den</em> was born to model mental energy costs.
                 </p>
                 <p>
-                    I am now mapping a full curriculum of human systems. My goal is to hand these tools to educators, parents, and leaders. We stop teaching the theory of failure, and start letting people feel the pressure of it.
+                    From there, the framework proved it was platform-agnostic. A standard deck of cards became a feudal power simulation (<strong>Leverage</strong>). Two dice became a climate economy model (<strong>The Tipping Point</strong>). A piece of paper became a lesson in algorithmic bias (<strong>Viral</strong>).
+                </p>
+                <p>
+                    I am now mapping a full curriculum of human systems. My goal is to hand these tools to educators, parents, and leaders to make the invisible mechanics of our world visible, playable, and solvable.
                 </p>
             </div>
 
@@ -105,21 +136,16 @@
                 <img src="assets/images/profile.jpg" alt="Shaun Bartlett" class="profile-img">
                 
                 <div class="stat-card">
-                    <div class="stat-num">Perth, AU</div>
-                    <div class="stat-label">Base of Operations</div>
+                    <div class="stat-num">Born 1991</div>
+                    <div class="stat-label">Based in Perth, AU</div>
                 </div>
                 
-                <div class="stat-card">
-                    <div class="stat-num">1991</div>
-                    <div class="stat-label">Established</div>
-                </div>
-                
-                <div class="connect-box">
-                    <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: #fff;">Collaboration</h3>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; line-height: 1.5;">
+                <div style="margin-top: 40px; background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: #fff;">Connect</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 20px;">
                         I actively encourage other designers to use the framework. Let's map the world together.
                     </p>
-                    <a href="contact.html" class="connect-btn">Open Channels</a>
+                    <a href="mailto:shaun.aj.bartlett@gmail.com" class="contact-btn">Get in Touch</a>
                 </div>
             </div>
         </div>
