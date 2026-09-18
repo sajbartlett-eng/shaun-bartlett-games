@@ -1593,7 +1593,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     margin: 14px 0 0;
 }
 .final-estate-board {
-    max-width: 370px;
+    max-width: 320px;
     margin: 12px auto 0;
 }
 .final-estate-board canvas {
@@ -1603,6 +1603,11 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 }
 .final-estate-board .scoreboard-label {
     margin-bottom: 6px;
+}
+
+.final-estate-board .estate-whatif {
+    width: 100%;
+    margin-top: 12px;
 }
 .fairness-review {
     margin: 14px 0 2px;
@@ -2120,7 +2125,6 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     cursor: pointer;
 }
 .next-game-plan { padding: 12px; border: 1px solid var(--paper-edge); border-radius: 4px; }
-.next-game-plan button { width: 100%; }
 
 .consequence-board { position: relative; width: 100%; margin: 12px 0; }
 .consequence-board canvas { width: 100%; height: auto; display: block; }
@@ -2563,10 +2567,6 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <h2 id="finalTitle">Game result</h2>
         <div class="winner-banner" id="winnerBanner"></div>
         <div id="finalDivision"></div>
-        <section class="fairness-review" id="fairnessReview" hidden aria-label="Fairness Challenge comparison">
-            <div class="story-kicker">Fairness Challenge</div>
-            <div id="fairnessReviewBody"></div>
-        </section>
         <section class="final-estate-board" id="finalEstatePanel" aria-label="Final estate">
             <div class="scoreboard-label" id="finalEstateLabel">Final Estate</div>
             <div class="final-estate-toggle" id="finalEstateToggle" hidden aria-label="Compare original and redraw fences">
@@ -2574,9 +2574,14 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                 <button type="button" id="finalEstateRedrawBtn" aria-pressed="false">Fairness redraw</button>
             </div>
             <canvas id="finalEstateCanvas" width="600" height="600" aria-label="Final divided estate"></canvas>
+            <button class="btn-secondary estate-whatif" id="whatIfBtn">What if? Try another fence</button>
         </section>
-        <div class="final-scoreboard" id="finalScoreboard"></div>
+        <section class="fairness-review" id="fairnessReview" hidden aria-label="Fairness Challenge comparison">
+            <div class="story-kicker">Fairness Challenge</div>
+            <div id="fairnessReviewBody"></div>
+        </section>
         <div id="finalStory"></div>
+        <div class="final-scoreboard" id="finalScoreboard"></div>
         <div id="finalAchievements"></div>
 
         <div class="actions">
@@ -2588,10 +2593,8 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             </div>
             <section class="next-game-plan" id="nextGamePlan" hidden aria-label="Next game setup">
                 <p class="comparison-note" id="nextGameSummary" aria-live="polite"></p>
-                <button class="btn-primary" id="playNextGameBtn">Play Next Game</button>
             </section>
             <p class="comparison-note" id="replayNote"></p>
-            <button class="btn-secondary" id="whatIfBtn">What if? Try another fence</button>
         </div>
     </div>
 </div>
@@ -7882,7 +7885,10 @@ const APP = {
             FLOW.skipChallenge();
         });
 
-        UI.el.finalPlayAgainBtn.addEventListener('click', () => FLOW.resetToSetup());
+        UI.el.finalPlayAgainBtn.addEventListener('click', () => {
+            if (MATCH_MENU.pendingAdditions.length || MATCH_MENU.pendingTwist) MATCH_MENU.launchPlanned();
+            else FLOW.resetToSetup();
+        });
         UI.el.whatIfBtn.addEventListener('click', () => FLOW.enterWhatIf());
 
         UI.el.whatifResetBtn.addEventListener('click', () => FLOW.resetWhatIfCut());
@@ -8420,13 +8426,15 @@ const MATCH_MENU = {
         });
         if (this.pendingTwist) parts.push(`Twist: ${this.optionLabels[this.pendingTwist]}`);
 
-        document.getElementById('nextGamePlan').hidden = !parts.length;
-        document.getElementById('nextGameSummary').textContent = parts.length
+        const hasPlan = parts.length > 0;
+        document.getElementById('nextGamePlan').hidden = !hasPlan;
+        document.getElementById('nextGameSummary').textContent = hasPlan
             ? `Next game: ${parts.join(' · ')}`
             : '';
 
-        document.getElementById('replayNote').textContent = parts.length
-            ? 'Play Next Game combines these selections with your current setup. Play again returns to setup without applying the staged selections.'
+        UI.el.finalPlayAgainBtn.textContent = hasPlan ? 'Play Next Game' : 'Play again';
+        document.getElementById('replayNote').textContent = hasPlan
+            ? 'These selections will be applied when you play the next game.'
             : STATE.settings.open || STATE.settings.meaningful || STATE.settings.lightning
                 ? 'Play again returns to setup with your estate settings. This round’s twist ends here.'
                 : 'Play again returns to setup with the same estate settings and names.';
@@ -8542,7 +8550,6 @@ const MATCH_MENU = {
         document.getElementById('twistCancelBtn').addEventListener('click', () => UI.close('twistOverlay'));
         document.getElementById('addChallengeSaveBtn').addEventListener('click', () => this.saveAdditions());
         document.getElementById('twistSaveBtn').addEventListener('click', () => this.saveTwist());
-        document.getElementById('playNextGameBtn').addEventListener('click', () => this.launchPlanned());
 
         const terrainAddition = document.querySelector('input[data-addition="terrain"]');
         const estateAddition = document.querySelector('input[data-addition="estateTemplate"]');
