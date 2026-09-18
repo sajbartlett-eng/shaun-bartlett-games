@@ -113,11 +113,12 @@ header.brand {
     pointer-events: none;
 }
 .exit-btn {
-    width: auto;
+    width: 44px;
     min-width: 44px;
-    padding: 0 10px;
+    padding: 0;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: 22px;
+    line-height: 1;
 }
 
 .status-strip {
@@ -1289,6 +1290,90 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     .welcome-credit { margin-top: 8px; }
 }
 
+/* Laptop / desktop modal composition: use width before asking the player to scroll. */
+.welcome-layout,
+.setup-main-grid {
+    display: block;
+}
+
+@media (min-width: 900px) and (min-height: 620px) {
+    .welcome-modal,
+    .setup-modal {
+        width: min(940px, calc(100vw - 48px));
+        padding: 24px 28px 20px;
+    }
+
+    .welcome-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+        gap: 28px;
+        align-items: start;
+    }
+    .welcome-preview {
+        margin-top: 0;
+        align-self: start;
+    }
+    .welcome-preview-board {
+        width: min(100%, 300px);
+    }
+    .welcome-actions { margin-top: 14px; }
+    .welcome-credit { margin-top: 8px; }
+
+    .setup-main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(340px, 1.1fr);
+        gap: 30px;
+        align-items: start;
+    }
+    .setup-preview {
+        margin-top: 0;
+        align-self: start;
+    }
+    .setup-preview-board {
+        width: min(100%, 330px);
+    }
+
+    /* Once advanced setup is opened, give it the full modal width. */
+    .setup-modal:has(#setupOptionsPanel:not([hidden])) .setup-main-grid {
+        display: block;
+    }
+    .setup-modal:has(#setupOptionsPanel:not([hidden])) .setup-preview {
+        margin-top: 16px;
+    }
+    #setupOptionsPanel:not([hidden]) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+    }
+    #setupOptionsPanel:not([hidden]) > .setup-section {
+        margin-top: 0;
+    }
+
+    .reveal-modal {
+        width: min(860px, calc(100vw - 48px));
+    }
+    .reveal-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        grid-template-areas:
+            "owners board"
+            "summary board"
+            "details board";
+        gap: 8px 26px;
+        align-items: start;
+    }
+    #revealOwners { grid-area: owners; }
+    #revealOverlay .consequence-board {
+        grid-area: board;
+        width: 100%;
+        max-width: 360px;
+        margin: 0;
+    }
+    #revealSummary { grid-area: summary; }
+    #revealDetails { grid-area: details; margin-top: 0; }
+}
+
 .setup-section { margin-top: 18px; }
 .setup-section h3 {
     font-family: var(--hand);
@@ -1474,6 +1559,80 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 }
 .final-estate-board .scoreboard-label {
     margin-bottom: 6px;
+}
+.fairness-review {
+    margin: 14px 0 2px;
+    padding: 14px;
+    border: 1px solid var(--paper-edge);
+    border-radius: 4px;
+    background: rgba(232, 219, 192, 0.34);
+}
+.fairness-review[hidden] { display: none; }
+.fairness-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+.fairness-compare-card {
+    padding: 10px;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: rgba(243, 234, 217, 0.62);
+}
+.fairness-compare-card.redraw { border-color: rgba(79, 111, 159, 0.55); }
+.fairness-compare-label {
+    display: block;
+    margin-bottom: 3px;
+    font: 700 11px var(--mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.fairness-compare-score {
+    display: block;
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.fairness-compare-detail,
+.fairness-review-note {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+}
+.fairness-review-verdict {
+    margin: 10px 0 0;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+}
+.final-estate-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 0 0 8px;
+}
+.final-estate-toggle[hidden] { display: none; }
+.final-estate-toggle button {
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: rgba(243, 234, 217, 0.55);
+    color: var(--ink-soft);
+    font: 600 12px var(--display);
+    cursor: pointer;
+}
+.final-estate-toggle button[aria-pressed="true"] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+}
+@media (max-width: 420px) {
+    .fairness-compare-grid { grid-template-columns: 1fr; }
 }
 .score-details {
     border-top: 1px solid var(--paper-edge);
@@ -1816,7 +1975,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     .brand h1 { font-size: 28px; }
     .brand .sub { font-size: 16px; }
     .brand .icons { gap: 6px; }
-    .exit-btn { padding: 0 7px; font-size: 11px; }
+    .exit-btn { width: 38px; min-width: 38px; padding: 0; font-size: 20px; }
     .status-strip {
         grid-template-columns: 1fr auto;
         gap: 5px 10px;
@@ -1957,7 +2116,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <div class="sub">a game for two</div>
         </div>
         <div class="icons">
-            <button class="icon-btn exit-btn" id="restartBtn" aria-label="Start over" title="Start over" hidden>Start over</button>
+            <button class="icon-btn exit-btn" id="restartBtn" aria-label="Start over" title="Start over" hidden>↺</button>
             <button class="icon-btn" id="muteBtn" aria-label="Mute" aria-pressed="false" title="Mute sound">♪</button>
             <button class="icon-btn" id="helpBtn" aria-label="How to play" title="How to play">?</button>
         </div>
@@ -2047,19 +2206,23 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 </div>
 
 <div class="overlay" id="revealOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="revealTitle">
-    <div class="modal">
+    <div class="modal reveal-modal">
         <div class="eyebrow">The fence is drawn</div>
         <h2 id="revealTitle">What the division changed</h2>
-        <p class="consequence-copy" id="revealOwners"></p>
-        <div class="consequence-board"><canvas id="revealCanvas" width="600" height="600" aria-label="The divided estate. Red squares mark lost value."></canvas><div class="loss-layer" id="revealLosses"></div></div>
-        <p class="consequence-copy" id="revealSummary" role="status"></p>
-        <ul class="consequence-list" id="revealDetails"></ul>
+        <div class="reveal-layout">
+            <p class="consequence-copy" id="revealOwners"></p>
+            <div class="consequence-board"><canvas id="revealCanvas" width="600" height="600" aria-label="The divided estate. Red squares mark lost value."></canvas><div class="loss-layer" id="revealLosses"></div></div>
+            <p class="consequence-copy" id="revealSummary" role="status"></p>
+            <ul class="consequence-list" id="revealDetails"></ul>
+        </div>
         <div class="actions"><button class="btn-primary" id="revealContinue">Continue to result</button></div>
     </div>
 </div>
 
 <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="welcomeTitle">
     <div class="modal welcome-modal">
+        <div class="welcome-layout">
+            <div class="welcome-copy">
         <h2 id="welcomeTitle">Inheritance</h2>
         <p class="welcome-thesis">A competitive I-cut-you-choose game for two.</p>
         <div class="setup-steps" aria-label="Three timed steps: build 90 seconds, cut 60 seconds, choose 30 seconds">
@@ -2086,6 +2249,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             </div>
         </div>
         <p class="welcome-outcome">The owner of the higher-value property wins. A perfect split goes to the Cutter.</p>
+            </div>
         <section class="welcome-preview" aria-label="Choosing example">
             <div class="welcome-preview-toggle" role="group" aria-label="Example difficulty">
                 <button type="button" id="welcomeBasicBtn" data-welcome-mode="basic" aria-pressed="true">Basic</button>
@@ -2103,6 +2267,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                 </div>
             </div>
         </section>
+        </div>
         <div class="welcome-actions">
             <button class="btn-primary" id="welcomeContinueBtn">Set up your game</button>
         </div>
@@ -2112,7 +2277,9 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 </div>
 
 <div class="overlay" id="setupOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="setupTitle">
-    <div class="modal">
+    <div class="modal setup-modal">
+        <div class="setup-main-grid">
+            <div class="setup-controls">
         <div class="eyebrow" id="setupEyebrow">Names and options</div>
         <h2 id="setupTitle">Set up your game</h2>
         <p class="body setup-intro">Name the siblings, choose how you want to play, then begin.</p>
@@ -2242,6 +2409,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                 </div>
             </div>
         </div>
+            </div>
 
         <section class="setup-preview" id="setupPreview">
             <h3>Example end state</h3>
@@ -2252,6 +2420,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <p class="setup-preview-caption" id="setupPreviewCaption"></p>
             <p class="setup-preview-flags" id="setupPreviewFlags"></p>
         </section>
+        </div>
 
         <div class="setup-link-row">
             <button class="btn-ghost" id="setupRulesBtn">How to play this setup</button>
@@ -2350,8 +2519,16 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <h2 id="finalTitle">Game result</h2>
         <div class="winner-banner" id="winnerBanner"></div>
         <div id="finalDivision"></div>
+        <section class="fairness-review" id="fairnessReview" hidden aria-label="Fairness Challenge comparison">
+            <div class="story-kicker">Fairness Challenge</div>
+            <div id="fairnessReviewBody"></div>
+        </section>
         <section class="final-estate-board" id="finalEstatePanel" aria-label="Final estate">
-            <div class="scoreboard-label">Final Estate</div>
+            <div class="scoreboard-label" id="finalEstateLabel">Final Estate</div>
+            <div class="final-estate-toggle" id="finalEstateToggle" hidden aria-label="Compare original and redraw fences">
+                <button type="button" id="finalEstateOriginalBtn" aria-pressed="true">Original cut</button>
+                <button type="button" id="finalEstateRedrawBtn" aria-pressed="false">Fairness redraw</button>
+            </div>
             <canvas id="finalEstateCanvas" width="600" height="600" aria-label="Final divided estate"></canvas>
         </section>
         <div class="final-scoreboard" id="finalScoreboard"></div>
@@ -3546,6 +3723,7 @@ const STATE = {
         timedOut: false,
         newGap: null,
         newTotal: null,
+        redrawCut: [],
     },
 
     whatIf: {
@@ -5288,7 +5466,13 @@ const UI = {
         finalTitle:          document.getElementById('finalTitle'),
         finalDivision:       document.getElementById('finalDivision'),
         finalScoreboard:     document.getElementById('finalScoreboard'),
+        fairnessReview:      document.getElementById('fairnessReview'),
+        fairnessReviewBody:  document.getElementById('fairnessReviewBody'),
         finalEstatePanel:    document.getElementById('finalEstatePanel'),
+        finalEstateLabel:    document.getElementById('finalEstateLabel'),
+        finalEstateToggle:   document.getElementById('finalEstateToggle'),
+        finalEstateOriginalBtn: document.getElementById('finalEstateOriginalBtn'),
+        finalEstateRedrawBtn:   document.getElementById('finalEstateRedrawBtn'),
         finalEstateCanvas:   document.getElementById('finalEstateCanvas'),
         finalStory:          document.getElementById('finalStory'),
         finalAchievements:   document.getElementById('finalAchievements'),
@@ -6188,6 +6372,7 @@ const FLOW = {
             timedOut: false,
             newGap: null,
             newTotal: null,
+            redrawCut: [],
         };
         STATE.whatIf = { savedEdges: [], savedPlotA: [], savedPlotB: [] };
         STATE.timer = 0;
@@ -6622,6 +6807,7 @@ const FLOW = {
         STATE.challenge.timedOut = false;
         STATE.challenge.newGap = null;
         STATE.challenge.newTotal = null;
+        STATE.challenge.redrawCut = [];
         STATE.cutNodes = [];
         STATE.cutEdges = [];
         STATE.isCutComplete = false;
@@ -7024,6 +7210,7 @@ const INPUT = {
             const fairTier = GAME.judgeFairnessTier(originalGap, newGap, targetGap);
             STATE.challenge.newGap = newGap;
             STATE.challenge.newTotal = newTotal;
+            STATE.challenge.redrawCut = [...STATE.cutEdges];
             STATE.challenge.attempted = true;
             FLOW.stopTimer();
             const token = STATE.phaseToken;
@@ -7073,26 +7260,142 @@ function achievementSeal(kind) {
     return `<svg ${common}><rect x="7" y="11" width="15" height="18" rx="2"/><rect x="18" y="11" width="15" height="18" rx="2"/><path d="M18 16h4M18 24h4"/></svg>`;
 }
 
-UI.renderFinalEstate = function () {
+UI.renderFinalEstate = function (view = 'original') {
     const panel = UI.el.finalEstatePanel;
     const canvas = UI.el.finalEstateCanvas;
     if (!panel || !canvas) return;
+
+    let cutEdges = STATE.cutEdges;
+    let plotA = STATE.plotA;
+    let plotB = STATE.plotB;
+    const canCompare = STATE.challenge.attempted
+        && !STATE.challenge.timedOut
+        && Array.isArray(STATE.challenge.redrawCut)
+        && STATE.challenge.redrawCut.length > 0;
+
+    if (view === 'redraw' && canCompare) {
+        const result = GAME.validateCut(STATE.challenge.redrawCut, STATE.estateMask);
+        if (result.ok) {
+            cutEdges = STATE.challenge.redrawCut;
+            plotA = result.plotA;
+            plotB = result.plotB;
+        } else {
+            view = 'original';
+        }
+    }
 
     const snapshot = {
         ...STATE,
         phase: PHASE.CHOOSE,
         cutNodes: [],
+        cutEdges: [...cutEdges],
+        plotA: plotA.slice(),
+        plotB: plotB.slice(),
+        isCutComplete: true,
         boardCursor: { c: 0, r: 0 },
     };
 
     panel.hidden = false;
+    if (UI.el.finalEstateLabel) {
+        UI.el.finalEstateLabel.textContent = canCompare ? 'Compare the cuts' : 'Final Estate';
+    }
+    if (UI.el.finalEstateToggle) {
+        UI.el.finalEstateToggle.hidden = !canCompare;
+    }
+    if (UI.el.finalEstateOriginalBtn && UI.el.finalEstateRedrawBtn) {
+        UI.el.finalEstateOriginalBtn.setAttribute('aria-pressed', String(view !== 'redraw'));
+        UI.el.finalEstateRedrawBtn.setAttribute('aria-pressed', String(view === 'redraw'));
+    }
+    canvas.setAttribute('aria-label', view === 'redraw' ? 'Fairness Challenge redraw' : 'Original final division');
     RENDER.renderSnapshot(canvas, snapshot);
+};
+
+UI.renderFairnessReview = function () {
+    const panel = UI.el.fairnessReview;
+    const body = UI.el.fairnessReviewBody;
+    if (!panel || !body) return;
+
+    if (!STATE.challenge.attempted) {
+        panel.hidden = true;
+        body.innerHTML = '';
+        return;
+    }
+
+    panel.hidden = false;
+    const originalA = STATE.outcome?.scoreA?.total ?? 0;
+    const originalB = STATE.outcome?.scoreB?.total ?? 0;
+    const originalGap = STATE.challenge.originalGap;
+    const intactTotal = GAME.intactEstateScore(
+        STATE.grid,
+        STATE.settings.betterTogether,
+        STATE.terrain,
+        STATE.estateMask
+    );
+    const originalPreserved = Math.round(
+        GAME.commonGround(intactTotal, originalA + originalB, originalGap).preservation * 100
+    );
+    const gapText = gap => gap === 0 ? 'Tied division' : `${gap}-point gap`;
+
+    if (STATE.challenge.timedOut || !STATE.challenge.redrawCut?.length) {
+        body.innerHTML = `
+            <div class="fairness-compare-grid">
+                <div class="fairness-compare-card">
+                    <span class="fairness-compare-label">Original cut</span>
+                    <strong class="fairness-compare-score">${originalA} / ${originalB}</strong>
+                    <p class="fairness-compare-detail">${gapText(originalGap)} · ${originalPreserved}% of estate value preserved</p>
+                </div>
+                <div class="fairness-compare-card redraw">
+                    <span class="fairness-compare-label">Your redraw</span>
+                    <strong class="fairness-compare-score">Time ran out</strong>
+                    <p class="fairness-compare-detail">No completed redraw to compare.</p>
+                </div>
+            </div>
+            <p class="fairness-review-note">The game result remains based on the original cut.</p>`;
+        return;
+    }
+
+    const redrawResult = GAME.validateCut(STATE.challenge.redrawCut, STATE.estateMask);
+    if (!redrawResult.ok) {
+        panel.hidden = true;
+        body.innerHTML = '';
+        return;
+    }
+    const redrawA = GAME.scorePlot(redrawResult.plotA, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+    const redrawB = GAME.scorePlot(redrawResult.plotB, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+    const redrawGap = Math.abs(redrawA - redrawB);
+    const redrawTotal = redrawA + redrawB;
+    const redrawPreserved = Math.round(
+        GAME.commonGround(intactTotal, redrawTotal, redrawGap).preservation * 100
+    );
+    const change = originalGap - redrawGap;
+    const verdict = change > 0
+        ? `Your redraw reduced the gap by ${change} ${change === 1 ? 'point' : 'points'}.`
+        : change === 0
+            ? `Your redraw matched the original ${gapText(originalGap).toLowerCase()}.`
+            : `Your redraw widened the gap by ${Math.abs(change)} ${Math.abs(change) === 1 ? 'point' : 'points'}.`;
+
+    body.innerHTML = `
+        <div class="fairness-compare-grid">
+            <div class="fairness-compare-card">
+                <span class="fairness-compare-label">Original cut</span>
+                <strong class="fairness-compare-score">${originalA} / ${originalB}</strong>
+                <p class="fairness-compare-detail">${gapText(originalGap)} · ${originalPreserved}% of estate value preserved</p>
+            </div>
+            <div class="fairness-compare-card redraw">
+                <span class="fairness-compare-label">Your redraw</span>
+                <strong class="fairness-compare-score">${redrawA} / ${redrawB}</strong>
+                <p class="fairness-compare-detail">${gapText(redrawGap)} · ${redrawPreserved}% of estate value preserved</p>
+            </div>
+        </div>
+        <p class="fairness-review-verdict">${verdict}</p>
+        <p class="fairness-review-note">Use the buttons below to compare both fences. The game result remains based on the original cut.</p>`;
 };
 
 UI.renderFinalScoreboard = function () {
     const o = STATE.outcome;
     if (!o) return;
     MATCH_MENU.refreshFinal();
+    UI.renderFairnessReview();
 
     const scoreDetails = (cardsHtml, label = 'See score breakdown') => `
         <details class="score-details">
@@ -7434,6 +7737,8 @@ const APP = {
         UI.el.helpBtn.addEventListener('click', () => UI.openRules());
         UI.el.phasePrimerRulesBtn.addEventListener('click', () => UI.openRules());
         UI.el.restartBtn.addEventListener('click', () => UI.openRestartConfirm());
+        UI.el.finalEstateOriginalBtn?.addEventListener('click', () => UI.renderFinalEstate('original'));
+        UI.el.finalEstateRedrawBtn?.addEventListener('click', () => UI.renderFinalEstate('redraw'));
 
         UI.el.undoBtn.addEventListener('click', INPUT.undo);
 
