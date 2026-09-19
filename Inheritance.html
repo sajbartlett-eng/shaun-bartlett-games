@@ -2043,6 +2043,22 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     .action-bar { align-items: flex-start; flex-wrap: wrap; }
     .history-control { order: 3; width: 100%; }
     .action-bar .right { margin-left: auto; }
+    .action-bar.whatif-active {
+        gap: 8px;
+        padding: 2px 0 4px;
+    }
+    .action-bar.whatif-active .whatif-bar {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .action-bar.whatif-active .history-control {
+        order: 2;
+        width: auto;
+    }
+    .action-bar.whatif-active .right {
+        order: 3;
+        margin-left: auto;
+    }
     .name-inputs { grid-template-columns: 1fr; }
     .setup-step { flex-direction: column; gap: 3px; min-height: 50px; }
     .setup-options-panel { padding: 10px; }
@@ -2207,18 +2223,6 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <canvas id="gameCanvas" width="600" height="600" tabindex="0" aria-label="Estate board">Interactive estate board. Use the keyboard instructions in the phase status if canvas rendering is unavailable.</canvas>
     </div>
 
-    <section id="comparisonPanel" aria-label="Compare divisions" hidden>
-        <h2 class="comparison-heading">Compare Divisions</h2>
-        <p class="comparison-note">Same estate. Different fence. The original result stays recorded.</p>
-        <div class="comparison-tabs" id="comparisonTabs" aria-label="Saved fences"></div>
-        <div class="comparison-assignment">
-            <label for="comparisonChoice" id="comparisonChoiceLabel">Chooser receives</label>
-            <select id="comparisonChoice"><option value="">Choose a plot</option><option value="A">Plot A</option><option value="B">Plot B</option></select>
-        </div>
-        <p class="comparison-note" id="comparisonStatus" role="status"></p>
-        <div class="comparison-table-wrap" id="comparisonTable"></div>
-        <div class="comparison-actions"><button class="btn" id="comparisonSave">Save this alternative</button><button class="btn" id="comparisonNew">Draw a new fence</button></div>
-    </section>
     <button class="btn-secondary" id="meaningfulSkipBtn" hidden>Skip this choice</button>
     <div class="meaningful-strip" id="meaningfulStrip" aria-label="Meaningful Assets" hidden></div>
 
@@ -2248,6 +2252,19 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <button class="btn btn-undo" id="undoBtn" disabled>↺ Undo<span class="key">Z</span></button>
         </div>
     </div>
+
+    <section id="comparisonPanel" aria-label="Compare divisions" hidden>
+        <h2 class="comparison-heading">Compare Divisions</h2>
+        <p class="comparison-note">Same estate. Different fence. The original result stays recorded.</p>
+        <div class="comparison-tabs" id="comparisonTabs" aria-label="Saved fences"></div>
+        <div class="comparison-assignment">
+            <label for="comparisonChoice" id="comparisonChoiceLabel">Chooser receives</label>
+            <select id="comparisonChoice"><option value="">Choose a plot</option><option value="A">Plot A</option><option value="B">Plot B</option></select>
+        </div>
+        <p class="comparison-note" id="comparisonStatus" role="status"></p>
+        <div class="comparison-table-wrap" id="comparisonTable"></div>
+        <div class="comparison-actions"><button class="btn" id="comparisonSave">Save this alternative</button><button class="btn" id="comparisonNew">Draw a new fence</button></div>
+    </section>
 
     <footer class="site-credit" aria-label="Game credits">Designed by <strong>Shaun Bartlett</strong> · © 2026</footer>
 
@@ -2386,15 +2403,15 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                         </button>
                         <button type="button" class="option-card radio" data-land-template="seaside" role="radio" aria-checked="false" tabindex="-1">
                             <span class="check"></span>
-                            <span class="label"><span class="title">Seaside</span><span class="desc">Sea and beach border one side. Beachfront land is worth 4, then falls inland through 3, 2 and 1. A simple access road adds +1 to adjacent land, capped at 4.</span></span>
+                            <span class="label"><span class="title">Seaside</span><span class="desc">Land is worth more closer to the coast. If the fence cuts a square off from the coast, it loses 1 value, to a minimum of 1. A connected access road can add +1.</span></span>
                         </button>
                         <button type="button" class="option-card radio" data-land-template="waterfront" role="radio" aria-checked="false" tabindex="-1">
                             <span class="check"></span>
-                            <span class="label"><span class="title">Waterfront</span><span class="desc">A broad river crosses the map. Waterfront land gains +2, and a simple access road adds +1 to adjacent land, capped at 4.</span></span>
+                            <span class="label"><span class="title">Waterfront</span><span class="desc">Land beside the river is worth 3. If the fence cuts that square off from the river, it drops to 2. A connected access road can add +1.</span></span>
                         </button>
                         <button type="button" class="option-card radio" data-land-template="motorway" role="radio" aria-checked="false" tabindex="-1">
                             <span class="check"></span>
-                            <span class="label"><span class="title">Main Road</span><span class="desc">A straight main road crosses the map. Land directly beside it gains +1.</span></span>
+                            <span class="label"><span class="title">Main Road</span><span class="desc">Land beside the main road is worth 2. If the fence cuts that square off from the road, it drops to the normal value of 1.</span></span>
                         </button>
                     </div>
                 </div>
@@ -2602,7 +2619,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 <div class="overlay" id="addChallengeOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="addChallengeTitle"><div class="modal">
     <div class="eyebrow">Next match</div><h2 id="addChallengeTitle">Add a Challenge</h2>
     <p class="body">Add one or more lasting layers that make the estate harder to value and divide.</p>
-    <fieldset class="option-list"><legend class="sr-only">Available additions</legend><label class="option-choice" data-addition-row="randomAssets"><input type="checkbox" data-addition="randomAssets"><span><strong>Random 12</strong><small>Each sibling gets a random pool of 6 assets to place.</small></span></label><label class="option-choice" data-addition-row="rocks"><input type="checkbox" data-addition="rocks"><span><strong>Broken Ground</strong><small>Adds 1–10 rocks in natural formations, reducing that land's value to zero.</small></span></label><label class="option-choice" data-addition-row="betterTogether"><input type="checkbox" data-addition="betterTogether"><span><strong>Better Together</strong><small>Certain neighbouring assets increase one another’s value. Boosted asset values are shown in blue, and a fence can break those relationships.</small></span></label><label class="option-choice" data-addition-row="terrain"><input type="checkbox" data-addition="terrain"><span><strong>Terrain</strong><small>Shape the land with water and roads. Nearby land gains value unless cut off by the fence.</small></span></label><label class="option-choice" data-addition-row="estateTemplate"><input type="checkbox" data-addition="estateTemplate" data-estate-template=""><span><strong id="estateChallengeName">Seaside Estate</strong><small id="estateChallengeCopy">Land nearer the coast is worth more. The fence has to account for the changing land values.</small></span></label></fieldset>
+    <fieldset class="option-list"><legend class="sr-only">Available additions</legend><label class="option-choice" data-addition-row="randomAssets"><input type="checkbox" data-addition="randomAssets"><span><strong>Random 12</strong><small>Each sibling gets a random pool of 6 assets to place.</small></span></label><label class="option-choice" data-addition-row="rocks"><input type="checkbox" data-addition="rocks"><span><strong>Broken Ground</strong><small>Adds 1–10 rocks in natural formations, reducing that land's value to zero.</small></span></label><label class="option-choice" data-addition-row="betterTogether"><input type="checkbox" data-addition="betterTogether"><span><strong>Better Together</strong><small>Certain neighbouring assets increase one another’s value. Boosted asset values are shown in blue, and a fence can break those relationships.</small></span></label><label class="option-choice" data-addition-row="terrain"><input type="checkbox" data-addition="terrain"><span><strong>Terrain</strong><small>Shape the land with water and roads. Nearby land gains value unless cut off by the fence.</small></span></label><label class="option-choice" data-addition-row="estateTemplate"><input type="checkbox" data-addition="estateTemplate" data-estate-template=""><span><strong id="estateChallengeName">Seaside Estate</strong><small id="estateChallengeCopy">Land nearer the coast is worth more. A fence can lower a square's value if it cuts its connection to the coast.</small></span></label></fieldset>
     <p class="body" id="addChallengeEmpty" hidden>No new challenges are available here. Use Custom Setup to change them.</p>
     <div class="actions"><button class="btn-primary" id="addChallengeSaveBtn">Save for next game</button><button class="btn-secondary" id="addChallengeCancelBtn">Back to result</button></div>
 </div></div>
@@ -3252,10 +3269,63 @@ const GAME = {
         return accessible;
     },
 
+    terrainTemplateKind(terrain) {
+        if (!terrain) return 'standard';
+        let hasWater = false, hasLand3 = false, hasLand4 = false, hasMotorway = false;
+        for (const row of terrain) {
+            for (const cell of row) {
+                if (cell === 'motorway') hasMotorway = true;
+                else if (cell === 'water') hasWater = true;
+                else if (cell === 'land4') hasLand4 = true;
+                else if (cell === 'land3') hasLand3 = true;
+            }
+        }
+        if (hasMotorway) return 'motorway';
+        if (hasLand4) return 'seaside';
+        if (hasWater && hasLand3) return 'waterfront';
+        return 'standard';
+    },
+
+    seasideCoastSide(terrain, estateMask = null) {
+        if (!terrain) return null;
+        const N = CONFIG.GRID;
+        const scores = { left: 0, right: 0, top: 0, bottom: 0 };
+        for (let i = 0; i < N; i++) {
+            if (GAME.isActiveCell(0, i, estateMask) && terrain[i][0] === 'land4') scores.left++;
+            if (GAME.isActiveCell(N - 1, i, estateMask) && terrain[i][N - 1] === 'land4') scores.right++;
+            if (GAME.isActiveCell(i, 0, estateMask) && terrain[0][i] === 'land4') scores.top++;
+            if (GAME.isActiveCell(i, N - 1, estateMask) && terrain[N - 1][i] === 'land4') scores.bottom++;
+        }
+        const [side, score] = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+        return score > 0 ? side : null;
+    },
+
+    seasideLandKeepsCoastConnection(c, r, terrain, plotSet, estateMask = null) {
+        if (!plotSet) return true;
+        const side = GAME.seasideCoastSide(terrain, estateMask);
+        if (!side) return true;
+        const N = CONFIG.GRID;
+        const step = side === 'left' ? { dc: -1, dr: 0 }
+            : side === 'right' ? { dc: 1, dr: 0 }
+            : side === 'top' ? { dc: 0, dr: -1 }
+            : { dc: 0, dr: 1 };
+        let cc = c, rr = r;
+        const atCoast = () => side === 'left' ? cc === 0
+            : side === 'right' ? cc === N - 1
+            : side === 'top' ? rr === 0
+            : rr === N - 1;
+        while (!atCoast()) {
+            cc += step.dc;
+            rr += step.dr;
+            if (!GAME.isActiveCell(cc, rr, estateMask) || !plotSet.has(`${cc},${rr}`)) return false;
+        }
+        return true;
+    },
+
     terrainLandValue(c, r, terrain, plotSet = null, roadAccessSet = null, estateMask = null) {
         if (!terrain) return 1;
         const surface = terrain[r][c];
-        const baseValue = surface === 'land4' ? 4
+        let baseValue = surface === 'land4' ? 4
             : surface === 'land3' ? 3
             : surface === 'land2' ? 2
             : surface === 'grass' ? 1
@@ -3263,8 +3333,31 @@ const GAME = {
         if (baseValue === 0) return 0;
 
         const accessibleRoads = roadAccessSet || GAME.terrainRoadAccessSet(plotSet, terrain, estateMask);
-        let water = false, road = false;
         const moves = [{dc:0,dr:-1},{dc:0,dr:1},{dc:-1,dr:0},{dc:1,dr:0}];
+        const samePlotFeature = kind => moves.some(m => {
+            const nc = c + m.dc, nr = r + m.dr;
+            if (nc < 0 || nc >= CONFIG.GRID || nr < 0 || nr >= CONFIG.GRID) return false;
+            if (terrain[nr][nc] !== kind) return false;
+            return !plotSet || plotSet.has(`${nc},${nr}`);
+        });
+
+        // Template premiums are attached to individual land squares. If a fence
+        // cuts the square off from the feature that raised its value, it loses
+        // 1 point (minimum 1). This mirrors Standard Terrain's local adjacency
+        // rule while preserving some view/location value for coast and river land.
+        if (plotSet) {
+            const template = GAME.terrainTemplateKind(terrain);
+            if (template === 'waterfront' && surface === 'land3' && !samePlotFeature('water')) {
+                baseValue = Math.max(1, baseValue - 1);
+            } else if (template === 'motorway' && surface === 'land2' && !samePlotFeature('motorway')) {
+                baseValue = 1;
+            } else if (template === 'seaside' && ['land2','land3','land4'].includes(surface)
+                && !GAME.seasideLandKeepsCoastConnection(c, r, terrain, plotSet, estateMask)) {
+                baseValue = Math.max(1, baseValue - 1);
+            }
+        }
+
+        let water = false, road = false;
         for (const m of moves) {
             const nc = c + m.dc, nr = r + m.dr;
             if (nc < 0 || nc >= CONFIG.GRID || nr < 0 || nr >= CONFIG.GRID) continue;
@@ -3274,9 +3367,8 @@ const GAME = {
             if (terrain[nr][nc] === 'road' && accessibleRoads.has(key)) road = true;
         }
 
-        // Standard Terrain water remains a +1 local feature. Template waterfront
-        // is already represented by land3 (+2 over ordinary land). Connected road
-        // access always adds +1, with all land capped at 4.
+        // Standard Terrain water is a +1 local feature. Connected road access
+        // always adds +1, with all land capped at 4.
         return Math.min(4, baseValue + (water ? 1 : 0) + (road ? 1 : 0));
     },
 
@@ -5685,9 +5777,9 @@ const UI = {
 
         const landTemplate = s.landTemplate || 'standard';
         const templateCopy = {
-            seaside: 'This estate sits beside the sea. The sea and beach lie outside the inherited boundary. Beachfront land is worth 4; the next two bands are 3, the next two are 2, and remaining land is 1. A connected access road adds +1 to adjacent land, capped at 4.',
-            waterfront: 'A broad public river crosses the map. The river itself is outside the inherited estate. Land directly on the waterfront gains +2. A connected access road adds +1 to adjacent land, so prime waterfront with road access is worth 4.',
-            motorway: 'A public main road crosses the map. The road itself is outside the inherited estate. Land directly beside it gains +1, so it is worth 2 instead of 1.',
+            seaside: 'This estate sits beside the sea. Beachfront land is worth 4; the next two bands are 3, the next two are 2, and remaining land is 1. Land keeps its full value only while it still connects toward the coast. If the fence cuts that connection, the square loses 1 value, to a minimum of 1. A connected access road can add +1 to adjacent land, capped at 4.',
+            waterfront: 'A broad river crosses the map. Land directly beside it is worth 3. If the fence cuts a waterfront square off from the river, it drops to 2. A connected access road can add +1 to adjacent land, so prime waterfront with road access can be worth 4.',
+            motorway: 'A main road crosses the map. Land directly beside it is worth 2 instead of 1. If the fence cuts that square off from the road, it drops to the normal value of 1.',
         }[landTemplate] || '';
         const terrainBuildCopy = s.terrain
             ? 'Before assets, together place 4 Water and 4 Road tiles. Each Road must touch the estate boundary or another Road. Terrain is untimed. '
@@ -5756,7 +5848,7 @@ const UI = {
             <div class="rules-section">
                 <h3>What the land is worth</h3>
                 <p class="body" style="margin:0;">${templateCopy || (s.terrain
-                    ? 'Land value and asset value stack on the same square. A fence can remove waterfront or road-access bonuses.'
+                    ? 'Land value and asset value stack on the same square. If a fence cuts a land square off from a feature that raised its value, that square loses 1 value for that feature, to a minimum of 1.'
                     : 'Land is worth <strong>1</strong> per ordinary square. A piece adds the value shown on its badge.')}</p>
                 <div class="rule-symbol-list">
                     <div class="rule-value-group">Land</div>
@@ -6177,6 +6269,8 @@ const UI = {
         e.undoBtn.style.display = undoPhase ? 'inline-flex' : 'none';
         e.undoBtn.disabled = !canUndo;
 
+        const actionBar = e.whatifBar.closest('.action-bar');
+        if (actionBar) actionBar.classList.toggle('whatif-active', s.phase === PHASE.WHAT_IF);
         if (s.phase === PHASE.WHAT_IF) {
             e.legend.style.display = 'none';
             e.whatifBar.style.display = 'flex';
@@ -7435,7 +7529,7 @@ UI.renderFairnessReview = function () {
             </div>
         </div>
         <p class="fairness-review-verdict">${verdict}</p>
-        <p class="fairness-review-note">Use the buttons below to compare both fences. The game result remains based on the original cut.</p>`;
+        <p class="fairness-review-note">Use Original cut and Fairness redraw to compare both fences. The game result remains based on the original cut.</p>`;
 };
 
 UI.renderFinalScoreboard = function () {
@@ -8370,15 +8464,15 @@ const MATCH_MENU = {
         return ({
             seaside: {
                 label: 'Seaside Estate',
-                copy: 'Land nearer the coast is worth more. The fence has to account for the changing land values.',
+                copy: 'Land nearer the coast is worth more. A fence can lower a square\'s value if it cuts its connection to the coast.',
             },
             motorway: {
                 label: 'Main Road Estate',
-                copy: 'Land beside the main road gains value. The fence has to track a thin valuable seam through the estate.',
+                copy: 'Land beside the main road is worth more, but drops back to normal if the fence cuts it off from the road.',
             },
             waterfront: {
                 label: 'Waterfront Estate',
-                copy: 'River frontage is worth more, and road access can raise it again. The fence has to balance both.',
+                copy: 'River frontage is worth more, and road access can raise it again. A fence can reduce either bonus by cutting the connection.',
             },
         })[kind] || null;
     },
