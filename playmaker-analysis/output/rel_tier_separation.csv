@@ -1,0 +1,26 @@
+stat,label,mean_A_minus_C,min_gap,max_gap,gap_in_pct_pts,types_with_no_gap
+handles,Handles,2.0,1.0,3.0,10.0,0
+pass,Pass,1.88,1.0,2.0,9.4,0
+screen,Screen,2.84,2.0,4.0,14.2,0
+pressure_def,Pressure Defence,2.0,2.0,2.0,10.0,0
+intercept,Intercept,1.48,1.0,2.0,7.4,0
+screen_def,Screen Defence,1.96,1.0,2.0,9.8,0
+steal,Steal,1.08,0.0,2.0,5.4,4
+foul_stl,Foul (Steal),2.0,2.0,2.0,10.0,0
+block,Block,2.04,1.0,5.0,10.2,0
+foul_blk,Foul (Block),2.16,1.0,7.0,10.8,0
+off_layup,Layup,1.08,1.0,2.0,5.4,0
+off_dunk,Dunk,1.76,1.0,2.0,8.8,0
+off_post,Post Move,1.96,1.0,2.0,9.8,0
+off_floater,Floater,1.48,0.0,2.0,7.4,2
+off_mid,Mid-range,1.88,1.0,2.0,9.4,0
+off_long2,Long-2pts,1.52,0.0,3.0,7.6,3
+off_three,3-Pointer,1.12,0.0,2.0,5.6,1
+off_ft,Free Throw,2.08,1.0,4.0,10.4,0
+def_layup,Layup,2.8,2.0,3.0,14.0,0
+def_dunk,Dunk,3.48,3.0,4.0,17.4,0
+def_post,Post Move,2.0,2.0,2.0,10.0,0
+def_floater,Floater,1.76,1.0,2.0,8.8,0
+def_mid,Mid-range,2.04,2.0,3.0,10.2,0
+def_long2,Long-2pts,0.92,0.0,2.0,4.6,5
+def_three,3-Pointer,0.88,0.0,2.0,4.4,6

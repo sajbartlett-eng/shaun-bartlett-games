@@ -1,0 +1,34 @@
+rating,value,band,pdf_stated_pct,formula,formula_pct,formula_pct_vs_opponent_20,formula_pct_vs_opponent_11,note
+Intercept,8,green,40-50,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",75.0,40.0,85.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept,9,green,40-50,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",80.0,44.99999999999999,90.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept,10,green,40-50,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",85.0,50.0,95.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept,6,orange,30-35,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",65.0,30.0,75.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept,7,orange,30-35,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",70.0,35.0,80.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept,5,red,25-25,"P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13",60.0,25.0,70.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Steal,4,green,20-25,"P(steal) = P(d20 >= Handles - Steal), at median card Handles 15",50.0,25.0,70.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Steal,5,green,20-25,"P(steal) = P(d20 >= Handles - Steal), at median card Handles 15",55.00000000000001,30.0,75.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Steal,2,orange,10-15,"P(steal) = P(d20 >= Handles - Steal), at median card Handles 15",40.0,15.0,60.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Steal,3,orange,10-15,"P(steal) = P(d20 >= Handles - Steal), at median card Handles 15",45.0,20.0,65.0,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Steal,1,red,0-9,"P(steal) = P(d20 >= Handles - Steal), at median card Handles 15",35.0,10.0,55.00000000000001,Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Foul (Steal),4,green,20-30,P(foul) = P(d20 <= Foul),20.0,,,
+Foul (Steal),5,green,20-30,P(foul) = P(d20 <= Foul),25.0,,,
+Foul (Steal),6,green,20-30,P(foul) = P(d20 <= Foul),30.0,,,
+Foul (Steal),6,orange,30-40,P(foul) = P(d20 <= Foul),30.0,,,
+Foul (Steal),7,orange,30-40,P(foul) = P(d20 <= Foul),35.0,,,
+Foul (Steal),8,orange,30-40,P(foul) = P(d20 <= Foul),40.0,,,
+Foul (Steal),8,red,40-55,P(foul) = P(d20 <= Foul),40.0,,,
+Foul (Steal),9,red,40-55,P(foul) = P(d20 <= Foul),45.0,,,
+Foul (Steal),10,red,40-55,P(foul) = P(d20 <= Foul),50.0,,,
+Foul (Steal),11,red,40-55,P(foul) = P(d20 <= Foul),55.0,,,
+Mid-range contest,6,green,-30 to -35,points of make % removed = contest x 5,-30.0,,,
+Mid-range contest,7,green,-30 to -35,points of make % removed = contest x 5,-35.0,,,
+Mid-range contest,4,orange,-20 to -25,points of make % removed = contest x 5,-20.0,,,
+Mid-range contest,5,orange,-20 to -25,points of make % removed = contest x 5,-25.0,,,
+Long-2 contest,5,green,-25 to -30,points of make % removed = contest x 5,-25.0,,,
+Long-2 contest,6,green,-25 to -30,points of make % removed = contest x 5,-30.0,,,
+Long-2 contest,3,orange,-15 to -20,points of make % removed = contest x 5,-15.0,,,
+Long-2 contest,4,orange,-15 to -20,points of make % removed = contest x 5,-20.0,,,
+3-point contest,5,green,-25 to -30,points of make % removed = contest x 5,-25.0,,,
+3-point contest,6,green,-25 to -30,points of make % removed = contest x 5,-30.0,,,
+3-point contest,3,orange,-15 to -20,points of make % removed = contest x 5,-15.0,,,
+3-point contest,4,orange,-15 to -20,points of make % removed = contest x 5,-20.0,,,

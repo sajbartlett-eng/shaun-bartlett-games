@@ -1,0 +1,15 @@
+check,severity,count
+ambiguous_colour_band,low,71
+document_inconsistency,info,14
+example_card_differs,medium,18
+example_colour_vs_band,medium,5
+large_tier_gap,low,1
+narrative_mismatch,medium,34
+no_colour_band,low,11
+out_of_position_range,medium,22
+out_of_range,high,28
+position_band_disagrees,low,24
+shot_relationship,low,39
+shot_relationship,medium,3
+tier_step_A_to_B,low,56
+tier_step_A_to_C,low,98

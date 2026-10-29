@@ -1,0 +1,16 @@
+prototype,pdf_card,stat,prototype_value,pdf_value,diff,effect_on_success_pct
+O1 Combo Point Guard,PG-4B,off_long2,11,9,2,+10 pts on every roll or shot that uses it
+O1 Combo Point Guard,PG-4B,off_three,10,9,1,+5 pts on every roll or shot that uses it
+O2 Two-Way Guard,SG-2B,pass,15,14,1,+5 pts on every roll or shot that uses it
+O2 Two-Way Guard,SG-2B,off_long2,11,10,1,+5 pts on every roll or shot that uses it
+O2 Two-Way Guard,SG-2B,off_three,10,9,1,+5 pts on every roll or shot that uses it
+O3 Point Forward,SF-4B,off_long2,11,10,1,+5 pts on every roll or shot that uses it
+O4 All-Rounder Forward,PF-4A,off_long2,11,10,1,+5 pts on every roll or shot that uses it
+O5 Playmaker Center,C-4C,off_three,6,8,-2,-10 pts on every roll or shot that uses it
+O5 Playmaker Center,C-4C,off_ft,13,14,-1,-5 pts on every roll or shot that uses it
+X2 Sharp Shooter,SG-1B,def_mid,3,4,-1,-5 pts on every roll or shot that uses it
+X3 Scoring Machine,SF-1B,def_long2,4,3,1,+5 pts on every roll or shot that uses it
+X4 Pick 'n' Pop Forward,PF-5B,def_mid,4,5,-1,-5 pts on every roll or shot that uses it
+X4 Pick 'n' Pop Forward,PF-5B,def_long2,4,3,1,+5 pts on every roll or shot that uses it
+X5 Rim Protector,C-2B,def_long2,7,4,3,+15 pts on every roll or shot that uses it
+X5 Rim Protector,C-2B,def_three,5,4,1,+5 pts on every roll or shot that uses it

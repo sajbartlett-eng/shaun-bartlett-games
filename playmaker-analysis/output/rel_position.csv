@@ -1,0 +1,12 @@
+stat,expected_order,game_order,PG,SG,SF,PF,C,inversions,inverted_pairs,basis
+handles,PG>SG>SF>PF>C,PG>SF>SG>PF>C,16.93,15.13,15.2,13.07,12.87,0,,guards handle more; convention
+pass,PG>SG>SF>PF>C,PG>SF>SG>C>PF,15.8,13.6,14.0,12.67,12.73,1,SF>SG,PDF's own stated hierarchy PG > SG/SF > PF > C
+off_three,SG>PG>SF>PF>C,SG>SF>PG>PF>C,8.27,9.2,8.73,7.8,6.2,1,SF>PG,guards/wings shoot threes best; convention
+off_ft,SG>PG>SF>PF>C,SG>SF>PG>PF>C,14.67,16.2,15.13,14.33,12.87,1,SF>PG,bigs shoot free throws worst; convention
+off_post,C>PF>SF>SG>PG,C>PF>SF>SG>PG,9.87,10.8,13.0,14.4,15.2,0,,PDF positional ranges
+screen,C>PF>SF>SG>PG,C>PF>SF>PG>SG,12.93,12.93,14.53,16.6,16.6,0,,PDF: screen ratings rise from guards to centres
+def_layup,C>PF>SF>SG>PG,C>PF>SF>SG>PG,6.67,6.93,7.93,8.47,9.47,0,,rim protection rises with size
+def_dunk,C>PF>SF>SG>PG,C>PF>SF>SG>PG,6.13,6.67,8.6,10.13,11.13,0,,rim protection rises with size
+pressure_def,PG>SG>SF>PF>C,PG>SG>SF>PF>C,7.2,6.8,6.8,5.6,5.2,0,,PDF: ratings decrease from guards to frontcourt
+def_three,SG>SF>PG>PF>C,SF>SG>PF>C>PG,2.87,3.53,4.0,3.33,3.2,3,"SF>SG, PF>PG, C>PG",perimeter defenders contest threes best; convention
+def_mid,SG>SF>PG>PF>C,SF>C>PF>SG>PG,4.6,5.13,5.53,5.4,5.47,5,"SF>SG, PF>SG, C>SG, PF>PG, C>PG",bigs in drop coverage concede pull-up mid-range; convention

@@ -1,0 +1,4 @@
+question,reading,mean_steal_pct,mean_foul_pct,mean_nothing_pct,note
+Steal and foul: one d20 or two?,same_roll,45.32,38.8,15.88,
+Steal and foul: one d20 or two?,two_rolls,28.28,38.8,32.92,
+Weak-side contest below 0: floor at 0 or add to the shot?,17 card-shot ratings are below 3,,,,"If not floored, a weak-side 'contest' would raise make % by up to 5 points."

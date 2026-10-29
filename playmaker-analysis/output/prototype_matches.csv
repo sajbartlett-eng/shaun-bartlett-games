@@ -1,0 +1,11 @@
+side,prototype,stated_tier,name_match,name_match_distance,nearest_by_numbers,nearest_distance,runner_up,runner_up_distance,prototype_qs,pdf_speed,qs_derived_from_speed,n_stats_different
+offence,O1 Combo Point Guard,B,PG-4B,2.24,PG-4B,2.24,SG-4B,3.32,1,10,1,2
+offence,O2 Two-Way Guard,B,SG-2B,1.73,SG-2B,1.73,SF-2B,3.16,1,10,1,3
+offence,O3 Point Forward,B,SF-4B,1.0,SF-4B,1.0,SF-2B,3.46,1,9,1,1
+offence,O4 All-Rounder Forward,A,PF-4A,1.0,PF-4A,1.0,PF-5A,2.65,1,9,1,1
+offence,O5 Playmaker Center,C,C-4C,2.24,C-4C,2.24,SF-4C,3.32,0,7,0,2
+defence,X1 Attacker/Slasher,not printed,PG-5B,0.0,PG-5B,0.0,PG-2B,2.0,2,11,2,0
+defence,X2 Sharp Shooter,not printed,SG-1B,1.0,SG-1B,1.0,PG-2B,2.0,1,9,1,1
+defence,X3 Scoring Machine,not printed,SF-1B,1.0,SF-1B,1.0,SF-3B,2.0,1,9,1,1
+defence,X4 Pick 'n' Pop Forward,not printed,PF-5B,1.41,PF-2B,1.41,PF-5B,1.41,0,8,0,2
+defence,X5 Rim Protector,not printed,C-2B,3.16,C-2B,3.16,C-3A,4.69,0,7,0,2

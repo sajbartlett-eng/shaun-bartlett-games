@@ -1,0 +1,9 @@
+check,real,game,status
+"three should beat post (open vs open, average shooters)",1.09 vs 0.89,1.21 vs 1.26,ORDER REVERSED
+"three should beat post (full vs full, average shooters)",1.09 vs 0.89,0.70 vs 0.73,tied in game (real gap lost)
+"three should beat mid (open vs open, average shooters)",1.09 vs 0.86,1.21 vs 1.21,tied in game (real gap lost)
+"three should beat mid (full vs full, average shooters)",1.09 vs 0.86,0.70 vs 0.69,tied in game (real gap lost)
+dunk should be the higher-percentage finish than layup (any state),dunk is the highest-percentage shot (DUNK); PDF: dunks 'harder to block',dunk beats layup in 254 of 16875 pairing-states,ORDER REVERSED in 98.5% of pairing-states
+"open three vs fully contested rim attempt (by C/PF), red three (<=7) shooters","real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters",open three is better in 45% of pairings,too favourable to the three
+"open three vs fully contested rim attempt (by C/PF), orange three (8-10) shooters","real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters",open three is better in 100% of pairings,matches direction
+"open three vs fully contested rim attempt (by C/PF), green three (11+) shooters","real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters",open three is better in 100% of pairings,matches direction

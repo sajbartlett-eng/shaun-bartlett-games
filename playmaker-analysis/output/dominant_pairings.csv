@@ -1,0 +1,13 @@
+kind,item,share_ge_75pct,share_le_10pct,max_pct,max_pairing,min_pct,min_pairing,share_zero,defenders_with_any_zero,worst_defender,worst_defender_share_le_10pct
+action,Dribble vs Agility,0.005,0.009,80.0,PG-1A v C-1C,5.0,PF-1C v PG-3A,,,,
+action,Pass vs Intercept,0.002,0.012,75.0,PG-1A v PG-1C,10.0,SG-3C v PG-3A,,,,
+action,Screen vs Challenge,0.002,0.014,75.0,PF-5A v SG-5C,5.0,PG-1C v PG-3A,,,,
+action,Steal (PDF rule),0.006,0.0,75.0,PF-1C v PG-3A,15.0,PG-1A v SG-1C,,,,
+action,Foul on steal attempt,0.0,0.0,55.0,PG-1A v PF-1C,20.0,PG-1A v PG-3A,,,,
+"shot, full contest",layup,,0.0,70.0,,25.0,,0.0,0.0,C-1A,0.0
+"shot, full contest",dunk,,0.018,75.0,,5.0,,0.0,0.0,C-2A,0.56
+"shot, full contest",post,,0.012,80.0,,0.0,,0.0,1.0,C-2A,0.227
+"shot, full contest",floater,,0.021,60.0,,5.0,,0.0,0.0,C-2A,0.547
+"shot, full contest",mid,,0.024,65.0,,5.0,,0.0,0.0,C-2A,0.213
+"shot, full contest",long2,,0.127,50.0,,0.0,,0.019,27.0,SF-5A,0.32
+"shot, full contest",three,,0.145,45.0,,0.0,,0.022,25.0,SF-5A,0.493

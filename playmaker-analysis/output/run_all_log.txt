@@ -1,0 +1,220 @@
+
+===== ingest =====
+parsed 75 cards; 115 log entries -> /home/user/shaun-bartlett-games/playmaker-analysis/data
+
+===== validate =====
+                  check severity  count
+  ambiguous_colour_band      low     71
+ document_inconsistency     info     14
+   example_card_differs   medium     18
+ example_colour_vs_band   medium      5
+         large_tier_gap      low      1
+     narrative_mismatch   medium     34
+         no_colour_band      low     11
+  out_of_position_range   medium     22
+           out_of_range     high     28
+position_band_disagrees      low     24
+      shot_relationship      low     39
+      shot_relationship   medium      3
+       tier_step_A_to_B      low     56
+       tier_step_A_to_C      low     98
+
+===== matchups =====
+steal conversion exact for all 220 integer cases: True; for all 5,625 card pairings: True
+
+===== audit =====
+          metric     item               state          group  game_mean  game_min  game_max  real_low  real_high                                                        direction  gap_pts confidence
+     shot make %    layup                open   all shooters       89.2      85.0      95.0      75.0       90.0                                           aligned (within 3 pts)      0.0        low
+     shot make %    layup                weak   all shooters       59.4      40.0      80.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %    layup                full   all shooters       44.4      25.0      65.0      46.0       55.0                                           aligned (within 3 pts)      0.0     medium
+     shot make %    layup all attempts (real) shooter tier A       66.7      46.8      91.6      65.0       67.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    layup all attempts (real) shooter tier B       64.9      45.0      89.8      65.0       67.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    layup all attempts (real) shooter tier C       61.3      41.4      86.2      65.0       67.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %     dunk                open   all shooters       82.0      75.0      95.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     dunk                weak   all shooters       43.8      20.0      70.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     dunk                full   all shooters       28.8       5.0      55.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     dunk all attempts (real) shooter tier A       56.2      33.4      86.6       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     dunk all attempts (real) shooter tier B       51.2      28.4      81.6       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     dunk all attempts (real) shooter tier C       47.4      24.6      77.8       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     post                open   all shooters       63.3      40.0      90.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     post                weak   all shooters       51.8      15.0      90.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     post                full   all shooters       36.8       0.0      75.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %     post all attempts (real) shooter tier A       55.5      41.7      68.2      42.5       46.5 real all-attempt rate falls inside the game's open-to-full range      NaN     medium
+     shot make %     post all attempts (real) shooter tier B       50.5      36.7      63.2      42.5       46.5 real all-attempt rate falls inside the game's open-to-full range      NaN     medium
+     shot make %     post all attempts (real) shooter tier C       45.7      31.9      58.4      42.5       46.5 real all-attempt rate falls inside the game's open-to-full range      NaN     medium
+     shot make %  floater                open   all shooters       49.3      40.0      75.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %  floater                weak   all shooters       42.7      20.0      75.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %  floater                full   all shooters       27.7       5.0      60.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %  floater all attempts (real) shooter tier A       44.0      31.7      53.4      43.0       45.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %  floater all attempts (real) shooter tier B       39.2      26.9      48.6      43.0       45.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %  floater all attempts (real) shooter tier C       36.6      24.3      46.0      43.0       45.0 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %      mid                open   all shooters       60.6      45.0      80.0      44.0       49.0                                                      game higher     11.6        low
+     shot make %      mid                weak   all shooters       49.5      20.0      80.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %      mid                full   all shooters       34.5       5.0      65.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %      mid all attempts (real) shooter tier A       53.0      39.3      65.4      41.5       44.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %      mid all attempts (real) shooter tier B       48.0      34.3      60.4      41.5       44.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %      mid all attempts (real) shooter tier C       43.6      29.9      56.0      41.5       44.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    long2                open   all shooters       44.4      20.0      60.0      43.0       47.0                                           aligned (within 3 pts)      0.0        low
+     shot make %    long2                weak   all shooters       42.0       5.0      60.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %    long2                full   all shooters       27.4       0.0      50.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %    long2 all attempts (real) shooter tier A       41.5      30.9      48.0      41.5       42.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    long2 all attempts (real) shooter tier B       38.3      27.8      44.8      41.5       42.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    long2 all attempts (real) shooter tier C       33.9      23.4      40.4      41.5       42.3 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    three                open   all shooters       40.2      20.0      55.0      37.0       38.6                                           aligned (within 3 pts)      0.0     medium
+     shot make %    three                weak   all shooters       37.9       5.0      55.0      30.0       33.0                                                      game higher      4.9     medium
+     shot make %    three                full   all shooters       23.3       0.0      45.0       NaN        NaN                                                     no benchmark      NaN       none
+     shot make %    three all attempts (real) shooter tier A       36.6      26.1      43.0      36.2       36.6 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    three all attempts (real) shooter tier B       33.8      23.3      40.2      36.2       36.6 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+     shot make %    three all attempts (real) shooter tier C       31.0      20.5      37.4      36.2       36.6 real all-attempt rate falls inside the game's open-to-full range      NaN       high
+    free throw %       ft         uncontested   all shooters       73.2      50.0      90.0      75.5       78.0                                           aligned (within 3 pts)      0.0       high
+action success %  dribble         per attempt   all pairings       41.6       5.0      80.0      45.0       60.0                                                       game lower     -3.4        low
+action success %     pass         per attempt   all pairings       35.3      10.0      75.0       NaN        NaN                                                         see note      NaN        low
+action success %   screen         per attempt   all pairings       40.5       5.0      75.0       NaN        NaN                                                         see note      NaN       none
+action success %    steal         per attempt   all pairings       45.7      15.0      75.0       NaN        NaN                                                         see note      NaN        low
+action success % foul_stl         per attempt   all pairings       38.8      20.0      55.0       NaN        NaN                                                         see note      NaN       none
+                                                                            check                                                                                                         real                                            game                                    status
+                          three should beat post (open vs open, average shooters)                                                                                                 1.09 vs 0.89                                    1.21 vs 1.26                            ORDER REVERSED
+                          three should beat post (full vs full, average shooters)                                                                                                 1.09 vs 0.89                                    0.70 vs 0.73              tied in game (real gap lost)
+                           three should beat mid (open vs open, average shooters)                                                                                                 1.09 vs 0.86                                    1.21 vs 1.21              tied in game (real gap lost)
+                           three should beat mid (full vs full, average shooters)                                                                                                 1.09 vs 0.86                                    0.70 vs 0.69              tied in game (real gap lost)
+               dunk should be the higher-percentage finish than layup (any state)                                     dunk is the highest-percentage shot (DUNK); PDF: dunks 'harder to block' dunk beats layup in 254 of 16875 pairing-states ORDER REVERSED in 98.5% of pairing-states
+    open three vs fully contested rim attempt (by C/PF), red three (<=7) shooters real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters         open three is better in 45% of pairings               too favourable to the three
+open three vs fully contested rim attempt (by C/PF), orange three (8-10) shooters real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters        open three is better in 100% of pairings                         matches direction
+  open three vs fully contested rim attempt (by C/PF), green three (11+) shooters real: elite-contested rim ~1.0 pts (46-54%), open three 0.9-1.05 for 30-35% shooters, 1.2+ for 40%+ shooters        open three is better in 100% of pairings                         matches direction
+   shot defender_tier    contesters  open_pct  weak_pct  full_pct  weak_drop_pts  full_drop_pts compare_state  real_drop_low  real_drop_high                                                                                real_basis confidence  ratio_game_to_real_mid
+  layup             A          C+PF      89.2      52.7      37.7           36.5           51.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.4
+  layup             B          C+PF      89.2      57.7      42.7           31.5           46.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.2
+  layup             C          C+PF      89.2      67.7      52.7           21.5           36.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.0
+   dunk             A          C+PF      82.0      35.5      20.5           46.5           61.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.6
+   dunk             B          C+PF      82.0      45.5      30.5           36.5           51.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.4
+   dunk             C          C+PF      82.0      50.5      35.5           31.5           46.5          full           31.0            44.0 open rim ~85-90% (low confidence) down to 46-54% against the best rim protectors (medium) low-medium                     1.2
+   post             A          C+PF      63.3      46.8      31.8           16.5           31.5           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+   post             B          C+PF      63.3      51.8      36.8           11.5           26.5           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+   post             C          C+PF      63.3      56.8      41.8            6.5           21.5           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+floater             A       C+PF+SF      49.3      38.0      23.0           11.3           26.3           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+floater             B       C+PF+SF      49.3      42.7      27.7            6.7           21.7           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+floater             C       C+PF+SF      49.3      47.3      32.3            2.0           17.0           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+    mid             A PG+SG+SF+PF+C      60.6      44.2      29.2           16.4           31.4           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+    mid             B PG+SG+SF+PF+C      60.6      49.8      34.8           10.8           25.8           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+    mid             C PG+SG+SF+PF+C      60.6      54.4      39.4            6.2           21.2           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+  long2             A PG+SG+SF+PF+C      44.4      40.0      25.1            4.4           19.3           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+  long2             B PG+SG+SF+PF+C      44.4      42.4      27.4            2.0           17.0           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+  long2             C PG+SG+SF+PF+C      44.4      43.6      29.6            0.8           14.8           NaN            NaN             NaN                                                                       no direct benchmark       none                     NaN
+  three             A PG+SG+SF+PF+C      40.2      36.0      21.1            4.2           19.1          weak            7.0             9.0                                   wide open 38.4% -> tight (2-4 ft) 30.1%: about 8 points     medium                     0.5
+  three             B PG+SG+SF+PF+C      40.2      38.4      23.4            1.8           16.8          weak            7.0             9.0                                   wide open 38.4% -> tight (2-4 ft) 30.1%: about 8 points     medium                     0.2
+  three             C PG+SG+SF+PF+C      40.2      39.4      25.4            0.8           14.8          weak            7.0             9.0                                   wide open 38.4% -> tight (2-4 ft) 30.1%: about 8 points     medium                     0.1
+        stat            label  mean_A_minus_C  min_gap  max_gap  gap_in_pct_pts  types_with_no_gap
+     handles          Handles            2.00      1.0      3.0            10.0                  0
+        pass             Pass            1.88      1.0      2.0             9.4                  0
+      screen           Screen            2.84      2.0      4.0            14.2                  0
+pressure_def Pressure Defence            2.00      2.0      2.0            10.0                  0
+   intercept        Intercept            1.48      1.0      2.0             7.4                  0
+  screen_def   Screen Defence            1.96      1.0      2.0             9.8                  0
+       steal            Steal            1.08      0.0      2.0             5.4                  4
+    foul_stl     Foul (Steal)            2.00      2.0      2.0            10.0                  0
+       block            Block            2.04      1.0      5.0            10.2                  0
+    foul_blk     Foul (Block)            2.16      1.0      7.0            10.8                  0
+   off_layup            Layup            1.08      1.0      2.0             5.4                  0
+    off_dunk             Dunk            1.76      1.0      2.0             8.8                  0
+    off_post        Post Move            1.96      1.0      2.0             9.8                  0
+ off_floater          Floater            1.48      0.0      2.0             7.4                  2
+     off_mid        Mid-range            1.88      1.0      2.0             9.4                  0
+   off_long2        Long-2pts            1.52      0.0      3.0             7.6                  3
+   off_three        3-Pointer            1.12      0.0      2.0             5.6                  1
+      off_ft       Free Throw            2.08      1.0      4.0            10.4                  0
+   def_layup            Layup            2.80      2.0      3.0            14.0                  0
+    def_dunk             Dunk            3.48      3.0      4.0            17.4                  0
+    def_post        Post Move            2.00      2.0      2.0            10.0                  0
+ def_floater          Floater            1.76      1.0      2.0             8.8                  0
+     def_mid        Mid-range            2.04      2.0      3.0            10.2                  0
+   def_long2        Long-2pts            0.92      0.0      2.0             4.6                  5
+   def_three        3-Pointer            0.88      0.0      2.0             4.4                  6
+        stat expected_order    game_order  inversions                  inverted_pairs
+     handles  PG>SG>SF>PF>C PG>SF>SG>PF>C           0                                
+        pass  PG>SG>SF>PF>C PG>SF>SG>C>PF           1                           SF>SG
+   off_three  SG>PG>SF>PF>C SG>SF>PG>PF>C           1                           SF>PG
+      off_ft  SG>PG>SF>PF>C SG>SF>PG>PF>C           1                           SF>PG
+    off_post  C>PF>SF>SG>PG C>PF>SF>SG>PG           0                                
+      screen  C>PF>SF>SG>PG C>PF>SF>PG>SG           0                                
+   def_layup  C>PF>SF>SG>PG C>PF>SF>SG>PG           0                                
+    def_dunk  C>PF>SF>SG>PG C>PF>SF>SG>PG           0                                
+pressure_def  PG>SG>SF>PF>C PG>SG>SF>PF>C           0                                
+   def_three  SG>SF>PG>PF>C SF>SG>PF>C>PG           3              SF>SG, PF>PG, C>PG
+     def_mid  SG>SF>PG>PF>C SF>C>PF>SG>PG           5 SF>SG, PF>SG, C>SG, PF>PG, C>PG
+              kind                  item  share_ge_75pct  share_le_10pct  max_pct   max_pairing  min_pct   min_pairing  share_zero  defenders_with_any_zero worst_defender  worst_defender_share_le_10pct
+            action    Dribble vs Agility           0.005           0.009     80.0  PG-1A v C-1C      5.0 PF-1C v PG-3A         NaN                      NaN            NaN                            NaN
+            action     Pass vs Intercept           0.002           0.012     75.0 PG-1A v PG-1C     10.0 SG-3C v PG-3A         NaN                      NaN            NaN                            NaN
+            action   Screen vs Challenge           0.002           0.014     75.0 PF-5A v SG-5C      5.0 PG-1C v PG-3A         NaN                      NaN            NaN                            NaN
+            action      Steal (PDF rule)           0.006           0.000     75.0 PF-1C v PG-3A     15.0 PG-1A v SG-1C         NaN                      NaN            NaN                            NaN
+            action Foul on steal attempt           0.000           0.000     55.0 PG-1A v PF-1C     20.0 PG-1A v PG-3A         NaN                      NaN            NaN                            NaN
+shot, full contest                 layup             NaN           0.000     70.0           NaN     25.0           NaN       0.000                      0.0           C-1A                          0.000
+shot, full contest                  dunk             NaN           0.018     75.0           NaN      5.0           NaN       0.000                      0.0           C-2A                          0.560
+shot, full contest                  post             NaN           0.012     80.0           NaN      0.0           NaN       0.000                      1.0           C-2A                          0.227
+shot, full contest               floater             NaN           0.021     60.0           NaN      5.0           NaN       0.000                      0.0           C-2A                          0.547
+shot, full contest                   mid             NaN           0.024     65.0           NaN      5.0           NaN       0.000                      0.0           C-2A                          0.213
+shot, full contest                 long2             NaN           0.127     50.0           NaN      0.0           NaN       0.019                     27.0          SF-5A                          0.320
+shot, full contest                 three             NaN           0.145     45.0           NaN      0.0           NaN       0.022                     25.0          SF-5A                          0.493
+                                                 question                          reading  mean_steal_pct  mean_foul_pct  mean_nothing_pct                                                                        note
+                          Steal and foul: one d20 or two?                        same_roll       45.317333           38.8         15.882667                                                                         NaN
+                          Steal and foul: one d20 or two?                        two_rolls       28.278267           38.8         32.921733                                                                         NaN
+Weak-side contest below 0: floor at 0 or add to the shot? 17 card-shot ratings are below 3             NaN            NaN               NaN If not floored, a weak-side 'contest' would raise make % by up to 5 points.
+   rating  value   band pdf_stated_pct                                                          formula  formula_pct  formula_pct_vs_opponent_20  formula_pct_vs_opponent_11                                                                                                                                                                   note
+Intercept      8  green          40-50 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         75.0                        40.0                        85.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept      9  green          40-50 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         80.0                        45.0                        90.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept     10  green          40-50 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         85.0                        50.0                        95.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept      6 orange          30-35 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         65.0                        30.0                        75.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept      7 orange          30-35 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         70.0                        35.0                        80.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+Intercept      5    red          25-25 P(intercept) = 1 - (Pass - Intercept)/20, at median card Pass 13         60.0                        25.0                        70.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+    Steal      4  green          20-25  P(steal) = P(d20 >= Handles - Steal), at median card Handles 15         50.0                        25.0                        70.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+    Steal      5  green          20-25  P(steal) = P(d20 >= Handles - Steal), at median card Handles 15         55.0                        30.0                        75.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+    Steal      2 orange          10-15  P(steal) = P(d20 >= Handles - Steal), at median card Handles 15         40.0                        15.0                        60.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+    Steal      3 orange          10-15  P(steal) = P(d20 >= Handles - Steal), at median card Handles 15         45.0                        20.0                        65.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+    Steal      1    red            0-9  P(steal) = P(d20 >= Handles - Steal), at median card Handles 15         35.0                        10.0                        55.0 Stated odds match the dice rule only when the opposing rating is 19-20; at typical opposing ratings the rule gives about 2x (Intercept) to 3x (Steal) the stated odds.
+
+===== whatif =====
+candidate                                             current ratings  Dunk contest capped at Layup contest - 1  Mid-range -2 (scale 9-16 -> 7-14)  Mid-range -3 (scale 9-16 -> 6-13)  Layup contest -3 (scale 5-12 -> 2-9)  Layup contest -3 + dunk cap  Weak-side reduction 3 -> 2  Attacker +6 on Pass and Steal rolls  Recommended set (dunk cap, mid -2, layup contest -3, weak-side 2, +6)
+ratings_changed                                                  0.00                                     61.00                              75.00                              75.00                                 75.00                       150.00                        0.00                                 0.00                                                                 225.00
+dunk beats layup (% of pairing-states)                           1.51                                      6.57                               1.51                               1.51                                  0.00                         5.48                        1.51                                 1.51                                                                   5.97
+layup full vs tier A bigs (real elite 46-54%)                   37.70                                     37.70                              37.70                              37.70                                 52.70                        52.70                       37.70                                37.70                                                                  52.70
+layup full vs C-2A, layup-18 finisher                           30.00                                     30.00                              30.00                              30.00                                 45.00                        45.00                       30.00                                30.00                                                                  45.00
+dunk full vs tier A bigs                                        20.50                                     35.50                              20.50                              20.50                                 20.50                        50.50                       20.50                                20.50                                                                  50.50
+share of dunk pairings vs C-2A at <=10%                         56.00                                      0.00                              56.00                              56.00                                 56.00                         0.00                       56.00                                56.00                                                                   0.00
+open mid % (avg shooter; real ~44-49)                           60.40                                     60.40                              50.40                              45.40                                 60.40                        60.40                       60.40                                60.40                                                                  50.40
+open mid pts / open three pts (real ~0.80)                       1.00                                      1.00                               0.84                               0.75                                  1.00                         1.00                        1.00                                 1.00                                                                   0.84
+mid full % (avg shooter)                                        34.27                                     34.27                              24.30                              19.43                                 34.27                        34.27                       34.27                                34.27                                                                  24.30
+three: weak-side drop, pts (real tight ~8)                       2.27                                      2.27                               2.27                               2.27                                  2.27                         2.27                        6.93                                 2.27                                                                   6.93
+three: full drop, pts                                           16.90                                     16.90                              16.90                              16.90                                 16.90                        16.90                       16.90                                16.90                                                                  16.90
+layup: weak-side drop vs bigs, pts                              29.83                                     29.83                              29.83                              29.83                                 14.83                        14.83                       34.83                                29.83                                                                  19.83
+red 3pt shooters: open three beats contested rim (%)            44.76                                     41.90                              44.76                              44.76                                 10.48                         9.68                       44.76                                44.76                                                                   9.68
+pass success vs Intercept, mean %                               35.27                                     35.27                              35.27                              35.27                                 35.27                        35.27                       35.27                                65.26                                                                  65.26
+steal success per attempt, mean % (PDF bands 10-25)             45.73                                     45.73                              45.73                              45.73                                 45.73                        45.73                       45.73                                16.21                                                                  16.21
+foul on steal attempt, mean %                                   38.80                                     38.80                              38.80                              38.80                                 38.80                        38.80                       38.80                                38.80                                                                  38.80
+
+===== prototype =====
+   side               prototype stated_tier name_match  name_match_distance nearest_by_numbers  nearest_distance runner_up  runner_up_distance  prototype_qs  pdf_speed  qs_derived_from_speed  n_stats_different
+offence    O1 Combo Point Guard           B      PG-4B                 2.24              PG-4B              2.24     SG-4B                3.32             1         10                      1                  2
+offence        O2 Two-Way Guard           B      SG-2B                 1.73              SG-2B              1.73     SF-2B                3.16             1         10                      1                  3
+offence        O3 Point Forward           B      SF-4B                 1.00              SF-4B              1.00     SF-2B                3.46             1          9                      1                  1
+offence  O4 All-Rounder Forward           A      PF-4A                 1.00              PF-4A              1.00     PF-5A                2.65             1          9                      1                  1
+offence     O5 Playmaker Center           C       C-4C                 2.24               C-4C              2.24     SF-4C                3.32             0          7                      0                  2
+defence     X1 Attacker/Slasher not printed      PG-5B                 0.00              PG-5B              0.00     PG-2B                2.00             2         11                      2                  0
+defence        X2 Sharp Shooter not printed      SG-1B                 1.00              SG-1B              1.00     PG-2B                2.00             1          9                      1                  1
+defence      X3 Scoring Machine not printed      SF-1B                 1.00              SF-1B              1.00     SF-3B                2.00             1          9                      1                  1
+defence X4 Pick 'n' Pop Forward not printed      PF-5B                 1.41              PF-2B              1.41     PF-5B                1.41             0          8                      0                  2
+defence        X5 Rim Protector not printed       C-2B                 3.16               C-2B              3.16      C-3A                4.69             0          7                      0                  2
+              prototype pdf_card      stat  prototype_value  pdf_value  diff                      effect_on_success_pct
+   O1 Combo Point Guard    PG-4B off_long2               11          9     2 +10 pts on every roll or shot that uses it
+   O1 Combo Point Guard    PG-4B off_three               10          9     1  +5 pts on every roll or shot that uses it
+       O2 Two-Way Guard    SG-2B      pass               15         14     1  +5 pts on every roll or shot that uses it
+       O2 Two-Way Guard    SG-2B off_long2               11         10     1  +5 pts on every roll or shot that uses it
+       O2 Two-Way Guard    SG-2B off_three               10          9     1  +5 pts on every roll or shot that uses it
+       O3 Point Forward    SF-4B off_long2               11         10     1  +5 pts on every roll or shot that uses it
+ O4 All-Rounder Forward    PF-4A off_long2               11         10     1  +5 pts on every roll or shot that uses it
+    O5 Playmaker Center     C-4C off_three                6          8    -2 -10 pts on every roll or shot that uses it
+    O5 Playmaker Center     C-4C    off_ft               13         14    -1  -5 pts on every roll or shot that uses it
+       X2 Sharp Shooter    SG-1B   def_mid                3          4    -1  -5 pts on every roll or shot that uses it
+     X3 Scoring Machine    SF-1B def_long2                4          3     1  +5 pts on every roll or shot that uses it
+X4 Pick 'n' Pop Forward    PF-5B   def_mid                4          5    -1  -5 pts on every roll or shot that uses it
+X4 Pick 'n' Pop Forward    PF-5B def_long2                4          3     1  +5 pts on every roll or shot that uses it
+       X5 Rim Protector     C-2B def_long2                7          4     3 +15 pts on every roll or shot that uses it
+       X5 Rim Protector     C-2B def_three                5          4     1  +5 pts on every roll or shot that uses it

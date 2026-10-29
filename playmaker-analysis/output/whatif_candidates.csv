@@ -1,0 +1,10 @@
+candidate,ratings_changed,dunk beats layup (% of pairing-states),layup full vs tier A bigs (real elite 46-54%),"layup full vs C-2A, layup-18 finisher",dunk full vs tier A bigs,share of dunk pairings vs C-2A at <=10%,open mid % (avg shooter; real ~44-49),open mid pts / open three pts (real ~0.80),mid full % (avg shooter),"three: weak-side drop, pts (real tight ~8)","three: full drop, pts","layup: weak-side drop vs bigs, pts",red 3pt shooters: open three beats contested rim (%),"pass success vs Intercept, mean %","steal success per attempt, mean % (PDF bands 10-25)","foul on steal attempt, mean %"
+current ratings,0,1.51,37.7,30.0,20.5,56.0,60.4,1.0,34.27,2.27,16.9,29.83,44.76,35.27,45.73,38.8
+Dunk contest capped at Layup contest - 1,61,6.57,37.7,30.0,35.5,0.0,60.4,1.0,34.27,2.27,16.9,29.83,41.9,35.27,45.73,38.8
+Mid-range -2 (scale 9-16 -> 7-14),75,1.51,37.7,30.0,20.5,56.0,50.4,0.84,24.3,2.27,16.9,29.83,44.76,35.27,45.73,38.8
+Mid-range -3 (scale 9-16 -> 6-13),75,1.51,37.7,30.0,20.5,56.0,45.4,0.75,19.43,2.27,16.9,29.83,44.76,35.27,45.73,38.8
+Layup contest -3 (scale 5-12 -> 2-9),75,0.0,52.7,45.0,20.5,56.0,60.4,1.0,34.27,2.27,16.9,14.83,10.48,35.27,45.73,38.8
+Layup contest -3 + dunk cap,150,5.48,52.7,45.0,50.5,0.0,60.4,1.0,34.27,2.27,16.9,14.83,9.68,35.27,45.73,38.8
+Weak-side reduction 3 -> 2,0,1.51,37.7,30.0,20.5,56.0,60.4,1.0,34.27,6.93,16.9,34.83,44.76,35.27,45.73,38.8
+Attacker +6 on Pass and Steal rolls,0,1.51,37.7,30.0,20.5,56.0,60.4,1.0,34.27,2.27,16.9,29.83,44.76,65.26,16.21,38.8
+"Recommended set (dunk cap, mid -2, layup contest -3, weak-side 2, +6)",225,5.97,52.7,45.0,50.5,0.0,50.4,0.84,24.3,6.93,16.9,19.83,9.68,65.26,16.21,38.8
