@@ -27,6 +27,7 @@ def main(argv=None):
     k.add_argument('--games', type=int, default=10000)
     k.add_argument('--workers', type=int, default=os.cpu_count() or 1)
     sub.add_parser('ceilings', help='first-turn ceilings: legacy script vs engine rules')
+    sub.add_parser('matchups', help='closeout check for every offence card v defence card v shot type')
     a = ap.parse_args(argv)
 
     if a.cmd == 'show':
@@ -54,6 +55,11 @@ def main(argv=None):
         rep = run_soak(a.games, a.workers)
         print(rep['summary'])
         return 0 if rep['ok'] else 1
+    if a.cmd == 'matchups':
+        from .matchups import closeout_report
+        rep = closeout_report()
+        print(rep['summary'])
+        return 0 if rep['foul_breaks'] == 0 and rep['clean_breaks'] == 0 else 1
     if a.cmd == 'ceilings':
         from .analysis import ceilings_report
         print(ceilings_report())

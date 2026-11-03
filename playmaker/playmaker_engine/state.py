@@ -46,6 +46,7 @@ class Result:
     contester: int = -1
     shot_value: int = 0       # points x (rating - contest), as scored
     free_throws: int = 0
+    and_one: bool = False     # the foul scored the uncontested shot value (higher than the free throws)
 
 
 @dataclass(frozen=True)

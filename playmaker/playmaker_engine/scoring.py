@@ -40,6 +40,18 @@ def free_throws(card, points):
     return mult * card.r['free_throw']
 
 
+def foul_on_shot_points(card, shot_type, pts, rules):
+    """Points for a foul on a declared or forced shot: free throws, or under the and-one
+    rule the higher of the free throws and the shot's uncontested value.
+    Returns (points, and_one_applied)."""
+    ft = free_throws(card, pts)
+    if rules.and_one and shot_type:
+        open_value = pts * card.shot(shot_type)
+        if open_value > ft:
+            return open_value, True
+    return ft, False
+
+
 def contest_rating(dcard, shot_type, dpos, spos, rules):
     c = dcard.con(shot_type)
     if B.dist_rim(dpos) > B.dist_rim(spos):
@@ -67,7 +79,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     card = ctx.off[shooter]
     pts = shot_points(spos)
     rating = card.shot(shot_type)
-    ft = free_throws(card, pts)
+    ft, _ = foul_on_shot_points(card, shot_type, pts, rules)
     floor = forced or rules.floor_declared_shot
 
     def val(c):
@@ -160,7 +172,8 @@ def score(state):
         if r.kind in ('shot', 'forced', 'free_throws'):
             who = f'O{r.shooter + 1} {r.shot_type}'
             if r.kind == 'free_throws':
-                detail = (detail + '. ' if detail else '') + f'{who}: fouled, free throws {r.free_throws}'
+                how = 'and-one, scores the open shot' if r.and_one else 'free throws'
+                detail = (detail + '. ' if detail else '') + f'{who}: fouled, {how} {r.free_throws}'
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
                 detail = (detail + '. ' if detail else '') + f'{who} {r.points} x ({r.rating} - {r.contest}) contested by {cby}'

@@ -13,7 +13,8 @@ python -m playmaker_engine play 6 --offence greedy --defence greedy --seed 1
 python -m playmaker_engine play 8 --offence random --defence greedy --seed 4 --target 5
 python -m playmaker_engine test                                     # full suite, ~80 s on 4 cores
 python -m playmaker_engine soak --games 10000                       # random v random, invariants
-python -m playmaker_engine ceilings                                 # REGRESSION.md table (~50 s)
+python -m playmaker_engine ceilings                                 # REGRESSION.md table (~100 s)
+python -m playmaker_engine matchups                                 # closeout check, every card pairing
 ```
 
 `PLAYMAKER_SOAK_GAMES=500 python -m playmaker_engine test` shortens the soak while iterating.
@@ -31,7 +32,8 @@ python -m playmaker_engine ceilings                                 # REGRESSION
 | `scoring.py` | Rolls, contests, free throws, bands, `score(state)`, match tiebreak |
 | `scenarios.py` | The 16 scenario cards and normal-game setup |
 | `policies.py` | `Policy`, `RandomPolicy`, `GreedyPolicy`, `play()` |
-| `analysis.py` | First-turn ceilings, legacy and engine (REGRESSION.md) |
+| `analysis.py` | First-turn ceilings, legacy and engine, one- and two-action reactions (REGRESSION.md) |
+| `matchups.py` | Closeout check for every offence card × defence card × shot type |
 | `soak.py` | The invariant checker and the random soak |
 
 ## How a solver plugs in
@@ -68,13 +70,14 @@ def expect(node):
 - **Agents** implement `Policy.choose(state) -> Action` (and optionally `reset(seed)`).
   `play(setup, offence, defence, seed)` returns the log and the `Score`; same seed, same game.
 
-## Results at hand-off
+## Results
 
-- 112 tests pass in about 80 seconds (4 cores), including the 10,000-game soak:
-  435,836 applies checked, 0 invariant failures.
+- 120 tests pass in about 90 seconds (4 cores), including the 10,000-game soak
+  (435,809 applies checked, 0 invariant failures) and the 39,375-pairing closeout check.
 - The legacy first-turn ceilings are reproduced exactly; every engine difference is explained in
   REGRESSION.md.
-- 33 open questions and 6 PDF wording conflicts are listed in OPEN_QUESTIONS.md.
+- Designer rulings and the and-one rule are applied; OPEN_QUESTIONS.md marks each one, and #7 is
+  still open for the solver.
 
 The source material is in `reference/` (PDFs), `PROMPT_rules_engine.md`, and `playmaker_engine/data/`
 (unchanged copies of the provided data files and scripts).

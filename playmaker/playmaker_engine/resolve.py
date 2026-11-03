@@ -5,7 +5,7 @@ from fractions import Fraction
 from . import board as B
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, MOVEMENT, TOKEN_FREE
-from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options
+from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points
 from .state import CI, ZERO_COUNTS, Result, count_key
 
 
@@ -139,7 +139,8 @@ def resolve_shot(s, forced=False):
     made = _terminal(s, Result(kind, shooter, t, pts, card.shot(t), opt.contest, opt.defender, opt.value, 0))
     if opt.clean or opt.p_foul == 0:
         return made
-    fouled = _terminal(s, Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft))
+    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules)
+    fouled = _terminal(s, Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
     return chance(f'contest foul roll X{opt.defender + 1}', [(opt.p_foul, 'foul', fouled), (1 - opt.p_foul, 'no foul', made)])
 
 
@@ -161,8 +162,11 @@ def end_phase(s):
         ib = s.ctx.inbounder
         cands = [i for i in range(5) if i != ib and B.on_board(s.o[i])]
         far = max(B.dist_rim(s.o[i]) for i in cands)
-        ball = min(i for i in cands if B.dist_rim(s.o[i]) == far)
-        return new_phase(s.with_(inbound=0, ball=ball), s.ctx.card_clock)
+        tied = [i for i in cands if B.dist_rim(s.o[i]) == far]
+        s = new_phase(s.with_(inbound=0), s.ctx.card_clock)
+        if len(tied) > 1 and s.ctx.rules.inbound_tie == 'offence':
+            return s.with_(stage='pick')                 # the offence picks who gets the ball
+        return s.with_(ball=tied[0])
     clock = s.clock - RC.PHASE_SECONDS
     if clock <= 0:
         s = s.with_(clock=0, tos=s.tos + 1, phase=s.phase)
@@ -238,6 +242,8 @@ def apply(state, action, check=False):
 
     if k == 'target':
         return s.with_(target=a.target, stage='play')
+    if k == 'pick':
+        return s.with_(ball=a.target, stage='play')
 
     if k not in TOKEN_FREE:
         s = _spend(s, side)
@@ -345,8 +351,9 @@ def apply(state, action, check=False):
         if s.stage == 'reaction':
             pts = shot_points(s.o[carrier])
             card = O[carrier]
+            fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules)
             foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, card.shot(s.shot), 0, a.piece, 0,
-                                              free_throws(card, pts)))
+                                              fpts, and1))
             stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
                                     zeroed=s.ctx.hold_for_one)
         else:

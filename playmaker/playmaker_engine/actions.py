@@ -4,9 +4,9 @@ from typing import NamedTuple
 from . import board as B
 from . import rules_config as RC
 
-ORDER = ['target', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
+ORDER = ['target', 'pick', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
          'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint']
-TOKEN_FREE = {'target', 'end_turn', 'forfeit'}
+TOKEN_FREE = {'target', 'pick', 'end_turn', 'forfeit'}
 MOVEMENT = {'move', 'qs', 'sprint'}
 
 
@@ -49,6 +49,8 @@ class Action(NamedTuple):
             return f'{who} Steal'
         if k == 'target':
             return f"Coach's Call target O{self.target + 1}"
+        if k == 'pick':
+            return f'Failed inbound: ball to O{self.target + 1}'
         if k == 'end_turn':
             return f'{who} End turn'
         if k == 'forfeit':
@@ -249,6 +251,8 @@ def _defence_actions(s, rules, kinds=None):
                     continue
                 if rules.challenge_who == 'adjacent' and not B.adjacent(xp, s.o[scr[0]]):
                     continue
+                if rules.challenge_who == 'on_t' and xp != t_square(s, scr):
+                    continue
                 acts.append(Action('challenge', 'X', j, target=scr[0]))
     if ok('pause') and s.count('X', 'pause') < RC.LIMITS['X']['pause'] and not (rules.wait_chain_block and s.prev_wait == 'H'):
         acts.append(Action('pause', 'X'))
@@ -266,6 +270,8 @@ def legal_actions(state):
         return []
     if s.stage == 'target':
         return [Action('target', 'O', target=i) for i in range(5)]
+    if s.stage == 'pick':
+        return [Action('pick', 'O', target=i) for i in inbound_tie_candidates(s)]
     side = s.side
     acts = []
     if s.stage == 'reaction':
@@ -313,6 +319,14 @@ def _ordered(acts):
     mv = [a for a in acts if a.kind in MOVEMENT]          # generated grouped by kind already
     rest.sort(key=lambda a: ORDER.index(a.kind))          # stable sort keeps generation order
     return rest + mv
+
+
+def inbound_tie_candidates(state):
+    """On-court players (not the inbounder) tied for furthest from the rim."""
+    ib = state.ctx.inbounder
+    cands = [i for i in range(5) if i != ib and B.on_board(state.o[i])]
+    far = max(B.dist_rim(state.o[i]) for i in cands)
+    return [i for i in cands if B.dist_rim(state.o[i]) == far]
 
 
 def is_approach(state, a):

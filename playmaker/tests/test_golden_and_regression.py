@@ -103,6 +103,14 @@ def test_engine_ceilings_recorded():
     assert eng[14] == (None, None)              # Hold for One: no shot before the final phase
 
 
+def test_two_action_reaction_closes_the_gap():
+    # Late Clock Reset: one reaction action leaves O1's three worth 12.75; with two actions X4
+    # Moves (arrow set) and Quick Steps in to contest clean: 3.
+    from playmaker_engine.analysis import two_action_ceilings
+    gift = two_action_ceilings([10], parts=('gift',))[10][0]
+    assert gift[0] == 3 and 'then' in gift[1]
+
+
 # ---- play() -------------------------------------------------------------------------------
 
 def test_play_same_seed_same_game():

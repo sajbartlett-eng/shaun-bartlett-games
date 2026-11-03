@@ -35,7 +35,7 @@ def kinds(s):
 def test_per_phase_limits(key, kind, side, limit):
     s = base(side=side)
     if kind == 'challenge':
-        s = s.with_(screens=((2, 4, False, 0),))
+        s = s.with_(screens=((2, 5, False, 0),))      # O3's T on X3 (N8): X3 may Challenge
     if kind == 'dribble':
         pass                                    # X1 at I10 is adjacent to the carrier
     s_ok = with_count(s, key, limit - 1)

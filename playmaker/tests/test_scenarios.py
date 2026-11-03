@@ -95,8 +95,20 @@ def test_inbounds_clock_frozen_two_phases_then_turnover():
         if phase == 1:
             assert s.inbound == 2 and s.clock == 8 and s.ball == 4
     assert s.inbound == 0 and s.tos == 1 and s.clock == 8
-    far = max(B.dist_rim(p) for i, p in enumerate(s.o) if i != 4)
-    assert B.dist_rim(s.o[s.ball]) == far and s.ball != 4
+    # O1 (G6) and O2 (K6) tie for furthest from the rim: the offence chooses (ruling OQ-27).
+    assert s.stage == 'pick' and s.side == 'O'
+    picks = legal_actions(s)
+    assert [(a.kind, a.target) for a in picks] == [('pick', 0), ('pick', 1)]
+    s2 = apply(s, picks[1])
+    assert s2.stage == 'play' and s2.ball == 1 and s2.tok_o == 6
+
+
+def test_failed_inbound_tie_lowest_number_alternative():
+    from playmaker_engine.rules_config import with_rules
+    s = scenario_state(1, rules=with_rules(inbound_tie='lowest'))
+    for _ in (1, 2):
+        s = apply(s.with_(side='X', tok_x=1, turn_n=0), Action('pause', 'X'))
+    assert s.stage == 'play' and s.ball == 0
 
 
 def test_inbound_pass_lands_new_phase_card_clock():

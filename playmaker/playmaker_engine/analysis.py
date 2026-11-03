@@ -137,6 +137,90 @@ def _reaction_value(R, three_only, ignore_arrows=False):
     return best
 
 
+def _reaction_value2(R, three_only):
+    """Defence's best reaction with up to two actions by one defender (e.g. Quick Step in, then
+    a Move that turns the arrow onto the shooter), or any single action. Still a ceiling: pairs
+    of actions by two different defenders are not searched."""
+    best = _reaction_value(R, three_only)
+    sp = R.o[R.ball]
+    if R.tok_x < 2:
+        return best
+    seen = set()
+    for a in legal_actions(R):
+        if a.kind not in MOVEMENT:
+            continue
+        reach = RC.MOVE_STRAIGHT + R.ctx.dfn[a.piece].qs + R.ctx.rules.sprint_orth_base
+        if B.cheb(a.dest, sp) > 1 + reach:
+            continue
+        child = apply(R, a)
+        if isinstance(child, ChanceNode) or child.stage != 'reaction':
+            continue
+        key = (child.x, child.arrows, child.moved_x, child.cnt)
+        if key in seen:
+            continue
+        seen.add(key)
+        for b in legal_actions(child):
+            if b.piece != a.piece:
+                continue
+            if b.kind in MOVEMENT and not B.adjacent(b.dest, sp):
+                continue
+            if b.kind not in MOVEMENT and b.kind != 'steal':
+                continue
+            v = _value(apply(child, b), three_only)
+            if v < best[0]:
+                best = (v, f'{a} then {b}')
+    return best
+
+
+def _looks(state, k, three_only):
+    """Every look for player k (given the ball) after at most one movement action:
+    (single-action value, description, reaction state)."""
+    st = state.with_(ball=k, stage='play', side='O', turn_n=0)
+    starts = [(st, 'stay')]
+    for kind in ('move', 'qs', 'sprint'):
+        if can_move_kind(st, 'O', k, kind):
+            for dest in movement_dests(st, 'O', k, kind, st.ctx.rules):
+                starts.append((apply(st, Action(kind, 'O', k, dest)), f'{kind} {B.sq(dest)}'))
+    out = []
+    for s0, how in starts:
+        if s0.side != 'O':
+            continue
+        for a in legal_actions(s0):
+            if a.kind == 'shot':
+                R = apply(s0, a)
+                if isinstance(R, ChanceNode) or R.stage != 'reaction':
+                    out.append((_value(R, three_only), f'O{k + 1} {how}, {a.shot}', None))
+                else:
+                    out.append((_reaction_value(R, three_only)[0], f'O{k + 1} {how}, {a.shot}', R))
+    return out
+
+
+def two_action_ceilings(ns=None, rules=None, parts=('gift', 'top')):
+    """Gift and top ceilings with the two-action reaction (branch and bound: the single-action
+    value is an upper bound for each look, so looks are checked best first)."""
+    out = {}
+    for n in ns or SCENARIOS:
+        sc = SCENARIOS[n]
+        st = scenario_state(n, rules=rules, target=0 if sc.get('target') else None)
+        three_only = st.ctx.three_only
+
+        def ceiling(players):
+            looks = sorted((l for k in players for l in _looks(st, k, three_only)), key=lambda l: -l[0])
+            best = None
+            for v1, how, R in looks:
+                if best is not None and v1 <= best[0]:
+                    break
+                v2, react = (v1, 'no tokens') if R is None else _reaction_value2(R, three_only)
+                if best is None or v2 > best[0]:
+                    best = (v2, f'{how} vs {react}')
+            return best
+
+        gift = None if (sc.get('inb') or st.ctx.hold_for_one or 'gift' not in parts) else ceiling([st.ball])
+        top = ceiling([k for k, p in enumerate(st.o) if B.on_board(p)]) if 'top' in parts else None
+        out[n] = (gift, top)
+    return out
+
+
 def _best_from(state, k, three_only, ignore_arrows=False):
     """Best shot for player k (given the ball) after at most one movement action."""
     st = state.with_(ball=k, stage='play', side='O', turn_n=0)
@@ -189,23 +273,37 @@ def _fmt(v):
     return str(int(f)) if f == int(f) else f'{f:.1f}'
 
 
-def ceilings_report():
+def _two(n):
+    return two_action_ceilings([n])[n]
+
+
+def ceilings_report(workers=None):
+    import os
+    from concurrent.futures import ProcessPoolExecutor
     leg = legacy_ceilings()
     eng = engine_ceilings()
     flat = engine_ceilings(ignore_arrows=True)
+    with ProcessPoolExecutor(workers or os.cpu_count() or 1) as ex:
+        two = dict(zip(SCENARIOS, ex.map(_two, list(SCENARIOS))))
     lines = ['First-turn ceilings: legacy script vs engine rules (expected look: shot value or free throws).',
              '"no arrows" = engine movement rules but every adjacent defender contests cleanly (the legacy contest).',
-             f'{"#":>2} {"scenario":24} {"gift: legacy":>12} {"no arrows":>9} {"engine":>7}   {"top: legacy":>11} {"no arrows":>9} {"engine":>7}']
+             '"1 action" = engine rules, defence reacts with one action. "2 actions" = up to two actions by one defender.',
+             f'{"#":>2} {"scenario":24} {"gift: legacy":>12} {"no arrows":>9} {"1 action":>8} {"2 actions":>9}   '
+             f'{"top: legacy":>11} {"no arrows":>9} {"1 action":>8} {"2 actions":>9}']
     v = lambda x: _fmt(x[0] if x else None)
     for n in SCENARIOS:
         g, _, t, _ = leg[n]
         eg, et = eng[n]
         fg, ft = flat[n]
-        lines.append(f'{n:>2} {SCENARIOS[n]["title"]:24} {_fmt(g):>12} {v(fg):>9} {v(eg):>7}   {_fmt(t):>11} {v(ft):>9} {v(et):>7}')
+        tg, tt = two[n]
+        lines.append(f'{n:>2} {SCENARIOS[n]["title"]:24} {_fmt(g):>12} {v(fg):>9} {v(eg):>8} {v(tg):>9}   '
+                     f'{_fmt(t):>11} {v(ft):>9} {v(et):>8} {v(tt):>9}')
     lines.append('')
     for n in SCENARIOS:
         g, gh, t, th = leg[n]
         eg, et = eng[n]
         lines.append(f'{n:>2} legacy gift: {gh or "n/a"} | top: {th}')
         lines.append(f'   engine gift: {eg[1] if eg else "n/a"} | top: {et[1] if et else "n/a"}')
+        tg, tt = two[n]
+        lines.append(f'   2-action gift: {tg[1] if tg else "n/a"} | top: {tt[1] if tt else "n/a"}')
     return '\n'.join(lines)

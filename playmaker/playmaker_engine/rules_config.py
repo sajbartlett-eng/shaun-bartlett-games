@@ -65,8 +65,8 @@ class Rules:
     sprint_diag_base: int = MOVE_DIAGONAL
     # OQ-4: roll bounds. A target >= 20 always succeeds, <= 0 always fails.
     natural_rolls: bool = False
-    # OQ-5: negative shot value on a declared shot scores as negative (False = floor at 0).
-    floor_declared_shot: bool = False
+    # OQ-5 (ruled): a declared shot worth less than 0 scores 0, matching the forced shot.
+    floor_declared_shot: bool = True
     # OQ-6: defence reaction to a declared shot may use 0, 1 or 2 actions (movement, arrow
     #   turns, Steal) from the tokens still in the pool.
     reaction_kinds: tuple = ('move', 'qs', 'sprint', 'steal')
@@ -87,7 +87,7 @@ class Rules:
     arrow_line_strict: bool = True
     # OQ-11: a 1 straight + 1 diagonal Move may go in either order.
     move_either_order: bool = True
-    # OQ-12: contest choice.
+    # OQ-12 (ruled: the defence chooses any adjacent defender): contest choice.
     #   'min_value' : defence picks the adjacent defender (or none) that minimises the
     #                 expected shot value, counting foul free throws.
     #   'nearest'   : the nearest adjacent defender (rulebook wording), ties by min value.
@@ -101,17 +101,19 @@ class Rules:
     qs_up_to: bool = True
     # OQ-15: a player with Quick Step 0 cannot Sprint.
     sprint_needs_qs: bool = True
-    # OQ-16: who may Challenge a screen: 'any' defender or only one 'adjacent' to the screener.
-    challenge_who: str = 'any'
-    # OQ-17: a locked ball carrier may still Dribble (locked bans only Move/Sprint/arrow).
-    locked_can_dribble: bool = True
+    # OQ-16 (ruled): who may Challenge a screen.
+    #   'on_t'     : only the defender standing on the screen's T square (the one it blocks).
+    #   'adjacent' : any defender next to the screener.   'any' : any defender.
+    challenge_who: str = 'on_t'
+    # OQ-17 (ruled): a locked ball carrier may not Dribble: a lost dribble means pass or shoot.
+    locked_can_dribble: bool = False
     # OQ-18: a Dribble win frees the carrier from that defender's arrow line for the rest
     #   of the phase.
     dribble_win_lasts: str = 'phase'
     # OQ-19: before the inbound pass lands the inbounder may only Pass.
     inbounder_pass_only: bool = True
-    # OQ-20: the far-contest penalty can take a contest below 0 (False = floor at 0).
-    floor_contest_zero: bool = False
+    # OQ-20 (ruled): the far-contest -3 never takes a contest below 0.
+    floor_contest_zero: bool = True
     # OQ-21: a side with tokens but no legal action forfeits its remaining tokens.
     forfeit_when_stuck: bool = True
     # OQ-22: Need a Three: a two-point shot (and its free throws) scores 0.
@@ -124,6 +126,13 @@ class Rules:
     arrow_line_adjacent_at: str = 'start'
     # OQ-25: two diagonal steps of a Move go the same way (a straight diagonal line).
     diag_move_straight: bool = True
+    # OQ-27 (ruled): on a failed inbound, a tie for "furthest from the rim" is the offence's
+    #   choice ('offence'); 'lowest' gives the ball to the lowest piece number.
+    inbound_tie: str = 'offence'
+    # OQ-34 (new rule, the and-one): once a shot is declared (or forced at clock 0), any foul
+    #   scores the higher of the free throws and the shot's uncontested value. Fouling a good
+    #   look can then never help the defence. False = free throws only.
+    and_one: bool = True
 
 
 DEFAULT_RULES = Rules()
