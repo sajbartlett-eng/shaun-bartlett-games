@@ -19,6 +19,8 @@ class SolverConfig:
     root_beam: int = 40              # plays kept at the root
     max_depth: int = 12              # iterative deepening limit, in turns
     # ---- evaluation ----
+    quiescence: bool = True          # a leaf where the defence is to move gets one more defence turn
+    quiescence_beam: int = 12        # defence plays kept in that extra turn (ball-side plays only, no combos)
     kick_weight: float = 0.0         # value of the best teammate look (0 = carrier only); tested in the report
     inbound_kick_weight: float = 1.0 # during an inbound the ball must go in: use the best receiver's look
     # ---- budgets and confidence ----

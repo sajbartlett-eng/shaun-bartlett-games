@@ -28,6 +28,17 @@ def main(argv=None):
     k.add_argument('--workers', type=int, default=os.cpu_count() or 1)
     sub.add_parser('ceilings', help='first-turn ceilings: legacy script vs engine rules')
     sub.add_parser('matchups', help='closeout check for every offence card v defence card v shot type')
+    v = sub.add_parser('solve', help='solve one scenario card')
+    v.add_argument('n', type=int)
+    v.add_argument('--budget', type=float, default=None, help='minutes (default: the first budget in solver_config)')
+    v.add_argument('--depth', type=int, default=None, help='fixed search depth in turns instead of a time budget')
+    v.add_argument('--exact', action='store_true', help='exact solve from the start (only small positions finish)')
+    va = sub.add_parser('solve-all', help='solve every card at both budgets, then write SOLVER_REPORT.md')
+    va.add_argument('--short', type=float, default=None, help='short budget, minutes')
+    va.add_argument('--long', type=float, default=None, help='long budget, minutes')
+    va.add_argument('--seeds', type=int, default=None)
+    va.add_argument('--workers', type=int, default=3)
+    sub.add_parser('rule-health', help='print the rule-health checks from the saved solver runs')
     a = ap.parse_args(argv)
 
     if a.cmd == 'show':
@@ -55,6 +66,35 @@ def main(argv=None):
         rep = run_soak(a.games, a.workers)
         print(rep['summary'])
         return 0 if rep['ok'] else 1
+    if a.cmd == 'solve':
+        from .scenarios import scenario_state as _ss
+        from .solver import exact_solve, NodeCap
+        from .solver_config import DEFAULT
+        from .solver_report import solve_card, format_card
+        if a.exact:
+            st = _ss(a.n, target=0 if SCENARIOS[a.n].get('target') else None)
+            try:
+                v, per = exact_solve(st, cap=DEFAULT.exact_node_cap * 250)
+                print(f'exact value {v.ev:.3f} (look {v.look:.2f}, P(30+) {v.p30:.2f})')
+            except NodeCap:
+                print('exact solve gave up: the position is too large (raise exact_node_cap, or use the guided search)')
+            return 0
+        budget = (a.budget if a.budget is not None else DEFAULT.budgets_min[0]) * 60
+        r = solve_card(a.n, budget_s=None if a.depth else budget, max_depth=a.depth)
+        print(format_card(a.n, r))
+        return 0
+    if a.cmd == 'solve-all':
+        from .solver_config import DEFAULT
+        from .solver_report import main_jobs, run_jobs, write_report
+        short = (a.short if a.short is not None else DEFAULT.budgets_min[0]) * 60
+        long = (a.long if a.long is not None else DEFAULT.budgets_min[1]) * 60
+        run_jobs(main_jobs(int(short), int(long), a.seeds or DEFAULT.seeds), workers=a.workers)
+        print(write_report(int(short), int(long)))
+        return 0
+    if a.cmd == 'rule-health':
+        from .solver_report import load_runs, rule_health_text
+        print(rule_health_text(load_runs()))
+        return 0
     if a.cmd == 'matchups':
         from .matchups import closeout_report
         rep = closeout_report()

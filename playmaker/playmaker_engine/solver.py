@@ -220,7 +220,7 @@ class Evaluator:
         r = self.reach_cache.get(key)
         if r is None:
             r = ReachMaps([defender_reach(s, d, budget) for d in range(5)])
-            if len(self.reach_cache) > 200000:
+            if len(self.reach_cache) > 15000:
                 self.reach_cache.clear()
             self.reach_cache[key] = r
         return r
@@ -328,7 +328,7 @@ class Evaluator:
             return v
         self.calls += 1
         v = self._eval(s)
-        if len(self.cache) > 300000:
+        if len(self.cache) > 60000:
             self.cache.clear()
         self.cache[key] = v
         return v
@@ -469,7 +469,7 @@ class Generator:
         self.cfg = cfg
         self.ev = ev
 
-    def plays(self, s, shallow, rng=None):
+    def plays(self, s, shallow, rng=None, light=False):
         if s.stage == 'target':
             out = [Play('target', (a,)) for a in legal_actions(s)]
         elif s.stage == 'pick':
@@ -479,7 +479,7 @@ class Generator:
         elif s.side == 'O':
             out = self.offence_plays(s)
         else:
-            out = self.defence_plays(s)
+            out = self.defence_plays(s, light)
         if shallow and self.cfg.top_k_raw > 0 and s.stage in ('play', 'reaction'):
             out += self.raw_plays(s, out)
         seen, uniq = set(), []
@@ -581,7 +581,7 @@ class Generator:
         return out
 
     # ---- defence ----
-    def defence_plays(self, s):
+    def defence_plays(self, s, light=False):
         out = []
         rules = s.ctx.rules
         view = s
@@ -662,6 +662,8 @@ class Generator:
             if found:
                 out.append(Play('deny', (found,)))
                 singles.append(('deny', found))
+        if light:                       # quiescence: plays around the ball only
+            return out
         # recover / switch: back to a man, rim side, arrow on him
         for d in range(5):
             free, _ = maps[d]
@@ -887,6 +889,8 @@ class Searcher:
             except NodeCap:
                 pass
         if depth <= 0:
+            if self.cfg.quiescence and s.side == 'X' and s.stage == 'play':
+                return self.quiesce(s)
             return self.ev(s)
         shallow = (self.root_depth - depth) < self.cfg.raw_depth
         plays = self.gen.plays(s, shallow, self.rng)
@@ -910,6 +914,27 @@ class Searcher:
             results.append((p, v))
         vals, best = self.choose(results, maximise)
         self.tt[k] = Entry(vals, best, results)
+        return vals
+
+    def quiesce(self, s):
+        """Leaf with the defence to move: let it take its turn (best of its concept plays), then evaluate."""
+        k = (s, -1)
+        e = self.tt.get(k)
+        if e is not None:
+            return e.vals
+        plays = self.gen.plays(s, False, light=True)
+        results = []
+        for p in plays:
+            node = apply_play(s, p)
+            if node is None:
+                continue
+            results.append((p, expected(node, self.ev)))
+        if not results:
+            vals = self.ev(s)
+        else:
+            results.sort(key=lambda pv: max(v.ev for v in pv[1]))
+            vals, best = self.choose(results[:self.cfg.quiescence_beam], False)
+        self.tt[k] = Entry(vals)
         return vals
 
     def expect(self, node, depth):

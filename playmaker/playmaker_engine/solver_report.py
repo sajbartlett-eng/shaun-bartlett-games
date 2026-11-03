@@ -191,15 +191,255 @@ def _job(args):
     return (kind, n, budget, seed), r
 
 
-def run_jobs(jobs, workers=None):
-    out = {}
-    with ProcessPoolExecutor(workers or os.cpu_count() or 1) as ex:
-        for key, r in ex.map(_job, jobs):
-            out[key] = r
-    return out
+def run_jobs(jobs, workers=3, store='runs.json'):
+    """Run jobs in parallel, saving every finished result as it lands (resumable)."""
+    from concurrent.futures import as_completed
+    path = os.path.join(RESULTS, store)
+    done = {}
+    if os.path.exists(path):
+        with open(path) as f:
+            done = json.load(f)
+    todo = [j for j in jobs if json.dumps(list(j[:4])) not in done]
+    with ProcessPoolExecutor(workers) as ex:
+        futs = {ex.submit(_job, j): j for j in todo}
+        for fut in as_completed(futs):
+            key, r = fut.result()
+            done[json.dumps(list(key))] = r
+            os.makedirs(RESULTS, exist_ok=True)
+            with open(path, 'w') as f:
+                json.dump(done, f, indent=1, default=str)
+            print(f'done {key}: value {r.get("value", r.get("known", 0)):.2f} ({r["wall"]}s)', flush=True)
+    return done
+
+
+def main_jobs(short=90, long=240, seeds=2, cards=None):
+    cards = cards or SOLVE_ORDER
+    jobs = []
+    for n in cards:
+        for sd in range(seeds):
+            jobs.append(('solve', n, short, sd, None))
+        jobs.append(('solve', n, long, 0, None))
+    for n in cards:
+        jobs.append(('rule7', n, short, 0, None))
+    for n in cards:
+        if SCENARIOS[n].get('target'):
+            jobs.append(('coach', n, short, 0, None))
+    return jobs
 
 
 def save(name, data):
     os.makedirs(RESULTS, exist_ok=True)
     with open(os.path.join(RESULTS, name), 'w') as f:
         json.dump(data, f, indent=1, default=str)
+
+
+# ---- reading results back --------------------------------------------------------------------
+
+def load_runs(store='runs.json'):
+    path = os.path.join(RESULTS, store)
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        raw = json.load(f)
+    return {tuple(json.loads(k)): v for k, v in raw.items()}
+
+
+def _runs_for(runs, kind, n):
+    return {(k[2], k[3]): v for k, v in runs.items() if k[0] == kind and k[1] == n}
+
+
+def card_summary(runs, n, short, long):
+    rs = _runs_for(runs, 'solve', n)
+    if not rs:
+        return None
+    main = rs.get((long, 0)) or rs.get((short, 0)) or next(iter(rs.values()))
+    vals = [r['value'] for r in rs.values()]
+    spread = max(vals) - min(vals)
+    first = lambda r: r['line'][0]['text'] if r['line'] else ''
+    changed = (long, 0) in rs and (short, 0) in rs and first(rs[(long, 0)]) != first(rs[(short, 0)])
+    label = 'unstable' if (spread > DEFAULT.unstable_spread or changed) else 'estimated'
+    if main.get('exact_full'):
+        label = 'exact'
+    return dict(main=main, spread=spread, line_changed=changed, label=label, runs=rs)
+
+
+def format_line(line, finish):
+    out = []
+    for i, ln in enumerate(line, 1):
+        who = 'Offence' if ln['side'] == 'O' else 'Defence'
+        rolls = (' — ' + '; '.join(ln['rolls'])) if ln['rolls'] else ''
+        out.append(f'{i}. **{who}** ({ln["concept"]}, clock {ln["clock"]}): {ln["text"]}{rolls}')
+    if finish:
+        out.append(f'\n*Result:* {finish}')
+    return '\n'.join(out)
+
+
+def format_card(n, r):
+    sc = SCENARIOS[n]
+    head = (f'{n}. {sc["title"]} ({sc["kind"]}, clock {sc["clock"]}): value {r["value"]:.2f}, look {r["look"]:.2f}, '
+            f'P(30+) {r["p30"]:.0%}, plans {r["n_plans"]}, verdict {r["verdict"]}, depth {r["depth"]} '
+            f'({r["seconds"]}s)')
+    return head + '\n' + format_line(r['line'], r['finish']).replace('**', '')
+
+
+def rule_health(runs, short=90, long=240):
+    rh = {}
+    # 1. open question 7
+    seven = []
+    for n in SOLVE_ORDER:
+        base = runs.get(('solve', n, short, 0))
+        alt = runs.get(('rule7', n, short, 0))
+        if not base or not alt:
+            continue
+        first = lambda r: [l['text'] for l in r['line'][:2]]
+        seven.append(dict(n=n, base=base['value'], alt=alt['value'], diff=alt['value'] - base['value'],
+                          line_changed=first(base) != first(alt), base_line=first(base), alt_line=first(alt),
+                          base_x_tokens_burn=sum(1 for l in base['line'] if l['side'] == 'X' and l['concept'] == 'pause')))
+    rh['seven'] = seven
+    # 2. dominant / unused actions in the principal lines
+    from collections import Counter
+    kinds_o, kinds_x, cards_with = Counter(), Counter(), Counter()
+    fouls = []
+    for n in SOLVE_ORDER:
+        c = card_summary(runs, n, short, long)
+        if not c:
+            continue
+        seen = set()
+        for ln in c['main']['line']:
+            for k in ln['kinds']:
+                (kinds_o if ln['side'] == 'O' else kinds_x)[k] += 1
+                seen.add((ln['side'], k))
+            for r in ln['rolls']:
+                if 'foul' in r and r.split(': ', 1)[1].startswith('foul'):
+                    fouls.append((n, r))
+        for k in seen:
+            cards_with[k] += 1
+    rh['kinds_o'], rh['kinds_x'], rh['cards_with'] = dict(kinds_o), dict(kinds_x), {f'{a}:{b}': v for (a, b), v in cards_with.items()}
+    rh['fouls'] = fouls
+    # 4. clock expiry
+    exp = []
+    for n in SOLVE_ORDER:
+        c = card_summary(runs, n, short, long)
+        if c:
+            m = c['main']
+            exp.append(dict(n=n, pexp=m['pexp'], fs=m['fs'], value=m['value'], alt=m['value'] - m['fs']))
+    rh['expiry'] = exp
+    return rh
+
+
+def rule_health_text(runs, short=90, long=240):
+    rh = rule_health(runs, short, long)
+    out = ['Open question 7 (defence playing its last token ends the phase):']
+    for r in rh['seven']:
+        out.append(f'  {r["n"]:>2}: as built {r["base"]:.2f}, alternative {r["alt"]:.2f} (diff {r["diff"]:+.2f}); '
+                   f'opening changed: {r["line_changed"]}')
+    out.append(f'Offence action counts in principal lines: {rh["kinds_o"]}')
+    out.append(f'Defence action counts in principal lines: {rh["kinds_x"]}')
+    out.append(f'Foul outcomes on principal lines: {rh["fouls"] or "none"}')
+    for e in rh['expiry']:
+        out.append(f'  {e["n"]:>2}: P(clock 0) {e["pexp"]:.0%}, expected forced-shot points {e["fs"]:.2f}')
+    return '\n'.join(out)
+
+
+# ---- SOLVER_REPORT.md --------------------------------------------------------------------------
+
+def _pct(x):
+    return f'{x:.0%}'
+
+
+def write_report(short=90, long=240, path=None, fixes=None, extra=''):
+    runs = load_runs()
+    path = path or os.path.join(ROOT, 'SOLVER_REPORT.md')
+    cfg = DEFAULT
+    L = []
+    L.append('# Solver Report\n')
+    L.append(f'Budgets used in this run: **{short} s and {long} s per card** (defaults in `solver_config.py`: '
+             f'{cfg.budgets_min[0]:g} and {cfg.budgets_min[1]:g} minutes), seeds 0 and 1 at the short budget. '
+             'Every value is **estimated** (guided search, evaluation at the leaves) unless marked exact. '
+             'A card is **unstable** if its values spread by more than 2 points across runs, or its first play changes '
+             'between budgets.\n')
+    L.append('Value is the expected possession score under best play; look is the expected shot value (or foul points); '
+             'P(30+) is the chance of an Excellent look. Coach\'s Call rows use the known-target value.\n')
+    L.append('## Summary\n')
+    L.append('| # | Card | Value | Look | P(30+) | Plans | Verdict | Label | Depth | Spread |')
+    L.append('|---|---|---|---|---|---|---|---|---|---|')
+    summaries = {}
+    for n in SOLVE_ORDER:
+        c = card_summary(runs, n, short, long)
+        if not c:
+            continue
+        summaries[n] = c
+        m = c['main']
+        L.append(f'| {n} | {SCENARIOS[n]["title"]} | {m["value"]:.1f} | {m["look"]:.1f} | {_pct(m["p30"])} | '
+                 f'{m["n_plans"]} | {m["verdict"]} | {c["label"]} | {m["depth"]} | {c["spread"]:.1f} |')
+    L.append('')
+    if extra:
+        L.append(extra)
+    # coach
+    coach = [(n, runs.get(('coach', n, short, 0))) for n in SOLVE_ORDER if SCENARIOS[n].get('target')]
+    coach = [(n, r) for n, r in coach if r]
+    if coach:
+        L.append("## Coach's Call bounds\n")
+        L.append('| # | Card | Known target (defence plays against it) | Guessing defence | Secret worth | Best target |')
+        L.append('|---|---|---|---|---|---|')
+        for n, r in coach:
+            L.append(f'| {n} | {SCENARIOS[n]["title"]} | {r["known"]:.1f} (O{r["known_target"] + 1}) | '
+                     f'{r["guessing"]:.1f} (O{r["guessing_target"] + 1}) | {r["gap"]:+.1f} | O{r["guessing_target"] + 1} |')
+        L.append('')
+    # rule health
+    rh = rule_health(runs, short, long)
+    L.append('## Rule health\n')
+    L.append('### 1. Open question 7: the defence playing its last token ends the phase\n')
+    L.append('| # | Card | As built | Phase runs on | Difference | Opening changes |')
+    L.append('|---|---|---|---|---|---|')
+    for r in rh['seven']:
+        L.append(f'| {r["n"]} | {SCENARIOS[r["n"]]["title"]} | {r["base"]:.1f} | {r["alt"]:.1f} | {r["diff"]:+.1f} | '
+                 f'{"yes" if r["line_changed"] else "no"} |')
+    L.append('')
+    L.append('### 2. Action use in the principal lines\n')
+    L.append('| Side | Action | Times played | Cards using it |')
+    L.append('|---|---|---|---|')
+    for side, counts in (('O', rh['kinds_o']), ('X', rh['kinds_x'])):
+        names = (['move', 'qs', 'sprint', 'pass', 'screen', 'dribble', 'hesitate', 'shot'] if side == 'O'
+                 else ['move', 'qs', 'sprint', 'intercept', 'challenge', 'steal', 'pause', 'end_turn'])
+        for k in names:
+            L.append(f'| {"Offence" if side == "O" else "Defence"} | {k} | {counts.get(k, 0)} | '
+                     f'{rh["cards_with"].get(f"{side}:{k}", 0)} of {len(summaries)} |')
+    L.append('')
+    L.append('### 3. And-one\n')
+    L.append(('Foul outcomes on the principal lines: ' + '; '.join(f'card {n}: {t}' for n, t in rh['fouls']))
+             if rh['fouls'] else 'No principal line contains a foul outcome.')
+    L.append('')
+    L.append('### 4. Clock expiry\n')
+    L.append('| # | Card | P(clock 0) | Expected forced-shot points | Value as built | Value with "forced shot or −5, whichever is worse" |')
+    L.append('|---|---|---|---|---|---|')
+    for e in rh['expiry']:
+        L.append(f'| {e["n"]} | {SCENARIOS[e["n"]]["title"]} | {_pct(e["pexp"])} | {e["fs"]:.2f} | {e["value"]:.1f} | {e["alt"]:.1f} |')
+    L.append('')
+    # per card
+    L.append('## Cards\n')
+    for n in SOLVE_ORDER:
+        c = summaries.get(n)
+        if not c:
+            continue
+        m = c['main']
+        sc = SCENARIOS[n]
+        L.append(f'<div class="file"></div>\n\n### {n}. {sc["title"]}\n')
+        L.append(f'{sc["kind"]}, clock {sc["clock"]}. O: {sc["off"]}. X: {sc["dfn"]}. *{sc["text"]}*\n')
+        L.append(f'**Value {m["value"]:.1f}**, look {m["look"]:.1f}, P(30+) {_pct(m["p30"])}, '
+                 f'P(clock 0) {_pct(m["pexp"])}. Plans within 90%: {m["n_plans"]}. **Verdict: {m["verdict"]}** '
+                 f'({c["label"]}; depth {m["depth"]}; spread {c["spread"]:.1f} across '
+                 + ', '.join(f'{v["value"]:.1f}' for v in c['runs'].values()) + ').\n')
+        if m.get('known_per_target'):
+            L.append('Known-target values: ' + ', '.join(f'O{int(t) + 1} {v:.1f}' for t, v in m['known_per_target'].items()) + '.\n')
+        L.append('**Principal line** (best play, following the most likely roll):\n')
+        L.append(format_line(m['line'], m['finish']) + '\n')
+        if m['plans']:
+            top = sorted(m['plans'], key=lambda p: -p['value'])[:5]
+            L.append('**Opening plans within 90% of best** (top 5 shown): ' +
+                     '; '.join(f'{p["text"]} ({p["value"]:.1f})' for p in top) + '\n')
+        if fixes and n in fixes:
+            L.append('**Suggested fix:** ' + fixes[n] + '\n')
+    with open(path, 'w') as f:
+        f.write('\n'.join(L))
+    return path
