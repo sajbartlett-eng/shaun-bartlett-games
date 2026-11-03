@@ -6424,5 +6424,227 @@
    4,
    null
   ]
+ },
+ "[\"solve\", 5, 120, 0]": {
+  "value": 27.2,
+  "look": 28.2,
+  "p30": 0.8,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 172.2,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O2 Pass to O1",
+    "value": 22.16
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "value": 27.2
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O2 Pass to O4",
+    "value": 14.71
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O2 Pass to O5",
+    "value": 27.2
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O1 Screen, T SE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T SW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 17.74
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 17.74
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O2 Pass to O5",
+    "value": 19.46
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G2",
+    "value": 17.74
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G2 then O2 Pass to O5",
+    "value": 19.46
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "seal",
+    "text": "O1 Move to D9 then O1 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: wing to long two",
+    "concept": "seal",
+    "text": "O3 Move to C4 then O3 Screen, T NW",
+    "value": 14.71
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "seal",
+    "text": "O4 Move to F6 then O4 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T E",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T S",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T SW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T W",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 17.74
+   }
+  ],
+  "best_label": "swing to the wing",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "swing to the wing",
+    "concept": "swing"
+   }
+  ],
+  "teams": [
+   "High-Low",
+   "Five Out"
+  ],
+  "nodes": 42,
+  "evals": 685,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 27.2 (look 28.2)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O3"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.2
+  ],
+  "wall": 172.3,
+  "job": [
+   "solve",
+   5,
+   120,
+   0,
+   null
+  ]
  }
 }
