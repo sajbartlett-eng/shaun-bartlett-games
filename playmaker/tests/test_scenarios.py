@@ -112,7 +112,8 @@ def test_failed_inbound_tie_lowest_number_alternative():
 
 
 def test_inbound_pass_lands_new_phase_card_clock():
-    s = scenario_state(3)                                              # inbounder O3 at R9
+    from playmaker_engine.rules_config import with_rules
+    s = scenario_state(3, rules=with_rules(inbound_resolves='defence_turn_start'))   # the step-1 timing
     s = apply(s, Action('pass', 'O', 2, target=0))
     assert s.side == 'X'
     acts = legal_actions(s)
@@ -184,3 +185,53 @@ def test_coach_call_target_is_first_decision():
     assert s.stage == 'target' and [a.kind for a in legal_actions(s)] == ['target'] * 5
     s = apply(s, legal_actions(s)[2])
     assert s.stage == 'play' and s.target == 2
+
+
+# ---- OQ-35: an inbound pass resolves after the defence's whole turn ---------------------------
+
+def _inbound_pass_card4():
+    s = scenario_state(4)                     # Deny Everything: inbounder O2 at R8, X2 at Q8 on the ball
+    return apply(s, Action('pass', 'O', 1, target=0))   # R8 -> O1 at O11
+
+
+def test_inbound_defence_gets_a_normal_turn():
+    s = _inbound_pass_card4()
+    assert s.side == 'X' and s.pending == (1, 0) and s.inbound
+    kinds = {a.kind for a in legal_actions(s)}
+    assert 'end_turn' not in kinds and 'move' in kinds and 'steal' not in kinds   # 1 or 2 real actions
+
+
+def test_inbound_move_then_intercept():
+    from playmaker_engine.actions import intercept_status, is_approach
+    s = _inbound_pass_card4()
+    a = next(a for a in legal_actions(s) if a.kind in ('move',) and is_approach(s, a))
+    s1 = apply(s, a)
+    assert s1.pending and s1.approach == a.piece and s1.inbound          # still in the air
+    assert Action('intercept', 'X', a.piece) in legal_actions(s1)
+    node = apply(s1, Action('intercept', 'X', a.piece))
+    ok = force(node, 'success')
+    assert ok.inbound == 0 and ok.ball == 0 and ok.phase == s.phase + 1  # in: reset after the turn
+    lost = force(node, 'failure')
+    assert lost.inbound and lost.ball == 1 and lost.tos == 1
+
+
+def test_inbound_sprint_then_intercept():
+    from playmaker_engine.actions import is_approach
+    s = _inbound_pass_card4()
+    sprints = [a for a in legal_actions(s) if a.kind == 'sprint' and is_approach(s, a)]
+    assert sprints
+    s1 = apply(s, sprints[0])
+    assert Action('intercept', 'X', sprints[0].piece) in legal_actions(s1)
+
+
+def test_inbound_two_moves_then_the_pass_lands_and_resets():
+    s = _inbound_pass_card4()
+    moves = [a for a in legal_actions(s) if a.kind == 'move']
+    a1 = next(a for a in moves if a.piece == 4)
+    s1 = apply(s, a1)
+    assert s1.side == 'X' and s1.pending and s1.inbound and s1.phase == s.phase   # no reset yet
+    a2 = next(a for a in legal_actions(s1) if a.kind == 'move' and a.piece == 3)
+    s2 = apply(s1, a2)
+    assert s2.inbound == 0 and s2.pending is None and s2.ball == 0
+    assert s2.phase == s.phase + 1 and s2.clock == 8 and s2.side == 'O' and s2.tok_x == 6   # reset only now
+    assert s2.x[4] == a1.dest and s2.x[3] == a2.dest                    # the defence's moves stood

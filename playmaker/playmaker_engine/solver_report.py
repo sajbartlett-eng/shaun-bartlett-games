@@ -117,6 +117,70 @@ def verdict(v, n_plans, gift2, cfg):
     return 'Puzzle'
 
 
+# ---- plans by role (the context test) ---------------------------------------------------------
+
+def role(card):
+    """A role word from the card's strongest offensive skill."""
+    r = card.r
+    if r['shot_three'] >= 11:
+        return 'shooter'
+    if r['shot_post'] >= 15:
+        return 'post'
+    if r['pass'] >= 17:
+        return 'playmaker'
+    if r['shot_layup'] >= 19 or r['shot_dunk'] >= 18:
+        return 'slasher'
+    return {1: 'guard', 2: 'guard', 3: 'wing', 4: 'big', 5: 'big'}[card.num]
+
+
+def zone_name(p):
+    z = B.zone(p)
+    if z == '3':
+        return 'corner three' if p[1] <= 7 else 'arc three'
+    return {'K': 'rim', 'M': 'mid-range', 'L': 'long two', '.': 'plain wood'}[z]
+
+
+def play_label(s, play):
+    """Concept play with player roles, e.g. 'kick to the shooter', 'drive by the slasher to the rim'."""
+    acts = [a for a in play.actions if a.kind != 'end_turn']
+    if not acts:
+        return play.concept
+    a = acts[0]
+    if a.side == 'O':
+        who = role(s.ctx.off[a.piece]) if a.piece >= 0 else ''
+        last = acts[-1]
+        if last.kind == 'pass':
+            r = role(s.ctx.off[last.target])
+            if len(acts) > 1:
+                return f'relocate the {r} and kick'
+            return f'{"kick" if play.concept == "kick" else "swing"} to the {r}'
+        if last.kind == 'shot':
+            spot = acts[0].dest if acts[0].kind in ('move', 'qs', 'sprint') else s.o[last.piece]
+            return f'{"drive and shoot" if len(acts) > 1 else "shoot"}: {who}, {zone_name(spot)}'
+        if a.kind in ('move', 'qs', 'sprint'):
+            kind = 'drive' if a.piece == s.ball else 'relocate'
+            return f'{kind}: {who} to {zone_name(a.dest)}'
+        if play.concept == 'seal' or (last.kind == 'screen' and len(acts) > 1):
+            return f'seal by the {who}'
+        return {'screen': f'screen by the {who}', 'dribble': f'attack the closeout ({who})',
+                'hesitate': 'hesitate'}.get(a.kind, f'{a.kind} by the {who}')
+    # defence
+    c = play.concept
+    base = c.split('+')[0]
+    if base in ('closeout', 'help', 'deny', 'recover', 'switch'):
+        two = B.cheb(s.x[a.piece], s.o[s.ball]) >= 4
+        return f'{c}{" from two passes away" if base == "help" and two else ""}'
+    return c
+
+
+def root_labels(se, s, depth):
+    root = se.tt.get((s, depth))
+    if root is None:
+        return []
+    return [dict(label=play_label(s, p), concept=p.concept, text=p.text(), value=round(v[0].ev, 3))
+            for p, v in root.children]
+
+
 def solve_state(s, cfg=DEFAULT, budget_s=60, seed=0, max_depth=None, targets=(None,), target_index=0):
     se = Searcher(cfg, targets=targets, seed=seed)
     res = se.search(s, budget_s=budget_s, max_depth=max_depth)
@@ -127,7 +191,19 @@ def solve_state(s, cfg=DEFAULT, budget_s=60, seed=0, max_depth=None, targets=(No
     gift2 = gift_two_turns(se, s, d, target_index)
     plan_list = [dict(sig=[list(x) for x in k], value=round(val[0].ev, 2),
                       text=val[1].text() + (f' / {val[2].text()}' if val[2] else '')) for k, val in good]
+    labels = root_labels(se, s, d)
+    best_label = max(labels, key=lambda x: x['value'])['label'] if labels else ''
+    # label every turn of the principal line too (for dead-rule counting)
+    node, dd, line_labels = s, d, []
+    for ln in se.principal_line(s, d, target_index)[0]:
+        line_labels.append(dict(side=ln['side'], label=play_label(node, ln['play']), concept=ln['concept']))
+        nxt = apply_play(node, ln['play'])
+        while isinstance(nxt, ChanceNode):
+            nxt = max(nxt.outcomes, key=lambda o: o[0])[2]
+        node = nxt
     return dict(value=v.ev, look=v.look, p30=v.p30, pexp=v.pexp, fs=v.fs, depth=d, seconds=round(res['seconds'], 1),
+                root=labels, best_label=best_label, line_labels=line_labels,
+                teams=[s.ctx.off_team, s.ctx.def_team],
                 nodes=res['nodes'], evals=res['evals'], exact_hits=res['exact_hits'], exact_tries=res['exact_tries'],
                 line=line, finish=finish, plans=plan_list, n_plans=len(plan_list), gift2=gift2,
                 verdict=verdict(v, len(plan_list), gift2, cfg), all_vals=[x.ev for x in res['vals']])
@@ -141,9 +217,14 @@ def _start(n, rules=None, setup=None):
     return st
 
 
-def solve_card(n, budget_s=60, seed=0, cfg=DEFAULT, rules=None, setup=None, max_depth=None):
-    """One run on one card. Coach's Call cards: known-target value for each target, best taken."""
+def solve_card(n, budget_s=60, seed=0, cfg=DEFAULT, rules=None, setup=None, max_depth=None, target=None):
+    """One run on one card. Coach's Call cards: known-target value for each target, best taken
+    (or the given target only)."""
     sc = SCENARIOS[n]
+    if sc.get('target') and target is not None:
+        r = solve_state(_start(n, rules, setup).with_(target=target), cfg, budget_s, seed, max_depth)
+        r['target'] = target
+        return r
     if sc.get('target'):
         best = None
         per = {}
@@ -156,6 +237,17 @@ def solve_card(n, budget_s=60, seed=0, cfg=DEFAULT, rules=None, setup=None, max_
         best['known_per_target'] = per
         return best
     return solve_state(_start(n, rules, setup), cfg, budget_s, seed, max_depth)
+
+
+def coach_vector(n, budget_s=60, cfg=DEFAULT):
+    """Guessing defence: one strategy against all five possible targets."""
+    st = _start(n)
+    se = Searcher(cfg, targets=(0, 1, 2, 3, 4))
+    res = se.search(st, budget_s=budget_s)
+    vals = res['vals']
+    t_best = max(range(5), key=lambda t: vals[t].ev)
+    return dict(value=vals[t_best].ev, guessing=vals[t_best].ev, guessing_target=t_best,
+                guessing_per_target=[v.ev for v in vals], depth=res['depth'])
 
 
 def coach_bounds(n, budget_s=60, cfg=DEFAULT):
@@ -185,12 +277,29 @@ def _job(args):
     elif kind == 'fix':
         from .solver_fixes import CANDIDATES
         text, fix = CANDIDATES[n][extra]
-        r = solve_card(n, budget, seed, setup=fix)
+        r = solve_card(n, budget, seed, setup=fix, target=_best_target(n))
         r['fix'] = text
+    elif kind == 'target':                    # Coach's Call: one target, its own full budget
+        r = solve_card(n, budget, seed, target=extra)
+    elif kind == 'coachvec':
+        r = coach_vector(n, budget)
+    elif kind == 'rule7b':
+        r = solve_card(n, budget, seed, rules=RC.with_rules(defence_empty_ends_phase=False), target=_best_target(n))
+    elif kind == 'context':                   # another prescribed matchup, same squares and clock
+        from .solver_fixes import teams
+        r = solve_card(n, budget, seed, setup=teams(*extra), target=_best_target(n))
     else:
         raise ValueError(kind)
     r['wall'] = round(time.time() - t0, 1)
+    r['job'] = [kind, n, budget, seed, extra]
     return (kind, n, budget, seed), r
+
+
+BEST_TARGET = {8: 0, 9: 4, 11: 1}         # the known-target winners from round 1, for single-target jobs
+
+
+def _best_target(n):
+    return BEST_TARGET.get(n) if SCENARIOS[n].get('target') else None
 
 
 def run_jobs(jobs, workers=3, store='runs.json'):
@@ -201,7 +310,7 @@ def run_jobs(jobs, workers=3, store='runs.json'):
     if os.path.exists(path):
         with open(path) as f:
             done = json.load(f)
-    keyf = lambda j: json.dumps(list(j[:4]) + ([j[4]] if j[0] == 'fix' else []))
+    keyf = lambda j: json.dumps(list(j[:4]) + ([j[4]] if j[4] is not None else []))
     todo = [j for j in jobs if keyf(j) not in done]
     with ProcessPoolExecutor(workers) as ex:
         futs = {ex.submit(_job, j): j for j in todo}
@@ -560,3 +669,53 @@ def extra_sections(runs, short=90, long=240):
              'often ties for best: see rule health 2.')
     L.append('')
     return '\n'.join(L)
+
+
+# ---- round 2 job list -----------------------------------------------------------------------------
+
+TEAM_NAMES = [t[0] for t in __import__('playmaker_engine.cards', fromlist=['TEAMS_MOD']).TEAMS_MOD.TEAMS]
+SCREEN_TEAMS = ['Twin Towers', 'High-Low', 'Pace and Space']
+
+
+def alt_matchups(n, k=2):
+    """k other prescribed matchups for card n, chosen by rotation (never the card's own teams)."""
+    sc = SCENARIOS[n]
+    out, i = [], n
+    while len(out) < k:
+        off = TEAM_NAMES[(i * 3 + 1) % 10]
+        dfn = TEAM_NAMES[(i * 7 + 4) % 10]
+        i += 1
+        if off == dfn or (off, dfn) == (sc['off'], sc['dfn']) or (off, dfn) in out:
+            continue
+        out.append((off, dfn))
+    return out
+
+
+SCREEN_CARDS = [10, 12, 15]                # O5's standing screen; post cards where seals matter
+
+
+def round2_jobs(short=120, long=600, seeds=5):
+    jobs = []
+    coach = [n for n in SOLVE_ORDER if SCENARIOS[n].get('target')]
+    for n in SOLVE_ORDER:
+        if n in coach:
+            for b in (short, long):
+                for t in range(5):
+                    jobs.append(('target', n, b, 0, t))
+                jobs.append(('coachvec', n, b, 0, None))
+        else:
+            for sd in range(seeds):
+                jobs.append(('solve', n, short, sd, None))
+            jobs.append(('solve', n, long, 0, None))
+    for n in SOLVE_ORDER:
+        for b in (short, long):
+            jobs.append(('rule7b', n, b, 0, None))
+    for n in SOLVE_ORDER:
+        for m in alt_matchups(n):
+            jobs.append(('context', n, short, 0, list(m)))
+    for n in SCREEN_CARDS:
+        for off in SCREEN_TEAMS:
+            if off != SCENARIOS[n]['off']:
+                jobs.append(('context', n, short, 0, [off, SCENARIOS[n]['dfn']]))
+    # cheapest first so partial results are useful early
+    return sorted(jobs, key=lambda j: (j[2], j[0] != 'solve'))

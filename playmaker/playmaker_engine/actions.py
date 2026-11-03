@@ -183,6 +183,11 @@ def is_inbound_pass(state):
     return bool(state.pending) and state.inbound and state.pending[0] == state.ctx.inbounder
 
 
+def inbound_held(state):
+    """An inbound pass in the air that resolves only after the defence's whole turn (OQ-35)."""
+    return is_inbound_pass(state) and state.ctx.rules.inbound_resolves == 'after_defence_turn'
+
+
 def completed_view(state):
     """The state as if the pending pass had landed (used for legality only)."""
     return state.with_(ball=state.pending[1], pending=None, approach=-1)
@@ -291,7 +296,17 @@ def legal_actions(state):
                         acts.append(Action('intercept', 'X', j))
             if s.turn_n == 1 and s.approach >= 0 and can_icpt:
                 acts.append(Action('intercept', 'X', s.approach))
-            if is_inbound_pass(s):
+            if inbound_held(s):
+                # the defence plays a normal turn while the ball is in the air; a defender already
+                # on the line (and still there, unmoved) may intercept with either action
+                if s.turn_n == 1 and can_icpt:
+                    for j in range(5):
+                        if intercept_status(s, j) == 'direct' and not (s.turn_moved >> j & 1):
+                            acts.append(Action('intercept', 'X', j))
+                acts += [a for a in _defence_actions(s, rules) if a.kind != 'steal']
+                if s.turn_n >= 1:
+                    acts.append(Action('end_turn', 'X'))
+            elif is_inbound_pass(s):
                 if s.turn_n == 0 and can_icpt:
                     for a in movement_actions(s, 'X', rules):
                         if is_approach(s, a):

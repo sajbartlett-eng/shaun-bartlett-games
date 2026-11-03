@@ -66,6 +66,16 @@ def defence_team(name):
     return fix
 
 
+def teams(off, dfn):
+    """Play the card with another prescribed matchup (same squares and clock)."""
+    def fix(st):
+        ctx = st.ctx
+        new = Context(TEAMS[off], TEAMS[dfn], ctx.rules, ctx.title, ctx.kind, ctx.scenario, ctx.card_clock,
+                      ctx.inbounder, ctx.coach_call, ctx.three_only, ctx.two_or_three, ctx.hold_for_one, off, dfn)
+        return st.with_(ctx=new)
+    return fix
+
+
 def both(*fixes):
     def fix(st):
         for f in fixes:

@@ -328,6 +328,11 @@ class Evaluator:
             return v
         self.calls += 1
         v = self._eval(s)
+        if self.cfg.eval_turns >= 2 and s.stage == 'play' and s.side == 'O' and s.tok_o >= 1 and not s.ctx.coach_call:
+            v2 = self._two_turns(s, v)
+            if v2 is not None and v2[0].ev > v[0].ev:
+                v = v2
+        v = self._terms(s, v)
         if len(self.cache) > 60000:
             self.cache.clear()
         self.cache[key] = v
@@ -403,6 +408,74 @@ class Evaluator:
                         ev, look, p30, shooter = e2 * self.cfg.kick_weight, l2 * self.cfg.kick_weight, p2 * self.cfg.kick_weight, r
         return self._vals(s, base, ev, look, p30, shooter, 0.0, 0.0)
 
+    def _one(self, s):
+        """One-turn evaluation (no recursion), cached."""
+        k = ('one', s)
+        v = self.cache.get(k)
+        if v is None:
+            v = self._eval(s)
+            self.cache[k] = v
+        return v
+
+    def _two_turns(self, s, v1):
+        """Best look over the offence's next two turns: a setup play now (no shot), the defence's
+        best reply among its ball-side plays, then the one-turn evaluation."""
+        gen = getattr(self, '_gen', None)
+        if gen is None:
+            gen = self._gen = Generator(self.cfg, self)
+        pri = {'kick': 0, 'relocate+kick': 1, 'drive': 2, 'seal': 3, 'relocate': 4, 'screen': 5, 'swing': 6,
+               'dribble': 7, 'hesitate': 8}
+        setups = [p for p in gen.offence_plays(s) if not any(a.kind == 'shot' for a in p.actions)]
+        setups.sort(key=lambda p: pri.get(p.concept, 9))
+        best = None
+        tried = 0
+        for p in setups:
+            if tried >= self.cfg.eval_setup_k:
+                break
+            node = apply_play(s, p)
+            if node is None:
+                continue
+            tried += 1
+            val = expected(node, self._reply)
+            if best is None or val[0].ev > best[0].ev:
+                best = val
+        return best
+
+    def _reply(self, s):
+        """Defence's best reply (ball-side plays), then the one-turn evaluation."""
+        if s.stage != 'play' or s.side != 'X':
+            return self._one(s)
+        gen = self._gen
+        res = []
+        for p in gen.plays(s, False, light=True)[:self.cfg.eval_reply_k + 2]:
+            node = apply_play(s, p)
+            if node is not None:
+                res.append(expected(node, self._one))
+        if not res:
+            return self._one(s)
+        res.sort(key=lambda vs: vs[0].ev)
+        return res[0]
+
+    def _terms(self, s, v):
+        c = self.cfg
+        if not (c.term_open_lane or c.term_zone) or s.stage != 'play' or s.side != 'O':
+            return v
+        extra = 0.0
+        if c.term_zone and B.on_board(s.o[s.ball]) and B.zone(s.o[s.ball]) != '.':
+            extra += c.term_zone
+        if c.term_open_lane:
+            mine = v[0].look
+            best = mine
+            for r in range(5):
+                if r == s.ball or not B.on_board(s.o[r]):
+                    continue
+                pend = s.with_(pending=(s.ball, r))
+                if any(intercept_status(pend, j) for j in range(5)):
+                    continue
+                best = max(best, self.carrier_look(s, r, min(2, s.tok_x), True)[0])
+            extra += c.term_open_lane * max(0.0, best - mine)
+        return tuple(Val(x.ev + extra, x.look, x.p30, x.pexp, x.fs) for x in v)
+
     def _vals(self, s, base, ev, look, p30, shooter, pexp, fs):
         out = []
         for t in self.targets:
@@ -442,7 +515,8 @@ def _seq_actions(d, seq, arrow):
 def quick_legal(s, a):
     """Cheap legality check for an action in state s."""
     if a.kind == 'end_turn':
-        return s.turn_n >= 1 or s.stage == 'reaction' or (s.pending and s.side == 'X')
+        from .actions import inbound_held
+        return s.turn_n >= 1 or s.stage == 'reaction' or (s.pending and s.side == 'X' and not inbound_held(s))
     if a.kind in MOVEMENT:
         if not can_move_kind(s, a.side, a.piece, a.kind):
             return False
@@ -601,10 +675,19 @@ class Generator:
                     out.append(Play('intercept', (a,)))
                 elif a.kind in MOVEMENT and is_approach(s, a):
                     out.append(Play('approach+intercept', (a, Action('intercept', 'X', a.piece))))
+            from .actions import inbound_held
             if s.inbound and s.pending[0] == s.ctx.inbounder:
-                out.append(Play('allow', (Action('end_turn', 'X'),)))
-                return out
-            view = completed_view(s)
+                if not inbound_held(s):
+                    out.append(Play('allow', (Action('end_turn', 'X'),)))
+                    return out
+                # OQ-35: the defence plays a normal turn while the inbound is in the air
+                for a in acts:
+                    if a.kind in MOVEMENT and is_approach(s, a):
+                        for b in (Action('intercept', 'X', a.piece),):
+                            out.append(Play('approach+intercept', (a, b)))
+                view = s
+            else:
+                view = completed_view(s)
         acts = legal_actions(view)
         c = view.ball
         cp = view.o[c]
@@ -746,8 +829,14 @@ class NodeCap(Exception):
 
 def _terminal_turn(s):
     """Is this the defence's last turn before the possession resolves (contest or forced shot)?"""
-    return (s.side == 'X' and not s.pending and s.inbound == 0 and s.ctx.rules.contest_choice == 'min_value'
-            and (s.stage == 'reaction' or (s.final and s.clock <= RC.PHASE_SECONDS)))
+    if not (s.side == 'X' and not s.pending and s.inbound == 0 and s.ctx.rules.contest_choice == 'min_value'):
+        return False
+    if s.stage == 'reaction':
+        return True
+    if s.stage != 'play' or s.clock > RC.PHASE_SECONDS:
+        return False
+    # the final turn, or the defence's last token (which ends the phase at once, then the clock runs out)
+    return s.final or (s.tok_x == 1 and s.ctx.rules.defence_empty_ends_phase)
 
 
 REACH_BOUND = 1 + RC.MOVE_STRAIGHT + 2 + 2   # adjacent square + longest Sprint (3 + QS 2) + margin = 8 (>= 6 needed)
@@ -770,9 +859,11 @@ def pruned_actions(s):
             keep.append(a)
         elif a.kind in MOVEMENT:
             start = s.x[a.piece]
-            if s.turn_n >= 1:
+            if s.turn_n >= 1 or s.tok_x <= 1:          # this is the defence's last action
                 if B.adjacent(a.dest, sp):
                     keep.append(a)
+                elif noop is None and s.turn_n == 0 and not B.adjacent(start, sp):
+                    noop = a                            # a true no-op: nobody near the shooter moves
             elif B.cheb(a.dest, sp) <= REACH_BOUND or B.cheb(start, sp) <= REACH_BOUND:
                 keep.append(a)
             elif noop is None:

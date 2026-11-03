@@ -4,7 +4,7 @@ from fractions import Fraction
 
 from . import board as B
 from . import rules_config as RC
-from .actions import Action, intercept_status, is_approach, MOVEMENT, TOKEN_FREE
+from .actions import Action, intercept_status, is_approach, inbound_held, MOVEMENT, TOKEN_FREE
 from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points
 from .state import CI, ZERO_COUNTS, Result, count_key
 
@@ -109,7 +109,7 @@ def _turnover(s):
 def new_phase(s, clock):
     return s.with_(clock=clock, tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
-                   beaten=(), side='O', phase=s.phase + 1, pending=None)
+                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0)
 
 
 def complete_pass(s):
@@ -188,7 +188,7 @@ def end_turn(s, side, kind=''):
         return resolve_shot(s)
     if side == 'O':
         s = _age_screens(s)
-        s = s.with_(side='X', turn_n=0, prev_wait='H' if kind == 'hesitate' else '', final=s.tok_o == 0)
+        s = s.with_(side='X', turn_n=0, prev_wait='H' if kind == 'hesitate' else '', final=s.tok_o == 0, turn_moved=0)
         if s.tok_x <= 0:
             return end_phase(s)
         return s
@@ -253,7 +253,7 @@ def apply(state, action, check=False):
         return _after(state, s, side, k)
 
     # A pending pass lands at the start of the defence's turn unless this action answers it.
-    if side == 'X' and s.pending:
+    if side == 'X' and s.pending and not inbound_held(state):
         answering = k == 'intercept' or (k in MOVEMENT and is_approach(state, a))
         if not answering:
             phase = s.phase
@@ -280,6 +280,8 @@ def apply(state, action, check=False):
             s = s.with_(x=tuple(x), arrows=tuple(arr))
             if k in MOVEMENT and is_approach(state, a):
                 s = s.with_(approach=a.piece)
+            if state.pending:
+                s = s.with_(turn_moved=s.turn_moved | 1 << a.piece)
         if k in ('move', 'sprint'):
             s = s.with_(moved_o=s.moved_o | 1 << a.piece) if side == 'O' else s.with_(moved_x=s.moved_x | 1 << a.piece)
         if k in ('qs', 'sprint'):

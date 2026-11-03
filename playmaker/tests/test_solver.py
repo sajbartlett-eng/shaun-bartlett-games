@@ -60,6 +60,8 @@ MICROS = [
     lambda: micro({0: 'H9'}, {0: ('H7', 'E'), 1: ('K9', 'N')}, side='X', stage='reaction', tok_x=2, shot='long'),
     # locked ball carrier, two offence tokens
     lambda: micro({0: 'I8', 1: 'C9'}, {0: ('I7', 'N'), 1: ('D8', 'NE')}, tok_o=2, lock_o=0b1),
+    # the defence's last token (it ends the phase at once): one defence action, then the clock runs out
+    lambda: micro({0: 'J9', 1: 'D9'}, {0: ('J7', 'N'), 1: ('E7', 'W')}, side='X', tok_o=1, tok_x=1),
 ]
 
 
@@ -127,8 +129,9 @@ def test_candidate_coverage():
 
 def test_determinism():
     from playmaker_engine.solver_report import solve_card
-    a = solve_card(13, budget_s=None, max_depth=2)
-    b = solve_card(13, budget_s=None, max_depth=2)
+    cfg = with_config(eval_turns=1)
+    a = solve_card(13, budget_s=None, max_depth=2, cfg=cfg)
+    b = solve_card(13, budget_s=None, max_depth=2, cfg=cfg)
     assert a['value'] == b['value'] and a['line'] == b['line']
 
 
@@ -146,7 +149,7 @@ def golden_position():
 
 def test_golden_position_kick_out_and_what_beats_it():
     s = golden_position()
-    se = Searcher()
+    se = Searcher(with_config(eval_turns=1))
     r = se.search(s, max_depth=2)
     kids = {p.text(): v[0] for p, v in r['entry'].children}
     o5 = s.ctx.off[4].shot('three')
@@ -182,5 +185,23 @@ def test_terminal_values_agree_with_score():
 def test_evaluation_matches_two_action_ceiling():
     # Late Clock Reset: the regression's two-action gift is 3; the evaluation of the start agrees.
     from playmaker_engine.scenarios import scenario_state
-    v = Evaluator()(scenario_state(10))[0]
+    st = scenario_state(10)
+    v = Evaluator(with_config(eval_turns=1))(st)[0]
     assert v.ev == pytest.approx(3.0, abs=0.01)
+    assert Evaluator()(st)[0].ev >= v.ev          # the two-turn evaluation is at least the one-turn look
+
+
+def test_evaluation_agreement_with_exact_solver():
+    """The two-turn evaluation must agree with the exact endgame solver better than the one-turn one
+    on the 50-position set (exact values precomputed in tests/data/agreement_set.json)."""
+    from playmaker_engine.agreement import agreement, load, state_of
+    rows = load()
+    assert len(rows) == 50
+    one = agreement(with_config(eval_turns=1), rows)
+    two = agreement(with_config(eval_turns=2), rows)
+    print(f'agreement: one turn MAE {one["mae"]:.2f} ({one["within2"]:.0%} within 2), '
+          f'two turns MAE {two["mae"]:.2f} ({two["within2"]:.0%} within 2)')
+    assert two['mae'] < one['mae'] and two['within2'] >= 0.9
+    # the fixture is still exact: re-solve one position
+    v, _ = exact_solve(state_of(rows[0]['spec']))
+    assert v.ev == pytest.approx(rows[0]['ev'], abs=1e-9)

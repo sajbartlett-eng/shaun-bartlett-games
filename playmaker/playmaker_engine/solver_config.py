@@ -19,6 +19,12 @@ class SolverConfig:
     root_beam: int = 40              # plays kept at the root
     max_depth: int = 12              # iterative deepening limit, in turns
     # ---- evaluation ----
+    eval_turns: int = 2              # the evaluation looks over the offence's next N turns (1 or 2)
+    eval_setup_k: int = 4            # offence setup plays (pass / relocate / drive...) tried in turn 1
+    eval_reply_k: int = 4            # defence replies tried to each setup
+    # small positional terms (kept only if they improve agreement with the exact solver; see report)
+    term_open_lane: float = 0.0      # per point of the best open-lane receiver's look above the carrier's
+    term_zone: float = 0.0           # bonus if the carrier stands on a shooting zone (not plain wood)
     quiescence: bool = True          # a leaf where the defence is to move gets one more defence turn
     quiescence_beam: int = 12        # defence plays kept in that extra turn (ball-side plays only, no combos)
     kick_weight: float = 0.0         # value of the best teammate look (0 = carrier only); tested in the report

@@ -129,6 +129,11 @@ class Rules:
     # OQ-27 (ruled): on a failed inbound, a tie for "furthest from the rim" is the offence's
     #   choice ('offence'); 'lowest' gives the ball to the lowest piece number.
     inbound_tie: str = 'offence'
+    # OQ-35 (ruled): an inbound pass works like any other pass. The defence gets its normal
+    #   turn (1 or 2 actions: e.g. Move then Intercept, Sprint then Intercept, or move two
+    #   players); the pass resolves after that turn, then the phase resets to the card's clock.
+    #   'after_defence_turn' (ruled) | 'defence_turn_start' (step 1: lands at the start of the turn)
+    inbound_resolves: str = 'after_defence_turn'
     # OQ-34 (new rule, the and-one): once a shot is declared (or forced at clock 0), any foul
     #   scores the higher of the free throws and the shot's uncontested value. Fouling a good
     #   look can then never help the defence. False = free throws only.
