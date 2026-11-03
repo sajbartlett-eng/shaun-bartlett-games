@@ -19,6 +19,43 @@ python -m playmaker_engine matchups                                 # closeout c
 
 `PLAYMAKER_SOAK_GAMES=500 python -m playmaker_engine test` shortens the soak while iterating.
 
+## Playtest in the browser (step 3)
+
+```
+python -m playmaker_web                 # serves http://localhost:8765 (add --port N to change it)
+```
+
+Open the page, pick **Full game** (two possessions, sides swap, the preview pack's table setup),
+**Scenario card** (any of the 16) or **One possession**, then **Hot-seat** (one screen) or **Remote**.
+Tick *computer plays offence/defence* to play alone against the test opponent (the greedy baseline:
+it is a sparring partner, not a strong player).
+
+- **Playing:** click one of your players (or Tab to it and press Enter), then an action. Only the
+  engine's legal actions are offered. Squares, receivers and T directions light up; defenders pick an
+  arrow after choosing a square. Turn-enders have dashed borders and say "(ends turn)". With the ball
+  carrier selected, the arrow lines it can't cross are drawn; every pass lists which defenders could
+  intercept it. Both sides see the same help.
+- **Rolls:** before a roll the page says what is needed ("Pass 18 v Intercept 5: success on 13 or less").
+  The server rolls from the game's seed; the page never rolls. The d20 face shown is the one the
+  engine used.
+- **Coach's Call:** the offence picks its target privately at the start (hot-seat: the defence looks
+  away); it is revealed after the shot.
+- **Undo:** hot-seat only, back to the last roll. In a remote game both players must agree.
+- **Remote play through a tunnel:** everything runs on one port, so one tunnel is enough:
+  `cloudflared tunnel --url http://localhost:8765` (or `ngrok http 8765`). Start a Remote game, pick
+  your seat, and send the other player the tunnel URL plus the code shown at the top. They choose
+  **Join a remote game**, enter the code and take the other seat. A direct link also works:
+  `https://<tunnel>/?code=ABC123` fills in the code.
+- **Logs:** every game writes `playtest_logs/<date>_<code>.jsonl`: the setup (teams, scenario, seed),
+  every action with the legal alternatives at that moment, every roll with its probability and face,
+  the time per decision, the score and band, and the five feedback answers from the end screen.
+- **Review a log:** `python -m playmaker_engine review playtest_logs/<file>.jsonl [--budget 5]` replays
+  the game and shows, at each human decision, the solver's preferred action and the gap in value.
+  It is "where the solver disagreed", not a list of mistakes: the solver's values are estimates.
+
+Screenshots: `docs/playtest_mid_possession.png`, `docs/playtest_scenario_card.png`,
+`docs/playtest_end_of_possession.png`.
+
 ## Solver (step 2)
 
 ```

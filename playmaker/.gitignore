@@ -2,3 +2,4 @@ __pycache__/
 .pytest_cache/
 *.pyc
 solver_results/*.tmp
+playtest_logs/*.jsonl

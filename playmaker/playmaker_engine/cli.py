@@ -39,6 +39,9 @@ def main(argv=None):
     va.add_argument('--seeds', type=int, default=None)
     va.add_argument('--workers', type=int, default=3)
     sub.add_parser('rule-health', help='print the rule-health checks from the saved solver runs')
+    rv = sub.add_parser('review', help='replay a playtest log and show where the solver disagreed')
+    rv.add_argument('log')
+    rv.add_argument('--budget', type=float, default=5.0, help='solver seconds per decision')
     a = ap.parse_args(argv)
 
     if a.cmd == 'show':
@@ -90,6 +93,10 @@ def main(argv=None):
         long = (a.long if a.long is not None else DEFAULT.budgets_min[1]) * 60
         run_jobs(main_jobs(int(short), int(long), a.seeds or DEFAULT.seeds), workers=a.workers)
         print(write_report(int(short), int(long)))
+        return 0
+    if a.cmd == 'review':
+        from .review import review
+        review(a.log, a.budget)
         return 0
     if a.cmd == 'rule-health':
         from .solver_report import load_runs, rule_health_text
