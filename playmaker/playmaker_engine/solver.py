@@ -379,11 +379,19 @@ class Evaluator:
         can_move = o_tokens >= 2 or s.side == 'X'
         if s.inbound and s.ball == ctx.inbounder:
             w, cands = self.cfg.inbound_kick_weight, [i for i in range(5) if i != s.ball and B.on_board(s.o[i])]
-            best = (0.0, 0.0, 0.0, -1)
-            for r in cands:
+            # the ball still has to come in: weigh each receiver's look by the pass's interception risk
+            best = (RC.TURNOVER_POINTS * 1.0, 0.0, 0.0, -1)
+            can_pass = s.count('O', 'pass') < RC.LIMITS['O']['pass'] and s.tok_o > 0
+            for r in cands if can_pass else []:
                 ev, look, p30, _, _ = self.carrier_look(s, r, budget_x, True)
-                if ev * w > best[0]:
-                    best = (ev * w, look * w, p30 * w, r)
+                pend = s.with_(pending=(s.ball, r))
+                p = 1.0
+                for j in range(5):
+                    if intercept_status(pend, j) in ('direct', 'approach'):
+                        p = min(p, float(p_success(ctx.off[s.ball].r['pass'] - ctx.dfn[j].r['intercept'], ctx.rules)))
+                v = (p * ev + (1 - p) * RC.TURNOVER_POINTS) * w
+                if v > best[0]:
+                    best = (v, p * look * w, p * p30 * w, r)
             return self._vals(s, base, best[0], best[1], best[2], best[3], 0.0, 0.0)
         ev, look, p30, _, _ = self.carrier_look(s, s.ball, budget_x, can_move)
         shooter = s.ball

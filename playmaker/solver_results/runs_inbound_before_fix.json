@@ -1,0 +1,6629 @@
+{
+ "[\"solve\", 5, 90, 0]": {
+  "value": 27.2,
+  "look": 28.2,
+  "p30": 0.8,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 1881,
+  "evals": 13635,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O2 Pass to O5",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   }
+  ],
+  "finish": "search horizon reached; evaluation 27.2 (look 28.2)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 25.4,
+    "text": "O5 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 24.95,
+    "text": "O5 Move to I2 then O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.2
+  ],
+  "wall": 91.4
+ },
+ "[\"solve\", 5, 90, 1]": {
+  "value": 27.2,
+  "look": 28.2,
+  "p30": 0.8,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 1793,
+  "evals": 13602,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O1 Screen, T SE",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "deny",
+    "text": "X1 Move to E10 facing SW",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "X1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 27.2 (look 28.2)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 24.95,
+    "text": "O5 Move to I2 then O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 25.4,
+    "text": "O5 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.2
+  ],
+  "wall": 91.2
+ },
+ "[\"solve\", 3, 90, 0]": {
+  "value": 22.0,
+  "look": 22.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.1,
+  "nodes": 2349,
+  "evals": 15634,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   }
+  ],
+  "finish": "search horizon reached; evaluation 22.0 (look 22.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   22.0
+  ],
+  "wall": 91.1
+ },
+ "[\"solve\", 3, 90, 1]": {
+  "value": 23.200000000000003,
+  "look": 23.200000000000003,
+  "p30": 0.45,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 3,
+  "seconds": 93.7,
+  "nodes": 3594,
+  "evals": 17306,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   },
+   {
+    "side": "O",
+    "concept": "dribble",
+    "text": "O5 Dribble vs X5",
+    "rolls": [
+     "Dribble O5 vs X5: dribble loses (55%)"
+    ],
+    "clock": 8,
+    "phase": 2,
+    "kinds": [
+     "dribble"
+    ],
+    "actors": [
+     "O5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 16.0 (look 16.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Move to P9 then O1 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O4 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O4 Move to L8 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O1 Screen, T S / O5 Move to K4 then O3 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "dribble",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 23.2,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O5 Dribble vs X5"
+   }
+  ],
+  "n_plans": 8,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   23.200000000000003
+  ],
+  "wall": 94.9
+ },
+ "[\"solve\", 5, 240, 0]": {
+  "value": 27.92,
+  "look": 30.895000000000003,
+  "p30": 0.8550000000000001,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 4,
+  "seconds": 240.0,
+  "nodes": 19189,
+  "evals": 44739,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O2 Pass to O5",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "intercept",
+    "text": "X5 Intercept",
+    "rolls": [
+     "Pass O2->O5 vs Intercept X5: pass completes (offence needs 11 or less; 55%)"
+    ],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "intercept"
+    ],
+    "actors": [
+     "X5"
+    ]
+   },
+   {
+    "side": "O",
+    "concept": "dribble",
+    "text": "O5 Dribble vs X5",
+    "rolls": [
+     "Dribble O5 vs X5: dribble wins (50%)"
+    ],
+    "clock": 4,
+    "phase": 2,
+    "kinds": [
+     "dribble"
+    ],
+    "actors": [
+     "O5"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 4,
+    "phase": 2,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 38.0 (look 38.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5 / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5 / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O3 / O3 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5 / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5 / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "dribble",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.71,
+    "text": "O2 Pass to O5 / O5 Dribble vs X5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O3 Move to C4 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE / O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE / O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW / O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Screen, T E / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Screen, T E / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Screen, T E / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Screen, T E / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Screen, T E / O1 Move to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate / O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 / O5 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 / O1 Move to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "dribble",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 32.6,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O5 Dribble vs X5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "shot",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O5 Shot (post)"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O2 Pass to O5 / O5 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 25.4,
+    "text": "O5 Move to G2 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to G2 then O2 Pass to O5 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to G2 then O2 Pass to O5 / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O3 Move to C4 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE / O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW / O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW / O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW / O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW / O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW / O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW / O1 Move to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW / O1 Move to D9 then O1 Screen, T NE"
+   }
+  ],
+  "n_plans": 73,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.92
+  ],
+  "wall": 242.0
+ },
+ "[\"solve\", 4, 90, 0]": {
+  "value": 38.0,
+  "look": 38.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 1958,
+  "evals": 15071,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O3 Screen, T S",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "challenge",
+    "text": "X3 Challenge screen of O3",
+    "rolls": [
+     "Screen O3 vs Challenge X3: screen beaten (80%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "challenge"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 38.0 (look 38.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M8 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Move to M9"
+   }
+  ],
+  "n_plans": 5,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   38.0
+  ],
+  "wall": 91.3
+ },
+ "[\"solve\", 4, 90, 1]": {
+  "value": 38.0,
+  "look": 38.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.2,
+  "nodes": 1503,
+  "evals": 12438,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "seal",
+    "text": "O3 Move to M8 then O3 Screen, T NW",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "screen"
+    ],
+    "actors": [
+     "O3",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "closeout+help",
+    "text": "X2 Move to Q7 facing NE then X1 Move to P8 facing E",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "move"
+    ],
+    "actors": [
+     "X2",
+     "X1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 38.0 (look 38.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M8 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M9"
+   }
+  ],
+  "n_plans": 5,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   38.0
+  ],
+  "wall": 91.5
+ },
+ "[\"solve\", 3, 240, 0]": {
+  "value": 23.200000000000003,
+  "look": 23.200000000000003,
+  "p30": 0.45,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 4,
+  "seconds": 240.7,
+  "nodes": 22858,
+  "evals": 53288,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   },
+   {
+    "side": "O",
+    "concept": "dribble",
+    "text": "O5 Dribble vs X5",
+    "rolls": [
+     "Dribble O5 vs X5: dribble loses (55%)"
+    ],
+    "clock": 8,
+    "phase": 2,
+    "kinds": [
+     "dribble"
+    ],
+    "actors": [
+     "O5"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 2,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 16.0 (look 16.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "dribble",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 23.2,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O5 Dribble vs X5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O4 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Move to M9"
+   }
+  ],
+  "n_plans": 5,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   23.200000000000003
+  ],
+  "wall": 242.0
+ },
+ "[\"solve\", 1, 90, 0]": {
+  "value": 36.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 1740,
+  "evals": 9889,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O1 Sprint to D9 then O5 Pass to O1",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint",
+     "pass"
+    ],
+    "actors": [
+     "O1",
+     "O5"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   }
+  ],
+  "finish": "search horizon reached; evaluation 36.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Move to D6"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to G8"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   36.0
+  ],
+  "wall": 90.9
+ },
+ "[\"solve\", 1, 90, 1]": {
+  "value": 36.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 1291,
+  "evals": 9566,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O1 Quick Step to G8",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "qs"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "switch",
+    "text": "X5 Move to J2 facing NE",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "X5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 36.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to G8"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Move to D6"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   36.0
+  ],
+  "wall": 90.9
+ },
+ "[\"solve\", 4, 240, 0]": {
+  "value": 38.0,
+  "look": 38.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 240.0,
+  "nodes": 3446,
+  "evals": 35140,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O3 Screen, T S",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "challenge",
+    "text": "X3 Challenge screen of O3",
+    "rolls": [
+     "Screen O3 vs Challenge X3: screen beaten (80%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "challenge"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 38.0 (look 38.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M8 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Move to M9"
+   }
+  ],
+  "n_plans": 5,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   38.0
+  ],
+  "wall": 241.5
+ },
+ "[\"solve\", 2, 90, 0]": {
+  "value": 29.1875,
+  "look": 30.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 91.5,
+  "nodes": 3398,
+  "evals": 16764,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O3 Sprint to O7",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X2 Steal",
+    "rolls": [
+     "Steal foul roll X2: no foul (75%)",
+     "Steal: Dribble O2 vs Steal X2: stolen (55%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 25.0 (look 30.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.19,
+    "text": "O3 Sprint to O7"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   29.1875
+  ],
+  "wall": 92.1
+ },
+ "[\"solve\", 2, 90, 1]": {
+  "value": 29.1875,
+  "look": 30.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 91.7,
+  "nodes": 2523,
+  "evals": 15653,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O3 Sprint to O7",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X2 Steal",
+    "rolls": [
+     "Steal foul roll X2: no foul (75%)",
+     "Steal: Dribble O2 vs Steal X2: stolen (55%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 25.0 (look 30.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.19,
+    "text": "O3 Sprint to O7"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   29.1875
+  ],
+  "wall": 92.4
+ },
+ "[\"solve\", 1, 240, 0]": {
+  "value": 36.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 3,
+  "seconds": 241.5,
+  "nodes": 3078,
+  "evals": 24689,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O2 Screen, T SW",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "challenge",
+    "text": "X2 Challenge screen of O2",
+    "rolls": [
+     "Screen O2 vs Challenge X2: screen beaten (70%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "challenge"
+    ],
+    "actors": [
+     "X2"
+    ]
+   },
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O1 Sprint to D9 then O5 Pass to O1",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint",
+     "pass"
+    ],
+    "actors": [
+     "O1",
+     "O5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 36.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O5 Pass to O3 / O3 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O5 Pass to O3 / O1 Sprint to D9 then O3 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Screen, T SE / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O2 Screen, T SW / O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 32.6,
+    "text": "O3 Screen, T E / O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O4 Screen, T W / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O4 Screen, T W / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O4 Screen, T W / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O4 Screen, T W / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O4 Screen, T W / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O Hesitate / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O1 Quick Step to B7"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Sprint to D9 / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O1 Move to B8"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "shot",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O1 Move to B8 then O1 Shot (three)"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O1 Sprint to A6"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "shot",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O1 Sprint to A6 then O1 Shot (three)"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O3 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1 / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Sprint to N9 / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Sprint to N9 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Sprint to N9 / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Move to K4 then O2 Screen, T NW / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Move to K4 then O2 Screen, T NW / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Move to K4 then O2 Screen, T NW / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O2 Move to K4 then O2 Screen, T NW / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 32.6,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 32.6,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 33.0,
+    "text": "O1 Move to D6 / O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O1 Quick Step to B8"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "qs",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 33.0,
+    "text": "O1 Move to D6 / O1 Quick Step to B8 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Move to D6 / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 33.0,
+    "text": "O1 Quick Step to G8 / O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 35.75,
+    "text": "O1 Quick Step to G8 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O1 Sprint to A4"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E6 / O1 Sprint to A2 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to E4 / O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 33.95,
+    "text": "O1 Quick Step to F7 / O1 Move to D9"
+   }
+  ],
+  "n_plans": 91,
+  "gift2": true,
+  "verdict": "Gift",
+  "all_vals": [
+   36.0
+  ],
+  "wall": 242.2
+ },
+ "[\"solve\", 2, 240, 0]": {
+  "value": 28.0625,
+  "look": 30.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 4,
+  "seconds": 240.0,
+  "nodes": 29183,
+  "evals": 55557,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O3 Sprint to O7",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X2 Steal",
+    "rolls": [
+     "Steal foul roll X2: no foul (75%)",
+     "Steal: Dribble O2 vs Steal X2: stolen (55%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X2"
+    ]
+   },
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O1 Screen, T SW",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X2 Steal",
+    "rolls": [
+     "Steal foul roll X2: no foul (75%)",
+     "Steal: Dribble O2 vs Steal X2: stolen (55%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 20.0 (look 30.0)",
+  "plans": [],
+  "n_plans": 0,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   28.0625
+  ],
+  "wall": 241.0
+ },
+ "[\"solve\", 11, 90, 0]": {
+  "value": 46.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 18.0,
+  "nodes": 860,
+  "evals": 2539,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O2 Sprint to B4",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 46.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 46.0,
+    "text": "O2 Sprint to B4"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   46.0
+  ],
+  "target": 1,
+  "known_per_target": {
+   "0": 36.0,
+   "1": 46.0,
+   "2": 36.0,
+   "3": 36.0,
+   "4": 36.0
+  },
+  "wall": 91.7
+ },
+ "[\"solve\", 11, 90, 1]": {
+  "value": 46.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 18.0,
+  "nodes": 846,
+  "evals": 2099,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O2 Sprint to B4",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "closeout+recover",
+    "text": "X1 Move to Q10 facing E then X2 Move to C5 facing SW",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "move"
+    ],
+    "actors": [
+     "X1",
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 46.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 46.0,
+    "text": "O2 Sprint to B4"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   46.0
+  ],
+  "target": 1,
+  "known_per_target": {
+   "0": 36.0,
+   "1": 46.0,
+   "2": 36.0,
+   "3": 36.0,
+   "4": 36.0
+  },
+  "wall": 91.6
+ },
+ "[\"solve\", 11, 240, 0]": {
+  "value": 46.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 48.0,
+  "nodes": 1223,
+  "evals": 7965,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O2 Sprint to B4",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 46.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 46.0,
+    "text": "O2 Sprint to B4"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   46.0
+  ],
+  "target": 1,
+  "known_per_target": {
+   "0": 36.0,
+   "1": 46.0,
+   "2": 36.0,
+   "3": 36.0,
+   "4": 36.0
+  },
+  "wall": 244.7
+ },
+ "[\"rule7\", 5, 90, 0]": {
+  "value": 27.2,
+  "look": 28.2,
+  "p30": 0.8,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 93.6,
+  "nodes": 2050,
+  "evals": 15977,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O2 Pass to O5",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   }
+  ],
+  "finish": "search horizon reached; evaluation 27.2 (look 28.2)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Screen, T SE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 25.4,
+    "text": "O5 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 24.95,
+    "text": "O5 Move to I2 then O2 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O1 Move to D9 then O1 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O3 Move to C4 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O4 Move to F6 then O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O5 Move to I2 then O5 Screen, T NW"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.2
+  ],
+  "wall": 94.8
+ },
+ "[\"rule7\", 3, 90, 0]": {
+  "value": 23.200000000000003,
+  "look": 23.200000000000003,
+  "p30": 0.45,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 3,
+  "seconds": 90.0,
+  "nodes": 2798,
+  "evals": 17099,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   },
+   {
+    "side": "O",
+    "concept": "dribble",
+    "text": "O5 Dribble vs X5",
+    "rolls": [
+     "Dribble O5 vs X5: dribble loses (55%)"
+    ],
+    "clock": 8,
+    "phase": 2,
+    "kinds": [
+     "dribble"
+    ],
+    "actors": [
+     "O5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 16.0 (look 16.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "dribble",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 23.2,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O5 Dribble vs X5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O4 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O1 Move to P9 then O1 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ],
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5 / O4 Move to L8 then O4 Screen, T NW"
+   }
+  ],
+  "n_plans": 7,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   23.200000000000003
+  ],
+  "wall": 90.9
+ },
+ "[\"rule7\", 4, 90, 0]": {
+  "value": 38.0,
+  "look": 38.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 2002,
+  "evals": 15745,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "screen",
+    "text": "O3 Screen, T S",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "challenge",
+    "text": "X3 Challenge screen of O3",
+    "rolls": [
+     "Screen O3 vs Challenge X3: screen beaten (80%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "challenge"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 38.0 (look 38.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M8 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O3 Move to M9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 38.0,
+    "text": "O4 Move to M9"
+   }
+  ],
+  "n_plans": 5,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   38.0
+  ],
+  "wall": 91.2
+ },
+ "[\"rule7\", 1, 90, 0]": {
+  "value": 36.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.1,
+  "nodes": 2036,
+  "evals": 12768,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O1 Sprint to D9 then O5 Pass to O1",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint",
+     "pass"
+    ],
+    "actors": [
+     "O1",
+     "O5"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "allow",
+    "text": "X End turn",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [],
+    "actors": []
+   }
+  ],
+  "finish": "search horizon reached; evaluation 36.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O1 Sprint to D9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Sprint to N9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O2 Move to K4 then O2 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O3 Move to I2 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O4 Move to I2 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Move to D6"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Quick Step to G8"
+   }
+  ],
+  "n_plans": 12,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   36.0
+  ],
+  "wall": 90.9
+ },
+ "[\"rule7\", 2, 90, 0]": {
+  "value": 29.1875,
+  "look": 30.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 90.0,
+  "nodes": 3810,
+  "evals": 20978,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O3 Sprint to O7",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X2 Steal",
+    "rolls": [
+     "Steal foul roll X2: no foul (75%)",
+     "Steal: Dribble O2 vs Steal X2: stolen (55%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 25.0 (look 30.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.19,
+    "text": "O3 Sprint to O7"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   29.1875
+  ],
+  "wall": 90.8
+ },
+ "[\"rule7\", 11, 90, 0]": {
+  "value": 46.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 18.0,
+  "nodes": 873,
+  "evals": 2885,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O2 Sprint to B4",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O2"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 46.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 46.0,
+    "text": "O2 Sprint to B4"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   46.0
+  ],
+  "target": 1,
+  "known_per_target": {
+   "0": 36.0,
+   "1": 46.0,
+   "2": 36.0,
+   "3": 36.0,
+   "4": 36.0
+  },
+  "wall": 91.4
+ },
+ "[\"coach\", 11, 90, 0]": {
+  "known": 46.0,
+  "known_target": 1,
+  "known_per_target": {
+   "0": 36.0,
+   "1": 46.0,
+   "2": 36.0,
+   "3": 36.0,
+   "4": 36.0
+  },
+  "guessing": 46.0,
+  "guessing_target": 1,
+  "guessing_per_target": [
+   36.0,
+   46.0,
+   36.0,
+   36.0,
+   36.0
+  ],
+  "gap": 0.0,
+  "depth": 2,
+  "wall": 183.9
+ }
+}

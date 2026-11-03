@@ -183,8 +183,10 @@ def _job(args):
     elif kind == 'coach':
         r = coach_bounds(n, budget)
     elif kind == 'fix':
-        from .solver_fixes import FIXES
-        r = solve_card(n, budget, seed, setup=FIXES[n]['setup'])
+        from .solver_fixes import CANDIDATES
+        text, fix = CANDIDATES[n][extra]
+        r = solve_card(n, budget, seed, setup=fix)
+        r['fix'] = text
     else:
         raise ValueError(kind)
     r['wall'] = round(time.time() - t0, 1)
@@ -199,12 +201,14 @@ def run_jobs(jobs, workers=3, store='runs.json'):
     if os.path.exists(path):
         with open(path) as f:
             done = json.load(f)
-    todo = [j for j in jobs if json.dumps(list(j[:4])) not in done]
+    keyf = lambda j: json.dumps(list(j[:4]) + ([j[4]] if j[0] == 'fix' else []))
+    todo = [j for j in jobs if keyf(j) not in done]
     with ProcessPoolExecutor(workers) as ex:
         futs = {ex.submit(_job, j): j for j in todo}
         for fut in as_completed(futs):
             key, r = fut.result()
-            done[json.dumps(list(key))] = r
+            j = futs[fut]
+            done[keyf(j)] = r
             os.makedirs(RESULTS, exist_ok=True)
             with open(path, 'w') as f:
                 json.dump(done, f, indent=1, default=str)
