@@ -328,7 +328,24 @@ def rule_health(runs, short=90, long=240):
             m = c['main']
             exp.append(dict(n=n, pexp=m['pexp'], fs=m['fs'], value=m['value'], alt=m['value'] - m['fs']))
     rh['expiry'] = exp
+    rh['forced_ref'] = forced_reference()
     return rh
+
+
+def forced_reference():
+    """Forced-shot value if the clock ran out with the pieces as the card sets them (the carrier
+    shoots where it stands; the defence gets its last two actions). As built: forced shot - 5.
+    Alternative: the forced shot or -5, whichever is worse for the offence."""
+    from .solver import Evaluator
+    out = []
+    ev = Evaluator()
+    for n in SOLVE_ORDER:
+        st = _start(n)
+        if st.inbound:
+            st = st.with_(ball=max((i for i in range(5) if i != st.ctx.inbounder), key=lambda i: B.dist_rim(st.o[i])))
+        fs = ev.carrier_look(st, st.ball, 2, False, forced=True)[0]
+        out.append(dict(n=n, forced=fs, built=fs + RC.TURNOVER_POINTS, alt=min(fs, RC.TURNOVER_POINTS)))
+    return out
 
 
 def rule_health_text(runs, short=90, long=240):
@@ -379,6 +396,7 @@ def write_report(short=90, long=240, path=None, fixes=None, extra=''):
     L.append('')
     if extra:
         L.append(extra)
+    L.append(extra_sections(runs, short, long))
     # coach
     coach = [(n, runs.get(('coach', n, short, 0))) for n in SOLVE_ORDER if SCENARIOS[n].get('target')]
     coach = [(n, r) for n, r in coach if r]
@@ -415,6 +433,17 @@ def write_report(short=90, long=240, path=None, fixes=None, extra=''):
              if rh['fouls'] else 'No principal line contains a foul outcome.')
     L.append('')
     L.append('### 4. Clock expiry\n')
+    L.append('Best play never runs the clock out on any card: every principal line shoots inside the search horizon, '
+             'so P(clock 0) is 0% throughout. To give the designer the numbers anyway, this table prices a forced shot '
+             'from each card\'s starting position (the carrier shoots where it stands after the defence\'s last two '
+             'actions; inbound cards use the player furthest from the rim).\n')
+    L.append('| # | Card | Forced shot | As built (forced shot − 5) | Alternative (worse of forced shot or −5) |')
+    L.append('|---|---|---|---|---|')
+    for e in rh['forced_ref']:
+        L.append(f'| {e["n"]} | {SCENARIOS[e["n"]]["title"]} | {e["forced"]:.1f} | {e["built"]:.1f} | {e["alt"]:.1f} |')
+    L.append('')
+    L.append('Because forced shots are floored at 0, "the worse of the two" is always −5: the alternative simply removes the '
+             'forced shot. Per-card values from the solver runs:\n')
     L.append('| # | Card | P(clock 0) | Expected forced-shot points | Value as built | Value with "forced shot or −5, whichever is worse" |')
     L.append('|---|---|---|---|---|---|')
     for e in rh['expiry']:
@@ -447,3 +476,87 @@ def write_report(short=90, long=240, path=None, fixes=None, extra=''):
     with open(path, 'w') as f:
         f.write('\n'.join(L))
     return path
+
+
+# ---- fixes, settings, limits --------------------------------------------------------------------
+
+def fix_rows(runs, long=240):
+    from .solver_fixes import CANDIDATES
+    rows = []
+    for n, cands in CANDIDATES.items():
+        base = runs.get(('solve', n, long, 0))
+        for i, (text, _) in enumerate(cands):
+            r = runs.get(('fix', n, long, 0, i))
+            if r and base:
+                rows.append(dict(n=n, i=i, text=text, base=base, fix=r))
+    return rows
+
+
+def concept_share(runs, long=240):
+    raw = concept = 0
+    for n in SOLVE_ORDER:
+        r = runs.get(('solve', n, long, 0))
+        if not r:
+            continue
+        for ln in r['line']:
+            if ln['concept'] == 'raw':
+                raw += 1
+            else:
+                concept += 1
+    return concept, raw
+
+
+def extra_sections(runs, short=90, long=240):
+    L = []
+    rows = fix_rows(runs, long)
+    if rows:
+        L.append('## Suggested fixes, re-solved\n')
+        L.append(f'Each fix changes only the card setup. Both columns are the same budget ({long} s, seed 0).\n')
+        L.append('| # | Card | Fix | Before | After |')
+        L.append('|---|---|---|---|---|')
+        for r in rows:
+            b, f = r['base'], r['fix']
+            L.append(f'| {r["n"]} | {SCENARIOS[r["n"]]["title"]} | {r["text"]} | {b["verdict"]}: {b["value"]:.1f}, '
+                     f'P(30+) {_pct(b["p30"])}, {b["n_plans"]} plans | **{f["verdict"]}**: {f["value"]:.1f}, '
+                     f'P(30+) {_pct(f["p30"])}, {f["n_plans"]} plans |')
+        L.append('')
+    c, raw = concept_share(runs, long)
+    L.append('## Search settings and their tested effect\n')
+    L.append('All live in `solver_config.py`.\n')
+    L.append('| Setting | Value | Tested effect |')
+    L.append('|---|---|---|')
+    before = {}
+    path = os.path.join(RESULTS, 'runs_inbound_before_fix.json')
+    if os.path.exists(path):
+        with open(path) as f:
+            for k, v in json.load(f).items():
+                kk = json.loads(k)
+                if kk[0] == 'solve' and kk[2] == long and kk[3] == 0:
+                    before[kk[1]] = v['value']
+    inb = ', '.join(f'{SCENARIOS[n]["title"]} {before[n]:.1f} → {runs[("solve", n, long, 0)]["value"]:.1f}'
+                    for n in sorted(before) if ('solve', n, long, 0) in runs)
+    L += [
+        f'| `top_k_raw` (K) | 8 | Candidate coverage 50/50 on random endgames. In the principal lines, {c} turns used a concept play and {raw} a raw action. |',
+        '| `raw_depth` | 1 | Raw actions are added at the root only; deeper nodes use concept plays (cost). |',
+        '| `beam` / `root_beam` | 6 / 40 | Not varied in this run (time). Guided search on micro positions with beam 30 matched exact values within 0.5. |',
+        '| `endgame_tokens` (N) / `exact_node_cap` | 2 / 4000 | The exact solver never triggered on a full card: no principal line reaches the last phase with 2 or fewer tokens inside the horizon. Exactness is tested on micro positions (matches brute force; pruning changes nothing). |',
+        '| `quiescence` | on | Leaves where the defence is to move get one more defence turn. Without it, Need a Three showed P(30+) = 100% on a line with a 45% interception risk. Costs 2 to 4 times the search time. |',
+        f'| Inbound evaluation prices interception risk | on | Before → after ({long} s): {inb}. |' if inb else '| Inbound evaluation prices interception risk | on | |',
+        '| `kick_weight` | 0 | 0.9 tried on One Phase Left and Need a Three at depth 3: no change in value (21.0, 30.0). Kept at 0. |',
+        f'| Budgets | {short} s and {long} s | Defaults are 2 and 10 minutes; see Limits. Values moved by up to the spreads in the summary table between the two budgets. |',
+    ]
+    L.append('')
+    L.append('## Limits of this run\n')
+    L.append(f'- **Budgets were scaled down** from 2 and 10 minutes to {short} and {long} seconds, and from 5 seeds to 2, '
+             'to fit the session (the full default set is about 30 hours of compute on this machine). '
+             '`python -m playmaker_engine solve-all` runs the defaults.')
+    L.append('- **Depth is 2 to 4 turns.** Clock-8 cards last 20 or more turns, so the value is "the best look the offence '
+             'can force in the next few turns", not the whole possession. The leaf evaluation fills in the rest.')
+    L.append('- **Seeds only change tie-breaking.** The search is deterministic, so the spread mostly reflects budget '
+             '(depth reached), not randomness.')
+    L.append("- **Coach's Call** searches reached depth 2 only (five targets share the budget), so the secret's value "
+             'could not be measured at this depth.')
+    L.append('- **The evaluation does not score defensive position for later turns.** That is why Pause (doing nothing) '
+             'often ties for best: see rule health 2.')
+    L.append('')
+    return '\n'.join(L)

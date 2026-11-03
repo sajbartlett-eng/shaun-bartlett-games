@@ -19,6 +19,19 @@ python -m playmaker_engine matchups                                 # closeout c
 
 `PLAYMAKER_SOAK_GAMES=500 python -m playmaker_engine test` shortens the soak while iterating.
 
+## Solver (step 2)
+
+```
+python -m playmaker_engine solve 13 --budget 2          # one card, 2-minute budget (or --depth 3)
+python -m playmaker_engine solve 13 --exact             # exact from the start (only tiny positions finish)
+python -m playmaker_engine solve-all --short 1.5 --long 4
+python -m playmaker_engine rule-health
+```
+
+`solver.py` holds the exact endgame solver, the fast evaluation, the candidate plays and the guided search;
+`solver_config.py` every limit and threshold; `solver_report.py` the card runs and `SOLVER_REPORT.md`;
+`solver_fixes.py` the setup fixes tried. Results are saved in `solver_results/runs.json` as each run finishes.
+
 ## Layout
 
 | File | What it holds |
@@ -72,7 +85,7 @@ def expect(node):
 
 ## Results
 
-- 120 tests pass in about 90 seconds (4 cores), including the 10,000-game soak
+- 133 tests pass in about 4 minutes (4 cores): 120 engine tests (about 90 seconds) and 13 solver tests, including the 10,000-game soak
   (435,809 applies checked, 0 invariant failures) and the 39,375-pairing closeout check.
 - The legacy first-turn ceilings are reproduced exactly; every engine difference is explained in
   REGRESSION.md.
