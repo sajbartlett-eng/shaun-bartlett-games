@@ -22,6 +22,7 @@ let G = null;        // {code, token}
 let st = null;       // last state
 let sel = { side: null, i: null, kind: null, dest: null };
 let busy = false, pollTimer = null;
+let seenFeed = null;          // feed entries already shown on this screen
 
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, kids = []) => {
@@ -148,8 +149,9 @@ function render() {
   $('defTeam').textContent = s.teams[1] + (s.full ? ` (player ${s.attacker === 'A' ? 'B' : 'A'})` : '');
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
-  renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists();
+  renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent();
   if (s.placing) return;
+  if (showFeedIfNew()) return;          // the other side's turn first; the end screen follows
   if (s.stage === 'target' && s.can_act) targetModal();
   else if (s.stage === 'over') endModal();
 }
@@ -235,7 +237,8 @@ function pieceLabel(side, p) {
 
 function pieceGroup(side, i) {
   const p = (side === 'O' ? st.o : st.x)[i];
-  const g = svg('g', { class: 'piece' + (sel.side === side && sel.i === i ? ' sel' : ''), tabindex: 0, role: 'button',
+  const acted = actedPieces().has(side + i);
+  const g = svg('g', { class: 'piece' + (sel.side === side && sel.i === i ? ' sel' : '') + (acted ? ' acted' : ''), tabindex: 0, role: 'button',
     'aria-label': pieceLabel(side, p), 'aria-pressed': sel.side === side && sel.i === i ? 'true' : 'false' });
   const choose = () => selectPiece(side, i);
   g.addEventListener('click', choose); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
@@ -408,6 +411,7 @@ async function submit(a) {
   try {
     const r = await api('/api/act', { code: G.code, token: G.token, action: a });
     sel = { side: null, i: null, kind: null, dest: null };
+    lastOther = [];
     if (r.rolls && r.rolls.length) await showRolls(r.rolls);
     st = r.state; render();
     announce(`${a.text}. ${st.summary}`);
@@ -646,3 +650,58 @@ function initTabs() {
   document.body.dataset.tab = 'off';
 }
 initTabs();
+
+
+// ---------------------------------------------------------------- the other side's turn, made visible
+function otherSide(e) {
+  if (e.actor === 'system') return false;
+  if (e.actor === 'ai') return true;
+  return st.mode === 'remote' && st.seat && st.seat !== 'both' && e.side !== st.seat;
+}
+function sideName(side) { return side === 'O' ? 'Offence' : side === 'X' ? 'Defence' : ''; }
+function feedEntry(e) {
+  const kids = [el('div', { class: 'fe-head' }, [el('span', { class: 'roller ' + (e.side === 'O' ? 'off' : 'def'), text: sideName(e.side) + (e.actor === 'ai' ? ' (computer)' : '') }), ' ' + e.text])];
+  for (const r of e.rolls) {
+    const ok = r.face <= r.need;
+    kids.push(el('div', { class: 'fe-roll' }, [rollerChip(r.roller), el('span', { class: 'die small' + (r.roller === 'X' ? ' black' : ''), text: r.face }),
+      ` ${r.what}: ${r.first} on ${r.need} or less → rolled ${r.face}: `, el('strong', { text: r.picked.toUpperCase() })]));
+  }
+  for (const o of e.outcomes) kids.push(el('div', { class: 'fe-out ' + o.tone, text: o.text }));
+  return el('div', { class: 'fe' + (e.rolls.length || e.outcomes.some(o => o.tone !== 'info') ? ' big' : '') }, kids);
+}
+function newOtherEntries() {
+  const feed = st.feed || [];
+  if (seenFeed === null) {           // just opened: show the other side's moves since your last one
+    const mine = feed.filter(e => !otherSide(e));
+    seenFeed = mine.length ? mine[mine.length - 1].n : 0;
+  }
+  const fresh = feed.filter(e => e.n > seenFeed);
+  seenFeed = st.feed_n;
+  return fresh.filter(otherSide);
+}
+let lastOther = [];
+function showFeedIfNew() {
+  const fresh = newOtherEntries();
+  if (!fresh.length) return false;
+  lastOther = fresh;
+  const who = sideName(fresh[0].side);
+  const kids = [el('h2', { text: `${who}${fresh[0].actor === 'ai' ? ' (computer)' : ''}: what just happened` }),
+    ...fresh.map(feedEntry),
+    el('button', { class: 'primary', text: 'Continue', onclick: () => { closeModal(); render(); } })];
+  announce(fresh.map(e => `${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' ')).join(' '));
+  renderRecent(); renderCourt();
+  modal(kids, () => render());
+  return true;
+}
+function renderRecent() {
+  const box = $('recent'); if (!box) return;
+  box.innerHTML = '';
+  if (!lastOther.length) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  box.append(el('h3', { text: `Last turn: ${sideName(lastOther[0].side)}${lastOther[0].actor === 'ai' ? ' (computer)' : ''}` }), ...lastOther.map(feedEntry));
+}
+function actedPieces() {
+  const out = new Set();
+  for (const e of lastOther) { const m = e.text.match(/^([OX])(\d)/); if (m) out.add(m[1] + (Number(m[2]) - 1)); }
+  return out;
+}

@@ -87,6 +87,46 @@ def chance_preview(state, a):
     return out
 
 
+def consequences(before, after, a):
+    """What an action changed, in plain words (from the state difference, so it is always true)."""
+    out = []
+    if after.tos > before.tos:
+        if a.kind == 'intercept':
+            out.append(('bad_O', 'Pass intercepted: turnover, −5. The ball goes back to the passer.'))
+        elif a.kind == 'steal':
+            out.append(('bad_O', 'Stolen: turnover, −5. Play on.'))
+        else:
+            out.append(('bad_O', 'Turnover, −5.'))
+    if after.bonus5 > before.bonus5:
+        out.append(('good_O', 'Foul on the steal: +5 to the offence. Play on.'))
+    if a.kind == 'intercept' and after.tos == before.tos and before.pending:
+        out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
+    if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.stage != 'over':
+        out.append(('good_O', f'Ball kept by O{before.ball + 1}.'))
+    if before.pending and not after.pending and a.kind != 'intercept' and after.ball == before.pending[1]:
+        out.append(('info', f'The pass lands: O{after.ball + 1} has the ball.'))
+    for side, mask_b, mask_a in (('O', before.lock_o, after.lock_o), ('X', before.lock_x, after.lock_x)):
+        for i in range(5):
+            if mask_a >> i & 1 and not mask_b >> i & 1:
+                why = {'dribble': 'beaten on the dribble' if side == 'X' else 'lost the dribble',
+                       'challenge': 'held by the screen'}.get(a.kind, '')
+                out.append(('bad_X' if side == 'X' else 'bad_O', f'{side}{i + 1} is locked' + (f' ({why}).' if why else '.')))
+    if a.kind == 'dribble' and after.lock_o == before.lock_o and after.lock_x == before.lock_x:
+        out.append(('info', 'Dribble: no change.'))
+    if a.kind == 'challenge':
+        for (i, d, f, m) in after.screens:
+            if m != dict((x[0], x[3]) for x in before.screens).get(i, m):
+                out.append(('good_X', f'X{a.piece + 1} beats the screen: may cross the T square.'))
+    if a.kind == 'shot':
+        out.append(('info', f'Shot declared ({a.shot}). The defence reacts, then chooses the contest.'))
+    if after.stage == 'over' and before.stage != 'over':
+        sc = score(after)
+        out.append(('end', f'Possession over: {sc.total} ({sc.band}). {sc.detail}'))
+    if after.phase != before.phase and after.stage != 'over':
+        out.append(('info', f'New phase: clock {after.clock}, tokens back to 6 each.'))
+    return [dict(tone=t, text=x) for t, x in out]
+
+
 def man_to_man(o_squares, ball):
     """The computer's defensive placement: each X on the empty square next to its man that is closest
     to the rim (ties: compass order N, NE, E...), arrow on its man."""
@@ -123,6 +163,7 @@ class Game:
         self.undo = []                   # [(state, rng_state, phase_slots)] since the last roll
         self.undo_votes = set()
         self.rolls = []
+        self.feed = []                   # every action with its rolls and consequences, for the page
         self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
         self.last_decision = time.time()
         self.lock = threading.RLock()
@@ -322,6 +363,10 @@ class Game:
         for r in rolls:
             self._log('roll', possession=self.possession, **r)
         self.last_decision = time.time()
+        text = rec['action']['text']
+        self.feed.append(dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
+                              outcomes=consequences(before, node, a), possession=self.possession,
+                              clock=before.clock, phase=before.phase, version=self.version))
         if node.stage == 'over':
             self._end_possession()
         return dict(rolls=rolls)
@@ -355,6 +400,8 @@ class Game:
             elif self.seat_of(token) is None:
                 raise GameError('unknown player token')
             st, rs, slots = self.undo.pop()
+            if self.feed:
+                self.feed.pop()
             self.state = st
             self.rng.setstate(rs)
             self.slots = {k: {int(i): v for i, v in d.items()} for k, d in json.loads(slots).items()}
@@ -387,6 +434,9 @@ class Game:
             self.possession = 2
             self.state = self._possession_state()
             self.undo, self.rolls = [], []
+            self.feed.append(dict(n=len(self.feed) + 1, actor='system', side='-', kind='possession',
+                                  text='Possession 2: sides swap', rolls=[], outcomes=[], possession=2,
+                                  clock=self.state.clock, phase=self.state.phase, version=self.version + 1))
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.version += 1
             self._log('possession', possession=2, teams=self.teams[::-1], start=self.state.encode())
