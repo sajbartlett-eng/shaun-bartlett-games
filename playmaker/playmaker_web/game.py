@@ -167,7 +167,7 @@ class Game:
         self.rng = random.Random(self.seed)
         self.rules = rules
         self.ai = {k: v for k, v in (ai or {}).items() if v}
-        self.policies = {side: GreedyPolicy() for side in self.ai}
+        self.policies = {side: self._policy(side, kind) for side, kind in self.ai.items()}
         self.tokens = {'both': secrets.token_hex(8)} if mode == 'hotseat' else {}
         self.seats = {}
         self.version = 0
@@ -203,6 +203,17 @@ class Game:
                 self._save_picks(side, self._engine_picks(side), actor='ai')
         if not self.picks_pending():
             self._begin_possession()
+
+    @staticmethod
+    def _policy(side, kind):
+        """'greedy' (the default computer): greedy on offence, the board-reading defence on defence.
+        'baseline': the greedy baseline on both sides (as the solver report compares against)."""
+        if kind not in ('greedy', 'baseline', 'reader'):
+            raise GameError('computer opponent: greedy, reader or baseline')
+        if side == 'X' and kind in ('greedy', 'reader'):
+            from playmaker_engine.defence import ReadingDefence
+            return ReadingDefence()
+        return GreedyPolicy()
 
     # ---- setup ----
     def _register_custom(self, custom):
@@ -330,7 +341,9 @@ class Game:
                 from playmaker_engine.scouting import report
                 out['in_play'] = report_in_play(recs, report(self.team_of('O'), self.team_of('X'), 'scout'))
             try:
-                from playmaker_engine import solver  # noqa: F401  (the in-browser build has no solver)
+                if getattr(self, 'static', False):
+                    raise ImportError('the in-browser build skips the solver review (too slow there)')
+                from playmaker_engine import solver  # noqa: F401
                 out['solver'] = solver_disagreements(recs)
                 out['solver_note'] = 'Estimates from a short solver search (about a second per decision).'
             except ImportError:
@@ -561,12 +574,19 @@ class Game:
         self._timer_decision()
 
     def _auto_place(self):
-        """The computer places for its side: the preview squares on offence, man-to-man on defence."""
+        """The computer places for its side: the preview squares on offence; on defence man-to-man squares,
+        with arrows chosen by the board-reading defence (or on each man, for the baseline)."""
         while self.placing and self.placing in self.ai:
             if self.placing == 'O':
                 self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
             else:
                 xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
+                if getattr(self.policies.get('X'), 'name', '') == 'reader':
+                    # the board-reading defence picks each starting arrow (wall, lane, help or on the ball)
+                    from playmaker_engine.defence import choose_arrows
+                    o_sq, ball = self.placed['O']
+                    trial = self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xs], arrows, ball)
+                    arrows = choose_arrows(trial)
                 self._place_side('X', xs, None, arrows, actor='ai')
 
     def place(self, token, body):
@@ -732,6 +752,9 @@ class Game:
             rec['timer_left'] = round(max(0.0, self._main_left(self.now())), 2)
         if a.kind == 'target':
             rec['action'] = dict(kind='target', side='O', text="Coach's Call target chosen (secret)", target=a.target)
+        if a.side == 'X' and a.kind in ('move', 'qs', 'sprint') and not isinstance(node, ChanceNode) and node.stage != 'over':
+            from playmaker_engine.defence import arrow_job
+            rec['arrow_job'] = arrow_job(node, a.piece)
         self._log('action', **rec)
         self.timer_note = None
         for r in rolls:

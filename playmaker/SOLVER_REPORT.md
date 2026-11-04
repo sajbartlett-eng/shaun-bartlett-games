@@ -62,6 +62,23 @@ All live in `solver_config.py`.
 | `kick_weight` | 0 | 0.9 tried on One Phase Left and Need a Three at depth 3: no change in value (21.0, 30.0). Kept at 0. |
 | Budgets | 90 s and 240 s | Defaults are 2 and 10 minutes; see Limits. Values moved by up to the spreads in the summary table between the two budgets. |
 
+## Audit: arrows and the reaction (step 3e)
+
+**Question:** does the solver's evaluation score a contest from the arrow's current facing, which would
+ignore that a defender can still turn or step in as a reaction once the shot is declared?
+
+**Answer: no.** `Evaluator.defended` uses `defender_reach` with the reaction budget (up to 2 actions,
+limited by the tokens left). A defender whose Move is unused and who is not locked reaches every Move
+square with any facing (including a turn in place), and Quick Step or Sprint arrivals keep their set
+facing. A contest counts as clean when a reachable arrival faces the shooter; otherwise it counts as a
+foul roll; with no reach it doesn't count. The search itself plays real reactions. So the solver already
+charges for a lost reaction (Move used, locked, no tokens) and nothing else.
+
+**What that means for the Pause result:** the facing model is not its cause. The known cause stands
+(the one-turn evaluation doesn't score defensive position for the offence's later turns; round 2's
+two-turn evaluation addresses it). The computer opponent had the blind spot, not the solver: it judged
+contests from the current facing. Step 3e replaced it with a defence that uses this evaluation.
+
 ## Limits of this run
 
 - **Budgets were scaled down** from 2 and 10 minutes to 90 and 240 seconds, and from 5 seeds to 2, to fit the session (the full default set is about 30 hours of compute on this machine). `python -m playmaker_engine solve-all` runs the defaults.

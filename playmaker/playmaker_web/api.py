@@ -109,5 +109,7 @@ def dispatch(method, path, query_json='{}', body_json='{}'):
     global _STATIC
     if _STATIC is None:
         _STATIC = Manager(static=True)
+        from playmaker_engine import defence
+        defence.DEFAULT_BUDGET_S = 1.2       # Python in the browser is several times slower: think less per move
     status, obj = handle(_STATIC, method, path, json.loads(query_json or '{}'), json.loads(body_json or '{}'))
     return json.dumps(dict(status=status, body=obj), default=str)
