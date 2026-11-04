@@ -1547,8 +1547,18 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .name-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .opponent-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .opponent-choice .option-card { margin-bottom: 0; }
-.computer-levels { margin-top: 8px; padding: 10px 12px 4px; border: 1px dashed var(--paper-edge); border-radius: 4px; }
-.computer-levels .hint { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin: 4px 0 6px; }
+.training-panel { margin-top: 8px; padding: 12px; border: 1px dashed var(--paper-edge); border-radius: 4px; display: grid; gap: 10px; }
+.training-track { padding: 10px 12px; border: 1.5px solid var(--paper-edge); border-radius: 4px; background: rgba(243, 234, 217, 0.5); }
+.training-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-family: var(--display); }
+.training-head strong { font-size: 16px; }
+.training-level { font-size: 12px; color: var(--ink-faint); font-weight: 600; letter-spacing: 0.03em; }
+.training-desc { font-size: 13px; line-height: 1.45; color: var(--ink-soft); margin: 6px 0 8px; }
+.training-progress { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 12px; color: var(--ink-faint); }
+.training-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; }
+.training-dot.done { background: var(--ink); }
+.training-count { margin-left: 4px; }
+.training-track .btn-primary { width: 100%; }
+.training-panel .hint { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin: 0; }
 .name-input:disabled { opacity: 0.7; background: var(--paper-deep); }
 @media (max-width: 420px) { .opponent-choice { grid-template-columns: 1fr; } }
 .opponent-choice { grid-template-columns: repeat(3, 1fr); }
@@ -2619,7 +2629,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <button class="btn btn-primary-sm" id="whatifDoneBtn">Done</button>
         </div>
         <div class="tutorial-bar" id="tutorialBar" style="display:none;" aria-label="Chapter Zero result controls">
-            <span class="whatif-label">Chapter Zero</span>
+            <span class="whatif-label" id="tutorialBarLabel">Chapter Zero</span>
             <button class="btn btn-undo" id="tutorialFairestBtn" type="button" aria-pressed="false" disabled>Show fairest fence</button>
             <button class="btn btn-undo" id="tutorialResultBtn" type="button">Result</button>
             <button class="btn btn-primary-sm" id="tutorialNextBtn" type="button">Swap chairs</button>
@@ -2745,7 +2755,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             </div>
             <div class="opponent-choice" role="radiogroup" aria-label="Who plays Sibling 2">
                 <button type="button" class="option-card radio selected" data-opponent="person" role="radio" aria-checked="true"><span class="check"></span><span class="label"><span class="title">A person</span><span class="desc">Pass the phone between you.</span></span></button>
-                <button type="button" class="option-card radio" data-opponent="computer" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">The computer</span><span class="desc">Plays by fixed rules you can read.</span></span></button>
+                <button type="button" class="option-card radio" data-opponent="training" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Training</span><span class="desc">Generated estates, level by level. Choose, or cut.</span></span></button>
                 <button type="button" class="option-card radio" data-opponent="remote" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Someone far away</span><span class="desc">Two devices, one estate, a room code.</span></span></button>
             </div>
             <div class="remote-panel" id="remotePanel" hidden>
@@ -2770,13 +2780,21 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                     </div>
                 </div>
             </div>
-            <div class="computer-levels" id="computerLevels" hidden>
-                <div class="option-group" role="radiogroup" aria-label="How the computer cuts">
-                    <button type="button" class="option-card radio" data-level="straight" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Straight by area</span><span class="desc">Draws the straight fence that divides the land most evenly by area, ignoring the pieces.</span></span></button>
-                    <button type="button" class="option-card radio selected" data-level="line" role="radio" aria-checked="true"><span class="check"></span><span class="label"><span class="title">Best straight fence</span><span class="desc">Of every straight fence, draws the one with the smallest score gap.</span></span></button>
-                    <button type="button" class="option-card radio" data-level="exact" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Best fence possible</span><span class="desc">Checks every fence and draws one with the smallest gap possible. If it wins the toss and a perfect split exists, it cuts, because a tie goes to the Cutter.</span></span></button>
+            <div class="training-panel" id="trainingPanel" hidden>
+                <div class="training-track">
+                    <div class="training-head"><strong>Choose</strong><span class="training-level" id="trainingChooseLevel"></span></div>
+                    <p class="training-desc" id="trainingChooseDesc"></p>
+                    <div class="training-progress" id="trainingChooseProgress"></div>
+                    <button type="button" class="btn-primary" id="trainingChooseBtn">Start Choose training</button>
                 </div>
-                <p class="hint">In every case the computer places its pieces at random, a coin toss decides the roles, it keeps the higher-value plot when it chooses, and it never changes these rules mid-game.</p>
+                <div class="training-track">
+                    <div class="training-head"><strong>Cut</strong><span class="training-level" id="trainingCutLevel"></span></div>
+                    <p class="training-desc" id="trainingCutDesc"></p>
+                    <div class="training-progress" id="trainingCutProgress"></div>
+                    <button type="button" class="btn-primary" id="trainingCutBtn">Start Cut training</button>
+                </div>
+                <p class="hint">No opponent. Each estate is generated. Three successes at a level unlock the next; a miss shows what was true and moves on. Progress is kept on this device.</p>
+                <div class="setup-link-row"><button type="button" class="btn-ghost" id="trainingResetBtn">Reset training progress</button></div>
             </div>
         </div>
 
@@ -3338,6 +3356,7 @@ const PHASE = {
 
 const DEFAULT_SETTINGS = Object.freeze({
     tutorial: false,
+    training: false,
     opponent: 'person',
     computer: false,
     computerLevel: 'line',
@@ -5775,7 +5794,7 @@ const RENDER = (() => {
     function drawTutorialGhost() {
         // Chapter Zero: the fairest fence the solver found, shown on request.
         if (viewState !== STATE) return;
-        const edges = TUTORIAL.ghostEdges();
+        const edges = TUTORIAL.ghostEdges() || TRAINING.ghostEdges();
         if (!edges || !edges.length) return;
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         ctx.save();
@@ -5816,7 +5835,7 @@ const RENDER = (() => {
 
     function drawPlotLabels() {
         if (!viewState.isCutComplete) return;
-        const tutorialResult = viewState.phase === PHASE.FINAL && !!(viewState.settings && viewState.settings.tutorial);
+        const tutorialResult = viewState.phase === PHASE.FINAL && !!(viewState.settings && (viewState.settings.tutorial || viewState.settings.training));
         if (![PHASE.CHOOSE, PHASE.CHALLENGE, PHASE.WHAT_IF].includes(viewState.phase) && !tutorialResult) return;
 
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
@@ -6893,7 +6912,16 @@ const UI = {
         remoteStrip:         document.getElementById('remoteStrip'),
         remoteStripText:     document.getElementById('remoteStripText'),
         remoteLeaveBtn:      document.getElementById('remoteLeaveBtn'),
-        computerLevels:      document.getElementById('computerLevels'),
+        trainingPanel:       document.getElementById('trainingPanel'),
+        trainingChooseLevel: document.getElementById('trainingChooseLevel'),
+        trainingChooseDesc:  document.getElementById('trainingChooseDesc'),
+        trainingChooseProgress: document.getElementById('trainingChooseProgress'),
+        trainingChooseBtn:   document.getElementById('trainingChooseBtn'),
+        trainingCutLevel:    document.getElementById('trainingCutLevel'),
+        trainingCutDesc:     document.getElementById('trainingCutDesc'),
+        trainingCutProgress: document.getElementById('trainingCutProgress'),
+        trainingCutBtn:      document.getElementById('trainingCutBtn'),
+        trainingResetBtn:    document.getElementById('trainingResetBtn'),
 
         meaningfulOverlay:   document.getElementById('meaningfulOverlay'),
         meaningfulEyebrow:   document.getElementById('meaningfulEyebrow'),
@@ -6953,6 +6981,7 @@ const UI = {
         welcomeTutorialBtn:  document.getElementById('welcomeTutorialBtn'),
         tutorialStrip:       document.getElementById('tutorialStrip'),
         tutorialBar:         document.getElementById('tutorialBar'),
+        tutorialBarLabel:    document.getElementById('tutorialBarLabel'),
         tutorialFairestBtn:  document.getElementById('tutorialFairestBtn'),
         tutorialResultBtn:   document.getElementById('tutorialResultBtn'),
         tutorialNextBtn:     document.getElementById('tutorialNextBtn'),
@@ -7347,7 +7376,7 @@ const UI = {
         if (STATE.settings.open) extraRules.push('Open Roles');
         if (STATE.settings.lightning) extraRules.push('Lightning Round');
         e.setupOptionsSummary.textContent = `${shapeSummary} · ${setSummary}${landSummary}${extraRules.length ? ` + ${extraRules.join(' + ')}` : ''}`;
-        e.setupBeginBtn.textContent = STATE.settings.computer ? 'Play the computer' : 'Play';
+        e.setupBeginBtn.textContent = 'Play';
 
         document.querySelectorAll('[data-shape]').forEach(button => {
             const selected = STATE.settings.irregular === (button.dataset.shape === 'irregular');
@@ -7379,6 +7408,7 @@ const UI = {
         });
         COMPUTER.refreshSetup();
         NET.refreshSetup();
+        TRAINING.refreshSetup();
         PREVIEW.render();
     },
 
@@ -7926,6 +7956,7 @@ const UI = {
             instruction = '…';
         }
         if (COMPUTER.on) instruction = COMPUTER.instruction(s.phase) || instruction;
+        if (TRAINING.on) instruction = TRAINING.instruction(s.phase) || instruction;
         e.phaseInstruction.innerHTML = instruction;
         RENDER.renderPhaseSymbols(e.phaseInstruction);
         const canvasLabels = {
@@ -8079,6 +8110,7 @@ const UI = {
         }
 
         TUTORIAL.refresh();
+        TRAINING.refresh();
         NET.refreshStrip();
         COMPUTER.schedule();
         this.refreshPrimer();
@@ -8190,6 +8222,7 @@ const FLOW = {
 
     resetToSetup({ showWelcome = false } = {}) {
         TUTORIAL.reset();
+        TRAINING.reset();
         REFEREE.reset();
         COMPUTER.reset();
         MATCH_MENU.resetStaging();
@@ -8668,6 +8701,7 @@ const FLOW = {
         if (STATE.phase !== PHASE.CHOOSE || STATE.outcome) return;
         if (plotId !== 'A' && plotId !== 'B') return;
         if (NET.intercept('choose', { plotId })) return;
+        if (TRAINING.on) { TRAINING.choiceMade(plotId); return; }
         FLOW.stopTimer();
         STATE.chosenPlotId = plotId;
         STATE.outcome = GAME.resolveOutcome({
@@ -9179,6 +9213,10 @@ const INPUT = {
     },
 
     onCutComplete() {
+        if (TRAINING.on && STATE.phase === PHASE.CUT) {
+            TRAINING.cutMade();
+            return;
+        }
         if (STATE.phase === PHASE.CUT) {
             FLOW.passToChoose();
         } else if (STATE.phase === PHASE.CHALLENGE) {
@@ -10185,7 +10223,7 @@ const REFEREE = {
     visited: 0,
 
     eligible() {
-        return !STATE.settings.tutorial
+        return !STATE.settings.tutorial && !STATE.settings.training
             && !document.body.classList.contains('legacy-active')
             && (!GAME.hasDynamicValue(STATE.settings) || GAME.activeCellCount(STATE.estateMask) <= SOLVER.MAX_CELLS);
     },
@@ -10609,44 +10647,22 @@ const COMPUTER = {
     humanNameStash: '',
 
     refreshSetup() {
-        const e = UI.el;
-        const on = !!STATE.settings.computer;
-        const opponent = STATE.settings.opponent === 'remote' ? 'remote' : on ? 'computer' : 'person';
+        const opponent = ['remote', 'training'].includes(STATE.settings.opponent) ? STATE.settings.opponent : 'person';
         document.querySelectorAll('[data-opponent]').forEach(button => {
             const selected = button.dataset.opponent === opponent;
             button.classList.toggle('selected', selected);
             button.setAttribute('aria-checked', String(selected));
             button.tabIndex = selected ? 0 : -1;
         });
-        e.computerLevels.hidden = !on;
-        document.querySelectorAll('[data-level]').forEach(button => {
-            const selected = button.dataset.level === this.level();
-            button.classList.toggle('selected', selected);
-            button.setAttribute('aria-checked', String(selected));
-            button.tabIndex = selected ? 0 : -1;
-        });
-        if (on) {
-            if (e.inputP2.value !== this.NAME) this.humanNameStash = e.inputP2.value;
-            e.inputP2.value = this.NAME;
-            e.inputP2.disabled = true;
-        } else {
-            if (e.inputP2.disabled) e.inputP2.value = this.humanNameStash || 'Sibling 2';
-            e.inputP2.disabled = false;
-        }
+        UI.el.inputP2.disabled = opponent === 'training';
+        UI.el.setupBeginBtn.hidden = false;
     },
 
     bind() {
         document.querySelectorAll('[data-opponent]').forEach(button => {
             button.addEventListener('click', () => {
                 STATE.settings.opponent = button.dataset.opponent;
-                STATE.settings.computer = button.dataset.opponent === 'computer';
-                if (STATE.settings.computer && !this.LEVELS[STATE.settings.computerLevel]) STATE.settings.computerLevel = 'line';
-                UI.refreshSetup();
-            });
-        });
-        document.querySelectorAll('[data-level]').forEach(button => {
-            button.addEventListener('click', () => {
-                STATE.settings.computerLevel = button.dataset.level;
+                STATE.settings.computer = false;
                 UI.refreshSetup();
             });
         });
@@ -10713,7 +10729,7 @@ const NET = {
         const e = UI.el;
         const remote = this.wantsRemote();
         e.remotePanel.hidden = !remote;
-        e.setupBeginBtn.hidden = remote;
+        e.setupBeginBtn.hidden = remote || STATE.settings.opponent === 'training';
         if (!remote) return;
         if (!e.remoteName.value) e.remoteName.value = this.pendingJoin ? 'Sibling 2' : (e.inputP1.value || 'Sibling 1');
         this.renderPanel();
@@ -11273,6 +11289,497 @@ NET.PeerTransport = class {
 };
 
 // ---------------------------------------------------------------------------
+// TRAINING: generated estates, no opponent. Two ladders.
+//   Choose: a fence is already drawn. Keep the better plot. Fences get
+//           wonkier, gaps get closer, land gets harder to read.
+//   Cut:    draw a fence. Finish within a set distance of the smallest gap
+//           possible (the referee's exact minimum) to climb.
+// Three successes at a level advance it. A miss shows what was true and moves
+// on; nothing is reset. Levels are data, so more can be added.
+// ---------------------------------------------------------------------------
+const TRAINING = {
+    KEY: 'inheritance.training.v1',
+    PASSES_PER_LEVEL: 3,
+    SMALL_MASKS: {
+        band: ['......', '######', '######', '######', '######', '......'],
+        offset: ['####..', '####..', '######', '######', '..####', '..####'],
+    },
+    CHOOSE_LEVELS: [
+        { name: 'Straight lines', estate: { irregular: false }, fence: { kind: 'straight', gap: [5, 14] }, time: 30 },
+        { name: 'Closer calls', estate: { irregular: false }, fence: { kind: 'straight', gap: [3, 5] }, time: 30 },
+        { name: 'Bent fences', estate: { irregular: false }, fence: { kind: 'wonky', turns: [2, 5], gap: [3, 6] }, time: 30 },
+        { name: 'Irregular land', estate: { irregular: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
+        { name: 'Restricted land', estate: { irregular: true, rocks: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
+        { name: 'Better Together', estate: { irregular: true, betterTogether: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
+        { name: 'Waterfront', estate: { irregular: true, landTemplate: 'waterfront' }, fence: { kind: 'wonky', turns: [2, 7], gap: [1, 3] }, time: 30 },
+        { name: 'Seaside, expanded set', estate: { irregular: true, landTemplate: 'seaside', randomAssets: true }, fence: { kind: 'wonky', turns: [3, 8], gap: [1, 3] }, time: 20 },
+        { name: 'Everything, fast', estate: { irregular: true, landTemplate: 'motorway', randomAssets: true, betterTogether: true, rocks: true }, fence: { kind: 'wonky', turns: [3, 9], gap: [1, 2] }, time: 15 },
+    ],
+    CUT_LEVELS: [
+        { name: 'Within 4', estate: { irregular: false }, within: 4, time: 90 },
+        { name: 'Within 3', estate: { irregular: false }, within: 3, time: 60 },
+        { name: 'Within 2', estate: { irregular: false }, within: 2, time: 60 },
+        { name: 'Irregular, within 2', estate: { irregular: true }, within: 2, time: 60 },
+        { name: 'Irregular, within 1', estate: { irregular: true }, within: 1, time: 60 },
+        { name: 'Restricted land, within 1', estate: { irregular: true, rocks: true }, within: 1, time: 60 },
+        { name: 'Better Together, small estate', estate: { small: 'offset', betterTogether: true }, within: 2, time: 60 },
+        { name: 'Waterfront, small estate', estate: { small: 'band', landTemplate: 'waterfront' }, within: 1, time: 60 },
+        { name: 'Perfect, fast', estate: { irregular: true }, within: 0, time: 45 },
+    ],
+    track: null,          // 'choose' | 'cut'
+    level: null,
+    progress: { choose: { level: 0, passes: 0 }, cut: { level: 0, passes: 0 } },
+    estate: null,         // the generated estate in play
+    referee: { status: 'idle', result: null },
+    showFairest: false,
+    last: null,           // result of the last estate
+    rng: null,
+
+    get on() { return !!STATE.settings.training && !!this.track; },
+
+    levels(track) { return track === 'cut' ? this.CUT_LEVELS : this.CHOOSE_LEVELS; },
+
+    load() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(this.KEY) || 'null');
+            if (saved && saved.choose && saved.cut) {
+                for (const track of ['choose', 'cut']) {
+                    const max = this.levels(track).length - 1;
+                    this.progress[track] = {
+                        level: Math.min(max, Math.max(0, Number(saved[track].level) || 0)),
+                        passes: Math.min(this.PASSES_PER_LEVEL - 1, Math.max(0, Number(saved[track].passes) || 0)),
+                    };
+                }
+            }
+        } catch (err) { /* keep defaults */ }
+    },
+
+    save() {
+        try { localStorage.setItem(this.KEY, JSON.stringify(this.progress)); } catch (err) { /* private mode */ }
+    },
+
+    resetProgress() {
+        this.progress = { choose: { level: 0, passes: 0 }, cut: { level: 0, passes: 0 } };
+        this.save();
+        this.refreshSetup();
+    },
+
+    // ---- Setup screen -------------------------------------------------------
+    bind() {
+        this.load();
+        UI.el.trainingChooseBtn.addEventListener('click', () => this.start('choose'));
+        UI.el.trainingCutBtn.addEventListener('click', () => this.start('cut'));
+        UI.el.trainingResetBtn.addEventListener('click', () => this.resetProgress());
+    },
+
+    describe(track, level) {
+        const estate = level.estate;
+        const land = estate.landTemplate ? GAME.landTemplateLabel(estate.landTemplate)
+            : estate.small ? 'a small estate' : estate.irregular ? 'an irregular estate' : 'a square estate';
+        const extras = [estate.rocks ? 'restricted land' : null, estate.betterTogether ? 'Better Together' : null, estate.randomAssets ? 'the expanded set' : null].filter(Boolean);
+        const where = `${land}${extras.length ? ` with ${extras.join(' and ')}` : ''}`;
+        if (track === 'choose') {
+            const f = level.fence;
+            const shape = f.kind === 'straight' ? 'a straight fence' : `a bent fence (${f.turns[0]} to ${f.turns[1]} turns)`;
+            return `On ${where}, ${shape} with a gap of ${f.gap[0]} to ${f.gap[1]} points. Keep the better plot. ${level.time} seconds.`;
+        }
+        return `On ${where}, draw a fence that finishes within ${level.within} ${level.within === 1 ? 'point' : 'points'} of the smallest gap possible. ${level.time} seconds.`;
+    },
+
+    refreshSetup() {
+        const e = UI.el;
+        const on = STATE.settings.opponent === 'training';
+        e.trainingPanel.hidden = !on;
+        if (on) e.setupBeginBtn.hidden = true;
+        if (!on) return;
+        for (const track of ['choose', 'cut']) {
+            const levels = this.levels(track);
+            const p = this.progress[track];
+            const level = levels[p.level];
+            const cap = track[0].toUpperCase() + track.slice(1);
+            e[`training${cap}Level`].textContent = `Level ${p.level + 1} of ${levels.length} · ${level.name}`;
+            e[`training${cap}Desc`].textContent = this.describe(track, level);
+            e[`training${cap}Progress`].innerHTML = Array.from({ length: this.PASSES_PER_LEVEL }, (_, i) =>
+                `<span class="training-dot${i < p.passes ? ' done' : ''}" aria-hidden="true"></span>`).join('')
+                + `<span class="training-count">${p.passes} of ${this.PASSES_PER_LEVEL} at this level</span>`;
+        }
+    },
+
+    // ---- Starting and ending -----------------------------------------------------
+    start(track) {
+        if (STATE.phase !== PHASE.SETUP) return;
+        this.track = track;
+        this.rng = makeRng((Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0);
+        STATE.pNames = [playerName(UI.el.inputP1.value, 0), 'Training'];
+        UI.closeAllOverlays();
+        this.nextEstate();
+    },
+
+    stop() {
+        UI.close('tutorialOverlay');
+        FLOW.resetToSetup();
+    },
+
+    reset() {
+        this.track = null;
+        this.level = null;
+        this.estate = null;
+        this.referee = { status: 'idle', result: null };
+        this.showFairest = false;
+        this.last = null;
+        SOLVER.cancel();
+    },
+
+    currentLevel() {
+        const p = this.progress[this.track];
+        return this.levels(this.track)[p.level];
+    },
+
+    nextEstate() {
+        if (!this.track) return;
+        this.level = this.currentLevel();
+        this.showFairest = false;
+        this.last = null;
+        STATE.settings = { ...DEFAULT_SETTINGS, ...this.level.estate, opponent: 'training', training: true, computer: false, tutorial: false };
+        delete STATE.settings.small;
+        // Try a few estates so the fence lands in the level's gap band.
+        let estate = null;
+        for (let attempt = 0; attempt < 10; attempt++) {
+            const candidate = this.generate(this.level);
+            if (!candidate) continue;
+            estate = candidate;
+            if (this.track !== 'choose' || candidate.fence.inBand) break;
+        }
+        if (!estate) { UI.toast('Could not generate an estate. Try again.', 'warn', 2000); FLOW.resetToSetup(); return; }
+        this.estate = estate;
+        this.install(estate);
+        if (this.track === 'choose') {
+            this.enterPhase(PHASE.CHOOSE);
+        } else {
+            this.solve(() => this.enterPhase(PHASE.CUT));
+        }
+    },
+
+    // ---- Estate generation ---------------------------------------------------------
+    generate(level) {
+        const rng = this.rng;
+        const spec = level.estate;
+        const landTemplate = spec.landTemplate || 'standard';
+        let estateMask = null;
+        if (spec.small) {
+            GAME.configureBoard(false);
+            estateMask = this.SMALL_MASKS[spec.small].map(row => [...row].map(ch => ch === '#'));
+        } else {
+            GAME.configureBoard(!!spec.irregular);
+            estateMask = GAME.buildEstateMask(!!spec.irregular, rng, landTemplate);
+        }
+        const terrain = landTemplate !== 'standard' ? GAME.buildLandTemplate(landTemplate, rng, estateMask) : null;
+        let grid = GAME.emptyGrid();
+        if (spec.rocks) grid = GAME.scatterRocks(grid, rng, CONFIG.PLACEMENT_COUNT, estateMask, terrain);
+        const pool = GAME.buildAssetPool(!!spec.randomAssets, rng, landTemplate);
+        const spots = GAME.activeCells(estateMask).filter(p => GAME.isBuildableCell(p.c, p.r, grid, terrain, estateMask));
+        shuffleInPlace(spots, rng);
+        if (spots.length < pool.length) return null;
+        pool.forEach((kind, i) => { grid[spots[i].r][spots[i].c] = kind; });
+        const estate = { estateMask, terrain, grid, settings: { ...STATE.settings } };
+        if (this.track === 'choose') {
+            const fence = this.pickFence(estate, level.fence);
+            if (!fence) return null;
+            estate.fence = fence;
+        }
+        return estate;
+    },
+
+    score(estate, cells) {
+        return GAME.scorePlot(cells, estate.grid, estate.settings.betterTogether, estate.terrain, estate.estateMask).total;
+    },
+
+    describeFence(estate, edges, nodes = null) {
+        const split = GAME.validateCut(edges, estate.estateMask);
+        if (!split.ok) return null;
+        const a = this.score(estate, split.plotA), b = this.score(estate, split.plotB);
+        let turns = 0;
+        if (nodes) {
+            for (let i = 2; i < nodes.length; i++) {
+                const d1 = `${nodes[i - 1].c - nodes[i - 2].c},${nodes[i - 1].r - nodes[i - 2].r}`;
+                const d2 = `${nodes[i].c - nodes[i - 1].c},${nodes[i].r - nodes[i - 1].r}`;
+                if (d1 !== d2) turns++;
+            }
+        }
+        return { edges, nodes, plotA: split.plotA, plotB: split.plotB, a, b, gap: Math.abs(a - b), turns, areaGap: Math.abs(split.plotA.length - split.plotB.length) };
+    },
+
+    straightFences(estate) {
+        const out = [];
+        for (const axis of ['v', 'h']) {
+            for (let index = 1; index < CONFIG.GRID; index++) {
+                const edges = GAME.straightCutEdges(axis, index, estate.estateMask);
+                if (!edges.length) continue;
+                const f = this.describeFence(estate, edges, null);
+                if (f) out.push(f);
+            }
+        }
+        return out;
+    },
+
+    // A random walk along grid lines from edge to edge, the way a player draws.
+    randomFence(estate, maxSteps = 70) {
+        const rng = this.rng;
+        const mask = estate.estateMask;
+        const N = CONFIG.GRID;
+        const borderNodes = [];
+        for (let r = 0; r <= N; r++) for (let c = 0; c <= N; c++) if (GAME.isBorderNode({ c, r }, mask)) borderNodes.push({ c, r });
+        if (!borderNodes.length) return null;
+        const start = borderNodes[Math.floor(rng() * borderNodes.length)];
+        const nodes = [start];
+        const edges = [];
+        const seen = new Set([`${start.c},${start.r}`]);
+        let last = start;
+        for (let step = 0; step < maxSteps; step++) {
+            const options = [{ c: last.c + 1, r: last.r }, { c: last.c - 1, r: last.r }, { c: last.c, r: last.r + 1 }, { c: last.c, r: last.r - 1 }]
+                .filter(n => n.c >= 0 && n.c <= N && n.r >= 0 && n.r <= N && !seen.has(`${n.c},${n.r}`) && GAME.edgeTouchesEstate(last, n, mask));
+            if (!options.length) return null;
+            const next = options[Math.floor(rng() * options.length)];
+            edges.push(GAME.edgeKey(last, next));
+            nodes.push(next);
+            seen.add(`${next.c},${next.r}`);
+            last = next;
+            if (GAME.isBorderNode(next, mask) && nodes.length > 2) {
+                const f = this.describeFence(estate, edges, nodes);
+                if (f) return f;
+            }
+        }
+        return null;
+    },
+
+    pickFence(estate, want) {
+        const inBand = f => f.gap >= 1 && f.gap >= want.gap[0] && f.gap <= want.gap[1]
+            && (want.kind !== 'wonky' || (f.turns >= want.turns[0] && f.turns <= want.turns[1]));
+        const candidates = [];
+        if (want.kind === 'straight') {
+            candidates.push(...this.straightFences(estate));
+        } else {
+            for (let i = 0; i < 600 && candidates.filter(inBand).length < 6; i++) {
+                const f = this.randomFence(estate);
+                if (f) candidates.push(f);
+            }
+        }
+        const good = candidates.filter(inBand);
+        if (good.length) return { ...good[Math.floor(this.rng() * good.length)], inBand: true };
+        // Nothing in the band on this estate: the closest gap that still has a right answer.
+        const fallback = candidates.filter(f => f.gap >= 1)
+            .sort((x, y) => Math.abs(x.gap - want.gap[1]) - Math.abs(y.gap - want.gap[1]))[0];
+        return fallback ? { ...fallback, inBand: false } : null;
+    },
+
+    install(estate) {
+        STATE.estateMask = estate.estateMask;
+        STATE.terrain = estate.terrain;
+        STATE.terrainPool = [];
+        STATE.grid = estate.grid;
+        STATE.placedBy = GAME.emptyGrid();
+        STATE.showPlacementHistory = false;
+        STATE.pool = [];
+        STATE.turn = 0;
+        STATE.meaningful = { picks: [null, null], skipped: [false, false], turn: 0, pending: null };
+        STATE.cutterIdx = this.track === 'cut' ? 0 : 1;
+        STATE.chooserIdx = this.track === 'cut' ? 1 : 0;
+        STATE.roles = { cutter: STATE.pNames[STATE.cutterIdx], chooser: STATE.pNames[STATE.chooserIdx] };
+        STATE.rpsWinnerIdx = -1;
+        STATE.cutNodes = [];
+        STATE.cutEdges = estate.fence ? [...estate.fence.edges] : [];
+        STATE.isCutComplete = !!estate.fence;
+        STATE.cutByBank = false;
+        STATE.plotA = estate.fence ? estate.fence.plotA : [];
+        STATE.plotB = estate.fence ? estate.fence.plotB : [];
+        STATE.chosenPlotId = null;
+        STATE.choiceActor = 'chooser';
+        STATE.chooserTimedOut = false;
+        STATE.outcome = null;
+        STATE.challenge.originalCut = [];
+        STATE.whatIf = { savedEdges: [], savedPlotA: [], savedPlotB: [] };
+    },
+
+    enterPhase(phase) {
+        UI.close('tutorialOverlay');
+        STATE.phase = phase;
+        STATE.phaseToken++;
+        FLOW.startTimer(this.level.time);
+        INPUT.resetCursor();
+        FLOW.sync();
+        UI.focusBoard();
+    },
+
+    solve(then) {
+        this.referee = { status: 'running', result: null };
+        TUTORIAL.openCard({
+            eyebrow: 'Training · Cut',
+            title: 'Preparing the estate',
+            body: '<p>Checking every fence that could be drawn, so the target is exact…</p>',
+            primary: { label: 'Stop training', action: () => this.stop() },
+        });
+        const estate = this.estate;
+        SOLVER.fairestDivision({
+            grid: estate.grid, estateMask: estate.estateMask, settings: estate.settings, terrain: estate.terrain,
+            onDone: result => {
+                if (!this.on || this.estate !== estate) return;
+                if (!result) { UI.toast('That estate could not be checked. Another one.', 'warn', 1800); this.nextEstate(); return; }
+                const straight = this.straightFences(estate).filter(f => f.gap === result.gap)
+                    .sort((x, y) => (x.areaGap - y.areaGap) || (x.edges.length - y.edges.length))[0];
+                if (straight) { result.edges = straight.edges; result.a = straight.a; result.b = straight.b; }
+                this.referee = { status: 'done', result };
+                then();
+            },
+        });
+    },
+
+    // ---- Playing ------------------------------------------------------------------------
+    choiceMade(plotId) {
+        if (!this.on || this.track !== 'choose' || STATE.phase !== PHASE.CHOOSE) return;
+        FLOW.stopTimer();
+        const f = this.estate.fence;
+        STATE.chosenPlotId = plotId;
+        STATE.outcome = GAME.resolveOutcome({
+            chosenPlotId: plotId, chosenByRole: 'chooser', plotA: STATE.plotA, plotB: STATE.plotB, grid: STATE.grid,
+            roles: STATE.roles, betterTogether: STATE.settings.betterTogether, terrain: STATE.terrain, estateMask: STATE.estateMask,
+        });
+        const better = f.a > f.b ? 'A' : 'B';
+        const correct = plotId === better;
+        this.finish({ correct, text: correct
+            ? `You kept Plot ${plotId}. It was worth ${f.gap} more.`
+            : `You kept Plot ${plotId}. Plot ${better} was worth ${f.gap} more.` });
+    },
+
+    cutMade({ timedOut = false } = {}) {
+        if (!this.on || this.track !== 'cut') return;
+        FLOW.stopTimer();
+        const a = this.score(this.estate, STATE.plotA), b = this.score(this.estate, STATE.plotB);
+        const gap = Math.abs(a - b);
+        const min = this.referee.result.gap;
+        const within = !timedOut && gap - min <= this.level.within;
+        STATE.chosenPlotId = null;
+        STATE.outcome = GAME.unresolvedOutcome({ plotA: STATE.plotA, plotB: STATE.plotB, grid: STATE.grid, betterTogether: STATE.settings.betterTogether, terrain: STATE.terrain, estateMask: STATE.estateMask });
+        const target = this.level.within === 0 ? 'the smallest gap exactly' : `within ${this.level.within} of the smallest gap`;
+        const text = timedOut
+            ? `Time ran out. The bank's straight division left a gap of ${gap}. Smallest gap possible: ${min}.`
+            : `Your fence: A ${a} · B ${b}, gap ${gap}. Smallest gap possible: ${min}. Target: ${target}.`;
+        this.finish({ correct: within, text, a, b, gap, min });
+    },
+
+    timeout() {
+        if (!this.on) return;
+        if (this.track === 'choose' && STATE.phase === PHASE.CHOOSE) {
+            FLOW.stopTimer();
+            const f = this.estate.fence;
+            const better = f.a > f.b ? 'A' : 'B';
+            STATE.chosenPlotId = null;
+            STATE.outcome = GAME.unresolvedOutcome({ plotA: STATE.plotA, plotB: STATE.plotB, grid: STATE.grid, betterTogether: STATE.settings.betterTogether, terrain: STATE.terrain, estateMask: STATE.estateMask });
+            this.finish({ correct: false, text: `Time ran out. Plot ${better} was worth ${f.gap} more.` });
+        } else if (this.track === 'cut' && STATE.phase === PHASE.CUT) {
+            const edges = GAME.bankCutEdges(STATE.estateMask);
+            const split = GAME.validateCut(edges, STATE.estateMask);
+            STATE.cutNodes = [];
+            STATE.cutEdges = edges;
+            STATE.isCutComplete = true;
+            STATE.cutByBank = true;
+            STATE.plotA = split.plotA;
+            STATE.plotB = split.plotB;
+            this.cutMade({ timedOut: true });
+        }
+    },
+
+    finish(result) {
+        const p = this.progress[this.track];
+        const levels = this.levels(this.track);
+        let advanced = false;
+        if (result.correct) {
+            p.passes++;
+            if (p.passes >= this.PASSES_PER_LEVEL) {
+                p.passes = 0;
+                if (p.level < levels.length - 1) { p.level++; advanced = true; }
+                else result.topped = true;
+            }
+        }
+        this.save();
+        this.last = { ...result, advanced, level: this.level, levelIndex: levels.indexOf(this.level) };
+        SOUND.play(result.correct ? 'win' : 'bad');
+        STATE.phase = PHASE.FINAL;
+        STATE.phaseToken++;
+        FLOW.sync();
+        this.showResult();
+    },
+
+    showResult() {
+        const r = this.last;
+        if (!r) return;
+        const p = this.progress[this.track];
+        const levels = this.levels(this.track);
+        const cap = this.track === 'cut' ? 'Cut' : 'Choose';
+        const standing = r.advanced
+            ? `<p><strong>Level complete.</strong> Next: Level ${p.level + 1} of ${levels.length}, ${escapeHtml(levels[p.level].name)}.</p>`
+            : r.topped
+                ? '<p><strong>Top level complete.</strong> It stays at the top; keep going as long as you like.</p>'
+                : `<p>${p.passes} of ${this.PASSES_PER_LEVEL} at this level.</p>`;
+        const fairest = this.track === 'cut' && this.referee.result
+            ? { label: this.showFairest ? 'Hide fairest fence' : 'Show fairest fence on the board', action: () => { this.showFairest = !this.showFairest; UI.close('tutorialOverlay'); FLOW.sync(); UI.focusBoard(); } }
+            : { label: 'Look at the board', action: () => { UI.close('tutorialOverlay'); UI.focusBoard(); } };
+        TUTORIAL.openCard({
+            eyebrow: `Training · ${cap} · Level ${r.levelIndex + 1} · ${escapeHtml(r.level.name)}`,
+            title: r.correct ? (this.track === 'cut' ? 'Within target' : 'The better plot') : (this.track === 'cut' ? 'Outside target' : 'The other plot'),
+            body: `<p>${escapeHtml(r.text)}</p>${standing}`,
+            primary: { label: r.advanced ? 'Start the next level' : 'Next estate', action: () => this.nextEstate() },
+            secondary: fairest,
+            ghost: { label: 'Stop training', action: () => this.stop() },
+        });
+    },
+
+    ghostEdges() {
+        if (!this.on || !this.showFairest || STATE.phase !== PHASE.FINAL || !this.referee.result) return null;
+        return this.referee.result.edges;
+    },
+
+    instruction(phase) {
+        if (!this.on) return '';
+        const levels = this.levels(this.track);
+        const p = this.progress[this.track];
+        const tag = `<span class="phase-hint">Training · Level ${p.level + 1} of ${levels.length} · ${escapeHtml(this.level.name)}</span>`;
+        if (phase === PHASE.CHOOSE) return `Keep the better plot${tag}`;
+        if (phase === PHASE.CUT) return `Draw the fence · ${this.level.within === 0 ? 'match the smallest gap' : `within ${this.level.within} of the smallest gap`}${tag}`;
+        if (phase === PHASE.FINAL) return `Estate complete${tag}`;
+        return '';
+    },
+
+    refresh() {
+        const e = UI.el;
+        if (!e.tutorialStrip || !this.on) return;
+        const show = [PHASE.CHOOSE, PHASE.CUT, PHASE.FINAL].includes(STATE.phase);
+        e.tutorialStrip.hidden = !show;
+        if (!show) return;
+        const p = this.progress[this.track];
+        let text = `${p.passes} of ${this.PASSES_PER_LEVEL} at this level.`;
+        if (STATE.phase === PHASE.FINAL && this.last) {
+            text = `${this.last.text}${this.showFairest && this.referee.result ? ` Dashed fence: A ${this.referee.result.a} · B ${this.referee.result.b}.` : ''}`;
+        } else if (STATE.phase === PHASE.CUT) {
+            text = `Smallest gap possible on this estate: ${this.referee.result ? this.referee.result.gap : '…'}. ${text}`;
+        } else if (STATE.phase === PHASE.CHOOSE) {
+            text = `Land 1 per square; pieces add their value${STATE.settings.betterTogether ? '; neighbours in the same plot add bonuses' : ''}. ${text}`;
+        }
+        const html = `<span class="tutorial-tag">Training</span><span>${text}</span>`;
+        if (e.tutorialStrip.innerHTML !== html) e.tutorialStrip.innerHTML = html;
+        e.tutorialBar.style.display = STATE.phase === PHASE.FINAL ? 'flex' : 'none';
+        if (STATE.phase === PHASE.FINAL) {
+            e.tutorialBarLabel.textContent = 'Training';
+            const ready = this.track === 'cut' && !!this.referee.result;
+            e.tutorialFairestBtn.disabled = !ready;
+            e.tutorialFairestBtn.hidden = this.track !== 'cut';
+            e.tutorialFairestBtn.textContent = this.showFairest ? 'Hide fairest fence' : 'Show fairest fence';
+            e.tutorialFairestBtn.setAttribute('aria-pressed', String(this.showFairest));
+            e.tutorialNextBtn.textContent = this.last && this.last.advanced ? 'Next level' : 'Next estate';
+        }
+    },
+};
+
+// ---------------------------------------------------------------------------
 // TUTORIAL: Chapter Zero. One small estate, untimed, played twice: the same
 // two siblings divide the same estate from both chairs. The game states what
 // the rules are and what happened. The solver reports what was possible. The
@@ -11299,9 +11806,18 @@ const TUTORIAL = {
         e.tutorialPrimaryBtn.addEventListener('click', () => TUTORIAL.fire('primary'));
         e.tutorialSecondaryBtn.addEventListener('click', () => TUTORIAL.fire('secondary'));
         e.tutorialGhostBtn.addEventListener('click', () => TUTORIAL.fire('ghost'));
-        e.tutorialFairestBtn.addEventListener('click', () => TUTORIAL.toggleFairest());
-        e.tutorialResultBtn.addEventListener('click', () => { if (TUTORIAL.on && STATE.phase === PHASE.FINAL) TUTORIAL.showResult(); });
-        e.tutorialNextBtn.addEventListener('click', () => TUTORIAL.next());
+        e.tutorialFairestBtn.addEventListener('click', () => {
+            if (TRAINING.on) { if (STATE.phase === PHASE.FINAL && TRAINING.referee.result) { TRAINING.showFairest = !TRAINING.showFairest; FLOW.sync(); } return; }
+            TUTORIAL.toggleFairest();
+        });
+        e.tutorialResultBtn.addEventListener('click', () => {
+            if (TRAINING.on) { if (STATE.phase === PHASE.FINAL) TRAINING.showResult(); return; }
+            if (TUTORIAL.on && STATE.phase === PHASE.FINAL) TUTORIAL.showResult();
+        });
+        e.tutorialNextBtn.addEventListener('click', () => {
+            if (TRAINING.on) { if (STATE.phase === PHASE.FINAL) TRAINING.nextEstate(); return; }
+            TUTORIAL.next();
+        });
     },
 
     fire(slot) {
@@ -11633,6 +12149,7 @@ const TUTORIAL = {
         const e = UI.el;
         if (!e.tutorialStrip) return;
         const on = this.on;
+        if (!on && TRAINING.on) return;
         const phasesWithStrip = [PHASE.BUILD, PHASE.PASS_TO_CUT, PHASE.CUT, PHASE.PASS_TO_CHOOSE, PHASE.CHOOSE, PHASE.FINAL];
         const showStrip = on && phasesWithStrip.includes(STATE.phase);
         e.tutorialStrip.hidden = !showStrip;
@@ -11643,6 +12160,8 @@ const TUTORIAL = {
         const showBar = on && STATE.phase === PHASE.FINAL;
         e.tutorialBar.style.display = showBar ? 'flex' : 'none';
         if (showBar) {
+            e.tutorialBarLabel.textContent = 'Chapter Zero';
+            e.tutorialFairestBtn.hidden = false;
             const ready = this.solver.status === 'done' && !!this.solver.result;
             e.tutorialFairestBtn.disabled = !ready;
             e.tutorialFairestBtn.textContent = this.showFairest ? 'Hide fairest fence' : 'Show fairest fence';
@@ -11689,6 +12208,7 @@ const LOOP = {
     },
 
     handleTimeout() {
+        if (TRAINING.on) { TRAINING.timeout(); return; }
         if (STATE.phase === PHASE.BUILD) {
             FLOW.endBuild();
         } else if (STATE.phase === PHASE.CUT) {
@@ -11713,6 +12233,7 @@ const APP = {
         TUTORIAL.bind();
         COMPUTER.bind();
         NET.bind();
+        TRAINING.bind();
 
         const c = RENDER.canvas;
         c.addEventListener('pointerdown', INPUT.handleCanvas, { passive: false });
@@ -12662,7 +13183,7 @@ const MATCH_MENU = {
             showLandValues: !!settings.showLandValues,
             computer: !!settings.computer,
             computerLevel: settings.computerLevel || 'line',
-            opponent: settings.opponent === 'remote' ? 'remote' : (settings.computer ? 'computer' : 'person'),
+            opponent: ['remote', 'training'].includes(settings.opponent) ? settings.opponent : 'person',
         };
     },
 
