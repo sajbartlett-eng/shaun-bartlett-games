@@ -173,7 +173,7 @@
 
             <div class="highlight-box">
                 <h3>The Fairness Challenge</h3>
-                <p style="margin-bottom: 0;">If the Chooser exploits a bad cut and wins by a large margin, the game offers a redemption arc: <strong>The Fairness Challenge.</strong> The winner must redraw the fence to make the plots perfectly even (≤1 point difference). It proves that winning isn't about greed; it's about precision.</p>
+                <p style="margin-bottom: 0;">If the Chooser exploits a bad cut and wins by a large margin, the game offers a redemption arc: <strong>The Fairness Challenge.</strong> The winner may redraw the fence to close the gap. The target is not a guess: the game has already checked every fence that could be drawn on that estate and knows the smallest gap possible. It proves that winning isn't about greed; it's about precision.</p>
             </div>
 
             <h2>System Design Analysis</h2>
@@ -195,8 +195,8 @@
 
                 <div class="analysis-card">
                     <h4>⚙️ Mechanical Honesty (3)</h4>
-                    <p><strong>The Mechanic:</strong> <em>The Ideal Cut Algorithm.</em> At the end of the match, players can click "Show Ideal Cut."</p>
-                    <p><strong>The Insight:</strong> The game runs a depth-first search to prove that a fair cut <em>was</em> possible. If the players failed to find it, the system reveals that human error—not the game design—was the limiting factor.</p>
+                    <p><strong>The Mechanic:</strong> <em>The Referee.</em> On the result screen, players can switch to "Fairest possible" and see a fence that reaches the smallest gap the estate allowed, with how many fences reach it.</p>
+                    <p><strong>The Insight:</strong> The game checks every fence that could have been drawn, exactly, not by sampling. If the players failed to find a fair cut, the system shows that one existed, so the limiting factor was the decision, not the design.</p>
                 </div>
 
             </div>
@@ -204,7 +204,7 @@
             <div class="image-showcase" style="margin: 40px 0; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
                 <img src="assets/images/inheritance-gameplay.jpg" alt="Inheritance Ideal Cut Algorithm" style="width: 100%; display: block;">
                 <div style="background: #1a1a1a; padding: 10px 20px; font-size: 0.85rem; color: #888; border-top: 1px solid #333;">
-                    The Solver Algorithm. Post-game analysis validates whether the player's cut was mathematically optimal or if a better solution existed.
+                    The referee. Post-game analysis states whether the player's cut reached the smallest gap possible or whether a better fence existed, and shows one.
                 </div>
             </div>
 
@@ -226,9 +226,12 @@
                 </li>
             </ul>
 
+            <h3>Chapter Zero</h3>
+            <p>New players can start with <strong>Chapter Zero</strong>: one small, untimed estate divided twice by the same two siblings, so each sits in both chairs. The game states the rules and the outcome; the referee reports the smallest gap that was possible. No scores against you, no judgement. It takes about three minutes and is reached from the welcome screen.</p>
+
             <div style="text-align: center; margin-top: 60px; margin-bottom: 60px;">
                 <a href="Inheritance.html" class="play-btn">▶ Play Prototype</a>
-                <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Works on Mobile & Desktop</p>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Works on Mobile & Desktop · <a href="Inheritance.html?chapter=zero" style="color: var(--accent);">Start with Chapter Zero</a></p>
             </div>
         </div>
     </div>
