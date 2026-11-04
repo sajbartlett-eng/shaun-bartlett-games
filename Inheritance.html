@@ -1766,9 +1766,16 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 }
 .final-estate-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
     gap: 6px;
     margin: 0 0 8px;
+}
+.final-estate-toggle button[hidden] { display: none; }
+.referee-line {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ink-soft);
 }
 .final-estate-toggle[hidden] { display: none; }
 .final-estate-toggle button {
@@ -2980,8 +2987,10 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <div class="final-estate-toggle" id="finalEstateToggle" hidden aria-label="Compare original and redraw fences">
                 <button type="button" id="finalEstateOriginalBtn" aria-pressed="true">Original cut</button>
                 <button type="button" id="finalEstateRedrawBtn" aria-pressed="false">Fairness redraw</button>
+                <button type="button" id="finalEstateFairestBtn" aria-pressed="false" hidden>Fairest possible</button>
             </div>
             <canvas id="finalEstateCanvas" width="600" height="600" aria-label="Final divided estate"></canvas>
+            <p class="referee-line" id="finalReferee" hidden></p>
             <button class="btn-secondary estate-whatif" id="whatIfBtn">What if? Try another fence</button>
         </section>
         <section class="fairness-review" id="fairnessReview" hidden aria-label="Fairness Challenge comparison">
@@ -4550,6 +4559,7 @@ const GAME = {
         dynamicValue = false,
         commonGroundEarned = false,
         minGap = CONFIG.FAIRNESS_OFFER_MIN_GAP,
+        targetGap = null,
     } = {}) {
         if (chooserTimedOut || !outcome || outcome.winnerRole !== 'chooser') return false;
         // Common Ground already represents a close division that preserves the estate.
@@ -4558,8 +4568,8 @@ const GAME = {
         const scoreA = outcome.scoreA.total;
         const scoreB = outcome.scoreB.total;
         const gap = Math.abs(scoreA - scoreB);
-        const targetGap = GAME.fairnessTargetGap(scoreA + scoreB, dynamicValue);
-        return gap >= minGap && gap > targetGap;
+        const target = targetGap ?? GAME.fairnessTargetGap(scoreA + scoreB, dynamicValue);
+        return gap >= minGap && gap > target;
     },
 
     fairnessTargetGap(total, dynamicValue = false) {
@@ -6837,6 +6847,8 @@ const UI = {
         finalEstateToggle:   document.getElementById('finalEstateToggle'),
         finalEstateOriginalBtn: document.getElementById('finalEstateOriginalBtn'),
         finalEstateRedrawBtn:   document.getElementById('finalEstateRedrawBtn'),
+        finalEstateFairestBtn:  document.getElementById('finalEstateFairestBtn'),
+        finalReferee:        document.getElementById('finalReferee'),
         finalEstateCanvas:   document.getElementById('finalEstateCanvas'),
         finalStory:          document.getElementById('finalStory'),
         finalAchievements:   document.getElementById('finalAchievements'),
@@ -8074,6 +8086,7 @@ const FLOW = {
 
     resetToSetup({ showWelcome = false } = {}) {
         TUTORIAL.reset();
+        REFEREE.reset();
         MATCH_MENU.resetStaging();
         ESTATE_REVIEW.reset();
         if (MATCH_MENU.base) STATE.settings = { ...MATCH_MENU.base };
@@ -8415,6 +8428,7 @@ const FLOW = {
         `;
         UI.el.passContinueBtn.textContent = `Start cutting · ${GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings)}s`;
         if (STATE.settings.tutorial) TUTORIAL.decoratePass('cut');
+        else REFEREE.ensure();
         if (FLOW.transition(PHASE.PASS_TO_CUT)) UI.open('passOverlay');
     },
 
@@ -8559,7 +8573,7 @@ const FLOW = {
             if (GAME.shouldOfferFairnessChallenge(
                 STATE.outcome,
                 STATE.chooserTimedOut,
-                { dynamicValue, commonGroundEarned }
+                { dynamicValue, commonGroundEarned, targetGap: REFEREE.targetGap(scoreA + scoreB, dynamicValue) }
             )) {
                 FLOW.offerFairnessChallenge(diff);
             } else {
@@ -8573,11 +8587,13 @@ const FLOW = {
         const chooserCls = STATE.chooserIdx === 0 ? 'p1' : 'p2';
         const total = STATE.outcome.scoreA.total + STATE.outcome.scoreB.total;
         const dynamicValue = GAME.hasDynamicValue(STATE.settings);
-        const targetGap = GAME.fairnessTargetGap(total, dynamicValue);
+        const targetGap = REFEREE.targetGap(total, dynamicValue);
         STATE.challenge.targetGap = targetGap;
         const alreadyAtBest = diff <= targetGap;
         const targetCopy = targetGap > 0
-            ? `<p>This estate totals an odd number. An exact tie is impossible. The perfect target is a <strong>${targetGap}-point gap</strong>.</p>`
+            ? (REFEREE.exact()
+                ? `<p>Every fence has been checked. No fence can bring these plots closer than a <strong>${targetGap}-point gap</strong> on this estate.</p>`
+                : `<p>This estate totals an odd number. An exact tie is impossible. The perfect target is a <strong>${targetGap}-point gap</strong>.</p>`)
             : '';
         const challengePrompt = alreadyAtBest
             ? '<p>This division already meets the perfect target. Try another fence?</p>'
@@ -8620,7 +8636,7 @@ const FLOW = {
         const oB = STATE.outcome.scoreB.total;
         STATE.challenge.originalGap = Math.abs(oA - oB);
         STATE.challenge.originalTotal = oA + oB;
-        STATE.challenge.targetGap = GAME.fairnessTargetGap(
+        STATE.challenge.targetGap = REFEREE.targetGap(
             STATE.challenge.originalTotal,
             GAME.hasDynamicValue(STATE.settings)
         );
@@ -9117,6 +9133,19 @@ UI.renderFinalEstate = function (view = 'original') {
             view = 'original';
         }
     }
+    const fairestAvailable = REFEREE.exact();
+    if (view === 'fairest') {
+        const result = fairestAvailable ? GAME.validateCut(REFEREE.result.edges, STATE.estateMask) : { ok: false };
+        if (result.ok) {
+            cutEdges = REFEREE.result.edges;
+            plotA = result.plotA;
+            plotB = result.plotB;
+        } else {
+            view = 'original';
+        }
+    }
+    if (view !== 'redraw' && view !== 'fairest') view = 'original';
+    UI.finalEstateView = view;
 
     const snapshot = {
         ...STATE,
@@ -9134,13 +9163,25 @@ UI.renderFinalEstate = function (view = 'original') {
         UI.el.finalEstateLabel.textContent = canCompare ? 'Compare the cuts' : 'Final Estate';
     }
     if (UI.el.finalEstateToggle) {
-        UI.el.finalEstateToggle.hidden = !canCompare;
+        UI.el.finalEstateToggle.hidden = !(canCompare || fairestAvailable);
     }
     if (UI.el.finalEstateOriginalBtn && UI.el.finalEstateRedrawBtn) {
-        UI.el.finalEstateOriginalBtn.setAttribute('aria-pressed', String(view !== 'redraw'));
+        UI.el.finalEstateOriginalBtn.setAttribute('aria-pressed', String(view === 'original'));
         UI.el.finalEstateRedrawBtn.setAttribute('aria-pressed', String(view === 'redraw'));
+        UI.el.finalEstateRedrawBtn.hidden = !canCompare;
     }
-    canvas.setAttribute('aria-label', view === 'redraw' ? 'Fairness Challenge redraw' : 'Original final division');
+    if (UI.el.finalEstateFairestBtn) {
+        UI.el.finalEstateFairestBtn.hidden = !fairestAvailable;
+        UI.el.finalEstateFairestBtn.setAttribute('aria-pressed', String(view === 'fairest'));
+    }
+    if (UI.el.finalReferee) {
+        const line = REFEREE.line(view, STATE.outcome);
+        UI.el.finalReferee.hidden = !line;
+        UI.el.finalReferee.textContent = line;
+    }
+    canvas.setAttribute('aria-label', view === 'redraw' ? 'Fairness Challenge redraw'
+        : view === 'fairest' ? 'A fence with the smallest possible gap on this estate'
+        : 'Original final division');
     RENDER.renderSnapshot(canvas, snapshot);
 };
 
@@ -9622,7 +9663,209 @@ const SOLVER = {
 
     cancel() { this.generation++; },
 
-    fairestDivision({ grid, estateMask, settings = {}, terrain = null, onProgress = null, onDone }) {
+    // Picks the exact method that fits the estate: the sweep for fixed square
+    // values on any size, the plot-by-plot search when value depends on the
+    // division (terrain, Better Together) and the estate is small enough.
+    fairestDivision(options) {
+        const { settings = {}, terrain = null, estateMask } = options;
+        if (!GAME.hasDynamicValue(settings) && !terrain) return this.frontierDivision(options);
+        if (GAME.activeCellCount(estateMask) <= this.MAX_CELLS) return this.bruteForceDivision(options);
+        options.onDone(null);
+    },
+    // ---- Exact search for full-size estates ---------------------------------
+    // When every square's value is fixed (standard scoring, with or without
+    // restricted land), the smallest possible gap can be found exactly on any
+    // estate the game produces by sweeping the grid one square at a time and
+    // remembering, for the squares along the sweep line, which plot each
+    // belongs to and how those plot pieces are joined. Two plots that both end
+    // up connected and both reach the outside edge are exactly the divisions a
+    // single edge-to-edge fence can make (every estate shape the game offers is
+    // one solid parcel with no holes, which this relies on). Each division is
+    // counted once by giving the top-left square to Plot A. The sweep also
+    // records enough to draw one fence that reaches the smallest gap.
+    frontierDivision({ grid, estateMask, onProgress = null, onDone }) {
+        const gen = ++this.generation;
+        const N = CONFIG.GRID;
+        const cells = [];
+        for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+                const active = GAME.isActiveCell(c, r, estateMask);
+                const asset = active ? grid[r][c] : null;
+                cells.push({
+                    c, r, active,
+                    value: active ? (GAME.isRestrictedKind(asset) ? 0 : 1) + (CONFIG.ASSET_VALUE[asset] || 0) : 0,
+                    border: active && GAME.isEstateBoundaryCell(c, r, estateMask),
+                });
+            }
+        }
+        const total = cells.reduce((sum, cell) => sum + cell.value, 0);
+        const firstActive = cells.findIndex(cell => cell.active);
+        if (firstActive < 0 || cells.filter(cell => cell.active).length < 2) { onDone(null); return; }
+
+        // Sweep-line entry per column: colour (0 none, 1 Plot A, 2 Plot B) in the
+        // high bits, join label in the low bits. Flags: 1 A complete, 2 B complete,
+        // 4 A reaches the edge, 8 B reaches the edge, 16 A started, 32 B started.
+        const CLOSED = [0, 1, 2], EDGE = [0, 4, 8], STARTED = [0, 16, 32];
+        const keyOf = (entries, flags) => String.fromCharCode(flags, ...entries);
+        const decode = key => ({ flags: key.charCodeAt(0), entries: Uint8Array.from(key.slice(1), ch => ch.charCodeAt(0)) });
+
+        const apply = (entries, flags, cell, choice) => {
+            const c = cell.c;
+            const out = entries.slice();
+            const depColor = entries[c] >> 4, depLabel = entries[c] & 15;
+            let f = flags;
+            let lab = 0;
+            if (choice === 0) {
+                out[c] = 0;
+            } else {
+                if (f & CLOSED[choice]) return null;
+                const targets = [];
+                if (depColor === choice) targets.push(depLabel);
+                if (c > 0 && (out[c - 1] >> 4) === choice) targets.push(out[c - 1] & 15);
+                if (targets.length) {
+                    lab = Math.min(...targets);
+                    for (const t of targets) {
+                        if (t === lab) continue;
+                        for (let j = 0; j < N; j++) {
+                            if ((out[j] >> 4) === choice && (out[j] & 15) === t) out[j] = (choice << 4) | lab;
+                        }
+                    }
+                } else {
+                    lab = 15;
+                }
+                out[c] = (choice << 4) | lab;
+                if (cell.border) f |= EDGE[choice];
+                f |= STARTED[choice];
+            }
+            if (depColor) {
+                const survived = depColor === choice ? lab : depLabel;
+                let present = false, other = false;
+                for (let j = 0; j < N; j++) {
+                    if ((out[j] >> 4) !== depColor) continue;
+                    if ((out[j] & 15) === survived) present = true; else other = true;
+                }
+                if (!present) {
+                    if (other) return null;
+                    f |= CLOSED[depColor];
+                }
+            }
+            const maps = [null, new Uint8Array(16), new Uint8Array(16)];
+            const next = [0, 1, 1];
+            for (let j = 0; j < N; j++) {
+                const e = out[j];
+                if (!e) continue;
+                const color = e >> 4, l = e & 15;
+                if (!maps[color][l]) maps[color][l] = next[color]++;
+                out[j] = (color << 4) | maps[color][l];
+            }
+            return { entries: out, flags: f };
+        };
+
+        const choicesFor = (index, cell) => !cell.active ? [0] : index === firstActive ? [1] : [1, 2];
+
+        let layer = new Map([[keyOf(new Uint8Array(N), 0), new Map([[0, 1]])]]);
+        const history = [];
+        let index = 0;
+        let visited = 0;
+
+        const finish = () => {
+            let best = Infinity, count = 0, pick = null;
+            for (const [key, values] of layer) {
+                const { flags, entries } = decode(key);
+                if ((flags & 48) !== 48 || (flags & 12) !== 12) continue;
+                const labels = [new Set(), new Set(), new Set()];
+                for (let j = 0; j < N; j++) if (entries[j]) labels[entries[j] >> 4].add(entries[j] & 15);
+                if (labels[1].size > 1 || labels[2].size > 1) continue;
+                for (const [vA, n] of values) {
+                    const gap = Math.abs(2 * vA - total);
+                    if (gap < best) { best = gap; count = n; pick = { key, vA }; }
+                    else if (gap === best) count += n;
+                }
+            }
+            if (!pick) { onDone(null); return; }
+
+            // Walk back through the sweep to recover one division with that gap.
+            const colors = new Int8Array(cells.length);
+            let key = pick.key, vA = pick.vA;
+            for (let t = cells.length - 1; t >= 0; t--) {
+                const cell = cells[t];
+                const prev = history[t];
+                let found = false;
+                const preferred = choicesFor(t, cell);
+                if (cell.active && t + 1 < cells.length && cells[t + 1].r === cell.r && colors[t + 1]) {
+                    preferred.sort((a, b) => (a === colors[t + 1] ? -1 : 0) - (b === colors[t + 1] ? -1 : 0));
+                }
+                for (const [prevKey, present] of prev) {
+                    const { flags, entries } = decode(prevKey);
+                    for (const choice of preferred) {
+                        const delta = choice === 1 ? cell.value : 0;
+                        if (vA - delta < 0 || !present[vA - delta]) continue;
+                        const step = apply(entries, flags, cell, choice);
+                        if (!step || keyOf(step.entries, step.flags) !== key) continue;
+                        colors[t] = choice;
+                        key = prevKey;
+                        vA -= delta;
+                        found = true;
+                        break;
+                    }
+                    if (found) break;
+                }
+                if (!found) { onDone(null); return; }
+            }
+
+            const inA = new Set();
+            cells.forEach((cell, t) => { if (colors[t] === 1) inA.add(`${cell.c},${cell.r}`); });
+            const edges = [];
+            cells.forEach(cell => {
+                if (!cell.active) return;
+                const mine = inA.has(`${cell.c},${cell.r}`);
+                const other = (dc, dr) => GAME.isActiveCell(cell.c + dc, cell.r + dr, estateMask)
+                    && inA.has(`${cell.c + dc},${cell.r + dr}`) !== mine;
+                if (other(1, 0)) edges.push(GAME.edgeKey({ c: cell.c + 1, r: cell.r }, { c: cell.c + 1, r: cell.r + 1 }));
+                if (other(0, 1)) edges.push(GAME.edgeKey({ c: cell.c, r: cell.r + 1 }, { c: cell.c + 1, r: cell.r + 1 }));
+            });
+            const a = pick.vA;
+            onDone({ gap: best, count, edges, a, b: total - a, total, visited, exact: true });
+        };
+
+        const step = () => {
+            if (gen !== SOLVER.generation) return;
+            const deadline = performance.now() + SOLVER.SLICE_MS;
+            while (index < cells.length) {
+                const cell = cells[index];
+                const present = new Map();
+                const nextLayer = new Map();
+                for (const [key, values] of layer) {
+                    const flagsByte = new Uint8Array(total + 1);
+                    for (const vA of values.keys()) flagsByte[vA] = 1;
+                    present.set(key, flagsByte);
+                    const { flags, entries } = decode(key);
+                    for (const choice of choicesFor(index, cell)) {
+                        const result = apply(entries, flags, cell, choice);
+                        if (!result) continue;
+                        visited++;
+                        const nextKey = keyOf(result.entries, result.flags);
+                        let bucket = nextLayer.get(nextKey);
+                        if (!bucket) { bucket = new Map(); nextLayer.set(nextKey, bucket); }
+                        const delta = choice === 1 ? cell.value : 0;
+                        for (const [vA, n] of values) bucket.set(vA + delta, (bucket.get(vA + delta) || 0) + n);
+                    }
+                }
+                history[index] = present;
+                layer = nextLayer;
+                index++;
+                if (performance.now() > deadline && index < cells.length) {
+                    if (onProgress) onProgress(visited);
+                    setTimeout(step, 0);
+                    return;
+                }
+            }
+            finish();
+        };
+        setTimeout(step, 0);
+    },
+
+    bruteForceDivision({ grid, estateMask, settings = {}, terrain = null, onProgress = null, onDone }) {
         const gen = ++this.generation;
         const cells = GAME.activeCells(estateMask);
         const n = cells.length;
@@ -9780,6 +10023,80 @@ const SOLVER = {
                 : null);
         };
         setTimeout(step, 0);
+    },
+};
+
+// ---------------------------------------------------------------------------
+// REFEREE: keeps the fairest-fence result for the estate being played. Started
+// once the estate is built; used by the result screen and by the Fairness
+// Challenge, whose target becomes the true smallest gap instead of a parity
+// guess whenever the exact answer is in.
+// ---------------------------------------------------------------------------
+const REFEREE = {
+    key: null,
+    status: 'idle',
+    result: null,
+    visited: 0,
+
+    eligible() {
+        return !STATE.settings.tutorial
+            && !document.body.classList.contains('legacy-active')
+            && (!GAME.hasDynamicValue(STATE.settings) || GAME.activeCellCount(STATE.estateMask) <= SOLVER.MAX_CELLS);
+    },
+
+    gridKey() {
+        return JSON.stringify([STATE.grid, STATE.estateMask, STATE.terrain, STATE.settings.betterTogether]);
+    },
+
+    reset() {
+        this.key = null;
+        this.status = 'idle';
+        this.result = null;
+        this.visited = 0;
+    },
+
+    ensure() {
+        if (!this.eligible()) { this.reset(); this.status = 'unavailable'; return; }
+        const key = this.gridKey();
+        if (this.key === key && this.status !== 'idle') return;
+        this.key = key;
+        this.status = 'running';
+        this.result = null;
+        this.visited = 0;
+        SOLVER.fairestDivision({
+            grid: STATE.grid,
+            estateMask: STATE.estateMask,
+            settings: STATE.settings,
+            terrain: STATE.terrain,
+            onProgress: visited => { if (this.key === key) this.visited = visited; },
+            onDone: result => {
+                if (this.key !== key) return;
+                this.status = result ? 'done' : 'unavailable';
+                this.result = result;
+                if (STATE.phase === PHASE.FINAL && UI.el.finalOverlay.classList.contains('open')) {
+                    UI.renderFinalEstate(UI.finalEstateView || 'original');
+                }
+            },
+        });
+    },
+
+    exact() {
+        return this.status === 'done' && !!this.result && this.key === this.gridKey();
+    },
+
+    targetGap(total, dynamicValue) {
+        return this.exact() ? this.result.gap : GAME.fairnessTargetGap(total, dynamicValue);
+    },
+
+    // The line under the final estate: what was possible, stated once.
+    line(view, outcome) {
+        if (this.status === 'running') return 'Checking every fence that could have been drawn on this estate…';
+        if (!this.exact() || !outcome) return '';
+        const r = this.result;
+        const gap = Math.abs(outcome.scoreA.total - outcome.scoreB.total);
+        const reach = r.count === 1 ? 'one fence reaches it' : `${r.count.toLocaleString()} fences reach it`;
+        const shown = view === 'fairest' ? ` Shown: a fence with that gap, A ${r.a} · B ${r.b}.` : '';
+        return `Every fence checked. Smallest gap possible on this estate: ${r.gap}; ${reach}. This fence: gap ${gap}.${shown}`;
     },
 };
 
@@ -10240,6 +10557,7 @@ const APP = {
         UI.el.restartBtn.addEventListener('click', () => UI.openRestartConfirm());
         UI.el.finalEstateOriginalBtn?.addEventListener('click', () => UI.renderFinalEstate('original'));
         UI.el.finalEstateRedrawBtn?.addEventListener('click', () => UI.renderFinalEstate('redraw'));
+        UI.el.finalEstateFairestBtn?.addEventListener('click', () => UI.renderFinalEstate('fairest'));
 
         UI.el.undoBtn.addEventListener('click', INPUT.undo);
 
