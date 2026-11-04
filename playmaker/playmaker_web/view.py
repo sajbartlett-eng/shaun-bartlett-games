@@ -172,6 +172,7 @@ def state_json(game, token):
                 feedback_questions=FEEDBACK_QUESTIONS, feedback_done=game.feedback is not None,
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
                 log_name=game.log_name, static=getattr(game, 'static', False),
+                feed=game.feed[-40:], feed_n=len(game.feed),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
 
 

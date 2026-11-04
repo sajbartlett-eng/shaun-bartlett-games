@@ -60,8 +60,11 @@ async function scan(page) {
   const trap = [];
   for (let i = 0; i < 12; i++) { await page.keyboard.press('Tab'); trap.push(await page.evaluate(() => !!document.activeElement.closest('#modal'))); }
   out['trap'] = trap;
-  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
-  out['escape closes'] = await page.evaluate(() => document.getElementById('modal').classList.contains('hidden'));
+  // the computer's turn card comes first, then the end screen; Escape closes each in turn
+  const heading = () => page.evaluate(() => document.getElementById('modal').classList.contains('hidden') ? null : (document.querySelector('#modalBox h2') || {}).textContent);
+  out['dialogs'] = [await heading()];
+  for (let i = 0; i < 3 && (await heading()); i++) { await page.keyboard.press('Escape'); await page.waitForTimeout(250); out['dialogs'].push(await heading()); }
+  out['escape closes'] = (await heading()) === null;
   console.log(JSON.stringify(out));
   await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
@@ -81,7 +84,8 @@ def test_accessibility(tmp_path):
     for screen in ('laptop start', 'laptop table', 'phone start', 'phone table', 'contest', 'end dialog'):
         assert out[screen] == [], (screen, out[screen])
     assert all(out['trap']), 'focus left the dialog'
-    assert out['escape closes']
+    assert out['escape closes'], out['dialogs']
+    assert 'what just happened' in out['dialogs'][0] and any(d and 'over' in d for d in out['dialogs'])
     labels = out['laptop labels']
     assert len(labels) == 10
     assert all(',' in l and ' on ' in l for l in labels)

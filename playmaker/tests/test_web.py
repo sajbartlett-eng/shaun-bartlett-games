@@ -266,3 +266,38 @@ def test_computer_places_man_to_man(web):
         assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
         d = (o['x'] - x['x'], o['y'] - x['y'])
         assert B.DIRS[x['arrow']] == d                                       # arrow on its man
+
+
+def test_the_computers_turn_is_reported_with_rolls_and_results(web):
+    """Against the computer, its steals and intercepts come back to the page with their rolls and what
+    happened, not only in the log."""
+    g = post(web, '/api/new', dict(mode='hotseat', scenario=6, seed=3, ai=dict(X='greedy')))
+    tok = dict(code=g['code'], token=g['token'])
+    s = state(web, g)
+    # O1 passes to O2: X2 stands on that line, so the computer intercepts
+    a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['target'] == 1)
+    assert any(t['how'] == 'direct' for t in a['threats'])
+    r = post(web, '/api/act', dict(tok, action=a))
+    feed = r['state']['feed']
+    ai = [e for e in feed if e['actor'] == 'ai']
+    icpt = [e for e in ai if e['kind'] == 'intercept']
+    assert icpt, [e['text'] for e in feed]
+    e = icpt[0]
+    assert e['rolls'] and e['rolls'][0]['roller'] == 'O' and e['rolls'][0]['picked'] in ('success', 'failure')
+    words = ' '.join(o['text'] for o in e['outcomes'])
+    assert ('Pass completes' in words) if e['rolls'][0]['picked'] == 'success' else ('intercepted' in words and '−5' in words)
+    assert r['state']['feed_n'] == feed[-1]['n']
+
+
+def test_consequences_words_for_a_steal(web):
+    from playmaker_web.game import consequences
+    from playmaker_engine.resolve import apply, force
+    from playmaker_engine.actions import Action
+    s = scenario_state(6).with_(side='X')
+    node = apply(s, Action('steal', 'X', 0))
+    stolen = force(node, 'no foul', 'stolen')
+    assert any('Stolen' in o['text'] and '−5' in o['text'] for o in consequences(s, stolen, Action('steal', 'X', 0)))
+    kept = force(node, 'no foul', 'kept')
+    assert any('Ball kept' in o['text'] for o in consequences(s, kept, Action('steal', 'X', 0)))
+    foul = force(node, 'foul')
+    assert any('+5' in o['text'] for o in consequences(s, foul, Action('steal', 'X', 0)))
