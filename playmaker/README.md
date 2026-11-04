@@ -188,9 +188,11 @@ greedy offence), arrow jobs read at the end of each turn:
 | Offence's mean score | 17.0 | 15.6 |
 
 Against the solver: on the 50-position exact endgame set (92 defence decisions) both defences already
-make an exact-best choice every time (tiny endgames: one token, two players a side). On 50 mid-phase
-defence turns from the scenario cards, graded by a fixed-depth solver search, see
-`tests/data/defence_play_set.json` and `tests/test_defence.py` for the figures.
+make an exact-best choice every time (tiny endgames: one token, two players a side), so that set can't
+tell them apart. On 50 mid-phase defence turns from the scenario cards in play, graded by a fixed-depth
+solver search (the offence's value after the defence's whole turn, against the best of the solver's own
+plays): within half a point of the solver **54% → 64%**, mean gap **1.51 → 0.36 points**
+(`tests/data/defence_play_set.json`, `tests/test_defence.py`).
 
 ## Decision timer (step 3d, optional)
 

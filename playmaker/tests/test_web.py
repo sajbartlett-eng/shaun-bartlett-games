@@ -259,15 +259,18 @@ def test_placement_rules_and_preview_shortcut(web):
 
 
 def test_computer_places_man_to_man(web):
-    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=8, ai=dict(X='greedy')))
-    tok = dict(code=g['code'], token=g['token'])
-    post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
-    s = state(web, g)
-    assert s['placing'] is None
-    for o, x in zip(s['o'], s['x']):
-        assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
-        d = (o['x'] - x['x'], o['y'] - x['y'])
-        assert B.DIRS[x['arrow']] == d                                       # arrow on its man
+    # the board-reading defence: man-to-man squares, arrows chosen (step 3e); the baseline: arrows on the man
+    for kind, on_man in (('greedy', False), ('baseline', True)):
+        g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=8, ai=dict(X=kind)))
+        tok = dict(code=g['code'], token=g['token'])
+        post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
+        s = state(web, g)
+        assert s['placing'] is None
+        facing = []
+        for o, x in zip(s['o'], s['x']):
+            assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
+            facing.append(B.DIRS[x['arrow']] == (o['x'] - x['x'], o['y'] - x['y']))
+        assert all(facing) if on_man else not all(facing), (kind, facing)
 
 
 def test_the_computers_turn_is_reported_with_rolls_and_results(web):
