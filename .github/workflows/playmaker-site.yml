@@ -1,0 +1,29 @@
+# Builds the no-install Playmaker playtest site (playmaker/site and playmaker/dist) on every push to
+# main. GitHub Pages already serves this repository from main, so the rebuilt files go live with the
+# rest of the website at https://sajbartlett-eng.github.io/shaun-bartlett-games/playmaker/site/
+name: Build Playmaker playtest site
+on:
+  push:
+    branches: [main]
+    paths: ['playmaker/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build the static site
+        working-directory: playmaker
+        run: python -m playmaker_web.build_site
+      - name: Commit the rebuilt site if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add playmaker/site playmaker/dist
+          if git diff --cached --quiet; then echo "site already up to date"; else
+            git commit -m "Rebuild the Playmaker playtest site" && git push; fi
