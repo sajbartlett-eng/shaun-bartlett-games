@@ -24645,5 +24645,6053 @@
    0,
    null
   ]
+ },
+ "[\"rule7b\", 5, 120, 0]": {
+  "value": 27.2,
+  "look": 28.2,
+  "p30": 0.8,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.0,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O2 Pass to O1",
+    "value": 22.16
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "value": 27.2
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O2 Pass to O4",
+    "value": 14.71
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O2 Pass to O5",
+    "value": 27.2
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O1 Screen, T SE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T SW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 17.74
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 17.74
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O2 Pass to O5",
+    "value": 19.46
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G2",
+    "value": 17.74
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G2 then O2 Pass to O5",
+    "value": 19.46
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "seal",
+    "text": "O1 Move to D9 then O1 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: wing to long two",
+    "concept": "seal",
+    "text": "O3 Move to C4 then O3 Screen, T NW",
+    "value": 14.71
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "seal",
+    "text": "O4 Move to F6 then O4 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T E",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T S",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T SW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T W",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T NW",
+    "value": 17.74
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 17.74
+   }
+  ],
+  "best_label": "swing to the wing",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "swing to the wing",
+    "concept": "swing"
+   }
+  ],
+  "teams": [
+   "High-Low",
+   "Five Out"
+  ],
+  "nodes": 464,
+  "evals": 794,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 27.2 (look 28.2)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 27.2,
+    "text": "O2 Pass to O3"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   27.2
+  ],
+  "wall": 120.0,
+  "job": [
+   "rule7b",
+   5,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 10, 120, 0]": {
+  "value": 19.5,
+  "look": 19.5,
+  "p30": 0.25,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 12.996
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 13.289
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 10.26
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 7.455
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 5.7
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 5.7
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 7.25
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 3.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 6.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 3.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 15.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 3.0
+   },
+   {
+    "label": "relocate: shooter to mid-range",
+    "concept": "relocate",
+    "text": "O2 Sprint to D5",
+    "value": 5.7
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Sprint to D5 then O1 Pass to O2",
+    "value": 12.5
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to E9",
+    "value": 5.7
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to E9 then O1 Pass to O2",
+    "value": 12.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to L11",
+    "value": 15.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to J12",
+    "value": 12.387
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "raw",
+    "text": "O1 Quick Step to J10",
+    "value": 15.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to L11",
+    "value": 15.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to M11",
+    "value": 19.5
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to L8",
+    "value": 19.5
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to K9",
+    "value": 15.6
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to J9",
+    "value": 12.312
+   }
+  ],
+  "best_label": "drive: guard to plain wood",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: guard to plain wood",
+    "concept": "raw"
+   },
+   {
+    "side": "X",
+    "label": "pause",
+    "concept": "pause"
+   }
+  ],
+  "teams": [
+   "Iron Wall",
+   "Run and Gun"
+  ],
+  "nodes": 715,
+  "evals": 1139,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O1 Sprint to M11",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 19.5 (look 19.5)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 19.5,
+    "text": "O1 Sprint to M11"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   19.5
+  ],
+  "wall": 120.1,
+  "job": [
+   "rule7b",
+   10,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 6, 120, 0]": {
+  "value": 30.0,
+  "look": 30.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.7,
+  "root": [
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 25.05
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 11.725
+   },
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O4",
+    "value": 30.0
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 9.2
+   },
+   {
+    "label": "attack the closeout (playmaker)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 19.13
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T W",
+    "value": 17.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 17.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 24.0
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to G10",
+    "value": 23.25
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to G10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Quick Step to H10",
+    "value": 24.0
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to H10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C8",
+    "value": 17.0
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C8 then O1 Pass to O2",
+    "value": 27.75
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to B8",
+    "value": 17.0
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to B8 then O1 Pass to O2",
+    "value": 25.05
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "seal",
+    "text": "O2 Move to C8 then O2 Screen, T NE",
+    "value": 17.0
+   },
+   {
+    "label": "relocate: wing to arc three",
+    "concept": "seal",
+    "text": "O3 Move to O8 then O3 Screen, T NW",
+    "value": 17.0
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O4 Move to C4 then O4 Screen, T SW",
+    "value": 17.0
+   },
+   {
+    "label": "relocate: big to long two",
+    "concept": "seal",
+    "text": "O5 Move to O2 then O5 Screen, T NE",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SE",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 17.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 17.0
+   }
+  ],
+  "best_label": "kick to the shooter",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "kick to the shooter",
+    "concept": "kick"
+   },
+   {
+    "side": "X",
+    "label": "pause",
+    "concept": "pause"
+   }
+  ],
+  "teams": [
+   "Five Out",
+   "Iron Wall"
+  ],
+  "nodes": 806,
+  "evals": 1553,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O1 Pass to O4",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 30.0 (look 30.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 30.0,
+    "text": "O1 Pass to O4"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.75,
+    "text": "O2 Move to C8 then O1 Pass to O2"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   30.0
+  ],
+  "wall": 120.7,
+  "job": [
+   "rule7b",
+   6,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 4, 120, 0]": {
+  "value": 10.0,
+  "look": 10.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O2 Pass to O1",
+    "value": 4.188
+   },
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "value": -1.048
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O2 Pass to O4",
+    "value": 1.68
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O2 Pass to O5",
+    "value": 3.32
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T SW",
+    "value": 3.6
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O3 Screen, T S",
+    "value": 3.6
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 2.16
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 3.6
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 2.16
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G3",
+    "value": -0.4
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G3 then O2 Pass to O5",
+    "value": 1.65
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Sprint to G3",
+    "value": -0.4
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Sprint to G3 then O2 Pass to O5",
+    "value": 1.65
+   },
+   {
+    "label": "relocate: playmaker to arc three",
+    "concept": "seal",
+    "text": "O1 Move to O9 then O1 Screen, T NW",
+    "value": 3.6
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O3 Move to M8 then O3 Screen, T NW",
+    "value": 3.6
+   },
+   {
+    "label": "relocate: big to mid-range",
+    "concept": "seal",
+    "text": "O4 Move to M5 then O4 Screen, T NE",
+    "value": 2.16
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to J2 then O5 Screen, T NE",
+    "value": 0.412
+   },
+   {
+    "label": "relocate: post to plain wood",
+    "concept": "raw",
+    "text": "O5 Move to J1",
+    "value": 1.059
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "raw",
+    "text": "O5 Quick Step to K2",
+    "value": 1.059
+   },
+   {
+    "label": "relocate: post to plain wood",
+    "concept": "raw",
+    "text": "O5 Sprint to J1",
+    "value": 1.059
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "raw",
+    "text": "O5 Move to K2",
+    "value": 0.438
+   },
+   {
+    "label": "relocate: post to plain wood",
+    "concept": "raw",
+    "text": "O5 Move to L1",
+    "value": 0.438
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O5 Move to L4",
+    "value": 10.0
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O5 Move to L2",
+    "value": 0.438
+   },
+   {
+    "label": "relocate: post to plain wood",
+    "concept": "raw",
+    "text": "O5 Move to K1",
+    "value": 0.438
+   }
+  ],
+  "best_label": "relocate: post to mid-range",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "relocate: post to mid-range",
+    "concept": "raw"
+   }
+  ],
+  "teams": [
+   "Pace and Space",
+   "Lockdown"
+  ],
+  "nodes": 294,
+  "evals": 803,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O5 Move to L4",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "O5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 15.3 (look 17.4)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 10.0,
+    "text": "O5 Move to L4"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Wall",
+  "all_vals": [
+   10.0
+  ],
+  "wall": 120.1,
+  "job": [
+   "rule7b",
+   4,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 3, 120, 0]": {
+  "value": 22.0,
+  "look": 22.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.5,
+  "root": [
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O3 Pass to O1",
+    "value": 8.75
+   },
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O3 Pass to O2",
+    "value": 15.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O3 Pass to O4",
+    "value": 12.0
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O3 Pass to O5",
+    "value": 16.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 8.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 9.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T S",
+    "value": 8.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 8.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "relocate",
+    "text": "O5 Move to K4",
+    "value": 8.0
+   },
+   {
+    "label": "relocate the big and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "value": 22.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I4",
+    "value": 8.0
+   },
+   {
+    "label": "relocate the big and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I4 then O3 Pass to O5",
+    "value": 9.95
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "seal",
+    "text": "O1 Move to P9 then O1 Screen, T NW",
+    "value": 7.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "seal",
+    "text": "O4 Move to L8 then O4 Screen, T NW",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "seal",
+    "text": "O5 Move to K4 then O5 Screen, T NW",
+    "value": 8.0
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to Q11",
+    "value": 7.75
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to Q10",
+    "value": 7.75
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to P11",
+    "value": 10.0
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to Q11",
+    "value": 7.75
+   },
+   {
+    "label": "relocate: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to Q11",
+    "value": 7.75
+   },
+   {
+    "label": "screen by the post",
+    "concept": "raw",
+    "text": "O4 Screen, T SE",
+    "value": 9.0
+   },
+   {
+    "label": "relocate: playmaker to arc three",
+    "concept": "raw",
+    "text": "O1 Move to M9",
+    "value": 9.0
+   },
+   {
+    "label": "relocate: playmaker to arc three",
+    "concept": "raw",
+    "text": "O1 Move to N9",
+    "value": 8.75
+   }
+  ],
+  "best_label": "relocate the big and kick",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "relocate the big and kick",
+    "concept": "relocate+kick"
+   },
+   {
+    "side": "X",
+    "label": "pause",
+    "concept": "pause"
+   }
+  ],
+  "teams": [
+   "Ball Movement",
+   "Shoot and Protect"
+  ],
+  "nodes": 641,
+  "evals": 1062,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O5 Move to K4 then O3 Pass to O5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "pass"
+    ],
+    "actors": [
+     "O5",
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 22.0 (look 22.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 22.0,
+    "text": "O5 Move to K4 then O3 Pass to O5"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   22.0
+  ],
+  "wall": 120.5,
+  "job": [
+   "rule7b",
+   3,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 1, 120, 0]": {
+  "value": 36.0,
+  "look": 36.0,
+  "p30": 1.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.2,
+  "root": [
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O5 Pass to O1",
+    "value": 32.28
+   },
+   {
+    "label": "kick to the guard",
+    "concept": "kick",
+    "text": "O5 Pass to O2",
+    "value": 30.5
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O5 Pass to O3",
+    "value": 34.2
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O5 Pass to O4",
+    "value": 30.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O1 Screen, T SE",
+    "value": 15.408
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T SW",
+    "value": 17.52
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T E",
+    "value": 17.52
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T W",
+    "value": 17.52
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 17.52
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O1 Sprint to D9",
+    "value": 17.808
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O1 Sprint to D9 then O5 Pass to O1",
+    "value": 36.0
+   },
+   {
+    "label": "relocate: guard to arc three",
+    "concept": "relocate",
+    "text": "O2 Sprint to N9",
+    "value": 17.088
+   },
+   {
+    "label": "relocate the guard and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Sprint to N9 then O5 Pass to O2",
+    "value": 32.28
+   },
+   {
+    "label": "relocate: shooter to rim",
+    "concept": "seal",
+    "text": "O1 Move to G4 then O1 Screen, T NE",
+    "value": 14.4
+   },
+   {
+    "label": "relocate: guard to rim",
+    "concept": "seal",
+    "text": "O2 Move to K4 then O2 Screen, T NW",
+    "value": 17.52
+   },
+   {
+    "label": "relocate: wing to rim",
+    "concept": "seal",
+    "text": "O3 Move to I2 then O3 Screen, T NW",
+    "value": 21.6
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O4 Move to I2 then O4 Screen, T NE",
+    "value": 18.9
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "raw",
+    "text": "O1 Quick Step to E8",
+    "value": 18.24
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to C2",
+    "value": 36.0
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "raw",
+    "text": "O1 Move to E8",
+    "value": 17.088
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to E8",
+    "value": 17.088
+   },
+   {
+    "label": "relocate: shooter to mid-range",
+    "concept": "raw",
+    "text": "O1 Sprint to D3",
+    "value": 36.0
+   },
+   {
+    "label": "relocate: shooter to rim",
+    "concept": "raw",
+    "text": "O1 Move to H4",
+    "value": 14.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 15.408
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 15.408
+   }
+  ],
+  "best_label": "relocate the shooter and kick",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick"
+   }
+  ],
+  "teams": [
+   "Bucket Brigade",
+   "Iron Wall"
+  ],
+  "nodes": 474,
+  "evals": 773,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "relocate+kick",
+    "text": "O1 Sprint to D9 then O5 Pass to O1",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint",
+     "pass"
+    ],
+    "actors": [
+     "O1",
+     "O5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 36.0 (look 36.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 34.2,
+    "text": "O5 Pass to O3"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to C2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ],
+      [
+       "pass",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 36.0,
+    "text": "O1 Sprint to D9 then O5 Pass to O1"
+   }
+  ],
+  "n_plans": 3,
+  "gift2": false,
+  "verdict": "Gift",
+  "all_vals": [
+   36.0
+  ],
+  "wall": 120.2,
+  "job": [
+   "rule7b",
+   1,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 2, 120, 0]": {
+  "value": 18.0,
+  "look": 18.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "kick to the slasher",
+    "concept": "kick",
+    "text": "O2 Pass to O1",
+    "value": 7.207
+   },
+   {
+    "label": "swing to the slasher",
+    "concept": "swing",
+    "text": "O2 Pass to O3",
+    "value": 5.107
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O2 Pass to O4",
+    "value": 9.296
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O2 Pass to O5",
+    "value": 3.725
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O1 Screen, T SW",
+    "value": 4.595
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O1 Screen, T W",
+    "value": 4.595
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 7.007
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 6.395
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O3 Screen, T NW",
+    "value": 6.395
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T SW",
+    "value": 7.007
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T W",
+    "value": 7.007
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T NW",
+    "value": 6.395
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T W",
+    "value": 7.007
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T NW",
+    "value": 7.007
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 7.007
+   },
+   {
+    "label": "relocate: slasher to mid-range",
+    "concept": "relocate",
+    "text": "O1 Move to L7",
+    "value": 7.188
+   },
+   {
+    "label": "relocate the slasher and kick",
+    "concept": "relocate+kick",
+    "text": "O1 Move to L7 then O2 Pass to O1",
+    "value": 7.207
+   },
+   {
+    "label": "relocate: slasher to mid-range",
+    "concept": "relocate",
+    "text": "O1 Quick Step to L7",
+    "value": 7.82
+   },
+   {
+    "label": "relocate the slasher and kick",
+    "concept": "relocate+kick",
+    "text": "O1 Quick Step to L7 then O2 Pass to O1",
+    "value": 8.21
+   },
+   {
+    "label": "relocate: big to plain wood",
+    "concept": "seal",
+    "text": "O5 Move to J1 then O5 Screen, T NE",
+    "value": 8.477
+   },
+   {
+    "label": "relocate: big to plain wood",
+    "concept": "raw",
+    "text": "O5 Quick Step to K1",
+    "value": 17.605
+   },
+   {
+    "label": "relocate: big to plain wood",
+    "concept": "raw",
+    "text": "O5 Move to K1",
+    "value": 15.188
+   },
+   {
+    "label": "relocate: big to plain wood",
+    "concept": "raw",
+    "text": "O5 Quick Step to L1",
+    "value": 8.276
+   },
+   {
+    "label": "relocate: big to plain wood",
+    "concept": "raw",
+    "text": "O5 Sprint to K1",
+    "value": 15.188
+   },
+   {
+    "label": "relocate: slasher to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to P1",
+    "value": 5.407
+   },
+   {
+    "label": "relocate: slasher to plain wood",
+    "concept": "raw",
+    "text": "O3 Sprint to O1",
+    "value": 12.478
+   },
+   {
+    "label": "relocate: slasher to corner three",
+    "concept": "raw",
+    "text": "O1 Sprint to Q5",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: slasher to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to H9",
+    "value": 8.12
+   }
+  ],
+  "best_label": "relocate: slasher to corner three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "relocate: slasher to corner three",
+    "concept": "raw"
+   }
+  ],
+  "teams": [
+   "Run and Gun",
+   "Twin Towers"
+  ],
+  "nodes": 839,
+  "evals": 847,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O1 Sprint to Q5",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 7.8 (look 10.8)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 17.61,
+    "text": "O5 Quick Step to K1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 18.0,
+    "text": "O1 Sprint to Q5"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Wall",
+  "all_vals": [
+   18.0
+  ],
+  "wall": 120.1,
+  "job": [
+   "rule7b",
+   2,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 8, 120, 0]": {
+  "value": 20.0,
+  "look": 18.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.0,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 15.0
+   },
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 15.0
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O4",
+    "value": 17.285
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O5",
+    "value": 17.564
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 16.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 0.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T S",
+    "value": 12.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 12.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 20.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 20.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 20.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 20.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Quick Step to J10",
+    "value": 20.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to J10 then O1 Shot (three)",
+    "value": 20.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 12.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O1 Pass to O5",
+    "value": 17.564
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O4 Move to I2",
+    "value": 12.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O4 Move to I2 then O1 Pass to O4",
+    "value": 17.285
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: playmaker to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T N",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O4 Move to H3 then O4 Screen, T W",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to J3 then O5 Screen, T SE",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T E",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 12.0
+   }
+  ],
+  "best_label": "drive: guard to arc three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: guard to arc three",
+    "concept": "drive"
+   },
+   {
+    "side": "X",
+    "label": "pause",
+    "concept": "pause"
+   }
+  ],
+  "teams": [
+   "Twin Towers",
+   "Pace and Space"
+  ],
+  "nodes": 4386,
+  "evals": 38417,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 20.0 (look 18.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.0,
+    "text": "O1 Move to J10"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "shot",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.0,
+    "text": "O1 Move to J10 then O1 Shot (three)"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.0,
+    "text": "O1 Quick Step to J10"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ],
+      [
+       "shot",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.0,
+    "text": "O1 Quick Step to J10 then O1 Shot (three)"
+   }
+  ],
+  "n_plans": 4,
+  "gift2": false,
+  "verdict": "Wall",
+  "all_vals": [
+   20.0
+  ],
+  "target": 0,
+  "wall": 120.5,
+  "job": [
+   "rule7b",
+   8,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 9, 120, 0]": {
+  "value": 24.825,
+  "look": 20.35,
+  "p30": 0.35,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.0,
+  "root": [
+   {
+    "label": "shoot: post, mid-range",
+    "concept": "shoot",
+    "text": "O5 Shot (mid)",
+    "value": 14.0
+   },
+   {
+    "label": "shoot: post, mid-range",
+    "concept": "shoot",
+    "text": "O5 Shot (floater)",
+    "value": 12.0
+   },
+   {
+    "label": "swing to the guard",
+    "concept": "swing",
+    "text": "O5 Pass to O1",
+    "value": 9.0
+   },
+   {
+    "label": "kick to the guard",
+    "concept": "kick",
+    "text": "O5 Pass to O2",
+    "value": 18.0
+   },
+   {
+    "label": "kick to the wing",
+    "concept": "kick",
+    "text": "O5 Pass to O3",
+    "value": 20.196
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O5 Pass to O4",
+    "value": 17.21
+   },
+   {
+    "label": "attack the closeout (post)",
+    "concept": "dribble",
+    "text": "O5 Dribble vs X5",
+    "value": 16.4
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O1 Screen, T SE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 20.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T S",
+    "value": 14.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 18.0
+   },
+   {
+    "label": "drive: post to rim",
+    "concept": "drive",
+    "text": "O5 Move to I4",
+    "value": 24.212
+   },
+   {
+    "label": "drive and shoot: post, rim",
+    "concept": "drive+shoot",
+    "text": "O5 Move to I4 then O5 Shot (post)",
+    "value": 24.825
+   },
+   {
+    "label": "drive: post to rim",
+    "concept": "drive",
+    "text": "O5 Move to J4",
+    "value": 24.212
+   },
+   {
+    "label": "drive and shoot: post, rim",
+    "concept": "drive+shoot",
+    "text": "O5 Move to J4 then O5 Shot (post)",
+    "value": 24.825
+   },
+   {
+    "label": "drive: post to mid-range",
+    "concept": "drive",
+    "text": "O5 Move to L6",
+    "value": 14.0
+   },
+   {
+    "label": "drive and shoot: post, mid-range",
+    "concept": "drive+shoot",
+    "text": "O5 Move to L6 then O5 Shot (mid)",
+    "value": 14.0
+   },
+   {
+    "label": "relocate: guard to corner three",
+    "concept": "relocate",
+    "text": "O2 Move to A5",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the guard and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to A5 then O5 Pass to O2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: guard to corner three",
+    "concept": "relocate",
+    "text": "O2 Move to A4",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the guard and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to A4 then O5 Pass to O2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: guard to long two",
+    "concept": "seal",
+    "text": "O1 Move to E8 then O1 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: guard to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: wing to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "seal",
+    "text": "O4 Move to I2 then O4 Screen, T NW",
+    "value": 20.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T W",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O1 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 18.0
+   }
+  ],
+  "best_label": "drive and shoot: post, rim",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive and shoot: post, rim",
+    "concept": "drive+shoot"
+   },
+   {
+    "side": "X",
+    "label": "closeout+steal",
+    "concept": "closeout+steal"
+   }
+  ],
+  "teams": [
+   "Lockdown",
+   "Ball Movement"
+  ],
+  "nodes": 4144,
+  "evals": 32271,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive+shoot",
+    "text": "O5 Move to I4 then O5 Shot (post)",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "shot"
+    ],
+    "actors": [
+     "O5",
+     "O5"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "closeout+steal",
+    "text": "X4 Move to J4 facing W then X4 Steal",
+    "rolls": [
+     "Steal foul roll X4: no foul (65%)",
+     "Steal: Dribble O5 vs Steal X4: kept (65%)"
+    ],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "move",
+     "steal"
+    ],
+    "actors": [
+     "X4",
+     "X4"
+    ]
+   }
+  ],
+  "finish": "total 25 (Great), shot value 20, coach's call +5, goal missed. O5 post 2 x (16 - 6) contested by X4",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 24.21,
+    "text": "O5 Move to I4"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "shot",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 24.82,
+    "text": "O5 Move to I4 then O5 Shot (post)"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   24.825
+  ],
+  "target": 4,
+  "wall": 120.4,
+  "job": [
+   "rule7b",
+   9,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 12, 120, 0]": {
+  "value": 21.0,
+  "look": 21.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.0,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 17.925
+   },
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 16.125
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 15.746
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O5",
+    "value": 16.85
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X5",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 16.85
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 19.65
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 18.75
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 18.75
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 18.75
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Quick Step to J10",
+    "value": 18.75
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to J10 then O1 Shot (three)",
+    "value": 18.75
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Sprint to J10",
+    "value": 18.75
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Sprint to J10 then O1 Shot (three)",
+    "value": 18.75
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G2 then O1 Pass to O5",
+    "value": 14.575
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G3",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G3 then O1 Pass to O5",
+    "value": 14.681
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 18.75
+   },
+   {
+    "label": "relocate: playmaker to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T N",
+    "value": 18.75
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O4 Move to K4 then O4 Screen, T E",
+    "value": 18.75
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T W",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "raw",
+    "text": "O4 Screen, T SW",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to K9",
+    "value": 18.75
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to K9",
+    "value": 18.75
+   },
+   {
+    "label": "relocate: playmaker to long two",
+    "concept": "raw",
+    "text": "O3 Sprint to K9",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T E",
+    "value": 18.75
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 18.75
+   }
+  ],
+  "best_label": "screen by the post",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "screen by the post",
+    "concept": "raw"
+   }
+  ],
+  "teams": [
+   "Twin Towers",
+   "Run and Gun"
+  ],
+  "nodes": 853,
+  "evals": 1036,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O4 Screen, T SW",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "screen"
+    ],
+    "actors": [
+     "O4"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 21.0 (look 21.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 21.0,
+    "text": "O4 Screen, T SW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 21.0,
+    "text": "O3 Sprint to K9"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   21.0
+  ],
+  "wall": 120.0,
+  "job": [
+   "rule7b",
+   12,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 14, 120, 0]": {
+  "value": 22.29,
+  "look": 20.04,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.7,
+  "root": [
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 13.2
+   },
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "value": 22.29
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 15.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 10.8
+   },
+   {
+    "label": "attack the closeout (playmaker)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 13.61
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 11.55
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 12.3
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T SE",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T SW",
+    "value": 15.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 15.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 22.29
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to G10",
+    "value": 18.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 15.0
+   },
+   {
+    "label": "relocate: shooter to corner three",
+    "concept": "relocate",
+    "text": "O2 Move to A7",
+    "value": 15.0
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to A7 then O1 Pass to O2",
+    "value": 11.55
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O3 Move to O8",
+    "value": 14.508
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O3 Move to O8 then O1 Pass to O3",
+    "value": 19.8
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 15.0
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T N",
+    "value": 12.3
+   },
+   {
+    "label": "relocate: big to long two",
+    "concept": "seal",
+    "text": "O4 Move to E8 then O4 Screen, T NE",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T E",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 15.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 12.3
+   }
+  ],
+  "best_label": "kick to the shooter",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "kick to the shooter",
+    "concept": "kick"
+   },
+   {
+    "side": "X",
+    "label": "steal",
+    "concept": "steal"
+   }
+  ],
+  "teams": [
+   "Pace and Space",
+   "High-Low"
+  ],
+  "nodes": 938,
+  "evals": 1451,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X3 Steal",
+    "rolls": [
+     "Steal foul roll X3: no foul (55%)",
+     "Steal: Dribble O3 vs Steal X3: kept (70%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 24.0 (look 24.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.29,
+    "text": "O1 Pass to O3"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 22.29,
+    "text": "O1 Move to K10"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   22.29
+  ],
+  "wall": 120.7,
+  "job": [
+   "rule7b",
+   14,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 11, 120, 0]": {
+  "value": 25.48,
+  "look": 22.68,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 122.2,
+  "root": [
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 25.48
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 10.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 15.28
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 10.36
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 16.2
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T S",
+    "value": 16.2
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 16.2
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T SE",
+    "value": 16.2
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: shooter to corner three",
+    "concept": "relocate",
+    "text": "O2 Move to B7",
+    "value": 16.2
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to B7 then O1 Pass to O2",
+    "value": 25.48
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C9",
+    "value": 16.2
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C9 then O1 Pass to O2",
+    "value": 25.48
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T NW",
+    "value": 9.76
+   },
+   {
+    "label": "relocate: wing to arc three",
+    "concept": "seal",
+    "text": "O3 Move to M9 then O3 Screen, T NW",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "seal",
+    "text": "O4 Move to K6 then O4 Screen, T NE",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "raw",
+    "text": "O4 Sprint to K3",
+    "value": 14.852
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "raw",
+    "text": "O2 Sprint to B4",
+    "value": 24.6
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O4 Move to K5",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "raw",
+    "text": "O4 Move to K4",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O4 Move to L5",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O4 Move to J5",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O4 Quick Step to L6",
+    "value": 16.2
+   },
+   {
+    "label": "relocate: post to mid-range",
+    "concept": "raw",
+    "text": "O4 Sprint to K5",
+    "value": 16.2
+   }
+  ],
+  "best_label": "kick to the shooter",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "kick to the shooter",
+    "concept": "kick"
+   },
+   {
+    "side": "X",
+    "label": "intercept",
+    "concept": "intercept"
+   }
+  ],
+  "teams": [
+   "Ball Movement",
+   "High-Low"
+  ],
+  "nodes": 2641,
+  "evals": 24193,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "intercept",
+    "text": "X1 Intercept",
+    "rolls": [
+     "Pass O1->O2 vs Intercept X1: pass completes (offence needs 12 or less; 60%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "intercept"
+    ],
+    "actors": [
+     "X1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 35.0 (look 27.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 25.48,
+    "text": "O1 Pass to O2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 25.48,
+    "text": "O2 Move to B7 then O1 Pass to O2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 24.6,
+    "text": "O2 Sprint to B4"
+   }
+  ],
+  "n_plans": 3,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   25.48
+  ],
+  "target": 1,
+  "wall": 123.6,
+  "job": [
+   "rule7b",
+   11,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 15, 120, 0]": {
+  "value": 29.0,
+  "look": 24.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.4,
+  "root": [
+   {
+    "label": "swing to the guard",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 27.432
+   },
+   {
+    "label": "kick to the wing",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "value": 27.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 27.146
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O5",
+    "value": 27.146
+   },
+   {
+    "label": "attack the closeout (shooter)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 27.146
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 29.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 29.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 29.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 29.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 29.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 29.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 29.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 29.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 29.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O1 Pass to O5",
+    "value": 27.146
+   },
+   {
+    "label": "relocate: wing to corner three",
+    "concept": "relocate",
+    "text": "O3 Move to Q7",
+    "value": 29.0
+   },
+   {
+    "label": "relocate the wing and kick",
+    "concept": "relocate+kick",
+    "text": "O3 Move to Q7 then O1 Pass to O3",
+    "value": 27.432
+   },
+   {
+    "label": "relocate: guard to arc three",
+    "concept": "seal",
+    "text": "O2 Move to C8 then O2 Screen, T NE",
+    "value": 29.0
+   },
+   {
+    "label": "relocate: wing to arc three",
+    "concept": "seal",
+    "text": "O3 Move to O8 then O3 Screen, T NW",
+    "value": 29.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O4 Move to J4 then O4 Screen, T NE",
+    "value": 29.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T NW",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T SE",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 29.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 29.0
+   }
+  ],
+  "best_label": "attack the closeout (shooter)",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "attack the closeout (shooter)",
+    "concept": "dribble"
+   },
+   {
+    "side": "X",
+    "label": "pause",
+    "concept": "pause"
+   }
+  ],
+  "teams": [
+   "High-Low",
+   "Bucket Brigade"
+  ],
+  "nodes": 828,
+  "evals": 1263,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "rolls": [
+     "Dribble O1 vs X1: dribble wins (50%)"
+    ],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "dribble"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "pause",
+    "text": "X Pause",
+    "rolls": [],
+    "clock": 8,
+    "phase": 1,
+    "kinds": [
+     "pause"
+    ],
+    "actors": [
+     "X0"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 29.0 (look 24.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.43,
+    "text": "O1 Pass to O2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "dribble",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O1 Dribble vs X1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.15,
+    "text": "O1 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O2 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O3 Screen, T W"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O4 Screen, T S"
+   },
+   {
+    "sig": [
+     [
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O5 Screen, T E"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O1 Move to J10"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ],
+      [
+       "shot",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O1 Move to J10 then O1 Shot (three)"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O5 Move to I2"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.15,
+    "text": "O5 Move to I2 then O1 Pass to O5"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O3 Move to Q7"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.43,
+    "text": "O3 Move to Q7 then O1 Pass to O3"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ],
+      [
+       "screen",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O2 Move to C8 then O2 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "screen",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O3 Move to O8 then O3 Screen, T NW"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O4"
+      ],
+      [
+       "screen",
+       "O4"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O4 Move to J4 then O4 Screen, T NE"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O5"
+      ],
+      [
+       "screen",
+       "O5"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O5 Move to I2 then O5 Screen, T NW"
+   }
+  ],
+  "n_plans": 18,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   29.0
+  ],
+  "wall": 120.4,
+  "job": [
+   "rule7b",
+   15,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"rule7b\", 16, 120, 0]": {
+  "value": 24.0,
+  "look": 24.0,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 121.0,
+  "root": [
+   {
+    "label": "kick to the guard",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 21.0
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 21.0
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O4",
+    "value": 18.712
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T SW",
+    "value": 21.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 21.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O1 Quick Step to H10",
+    "value": 24.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to H10 then O1 Shot (three)",
+    "value": 21.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O1 Quick Step to J10",
+    "value": 21.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to J10 then O1 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "drive: shooter to long two",
+    "concept": "drive",
+    "text": "O1 Quick Step to G9",
+    "value": 24.0
+   },
+   {
+    "label": "drive and shoot: shooter, long two",
+    "concept": "drive+shoot",
+    "text": "O1 Quick Step to G9 then O1 Shot (long)",
+    "value": 16.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O4 Move to G3",
+    "value": 21.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O4 Move to G3 then O1 Pass to O4",
+    "value": 19.492
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O4 Move to G2",
+    "value": 21.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O4 Move to G2 then O1 Pass to O4",
+    "value": 20.04
+   },
+   {
+    "label": "relocate: guard to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: wing to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T N",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O4 Move to H3 then O4 Screen, T N",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to K4 then O5 Screen, T N",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T E",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 21.0
+   }
+  ],
+  "best_label": "drive: shooter to arc three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: shooter to arc three",
+    "concept": "drive"
+   },
+   {
+    "side": "X",
+    "label": "deny",
+    "concept": "deny"
+   }
+  ],
+  "teams": [
+   "Bucket Brigade",
+   "Iron Wall"
+  ],
+  "nodes": 867,
+  "evals": 1096,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O1 Quick Step to H10",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "qs"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "deny",
+    "text": "X2 Move to D8 facing N",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "X2"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 24.0 (look 24.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 24.0,
+    "text": "O1 Quick Step to H10"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   24.0
+  ],
+  "wall": 121.0,
+  "job": [
+   "rule7b",
+   16,
+   120,
+   0,
+   null
+  ]
+ },
+ "[\"context\", 13, 120, 0, [\"Pace and Space\", \"Shoot and Protect\"]]": {
+  "value": 22.0225,
+  "look": 23.535000000000004,
+  "p30": 0.45,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "shoot: shooter, arc three",
+    "concept": "shoot",
+    "text": "O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O3 Pass to O1",
+    "value": 14.445
+   },
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O3 Pass to O2",
+    "value": 11.0
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O3 Pass to O4",
+    "value": 13.009
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O3 Pass to O5",
+    "value": 16.158
+   },
+   {
+    "label": "attack the closeout (shooter)",
+    "concept": "dribble",
+    "text": "O3 Dribble vs X3",
+    "value": 18.17
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 18.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O3 Move to O8",
+    "value": 18.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to O8 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O3 Move to N9",
+    "value": 22.023
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to N9 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "drive: shooter to arc three",
+    "concept": "drive",
+    "text": "O3 Move to P8",
+    "value": 18.0
+   },
+   {
+    "label": "drive and shoot: shooter, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to P8 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O3 Pass to O5",
+    "value": 16.158
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G4",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G4 then O3 Pass to O5",
+    "value": 15.45
+   },
+   {
+    "label": "relocate: playmaker to long two",
+    "concept": "seal",
+    "text": "O1 Move to J9 then O1 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: big to long two",
+    "concept": "seal",
+    "text": "O4 Move to L8 then O4 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T SE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T W",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "raw",
+    "text": "O1 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 18.0
+   }
+  ],
+  "best_label": "drive: shooter to arc three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: shooter to arc three",
+    "concept": "drive"
+   },
+   {
+    "side": "X",
+    "label": "closeout",
+    "concept": "closeout"
+   }
+  ],
+  "teams": [
+   "Pace and Space",
+   "Shoot and Protect"
+  ],
+  "nodes": 909,
+  "evals": 1640,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O3 Move to N9",
+    "rolls": [],
+    "clock": 2,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "closeout",
+    "text": "X3 Move to O8 facing NW",
+    "rolls": [],
+    "clock": 2,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 22.0 (look 23.5)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 22.02,
+    "text": "O3 Move to N9"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   22.0225
+  ],
+  "wall": 120.1,
+  "job": [
+   "context",
+   13,
+   120,
+   0,
+   [
+    "Pace and Space",
+    "Shoot and Protect"
+   ]
+  ]
+ },
+ "[\"context\", 7, 120, 0, [\"Twin Towers\", \"Run and Gun\"]]": {
+  "value": 25.575000000000003,
+  "look": 26.700000000000003,
+  "p30": 0.5,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 18.0
+   },
+   {
+    "label": "swing to the playmaker",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 19.351
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 0.515
+   },
+   {
+    "label": "kick to the post",
+    "concept": "kick",
+    "text": "O1 Pass to O5",
+    "value": 19.351
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 12.526
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 13.501
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 21.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 21.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "drive",
+    "text": "O1 Sprint to M8",
+    "value": 25.575
+   },
+   {
+    "label": "drive and shoot: guard, long two",
+    "concept": "drive+shoot",
+    "text": "O1 Sprint to M8 then O1 Shot (long)",
+    "value": 12.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 21.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to I10",
+    "value": 9.394
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to I10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 12.63
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O1 Pass to O5",
+    "value": 19.351
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "relocate",
+    "text": "O5 Move to H4",
+    "value": 16.465
+   },
+   {
+    "label": "relocate the post and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to H4 then O1 Pass to O5",
+    "value": 18.266
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T NW",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: playmaker to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T NE",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "seal",
+    "text": "O4 Move to G8 then O4 Screen, T NW",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T N",
+    "value": 12.63
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to L11",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to M11",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to L9",
+    "value": 25.575
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "raw",
+    "text": "O1 Move to L10",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "raw",
+    "text": "O4 Move to G9",
+    "value": 21.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "raw",
+    "text": "O4 Move to H9",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to J12",
+    "value": 21.0
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to K12",
+    "value": 12.05
+   }
+  ],
+  "best_label": "drive: guard to long two",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: guard to long two",
+    "concept": "drive"
+   }
+  ],
+  "teams": [
+   "Twin Towers",
+   "Run and Gun"
+  ],
+  "nodes": 772,
+  "evals": 927,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O1 Sprint to M8",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 21.0 (look 21.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 25.58,
+    "text": "O1 Sprint to M8"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 25.58,
+    "text": "O1 Move to L9"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   25.575000000000003
+  ],
+  "wall": 120.1,
+  "job": [
+   "context",
+   7,
+   120,
+   0,
+   [
+    "Twin Towers",
+    "Run and Gun"
+   ]
+  ]
+ },
+ "[\"context\", 13, 120, 0, [\"Run and Gun\", \"Twin Towers\"]]": {
+  "value": 21.575,
+  "look": 22.95,
+  "p30": 0.5,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 122.7,
+  "root": [
+   {
+    "label": "shoot: slasher, arc three",
+    "concept": "shoot",
+    "text": "O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "swing to the slasher",
+    "concept": "swing",
+    "text": "O3 Pass to O1",
+    "value": 13.8
+   },
+   {
+    "label": "swing to the guard",
+    "concept": "swing",
+    "text": "O3 Pass to O2",
+    "value": 11.188
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O3 Pass to O4",
+    "value": 20.0
+   },
+   {
+    "label": "kick to the big",
+    "concept": "kick",
+    "text": "O3 Pass to O5",
+    "value": 16.001
+   },
+   {
+    "label": "attack the closeout (slasher)",
+    "concept": "dribble",
+    "text": "O3 Dribble vs X3",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T SE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "screen",
+    "text": "O3 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 18.0
+   },
+   {
+    "label": "drive: slasher to arc three",
+    "concept": "drive",
+    "text": "O3 Move to O8",
+    "value": 18.0
+   },
+   {
+    "label": "drive and shoot: slasher, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to O8 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "drive: slasher to arc three",
+    "concept": "drive",
+    "text": "O3 Move to N9",
+    "value": 21.575
+   },
+   {
+    "label": "drive and shoot: slasher, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to N9 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "drive: slasher to arc three",
+    "concept": "drive",
+    "text": "O3 Move to P8",
+    "value": 18.0
+   },
+   {
+    "label": "drive and shoot: slasher, arc three",
+    "concept": "drive+shoot",
+    "text": "O3 Move to P8 then O3 Shot (three)",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "relocate",
+    "text": "O5 Move to I2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the big and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to I2 then O3 Pass to O5",
+    "value": 16.001
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "relocate",
+    "text": "O5 Move to G4",
+    "value": 18.0
+   },
+   {
+    "label": "relocate the big and kick",
+    "concept": "relocate+kick",
+    "text": "O5 Move to G4 then O3 Pass to O5",
+    "value": 14.75
+   },
+   {
+    "label": "relocate: slasher to long two",
+    "concept": "seal",
+    "text": "O1 Move to J9 then O1 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: guard to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T N",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "seal",
+    "text": "O4 Move to L8 then O4 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T N",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T NE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T E",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T SE",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T SW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T W",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the slasher",
+    "concept": "raw",
+    "text": "O1 Screen, T NW",
+    "value": 18.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 18.0
+   }
+  ],
+  "best_label": "drive: slasher to arc three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: slasher to arc three",
+    "concept": "drive"
+   },
+   {
+    "side": "X",
+    "label": "closeout",
+    "concept": "closeout"
+   }
+  ],
+  "teams": [
+   "Run and Gun",
+   "Twin Towers"
+  ],
+  "nodes": 889,
+  "evals": 1471,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O3 Move to N9",
+    "rolls": [],
+    "clock": 2,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "O3"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "closeout",
+    "text": "X3 Move to O10 facing SW",
+    "rolls": [],
+    "clock": 2,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 21.6 (look 22.9)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 20.0,
+    "text": "O3 Pass to O4"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ]
+     ]
+    ],
+    "value": 21.57,
+    "text": "O3 Move to N9"
+   }
+  ],
+  "n_plans": 2,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   21.575
+  ],
+  "wall": 122.7,
+  "job": [
+   "context",
+   13,
+   120,
+   0,
+   [
+    "Run and Gun",
+    "Twin Towers"
+   ]
+  ]
+ },
+ "[\"context\", 7, 120, 0, [\"Shoot and Protect\", \"Pace and Space\"]]": {
+  "value": 20.535,
+  "look": 22.8975,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.7,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 19.545
+   },
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "value": 20.535
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 10.0
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 20.04
+   },
+   {
+    "label": "attack the closeout (playmaker)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 18.785
+   },
+   {
+    "label": "screen by the playmaker",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T S",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O5 Screen, T E",
+    "value": 18.4
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 18.4
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 19.1
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 15.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to I10",
+    "value": 18.4
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to I10 then O1 Shot (three)",
+    "value": 15.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to L10",
+    "value": 19.1
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to L10 then O1 Shot (three)",
+    "value": 15.0
+   },
+   {
+    "label": "relocate: shooter to corner three",
+    "concept": "relocate",
+    "text": "O3 Move to P7",
+    "value": 18.4
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O3 Move to P7 then O1 Pass to O3",
+    "value": 20.535
+   },
+   {
+    "label": "relocate: shooter to corner three",
+    "concept": "relocate",
+    "text": "O3 Move to Q7",
+    "value": 18.4
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O3 Move to Q7 then O1 Pass to O3",
+    "value": 20.535
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O2 Move to D7 then O2 Screen, T NW",
+    "value": 18.4
+   },
+   {
+    "label": "relocate: shooter to long two",
+    "concept": "seal",
+    "text": "O3 Move to N7 then O3 Screen, T NE",
+    "value": 15.2
+   },
+   {
+    "label": "relocate: big to long two",
+    "concept": "seal",
+    "text": "O4 Move to G8 then O4 Screen, T NW",
+    "value": 18.4
+   },
+   {
+    "label": "relocate: big to rim",
+    "concept": "seal",
+    "text": "O5 Move to I2 then O5 Screen, T N",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SE",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 18.4
+   },
+   {
+    "label": "screen by the shooter",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 18.4
+   }
+  ],
+  "best_label": "kick to the shooter",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "kick to the shooter",
+    "concept": "kick"
+   },
+   {
+    "side": "X",
+    "label": "intercept",
+    "concept": "intercept"
+   }
+  ],
+  "teams": [
+   "Shoot and Protect",
+   "Pace and Space"
+  ],
+  "nodes": 847,
+  "evals": 1272,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "intercept",
+    "text": "X3 Intercept",
+    "rolls": [
+     "Pass O1->O3 vs Intercept X3: pass completes (offence needs 13 or less; 65%)"
+    ],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "intercept"
+    ],
+    "actors": [
+     "X3"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 24.0 (look 24.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.54,
+    "text": "O1 Pass to O3"
+   },
+   {
+    "sig": [
+     [
+      [
+       "dribble",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 18.79,
+    "text": "O1 Dribble vs X1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 19.1,
+    "text": "O1 Move to K10"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O3"
+      ],
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.54,
+    "text": "O3 Move to P7 then O1 Pass to O3"
+   }
+  ],
+  "n_plans": 4,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   20.535
+  ],
+  "wall": 120.7,
+  "job": [
+   "context",
+   7,
+   120,
+   0,
+   [
+    "Shoot and Protect",
+    "Pace and Space"
+   ]
+  ]
+ },
+ "[\"context\", 10, 120, 0, [\"Ball Movement\", \"Iron Wall\"]]": {
+  "value": 29.0,
+  "look": 30.75,
+  "p30": 0.65,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "kick to the shooter",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 25.215
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 16.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 27.0
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 18.12
+   },
+   {
+    "label": "attack the closeout (playmaker)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 26.95
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 26.9
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to G10",
+    "value": 29.0
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to G10 then O1 Shot (three)",
+    "value": 15.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 22.1
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 12.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 20.7
+   },
+   {
+    "label": "drive and shoot: playmaker, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C9",
+    "value": 26.9
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C9 then O1 Pass to O2",
+    "value": 23.168
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C8",
+    "value": 26.9
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C8 then O1 Pass to O2",
+    "value": 23.168
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to G13",
+    "value": 27.0
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to E11",
+    "value": 27.0
+   },
+   {
+    "label": "drive: playmaker to long two",
+    "concept": "raw",
+    "text": "O1 Sprint to E7",
+    "value": 27.0
+   },
+   {
+    "label": "drive: playmaker to arc three",
+    "concept": "raw",
+    "text": "O1 Quick Step to J10",
+    "value": 22.1
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to I12",
+    "value": 19.0
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to H11",
+    "value": 26.9
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to G11",
+    "value": 29.0
+   },
+   {
+    "label": "drive: playmaker to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to F11",
+    "value": 26.9
+   }
+  ],
+  "best_label": "drive: playmaker to arc three",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: playmaker to arc three",
+    "concept": "drive"
+   }
+  ],
+  "teams": [
+   "Ball Movement",
+   "Iron Wall"
+  ],
+  "nodes": 794,
+  "evals": 982,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "drive",
+    "text": "O1 Move to G10",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "move"
+    ],
+    "actors": [
+     "O1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 15.0 (look 15.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.0,
+    "text": "O1 Pass to O4"
+   },
+   {
+    "sig": [
+     [
+      [
+       "dribble",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 26.95,
+    "text": "O1 Dribble vs X1"
+   },
+   {
+    "sig": [
+     [
+      [
+       "hesitate",
+       "O0"
+      ]
+     ]
+    ],
+    "value": 26.9,
+    "text": "O Hesitate"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 29.0,
+    "text": "O1 Move to G10"
+   },
+   {
+    "sig": [
+     [
+      [
+       "move",
+       "O2"
+      ]
+     ]
+    ],
+    "value": 26.9,
+    "text": "O2 Move to C9"
+   },
+   {
+    "sig": [
+     [
+      [
+       "qs",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.0,
+    "text": "O1 Quick Step to G13"
+   },
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 27.0,
+    "text": "O1 Sprint to E11"
+   }
+  ],
+  "n_plans": 7,
+  "gift2": false,
+  "verdict": "Puzzle",
+  "all_vals": [
+   29.0
+  ],
+  "wall": 120.1,
+  "job": [
+   "context",
+   10,
+   120,
+   0,
+   [
+    "Ball Movement",
+    "Iron Wall"
+   ]
+  ]
+ },
+ "[\"context\", 10, 120, 0, [\"Iron Wall\", \"Ball Movement\"]]": {
+  "value": 20.1325,
+  "look": 21.645,
+  "p30": 0.45,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 1,
+  "seconds": 120.1,
+  "root": [
+   {
+    "label": "swing to the shooter",
+    "concept": "swing",
+    "text": "O1 Pass to O2",
+    "value": 12.81
+   },
+   {
+    "label": "swing to the wing",
+    "concept": "swing",
+    "text": "O1 Pass to O3",
+    "value": 12.158
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 14.963
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 10.924
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 10.166
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 10.166
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 12.4
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 12.015
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 12.116
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 9.0
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to E9",
+    "value": 10.166
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to E9 then O1 Pass to O2",
+    "value": 18.0
+   },
+   {
+    "label": "relocate: shooter to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C9",
+    "value": 10.166
+   },
+   {
+    "label": "relocate the shooter and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C9 then O1 Pass to O2",
+    "value": 10.3
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Move to L11",
+    "value": 12.116
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to K9",
+    "value": 16.3
+   },
+   {
+    "label": "drive: guard to long two",
+    "concept": "raw",
+    "text": "O1 Move to J9",
+    "value": 14.35
+   },
+   {
+    "label": "relocate: big to mid-range",
+    "concept": "raw",
+    "text": "O4 Move to H7",
+    "value": 12.116
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Quick Step to J12",
+    "value": 14.35
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "raw",
+    "text": "O1 Quick Step to J10",
+    "value": 14.35
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to L11",
+    "value": 12.116
+   },
+   {
+    "label": "drive: guard to plain wood",
+    "concept": "raw",
+    "text": "O1 Sprint to M11",
+    "value": 20.133
+   }
+  ],
+  "best_label": "drive: guard to plain wood",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "drive: guard to plain wood",
+    "concept": "raw"
+   }
+  ],
+  "teams": [
+   "Iron Wall",
+   "Ball Movement"
+  ],
+  "nodes": 552,
+  "evals": 773,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "raw",
+    "text": "O1 Sprint to M11",
+    "rolls": [],
+    "clock": 4,
+    "phase": 1,
+    "kinds": [
+     "sprint"
+    ],
+    "actors": [
+     "O1"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 12.0 (look 12.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "sprint",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.13,
+    "text": "O1 Sprint to M11"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Single trick",
+  "all_vals": [
+   20.1325
+  ],
+  "wall": 120.1,
+  "job": [
+   "context",
+   10,
+   120,
+   0,
+   [
+    "Iron Wall",
+    "Ball Movement"
+   ]
+  ]
+ },
+ "[\"context\", 6, 120, 0, [\"Lockdown\", \"Bucket Brigade\"]]": {
+  "value": 20.119999999999997,
+  "look": 19.92,
+  "p30": 0.0,
+  "pexp": 0.0,
+  "fs": 0.0,
+  "depth": 2,
+  "seconds": 120.5,
+  "root": [
+   {
+    "label": "kick to the guard",
+    "concept": "kick",
+    "text": "O1 Pass to O2",
+    "value": 11.9
+   },
+   {
+    "label": "kick to the wing",
+    "concept": "kick",
+    "text": "O1 Pass to O3",
+    "value": 11.9
+   },
+   {
+    "label": "swing to the big",
+    "concept": "swing",
+    "text": "O1 Pass to O4",
+    "value": 18.0
+   },
+   {
+    "label": "swing to the post",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "value": 20.12
+   },
+   {
+    "label": "attack the closeout (guard)",
+    "concept": "dribble",
+    "text": "O1 Dribble vs X1",
+    "value": 12.38
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O1 Screen, T S",
+    "value": 11.9
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "screen",
+    "text": "O2 Screen, T E",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "screen",
+    "text": "O3 Screen, T W",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the big",
+    "concept": "screen",
+    "text": "O4 Screen, T E",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the post",
+    "concept": "screen",
+    "text": "O5 Screen, T W",
+    "value": 12.0
+   },
+   {
+    "label": "hesitate",
+    "concept": "hesitate",
+    "text": "O Hesitate",
+    "value": 12.1
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to J10",
+    "value": 14.2
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to J10 then O1 Shot (three)",
+    "value": 12.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to H10",
+    "value": 12.1
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to H10 then O1 Shot (three)",
+    "value": 12.0
+   },
+   {
+    "label": "drive: guard to arc three",
+    "concept": "drive",
+    "text": "O1 Move to K10",
+    "value": 12.0
+   },
+   {
+    "label": "drive and shoot: guard, arc three",
+    "concept": "drive+shoot",
+    "text": "O1 Move to K10 then O1 Shot (three)",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: guard to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to C8",
+    "value": 12.1
+   },
+   {
+    "label": "relocate the guard and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to C8 then O1 Pass to O2",
+    "value": 12.517
+   },
+   {
+    "label": "relocate: guard to arc three",
+    "concept": "relocate",
+    "text": "O2 Move to B8",
+    "value": 12.1
+   },
+   {
+    "label": "relocate the guard and kick",
+    "concept": "relocate+kick",
+    "text": "O2 Move to B8 then O1 Pass to O2",
+    "value": 12.517
+   },
+   {
+    "label": "relocate: guard to arc three",
+    "concept": "seal",
+    "text": "O2 Move to C8 then O2 Screen, T NE",
+    "value": 12.1
+   },
+   {
+    "label": "relocate: wing to arc three",
+    "concept": "seal",
+    "text": "O3 Move to O8 then O3 Screen, T NW",
+    "value": 12.1
+   },
+   {
+    "label": "relocate: big to long two",
+    "concept": "seal",
+    "text": "O4 Move to C4 then O4 Screen, T SW",
+    "value": 12.0
+   },
+   {
+    "label": "relocate: post to long two",
+    "concept": "seal",
+    "text": "O5 Move to O2 then O5 Screen, T NE",
+    "value": 12.0
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T N",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NE",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T SE",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T S",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T SW",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T W",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the guard",
+    "concept": "raw",
+    "text": "O2 Screen, T NW",
+    "value": 12.1
+   },
+   {
+    "label": "screen by the wing",
+    "concept": "raw",
+    "text": "O3 Screen, T N",
+    "value": 12.0
+   }
+  ],
+  "best_label": "swing to the post",
+  "line_labels": [
+   {
+    "side": "O",
+    "label": "swing to the post",
+    "concept": "swing"
+   },
+   {
+    "side": "X",
+    "label": "steal",
+    "concept": "steal"
+   }
+  ],
+  "teams": [
+   "Lockdown",
+   "Bucket Brigade"
+  ],
+  "nodes": 793,
+  "evals": 1442,
+  "exact_hits": 0,
+  "exact_tries": 0,
+  "line": [
+   {
+    "side": "O",
+    "concept": "swing",
+    "text": "O1 Pass to O5",
+    "rolls": [],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "pass"
+    ],
+    "actors": [
+     "O1"
+    ]
+   },
+   {
+    "side": "X",
+    "concept": "steal",
+    "text": "X5 Steal",
+    "rolls": [
+     "Steal foul roll X5: no foul (60%)",
+     "Steal: Dribble O5 vs Steal X5: kept (70%)"
+    ],
+    "clock": 6,
+    "phase": 1,
+    "kinds": [
+     "steal"
+    ],
+    "actors": [
+     "X5"
+    ]
+   }
+  ],
+  "finish": "search horizon reached; evaluation 21.0 (look 21.0)",
+  "plans": [
+   {
+    "sig": [
+     [
+      [
+       "pass",
+       "O1"
+      ]
+     ]
+    ],
+    "value": 20.12,
+    "text": "O1 Pass to O5"
+   }
+  ],
+  "n_plans": 1,
+  "gift2": false,
+  "verdict": "Wall",
+  "all_vals": [
+   20.119999999999997
+  ],
+  "wall": 120.5,
+  "job": [
+   "context",
+   6,
+   120,
+   0,
+   [
+    "Lockdown",
+    "Bucket Brigade"
+   ]
+  ]
  }
 }
