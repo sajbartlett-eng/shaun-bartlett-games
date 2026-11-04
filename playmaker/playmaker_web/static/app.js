@@ -28,6 +28,7 @@ const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, kids = []) => {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;           // an absent attribute, never the string "null"
     if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v;
     else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
   }
@@ -205,6 +206,7 @@ function render() {
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+  if (s.placing) $('summary').textContent = `SETUP · the ${s.placing.side === 'O' ? 'offence' : 'defence'} places its pieces` + (s.placing.mine ? '' : s.placing.by_ai ? ' (the computer)' : ' · waiting for the other side');
   if (s.timer && s.timer.note) $('summary').textContent += ` · ${s.timer.note}`;
   if (s.timer && s.timer.note && s.timer.note !== lastTimerNote) announce(s.timer.note);
   lastTimerNote = s.timer ? s.timer.note : null;
@@ -299,10 +301,10 @@ function renderCourt() {
     const a = s.o[s.pending[0]], b = s.o[s.pending[1]];
     c.append(svg('line', { x1: px(a.x) + S / 2, y1: py(a.y) + S / 2, x2: px(b.x) + S / 2, y2: py(b.y) + S / 2, stroke: '#7a4b00', 'stroke-width': 3, 'stroke-dasharray': '3 3' }));
   }
+  if (s.placing && s.placing.mine) { placementPieces(c); placementTargets(c); return; }
   for (const p of s.o) drawO(c, p);
   for (const p of s.x) drawX(c, p);
   drawTargets(c);
-  placementTargets(c);
 }
 
 // The printed board's court lines, fitted to the board art (grid units: u from column A's left edge,
@@ -338,18 +340,21 @@ function pieceLabel(side, p) {
   return bits.join(', ');
 }
 
-function pieceGroup(side, i) {
-  const p = (side === 'O' ? st.o : st.x)[i];
-  const acted = actedPieces().has(side + i);
-  const g = svg('g', { class: 'piece' + (sel.side === side && sel.i === i ? ' sel' : '') + (acted ? ' acted' : ''), tabindex: 0, role: 'button',
-    'aria-label': pieceLabel(side, p), 'aria-pressed': sel.side === side && sel.i === i ? 'true' : 'false' });
-  const choose = () => selectPiece(side, i);
+function pieceGroup(side, i, opts) {
+  opts = opts || {};
+  const p = opts.piece || (side === 'O' ? st.o : st.x)[i];
+  const acted = !opts.piece && actedPieces().has(side + i);
+  const on = opts.piece ? !!opts.selected : (sel.side === side && sel.i === i);
+  const g = svg('g', { class: 'piece' + (on ? ' sel' : '') + (acted ? ' acted' : '') + (opts.inert ? ' inert' : ''), tabindex: opts.inert ? -1 : 0, role: 'button',
+    'aria-label': opts.label || pieceLabel(side, p), 'aria-pressed': on ? 'true' : 'false' });
+  if (opts.inert) { g.removeAttribute('role'); g.removeAttribute('aria-pressed'); g.setAttribute('aria-hidden', 'true'); return g; }
+  const choose = opts.onClick || (() => selectPiece(side, i));
   g.addEventListener('click', choose); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
   return g;
 }
 
-function drawO(c, p) {
-  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('O', p.i);
+function drawO(c, p, opts) {
+  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('O', p.i, opts);
   if (p.screen) {
     const d = DIRS[p.screen.dir];
     g.append(svg('line', { x1: cx, y1: cy, x2: cx + d[0] * S * 0.62, y2: cy - d[1] * S * 0.62, stroke: '#111', 'stroke-width': 5 }));
@@ -368,8 +373,8 @@ function drawO(c, p) {
   c.append(g);
 }
 
-function drawX(c, p) {
-  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('X', p.i);
+function drawX(c, p, opts) {
+  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('X', p.i, opts);
   // the arrow: a wedge from the piece's edge reaching about a third of a square into the next square
   const d = DIRS[p.arrow], ux = d[0], uy = -d[1];
   const reach = S / 2 + S / 3;                                 // edge of this square + a third of the next
@@ -762,55 +767,129 @@ function rollerChip(r) {
   return el('span', { class: 'roller ' + (r === 'O' ? 'off' : 'def'), text: r === 'O' ? 'Offence rolls' : 'Defence rolls' });
 }
 
-let place = null;      // {side, squares: [], ball, arrows: []}
+let place = null;      // {side, squares: [sq or null] x5, ball, arrows: [d] x5, pick, orig}
+const sqXY = q => [COLS.indexOf(q[0]), Number(q.slice(1))];
+function placeInit(P) {
+  if (P.side === 'O') {
+    const squares = st.o.map(p => p.sq);
+    place = { side: 'O', squares, ball: st.o.findIndex(p => p.ball), arrows: [], pick: null, orig: squares.slice() };
+  } else {
+    const occ = new Set(P.offence || []);
+    const squares = st.x.map(p => (occ.has(p.sq) ? null : p.sq));
+    place = { side: 'X', squares, ball: null, arrows: st.x.map((p, i) => (squares[i] ? p.arrow : null)), pick: null, orig: st.x.map(p => p.sq) };
+  }
+}
+function placeOpen(P) {
+  // the squares a piece may move to: empty of the placing side's other pieces (and, for the defence, of the offence)
+  const mine = new Set(place.squares.filter((q, i) => q && i !== place.pick));
+  return P.squares.filter(q => !mine.has(q));
+}
+function placeMove(i, q) {
+  place.squares[i] = q;
+  if (place.side === 'X') place.arrows[i] = defaultArrow(q);
+  place.pick = null;
+  renderPlacement(); renderCourt();
+  announce(`${place.side}${i + 1} moved to ${q}.`);
+}
+function placePick(i) {
+  place.pick = place.pick === i ? null : i;
+  renderPlacement(); renderCourt();
+}
+function placeProblem(P) {
+  const who = place.side;
+  const missing = place.squares.map((q, i) => (q ? null : `${who}${i + 1}`)).filter(Boolean);
+  if (missing.length) return `Place ${missing.join(', ')}: ${missing.length === 1 ? 'its square is' : 'their squares are'} taken by the offence.`;
+  if (new Set(place.squares).size !== 5) return 'Two pieces share a square.';
+  if (who === 'O' && (place.ball == null || !P.ball_squares.includes(place.squares[place.ball])))
+    return 'Choose who has the ball: a player on plain wood beyond the three-point tiles.';
+  if (who === 'X' && place.arrows.some(a => a == null)) return 'Set every arrow.';
+  return null;
+}
 function renderPlacement() {
   const s = st, P = s.placing;
   $('selected').textContent = ''; $('kindButtons').innerHTML = ''; $('targetButtons').innerHTML = ''; $('sideButtons').innerHTML = '';
-  if (!place || place.side !== P.side) place = { side: P.side, squares: [], ball: null, arrows: [] };
   const who = P.side === 'O' ? 'Offence' : 'Defence';
-  if (!P.mine) { $('selected').textContent = P.by_ai ? `The computer is placing the ${who.toLowerCase()}.` : `Waiting: the ${who.toLowerCase()} is placing.`; return; }
-  const k = place.squares.length;
-  if (k < 5) $('selected').textContent = `${who} setup: place ${P.side}${k + 1}. Click a highlighted square.` + (P.side === 'O' ? ' The ball must start on a player on plain wood beyond the three-point tiles (outlined).' : ' Defenders go on empty squares.');
-  else if (P.side === 'O' && place.ball == null) $('selected').textContent = 'Choose who has the ball (on plain wood beyond the three-point tiles):';
-  else if (P.side === 'X') $('selected').textContent = 'Set each arrow, then confirm:';
+  if (!P.mine) { place = null; $('selected').textContent = P.by_ai ? `The computer is placing the ${who.toLowerCase()}.` : `Waiting: the ${who.toLowerCase()} is placing.`; return; }
+  if (!place || place.side !== P.side) placeInit(P);
+  const k = place.pick;
+  $('selected').textContent = k == null
+    ? `${who} setup: tap one of your players, then tap its new square. ${P.side === 'O' ? 'Then choose who has the ball.' : 'Then set the arrows.'}`
+    : `Moving ${P.side}${k + 1}${place.squares[k] ? ` (now on ${place.squares[k]})` : ''}: tap a highlighted square, or tap ${P.side}${k + 1} again to leave it.`;
   const tb = $('targetButtons');
-  if (k === 5 && P.side === 'O') {
-    place.squares.forEach((q, i) => { if (P.ball_squares.includes(q)) tb.append(el('button', { class: place.ball === i ? 'active' : '', text: `Ball to O${i + 1} (${q})`, onclick: () => { place.ball = i; renderPlacement(); renderCourt(); } })); });
+  // every piece as a button (phones, keyboards), and the open squares as a list when one is picked
+  tb.append(el('div', { class: 'buttons' }, place.squares.map((q, i) => el('button', { class: k === i ? 'active' : '', 'aria-pressed': k === i ? 'true' : 'false',
+    text: `${P.side}${i + 1} ${q ? 'on ' + q : '(needs a square)'}`, onclick: () => placePick(i) }))));
+  if (k != null) {
+    const pick = el('select', { id: 'placeSq', 'aria-label': `New square for ${P.side}${k + 1}` }, [el('option', { value: '', text: 'Choose a square…' }),
+      ...placeOpen(P).map(q => el('option', { value: q, text: q + (P.side === 'O' && P.ball_squares.includes(q) ? ' (ball allowed)' : '') }))]);
+    pick.onchange = () => { if (pick.value) placeMove(k, pick.value); };
+    tb.append(el('label', {}, [`Move ${P.side}${k + 1} to `, pick]));
   }
-  if (k === 5 && P.side === 'X') {
-    place.squares.forEach((q, i) => { tb.append(el('div', {}, [el('span', { text: `X${i + 1} on ${q}: ` }), ...DIRN.map((n, d) => el('button', { class: place.arrows[i] === d ? 'active' : '', text: n, onclick: () => { place.arrows[i] = d; renderPlacement(); renderCourt(); } }))])); });
+  if (P.side === 'O') {
+    tb.append(el('div', { class: 'buttons' }, [el('span', { text: 'Ball: ' }), ...place.squares.map((q, i) => (q && P.ball_squares.includes(q)) ?
+      el('button', { class: place.ball === i ? 'active' : '', text: `O${i + 1} (${q})`, onclick: () => { place.ball = i; renderPlacement(); renderCourt(); } }) : null)]));
+  } else {
+    const arrows = el('div', { class: 'arrowpicks' });
+    place.squares.forEach((q, i) => {
+      if (!q) return;
+      const sel = el('select', { 'aria-label': `X${i + 1} on ${q}: arrow direction` }, DIRN.map((n, d) => el('option', { value: d, text: n })));
+      sel.value = String(place.arrows[i]);
+      sel.onchange = () => { place.arrows[i] = Number(sel.value); renderPlacement(); renderCourt(); };
+      arrows.append(el('label', {}, [`X${i + 1} faces `, sel]));
+    });
+    tb.append(arrows);
   }
-  const ready = k === 5 && (P.side === 'O' ? place.ball != null : place.arrows.filter(a => a != null).length === 5);
-  $('sideButtons').append(
-    el('button', { class: 'primary', text: `Confirm the ${who.toLowerCase()} setup`, disabled: ready ? null : 'disabled', onclick: confirmPlacement }),
+  const problem = placeProblem(P);
+  const confirm = el('button', { class: 'primary', text: `Confirm the ${who.toLowerCase()} setup`, onclick: confirmPlacement });
+  if (problem) confirm.setAttribute('disabled', 'disabled');
+  $('sideButtons').append(confirm,
     el('button', { text: 'Start again', onclick: () => { place = null; renderPlacement(); renderCourt(); } }),
-    el('button', { text: 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }));
-  if (!ready) $('sideButtons').firstChild.setAttribute('disabled', 'disabled');
+    el('button', { text: 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }),
+    ...(problem ? [el('p', { class: 'note', role: 'status', text: problem })] : []));
 }
 async function confirmPlacement() {
+  if (!place || placeProblem(st.placing)) return;
   try {
     const body = { code: G.code, token: G.token, squares: place.squares };
     if (place.side === 'O') body.ball = place.ball; else body.arrows = place.arrows;
     const r = await api('/api/place', body); place = null; st = r.state; render();
+    announce(`${r.state.placing ? 'Offence placed. The defence places next.' : 'Setup confirmed.'}`);
   } catch (e) { $('error').textContent = e.message; }
 }
-function placementTargets(c) {
-  const P = st.placing; if (!P || !P.mine || !place) return;
-  const taken = new Set(place.squares);
-  for (const q of P.squares) {
-    if (taken.has(q) || place.squares.length >= 5) continue;
-    const x = COLS.indexOf(q[0]), y = Number(q.slice(1));
-    const r = svg('rect', { class: 'target' + (P.side === 'O' && P.ball_squares.includes(q) ? ' ballsq' : ''), x: px(x) + 3, y: py(y) + 3, width: S - 6, height: S - 6, rx: 5, tabindex: 0, role: 'button', 'aria-label': `place on ${q}` });
-    const fn = () => { place.squares.push(q); if (place.side === 'X') place.arrows.push(defaultArrow(q)); renderPlacement(); renderCourt(); };
-    r.addEventListener('click', fn); r.addEventListener('keydown', e => { if (e.key === 'Enter') fn(); });
-    c.append(r);
+function placementPieces(c) {
+  const P = st.placing;
+  if (!place || place.side !== P.side) placeInit(P);
+  // where each moved piece started: a faint dashed ring, not a second piece
+  place.orig.forEach((q, i) => {
+    if (!q || q === place.squares[i]) return;
+    const [x, y] = sqXY(q);
+    const g = svg('g', { class: 'ghost', 'aria-hidden': 'true' });
+    g.append(svg('circle', { cx: px(x) + S / 2, cy: py(y) + S / 2, r: 14 }));
+    const t = svg('text', { x: px(x) + S / 2, y: py(y) + S / 2 + 5, 'text-anchor': 'middle' }); t.textContent = i + 1; g.append(t);
+    c.append(g);
+  });
+  if (P.side === 'X') {          // the offence as placed, fixed while the defence sets up
+    (P.offence || []).forEach((q, i) => { const [x, y] = sqXY(q); { const op = { ...st.o[i], sq: q, x, y, ball: i === P.ball, screen: null, locked: false }; drawO(c, op, { piece: op, inert: true }); } });
   }
   place.squares.forEach((q, i) => {
-    const x = COLS.indexOf(q[0]), y = Number(q.slice(1));
-    const t = svg('text', { x: px(x) + S / 2, y: py(y) + S / 2 + 6, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 'bold', fill: P.side === 'X' ? '#fff' : '#000' });
-    c.append(svg('circle', { cx: px(x) + S / 2, cy: py(y) + S / 2, r: 14, fill: P.side === 'X' ? '#1a1a1a' : '#fff', stroke: '#333', 'stroke-width': 2, 'stroke-dasharray': '3 2' }));
-    t.textContent = i + 1; c.append(t);
+    if (!q) return;
+    const [x, y] = sqXY(q);
+    const base = (place.side === 'O' ? st.o : st.x)[i];
+    const p = { ...base, sq: q, x, y, screen: null, locked: false, ball: place.side === 'O' && i === place.ball, arrow: place.side === 'X' ? place.arrows[i] : base.arrow };
+    const label = `${place.side}${i + 1}, ${base.card.role}, on ${q}${p.ball ? ', has the ball' : ''}. ${place.pick === i ? 'Selected: choose its new square.' : 'Select to move.'}`;
+    (place.side === 'O' ? drawO : drawX)(c, p, { piece: p, selected: place.pick === i, label, onClick: () => placePick(i) });
   });
+}
+function placementTargets(c) {
+  const P = st.placing; if (!P || !P.mine || !place || place.pick == null) return;
+  for (const q of placeOpen(P)) {
+    if (q === place.squares[place.pick]) continue;
+    const [x, y] = sqXY(q);
+    const r = svg('rect', { class: 'target' + (P.side === 'O' && P.ball_squares.includes(q) ? ' ballsq' : ''), x: px(x) + 3, y: py(y) + 3, width: S - 6, height: S - 6, rx: 5, tabindex: 0, role: 'button', 'aria-label': `move ${P.side}${place.pick + 1} to ${q}` });
+    const fn = () => placeMove(place.pick, q);
+    r.addEventListener('click', fn); r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+    c.insertBefore(r, c.querySelector('g.piece') || null);
+  }
 }
 function defaultArrow(q) {
   const o = st.placing.offence || []; const x = COLS.indexOf(q[0]), y = Number(q.slice(1));
