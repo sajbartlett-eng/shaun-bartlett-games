@@ -2054,6 +2054,113 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 }
 .btn-primary-sm:hover { background: #1a140a; }
 
+/* Chapter Zero: the guided first estate. */
+.welcome-actions .btn-secondary { width: 100%; margin-top: 8px; }
+.tutorial-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    padding: 8px 12px;
+    border: 1px dashed var(--gold);
+    border-radius: 4px;
+    background: var(--gold-soft);
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+}
+.tutorial-strip .tutorial-tag {
+    font-family: var(--hand);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+}
+.tutorial-strip .p1 { color: var(--p1); font-weight: 600; }
+.tutorial-strip .p2 { color: var(--p2); font-weight: 600; }
+.tutorial-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.tutorial-modal { width: min(600px, 100%); }
+.tutorial-modal .tutorial-facts {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    gap: 8px;
+}
+.tutorial-modal .tutorial-facts li {
+    padding: 6px 10px;
+    border-left: 2px solid var(--paper-edge);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+}
+.tutorial-modal .tutorial-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 6px 0 12px;
+}
+.tutorial-modal .tutorial-score {
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1.5px solid var(--paper-edge);
+    background: rgba(232, 219, 192, 0.5);
+}
+.tutorial-modal .tutorial-score.a { border-color: var(--plot-a); }
+.tutorial-modal .tutorial-score.b { border-color: var(--plot-b); }
+.tutorial-modal .tutorial-score .label {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.tutorial-modal .tutorial-score .value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.1;
+}
+.tutorial-modal .tutorial-score .detail { font-size: 12px; line-height: 1.4; color: var(--ink-soft); }
+.tutorial-modal .tutorial-referee {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    background: rgba(243, 234, 217, 0.72);
+}
+.tutorial-modal .tutorial-referee .eyebrow { margin-bottom: 2px; }
+.tutorial-modal .tutorial-referee p { margin: 6px 0; }
+.tutorial-modal .tutorial-rounds {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 14px;
+}
+.tutorial-modal .tutorial-rounds th,
+.tutorial-modal .tutorial-rounds td {
+    text-align: left;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--paper-edge);
+}
+.tutorial-modal .tutorial-rounds th {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.tutorial-modal .tutorial-bridge { font-size: 13px; color: var(--ink-faint); }
+.tutorial-modal .actions .btn-secondary { width: 100%; }
+
 .site-credit {
     padding-top: 4px;
     border-top: 1px solid rgba(205, 187, 150, 0.72);
@@ -2399,6 +2506,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <span>Extra rules active ·</span>
         <button type="button" class="phase-primer-link" id="phasePrimerRulesBtn">How to Play</button>
     </aside>
+    <aside id="tutorialStrip" class="tutorial-strip" hidden aria-live="polite" aria-label="Chapter Zero"></aside>
     <div class="board-wrap">
         <div class="loss-layer" id="boardLosses" hidden></div>
         <canvas id="gameCanvas" width="600" height="600" tabindex="0" aria-label="Estate board">Interactive estate board. Use the keyboard instructions in the phase status if canvas rendering is unavailable.</canvas>
@@ -2419,6 +2527,12 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <span class="whatif-label">What if?</span>
             <button class="btn btn-undo" id="whatifResetBtn">Reset cut</button>
             <button class="btn btn-primary-sm" id="whatifDoneBtn">Done</button>
+        </div>
+        <div class="tutorial-bar" id="tutorialBar" style="display:none;" aria-label="Chapter Zero result controls">
+            <span class="whatif-label">Chapter Zero</span>
+            <button class="btn btn-undo" id="tutorialFairestBtn" type="button" aria-pressed="false" disabled>Show fairest fence</button>
+            <button class="btn btn-undo" id="tutorialResultBtn" type="button">Result</button>
+            <button class="btn btn-primary-sm" id="tutorialNextBtn" type="button">Swap chairs</button>
         </div>
         <div class="history-control" id="historyControl" style="display:none;">
             <button class="btn btn-history" id="historyToggleBtn" type="button" aria-pressed="false">
@@ -2516,6 +2630,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         </div>
         <div class="welcome-actions">
             <button class="btn-primary" id="welcomeContinueBtn">Set up your game</button>
+            <button class="btn-secondary" id="welcomeTutorialBtn">Learn by playing · Chapter Zero</button>
         </div>
         <div class="setup-link-row"><button class="btn-ghost" id="welcomeRulesBtn">How to play</button></div>
         <div class="welcome-credit">Designed by <strong>Shaun Bartlett</strong> · © 2026</div>
@@ -2773,6 +2888,19 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <div class="actions">
             <button class="btn-primary" id="passContinueBtn">Continue</button>
         </div>
+    </div>
+</div>
+
+<div class="overlay" id="tutorialOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="tutorialTitle">
+    <div class="modal tutorial-modal">
+        <div class="eyebrow" id="tutorialEyebrow">Chapter Zero</div>
+        <h2 id="tutorialTitle">One small estate</h2>
+        <div class="body" id="tutorialBody"></div>
+        <div class="actions">
+            <button class="btn-primary" id="tutorialPrimaryBtn">Continue</button>
+            <button class="btn-secondary" id="tutorialSecondaryBtn" hidden>Look at the board</button>
+        </div>
+        <div class="setup-link-row"><button class="btn-ghost" id="tutorialGhostBtn" hidden>Play Chapter Zero again</button></div>
     </div>
 </div>
 
@@ -3074,6 +3202,7 @@ const PHASE = {
 };
 
 const DEFAULT_SETTINGS = Object.freeze({
+    tutorial: false,
     randomAssets: false,
     irregular: true,
     landTemplate: 'standard',
@@ -3099,7 +3228,7 @@ const PHASE_TRANSITIONS = Object.freeze({
     [PHASE.CHOOSE]:         [PHASE.FAIRNESS_OFFER, PHASE.FINAL],
     [PHASE.FAIRNESS_OFFER]: [PHASE.CHALLENGE, PHASE.FINAL],
     [PHASE.CHALLENGE]:      [PHASE.FINAL],
-    [PHASE.FINAL]:          [PHASE.WHAT_IF],
+    [PHASE.FINAL]:          [PHASE.WHAT_IF, PHASE.PASS_TO_CUT],
     [PHASE.WHAT_IF]:        [PHASE.FINAL],
 });
 
@@ -3191,6 +3320,7 @@ const GAME = {
     },
 
     timeLimit(baseSeconds, settings = {}) {
+        if (settings.tutorial) return 0;
         return settings.lightning ? Math.max(1, Math.ceil(baseSeconds / 2)) : baseSeconds;
     },
 
@@ -5503,6 +5633,30 @@ const RENDER = (() => {
         ctx.restore();
     }
 
+    function drawTutorialGhost() {
+        // Chapter Zero: the fairest fence the solver found, shown on request.
+        if (viewState !== STATE) return;
+        const edges = TUTORIAL.ghostEdges();
+        if (!edges || !edges.length) return;
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(244, 237, 224, 0.95)';
+        ctx.lineWidth = 7;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        edges.forEach(k => {
+            const [a, b] = k.split('-').map(s => s.split(',').map(Number));
+            ctx.moveTo(m + a[0] * s, m + a[1] * s);
+            ctx.lineTo(m + b[0] * s, m + b[1] * s);
+        });
+        ctx.stroke();
+        ctx.strokeStyle = '#825616';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([9, 7]);
+        ctx.stroke();
+        ctx.restore();
+    }
+
     function plotLabelPoint(cells) {
         if (!cells.length) return null;
         const meanC = cells.reduce((sum, p) => sum + p.c, 0) / cells.length;
@@ -5523,7 +5677,8 @@ const RENDER = (() => {
 
     function drawPlotLabels() {
         if (!viewState.isCutComplete) return;
-        if (![PHASE.CHOOSE, PHASE.CHALLENGE, PHASE.WHAT_IF].includes(viewState.phase)) return;
+        const tutorialResult = viewState.phase === PHASE.FINAL && !!(viewState.settings && viewState.settings.tutorial);
+        if (![PHASE.CHOOSE, PHASE.CHALLENGE, PHASE.WHAT_IF].includes(viewState.phase) && !tutorialResult) return;
 
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         const labels = [
@@ -5690,6 +5845,7 @@ const RENDER = (() => {
         drawMeaningfulMarks();
         drawChallengeGhost();
         drawCut();
+        drawTutorialGhost();
         drawPlotLabels();
         drawCutNodes();
         drawKeyboardCursor();
@@ -6633,10 +6789,24 @@ const UI = {
         winnerBanner:        document.getElementById('winnerBanner'),
         finalPlayAgainBtn:   document.getElementById('finalPlayAgainBtn'),
         whatIfBtn:           document.getElementById('whatIfBtn'),
+
+        welcomeTutorialBtn:  document.getElementById('welcomeTutorialBtn'),
+        tutorialStrip:       document.getElementById('tutorialStrip'),
+        tutorialBar:         document.getElementById('tutorialBar'),
+        tutorialFairestBtn:  document.getElementById('tutorialFairestBtn'),
+        tutorialResultBtn:   document.getElementById('tutorialResultBtn'),
+        tutorialNextBtn:     document.getElementById('tutorialNextBtn'),
+        tutorialOverlay:     document.getElementById('tutorialOverlay'),
+        tutorialEyebrow:     document.getElementById('tutorialEyebrow'),
+        tutorialTitle:       document.getElementById('tutorialTitle'),
+        tutorialBody:        document.getElementById('tutorialBody'),
+        tutorialPrimaryBtn:  document.getElementById('tutorialPrimaryBtn'),
+        tutorialSecondaryBtn: document.getElementById('tutorialSecondaryBtn'),
+        tutorialGhostBtn:    document.getElementById('tutorialGhostBtn'),
     },
 
     overlayKeys: ['welcomeOverlay','setupOverlay','rulesOverlay','restartOverlay','rpsOverlay','meaningfulOverlay','passOverlay',
-                  'fairnessOverlay','finalOverlay','revealOverlay','addChallengeOverlay','twistOverlay'],
+                  'fairnessOverlay','finalOverlay','revealOverlay','addChallengeOverlay','twistOverlay','tutorialOverlay'],
     overlayStack: [],
     toastTimer: null,
     toast(msg, kind = 'warn', ms = 1700) {
@@ -7360,7 +7530,8 @@ const UI = {
     refreshTimer() {
         const s = STATE;
         const e = this.el;
-        const showTimer = [PHASE.BUILD, PHASE.CUT, PHASE.CHOOSE, PHASE.CHALLENGE].includes(s.phase);
+        const showTimer = [PHASE.BUILD, PHASE.CUT, PHASE.CHOOSE, PHASE.CHALLENGE].includes(s.phase)
+            && s.maxPhaseTime > 0;
         e.timerText.hidden = !showTimer;
         e.timeBarFill.parentElement.hidden = !showTimer;
         if (showTimer) {
@@ -7528,7 +7699,7 @@ const UI = {
                         ? 'Land is 1; restricted rock and woodland are 0; pieces add their shown value.'
                         : 'Land is 1; pieces add their shown value.');
                 const phaseHint = firstMove
-                    ? `Tap an empty square to begin · ${GAME.timeLimit(CONFIG.BUILD_TIME, s.settings)}s. ${baseValueHint}`
+                    ? `Tap an empty square to begin · ${GAME.timeLimit(CONFIG.BUILD_TIME, s.settings) ? `${GAME.timeLimit(CONFIG.BUILD_TIME, s.settings)}s` : 'untimed'}. ${baseValueHint}`
                     : [hint, `${remaining} ${remaining === 1 ? 'placement' : 'placements'} left`].filter(Boolean).join(' · ');
 
                 const ownFuture = s.pool.filter((kind, index) => index > 0 && index % 2 === 0);
@@ -7739,6 +7910,7 @@ const UI = {
             e.scoreReadout.style.display = 'none';
         }
 
+        TUTORIAL.refresh();
         this.refreshPrimer();
         ESTATE_REVIEW.refresh();
     },
@@ -7803,6 +7975,13 @@ const FLOW = {
     },
 
     startTimer(seconds) {
+        if (seconds <= 0) {
+            FLOW.stopTimer();
+            STATE.timer = 0;
+            STATE.maxPhaseTime = 0;
+            UI.refreshTimer();
+            return;
+        }
         STATE.timer = seconds;
         STATE.maxPhaseTime = seconds;
         STATE.timerPauseReasons.clear();
@@ -7840,6 +8019,7 @@ const FLOW = {
     },
 
     resetToSetup({ showWelcome = false } = {}) {
+        TUTORIAL.reset();
         MATCH_MENU.resetStaging();
         ESTATE_REVIEW.reset();
         if (MATCH_MENU.base) STATE.settings = { ...MATCH_MENU.base };
@@ -7912,13 +8092,15 @@ const FLOW = {
 
     startGame() {
         if (STATE.phase !== PHASE.SETUP) return;
-        MATCH_MENU.base = MATCH_MENU.persistent(STATE.settings);
+        if (!STATE.settings.tutorial) MATCH_MENU.base = MATCH_MENU.persistent(STATE.settings);
         STATE.pNames[0] = playerName(UI.el.inputP1.value, 0);
         STATE.pNames[1] = playerName(UI.el.inputP2.value, 1);
         GAME.configureBoard(STATE.settings.irregular);
         const landTemplate = STATE.settings.landTemplate || 'standard';
         MATCH_MENU.markTemplateSeen(landTemplate);
-        STATE.estateMask = GAME.buildEstateMask(STATE.settings.irregular, STATE.rng, landTemplate);
+        STATE.estateMask = STATE.settings.tutorial
+            ? TUTORIAL.estateMask()
+            : GAME.buildEstateMask(STATE.settings.irregular, STATE.rng, landTemplate);
         STATE.grid = GAME.emptyGrid();
         STATE.terrain = landTemplate !== 'standard'
             ? GAME.buildLandTemplate(landTemplate, STATE.rng, STATE.estateMask)
@@ -7928,7 +8110,9 @@ const FLOW = {
         STATE.placedBy = GAME.emptyGrid();
         STATE.showPlacementHistory = false;
         STATE.meaningful = { picks: [null, null], skipped: [false, false], turn: 0, pending: null };
-        STATE.pool = GAME.buildAssetPool(STATE.settings.randomAssets, STATE.rng, landTemplate);
+        STATE.pool = STATE.settings.tutorial
+            ? TUTORIAL.assetPool()
+            : GAME.buildAssetPool(STATE.settings.randomAssets, STATE.rng, landTemplate);
         if (STATE.settings.rocks) {
             const reserveSlots = CONFIG.PLACEMENT_COUNT
                 + (STATE.settings.terrain ? CONFIG.TERRAIN_PLACEMENT.length : 0);
@@ -8032,7 +8216,9 @@ const FLOW = {
             );
         }
 
-        if (STATE.settings.meaningful) {
+        if (STATE.settings.tutorial) {
+            TUTORIAL.assignRoles();
+        } else if (STATE.settings.meaningful) {
             FLOW.beginMeaningful();
         } else if (STATE.settings.open) {
             FLOW.passToCut();
@@ -8156,7 +8342,8 @@ const FLOW = {
     },
 
     passToCut() {
-        if (![PHASE.RPS_POST, PHASE.BUILD, PHASE.MEANINGFUL].includes(STATE.phase)) return;
+        if (![PHASE.RPS_POST, PHASE.BUILD, PHASE.MEANINGFUL].includes(STATE.phase)
+            && !(STATE.settings.tutorial && STATE.phase === PHASE.FINAL)) return;
         FLOW.stopTimer();
         STATE.cutNodes = [];
         STATE.cutEdges = [];
@@ -8173,6 +8360,7 @@ const FLOW = {
             <p><strong>${GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings)} seconds.</strong> If time runs out, ${STATE.settings.irregular ? 'the bank makes a simple straight division.' : 'the bank splits the estate straight down the middle.'}</p>
         `;
         UI.el.passContinueBtn.textContent = `Start cutting · ${GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings)}s`;
+        if (STATE.settings.tutorial) TUTORIAL.decoratePass('cut');
         if (FLOW.transition(PHASE.PASS_TO_CUT)) UI.open('passOverlay');
     },
 
@@ -8220,6 +8408,7 @@ const FLOW = {
             <p><strong>${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds.</strong> If you do not choose, the Cutter gets the same ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds to choose instead.</p>
         `;
         UI.el.passContinueBtn.textContent = `Choose · ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)}s`;
+        if (STATE.settings.tutorial) TUTORIAL.decoratePass('choose');
         if (FLOW.transition(PHASE.PASS_TO_CHOOSE)) UI.open('passOverlay');
     },
 
@@ -8292,6 +8481,11 @@ const FLOW = {
             betterTogether: STATE.settings.betterTogether,
             terrain: STATE.terrain, estateMask: STATE.estateMask,
         });
+
+        if (STATE.settings.tutorial) {
+            TUTORIAL.roundComplete();
+            return;
+        }
 
         const scoreA = STATE.outcome.scoreA.total;
         const scoreB = STATE.outcome.scoreB.total;
@@ -9349,6 +9543,572 @@ UI.renderFinalScoreboard = function () {
         </div>`;
 };
 
+// ---------------------------------------------------------------------------
+// SOLVER: the referee. Finds the smallest score gap any legal fence could
+// produce on an estate, by checking every division the rules allow.
+//
+// A legal fence splits the estate into exactly two plots. Each plot is a
+// connected group of squares, and the boundary between them is one path from
+// the outside edge to the outside edge. Every such division can be drawn as a
+// fence, and every fence produces such a division, so searching divisions is
+// the same as searching fences.
+//
+// The search grows every connected plot that contains the top-left square,
+// visiting each one exactly once (candidates are processed in order and then
+// excluded, so no plot is reached by two routes). For each plot it checks that
+// the remainder is also connected and that the shared boundary is a single
+// edge-to-edge path. The result is exact, not sampled. Work is sliced across
+// frames so the page never freezes; the estate must have MAX_CELLS squares or
+// fewer, which covers the Chapter Zero estate (24).
+// ---------------------------------------------------------------------------
+const SOLVER = {
+    MAX_CELLS: 28,
+    SLICE_MS: 9,
+    generation: 0,
+
+    cancel() { this.generation++; },
+
+    fairestDivision({ grid, estateMask, settings = {}, terrain = null, onProgress = null, onDone }) {
+        const gen = ++this.generation;
+        const cells = GAME.activeCells(estateMask);
+        const n = cells.length;
+        if (n < 2 || n > this.MAX_CELLS) { onDone(null); return; }
+
+        const index = new Map(cells.map((p, i) => [`${p.c},${p.r}`, i]));
+        const nb = new Int32Array(n);
+        const value = new Int32Array(n);
+        const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        cells.forEach((p, i) => {
+            dirs.forEach(([dc, dr]) => {
+                const j = index.get(`${p.c + dc},${p.r + dr}`);
+                if (j !== undefined) nb[i] |= (1 << j);
+            });
+            const asset = grid[p.r][p.c];
+            value[i] = (GAME.isRestrictedKind(asset) ? 0 : 1) + (CONFIG.ASSET_VALUE[asset] || 0);
+        });
+
+        const ALL = (1 << n) - 1;
+        const idxOf = b => 31 - Math.clz32(b);
+        const bitsToCells = mask => {
+            const out = [];
+            let f = mask;
+            while (f) { const b = f & -f; f ^= b; out.push(cells[idxOf(b)]); }
+            return out;
+        };
+        const connected = mask => {
+            let seen = mask & -mask;
+            let frontier = seen;
+            while (frontier) {
+                let next = 0, f = frontier;
+                while (f) { const b = f & -f; f ^= b; next |= nb[idxOf(b)]; }
+                next &= mask & ~seen;
+                seen |= next;
+                frontier = next;
+            }
+            return seen === mask;
+        };
+        // Plain land and asset values add up square by square. Terrain and
+        // Better Together depend on the division itself, so those estates are
+        // scored with the game's own scorer instead.
+        const simpleValues = !GAME.hasDynamicValue(settings) && !terrain;
+        const plotValue = mask => {
+            let v = 0, f = mask;
+            while (f) { const b = f & -f; f ^= b; v += value[idxOf(b)]; }
+            return v;
+        };
+        const scores = A => {
+            if (simpleValues) {
+                const a = plotValue(A);
+                return { a, b: total - a };
+            }
+            const sA = GAME.scorePlot(bitsToCells(A), grid, settings.betterTogether, terrain, estateMask).total;
+            const sB = GAME.scorePlot(bitsToCells(ALL & ~A), grid, settings.betterTogether, terrain, estateMask).total;
+            return { a: sA, b: sB };
+        };
+        const total = plotValue(ALL);
+
+        const nodeW = CONFIG.GRID + 1;
+        const degree = new Int16Array(nodeW * nodeW);
+        const touched = [];
+        const boundary = A => {
+            // Edges between the two plots must form one simple path whose two
+            // ends sit on the outside edge of the estate.
+            touched.length = 0;
+            const edges = [];
+            const addEdge = (a, b) => {
+                edges.push(GAME.edgeKey(a, b));
+                for (const node of [a, b]) {
+                    const k = node.r * nodeW + node.c;
+                    if (degree[k] === 0) touched.push(k);
+                    degree[k]++;
+                }
+            };
+            let f = A;
+            while (f) {
+                const b = f & -f; f ^= b;
+                const p = cells[idxOf(b)];
+                const other = (dc, dr) => {
+                    const j = index.get(`${p.c + dc},${p.r + dr}`);
+                    return j !== undefined && !(A & (1 << j));
+                };
+                if (other(1, 0))  addEdge({ c: p.c + 1, r: p.r }, { c: p.c + 1, r: p.r + 1 });
+                if (other(-1, 0)) addEdge({ c: p.c, r: p.r }, { c: p.c, r: p.r + 1 });
+                if (other(0, 1))  addEdge({ c: p.c, r: p.r + 1 }, { c: p.c + 1, r: p.r + 1 });
+                if (other(0, -1)) addEdge({ c: p.c, r: p.r }, { c: p.c + 1, r: p.r });
+            }
+            let ends = 0, ok = true;
+            for (const k of touched) {
+                const d = degree[k];
+                if (d > 2) ok = false;
+                else if (d === 1) {
+                    ends++;
+                    const node = { c: k % nodeW, r: Math.floor(k / nodeW) };
+                    if (!GAME.isBorderNode(node, estateMask)) ok = false;
+                }
+                degree[k] = 0;
+            }
+            return ok && ends === 2 ? edges : null;
+        };
+
+        const S = new Int32Array(n + 1), X = new Int32Array(n + 1), N = new Int32Array(n + 1), E = new Int32Array(n + 1);
+        let depth = 0;
+        S[0] = 1; X[0] = 0; N[0] = nb[0]; E[0] = N[0] & ~S[0];
+        let best = { gap: Infinity, count: 0, edges: null, a: 0, b: 0 };
+        let visited = 0;
+
+        const consider = A => {
+            visited++;
+            const B = ALL & ~A;
+            if (!B) return;
+            let sc = null;
+            if (simpleValues) {
+                sc = scores(A);
+                if (Math.abs(sc.a - sc.b) > best.gap) return;
+            }
+            if (!connected(B)) return;
+            const edges = boundary(A);
+            if (!edges) return;
+            if (!sc) sc = scores(A);
+            const gap = Math.abs(sc.a - sc.b);
+            if (gap > best.gap) return;
+            if (gap < best.gap) {
+                best = { gap, count: 1, edges, a: sc.a, b: sc.b };
+            } else {
+                best.count++;
+                if (edges.length < best.edges.length) best = { ...best, edges, a: sc.a, b: sc.b };
+            }
+        };
+
+        consider(S[0]);
+        const step = () => {
+            if (gen !== SOLVER.generation) return;
+            const deadline = performance.now() + SOLVER.SLICE_MS;
+            while (depth >= 0) {
+                if (E[depth] === 0) { depth--; continue; }
+                const v = E[depth] & -E[depth];
+                E[depth] ^= v;
+                const childS = S[depth] | v;
+                const childX = X[depth];
+                X[depth] |= v;
+                consider(childS);
+                const childN = N[depth] | nb[idxOf(v)];
+                depth++;
+                S[depth] = childS; X[depth] = childX; N[depth] = childN;
+                E[depth] = childN & ~childS & ~childX;
+                if ((visited & 511) === 0 && performance.now() > deadline) {
+                    if (onProgress) onProgress(visited);
+                    setTimeout(step, 0);
+                    return;
+                }
+            }
+            onDone(best.edges
+                ? { gap: best.gap, count: best.count, edges: best.edges, a: best.a, b: best.b, total, visited }
+                : null);
+        };
+        setTimeout(step, 0);
+    },
+};
+
+// ---------------------------------------------------------------------------
+// TUTORIAL: Chapter Zero. One small estate, untimed, played twice: the same
+// two siblings divide the same estate from both chairs. The game states what
+// the rules are and what happened. The solver reports what was possible. The
+// player draws every conclusion themselves.
+// ---------------------------------------------------------------------------
+const TUTORIAL = {
+    MASK_ROWS: ['......', '######', '######', '######', '######', '......'],
+    POOL: ['G', 'G', 'Y', 'Y', 'C', 'C'],
+    active: false,
+    round: 0,
+    rounds: [],
+    solver: { status: 'idle', result: null, visited: 0 },
+    showFairest: false,
+    actions: { primary: null, secondary: null, ghost: null },
+
+    get on() { return this.active && !!STATE.settings.tutorial; },
+
+    estateMask() { return this.MASK_ROWS.map(row => [...row].map(ch => ch === '#')); },
+    assetPool() { return [...this.POOL]; },
+
+    bind() {
+        const e = UI.el;
+        e.welcomeTutorialBtn.addEventListener('click', () => TUTORIAL.start());
+        e.tutorialPrimaryBtn.addEventListener('click', () => TUTORIAL.fire('primary'));
+        e.tutorialSecondaryBtn.addEventListener('click', () => TUTORIAL.fire('secondary'));
+        e.tutorialGhostBtn.addEventListener('click', () => TUTORIAL.fire('ghost'));
+        e.tutorialFairestBtn.addEventListener('click', () => TUTORIAL.toggleFairest());
+        e.tutorialResultBtn.addEventListener('click', () => { if (TUTORIAL.on && STATE.phase === PHASE.FINAL) TUTORIAL.showResult(); });
+        e.tutorialNextBtn.addEventListener('click', () => TUTORIAL.next());
+    },
+
+    fire(slot) {
+        const action = this.actions[slot];
+        if (typeof action === 'function') action();
+    },
+
+    reset() {
+        this.active = false;
+        this.round = 0;
+        this.rounds = [];
+        this.solver = { status: 'idle', result: null, visited: 0 };
+        this.showFairest = false;
+        SOLVER.cancel();
+        if (UI.el.tutorialStrip) UI.el.tutorialStrip.hidden = true;
+        if (UI.el.tutorialBar) UI.el.tutorialBar.style.display = 'none';
+    },
+
+    start() {
+        if (STATE.phase !== PHASE.SETUP) return;
+        this.reset();
+        UI.closeAllOverlays();
+        STATE.settings = { ...DEFAULT_SETTINGS, irregular: false, tutorial: true };
+        this.active = true;
+        this.round = 1;
+        FLOW.startGame();
+        if (STATE.phase !== PHASE.BUILD) { this.reset(); return; }
+        this.showIntro();
+    },
+
+    openCard({ eyebrow, title, body, primary, secondary = null, ghost = null }) {
+        const e = UI.el;
+        e.tutorialEyebrow.textContent = eyebrow;
+        e.tutorialTitle.textContent = title;
+        e.tutorialBody.innerHTML = body;
+        const slots = { primary, secondary, ghost };
+        for (const slot of ['primary', 'secondary', 'ghost']) {
+            const btn = e[`tutorial${slot[0].toUpperCase()}${slot.slice(1)}Btn`];
+            const spec = slots[slot];
+            btn.hidden = !spec;
+            btn.textContent = spec ? spec.label : '';
+            this.actions[slot] = spec ? spec.action : null;
+        }
+        if (UI.topOverlayKey() !== 'tutorialOverlay') UI.open('tutorialOverlay');
+        else UI.focusFirst(e.tutorialOverlay);
+    },
+
+    closeCard() {
+        UI.close('tutorialOverlay');
+        UI.focusBoard();
+    },
+
+    name(idx) {
+        return `<span class="${idx === 0 ? 'p1' : 'p2'}">${escapeHtml(STATE.pNames[idx])}</span>`;
+    },
+
+    showIntro() {
+        const pieces = `${GAME.assetName('G')} +${CONFIG.ASSET_VALUE.G}, ${GAME.assetName('Y')} +${CONFIG.ASSET_VALUE.Y} and ${GAME.assetName('C')} +${CONFIG.ASSET_VALUE.C}`;
+        this.openCard({
+            eyebrow: 'Chapter Zero',
+            title: 'One small estate',
+            body: `
+                <p>A short, untimed game on a small estate. Play both siblings yourself, or pass the phone.</p>
+                <ul class="tutorial-facts">
+                    <li><strong>Build.</strong> Take turns placing six pieces: a ${pieces} each. Every square of land is worth 1. Nobody knows yet who will cut and who will choose.</li>
+                    <li><strong>Cut.</strong> A coin toss sets the roles. The Cutter draws one fence from edge to edge.</li>
+                    <li><strong>Choose.</strong> The Chooser sees the fence, then keeps either plot. The Cutter keeps the other. The higher-value plot wins. A tie goes to the Cutter.</li>
+                </ul>
+                <p>Then swap chairs and divide the same estate again. At the end, the game checks every fence that could have been drawn and reports the smallest gap that was possible.</p>
+            `,
+            primary: { label: 'Start building', action: () => this.closeCard() },
+        });
+    },
+
+    assignRoles() {
+        if (STATE.phase !== PHASE.BUILD) return;
+        const cutterIdx = STATE.rng() < 0.5 ? 0 : 1;
+        STATE.cutterIdx = cutterIdx;
+        STATE.chooserIdx = 1 - cutterIdx;
+        STATE.roles.cutter = STATE.pNames[cutterIdx];
+        STATE.roles.chooser = STATE.pNames[1 - cutterIdx];
+        STATE.rpsWinnerIdx = -1;
+        this.solve();
+        FLOW.sync();
+        this.openCard({
+            eyebrow: 'Chapter Zero · the coin',
+            title: 'Roles are set',
+            body: `
+                <p>The coin lands. ${this.name(cutterIdx)} cuts. ${this.name(1 - cutterIdx)} chooses.</p>
+                <ul class="tutorial-facts">
+                    <li>The Cutter draws one fence from edge to edge.</li>
+                    <li>The Chooser sees the fence before picking a plot.</li>
+                    <li>Land is 1 per square. Pieces add their printed value. Scores stay hidden until the choice is made.</li>
+                    <li>A tie goes to the Cutter.</li>
+                </ul>
+            `,
+            primary: { label: 'Continue', action: () => { UI.close('tutorialOverlay'); FLOW.passToCut(); } },
+        });
+    },
+
+    decoratePass(kind) {
+        const e = UI.el;
+        const cutter = this.name(STATE.cutterIdx);
+        const chooser = this.name(STATE.chooserIdx);
+        e.passEyebrow.textContent = `Chapter Zero · round ${this.round} of 2`;
+        if (kind === 'cut') {
+            e.passTitle.textContent = `${STATE.roles.cutter} cuts`;
+            e.passBody.innerHTML = `
+                <p>Pass to ${cutter}.</p>
+                <p>Draw one fence from edge to edge. ${chooser} will see the fence before choosing a plot. A tie goes to you.</p>
+                <p><strong>Untimed.</strong> Take as long as you need.</p>
+            `;
+            e.passContinueBtn.textContent = 'Start cutting';
+        } else {
+            e.passTitle.textContent = `${STATE.roles.chooser} chooses`;
+            e.passBody.innerHTML = `
+                <p>Pass to ${chooser}.</p>
+                <p>Tap the plot you want to keep. ${cutter} keeps the other. Scores stay hidden until you choose.</p>
+                <p><strong>Untimed.</strong> Take as long as you need.</p>
+            `;
+            e.passContinueBtn.textContent = 'Choose';
+        }
+    },
+
+    solve() {
+        this.solver = { status: 'running', result: null, visited: 0 };
+        SOLVER.fairestDivision({
+            grid: STATE.grid,
+            estateMask: STATE.estateMask,
+            settings: STATE.settings,
+            terrain: STATE.terrain,
+            onProgress: visited => {
+                if (!this.on) return;
+                this.solver.visited = visited;
+                this.refresh();
+                if (UI.topOverlayKey() === 'tutorialOverlay' && STATE.phase === PHASE.FINAL) this.showResult();
+            },
+            onDone: result => {
+                if (!this.on) return;
+                this.solver = { status: result ? 'done' : 'unavailable', result, visited: result ? result.visited : this.solver.visited };
+                this.refresh();
+                RENDER.render();
+                if (UI.topOverlayKey() === 'tutorialOverlay' && STATE.phase === PHASE.FINAL) this.showResult();
+            },
+        });
+    },
+
+    roundComplete() {
+        if (STATE.phase !== PHASE.CHOOSE || !STATE.outcome) return;
+        FLOW.stopTimer();
+        const o = STATE.outcome;
+        this.rounds.push({
+            round: this.round,
+            cutterIdx: STATE.cutterIdx,
+            chooserIdx: STATE.chooserIdx,
+            edges: [...STATE.cutEdges],
+            a: o.scoreA.total,
+            b: o.scoreB.total,
+            gap: Math.abs(o.scoreA.total - o.scoreB.total),
+            chosenPlotId: STATE.chosenPlotId,
+            winnerRole: o.winnerRole,
+            winnerName: o.winnerName,
+        });
+        this.showFairest = false;
+        if (!FLOW.transition(PHASE.FINAL)) return;
+        SOUND.play('win');
+        this.showResult();
+    },
+
+    refereeText(playerGap) {
+        const s = this.solver;
+        if (s.status === 'running') {
+            return `<p>Checking every fence that could be drawn on this estate… <strong>${s.visited.toLocaleString()}</strong> divisions checked so far.</p>`;
+        }
+        if (s.status !== 'done' || !s.result) {
+            return '<p>This estate is too large to check every fence.</p>';
+        }
+        const r = s.result;
+        const odd = r.total % 2 === 1
+            ? `<p>The estate totals ${r.total}, an odd number, so no fence can make equal plots.</p>`
+            : '';
+        const reach = r.count === 1 ? 'One fence reaches it' : `${r.count.toLocaleString()} different fences reach it`;
+        const yours = playerGap == null ? ''
+            : playerGap === r.gap ? ' Yours is one of them.'
+            : ` Your fence left a gap of ${playerGap}.`;
+        return `${odd}<p>The smallest gap any fence could make here is <strong>${r.gap}</strong>. ${reach}.${yours}</p>`;
+    },
+
+    showResult() {
+        if (STATE.phase !== PHASE.FINAL) return;
+        const rec = this.rounds[this.rounds.length - 1];
+        if (!rec) return;
+        const o = STATE.outcome;
+        const last = this.round === 2;
+        const chooserPlot = rec.chosenPlotId;
+        const cutterPlot = chooserPlot === 'A' ? 'B' : 'A';
+        const ownerOf = id => (id === chooserPlot ? rec.chooserIdx : rec.cutterIdx);
+        const detail = sc => `Land ${sc.area} + pieces ${sc.assets}${sc.bonus ? ` + neighbours ${sc.bonus}` : ''}`;
+        const scoreCard = (id, sc) => `
+            <div class="tutorial-score ${id.toLowerCase()}">
+                <div class="label">Plot ${id}</div>
+                <div class="value">${sc.total}</div>
+                <div class="detail">${detail(sc)}<br>${this.name(ownerOf(id))}</div>
+            </div>`;
+        const outcomeLine = o.winnerRole && rec.a === rec.b
+            ? `Equal plots. The tie goes to the Cutter, ${this.name(rec.cutterIdx)}.`
+            : `${this.name(rec.winnerRole === 'cutter' ? rec.cutterIdx : rec.chooserIdx)} finishes with the higher-value plot, by ${rec.gap}.`;
+
+        let rounds = '';
+        let bridge = '';
+        if (last) {
+            const best = this.solver.result;
+            rounds = `
+                <table class="tutorial-rounds">
+                    <thead><tr><th>Round</th><th>Cutter</th><th>Plots</th><th>Gap</th></tr></thead>
+                    <tbody>
+                        ${this.rounds.map(r => `<tr><td>${r.round}</td><td>${this.name(r.cutterIdx)}</td><td>${r.a} · ${r.b}</td><td>${r.gap}</td></tr>`).join('')}
+                        ${best ? `<tr><td colspan="3">Smallest gap possible</td><td>${best.gap}</td></tr>` : ''}
+                    </tbody>
+                </table>`;
+            bridge = `<p class="tutorial-bridge">In the full game the estate is bigger, Rock, Paper, Scissors decides the roles, and each phase is timed: ${CONFIG.BUILD_TIME} seconds to build, ${CONFIG.CUT_TIME} to cut, ${CONFIG.CHOOSE_TIME} to choose.</p>`;
+        }
+
+        this.openCard({
+            eyebrow: `Chapter Zero · round ${this.round} of 2`,
+            title: last ? 'Same estate, other chair' : 'The division',
+            body: `
+                <div class="tutorial-scores">${scoreCard('A', o.scoreA)}${scoreCard('B', o.scoreB)}</div>
+                <p>${this.name(rec.chooserIdx)} took Plot ${chooserPlot}. ${this.name(rec.cutterIdx)} keeps Plot ${cutterPlot}.</p>
+                <p><strong>${outcomeLine}</strong></p>
+                <div class="tutorial-referee">
+                    <div class="eyebrow">every fence checked</div>
+                    ${this.refereeText(rec.gap)}
+                </div>
+                ${rounds}${bridge}
+            `,
+            primary: last
+                ? { label: 'Play the full game', action: () => this.exit() }
+                : { label: 'Swap chairs · divide it again', action: () => this.swapChairs() },
+            secondary: { label: 'Look at the board', action: () => this.closeCard() },
+            ghost: last ? { label: 'Play Chapter Zero again', action: () => this.replay() } : null,
+        });
+    },
+
+    swapChairs() {
+        if (!this.on || STATE.phase !== PHASE.FINAL || this.round !== 1) return;
+        this.round = 2;
+        this.showFairest = false;
+        const cutterIdx = STATE.chooserIdx;
+        STATE.cutterIdx = cutterIdx;
+        STATE.chooserIdx = 1 - cutterIdx;
+        STATE.roles.cutter = STATE.pNames[cutterIdx];
+        STATE.roles.chooser = STATE.pNames[1 - cutterIdx];
+        STATE.cutNodes = [];
+        STATE.cutEdges = [];
+        STATE.isCutComplete = false;
+        STATE.cutByBank = false;
+        STATE.plotA = [];
+        STATE.plotB = [];
+        STATE.chosenPlotId = null;
+        STATE.choiceActor = 'chooser';
+        STATE.chooserTimedOut = false;
+        STATE.outcome = null;
+        UI.close('tutorialOverlay');
+        FLOW.passToCut();
+    },
+
+    next() {
+        if (!this.on || STATE.phase !== PHASE.FINAL) return;
+        if (this.round === 1) this.swapChairs();
+        else this.exit();
+    },
+
+    replay() {
+        UI.close('tutorialOverlay');
+        FLOW.resetToSetup();
+        UI.close('setupOverlay');
+        this.start();
+    },
+
+    exit() {
+        UI.close('tutorialOverlay');
+        FLOW.resetToSetup();
+    },
+
+    toggleFairest() {
+        if (!this.on || STATE.phase !== PHASE.FINAL || this.solver.status !== 'done') return;
+        this.showFairest = !this.showFairest;
+        this.refresh();
+        RENDER.render();
+    },
+
+    ghostEdges() {
+        if (!this.on || !this.showFairest || STATE.phase !== PHASE.FINAL) return null;
+        return this.solver.result ? this.solver.result.edges : null;
+    },
+
+    stripText() {
+        const s = STATE;
+        const cutter = this.name(s.cutterIdx);
+        const chooser = this.name(s.chooserIdx);
+        switch (s.phase) {
+            case PHASE.BUILD:
+                return 'Untimed. Roles are decided after the build, so nobody knows yet who will cut and who will choose.';
+            case PHASE.PASS_TO_CUT:
+            case PHASE.CUT:
+                return `${cutter} draws one fence, edge to edge. ${chooser} sees it before choosing. Land 1 per square; pieces add their value. A tie goes to the Cutter.`;
+            case PHASE.PASS_TO_CHOOSE:
+            case PHASE.CHOOSE:
+                return `${chooser} keeps one plot. ${cutter} keeps the other. Scores stay hidden until the choice is made.`;
+            case PHASE.FINAL: {
+                const rec = this.rounds[this.rounds.length - 1];
+                if (!rec) return '';
+                let text = `Your fence: A ${rec.a} · B ${rec.b}, gap ${rec.gap}.`;
+                const sv = this.solver;
+                if (sv.status === 'running') text += ` Checking every possible fence… ${sv.visited.toLocaleString()} so far.`;
+                else if (sv.status === 'done' && sv.result) {
+                    text += ` Smallest gap any fence could make: ${sv.result.gap}.`;
+                    if (this.showFairest) text += ` Dashed fence shown: A ${sv.result.a} · B ${sv.result.b}.`;
+                }
+                return text;
+            }
+            default:
+                return '';
+        }
+    },
+
+    refresh() {
+        const e = UI.el;
+        if (!e.tutorialStrip) return;
+        const on = this.on;
+        const phasesWithStrip = [PHASE.BUILD, PHASE.PASS_TO_CUT, PHASE.CUT, PHASE.PASS_TO_CHOOSE, PHASE.CHOOSE, PHASE.FINAL];
+        const showStrip = on && phasesWithStrip.includes(STATE.phase);
+        e.tutorialStrip.hidden = !showStrip;
+        if (showStrip) {
+            const html = `<span class="tutorial-tag">Chapter Zero</span><span>${this.stripText()}</span>`;
+            if (e.tutorialStrip.innerHTML !== html) e.tutorialStrip.innerHTML = html;
+        }
+        const showBar = on && STATE.phase === PHASE.FINAL;
+        e.tutorialBar.style.display = showBar ? 'flex' : 'none';
+        if (showBar) {
+            const ready = this.solver.status === 'done' && !!this.solver.result;
+            e.tutorialFairestBtn.disabled = !ready;
+            e.tutorialFairestBtn.textContent = this.showFairest ? 'Hide fairest fence' : 'Show fairest fence';
+            e.tutorialFairestBtn.setAttribute('aria-pressed', String(this.showFairest));
+            e.tutorialNextBtn.textContent = this.round === 1 ? 'Swap chairs' : 'Play the full game';
+        }
+    },
+};
+
 const LOOP = {
     frameId: null,
     lastTimerPaint: 0,
@@ -9405,6 +10165,7 @@ const APP = {
         ESTATE_REVIEW.bind();
         MATCH_MENU.bind();
         PREVIEW.bind();
+        TUTORIAL.bind();
 
         const c = RENDER.canvas;
         c.addEventListener('pointerdown', INPUT.handleCanvas, { passive: false });
