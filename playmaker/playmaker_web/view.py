@@ -165,6 +165,7 @@ def turn_summary(s):
 
 
 def state_json(game, token):
+    game.timer_tick()                    # apply any forfeit that fell due before reading the state
     s = game.state
     ctx = s.ctx
     seat = game.seat_of(token)
@@ -208,7 +209,7 @@ def state_json(game, token):
                        ball=game.placed.get('O', (None, None))[1])
     inbound_note = ('Inbounder: can only pass. The defence answers the pass with its normal turn.'
                     if s.inbound else None)
-    return dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
+    out = dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
                 side_to_act=game.side_to_act(), ai=game.ai, title=ctx.title, scenario=sc_info, full=game.full,
                 possession=game.possession, attacker=game.offence_player(), teams=[ctx.off_team, ctx.def_team],
                 clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final,
@@ -226,6 +227,9 @@ def state_json(game, token):
                 level=game.level, scout=scout_json(game, seat), matchups=matchups(s),
                 custom=game.custom or None, experimental=game.experimental,
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
+    if game.timer:
+        out['timer'] = game.timer_json()
+    return out
 
 
 def _scenario_rules(c):

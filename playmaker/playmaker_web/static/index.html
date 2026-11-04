@@ -34,6 +34,15 @@
         <option value="pro">Pro</option>
       </select></label>
       <p class="note" id="levelNote"></p>
+      <fieldset><legend>Decision timer (optional)</legend>
+        <label>Seconds per decision <select id="timerA"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
+        <p class="note">Each full period without an action costs the acting side 1 token. Selecting an action gives 15 seconds to finish it. Hot-seat: a Ready screen at each handover.</p>
+        <label><input type="checkbox" id="hcA"> Handicap: player A agrees</label>
+        <label><input type="checkbox" id="hcB"> Handicap: player B agrees</label>
+        <label id="timerBRow" class="hidden">Player B's timer <select id="timerB"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
+        <p class="note">Player A is on offence in possession 1. Separate settings need both players to tick the handicap.</p>
+        <label><input type="checkbox" id="timerSound"> Sound cue at 10 seconds</label>
+      </fieldset>
       <label>Seed <input id="seed" type="number" placeholder="random"></label>
       <fieldset><legend>Test opponent (greedy baseline, not a strong player)</legend>
         <label><input type="checkbox" id="aiO"> computer plays offence</label>
@@ -73,6 +82,7 @@
       <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
       <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
+        <div id="phoneTimer" class="phoneonly"></div>
         <div id="selected" class="selected"></div>
         <div id="kindButtons" class="buttons"></div>
         <div id="targetButtons" class="buttons"></div>

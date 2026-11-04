@@ -24,7 +24,7 @@ class Manager:
         g = Game(mode=body.get('mode', 'hotseat'), scenario=body.get('scenario'), teams=body.get('teams'),
                  seed=body.get('seed'), ai=body.get('ai'), full=bool(body.get('full')),
                  place=body.get('place', bool(body.get('full'))), code=body.get('code'),
-                 level=body.get('level', 'scout'), custom=body.get('custom'))
+                 level=body.get('level', 'scout'), custom=body.get('custom'), timer=body.get('timer'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -87,6 +87,9 @@ def handle(manager, method, path, query=None, body=None):
             return 200, dict(res, state=state_json(g, tok))
         if path == '/api/next':
             g.next_possession(tok)
+            return 200, dict(state=state_json(g, tok))
+        if path == '/api/timer':
+            g.timer_event(tok, body.get('event'))
             return 200, dict(state=state_json(g, tok))
         if path == '/api/feedback':
             g.save_feedback(tok, body.get('answers') or {})

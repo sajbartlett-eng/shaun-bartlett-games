@@ -176,3 +176,20 @@ details.sidelist summary { cursor: pointer; font-weight: 600; padding: 6px 0; mi
 .exp { color: #7a3b12; font-weight: 600; }
 ul.inplay li.untested { color: var(--muted, #6b6357); }
 button.small { font-size: 12px; padding: 2px 8px; margin-top: 4px; }
+
+/* step 3d: decision timer */
+.timer { display: flex; align-items: center; gap: 8px; margin: 4px 0 6px; }
+.timer .twords { font-size: 13px; font-weight: 600; }
+svg.ring { width: 44px; height: 44px; flex: none; }
+svg.ring.grace { width: 32px; height: 32px; }
+svg.ring circle { fill: none; stroke-width: 4; }
+svg.ring .track { stroke: #d9cfbd; }
+svg.ring.main .bar { stroke: #0b2a5b; }
+svg.ring.main.warn .bar { stroke: #7a1f12; stroke-width: 5; }
+svg.ring.main.warn .track { stroke: #7a1f12; stroke-dasharray: 2 2; stroke-width: 2; }
+svg.ring.grace .bar { stroke: #3d7a4c; }
+svg.ring text { font-size: 12px; font-weight: 700; fill: var(--ink); }
+.timer.warn .twords { color: #7a1f12; }
+#modal.readyscreen { background: var(--paper); }
+#modal.readyscreen .modalbox { box-shadow: none; text-align: center; }
+@media (forced-colors: active) { svg.ring .bar { stroke: Highlight; } svg.ring.main.warn .bar, svg.ring.main.warn .track { stroke: Mark; } }

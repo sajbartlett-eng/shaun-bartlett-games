@@ -69,6 +69,18 @@ def replay(records, on_decision=None):
             state = undo.pop()
             if state.encode() != r['state']:
                 raise ValueError('undo replay diverged')
+        elif r['type'] == 'timer' and r.get('event') == 'forfeit':
+            from .timer import timer_forfeit
+            node, _ = timer_forfeit(state)
+            j = i + 1
+            while isinstance(node, ChanceNode) and j < len(records) and records[j]['type'] == 'roll':
+                node = force(node, records[j]['picked'])
+                j += 1
+            state = node
+            undo = []
+            i = j - 1
+            if state.encode() != r['after']:
+                raise ValueError(f'timer forfeit replay diverged: {state.encode()} != {r["after"]}')
         elif r['type'] == 'action':
             a = _action(r['action'])
             if on_decision and r.get('actor') == 'human':
@@ -119,8 +131,11 @@ def review(path, budget_s=5.0, out=print):
         rows.append(dict(possession=rec.get('possession'), clock=rec.get('clock'), side=state.side,
                          played=str(a), solver=best_p.text(), gap=round(gap, 2)))
 
-    replay(read(path), decide)
+    recs = read(path)
+    replay(recs, decide)
     out(f'Review of {path} ({len(rows)} human decisions; solver at {budget_s:g} s per position).')
+    for t in timer_facts(recs):
+        out('  ' + t)
     out('Where the solver disagreed (its values are estimates, not verdicts):')
     for r in rows:
         mark = '' if r['gap'] <= 0.5 else f'   <- solver preferred: {r["solver"]} (+{r["gap"]:.1f} for the {"offence" if r["side"] == "O" else "defence"})'
@@ -443,3 +458,62 @@ def report_in_play(records, rep):
                                       text=text if c else 'not tested'))
         out.append(dict(team=name, items=items))
     return out
+
+
+# ---- the decision timer in the log (step 3d part C) -----------------------------------------------
+
+def timer_facts(records):
+    """Every timer forfeit as a plain fact, no verdict."""
+    side = {'O': 'offence', 'X': 'defence'}
+    out = []
+    for r in records:
+        if r['type'] == 'timer' and r.get('event') == 'forfeit':
+            what = {'token': 'lost 1 token to the timer', 'token_end': 'lost its last token to the timer (turn over)',
+                    'end_turn': 'ran out of time with no tokens (turn over)',
+                    'default': "ran out of time on a token-free choice (the default applied)"}[r['effect']]
+            out.append(f"Possession {r.get('possession', 1)}: the {side[r['side']]} {what} in phase {r['phase']} "
+                       f"(clock {r['clock']}).")
+    return out
+
+
+def _pct(xs, p):
+    xs = sorted(xs)
+    if not xs:
+        return None
+    k = (len(xs) - 1) * p / 100
+    lo, hi = int(k), min(int(k) + 1, len(xs) - 1)
+    return xs[lo] + (xs[hi] - xs[lo]) * (k - lo)
+
+
+def timer_stats(paths=None, out=print, min_games=20):
+    """Decision time (seconds, admin grace excluded) at the 50th, 75th and 90th percentiles, by action type
+    and by side, over human decisions in real games. Scripted test games (every decision under a quarter
+    of a second) are left out."""
+    import glob
+    import os
+    paths = paths or sorted(glob.glob(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'playtest_logs', '*.jsonl')))
+    rows, games = [], 0
+    for p in paths:
+        try:
+            recs = read(p)
+        except (OSError, ValueError):
+            continue
+        acts = [r for r in recs if r['type'] == 'action' and r.get('actor') == 'human' and 'seconds' in r]
+        secs = [max(0.0, r['seconds'] - r.get('grace_s', 0)) for r in acts]
+        if not acts or _pct(secs, 50) < 0.25:
+            continue
+        games += 1
+        rows += [(r['action']['kind'], r['action']['side'], s) for r, s in zip(acts, secs)]
+    out(f'Decision times from {games} real game(s), {len(rows)} human decisions (seconds; admin grace excluded).')
+    if games < min_games:
+        out(f'Not enough data yet: about {min_games} logged games are needed for presets you can trust '
+            f'({max(0, min_games - games)} more).')
+    def line(label, xs):
+        if xs:
+            out(f'  {label:<18} n={len(xs):<5} p50 {_pct(xs, 50):6.1f}  p75 {_pct(xs, 75):6.1f}  p90 {_pct(xs, 90):6.1f}')
+    line('all', [s for _, _, s in rows])
+    for side in ('O', 'X'):
+        line('offence' if side == 'O' else 'defence', [s for _, sd, s in rows if sd == side])
+    for kind in sorted({k for k, _, _ in rows}):
+        line(kind, [s for k, _, s in rows if k == kind])
+    return dict(games=games, decisions=len(rows))

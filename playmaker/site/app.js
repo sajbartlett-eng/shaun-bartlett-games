@@ -21,7 +21,7 @@ const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move'
 let G = null;        // {code, token}
 let st = null;       // last state
 let sel = { side: null, i: null, kind: null, dest: null };
-let busy = false, pollTimer = null;
+let busy = false, pollTimer = null, lastSelKind = null, lastTimerNote = null;
 let seenFeed = null;          // feed entries already shown on this screen
 
 const $ = id => document.getElementById(id);
@@ -75,6 +75,8 @@ async function initStart() {
       'One possession on the preview table setup.';
   };
   $('kind').onchange = showKind; $('scenario').onchange = showKind; showKind();
+  const showHc = () => { $('timerBRow').classList.toggle('hidden', !($('hcA').checked && $('hcB').checked)); };
+  $('hcA').onchange = showHc; $('hcB').onchange = showHc;
   $('create').onclick = create; if ($('join')) $('join').onclick = join;
   const q = new URLSearchParams(location.search);
   if (q.get('code') && q.get('token')) { G = { code: q.get('code'), token: q.get('token') }; enterTable(); return; }
@@ -130,6 +132,11 @@ async function create() {
   const k = $('kind').value, mode = $('mode').value;
   const body = { mode, level: $('level').value, ai: { O: $('aiO').checked ? 'greedy' : null, X: $('aiX').checked ? 'greedy' : null } };
   if ($('seed').value) body.seed = Number($('seed').value);
+  const tA = $('timerA').value ? Number($('timerA').value) : null;
+  const hc = $('hcA').checked && $('hcB').checked;
+  const tB = hc ? ($('timerB').value ? Number($('timerB').value) : null) : tA;
+  if (tA || tB) body.timer = { A: tA, B: tB, handicap: hc };
+  try { localStorage.setItem('pm_sound', $('timerSound').checked ? '1' : '0'); } catch (e) { /* ignore */ }
   if (k === 'scenario') body.scenario = Number($('scenario').value);
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
@@ -193,19 +200,29 @@ function render() {
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
     ...(ai ? [el('div', { text: `Test opponent plays ${ai} (greedy baseline, not strong)` })] : []),
+    ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+  if (s.timer && s.timer.note) $('summary').textContent += ` · ${s.timer.note}`;
+  if (s.timer && s.timer.note && s.timer.note !== lastTimerNote) announce(s.timer.note);
+  lastTimerNote = s.timer ? s.timer.note : null;
   $('summary').dataset.side = s.side_to_act || '';
   $('offTeam').textContent = s.teams[0] + (s.full ? ` (player ${s.attacker})` : '');
   $('defTeam').textContent = s.teams[1] + (s.full ? ` (player ${s.attacker === 'A' ? 'B' : 'A'})` : '');
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
+  $('phoneTimer').innerHTML = ''; if (s.timer && s.timer.mode !== 'idle' && s.timer.side) $('phoneTimer').append(timerEl());
+  timerRecv();
+  const k = sel.kind || null;
+  if (s.timer && s.can_act && k !== lastSelKind && !busy) timerEvent(k ? 'select' : 'cancel');
+  lastSelKind = k;
   if (scoutModalIfDue()) return;
   if (s.placing) return;
   if (showFeedIfNew()) return;          // the other side's turn first; the end screen follows
+  if (readyIfDue()) return;
   if (s.stage === 'target' && s.can_act) targetModal();
   else if (s.stage === 'over') endModal();
 }
@@ -241,6 +258,7 @@ function renderTracker(id, side) {
   const pool = el('div', { class: 'pool', title: `${s.tokens[side]} of 6 tokens left` });
   for (let k = 0; k < 6; k++) pool.append(el('span', { class: 'tok ' + (k < s.tokens[side] ? 'full' : 'spent') }));
   box.append(el('div', { text: `Action pool: ${s.tokens[side]} of 6 left` }), pool);
+  if (s.timer && s.timer.side === side && s.timer.mode !== 'idle') box.prepend(timerEl());
   const tb = el('table', { class: 'slots' });
   for (const p of (side === 'O' ? s.o : s.x)) {
     const chips = p.slots.map(k => el('span', { class: 'chip', text: KIND_NAME[k] || k }));
@@ -583,7 +601,11 @@ async function renderLog() {
 }
 
 let modalReturn = null, modalCancel = null;
-function modal(kids, cancel) {
+let modalPaused = false;
+function modal(kids, cancel, opts) {
+  opts = opts || {};
+  if (!opts.noTimer && !modalPaused && st && st.timer && st.can_act && ['main', 'grace'].includes(st.timer.mode)) { modalPaused = true; timerEvent('pause'); }
+  $('modal').classList.toggle('readyscreen', !!opts.ready);
   const b = $('modalBox'); b.innerHTML = ''; b.append(...kids);
   const h = b.querySelector('h1, h2, h3');
   if (h) { h.id = 'modalTitle'; $('modal').setAttribute('aria-labelledby', 'modalTitle'); }
@@ -593,6 +615,8 @@ function modal(kids, cancel) {
   const f = b.querySelector('button, textarea, input'); if (f) f.focus();
 }
 function closeModal() {
+  if (modalPaused) { modalPaused = false; timerEvent('resume'); }
+  $('modal').classList.remove('readyscreen');
   $('modal').classList.add('hidden'); document.body.classList.remove('modal-open');
   for (const id of ['table', 'start']) $(id).removeAttribute('aria-hidden');
   if (modalReturn && document.contains(modalReturn)) modalReturn.focus();
@@ -614,6 +638,88 @@ document.addEventListener('keydown', e => {
     sel = { side: null }; if (st) render();
   }
 });
+// ---------------------------------------------------------------- decision timer (step 3d part C)
+let tmRecv = { at: 0, v: null }, tmWarned = null, tmFull = null;
+function timerEvent(event) {
+  api('/api/timer', { code: G.code, token: G.token, event }).then(r => {
+    if (event === 'ready') { st = r.state; render(); }
+    else if (r.state && r.state.timer) { st.timer = r.state.timer; timerRecv(true); }
+  }).catch(() => {});
+}
+function timerRecv(force) {
+  if (!st || !st.timer) return;
+  const key = JSON.stringify([st.version, st.timer.mode, st.timer.left, st.timer.grace_left, st.timer.paused]);
+  if (force || key !== tmRecv.v) tmRecv = { at: performance.now(), v: key };
+}
+function timerNow() {
+  const t = st.timer, dt = (performance.now() - tmRecv.at) / 1000;
+  const run = !t.paused;
+  const left = t.mode === 'main' && run ? Math.max(0, t.left - dt) : t.left;
+  const grace = t.mode === 'grace' ? (run ? Math.max(0, t.grace_left - dt) : t.grace_left) : null;
+  return { left, grace };
+}
+function ring(frac, r, cls, label) {
+  const c = 2 * Math.PI * r, g = svg('svg', { viewBox: '0 0 44 44', class: 'ring ' + cls, 'aria-hidden': 'true' });
+  g.append(svg('circle', { cx: 22, cy: 22, r, class: 'track' }), svg('circle', { cx: 22, cy: 22, r, class: 'bar',
+    'stroke-dasharray': `${(c * Math.max(0, Math.min(1, frac))).toFixed(1)} ${c.toFixed(1)}`, transform: 'rotate(-90 22 22)' }));
+  const tx = svg('text', { x: 22, y: 26, 'text-anchor': 'middle' }); tx.textContent = label; g.append(tx);
+  return g;
+}
+function timerEl() {
+  const t = st.timer, box = el('div', { class: 'timer', 'data-timer': '1' });
+  timerPaint(box);
+  return box;
+}
+function timerPaint(box) {
+  const t = st.timer; if (!t) return;
+  const { left, grace } = timerNow();
+  const warn = t.mode === 'main' && left <= t.warn_at;
+  box.innerHTML = '';
+  box.classList.toggle('warn', warn);
+  const who = t.side === 'O' ? 'Offence' : 'Defence';
+  const words = t.mode === 'ready' ? `${who}: timer starts when you tap Ready` :
+    t.paused ? `${who}: timer paused` :
+    t.mode === 'grace' ? `${who}: finish the action (${Math.ceil(grace)} s grace; main timer paused at ${Math.ceil(left)} s)` :
+    `${who}: ${Math.ceil(left)} s to act` + (t.token_free ? ' (no token lost: the default applies)' : '') + (warn ? ' · 10 seconds or less' : '');
+  box.append(ring(left / t.period, 18, warn ? 'main warn' : 'main', String(Math.ceil(left))));
+  if (t.mode === 'grace') box.append(ring(grace / t.grace, 12, 'grace', String(Math.ceil(grace))));
+  box.append(el('span', { class: 'twords', text: words }));
+}
+setInterval(() => {
+  if (!st || !st.timer || !st.timer.side) return;
+  for (const b of document.querySelectorAll('[data-timer]')) timerPaint(b);
+  const t = st.timer, { left, grace } = timerNow(), key = `${st.version}:${t.side}:${t.note}`;
+  if (t.mode === 'main' && !t.paused && st.can_act) {
+    if (tmFull !== key) { tmFull = key; announce(`${t.side === 'O' ? 'Offence' : 'Defence'}: ${t.period} seconds to act.`); }
+    if (left <= t.warn_at && tmWarned !== key) {
+      tmWarned = key; announce(`${Math.ceil(left)} seconds left.`);
+      try { if (navigator.vibrate) navigator.vibrate(200); } catch (e) { /* not supported */ }
+      try { if (localStorage.getItem('pm_sound') === '1') beep(); } catch (e) { /* ignore */ }
+    }
+    if (left <= 0) timerRefresh();
+  }
+  if (t.mode === 'grace' && grace <= 0) timerRefresh();
+}, 250);
+let tmRefreshAt = 0;
+function timerRefresh() {
+  const now = performance.now();
+  if (busy || now - tmRefreshAt < 1000) return;
+  tmRefreshAt = now; refresh(true);
+}
+function beep() {
+  const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
+  const ctx = new A(), o = ctx.createOscillator(), g = ctx.createGain();
+  o.frequency.value = 660; g.gain.value = 0.08; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.15);
+}
+function readyIfDue() {
+  const t = st.timer;
+  if (!t || t.mode !== 'ready' || !st.can_act || st.mode !== 'hotseat' || !$('modal').classList.contains('hidden')) return false;
+  const who = t.side === 'O' ? 'Offence' : 'Defence';
+  modal([el('h2', { text: `${who} to act` }), el('p', { text: `Hand over to the ${who.toLowerCase()}. The board is hidden; your ${t.period}-second timer starts when you tap Ready.` }),
+    el('button', { class: 'primary', text: 'Ready', onclick: () => { closeModal(); timerEvent('ready'); } })], null, { noTimer: true, ready: true });
+  return true;
+}
+
 function announce(text) { const a = $('announce'); if (!a) return; a.textContent = ''; setTimeout(() => { a.textContent = text; }, 50); }
 
 initStart();
@@ -934,6 +1040,7 @@ async function loadReview() {
   box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
   if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
+  if (r.timer && r.timer.length) box.append(el('h4', { text: 'The timer' }), el('ul', {}, r.timer.map(t => el('li', { text: t }))));
   if (r.in_play) {
     const pk = sides.filter(side => r.picks[side]).map(side => `${side === 'O' ? 'Offence' : 'Defence'}: ${pickText(side, r.picks[side])}`).join(' · ');
     box.append(el('h4', { text: 'The report in play' }), el('p', { class: 'note', text: 'Counts from the log for each line of the scout report. Facts only.' + (pk ? ' Your calls: ' + pk + '.' : '') }));

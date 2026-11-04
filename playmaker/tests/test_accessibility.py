@@ -65,6 +65,17 @@ async function scan(page) {
   out['dialogs'] = [await heading()];
   for (let i = 0; i < 3 && (await heading()); i++) { await page.keyboard.press('Escape'); await page.waitForTimeout(250); out['dialogs'].push(await heading()); }
   out['escape closes'] = (await heading()) === null;
+  // step 3d screens: the pick lock, the unlocked report, the custom team builder (phone width)
+  const ph = await (await b.newContext({ viewport: { width: 412, height: 915 } })).newPage();
+  const g4 = await post('/api/new', { mode: 'hotseat', teams: ['Ball Movement', 'Twin Towers'], seed: 2, level: 'scout' });
+  await ph.goto(`${base}/?code=${g4.code}&token=${g4.token}`); await ph.waitForTimeout(900);
+  out['pick lock'] = await scan(ph);
+  for (let i = 0; i < 2; i++) { await ph.click('#modal button.primary'); await ph.waitForTimeout(500); }
+  await ph.evaluate(() => document.querySelectorAll('#modal details').forEach(d => { d.open = true; }));
+  out['scout report'] = await scan(ph);
+  await ph.goto(base + '/'); await ph.waitForTimeout(500);
+  await ph.selectOption('#teamA', '__custom'); await ph.selectOption('#teamB', '__custom'); await ph.waitForTimeout(200);
+  out['team builder'] = await scan(ph);
   console.log(JSON.stringify(out));
   await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
@@ -81,7 +92,8 @@ def test_accessibility(tmp_path):
         out = json.loads(r.stdout.strip().splitlines()[-1])
     finally:
         srv.shutdown()
-    for screen in ('laptop start', 'laptop table', 'phone start', 'phone table', 'contest', 'end dialog'):
+    for screen in ('laptop start', 'laptop table', 'phone start', 'phone table', 'contest', 'end dialog',
+                   'pick lock', 'scout report', 'team builder'):
         assert out[screen] == [], (screen, out[screen])
     assert all(out['trap']), 'focus left the dialog'
     assert out['escape closes'], out['dialogs']

@@ -39,6 +39,8 @@ def main(argv=None):
     va.add_argument('--seeds', type=int, default=None)
     va.add_argument('--workers', type=int, default=3)
     sub.add_parser('rule-health', help='print the rule-health checks from the saved solver runs')
+    ts = sub.add_parser('timer-stats', help='decision times from the playtest logs (percentiles by action and side)')
+    ts.add_argument('logs', nargs='*', help='log files (default: playtest_logs/*.jsonl)')
     rv = sub.add_parser('review', help='replay a playtest log and show where the solver disagreed')
     rv.add_argument('log')
     rv.add_argument('--budget', type=float, default=5.0, help='solver seconds per decision')
@@ -94,6 +96,10 @@ def main(argv=None):
         run_jobs(main_jobs(int(short), int(long), a.seeds or DEFAULT.seeds), workers=a.workers)
         print(write_report(int(short), int(long)))
         return 0
+    if a.cmd == 'timer-stats':
+        from .review import timer_stats
+        timer_stats(a.logs)
+        return
     if a.cmd == 'review':
         from .review import review
         review(a.log, a.budget)
