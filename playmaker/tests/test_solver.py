@@ -223,3 +223,25 @@ def test_player_contest_choice_equals_old_automatic_minimum(which):
         r = Searcher(with_config(eval_turns=1)).search(s, max_depth=2)
         vals[choice] = r['vals'][0].ev
     assert vals['player'] == pytest.approx(vals['min_value'], abs=1e-9), vals
+
+
+def test_solver_runs_resume_without_redoing_finished_jobs(tmp_path, monkeypatch):
+    """run_jobs saves each result as it lands (atomically) and skips saved jobs after a restart."""
+    import json
+    from playmaker_engine import solver_report as SR
+    calls = []
+
+    def fake_job(j):
+        calls.append(j)
+        return j, dict(value=1.0, wall=0)
+    monkeypatch.setattr(SR, 'RESULTS', str(tmp_path))
+    monkeypatch.setattr(SR, '_job', fake_job)
+    import concurrent.futures as cf
+    monkeypatch.setattr(SR, 'ProcessPoolExecutor', cf.ThreadPoolExecutor)
+    jobs = [('solve', 1, 120, 0, None), ('solve', 2, 120, 0, None), ('context', 3, 120, 0, ['A', 'B'])]
+    SR.run_jobs(jobs[:2], workers=1, store='r.json')
+    assert len(json.load(open(tmp_path / 'r.json'))) == 2
+    calls.clear()
+    SR.run_jobs(jobs, workers=1, store='r.json')            # 'restart' with the full list
+    assert calls == [jobs[2]] and len(json.load(open(tmp_path / 'r.json'))) == 3
+    assert not (tmp_path / 'r.json.tmp').exists()

@@ -319,9 +319,11 @@ def run_jobs(jobs, workers=3, store='runs.json'):
             j = futs[fut]
             done[keyf(j)] = r
             os.makedirs(RESULTS, exist_ok=True)
-            with open(path, 'w') as f:
+            tmp = path + '.tmp'                  # atomic: a kill mid-write never leaves a broken file
+            with open(tmp, 'w') as f:
                 json.dump(done, f, indent=1, default=str)
-            print(f'done {key}: value {r.get("value", r.get("known", 0)):.2f} ({r["wall"]}s)', flush=True)
+            os.replace(tmp, path)
+            print(f'done {keyf(j)}: value {r.get("value", r.get("known", 0)):.2f} ({r["wall"]}s)', flush=True)
     return done
 
 
