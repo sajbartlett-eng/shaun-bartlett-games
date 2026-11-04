@@ -120,7 +120,7 @@ const [url, shot] = process.argv.slice(2);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
   await page.selectOption('#kind', 'single');
   await page.click('#create'); await page.waitForTimeout(1200);
-  await page.click('g.piece[aria-label="O1"]'); await page.waitForTimeout(400);
+  await page.click('g.piece[aria-label^="O1,"]'); await page.waitForTimeout(400);
   const res = await page.evaluate(() => {
     const vw = document.documentElement.clientWidth;
     const scroll = document.documentElement.scrollWidth;

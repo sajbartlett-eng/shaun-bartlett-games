@@ -11,6 +11,8 @@ const SHORT = { 'Quick Step': 'QS', Dribble: 'Drb', Pass: 'Pass', Screen: 'Scr',
   Mid: 'Mid', Floater: 'Flt', 'Long 2': 'L2', Three: '3PT', FT: 'FT', Agility: 'Agi', Intercept: 'Int', Challenge: 'Chl',
   Steal: 'Stl', 'Foul (steal)': 'F·S', 'v Layup': 'Lay', 'v Dunk': 'Dunk', 'v Post': 'Post', 'v Mid': 'Mid',
   'v Floater': 'Flt', 'v Long 2': 'L2', 'v Three': '3PT', 'Foul (contest)': 'F·C' };
+const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+const ZONE_WORD = { K: 'rim zone', '3': 'three-point zone', M: 'mid-range zone', L: 'long-two zone', '.': 'plain wood' };
 const isPhone = () => window.matchMedia('(max-width: 820px)').matches;
 const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
   shot: 'Shot', intercept: 'Intercept', challenge: 'Challenge Screen', steal: 'Steal', hesitate: 'Hesitate', pause: 'Pause',
@@ -128,7 +130,8 @@ async function refresh(quiet) {
 // ---------------------------------------------------------------- render
 function render() {
   const s = st;
-  $('title').textContent = s.scenario ? `${s.scenario.n}. ${s.scenario.title}` : s.title;
+  $('title').textContent = (s.scenario ? `${s.scenario.n}. ${s.scenario.title}` : s.title);
+  document.title = `${$('title').textContent} · Playmaker playtest`;
   $('clock').textContent = s.inbound ? `${s.clock} (frozen)` : s.clock;
   $('phase').textContent = s.phase + (s.inbound ? ` · inbound ${s.inbound}` : '');
   $('poss').textContent = s.full ? `${s.possession} of 2` : '1';
@@ -138,7 +141,9 @@ function render() {
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
     ...(ai ? [el('div', { text: `Test opponent plays ${ai} (greedy baseline, not strong)` })] : []));
-  $('summary').textContent = s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+  const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
+  $('summary').textContent = sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+  $('summary').dataset.side = s.side_to_act || '';
   $('offTeam').textContent = s.teams[0] + (s.full ? ` (player ${s.attacker})` : '');
   $('defTeam').textContent = s.teams[1] + (s.full ? ` (player ${s.attacker === 'A' ? 'B' : 'A'})` : '');
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
@@ -187,11 +192,13 @@ function renderCourt() {
   c.innerHTML = '';
   const W = PADX + 19 * S + 4, H = PADY + 15 * S + 22;
   c.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  c.setAttribute('role', 'group');
+  c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   for (let y = 1; y <= 14; y++) {
     for (let x = 0; x < 17; x++) {
       const z = s.zones[y - 1][x];
       c.append(svg('rect', { class: 'cell', x: px(x), y: py(y), width: S, height: S, fill: ZCOL[z] }));
-      if (ZLBL[z]) { const t = svg('text', { class: 'zonelbl', x: px(x) + 2, y: py(y) + 10 }); t.textContent = ZLBL[z]; c.append(t); }
+      if (ZLBL[z]) { const t = svg('text', { class: 'zonelbl', x: px(x) + 2, y: py(y) + 11, 'aria-hidden': 'true' }); t.textContent = ZLBL[z]; c.append(t); }
     }
     const t = svg('text', { class: 'axis', x: 2, y: py(y) + S / 2 + 4 }); t.textContent = y; c.append(t);
   }
@@ -213,8 +220,23 @@ function renderCourt() {
   placementTargets(c);
 }
 
+function pieceLabel(side, p) {
+  const z = st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';
+  const bits = [`${side}${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
+  if (side === 'O' && p.ball) bits.push('has the ball');
+  if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
+  if (side === 'X') bits.push(`arrow pointing ${COMPASS[p.arrow]}`);
+  if (p.locked) bits.push('locked');
+  if (sel.side === side && sel.i === p.i) bits.push('selected');
+  const n = pieceActs(side, p.i).length;
+  if (st.can_act && n) bits.push(`${n} legal action${n === 1 ? '' : 's'}`);
+  return bits.join(', ');
+}
+
 function pieceGroup(side, i) {
-  const g = svg('g', { class: 'piece' + (sel.side === side && sel.i === i ? ' sel' : ''), tabindex: 0, role: 'button', 'aria-label': `${side}${i + 1}` });
+  const p = (side === 'O' ? st.o : st.x)[i];
+  const g = svg('g', { class: 'piece' + (sel.side === side && sel.i === i ? ' sel' : ''), tabindex: 0, role: 'button',
+    'aria-label': pieceLabel(side, p), 'aria-pressed': sel.side === side && sel.i === i ? 'true' : 'false' });
   const choose = () => selectPiece(side, i);
   g.addEventListener('click', choose); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
   return g;
@@ -229,9 +251,13 @@ function drawO(c, p) {
     const ex = cx + d[0] * S * 0.62, ey = cy - d[1] * S * 0.62;
     g.append(svg('line', { x1: ex - nx * 9, y1: ey + ny * 9, x2: ex + nx * 9, y2: ey - ny * 9, stroke: '#111', 'stroke-width': 5 }));
   }
-  g.append(svg('circle', { class: 'ring', cx, cy, r: 15, fill: '#fff', stroke: '#333', 'stroke-width': 2 }));
-  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 'bold' }); t.textContent = p.i + 1; g.append(t);
-  if (p.ball) g.append(svg('circle', { cx: cx + 11, cy: cy - 11, r: 6, fill: '#e07a1f', stroke: '#5a2c00' }));
+  g.append(svg('circle', { class: 'halo', cx, cy, r: 19 }));
+  g.append(svg('circle', { class: 'ring', cx, cy, r: 15, fill: '#fff', stroke: '#1d1b18', 'stroke-width': 2.5 }));
+  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 'bold', 'aria-hidden': 'true' }); t.textContent = p.i + 1; g.append(t);
+  if (p.ball) {          // the ball: an orange disc with a dark outline (readable on every zone colour)
+    g.append(svg('circle', { cx: cx + 12, cy: cy - 12, r: 7.5, fill: '#e07a1f', stroke: '#3a1d00', 'stroke-width': 2.5 }));
+    g.append(svg('path', { d: `M${cx + 4.5} ${cy - 12} H${cx + 19.5} M${cx + 12} ${cy - 19.5} V${cy - 4.5}`, stroke: '#3a1d00', 'stroke-width': 1.2 }));
+  }
   if (p.locked) lockBadge(g, cx, cy);
   c.append(g);
 }
@@ -244,15 +270,16 @@ function drawX(c, p) {
   const tip = [cx + ux * reach, cy + uy * reach];
   const len = Math.hypot(ux, uy), nx = -uy / len, ny = ux / len, bx = cx + ux * 9 / len, by = cy + uy * 9 / len;
   g.append(svg('polygon', { class: 'arrowhead', points: `${tip[0]},${tip[1]} ${bx + nx * 11},${by + ny * 11} ${bx - nx * 11},${by - ny * 11}`, fill: '#111', stroke: '#fff', 'stroke-width': 1.5 }));
+  g.append(svg('circle', { class: 'halo', cx, cy, r: 19 }));
   g.append(svg('circle', { class: 'ring', cx, cy, r: 14, fill: '#1a1a1a', stroke: '#000', 'stroke-width': 2 }));
-  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 'bold', fill: '#fff' }); t.textContent = p.i + 1; g.append(t);
+  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }); t.textContent = p.i + 1; g.append(t);
   if (p.locked) lockBadge(g, cx, cy);
   c.append(g);
 }
 
 function lockBadge(g, cx, cy) {
-  g.append(svg('rect', { x: cx - 18, y: cy + 6, width: 16, height: 11, rx: 2, fill: '#8a8a8a', stroke: '#444' }));
-  const t = svg('text', { x: cx - 10, y: cy + 15, 'text-anchor': 'middle', 'font-size': 8, fill: '#fff' }); t.textContent = 'LK'; g.append(t);
+  g.append(svg('rect', { x: cx - 21, y: cy + 5, width: 26, height: 13, rx: 3, fill: '#4a4a4a', stroke: '#1d1b18', 'stroke-width': 1.5 }));
+  const t = svg('text', { x: cx - 8, y: cy + 15, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }); t.textContent = 'LOCK'; g.append(t);
 }
 
 // ---------------------------------------------------------------- selection and actions
@@ -264,13 +291,19 @@ function selectPiece(side, i) {
   const kinds = [...new Set(pieceActs(side, i).map(a => a.kind))];
   if (kinds.length === 1) sel.kind = kinds[0];
   render();
+  const first = $('kindButtons').querySelector('button') || $('targetButtons').querySelector('button');
+  if (first) first.focus();
 }
 
 function drawTargets(c) {
   if (sel.kind == null) return;
   const acts = pieceActs(sel.side, sel.i).filter(a => a.kind === sel.kind);
   const mark = (x, y, label, fn) => {
-    const r = svg('rect', { class: 'target', x: px(x) + 3, y: py(y) + 3, width: S - 6, height: S - 6, rx: 5, tabindex: 0, role: 'button', 'aria-label': label });
+    const onPiece = st.o.some(p => p.x === x && p.y === y) || st.x.some(p => p.x === x && p.y === y);
+    // on a piece: a ring around it (so its number stays readable); on an empty square: a filled tile
+    const r = onPiece
+      ? svg('circle', { class: 'target ring-target', cx: px(x) + S / 2, cy: py(y) + S / 2, r: 18, tabindex: 0, role: 'button', 'aria-label': label, 'pointer-events': 'all' })
+      : svg('rect', { class: 'target', x: px(x) + 3, y: py(y) + 3, width: S - 6, height: S - 6, rx: 5, tabindex: 0, role: 'button', 'aria-label': label });
     r.addEventListener('click', fn); r.addEventListener('keydown', e => { if (e.key === 'Enter') fn(); });
     c.append(r);
   };
@@ -377,6 +410,8 @@ async function submit(a) {
     sel = { side: null, i: null, kind: null, dest: null };
     if (r.rolls && r.rolls.length) await showRolls(r.rolls);
     st = r.state; render();
+    announce(`${a.text}. ${st.summary}`);
+    if ($('modal').classList.contains('hidden')) $('actionsPanel').focus();   // keyboard users continue from the actions
   } catch (e) { $('error').textContent = e.message; }
   busy = false;
 }
@@ -386,7 +421,7 @@ function confirmRoll(a) {
     modal([el('h2', { text: a.text }), el('p', { text: 'This action needs a roll. The server rolls the d20 (seeded); you never roll on this page.' }),
       el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text]))),
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
-      el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })]);
+      el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
 }
 
@@ -398,7 +433,8 @@ function showRolls(rolls) {
       box.push(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }), el('span', { text: `${r.text} → rolled ${r.face}: ${r.picked}` })]));
     }
     box.push(el('button', { class: 'primary', text: 'Continue', onclick: () => { closeModal(); res(); } }));
-    modal(box);
+    announce(rolls.map(r => `${r.text}. Rolled ${r.face}: ${r.picked}.`).join(' '));
+    modal(box, () => res());
   });
 }
 
@@ -436,8 +472,9 @@ function endModal() {
   }
   if (s.feedback_due) kids.push(el('h3', { text: 'Game log' }), el('p', { class: 'note', text: s.static ? 'The log lives in this browser tab. Download it, or copy it to paste into an email.' : `Saved on the server in playtest_logs/${s.log_name}.` }),
     el('button', { text: 'Download log', onclick: downloadLog }), el('button', { text: 'Copy log', onclick: copyLog }));
-  kids.push(el('button', { text: 'Close', onclick: closeModal }), el('button', { text: 'New game', onclick: () => { location.href = '/'; } }));
-  modal(kids);
+  kids.push(el('button', { text: 'Close', onclick: closeModal }), el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } }));
+  announce(`Possession over: ${r.total}, ${r.band}.`);
+  modal(kids, () => {});
 }
 
 function renderScenario() {
@@ -451,7 +488,7 @@ function renderScenario() {
 
 function renderRolls() {
   const box = $('rolls'); box.innerHTML = '';
-  for (const r of st.rolls || []) box.append(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die' + (r.roller === 'X' ? ' black' : ''), text: r.face }), ` ${r.text} → ${r.picked}`]));
+  for (const r of st.rolls || []) box.append(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die' + (r.roller === 'X' ? ' black' : ''), text: r.face }), ` ${r.text.replace(/^(Offence|Defence) rolls: /, '')} → ${r.picked}`]));
   if (!(st.rolls || []).length) box.append(el('div', { class: 'note', text: 'No roll on the last action.' }));
 }
 
@@ -461,7 +498,7 @@ async function renderLog() {
     const ol = $('log'); ol.innerHTML = '';
     for (const r of log.slice(-60)) {
       if (r.type === 'action') ol.append(el('li', { text: `[${r.actor}] ${r.action.text}` }));
-      else if (r.type === 'roll') ol.append(el('li', {}, [rollerChip(r.roller), ` rolled ${r.face}: ${r.text} → ${r.picked}`]));
+      else if (r.type === 'roll') ol.append(el('li', {}, [rollerChip(r.roller), ` rolled ${r.face}: ${r.text.replace(/^(Offence|Defence) rolls: /, '')} → ${r.picked}`]));
       else if (r.type === 'placement') ol.append(el('li', { text: `[${r.actor}] ${r.side === 'O' ? 'Offence' : 'Defence'} placed: ${r.squares.join(' ')}` }));
       else if (r.type === 'end') ol.append(el('li', { text: `Possession ${r.possession}: ${r.score.total} (${r.score.band})` }));
       else if (r.type === 'possession') ol.append(el('li', { text: 'Second possession: sides swap' }));
@@ -470,9 +507,39 @@ async function renderLog() {
   } catch (e) { /* log is optional */ }
 }
 
-function modal(kids) { const b = $('modalBox'); b.innerHTML = ''; b.append(...kids); $('modal').classList.remove('hidden'); const f = b.querySelector('button'); if (f) f.focus(); }
-function closeModal() { $('modal').classList.add('hidden'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { sel = { side: null }; if (st) render(); } });
+let modalReturn = null, modalCancel = null;
+function modal(kids, cancel) {
+  const b = $('modalBox'); b.innerHTML = ''; b.append(...kids);
+  const h = b.querySelector('h1, h2, h3');
+  if (h) { h.id = 'modalTitle'; $('modal').setAttribute('aria-labelledby', 'modalTitle'); }
+  modalReturn = document.activeElement; modalCancel = cancel || null;
+  $('modal').classList.remove('hidden'); document.body.classList.add('modal-open');
+  for (const id of ['table', 'start']) $(id).setAttribute('aria-hidden', 'true');
+  const f = b.querySelector('button, textarea, input'); if (f) f.focus();
+}
+function closeModal() {
+  $('modal').classList.add('hidden'); document.body.classList.remove('modal-open');
+  for (const id of ['table', 'start']) $(id).removeAttribute('aria-hidden');
+  if (modalReturn && document.contains(modalReturn)) modalReturn.focus();
+  modalCancel = null;
+}
+document.addEventListener('keydown', e => {
+  const open = !$('modal').classList.contains('hidden');
+  if (open && e.key === 'Tab') {                 // keep focus inside the dialog
+    const f = [...$('modalBox').querySelectorAll('button, textarea, input, select, a[href]')].filter(x => !x.disabled);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    else if (!$('modalBox').contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (open) { if (modalCancel) { const c = modalCancel; closeModal(); c(); } return; }
+    sel = { side: null }; if (st) render();
+  }
+});
+function announce(text) { const a = $('announce'); if (!a) return; a.textContent = ''; setTimeout(() => { a.textContent = text; }, 50); }
 
 initStart();
 
