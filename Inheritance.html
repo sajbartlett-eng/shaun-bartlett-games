@@ -1545,6 +1545,12 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 }
 .setup-display-options h3 { margin-bottom: 8px; }
 .name-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opponent-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.opponent-choice .option-card { margin-bottom: 0; }
+.computer-levels { margin-top: 8px; padding: 10px 12px 4px; border: 1px dashed var(--paper-edge); border-radius: 4px; }
+.computer-levels .hint { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin: 4px 0 6px; }
+.name-input:disabled { opacity: 0.7; background: var(--paper-deep); }
+@media (max-width: 420px) { .opponent-choice { grid-template-columns: 1fr; } }
 .name-input {
     background: var(--paper);
     border: 1.5px solid var(--ink);
@@ -2712,6 +2718,18 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                 <input type="text" class="name-input p1" id="inputP1" aria-label="Sibling 1 name" placeholder="Sibling 1" value="Sibling 1" maxlength="14">
                 <input type="text" class="name-input p2" id="inputP2" aria-label="Sibling 2 name" placeholder="Sibling 2" value="Sibling 2" maxlength="14">
             </div>
+            <div class="opponent-choice" role="radiogroup" aria-label="Who plays Sibling 2">
+                <button type="button" class="option-card radio selected" data-opponent="person" role="radio" aria-checked="true"><span class="check"></span><span class="label"><span class="title">A person</span><span class="desc">Pass the phone between you.</span></span></button>
+                <button type="button" class="option-card radio" data-opponent="computer" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">The computer</span><span class="desc">Plays by fixed rules you can read.</span></span></button>
+            </div>
+            <div class="computer-levels" id="computerLevels" hidden>
+                <div class="option-group" role="radiogroup" aria-label="How the computer cuts">
+                    <button type="button" class="option-card radio" data-level="straight" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Straight by area</span><span class="desc">Draws the straight fence that divides the land most evenly by area, ignoring the pieces.</span></span></button>
+                    <button type="button" class="option-card radio selected" data-level="line" role="radio" aria-checked="true"><span class="check"></span><span class="label"><span class="title">Best straight fence</span><span class="desc">Of every straight fence, draws the one with the smallest score gap.</span></span></button>
+                    <button type="button" class="option-card radio" data-level="exact" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Best fence possible</span><span class="desc">Checks every fence and draws one with the smallest gap possible. If it wins the toss and a perfect split exists, it cuts, because a tie goes to the Cutter.</span></span></button>
+                </div>
+                <p class="hint">In every case the computer places its pieces at random, a coin toss decides the roles, it keeps the higher-value plot when it chooses, and it never changes these rules mid-game.</p>
+            </div>
         </div>
 
         <div class="setup-primary">
@@ -2896,6 +2914,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
                 <span class="rps-role-desc">Pick the property you want</span>
             </button>
         </div>
+        <div class="actions"><button class="btn-primary" id="rpsContinueBtn" hidden>Continue</button></div>
     </div>
 </div>
 
@@ -3266,6 +3285,8 @@ const PHASE = {
 
 const DEFAULT_SETTINGS = Object.freeze({
     tutorial: false,
+    computer: false,
+    computerLevel: 'line',
     randomAssets: false,
     irregular: true,
     landTemplate: 'standard',
@@ -6800,6 +6821,8 @@ const UI = {
         rpsP2Btn:            document.getElementById('rpsP2Btn'),
         rpsCutBtn:           document.getElementById('rpsCutBtn'),
         rpsChooseBtn:        document.getElementById('rpsChooseBtn'),
+        rpsContinueBtn:      document.getElementById('rpsContinueBtn'),
+        computerLevels:      document.getElementById('computerLevels'),
 
         meaningfulOverlay:   document.getElementById('meaningfulOverlay'),
         meaningfulEyebrow:   document.getElementById('meaningfulEyebrow'),
@@ -7125,7 +7148,7 @@ const UI = {
                 </div>
             </div>` : '';
 
-        e.rulesContent.innerHTML = `
+        e.rulesContent.innerHTML = COMPUTER.rulesHtml() + `
             <div class="rules-section">
                 <h3>${['Build', s.meaningful ? 'What matters?' : null, 'Cut', 'Choose'].filter(Boolean).join(' → ')}</h3>
                 ${s.open ? `<p class="rules-context-note">${rpsCopy}</p>` : ''}
@@ -7252,7 +7275,7 @@ const UI = {
         if (STATE.settings.open) extraRules.push('Open Roles');
         if (STATE.settings.lightning) extraRules.push('Lightning Round');
         e.setupOptionsSummary.textContent = `${shapeSummary} · ${setSummary}${landSummary}${extraRules.length ? ` + ${extraRules.join(' + ')}` : ''}`;
-        e.setupBeginBtn.textContent = 'Play';
+        e.setupBeginBtn.textContent = STATE.settings.computer ? 'Play the computer' : 'Play';
 
         document.querySelectorAll('[data-shape]').forEach(button => {
             const selected = STATE.settings.irregular === (button.dataset.shape === 'irregular');
@@ -7282,6 +7305,7 @@ const UI = {
             if (blockedTerrain) card.title = 'Terrain shaping is available with the Standard land template.';
             else card.removeAttribute('title');
         });
+        COMPUTER.refreshSetup();
         PREVIEW.render();
     },
 
@@ -7620,6 +7644,8 @@ const UI = {
     },
 
     prepareRps() {
+        if (COMPUTER.on) { COMPUTER.prepareToss(); return; }
+        if (this.el.rpsContinueBtn) this.el.rpsContinueBtn.hidden = true;
         STATE.rpsWinnerIdx = -1;
         this.el.rpsEyebrow.textContent = 'decide roles';
         this.el.rpsEyebrow.className = 'eyebrow';
@@ -7824,6 +7850,7 @@ const UI = {
         } else {
             instruction = '…';
         }
+        if (COMPUTER.on) instruction = COMPUTER.instruction(s.phase) || instruction;
         e.phaseInstruction.innerHTML = instruction;
         RENDER.renderPhaseSymbols(e.phaseInstruction);
         const canvasLabels = {
@@ -7977,6 +8004,7 @@ const UI = {
         }
 
         TUTORIAL.refresh();
+        COMPUTER.schedule();
         this.refreshPrimer();
         ESTATE_REVIEW.refresh();
     },
@@ -8087,6 +8115,7 @@ const FLOW = {
     resetToSetup({ showWelcome = false } = {}) {
         TUTORIAL.reset();
         REFEREE.reset();
+        COMPUTER.reset();
         MATCH_MENU.resetStaging();
         ESTATE_REVIEW.reset();
         if (MATCH_MENU.base) STATE.settings = { ...MATCH_MENU.base };
@@ -8283,6 +8312,7 @@ const FLOW = {
             );
         }
 
+        if (COMPUTER.on) REFEREE.ensure();
         if (STATE.settings.tutorial) {
             TUTORIAL.assignRoles();
         } else if (STATE.settings.meaningful) {
@@ -8429,7 +8459,8 @@ const FLOW = {
         UI.el.passContinueBtn.textContent = `Start cutting · ${GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings)}s`;
         if (STATE.settings.tutorial) TUTORIAL.decoratePass('cut');
         else REFEREE.ensure();
-        if (FLOW.transition(PHASE.PASS_TO_CUT)) UI.open('passOverlay');
+        if (COMPUTER.on && !COMPUTER.seat('cutter')) COMPUTER.decoratePass('cut');
+        if (FLOW.transition(PHASE.PASS_TO_CUT) && !COMPUTER.seat('cutter')) UI.open('passOverlay');
     },
 
     beginCut() {
@@ -8477,7 +8508,8 @@ const FLOW = {
         `;
         UI.el.passContinueBtn.textContent = `Choose · ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)}s`;
         if (STATE.settings.tutorial) TUTORIAL.decoratePass('choose');
-        if (FLOW.transition(PHASE.PASS_TO_CHOOSE)) UI.open('passOverlay');
+        if (COMPUTER.on && !COMPUTER.seat('chooser')) COMPUTER.decoratePass('choose');
+        if (FLOW.transition(PHASE.PASS_TO_CHOOSE) && !COMPUTER.seat('chooser')) UI.open('passOverlay');
     },
 
     beginChoose() {
@@ -8507,7 +8539,7 @@ const FLOW = {
             <p><strong>${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds.</strong> If you also run out of time, no one inherits.</p>
         `;
         UI.el.passContinueBtn.textContent = `Choose · ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)}s`;
-        UI.open('passOverlay');
+        if (!COMPUTER.seat('cutter')) UI.open('passOverlay');
         FLOW.sync();
     },
 
@@ -8570,7 +8602,7 @@ const FLOW = {
             commonGroundEarned = GAME.commonGround(intactTotal, scoreA + scoreB, diff).earned;
         }
         ESTATE_REVIEW.reveal(() => {
-            if (GAME.shouldOfferFairnessChallenge(
+            if (!COMPUTER.seat('chooser') && GAME.shouldOfferFairnessChallenge(
                 STATE.outcome,
                 STATE.chooserTimedOut,
                 { dynamicValue, commonGroundEarned, targetGap: REFEREE.targetGap(scoreA + scoreB, dynamicValue) }
@@ -8844,6 +8876,7 @@ const INPUT = {
     },
 
     activateCursor() {
+        if (COMPUTER.blocksHuman()) { UI.toast('The computer is taking its turn.', 'warn', 1100); return; }
         const target = { ...STATE.boardCursor };
         if (STATE.phase === PHASE.TERRAIN) INPUT.terrainCell(target);
         else if (STATE.phase === PHASE.BUILD) INPUT.buildCell(target);
@@ -8874,6 +8907,7 @@ const INPUT = {
         if (UI.topOverlayKey()) return;
         if (e.cancelable) e.preventDefault();
         SOUND.init();
+        if (COMPUTER.blocksHuman()) { UI.toast('The computer is taking its turn.', 'warn', 1100); return; }
         const { x, y } = INPUT.getCanvasPoint(e);
         if (STATE.phase === PHASE.TERRAIN) {
             const cell = INPUT.cellFromPoint(x, y);
@@ -9093,6 +9127,7 @@ const INPUT = {
 
     undo() {
         if (STATE.phase !== PHASE.CUT && STATE.phase !== PHASE.CHALLENGE && STATE.phase !== PHASE.WHAT_IF) return;
+        if (COMPUTER.blocksHuman()) return;
         if (STATE.isCutComplete || STATE.cutNodes.length === 0) return;
         STATE.cutNodes.pop();
         if (STATE.cutEdges.length > 0) STATE.cutEdges.pop();
@@ -10071,6 +10106,19 @@ const REFEREE = {
             onProgress: visited => { if (this.key === key) this.visited = visited; },
             onDone: result => {
                 if (this.key !== key) return;
+                if (result) {
+                    // Same gap, simplest fence: show a straight one when it reaches the minimum.
+                    const straight = COMPUTER.straightFences().filter(f => f.gap === result.gap)
+                        .sort((x, y) => (x.areaGap - y.areaGap) || (x.edges.length - y.edges.length))[0];
+                    if (straight) {
+                        const split = GAME.validateCut(straight.edges, STATE.estateMask);
+                        if (split.ok) {
+                            result.edges = straight.edges;
+                            result.a = GAME.scorePlot(split.plotA, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+                            result.b = GAME.scorePlot(split.plotB, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+                        }
+                    }
+                }
                 this.status = result ? 'done' : 'unavailable';
                 this.result = result;
                 if (STATE.phase === PHASE.FINAL && UI.el.finalOverlay.classList.contains('open')) {
@@ -10097,6 +10145,399 @@ const REFEREE = {
         const reach = r.count === 1 ? 'one fence reaches it' : `${r.count.toLocaleString()} fences reach it`;
         const shown = view === 'fairest' ? ` Shown: a fence with that gap, A ${r.a} · B ${r.b}.` : '';
         return `Every fence checked. Smallest gap possible on this estate: ${r.gap}; ${reach}. This fence: gap ${gap}.${shown}`;
+    },
+};
+
+// ---------------------------------------------------------------------------
+// COMPUTER: a second sibling played by fixed, stated rules. No personality, no
+// hidden adjustment. It places its pieces at random, roles come from a coin
+// toss, it always keeps the higher-value plot, and it cuts by one of three
+// rules the player picked and can read at any time.
+// ---------------------------------------------------------------------------
+const COMPUTER = {
+    IDX: 1,
+    NAME: 'Computer',
+    LEVELS: {
+        straight: {
+            title: 'Straight by area',
+            desc: 'Draws the straight fence that divides the land most evenly by area, ignoring the pieces.',
+        },
+        line: {
+            title: 'Best straight fence',
+            desc: 'Of every straight fence, draws the one with the smallest score gap.',
+        },
+        exact: {
+            title: 'Best fence possible',
+            desc: 'Checks every fence and draws one with the smallest gap possible. If it wins the toss and a perfect split exists, it cuts, because a tie goes to the Cutter.',
+        },
+    },
+    COMMON: 'In every case the computer places its pieces at random, a coin toss decides the roles, it keeps the higher-value plot when it chooses, and it never changes these rules mid-game.',
+    PACE: { place: 650, pass: 700, choose: 1100, node: 130 },
+    timer: null,
+    token: 0,
+    busy: false,
+    tossTimer: null,
+    tossPending: null,
+
+    get on() {
+        return !!STATE.settings.computer && !STATE.settings.tutorial
+            && !document.body.classList.contains('legacy-active');
+    },
+
+    level() { return this.LEVELS[STATE.settings.computerLevel] ? STATE.settings.computerLevel : 'line'; },
+
+    seat(role) {
+        if (!this.on) return false;
+        return role === 'cutter' ? STATE.cutterIdx === this.IDX : STATE.chooserIdx === this.IDX;
+    },
+
+    isTurn() {
+        if (!this.on) return false;
+        const s = STATE;
+        switch (s.phase) {
+            case PHASE.TERRAIN: return s.terrainTurn === this.IDX && s.terrainPool.length > 0;
+            case PHASE.BUILD: return s.turn === this.IDX && s.pool.length > 0;
+            case PHASE.MEANINGFUL: return s.meaningful.turn === this.IDX && !s.meaningful.pending;
+            case PHASE.PASS_TO_CUT: return s.cutterIdx === this.IDX;
+            case PHASE.CUT: return s.cutterIdx === this.IDX && !s.isCutComplete;
+            case PHASE.PASS_TO_CHOOSE: return s.chooserIdx === this.IDX;
+            case PHASE.CHOOSE: return !s.outcome && (s.choiceActor === 'cutter' ? s.cutterIdx : s.chooserIdx) === this.IDX;
+            default: return false;
+        }
+    },
+
+    blocksHuman() {
+        return this.on && this.isTurn()
+            && [PHASE.TERRAIN, PHASE.BUILD, PHASE.MEANINGFUL, PHASE.CUT, PHASE.CHOOSE].includes(STATE.phase);
+    },
+
+    reset() {
+        clearTimeout(this.timer);
+        clearTimeout(this.tossTimer);
+        this.timer = null;
+        this.tossTimer = null;
+        this.tossPending = null;
+        this.busy = false;
+        this.token++;
+    },
+
+    // Called whenever the HUD refreshes; acts a moment after the last change.
+    schedule() {
+        if (!this.on || this.busy) return;
+        clearTimeout(this.timer);
+        const token = ++this.token;
+        if (!this.isTurn()) return;
+        const s = STATE;
+        const delay = s.phase === PHASE.CHOOSE ? this.PACE.choose
+            : [PHASE.PASS_TO_CUT, PHASE.PASS_TO_CHOOSE].includes(s.phase) ? this.PACE.pass
+            : this.PACE.place;
+        this.timer = setTimeout(() => { if (token === this.token && this.isTurn()) this.act(); }, delay);
+    },
+
+    act() {
+        const s = STATE;
+        switch (s.phase) {
+            case PHASE.TERRAIN: return this.placeTerrain();
+            case PHASE.BUILD: return this.placePiece();
+            case PHASE.MEANINGFUL: return FLOW.skipMeaningful();
+            case PHASE.PASS_TO_CUT: return FLOW.beginCut();
+            case PHASE.CUT: return this.cut();
+            case PHASE.PASS_TO_CHOOSE: return FLOW.beginChoose();
+            case PHASE.CHOOSE:
+                if (s.choiceActor === 'cutter' && s.chooserTimedOut) FLOW.beginCutterChoice();
+                return this.choose();
+            default: return undefined;
+        }
+    },
+
+    randomFrom(list) {
+        return list.length ? list[Math.floor(STATE.rng() * list.length)] : null;
+    },
+
+    placeTerrain() {
+        const kind = STATE.terrainPool[0];
+        const spots = GAME.activeCells(STATE.estateMask)
+            .filter(p => GAME.canPlaceTerrain(kind, p.c, p.r, STATE.grid, STATE.terrain, STATE.estateMask));
+        const spot = this.randomFrom(spots);
+        if (spot) INPUT.terrainCell(spot);
+    },
+
+    placePiece() {
+        const spots = GAME.activeCells(STATE.estateMask)
+            .filter(p => GAME.isBuildableCell(p.c, p.r, STATE.grid, STATE.terrain, STATE.estateMask));
+        const spot = this.randomFrom(spots);
+        if (spot) INPUT.buildCell(spot);
+    },
+
+    // ---- The three cutting rules -------------------------------------------
+    straightFences() {
+        const fences = [];
+        for (const axis of ['v', 'h']) {
+            for (let index = 1; index < CONFIG.GRID; index++) {
+                const edges = GAME.straightCutEdges(axis, index, STATE.estateMask);
+                if (!edges.length) continue;
+                const split = GAME.validateCut(edges, STATE.estateMask);
+                if (!split.ok) continue;
+                const a = GAME.scorePlot(split.plotA, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+                const b = GAME.scorePlot(split.plotB, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+                fences.push({ edges, gap: Math.abs(a - b), areaGap: Math.abs(split.plotA.length - split.plotB.length) });
+            }
+        }
+        return fences;
+    },
+
+    fenceFor(level) {
+        if (level === 'exact' && REFEREE.exact()) return REFEREE.result.edges;
+        const straight = this.straightFences();
+        if (level === 'straight') return GAME.bankCutEdges(STATE.estateMask);
+        if (!straight.length) return GAME.bankCutEdges(STATE.estateMask);
+        straight.sort((x, y) => (x.gap - y.gap) || (x.areaGap - y.areaGap) || (x.edges.length - y.edges.length));
+        return straight[0].edges;
+    },
+
+    // Edge set to an ordered run of nodes, if the edges form one path.
+    nodePath(edges) {
+        const adjacency = new Map();
+        const parse = k => k.split('-').map(s => s.split(',').map(Number)).map(([c, r]) => ({ c, r }));
+        const add = (a, b) => {
+            const k = `${a.c},${a.r}`;
+            if (!adjacency.has(k)) adjacency.set(k, []);
+            adjacency.get(k).push(b);
+        };
+        edges.forEach(k => { const [a, b] = parse(k); add(a, b); add(b, a); });
+        const ends = [...adjacency.entries()].filter(([, list]) => list.length === 1).map(([k]) => k);
+        if (ends.length !== 2 || [...adjacency.values()].some(list => list.length > 2)) return null;
+        const start = ends.map(k => k.split(',').map(Number)).map(([c, r]) => ({ c, r }))
+            .find(node => GAME.isBorderNode(node, STATE.estateMask));
+        if (!start) return null;
+        const path = [start];
+        const seen = new Set([`${start.c},${start.r}`]);
+        let current = start;
+        for (;;) {
+            const next = (adjacency.get(`${current.c},${current.r}`) || []).find(n => !seen.has(`${n.c},${n.r}`));
+            if (!next) break;
+            seen.add(`${next.c},${next.r}`);
+            path.push(next);
+            current = next;
+        }
+        return path.length === edges.length + 1 ? path : null;
+    },
+
+    cut() {
+        if (STATE.phase !== PHASE.CUT || this.busy) return;
+        const level = this.level();
+        if (level === 'exact' && REFEREE.status === 'running') {
+            // The exact search finishes in well under a second; wait for it.
+            this.busy = true;
+            const started = performance.now();
+            const poll = () => {
+                if (STATE.phase !== PHASE.CUT) { this.busy = false; return; }
+                if (REFEREE.status === 'running' && performance.now() - started < 4000) { setTimeout(poll, 120); return; }
+                this.busy = false;
+                this.cut();
+            };
+            setTimeout(poll, 120);
+            return;
+        }
+        const edges = this.fenceFor(level);
+        const path = this.nodePath(edges);
+        if (!path) { this.applyFence(edges); return; }
+        this.busy = true;
+        const token = ++this.token;
+        let i = 0;
+        const next = () => {
+            if (token !== this.token || STATE.phase !== PHASE.CUT) { this.busy = false; return; }
+            INPUT.cutNode(path[i++]);
+            if (i < path.length && !STATE.isCutComplete) { this.timer = setTimeout(next, this.PACE.node); return; }
+            this.busy = false;
+            if (!STATE.isCutComplete) this.applyFence(edges);
+        };
+        next();
+    },
+
+    applyFence(edges) {
+        if (STATE.phase !== PHASE.CUT) return;
+        const split = GAME.validateCut(edges, STATE.estateMask);
+        if (!split.ok) { FLOW.bankCut(); return; }
+        STATE.cutNodes = [];
+        STATE.cutEdges = [...edges];
+        STATE.isCutComplete = true;
+        STATE.cutByBank = false;
+        STATE.plotA = split.plotA;
+        STATE.plotB = split.plotB;
+        SOUND.play('snap');
+        INPUT.onCutComplete();
+        UI.refreshHUD();
+        RENDER.render();
+    },
+
+    choose() {
+        if (STATE.phase !== PHASE.CHOOSE || STATE.outcome) return;
+        const a = GAME.scorePlot(STATE.plotA, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+        const b = GAME.scorePlot(STATE.plotB, STATE.grid, STATE.settings.betterTogether, STATE.terrain, STATE.estateMask).total;
+        SOUND.play('pop');
+        FLOW.completeChoice(b > a ? 'B' : 'A');
+    },
+
+    // ---- Coin toss in place of Rock, Paper, Scissors ---------------------------
+    prepareToss() {
+        const e = UI.el;
+        clearTimeout(this.tossTimer);
+        this.tossPending = null;
+        STATE.rpsWinnerIdx = -1;
+        e.rpsEyebrow.textContent = 'decide roles';
+        e.rpsEyebrow.className = 'eyebrow';
+        e.rpsTitle.textContent = 'Coin toss';
+        e.rpsPrompt.innerHTML = `Heads: <span class="p1">${escapeHtml(STATE.pNames[0])}</span>. Tails: <span class="p2">${escapeHtml(this.NAME)}</span>. The coin is in the air…`;
+        e.rpsWinnerButtons.hidden = true;
+        e.rpsRoleButtons.hidden = true;
+        e.rpsContinueBtn.hidden = true;
+        if (STATE.phase === PHASE.RPS_POST) REFEREE.ensure();
+        const token = ++this.token;
+        const started = performance.now();
+        const settle = () => {
+            if (token !== this.token || ![PHASE.RPS_PRE, PHASE.RPS_POST].includes(STATE.phase)) return;
+            const needsReferee = this.level() === 'exact' && STATE.phase === PHASE.RPS_POST && REFEREE.status === 'running';
+            if (needsReferee && performance.now() - started < 3000) { this.tossTimer = setTimeout(settle, 120); return; }
+            this.toss();
+        };
+        this.tossTimer = setTimeout(settle, 900);
+    },
+
+    toss() {
+        const e = UI.el;
+        const winnerIdx = STATE.rng() < 0.5 ? 0 : this.IDX;
+        if (winnerIdx === 0) {
+            FLOW.recordRpsWinner(0);
+            return;
+        }
+        STATE.rpsWinnerIdx = this.IDX;
+        const perfect = this.level() === 'exact' && STATE.phase === PHASE.RPS_POST && REFEREE.exact() && REFEREE.result.gap === 0;
+        const role = perfect ? 'cutter' : 'chooser';
+        const reason = perfect
+            ? 'A perfect split exists on this estate, and a tie goes to the Cutter.'
+            : 'The Chooser takes the higher-value plot.';
+        e.rpsEyebrow.innerHTML = `<span class="p2">${escapeHtml(this.NAME)}</span> won the toss`;
+        e.rpsTitle.textContent = `Computer will ${role === 'cutter' ? 'cut' : 'choose'}`;
+        e.rpsPrompt.textContent = reason;
+        e.rpsContinueBtn.hidden = false;
+        this.tossPending = role;
+        INTERACTION.changed();
+        e.rpsContinueBtn.focus({ preventScroll: true });
+    },
+
+    continueToss() {
+        if (!this.tossPending) return;
+        const role = this.tossPending;
+        this.tossPending = null;
+        UI.el.rpsContinueBtn.hidden = true;
+        FLOW.chooseRpsRole(role);
+    },
+
+    // ---- Copy ---------------------------------------------------------------------
+    instruction(phase) {
+        if (!this.on) return '';
+        const s = STATE;
+        const human = `<span class="p1">${escapeHtml(s.pNames[0])}</span>`;
+        const level = this.LEVELS[this.level()];
+        if (phase === PHASE.PASS_TO_CUT && this.seat('cutter')) {
+            return `Computer draws the fence next<span class="phase-hint">${escapeHtml(level.title)}: ${escapeHtml(level.desc)}</span>`;
+        }
+        if (phase === PHASE.CUT && this.seat('cutter')) {
+            return `<span class="p2">Computer</span> draws the fence<span class="phase-hint">${escapeHtml(level.title)}: ${escapeHtml(level.desc)}</span>`;
+        }
+        if (phase === PHASE.PASS_TO_CHOOSE && this.seat('chooser')) {
+            return `Computer chooses next<span class="phase-hint">It keeps the higher-value plot.</span>`;
+        }
+        if (phase === PHASE.CHOOSE && (s.choiceActor === 'cutter' ? s.cutterIdx : s.chooserIdx) === this.IDX) {
+            return `<span class="p2">Computer</span> is choosing<span class="phase-hint">It keeps the higher-value plot.</span>`;
+        }
+        if (phase === PHASE.BUILD && s.turn === this.IDX && s.pool.length) {
+            return `<span class="p2">Computer</span> is placing ${escapeHtml(GAME.assetName(s.pool[0]))}<span class="phase-hint">It places its pieces at random · ${s.pool.length} ${s.pool.length === 1 ? 'placement' : 'placements'} left</span>`;
+        }
+        if (phase === PHASE.PASS_TO_CUT || phase === PHASE.PASS_TO_CHOOSE) {
+            return `${human} is next`;
+        }
+        return '';
+    },
+
+    decoratePass(kind) {
+        const e = UI.el;
+        const human = `<span class="p1">${escapeHtml(STATE.pNames[0])}</span>`;
+        if (kind === 'cut') {
+            e.passTitle.textContent = 'Your turn to cut';
+            e.passBody.innerHTML = `
+                <p>${human} draws one fence edge to edge. A tie goes to you.</p>
+                <p><strong>${GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings)} seconds.</strong> If time runs out, ${STATE.settings.irregular ? 'the bank makes a simple straight division.' : 'the bank splits the estate straight down the middle.'}</p>
+                <p>The computer sees the fence, then keeps the higher-value plot.</p>
+            `;
+        } else if (kind === 'choose') {
+            e.passTitle.textContent = 'Your turn to choose';
+            e.passBody.innerHTML = `
+                <p>${STATE.cutByBank
+                    ? `Time ran out, so <strong>${STATE.settings.irregular ? 'the bank made a simple straight division.' : 'the bank split the estate straight down the middle.'}</strong>`
+                    : `The computer drew the fence (${escapeHtml(this.LEVELS[this.level()].title)}).`}</p>
+                <p>${human} picks the half to keep. Scores stay hidden until you choose.</p>
+                <p><strong>${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds.</strong> If you do not choose, the computer gets the same ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds to choose instead.</p>
+            `;
+        }
+    },
+
+    rulesHtml() {
+        if (!STATE.settings.computer) return '';
+        const level = this.LEVELS[this.level()];
+        return `
+            <div class="rules-section">
+                <h3>The computer</h3>
+                <p><strong>${escapeHtml(level.title)}:</strong> ${escapeHtml(level.desc)}</p>
+                <p>${escapeHtml(this.COMMON)}</p>
+            </div>`;
+    },
+
+    // ---- Setup screen -------------------------------------------------------------
+    humanNameStash: '',
+
+    refreshSetup() {
+        const e = UI.el;
+        const on = !!STATE.settings.computer;
+        document.querySelectorAll('[data-opponent]').forEach(button => {
+            const selected = (button.dataset.opponent === 'computer') === on;
+            button.classList.toggle('selected', selected);
+            button.setAttribute('aria-checked', String(selected));
+            button.tabIndex = selected ? 0 : -1;
+        });
+        e.computerLevels.hidden = !on;
+        document.querySelectorAll('[data-level]').forEach(button => {
+            const selected = button.dataset.level === this.level();
+            button.classList.toggle('selected', selected);
+            button.setAttribute('aria-checked', String(selected));
+            button.tabIndex = selected ? 0 : -1;
+        });
+        if (on) {
+            if (e.inputP2.value !== this.NAME) this.humanNameStash = e.inputP2.value;
+            e.inputP2.value = this.NAME;
+            e.inputP2.disabled = true;
+        } else {
+            if (e.inputP2.disabled) e.inputP2.value = this.humanNameStash || 'Sibling 2';
+            e.inputP2.disabled = false;
+        }
+    },
+
+    bind() {
+        document.querySelectorAll('[data-opponent]').forEach(button => {
+            button.addEventListener('click', () => {
+                STATE.settings.computer = button.dataset.opponent === 'computer';
+                if (STATE.settings.computer && !this.LEVELS[STATE.settings.computerLevel]) STATE.settings.computerLevel = 'line';
+                UI.refreshSetup();
+            });
+        });
+        document.querySelectorAll('[data-level]').forEach(button => {
+            button.addEventListener('click', () => {
+                STATE.settings.computerLevel = button.dataset.level;
+                UI.refreshSetup();
+            });
+        });
+        UI.el.rpsContinueBtn.addEventListener('click', () => this.continueToss());
     },
 };
 
@@ -10537,6 +10978,7 @@ const APP = {
         MATCH_MENU.bind();
         PREVIEW.bind();
         TUTORIAL.bind();
+        COMPUTER.bind();
 
         const c = RENDER.canvas;
         c.addEventListener('pointerdown', INPUT.handleCanvas, { passive: false });
@@ -11478,6 +11920,8 @@ const MATCH_MENU = {
             meaningful: false,
             lightning: false,
             showLandValues: !!settings.showLandValues,
+            computer: !!settings.computer,
+            computerLevel: settings.computerLevel || 'line',
         };
     },
 
