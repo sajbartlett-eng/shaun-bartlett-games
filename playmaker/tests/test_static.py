@@ -63,7 +63,7 @@ const [url, actionsFile, outFile, code, seed, scenario] = process.argv.slice(2);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
   const actions = JSON.parse(require('fs').readFileSync(actionsFile, 'utf8'));
   const log = await page.evaluate(async ([actions, code, seed, scenario]) => {
-    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: Number(scenario), seed: Number(seed), code });
+    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: Number(scenario), seed: Number(seed), code, level: 'pro' });
     for (const a of actions) await window.PM_BACKEND('/api/act', { code: g.code, token: g.token, action: a });
     return window.PM_BACKEND(`/api/log?code=${g.code}`);
   }, [actions, code, seed, scenario]);
@@ -91,7 +91,7 @@ def test_static_build_matches_the_server(static_site, tmp_path, scenario, seed):
     srv, base = start_background()
     req = lambda p, b: json.loads(urllib.request.urlopen(urllib.request.Request(
         base + p, json.dumps(b).encode(), {'Content-Type': 'application/json'})).read())
-    g = req('/api/new', dict(mode='hotseat', scenario=scenario, seed=seed, code=code))
+    g = req('/api/new', dict(mode='hotseat', scenario=scenario, seed=seed, code=code, level='pro'))
     for a in actions:
         req('/api/act', dict(code=g['code'], token=g['token'], action=a))
     server_log = json.loads(urllib.request.urlopen(f'{base}/api/log?code={g["code"]}').read())
@@ -118,7 +118,7 @@ const [url, shot] = process.argv.slice(2);
   const page = await ctx.newPage();
   await page.goto(url);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
-  await page.selectOption('#kind', 'single');
+  await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
   await page.click('#create'); await page.waitForTimeout(1200);
   await page.click('g.piece[aria-label^="O1,"]'); await page.waitForTimeout(400);
   const res = await page.evaluate(() => {

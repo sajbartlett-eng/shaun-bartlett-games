@@ -81,7 +81,7 @@ async function initStart() {
 
 async function create() {
   const k = $('kind').value, mode = $('mode').value;
-  const body = { mode, ai: { O: $('aiO').checked ? 'greedy' : null, X: $('aiX').checked ? 'greedy' : null } };
+  const body = { mode, level: $('level').value, ai: { O: $('aiO').checked ? 'greedy' : null, X: $('aiX').checked ? 'greedy' : null } };
   if ($('seed').value) body.seed = Number($('seed').value);
   if (k === 'scenario') body.scenario = Number($('scenario').value);
   else { body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full'; }
@@ -149,11 +149,22 @@ function render() {
   $('defTeam').textContent = s.teams[1] + (s.full ? ` (player ${s.attacker === 'A' ? 'B' : 'A'})` : '');
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
-  renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent();
+  renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
+  if (scoutModalIfDue()) return;
   if (s.placing) return;
   if (showFeedIfNew()) return;          // the other side's turn first; the end screen follows
   if (s.stage === 'target' && s.can_act) targetModal();
   else if (s.stage === 'over') endModal();
+}
+
+function cardEl(c, side, label, extra) {
+  const head = el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), el('span', { text: `QS ${c.qs}` })]);
+  const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
+    el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
+      ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
+    el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
+      'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
+  return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [head, ...groups, extra || null]);
 }
 
 function renderCards(id, pieces, side) {
@@ -289,8 +300,10 @@ function lockBadge(g, cx, cy) {
 function myActs() { return st.legal || []; }
 function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.piece === i && !SIDE_KINDS.includes(a.kind)); }
 
+let compare = null;     // {side, i, k}: the card panel and which matchup is showing
 function selectPiece(side, i) {
   sel = { side, i, kind: null, dest: null };
+  compare = { side, i, k: 0 };
   const kinds = [...new Set(pieceActs(side, i).map(a => a.kind))];
   if (kinds.length === 1) sel.kind = kinds[0];
   render();
@@ -361,24 +374,24 @@ function renderActions() {
       } else if (sel.kind === 'pass') {
         for (const a of ka) {
           const th = (a.threats || []).map(t => `X${t.defender + 1} ${t.how === 'direct' ? 'on the line' : 'arrow across (must move onto the line first)'}`);
-          tb.append(el('div', {}, [actionButton(a, `Pass to O${a.target + 1}`), el('span', { class: 'note', text: th.length ? ' Can intercept: ' + th.join('; ') : ' No defender can intercept this pass' })]));
+          tb.append(el('div', { class: 'opt' }, [actionButton(a, `Pass to O${a.target + 1}`), el('span', { class: 'note', text: th.length ? ' Can intercept: ' + th.join('; ') : ' No defender can intercept this pass' }), chips(a)]));
         }
       } else if (sel.kind === 'shot') {
-        for (const a of ka) tb.append(el('div', {}, [actionButton(a, `Shoot: ${a.shot}`), el('span', { class: 'note', text: ' ' + a.value_now })]));
+        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Shoot: ${a.shot}`), chips(a)]));
       } else if (sel.kind === 'screen') {
-        for (const a of ka) tb.append(actionButton(a, `T ${DIRN[a.target]}`));
+        for (const a of ka) tb.append(el('div', { class: 'opt inline' }, [actionButton(a, `T ${DIRN[a.target]}`), chips(a)]));
       } else if (sel.kind === 'dribble') {
-        for (const a of ka) tb.append(actionButton(a, `Dribble v X${a.target + 1}`));
+        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Dribble v X${a.target + 1}`), chips(a)]));
       } else if (sel.kind === 'challenge') {
-        for (const a of ka) tb.append(actionButton(a, `Challenge O${a.target + 1}'s screen`));
-      } else for (const a of ka) tb.append(actionButton(a, KIND_NAME[a.kind]));
+        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Challenge O${a.target + 1}'s screen`), chips(a)]));
+      } else for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, KIND_NAME[a.kind]), chips(a)]));
     }
   } else $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
   if (s.stage === 'contest' || s.stage === 'forced') {
     $('selected').textContent = s.stage === 'contest' ? 'The defence chooses the contest:' : 'The offence chooses the forced shot:';
     for (const a of myActs()) {
-      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: a.option || a.value_now || a.text, onclick: () => submit(a) });
-      $('targetButtons').append(el('div', {}, [b]));
+      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: a.option || (a.kind === 'forced_shot' ? `Forced shot: ${a.shot}` : a.text), onclick: () => submit(a) });
+      $('targetButtons').append(el('div', { class: 'opt' }, [b, a.kind === 'forced_shot' ? chips(a) : null]));
     }
     return;
   }
@@ -467,11 +480,16 @@ function endModal() {
     kids.push(el('h3', { text: `Match: A ${m.A} · B ${m.B} → ${m.winner === 'tie' ? 'still tied' : 'player ' + m.winner + ' wins'}` }));
     if (m.tiebreak) kids.push(el('p', { text: `Tiebreak: A rolled ${m.tiebreak.A.roll} (needs ${m.tiebreak.A.need} or less), B rolled ${m.tiebreak.B.roll} (needs ${m.tiebreak.B.need} or less).` }));
   }
+  if (s.feedback_due) kids.push(el('section', { id: 'reviewBox', class: 'review' }, [el('h3', { text: 'Review' }),
+    s.level === 'pro' ? el('button', { text: 'Show the full review', onclick: loadReview }) : el('p', { class: 'note', text: 'Loading the review…' })]));
+  if (s.feedback_due && s.level !== 'pro') setTimeout(loadReview, 0);
   if (s.feedback_due && !s.feedback_done) {
     const areas = s.feedback_questions.map((q, i) => el('label', {}, [el('div', { text: `${i + 1}. ${q}` }), el('textarea', { id: 'fb' + i })]));
+    areas.push(el('label', {}, [el('div', { text: 'Was your setup and plan the right one for these two teams?' }), el('textarea', { id: 'fbReflect' })]));
     kids.push(el('h3', { text: 'Feedback (saved with the game log)' }), ...areas,
       el('button', { class: 'primary', text: 'Send feedback', onclick: async () => {
         const answers = {}; s.feedback_questions.forEach((q, i) => { answers[i] = $('fb' + i).value; });
+        answers.reflect = $('fbReflect').value;
         await api('/api/feedback', { code: G.code, token: G.token, answers }); st.feedback_done = true; closeModal(); endModal(); } }));
   }
   if (s.feedback_due) kids.push(el('h3', { text: 'Game log' }), el('p', { class: 'note', text: s.static ? 'The log lives in this browser tab. Download it, or copy it to paste into an email.' : `Saved on the server in playtest_logs/${s.log_name}.` }),
@@ -704,4 +722,100 @@ function actedPieces() {
   const out = new Set();
   for (const e of lastOther) { const m = e.text.match(/^([OX])(\d)/); if (m) out.add(m[1] + (Number(m[2]) - 1)); }
   return out;
+}
+
+
+// ---------------------------------------------------------------- scouting: arrange, never judge
+function chips(a) {
+  if (!a.chips || !a.chips.length) return null;
+  return el('div', { class: 'chips' }, a.chips.map(c => el('span', { class: 'vchip', text: c })));
+}
+
+function renderCompare() {
+  const box = $('compare'); if (!box) return;
+  box.innerHTML = '';
+  if (!compare || !st) { box.classList.add('hidden'); return; }
+  const side = compare.side, i = compare.i;
+  const mine = (side === 'O' ? st.o : st.x)[i];
+  const oppSide = side === 'O' ? 'X' : 'O';
+  const opps = (st.matchups[side] || [])[i] || [];
+  const k = Math.min(compare.k, Math.max(0, opps.length - 1));
+  const opp = opps.length ? (oppSide === 'O' ? st.o : st.x)[opps[k]] : null;
+  const how = opp ? (side === 'O' ? (st.x[opps[k]].arrow !== undefined && opps.length && isArrowOn(st.x[opps[k]], mine) ? 'arrow on him' : 'nearest defender')
+                                  : (isArrowOn(mine, opp) ? 'his arrow is on this player' : 'nearest attacker')) : '';
+  box.classList.remove('hidden');
+  box.append(el('div', { class: 'cmp-head' }, [el('h3', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
+    opps.length > 1 ? el('button', { text: `Next matchup (${k + 1} of ${opps.length})`, onclick: () => { compare.k = (k + 1) % opps.length; renderCompare(); } }) : null,
+    el('button', { text: 'Close card', onclick: () => { compare = null; renderCompare(); } })]),
+    el('div', { class: 'cmp-cards' }, [cardEl(mine.card, side, `${side}${i + 1}`), opp ? cardEl(opp.card, oppSide, `${oppSide}${opps[k] + 1}`) : null]));
+}
+function isArrowOn(x, o) { const d = [o.x - x.x, o.y - x.y]; return Math.max(Math.abs(d[0]), Math.abs(d[1])) === 1 && DIRS[x.arrow][0] === d[0] && DIRS[x.arrow][1] === d[1]; }
+
+function reportEl(rep) {
+  const out = [];
+  if (rep.level === 'pro') return out;
+  for (const t of rep.teams) {
+    const L = t.lists, nums = a => a.length ? a.map(n => '#' + n).join(', ') : 'none';
+    out.push(el('h3', { text: t.name }),
+      el('p', { class: 'note', text: `Creators (Dribble or Pass ▲): ${nums(L.creators)} · Three ▲: ${nums(L.three_shooters)} · Rim protection (v Layup or v Dunk ▲): ${nums(L.rim_protectors)} · Two or more ▼ on defence: ${nums(L.defensive_liabilities)}` }),
+      el('table', { class: 'scout' }, [el('tr', {}, [el('th', { text: '#' }), el('th', { text: 'Player' }), el('th', { text: 'Offence' }), el('th', { text: 'Defence' })]),
+        ...t.players.map(p => el('tr', {}, [el('td', { text: p.num }), el('td', { text: `${p.role} (${p.tier})` }), el('td', { text: p.offence.text }), el('td', { text: p.defence.text })]))]));
+  }
+  if (rep.matchups) out.push(el('h3', { text: 'Matchups on the cards (by position)' }), el('ul', {}, rep.matchups.map(m => el('li', { text: m.text }))));
+  if (rep.engine) out.push(el('h3', { text: "The engine's hunt / protect (team sheet)" }), el('p', { text: `Hunt: ${rep.engine.hunt.text}. Protect: ${rep.engine.protect.text}.` }));
+  return out;
+}
+
+function seenKey(what) { return `pm_${what}_${G.code}`; }
+function scoutModalIfDue() {
+  const sc = st.scout;
+  if (!sc || !$('modal').classList.contains('hidden')) return false;
+  const pending = sc.pending.filter(side => st.mode === 'hotseat' || st.seat === side);
+  if (pending.length) { pickModal(pending[0]); return true; }
+  if (sc.pending.length && st.mode === 'remote') {
+    $('summary').textContent = 'Waiting for the other side\'s scouting call before tip-off'; return false;
+  }
+  let seen = false; try { seen = localStorage.getItem(seenKey('report')) === '1'; } catch (e) { /* private mode */ }
+  if (st.level === 'learn' && !seen) {
+    modal([el('h2', { text: 'Scout report (Learn level)' }), ...reportEl(sc.report),
+      el('button', { class: 'primary', text: 'Tip off', onclick: () => { try { localStorage.setItem(seenKey('report'), '1'); } catch (e) { /* ignore */ } closeModal(); render(); } })]);
+    return true;
+  }
+  return false;
+}
+
+function pickModal(side) {
+  const sc = st.scout, needs = sc.needs[side];
+  const mine = sc.teams[side], theirs = sc.teams[side === 'O' ? 'X' : 'O'];
+  const sel = (id, label, prefix) => el('label', {}, [label + ' ', el('select', { id }, [1, 2, 3, 4, 5].map(n => el('option', { value: n, text: `${prefix}${n}` })))]);
+  const parts = [el('h2', { text: `${side === 'O' ? 'Offence' : 'Defence'} (${mine}): your scouting call` }),
+    el('p', { class: 'note', text: st.mode === 'hotseat' ? `${side === 'O' ? 'Defence' : 'Offence'}, look away. This stays private until the review.` : 'Private until the review.' }),
+    ...reportEl(sc.report)];
+  if (needs.includes('hunt')) parts.push(el('h3', { text: 'Hunt one matchup' }), el('div', { class: 'picker' }, [sel('pkHuntO', `Your attacker (${mine})`, 'O'), sel('pkHuntX', `v their defender (${theirs})`, 'X')]));
+  if (needs.includes('protect')) parts.push(el('h3', { text: 'Protect one weakness' }), el('div', { class: 'picker' }, [sel('pkProtect', `Your defender (${mine})`, '#')]));
+  parts.push(el('button', { class: 'primary', text: 'Save my call', onclick: async () => {
+    const body = { code: G.code, token: G.token, side };
+    if (needs.includes('hunt')) body.hunt = { o: Number($('pkHuntO').value), x: Number($('pkHuntX').value) };
+    if (needs.includes('protect')) body.protect = { x: Number($('pkProtect').value) };
+    try { const r = await api('/api/scout', body); closeModal(); st = r.state; render(); } catch (e) { alert(e.message); }
+  } }));
+  modal(parts);
+}
+
+async function loadReview() {
+  const box = $('reviewBox'); if (!box) return;
+  box.innerHTML = ''; box.append(el('h3', { text: 'Review' }), el('p', { class: 'note', text: 'Working out the review (a few seconds)…' }));
+  let r; try { r = await api('/api/review', { code: G.code, token: G.token }); } catch (e) { box.append(el('p', { text: e.message })); return; }
+  box.innerHTML = '';
+  box.append(el('h3', { text: 'Review' }));
+  const sides = ['O', 'X'];
+  const pickText = (side, p) => [p.hunt ? `hunt O${p.hunt.o} v X${p.hunt.x}` : null, p.protect ? `protect #${p.protect.x}` : null].filter(Boolean).join('; ');
+  box.append(el('h4', { text: '1. Your plan against the board' }), el('ul', {}, sides.map(side => el('li', { text:
+    `${side === 'O' ? 'Offence' : 'Defence'}: ${r.picks[side] ? 'your call: ' + pickText(side, r.picks[side]) : 'no call made'} · team sheet: ${[r.engine[side].hunt ? 'hunt ' + r.engine[side].hunt.text : null, r.engine[side].protect ? 'protect ' + r.engine[side].protect.text : null].filter(Boolean).join('; ')}` }))));
+  box.append(el('h4', { text: '2. What the board offered' }), el('p', { class: 'note', text: 'The biggest ▲ shot edges against the contester eligible at that moment, at any decision point.' }),
+    el('ul', {}, r.advantages.length ? r.advantages.map(a => el('li', { text: `${a.text} (clock ${a.clock}): ${a.used ? 'used (that shot was taken)' : 'not used'}` })) : [el('li', { text: 'No ▲ shot was on the board.' })]));
+  box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
+  if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
+    : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
+  box.append(el('h4', { text: '4. Reflect' }), el('p', { text: 'Was your setup and plan the right one for these two teams? (Answer it with the feedback below.)' }));
 }

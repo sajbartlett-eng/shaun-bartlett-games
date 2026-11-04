@@ -21,7 +21,8 @@ class Manager:
             raise GameError('remote play needs the server version (python -m playmaker_web)')
         g = Game(mode=body.get('mode', 'hotseat'), scenario=body.get('scenario'), teams=body.get('teams'),
                  seed=body.get('seed'), ai=body.get('ai'), full=bool(body.get('full')),
-                 place=body.get('place', bool(body.get('full'))), code=body.get('code'))
+                 place=body.get('place', bool(body.get('full'))), code=body.get('code'),
+                 level=body.get('level', 'scout'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -70,6 +71,11 @@ def handle(manager, method, path, query=None, body=None):
             res = g.act(tok, body.get('action') or {})
             g.after_human()
             return 200, dict(rolls=res['rolls'], state=state_json(g, tok))
+        if path == '/api/scout':
+            g.scout(tok, body)
+            return 200, dict(state=state_json(g, tok))
+        if path == '/api/review':
+            return 200, g.review(tok)
         if path == '/api/place':
             g.place(tok, body)
             return 200, dict(state=state_json(g, tok))

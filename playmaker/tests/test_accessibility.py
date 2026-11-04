@@ -29,7 +29,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const [base, axePath] = process.argv.slice(2);
 const AXE = fs.readFileSync(axePath, 'utf8');
-const post = async (p, b) => (await fetch(base + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) })).json();
+const post = async (p, b) => (await fetch(base + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p === '/api/new' && !b.level ? { ...b, level: 'pro' } : b) })).json();
 const get = async p => (await fetch(base + p)).json();
 const act = async (g, pred) => { const s = await get(`/api/state?code=${g.code}&token=${g.token}`); return post('/api/act', { code: g.code, token: g.token, action: s.legal.find(pred) }); };
 async function scan(page) {

@@ -117,3 +117,93 @@ def review(path, budget_s=5.0, out=print):
         mark = '' if r['gap'] <= 0.5 else f'   <- solver preferred: {r["solver"]} (+{r["gap"]:.1f} for the {"offence" if r["side"] == "O" else "defence"})'
         out(f'  poss {r["possession"]} clock {r["clock"]:>2} {r["side"]}: {r["played"]}{mark}')
     return rows
+
+
+# ---- post-game review helpers (step 3c) -------------------------------------------------------------
+
+def replay_states(records):
+    """Every decision state in the log, in order, with the action taken there."""
+    out = []
+
+    def grab(state, a, rec):
+        out.append((state, a, rec))
+    _replay_all(records, grab)
+    return out
+
+
+def _replay_all(records, fn):
+    """Like replay(), but calls fn at every action (human and computer)."""
+    orig = [dict(r) for r in records]
+    for r in orig:
+        if r['type'] == 'action':
+            r['actor'] = 'human'
+    replay(orig, on_decision=fn)
+
+
+def board_advantages(records, k=3):
+    """The biggest matchup advantages the board offered: a ▲ shooter's shot value against the contester
+    eligible at that moment (an adjacent defender, the one giving the lowest value; none = contest 0),
+    over every decision point. Returns the top k (distinct player, square and shot type), and whether
+    the possession's shot used any of them."""
+    from . import board as B
+    from . import rules_config as RC
+    from .scoring import contest_rating
+    best = {}
+    finals = []
+    for state, a, rec in replay_states(records):
+        if state.stage not in ('play', 'reaction'):
+            continue
+        for i, p in enumerate(state.o):
+            if not B.on_board(p):
+                continue
+            z = B.zone(p)
+            for t in RC.ZONE_SHOTS[z]:
+                card = state.ctx.off[i]
+                if card.bands['shot_' + t] != 'H':
+                    continue
+                pts = RC.ZONE_POINTS[z]
+                opts = [(0, None)]
+                for j, xp in enumerate(state.x):
+                    if B.adjacent(xp, p):
+                        opts.append((contest_rating(state.ctx.dfn[j], t, xp, p, state.ctx.rules), j))
+                c, j = max(opts, key=lambda o: o[0])
+                v = pts * (card.shot(t) - c)
+                key = (rec.get('possession', 1), i, B.sq(p), t)
+                if key not in best or v > best[key]['value']:
+                    best[key] = dict(possession=key[0], o=i + 1, square=key[2], shot=t, rating=card.shot(t),
+                                     contest=c, contester=(j + 1) if j is not None else None, value=v,
+                                     clock=state.clock, phase=state.phase,
+                                     text=f'O{i + 1} {t} {card.shot(t)}▲ on {key[2]} v '
+                                          + (f'X{j + 1} contest {c}' if j is not None else 'no eligible contester')
+                                          + f': {pts} × ({card.shot(t)} − {c}) = {v}')
+    top = sorted(best.values(), key=lambda b: (-b['value'], b['o']))[:k]
+    shots = [r for r in records if r['type'] == 'end']
+    taken = []
+    for r in records:
+        if r['type'] == 'action' and r['action']['kind'] in ('shot', 'forced_shot'):
+            taken.append((r.get('possession', 1), r['action']['piece'] + 1, r['action']['shot']))
+    for b in top:
+        b['used'] = (b['possession'], b['o'], b['shot']) in taken
+    return top
+
+
+def solver_disagreements(path_or_records, budget_s=1.0, k=3, max_decisions=12):
+    """Key moments where the solver's preferred action differed most in value (estimates)."""
+    import tempfile, os, json as _json
+    recs = path_or_records if isinstance(path_or_records, list) else read(path_or_records)
+    humans = [r for r in recs if r['type'] == 'action' and r.get('actor') == 'human']
+    if len(humans) > max_decisions:              # keep the review quick: the first decisions of each side
+        keep = set(id(r) for r in humans[:max_decisions])
+        recs = [r if r['type'] != 'action' or r.get('actor') != 'human' or id(r) in keep else dict(r, actor='skip')
+                for r in recs]
+    with tempfile.NamedTemporaryFile('w', suffix='.jsonl', delete=False) as f:
+        for r in recs:
+            f.write(_json.dumps(r) + '\n')
+        path = f.name
+    try:
+        rows = review(path, budget_s, out=lambda *a: None)
+    finally:
+        os.remove(path)
+    rows = [r for r in rows if r['gap'] > 0.5]
+    rows.sort(key=lambda r: -r['gap'])
+    return [dict(r, label='estimate') for r in rows[:k]]
