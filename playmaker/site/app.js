@@ -811,9 +811,9 @@ async function loadReview() {
   const sides = ['O', 'X'];
   const pickText = (side, p) => [p.hunt ? `hunt O${p.hunt.o} v X${p.hunt.x}` : null, p.protect ? `protect #${p.protect.x}` : null].filter(Boolean).join('; ');
   box.append(el('h4', { text: '1. Your plan against the board' }), el('ul', {}, sides.map(side => el('li', { text:
-    `${side === 'O' ? 'Offence' : 'Defence'}: ${r.picks[side] ? 'your call: ' + pickText(side, r.picks[side]) : 'no call made'} · team sheet: hunt ${r.engine[side].hunt.text}; protect ${r.engine[side].protect.text}` }))));
+    `${side === 'O' ? 'Offence' : 'Defence'}: ${r.picks[side] ? 'your call: ' + pickText(side, r.picks[side]) : 'no call made'} · team sheet: ${[r.engine[side].hunt ? 'hunt ' + r.engine[side].hunt.text : null, r.engine[side].protect ? 'protect ' + r.engine[side].protect.text : null].filter(Boolean).join('; ')}` }))));
   box.append(el('h4', { text: '2. What the board offered' }), el('p', { class: 'note', text: 'The biggest ▲ shot edges against the contester eligible at that moment, at any decision point.' }),
-    el('ul', {}, r.advantages.length ? r.advantages.map(a => el('li', { text: `${a.text} (clock ${a.clock}) — ${a.used ? 'used: that shot was taken' : 'not used'}` })) : [el('li', { text: 'No ▲ shot was on the board.' })]));
+    el('ul', {}, r.advantages.length ? r.advantages.map(a => el('li', { text: `${a.text} (clock ${a.clock}): ${a.used ? 'used (that shot was taken)' : 'not used'}` })) : [el('li', { text: 'No ▲ shot was on the board.' })]));
   box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
   if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));

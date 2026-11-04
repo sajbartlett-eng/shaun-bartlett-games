@@ -278,7 +278,11 @@ class Game:
             raise GameError('the review comes at the end of the match (or of a scenario or single possession)')
         if self.review_cache is None:
             recs = self.read_log()
-            engine = {side: self._engine_picks_any(side) for side in ('O', 'X')}
+            # Only the calls that apply: both in a full match, else the offence hunts and the defence protects.
+            shape = {side: (['hunt', 'protect'] if self.full else ['hunt'] if side == 'O' else ['protect'])
+                     for side in ('O', 'X')}
+            engine = {side: {k: v for k, v in self._engine_picks_any(side).items() if k in shape[side]}
+                      for side in ('O', 'X')}
             out = dict(level=self.level, picks=self.picks, engine=engine, advantages=board_advantages(recs))
             try:
                 from playmaker_engine import solver  # noqa: F401  (the in-browser build has no solver)

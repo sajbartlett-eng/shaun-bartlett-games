@@ -109,6 +109,42 @@ Screenshots: `docs/playtest_mid_possession.png` (laptop), `docs/playtest_phone_p
 `docs/playtest_contest_decision.png`, `docs/playtest_match_end_feedback.png`,
 `docs/playtest_scenario_card.png`, `docs/playtest_end_of_possession.png`.
 
+## Scouting and detail levels (step 3c)
+
+**The rule: the screen may arrange information, never judge it.** It can put two cards side by side,
+mark ▲ and ▼ values (the bands come from the locked range table), and say which defender can contest
+or intercept. It never says what a play is worth before you commit, never ranks your options and never
+tells you what to do. Judgement only appears after the game, in the review, and solver numbers there are
+labelled "estimate". The word "mistake" never appears.
+
+- **Card comparison:** tap or click a piece and its card opens beside its matchup's card (the
+  defender whose arrow points at it, otherwise the nearest). "Next matchup" flips through the others.
+- **Matched-value chips:** every pass, dribble, screen, steal, intercept, challenge and shot shows the
+  two ratings that meet, for example "Pass 18▲ v Intercept 5▼ (X3)". No odds, no point sums.
+- **Scout report (before tip-off):** each player's ▲ strengths and ▼ liabilities, written from the card
+  data only, plus team lists (creators, three-point ▲, rim protection, players with two or more ▼ on
+  defence). A list of banned words (attack, avoid, exploit, target, should, must and others) is checked
+  by the tests.
+- **Your scouting call:** at Scout level the offence privately picks one matchup to hunt and the
+  defence one weakness to protect (both, in a full match). Calls stay hidden until the review.
+- **Post-game review:** (1) your call next to the team-sheet calculation, (2) the three biggest ▲ shot
+  edges the board offered and whether you used them, (3) where a short solver search disagreed, as
+  estimates (server version only; the link version says how to run it on the log), (4) a reflective
+  question saved with the log.
+
+| Level | Before the game | During | After |
+|---|---|---|---|
+| **Learn** | Scout report, matchups on the cards, the team-sheet hunt / protect | Chips and card comparison | Full review |
+| **Scout** (default) | Scout report inside your private scouting call | Chips and card comparison | Full review |
+| **Pro** | Nothing | Chips and card comparison | Review on request |
+
+Both players always get the same level; it is written to the log. `tests/test_scouting.py` checks the
+report's wording, the bands, the levels, that neither seat sees anything the other cannot, that no
+pre-commit value or odds reach the page, the review and the phone layout.
+
+Screenshots: `docs/playtest_scout_report.png`, `docs/playtest_card_compare_phone.png`,
+`docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
+
 ## Solver (step 2)
 
 ```
