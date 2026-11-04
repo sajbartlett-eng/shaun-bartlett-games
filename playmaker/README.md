@@ -159,40 +159,90 @@ and `docs/playtest_scout_reveal.png` (read the cards first), `docs/playtest_lear
 `docs/playtest_team_builder.png`, `docs/playtest_report_in_play.png`, `docs/playtest_card_compare_phone.png`,
 `docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
 
-## The computer defence (step 3e)
+## How the computer plays (step 3e)
 
-Tick *computer plays defence* and the defence now reads the board. An arrow does one job at a time: on
-the ball (Steal, clean contest), a **wall** across the drive, a **lane** across a pass, or **help** across
-the path to the rim. The old opponent judged every contest from the arrows' current facing, so it kept
-them on the ball. Yet any defender with their Move and a token left can turn or step in to face the
-shooter as a reaction, so that facing usually comes free.
+Pick **Computer plays offence / defence: Rookie, Starter or All-Star** at the start. Each side's level is
+shown on screen and saved in the log.
 
-- **How it decides:** each candidate turn is scored with the solver's evaluation of the offence's next
-  turn (shoot now, drive, or pass and then shoot). That evaluation counts a contest as clean when the
-  defender could still get adjacent and facing in the reaction (Move unused, not locked, token in the
-  pool), so holding a reaction back is valued, and walls and lanes start to score. It thinks for at most
-  2.5 seconds per decision on the server and 1.2 seconds in the link version.
-- **At setup** it places man-to-man, then picks each starting arrow the same way.
-- **The offence** is still the simple greedy baseline. *baseline* (in the API) keeps the old defence for
-  comparisons.
-- Every computer defender move logs its arrow's job (`arrow_job`) for the review and the tests.
+- **Rookie:** makes beginner mistakes you can learn to spot.
+- **Starter:** solid, with one habit to find.
+- **All-Star:** plays the full read.
 
-Measured on 46 possessions (30 table-setup games across team pairings and the 16 scenario cards,
-greedy offence), arrow jobs read at the end of each turn:
+**What every level sees:** the cards, the board and the trackers, nothing else. No level gets hidden
+information or extra tokens, and the defence never sees the Coach's Call target. There are no stored
+solver results; every choice is worked out at the table from what is in front of it.
 
-| | Old defence | New defence |
-|---|---|---|
-| Defender moves during play turns | 6 | 32 |
-| Their arrows: on the ball / lanes / walls | 67% / 17% / 0% | 34% / 53% / 6% |
-| Reactions ending on the shooter | 100% | 98% |
-| Offence's mean score | 17.0 | 15.6 |
+**How it values things.**
+- **A contest is judged after the defence's legal reaction.** When a shot is declared the defence may
+  spend 0, 1 or 2 actions from its pool. A defender with their Move unused, not locked and a token
+  available can still get adjacent and facing. A Quick Step keeps the facing, a Sprint faces the way it
+  ran, and a locked defender can't turn (`reachable_contest` in `computer.py`).
+- **A position is judged by the offence's best next action against it:** shoot now, drive, or pass
+  and then shoot, with interception risk from the arrow lines. This is the solver's evaluation, so walls,
+  lanes and help count, and a spent reaction (the "closeout tax") counts too. Help is not a special
+  rule: a defender's square and arrow are worth what they cut from the offence's best look (help gain)
+  minus what they open up on their own man (leave cost).
+- **The comfort line:** the defence won't spend to push the offence's look below 15 (the Okay/Poor
+  line). That's "let them shoot it": a ▼ shooter left open is a choice, not a lapse.
+- **The offence picks two targets** (its biggest ▲ edges, the secret target on a Coach's Call card,
+  threes only on Need a Three). It builds toward them, re-plans when the defence takes the target away,
+  and shoots when the look beats what continuing is worth. A patience curve stops obviously early shots.
+- **Setup:** man-to-man by number, unless a switch puts the best on-ball defender on the most explosive
+  creator, or the best three-point contester on the ▲ shooter, and the evaluation says it's worth it.
+  The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
+  squares (next to their man, or sagging up to two squares off) and arrows come from the same evaluation.
 
-Against the solver: on the 50-position exact endgame set (92 defence decisions) both defences already
-make an exact-best choice every time (tiny endgames: one token, two players a side), so that set can't
-tell them apart. On 50 mid-phase defence turns from the scenario cards in play, graded by a fixed-depth
-solver search (the offence's value after the defence's whole turn, against the best of the solver's own
-plays): within half a point of the solver **54% → 64%**, mean gap **1.51 → 0.36 points**
-(`tests/data/defence_play_set.json`, `tests/test_defence.py`).
+**The levels** (`playmaker_engine/computer_levels.json`):
+
+| | Rookie | Starter | All-Star |
+|---|---|---|---|
+| Defence concepts | the reaction only | all except keeping a reaction in hand | all |
+| Offence concepts | reaction-aware shot value and risk | all except draining the reserve | all |
+| Habits (drawn per game, named in the review) | 2 | 1 | none |
+| Tunnel vision (defence) | the 2 attackers nearest the ball | 4 | all 5 |
+| Reads the cards by | position (`role`) | ▲ / plain / ▼ only (`marks`) | the numbers (`exact`) |
+| Comfort line | 15 + 6 | 15 + 2 | 15 |
+| Looks ahead | the shot on the board now | the offence's next turn | the solver's search, short budget |
+| Second-best choice | 15% of the time | 5% | never |
+
+Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
+the first pass. Offence habits: settles for the first shot, never screens, ignores the mismatch (passes by
+position order), star only. A habit overrides the choice every time it applies, so it can be scouted and
+beaten. After the game, **About the computer** in the review names the level, the habits drawn, the
+concepts switched off, and the offence's targets and plan. It never appears during play.
+
+**Thinking time:** at most 1 second a decision on the server and 0.45 seconds in the link version,
+the best choice found so far being used when time is up.
+
+**How it measures up.**
+- *Arrow mix* (46 possessions: 30 table-setup games across team pairings and the 16 scenario cards,
+  greedy offence, arrow jobs read at the end of each turn): the old one-action-ahead defence kept 67% of
+  its in-play arrows on the ball and 17% on lanes; the board-reading defence of the first step-3e change
+  had 34% on the ball, 53% lanes and 6% walls. Reactions end on the shooter about 98% of the time at every
+  level. Offence's mean score against each defence: old 17.0, Rookie 20.0, Starter 16.6, All-Star 16.6.
+- *The comfort line* decided 18% of Starter's defensive choices and 12% of All-Star's (Rookie doesn't
+  use it: its help concept is off).
+- *Against the solver:* on the 50-position exact endgame set every defence (old, Starter, All-Star)
+  makes an exact-best choice every time, so that set can't separate them. On 50 mid-phase defence turns
+  graded by a fixed-depth solver search, the board-reading defence is within half a point of the
+  solver on 64% of turns (old: 54%), mean gap 0.36 points (old: 1.51).
+- *Value given up against the solver* (each level against itself on the 16 scenario cards and 4
+  random team possessions, one seed; the judge is a fixed depth-2 solver search at every decision, the
+  review's logic):
+
+| | Rookie | Starter | All-Star | Target |
+|---|---|---|---|---|
+| Offence, per possession | 12.6 | 13.9 | 14.0 | 6 / 3 / under 1 |
+| Defence, per possession | 14.0 | 12.6 | 6.5 | 6 / 3 / under 1 |
+| Offence, per decision | 5.6 | 2.8 | 2.1 | |
+| Defence, per decision | 4.1 | 2.1 | 0.9 | |
+| Decisions per possession (O / X) | 2.2 / 3.5 | 5.0 / 6.0 | 6.7 / 7.2 | |
+
+  Per decision the levels line up as intended. Per possession they don't hit the targets, and on
+  offence they don't separate: a Rookie offence shoots early, so it has fewer decisions to give value up
+  on. The All-Star can't match a depth-2 judge while deciding in under a second (under half a second in
+  the link version). No settings were changed by this run. The full run asked for (5 seeds, 20 random
+  possessions, every level against every other) would take about ten hours on this machine.
 
 ## Decision timer (step 3d, optional)
 

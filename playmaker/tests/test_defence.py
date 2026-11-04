@@ -13,7 +13,9 @@ from playmaker_engine.scenarios import scenario_state
 def profiles():
     """46 possessions (30 table-setup games across team pairings, the 16 scenario cards), greedy offence."""
     from playmaker_engine.defence_check import job_profile
-    return dict(greedy=job_profile(GreedyPolicy()), reader=job_profile(ReadingDefence(budget_s=None)))
+    from playmaker_engine.computer import Computer
+    return dict(greedy=job_profile(GreedyPolicy()), reader=job_profile(ReadingDefence(budget_s=None)),
+                starter=job_profile(Computer('X', 'starter', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)))
 
 
 def _share(c, *keys):
@@ -42,7 +44,7 @@ def test_the_offence_scores_less_against_it(profiles):
 def test_setup_arrows_are_chosen_not_all_on_the_man():
     from playmaker_web.game import Game
     from playmaker_engine.defence import arrow_job
-    g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, place=True, seed=1, level='pro', ai=dict(X='greedy'))
+    g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, place=True, seed=1, level='pro', ai=dict(X='allstar'))
     g.place(g.tokens['both'], dict(squares=['I11', 'C9', 'O9', 'A3', 'Q3'], ball=0))
     jobs = [arrow_job(g.state, j) for j in range(5)]
     assert g.placing is None and set(jobs) != {'on_man'} and jobs.count('on_ball') + jobs.count('on_man') < 5, jobs
@@ -85,7 +87,7 @@ def test_the_computer_defence_in_a_game_logs_arrow_jobs():
     acts = [r for r in g.read_log() if r['type'] == 'action' and r['action']['side'] == 'X'
             and r['action']['kind'] in ('move', 'qs', 'sprint')]
     assert g.state.stage == 'over' and acts and all('arrow_job' in r for r in acts)
-    assert type(g.policies['X']).__name__ == 'ReadingDefence' and type(g.policies['O']).__name__ == 'GreedyPolicy'
+    assert type(g.policies['X']).__name__ == 'Computer' and g.policies['X'].level == 'starter'
     b = Game(mode='hotseat', scenario=6, seed=3, level='pro', ai=dict(X='baseline'))
     assert type(b.policies['X']).__name__ == 'GreedyPolicy'
 
@@ -101,3 +103,8 @@ def test_the_defence_plays_closer_to_the_solver_mid_phase():
     s = summary_play(rows)
     assert s['reader']['n'] == 50
     assert s['reader']['mean_gap'] < s['greedy']['mean_gap'] and s['reader']['agree'] > s['greedy']['agree'], s
+
+
+def test_the_starter_computer_spreads_its_arrows_too(profiles):
+    g, r = profiles['greedy'][0]['play'], profiles['starter'][0]['play']
+    assert _share(r, 'on_ball') < _share(g, 'on_ball') and _share(r, 'wall', 'lane', 'help') > _share(g, 'wall', 'lane', 'help'), (g, r)

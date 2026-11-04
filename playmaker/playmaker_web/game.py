@@ -167,6 +167,7 @@ class Game:
         self.rng = random.Random(self.seed)
         self.rules = rules
         self.ai = {k: v for k, v in (ai or {}).items() if v}
+        self.ai = {side: {'greedy': 'starter', 'reader': 'starter'}.get(kind, kind) for side, kind in self.ai.items()}
         self.policies = {side: self._policy(side, kind) for side, kind in self.ai.items()}
         self.tokens = {'both': secrets.token_hex(8)} if mode == 'hotseat' else {}
         self.seats = {}
@@ -197,23 +198,25 @@ class Game:
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
                   ai=self.ai, possession=self.possession, place=self.place_on, level=self.level,
                   custom=self.custom or None, experimental=self.experimental or None,
-                  timer=self.timer, start=self.state.encode())
+                  timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
+                                              if hasattr(p, 'describe')} or None,
+                  start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):
                 self._save_picks(side, self._engine_picks(side), actor='ai')
         if not self.picks_pending():
             self._begin_possession()
 
-    @staticmethod
-    def _policy(side, kind):
-        """'greedy' (the default computer): greedy on offence, the board-reading defence on defence.
-        'baseline': the greedy baseline on both sides (as the solver report compares against)."""
-        if kind not in ('greedy', 'baseline', 'reader'):
-            raise GameError('computer opponent: greedy, reader or baseline')
-        if side == 'X' and kind in ('greedy', 'reader'):
-            from playmaker_engine.defence import ReadingDefence
-            return ReadingDefence()
-        return GreedyPolicy()
+    def _policy(self, side, kind):
+        """The computer for a side: 'rookie', 'starter' or 'allstar' (step 3e; 'greedy' means starter, from
+        older pages). 'baseline': the old greedy baseline (the solver report compares against it)."""
+        kind = {'greedy': 'starter', 'reader': 'starter'}.get(kind, kind)
+        if kind == 'baseline':
+            return GreedyPolicy()
+        from playmaker_engine.computer import Computer, LEVEL_NAMES
+        if kind not in LEVEL_NAMES:
+            raise GameError('computer level: rookie, starter or allstar')
+        return Computer(side, kind, seed=self.seed)
 
     # ---- setup ----
     def _register_custom(self, custom):
@@ -334,8 +337,9 @@ class Game:
             engine = {side: {k: v for k, v in self._engine_picks_any(side).items() if k in shape[side]}
                       for side in ('O', 'X')}
             out = dict(level=self.level, picks=self.picks, engine=engine, advantages=board_advantages(recs))
-            from playmaker_engine.review import timer_facts
+            from playmaker_engine.review import timer_facts, computer_facts
             out['timer'] = timer_facts(recs) if self.timer else None
+            out['computer'] = computer_facts(recs)
             if self.level != 'pro':
                 from playmaker_engine.review import report_in_play
                 from playmaker_engine.scouting import report
@@ -581,12 +585,14 @@ class Game:
                 self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
             else:
                 xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
-                if getattr(self.policies.get('X'), 'name', '') == 'reader':
-                    # the board-reading defence picks each starting arrow (wall, lane, help or on the ball)
-                    from playmaker_engine.defence import choose_arrows
+                comp = self.policies.get('X')
+                if getattr(comp, 'name', '') == 'computer':
+                    # step 3e: matchups, the on-ball arrow and help positions chosen by the computer's evaluation
+                    from playmaker_engine.computer import place_defence
                     o_sq, ball = self.placed['O']
-                    trial = self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xs], arrows, ball)
-                    arrows = choose_arrows(trial)
+                    build = lambda xq, ar: self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xq], ar, ball)
+                    xs, arrows, perm = place_defence(comp, o_sq, ball, build)
+                    self._log('computer', side='X', event='setup', matchup=[f'X{j + 1} on O{perm[j] + 1}' for j in range(5)])
                 self._place_side('X', xs, None, arrows, actor='ai')
 
     def place(self, token, body):
@@ -745,6 +751,9 @@ class Game:
                    legal=[str(x) for x in legal] if a.kind != 'target' else [f'O{i + 1}' for i in range(5)],
                    seconds=round(now - self.last_decision, 2), clock=before.clock, phase=before.phase,
                    possession=self.possession, after=node.encode())
+        if actor == 'ai' and getattr(self, '_think', None) is not None:
+            rec['think_s'] = self._think
+            self._think = None
         tm = getattr(self, 'tm', None)
         if self.timer and tm and actor == 'human' and tm.get('mode') in ('main', 'grace'):
             g = tm['grace_used'] + ((self.now() - tm.get('grace_start', self.now())) if tm['mode'] == 'grace' else 0)
@@ -775,8 +784,15 @@ class Game:
             if side is None or side not in self.ai:
                 return
             pol = self.policies[side]
-            pol.reset(self.seed * 7 + self.version)
+            if not hasattr(pol, 'describe'):
+                pol.reset(self.seed * 7 + self.version)
+            t0 = time.time()
             a = pol.choose(self.state)
+            self._think = round(time.time() - t0, 3)
+            for note in getattr(pol, 'notes', []):
+                self._log('computer', side=side, possession=self.possession, clock=self.state.clock, **note)
+            if hasattr(pol, 'notes'):
+                pol.notes.clear()
             self._apply(a, self.legal(), actor='ai')
 
     def after_human(self):

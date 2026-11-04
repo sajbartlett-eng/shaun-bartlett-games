@@ -111,6 +111,8 @@ class ReadingDefence(Policy):
     def best_play(self, state, acts=None):
         from .solver import Play, apply_play
         self._context(state)
+        if state.ctx.coach_call and state.stage != 'over':
+            state = state.with_(target=-1)        # the defence never sees the offence's secret target
         acts = acts if acts is not None else legal_actions(state)
         plays = self.gen.plays(state, shallow=False)
         if state.stage in ('reaction', 'contest') or state.pending:

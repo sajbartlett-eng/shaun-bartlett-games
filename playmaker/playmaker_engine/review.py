@@ -517,3 +517,40 @@ def timer_stats(paths=None, out=print, min_games=20):
     for kind in sorted({k for k, _, _ in rows}):
         line(kind, [s for k, _, s in rows if k == kind])
     return dict(games=games, decisions=len(rows))
+
+
+# ---- "About the computer" (step 3e): plain facts from the log, after the game ------------------
+
+def computer_facts(records):
+    """Name each computer side's level, the habits drawn and the concepts switched off, and the
+    offence's plan and targets, from the log."""
+    from .computer import LEVELS
+    setup = next((r for r in records if r['type'] == 'setup'), {})
+    comp = setup.get('computer') or {}
+    out = []
+    words, cwords = LEVELS['habit_words'], LEVELS['concept_words']
+    for side in ('O', 'X'):
+        d = comp.get(side)
+        if not d:
+            continue
+        who = 'offence' if side == 'O' else 'defence'
+        line = f"The computer {who} played at {d['name']} level."
+        bits = [words.get(h, h) for h in d.get('habits', [])]
+        if bits:
+            line += f" This {who} " + '; it '.join(bits) + '.'
+        off = [cwords.get(k, k) for k in d.get('concepts_off', [])]
+        if off:
+            line += f" It " + '; it '.join(off) + '.'
+        out.append(line)
+        if side == 'O':
+            plans = [r for r in records if r['type'] == 'computer' and r.get('side') == 'O']
+            for r in plans:
+                if r.get('event') == 'plan' and r.get('targets'):
+                    t = r['targets']
+                    tx = ', then '.join(f"O{x['o'] + 1} ({x['shot']})" for x in t)
+                    out.append(f"Possession {r.get('possession', 1)}: its targets were {tx}.")
+                elif r.get('event') == 'plan_type':
+                    out.append(f"It worked a {r['plan']} plan.")
+                elif r.get('event') == 'replan':
+                    out.append(f"It changed plan: {r['why']}.")
+    return out

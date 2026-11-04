@@ -131,7 +131,7 @@ function builderStatus() {
 
 async function create() {
   const k = $('kind').value, mode = $('mode').value;
-  const body = { mode, level: $('level').value, ai: { O: $('aiO').checked ? 'greedy' : null, X: $('aiX').checked ? 'greedy' : null } };
+  const body = { mode, level: $('level').value, ai: { O: $('aiO').value || null, X: $('aiX').value || null } };
   if ($('seed').value) body.seed = Number($('seed').value);
   const tA = $('timerA').value ? Number($('timerA').value) : null;
   const hc = $('hcA').checked && $('hcB').checked;
@@ -197,10 +197,11 @@ function render() {
   $('poss').textContent = s.full ? `${s.possession} of 2` : '1';
   if (s.full) { const t = s.scores.map(x => `${x.attacker}: ${x.total}`).join(' · '); $('score').textContent = t || '0'; }
   else $('score').textContent = String(s.bonus - 5 * s.turnovers);
-  const ai = Object.keys(s.ai || {}).map(k => (k === 'O' ? 'offence' : 'defence')).join(' and ');
+  const LV = { rookie: 'Rookie (makes beginner mistakes you can learn to spot)', starter: 'Starter (solid, with one habit to find)', allstar: 'All-Star (plays the full read)', baseline: 'baseline' };
+  const ai = Object.entries(s.ai || {}).map(([k, v]) => `${k === 'O' ? 'offence' : 'defence'}: ${LV[v] || v}`).join('; ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
-    ...(ai ? [el('div', { text: `Computer plays ${ai}` })] : []),
+    ...(ai ? [el('div', { text: `Computer ${ai}` })] : []),
     ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
@@ -1140,6 +1141,10 @@ async function loadReview() {
   box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
   if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
+  if (r.computer && r.computer.length) {
+    box.append(el('h4', { text: 'About the computer' }));
+    for (const c of r.computer) box.append(el('p', { text: c }));
+  }
   if (r.timer && r.timer.length) box.append(el('h4', { text: 'The timer' }), el('ul', {}, r.timer.map(t => el('li', { text: t }))));
   if (r.in_play) {
     const pk = sides.filter(side => r.picks[side]).map(side => `${side === 'O' ? 'Offence' : 'Defence'}: ${pickText(side, r.picks[side])}`).join(' · ');

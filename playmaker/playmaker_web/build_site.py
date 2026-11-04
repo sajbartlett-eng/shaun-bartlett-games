@@ -10,7 +10,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC = os.path.join(ROOT, 'playmaker_web', 'static')
 ENGINE_FILES = ['__init__.py', 'rules_config.py', 'board.py', 'cards.py', 'state.py', 'actions.py', 'resolve.py',
                 'scoring.py', 'scenarios.py', 'policies.py', 'review.py', 'scouting.py', 'scout_phrases.json', 'timer.py',
-                'defence.py', 'solver.py', 'solver_config.py']
+                'defence.py', 'solver.py', 'solver_config.py',
+                'computer.py', 'computer_levels.json']
 DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json']
 WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py']
 
