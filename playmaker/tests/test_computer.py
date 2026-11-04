@@ -113,20 +113,22 @@ def test_every_clean_contest_is_a_real_legal_reaction():
 
 # ---- sections 2-5: reserve, help, comfort line, paint, setup ------------------------------------
 
-def test_reserve_all_star_holds_its_last_token_more_than_starter():
+def test_reserve_all_star_holds_its_last_token_more_than_a_level_without_reserve():
     from playmaker_engine.defence_check import play_positions
     spent = {}
-    for lv in ('starter', 'allstar'):
+    for lv in ('rookie', 'allstar'):
         n = 0
         for _, s in play_positions()[:20]:
             s1 = s.with_(tok_x=1)
             if not legal_actions(s1):
                 continue
-            c = C.Computer('X', lv, seed=1, budget_s=None, overrides={'randomness': 0.0, 'habits': 0}, habits=[])
+            c = C.Computer('X', lv, seed=1, budget_s=None, overrides={'randomness': 0.0, 'habits': 0, 'lookahead': 1,
+                                                                       'tunnel': 5, 'reading': 'exact'}, habits=[])
             a = c.choose(s1)
             n += a.kind not in ('end_turn', 'pause')
         spent[lv] = n
-    assert spent['allstar'] <= spent['starter'], spent
+    assert C.LEVELS['defence']['levels']['rookie']['concepts']['reserve'] is False
+    assert spent['allstar'] <= spent['rookie'], spent
 
 
 def test_paint_a_helper_who_can_still_recover_is_worth_more():
@@ -360,7 +362,7 @@ def test_help_the_golden_setup_still_contests_every_kick_out_cleanly():
 
 
 def test_drain_only_the_reserve_aware_levels_see_the_closeout_tax():
-    """The only closeout defender's Move spent: All-Star (drain on) values the shot higher; Starter (drain
+    """The only closeout defender's Move spent: All-Star (drain on) values the shot higher; Rookie (drain
     off: it assumes the defence can always react) sees no difference."""
     s = shot_declared()
     before = C.reachable_contest(s)[0]
@@ -370,9 +372,10 @@ def test_drain_only_the_reserve_aware_levels_see_the_closeout_tax():
     after = C.reachable_contest(drained)[0]
     assert after['value'] > before['value']
     vals = {}
-    for lv in ('starter', 'allstar'):
+    for lv in ('rookie', 'allstar'):
         c = C.Computer('O', lv, seed=1, budget_s=None, habits=[])
         c._context(s)
         vals[lv] = (c.ev(s)[0].ev, c.ev(drained)[0].ev)
+    assert C.LEVELS['offence']['levels']['rookie']['concepts']['drain'] is False
     assert vals['allstar'][1] > vals['allstar'][0]
-    assert vals['starter'][1] == pytest.approx(vals['starter'][0])
+    assert vals['rookie'][1] == pytest.approx(vals['rookie'][0])
