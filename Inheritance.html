@@ -11304,28 +11304,61 @@ const TRAINING = {
         band: ['......', '######', '######', '######', '######', '......'],
         offset: ['####..', '####..', '######', '######', '..####', '..####'],
     },
+    // Each level names what is new (intro, shown once when the level begins)
+    // and the rule to keep in view while playing. Gaps widen again on the
+    // complex estates so the difference can be read, not guessed.
     CHOOSE_LEVELS: [
-        { name: 'Straight lines', estate: { irregular: false }, fence: { kind: 'straight', gap: [5, 14] }, time: 30 },
-        { name: 'Closer calls', estate: { irregular: false }, fence: { kind: 'straight', gap: [3, 5] }, time: 30 },
-        { name: 'Bent fences', estate: { irregular: false }, fence: { kind: 'wonky', turns: [2, 5], gap: [3, 6] }, time: 30 },
-        { name: 'Irregular land', estate: { irregular: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
-        { name: 'Restricted land', estate: { irregular: true, rocks: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
-        { name: 'Better Together', estate: { irregular: true, betterTogether: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [2, 4] }, time: 30 },
-        { name: 'Waterfront', estate: { irregular: true, landTemplate: 'waterfront' }, fence: { kind: 'wonky', turns: [2, 7], gap: [1, 3] }, time: 30 },
-        { name: 'Seaside, expanded set', estate: { irregular: true, landTemplate: 'seaside', randomAssets: true }, fence: { kind: 'wonky', turns: [3, 8], gap: [1, 3] }, time: 20 },
-        { name: 'Everything, fast', estate: { irregular: true, landTemplate: 'motorway', randomAssets: true, betterTogether: true, rocks: true }, fence: { kind: 'wonky', turns: [3, 9], gap: [1, 2] }, time: 15 },
+        { name: 'Straight lines', estate: { irregular: false }, fence: { kind: 'straight', gap: [5, 14] }, time: 30,
+          intro: 'A fence is already drawn. Every square of land is worth 1 and each piece adds its printed value. Tap the plot that is worth more. The totals stay hidden until you choose.',
+          rule: 'Land 1 per square; pieces add their printed value.' },
+        { name: 'Closer calls', estate: { irregular: false }, fence: { kind: 'straight', gap: [3, 5] }, time: 30,
+          intro: 'Same rules. The two plots are closer in value now, so count rather than glance.',
+          rule: 'Land 1 per square; pieces add their printed value. The gaps are small.' },
+        { name: 'Bent fences', estate: { irregular: false }, fence: { kind: 'wonky', turns: [2, 5], gap: [3, 6] }, time: 30,
+          intro: 'Fences can bend. A plot is everything on one side of the fence, whatever shape that makes. Count the squares and the pieces on each side.',
+          rule: 'A plot is everything on one side of the fence, whatever its shape.' },
+        { name: 'Irregular land', estate: { irregular: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [3, 5] }, time: 30,
+          intro: 'The estate is no longer a square. Only the green squares are land; the pale squares are outside the estate and count for nothing.',
+          rule: 'Only green squares are land. Pale squares are outside the estate.' },
+        { name: 'Restricted land', estate: { irregular: true, rocks: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [3, 5] }, time: 30,
+          intro: 'Some squares are rock or protected woodland. They hold nothing and count as 0 land, even though they sit inside the estate.',
+          rule: 'Rock and woodland are 0 land.' },
+        { name: 'Better Together', estate: { irregular: true, betterTogether: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [3, 6] }, time: 30,
+          intro: 'bt', rule: 'Neighbouring pieces in the same plot add +1 per relationship. The fence breaks bonds it crosses.' },
+        { name: 'Waterfront', estate: { irregular: true, landTemplate: 'waterfront' }, fence: { kind: 'wonky', turns: [2, 7], gap: [3, 6] }, time: 30,
+          intro: 'A river runs through the estate. Land beside the river is worth 3 instead of 1. If the fence cuts such a square off from the river, it drops to 2. A connected access road can add +1, to a maximum of 4. River and road squares themselves are worth 0. The legend under the board shows the bands.',
+          rule: 'Riverside land 3; cut off from the river 2; road access +1; river and roads 0.' },
+        { name: 'Seaside, expanded set', estate: { irregular: true, landTemplate: 'seaside', randomAssets: true }, fence: { kind: 'wonky', turns: [3, 8], gap: [3, 6] }, time: 25,
+          intro: 'The coast runs along one edge. Beachfront land is 4; the next two bands are 3, the next two are 2, the rest is 1. If the fence cuts a square off from the coast, it loses 1 (never below 1). New pieces appear too: Cottage +4, Stables and Mill +3, Vineyard and Orchard +2, Well, Beehive, Chicken Coop and Garden +1. The legend shows them all.',
+          rule: 'Beach 4, then 3, 3, 2, 2, 1. Cut off from the coast: minus 1. Pieces show their value.' },
+        { name: 'Everything, fast', estate: { irregular: true, landTemplate: 'motorway', randomAssets: true, betterTogether: true, rocks: true }, fence: { kind: 'wonky', turns: [3, 9], gap: [3, 5] }, time: 20,
+          intro: 'A main road crosses the estate: land beside it is worth 2, and drops to 1 if the fence cuts it off from the road. Restricted land, Better Together and the expanded set are all in play, and the clock is shorter.',
+          rule: 'Roadside land 2, cut off from the road 1. Rock 0. Same-plot neighbours +1 per relationship.' },
     ],
     CUT_LEVELS: [
-        { name: 'Within 4', estate: { irregular: false }, within: 4, time: 90 },
-        { name: 'Within 3', estate: { irregular: false }, within: 3, time: 60 },
-        { name: 'Within 2', estate: { irregular: false }, within: 2, time: 60 },
-        { name: 'Irregular, within 2', estate: { irregular: true }, within: 2, time: 60 },
-        { name: 'Irregular, within 1', estate: { irregular: true }, within: 1, time: 60 },
-        { name: 'Restricted land, within 1', estate: { irregular: true, rocks: true }, within: 1, time: 60 },
-        { name: 'Better Together, small estate', estate: { small: 'offset', betterTogether: true }, within: 2, time: 60 },
-        { name: 'Waterfront, small estate', estate: { small: 'band', landTemplate: 'waterfront' }, within: 1, time: 60 },
-        { name: 'Perfect, fast', estate: { irregular: true }, within: 0, time: 45 },
+        { name: 'Within 4', estate: { irregular: false }, within: 4, time: 90,
+          intro: 'Draw one fence from edge to edge, one dot at a time. The referee has already checked every fence that can be drawn on this estate and knows the smallest gap possible. Finish within 4 points of it.',
+          rule: 'Land 1 per square; pieces add their value. Edge to edge.' },
+        { name: 'Within 3', estate: { irregular: false }, within: 3, time: 60,
+          intro: 'Same estate rules. The tolerance is 3 now, and the clock is 60 seconds.',
+          rule: 'Land 1 per square; pieces add their value.' },
+        { name: 'Within 2', estate: { irregular: false }, within: 2, time: 60, rule: 'Land 1 per square; pieces add their value.' },
+        { name: 'Irregular, within 2', estate: { irregular: true }, within: 2, time: 60,
+          intro: 'The estate is no longer a square. Only green squares are land; pale squares are outside. Your fence starts and ends on the outside edge, which now has corners and bays.',
+          rule: 'Only green squares are land. The fence runs from outside edge to outside edge.' },
+        { name: 'Irregular, within 1', estate: { irregular: true }, within: 1, time: 60, rule: 'Only green squares are land.' },
+        { name: 'Restricted land, within 1', estate: { irregular: true, rocks: true }, within: 1, time: 60,
+          intro: 'Rock and protected woodland count as 0 land. They are inside the estate, so your fence can run beside them, but they add nothing to either plot.',
+          rule: 'Rock and woodland are 0 land.' },
+        { name: 'Better Together, small estate', estate: { small: 'offset', betterTogether: true }, within: 2, time: 60,
+          intro: 'bt', rule: 'Same-plot neighbours add +1 per relationship. A fence between them breaks the bond.' },
+        { name: 'Waterfront, small estate', estate: { small: 'band', landTemplate: 'waterfront' }, within: 2, time: 60,
+          intro: 'A river runs through a smaller estate. Land beside the river is worth 3; cut off from the river by your fence it drops to 2. A connected access road adds +1 (maximum 4). River and road squares are 0.',
+          rule: 'Riverside land 3; cut off from the river 2; road access +1; river and roads 0.' },
+        { name: 'Perfect, fast', estate: { irregular: true }, within: 0, time: 45,
+          intro: 'Match the smallest gap exactly. 45 seconds.', rule: 'Only green squares are land. Match the smallest gap.' },
     ],
+    introShown: { choose: -1, cut: -1 },
     track: null,          // 'choose' | 'cut'
     level: null,
     progress: { choose: { level: 0, passes: 0 }, cut: { level: 0, passes: 0 } },
@@ -11423,6 +11456,7 @@ const TRAINING = {
     reset() {
         this.track = null;
         this.level = null;
+        this.introShown = { choose: -1, cut: -1 };
         this.estate = null;
         this.referee = { status: 'idle', result: null };
         this.showFairest = false;
@@ -11433,6 +11467,45 @@ const TRAINING = {
     currentLevel() {
         const p = this.progress[this.track];
         return this.levels(this.track)[p.level];
+    },
+
+    // The Better Together rules, from the game's own table, so they are always right.
+    betterTogetherIntro() {
+        // Only the pieces on this estate, so the list is the one that matters now.
+        const present = new Set(STATE.grid.flat().filter(kind => GAME.isAssetKind(kind)));
+        const lines = Object.entries(CONFIG.BETTER_TOGETHER)
+            .filter(([kind, relationships]) => CONFIG.ASSET_NAME[kind] && relationships.length && present.has(kind))
+            .map(([kind, relationships]) => {
+                const parts = relationships.map(rel => {
+                    const names = rel.with.map(k => GAME.assetName(k));
+                    const readable = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`;
+                    return `${rel.label} +1 beside ${readable}`;
+                });
+                return `<li><strong>${escapeHtml(GAME.assetName(kind))}:</strong> ${escapeHtml(parts.join(' · '))}</li>`;
+            });
+        return `<p>Pieces that sit beside the right neighbours in the <strong>same plot</strong> add value. Each relationship type adds +1 once per piece, and different types stack. A fence between two neighbours breaks their bond, so a plot can be worth less than its pieces suggest.</p><ul class="tutorial-facts">${lines.join('')}</ul>`;
+    },
+
+    introHtml(level) {
+        if (!level.intro) return '';
+        if (level.intro === 'bt') return this.betterTogetherIntro();
+        return `<p>${escapeHtml(level.intro)}</p>`;
+    },
+
+    showIntro(then) {
+        const levels = this.levels(this.track);
+        const index = levels.indexOf(this.level);
+        const cap = this.track === 'cut' ? 'Cut' : 'Choose';
+        const goal = this.track === 'cut'
+            ? `Finish within ${this.level.within} ${this.level.within === 1 ? 'point' : 'points'} of the smallest gap possible. ${this.level.time} seconds.`
+            : `Keep the plot worth more. ${this.level.time} seconds.`;
+        TUTORIAL.openCard({
+            eyebrow: `Training · ${cap} · Level ${index + 1} of ${levels.length}`,
+            title: this.level.name,
+            body: `${this.introHtml(this.level)}<p><strong>${escapeHtml(goal)}</strong> Three successes unlock the next level.</p>`,
+            primary: { label: 'Begin', action: then },
+            ghost: { label: 'Stop training', action: () => this.stop() },
+        });
     },
 
     nextEstate() {
@@ -11453,10 +11526,20 @@ const TRAINING = {
         if (!estate) { UI.toast('Could not generate an estate. Try again.', 'warn', 2000); FLOW.resetToSetup(); return; }
         this.estate = estate;
         this.install(estate);
-        if (this.track === 'choose') {
-            this.enterPhase(PHASE.CHOOSE);
+        STATE.phase = PHASE.SETUP;
+        STATE.phaseToken++;
+        FLOW.stopTimer();
+        FLOW.sync();
+        const proceed = () => {
+            if (this.track === 'choose') this.enterPhase(PHASE.CHOOSE);
+            else this.solve(() => this.enterPhase(PHASE.CUT));
+        };
+        const index = this.levels(this.track).indexOf(this.level);
+        if (this.level.intro && this.introShown[this.track] !== index) {
+            this.introShown[this.track] = index;
+            this.showIntro(proceed);
         } else {
-            this.solve(() => this.enterPhase(PHASE.CUT));
+            proceed();
         }
     },
 
@@ -11760,9 +11843,9 @@ const TRAINING = {
         if (STATE.phase === PHASE.FINAL && this.last) {
             text = `${this.last.text}${this.showFairest && this.referee.result ? ` Dashed fence: A ${this.referee.result.a} · B ${this.referee.result.b}.` : ''}`;
         } else if (STATE.phase === PHASE.CUT) {
-            text = `Smallest gap possible on this estate: ${this.referee.result ? this.referee.result.gap : '…'}. ${text}`;
+            text = `${this.level.rule || ''} Smallest gap possible on this estate: ${this.referee.result ? this.referee.result.gap : '…'}. ${text}`;
         } else if (STATE.phase === PHASE.CHOOSE) {
-            text = `Land 1 per square; pieces add their value${STATE.settings.betterTogether ? '; neighbours in the same plot add bonuses' : ''}. ${text}`;
+            text = `${this.level.rule || 'Land 1 per square; pieces add their value.'} ${text}`;
         }
         const html = `<span class="tutorial-tag">Training</span><span>${text}</span>`;
         if (e.tutorialStrip.innerHTML !== html) e.tutorialStrip.innerHTML = html;
