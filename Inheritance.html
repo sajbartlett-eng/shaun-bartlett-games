@@ -2496,6 +2496,20 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .legacy-active #legacyRecordBtn {display:block;}
 .legacy-active #finalPlayAgainBtn,.legacy-active #finalOverlay .match-menu,.legacy-active #nextGamePlan,.legacy-active #replayNote,.legacy-active #whatIfBtn {display:none!important;}
 .legacy-entry {margin:14px 0 0;width:100%;}
+#legacyUnlockStatus { margin-top: 8px; }
+#legacyUnlockStatus p { margin: 6px 0; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+#legacyUnlockStatus code { font-family: var(--mono); font-size: 12px; }
+.legacy-checklist { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+.legacy-checklist th, .legacy-checklist td { padding: 6px 4px; border-bottom: 1px solid var(--paper-edge); text-align: left; vertical-align: top; }
+.legacy-checklist thead th { font-family: var(--display); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.legacy-checklist thead th:not(:first-child), .legacy-checklist td { text-align: center; width: 64px; }
+.legacy-checklist tbody th { font-weight: 600; color: var(--ink); }
+.legacy-checklist .legacy-why { display: block; font-weight: 400; font-size: 11px; color: var(--ink-faint); }
+.legacy-checklist td.met { color: var(--manor); font-weight: 700; font-size: 16px; }
+.legacy-checklist td.unmet { color: var(--ink-faint); }
+.legacy-progress { margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--paper-edge); border-radius: 4px; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.legacy-progress p { margin: 6px 0 0; }
+.legacy-tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--gold); border-radius: 3px; font-family: var(--display); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); vertical-align: middle; }
 .legacy-accounting {border:1px solid var(--paper-edge);background:rgba(255,255,255,.2);padding:14px;margin:14px 0;}
 .legacy-accounting h3 {margin-top:0;}
 .legacy-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0;}
@@ -3091,6 +3105,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <div class="final-scoreboard" id="finalScoreboard"></div>
         <section class="value-ceiling" id="valueCeilingPanel" aria-label="Estate value compared with its theoretical ceiling"></section>
         <div id="finalAchievements"></div>
+        <div id="legacyProgress" class="legacy-progress" hidden></div>
         <section class="legacy-accounting" id="legacyAccountingPreview" hidden></section>
 
         <div class="actions">
@@ -9482,6 +9497,8 @@ UI.renderFairnessReview = function () {
 };
 
 UI.renderFinalScoreboard = function () {
+    const legacyProgress = document.getElementById('legacyProgress');
+    if (legacyProgress) legacyProgress.hidden = true;
     const o = STATE.outcome;
     if (!o) return;
     MATCH_MENU.refreshFinal();
@@ -13346,6 +13363,7 @@ const MATCH_MENU = {
             input.disabled = !!this.base[key] || incompatible;
         });
 
+        LEGACY_UNLOCK.tagAdditions();
         document.getElementById('addChallengeEmpty').hidden = available > 0;
         UI.open('addChallengeOverlay');
     },
@@ -13575,40 +13593,133 @@ const VALUE_ENGINE = {
     }
 };
 const LEGACY_UNLOCK = (() => {
-    const KEY='inheritance.familyLegacy.players.v1', LIMIT=3;
+    // Family Legacy assumes both siblings have met the rules every one of its
+    // estates uses. The gate is that list, nothing more: one completed game
+    // under each rule, in any mix and any order, tracked per named sibling.
+    const KEY='inheritance.familyLegacy.players.v2', OLD_KEY='inheritance.familyLegacy.players.v1';
+    const REQUIREMENTS = Object.freeze([
+        { key:'betterTogether', label:'Better Together', why:'every Legacy estate scores neighbours', test:s=>!!s.betterTogether },
+        { key:'rocks', label:'Restricted Land', why:'every Legacy estate has rock or woodland', test:s=>!!s.rocks },
+        { key:'randomAssets', label:'Expanded Estate', why:'Legacy uses the full piece set', test:s=>!!s.randomAssets },
+        { key:'land', label:'Terrain or a land template', why:'Legacy estates have water, roads or a coast', test:s=>!!s.terrain||((s.landTemplate||'standard')!=='standard') },
+    ]);
+    const ADDITION_KEYS = Object.freeze({ randomAssets:'randomAssets', rocks:'rocks', betterTogether:'betterTogether', terrain:'land', estateTemplate:'land' });
     const records=new Map();
     let persistenceError=false;
     const key=name=>String(name||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();
-    const eligibleName=name=>{const value=key(name);return !!value&&value!=='sibling 1'&&value!=='sibling 2';};
-    const testAccess=names=>names.some(name=>key(name)==='shaun');
-    try {
-        const data=JSON.parse(localStorage.getItem(KEY)||'[]');
-        if(Array.isArray(data))for(const item of data){
-            if(!item||typeof item.name!=='string'||!eligibleName(item.name)||!Number.isInteger(item.completed)||item.completed<0||typeof item.advanced!=='boolean')continue;
-            records.set(key(item.name),{name:item.name.slice(0,14),completed:Math.min(LIMIT,item.completed),advanced:item.advanced});
-        }
-    } catch (_) {persistenceError=true;}
-    function progress(name){return records.get(key(name))||{name,completed:0,advanced:false};}
-    function ready(names){return names.length===2&&names.every(eligibleName)&&key(names[0])!==key(names[1])&&(testAccess(names)||names.every(name=>{const p=progress(name);return p.completed>=LIMIT&&p.advanced;}));}
+    const eligibleName=name=>{const value=key(name);return !!value&&value!=='sibling 1'&&value!=='sibling 2'&&value!=='computer'&&value!=='training';};
+    const validPair=names=>names.length===2&&names.every(eligibleName)&&key(names[0])!==key(names[1]);
+    // Testing override, stated on screen when in use: open the page with ?legacy=open
+    const testAccess=()=>/[?&]legacy=open(&|$)/.test(location.search);
+    const emptyMet=()=>Object.fromEntries(REQUIREMENTS.map(r=>[r.key,false]));
+    const load=()=>{
+        try {
+            const data=JSON.parse(localStorage.getItem(KEY)||'null');
+            if(Array.isArray(data)){
+                for(const item of data){
+                    if(!item||typeof item.name!=='string'||!eligibleName(item.name))continue;
+                    const met=emptyMet();
+                    for(const r of REQUIREMENTS)met[r.key]=!!(item.met&&item.met[r.key]);
+                    records.set(key(item.name),{name:item.name.slice(0,14),completed:Math.max(0,Number(item.completed)||0),met});
+                }
+                return;
+            }
+            // Earlier records: a count plus one flag for Terrain with Better Together.
+            const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
+            if(Array.isArray(old))for(const item of old){
+                if(!item||typeof item.name!=='string'||!eligibleName(item.name))continue;
+                const met=emptyMet();
+                if(item.advanced){met.betterTogether=true;met.land=true;}
+                records.set(key(item.name),{name:item.name.slice(0,14),completed:Math.max(0,Number(item.completed)||0),met});
+            }
+        } catch (_) {persistenceError=true;}
+    };
+    load();
+    const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...records.values()]));persistenceError=false;}catch(_){persistenceError=true;}};
+    function progress(name){return records.get(key(name))||{name,completed:0,met:emptyMet()};}
+    function missing(name){const p=progress(name);return REQUIREMENTS.filter(r=>!p.met[r.key]);}
+    function ready(names){return validPair(names)&&(testAccess()||names.every(name=>missing(name).length===0));}
     function record(names,settings){
-        if(names.length!==2||!names.every(eligibleName)||key(names[0])===key(names[1]))return false;
+        if(!validPair(names))return null;
+        const newly=[];
         for(const name of names){
             const old=progress(name);
-            records.set(key(name),{name,completed:Math.min(LIMIT,old.completed+1),advanced:old.advanced||!!(settings.terrain&&settings.betterTogether)});
+            const met={...old.met};
+            const gained=[];
+            for(const r of REQUIREMENTS)if(!met[r.key]&&r.test(settings)){met[r.key]=true;gained.push(r);}
+            records.set(key(name),{name:name.slice(0,14),completed:old.completed+1,met});
+            newly.push({name,gained});
         }
-        try{localStorage.setItem(KEY,JSON.stringify([...records.values()]));persistenceError=false;}catch(_){persistenceError=true;}
-        return true;
+        save();
+        return newly;
+    }
+    const esc=value=>escapeHtml(String(value));
+    function stillNeeded(names){
+        // Rules at least one sibling has not met yet, naming who.
+        return REQUIREMENTS.map(r=>{
+            const who=names.filter(name=>!progress(name).met[r.key]);
+            return who.length?{rule:r,who}:null;
+        }).filter(Boolean);
+    }
+    function checklistHtml(names){
+        const head=names.map(name=>`<th scope="col">${esc(name.trim())}</th>`).join('');
+        const rows=REQUIREMENTS.map(r=>`<tr><th scope="row">${esc(r.label)}<span class="legacy-why">${esc(r.why)}</span></th>${names.map(name=>`<td class="${progress(name).met[r.key]?'met':'unmet'}">${progress(name).met[r.key]?'✓':'·'}</td>`).join('')}</tr>`).join('');
+        return `<table class="legacy-checklist"><thead><tr><th scope="col">Played a game with</th>${head}</tr></thead><tbody>${rows}</tbody></table>`;
     }
     function refresh(){
         const names=[UI.el.inputP1.value,UI.el.inputP2.value],unlocked=ready(names),status=document.getElementById('legacyUnlockStatus');
         let saved=false;try{saved=!!localStorage.getItem('inheritance.familyLegacy.current');}catch(_){}
-        const same=key(names[0])===key(names[1]);
-        const state=names.map(name=>{const p=progress(name);return `${escapeHtml(name.trim()||'Unnamed')}: ${p.completed}/${LIMIT} completed${p.advanced?' · Terrain + Better Together done':' · needs Terrain + Better Together'}`;});
-        status.innerHTML=(unlocked?(testAccess(names)?'Family Legacy unlocked for testing with Shaun.':'Family Legacy unlocked for these players.'):!names.every(eligibleName)?'Enter two distinct player names to track completed games.':same?'Enter two different player names to track their games.':`${state.join('<br>')}. Each player needs three completed games, including one with both Terrain and Better Together.`)+(persistenceError?' Progress could not be saved on this device.':'');
+        let html;
+        if(unlocked){
+            html=testAccess()
+                ?'<p>Family Legacy is open on this page for testing (<code>?legacy=open</code>).</p>'
+                :`<p>Family Legacy is unlocked for <strong>${esc(names[0].trim())}</strong> and <strong>${esc(names[1].trim())}</strong>.</p>`;
+        } else if(!validPair(names)){
+            html='<p>Family Legacy unlocks for two named siblings once each has completed a game with Better Together, Restricted Land, the Expanded Estate, and Terrain or a land template. Enter two different names above to start the checklist. Chapter Zero and Training do not count; games across a distance do.</p>';
+        } else {
+            html=`<p>Unlocks when both have completed a game with each rule below, in any mix and any order. After a game, <strong>Add a Challenge</strong> stacks them one at a time.</p>${checklistHtml(names)}`;
+        }
+        if(persistenceError)html+='<p>Progress could not be saved on this device.</p>';
+        status.innerHTML=html;
         const button=document.getElementById('legacyEntryBtn');button.disabled=!unlocked&&!saved;button.textContent=unlocked?'Family Legacy · Six linked estates':saved?'Resume saved Family Legacy':'Family Legacy · Locked';
         document.querySelectorAll('.legacy-tools').forEach(el=>el.hidden=!unlocked&&!saved);
     }
-    return {ready,record,refresh,progress};
+    // After a normal game: record it and say what it counted for.
+    function afterGame(names,settings){
+        const box=document.getElementById('legacyProgress');
+        if(!box)return;
+        if(!validPair(names)){
+            box.hidden=false;
+            box.innerHTML='<div class="story-kicker">Family Legacy</div><p>Games count toward Family Legacy when both siblings are named. Name them in setup next time.</p>';
+            return;
+        }
+        const before=ready(names);
+        const newly=record(names,settings)||[];
+        const after=ready(names);
+        const gainedLines=newly.filter(n=>n.gained.length).map(n=>`<strong>${esc(n.name.trim())}</strong> ticked ${n.gained.map(r=>esc(r.label)).join(' and ')}.`);
+        let html='<div class="story-kicker">Family Legacy</div>';
+        if(after&&!testAccess()){
+            html+=`<p>${gainedLines.join(' ')} <strong>Family Legacy is unlocked</strong> for ${esc(names[0].trim())} and ${esc(names[1].trim())}. It is in setup.</p>`;
+            if(!before)UI.toast('Family Legacy unlocked for these players.','good',4000);
+        } else {
+            const needed=stillNeeded(names).map(({rule,who})=>`${esc(rule.label)} (${who.length===2?'both':esc(who[0].trim())})`);
+            html+=`<p>${gainedLines.length?gainedLines.join(' '):'Nothing new ticked this game.'} Still needed: ${needed.join(' · ')}. Add a Challenge below adds a rule to the next game.</p>`;
+        }
+        box.hidden=false;
+        box.innerHTML=html;
+    }
+    // In the Add a Challenge menu, mark the additions that still count toward the unlock.
+    function tagAdditions(){
+        const names=STATE.pNames;
+        const needed=validPair(names)&&!ready(names)?new Set(stillNeeded(names).map(n=>n.rule.key)):new Set();
+        document.querySelectorAll('[data-addition-row]').forEach(row=>{
+            const need=needed.has(ADDITION_KEYS[row.dataset.additionRow]);
+            let tag=row.querySelector('.legacy-tag');
+            if(need&&!tag){tag=document.createElement('span');tag.className='legacy-tag';tag.textContent='counts toward Family Legacy';const target=row.querySelector('span')||row;target.appendChild(tag);}
+            if(!need&&tag)tag.remove();
+        });
+    }
+    return {ready,record,refresh,progress,afterGame,tagAdditions,REQUIREMENTS};
 })();
 // Family Legacy Stage 16. Standard assets use face-value Capital pricing; special developments keep bespoke prices.
 const LEGACY = (() => {
@@ -14449,7 +14560,7 @@ const LEGACY = (() => {
     function open() {
         if(!campaign&&!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){
             let saved=false;try{saved=!!localStorage.getItem(KEY);}catch(_){}
-            if(!saved){LEGACY_UNLOCK.refresh();UI.toast('Enter Shaun with another named player, or complete the Legacy unlock requirements.','warn',3800);return;}
+            if(!saved){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is locked. The checklist in setup shows what each sibling still needs.','warn',3800);return;}
         }
         if (campaign && !suspended) {
             suspended=snapshot();
@@ -14865,7 +14976,7 @@ const LEGACY = (() => {
         panel.innerHTML=html;
     }
     function newCampaign() {
-        if(!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){LEGACY_UNLOCK.refresh();UI.toast('Enter Shaun with another named player, or two qualified players.','warn',3600);return;}
+        if(!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is locked. The checklist in setup shows what each sibling still needs.','warn',3600);return;}
         let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
         if(stored && !confirm('Start a new Legacy? This replaces the automatic save. Download the existing Legacy first if you want to keep it.'))return;
         const names=[playerName(UI.el.inputP1.value,0),playerName(UI.el.inputP2.value,1)];
@@ -15398,7 +15509,7 @@ const LEGACY = (() => {
         };
         UI.refreshSetup=function(...args){const result=originalRefreshSetup.apply(this,args);LEGACY_UNLOCK.refresh();return result;};
         UI.renderFinalScoreboard=function(...args){const result=originalRenderFinalScoreboard.apply(this,args);VALUE_ENGINE.render();return result;};
-        FLOW.showFinal=function(...args){const wasFinal=STATE.phase===PHASE.FINAL;const result=originalFinal.apply(this,args);if(!campaign&&!wasFinal&&STATE.phase===PHASE.FINAL&&!STATE.outcome?.unresolved){const names=STATE.pNames;const unlockedBefore=LEGACY_UNLOCK.ready(names);if(LEGACY_UNLOCK.record(names,STATE.settings)&&!unlockedBefore&&LEGACY_UNLOCK.ready(names))UI.toast('Family Legacy unlocked for these players.','good',4000);}decorateFinal();save();return result;};
+        FLOW.showFinal=function(...args){const wasFinal=STATE.phase===PHASE.FINAL;const result=originalFinal.apply(this,args);if(!campaign&&!wasFinal&&STATE.phase===PHASE.FINAL&&!STATE.outcome?.unresolved){LEGACY_UNLOCK.afterGame(STATE.pNames,STATE.settings);}decorateFinal();save();return result;};
         FLOW.resetToSetup=function(...args){if(campaign&&!busy){open();return;}return originalReset.apply(this,args);};
         UI.openRules=function(options={}){if(campaign){showCampaignRules();return;}return originalOpenRules(options);};
         UI.confirmRestart=function(){UI.close('restartOverlay');if(campaign){FLOW.resumeTimer('restart');open();}else FLOW.resetToSetup();};
