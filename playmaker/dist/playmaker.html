@@ -953,7 +953,7 @@ function modal(kids, cancel, opts) {
   opts = opts || {};
   if (!opts.noTimer && !modalPaused && st && st.timer && st.can_act && ['main', 'grace'].includes(st.timer.mode)) { modalPaused = true; timerEvent('pause'); }
   $('modal').classList.toggle('readyscreen', !!opts.ready);
-  const b = $('modalBox'); b.innerHTML = ''; b.append(...kids);
+  const b = $('modalBox'); b.innerHTML = ''; b.append(...kids.filter(k => k != null));
   const h = b.querySelector('h1, h2, h3');
   if (h) { h.id = 'modalTitle'; $('modal').setAttribute('aria-labelledby', 'modalTitle'); }
   modalReturn = document.activeElement; modalCancel = cancel || null;
