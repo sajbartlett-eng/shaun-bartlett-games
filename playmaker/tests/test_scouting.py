@@ -10,7 +10,9 @@ from playmaker_engine.cards import TEAMS
 from playmaker_engine.scouting import report, report_text, BANNED, hunt_protect, best_edge
 from playmaker_web.server import start_background
 
-TEAM_NAMES = list(TEAMS)
+from playmaker_engine.cards import PRESCRIBED
+
+TEAM_NAMES = list(PRESCRIBED)
 
 
 @pytest.fixture(scope='module')
@@ -34,37 +36,192 @@ def get(base, path):
     return json.loads(urllib.request.urlopen(base + path).read())
 
 
-# ---- the report: a pure function of the cards ------------------------------------------------------
+# ---- the report (step 3d): words only, nothing average, a pure function of five cards -------------
+
+import random
+
+from playmaker_engine import scouting as S
+from playmaker_engine.cards import CARDS
+
+GOLD = {
+    'Pace and Space': (['fast and athletic', 'shooters to space the floor'], ['foul-prone']),
+    'Iron Wall': (['disruptive in the passing lanes'], ['limited half-court offence']),
+    'Twin Towers': (['shooters to space the floor', 'multiple creators', 'attacks the rim', 'inside-out'],
+                    ['leaks dribble penetration', 'gives up open threes']),
+    'Run and Gun': (['fast and athletic', 'multiple creators', 'attacks the rim', 'disruptive in the passing lanes'],
+                    ['no spacing', 'gives up open threes']),
+    'Ball Movement': (['fast and athletic', 'moves the ball', 'inside-out'], ['leaks dribble penetration']),
+    'Shoot and Protect': (['shooters to space the floor'], ['leaks dribble penetration']),
+    'Bucket Brigade': (['multiple creators', 'attacks the rim', 'inside-out'],
+                       ['leaks dribble penetration', 'gives up open threes']),
+    'Five Out': (['fast and athletic', 'shooters to space the floor'], ['gives up open threes']),
+    'High-Low': (['inside-out'], ['limited half-court offence', 'leaks dribble penetration', 'foul-prone']),
+    'Lockdown': (['protects the paint', 'disruptive in the passing lanes'], ['no spacing', 'limited half-court offence']),
+}
+BAND_WORDS = ['above average', 'below average', 'poor', 'okay', 'great', 'excellent']
+
+
+def _pairs():
+    return [(a, b) for a in TEAM_NAMES for b in TEAM_NAMES if a != b]
+
+
+def _clean(line):
+    """Strip the allowed numbers (player numbers 1-5 at the start of a name line, and O1..X5 labels)."""
+    line = re.sub(r'^[1-5] ', '', line)
+    return re.sub(r'\b[OX][1-5]\b', '', line)
+
+
+@pytest.mark.parametrize('level', ['learn', 'scout'])
+def test_report_has_no_numbers_marks_or_band_names(level):
+    for a, b in _pairs():
+        for line in report_text(report(a, b, level, full=True)):
+            c = _clean(line)
+            assert not re.search(r'\d', c), line
+            assert '▲' not in c and '▼' not in c, line
+            low = c.lower()
+            assert not any(re.search(r'\b' + w + r'\b', low) for w in BAND_WORDS), line
+
 
 @pytest.mark.parametrize('level', ['learn', 'scout'])
 def test_report_never_instructs(level):
-    for a in TEAM_NAMES:
-        for b in TEAM_NAMES:
-            if a == b:
-                continue
-            for line in report_text(report(a, b, level)):
-                low = line.lower()
-                for w in BANNED:
-                    assert not re.search(r'\b' + re.escape(w) + r'\b', low), (w, line)
+    for a, b in _pairs():
+        for line in report_text(report(a, b, level, full=True)):
+            low = line.lower()
+            for ok in S.ALLOWED:
+                low = low.replace(ok, '')
+            for w in S.BANNED:
+                assert not re.search(r'\b' + re.escape(w) + r'\b', low), (w, line)
+    assert 'attacks the rim' in S.ALLOWED and 'attack' in S.BANNED
 
 
-def test_every_strength_and_liability_matches_the_card_band():
+def _check_phrase_traces(card, ph, side, kind):
+    want = 'H' if kind == 'strength' else 'L'
+    spec = S.PHRASES[ph['id']][kind]
+    assert spec['text'] == ph['text']
+    assert ph['ratings'] and all(S.band(card, r) == want for r in ph['ratings']), (card.key, ph)
+    assert all(r in spec['any'] for r in ph['ratings'])
+
+
+def _every_lineup_report(cards):
+    return S.team_report('Lineup', cards)
+
+
+def test_average_stays_out_and_every_phrase_traces_to_the_card():
     for name in TEAM_NAMES:
-        rep = report(name, TEAM_NAMES[0] if name != TEAM_NAMES[0] else TEAM_NAMES[1])
-        team = next(t for t in rep['teams'] if t['name'] == name)
-        for p, card in zip(team['players'], TEAMS[name]):
-            for side in ('offence', 'defence'):
-                for s in p[side]['strengths']:
-                    assert card.bands[s['rating']] == 'H' and f"{card.r[s['rating']]}▲" in s['text']
-                for s in p[side]['liabilities']:
-                    assert card.bands[s['rating']] == 'L' and f"{card.r[s['rating']]}▼" in s['text']
+        for p, card in zip(S.team_report(name, TEAMS[name])['players'], TEAMS[name]):
+            for side in ('off', 'def'):
+                for kind, key in (('strength', 'strengths'), ('weakness', 'weaknesses')):
+                    for ph in p[side][key]:
+                        _check_phrase_traces(card, ph, side, kind)
+
+
+def test_caps_and_order():
+    for card in CARDS.values():
+        pl = S.player_lists(card, 1)
+        for side in ('off', 'def'):
+            for kind, key in (('strength', 'strengths'), ('weakness', 'weaknesses')):
+                shown = pl[side][key]
+                assert len(shown) <= 3
+                full = S.ordered(card, side, kind)
+                assert [x['id'] for x in shown] == [x['id'] for x in full[:3]]
+                keys = [(x['typical'], x['id'] != 'quick_step', -x['dist']) for x in full]
+                assert keys == sorted(keys), (card.key, side, kind)
+
+
+def test_typical_phrases_are_computed_from_the_cards():
+    assert set(S.typical_text('PG')) == {'foul-prone', 'soft screens', 'no resistance at the rim', 'creates off the dribble'}
+    assert set(S.typical_text('SG')) == {'limited passer', 'soft screens'}
+    assert set(S.typical_text('PF')) == {'limited passer', 'slow-footed'}
+    assert S.typical_text('SF') == []
+    assert len(S.typical_text('C')) >= 6
+
+
+def test_golden_reads():
+    for name, (st, wk) in GOLD.items():
+        read = S.team_read(TEAMS[name])
+        assert (read['strengths'], read['weaknesses']) == (st, wk), name
+
+
+def test_calibration_no_team_line_on_more_than_five_teams():
+    from collections import Counter
+    c = Counter()
+    for name in TEAM_NAMES:
+        c.update(l['id'] for l in S.team_lines(TEAMS[name]))
+    assert max(c.values()) <= S.CONFIG['calibration_max_teams'], c
+    assert c['leaks'] == 5
+
+
+def _random_lineup(rng, legal):
+    by = {p: [c for c in CARDS.values() if S.position(c) == p] for p in S.POSITIONS}
+    while True:
+        cards = [rng.choice(by[p]) for p in S.POSITIONS]
+        shape = ''.join(sorted(c.tier for c in cards))
+        if (shape in ('BBBBB', 'ABBBC', 'AABCC')) == legal:
+            return cards
+
+
+def _line_holds(cards, line):
+    cfg = next(l for l in S.TEAM_LINES if l['id'] == line['id'])
+    terms = cfg.get('all') or cfg.get('any')
+    res = []
+    for t, n in zip(terms, line['counts']):
+        assert n == sum(S._passes(c, t) for c in cards)
+        res.append({'>=': n >= t['n'], '<=': n <= t['n'], '==': n == t['n']}[t['op']])
+    return all(res) if 'all' in cfg else any(res)
+
+
+def test_custom_lineups_200_legal_and_50_experimental():
+    rng = random.Random(7)
+    for legal, n in ((True, 200), (False, 50)):
+        for _ in range(n):
+            cards = _random_lineup(rng, legal)
+            t = S.team_report('Custom', cards)
+            for line in t['lines']:
+                assert _line_holds(cards, line), line
+            for line in [t['name']] + t['strengths'] + t['weaknesses']:
+                assert not S.banned_hits(line)
+            for p, card in zip(t['players'], cards):
+                for side in ('off', 'def'):
+                    assert len(p[side]['strengths']) <= 3 and len(p[side]['weaknesses']) <= 3
+                    for ph in p[side]['strengths']:
+                        _check_phrase_traces(card, ph, side, 'strength')
+                    for ph in p[side]['weaknesses']:
+                        _check_phrase_traces(card, ph, side, 'weakness')
+
+
+def test_shot_charts_match_the_card_marks():
+    for card in CARDS.values():
+        ch = S.shot_chart(card)
+        for side, prefix in (('off', 'shot_'), ('def', 'con_')):
+            for z, shots in (('K', ['layup', 'dunk']), ('M', ['mid']), ('L', ['long']), ('3', ['three'])):
+                bands = [card.bands[prefix + t] for t in shots]
+                want = 'H' if 'H' in bands else 'L' if 'L' in bands else 'A'
+                assert ch[side]['marks'][z] == want
+            alt = ch[side]['alt']
+            assert alt and 'Strong (solid)' in alt and 'Weak (hatched)' in alt
+            for z, (word, _) in S.CHART_ZONES.items():
+                if ch[side]['marks'][z] == 'H':
+                    assert word in alt.split('Weak')[0]
+                if ch[side]['marks'][z] == 'L':
+                    assert word in alt.split('Weak')[1]
 
 
 def test_levels_show_and_hide_exactly():
     learn, scout, pro = (report('Five Out', 'High-Low', lv) for lv in ('learn', 'scout', 'pro'))
-    assert 'matchups' in learn and 'engine' in learn
-    assert 'matchups' not in scout and 'engine' not in scout and scout['teams']
-    assert pro['teams'] == [] and 'engine' not in pro
+    assert learn['mismatches'] and 'mismatches' not in scout and scout['teams']
+    assert pro['teams'] == []
+    m = learn['mismatches'][0]
+    assert m['attacking'] == 'Five Out' and all(re.match(r'^O[1-5] .*; X[1-5] ', x) for x in m['offence'])
+    assert all(re.match(r'^X[1-5] .*; O[1-5] ', x) for x in m['defence'])
+    assert len(report('Five Out', 'High-Low', 'learn', full=True)['mismatches']) == 2
+
+
+def test_learn_mismatch_pairs_come_from_the_config():
+    for a, b in _pairs():
+        offs, defs = S.mismatches(TEAMS[a], TEAMS[b])
+        for line in offs + defs:
+            i = int(line[1]) - 1
+            assert line.count(f'{i + 1}') >= 2           # the same numbered pairing on both sides
 
 
 def test_team_sheet_hunt_protect():
@@ -72,6 +229,12 @@ def test_team_sheet_hunt_protect():
     hp = hunt_protect(a, d)
     edges = [best_edge(a[i], d[i])[0] for i in range(5)]
     assert hp['hunt']['o'] == edges.index(max(edges)) + 1 == hp['protect']['x']
+
+
+def test_team_sheet_file_is_current():
+    import os
+    path = os.path.join(os.path.dirname(__file__), '..', 'docs', 'TEAM_SHEET_HUNT_PROTECT.md')
+    assert open(path).read() == S.team_sheet_markdown()
 
 
 # ---- the rule audit: no judgement anywhere during play ------------------------------------------------
@@ -120,7 +283,7 @@ def test_both_players_get_identical_scouting_and_cards(web):
     x = post(web, '/api/join', dict(code=g['code'], seat='X'))['token']
     so = get(web, f'/api/state?code={g["code"]}&token={o}')
     sx = get(web, f'/api/state?code={g["code"]}&token={x}')
-    assert so['scout']['report'] == sx['scout']['report']
+    assert so['scout']['report'] is None and sx['scout']['report'] is None      # read the cards first
     assert so['matchups'] == sx['matchups']
     assert [p['card'] for p in so['o']] == [p['card'] for p in sx['o']] and [p['card'] for p in so['x']] == [p['card'] for p in sx['x']]
     # picks are private until the review
@@ -129,8 +292,15 @@ def test_both_players_get_identical_scouting_and_cards(web):
     assert sx['scout']['done'] == ['O'] and 'hunt' not in json.dumps(sx['scout']['done'])
     assert '"o": 3, "x": 3' not in json.dumps(sx) and "'o': 3" not in json.dumps(sx)
     assert post(web, '/api/act', dict(code=g['code'], token=o, action={'kind': 'hesitate', 'side': 'O'}), ok=False)['status'] == 400
+    so = get(web, f'/api/state?code={g["code"]}&token={o}')
+    assert so['scout']['report'] and so['scout']['locked'] and so['scout']['mine'] == dict(hunt=dict(o=3, x=3))
+    assert sx['scout']['report'] is None                                         # X has not picked yet
+    assert post(web, '/api/scout', dict(code=g['code'], token=o, hunt=dict(o=1, x=1)), ok=False)['status'] == 400
     post(web, '/api/scout', dict(code=g['code'], token=x, protect=dict(x=2)))
-    assert get(web, f'/api/state?code={g["code"]}&token={o}')['can_act']
+    so = get(web, f'/api/state?code={g["code"]}&token={o}')
+    sx = get(web, f'/api/state?code={g["code"]}&token={x}')
+    assert so['can_act'] and so['scout']['report'] == sx['scout']['report']    # identical report for both
+    assert sx['scout']['mine'] == dict(protect=dict(x=2)) and '"x": 3' not in json.dumps(sx['scout'])
 
 
 def test_detail_levels_gate_the_picks(web):
@@ -139,7 +309,10 @@ def test_detail_levels_gate_the_picks(web):
         s = get(web, f'/api/state?code={g["code"]}&token={g["token"]}')
         assert s['level'] == level and s['scout']['needs']['O'] == needs
         assert s['can_act'] == (not needs)
-        assert ('engine' in s['scout']['report']) == (level == 'learn')
+        rep = s['scout']['report']
+        assert (rep is not None) == (level == 'learn')         # scout: hidden until the picks lock; pro: none
+        if rep:
+            assert 'mismatches' in rep
 
 
 def test_matched_value_chips_during_a_pass(web):
@@ -221,3 +394,101 @@ def test_phone_tap_opens_card_and_matchup(tmp_path):
         srv.shutdown()
     assert res['open'] and res['cards'] == 2 and 'matchup: X2' in res['head'], res
     assert res['scroll'] <= res['vw'], res
+
+
+# ---- step 3d: custom teams, the report in play, the phone report ----------------------------------
+
+def test_custom_team_game_logs_experimental_and_replays(web):
+    from playmaker_engine.review import read, replay
+    import os
+    custom = [dict(slot=0, name='Lab Five', cards=['apgA', 'shsB', 'scsfB', 'pspfB', 'rpcA']),    # AABBB: experimental
+              dict(slot=1, name='Lab Two', cards=['ppgA', 'shsB', 'pfsfC', 'arpfA', 'pscC'])]   # AABCC; shsB on both sides
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['x', 'y'], custom=custom, seed=3, level='scout',
+                                   ai=dict(O='greedy', X='greedy')))
+    s = get(web, f'/api/state?code={g["code"]}&token={g["token"]}')
+    assert s['teams'] == ['Lab Five', 'Lab Two'] and s['experimental'] == ['Lab Five'] and s['stage'] == 'over'
+    rep = s['scout']['report']
+    assert [t['name'] for t in rep['teams']] == ['Lab Five', 'Lab Two']
+    log = get(web, f'/api/log?code={g["code"]}')
+    setup = log[0]
+    assert setup['custom'] == {'Lab Five': custom[0]['cards'], 'Lab Two': custom[1]['cards']}
+    assert setup['experimental'] == ['Lab Five']
+    r = post(web, '/api/review', dict(code=g['code'], token=g['token']))
+    assert r['in_play'] and r['engine']['O']['hunt']
+    bad = dict(slot=0, name='Bad', cards=['shsB', 'apgA', 'scsfB', 'pspfB', 'rpcA'])               # positions out of order
+    assert post(web, '/api/new', dict(mode='hotseat', teams=['a', 'b'], custom=[bad]), ok=False)['status'] == 400
+
+
+def test_the_report_in_play_counts_match_the_log(web):
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], seed=1, level='scout'))
+    tok = dict(code=g['code'], token=g['token'])
+    post(web, '/api/scout', dict(tok, side='O', hunt=dict(o=2, x=2)))
+    post(web, '/api/scout', dict(tok, side='X', protect=dict(x=2)))
+    for _ in range(400):
+        s = get(web, f'/api/state?code={g["code"]}&token={g["token"]}')
+        if s['stage'] == 'over':
+            break
+        kinds = ['pass', 'dribble', 'shot', 'intercept', 'contest', 'steal', 'end_turn', 'hesitate', 'move']
+        a = next((a for k in kinds for a in s['legal'] if a['kind'] == k), s['legal'][0])
+        post(web, '/api/act', dict(tok, action=a))
+    r = post(web, '/api/review', tok)
+    log = get(web, f'/api/log?code={g["code"]}')
+    acts = [x['action'] for x in log if x['type'] == 'action']
+    passes = {i: sum(a['kind'] == 'pass' and a['piece'] == i for a in acts) for i in range(5)}
+    threes = sum(a['kind'] in ('shot', 'forced_shot') and a['shot'] == 'three' for a in acts)
+    five, high = r['in_play']
+    assert five['team'] == 'Five Out' and high['team'] == 'High-Low'
+    for it in five['items']:
+        if it['line'] == 'shooters to space the floor':
+            assert it['text'] == ('not tested' if not threes else f'{threes} three{"s" if threes != 1 else ""} taken')
+        if it['line'] == 'sees the floor' and it['who'].startswith('O'):
+            n = passes[int(it['who'][1]) - 1]
+            assert it['text'] == 'not tested' if not n else it['text'].startswith(f'{n} pass')
+        assert it['tested'] == (it['text'] != 'not tested')
+    # High-Low never had the ball in this single possession: its offence lines were never tested
+    assert all(it['text'] == 'not tested' for it in high['items'] if it['who'].startswith('O'))
+    assert 'estimate' not in json.dumps(r['in_play']) and 'mistake' not in json.dumps(r).lower()
+    assert r['picks']['O'] == dict(hunt=dict(o=2, x=2))
+
+
+NODE_REPORT = r"""
+const { chromium } = require('playwright');
+const [base] = process.argv.slice(2);
+(async () => {
+  const b = await chromium.launch();
+  const page = await (await b.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true })).newPage();
+  const g = await (await fetch(base + '/api/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'hotseat', teams: ['Twin Towers', 'Run and Gun'], seed: 3, level: 'scout' }) })).json();
+  await page.goto(`${base}/?code=${g.code}&token=${g.token}`); await page.waitForTimeout(900);
+  const locked = await page.evaluate(() => document.querySelectorAll('#modal .reads').length);
+  for (let i = 0; i < 2; i++) { await page.click('#modal button.primary'); await page.waitForTimeout(500); }
+  await page.evaluate(() => { document.getElementById('modalBox').scrollTop = 0; });
+  const res = await page.evaluate(() => {
+    const reads = [...document.querySelectorAll('#modal .teamread')];
+    const bottom = Math.max(...reads.map(r => r.getBoundingClientRect().bottom));
+    const text = [...document.querySelectorAll('#modal .reads *, #modal details.sidelist *')].filter(e => !e.children.length).map(e => e.textContent).join(' | ');
+    return { locked: 0, n: reads.length, bottom, vh: window.innerHeight, scroll: document.documentElement.scrollWidth,
+             vw: document.documentElement.clientWidth, text, charts: [...document.querySelectorAll('#modal svg.chart')].map(s => s.getAttribute('aria-label')) };
+  });
+  res.locked = locked;
+  console.log(JSON.stringify(res));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });
+"""
+
+
+def test_phone_report_fits_and_has_no_numbers(tmp_path):
+    import subprocess
+    srv, base = start_background()
+    try:
+        (tmp_path / 'r.js').write_text(NODE_REPORT)
+        r = subprocess.run(['node', str(tmp_path / 'r.js'), base], capture_output=True, text=True, timeout=120)
+        assert r.returncode == 0, r.stderr[-500:]
+        res = json.loads(r.stdout.strip().splitlines()[-1])
+    finally:
+        srv.shutdown()
+    assert res['locked'] == 0                                # no report before the picks lock
+    assert res['n'] == 2 and res['bottom'] <= res['vh'], res  # both teams' reads on the first screen
+    assert res['scroll'] <= res['vw'], res
+    text = ' | '.join(re.sub(r'^[1-5] ', '', t.strip()) for t in res['text'].split(' | '))
+    assert not re.search(r'\d', text) and '▲' not in text and '▼' not in text, text[:300]
+    assert res['charts'] and all('Strong (solid)' in c for c in res['charts'])

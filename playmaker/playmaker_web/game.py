@@ -145,7 +145,7 @@ def man_to_man(o_squares, ball):
 
 class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
-                 place=False, code=None, level='scout'):
+                 place=False, code=None, level='scout', custom=None):
         self.code = (code or secrets.token_hex(3)).upper()
         if level not in ('learn', 'scout', 'pro'):
             raise GameError('level must be learn, scout or pro')
@@ -154,6 +154,12 @@ class Game:
         self.scenario = scenario
         self.full = full and scenario is None
         self.teams = list(teams or FIRST_GAME)
+        self.custom, self.experimental = {}, []
+        if custom and not scenario:
+            self._register_custom(custom)
+        for t in self.teams:
+            if t not in TEAMS:
+                raise GameError(f'no team {t}')
         self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
         self.rng = random.Random(self.seed)
         self.rules = rules
@@ -187,6 +193,7 @@ class Game:
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
                   ai=self.ai, possession=self.possession, place=self.place_on, level=self.level,
+                  custom=self.custom or None, experimental=self.experimental or None,
                   start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):
@@ -195,6 +202,24 @@ class Game:
             self._begin_possession()
 
     # ---- setup ----
+    def _register_custom(self, custom):
+        """custom: [{slot: 0 or 1, name, cards: [5 keys, PG..C]}]. One card per position; a tier shape
+        outside BBBBB / ABBBC / AABCC is allowed but labelled experimental."""
+        from playmaker_engine.cards import register_team, CARDS
+        from playmaker_engine.scouting import position, POSITIONS
+        for c in custom:
+            slot = int(c.get('slot', 0))
+            keys = list(c.get('cards') or [])
+            if slot not in (0, 1) or len(keys) != 5 or any(k not in CARDS for k in keys):
+                raise GameError('a custom team is five cards, one per position')
+            if [position(CARDS[k]) for k in keys] != POSITIONS:
+                raise GameError('a custom team needs one card per position, in order PG, SG, SF, PF, C')
+            name = register_team(c.get('name') or 'Custom', keys)
+            self.teams[slot] = name
+            self.custom[name] = keys
+            if ''.join(sorted(CARDS[k].tier for k in keys)) not in ('BBBBB', 'ABBBC', 'AABCC'):
+                self.experimental.append(name)
+
     def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
@@ -210,6 +235,17 @@ class Game:
         if self.full:
             return ['hunt', 'protect']
         return ['hunt'] if side == 'O' else ['protect']
+
+    def report_visible(self, seat):
+        """Read the cards first (Scout level): the report unlocks for a client once its picks are locked.
+        A hot-seat client is both players, so it unlocks when both sides have picked."""
+        if self.level == 'pro':
+            return False
+        if self.level == 'learn':
+            return True
+        if seat == 'both':
+            return not self.picks_pending()
+        return seat in ('O', 'X') and (seat in self.picks or not self.picks_needed(seat))
 
     def picks_pending(self):
         return [side for side in ('O', 'X') if self.picks_needed(side) and side not in self.picks]
@@ -284,6 +320,10 @@ class Game:
             engine = {side: {k: v for k, v in self._engine_picks_any(side).items() if k in shape[side]}
                       for side in ('O', 'X')}
             out = dict(level=self.level, picks=self.picks, engine=engine, advantages=board_advantages(recs))
+            if self.level != 'pro':
+                from playmaker_engine.review import report_in_play
+                from playmaker_engine.scouting import report
+                out['in_play'] = report_in_play(recs, report(self.team_of('O'), self.team_of('X'), 'scout'))
             try:
                 from playmaker_engine import solver  # noqa: F401  (the in-browser build has no solver)
                 out['solver'] = solver_disagreements(recs)

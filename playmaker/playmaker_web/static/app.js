@@ -58,8 +58,12 @@ async function initStart() {
     $('mode').querySelector('option[value=remote]').disabled = true;
     $('joinBox').innerHTML = '<h2>Remote play</h2><p class="note">Remote play (two browsers, one game) needs the server version: <code>python -m playmaker_web</code>. This link version plays hot-seat and against the computer.</p>';
   }
+  OPTS = o;
   for (const t of o.teams) { $('teamA').append(el('option', { value: t.name, text: t.name })); $('teamB').append(el('option', { value: t.name, text: t.name })); }
+  for (const id of ['teamA', 'teamB']) $(id).append(el('option', { value: '__custom', text: 'Custom team…' }));
   $('teamA').value = o.first_game[0]; $('teamB').value = o.first_game[1];
+  for (const [id, slot] of [['teamA', 0], ['teamB', 1]]) $(id).addEventListener('change', () => builder(slot));
+  builder(0); builder(1);
   for (const s of o.scenarios) $('scenario').append(el('option', { value: s.n, text: `${s.n}. ${s.title} (${s.kind}, clock ${s.clock})` }));
   const showKind = () => {
     const k = $('kind').value;
@@ -79,12 +83,59 @@ async function initStart() {
   if (saved && q.has('resume')) { G = JSON.parse(saved); enterTable(); }
 }
 
+// ---------------------------------------------------------------- custom team builder (step 3d)
+let OPTS = null;
+const POS = ['PG', 'SG', 'SF', 'PF', 'C'];
+const LEGAL_SHAPES = ['BBBBB', 'ABBBC', 'AABCC'];
+function customCards(slot) { return POS.map(p => $(`b${slot}${p}`).value); }
+function builder(slot) {
+  const box = $(`builder${slot}`), on = $(slot ? 'teamB' : 'teamA').value === '__custom';
+  box.classList.toggle('hidden', !on);
+  if (!on) { builderStatus(); return; }
+  if (box.dataset.built) { builderStatus(); return; }
+  box.dataset.built = '1';
+  const load = el('select', { id: `bLoad${slot}`, onchange: () => {
+    const t = OPTS.teams.find(x => x.name === load.value); if (!t) return;
+    POS.forEach((p, i) => { $(`b${slot}${p}`).value = t.cards[i]; }); builderStatus();
+  } }, [el('option', { value: '', text: 'Start from a prescribed team…' }), ...OPTS.teams.map(t => el('option', { value: t.name, text: t.name }))]);
+  box.append(el('h3', { text: `Custom team ${slot ? 'B' : 'A'}` }),
+    el('label', {}, ['Name ', el('input', { id: `bName${slot}`, value: 'Custom', maxlength: 30 })]),
+    el('label', {}, ['Load ', load]),
+    ...POS.map(p => el('label', {}, [`${p} `, el('select', { id: `b${slot}${p}`, onchange: builderStatus },
+      OPTS.cards.filter(c => c.position === p).map(c => el('option', { value: c.key, text: `${c.role} (${c.tier})` })))])),
+    el('p', { class: 'note', id: `bShape${slot}`, role: 'status' }));
+  const start = OPTS.teams.find(t => t.name === OPTS.first_game[slot]);
+  POS.forEach((p, i) => { $(`b${slot}${p}`).value = start.cards[i]; });
+  builderStatus();
+}
+function builderStatus() {
+  const tier = k => OPTS.cards.find(c => c.key === k).tier;
+  const cardsOf = slot => {
+    const v = $(slot ? 'teamB' : 'teamA').value;
+    if (v === '__custom') return $(`b${slot}PG`) ? customCards(slot) : [];
+    const t = OPTS.teams.find(x => x.name === v); return t ? t.cards : [];
+  };
+  for (const slot of [0, 1]) {
+    const p = $(`bShape${slot}`); if (!p || $(slot ? 'teamB' : 'teamA').value !== '__custom') continue;
+    const shape = customCards(slot).map(tier).sort().join('');
+    p.textContent = LEGAL_SHAPES.includes(shape) ? `Tier shape ${shape}: a legal shape.` :
+      `Tier shape ${shape}: not a legal shape (BBBBB, ABBBC or AABCC). Allowed, but the game is labelled experimental in the log.`;
+    p.classList.toggle('exp', !LEGAL_SHAPES.includes(shape));
+  }
+  const a = cardsOf(0), b = cardsOf(1), both = a.filter(k => b.includes(k));
+  $('builderWarn').textContent = both.length ? `Both sides use ${both.map(k => OPTS.cards.find(c => c.key === k).role + ' (' + tier(k) + ')').join(', ')}: the table game would need two card sets. Allowed here.` : '';
+}
+
 async function create() {
   const k = $('kind').value, mode = $('mode').value;
   const body = { mode, level: $('level').value, ai: { O: $('aiO').checked ? 'greedy' : null, X: $('aiX').checked ? 'greedy' : null } };
   if ($('seed').value) body.seed = Number($('seed').value);
   if (k === 'scenario') body.scenario = Number($('scenario').value);
-  else { body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full'; }
+  else {
+    body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
+    body.custom = [0, 1].filter(i => body.teams[i] === '__custom').map(i => ({ slot: i, name: $(`bName${i}`).value || 'Custom', cards: customCards(i) }));
+    body.custom.forEach(c => { body.teams[c.slot] = c.name; });
+  }
   try {
     const r = await api('/api/new', body);
     G = { code: r.code, token: r.token };
@@ -141,7 +192,9 @@ function render() {
   const ai = Object.keys(s.ai || {}).map(k => (k === 'O' ? 'offence' : 'defence')).join(' and ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
-    ...(ai ? [el('div', { text: `Test opponent plays ${ai} (greedy baseline, not strong)` })] : []));
+    ...(ai ? [el('div', { text: `Test opponent plays ${ai} (greedy baseline, not strong)` })] : []),
+    ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
+    ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
   $('summary').dataset.side = s.side_to_act || '';
@@ -751,22 +804,81 @@ function renderCompare() {
 }
 function isArrowOn(x, o) { const d = [o.x - x.x, o.y - x.y]; return Math.max(Math.abs(d[0]), Math.abs(d[1])) === 1 && DIRS[x.arrow][0] === d[0] && DIRS[x.arrow][1] === d[1]; }
 
-function reportEl(rep) {
-  const out = [];
-  if (rep.level === 'pro') return out;
-  for (const t of rep.teams) {
-    const L = t.lists, nums = a => a.length ? a.map(n => '#' + n).join(', ') : 'none';
-    out.push(el('h3', { text: t.name }),
-      el('p', { class: 'note', text: `Creators (Dribble or Pass ▲): ${nums(L.creators)} · Three ▲: ${nums(L.three_shooters)} · Rim protection (v Layup or v Dunk ▲): ${nums(L.rim_protectors)} · Two or more ▼ on defence: ${nums(L.defensive_liabilities)}` }),
-      el('table', { class: 'scout' }, [el('tr', {}, [el('th', { text: '#' }), el('th', { text: 'Player' }), el('th', { text: 'Offence' }), el('th', { text: 'Defence' })]),
-        ...t.players.map(p => el('tr', {}, [el('td', { text: p.num }), el('td', { text: `${p.role} (${p.tier})` }), el('td', { text: p.offence.text }), el('td', { text: p.defence.text })]))]));
+// ---------------------------------------------------------------- scout report (step 3d)
+// Words only: no ratings, no numbers, no marks. Team lines first, then players by side.
+function chartEl(chart, label) {
+  const W = 17, H = 14, c = 4;
+  const zs = (st && st.zones) || [];
+  const g = svg('svg', { viewBox: `0 0 ${W * c} ${H * c}`, class: 'chart', role: 'img', 'aria-label': `${label}. ${chart.alt}` });
+  const defs = svg('defs');
+  const pat = svg('pattern', { id: 'hatch', width: 3, height: 3, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+  pat.append(svg('rect', { width: 3, height: 3, fill: '#f6f1e7' }), svg('line', { x1: 0, y1: 0, x2: 0, y2: 3, stroke: '#1d1b18', 'stroke-width': 1.4 }));
+  defs.append(pat); g.append(defs);
+  for (let y = 1; y <= H; y++) for (let x = 0; x < W; x++) {
+    const z = zs[y - 1] ? zs[y - 1][x] : '.';
+    const m = chart.marks[z];
+    const at = { x: x * c, y: (H - y) * c, width: c, height: c };
+    if (m === 'L') g.append(svg('rect', { ...at, fill: 'url(#hatch)' }));
+    else g.append(svg('rect', { ...at, fill: z === '.' ? '#f6f1e7' : ZCOL[z], 'fill-opacity': m === 'H' ? 1 : 0.22 }));
   }
-  if (rep.matchups) out.push(el('h3', { text: 'Matchups on the cards (by position)' }), el('ul', {}, rep.matchups.map(m => el('li', { text: m.text }))));
-  if (rep.engine) out.push(el('h3', { text: "The engine's hunt / protect (team sheet)" }), el('p', { text: `Hunt: ${rep.engine.hunt.text}. Protect: ${rep.engine.protect.text}.` }));
+  g.append(svg('rect', { x: 0.25, y: 0.25, width: W * c - 0.5, height: H * c - 0.5, fill: 'none', stroke: '#6b6357', 'stroke-width': 0.5 }));
+  const btn = el('button', { class: 'chartbtn', 'aria-label': `${label}: ${chart.alt} Tap to enlarge.`, title: chart.alt,
+    onclick: e => { e.currentTarget.classList.toggle('big'); } });
+  btn.append(g);
+  return btn;
+}
+
+function phraseLines(ph) {
+  const out = [];
+  if (ph.strengths.length) out.push(el('div', { class: 'plus' }, [el('span', { class: 'sign', 'aria-label': 'strengths', text: '+' }), ' ' + ph.strengths.map(x => x.text).join(', ')]));
+  if (ph.weaknesses.length) out.push(el('div', { class: 'minus' }, [el('span', { class: 'sign', 'aria-label': 'weaknesses', text: '−' }), ' ' + ph.weaknesses.map(x => x.text).join(', ')]));
+  return out;
+}
+
+function teamLinesEl(t) {
+  const none = !t.strengths.length && !t.weaknesses.length;
+  return el('div', { class: 'teamread' }, [el('h3', { text: t.name.toUpperCase() }),
+    none ? el('p', { text: t.nothing }) : null,
+    t.strengths.length ? el('p', {}, [el('b', { text: 'Strengths: ' }), t.strengths.join(' · ')]) : null,
+    t.weaknesses.length ? el('p', {}, [el('b', { text: 'Weaknesses: ' }), t.weaknesses.join(' · ')]) : null]);
+}
+
+function sideListEl(t, side) {
+  const rows = t.players.filter(p => p[side].strengths.length || p[side].weaknesses.length).map(p =>
+    el('div', { class: 'prow' }, [chartEl(p.chart[side], `${side === 'off' ? 'Shooting' : 'Contests'} chart for ${p.num} ${p.short}`),
+      el('div', { class: 'ptext' }, [el('div', { class: 'pname', text: `${p.num} ${p.short}` }), ...phraseLines(p[side])])]));
+  const d = el('details', { class: 'sidelist' }, [el('summary', { text: `${t.name}: on ${side === 'off' ? 'offence' : 'defence'}` }),
+    ...(rows.length ? rows : [el('p', { class: 'note', text: 'Nobody stands out on this side.' })])]);
+  return d;
+}
+
+function reportEl(rep) {
+  if (!rep || rep.level === 'pro') return [];
+  const out = [el('div', { class: 'reads' }, rep.teams.map(teamLinesEl)),
+    el('p', { class: 'note', text: 'Charts: solid = strong zone, hatched = weak zone, pale = neither. Tap a chart to enlarge it.' })];
+  for (const t of rep.teams) out.push(sideListEl(t, 'off'), sideListEl(t, 'def'));
+  if (rep.mismatches) {
+    out.push(el('h3', { text: 'Mismatches (by numbered pairing)' }));
+    for (const m of rep.mismatches) {
+      out.push(el('h4', { text: `When ${m.attacking} has the ball` }),
+        el('p', { class: 'note', text: `${m.attacking} on offence:` }),
+        el('ul', {}, (m.offence.length ? m.offence : ['None on the cards.']).map(x => el('li', { text: x }))),
+        el('p', { class: 'note', text: `${m.defending} on defence:` }),
+        el('ul', {}, (m.defence.length ? m.defence : ['None on the cards.']).map(x => el('li', { text: x }))));
+    }
+  }
   return out;
 }
 
 function seenKey(what) { return `pm_${what}_${G.code}`; }
+function seen(what) { try { return localStorage.getItem(seenKey(what)) === '1'; } catch (e) { return false; } }
+function markSeen(what) { try { localStorage.setItem(seenKey(what), '1'); } catch (e) { /* private mode */ } }
+
+function showReport(title, intro, done) {
+  modal([el('h2', { text: title }), intro ? el('p', { class: 'note', text: intro }) : null, ...reportEl(st.scout.report),
+    el('button', { class: 'primary', text: done || 'Close', onclick: () => { closeModal(); render(); } })], () => { closeModal(); render(); });
+}
+
 function scoutModalIfDue() {
   const sc = st.scout;
   if (!sc || !$('modal').classList.contains('hidden')) return false;
@@ -775,10 +887,13 @@ function scoutModalIfDue() {
   if (sc.pending.length && st.mode === 'remote') {
     $('summary').textContent = 'Waiting for the other side\'s scouting call before tip-off'; return false;
   }
-  let seen = false; try { seen = localStorage.getItem(seenKey('report')) === '1'; } catch (e) { /* private mode */ }
-  if (st.level === 'learn' && !seen) {
-    modal([el('h2', { text: 'Scout report (Learn level)' }), ...reportEl(sc.report),
-      el('button', { class: 'primary', text: 'Tip off', onclick: () => { try { localStorage.setItem(seenKey('report'), '1'); } catch (e) { /* ignore */ } closeModal(); render(); } })]);
+  if (sc.report && sc.report.level !== 'pro' && !seen('report')) {
+    markSeen('report');
+    if (st.level === 'learn') showReport('Scout report (Learn level)', null, 'Tip off');
+    else {
+      const mine = sc.mine ? ' Your call: ' + [sc.mine.hunt ? `hunt O${sc.mine.hunt.o} v X${sc.mine.hunt.x}` : null, sc.mine.protect ? `protect #${sc.mine.protect.x}` : null].filter(Boolean).join('; ') + '.' : '';
+      showReport('Scout report unlocked', 'Your scouting call is locked. Check your read against the report.' + mine, 'Tip off');
+    }
     return true;
   }
   return false;
@@ -788,17 +903,19 @@ function pickModal(side) {
   const sc = st.scout, needs = sc.needs[side];
   const mine = sc.teams[side], theirs = sc.teams[side === 'O' ? 'X' : 'O'];
   const sel = (id, label, prefix) => el('label', {}, [label + ' ', el('select', { id }, [1, 2, 3, 4, 5].map(n => el('option', { value: n, text: `${prefix}${n}` })))]);
+  const cards = (pieces, s) => el('div', { class: 'pickcards' }, pieces.map(p => cardEl(p.card, s, `${s}${p.i + 1}`)));
   const parts = [el('h2', { text: `${side === 'O' ? 'Offence' : 'Defence'} (${mine}): your scouting call` }),
-    el('p', { class: 'note', text: st.mode === 'hotseat' ? `${side === 'O' ? 'Defence' : 'Offence'}, look away. This stays private until the review.` : 'Private until the review.' }),
-    ...reportEl(sc.report)];
+    el('p', { class: 'note', text: (st.mode === 'hotseat' ? `${side === 'O' ? 'Defence' : 'Offence'}, look away. ` : '') +
+      'Read the cards first: make your call from the cards alone. It locks when you save it, and the scout report unlocks after that. The other side sees your call only in the review.' })];
   if (needs.includes('hunt')) parts.push(el('h3', { text: 'Hunt one matchup' }), el('div', { class: 'picker' }, [sel('pkHuntO', `Your attacker (${mine})`, 'O'), sel('pkHuntX', `v their defender (${theirs})`, 'X')]));
   if (needs.includes('protect')) parts.push(el('h3', { text: 'Protect one weakness' }), el('div', { class: 'picker' }, [sel('pkProtect', `Your defender (${mine})`, '#')]));
-  parts.push(el('button', { class: 'primary', text: 'Save my call', onclick: async () => {
+  parts.push(el('button', { class: 'primary', text: 'Lock my call', onclick: async () => {
     const body = { code: G.code, token: G.token, side };
     if (needs.includes('hunt')) body.hunt = { o: Number($('pkHuntO').value), x: Number($('pkHuntX').value) };
     if (needs.includes('protect')) body.protect = { x: Number($('pkProtect').value) };
     try { const r = await api('/api/scout', body); closeModal(); st = r.state; render(); } catch (e) { alert(e.message); }
   } }));
+  parts.push(el('h3', { text: `Offence: ${st.teams[0]}` }), cards(st.o, 'O'), el('h3', { text: `Defence: ${st.teams[1]}` }), cards(st.x, 'X'));
   modal(parts);
 }
 
@@ -817,6 +934,12 @@ async function loadReview() {
   box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
   if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
+  if (r.in_play) {
+    const pk = sides.filter(side => r.picks[side]).map(side => `${side === 'O' ? 'Offence' : 'Defence'}: ${pickText(side, r.picks[side])}`).join(' · ');
+    box.append(el('h4', { text: 'The report in play' }), el('p', { class: 'note', text: 'Counts from the log for each line of the scout report. Facts only.' + (pk ? ' Your calls: ' + pk + '.' : '') }));
+    for (const t of r.in_play) box.append(el('p', {}, [el('b', { text: t.team })]), el('ul', { class: 'inplay' }, t.items.map(it =>
+      el('li', { class: it.tested ? '' : 'untested', text: `${it.who === t.team ? t.team : it.who} ${it.line}: ${it.text}` }))));
+  }
   box.append(el('h4', { text: '4. Reflect' }), el('p', { text: 'Was your setup and plan the right one for these two teams? (Answer it with the feedback below.)' }));
 }
 

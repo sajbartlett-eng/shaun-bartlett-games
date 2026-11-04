@@ -2,9 +2,10 @@
 import importlib.util
 import os
 
-from playmaker_engine.cards import TEAMS, CARDS, TEAMS_MOD, DATA_DIR
+from playmaker_engine.cards import TEAMS as _ALL, CARDS, TEAMS_MOD, DATA_DIR, PRESCRIBED
 from playmaker_engine.scouting import position
 
+TEAMS = {n: _ALL[n] for n in PRESCRIBED}      # prescribed only (custom lineups may be registered too)
 SHAPES = {'BBBBB', 'ABBBC', 'AABCC'}
 
 

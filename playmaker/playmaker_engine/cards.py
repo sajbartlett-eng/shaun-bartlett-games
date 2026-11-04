@@ -58,3 +58,25 @@ TEAMS = {name: [CARDS[k] for k in keys] for name, _, keys in TEAMS_MOD.TEAMS}
 TEAM_TAGLINES = {name: tag for name, tag, _ in TEAMS_MOD.TEAMS}
 FIRST_GAME = TEAMS_MOD.FIRST_GAME
 SCENARIO_CARDS = SCEN_MOD.SC
+
+
+# ---- custom lineups (step 3d) ------------------------------------------------------------------------
+PRESCRIBED = [name for name, _, _ in TEAMS_MOD.TEAMS]
+CUSTOM = {}
+
+
+def register_team(name, keys):
+    """Add a custom lineup to TEAMS and return the name it is registered under. The same name with the
+    same cards is reused; a name already taken by other cards gets ' (2)', ' (3)' ..."""
+    keys = [str(k) for k in keys]
+    if len(keys) != 5 or any(k not in CARDS for k in keys):
+        raise ValueError('a custom team is five card keys')
+    base = ' '.join(str(name or '').split())[:30] or 'Custom'
+    n, i = base, 2
+    while n in TEAMS and [c.key for c in TEAMS[n]] != keys:
+        n, i = f'{base} ({i})', i + 1
+    if n not in TEAMS:
+        TEAMS[n] = [CARDS[k] for k in keys]
+        TEAM_TAGLINES[n] = 'Custom team'
+        CUSTOM[n] = keys
+    return n

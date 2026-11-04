@@ -21,7 +21,9 @@
         <option value="single">One possession</option>
       </select></label>
       <label id="scenarioRow">Card <select id="scenario"></select></label>
-      <label id="teamsRow">Teams <select id="teamA"></select> v <select id="teamB"></select></label>
+      <div id="teamsRow"><label>Teams <select id="teamA"></select> v <select id="teamB"></select></label>
+        <div class="builders"><div id="builder0" class="builder hidden"></div><div id="builder1" class="builder hidden"></div></div>
+        <p class="note exp" id="builderWarn" role="status"></p></div>
       <label>Where <select id="mode">
         <option value="hotseat">Hot-seat: two players, this screen</option>
         <option value="remote">Remote: two browsers, join by code</option>
