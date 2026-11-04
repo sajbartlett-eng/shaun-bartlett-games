@@ -719,3 +719,12 @@ def round2_jobs(short=120, long=600, seeds=5):
                 jobs.append(('context', n, short, 0, [off, SCENARIOS[n]['dfn']]))
     # cheapest first so partial results are useful early
     return sorted(jobs, key=lambda j: (j[2], j[0] != 'solve'))
+
+
+# Step 3d changed two teams (Twin Towers, Ball Movement). These cards use them, so their round-2 results
+# are stale: kept, not deleted, and re-solved with the new teams into runs_3d.json.
+STALE_3D = [2, 3, 8, 9, 11, 12]
+
+
+def round3d_jobs(short=120, long=600, seeds=5):
+    return [j for j in round2_jobs(short, long, seeds) if j[1] in STALE_3D]

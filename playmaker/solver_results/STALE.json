@@ -1,0 +1,7 @@
+{
+ "stale_after": "step 3d team change (Twin Towers and Ball Movement rebuilt)",
+ "scenarios": [2, 3, 8, 9, 11, 12],
+ "titles": {"2": "Baseline Stack", "3": "Sideline Out", "8": "Coach's Call", "9": "Coach's Call, Late", "11": "After a Timeout", "12": "Mismatch on the Switch"},
+ "files": ["runs.json", "runs_r2.json"],
+ "note": "Results for these cards in the files above were solved with the old teams. They are kept for comparison, not deleted. The re-solve with the new teams goes to runs_3d.json (round3d_jobs in solver_report.py)."
+}
