@@ -26,6 +26,11 @@
         <option value="hotseat">Hot-seat: two players, this screen</option>
         <option value="remote">Remote: two browsers, join by code</option>
       </select></label>
+      <label>Detail level <select id="level">
+        <option value="learn">Learn: full scout report, matchups and the engine's hunt / protect shown</option>
+        <option value="scout" selected>Scout: strengths and liabilities; you make the hunt / protect call</option>
+        <option value="pro">Pro: cards only; score at the end, full review on request</option>
+      </select></label>
       <label>Seed <input id="seed" type="number" placeholder="random"></label>
       <fieldset><legend>Test opponent (greedy baseline, not a strong player)</legend>
         <label><input type="checkbox" id="aiO"> computer plays offence</label>
@@ -62,6 +67,7 @@
     </aside>
     <main id="tableMain">
       <svg id="court" role="group" aria-label="Court"></svg>
+      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
       <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
         <div id="selected" class="selected"></div>

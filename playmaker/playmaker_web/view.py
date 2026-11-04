@@ -52,6 +52,49 @@ def arrow_lines(s):
     return out
 
 
+def rv(card, name):
+    """A rating as the card prints it: value plus its ▲ / ▼ mark."""
+    return f'{card.r[name]}{MARK[card.bands[name]]}'
+
+
+SHOT_NAME = {'layup': 'Layup', 'dunk': 'Dunk', 'post': 'Post', 'floater': 'Floater', 'mid': 'Mid', 'long': 'Long 2',
+             'three': 'Three'}
+
+
+def shot_chips(s, shooter, t):
+    """The comparison the tracker tells players to make, for a shot: rating v each eligible contester."""
+    card = s.ctx.off[shooter]
+    sp = s.o[shooter]
+    out = []
+    for j, xp in enumerate(s.x):
+        if B.adjacent(xp, sp):
+            far = ' (further from the rim: −3)' if B.dist_rim(xp) > B.dist_rim(sp) else ''
+            on = s.arrows[j] == B.dir_between(xp, sp)
+            out.append(f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v contest {rv(s.ctx.dfn[j], "con_" + t)} (X{j + 1}){far}'
+                       + ('' if on else f', arrow off: foul roll on Foul {rv(s.ctx.dfn[j], "foul_contest")}'))
+    if not out:
+        out.append(f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v no contester next to the shooter now')
+    return out
+
+
+def matchups(s):
+    """Who guards whom, as the board shows it: an adjacent defender whose arrow points at the player,
+    otherwise the nearest (all tied nearest). The same for both players."""
+    def pick(me, others, arrows_of_others=None, arrow_me=None):
+        out = []
+        if arrows_of_others is not None:
+            out = [j for j, q in enumerate(others) if B.adjacent(q, me) and arrows_of_others[j] == B.dir_between(q, me)]
+        if arrow_me is not None:
+            out = [j for j, q in enumerate(others) if B.adjacent(q, me) and arrow_me == B.dir_between(me, q)]
+        if out:
+            return out
+        d = [B.cheb(q, me) for q in others]
+        m = min(d)
+        return [j for j, v in enumerate(d) if v == m]
+    return dict(O=[pick(p, s.x, arrows_of_others=s.arrows) for p in s.o],
+                X=[pick(p, s.o, arrow_me=s.arrows[i]) for i, p in enumerate(s.x)])
+
+
 def legal_json(s, acts):
     out = []
     for a in acts:
@@ -62,32 +105,39 @@ def legal_json(s, acts):
             pend = s.with_(pending=(a.piece, a.target))
             d['threats'] = [dict(defender=j, how=intercept_status(pend, j)) for j in range(5)
                             if intercept_status(pend, j)]
+            d['chips'] = [f'Pass {rv(s.ctx.off[a.piece], "pass")} v Intercept {rv(s.ctx.dfn[t["defender"]], "intercept")} '
+                          f'(X{t["defender"] + 1})' for t in d['threats']]
+        if a.kind == 'dribble':
+            d['chips'] = [f'Dribble {rv(s.ctx.off[a.piece], "dribble")} v Agility {rv(s.ctx.dfn[a.target], "agility")} (X{a.target + 1})']
+        if a.kind == 'screen':
+            tq = B.add(s.o[a.piece], B.DIRS[a.target])
+            d['chips'] = [f'Screen {rv(s.ctx.off[a.piece], "screen")} v Challenge {rv(s.ctx.dfn[j], "challenge")} (X{j + 1} on the T square)'
+                          for j, xp in enumerate(s.x) if xp == tq]
+        if a.kind == 'steal':
+            d['chips'] = [f'Steal {rv(s.ctx.dfn[a.piece], "steal")} v Dribble {rv(s.ctx.off[s.ball], "dribble")} (O{s.ball + 1})',
+                          f'Foul (steal) {rv(s.ctx.dfn[a.piece], "foul_steal")}: a straight foul roll first']
+        if a.kind == 'intercept':
+            d['chips'] = [f'Intercept {rv(s.ctx.dfn[a.piece], "intercept")} v Pass {rv(s.ctx.off[s.pending[0]], "pass")} (O{s.pending[0] + 1})']
+        if a.kind == 'challenge':
+            d['chips'] = [f'Challenge {rv(s.ctx.dfn[a.piece], "challenge")} v Screen {rv(s.ctx.off[a.target], "screen")} (O{a.target + 1})']
         if a.kind == 'contest':
             opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
             o = opts[a.piece]
-            pts = shot_points(s.o[s.ball])
-            rating = s.ctx.off[s.ball].shot(s.shot)
+            sh = s.ctx.off[s.ball]
+            t = s.shot
             if a.piece < 0:
-                d['option'] = f"Don't contest: {pts} × {rating} = {o.value}"
-            elif o.clean:
-                d['option'] = (f'Contest with X{a.piece + 1}: contest {o.contest}, clean (arrow on the shooter): '
-                               f'{pts} × ({rating} − {o.contest}) = {o.value}')
+                d['option'] = f"Don't contest: {SHOT_NAME[t]} {rv(sh, 'shot_' + t)} v no contest"
             else:
-                d['option'] = (f'Contest with X{a.piece + 1}: contest {o.contest}, foul roll (arrow off: foul on '
-                               f'{int(o.p_foul * 20)} or less scores {o.ft}; otherwise {o.value})')
+                dc = s.ctx.dfn[a.piece]
+                far = ', further from the rim: −3' if o.contest < dc.con(t) else ''
+                d['option'] = (f'Contest with X{a.piece + 1}: {SHOT_NAME[t]} {rv(sh, "shot_" + t)} v contest '
+                               f'{rv(dc, "con_" + t)}{far}, ' + ('arrow on the shooter (clean)' if o.clean else
+                               f'arrow off the shooter: foul roll on Foul {rv(dc, "foul_contest")}'))
             d['clean'] = bool(o.clean)
         if a.kind == 'forced_shot':
-            opt = choose_contest(s, a.piece, a.shot, True)
-            d['value_now'] = f'{a.shot}: worth {float(opt.ev):.1f} against the defence\'s best contest'
+            d['chips'] = shot_chips(s, a.piece, a.shot)
         if a.kind == 'shot':
-            opt = choose_contest(s, a.piece, a.shot)
-            pts = shot_points(s.o[a.piece])
-            rating = s.ctx.off[a.piece].shot(a.shot)
-            who = f'X{opt.defender + 1}' if opt.defender >= 0 else 'nobody'
-            txt = f'{a.shot}: {pts} × ({rating} − {opt.contest}) = {opt.value} if contested by {who} now'
-            if not opt.clean and opt.defender >= 0:
-                txt += f' (arrow off: foul on {int(opt.p_foul * 20)} or less scores {opt.ft})'
-            d['value_now'] = txt + '; the defence reacts first'
+            d['chips'] = shot_chips(s, a.piece, a.shot)
         out.append(d)
     return out
 
@@ -173,6 +223,7 @@ def state_json(game, token):
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
+                level=game.level, scout=scout_json(game), matchups=matchups(s),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
 
 
@@ -197,3 +248,13 @@ def _scenario_rules(c):
     if c['title'] == 'Late Clock Reset':
         out.append("Both Screens are spent; O5's screen is still standing. Offence 4 tokens, defence 4.")
     return out
+
+
+def scout_json(game):
+    """The pre-game report (identical for both players) and the pick status (picks stay private)."""
+    from playmaker_engine.scouting import report
+    rep = report(game.team_of('O'), game.team_of('X'), game.level)
+    return dict(report=rep, needs={side: game.picks_needed(side) for side in ('O', 'X')},
+                done=sorted(game.picks), pending=game.picks_pending(),
+                ai=[side for side in ('O', 'X') if side in game.ai],
+                teams=dict(O=game.team_of('O'), X=game.team_of('X')))

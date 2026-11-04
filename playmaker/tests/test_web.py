@@ -21,6 +21,8 @@ def web():
 
 
 def post(base, path, body, ok=True):
+    if path == '/api/new' and 'level' not in body:      # older tests play straight away (no scouting picks)
+        body = dict(body, level='pro')
     req = urllib.request.Request(base + path, json.dumps(body).encode(), {'Content-Type': 'application/json'})
     try:
         return json.loads(urllib.request.urlopen(req).read())
@@ -184,7 +186,7 @@ def test_contest_decision_through_the_api(web):
     assert {a['kind'] for a in opts} == {'contest'} and any(a['piece'] == -1 for a in opts)
     adj = [a for a in opts if a['piece'] >= 0]
     assert adj and all(('clean' in a['option']) == a['clean'] for a in adj)
-    assert all('foul on' in a['option'] for a in adj if not a['clean'])
+    assert all('foul roll on Foul' in a['option'] for a in adj if not a['clean'])
     r = post(web, '/api/act', dict(tok, action=next(a for a in opts if a['piece'] == -1)))
     assert r['state']['stage'] == 'over' and r['state']['result']['detail'].endswith('contested by nobody')
 

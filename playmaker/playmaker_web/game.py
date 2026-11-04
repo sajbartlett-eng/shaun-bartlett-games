@@ -25,6 +25,7 @@ TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 TABLE_ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 
+REFLECT_QUESTION = 'Was your setup and plan the right one for these two teams?'
 FEEDBACK_QUESTIONS = [
     'Did the token-and-phase rhythm feel like basketball tempo?',
     'Was scoring shot quality, not makes and misses, a satisfying payoff?',
@@ -144,8 +145,11 @@ def man_to_man(o_squares, ball):
 
 class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
-                 place=False, code=None):
+                 place=False, code=None, level='scout'):
         self.code = (code or secrets.token_hex(3)).upper()
+        if level not in ('learn', 'scout', 'pro'):
+            raise GameError('level must be learn, scout or pro')
+        self.level = level
         self.mode = mode
         self.scenario = scenario
         self.full = full and scenario is None
@@ -178,9 +182,17 @@ class Game:
         self.placing = None              # 'O' or 'X' while the pieces are being set up
         self.placed = {}
         self.state = self._possession_state()
+        self.picks = {}                  # side -> {hunt: {o, x}, protect: {x}} (private until the review)
+        self.reflection = None
+        self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
-                  ai=self.ai, possession=self.possession, place=self.place_on, start=self.state.encode())
-        self._begin_possession()
+                  ai=self.ai, possession=self.possession, place=self.place_on, level=self.level,
+                  start=self.state.encode())
+        for side in ('O', 'X'):
+            if side in self.ai and self.picks_needed(side):
+                self._save_picks(side, self._engine_picks(side), actor='ai')
+        if not self.picks_pending():
+            self._begin_possession()
 
     # ---- setup ----
     def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
@@ -188,6 +200,103 @@ class Game:
             return scenario_state(self.scenario, rules=self.rules)
         off, dfn = (self.teams if self.possession == 1 else self.teams[::-1])
         return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules)
+
+    # ---- the pre-game scouting call (hunt one matchup, protect one weakness) ----
+    def picks_needed(self, side):
+        """What a side picks at Scout level: in a full match both; otherwise the offence hunts and the
+        defence protects."""
+        if self.level != 'scout':
+            return []
+        if self.full:
+            return ['hunt', 'protect']
+        return ['hunt'] if side == 'O' else ['protect']
+
+    def picks_pending(self):
+        return [side for side in ('O', 'X') if self.picks_needed(side) and side not in self.picks]
+
+    def team_of(self, side):
+        """Team name for a seat at possession 1 (in a full match, O = player A)."""
+        st = scenario_state(self.scenario) if self.scenario else None
+        if self.scenario:
+            return st.ctx.off_team if side == 'O' else st.ctx.def_team
+        return self.teams[0] if side == 'O' else self.teams[1]
+
+    def _engine_picks(self, side):
+        from playmaker_engine.scouting import hunt_protect
+        mine, theirs = TEAMS[self.team_of(side)], TEAMS[self.team_of('X' if side == 'O' else 'O')]
+        out = {}
+        if 'hunt' in self.picks_needed(side):
+            h = hunt_protect(mine, theirs)['hunt']
+            out['hunt'] = dict(o=h['o'], x=h['x'])
+        if 'protect' in self.picks_needed(side):
+            p = hunt_protect(theirs, mine)['protect']
+            out['protect'] = dict(x=p['x'])
+        return out
+
+    def scout(self, token, body):
+        with self.lock:
+            seat = self.seat_of(token)
+            if seat is None:
+                raise GameError('unknown player token')
+            side = body.get('side') if seat == 'both' else seat
+            if side not in ('O', 'X'):
+                raise GameError('say which side is picking')
+            need = self.picks_needed(side)
+            if not need:
+                raise GameError('no scouting picks at this detail level')
+            if side in self.picks:
+                raise GameError('this side has already picked')
+            picks = {}
+            for kind in need:
+                v = body.get(kind) or {}
+                try:
+                    if kind == 'hunt':
+                        picks['hunt'] = dict(o=int(v['o']), x=int(v['x']))
+                        ok = 1 <= picks['hunt']['o'] <= 5 and 1 <= picks['hunt']['x'] <= 5
+                    else:
+                        picks['protect'] = dict(x=int(v['x']))
+                        ok = 1 <= picks['protect']['x'] <= 5
+                except (KeyError, TypeError, ValueError):
+                    ok = False
+                if not ok:
+                    raise GameError(f'pick a player for {kind}')
+            self._save_picks(side, picks, actor='human')
+            if not self.picks_pending():
+                self._begin_possession()
+
+    def _save_picks(self, side, picks, actor):
+        self.picks[side] = picks
+        self.version += 1
+        self._log('scout', side=side, actor=actor, picks=picks)
+
+    def review(self, token):
+        """The post-game review (labelled estimates where the solver is involved)."""
+        from playmaker_engine.review import board_advantages, solver_disagreements
+        if self.seat_of(token) is None:
+            raise GameError('unknown player token')
+        if not self.feedback_due():
+            raise GameError('the review comes at the end of the match (or of a scenario or single possession)')
+        if self.review_cache is None:
+            recs = self.read_log()
+            engine = {side: self._engine_picks_any(side) for side in ('O', 'X')}
+            out = dict(level=self.level, picks=self.picks, engine=engine, advantages=board_advantages(recs))
+            try:
+                from playmaker_engine import solver  # noqa: F401  (the in-browser build has no solver)
+                out['solver'] = solver_disagreements(recs)
+                out['solver_note'] = 'Estimates from a short solver search (about a second per decision).'
+            except ImportError:
+                out['solver'] = None
+                out['solver_note'] = ('Solver estimates need the server version (python -m playmaker_web), or run '
+                                      '"python -m playmaker_engine review <log>" on the downloaded log.')
+            self.review_cache = out
+        return self.review_cache
+
+    def _engine_picks_any(self, side):
+        from playmaker_engine.scouting import hunt_protect
+        mine, theirs = TEAMS[self.team_of(side)], TEAMS[self.team_of('X' if side == 'O' else 'O')]
+        h = hunt_protect(mine, theirs)['hunt']
+        p = hunt_protect(theirs, mine)['protect']
+        return dict(hunt=dict(o=h['o'], x=h['x'], text=h['text']), protect=dict(x=p['x'], text=p['text']))
 
     # ---- placement (rulebook setup steps 4 and 5) ----
     def _begin_possession(self):
@@ -209,6 +318,8 @@ class Game:
 
     def place(self, token, body):
         with self.lock:
+            if self.picks_pending():
+                raise GameError('waiting for the scouting picks before tip-off')
             if not self.placing:
                 raise GameError('nothing to place now')
             seat = self.seat_of(token)
@@ -298,7 +409,7 @@ class Game:
         return (not self.full) or self.possession == 2
 
     def side_to_act(self):
-        if self.placing:
+        if self.placing or self.picks_pending():
             return None
         s = self.state
         if s.stage == 'over':
@@ -320,6 +431,8 @@ class Game:
 
     def act(self, token, data):
         with self.lock:
+            if self.picks_pending():
+                raise GameError('waiting for the scouting picks before tip-off')
             if self.placing:
                 raise GameError('the pieces are still being placed')
             if self.state.stage == 'over':
@@ -466,7 +579,8 @@ class Game:
             raise GameError('feedback comes at the end of the match (or of a scenario or single possession)')
         self.feedback = answers
         self._log('feedback', seat=self.seat_of(token),
-                  answers=[dict(question=q, answer=answers.get(str(i), '')) for i, q in enumerate(FEEDBACK_QUESTIONS)])
+                  answers=[dict(question=q, answer=answers.get(str(i), '')) for i, q in enumerate(FEEDBACK_QUESTIONS)],
+                  reflection=dict(question=REFLECT_QUESTION, answer=answers.get('reflect', '')))
 
     # ---- log ----
     def _log(self, kind, **data):
