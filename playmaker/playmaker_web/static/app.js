@@ -287,6 +287,7 @@ function renderCourt() {
     const t = svg('text', { class: 'axis', x: 2, y: py(y) + S / 2 + 4 }); t.textContent = y; c.append(t);
   }
   for (let x = 0; x < 17; x++) { const t = svg('text', { class: 'axis', x: px(x) + S / 2 - 4, y: PADY - 6 }); t.textContent = COLS[x]; c.append(t); }
+  courtLines(c);
   const rim = svg('circle', { cx: px(8) + S / 2, cy: py(2) + S / 2, r: 9, fill: 'none', stroke: '#c0392b', 'stroke-width': 3 }); c.append(rim);
   // arrow lines the ball carrier can't cross (shown to both players)
   const carrier = s.o.find(p => p.ball);
@@ -302,6 +303,26 @@ function renderCourt() {
   for (const p of s.x) drawX(c, p);
   drawTargets(c);
   placementTargets(c);
+}
+
+// The printed board's court lines, fitted to the board art (grid units: u from column A's left edge,
+// v from row 14's top edge). Decoration only: the zones and squares decide every rule.
+function courtLines(c) {
+  const X = u => PADX + S + u * S, Y = v => PADY + v * S;
+  const g = svg('g', { class: 'courtlines', 'aria-hidden': 'true' });
+  const line = (u1, v1, u2, v2, extra) => g.append(svg('line', { x1: X(u1), y1: Y(v1), x2: X(u2), y2: Y(v2), ...(extra || {}) }));
+  // three-point line: corners straight up from the baseline, then an arc over the top of row 9
+  const a = 7.55, b = 5.05, cv = 10;
+  g.append(svg('path', { d: `M ${X(8.5 - a)} ${Y(14)} L ${X(8.5 - a)} ${Y(cv)} A ${a * S} ${b * S} 0 0 1 ${X(8.5 + a)} ${Y(cv)} L ${X(8.5 + a)} ${Y(14)}` }));
+  // the key (columns G to K, up to the top of row 6), its hash marks, the free-throw circle
+  g.append(svg('path', { d: `M ${X(6)} ${Y(14)} L ${X(6)} ${Y(8)} L ${X(11)} ${Y(8)} L ${X(11)} ${Y(14)}` }));
+  for (const v of [10, 11, 12]) { line(5.8, v, 6, v); line(11, v, 11.2, v); }
+  g.append(svg('path', { d: `M ${X(6.5)} ${Y(8)} A ${2 * S} ${2 * S} 0 0 1 ${X(10.5)} ${Y(8)}` }));
+  g.append(svg('path', { d: `M ${X(6.5)} ${Y(8)} A ${2 * S} ${2 * S} 0 0 0 ${X(10.5)} ${Y(8)}`, 'stroke-dasharray': '7 6' }));
+  // backboard and the half-court circle at the top edge
+  line(7.7, 13, 9.3, 13); line(8.5, 12.75, 8.5, 13);
+  g.append(svg('path', { d: `M ${X(6.4)} ${Y(0)} A ${2.1 * S} ${2.1 * S} 0 0 0 ${X(10.6)} ${Y(0)}` }));
+  c.append(g);
 }
 
 function pieceLabel(side, p) {
