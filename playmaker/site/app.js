@@ -819,3 +819,12 @@ async function loadReview() {
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
   box.append(el('h4', { text: '4. Reflect' }), el('p', { text: 'Was your setup and plan the right one for these two teams? (Answer it with the feedback below.)' }));
 }
+
+// Detail level: a short option name, explained underneath (long option text overflows phone screens).
+const LEVEL_NOTE = {
+  learn: 'Learn: the full scout report, the matchups on the cards and the team-sheet hunt / protect.',
+  scout: 'Scout: strengths and liabilities; each side makes a private hunt / protect call.',
+  pro: 'Pro: cards only; the score at the end and the full review on request.',
+};
+function showLevelNote() { const n = $('levelNote'); if (n) n.textContent = LEVEL_NOTE[$('level').value] || ''; }
+if ($('level')) { $('level').addEventListener('change', showLevelNote); showLevelNote(); }

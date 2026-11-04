@@ -19,7 +19,8 @@ h2 { font-size: 15px; margin: 6px 0; } h3 { font-size: 13px; margin: 4px 0; }
 .hidden { display: none !important; }
 .note { color: var(--muted); }
 .panel.start { max-width: 920px; margin: 30px auto; background: #fff; padding: 20px 24px; border: 1px solid var(--line); border-radius: 8px; }
-.startgrid { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; }
+.startgrid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; }
+.startgrid > * { min-width: 0; } .start select, .start input { max-width: 100%; }
 .start label { display: block; margin: 8px 0; } .start select, .start input { font-size: 13px; padding: 3px; }
 fieldset { border: 1px solid var(--line); margin: 8px 0; }
 button { font: inherit; padding: 5px 10px; border: 1px solid #8b7f6b; background: #fff; border-radius: 4px; cursor: pointer; margin: 2px; }
@@ -112,7 +113,7 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
   body[data-tab=log] .tab-log { display: grid; }
   .lower { grid-template-columns: 1fr; padding: 4px 8px; }
   button { min-height: 44px; min-width: 44px; font-size: 14px; }
-  .startgrid { grid-template-columns: 1fr; }
+  .startgrid { grid-template-columns: minmax(0, 1fr); }
   .panel.start { margin: 8px; padding: 12px; }
   .start select, .start input { min-height: 44px; max-width: 100%; }
   .side h2 { margin-top: 4px; }
@@ -169,7 +170,7 @@ table.scout { border-collapse: collapse; width: 100%; font-size: 13px; } table.s
 <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 <main id="start" class="panel start">
   <h1>Playmaker <span class="sub">playtest table</span></h1>
-  <p class="note">The rules engine runs on the server and decides every rule. This page only shows the table and sends the action you choose.</p>
+  <p class="note">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
   <div class="startgrid">
     <section>
       <h2>New game</h2>
@@ -185,10 +186,11 @@ table.scout { border-collapse: collapse; width: 100%; font-size: 13px; } table.s
         <option value="remote">Remote: two browsers, join by code</option>
       </select></label>
       <label>Detail level <select id="level">
-        <option value="learn">Learn: full scout report, matchups and the engine's hunt / protect shown</option>
-        <option value="scout" selected>Scout: strengths and liabilities; you make the hunt / protect call</option>
-        <option value="pro">Pro: cards only; score at the end, full review on request</option>
+        <option value="learn">Learn</option>
+        <option value="scout" selected>Scout</option>
+        <option value="pro">Pro</option>
       </select></label>
+      <p class="note" id="levelNote"></p>
       <label>Seed <input id="seed" type="number" placeholder="random"></label>
       <fieldset><legend>Test opponent (greedy baseline, not a strong player)</legend>
         <label><input type="checkbox" id="aiO"> computer plays offence</label>
@@ -1114,6 +1116,15 @@ async function loadReview() {
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
   box.append(el('h4', { text: '4. Reflect' }), el('p', { text: 'Was your setup and plan the right one for these two teams? (Answer it with the feedback below.)' }));
 }
+
+// Detail level: a short option name, explained underneath (long option text overflows phone screens).
+const LEVEL_NOTE = {
+  learn: 'Learn: the full scout report, the matchups on the cards and the team-sheet hunt / protect.',
+  scout: 'Scout: strengths and liabilities; each side makes a private hunt / protect call.',
+  pro: 'Pro: cards only; the score at the end and the full review on request.',
+};
+function showLevelNote() { const n = $('levelNote'); if (n) n.textContent = LEVEL_NOTE[$('level').value] || ''; }
+if ($('level')) { $('level').addEventListener('change', showLevelNote); showLevelNote(); }
 
 </script>
 </body>

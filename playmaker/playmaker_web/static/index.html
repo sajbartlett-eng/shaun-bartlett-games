@@ -11,7 +11,7 @@
 <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 <main id="start" class="panel start">
   <h1>Playmaker <span class="sub">playtest table</span></h1>
-  <p class="note">The rules engine runs on the server and decides every rule. This page only shows the table and sends the action you choose.</p>
+  <p class="note">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
   <div class="startgrid">
     <section>
       <h2>New game</h2>
@@ -27,10 +27,11 @@
         <option value="remote">Remote: two browsers, join by code</option>
       </select></label>
       <label>Detail level <select id="level">
-        <option value="learn">Learn: full scout report, matchups and the engine's hunt / protect shown</option>
-        <option value="scout" selected>Scout: strengths and liabilities; you make the hunt / protect call</option>
-        <option value="pro">Pro: cards only; score at the end, full review on request</option>
+        <option value="learn">Learn</option>
+        <option value="scout" selected>Scout</option>
+        <option value="pro">Pro</option>
       </select></label>
+      <p class="note" id="levelNote"></p>
       <label>Seed <input id="seed" type="number" placeholder="random"></label>
       <fieldset><legend>Test opponent (greedy baseline, not a strong player)</legend>
         <label><input type="checkbox" id="aiO"> computer plays offence</label>
