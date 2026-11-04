@@ -192,18 +192,19 @@ solver results; every choice is worked out at the table from what is in front of
   The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
   squares (next to their man, or sagging up to two squares off) and arrows come from the same evaluation.
 
-**The levels** (`playmaker_engine/computer_levels.json`):
+**The levels** (`playmaker_engine/computer_levels.json`, as tuned by the head-to-head calibration below):
 
 | | Rookie | Starter | All-Star |
 |---|---|---|---|
-| Defence concepts | the reaction only | all except keeping a reaction in hand | all |
-| Offence concepts | reaction-aware shot value and risk | all except draining the reserve | all |
-| Habits (drawn per game, named in the review) | 2 | 1 | none |
+| Defence concepts | the reaction only | all | all |
+| Offence concepts | reaction-aware shot value, risk, lookahead, plan | all | all |
+| Habits (drawn per game, named in the review) | defence 2, offence 1 | 1 | none |
 | Tunnel vision (defence) | the 2 attackers nearest the ball | 4 | all 5 |
-| Reads the cards by | position (`role`) | ▲ / plain / ▼ only (`marks`) | the numbers (`exact`) |
-| Comfort line | 15 + 6 | 15 + 2 | 15 |
-| Looks ahead | the shot on the board now | the offence's next turn | the solver's search, short budget |
-| Second-best choice | 15% of the time | 5% | never |
+| Reads the cards by | defence: position (`role`); offence: the numbers | defence: ▲ / plain / ▼ (`marks`); offence: the numbers | the numbers (`exact`) |
+| Comfort line | 15 + 6 | 15 + 3 | 15 |
+| Looks ahead | defence: the shot on the board now; offence: the defence's reply | the offence's next turn / the defence's reply | the same, with no handicaps |
+| Shot patience | settles for a look of 18 / 16 / 12 (clock 12 / 8 / 4) | waits for 14 / 12 / 10 unless continuing is worth more | the lookahead decides |
+| Second-best choice | defence 15%, offence 3% | defence 5%, offence never | never |
 
 Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
 the first pass. Offence habits: settles for the first shot, never screens, ignores the mismatch (passes by
@@ -214,35 +215,72 @@ concepts switched off, and the offence's targets and plan. It never appears duri
 **Thinking time:** at most 1 second a decision on the server and 0.45 seconds in the link version,
 the best choice found so far being used when time is up.
 
-**How it measures up.**
-- *Arrow mix* (46 possessions: 30 table-setup games across team pairings and the 16 scenario cards,
-  greedy offence, arrow jobs read at the end of each turn): the old one-action-ahead defence kept 67% of
-  its in-play arrows on the ball and 17% on lanes; the board-reading defence of the first step-3e change
-  had 34% on the ball, 53% lanes and 6% walls. Reactions end on the shooter about 98% of the time at every
-  level. Offence's mean score against each defence: old 17.0, Rookie 20.0, Starter 16.6, All-Star 16.6.
-- *The comfort line* decided 18% of Starter's defensive choices and 12% of All-Star's (Rookie doesn't
-  use it: its help concept is off).
-- *Against the solver:* on the 50-position exact endgame set every defence (old, Starter, All-Star)
-  makes an exact-best choice every time, so that set can't separate them. On 50 mid-phase defence turns
-  graded by a fixed-depth solver search, the board-reading defence is within half a point of the
-  solver on 64% of turns (old: 54%), mean gap 0.36 points (old: 1.51).
-- *Value given up against the solver* (each level against itself on the 16 scenario cards and 4
-  random team possessions, one seed; the judge is a fixed depth-2 solver search at every decision, the
-  review's logic):
+**Calibration: head-to-head.** Each offence level played each defence level on the 16 scenario cards
+and 20 random prescribed-team possessions, 3 seeds each (972 possessions, 22 minutes on two cores at
+play speed). A possession is scored as the game scores it (shot quality, bonuses, turnovers). Mean
+points per possession, with a 95% interval:
 
-| | Rookie | Starter | All-Star | Target |
-|---|---|---|---|---|
-| Offence, per possession | 12.6 | 13.9 | 14.0 | 6 / 3 / under 1 |
-| Defence, per possession | 14.0 | 12.6 | 6.5 | 6 / 3 / under 1 |
-| Offence, per decision | 5.6 | 2.8 | 2.1 | |
-| Defence, per decision | 4.1 | 2.1 | 0.9 | |
-| Decisions per possession (O / X) | 2.2 / 3.5 | 5.0 / 6.0 | 6.7 / 7.2 | |
+| Offence ↓ / Defence → | Rookie | Starter | All-Star |
+|---|---|---|---|
+| **All-Star** | 26.3 ± 2.0 | 26.0 ± 1.7 | 24.3 ± 1.8 |
+| **Starter** | 23.6 ± 1.9 | 23.9 ± 1.7 | 21.7 ± 1.5 |
+| **Rookie** | 22.7 ± 1.8 | 21.7 ± 1.6 | 19.6 ± 1.5 |
 
-  Per decision the levels line up as intended. Per possession they don't hit the targets, and on
-  offence they don't separate: a Rookie offence shoots early, so it has fewer decisions to give value up
-  on. The All-Star can't match a depth-2 judge while deciding in under a second (under half a second in
-  the link version). No settings were changed by this run. The full run asked for (5 seeds, 20 random
-  possessions, every level against every other) would take about ten hours on this machine.
+Against the All-Star opponent, paired over the same start and seed (99 pairs):
+
+| | Measured | Target |
+|---|---|---|
+| Starter defence concedes | +1.7 ± 1.6 | +2 |
+| Rookie defence concedes | +1.7 ± 1.6 | +4 (**not met**; not separated from Starter: 0.0 ± 2.0) |
+| Starter offence scores | −2.7 ± 1.4 | −2 |
+| Rookie offence scores | −4.7 ± 1.8 | −4 (separated from Starter: 2.0 ± 1.5) |
+
+The defensive levels can't be pushed further apart with the levers: every Rookie setting tried
+(looking ahead 0 or 1, tunnel vision 2 or 3, role or marks reading, comfort +6 or +8, randomness 0.10 or
+0.15) lands at +2 to +3 against the All-Star offence, which mostly finds looks nobody can reach in the
+reaction. The settings changed, and why:
+
+- **All-Star, both sides: looks ahead one turn instead of the solver's search.** Inside a one-second
+  budget the search is shallow, and in head-to-head play it did worse than the one-turn ranking: a
+  Starter offence outscored it by 2 points.
+- **Starter defence: keeps a reaction in hand (reserve on); comfort offset +3 (was +2).** Without the
+  reserve it conceded 7.6 more than All-Star against an offence that drains the reaction.
+- **Starter offence: reads the cards exactly (was marks); works to drain the reserve (was off);
+  randomness 0 (was 0.05); patience 14 / 12 / 10 (was 20 / 18 / 14).** Reading by marks cost about
+  3 points on its own, and the old curve waited too long.
+- **Rookie offence: reads exactly (was role); one habit (was two); looks at the defence's reply (was
+  the shot now); plans toward a target; randomness 0.03 (was 0.15); settles at 18 / 16 / 12 (was a
+  threshold of 12).** It drew "settles for the first shot" in most games and took looks of 12; it
+  still settles early, but on better looks.
+- **Offence, every level: a shot wins a tie with continuing** (section 7.3: shoot when the shot, valued
+  after the reaction, is worth at least what continuing is estimated to be worth). Before this, a
+  one-action setup play that the lookahead valued the same as a two-action step-back three won the tie,
+  and All-Star passed up the golden position's 27-point line.
+- Unchanged: the Rookie defence preset, the Starter defence's reading, tunnel and habit, the comfort
+  line, every habit's behaviour.
+
+**Against the All-Star offence** (from the same matrix):
+
+| Defence | Shots declared | Clean contest | Foul roll | No contest | Reaction couldn't change the contest | Comfort line decided |
+|---|---|---|---|---|---|---|
+| Rookie | 107 | 25% | 0% | 75% | 53% | never (help is off) |
+| Starter | 104 | 37% | 3% | 60% | 45% | 6% of choices |
+| All-Star | 105 | 41% | 8% | 51% | 50% | 6% of choices |
+
+The defence never had an empty pool when a shot was declared. In-play arrow jobs: Rookie 38% on the
+ball, 22% lanes, 16% on its man; Starter 62% lanes, 13% on the ball, 9% walls; All-Star 65% lanes, 13% on
+the ball, 9% walls. Clean contests are well under 90%, so there is no rule question here: the All-Star
+offence mostly shoots where no defender can still reach.
+
+**Setup sag (golden table, Five Out v High-Low preview setup):** All-Star's own setup keeps X5 next to
+O5 (the Stretch Centre on Q3, Three 8, tied weakest with the ball-handler O1). Sagging X5 two squares off
+to O3, facing the ball, scored 33.6 ± 3.3 against the All-Star offence; the setup as chosen scored
+33.6 ± 3.3 (40 seeds each, paired difference +0.03 ± 0.74). Neither is better here, so the setup rule
+is left as it is.
+
+*Diagnostic, before this tuning:* the value given up per decision against a depth-2 solver judge was
+offence 5.6 / 2.8 / 2.1 and defence 4.1 / 2.1 / 0.9 (Rookie / Starter / All-Star). It isn't used as the
+target because summed per possession it penalises patience.
 
 ## Decision timer (step 3d, optional)
 

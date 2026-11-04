@@ -9,7 +9,8 @@ How it values things:
   Move unused, not locked and a token in the pool can still get adjacent and facing once the shot is
   declared; Quick Step keeps the facing, a Sprint faces the way it ran.
 - A position is valued by the offence's best next action against it (shoot now, drive, or pass and
-  then shoot), the solver's evaluation; All-Star uses the solver's search at a short budget.
+  then shoot), the solver's evaluation. A level may instead use the solver's search at a short budget
+  (lookahead 'solver'); calibration found the one-turn ranking stronger within the time limit.
 - Concepts, habits, tunnel vision, card reading, the comfort line and randomness are the level levers
   (computer_levels.json).
 """
@@ -619,11 +620,18 @@ class Computer(Policy):
         shots = [(v, p) for v, p in scored if any(a.kind == 'shot' for a in p.actions)]
         rest = [(v, p) for v, p in scored if not any(a.kind == 'shot' for a in p.actions)]
         if 'settles_for_first_shot' in self.habits:
-            ok = [vp for vp in shots if vp[0] >= LEVELS['offence']['settle_threshold']]
+            ok = [vp for vp in shots if vp[0] >= self.cfg.get('settle_threshold', LEVELS['offence']['settle_threshold'])]
             if ok:
                 self._fire('settles_for_first_shot')
                 return ok[0][1]
         best = self._pick(scored, True)
+        if best is not None and shots and rest and not any(a.kind == 'shot' for a in best.actions):
+            # 7.3: shoot when the shot (valued after the reaction) is worth at least what continuing is
+            # estimated to be worth: a tie goes to the shot, as continuing's value is only an estimate
+            sv, sp = max(shots, key=lambda vp: vp[0])
+            cv = max(v for v, p in rest)
+            if sv >= cv - 1e-9 and self._patient(view, sp, sv):
+                best = sp
         if best is not None and any(a.kind == 'shot' for a in best.actions) and rest:
             sv = max(v for v, p in shots)
             if not self._patient(view, best, sv):

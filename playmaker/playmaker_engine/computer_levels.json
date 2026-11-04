@@ -4,37 +4,166 @@
     "comfort_line": 15,
     "_comfort_about": "The defence concedes any look worth less than this (the Okay/Poor prestige boundary): it won't spend to push the offence below it. A level's comfort_offset is added.",
     "levels": {
-      "rookie":  {"concepts": {"reaction": true, "reserve": false, "lookahead": false, "help": false, "walls": false, "lanes": false},
-                  "habits": 2, "tunnel": 2, "reading": "role", "comfort_offset": 6, "lookahead": 0, "randomness": 0.15},
-      "starter": {"concepts": {"reaction": true, "reserve": false, "lookahead": true, "help": true, "walls": true, "lanes": true},
-                  "habits": 1, "tunnel": 4, "reading": "marks", "comfort_offset": 2, "lookahead": 1, "randomness": 0.05},
-      "allstar": {"concepts": {"reaction": true, "reserve": true, "lookahead": true, "help": true, "walls": true, "lanes": true},
-                  "habits": 0, "tunnel": 5, "reading": "exact", "comfort_offset": 0, "lookahead": "solver", "randomness": 0.0}
+      "rookie": {
+        "concepts": {
+          "reaction": true,
+          "reserve": false,
+          "lookahead": false,
+          "help": false,
+          "walls": false,
+          "lanes": false
+        },
+        "habits": 2,
+        "tunnel": 2,
+        "reading": "role",
+        "comfort_offset": 6,
+        "lookahead": 0,
+        "randomness": 0.15
+      },
+      "starter": {
+        "concepts": {
+          "reaction": true,
+          "reserve": true,
+          "lookahead": true,
+          "help": true,
+          "walls": true,
+          "lanes": true
+        },
+        "habits": 1,
+        "tunnel": 4,
+        "reading": "marks",
+        "comfort_offset": 3,
+        "lookahead": 1,
+        "randomness": 0.05
+      },
+      "allstar": {
+        "concepts": {
+          "reaction": true,
+          "reserve": true,
+          "lookahead": true,
+          "help": true,
+          "walls": true,
+          "lanes": true
+        },
+        "habits": 0,
+        "tunnel": 5,
+        "reading": "exact",
+        "comfort_offset": 0,
+        "lookahead": 1,
+        "randomness": 0.0
+      }
     },
-    "habits": ["always_force_middle", "nearest_closes_out", "never_leaves_shooter", "ball_watcher", "jumps_first_pass"]
+    "habits": [
+      "always_force_middle",
+      "nearest_closes_out",
+      "never_leaves_shooter",
+      "ball_watcher",
+      "jumps_first_pass"
+    ]
   },
   "offence": {
     "levels": {
-      "rookie":  {"concepts": {"reaction_shot": true, "plan": false, "patience": false, "drain": false, "risk": true, "lookahead": false},
-                  "habits": 2, "tunnel": 5, "reading": "role", "lookahead": 0, "randomness": 0.15,
-                  "patience": {"mode": "settle", "curve": {"12": 10, "8": 8, "4": 6, "2": 0}}},
-      "starter": {"concepts": {"reaction_shot": true, "plan": true, "patience": true, "drain": false, "risk": true, "lookahead": true},
-                  "habits": 1, "tunnel": 5, "reading": "marks", "lookahead": 1, "randomness": 0.05,
-                  "patience": {"mode": "compare", "curve": {"12": 20, "8": 18, "4": 14, "2": 0}}},
-      "allstar": {"concepts": {"reaction_shot": true, "plan": true, "patience": true, "drain": true, "risk": true, "lookahead": true},
-                  "habits": 0, "tunnel": 5, "reading": "exact", "lookahead": "solver", "randomness": 0.0,
-                  "patience": {"mode": "lookahead", "curve": {"12": 10, "8": 8, "4": 6, "2": 0}}}
+      "rookie": {
+        "concepts": {
+          "reaction_shot": true,
+          "plan": true,
+          "patience": false,
+          "drain": false,
+          "risk": true,
+          "lookahead": true
+        },
+        "habits": 1,
+        "tunnel": 5,
+        "reading": "exact",
+        "lookahead": 1,
+        "randomness": 0.03,
+        "patience": {
+          "mode": "settle",
+          "curve": {
+            "12": 18,
+            "8": 16,
+            "4": 12,
+            "2": 0
+          }
+        },
+        "settle_threshold": 18
+      },
+      "starter": {
+        "concepts": {
+          "reaction_shot": true,
+          "plan": true,
+          "patience": true,
+          "drain": true,
+          "risk": true,
+          "lookahead": true
+        },
+        "habits": 1,
+        "tunnel": 5,
+        "reading": "exact",
+        "lookahead": 1,
+        "randomness": 0.0,
+        "patience": {
+          "mode": "compare",
+          "curve": {
+            "12": 14,
+            "8": 12,
+            "4": 10,
+            "2": 0
+          }
+        }
+      },
+      "allstar": {
+        "concepts": {
+          "reaction_shot": true,
+          "plan": true,
+          "patience": true,
+          "drain": true,
+          "risk": true,
+          "lookahead": true
+        },
+        "habits": 0,
+        "tunnel": 5,
+        "reading": "exact",
+        "lookahead": 1,
+        "randomness": 0.0,
+        "patience": {
+          "mode": "lookahead",
+          "curve": {
+            "12": 10,
+            "8": 8,
+            "4": 6,
+            "2": 0
+          }
+        }
+      }
     },
-    "habits": ["settles_for_first_shot", "never_screens", "ignores_mismatch", "star_only"],
+    "habits": [
+      "settles_for_first_shot",
+      "never_screens",
+      "ignores_mismatch",
+      "star_only"
+    ],
     "settle_threshold": 12,
     "plan_weight": 1.5
   },
-  "budget_s": {"server": 1.0, "browser": 0.45},
+  "budget_s": {
+    "server": 1.0,
+    "browser": 0.45
+  },
   "_budget_about": "Thinking time per decision. The browser build (Python compiled to the web) runs several times slower, so it gets less; the best choice found so far is used when time is up.",
   "names": {
-    "rookie": ["Rookie", "makes beginner mistakes you can learn to spot"],
-    "starter": ["Starter", "solid, with one habit to find"],
-    "allstar": ["All-Star", "plays the full read"]
+    "rookie": [
+      "Rookie",
+      "makes beginner mistakes you can learn to spot"
+    ],
+    "starter": [
+      "Starter",
+      "solid, with one habit to find"
+    ],
+    "allstar": [
+      "All-Star",
+      "plays the full read"
+    ]
   },
   "habit_words": {
     "always_force_middle": "always pointed the on-ball arrow at the baseline, shading drives to the middle",
@@ -58,5 +187,6 @@
     "patience": "didn't weigh waiting for a better shot",
     "drain": "didn't work to drain the defence's reactions",
     "risk": "ignored turnover risk"
-  }
+  },
+  "_tuned": "Head-to-head calibration (step 3e revised): see README 'How the computer plays' for every change and why."
 }
