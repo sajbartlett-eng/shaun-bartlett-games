@@ -91,7 +91,8 @@ class Rules:
     #   'min_value' : defence picks the adjacent defender (or none) that minimises the
     #                 expected shot value, counting foul free throws.
     #   'nearest'   : the nearest adjacent defender (rulebook wording), ties by min value.
-    contest_choice: str = 'min_value'
+    #   'player'    : (RULED, step 3b) the defence chooses: contest with any adjacent defender, or not.
+    contest_choice: str = 'player'
     # ---- new questions found while building (OPEN_QUESTIONS.md 13+) ----
     # OQ-13: a square is 'on the pass line' if its centre lies within this distance of
     #   the segment (0.5 = the line goes through the middle half of the square;
@@ -129,6 +130,9 @@ class Rules:
     # OQ-27 (ruled): on a failed inbound, a tie for "furthest from the rim" is the offence's
     #   choice ('offence'); 'lowest' gives the ball to the lowest piece number.
     inbound_tie: str = 'offence'
+    # OQ-30 (RULED, step 3b): the forced shot's type at clock 0. 'player' = the offence picks among the
+    #   types its zone allows; 'best' = the engine picks the best expected value.
+    forced_shot_choice: str = 'player'
     # OQ-35 (ruled): an inbound pass works like any other pass. The defence gets its normal
     #   turn (1 or 2 actions: e.g. Move then Intercept, Sprint then Intercept, or move two
     #   players); the pass resolves after that turn, then the phase resets to the card's clock.

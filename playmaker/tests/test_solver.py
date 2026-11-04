@@ -7,7 +7,7 @@ from conftest import mk, P
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
-from playmaker_engine.resolve import apply, force, ChanceNode
+from playmaker_engine.resolve import settle, apply, force, ChanceNode
 from playmaker_engine.scoring import score
 from playmaker_engine.solver import (Searcher, Evaluator, Generator, exact_solve, terminal_vals, apply_play,
                                      expected, pruned_actions)
@@ -166,19 +166,19 @@ def test_terminal_values_agree_with_score():
     # Coach's Call bonus
     s = scenario_state(8, target=0)
     s = s.with_(o=(P('J10'),) + s.o[1:], x=(P('A14'),) + s.x[1:])
-    end = apply(apply(s, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X'))
+    end = settle(apply(apply(s, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X')))
     assert terminal_vals(end, (None,))[0].ev == score(end).total
     assert Evaluator()(end)[0].ev == score(end).total
     # and-one foul
     s2 = mk(['I4', 'C9', 'O9', 'A3', 'A14'], ['I3', 'D8', 'N8', 'G4', 'N4'], ['E', 'NE', 'NW', 'N', 'N'],
             off='High-Low', dfn='Five Out')
-    node = apply(apply(s2, Action('shot', 'O', 0, shot='post')), Action('end_turn', 'X'))
+    node = settle(apply(apply(s2, Action('shot', 'O', 0, shot='post')), Action('end_turn', 'X')))
     for _, _, leaf in (node.flatten() if isinstance(node, ChanceNode) else [(1, '', node)]):
         assert terminal_vals(leaf, (None,))[0].ev == score(leaf).total
     # floors: a declared shot worth less than 0
     s3 = mk(['I14', 'A14', 'C14', 'Q3', 'E14'], ['A13', 'P3', 'M14', 'K14', 'O14'], ['N', 'E', 'N', 'N', 'N'],
             ball=3, off='Twin Towers', dfn='Shoot and Protect')
-    end3 = apply(apply(s3, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X'))
+    end3 = settle(apply(apply(s3, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
     assert terminal_vals(end3, (None,))[0].ev == score(end3).total == 0
 
 
@@ -205,3 +205,21 @@ def test_evaluation_agreement_with_exact_solver():
     # the fixture is still exact: re-solve one position
     v, _ = exact_solve(state_of(rows[0]['spec']))
     assert v.ev == pytest.approx(rows[0]['ev'], abs=1e-9)
+
+
+@pytest.mark.parametrize('which', ['golden', 6, 10, 13])
+def test_player_contest_choice_equals_old_automatic_minimum(which):
+    """The round-2 values stay valid: the solver's best contest choice is the old automatic minimum."""
+    from playmaker_engine.rules_config import with_rules
+    from playmaker_engine.scenarios import scenario_state
+    vals = {}
+    for choice in ('player', 'min_value'):
+        rules = with_rules(contest_choice=choice, forced_shot_choice='player' if choice == 'player' else 'best')
+        if which == 'golden':
+            s = golden_position()
+            s = s.with_(ctx=type(s.ctx)(s.ctx.off, s.ctx.dfn, rules, s.ctx.title))
+        else:
+            s = scenario_state(which, rules=rules)
+        r = Searcher(with_config(eval_turns=1)).search(s, max_depth=2)
+        vals[choice] = r['vals'][0].ev
+    assert vals['player'] == pytest.approx(vals['min_value'], abs=1e-9), vals

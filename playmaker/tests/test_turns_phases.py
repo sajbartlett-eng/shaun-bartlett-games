@@ -4,7 +4,7 @@ from conftest import mk, P
 
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
-from playmaker_engine.resolve import apply, force, ChanceNode
+from playmaker_engine.resolve import settle, apply, force, ChanceNode
 from playmaker_engine.scoring import score
 from playmaker_engine.state import CI, ZERO_COUNTS
 
@@ -76,7 +76,7 @@ def test_offence_last_token_gives_defence_one_final_turn():
     s = apply(s, Action('move', 'O', 1, P('C10')))
     assert s.side == 'X' and s.final
     s = apply(s, Action('move', 'X', 3, P('G5'), 0))
-    s = apply(s, Action('end_turn', 'X'))
+    s = settle(apply(s, Action('end_turn', 'X')))
     assert s.phase == 2 and s.clock == 10 and s.tok_o == 6 and s.tok_x == 6 and s.side == 'O'
 
 
@@ -98,6 +98,8 @@ def test_clock_expiry_forced_shot():
     s = base(o=(P('I10'), P('C9'), P('O9'), P('A3'), P('Q3')), x=(P('I14'),) + base().x[1:], clock=2,
              side='X', tok_x=1)
     end = apply(s, Action('move', 'X', 3, P('G5'), 0))
+    assert end.stage == 'contest' and [a.piece for a in legal_actions(end)] == [-1]   # nobody adjacent
+    end = settle(end)
     assert not isinstance(end, ChanceNode)          # nobody adjacent: no foul roll, contest 0
     assert end.stage == 'over' and end.result.kind == 'forced'
     sc = score(end)
@@ -117,7 +119,7 @@ def test_clock_expiry_negative_value_floors_at_zero():
     # O4 pspfB three 6 v X2 tndA con_three 7, arrow on the shooter, nearer the rim: 3 x (6 - 7) = -3 -> 0.
     s = mk(['I14', 'A14', 'C14', 'Q3', 'E14'], ['A13', 'P3', 'M14', 'K14', 'O14'], ['N', 'E', 'N', 'N', 'N'],
            ball=3, off='Twin Towers', dfn='Shoot and Protect', clock=2, side='X', tok_x=1)
-    end = apply(s, Action('move', 'X', 4, P('O13'), 0))
+    end = settle(apply(s, Action('move', 'X', 4, P('O13'), 0)))
     assert end.result.kind == 'forced' and end.result.shot_value == 0 and score(end).total == -5
 
 
@@ -126,7 +128,7 @@ def test_hesitate_pause_chain():
     s = apply(s, Action('hesitate', 'O'))
     assert 'pause' not in kinds(s)             # not straight after Hesitate
     s = apply(s, Action('move', 'X', 3, P('G5'), 0))
-    s = apply(s, Action('end_turn', 'X'))
+    s = settle(apply(s, Action('end_turn', 'X')))
     s = apply(s, Action('move', 'O', 1, P('C10')))
     s = apply(s, Action('end_turn', 'O'))
     assert 'pause' in kinds(s)
@@ -140,7 +142,7 @@ def test_shot_declaration_then_reaction_then_contest():
     assert r.stage == 'reaction' and r.side == 'X'
     kinds_r = kinds(r)
     assert kinds_r <= {'move', 'qs', 'sprint', 'steal', 'end_turn'}
-    end = apply(r, Action('end_turn', 'X'))
+    end = settle(apply(r, Action('end_turn', 'X')))
     flat = end.flatten() if isinstance(end, ChanceNode) else [(1, '', end)]
     assert all(st.stage == 'over' for _, _, st in flat)
 

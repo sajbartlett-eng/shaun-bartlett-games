@@ -10,7 +10,7 @@ from conftest import P
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
-from playmaker_engine.resolve import apply, force, ChanceNode
+from playmaker_engine.resolve import settle, apply, force, ChanceNode
 from playmaker_engine.scenarios import SCENARIOS, scenario_state, scenario_layout
 from playmaker_engine.scoring import score
 
@@ -118,7 +118,7 @@ def test_inbound_pass_lands_new_phase_card_clock():
     assert s.side == 'X'
     acts = legal_actions(s)
     assert Action('end_turn', 'X') in acts                             # let it in
-    s2 = apply(s, Action('end_turn', 'X'))
+    s2 = settle(apply(s, Action('end_turn', 'X')))
     assert s2.inbound == 0 and s2.ball == 0 and s2.clock == 8 and s2.phase == 2 and s2.tok_o == 6
     moves = [a for a in legal_actions(s2) if a.piece == 2 and a.kind == 'move']
     assert moves and all(B.on_board(a.dest) for a in moves)            # inbounder may step on
@@ -127,20 +127,20 @@ def test_inbound_pass_lands_new_phase_card_clock():
 def test_need_a_three_only_threes_score():
     s = scenario_state(6)
     s = s.with_(o=(P('I8'),) + s.o[1:], x=(P('A14'),) + s.x[1:])
-    end = apply(apply(s, Action('shot', 'O', 0, shot='long')), Action('end_turn', 'X'))
+    end = settle(apply(apply(s, Action('shot', 'O', 0, shot='long')), Action('end_turn', 'X')))
     assert score(end).total == 0
     s2 = s.with_(o=(P('J10'),) + s.o[1:])
-    end2 = apply(apply(s2, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X'))
+    end2 = settle(apply(apply(s2, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X')))
     assert score(end2).total == 3 * s.ctx.off[0].shot('three')
 
 
 def test_two_or_three_results():
     s = scenario_state(7)
-    sc = score(apply(apply(s.with_(o=(P('J10'),) + s.o[1:], x=(P('A14'),) + s.x[1:]),
-                           Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X')))
+    sc = score(settle(apply(apply(s.with_(o=(P('J10'),) + s.o[1:], x=(P('A14'),) + s.x[1:]),
+                                  Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X'))))
     assert sc.late_clock == ('win' if sc.look >= 30 else 'loss')
     s5 = s.with_(ball=4, o=s.o[:4] + (P('I3'),), x=s.x[:4] + (P('A14'),))
-    sc5 = score(apply(apply(s5, Action('shot', 'O', 4, shot='dunk')), Action('end_turn', 'X')))
+    sc5 = score(settle(apply(apply(s5, Action('shot', 'O', 4, shot='dunk')), Action('end_turn', 'X'))))
     assert sc5.look >= 30 and sc5.late_clock == 'tie'
 
 

@@ -25,11 +25,11 @@ def _action(d):
                   int(d.get('arrow', -1)), int(d.get('target', -1)), d.get('shot', '') or '')
 
 
-def _start(setup, possession):
+def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
     if setup.get('scenario'):
         return scenario_state(setup['scenario'])
     off, dfn = setup['teams'] if possession == 1 else setup['teams'][::-1]
-    return game_state(off, dfn, TABLE_O, TABLE_X, TABLE_ARROWS, ball=0)
+    return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball)
 
 
 def replay(records, on_decision=None):
@@ -40,10 +40,18 @@ def replay(records, on_decision=None):
     state = _start(setup, 1)
     finals = []
     undo = []                         # states before each action since the last roll (as the server keeps)
+    placed_o = None
     i = 0
     while i < len(records):
         r = records[i]
-        if r['type'] == 'possession':
+        if r['type'] == 'placement':
+            if r['side'] == 'O':
+                placed_o = (r['squares'], r['ball'])
+            else:
+                state = _start(setup, possession, placed_o[0], r['squares'], r['arrows'], placed_o[1])
+                if r.get('start') and state.encode() != r['start']:
+                    raise ValueError('placement replay diverged')
+        elif r['type'] == 'possession':
             finals.append((possession, state))
             possession = r['possession']
             state = _start(setup, possession)

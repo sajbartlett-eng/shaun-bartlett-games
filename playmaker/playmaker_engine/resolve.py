@@ -11,9 +11,11 @@ from .state import CI, ZERO_COUNTS, Result, count_key
 
 @dataclass(frozen=True)
 class ChanceNode:
-    """outcomes: tuple of (probability, label, GameState or ChanceNode). Probabilities sum to 1."""
+    """outcomes: tuple of (probability, label, GameState or ChanceNode). Probabilities sum to 1.
+    roller: the side rolling the d20 ('O' for opposed rolls, 'X' for the defender's foul rolls)."""
     outcomes: tuple
     what: str = ''
+    roller: str = ''
 
     def flatten(self, prefix=''):
         out = []
@@ -30,18 +32,18 @@ class ChanceNode:
         return sum(p for p, _, _ in self.flatten())
 
 
-def chance(what, outcomes):
+def chance(what, outcomes, roller=''):
     """Build a node, dropping impossible branches; a sure thing collapses to its state."""
     outs = tuple((Fraction(p), l, s) for p, l, s in outcomes if p > 0)
     if len(outs) == 1:
         return outs[0][2]
-    return ChanceNode(outs, what)
+    return ChanceNode(outs, what, roller)
 
 
 def cmap(node, fn):
     """Apply fn to every state leaf of a node (fn may itself return a ChanceNode)."""
     if isinstance(node, ChanceNode):
-        return ChanceNode(tuple((p, l, cmap(s, fn)) for p, l, s in node.outcomes), node.what)
+        return ChanceNode(tuple((p, l, cmap(s, fn)) for p, l, s in node.outcomes), node.what, node.roller)
     return fn(node)
 
 
@@ -122,18 +124,33 @@ def complete_pass(s):
 
 
 def resolve_shot(s, forced=False):
-    """Automatic contest for the declared (or forced) shot. Returns a terminal state or ChanceNode."""
+    """The declared (or forced) shot reaches its contest. With contest_choice='player' this returns the
+    decision node (the defence chooses who contests); otherwise the automatic contest is resolved."""
     shooter = s.ball
     spos = s.o[shooter]
-    card = s.ctx.off[shooter]
+    rules = s.ctx.rules
     if forced:
         if not B.on_board(spos) or B.zone(spos) == '.':
             return _terminal(s, Result('forced', shooter, '', 0))
         types = RC.ZONE_SHOTS[B.zone(spos)]
-        t = max(types, key=lambda t: (choose_contest(s, shooter, t, True).ev, -types.index(t)))
-    else:
-        t = s.shot
-    opt = choose_contest(s, shooter, t, forced)
+        if rules.forced_shot_choice == 'player' and len(types) > 1:
+            return s.with_(stage='forced', side='O', shot=None, forced=True, turn_n=0, pending=None)
+        if rules.forced_shot_choice == 'player':
+            t = types[0]
+        else:
+            t = max(types, key=lambda t: (choose_contest(s, shooter, t, True).ev, -types.index(t)))
+        s = s.with_(shot=t, forced=True)
+    if rules.contest_choice == 'player':
+        return s.with_(stage='contest', side='X', turn_n=0, forced=forced, pending=None)
+    return contest_outcome(s, choose_contest(s, shooter, s.shot, forced), forced)
+
+
+def contest_outcome(s, opt, forced):
+    """The result of one contest option: a terminal state, or a foul roll (arrow off the shooter)."""
+    shooter = s.ball
+    spos = s.o[shooter]
+    card = s.ctx.off[shooter]
+    t = s.shot
     pts = shot_points(spos)
     kind = 'forced' if forced else 'shot'
     made = _terminal(s, Result(kind, shooter, t, pts, card.shot(t), opt.contest, opt.defender, opt.value, 0))
@@ -141,7 +158,23 @@ def resolve_shot(s, forced=False):
         return made
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules)
     fouled = _terminal(s, Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
-    return chance(f'contest foul roll X{opt.defender + 1}', [(opt.p_foul, 'foul', fouled), (1 - opt.p_foul, 'no foul', made)])
+    fr = s.ctx.dfn[opt.defender].r['foul_contest']
+    return chance(f'Contest foul {fr} (X{opt.defender + 1}, arrow off the shooter)',
+                  [(opt.p_foul, 'foul', fouled), (1 - opt.p_foul, 'no foul', made)], 'X')
+
+
+def settle(node):
+    """Resolve contest and forced-shot decisions the automatic way (defence's minimum, offence's best type).
+    For analysis code written before those became player decisions; play itself never needs it."""
+    if isinstance(node, ChanceNode):
+        return ChanceNode(tuple((p, l, settle(sub)) for p, l, sub in node.outcomes), node.what, node.roller)
+    if node.stage == 'contest':
+        return settle(contest_outcome(node, choose_contest(node, node.ball, node.shot, node.forced), node.forced))
+    if node.stage == 'forced':
+        types = RC.ZONE_SHOTS[B.zone(node.o[node.ball])]
+        t = max(types, key=lambda t: (choose_contest(node, node.ball, t, True).ev, -types.index(t)))
+        return settle(apply(node, Action('forced_shot', 'O', node.ball, shot=t)))
+    return node
 
 
 def end_phase(s):
@@ -244,6 +277,16 @@ def apply(state, action, check=False):
         return s.with_(target=a.target, stage='play')
     if k == 'pick':
         return s.with_(ball=a.target, stage='play')
+    if k == 'forced_shot':
+        s = s.with_(shot=a.shot, stage='play')
+        if s.ctx.rules.contest_choice == 'player':
+            return s.with_(stage='contest', side='X', forced=True)
+        return contest_outcome(s, choose_contest(s, s.ball, a.shot, True), True)
+    if k == 'contest':
+        opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
+        if a.piece not in opts:
+            raise ValueError(f'X{a.piece + 1} cannot contest this shot')
+        return contest_outcome(s, opts[a.piece], s.forced)
 
     if k not in TOKEN_FREE:
         s = _spend(s, side)
@@ -319,9 +362,9 @@ def apply(state, action, check=False):
         p = p_success(O[s.ball].r['dribble'] - X[a.target].r['agility'], rules)
         win = _lock(s, 'X', a.target).with_(beaten=tuple(sorted(set(s.beaten) | {(s.ball, a.target)})))
         lose = _lock(s, 'O', s.ball)
-        return chance(f'Dribble O{s.ball + 1} vs X{a.target + 1}', [
+        return chance(f'Dribble {O[s.ball].r["dribble"]} v Agility {X[a.target].r["agility"]} (O{s.ball + 1} v X{a.target + 1})', [
             (p, 'success', _after(state, win, side, k)),
-            (1 - p, 'failure', _after(state, lose, side, k))])
+            (1 - p, 'failure', _after(state, lose, side, k))], 'O')
 
     if k == 'intercept':
         passer, recv = s.pending
@@ -333,17 +376,17 @@ def apply(state, action, check=False):
             ok_node = _after(state, ok, side, k)
         lost = _turnover(s.with_(pending=None, approach=-1))   # ball stays with the passer
         lost_node = lost if lost.stage == 'over' else _after(state, lost, side, k)
-        return chance(f'Pass O{passer + 1}->O{recv + 1} vs Intercept X{a.piece + 1}', [
-            (p, 'success', ok_node), (1 - p, 'failure', lost_node)])
+        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[a.piece].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{a.piece + 1})', [
+            (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
 
     if k == 'challenge':
         scr = s.screen_of(a.target)
         p = p_success(O[a.target].r['screen'] - X[a.piece].r['challenge'], rules)
         holds = _lock(s, 'X', a.piece)
         fails = s.with_(screens=tuple((i, d, f, m | (1 << a.piece) if i == a.target else m) for i, d, f, m in s.screens))
-        return chance(f'Screen O{a.target + 1} vs Challenge X{a.piece + 1}', [
+        return chance(f'Screen {O[a.target].r["screen"]} v Challenge {X[a.piece].r["challenge"]} (O{a.target + 1}, X{a.piece + 1})', [
             (p, 'success', _after(state, holds, side, k)),
-            (1 - p, 'failure', _after(state, fails, side, k))])
+            (1 - p, 'failure', _after(state, fails, side, k))], 'O')
 
     if k == 'steal':
         carrier = s.ball
@@ -367,8 +410,9 @@ def apply(state, action, check=False):
             st = _turnover(s)
             stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
         kept_node = _after(state, s, side, k)
-        inner = chance(f'Steal: Dribble O{carrier + 1} vs Steal X{a.piece + 1}',
-                       [(pk, 'kept', kept_node), (1 - pk, 'stolen', stolen_node)])
-        return chance(f'Steal foul roll X{a.piece + 1}', [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)])
+        inner = chance(f'Dribble {O[carrier].r["dribble"]} v Steal {X[a.piece].r["steal"]} (O{carrier + 1} v X{a.piece + 1})',
+                       [(pk, 'kept', kept_node), (1 - pk, 'stolen', stolen_node)], 'O')
+        return chance(f'Steal foul {X[a.piece].r["foul_steal"]} (X{a.piece + 1})',
+                      [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)], 'X')
 
     raise ValueError(f'unknown action {a}')

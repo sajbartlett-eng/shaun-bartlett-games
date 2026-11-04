@@ -18,7 +18,7 @@ from fractions import Fraction
 from . import board as B
 from . import rules_config as RC
 from .actions import Action, legal_actions, movement_dests, can_move_kind, MOVEMENT
-from .resolve import apply, ChanceNode
+from .resolve import apply, ChanceNode, settle
 from .scenarios import SCENARIOS, scenario_state
 from .scoring import contest_rating, choose_contest
 
@@ -99,6 +99,8 @@ def _value(node, three_only):
     """Expected look of a resolved shot (shot value or free throws, -5 for a steal)."""
     if isinstance(node, ChanceNode):
         return sum(Fraction(p) * _value(s, three_only) for p, _, s in node.outcomes)
+    if node.stage in ('contest', 'forced'):
+        return _value(settle(node), three_only)
     r = node.result
     if r is None:
         raise ValueError('unresolved')
@@ -131,6 +133,7 @@ def _reaction_value(R, three_only, ignore_arrows=False):
             if ignore_arrows:
                 nxt = _face_shooter(nxt)
             nxt = apply(nxt, Action('end_turn', 'X'))
+        nxt = settle(nxt)
         v = _value(nxt, three_only)
         if best is None or v < best[0]:
             best = (v, str(a))
@@ -188,6 +191,8 @@ def _looks(state, k, three_only):
         for a in legal_actions(s0):
             if a.kind == 'shot':
                 R = apply(s0, a)
+                if not isinstance(R, ChanceNode) and R.stage != 'reaction':
+                    R = settle(R)
                 if isinstance(R, ChanceNode) or R.stage != 'reaction':
                     out.append((_value(R, three_only), f'O{k + 1} {how}, {a.shot}', None))
                 else:

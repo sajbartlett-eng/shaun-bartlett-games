@@ -4,7 +4,7 @@ from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import intercept_status
 from playmaker_engine.cards import OFF, DEF
 from playmaker_engine.scenarios import SCENARIOS
-from playmaker_engine.scoring import score, choose_contest, shot_points, foul_on_shot_points, band
+from playmaker_engine.scoring import score, choose_contest, shot_points, foul_on_shot_points, band, contest_options
 
 from .game import action_to_json, chance_preview, FEEDBACK_QUESTIONS, _score_json
 
@@ -17,14 +17,24 @@ LABELS = {
     'con_floater': 'v Floater', 'con_mid': 'v Mid', 'con_long': 'v Long 2', 'con_three': 'v Three',
     'foul_contest': 'Foul (contest)',
 }
-CHANCE_KINDS = {'dribble', 'intercept', 'challenge', 'steal'}
+CHANCE_KINDS = {'dribble', 'intercept', 'challenge', 'steal', 'contest', 'forced_shot'}
+# Printed-card order: actions first, then shot zones (ratings keep their ▲ / ▼ marks)
+GROUPS = {
+    'O': [('Actions', ['dribble', 'pass', 'screen']),
+          ('Shots', ['shot_layup', 'shot_dunk', 'shot_post', 'shot_mid', 'shot_floater', 'shot_long', 'shot_three', 'free_throw'])],
+    'X': [('Actions', ['agility', 'intercept', 'challenge', 'steal', 'foul_steal']),
+          ('Contests', ['con_layup', 'con_dunk', 'con_post', 'con_mid', 'con_floater', 'con_long', 'con_three', 'foul_contest'])],
+}
 
 
 def card_json(card, side):
     names = OFF if side == 'O' else DEF
+    r = lambda n: dict(name=LABELS[n], value=card.r[n], band=card.bands[n], mark=MARK[card.bands[n]])
+    groups = [dict(name='Actions', ratings=[dict(name='Quick Step', value=card.qs, band='A', mark='')]
+                   + [r(n) for n in GROUPS[side][0][1]]),
+              dict(name=GROUPS[side][1][0], ratings=[r(n) for n in GROUPS[side][1][1]])]
     return dict(key=card.key, role=card.role, tier=card.tier, tagline=card.tagline, qs=card.qs,
-                ratings=[dict(name=LABELS[n], value=card.r[n], band=card.bands[n], mark=MARK[card.bands[n]])
-                         for n in names])
+                ratings=[r(n) for n in names], groups=groups)
 
 
 def zones():
@@ -52,6 +62,23 @@ def legal_json(s, acts):
             pend = s.with_(pending=(a.piece, a.target))
             d['threats'] = [dict(defender=j, how=intercept_status(pend, j)) for j in range(5)
                             if intercept_status(pend, j)]
+        if a.kind == 'contest':
+            opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
+            o = opts[a.piece]
+            pts = shot_points(s.o[s.ball])
+            rating = s.ctx.off[s.ball].shot(s.shot)
+            if a.piece < 0:
+                d['option'] = f"Don't contest: {pts} × {rating} = {o.value}"
+            elif o.clean:
+                d['option'] = (f'Contest with X{a.piece + 1}: contest {o.contest}, clean (arrow on the shooter): '
+                               f'{pts} × ({rating} − {o.contest}) = {o.value}')
+            else:
+                d['option'] = (f'Contest with X{a.piece + 1}: contest {o.contest}, foul roll (arrow off: foul on '
+                               f'{int(o.p_foul * 20)} or less scores {o.ft}; otherwise {o.value})')
+            d['clean'] = bool(o.clean)
+        if a.kind == 'forced_shot':
+            opt = choose_contest(s, a.piece, a.shot, True)
+            d['value_now'] = f'{a.shot}: worth {float(opt.ev):.1f} against the defence\'s best contest'
         if a.kind == 'shot':
             opt = choose_contest(s, a.piece, a.shot)
             pts = shot_points(s.o[a.piece])
@@ -66,6 +93,10 @@ def legal_json(s, acts):
 
 
 def turn_summary(s):
+    if s.stage == 'contest':
+        return 'Contest: the defence chooses who contests the shot (or nobody)'
+    if s.stage == 'forced':
+        return 'Shot clock out: the offence chooses the forced shot (turnover, −5 as well)'
     if s.stage == 'over':
         return 'Possession over'
     if s.stage == 'target':
@@ -114,6 +145,19 @@ def state_json(game, token):
         sc = score(s)
         result = _score_json(sc)
     legal = legal_json(s, game.legal()) if can else []
+    placing = None
+    if game.placing:
+        o_sq = game.placed.get('O', (None,))[0]
+        occupied = {B.sq(q) for q in o_sq} if o_sq else set()
+        squares = [B.sq((x, y)) for y in range(1, B.H + 1) for x in range(B.W)]
+        placing = dict(side=game.placing, by_ai=game.placing in game.ai,
+                       mine=(seat == 'both' or seat == game.placing) and game.placing not in game.ai,
+                       squares=[q for q in squares if q not in occupied],
+                       ball_squares=[q for q in squares if B.zone(B.parse_sq(q)) == '.' and B.parse_sq(q)[1] > 1],
+                       offence=[B.sq(q) for q in o_sq] if o_sq else None,
+                       ball=game.placed.get('O', (None, None))[1])
+    inbound_note = ('Inbounder: can only pass. The defence answers the pass with its normal turn.'
+                    if s.inbound else None)
     return dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
                 side_to_act=game.side_to_act(), ai=game.ai, title=ctx.title, scenario=sc_info, full=game.full,
                 possession=game.possession, attacker=game.offence_player(), teams=[ctx.off_team, ctx.def_team],
@@ -126,6 +170,8 @@ def state_json(game, token):
                 summary=turn_summary(s), rolls=game.rolls, result=result, scores=game.scores, match=game.match,
                 legal=legal, can_undo=bool(game.undo), undo_votes=sorted(game.undo_votes),
                 feedback_questions=FEEDBACK_QUESTIONS, feedback_done=game.feedback is not None,
+                feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
+                log_name=game.log_name, static=getattr(game, 'static', False),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
 
 

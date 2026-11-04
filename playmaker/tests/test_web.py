@@ -163,3 +163,106 @@ def test_full_game_two_possessions_and_feedback(web):
     log = get(web, f'/api/log?code={g["code"]}')
     fb = [r for r in log if r['type'] == 'feedback'][0]
     assert fb['answers'][0]['answer'] == 'yes' and len(fb['answers']) == 5
+
+
+# ---- step 3b ------------------------------------------------------------------------------------
+
+def test_contest_decision_through_the_api(web):
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], seed=2))
+    tok = dict(code=g['code'], token=g['token'])
+    s = state(web, g)
+    # O1 to I9 (long two, X1 adjacent with its arrow off the shooter) then declare the shot
+    mv = next(a for a in s['legal'] if a['kind'] == 'move' and a['piece'] == 0 and a['dest'] == list(P('J10')))
+    post(web, '/api/act', dict(tok, action=mv))
+    s = state(web, g)
+    shot = next(a for a in s['legal'] if a['kind'] == 'shot')
+    post(web, '/api/act', dict(tok, action=shot))
+    post(web, '/api/act', dict(tok, action=next(a for a in state(web, g)['legal'] if a['kind'] == 'end_turn')))
+    s = state(web, g)
+    assert s['stage'] == 'contest' and s['side'] == 'X'
+    opts = s['legal']
+    assert {a['kind'] for a in opts} == {'contest'} and any(a['piece'] == -1 for a in opts)
+    adj = [a for a in opts if a['piece'] >= 0]
+    assert adj and all(('clean' in a['option']) == a['clean'] for a in adj)
+    assert all('foul on' in a['option'] for a in adj if not a['clean'])
+    r = post(web, '/api/act', dict(tok, action=next(a for a in opts if a['piece'] == -1)))
+    assert r['state']['stage'] == 'over' and r['state']['result']['detail'].endswith('contested by nobody')
+
+
+def test_every_roll_names_the_side_rolling(web):
+    rolls, games = [], 0
+    for seed in range(200):                      # scripted random games until three of them have rolled
+        acts = []
+        res = play(scenario_state(15), RandomPolicy(), RandomPolicy(), seed=seed, check=lambda b, a, s: acts.append(a))
+        if not any(e[3] for e in res['log']):
+            continue
+        g = post(web, '/api/new', dict(mode='hotseat', scenario=15, seed=seed))
+        for a in acts:
+            post(web, '/api/act', dict(code=g['code'], token=g['token'], action=action_to_json(a)))
+        rolls += [r for r in get(web, f'/api/log?code={g["code"]}') if r['type'] == 'roll']
+        games += 1
+        if games == 3:
+            break
+    assert len(rolls) >= 3
+    for r in rolls:
+        assert r['roller'] in ('O', 'X')
+        assert r['text'].startswith('Offence rolls' if r['roller'] == 'O' else 'Defence rolls')
+        if 'foul' in r['what'].lower():
+            assert r['roller'] == 'X'
+
+
+def test_feedback_only_at_the_end_of_the_match(web):
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=4,
+                                   place=False, ai=dict(O='greedy', X='greedy')))
+    tok = dict(code=g['code'], token=g['token'])
+    s = state(web, g)
+    assert s['stage'] == 'over' and s['possession'] == 1 and not s['feedback_due']
+    assert post(web, '/api/feedback', dict(tok, answers={'0': 'x'}), ok=False)['status'] == 400
+    post(web, '/api/next', tok)
+    assert state(web, g)['feedback_due']
+    g2 = post(web, '/api/new', dict(mode='hotseat', scenario=6, seed=1, ai=dict(O='greedy', X='greedy')))
+    assert state(web, g2)['feedback_due']                   # a scenario ends: the form is due
+
+
+def test_placement_rules_and_preview_shortcut(web):
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=6))
+    tok = dict(code=g['code'], token=g['token'])
+    s = state(web, g)
+    assert s['placing']['side'] == 'O' and 'I11' in s['placing']['ball_squares'] and 'I9' not in s['placing']['ball_squares']
+    bad = [
+        dict(squares=['I11', 'C9', 'O9', 'A3'], ball=0),                       # four pieces
+        dict(squares=['I11', 'I11', 'O9', 'A3', 'Q3'], ball=0),                # shared square
+        dict(squares=['I9', 'C9', 'O9', 'A3', 'Q3'], ball=0),                  # ball not on plain wood
+        dict(squares=['I11', 'C9', 'O9', 'A3', 'R3'], ball=0),                 # off the court
+    ]
+    for b in bad:
+        r = post(web, '/api/place', dict(tok, **b), ok=False)
+        assert r['status'] == 400
+    assert 'plain wood' in post(web, '/api/place', dict(tok, **bad[2]), ok=False)['error']
+    post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
+    s = state(web, g)
+    assert s['placing']['side'] == 'X'
+    r = post(web, '/api/place', dict(tok, squares=['I12', 'D8', 'N8', 'G4', 'N4'], arrows=['N'] * 5), ok=False)
+    assert r['status'] == 400 and 'empty' in r['error']
+    post(web, '/api/place', dict(tok, squares=['I11', 'D8', 'N8', 'G4', 'N4'], arrows=['S', 'NE', 'NW', 'N', 'N']))
+    s = state(web, g)
+    assert s['placing'] is None and s['o'][0]['sq'] == 'I12' and s['x'][0]['sq'] == 'I11' and s['can_act']
+    # the shortcut gives exactly the preview table setup
+    g3 = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=6))
+    post(web, '/api/place', dict(code=g3['code'], token=g3['token'], preview=True))
+    g4 = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], seed=6))
+    a3 = [r for r in get(web, f'/api/log?code={g3["code"]}') if r['type'] == 'placement'][-1]['start']
+    a4 = get(web, f'/api/log?code={g4["code"]}')[0]['start']
+    assert a3 == a4
+
+
+def test_computer_places_man_to_man(web):
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=8, ai=dict(X='greedy')))
+    tok = dict(code=g['code'], token=g['token'])
+    post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
+    s = state(web, g)
+    assert s['placing'] is None
+    for o, x in zip(s['o'], s['x']):
+        assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
+        d = (o['x'] - x['x'], o['y'] - x['y'])
+        assert B.DIRS[x['arrow']] == d                                       # arrow on its man

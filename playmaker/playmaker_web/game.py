@@ -14,7 +14,7 @@ from playmaker_engine.actions import Action, legal_actions, intercept_status
 from playmaker_engine.cards import TEAMS, FIRST_GAME
 from playmaker_engine.policies import GreedyPolicy
 from playmaker_engine.resolve import apply, ChanceNode
-from playmaker_engine.scenarios import SCENARIOS, scenario_state, game_state
+from playmaker_engine.scenarios import SCENARIOS, scenario_state, game_state, setup_errors
 from playmaker_engine.scoring import score, band, choose_contest, shot_points, match_result
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -65,26 +65,47 @@ def resolve_chance(node, rng):
         first_p, first_label = node.outcomes[0][0], node.outcomes[0][1]
         need = int(first_p * 20)
         rolls.append(dict(what=node.what, outcomes=[[l, float(p)] for p, l, _ in node.outcomes], picked=pick[1],
-                          face=int(r * 20) + 1, need=need, first=first_label,
-                          text=f'{node.what}: {first_label} on {need} or less ({float(first_p):.0%})'))
+                          face=int(r * 20) + 1, need=need, first=first_label, roller=node.roller,
+                          text=roll_text(node.what, node.roller, first_label, need, first_p)))
         node = pick[2]
     return node, rolls
 
 
+def roll_text(what, roller, label, need, p):
+    who = {'O': 'Offence rolls', 'X': 'Defence rolls'}.get(roller, 'Roll')
+    return f'{who}: {what}, {label} on {need} or less ({float(p):.0%})'
+
+
 def chance_preview(state, a):
-    """Plain-words description of the roll an action would need, without rolling."""
+    """Plain-words description of the roll(s) an action would need, without rolling."""
     node = apply(state, a)
     out = []
     while isinstance(node, ChanceNode):
         p, label, sub = node.outcomes[0]
-        out.append(f'{node.what}: {label} on {int(p * 20)} or less ({float(p):.0%})')
+        out.append(dict(roller=node.roller, text=roll_text(node.what, node.roller, label, int(p * 20), p)))
         node = max(node.outcomes, key=lambda o: o[0])[2]
     return out
 
 
+def man_to_man(o_squares, ball):
+    """The computer's defensive placement: each X on the empty square next to its man that is closest
+    to the rim (ties: compass order N, NE, E...), arrow on its man."""
+    taken = set(o_squares)
+    xs, arrows = [], []
+    for o in o_squares:
+        cands = [B.add(o, d) for d in B.DIRS]
+        cands = [q for q in cands if B.on_board(q) and q not in taken]
+        q = min(cands, key=lambda q: (B.dist_rim(q), cands.index(q)))
+        taken.add(q)
+        xs.append(q)
+        arrows.append(B.dir_between(q, o))
+    return xs, arrows
+
+
 class Game:
-    def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None):
-        self.code = secrets.token_hex(3).upper()
+    def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
+                 place=False, code=None):
+        self.code = (code or secrets.token_hex(3)).upper()
         self.mode = mode
         self.scenario = scenario
         self.full = full and scenario is None
@@ -108,18 +129,104 @@ class Game:
         self.feedback = None
         self.match = None
         os.makedirs(LOG_DIR, exist_ok=True)
-        self.log_path = os.path.join(LOG_DIR, f'{datetime.date.today().isoformat()}_{self.code}.jsonl')
+        self.log_name = f'{datetime.date.today().isoformat()}_{self.code}.jsonl'
+        self.log_path = os.path.join(LOG_DIR, self.log_name)
+        if os.path.exists(self.log_path):          # a new game always starts its own log
+            os.remove(self.log_path)
+        self.place_on = bool(place) and scenario is None
+        self.placing = None              # 'O' or 'X' while the pieces are being set up
+        self.placed = {}
         self.state = self._possession_state()
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
-                  ai=self.ai, possession=self.possession, start=self.state.encode())
-        self._run_ai()
+                  ai=self.ai, possession=self.possession, place=self.place_on, start=self.state.encode())
+        self._begin_possession()
 
     # ---- setup ----
-    def _possession_state(self):
+    def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
         off, dfn = (self.teams if self.possession == 1 else self.teams[::-1])
-        return game_state(off, dfn, TABLE_O, TABLE_X, TABLE_ARROWS, ball=0, rules=self.rules)
+        return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules)
+
+    # ---- placement (rulebook setup steps 4 and 5) ----
+    def _begin_possession(self):
+        if self.place_on:
+            self.placing, self.placed = 'O', {}
+            self.version += 1
+            self._auto_place()
+        else:
+            self._run_ai()
+
+    def _auto_place(self):
+        """The computer places for its side: the preview squares on offence, man-to-man on defence."""
+        while self.placing and self.placing in self.ai:
+            if self.placing == 'O':
+                self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
+            else:
+                xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
+                self._place_side('X', xs, None, arrows, actor='ai')
+
+    def place(self, token, body):
+        with self.lock:
+            if not self.placing:
+                raise GameError('nothing to place now')
+            seat = self.seat_of(token)
+            if seat is None:
+                raise GameError('unknown player token')
+            if body.get('preview'):
+                if seat != 'both' and seat != self.placing:
+                    raise GameError('the preview shortcut sets both sides: use it in hot-seat or before joining')
+                self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='human')
+                self._place_side('X', [B.parse_sq(q) for q in TABLE_X], None, list(TABLE_ARROWS), actor='human')
+                return
+            if seat != 'both' and seat != self.placing:
+                raise GameError(f'the {"offence" if self.placing == "O" else "defence"} is placing')
+            if self.placing in self.ai:
+                raise GameError('the computer places this side')
+            try:
+                squares = [B.parse_sq(q) for q in body.get('squares') or []]
+            except (ValueError, IndexError):
+                raise GameError('squares must be names like I11')
+            arrows = body.get('arrows')
+            self._place_side(self.placing, squares, body.get('ball'), arrows, actor='human')
+            self._auto_place()
+
+    def _place_side(self, side, squares, ball, arrows, actor):
+        if len(squares) != 5 or len(set(squares)) != 5:
+            raise GameError('place all 5 pieces on 5 different squares')
+        if not all(B.on_board(q) for q in squares):
+            raise GameError('every piece must be on the court')
+        if side == 'O':
+            if ball is None or not 0 <= int(ball) < 5:
+                raise GameError('choose the player with the ball')
+            ball = int(ball)
+            bq = squares[ball]
+            if not (B.zone(bq) == '.' and bq[1] > 1):
+                raise GameError('the ball must start on a player standing on plain wood beyond the three-point tiles')
+            self.placed['O'] = (squares, ball)
+            self.placing = 'X'
+        else:
+            o_sq, ball = self.placed['O']
+            if set(squares) & set(o_sq):
+                raise GameError('defenders go on empty squares')
+            if arrows is None or len(arrows) != 5:
+                raise GameError('set an arrow for each defender')
+            arrows = [B.DIR_NAMES.index(a) if isinstance(a, str) else int(a) for a in arrows]
+            if not all(0 <= a < 8 for a in arrows):
+                raise GameError('arrows are 0-7 or compass names')
+            errs = setup_errors(tuple(o_sq), tuple(squares), ball)
+            if errs:
+                raise GameError('; '.join(errs))
+            self.state = self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in squares],
+                                                arrows, ball)
+            self.placing = None
+        self._log('placement', possession=self.possession, side=side, actor=actor,
+                  squares=[B.sq(q) for q in squares], ball=ball if side == 'O' else None,
+                  arrows=[B.DIR_NAMES[a] for a in arrows] if side == 'X' else None,
+                  start=self.state.encode() if side == 'X' else None)
+        self.version += 1
+        if self.placing is None:
+            self._run_ai()
 
     def offence_player(self):
         """Which player (A or B) is attacking this possession."""
@@ -143,7 +250,15 @@ class Game:
             return 'both' if token == self.tokens['both'] else None
         return self.seats.get(token)
 
+    def feedback_due(self):
+        """The feedback form appears once: at the end of the match, a scenario or a single possession."""
+        if self.state.stage != 'over' or self.placing:
+            return False
+        return (not self.full) or self.possession == 2
+
     def side_to_act(self):
+        if self.placing:
+            return None
         s = self.state
         if s.stage == 'over':
             return None
@@ -164,6 +279,8 @@ class Game:
 
     def act(self, token, data):
         with self.lock:
+            if self.placing:
+                raise GameError('the pieces are still being placed')
             if self.state.stage == 'over':
                 raise GameError('the possession is over')
             if not self.can_act(token):
@@ -273,7 +390,7 @@ class Game:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.version += 1
             self._log('possession', possession=2, teams=self.teams[::-1], start=self.state.encode())
-            self._run_ai()
+            self._begin_possession()
 
     def _finish_match(self):
         a, b = self.scores[0], self.scores[1]
@@ -295,6 +412,8 @@ class Game:
     def save_feedback(self, token, answers):
         if self.seat_of(token) is None:
             raise GameError('unknown player token')
+        if not self.feedback_due():
+            raise GameError('feedback comes at the end of the match (or of a scenario or single possession)')
         self.feedback = answers
         self._log('feedback', seat=self.seat_of(token),
                   answers=[dict(question=q, answer=answers.get(str(i), '')) for i, q in enumerate(FEEDBACK_QUESTIONS)])

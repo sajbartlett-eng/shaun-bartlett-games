@@ -5,7 +5,7 @@ from conftest import mk, P
 
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
-from playmaker_engine.resolve import apply, force, ChanceNode
+from playmaker_engine.resolve import settle, apply, force, ChanceNode
 from playmaker_engine.scoring import (score, band, p_success, contest_options, choose_contest, free_throws,
                                       match_result)
 from playmaker_engine.rules_config import with_rules
@@ -164,7 +164,7 @@ def test_steal_after_declared_shot():
     assert foul.stage == 'over' and score(foul).free_throws == max(2 * o.r['free_throw'], 2 * o.shot('long'))
     stolen = force(st, 'no foul', 'stolen')
     assert stolen.result.kind == 'steal' and score(stolen).total == -5
-    kept = force(st, 'no foul', 'kept')
+    kept = settle(force(st, 'no foul', 'kept'))
     assert kept.stage == 'over' and kept.result.kind == 'shot'       # then the contest
 
 
@@ -219,10 +219,10 @@ def test_declared_negative_shot_floors_at_zero():
     # nearer the rim: 3 x (6 - 7) = -3 scores 0. With the old setting it scores -3.
     sq = (['I14', 'A14', 'C14', 'Q3', 'E14'], ['A13', 'P3', 'M14', 'K14', 'O14'], ['N', 'E', 'N', 'N', 'N'])
     s = mk(*sq, ball=3, off='Twin Towers', dfn='Shoot and Protect')
-    end = apply(apply(s, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X'))
+    end = settle(apply(apply(s, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
     assert end.result.shot_value == 0 and score(end).total == 0
     s2 = mk(*sq, ball=3, off='Twin Towers', dfn='Shoot and Protect', rules=with_rules(floor_declared_shot=False))
-    end2 = apply(apply(s2, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X'))
+    end2 = settle(apply(apply(s2, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
     assert end2.result.shot_value == -3 and score(end2).total == -3
 
 
@@ -297,11 +297,11 @@ def test_coach_call_bonus():
     s = scenario_state(8, target=0)
     # put O1 on a three square, nobody near, and shoot
     s = s.with_(o=(P('J10'),) + s.o[1:], x=(P('A14'),) + s.x[1:])
-    end = apply(apply(s, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X'))
+    end = settle(apply(apply(s, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X')))
     sc = score(end)
     assert sc.coach_bonus == RC.COACH_BONUS[band(sc.look)] and sc.total == sc.shot_value + sc.coach_bonus
     s2 = scenario_state(8, target=1).with_(o=(P('J10'),) + s.o[1:], x=(P('A14'),) + s.x[1:])
-    end2 = apply(apply(s2, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X'))
+    end2 = settle(apply(apply(s2, Action('shot', 'O', 0, shot='three')), Action('end_turn', 'X')))
     assert score(end2).coach_bonus == 0
 
 
@@ -331,3 +331,56 @@ def test_only_the_defender_on_the_t_square_may_challenge():
     assert not [a for a in legal_actions(s_off) if a.kind == 'challenge']
     s_any = base(side='X', screens=((2, 4, False, 0),), rules=with_rules(challenge_who='any'))
     assert len([a for a in legal_actions(s_any) if a.kind == 'challenge']) == 5
+
+
+# ---- step 3b: the contest and the forced-shot type are player decisions -------------------------
+
+def _declared(xsq, arrow, osq='I9', shot='long', extra_x=None):
+    x = [xsq, 'D8', 'N8', 'G4', 'N4']
+    arr = [arrow, 'NE', 'NW', 'N', 'N']
+    if extra_x:
+        x[1], arr[1] = extra_x
+    s = base(o=[osq, 'C9', 'O9', 'A3', 'Q3'], x=x, arr=arr)
+    return apply(apply(s, Action('shot', 'O', 0, shot=shot)), Action('end_turn', 'X'))
+
+
+def test_contest_decision_offers_every_adjacent_defender_and_no_contest():
+    # X1 on I8 (arrow N, on the shooter at I9: clean); X2 on H9 (arrow N, off the shooter: foul roll)
+    node = _declared('I8', 'N', extra_x=('H9', 'N'))
+    assert node.stage == 'contest' and node.side == 'X'
+    acts = legal_actions(node)
+    assert sorted(a.piece for a in acts) == [-1, 0, 1]
+    opts = {o.defender: o for o in contest_options(node, 0, 'long')}
+    assert opts[0].clean and not opts[1].clean and opts[1].p_foul == F(node.ctx.dfn[1].r['foul_contest'], 20)
+    # each choice reproduces the old outcome for that contester
+    clean = apply(node, Action('contest', 'X', 0))
+    assert clean.stage == 'over' and clean.result.contester == 0 and clean.result.shot_value == opts[0].value
+    side = apply(node, Action('contest', 'X', 1))
+    assert isinstance(side, ChanceNode) and {l for _, l, _ in side.outcomes} == {'foul', 'no foul'}
+    none = apply(node, Action('contest', 'X', -1))
+    assert none.result.contester == -1 and none.result.shot_value == opts[-1].value
+    # the old automatic minimum is one of the player's choices
+    auto = choose_contest(node, 0, 'long')
+    assert auto.defender in opts
+
+
+def test_contest_setting_alternatives_still_work():
+    s = base(o=['I9', 'C9', 'O9', 'A3', 'Q3'], x=['I8', 'D8', 'N8', 'G4', 'N4'], rules=with_rules(contest_choice='min_value'))
+    end = apply(apply(s, Action('shot', 'O', 0, shot='long')), Action('end_turn', 'X'))
+    assert not isinstance(end, ChanceNode) and end.stage == 'over'
+
+
+def test_forced_shot_type_is_the_offence_choice():
+    # O1 on I4 (rim zone: layup, dunk, post) when the clock runs out
+    s = base(o=['I4', 'C9', 'O9', 'A3', 'Q3'], x=['A14', 'D8', 'N8', 'G7', 'N4'], clock=2, side='X', tok_x=1)
+    node = apply(s, Action('move', 'X', 3, P('G8'), 0))
+    assert node.stage == 'forced' and node.side == 'O'
+    acts = legal_actions(node)
+    assert [a.shot for a in acts] == list(RC.ZONE_SHOTS['K'])
+    nxt = apply(node, next(a for a in acts if a.shot == 'post'))
+    assert nxt.stage == 'contest' and nxt.forced and nxt.shot == 'post'
+    end = apply(nxt, Action('contest', 'X', -1))
+    assert end.result.kind == 'forced' and end.result.shot_type == 'post' and score(end).turnovers == 1
+    alt = base(o=['I4', 'C9', 'O9', 'A3', 'Q3'], x=['A14', 'D8', 'N8', 'G7', 'N4'], clock=2, side='X', tok_x=1,
+               rules=with_rules(forced_shot_choice='best', contest_choice='min_value'))
+    assert apply(alt, Action('move', 'X', 3, P('G8'), 0)).stage == 'over'

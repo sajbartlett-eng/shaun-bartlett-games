@@ -341,8 +341,10 @@ class Evaluator:
     def _eval(self, s):
         if s.stage == 'over':
             return terminal_vals(s, self.targets)
-        if s.stage == 'pick':
-            return max((self(apply(s, a)) for a in legal_actions(s)), key=lambda vs: vs[0].ev)
+        if s.stage in ('pick', 'forced'):
+            return max((expected(apply(s, a), self) for a in legal_actions(s)), key=lambda vs: vs[0].ev)
+        if s.stage == 'contest':
+            return min((expected(apply(s, a), self) for a in legal_actions(s)), key=lambda vs: max(v.ev for v in vs))
         if s.stage == 'target':
             return max((self(apply(s, a)) for a in legal_actions(s)), key=lambda vs: vs[0].ev)
         ctx = s.ctx
@@ -554,8 +556,8 @@ class Generator:
     def plays(self, s, shallow, rng=None, light=False):
         if s.stage == 'target':
             out = [Play('target', (a,)) for a in legal_actions(s)]
-        elif s.stage == 'pick':
-            out = [Play('pick', (a,)) for a in legal_actions(s)]
+        elif s.stage in ('pick', 'contest', 'forced'):
+            out = [Play(s.stage, (a,)) for a in legal_actions(s)]
         elif s.stage == 'reaction':
             out = self.reaction_plays(s)
         elif s.side == 'O':
@@ -829,7 +831,7 @@ class NodeCap(Exception):
 
 def _terminal_turn(s):
     """Is this the defence's last turn before the possession resolves (contest or forced shot)?"""
-    if not (s.side == 'X' and not s.pending and s.inbound == 0 and s.ctx.rules.contest_choice == 'min_value'):
+    if not (s.side == 'X' and not s.pending and s.inbound == 0 and s.ctx.rules.contest_choice in ('min_value', 'player')):
         return False
     if s.stage == 'reaction':
         return True
@@ -993,7 +995,7 @@ class Searcher:
             return self.ev(s)
         shallow = (self.root_depth - depth) < self.cfg.raw_depth
         plays = self.gen.plays(s, shallow, self.rng)
-        maximise = (s.side == 'O' and s.stage != 'reaction') or s.stage in ('target', 'pick')
+        maximise = (s.side == 'O' and s.stage != 'reaction') or s.stage in ('target', 'pick', 'forced')
         children = []
         for p in plays:
             node = apply_play(s, p)

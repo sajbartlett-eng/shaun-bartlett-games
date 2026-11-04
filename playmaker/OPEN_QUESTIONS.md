@@ -25,7 +25,7 @@ show the ruling.
 | 9 | Screen geometry | A defender's diagonal step is banned if it starts on the T square, or cuts the T square's corner (T is one of the two squares the diagonal passes between). `screen_rule='from_t_or_corner'` | `'from_t_only'` | Exact squares are in `tests/test_movement.py::test_screen_t_square_exact_squares`: screener I6, T on I5. From I5 a Quick Step reaches only J5, I4, H5 (H4, J4, H6, J6 banned). From H5, I4 is banned (cuts T's corner); H6, I5, H4, G4, G5, G6 are open. |
 | 10 | Arrow line crossing | Illegal only if the carrier's path goes from one side of the ray to the other (touching it, or stepping onto it and back, is fine). Checked over the whole path of one movement action. `arrow_line_strict=True` | `False`: stepping onto the ray at all counts | How hard an adjacent defender walls off a side. A carrier who ends one action on the line and leaves to the far side with the next is not caught (each action is checked on its own). |
 | 11 | Move path order for 1 straight + 1 diagonal | Either order, if the middle square is empty. `move_either_order=True` | `False`: straight first (the old script) | Explains several regression differences (REGRESSION.md). |
-| 12 | Contest choice | **RULED: the defence chooses any adjacent defender** (fix the rulebook's "nearest" wording, C1). The defence picks the adjacent defender, or nobody, with the lowest expected value, counting foul free throws. `contest_choice='min_value'` | `'nearest'`: the nearest adjacent defender (rulebook wording, see C1) | Note: under the default the defence sometimes prefers an arrow-off contest because free throws (2 × FT) are worth less than a great look. That is a real "foul the shooter" decision the rules allow. |
+| 12 | Contest choice | **RULED (step 3b): the player decides.** After its reaction the defence chooses: contest with any adjacent defender (clean with the arrow on the shooter, or a foul roll with it off), or don't contest. `contest_choice='player'`; the solver's best choice equals the old automatic minimum (tested). Earlier ruling: the defence chooses any adjacent defender (fix the rulebook's "nearest" wording, C1). The defence picks the adjacent defender, or nobody, with the lowest expected value, counting foul free throws. `contest_choice='min_value'` | `'nearest'`: the nearest adjacent defender (rulebook wording, see C1) | Note: under the default the defence sometimes prefers an arrow-off contest because free throws (2 × FT) are worth less than a great look. That is a real "foul the shooter" decision the rules allow. |
 
 ## B. New questions found while building
 
@@ -48,7 +48,7 @@ show the ruling.
 | 27 | Inbound not in after two phases: tie for "furthest from the rim" | **RULED: the offence chooses.** A new offence decision (`pick`) among the tied players. `inbound_tie='offence'` | `'lowest'`: lowest piece number | Scenario rules "offence picks if tied". The off-court inbounder is excluded. |
 | 28 | Where the inbounder goes once the ball is in | It stays on its off-court square until it moves; its movement steps onto the court. It can receive a pass there but can't shoot (no zone). (engine behaviour) | Place it on the edge square automatically | Scenario rules "the inbounder may step onto the court". |
 | 29 | Re-screening and screener movement | A screener can't Screen again until it flips back, and can't Quick Step or Sprint either ("can't move"). Screens survive the phase reset and flip back after the offence's next turn. (engine behaviour) | Allow a refreshed screen | Offence tracker "Can't move; flips back". |
-| 30 | Forced-shot type | The offence's best shot type for that zone, against the defence's contest choice. (engine behaviour) | Offence picks explicitly | Rulebook "the ball carrier takes a forced shot". |
+| 30 | Forced-shot type | **RULED (step 3b): the player decides.** The offence picks the type its zone allows at clock 0, then the defence chooses the contest. `forced_shot_choice='player'` | `'best'`: the engine picks | Rulebook "the ball carrier takes a forced shot". |
 | 31 | Arrow-across defender who moved onto the line but then doesn't Intercept | Allowed: the pass then lands. (engine behaviour) | Must Intercept | Prompt "must first reach the segment". |
 | 32 | Lock token supply | **RULED: no cap.** At most 2 Dribbles and 2 Challenges per phase means at most 4 new locks; Star Locked can reach 5 in phase 1, and the printed token sheet has a spare. | Cap at 4 | Rulebook p1 "4 lock tokens". |
 | 33 | Two or Three with free throws | A fouled three with 30+ in foul points counts as an Excellent three (win). (engine behaviour) | Only made shot values count | Scenario rules "an Excellent three wins". |
@@ -86,3 +86,15 @@ Evidence is in `SOLVER_REPORT.md` and `solver_results/runs.json`. Priority label
 | # | Finding | Evidence | Affects |
 |---|---|---|---|
 | 41 | **The one-turn evaluation was blind to defensive position.** It scored only the offence's next shot, so a defender standing still cost nothing (the Pause result). The evaluation now looks over the offence's next two turns against the defence's best reply. | Agreement with the exact endgame solver on 50 positions: mean error 5.38 → 0.61, within 2 points 46% → 92%. Positional terms (open lane to a shooter, carrier on a shooting zone) did not improve agreement (0.65, 1.30) and are off. | Fidelity of every solver result |
+
+## F. Playtest build (steps 3 and 3b)
+
+Legibility questions raised by the interface; none changes a rule.
+
+| # | Question | Status |
+|---|---|---|
+| 42 | Who rolls. Opposed rolls are the offence's; foul rolls are the defender's straight roll. | Every roll now says "Offence rolls" or "Defence rolls" (preview, last roll, log). |
+| 43 | Opening placement. | Built for full games, with the preview setup as a shortcut and a documented computer rule. |
+| 44 | Blocked diagonal steps around a screen just don't appear as options. | Open: the interface does not yet say why a square is missing. |
+| 45 | Coach's Call in hot-seat relies on the defence looking away. | Open (remote play hides it properly). |
+| 46 | Court squares on a phone are about 22 px, under the 44 px touch target. | Every court choice is repeated as a full-size button on phones. |

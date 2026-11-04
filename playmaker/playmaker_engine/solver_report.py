@@ -26,7 +26,7 @@ def roll_text(what, label, p):
     if what.startswith('Pass'):
         need = round(p * 20) if label == 'success' else round((1 - p) * 20)
         return f'{what}: pass {"completes" if label == "success" else "intercepted"} (offence needs {need} or less; {pct})'
-    if what.startswith('Dribble'):
+    if what.startswith('Dribble') and label in ('success', 'failure'):
         return f'{what}: dribble {"wins" if label == "success" else "loses"} ({pct})'
     if what.startswith('Screen'):
         return f'{what}: screen {"holds" if label == "success" else "beaten"} ({pct})'

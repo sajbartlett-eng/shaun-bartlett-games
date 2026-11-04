@@ -19,6 +19,50 @@ python -m playmaker_engine matchups                                 # closeout c
 
 `PLAYMAKER_SOAK_GAMES=500 python -m playmaker_engine test` shortens the soak while iterating.
 
+## Play from a link (no install: laptop or phone)
+
+**https://sajbartlett-eng.github.io/shaun-bartlett-games/playmaker/site/**
+
+The link version runs the same Python engine inside the browser (Pyodide 0.26.4 from cdn.jsdelivr.net;
+about 10 MB the first time, cached after). It plays hot-seat, against the computer, all 16 scenario
+cards, full matches with placement, and Coach's Call. **Remote play** (two browsers in one game) needs
+the server version below. The solver-backed review is not in the link version (too slow in the browser):
+download the log and run `review` on a computer.
+
+There is also a single self-contained file, `playmaker/dist/playmaker.html` (engine and data inside;
+only Pyodide comes from the CDN), to share or host anywhere.
+
+**Switching the link on (one time).** GitHub Pages already serves this repository from `main`, so the
+link works as soon as this work is merged into `main`:
+
+1. On github.com open the repository, then **Pull requests → New pull request**.
+2. Base: `main`; compare: the branch with this work. **Create pull request**, then **Merge pull request**.
+3. Open **Settings → Pages** and check *Source* says **Deploy from a branch**, branch **main**, folder **/ (root)**.
+4. Open **Settings → Actions → General → Workflow permissions**, choose **Read and write permissions**, **Save**
+   (lets the build workflow commit the rebuilt site).
+5. Wait a minute or two, then open the link.
+
+**Updating it.** Every push to `main` that touches `playmaker/` runs *Build Playmaker playtest site*
+(`.github/workflows/playmaker-site.yml`), which rebuilds `playmaker/site` and `playmaker/dist`; Pages
+then publishes them. To rebuild by hand: `python -m playmaker_web.build_site`.
+
+## Play on Windows without the link
+
+1. Install Python from **python.org** (Downloads → Windows). In the installer, tick **Add python.exe to PATH**.
+2. On the repository page on GitHub: **Code → Download ZIP**. Unzip it.
+3. Open the unzipped folder, then the `playmaker` folder inside it. Click the address bar, type
+   `powershell` and press Enter.
+4. Type `py -m playmaker_web` and press Enter. Open **http://localhost:8765** in your browser.
+5. Stop it with Ctrl+C in that window.
+
+## Where the logs go
+
+- **Link version:** in the browser tab only. At the end of a game, after the feedback form, use
+  **Download log** (a `.jsonl` file named `<date>_<code>.jsonl`) or **Copy log** (paste it into an email
+  on a phone). Closing the tab without downloading loses it.
+- **Server version:** `playmaker/playtest_logs/<date>_<code>.jsonl`, written as you play.
+- Either log works with `python -m playmaker_engine review <file>.jsonl`.
+
 ## Playtest in the browser (step 3)
 
 ```
@@ -53,8 +97,17 @@ it is a sparring partner, not a strong player).
   the game and shows, at each human decision, the solver's preferred action and the gap in value.
   It is "where the solver disagreed", not a list of mistakes: the solver's values are estimates.
 
-Screenshots: `docs/playtest_mid_possession.png`, `docs/playtest_scenario_card.png`,
-`docs/playtest_end_of_possession.png`.
+- **The contest is the defence's decision:** after its reaction, the defence picks who contests
+  (each option shows its contest value, and whether it is clean or carries a foul roll), or not to
+  contest. At clock 0 the offence picks the forced shot's type.
+- **Full-game setup:** the offence places its five pieces (ball on plain wood beyond the three-point
+  tiles), then the defence places its five and sets the arrows; or use the preview table setup.
+  **The computer places like this:** on offence, the preview squares; on defence, man-to-man: each X on
+  the empty square next to its man that is closest to the rim (ties in compass order), arrow on its man.
+
+Screenshots: `docs/playtest_mid_possession.png` (laptop), `docs/playtest_phone_portrait.png`,
+`docs/playtest_contest_decision.png`, `docs/playtest_match_end_feedback.png`,
+`docs/playtest_scenario_card.png`, `docs/playtest_end_of_possession.png`.
 
 ## Solver (step 2)
 

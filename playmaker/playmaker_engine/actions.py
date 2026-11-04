@@ -4,9 +4,9 @@ from typing import NamedTuple
 from . import board as B
 from . import rules_config as RC
 
-ORDER = ['target', 'pick', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
+ORDER = ['target', 'pick', 'forced_shot', 'contest', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
          'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint']
-TOKEN_FREE = {'target', 'pick', 'end_turn', 'forfeit'}
+TOKEN_FREE = {'target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot'}
 MOVEMENT = {'move', 'qs', 'sprint'}
 
 
@@ -49,6 +49,10 @@ class Action(NamedTuple):
             return f'{who} Steal'
         if k == 'target':
             return f"Coach's Call target O{self.target + 1}"
+        if k == 'contest':
+            return f'{who} contests' if self.piece >= 0 else "X: don't contest"
+        if k == 'forced_shot':
+            return f'{who} forced shot ({self.shot})'
         if k == 'pick':
             return f'Failed inbound: ball to O{self.target + 1}'
         if k == 'end_turn':
@@ -275,6 +279,11 @@ def legal_actions(state):
         return []
     if s.stage == 'target':
         return [Action('target', 'O', target=i) for i in range(5)]
+    if s.stage == 'contest':
+        from .scoring import contest_options
+        return [Action('contest', 'X', o.defender) for o in contest_options(s, s.ball, s.shot, s.forced)]
+    if s.stage == 'forced':
+        return [Action('forced_shot', 'O', s.ball, shot=t) for t in RC.ZONE_SHOTS[B.zone(s.o[s.ball])]]
     if s.stage == 'pick':
         return [Action('pick', 'O', target=i) for i in inbound_tie_candidates(s)]
     side = s.side

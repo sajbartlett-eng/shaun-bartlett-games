@@ -82,7 +82,8 @@ class GameState:
     result: Result = None
     zeroed: bool = False      # Hold for One turnover: possession scores 0
     phase: int = 1
-    turn_moved: int = 0       # defenders who moved during this defence turn (inbound pass in the air)
+    turn_moved: int = 0
+    forced: bool = False      # the pending contest is for a forced shot at clock 0       # defenders who moved during this defence turn (inbound pass in the air)
 
     # ---- helpers ----
     def count(self, side, kind):

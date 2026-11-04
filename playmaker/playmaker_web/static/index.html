@@ -32,7 +32,7 @@
       <button id="create" class="primary">Start</button>
       <p id="scenarioText" class="note"></p>
     </section>
-    <section>
+    <section id="joinBox">
       <h2>Join a remote game</h2>
       <label>Code <input id="joinCode" maxlength="6" placeholder="ABC123"></label>
       <label>Seat <select id="joinSeat"><option value="O">Offence</option><option value="X">Defence</option></select></label>
@@ -54,28 +54,32 @@
   <div id="summary" class="summary" role="status" aria-live="polite"></div>
   <div class="tablegrid">
     <aside class="side offence">
-      <h2>Offence <span id="offTeam" class="team"></span></h2>
-      <div id="offCards" class="cards"></div>
-      <div id="offTracker" class="tracker"></div>
+      <h2 class="tab-cards">Offence <span id="offTeam" class="team"></span></h2>
+      <div id="offCards" class="cards tab-cards"></div>
+      <div id="offTracker" class="tracker tab-off"></div>
     </aside>
     <main>
       <svg id="court" role="img" aria-label="Court"></svg>
+      <section class="actions">
+        <div id="selected" class="selected"></div>
+        <div id="kindButtons" class="buttons"></div>
+        <div id="targetButtons" class="buttons"></div>
+        <div id="phoneLists" class="buttons phoneonly"></div>
+        <div id="sideButtons" class="buttons"></div>
+        <div id="error" class="error" role="alert"></div>
+      </section>
       <div id="scenarioCard" class="scenariocard hidden"></div>
+      <nav class="tabs phoneonly" aria-label="Panels">
+        <button data-tab="off" class="active">Offence tracker</button><button data-tab="def">Defence tracker</button><button data-tab="cards">Cards</button><button data-tab="log">Log</button>
+      </nav>
     </main>
     <aside class="side defence">
-      <h2>Defence <span id="defTeam" class="team"></span></h2>
-      <div id="defCards" class="cards"></div>
-      <div id="defTracker" class="tracker"></div>
+      <h2 class="tab-cards">Defence <span id="defTeam" class="team"></span></h2>
+      <div id="defCards" class="cards tab-cards"></div>
+      <div id="defTracker" class="tracker tab-def"></div>
     </aside>
   </div>
-  <section class="actions">
-    <div id="selected" class="selected"></div>
-    <div id="kindButtons" class="buttons"></div>
-    <div id="targetButtons" class="buttons"></div>
-    <div id="sideButtons" class="buttons"></div>
-    <div id="error" class="error" role="alert"></div>
-  </section>
-  <section class="lower">
+  <section class="lower tab-log">
     <div class="rolls"><h3>Last roll</h3><div id="rolls"></div></div>
     <div class="log"><h3>Log</h3><ol id="log"></ol></div>
   </section>

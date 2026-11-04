@@ -66,6 +66,10 @@ class GreedyPolicy(Policy):
             return acts[0]
         if state.stage == 'target':
             return max(acts, key=lambda a: max(state.ctx.off[a.target].r[k] for k in state.ctx.off[a.target].r if k.startswith('shot_')))
+        if state.stage == 'forced':
+            return max(acts, key=lambda a: expected(apply(state, a), lambda n: min(
+                (expected(apply(n, c), immediate_shot_value) for c in legal_actions(n)), default=Fraction(0))
+                if n.stage == 'contest' else immediate_shot_value(n)))
         if state.side == 'O':
             return self._offence(state, acts)
         return self._defence(state, acts)
