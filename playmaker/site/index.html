@@ -7,7 +7,9 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="start" class="panel start">
+<a class="skip" href="#actionsPanel">Skip to the actions</a>
+<div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<main id="start" class="panel start">
   <h1>Playmaker <span class="sub">playtest table</span></h1>
   <p class="note">The rules engine runs on the server and decides every rule. This page only shows the table and sends the action you choose.</p>
   <div class="startgrid">
@@ -40,11 +42,11 @@
       <p class="note">The player who starts a remote game picks a seat too; the code appears at the top of the table.</p>
     </section>
   </div>
-</div>
+</main>
 
 <div id="table" class="hidden">
   <header class="topbar">
-    <div class="title" id="title"></div>
+    <h1 class="title" id="title"></h1>
     <div class="clock"><span class="lbl">Shot clock</span><span id="clock" class="big"></span></div>
     <div class="clock"><span class="lbl">Phase</span><span id="phase" class="big"></span></div>
     <div class="clock"><span class="lbl">Possession</span><span id="poss" class="big"></span></div>
@@ -53,14 +55,14 @@
   </header>
   <div id="summary" class="summary" role="status" aria-live="polite"></div>
   <div class="tablegrid">
-    <aside class="side offence">
+    <aside class="side offence" aria-label="Offence: cards and tracker">
       <h2 class="tab-cards">Offence <span id="offTeam" class="team"></span></h2>
       <div id="offCards" class="cards tab-cards"></div>
       <div id="offTracker" class="tracker tab-off"></div>
     </aside>
-    <main>
-      <svg id="court" role="img" aria-label="Court"></svg>
-      <section class="actions">
+    <main id="tableMain">
+      <svg id="court" role="group" aria-label="Court"></svg>
+      <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
         <div id="selected" class="selected"></div>
         <div id="kindButtons" class="buttons"></div>
         <div id="targetButtons" class="buttons"></div>
@@ -73,13 +75,13 @@
         <button data-tab="off" class="active">Offence tracker</button><button data-tab="def">Defence tracker</button><button data-tab="cards">Cards</button><button data-tab="log">Log</button>
       </nav>
     </main>
-    <aside class="side defence">
+    <aside class="side defence" aria-label="Defence: cards and tracker">
       <h2 class="tab-cards">Defence <span id="defTeam" class="team"></span></h2>
       <div id="defCards" class="cards tab-cards"></div>
       <div id="defTracker" class="tracker tab-def"></div>
     </aside>
   </div>
-  <section class="lower tab-log">
+  <section class="lower tab-log" aria-label="Rolls and log">
     <div class="rolls"><h3>Last roll</h3><div id="rolls"></div></div>
     <div class="log"><h3>Log</h3><ol id="log"></ol></div>
   </section>
