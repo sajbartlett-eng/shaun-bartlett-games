@@ -1551,6 +1551,30 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .computer-levels .hint { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin: 4px 0 6px; }
 .name-input:disabled { opacity: 0.7; background: var(--paper-deep); }
 @media (max-width: 420px) { .opponent-choice { grid-template-columns: 1fr; } }
+.opponent-choice { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 560px) { .opponent-choice { grid-template-columns: 1fr; } }
+.remote-panel { margin-top: 8px; padding: 12px; border: 1px dashed var(--paper-edge); border-radius: 4px; }
+.remote-field { display: grid; gap: 4px; font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+.remote-field input { text-transform: none; letter-spacing: 0; }
+.remote-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.remote-join { display: flex; gap: 6px; flex: 1; min-width: 200px; }
+.remote-code-input { flex: 1; text-transform: uppercase; letter-spacing: 0.12em; font-family: var(--mono); }
+.remote-panel .hint { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin: 8px 0 0; }
+.remote-lost { margin: 8px 0 0; font-size: 13px; color: var(--danger); }
+.remote-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.remote-code-label { font-family: var(--display); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.remote-code { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: 0.18em; color: var(--ink); }
+.remote-status { font-size: 14px; color: var(--ink-soft); margin: 10px 0; }
+.remote-strip {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+    padding: 8px 12px; border: 1px dashed var(--p1); border-radius: 4px;
+    background: rgba(46, 90, 140, 0.08); font-size: 14px; line-height: 1.4; color: var(--ink-soft);
+}
+.remote-strip .tutorial-tag { color: var(--p1); }
+.remote-strip .btn-ghost { margin-left: auto; padding: 2px 6px; }
+.rps-picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rps-picks .rps-btn.pick { background: var(--ink); }
+.rps-picks .rps-btn.pick:disabled { opacity: 0.5; cursor: default; }
 .name-input {
     background: var(--paper);
     border: 1.5px solid var(--ink);
@@ -2572,6 +2596,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <button type="button" class="phase-primer-link" id="phasePrimerRulesBtn">How to Play</button>
     </aside>
     <aside id="tutorialStrip" class="tutorial-strip" hidden aria-live="polite" aria-label="Chapter Zero"></aside>
+    <aside id="remoteStrip" class="remote-strip" hidden aria-live="polite" aria-label="Playing across a distance"><span class="tutorial-tag">Across a distance</span><span id="remoteStripText"></span><button type="button" class="btn-ghost" id="remoteLeaveBtn">Leave</button></aside>
     <div class="board-wrap">
         <div class="loss-layer" id="boardLosses" hidden></div>
         <canvas id="gameCanvas" width="600" height="600" tabindex="0" aria-label="Estate board">Interactive estate board. Use the keyboard instructions in the phase status if canvas rendering is unavailable.</canvas>
@@ -2721,6 +2746,29 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             <div class="opponent-choice" role="radiogroup" aria-label="Who plays Sibling 2">
                 <button type="button" class="option-card radio selected" data-opponent="person" role="radio" aria-checked="true"><span class="check"></span><span class="label"><span class="title">A person</span><span class="desc">Pass the phone between you.</span></span></button>
                 <button type="button" class="option-card radio" data-opponent="computer" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">The computer</span><span class="desc">Plays by fixed rules you can read.</span></span></button>
+                <button type="button" class="option-card radio" data-opponent="remote" role="radio" aria-checked="false" tabindex="-1"><span class="check"></span><span class="label"><span class="title">Someone far away</span><span class="desc">Two devices, one estate, a room code.</span></span></button>
+            </div>
+            <div class="remote-panel" id="remotePanel" hidden>
+                <label class="remote-field"><span>Your name</span><input type="text" class="name-input" id="remoteName" maxlength="14" placeholder="Your name"></label>
+                <div id="remoteChoose">
+                    <div class="remote-actions">
+                        <button type="button" class="btn-secondary" id="remoteHostBtn">Host a game</button>
+                        <div class="remote-join">
+                            <input type="text" class="name-input remote-code-input" id="remoteCodeInput" maxlength="6" placeholder="Room code" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Room code">
+                            <button type="button" class="btn-secondary" id="remoteJoinBtn">Join</button>
+                        </div>
+                    </div>
+                    <p class="hint">One of you hosts and reads out the code (or shares the link). The other joins. The host's estate settings are used. Each device shows its owner's moves to the other as they happen.</p>
+                    <p class="remote-lost" id="remoteLost" hidden></p>
+                </div>
+                <div id="remoteRoom" hidden>
+                    <div class="remote-code-row"><span class="remote-code-label">Room code</span><span class="remote-code" id="remoteCode">·····</span><button type="button" class="btn-secondary" id="remoteShareBtn">Share link</button></div>
+                    <p class="remote-status" id="remoteStatus" role="status"></p>
+                    <div class="remote-actions">
+                        <button type="button" class="btn-primary" id="remoteStartBtn" disabled>Start the game</button>
+                        <button type="button" class="btn-ghost" id="remoteCancelBtn">Cancel</button>
+                    </div>
+                </div>
             </div>
             <div class="computer-levels" id="computerLevels" hidden>
                 <div class="option-group" role="radiogroup" aria-label="How the computer cuts">
@@ -2900,6 +2948,11 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <div class="eyebrow" id="rpsEyebrow">decide roles</div>
         <h2 id="rpsTitle">Rock, paper, scissors</h2>
         <p class="body" id="rpsPrompt">Play it off-screen. Who won?</p>
+        <div class="rps-buttons rps-picks" id="rpsPickButtons" hidden>
+            <button class="rps-btn pick" type="button" data-pick="rock">Rock</button>
+            <button class="rps-btn pick" type="button" data-pick="paper">Paper</button>
+            <button class="rps-btn pick" type="button" data-pick="scissors">Scissors</button>
+        </div>
         <div class="rps-buttons" id="rpsWinnerButtons">
             <button class="rps-btn p1" id="rpsP1Btn">Sibling 1 won</button>
             <button class="rps-btn p2" id="rpsP2Btn">Sibling 2 won</button>
@@ -3285,6 +3338,7 @@ const PHASE = {
 
 const DEFAULT_SETTINGS = Object.freeze({
     tutorial: false,
+    opponent: 'person',
     computer: false,
     computerLevel: 'line',
     randomAssets: false,
@@ -6822,6 +6876,23 @@ const UI = {
         rpsCutBtn:           document.getElementById('rpsCutBtn'),
         rpsChooseBtn:        document.getElementById('rpsChooseBtn'),
         rpsContinueBtn:      document.getElementById('rpsContinueBtn'),
+        rpsPickButtons:      document.getElementById('rpsPickButtons'),
+        remotePanel:         document.getElementById('remotePanel'),
+        remoteName:          document.getElementById('remoteName'),
+        remoteChoose:        document.getElementById('remoteChoose'),
+        remoteRoom:          document.getElementById('remoteRoom'),
+        remoteHostBtn:       document.getElementById('remoteHostBtn'),
+        remoteJoinBtn:       document.getElementById('remoteJoinBtn'),
+        remoteCodeInput:     document.getElementById('remoteCodeInput'),
+        remoteCode:          document.getElementById('remoteCode'),
+        remoteShareBtn:      document.getElementById('remoteShareBtn'),
+        remoteStatus:        document.getElementById('remoteStatus'),
+        remoteStartBtn:      document.getElementById('remoteStartBtn'),
+        remoteCancelBtn:     document.getElementById('remoteCancelBtn'),
+        remoteLost:          document.getElementById('remoteLost'),
+        remoteStrip:         document.getElementById('remoteStrip'),
+        remoteStripText:     document.getElementById('remoteStripText'),
+        remoteLeaveBtn:      document.getElementById('remoteLeaveBtn'),
         computerLevels:      document.getElementById('computerLevels'),
 
         meaningfulOverlay:   document.getElementById('meaningfulOverlay'),
@@ -7232,6 +7303,7 @@ const UI = {
 
     confirmRestart() {
         this.close('restartOverlay');
+        if (NET.active) NET.leave();
         FLOW.resetToSetup();
     },
 
@@ -7306,6 +7378,7 @@ const UI = {
             else card.removeAttribute('title');
         });
         COMPUTER.refreshSetup();
+        NET.refreshSetup();
         PREVIEW.render();
     },
 
@@ -7645,7 +7718,9 @@ const UI = {
 
     prepareRps() {
         if (COMPUTER.on) { COMPUTER.prepareToss(); return; }
+        if (NET.active) { NET.prepareRps(); return; }
         if (this.el.rpsContinueBtn) this.el.rpsContinueBtn.hidden = true;
+        if (this.el.rpsPickButtons) this.el.rpsPickButtons.hidden = true;
         STATE.rpsWinnerIdx = -1;
         this.el.rpsEyebrow.textContent = 'decide roles';
         this.el.rpsEyebrow.className = 'eyebrow';
@@ -8004,6 +8079,7 @@ const UI = {
         }
 
         TUTORIAL.refresh();
+        NET.refreshStrip();
         COMPUTER.schedule();
         this.refreshPrimer();
         ESTATE_REVIEW.refresh();
@@ -8188,6 +8264,15 @@ const FLOW = {
 
     startGame() {
         if (STATE.phase !== PHASE.SETUP) return;
+        if (NET.active && !NET.applying) {
+            if (NET.host) NET.requestStart();
+            else UI.toast(`Waiting for ${NET.peerName || 'the host'} to start.`, 'warn', 1500);
+            return;
+        }
+        if (NET.wantsRemote() && !NET.active) {
+            UI.toast('Host or join a room first.', 'warn', 1500);
+            return;
+        }
         if (!STATE.settings.tutorial) MATCH_MENU.base = MATCH_MENU.persistent(STATE.settings);
         STATE.pNames[0] = playerName(UI.el.inputP1.value, 0);
         STATE.pNames[1] = playerName(UI.el.inputP2.value, 1);
@@ -8249,6 +8334,7 @@ const FLOW = {
 
     chooseRpsRole(winnerRole) {
         if (![PHASE.RPS_PRE, PHASE.RPS_POST].includes(STATE.phase)) return;
+        if (NET.intercept('role', { role: winnerRole })) return;
         const assignment = GAME.rolesFromRps(STATE.rpsWinnerIdx, winnerRole);
         if (!assignment) return;
         STATE.cutterIdx = assignment.cutterIdx;
@@ -8391,13 +8477,15 @@ const FLOW = {
             : (UI.el.meaningfulNameInput.value.trim() || draft.defaultLabel);
         const i = STATE.meaningful.turn;
         const pending = STATE.meaningful.pending;
-        STATE.meaningful.picks[i] = {
+        const pick = {
             ...pending,
             label: label.slice(0, 48),
             storyType: useDefault ? 'none' : (choice?.id || 'none'),
             storyValue: useDefault ? '' : storyValue.slice(0, 64),
             storyClause: useDefault ? '' : storyClause.slice(0, 96),
         };
+        if (NET.intercept('meaningful', { i, pick })) { UI.close('meaningfulOverlay'); return; }
+        STATE.meaningful.picks[i] = pick;
         SOUND.play('pop');
         FLOW.advanceMeaningful();
     },
@@ -8409,6 +8497,7 @@ const FLOW = {
     skipMeaningful() {
         if (STATE.phase !== PHASE.MEANINGFUL) return;
         const i = STATE.meaningful.turn;
+        if (NET.intercept('meaningful', { i, pick: null })) return;
         STATE.meaningful.picks[i] = null;
         STATE.meaningful.skipped[i] = true;
         FLOW.advanceMeaningful();
@@ -8449,6 +8538,7 @@ const FLOW = {
         STATE.plotA = [];
         STATE.plotB = [];
         const cutterCls = STATE.cutterIdx === 0 ? 'p1' : 'p2';
+        UI.el.passContinueBtn.hidden = false;
         UI.el.passEyebrow.textContent = 'phase two';
         UI.el.passTitle.textContent = 'Pass to the Cutter';
         UI.el.passBody.innerHTML = `
@@ -8460,11 +8550,13 @@ const FLOW = {
         if (STATE.settings.tutorial) TUTORIAL.decoratePass('cut');
         else REFEREE.ensure();
         if (COMPUTER.on && !COMPUTER.seat('cutter')) COMPUTER.decoratePass('cut');
+        if (NET.active) NET.decoratePass('cut');
         if (FLOW.transition(PHASE.PASS_TO_CUT) && !COMPUTER.seat('cutter')) UI.open('passOverlay');
     },
 
     beginCut() {
         if (STATE.phase !== PHASE.PASS_TO_CUT) return;
+        if (NET.intercept('beginCut')) return;
         UI.close('passOverlay');
         FLOW.startTimer(GAME.timeLimit(CONFIG.CUT_TIME, STATE.settings));
         if (FLOW.transition(PHASE.CUT)) {
@@ -8495,6 +8587,7 @@ const FLOW = {
         if (STATE.phase !== PHASE.CUT) return;
         FLOW.stopTimer();
         const chooserCls = STATE.chooserIdx === 0 ? 'p1' : 'p2';
+        UI.el.passContinueBtn.hidden = false;
         UI.el.passEyebrow.textContent = 'phase three';
         UI.el.passTitle.textContent = 'Pass to the Chooser';
         UI.el.passBody.innerHTML = STATE.cutByBank ? `
@@ -8509,11 +8602,13 @@ const FLOW = {
         UI.el.passContinueBtn.textContent = `Choose · ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)}s`;
         if (STATE.settings.tutorial) TUTORIAL.decoratePass('choose');
         if (COMPUTER.on && !COMPUTER.seat('chooser')) COMPUTER.decoratePass('choose');
+        if (NET.active) NET.decoratePass('choose');
         if (FLOW.transition(PHASE.PASS_TO_CHOOSE) && !COMPUTER.seat('chooser')) UI.open('passOverlay');
     },
 
     beginChoose() {
         if (STATE.phase !== PHASE.PASS_TO_CHOOSE) return;
+        if (NET.intercept('beginChoose')) return;
         UI.close('passOverlay');
         STATE.choiceActor = 'chooser';
         STATE.chooserTimedOut = false;
@@ -8531,6 +8626,7 @@ const FLOW = {
         STATE.choiceActor = 'cutter';
         const chooserCls = STATE.chooserIdx === 0 ? 'p1' : 'p2';
         const cutterCls = STATE.cutterIdx === 0 ? 'p1' : 'p2';
+        UI.el.passContinueBtn.hidden = false;
         UI.el.passEyebrow.textContent = 'time is up';
         UI.el.passTitle.textContent = 'Cutter gets the choice';
         UI.el.passBody.innerHTML = `
@@ -8539,12 +8635,14 @@ const FLOW = {
             <p><strong>${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)} seconds.</strong> If you also run out of time, no one inherits.</p>
         `;
         UI.el.passContinueBtn.textContent = `Choose · ${GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings)}s`;
+        if (NET.active) NET.decoratePass('cutterChoice');
         if (!COMPUTER.seat('cutter')) UI.open('passOverlay');
         FLOW.sync();
     },
 
     beginCutterChoice() {
         if (STATE.phase !== PHASE.CHOOSE || STATE.choiceActor !== 'cutter' || !STATE.chooserTimedOut) return;
+        if (NET.intercept('beginCutterChoice')) return;
         UI.close('passOverlay');
         FLOW.startTimer(GAME.timeLimit(CONFIG.CHOOSE_TIME, STATE.settings));
         INPUT.resetCursor();
@@ -8569,6 +8667,7 @@ const FLOW = {
     completeChoice(plotId) {
         if (STATE.phase !== PHASE.CHOOSE || STATE.outcome) return;
         if (plotId !== 'A' && plotId !== 'B') return;
+        if (NET.intercept('choose', { plotId })) return;
         FLOW.stopTimer();
         STATE.chosenPlotId = plotId;
         STATE.outcome = GAME.resolveOutcome({
@@ -8656,12 +8755,16 @@ const FLOW = {
             <p style="font-size: 13px; color: var(--ink-faint);">${GAME.timeLimit(CONFIG.CHALLENGE_TIME, STATE.settings)} seconds. The dashed fence shows the original cut. The game result cannot change.</p>
         `;
         UI.el.fairnessAcceptBtn.textContent = `Try redraw · ${GAME.timeLimit(CONFIG.CHALLENGE_TIME, STATE.settings)}s`;
+        UI.el.fairnessAcceptBtn.hidden = false;
+        UI.el.fairnessSkipBtn.hidden = false;
+        if (NET.active) NET.decorateFairness();
         if (!FLOW.transition(PHASE.FAIRNESS_OFFER)) return;
         UI.open('fairnessOverlay');
     },
 
     acceptChallenge() {
         if (STATE.phase !== PHASE.FAIRNESS_OFFER || !STATE.outcome) return;
+        if (NET.intercept('acceptChallenge')) return;
         UI.close('fairnessOverlay');
         STATE.challenge.originalCut = [...STATE.cutEdges];
         const oA = STATE.outcome.scoreA.total;
@@ -8692,6 +8795,7 @@ const FLOW = {
 
     skipChallenge() {
         if (STATE.phase !== PHASE.FAIRNESS_OFFER) return;
+        if (NET.intercept('skipChallenge')) return;
         UI.close('fairnessOverlay');
         FLOW.showFinal();
     },
@@ -8877,6 +8981,7 @@ const INPUT = {
 
     activateCursor() {
         if (COMPUTER.blocksHuman()) { UI.toast('The computer is taking its turn.', 'warn', 1100); return; }
+        if (NET.blocksLocal()) { NET.waitToast(); return; }
         const target = { ...STATE.boardCursor };
         if (STATE.phase === PHASE.TERRAIN) INPUT.terrainCell(target);
         else if (STATE.phase === PHASE.BUILD) INPUT.buildCell(target);
@@ -8908,6 +9013,7 @@ const INPUT = {
         if (e.cancelable) e.preventDefault();
         SOUND.init();
         if (COMPUTER.blocksHuman()) { UI.toast('The computer is taking its turn.', 'warn', 1100); return; }
+        if (NET.blocksLocal()) { NET.waitToast(); return; }
         const { x, y } = INPUT.getCanvasPoint(e);
         if (STATE.phase === PHASE.TERRAIN) {
             const cell = INPUT.cellFromPoint(x, y);
@@ -8934,6 +9040,7 @@ const INPUT = {
     },
 
     terrainCell(cell) {
+        if (NET.intercept('terrain', { c: cell.c, r: cell.r })) return;
         if (STATE.phase !== PHASE.TERRAIN) return;
         STATE.boardCursor = { ...cell };
         const kind = STATE.terrainPool[0];
@@ -8978,6 +9085,7 @@ const INPUT = {
 
     buildCell(cell) {
         if (STATE.phase !== PHASE.BUILD) return;
+        if (NET.intercept('build', { c: cell.c, r: cell.r })) return;
         STATE.boardCursor = { ...cell };
         const occupied = STATE.grid[cell.r][cell.c];
         const terrain = STATE.terrain ? STATE.terrain[cell.r][cell.c] : null;
@@ -9008,6 +9116,7 @@ const INPUT = {
     cutNode(node) {
         if (![PHASE.CUT, PHASE.CHALLENGE, PHASE.WHAT_IF].includes(STATE.phase)) return;
         if (STATE.isCutComplete) return;
+        if (NET.intercept('cutNode', { c: node.c, r: node.r })) return;
         STATE.boardCursor = { ...node };
 
         if (STATE.cutNodes.length === 0) {
@@ -9128,6 +9237,8 @@ const INPUT = {
     undo() {
         if (STATE.phase !== PHASE.CUT && STATE.phase !== PHASE.CHALLENGE && STATE.phase !== PHASE.WHAT_IF) return;
         if (COMPUTER.blocksHuman()) return;
+        if (NET.blocksLocal()) { NET.waitToast(); return; }
+        if (NET.intercept('undo')) return;
         if (STATE.isCutComplete || STATE.cutNodes.length === 0) return;
         STATE.cutNodes.pop();
         if (STATE.cutEdges.length > 0) STATE.cutEdges.pop();
@@ -10180,7 +10291,7 @@ const COMPUTER = {
     tossPending: null,
 
     get on() {
-        return !!STATE.settings.computer && !STATE.settings.tutorial
+        return !!STATE.settings.computer && !STATE.settings.tutorial && !NET.active
             && !document.body.classList.contains('legacy-active');
     },
 
@@ -10500,8 +10611,9 @@ const COMPUTER = {
     refreshSetup() {
         const e = UI.el;
         const on = !!STATE.settings.computer;
+        const opponent = STATE.settings.opponent === 'remote' ? 'remote' : on ? 'computer' : 'person';
         document.querySelectorAll('[data-opponent]').forEach(button => {
-            const selected = (button.dataset.opponent === 'computer') === on;
+            const selected = button.dataset.opponent === opponent;
             button.classList.toggle('selected', selected);
             button.setAttribute('aria-checked', String(selected));
             button.tabIndex = selected ? 0 : -1;
@@ -10526,6 +10638,7 @@ const COMPUTER = {
     bind() {
         document.querySelectorAll('[data-opponent]').forEach(button => {
             button.addEventListener('click', () => {
+                STATE.settings.opponent = button.dataset.opponent;
                 STATE.settings.computer = button.dataset.opponent === 'computer';
                 if (STATE.settings.computer && !this.LEVELS[STATE.settings.computerLevel]) STATE.settings.computerLevel = 'line';
                 UI.refreshSetup();
@@ -10539,6 +10652,624 @@ const COMPUTER = {
         });
         UI.el.rpsContinueBtn.addEventListener('click', () => this.continueToss());
     },
+};
+
+// ---------------------------------------------------------------------------
+// NET: play across a distance. Two devices, one estate. The host's device is
+// the referee of order: every move, from either player, goes to the host, is
+// applied there, and is sent back to both devices in sequence. Both run the
+// same rules from the same seed, so they stay identical. Timers are the host's
+// clock; the other device shows the clock but never acts on it running out.
+//
+// Transports: PeerJS over WebRTC with a room code (the normal case), or a
+// same-browser channel for two tabs on one machine (?net=local), used for
+// automated testing and demos.
+// ---------------------------------------------------------------------------
+const NET = {
+    VERSION: 1,
+    PEER_PREFIX: 'inheritance-estate-',
+    LIBS: [
+        'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js',
+        'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
+    ],
+    SYNCED_PHASES: null,
+    active: false,
+    host: false,
+    idx: -1,
+    code: '',
+    status: 'idle',          // idle · hosting · joining · connected · lost
+    peerName: '',
+    myName: '',
+    transport: null,
+    applying: false,
+    seq: 0,
+    queue: [],
+    rpsPicks: [null, null],
+    lostReason: '',
+
+    // ---- Setup screen -------------------------------------------------------
+    bind() {
+        const e = UI.el;
+        e.remoteHostBtn.addEventListener('click', () => this.hostGame());
+        e.remoteJoinBtn.addEventListener('click', () => this.joinGame(e.remoteCodeInput.value));
+        e.remoteCodeInput.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); this.joinGame(e.remoteCodeInput.value); } });
+        e.remoteStartBtn.addEventListener('click', () => this.requestStart());
+        e.remoteCancelBtn.addEventListener('click', () => this.cancel());
+        e.remoteShareBtn.addEventListener('click', () => this.share());
+        e.remoteLeaveBtn.addEventListener('click', () => UI.openRestartConfirm());
+        e.rpsPickButtons.querySelectorAll('[data-pick]').forEach(button => {
+            button.addEventListener('click', () => this.pickRps(button.dataset.pick));
+        });
+        const params = new URLSearchParams(location.search);
+        if (params.get('join')) {
+            e.remoteCodeInput.value = params.get('join').toUpperCase();
+            this.pendingJoin = true;
+        }
+    },
+
+    wantsRemote() { return STATE.settings.opponent === 'remote'; },
+
+    refreshSetup() {
+        const e = UI.el;
+        const remote = this.wantsRemote();
+        e.remotePanel.hidden = !remote;
+        e.setupBeginBtn.hidden = remote;
+        if (!remote) return;
+        if (!e.remoteName.value) e.remoteName.value = this.pendingJoin ? 'Sibling 2' : (e.inputP1.value || 'Sibling 1');
+        this.renderPanel();
+        if (this.pendingJoin && this.status === 'idle') {
+            this.pendingJoin = false;
+            this.joinGame(e.remoteCodeInput.value);
+        }
+    },
+
+    renderPanel() {
+        const e = UI.el;
+        const idle = this.status === 'idle' || this.status === 'lost';
+        e.remoteChoose.hidden = !idle;
+        e.remoteRoom.hidden = idle;
+        e.remoteCode.textContent = this.code || '·····';
+        e.remoteShareBtn.hidden = !(this.host && this.code);
+        e.remoteStartBtn.hidden = !this.host;
+        e.remoteStartBtn.disabled = this.status !== 'connected';
+        let status = '';
+        if (this.status === 'hosting') status = 'Share the code. Waiting for your sibling to join…';
+        else if (this.status === 'joining') status = `Joining room ${this.code}…`;
+        else if (this.status === 'connected') status = this.host
+            ? `${this.peerName} is here. Start when you are both ready.`
+            : `Connected to ${this.peerName}. Waiting for them to start the game.`;
+        else if (this.status === 'lost') status = this.lostReason;
+        e.remoteStatus.textContent = status;
+        e.remoteLost.hidden = this.status !== 'lost';
+        e.remoteLost.textContent = this.status === 'lost' ? this.lostReason : '';
+    },
+
+    async hostGame() {
+        if (this.status !== 'idle' && this.status !== 'lost') return;
+        this.myName = playerName(UI.el.remoteName.value, 0);
+        this.host = true;
+        this.idx = 0;
+        this.code = this.makeCode();
+        this.status = 'hosting';
+        this.lostReason = '';
+        this.renderPanel();
+        try {
+            this.transport = await this.makeTransport();
+            await this.transport.host(this.code);
+        } catch (err) {
+            this.fail(`Could not open a room: ${err && err.message ? err.message : err}`);
+        }
+    },
+
+    async joinGame(codeValue) {
+        if (this.status !== 'idle' && this.status !== 'lost') return;
+        const code = String(codeValue || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (code.length < 4) { UI.toast('Enter the room code.', 'warn', 1400); return; }
+        this.myName = playerName(UI.el.remoteName.value, 1);
+        this.host = false;
+        this.idx = 1;
+        this.code = code;
+        this.status = 'joining';
+        this.lostReason = '';
+        this.renderPanel();
+        try {
+            this.transport = await this.makeTransport();
+            await this.transport.join(this.code);
+            this.transport.send({ v: this.VERSION, type: 'hello', name: this.myName });
+        } catch (err) {
+            this.fail(`Could not join: ${err && err.message ? err.message : err}`);
+        }
+    },
+
+    cancel() {
+        this.closeTransport();
+        this.active = false;
+        this.status = 'idle';
+        this.code = '';
+        this.peerName = '';
+        this.renderPanel();
+    },
+
+    makeCode() {
+        const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        const bytes = new Uint8Array(5);
+        (window.crypto || { getRandomValues: a => a.forEach((_, i) => { a[i] = Math.floor(Math.random() * 256); }) }).getRandomValues(bytes);
+        bytes.forEach(b => { code += alphabet[b % alphabet.length]; });
+        return code;
+    },
+
+    shareUrl() {
+        const base = location.href.split('#')[0].split('?')[0];
+        return `${base}?join=${this.code}`;
+    },
+
+    async share() {
+        const url = this.shareUrl();
+        const text = `Join my Inheritance estate. Room code ${this.code}: ${url}`;
+        try {
+            if (navigator.share) { await navigator.share({ title: 'Inheritance', text, url }); return; }
+            await navigator.clipboard.writeText(text);
+            UI.toast('Link copied.', 'good', 1400);
+        } catch (err) {
+            UI.toast(`Room code ${this.code}`, 'good', 2200);
+        }
+    },
+
+    fail(reason) {
+        this.closeTransport();
+        this.status = 'lost';
+        this.lostReason = reason;
+        this.active = false;
+        this.renderPanel();
+    },
+
+    // ---- Transport ------------------------------------------------------------
+    async makeTransport() {
+        const handlers = {
+            onOpen: () => this.onOpen(),
+            onMessage: msg => this.onMessage(msg),
+            onClose: reason => this.onClose(reason),
+        };
+        const params = new URLSearchParams(location.search);
+        if (params.get('net') === 'local') return new NET.LocalTransport(handlers);
+        await this.loadPeerLibrary();
+        return new NET.PeerTransport(handlers);
+    },
+
+    loadPeerLibrary() {
+        if (window.Peer) return Promise.resolve();
+        if (this.libraryPromise) return this.libraryPromise;
+        const tryLoad = src => new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('library did not load'));
+            document.head.appendChild(script);
+        });
+        this.libraryPromise = (async () => {
+            for (const src of this.LIBS) {
+                try { await tryLoad(src); if (window.Peer) return; } catch (err) { /* try the next copy */ }
+            }
+            this.libraryPromise = null;
+            throw new Error('the connection library could not be loaded (no internet, or a blocked address)');
+        })();
+        return this.libraryPromise;
+    },
+
+    closeTransport() {
+        if (this.transport) { try { this.transport.close(); } catch (err) { /* already closed */ } }
+        this.transport = null;
+    },
+
+    send(obj) {
+        if (this.transport) this.transport.send(obj);
+    },
+
+    onOpen() {
+        // Data channel open. The guest introduces itself; the host answers in onMessage.
+    },
+
+    onClose(reason) {
+        if (this.status === 'idle') return;
+        this.lost(reason || 'Connection lost.');
+    },
+
+    lost(reason) {
+        const wasActive = this.active;
+        this.closeTransport();
+        this.active = false;
+        this.status = 'lost';
+        this.lostReason = wasActive
+            ? `${reason} You can keep playing on this device by passing the phone.`
+            : reason;
+        this.renderPanel();
+        this.refreshStrip();
+        if (wasActive) {
+            UI.toast(this.lostReason, 'warn', 3200);
+            if (UI.topOverlayKey() === 'passOverlay' || UI.topOverlayKey() === 'rpsOverlay' || UI.topOverlayKey() === 'fairnessOverlay') {
+                // Hand the waiting screens back to a single device.
+                UI.el.passContinueBtn.hidden = false;
+                UI.el.rpsPickButtons.hidden = true;
+                if (UI.topOverlayKey() === 'rpsOverlay') UI.prepareRps();
+                UI.el.fairnessAcceptBtn.hidden = false;
+                UI.el.fairnessSkipBtn.hidden = false;
+            }
+            UI.refreshHUD();
+        }
+    },
+
+    onMessage(msg) {
+        if (!msg || msg.v !== this.VERSION) return;
+        switch (msg.type) {
+            case 'hello':
+                if (!this.host) return;
+                this.peerName = playerName(msg.name, 1);
+                this.status = 'connected';
+                this.send({ v: this.VERSION, type: 'welcome', name: this.myName });
+                this.renderPanel();
+                return;
+            case 'welcome':
+                if (this.host) return;
+                this.peerName = playerName(msg.name, 0);
+                this.status = 'connected';
+                this.renderPanel();
+                return;
+            case 'intent':
+                if (!this.host || !msg.action) return;
+                if (msg.action.type === 'rpsPick') { this.recordRpsPick(1, msg.action.payload.pick); return; }
+                this.dispatch(msg.action);
+                return;
+            case 'action':
+                if (this.host) return;
+                this.receive(msg.action);
+                return;
+            case 'leave':
+                this.lost(`${this.peerName || 'Your sibling'} left the game.`);
+                return;
+            default:
+                return;
+        }
+    },
+
+    // ---- Starting a game ------------------------------------------------------
+    requestStart() {
+        if (!this.host || this.status !== 'connected') return;
+        this.active = true;
+        this.dispatch({ type: 'start', payload: this.startPayload() });
+    },
+
+    startPayload() {
+        const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+        const settings = { ...MATCH_MENU.persistent(STATE.settings), ...{
+            open: !!STATE.settings.open, meaningful: !!STATE.settings.meaningful, lightning: !!STATE.settings.lightning,
+        }, computer: false, tutorial: false, opponent: 'remote' };
+        return { seed, settings, names: [this.myName, this.peerName] };
+    },
+
+    applyStart(payload) {
+        this.active = true;
+        this.status = 'connected';
+        this.queue = [];
+        this.rpsPicks = [null, null];
+        this.applying = true;
+        try {
+            FLOW.resetToSetup();
+            STATE.seed = payload.seed >>> 0;
+            STATE.rng = makeRng(STATE.seed);
+            STATE.settings = { ...DEFAULT_SETTINGS, ...payload.settings, computer: false, tutorial: false, opponent: 'remote' };
+            UI.el.inputP1.value = payload.names[0];
+            UI.el.inputP2.value = payload.names[1];
+            this.peerName = payload.names[this.host ? 1 : 0];
+            this.myName = payload.names[this.idx];
+            SOUND.init();
+            FLOW.startGame();
+        } finally {
+            this.applying = false;
+        }
+        this.refreshStrip();
+    },
+
+    // ---- Action relay ---------------------------------------------------------
+    synced(type) {
+        if (!this.active || this.applying) return false;
+        const p = STATE.phase;
+        if (type === 'cutNode' || type === 'undo') return p === PHASE.CUT || p === PHASE.CHALLENGE;
+        if (type === 'start') return true;
+        return p !== PHASE.WHAT_IF;
+    },
+
+    // Called at the top of a user-driven entry point. Returns true when the
+    // relay has taken the action (so the caller must stop), false to proceed.
+    intercept(type, payload = {}) {
+        if (!this.synced(type)) return false;
+        if (this.host) this.dispatch({ type, payload });
+        else this.send({ v: this.VERSION, type: 'intent', action: { type, payload } });
+        return true;
+    },
+
+    dispatch(action) {
+        // Host only. While this device is paging through the consequence
+        // replay, moves wait, so both devices apply them in the same order.
+        if (ESTATE_REVIEW.pending || this.queue.length) { this.queue.push(action); return; }
+        this.publish(action);
+    },
+
+    publish(action) {
+        const stamped = { ...action, seq: ++this.seq, t: STATE.timer, phase: STATE.phase };
+        this.apply(stamped);
+        this.send({ v: this.VERSION, type: 'action', action: stamped });
+    },
+
+    receive(action) {
+        if (ESTATE_REVIEW.pending || this.queue.length) { this.queue.push(action); return; }
+        this.apply(action);
+    },
+
+    flushQueue() {
+        while (this.queue.length && !ESTATE_REVIEW.pending) {
+            const action = this.queue.shift();
+            if (this.host) this.publish(action); else this.apply(action);
+        }
+    },
+
+    apply(action) {
+        const { type, payload = {} } = action;
+        this.applying = true;
+        try {
+            if (!this.host && typeof action.t === 'number' && action.phase === STATE.phase && STATE.timerRunning) {
+                STATE.timer = action.t;
+            }
+            switch (type) {
+                case 'start': this.applyStart(payload); break;
+                case 'terrain': INPUT.terrainCell({ c: payload.c, r: payload.r }); break;
+                case 'build': INPUT.buildCell({ c: payload.c, r: payload.r }); break;
+                case 'meaningful': this.applyMeaningful(payload); break;
+                case 'rpsResult': this.applyRpsResult(payload); break;
+                case 'role': FLOW.chooseRpsRole(payload.role); break;
+                case 'beginCut': FLOW.beginCut(); break;
+                case 'cutNode': INPUT.cutNode({ c: payload.c, r: payload.r }); break;
+                case 'undo': INPUT.undo(); break;
+                case 'beginChoose': FLOW.beginChoose(); break;
+                case 'beginCutterChoice': FLOW.beginCutterChoice(); break;
+                case 'choose': FLOW.completeChoice(payload.plotId); break;
+                case 'acceptChallenge': FLOW.acceptChallenge(); break;
+                case 'skipChallenge': FLOW.skipChallenge(); break;
+                case 'timeout': if (STATE.phase === payload.phase) LOOP.handleTimeout(); break;
+                default: break;
+            }
+        } finally {
+            this.applying = false;
+        }
+        if (!this.host && typeof action.t === 'number' && action.phase !== STATE.phase && STATE.timerRunning) {
+            // A phase just began on the host with a fresh clock; ours began too.
+        }
+        this.refreshStrip();
+    },
+
+    applyMeaningful({ i, pick }) {
+        if (STATE.phase !== PHASE.MEANINGFUL) return;
+        STATE.meaningful.turn = i;
+        STATE.meaningful.pending = null;
+        UI.meaningfulDraft = null;
+        if (pick) { STATE.meaningful.picks[i] = pick; STATE.meaningful.skipped[i] = false; SOUND.play('pop'); }
+        else { STATE.meaningful.picks[i] = null; STATE.meaningful.skipped[i] = true; }
+        FLOW.advanceMeaningful();
+    },
+
+    // ---- Who may act on this device ---------------------------------------------
+    blocksLocal() {
+        if (!this.active || this.applying) return false;
+        const s = STATE;
+        const me = this.idx;
+        switch (s.phase) {
+            case PHASE.TERRAIN: return s.terrainTurn !== me;
+            case PHASE.BUILD: return s.turn !== me;
+            case PHASE.MEANINGFUL: return s.meaningful.turn !== me;
+            case PHASE.CUT: return s.cutterIdx !== me;
+            case PHASE.CHALLENGE: return s.chooserIdx !== me;
+            case PHASE.CHOOSE: return (s.choiceActor === 'cutter' ? s.cutterIdx : s.chooserIdx) !== me;
+            default: return false;
+        }
+    },
+
+    waitToast() {
+        UI.toast(`Waiting for ${this.peerName || 'your sibling'}.`, 'warn', 1200);
+    },
+
+    // ---- Rock, paper, scissors across the distance -------------------------------
+    prepareRps() {
+        const e = UI.el;
+        STATE.rpsWinnerIdx = -1;
+        this.rpsPicks = [null, null];
+        e.rpsEyebrow.textContent = 'decide roles';
+        e.rpsEyebrow.className = 'eyebrow';
+        e.rpsTitle.textContent = 'Rock, paper, scissors';
+        e.rpsPrompt.textContent = `Choose. ${this.peerName} chooses on their device. The winner picks a role.`;
+        e.rpsWinnerButtons.hidden = true;
+        e.rpsRoleButtons.hidden = true;
+        e.rpsContinueBtn.hidden = true;
+        e.rpsPickButtons.hidden = false;
+        e.rpsPickButtons.querySelectorAll('button').forEach(b => { b.disabled = false; });
+    },
+
+    pickRps(pick) {
+        if (!this.active || ![PHASE.RPS_PRE, PHASE.RPS_POST].includes(STATE.phase)) return;
+        if (!['rock', 'paper', 'scissors'].includes(pick)) return;
+        UI.el.rpsPickButtons.querySelectorAll('button').forEach(b => { b.disabled = true; });
+        UI.el.rpsPrompt.textContent = `You chose ${pick}. Waiting for ${this.peerName}…`;
+        if (this.host) this.recordRpsPick(0, pick);
+        else this.send({ v: this.VERSION, type: 'intent', action: { type: 'rpsPick', payload: { idx: 1, pick } } });
+    },
+
+    recordRpsPick(idx, pick) {
+        this.rpsPicks[idx] = pick;
+        if (this.rpsPicks[0] && this.rpsPicks[1]) {
+            const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+            const [a, b] = this.rpsPicks;
+            const winnerIdx = a === b ? null : beats[a] === b ? 0 : 1;
+            this.dispatch({ type: 'rpsResult', payload: { picks: [a, b], winnerIdx } });
+            this.rpsPicks = [null, null];
+        }
+    },
+
+    applyRpsResult({ picks, winnerIdx }) {
+        const e = UI.el;
+        if (![PHASE.RPS_PRE, PHASE.RPS_POST].includes(STATE.phase)) return;
+        const names = STATE.pNames;
+        if (winnerIdx === null || winnerIdx === undefined) {
+            e.rpsPrompt.textContent = `Both chose ${picks[0]}. Again.`;
+            e.rpsPickButtons.querySelectorAll('button').forEach(b => { b.disabled = false; });
+            INTERACTION.changed();
+            return;
+        }
+        e.rpsPickButtons.hidden = true;
+        STATE.rpsWinnerIdx = winnerIdx;
+        UI.showRpsRoleChoice(winnerIdx);
+        const mine = winnerIdx === this.idx;
+        e.rpsRoleButtons.hidden = !mine;
+        e.rpsPrompt.textContent = mine
+            ? `${picks[winnerIdx]} beats ${picks[1 - winnerIdx]}. Which job do you want?`
+            : `${picks[winnerIdx]} beats ${picks[1 - winnerIdx]}. ${names[winnerIdx]} is choosing a role…`;
+    },
+
+    // ---- Waiting screens ---------------------------------------------------------
+    decoratePass(kind) {
+        const e = UI.el;
+        const acting = kind === 'cut' ? STATE.cutterIdx : kind === 'choose' ? STATE.chooserIdx : STATE.cutterIdx;
+        const mine = acting === this.idx;
+        e.passContinueBtn.hidden = !mine;
+        if (mine) {
+            e.passTitle.textContent = kind === 'cut' ? 'Your turn to cut' : kind === 'choose' ? 'Your turn to choose' : 'You get the choice';
+            e.passBody.innerHTML = e.passBody.innerHTML.replace(/<p>Pass to .*?<\/p>/, '');
+        } else {
+            const name = escapeHtml(STATE.pNames[acting]);
+            e.passTitle.textContent = `Waiting for ${STATE.pNames[acting]}`;
+            e.passBody.innerHTML = kind === 'cut'
+                ? `<p><strong>${name}</strong> is about to draw the fence on their device. You will see it drawn here as it happens.</p>`
+                : kind === 'choose'
+                    ? `<p>The fence is drawn. <strong>${name}</strong> is about to choose a plot on their device.</p>`
+                    : `<p>Time ran out before a choice was made. <strong>${name}</strong> gets the choice instead.</p>`;
+        }
+    },
+
+    decorateFairness() {
+        const e = UI.el;
+        const mine = STATE.chooserIdx === this.idx;
+        e.fairnessAcceptBtn.hidden = !mine;
+        e.fairnessSkipBtn.hidden = !mine;
+        if (!mine) {
+            e.fairnessBody.innerHTML += `<p><strong>${escapeHtml(STATE.pNames[STATE.chooserIdx])}</strong> is deciding on their device whether to redraw.</p>`;
+        }
+    },
+
+    refreshStrip() {
+        const e = UI.el;
+        if (!e.remoteStrip) return;
+        const show = (this.active || this.status === 'lost') && STATE.phase !== PHASE.SETUP;
+        e.remoteStrip.hidden = !show;
+        if (!show) return;
+        const me = escapeHtml(this.myName || STATE.pNames[this.idx] || '');
+        const peer = escapeHtml(this.peerName || 'your sibling');
+        let text;
+        if (this.status === 'lost') text = `${peer} is no longer connected. Keep playing here by passing the phone.`;
+        else if (this.blocksLocal()) text = `Waiting for ${peer} to act on their device.`;
+        else text = `You are <strong>${me}</strong>. ${peer} is connected.`;
+        e.remoteStripText.innerHTML = text;
+        e.remoteLeaveBtn.hidden = this.status === 'lost';
+    },
+
+    leave() {
+        if (this.transport) this.send({ v: this.VERSION, type: 'leave' });
+        this.closeTransport();
+        this.active = false;
+        this.status = 'idle';
+        this.code = '';
+        this.peerName = '';
+        this.queue = [];
+        this.refreshStrip();
+    },
+};
+
+// Two tabs in one browser, for testing and demos: ?net=local
+NET.LocalTransport = class {
+    constructor(handlers) {
+        this.handlers = handlers;
+        this.id = Math.random().toString(36).slice(2);
+        this.channel = null;
+    }
+    open(code) {
+        this.channel = new BroadcastChannel(`inheritance-room-${code}`);
+        this.channel.onmessage = ev => {
+            const data = ev.data;
+            if (!data || data.from === this.id) return;
+            if (data.kind === 'bye') { this.handlers.onClose('Connection closed.'); return; }
+            if (data.kind === 'msg') this.handlers.onMessage(data.msg);
+        };
+    }
+    async host(code) { this.open(code); this.handlers.onOpen(); }
+    async join(code) { this.open(code); this.handlers.onOpen(); }
+    send(msg) { if (this.channel) this.channel.postMessage({ from: this.id, kind: 'msg', msg }); }
+    close() {
+        if (!this.channel) return;
+        try { this.channel.postMessage({ from: this.id, kind: 'bye' }); } catch (err) { /* closed */ }
+        this.channel.close();
+        this.channel = null;
+    }
+};
+
+// WebRTC through PeerJS, rooms by code.
+NET.PeerTransport = class {
+    constructor(handlers) {
+        this.handlers = handlers;
+        this.peer = null;
+        this.conn = null;
+    }
+    wire(conn) {
+        this.conn = conn;
+        conn.on('data', data => this.handlers.onMessage(data));
+        conn.on('close', () => this.handlers.onClose('Connection lost.'));
+        conn.on('error', err => this.handlers.onClose(`Connection error: ${err && err.message ? err.message : err}`));
+    }
+    host(code) {
+        return new Promise((resolve, reject) => {
+            this.peer = new Peer(NET.PEER_PREFIX + code);
+            this.peer.on('open', () => resolve());
+            this.peer.on('connection', conn => {
+                if (this.conn) { conn.close(); return; }
+                conn.on('open', () => { this.wire(conn); this.handlers.onOpen(); });
+            });
+            this.peer.on('error', err => {
+                if (this.conn) this.handlers.onClose(`Connection error: ${err.type || err}`);
+                else reject(new Error(err.type === 'unavailable-id' ? 'that room code is in use, try again' : (err.type || String(err))));
+            });
+            this.peer.on('disconnected', () => { if (this.conn) this.handlers.onClose('Connection lost.'); });
+        });
+    }
+    join(code) {
+        return new Promise((resolve, reject) => {
+            this.peer = new Peer();
+            this.peer.on('open', () => {
+                const conn = this.peer.connect(NET.PEER_PREFIX + code, { reliable: true });
+                const timer = setTimeout(() => reject(new Error('no answer from that room')), 15000);
+                conn.on('open', () => { clearTimeout(timer); this.wire(conn); this.handlers.onOpen(); resolve(); });
+                conn.on('error', err => { clearTimeout(timer); reject(new Error(err.type || String(err))); });
+            });
+            this.peer.on('error', err => {
+                if (this.conn) this.handlers.onClose(`Connection error: ${err.type || err}`);
+                else reject(new Error(err.type === 'peer-unavailable' ? 'no room with that code' : (err.type || String(err))));
+            });
+            this.peer.on('disconnected', () => { if (this.conn) this.handlers.onClose('Connection lost.'); });
+        });
+    }
+    send(msg) { if (this.conn && this.conn.open) this.conn.send(msg); }
+    close() {
+        try { if (this.conn) this.conn.close(); } catch (err) { /* closed */ }
+        try { if (this.peer) this.peer.destroy(); } catch (err) { /* closed */ }
+        this.conn = null;
+        this.peer = null;
+    }
 };
 
 // ---------------------------------------------------------------------------
@@ -10943,6 +11674,8 @@ const LOOP = {
                 STATE.timer = 0;
                 STATE.timerRunning = false;
                 STATE.timerPauseReasons.clear();
+                if (NET.active && !NET.host) { UI.refreshTimer(); return; }
+                if (NET.intercept('timeout', { phase: STATE.phase })) return;
                 LOOP.handleTimeout();
                 return;
             }
@@ -10979,6 +11712,7 @@ const APP = {
         PREVIEW.bind();
         TUTORIAL.bind();
         COMPUTER.bind();
+        NET.bind();
 
         const c = RENDER.canvas;
         c.addEventListener('pointerdown', INPUT.handleCanvas, { passive: false });
@@ -11201,6 +11935,11 @@ const APP = {
         FLOW.resetToSetup({ showWelcome: true });
         // A link from the website can open straight into Chapter Zero.
         if (/[?&]chapter=zero(&|$)/.test(location.search)) TUTORIAL.start();
+        // A shared room link opens the setup screen ready to join.
+        if (/[?&]join=/.test(location.search)) {
+            STATE.settings.opponent = 'remote';
+            FLOW.continueFromWelcome();
+        }
     }
 };
 
@@ -11664,6 +12403,7 @@ const ESTATE_REVIEW = {
         this.element('revealReplay').innerHTML = '';
         UI.close('revealOverlay');
         next();
+        NET.flushQueue();
     },
 
     begin() {
@@ -11922,6 +12662,7 @@ const MATCH_MENU = {
             showLandValues: !!settings.showLandValues,
             computer: !!settings.computer,
             computerLevel: settings.computerLevel || 'line',
+            opponent: settings.opponent === 'remote' ? 'remote' : (settings.computer ? 'computer' : 'person'),
         };
     },
 
