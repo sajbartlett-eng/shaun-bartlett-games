@@ -200,7 +200,7 @@ function render() {
   const ai = Object.keys(s.ai || {}).map(k => (k === 'O' ? 'offence' : 'defence')).join(' and ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
-    ...(ai ? [el('div', { text: `Test opponent plays ${ai} (greedy baseline, not strong)` })] : []),
+    ...(ai ? [el('div', { text: `Computer plays ${ai}` })] : []),
     ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));

@@ -1,0 +1,502 @@
+[
+ {
+  "card": 1,
+  "state": "play:X|c8|t5/6|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1",
+  "ref": 17.808,
+  "values": {
+   "greedy": 36.8,
+   "reader": 17.558
+  },
+  "seconds": 45.1
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t5/6|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1",
+  "ref": 11.9875,
+  "values": {
+   "greedy": 11.9875,
+   "reader": 11.9875
+  },
+  "seconds": 20.1
+ },
+ {
+  "card": 3,
+  "state": "play:X|c8|t5/6|OO11,C9,R9,K10,J6|XO10NE,E7E,Q9E,K9NE,J5N|b3|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1",
+  "ref": 21.425,
+  "values": {
+   "greedy": 22.0375,
+   "reader": 21.425
+  },
+  "seconds": 29.7
+ },
+ {
+  "card": 4,
+  "state": "play:X|c8|t5/6|OO11,R8,L10,M6,J3|XN10E,Q8E,L9NE,N6NW,K3NW|b2|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1",
+  "ref": 1.6159999999999997,
+  "values": {
+   "greedy": 3.7250000000000005,
+   "reader": 3.6000000000000005
+  },
+  "seconds": 44.8
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t5/6|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1",
+  "ref": 21.0,
+  "values": {
+   "greedy": 27.975,
+   "reader": 15.0
+  },
+  "seconds": 45.2
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t5/6|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n00001000000|u0|L0000|WH|f0+0-0|i1|g1",
+  "ref": 17.8,
+  "values": {
+   "greedy": 18.159999999999997,
+   "reader": 27.0
+  },
+  "seconds": 42.4
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t5/6|OK10,C9,O9,E10,K4|XI11N,D8NW,N8NE,F9NW,J3NE|b1|m0100|n00000000000|u0|L0000|f0+0-0",
+  "ref": 22.29,
+  "values": {
+   "greedy": 17.436299999999996,
+   "reader": 22.29
+  },
+  "seconds": 19.4
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t4/5|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n01001000010|u0|L0000|P5>1|f1+1-0|i1",
+  "ref": 35.6,
+  "values": {
+   "greedy": 38.0,
+   "reader": 22.64
+  },
+  "seconds": 37.5
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t4/5|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n01001000010|u0|L0000|P2>1|f1+1-0|i1",
+  "ref": 18.56,
+  "values": {
+   "greedy": 18.56,
+   "reader": 18.56
+  },
+  "seconds": 14.4
+ },
+ {
+  "card": 3,
+  "state": "play:X|c8|t4/5|OO11,C9,R9,K10,J6|XO10NE,E7E,Q9E,K9NE,J5N|b3|m0000|n01001000010|u0|L0000|P3>1|f1+1-0|i1",
+  "ref": 20.967499999999998,
+  "values": {
+   "greedy": 23.525,
+   "reader": 20.967499999999998
+  },
+  "seconds": 38.6
+ },
+ {
+  "card": 4,
+  "state": "play:X|c8|t4/5|OO11,R8,L10,M6,J3|XN10E,Q8E,L9NE,N6NW,K3NW|b2|m0000|n01001000010|u0|L0000|P2>1|f1+1-0|i1",
+  "ref": 17.0,
+  "values": {
+   "greedy": 20.55,
+   "reader": 17.0
+  },
+  "seconds": 34.9
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t4/5|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n01001000010|u0|L0000|P2>1|f1+1-0|i1",
+  "ref": 27.145000000000003,
+  "values": {
+   "greedy": 26.6,
+   "reader": 27.145000000000003
+  },
+  "seconds": 55.9
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t4/5|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n01001000010|u0|L0000|P1>2|f1+1-0|i1|g1",
+  "ref": 22.84,
+  "values": {
+   "greedy": 22.84,
+   "reader": 22.84
+  },
+  "seconds": 40.5
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t4/4|OL10,C9,O9,E10,K4|XJ10E,D8NW,N8NE,F9NW,J3NE|b1|m0101|n10000000010|u0|L0000|f1+1-0",
+  "ref": 35.0,
+  "values": {
+   "greedy": 26.915,
+   "reader": 38.0
+  },
+  "seconds": 9.5
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t3/4|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n02001001010|u0|L0000|P5>1|f1+1-1|i1",
+  "ref": 8.4,
+  "values": {
+   "greedy": 8.4,
+   "reader": 8.4
+  },
+  "seconds": 24.0
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t3/4|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n02001001010|u0|L0000|P2>1|f1+1-1|i1",
+  "ref": 1.0999999999999996,
+  "values": {
+   "greedy": 1.0999999999999996,
+   "reader": 1.0999999999999996
+  },
+  "seconds": 10.4
+ },
+ {
+  "card": 3,
+  "state": "play:X|c8|t4/5|OO11,C9,R9,K10,J6|XO10NE,E7E,Q9E,K9NE,J5N|b3|m0000|n01001000010|u0|L0000|P3>1|f0+0-1|i1",
+  "ref": 10.967499999999998,
+  "values": {
+   "greedy": 13.524999999999999,
+   "reader": 10.967499999999998
+  },
+  "seconds": 41.5
+ },
+ {
+  "card": 4,
+  "state": "play:X|c8|t4/5|OO11,R8,L10,M6,J3|XN10E,Q8E,L9NE,N6NW,K3NW|b2|m0000|n01001000010|u0|L0000|P2>1|f0+0-1|i1",
+  "ref": 7.0,
+  "values": {
+   "greedy": 10.55,
+   "reader": 7.0
+  },
+  "seconds": 37.5
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t3/4|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n02001001010|u0|L0000|P2>1|f1+1-1|i1",
+  "ref": 5.5,
+  "values": {
+   "greedy": 5.5,
+   "reader": 5.5
+  },
+  "seconds": 27.8
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t3/4|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n02001001010|u0|L0000|P1>2|f1+1-1|i1|g1",
+  "ref": 10.399999999999999,
+  "values": {
+   "greedy": 10.399999999999999,
+   "reader": 10.399999999999999
+  },
+  "seconds": 24.2
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t3/3|OM10,C9,O9,E10,K4|XK10E,D8NW,N8NE,F9NW,J3NE|b1|m0101|n20000010010|u0|L0000|f1+1-0",
+  "ref": 22.8,
+  "values": {
+   "greedy": 26.915,
+   "reader": 26.915
+  },
+  "seconds": 5.4
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t2/3|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n02101002010|u0|L0000|S1N0|f1+1-2|i1",
+  "ref": 5.6800000000000015,
+  "values": {
+   "greedy": 5.6800000000000015,
+   "reader": 5.6800000000000015
+  },
+  "seconds": 1.6
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t2/3|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n02101002010|u0|L0000|S1N0|f1+1-2|i1",
+  "ref": -3.1000000000000005,
+  "values": {
+   "greedy": -3.1000000000000005,
+   "reader": -3.1000000000000005
+  },
+  "seconds": 1.0
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t2/3|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n02101002010|u0|L0000|S1N0|f1+1-2|i1",
+  "ref": 7.710000000000001,
+  "values": {
+   "greedy": 7.710000000000001,
+   "reader": 7.710000000000001
+  },
+  "seconds": 4.9
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t2/3|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n02101002010|u0|L0000|S2N0|f1+1-2|i1|g1",
+  "ref": 7.399999999999999,
+  "values": {
+   "greedy": 7.399999999999999,
+   "reader": 7.399999999999999
+  },
+  "seconds": 1.3
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t2/2|OM10,C9,O9,E10,K4|XL10E,D8NW,N8NE,F9NW,J3NE|b1|m0101|n20001020010|u0|L0000|WH|f1+1-0",
+  "ref": 18.9,
+  "values": {
+   "greedy": 23.0,
+   "reader": 20.159999999999997
+  },
+  "seconds": 8.3
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t1/2|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n02201002011|u0|L0000|S2N0|f1+1-2|i1",
+  "ref": 6.4,
+  "values": {
+   "greedy": 6.4,
+   "reader": 12.808000000000002
+  },
+  "seconds": 9.8
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t1/2|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n02201002011|u0|L0000|S3N0|f1+1-2|i1",
+  "ref": -0.40000000000000036,
+  "values": {
+   "greedy": -0.40000000000000036,
+   "reader": 3.0500000000000007
+  },
+  "seconds": 4.9
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t1/2|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n02201002011|u0|L0000|S3N0|f1+1-2|i1",
+  "ref": 10.0,
+  "values": {
+   "greedy": 16.0,
+   "reader": 13.4295
+  },
+  "seconds": 10.1
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t1/2|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n02201002011|u0|L0000|S3N0|f1+1-2|i1|g1",
+  "ref": 7.399999999999999,
+  "values": {
+   "greedy": 10.299999999999997,
+   "reader": 14.889999999999999
+  },
+  "seconds": 7.1
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t1/1|OM10,C9,O9,E10,K4|XL10E,D8N,N8NE,F9NW,J3NE|b1|m0103|n21001020010|u0|L0000|P1>2|f1+1-0",
+  "ref": 13.05,
+  "values": {
+   "greedy": 13.05,
+   "reader": 13.05
+  },
+  "seconds": 28.7
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t0/1|OG7,K6,G3,K3,K0|XH5N,J5NE,H3W,J3E,K1S|b5|m0101|n02201002011|u0F|L0000|f1+1-2|i1",
+  "ref": 10.5625,
+  "values": {
+   "greedy": 16.5025,
+   "reader": 13.24
+  },
+  "seconds": 45.4
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t0/1|OL6,N0,L4,L3,L2|XK5N,N1S,K4E,K3E,K2E|b2|m0101|n02201002011|u0F|L0000|f1+1-2|i1",
+  "ref": 1.02,
+  "values": {
+   "greedy": 4.840000000000001,
+   "reader": 7.800000000000001
+  },
+  "seconds": 23.8
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t0/1|OD12,@9,A4,F8,G3|XE10N,A9W,B5SW,E7N,H3W|b2|m0101|n02201002011|u0F|L0000|f1+1-2|i1",
+  "ref": 13.0,
+  "values": {
+   "greedy": 22.2,
+   "reader": 15.1
+  },
+  "seconds": 42.8
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t0/1|OR10,B9,L11,K7,F5|XQ10N,C8W,L10NE,L7NW,G4NE|b1|m0201|n02201002011|u0F|L0000|f1+1-2|i1|g1",
+  "ref": 12.36,
+  "values": {
+   "greedy": 14.889999999999999,
+   "reader": 14.889999999999999
+  },
+  "seconds": 39.7
+ },
+ {
+  "card": 14,
+  "state": "play:X|c6|t5/6|OM10,C8,O9,E10,K4|XL10E,D8N,N8NE,F9NW,J3NE|b2|m0200|n00000000000|u0|L0000|f1+1-0",
+  "ref": 26.0,
+  "values": {
+   "greedy": 26.0,
+   "reader": 26.0
+  },
+  "seconds": 19.9
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t5/6|OG7,K6,G3,K3,K0|XH5N,J5N,H3W,J3E,K1S|b5|m0000|n00001000000|u0|L0000|WH|f1+1-2|i2",
+  "ref": 12.088000000000003,
+  "values": {
+   "greedy": 17.368,
+   "reader": 13.24
+  },
+  "seconds": 31.3
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t5/6|OL6,N0,L4,L3,L2|XK5N,N1N,K4E,K3E,K2E|b2|m0000|n00001000000|u0|L0000|WH|f1+1-2|i2",
+  "ref": 10.5,
+  "values": {
+   "greedy": 4.640000000000001,
+   "reader": 2.8909875000000005
+  },
+  "seconds": 21.1
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t5/6|OD12,@9,A4,F8,G3|XE10N,A9N,B5SW,E7N,H3W|b2|m0000|n00001000000|u0|L0000|WH|f1+1-2|i2",
+  "ref": 10.0,
+  "values": {
+   "greedy": 22.2,
+   "reader": 10.0
+  },
+  "seconds": 41.3
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t5/6|OR10,B9,L11,K7,F5|XQ10N,C8N,L10NE,L7NW,G4NE|b1|m0000|n00001000000|u0|L0000|WH|f1+1-2|i2|g1",
+  "ref": 12.36,
+  "values": {
+   "greedy": 16.599999999999998,
+   "reader": 22.0
+  },
+  "seconds": 37.9
+ },
+ {
+  "card": 14,
+  "state": "play:X|c6|t4/5|OM10,C9,O9,E10,K4|XL10E,D8N,N8NE,D7NW,J3NE|b2|m0208|n10000000000|u0|L0000|f1+1-0",
+  "ref": 26.0,
+  "values": {
+   "greedy": 24.886200000000002,
+   "reader": 24.886200000000002
+  },
+  "seconds": 11.9
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t4/5|OG7,K6,G3,K3,K0|XH5NE,J5N,H3W,J3E,K1S|b5|m0001|n01001000000|u0|L0000|P5>1|f1+1-2|i2",
+  "ref": 31.0,
+  "values": {
+   "greedy": 14.8,
+   "reader": 14.8
+  },
+  "seconds": 39.0
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t4/5|OL6,N0,L4,L3,L2|XK5NE,N1N,K4E,K3E,K2E|b2|m0001|n01001000000|u0|L0000|P2>1|f1+1-2|i2",
+  "ref": 7.6000000000000005,
+  "values": {
+   "greedy": 22.0,
+   "reader": 13.120000000000001
+  },
+  "seconds": 28.1
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t4/5|OD12,@9,A4,F8,G3|XE10NE,A9N,B5SW,E7N,H3W|b2|m0001|n01001000000|u0|L0000|P2>1|f1+1-2|i2",
+  "ref": 16.0,
+  "values": {
+   "greedy": 19.0,
+   "reader": 19.0
+  },
+  "seconds": 52.1
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t4/5|OR10,B9,L11,K7,F5|XQ10NE,C8N,L10NE,L7NW,G4NE|b1|m0001|n01001000000|u0|L0000|P1>2|f1+1-2|i2|g1",
+  "ref": 16.779999999999998,
+  "values": {
+   "greedy": 17.15,
+   "reader": 18.1072
+  },
+  "seconds": 43.8
+ },
+ {
+  "card": 14,
+  "state": "play:X|c8|t4/4|OL10,C9,O9,E10,K4|XJ10E,D8NW,N8NE,F9NW,J3NE|b1|m0101|n10000000010|u0|L0000|f0+0-0",
+  "ref": 30.0,
+  "values": {
+   "greedy": 18.779999999999998,
+   "reader": 29.805
+  },
+  "seconds": 10.1
+ },
+ {
+  "card": 1,
+  "state": "play:X|c8|t4/5|OG6,K6,G3,K3,K0|XH5NW,J5NE,H3W,J3E,K1S|b5|m0000|n01001000010|u0|L0000|P5>1|f0+0-1|i1",
+  "ref": 25.6,
+  "values": {
+   "greedy": 28.0,
+   "reader": 12.640000000000002
+  },
+  "seconds": 36.6
+ },
+ {
+  "card": 2,
+  "state": "play:X|c8|t4/5|OL5,N0,L4,L3,L2|XK5E,N1S,K4E,K3E,K2E|b2|m0000|n01001000010|u0|L0000|P2>1|f0+0-1|i1",
+  "ref": 8.56,
+  "values": {
+   "greedy": 8.56,
+   "reader": 8.56
+  },
+  "seconds": 14.8
+ },
+ {
+  "card": 5,
+  "state": "play:X|c4|t4/5|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n01001000010|u0|L0000|P2>1|f0+0-1|i1",
+  "ref": 17.145000000000003,
+  "values": {
+   "greedy": 16.6,
+   "reader": 17.145000000000003
+  },
+  "seconds": 52.5
+ },
+ {
+  "card": 11,
+  "state": "play:X|c8|t4/5|OR10,B8,L11,K7,F5|XQ10E,C8W,L10NE,L7NW,G4NE|b1|m0000|n01001000010|u0|L0000|P1>2|f0+0-1|i1|g1",
+  "ref": 12.84,
+  "values": {
+   "greedy": 12.84,
+   "reader": 12.84
+  },
+  "seconds": 38.6
+ }
+]
