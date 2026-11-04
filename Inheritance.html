@@ -2381,6 +2381,58 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .comparison-assignment select { min-height: 44px; max-width: 100%; background: var(--paper); color: var(--ink); border: 1px solid var(--paper-edge); padding: 8px; font: inherit; }
 @media (prefers-reduced-motion: reduce) { .loss-mark { animation: none; } }
 
+/* Consequence replay: the fence, then each square that lost value, one at a time. */
+.replay-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+.replay-fence {
+    fill: none;
+    stroke: rgba(244, 237, 224, 0.92);
+    stroke-width: 11;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation: replay-draw 900ms ease-out forwards;
+}
+.replay-fence.ink { stroke: var(--ink); stroke-width: 5; animation-duration: 950ms; }
+.replay-cell {
+    fill: rgba(168, 58, 44, 0.2);
+    stroke: var(--danger);
+    stroke-width: 5;
+    animation: replay-pulse 1.1s ease-in-out infinite alternate;
+}
+.replay-partner { fill: rgba(243, 234, 217, 0.18); stroke: var(--ink); stroke-width: 3; stroke-dasharray: 7 5; }
+.replay-link {
+    fill: none;
+    stroke: var(--danger);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation: replay-draw 550ms ease-out forwards;
+}
+.replay-link-halo { fill: none; stroke: rgba(244, 237, 224, 0.9); stroke-width: 10; stroke-linecap: round; }
+.replay-break { fill: var(--paper); stroke: var(--danger); stroke-width: 3; animation: replay-pop 420ms 420ms both; }
+@keyframes replay-draw { to { stroke-dashoffset: 0; } }
+@keyframes replay-pulse { from { stroke-opacity: 0.55; } to { stroke-opacity: 1; } }
+@keyframes replay-pop { from { opacity: 0; transform: scale(0.4); transform-box: fill-box; transform-origin: center; } to { opacity: 1; transform: scale(1); transform-box: fill-box; transform-origin: center; } }
+.replay-step {
+    margin: 6px 0 0;
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.replay-step .plot-a { color: var(--plot-a); }
+.replay-step .plot-b { color: var(--plot-b); }
+.consequence-copy .loss-number { font-family: var(--mono); font-weight: 700; color: var(--danger); }
+@media (prefers-reduced-motion: reduce) {
+    .replay-fence, .replay-link { animation: none; stroke-dashoffset: 0; }
+    .replay-cell { animation: none; }
+    .replay-break { animation: none; }
+}
+
 /* Family Legacy foundation: integrated with the existing modal and focus system. */
 .legacy-note {color:var(--ink-soft);font:700 13px var(--mono);margin:8px 0 14px;}
 .legacy-scroll {overflow-x:auto;}
@@ -2571,11 +2623,13 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         <h2 id="revealTitle">What the division changed</h2>
         <div class="reveal-layout">
             <p class="consequence-copy" id="revealOwners"></p>
-            <div class="consequence-board"><canvas id="revealCanvas" width="600" height="600" aria-label="The divided estate. Red squares mark lost value."></canvas><div class="loss-layer" id="revealLosses"></div></div>
+            <div class="consequence-board"><canvas id="revealCanvas" width="600" height="600" aria-label="The divided estate. Red squares mark lost value."></canvas><svg class="replay-layer" id="revealReplay" viewBox="0 0 600 600" aria-hidden="true"></svg><div class="loss-layer" id="revealLosses"></div></div>
+            <p class="replay-step" id="revealStep" hidden></p>
             <p class="consequence-copy" id="revealSummary" role="status"></p>
             <ul class="consequence-list" id="revealDetails"></ul>
         </div>
         <div class="actions"><button class="btn-primary" id="revealContinue">Continue to result</button></div>
+        <div class="setup-link-row"><button class="btn-ghost" id="revealSkipBtn" hidden>Skip to the result</button></div>
     </div>
 </div>
 
@@ -10545,6 +10599,273 @@ const ESTATE_REVIEW = {
             .join(' · ');
     },
 
+    // ---- Consequence replay --------------------------------------------------
+    // Once the Chooser has chosen, the fence is final. If the estate has value
+    // that depends on neighbours (Better Together, terrain, land templates),
+    // the replay shows what the fence changed: the fence itself, then every
+    // square that lost value, one at a time, with the squares across the fence
+    // it was separated from. Every number comes from the scorer; the captions
+    // say what was lost and why, nothing more.
+    replay: null,
+
+    explainLosses(split, data) {
+        const { grid, terrain, estateMask, settings } = STATE;
+        const key = p => `${p.c},${p.r}`;
+        const allCells = GAME.activeCells(estateMask);
+        const whole = new Set(allCells.map(key));
+        const wholeRoads = terrain ? GAME.terrainRoadAccessSet(whole, terrain, estateMask) : null;
+        const template = terrain ? GAME.terrainTemplateKind(terrain) : 'standard';
+        const plotSets = {
+            A: new Set(split.plotA.map(key)),
+            B: new Set(split.plotB.map(key)),
+        };
+        const plotRoads = {
+            A: terrain ? GAME.terrainRoadAccessSet(plotSets.A, terrain, estateMask) : null,
+            B: terrain ? GAME.terrainRoadAccessSet(plotSets.B, terrain, estateMask) : null,
+        };
+        const nameOf = kind => GAME.isAssetKind(kind) ? GAME.assetName(kind) : 'Land';
+        const listNames = cells => {
+            const names = cells.map(p => `the ${nameOf(grid[p.r][p.c])}`);
+            return names.length <= 1 ? names.join('')
+                : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+        };
+
+        return data.lost.map(point => {
+            const { c, r } = point;
+            const plotId = plotSets.A.has(key(point)) ? 'A' : 'B';
+            const own = plotSets[plotId];
+            const ownRoads = plotRoads[plotId];
+            const neighbours = [{ c: c - 1, r }, { c: c + 1, r }, { c, r: r - 1 }, { c, r: r + 1 }]
+                .filter(p => GAME.isActiveCell(p.c, p.r, estateMask));
+            const across = neighbours.filter(p => !own.has(key(p)));
+            const asset = grid[r][c];
+            const items = [];
+            const partners = [];
+            const addPartners = cells => cells.forEach(p => {
+                if (!partners.some(q => q.c === p.c && q.r === p.r)) partners.push(p);
+            });
+
+            if (point.bonus > 0 && settings.betterTogether && GAME.isAssetKind(asset)) {
+                for (const relationship of CONFIG.BETTER_TOGETHER[asset] || []) {
+                    const matches = p => relationship.with.includes(grid[p.r][p.c]);
+                    const wholeMatch = neighbours.some(matches);
+                    const ownMatch = neighbours.some(p => own.has(key(p)) && matches(p));
+                    if (wholeMatch && !ownMatch) {
+                        const lost = across.filter(matches);
+                        addPartners(lost);
+                        items.push(`${relationship.label} +1: separated from ${listNames(lost)}.`);
+                    }
+                }
+            }
+            if (terrain && (point.water > 0 || point.road > 0)) {
+                if (point.water > 0) {
+                    const water = across.filter(p => terrain[p.r][p.c] === 'water');
+                    addPartners(water);
+                    items.push('Waterfront +1: the water is across the fence.');
+                }
+                if (point.road > 0) {
+                    const roads = neighbours.filter(p => terrain[p.r][p.c] === 'road');
+                    const cut = roads.filter(p => !own.has(key(p)));
+                    const stranded = roads.filter(p => own.has(key(p)) && !ownRoads.has(key(p)));
+                    addPartners(cut.length ? cut : stranded);
+                    items.push(cut.length
+                        ? 'Road access +1: the road is across the fence.'
+                        : 'Road access +1: the road no longer reaches the outside of this plot.');
+                }
+            }
+            if (terrain && point.land > 0) {
+                const surface = terrain[r][c];
+                const before = GAME.terrainLandValue(c, r, terrain, whole, wholeRoads, estateMask);
+                const after = GAME.terrainLandValue(c, r, terrain, own, ownRoads, estateMask);
+                const causes = [];
+                const sameSide = kind => neighbours.some(p => own.has(key(p)) && terrain[p.r][p.c] === kind);
+                if (template === 'waterfront' && surface === 'land3' && !sameSide('water')) {
+                    addPartners(across.filter(p => terrain[p.r][p.c] === 'water'));
+                    causes.push('cut off from the river');
+                } else if (template === 'motorway' && surface === 'land2' && !sameSide('motorway')) {
+                    addPartners(across.filter(p => terrain[p.r][p.c] === 'motorway'));
+                    causes.push('cut off from the main road');
+                } else if (template === 'seaside' && ['land2', 'land3', 'land4'].includes(surface)
+                    && !GAME.seasideLandKeepsCoastConnection(c, r, terrain, own, estateMask)) {
+                    causes.push('cut off from the coast');
+                }
+                const roads = neighbours.filter(p => terrain[p.r][p.c] === 'road');
+                const hadRoad = roads.some(p => wholeRoads.has(key(p)));
+                const hasRoad = roads.some(p => own.has(key(p)) && ownRoads.has(key(p)));
+                if (hadRoad && !hasRoad) {
+                    const cut = roads.filter(p => !own.has(key(p)));
+                    addPartners(cut.length ? cut : roads);
+                    causes.push(cut.length ? 'the access road is across the fence' : 'the access road no longer reaches the outside');
+                }
+                const subject = GAME.isAssetKind(asset) ? `Land under the ${nameOf(asset)}` : 'Land';
+                items.push(`${subject} ${before} → ${after}${causes.length ? `: ${causes.join('; ')}` : ''}.`);
+            }
+            const explained = items.length;
+            if (!explained) items.push(`${point.total} ${point.total === 1 ? 'point' : 'points'} of neighbour-dependent value.`);
+
+            return { c, r, plotId, asset, total: point.total, items, partners };
+        });
+    },
+
+    fencePoints(edges) {
+        // Order the fence's sections into one run of grid nodes, for the stroke.
+        const adjacency = new Map();
+        const add = (a, b) => {
+            if (!adjacency.has(a)) adjacency.set(a, []);
+            adjacency.get(a).push(b);
+        };
+        edges.forEach(k => {
+            const [a, b] = k.split('-');
+            add(a, b);
+            add(b, a);
+        });
+        if (!adjacency.size) return [];
+        let start = [...adjacency.keys()].find(node => adjacency.get(node).length === 1) || adjacency.keys().next().value;
+        const order = [start];
+        const used = new Set();
+        let current = start;
+        for (;;) {
+            const next = (adjacency.get(current) || []).find(n => !used.has(GAME.edgeKey(
+                { c: Number(current.split(',')[0]), r: Number(current.split(',')[1]) },
+                { c: Number(n.split(',')[0]), r: Number(n.split(',')[1]) }
+            )));
+            if (!next) break;
+            used.add(GAME.edgeKey(
+                { c: Number(current.split(',')[0]), r: Number(current.split(',')[1]) },
+                { c: Number(next.split(',')[0]), r: Number(next.split(',')[1]) }
+            ));
+            order.push(next);
+            current = next;
+        }
+        return order.map(node => {
+            const [c, r] = node.split(',').map(Number);
+            return { x: CONFIG.MARGIN + c * CONFIG.CELL, y: CONFIG.MARGIN + r * CONFIG.CELL };
+        });
+    },
+
+    marksFor(target, points) {
+        target.innerHTML = points.map((point, index) => {
+            const x = (CONFIG.MARGIN + point.c * CONFIG.CELL) / CONFIG.INTERNAL * 100;
+            const y = (CONFIG.MARGIN + point.r * CONFIG.CELL) / CONFIG.INTERNAL * 100;
+            const size = CONFIG.CELL / CONFIG.INTERNAL * 100;
+            const last = index === points.length - 1;
+            return `<div class="loss-mark" style="left:${x}%;top:${y}%;width:${size}%;height:${size}%;${last ? '' : 'animation:none;'}"><span>−${point.total}</span></div>`;
+        }).join('');
+    },
+
+    drawFence(svg) {
+        const points = this.fencePoints(STATE.cutEdges);
+        if (points.length < 2) return;
+        let length = 0;
+        for (let i = 1; i < points.length; i++) {
+            length += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+        }
+        const d = points.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(' ');
+        svg.innerHTML = `<path class="replay-fence" d="${d}" style="--len:${length}"></path>`
+            + `<path class="replay-fence ink" d="${d}" style="--len:${length}"></path>`;
+    },
+
+    drawEvent(svg, event) {
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        const rect = (p, cls) => `<rect class="${cls}" x="${m + p.c * s + 3}" y="${m + p.r * s + 3}" width="${s - 6}" height="${s - 6}" rx="4"></rect>`;
+        const centre = p => ({ x: m + (p.c + 0.5) * s, y: m + (p.r + 0.5) * s });
+        const links = event.partners.map(p => {
+            const a = centre(event), b = centre(p);
+            const len = Math.hypot(b.x - a.x, b.y - a.y);
+            const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+            return `<line class="replay-link-halo" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"></line>`
+                + `<line class="replay-link" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" style="--len:${len}"></line>`
+                + `<circle class="replay-break" cx="${mid.x}" cy="${mid.y}" r="7"></circle>`;
+        }).join('');
+        svg.innerHTML = event.partners.map(p => rect(p, 'replay-partner')).join('')
+            + links
+            + rect(event, 'replay-cell');
+    },
+
+    renderReplayStep() {
+        const replay = this.replay;
+        if (!replay) return;
+        const svg = this.element('revealReplay');
+        const marks = this.element('revealLosses');
+        const step = this.element('revealStep');
+        const summary = this.element('revealSummary');
+        const details = this.element('revealDetails');
+        const next = this.element('revealContinue');
+        const skip = this.element('revealSkipBtn');
+        const { data, events, index } = replay;
+        const total = events.length;
+        const final = index > total;
+
+        if (index === 0) {
+            this.drawFence(svg);
+            marks.innerHTML = '';
+            step.hidden = total === 0;
+            step.textContent = total ? `The fence · ${total} ${total === 1 ? 'square' : 'squares'} lost value` : '';
+            summary.innerHTML = total
+                ? `The fence is final. ${total === 1 ? 'One square' : `${total} squares`} lost value because of where it runs.`
+                : `All ${data.intact} points of estate value preserved.`;
+            details.innerHTML = total ? '' : this.finalDetails(data);
+            next.textContent = total ? 'Show what changed' : 'Continue to result';
+            skip.hidden = total === 0;
+            return;
+        }
+
+        if (!final) {
+            const event = events[index - 1];
+            this.drawEvent(svg, event);
+            this.marksFor(marks, events.slice(0, index));
+            const lostSoFar = events.slice(0, index).reduce((sum, e) => sum + e.total, 0);
+            step.hidden = false;
+            step.innerHTML = `${index} of ${total} · <span class="plot-${event.plotId.toLowerCase()}">Plot ${event.plotId}</span> · ${escapeHtml(STATE.pNames[data.owners[event.plotId]])}`;
+            const subject = GAME.isAssetKind(event.asset) ? GAME.assetName(event.asset) : 'This square';
+            summary.innerHTML = `${escapeHtml(subject)} lost <span class="loss-number">${event.total}</span> ${event.total === 1 ? 'point' : 'points'}. Lost so far: ${lostSoFar} of ${data.intact - data.total}.`;
+            details.innerHTML = event.items.map(text => `<li>${escapeHtml(text)}</li>`).join('');
+            next.textContent = index === total ? 'See the totals' : 'Next';
+            skip.hidden = false;
+            return;
+        }
+
+        svg.innerHTML = '';
+        this.marks(marks, data);
+        step.hidden = false;
+        step.textContent = 'Totals';
+        summary.textContent = data.lost.length
+            ? `${data.intact - data.total} points lost. ${data.total} of ${data.intact} estate value remains.`
+            : `All ${data.intact} points of estate value preserved.`;
+        details.innerHTML = this.finalDetails(data);
+        next.textContent = 'Continue to result';
+        skip.hidden = true;
+    },
+
+    finalDetails(data) {
+        const details = [];
+        if (data.lost.length) {
+            details.push(`${this.lossText(data)}. Red squares show where the value was lost.`);
+        }
+        if (STATE.settings.meaningful) {
+            data.wants.forEach(want => {
+                if (want) details.push(`${STATE.pNames[want.owner]} inherits ${want.label}.`);
+            });
+        }
+        return details.map(text => `<li>${escapeHtml(text)}</li>`).join('');
+    },
+
+    advanceReplay() {
+        if (!this.replay) { this.finishReveal(); return; }
+        const total = this.replay.events.length;
+        if (this.replay.index > total || total === 0) { this.finishReveal(); return; }
+        this.replay.index++;
+        INTERACTION.changed();
+        this.renderReplayStep();
+    },
+
+    skipReplay() {
+        if (!this.replay) return;
+        this.replay.index = this.replay.events.length + 1;
+        INTERACTION.changed();
+        this.renderReplayStep();
+    },
+
     reveal(next) {
         if (!GAME.hasDynamicValue(STATE.settings)) {
             next();
@@ -10557,39 +10878,28 @@ const ESTATE_REVIEW = {
             next();
             return;
         }
+        const split = GAME.validateCut(snapshot.edges, STATE.estateMask);
 
         this.pending = next;
         this.element('revealOwners').textContent = ['A', 'B']
             .map(id => `${STATE.pNames[data.owners[id]]} inherits Plot ${id}.`)
             .join(' ');
-        this.element('revealSummary').textContent = data.lost.length
-            ? `${data.intact - data.total} points lost. ${data.total} of ${data.intact} estate value remains.`
-            : `All ${data.intact} points of estate value preserved.`;
-
-        const details = [];
-        if (data.lost.length) {
-            details.push(`${this.lossText(data)}. Red squares show where the value was lost.`);
-        }
-        if (STATE.settings.meaningful) {
-            data.wants.forEach(want => {
-                if (want) details.push(`${STATE.pNames[want.owner]} inherits ${want.label}.`);
-            });
-        }
-        this.element('revealDetails').innerHTML = details
-            .map(text => `<li>${escapeHtml(text)}</li>`)
-            .join('');
 
         RENDER.render();
         const canvas = this.element('revealCanvas');
         canvas.getContext('2d').drawImage(RENDER.canvas, 0, 0, canvas.width, canvas.height);
+        const events = this.explainLosses(split, data);
+        this.replay = { data, events, index: 0 };
+        this.renderReplayStep();
         UI.open('revealOverlay');
-        this.marks(this.element('revealLosses'), data);
     },
 
     finishReveal() {
         if (!this.pending) return;
         const next = this.pending;
         this.pending = null;
+        this.replay = null;
+        this.element('revealReplay').innerHTML = '';
         UI.close('revealOverlay');
         next();
     },
@@ -10739,7 +11049,8 @@ const ESTATE_REVIEW = {
     },
 
     bind() {
-        this.element('revealContinue').addEventListener('click', () => this.finishReveal());
+        this.element('revealContinue').addEventListener('click', () => this.advanceReplay());
+        this.element('revealSkipBtn').addEventListener('click', () => this.skipReplay());
         this.element('comparisonTabs').addEventListener('click', event => {
             const button = event.target.closest('[data-fence]');
             if (button) this.select(Number(button.dataset.fence));
