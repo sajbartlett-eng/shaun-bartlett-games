@@ -183,5 +183,2036 @@
 ]
 },
 "wall": 72.0
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+2
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 36.7275,
+"X": 21.492500000000003
+},
+"decisions": {
+"O": 8,
+"X": 11
+},
+"think_max": {
+"O": 1.075256109237671,
+"X": 0.5354301929473877
+},
+"think_mean": {
+"O": 0.7768611113230387,
+"X": 0.40866123305426705
+},
+"comfort_decided": 0,
+"x_decisions": 9,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 122.3
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+3
+],
+"seed": 1,
+"score": 33.0,
+"gap": {
+"O": 14.375,
+"X": 22.99125
+},
+"decisions": {
+"O": 2,
+"X": 4
+},
+"think_max": {
+"O": 0.06631708145141602,
+"X": 0.04597067832946777
+},
+"think_mean": {
+"O": 0.0451434850692749,
+"X": 0.021242082118988037
+},
+"comfort_decided": 0,
+"x_decisions": 4,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 34.6
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+3
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 15.425,
+"X": 0.0
+},
+"decisions": {
+"O": 5,
+"X": 3
+},
+"think_max": {
+"O": 0.5437920093536377,
+"X": 1.00407075881958
+},
+"think_mean": {
+"O": 0.29956191778182983,
+"X": 0.3769516150156657
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 32.6
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+3
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 32.85,
+"X": 11.35875
+},
+"decisions": {
+"O": 8,
+"X": 7
+},
+"think_max": {
+"O": 1.001453161239624,
+"X": 0.7768402099609375
+},
+"think_mean": {
+"O": 0.7968328475952149,
+"X": 0.5027005672454834
+},
+"comfort_decided": 0,
+"x_decisions": 7,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 76.5
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+4
+],
+"seed": 1,
+"score": 38.0,
+"gap": {
+"O": 24.157500000000002,
+"X": 25.435000000000002
+},
+"decisions": {
+"O": 2,
+"X": 4
+},
+"think_max": {
+"O": 0.029759883880615234,
+"X": 0.051532745361328125
+},
+"think_mean": {
+"O": 0.025940299034118652,
+"X": 0.023519456386566162
+},
+"comfort_decided": 0,
+"x_decisions": 4,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 103.8
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+4
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 74.551875,
+"X": 65.1025
+},
+"decisions": {
+"O": 7,
+"X": 7
+},
+"think_max": {
+"O": 0.5096704959869385,
+"X": 0.20627856254577637
+},
+"think_mean": {
+"O": 0.3243941863377889,
+"X": 0.0759829112461635
+},
+"comfort_decided": 0,
+"x_decisions": 7,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 168.2
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+4
+],
+"seed": 1,
+"score": 13.0,
+"gap": {
+"O": 11.181250000000006,
+"X": 11.096760937500001
+},
+"decisions": {
+"O": 9,
+"X": 12
+},
+"think_max": {
+"O": 1.689337968826294,
+"X": 1.3060429096221924
+},
+"think_mean": {
+"O": 1.0066672960917156,
+"X": 0.5816683570543925
+},
+"comfort_decided": 1,
+"x_decisions": 12,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 253.3
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+5
+],
+"seed": 1,
+"score": 24.0,
+"gap": {
+"O": 8.212500000000002,
+"X": 5.012500000000003
+},
+"decisions": {
+"O": 2,
+"X": 5
+},
+"think_max": {
+"O": 0.03150296211242676,
+"X": 0.45137715339660645
+},
+"think_mean": {
+"O": 0.03020775318145752,
+"X": 0.15961751937866211
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 57.0
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+5
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 4.530000000000005,
+"X": 5.5
+},
+"decisions": {
+"O": 5,
+"X": 6
+},
+"think_max": {
+"O": 0.4854698181152344,
+"X": 1.042719841003418
+},
+"think_mean": {
+"O": 0.2762716770172119,
+"X": 0.2322842280069987
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 51.0
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+5
+],
+"seed": 1,
+"score": 14.0,
+"gap": {
+"O": 15.989999999999997,
+"X": 7.301499999999994
+},
+"decisions": {
+"O": 6,
+"X": 8
+},
+"think_max": {
+"O": 1.5237128734588623,
+"X": 0.5593686103820801
+},
+"think_mean": {
+"O": 0.7826349258422851,
+"X": 0.3094135522842407
+},
+"comfort_decided": 2,
+"x_decisions": 6,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 203.8
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+6
+],
+"seed": 1,
+"score": 24.0,
+"gap": {
+"O": 30.0,
+"X": 15.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.0270843505859375,
+"X": 0.03797650337219238
+},
+"think_mean": {
+"O": 0.0270843505859375,
+"X": 0.021839062372843426
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 4.8
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+6
+],
+"seed": 1,
+"score": 33.0,
+"gap": {
+"O": 19.95,
+"X": 9.699999999999989
+},
+"decisions": {
+"O": 5,
+"X": 7
+},
+"think_max": {
+"O": 0.3309311866760254,
+"X": 1.0012574195861816
+},
+"think_mean": {
+"O": 0.171610689163208,
+"X": 0.15224177496773855
+},
+"comfort_decided": 0,
+"x_decisions": 7,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 21.4
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+6
+],
+"seed": 1,
+"score": 35.0,
+"gap": {
+"O": 6.0,
+"X": 1.2875000000000014
+},
+"decisions": {
+"O": 4,
+"X": 4
+},
+"think_max": {
+"O": 1.004357099533081,
+"X": 0.654923677444458
+},
+"think_mean": {
+"O": 0.7522273063659668,
+"X": 0.33853602409362793
+},
+"comfort_decided": 0,
+"x_decisions": 4,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 25.6
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+7
+],
+"seed": 1,
+"score": 21.0,
+"gap": {
+"O": 12.100000000000001,
+"X": 6.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.03360319137573242,
+"X": 0.040369510650634766
+},
+"think_mean": {
+"O": 0.03360319137573242,
+"X": 0.02028787136077881
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 4.5
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+7
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 11.100000000000001,
+"X": 1.0500000000000007
+},
+"decisions": {
+"O": 5,
+"X": 7
+},
+"think_max": {
+"O": 0.3965773582458496,
+"X": 1.1838865280151367
+},
+"think_mean": {
+"O": 0.26466500759124756,
+"X": 0.24407941954476492
+},
+"comfort_decided": 0,
+"x_decisions": 7,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 66.1
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+7
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 3.0,
+"X": 0.4499999999999993
+},
+"decisions": {
+"O": 6,
+"X": 5
+},
+"think_max": {
+"O": 1.1943984031677246,
+"X": 0.5942788124084473
+},
+"think_mean": {
+"O": 0.8707026243209839,
+"X": 0.4497220993041992
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 60.0
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+8
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 13.975000000000001,
+"X": 24.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.03624606132507324,
+"X": 0.04752635955810547
+},
+"think_mean": {
+"O": 0.01814854145050049,
+"X": 0.02805471420288086
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 5.7
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+8
+],
+"seed": 1,
+"score": 40.0,
+"gap": {
+"O": 6.224999999999998,
+"X": 14.800000000000004
+},
+"decisions": {
+"O": 6,
+"X": 8
+},
+"think_max": {
+"O": 0.3963301181793213,
+"X": 1.0058636665344238
+},
+"think_mean": {
+"O": 0.1972386042277018,
+"X": 0.2660169303417206
+},
+"comfort_decided": 0,
+"x_decisions": 8,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 41.0
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+8
+],
+"seed": 1,
+"score": 26.0,
+"gap": {
+"O": 0.0,
+"X": 6.799999999999997
+},
+"decisions": {
+"O": 6,
+"X": 7
+},
+"think_max": {
+"O": 2.379626512527466,
+"X": 0.639336347579956
+},
+"think_mean": {
+"O": 0.9395051683698382,
+"X": 0.3650330066680908
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 88.5
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+9
+],
+"seed": 1,
+"score": 34.0,
+"gap": {
+"O": 1.5750000000000028,
+"X": 8.350000000000005
+},
+"decisions": {
+"O": 2,
+"X": 2
+},
+"think_max": {
+"O": 0.030075550079345703,
+"X": 0.045974016189575195
+},
+"think_mean": {
+"O": 0.015066385269165039,
+"X": 0.045974016189575195
+},
+"comfort_decided": 0,
+"x_decisions": 1,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 5.6
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+9
+],
+"seed": 1,
+"score": 25.0,
+"gap": {
+"O": 0.6125000000000007,
+"X": 0.1750000000000007
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.4187355041503906,
+"X": 0.2510695457458496
+},
+"think_mean": {
+"O": 0.21044460932413736,
+"X": 0.13754121462504068
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 5.5
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+9
+],
+"seed": 1,
+"score": 44.0,
+"gap": {
+"O": 0.6125000000000007,
+"X": 0.0
+},
+"decisions": {
+"O": 2,
+"X": 2
+},
+"think_max": {
+"O": 1.0129971504211426,
+"X": 0.2149207592010498
+},
+"think_mean": {
+"O": 0.6712085405985514,
+"X": 0.2149207592010498
+},
+"comfort_decided": 0,
+"x_decisions": 1,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 7.8
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+10
+],
+"seed": 1,
+"score": 24.0,
+"gap": {
+"O": 25.5,
+"X": 33.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.04193425178527832,
+"X": 0.0881190299987793
+},
+"think_mean": {
+"O": 0.04193425178527832,
+"X": 0.049527883529663086
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 5.1
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+10
+],
+"seed": 1,
+"score": 17.0,
+"gap": {
+"O": 10.340249999999997,
+"X": 1.615249999999996
+},
+"decisions": {
+"O": 3,
+"X": 4
+},
+"think_max": {
+"O": 0.5410120487213135,
+"X": 1.0026862621307373
+},
+"think_mean": {
+"O": 0.422025203704834,
+"X": 0.33963990211486816
+},
+"comfort_decided": 0,
+"x_decisions": 4,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 28.1
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+10
+],
+"seed": 1,
+"score": 20.0,
+"gap": {
+"O": 42.5,
+"X": 20.665000000000003
+},
+"decisions": {
+"O": 8,
+"X": 10
+},
+"think_max": {
+"O": 1.2264642715454102,
+"X": 0.6594946384429932
+},
+"think_mean": {
+"O": 0.9162115573883056,
+"X": 0.4126683643886021
+},
+"comfort_decided": 0,
+"x_decisions": 7,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 178.7
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+11
+],
+"seed": 1,
+"score": 29.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.03306937217712402,
+"X": 0.03145909309387207
+},
+"think_mean": {
+"O": 0.01872857411702474,
+"X": 0.01060334841410319
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 97.3
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+11
+],
+"seed": 1,
+"score": -5.0,
+"gap": {
+"O": 0.0,
+"X": 2.4200000000000017
+},
+"decisions": {
+"O": 2,
+"X": 2
+},
+"think_max": {
+"O": 0.4862813949584961,
+"X": 0.16410398483276367
+},
+"think_mean": {
+"O": 0.2632603645324707,
+"X": 0.08214998245239258
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 95.3
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+11
+],
+"seed": 1,
+"score": 29.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 1.0471484661102295,
+"X": 1.0484182834625244
+},
+"think_mean": {
+"O": 0.6653652191162109,
+"X": 0.3884105682373047
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 123.6
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+12
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 3.5375000000000014,
+"X": 11.25
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.034311771392822266,
+"X": 0.04468727111816406
+},
+"think_mean": {
+"O": 0.034311771392822266,
+"X": 0.02741241455078125
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 6.0
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+12
+],
+"seed": 1,
+"score": 48.0,
+"gap": {
+"O": 5.825000000000003,
+"X": 2.254999999999999
+},
+"decisions": {
+"O": 3,
+"X": 3
+},
+"think_max": {
+"O": 0.5543015003204346,
+"X": 1.0030922889709473
+},
+"think_mean": {
+"O": 0.5306298732757568,
+"X": 0.665829062461853
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 35.8
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+12
+],
+"seed": 1,
+"score": 24.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 4,
+"X": 4
+},
+"think_max": {
+"O": 2.135511875152588,
+"X": 0.8790218830108643
+},
+"think_mean": {
+"O": 1.275950014591217,
+"X": 0.4231167435646057
+},
+"comfort_decided": 0,
+"x_decisions": 4,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 69.5
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+13
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 1,
+"X": 2
+},
+"think_max": {
+"O": 0.03485989570617676,
+"X": 0.08315062522888184
+},
+"think_mean": {
+"O": 0.03485989570617676,
+"X": 0.04164743423461914
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 3.9
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+13
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 1,
+"X": 2
+},
+"think_max": {
+"O": 0.38245677947998047,
+"X": 0.18437981605529785
+},
+"think_mean": {
+"O": 0.38245677947998047,
+"X": 0.09225583076477051
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 4.1
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+13
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 0.0,
+"X": 0.0
+},
+"decisions": {
+"O": 1,
+"X": 2
+},
+"think_max": {
+"O": 1.016164779663086,
+"X": 0.4388444423675537
+},
+"think_mean": {
+"O": 1.016164779663086,
+"X": 0.2194969654083252
+},
+"comfort_decided": 0,
+"x_decisions": 2,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 5.5
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+14
+],
+"seed": 1,
+"score": 39.0,
+"gap": {
+"O": 5.085000000000001,
+"X": 11.506000000000004
+},
+"decisions": {
+"O": 7,
+"X": 8
+},
+"think_max": {
+"O": 0.06893444061279297,
+"X": 0.5442795753479004
+},
+"think_mean": {
+"O": 0.03301378091176351,
+"X": 0.18521171808242798
+},
+"comfort_decided": 0,
+"x_decisions": 8,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 151.8
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+14
+],
+"seed": 1,
+"score": 38.0,
+"gap": {
+"O": 9.0,
+"X": 14.006712499999999
+},
+"decisions": {
+"O": 19,
+"X": 20
+},
+"think_max": {
+"O": 1.0213532447814941,
+"X": 1.0070984363555908
+},
+"think_mean": {
+"O": 0.38812930960404246,
+"X": 0.12505390644073486
+},
+"comfort_decided": 0,
+"x_decisions": 20,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 220.2
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+14
+],
+"seed": 1,
+"score": 38.0,
+"gap": {
+"O": 38.0,
+"X": 12.465000000000003
+},
+"decisions": {
+"O": 23,
+"X": 21
+},
+"think_max": {
+"O": 1.438645601272583,
+"X": 1.8961005210876465
+},
+"think_mean": {
+"O": 0.8581797968257557,
+"X": 0.6201202528817313
+},
+"comfort_decided": 0,
+"x_decisions": 21,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 343.1
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+15
+],
+"seed": 1,
+"score": 38.0,
+"gap": {
+"O": 0.7199999999999989,
+"X": 9.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.04793810844421387,
+"X": 0.0626368522644043
+},
+"think_mean": {
+"O": 0.04793810844421387,
+"X": 0.03739778200785319
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 9.2
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+15
+],
+"seed": 1,
+"score": 29.0,
+"gap": {
+"O": 0.7199999999999989,
+"X": 0.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.5937581062316895,
+"X": 0.34219956398010254
+},
+"think_mean": {
+"O": 0.5054230690002441,
+"X": 0.19671058654785156
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 7.9
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+15
+],
+"seed": 1,
+"score": 0.0,
+"gap": {
+"O": 2.206000000000003,
+"X": 2.754400000000004
+},
+"decisions": {
+"O": 6,
+"X": 6
+},
+"think_max": {
+"O": 1.1340053081512451,
+"X": 1.1632781028747559
+},
+"think_mean": {
+"O": 0.9378422896067301,
+"X": 0.6736965656280518
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 122.5
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+16
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 2.780000000000001,
+"X": 15.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 2.0703611373901367,
+"X": 0.09556293487548828
+},
+"think_mean": {
+"O": 2.0703611373901367,
+"X": 0.04472001393636068
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 6.2
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+16
+],
+"seed": 1,
+"score": 26.0,
+"gap": {
+"O": 28.22,
+"X": 21.08
+},
+"decisions": {
+"O": 5,
+"X": 7
+},
+"think_max": {
+"O": 0.5169661045074463,
+"X": 1.0047180652618408
+},
+"think_mean": {
+"O": 0.28761630058288573,
+"X": 0.3550989230473836
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 72.6
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+16
+],
+"seed": 1,
+"score": 38.0,
+"gap": {
+"O": 18.4,
+"X": 0.0
+},
+"decisions": {
+"O": 6,
+"X": 5
+},
+"think_max": {
+"O": 1.0420904159545898,
+"X": 0.5304505825042725
+},
+"think_mean": {
+"O": 0.7713119188944498,
+"X": 0.42142252922058104
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 65.9
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"teams",
+[
+"Bucket Brigade",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 1.0,
+"X": 18.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.03981733322143555,
+"X": 0.043079376220703125
+},
+"think_mean": {
+"O": 0.03981733322143555,
+"X": 0.02645723025004069
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 11.6
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"teams",
+[
+"Bucket Brigade",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 2.0,
+"X": 15.0
+},
+"decisions": {
+"O": 3,
+"X": 3
+},
+"think_max": {
+"O": 0.6315052509307861,
+"X": 0.21590900421142578
+},
+"think_mean": {
+"O": 0.43262259165445965,
+"X": 0.11354478200276692
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 37.9
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"teams",
+[
+"Bucket Brigade",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 25.0,
+"gap": {
+"O": 15.091000000000001,
+"X": 3.8000000000000007
+},
+"decisions": {
+"O": 11,
+"X": 11
+},
+"think_max": {
+"O": 1.3849446773529053,
+"X": 0.9200549125671387
+},
+"think_mean": {
+"O": 0.8251113891601562,
+"X": 0.6144491831461588
+},
+"comfort_decided": 0,
+"x_decisions": 9,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 213.0
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Twin Towers"
+]
+],
+"seed": 1,
+"score": 27.0,
+"gap": {
+"O": 24.0,
+"X": 27.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.027926921844482422,
+"X": 0.07738852500915527
+},
+"think_mean": {
+"O": 0.027926921844482422,
+"X": 0.03904151916503906
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 4.3
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Twin Towers"
+]
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 12.534999999999997,
+"X": 5.099999999999994
+},
+"decisions": {
+"O": 8,
+"X": 10
+},
+"think_max": {
+"O": 0.5678515434265137,
+"X": 1.0011212825775146
+},
+"think_mean": {
+"O": 0.3556917607784271,
+"X": 0.25819995668199325
+},
+"comfort_decided": 0,
+"x_decisions": 9,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 101.7
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Twin Towers"
+]
+],
+"seed": 1,
+"score": 35.0,
+"gap": {
+"O": 27.0,
+"X": 2.1125000000000007
+},
+"decisions": {
+"O": 5,
+"X": 6
+},
+"think_max": {
+"O": 1.0404000282287598,
+"X": 1.1420090198516846
+},
+"think_mean": {
+"O": 0.7641217112541199,
+"X": 0.6233160893122355
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 43.1
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 27.0,
+"gap": {
+"O": 18.0,
+"X": 18.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.024778366088867188,
+"X": 0.08372735977172852
+},
+"think_mean": {
+"O": 0.024778366088867188,
+"X": 0.05126420656840006
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 6.3
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 29.0,
+"gap": {
+"O": 7.1325,
+"X": 20.552500000000002
+},
+"decisions": {
+"O": 3,
+"X": 6
+},
+"think_max": {
+"O": 0.6641309261322021,
+"X": 1.2747516632080078
+},
+"think_mean": {
+"O": 0.4279308319091797,
+"X": 0.4155664841334025
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 28.1
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"teams",
+[
+"Run and Gun",
+"Lockdown"
+]
+],
+"seed": 1,
+"score": 21.0,
+"gap": {
+"O": 0.0,
+"X": 10.125
+},
+"decisions": {
+"O": 5,
+"X": 6
+},
+"think_max": {
+"O": 1.006138563156128,
+"X": 1.0177147388458252
+},
+"think_mean": {
+"O": 0.7534985065460205,
+"X": 0.5388343731562296
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 52.7
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"teams",
+[
+"Twin Towers",
+"Iron Wall"
+]
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 6.0,
+"X": 15.0
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.029632568359375,
+"X": 0.08145451545715332
+},
+"think_mean": {
+"O": 0.029632568359375,
+"X": 0.03736432393391927
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 4.8
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"teams",
+[
+"Twin Towers",
+"Iron Wall"
+]
+],
+"seed": 1,
+"score": 33.0,
+"gap": {
+"O": 4.050000000000001,
+"X": 23.0
+},
+"decisions": {
+"O": 6,
+"X": 6
+},
+"think_max": {
+"O": 0.4078679084777832,
+"X": 1.0422179698944092
+},
+"think_mean": {
+"O": 0.17110188802083334,
+"X": 0.43776023387908936
+},
+"comfort_decided": 0,
+"x_decisions": 6,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 29.8
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"teams",
+[
+"Twin Towers",
+"Iron Wall"
+]
+],
+"seed": 1,
+"score": 24.0,
+"gap": {
+"O": 3.1000000000000014,
+"X": 5.6325
+},
+"decisions": {
+"O": 6,
+"X": 7
+},
+"think_max": {
+"O": 1.4695563316345215,
+"X": 0.5761873722076416
+},
+"think_mean": {
+"O": 0.7307658990224203,
+"X": 0.3462939739227295
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 75.2
 }
 ]

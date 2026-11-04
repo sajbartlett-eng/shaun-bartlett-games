@@ -214,7 +214,35 @@ concepts switched off, and the offence's targets and plan. It never appears duri
 **Thinking time:** at most 1 second a decision on the server and 0.45 seconds in the link version,
 the best choice found so far being used when time is up.
 
-CALIBRATION_PLACEHOLDER
+**How it measures up.**
+- *Arrow mix* (46 possessions: 30 table-setup games across team pairings and the 16 scenario cards,
+  greedy offence, arrow jobs read at the end of each turn): the old one-action-ahead defence kept 67% of
+  its in-play arrows on the ball and 17% on lanes; the board-reading defence of the first step-3e change
+  had 34% on the ball, 53% lanes and 6% walls. Reactions end on the shooter about 98% of the time at every
+  level. Offence's mean score against each defence: old 17.0, Rookie 20.0, Starter 16.6, All-Star 16.6.
+- *The comfort line* decided 18% of Starter's defensive choices and 12% of All-Star's (Rookie doesn't
+  use it: its help concept is off).
+- *Against the solver:* on the 50-position exact endgame set every defence (old, Starter, All-Star)
+  makes an exact-best choice every time, so that set can't separate them. On 50 mid-phase defence turns
+  graded by a fixed-depth solver search, the board-reading defence is within half a point of the
+  solver on 64% of turns (old: 54%), mean gap 0.36 points (old: 1.51).
+- *Value given up against the solver* (each level against itself on the 16 scenario cards and 4
+  random team possessions, one seed; the judge is a fixed depth-2 solver search at every decision, the
+  review's logic):
+
+| | Rookie | Starter | All-Star | Target |
+|---|---|---|---|---|
+| Offence, per possession | 12.6 | 13.9 | 14.0 | 6 / 3 / under 1 |
+| Defence, per possession | 14.0 | 12.6 | 6.5 | 6 / 3 / under 1 |
+| Offence, per decision | 5.6 | 2.8 | 2.1 | |
+| Defence, per decision | 4.1 | 2.1 | 0.9 | |
+| Decisions per possession (O / X) | 2.2 / 3.5 | 5.0 / 6.0 | 6.7 / 7.2 | |
+
+  Per decision the levels line up as intended. Per possession they don't hit the targets, and on
+  offence they don't separate: a Rookie offence shoots early, so it has fewer decisions to give value up
+  on. The All-Star can't match a depth-2 judge while deciding in under a second (under half a second in
+  the link version). No settings were changed by this run. The full run asked for (5 seeds, 20 random
+  possessions, every level against every other) would take about ten hours on this machine.
 
 ## Decision timer (step 3d, optional)
 

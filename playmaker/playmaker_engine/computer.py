@@ -381,10 +381,13 @@ class Computer(Policy):
         if not scored:
             return None
         comfort = self._comfort_key(view)
+        if comfort is not None:
+            cost = lambda p: sum(a.kind != 'end_turn' for a in p.actions) * 1e-6
+            with_line = min(scored, key=comfort)[1]
+            without = min(scored, key=lambda vp: vp[0] + cost(vp[1]))[1]
+            if with_line.actions != without.actions:
+                self.stats['comfort_decided'] += 1          # the comfort line changed this choice
         best = self._pick(scored, False, key=comfort)
-        raw = self._pick(scored, False) if self.cfg['randomness'] == 0 else best
-        if comfort is not None and raw is not best and raw.actions != best.actions:
-            self.stats['comfort_decided'] += 1
         return self._habit_rewrite(view, best)
 
     def _comfort_key(self, view):
