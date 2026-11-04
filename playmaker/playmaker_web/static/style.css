@@ -155,3 +155,45 @@ table.scout { border-collapse: collapse; width: 100%; font-size: 13px; } table.s
   table.scout { font-size: 12.5px; } table.scout th:nth-child(2), table.scout td:nth-child(2) { width: 22%; }
   .picker select { min-height: 44px; }
 }
+
+/* step 3d: scout report, shot charts, custom team builder */
+.reads { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 16px; }
+.teamread h3 { margin: 4px 0 2px; font-size: 15px; letter-spacing: .04em; }
+.teamread p { margin: 2px 0; font-size: 14px; }
+details.sidelist { border-top: 1px solid var(--line); padding: 4px 0; }
+details.sidelist summary { cursor: pointer; font-weight: 600; padding: 6px 0; min-height: 32px; }
+.prow { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+.ptext { flex: 1; min-width: 0; font-size: 14px; }
+.pname { font-weight: 600; }
+.plus .sign, .minus .sign { font-weight: 700; display: inline-block; width: 1em; }
+.chartbtn { padding: 2px; border: 1px solid var(--line); background: #fff; border-radius: 4px; line-height: 0; min-height: 0; min-width: 0; }
+.chartbtn svg.chart { width: 68px; height: 56px; display: block; }
+.chartbtn.big svg.chart { width: 238px; height: 196px; }
+.pickcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px; }
+.builders { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.builder { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.builder h3 { margin: 4px 0; font-size: 14px; }
+.exp { color: #7a3b12; font-weight: 600; }
+ul.inplay li.untested { color: var(--muted, #6b6357); }
+button.small { font-size: 12px; padding: 2px 8px; margin-top: 4px; }
+
+/* step 3d: decision timer */
+.timer { display: flex; align-items: center; gap: 8px; margin: 4px 0 6px; }
+.timer .twords { font-size: 13px; font-weight: 600; }
+svg.ring { width: 44px; height: 44px; flex: none; }
+svg.ring.grace { width: 32px; height: 32px; }
+svg.ring circle { fill: none; stroke-width: 4; }
+svg.ring .track { stroke: #d9cfbd; }
+svg.ring.main .bar { stroke: #0b2a5b; }
+svg.ring.main.warn .bar { stroke: #7a1f12; stroke-width: 5; }
+svg.ring.main.warn .track { stroke: #7a1f12; stroke-dasharray: 2 2; stroke-width: 2; }
+svg.ring.grace .bar { stroke: #3d7a4c; }
+svg.ring text { font-size: 12px; font-weight: 700; fill: var(--ink); }
+.timer.warn .twords { color: #7a1f12; }
+#modal.readyscreen { background: var(--paper); }
+#modal.readyscreen .modalbox { box-shadow: none; text-align: center; }
+@media (forced-colors: active) { svg.ring .bar { stroke: Highlight; } svg.ring.main.warn .bar, svg.ring.main.warn .track { stroke: Mark; } }
+
+/* the printed board's court lines (decoration; the squares decide the rules) */
+.courtlines path, .courtlines line { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; pointer-events: none; }
+@media (forced-colors: active) { .courtlines path, .courtlines line { stroke: CanvasText; } }

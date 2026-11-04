@@ -3,8 +3,10 @@ call handle(), so the front end talks to one API whichever back end runs it."""
 import json
 import threading
 
-from playmaker_engine.cards import TEAMS, TEAM_TAGLINES, FIRST_GAME
+from playmaker_engine.cards import TEAMS, TEAM_TAGLINES, FIRST_GAME, PRESCRIBED, CARDS
 from playmaker_engine.scenarios import SCENARIOS
+
+from playmaker_engine.scouting import position
 
 from .game import Game, GameError
 from .view import state_json, legal_json
@@ -22,7 +24,7 @@ class Manager:
         g = Game(mode=body.get('mode', 'hotseat'), scenario=body.get('scenario'), teams=body.get('teams'),
                  seed=body.get('seed'), ai=body.get('ai'), full=bool(body.get('full')),
                  place=body.get('place', bool(body.get('full'))), code=body.get('code'),
-                 level=body.get('level', 'scout'))
+                 level=body.get('level', 'scout'), custom=body.get('custom'), timer=body.get('timer'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -37,7 +39,8 @@ class Manager:
 
 def options(manager):
     return dict(static=manager.static,
-                teams=[dict(name=n, tagline=TEAM_TAGLINES[n], cards=[c.key for c in cs]) for n, cs in TEAMS.items()],
+                teams=[dict(name=n, tagline=TEAM_TAGLINES[n], cards=[c.key for c in TEAMS[n]]) for n in PRESCRIBED],
+                cards=[dict(key=c.key, role=c.role, tier=c.tier, position=position(c)) for c in CARDS.values()],
                 first_game=list(FIRST_GAME),
                 scenarios=[dict(n=n, title=s['title'], kind=s['kind'], clock=s['clock'], text=s['text'],
                                 off=s['off'], dfn=s['dfn']) for n, s in SCENARIOS.items()])
@@ -84,6 +87,9 @@ def handle(manager, method, path, query=None, body=None):
             return 200, dict(res, state=state_json(g, tok))
         if path == '/api/next':
             g.next_possession(tok)
+            return 200, dict(state=state_json(g, tok))
+        if path == '/api/timer':
+            g.timer_event(tok, body.get('event'))
             return 200, dict(state=state_json(g, tok))
         if path == '/api/feedback':
             g.save_feedback(tok, body.get('answers') or {})

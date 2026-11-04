@@ -165,6 +165,7 @@ def turn_summary(s):
 
 
 def state_json(game, token):
+    game.timer_tick()                    # apply any forfeit that fell due before reading the state
     s = game.state
     ctx = s.ctx
     seat = game.seat_of(token)
@@ -208,7 +209,7 @@ def state_json(game, token):
                        ball=game.placed.get('O', (None, None))[1])
     inbound_note = ('Inbounder: can only pass. The defence answers the pass with its normal turn.'
                     if s.inbound else None)
-    return dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
+    out = dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
                 side_to_act=game.side_to_act(), ai=game.ai, title=ctx.title, scenario=sc_info, full=game.full,
                 possession=game.possession, attacker=game.offence_player(), teams=[ctx.off_team, ctx.def_team],
                 clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final,
@@ -223,8 +224,12 @@ def state_json(game, token):
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
-                level=game.level, scout=scout_json(game), matchups=matchups(s),
+                level=game.level, scout=scout_json(game, seat), matchups=matchups(s),
+                custom=game.custom or None, experimental=game.experimental,
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
+    if game.timer:
+        out['timer'] = game.timer_json()
+    return out
 
 
 def _scenario_rules(c):
@@ -250,11 +255,14 @@ def _scenario_rules(c):
     return out
 
 
-def scout_json(game):
-    """The pre-game report (identical for both players) and the pick status (picks stay private)."""
+def scout_json(game, seat=None):
+    """The pre-game report (identical for both players) and the pick status (picks stay private).
+    At Scout level the report is only sent once this client's picks are locked."""
     from playmaker_engine.scouting import report
-    rep = report(game.team_of('O'), game.team_of('X'), game.level)
-    return dict(report=rep, needs={side: game.picks_needed(side) for side in ('O', 'X')},
+    rep = (report(game.team_of('O'), game.team_of('X'), game.level, full=game.full)
+           if game.report_visible(seat) else None)
+    return dict(report=rep, locked=game.level == 'scout' and rep is not None,
+                mine=game.picks.get(seat) if seat in ('O', 'X') else None, needs={side: game.picks_needed(side) for side in ('O', 'X')},
                 done=sorted(game.picks), pending=game.picks_pending(),
                 ai=[side for side in ('O', 'X') if side in game.ai],
                 teams=dict(O=game.team_of('O'), X=game.team_of('X')))

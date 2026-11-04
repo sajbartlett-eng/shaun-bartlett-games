@@ -16,6 +16,7 @@ from playmaker_engine.policies import GreedyPolicy
 from playmaker_engine.resolve import apply, ChanceNode
 from playmaker_engine.scenarios import SCENARIOS, scenario_state, game_state, setup_errors
 from playmaker_engine.scoring import score, band, choose_contest, shot_points, match_result
+from playmaker_engine.timer import timer_forfeit, TIMER_CONFIG, TIMED_STAGES, token_free
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG_DIR = os.path.join(ROOT, 'playtest_logs')
@@ -145,8 +146,10 @@ def man_to_man(o_squares, ball):
 
 class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
-                 place=False, code=None, level='scout'):
+                 place=False, code=None, level='scout', custom=None, timer=None, clock=None):
         self.code = (code or secrets.token_hex(3)).upper()
+        self.now = clock or time.time
+        self.timer = self._timer_settings(timer)
         if level not in ('learn', 'scout', 'pro'):
             raise GameError('level must be learn, scout or pro')
         self.level = level
@@ -154,6 +157,12 @@ class Game:
         self.scenario = scenario
         self.full = full and scenario is None
         self.teams = list(teams or FIRST_GAME)
+        self.custom, self.experimental = {}, []
+        if custom and not scenario:
+            self._register_custom(custom)
+        for t in self.teams:
+            if t not in TEAMS:
+                raise GameError(f'no team {t}')
         self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
         self.rng = random.Random(self.seed)
         self.rules = rules
@@ -187,7 +196,8 @@ class Game:
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
                   ai=self.ai, possession=self.possession, place=self.place_on, level=self.level,
-                  start=self.state.encode())
+                  custom=self.custom or None, experimental=self.experimental or None,
+                  timer=self.timer, start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):
                 self._save_picks(side, self._engine_picks(side), actor='ai')
@@ -195,6 +205,24 @@ class Game:
             self._begin_possession()
 
     # ---- setup ----
+    def _register_custom(self, custom):
+        """custom: [{slot: 0 or 1, name, cards: [5 keys, PG..C]}]. One card per position; a tier shape
+        outside BBBBB / ABBBC / AABCC is allowed but labelled experimental."""
+        from playmaker_engine.cards import register_team, CARDS
+        from playmaker_engine.scouting import position, POSITIONS
+        for c in custom:
+            slot = int(c.get('slot', 0))
+            keys = list(c.get('cards') or [])
+            if slot not in (0, 1) or len(keys) != 5 or any(k not in CARDS for k in keys):
+                raise GameError('a custom team is five cards, one per position')
+            if [position(CARDS[k]) for k in keys] != POSITIONS:
+                raise GameError('a custom team needs one card per position, in order PG, SG, SF, PF, C')
+            name = register_team(c.get('name') or 'Custom', keys)
+            self.teams[slot] = name
+            self.custom[name] = keys
+            if ''.join(sorted(CARDS[k].tier for k in keys)) not in ('BBBBB', 'ABBBC', 'AABCC'):
+                self.experimental.append(name)
+
     def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
@@ -210,6 +238,17 @@ class Game:
         if self.full:
             return ['hunt', 'protect']
         return ['hunt'] if side == 'O' else ['protect']
+
+    def report_visible(self, seat):
+        """Read the cards first (Scout level): the report unlocks for a client once its picks are locked.
+        A hot-seat client is both players, so it unlocks when both sides have picked."""
+        if self.level == 'pro':
+            return False
+        if self.level == 'learn':
+            return True
+        if seat == 'both':
+            return not self.picks_pending()
+        return seat in ('O', 'X') and (seat in self.picks or not self.picks_needed(seat))
 
     def picks_pending(self):
         return [side for side in ('O', 'X') if self.picks_needed(side) and side not in self.picks]
@@ -284,6 +323,12 @@ class Game:
             engine = {side: {k: v for k, v in self._engine_picks_any(side).items() if k in shape[side]}
                       for side in ('O', 'X')}
             out = dict(level=self.level, picks=self.picks, engine=engine, advantages=board_advantages(recs))
+            from playmaker_engine.review import timer_facts
+            out['timer'] = timer_facts(recs) if self.timer else None
+            if self.level != 'pro':
+                from playmaker_engine.review import report_in_play
+                from playmaker_engine.scouting import report
+                out['in_play'] = report_in_play(recs, report(self.team_of('O'), self.team_of('X'), 'scout'))
             try:
                 from playmaker_engine import solver  # noqa: F401  (the in-browser build has no solver)
                 out['solver'] = solver_disagreements(recs)
@@ -302,6 +347,209 @@ class Game:
         p = hunt_protect(theirs, mine)['protect']
         return dict(hunt=dict(o=h['o'], x=h['x'], text=h['text']), protect=dict(x=p['x'], text=p['text']))
 
+
+    # ---- the decision timer (step 3d part C; off by default) ----
+    def _timer_settings(self, t):
+        """t: None / 0 (off), a number of seconds for both, or {A: s, B: s, handicap: true}. A is the player
+        on offence in possession 1. Different settings need handicap ticked by both players."""
+        if not t:
+            return None
+        ok = TIMER_CONFIG['settings']
+        if isinstance(t, (int, float)):
+            t = dict(A=int(t), B=int(t))
+        a, b = t.get('A'), t.get('B')
+        a = int(a) if a else None
+        b = int(b) if b else None
+        if a not in ok or b not in ok:
+            raise GameError(f'timer settings are {", ".join(str(x) for x in ok[1:])} seconds or off')
+        handicap = bool(t.get('handicap'))
+        if a != b and not handicap:
+            raise GameError('different timer settings need the handicap ticked by both players')
+        if a is None and b is None:
+            return None
+        return dict(A=a, B=b, handicap=handicap and a != b, grace=TIMER_CONFIG['grace'],
+                    regrace_after=TIMER_CONFIG['regrace_after'])
+
+    def _player_of(self, side):
+        att = self.offence_player()
+        return att if side == 'O' else ('B' if att == 'A' else 'A')
+
+    def _period(self, side):
+        return self.timer[self._player_of(side)] if self.timer else None
+
+    def _timed_side(self):
+        """The side whose decision is on the clock now, or None (no timer before tip-off, for the computer,
+        in the Coach's Call secret entry or once the possession is over)."""
+        side = self.side_to_act()
+        if not self.timer or side is None or side in self.ai or self.state.stage not in TIMED_STAGES:
+            return None
+        return side if self._period(side) else None
+
+    def _timer_decision(self, force_ready=False):
+        """A new decision began (an action was committed, a forfeit applied, a turn changed...)."""
+        if not self.timer:
+            return
+        now = self.now()
+        side = self._timed_side()
+        prev = getattr(self, 'tm', None) or {}
+        if side is None:
+            self.tm = dict(mode='idle', side=None)
+            return
+        handover = self.mode == 'hotseat' and (force_ready or prev.get('side') != side)
+        self.tm = dict(mode='ready' if handover else 'main', side=side, period=self._period(side),
+                       left=float(self._period(side)), mark=None if handover else now, paused=False,
+                       grace_until=None, grace_left=None, sel_left=None, selected=False, grace_used=0.0,
+                       token_free=token_free(self.state))
+
+    def _main_left(self, now):
+        tm = self.tm
+        if tm['mode'] != 'main' or tm['mark'] is None:
+            return tm['left']
+        return tm['left'] - (now - tm['mark'])
+
+    def timer_tick(self):
+        """Catch the timer up to now: expire graces and apply forfeits at the moments they fell due."""
+        if not self.timer:
+            return
+        with self.lock:
+            now = self.now()
+            for _ in range(200):
+                tm = getattr(self, 'tm', None)
+                if not tm or tm['mode'] in ('idle', 'ready') or tm['paused']:
+                    return
+                if tm['mode'] == 'grace':
+                    if now < tm['grace_until']:
+                        return
+                    t = tm['grace_until']
+                    tm['grace_used'] += self.timer['grace']
+                    tm.update(mode='main', mark=t, grace_until=None)
+                    self._log('timer', event='grace_expired', side=tm['side'], possession=self.possession,
+                              clock=self.state.clock, phase=self.state.phase, turn=self.state.turn_n)
+                    continue
+                due = tm['mark'] + tm['left']
+                if now < due:
+                    return
+                self._forfeit(due)
+
+    def _forfeit(self, t):
+        before = self.state
+        side = self.tm['side']
+        node, effect = timer_forfeit(before)
+        rolls = []
+        if isinstance(node, ChanceNode):
+            node, rolls = resolve_chance(node, self.rng)
+        self.state = node
+        self.undo, self.undo_votes = [], set()
+        if node.phase != before.phase:
+            self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
+        self.rolls = rolls
+        self.version += 1
+        left = node.tokens(side) if node.stage in ('play', 'reaction') and node.side == side else None
+        if effect == 'default':
+            what = "Timer: time ran out; the default applies (don't contest)." if before.stage == 'contest' else \
+                   'Timer: time ran out; the default applies (the first legal choice).'
+        elif effect == 'token':
+            what = f'Timer: 1 token lost. {before.tokens(side) - 1} left.'
+        elif effect == 'token_end':
+            what = 'Timer: 1 token lost, the last one. The turn ends.'
+        else:
+            what = 'Timer: no tokens left. The turn ends.'
+        self._log('timer', event='forfeit', side=side, effect=effect, possession=self.possession,
+                  clock=before.clock, phase=before.phase, turn=before.turn_n, stage=before.stage,
+                  tokens_before=before.tokens(side), text=what, after=node.encode())
+        for r in rolls:
+            self._log('roll', possession=self.possession, **r)
+        self.feed.append(dict(n=len(self.feed) + 1, actor='timer', side=side, kind='timer', text=what, rolls=rolls,
+                              outcomes=consequences(before, node, Action('end_turn', side)) if node.stage == 'over' else [],
+                              possession=self.possession, clock=before.clock, phase=before.phase, version=self.version))
+        self.timer_note = what
+        if node.stage == 'over':
+            self._end_possession()
+        same = self._timed_side() == side and node.stage in TIMED_STAGES
+        if same and self.tm['mode'] == 'main':
+            # the turn goes on: the timer restarts at full from the moment of the forfeit
+            self.tm.update(left=float(self.tm['period']), mark=t, sel_left=None, selected=False,
+                           grace_used=0.0, token_free=token_free(node))
+        else:
+            self._timer_decision()
+            if self.tm['mode'] == 'main':
+                self.tm['mark'] = t
+        self._run_ai()
+        if self.tm.get('mode') != 'idle' and self.tm.get('side') != self._timed_side():
+            self._timer_decision()
+
+    def timer_event(self, token, event):
+        """From the acting player's page: ready (hot-seat handover), select / cancel (an action), pause /
+        resume (a roll preview, roll result or turn card is open)."""
+        if not self.timer:
+            raise GameError('this game has no timer')
+        with self.lock:
+            self.timer_tick()
+            tm = self.tm
+            if tm['mode'] == 'idle' or not self.can_act(token):
+                return
+            now = self.now()
+            if event == 'ready':
+                if tm['mode'] == 'ready':
+                    tm.update(mode='main', mark=now)
+                    self.version += 1
+            elif event == 'pause':
+                if tm['mode'] in ('main', 'grace') and not tm['paused']:
+                    tm['left'] = self._main_left(now)
+                    if tm['mode'] == 'grace':
+                        tm['grace_left'] = tm['grace_until'] - now
+                    tm.update(paused=True, mark=None)
+            elif event == 'resume':
+                if tm['paused']:
+                    tm['paused'] = False
+                    if tm['mode'] == 'grace':
+                        tm['grace_until'] = now + tm['grace_left']
+                    else:
+                        tm['mark'] = now
+            elif event == 'select':
+                if tm['mode'] == 'grace':                       # switching action: like cancel, then select
+                    self._end_grace(now, cancelled=True)
+                if tm['mode'] == 'main' and not tm['paused']:
+                    left = self._main_left(now)
+                    fresh = tm['sel_left'] is None or (tm['sel_left'] - left) >= self.timer['regrace_after']
+                    tm['selected'] = True
+                    if fresh:
+                        tm.update(mode='grace', left=left, mark=None, grace_until=now + self.timer['grace'],
+                                  sel_left=left, grace_start=now)
+            elif event == 'cancel':
+                if tm['mode'] == 'grace':
+                    self._end_grace(now, cancelled=True)
+                elif tm['selected']:
+                    tm['selected'] = False
+                    self._log('timer', event='cancel', side=tm['side'], possession=self.possession,
+                              clock=self.state.clock, phase=self.state.phase, turn=self.state.turn_n, grace=False)
+            else:
+                raise GameError('timer events: ready, select, cancel, pause, resume')
+
+    def _end_grace(self, now, cancelled):
+        tm = self.tm
+        tm['grace_used'] += now - tm.get('grace_start', now)
+        tm.update(mode='main', mark=now, grace_until=None, selected=False)
+        if cancelled:
+            self._log('timer', event='cancel', side=tm['side'], possession=self.possession,
+                      clock=self.state.clock, phase=self.state.phase, turn=self.state.turn_n, grace=True)
+
+    def timer_json(self):
+        if not self.timer:
+            return None
+        self.timer_tick()
+        tm = getattr(self, 'tm', None) or dict(mode='idle', side=None)
+        now = self.now()
+        out = dict(setting=dict(A=self.timer['A'], B=self.timer['B']), handicap=self.timer['handicap'],
+                   by_side=dict(O=self._period('O'), X=self._period('X')), mode=tm['mode'], side=tm.get('side'),
+                   period=tm.get('period'), paused=tm.get('paused', False), token_free=tm.get('token_free', False),
+                   grace=self.timer['grace'], warn_at=TIMER_CONFIG['warn_at'], note=getattr(self, 'timer_note', None))
+        if tm['mode'] in ('main', 'grace', 'ready'):
+            out['left'] = round(max(0.0, self._main_left(now)), 2)
+        if tm['mode'] == 'grace':
+            out['grace_left'] = round(max(0.0, (tm['grace_left'] if tm['paused'] else tm['grace_until'] - now)), 2)
+        return out
+
     # ---- placement (rulebook setup steps 4 and 5) ----
     def _begin_possession(self):
         if self.place_on:
@@ -310,6 +558,7 @@ class Game:
             self._auto_place()
         else:
             self._run_ai()
+        self._timer_decision()
 
     def _auto_place(self):
         """The computer places for its side: the preview squares on offence, man-to-man on defence."""
@@ -383,6 +632,7 @@ class Game:
         self.version += 1
         if self.placing is None:
             self._run_ai()
+            self._timer_decision()
 
     def offence_player(self):
         """Which player (A or B) is attacking this possession."""
@@ -435,6 +685,7 @@ class Game:
 
     def act(self, token, data):
         with self.lock:
+            self.timer_tick()
             if self.picks_pending():
                 raise GameError('waiting for the scouting picks before tip-off')
             if self.placing:
@@ -474,9 +725,15 @@ class Game:
                    legal=[str(x) for x in legal] if a.kind != 'target' else [f'O{i + 1}' for i in range(5)],
                    seconds=round(now - self.last_decision, 2), clock=before.clock, phase=before.phase,
                    possession=self.possession, after=node.encode())
+        tm = getattr(self, 'tm', None)
+        if self.timer and tm and actor == 'human' and tm.get('mode') in ('main', 'grace'):
+            g = tm['grace_used'] + ((self.now() - tm.get('grace_start', self.now())) if tm['mode'] == 'grace' else 0)
+            rec['grace_s'] = round(g, 2)
+            rec['timer_left'] = round(max(0.0, self._main_left(self.now())), 2)
         if a.kind == 'target':
             rec['action'] = dict(kind='target', side='O', text="Coach's Call target chosen (secret)", target=a.target)
         self._log('action', **rec)
+        self.timer_note = None
         for r in rolls:
             self._log('roll', possession=self.possession, **r)
         self.last_decision = time.time()
@@ -486,6 +743,7 @@ class Game:
                               clock=before.clock, phase=before.phase, version=self.version))
         if node.stage == 'over':
             self._end_possession()
+        self._timer_decision()
         return dict(rolls=rolls)
 
     def _run_ai(self):
@@ -526,6 +784,7 @@ class Game:
             self.rolls = []
             self.version += 1
             self._log('undo', possession=self.possession, state=st.encode())
+            self._timer_decision(force_ready=True)
             return dict(ok=True)
 
     # ---- possessions and the match ----

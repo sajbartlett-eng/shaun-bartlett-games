@@ -109,7 +109,7 @@ Screenshots: `docs/playtest_mid_possession.png` (laptop), `docs/playtest_phone_p
 `docs/playtest_contest_decision.png`, `docs/playtest_match_end_feedback.png`,
 `docs/playtest_scenario_card.png`, `docs/playtest_end_of_possession.png`.
 
-## Scouting and detail levels (step 3c)
+## Scouting and detail levels (steps 3c and 3d)
 
 **The rule: the screen may arrange information, never judge it.** It can put two cards side by side,
 mark ▲ and ▼ values (the bands come from the locked range table), and say which defender can contest
@@ -121,29 +121,85 @@ labelled "estimate". The word "mistake" never appears.
   defender whose arrow points at it, otherwise the nearest). "Next matchup" flips through the others.
 - **Matched-value chips:** every pass, dribble, screen, steal, intercept, challenge and shot shows the
   two ratings that meet, for example "Pass 18▲ v Intercept 5▼ (X3)". No odds, no point sums.
-- **Scout report (before tip-off):** each player's ▲ strengths and ▼ liabilities, written from the card
-  data only, plus team lists (creators, three-point ▲, rim protection, players with two or more ▼ on
-  defence). A list of banned words (attack, avoid, exploit, target, should, must and others) is checked
-  by the tests.
-- **Your scouting call:** at Scout level the offence privately picks one matchup to hunt and the
-  defence one weakness to protect (both, in a full match). Calls stay hidden until the review.
+- **Scout report (step 3d):** written the way a scout writes: strengths and weaknesses only, in
+  words, no numbers and nothing average. Team lines come first (for example "fast and athletic · moves the
+  ball · inside-out"), then each player's offence and defence, at most 3 strengths and 3 weaknesses
+  each, with a mini shot chart (solid = ▲ zone, hatched = ▼ zone). Every phrase traces to a ▲ or ▼ on the
+  card; every team line to a threshold. All wording, thresholds and pairings live in
+  `playmaker_engine/scout_phrases.json`, so they can be reworded without touching code. Phrases that are
+  typical for a position (computed from all 75 cards) drop down the order, so the unusual ones show first.
+- **Read the cards first (Scout level):** each player makes the scouting call from the cards alone.
+  The offence picks one matchup to hunt and the defence one weakness to protect (both, in a full match).
+  The call locks when saved, then the report unlocks for that player (hot-seat: once both have locked).
+  Calls stay hidden from the other side until the review.
+- **Custom teams:** pick "Custom team…" in either team list. Choose one card per position from all 75,
+  or load a prescribed team as a start. A tier shape other than BBBBB, ABBBC or AABCC is allowed but
+  labelled experimental in the log. Both sides using the same card gets a warning (the table game would
+  need two card sets).
 - **Post-game review:** (1) your call next to the team-sheet calculation, (2) the three biggest ▲ shot
   edges the board offered and whether you used them, (3) where a short solver search disagreed, as
-  estimates (server version only; the link version says how to run it on the log), (4) a reflective
-  question saved with the log.
+  estimates (server version only; the link version says how to run it on the log), (4) **the report in
+  play**: for each scout line, the plain counts from the log ("12 passes, 0 intercepted") or "not
+  tested", (5) a reflective question saved with the log.
 
-| Level | Before the game | During | After |
+| Level | Scout report | During | After |
 |---|---|---|---|
-| **Learn** | Scout report, matchups on the cards, the team-sheet hunt / protect | Chips and card comparison | Full review |
-| **Scout** (default) | Scout report inside your private scouting call | Chips and card comparison | Full review |
-| **Pro** | Nothing | Chips and card comparison | Review on request |
+| **Learn** | Team lines and player lists at once, plus Mismatches in words for each numbered pairing (O1 v X1 ...), both directions | Chips and card comparison | Full review |
+| **Scout** (default) | Team lines and player lists, unlocked after your call locks | Chips and card comparison | Full review |
+| **Pro** | None: cards only | Chips and card comparison | Review on request |
 
-Both players always get the same level; it is written to the log. `tests/test_scouting.py` checks the
-report's wording, the bands, the levels, that neither seat sees anything the other cannot, that no
-pre-commit value or odds reach the page, the review and the phone layout.
+Both players always get the same level and the same report; the level is written to the log.
+`tests/test_scouting.py` checks no numbers or marks in the report, average stays out, the caps and order,
+the golden team reads, the calibration (no team line on more than 5 of the 10 teams), 250 random custom
+lineups, banned words, the shot charts, the lock, the report in play and the phone layout.
+`docs/TEAM_SHEET_HUNT_PROTECT.md` lists the team-sheet Hunt / Protect line for every pairing.
 
-Screenshots: `docs/playtest_scout_report.png`, `docs/playtest_card_compare_phone.png`,
+Screenshots: `docs/playtest_scout_report.png` (phone, with shot charts), `docs/playtest_scout_lock.png`
+and `docs/playtest_scout_reveal.png` (read the cards first), `docs/playtest_learn_mismatches.png`,
+`docs/playtest_team_builder.png`, `docs/playtest_report_in_play.png`, `docs/playtest_card_compare_phone.png`,
 `docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
+
+## Decision timer (step 3d, optional)
+
+Off by default. The table game slows decisions far below basketball pace; the timer brings some
+pressure back once players read the board faster.
+
+- **Settings:** Off, 60, 45 or 30 seconds per decision, chosen at the start, the same for both players
+  and written to the log.
+- **Handicap:** each player may have their own setting (for example an experienced player teaching a
+  new one), only when both players tick "handicap" at setup. It is shown on screen and in the log.
+  Player A is on offence in possession 1.
+- **Penalty:** each full period without an action costs the acting side 1 token from its pool; the
+  turn goes on and the timer restarts at full. Losing the last token ends the turn, exactly as spending
+  it on an action does. A token-free decision (the contest choice, the forced shot type) gets one period,
+  then the default applies (don't contest; the first legal shot type), and no token is lost. The
+  defence's turns and reactions are timed the same way.
+- **When it runs:** only while the acting player is deciding. It stops for roll previews and results,
+  the other side's turn, the Coach's Call secret entry, scouting calls and placement. Hot-seat: after
+  each handover a Ready screen hides the board, and the timer starts when the next player taps Ready.
+- **Admin grace:** selecting an action (Move, Pass, Shot ...) pauses the main timer and gives 15
+  seconds to pick its square, target or direction. Finishing in time commits it and resets the timer.
+  If the grace runs out, the main timer resumes from where it paused and the action stays selected.
+  Cancelling resumes the main timer without a reset or a penalty. A fresh grace needs 5 seconds of main
+  timer since the last selection, so select-and-cancel can't freeze the clock. Both numbers are in
+  `TIMER_CONFIG` (`playmaker_engine/timer.py`).
+- **Display:** a countdown ring on the acting side's tracker (on phones, above the actions) and a smaller
+  ring for the grace. At 10 seconds the ring turns dashed (not colour alone), the phone vibrates where
+  supported, and an optional sound plays (off by default). A forfeit is written in the turn bar
+  ("Timer: 1 token lost. 3 left."). Screen readers hear the timer at full, at 10 seconds and on each
+  forfeit.
+- **Engine and log:** `timer_forfeit` (in `playmaker_engine/timer.py`) is an ordinary logged state change,
+  so timed games replay exactly. It is never a legal action and never reaches the solver. The log keeps
+  the setting and handicap, every forfeit (phase and turn), every grace that ran out and every
+  cancellation. `review` and the post-game review list forfeits as plain facts ("the offence lost 1
+  token to the timer in phase 3").
+- **Presets from data:** `python -m playmaker_engine timer-stats` reads every playtest log and prints
+  decision time at the 50th, 75th and 90th percentiles by action and side (admin grace excluded;
+  scripted test games left out). There are not enough real games logged yet: games played on the link
+  version stay in that browser, so use **Download log** and put the files in `playtest_logs/`. About 20
+  games are needed before the presets can be set from data; until then keep 60, 45 and 30.
+
+Screenshots: `docs/playtest_timer_ready.png`, `docs/playtest_timer_ring.png`, `docs/playtest_timer_grace.png`.
 
 ## Solver (step 2)
 

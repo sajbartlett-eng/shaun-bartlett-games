@@ -6,6 +6,8 @@ Value is the expected possession score under best play; look is the expected sho
 
 ## Summary
 
+**Stale (step 3d):** cards 2, 3, 8, 9, 11 and 12 use Twin Towers or Ball Movement, which were rebuilt in step 3d. Their rows below were solved with the old teams and are kept for comparison; the re-solve with the new teams is queued (`round3d_jobs`, results in `solver_results/runs_3d.json`). See `solver_results/STALE.json`.
+
 | # | Card | Value | Look | P(30+) | Plans | Verdict | Label | Depth | Spread |
 |---|---|---|---|---|---|---|---|---|---|
 | 13 | One Phase Left | 21.0 | 21.0 | 0% | 4 | Puzzle | unstable | 4 | 3.0 |
@@ -13,14 +15,14 @@ Value is the expected possession score under best play; look is the expected sho
 | 10 | Late Clock Reset | 19.5 | 19.5 | 25% | 2 | Puzzle | unstable | 4 | 4.5 |
 | 6 | Need a Three | 30.0 | 30.0 | 100% | 17 | Gift | unstable | 4 | 6.0 |
 | 5 | Sideline, Late | 27.7 | 28.4 | 70% | 15 | Puzzle | estimated | 4 | 0.5 |
-| 3 | Sideline Out | 23.2 | 23.2 | 45% | 9 | Puzzle | estimated | 4 | 1.2 |
+| 3 | Sideline Out (stale) | 23.2 | 23.2 | 45% | 9 | Puzzle | estimated | 4 | 1.2 |
 | 4 | Deny Everything | 3.6 | 7.6 | 20% | 2 | Puzzle | estimated | 2 | 0.0 |
 | 1 | Baseline Box | 36.0 | 36.0 | 100% | 11 | Gift | unstable | 4 | 0.0 |
-| 2 | Baseline Stack | 19.5 | 19.5 | 35% | 2 | Puzzle | unstable | 4 | 7.5 |
-| 8 | Coach's Call | 20.0 | 18.0 | 0% | 4 | Wall | estimated | 2 | 0.0 |
-| 9 | Coach's Call, Late | 24.8 | 20.4 | 35% | 2 | Puzzle | estimated | 2 | 0.0 |
-| 11 | After a Timeout | 25.5 | 22.7 | 0% | 3 | Puzzle | estimated | 2 | 0.0 |
-| 12 | Mismatch on the Switch | 21.0 | 21.0 | 0% | 16 | Puzzle | estimated | 3 | 0.0 |
+| 2 | Baseline Stack (stale) | 19.5 | 19.5 | 35% | 2 | Puzzle | unstable | 4 | 7.5 |
+| 8 | Coach's Call (stale) | 20.0 | 18.0 | 0% | 4 | Wall | estimated | 2 | 0.0 |
+| 9 | Coach's Call, Late (stale) | 24.8 | 20.4 | 35% | 2 | Puzzle | estimated | 2 | 0.0 |
+| 11 | After a Timeout (stale) | 25.5 | 22.7 | 0% | 3 | Puzzle | estimated | 2 | 0.0 |
+| 12 | Mismatch on the Switch (stale) | 21.0 | 21.0 | 0% | 16 | Puzzle | estimated | 3 | 0.0 |
 | 14 | Hold for One | 22.3 | 20.0 | 0% | 12 | Puzzle | unstable | 4 | 0.0 |
 | 15 | In the Bonus | 29.7 | 25.9 | 76% | 111 | Gift | unstable | 4 | 0.7 |
 | 16 | Star Locked | 26.0 | 26.0 | 0% | 1 | Single trick | unstable | 4 | 4.0 |
