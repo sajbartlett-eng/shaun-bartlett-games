@@ -44,9 +44,10 @@
         <label><input type="checkbox" id="timerSound"> Sound cue at 10 seconds</label>
       </fieldset>
       <label>Seed <input id="seed" type="number" placeholder="random"></label>
-      <fieldset><legend>Computer opponent (on defence it reads the board; on offence it is a simple baseline)</legend>
-        <label><input type="checkbox" id="aiO"> computer plays offence</label>
-        <label><input type="checkbox" id="aiX"> computer plays defence</label>
+      <fieldset><legend>Computer opponent</legend>
+        <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
+        <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
+        <p class="note">Rookie: makes beginner mistakes you can learn to spot. Starter: solid, with one habit to find. All-Star: plays the full read.</p>
       </fieldset>
       <button id="create" class="primary">Start</button>
       <p id="scenarioText" class="note"></p>

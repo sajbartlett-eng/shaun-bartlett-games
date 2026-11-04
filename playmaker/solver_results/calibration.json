@@ -1,0 +1,187 @@
+[
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+1
+],
+"seed": 1,
+"score": 21.0,
+"gap": {
+"O": 41.52,
+"X": 3.0
+},
+"decisions": {
+"O": 3,
+"X": 5
+},
+"think_max": {
+"O": 0.07309889793395996,
+"X": 0.33147549629211426
+},
+"think_mean": {
+"O": 0.05899405479431152,
+"X": 0.11610078811645508
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 30.7
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+1
+],
+"seed": 1,
+"score": 36.0,
+"gap": {
+"O": 59.495000000000005,
+"X": 39.0
+},
+"decisions": {
+"O": 8,
+"X": 8
+},
+"think_max": {
+"O": 0.8244888782501221,
+"X": 1.068960428237915
+},
+"think_mean": {
+"O": 0.3470968518938337,
+"X": 0.534174233675003
+},
+"comfort_decided": 0,
+"x_decisions": 8,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 104.8
+},
+{
+"o": "allstar",
+"x": "allstar",
+"spec": [
+"card",
+1
+],
+"seed": 1,
+"score": 30.0,
+"gap": {
+"O": 28.200000000000003,
+"X": 13.200000000000003
+},
+"decisions": {
+"O": 7,
+"X": 8
+},
+"think_max": {
+"O": 1.4191603660583496,
+"X": 1.0373106002807617
+},
+"think_mean": {
+"O": 0.9105829397837321,
+"X": 0.534134715795517
+},
+"comfort_decided": 0,
+"x_decisions": 8,
+"habits": {
+"O": [],
+"X": []
+},
+"wall": 157.9
+},
+{
+"o": "rookie",
+"x": "rookie",
+"spec": [
+"card",
+2
+],
+"seed": 1,
+"score": 20.0,
+"gap": {
+"O": 18.54803125,
+"X": 11.725
+},
+"decisions": {
+"O": 2,
+"X": 3
+},
+"think_max": {
+"O": 0.040151119232177734,
+"X": 0.14300227165222168
+},
+"think_mean": {
+"O": 0.03206062316894531,
+"X": 0.06455055872599284
+},
+"comfort_decided": 0,
+"x_decisions": 3,
+"habits": {
+"O": [
+"never_screens",
+"settles_for_first_shot"
+],
+"X": [
+"jumps_first_pass",
+"never_leaves_shooter"
+]
+},
+"wall": 24.3
+},
+{
+"o": "starter",
+"x": "starter",
+"spec": [
+"card",
+2
+],
+"seed": 1,
+"score": 18.0,
+"gap": {
+"O": 6.377499999999998,
+"X": 10.975624999999999
+},
+"decisions": {
+"O": 3,
+"X": 5
+},
+"think_max": {
+"O": 0.5496575832366943,
+"X": 1.0064313411712646
+},
+"think_mean": {
+"O": 0.4180905024210612,
+"X": 0.4983233451843262
+},
+"comfort_decided": 0,
+"x_decisions": 5,
+"habits": {
+"O": [
+"never_screens"
+],
+"X": [
+"jumps_first_pass"
+]
+},
+"wall": 72.0
+}
+]

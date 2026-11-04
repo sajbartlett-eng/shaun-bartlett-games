@@ -153,16 +153,16 @@ def test_phone_layout_fits_galaxy_portrait(static_site, tmp_path):
 
 
 NODE_AI = r"""
-const { chromium } = require('playwright');
-const [url] = process.argv.slice(2);
+const { chromium, devices } = require('playwright');
+const [url, level] = process.argv.slice(2);
 (async () => {
-  const b = await chromium.launch(); const page = await b.newPage();
+  const b = await chromium.launch(); const page = await (await b.newContext({ ...devices['Galaxy S9+'] })).newPage();
   page.on('pageerror', e => console.error('pageerror', e.message));
   await page.goto(url);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
-  const out = await page.evaluate(async () => {
+  const out = await page.evaluate(async (lvl) => {
     const t0 = performance.now();
-    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: 1, seed: 9, level: 'pro', ai: { X: 'greedy' } });
+    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: 1, seed: 9, level: 'pro', ai: { X: lvl } });
     const times = [];
     for (let i = 0; i < 8; i++) {
       const s = await window.PM_BACKEND(`/api/state?code=${g.code}&token=${g.token}`);
@@ -173,22 +173,23 @@ const [url] = process.argv.slice(2);
       times.push(performance.now() - t);
     }
     const log = await window.PM_BACKEND(`/api/log?code=${g.code}`);
-    return { times, ai: log.filter(r => r.type === 'action' && r.actor === 'ai').map(r => r.action.text) };
-  });
+    const ai = log.filter(r => r.type === 'action' && r.actor === 'ai');
+    return { times, ai: ai.map(r => r.action.text), think: ai.map(r => r.think_s || 0) };
+  }, level);
   console.log(JSON.stringify(out));
   await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
 """
 
 
-def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path):
-    """The board-reading defence (it uses the solver's evaluation) plays in the link version too, and
-    each of the offence's actions, the computer's reply included, comes back within a few seconds."""
+@pytest.mark.parametrize('level', ['rookie', 'starter', 'allstar'])
+def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path, level):
+    """Each computer level plays in the link version (on the phone profile), under a second per decision."""
     (tmp_path / 'ai.js').write_text(NODE_AI)
     url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
-    r = subprocess.run(['node', str(tmp_path / 'ai.js'), url], capture_output=True, text=True, timeout=600)
+    r = subprocess.run(['node', str(tmp_path / 'ai.js'), url, level], capture_output=True, text=True, timeout=600)
     assert r.returncode == 0, r.stderr[-800:]
     out = json.loads(r.stdout.strip().splitlines()[-1])
-    print('browser timings ms', [round(t) for t in out['times']], out['ai'][:4])
+    print(f'browser {level}: think s per decision', out['think'], 'ms per human action', [round(t) for t in out['times']])
     assert out['ai'], out                                    # the computer defence acted
-    assert max(out['times']) < 15000, out['times']           # ms, generous for a slow phone
+    assert max(out['think']) < 1.0, out['think']
