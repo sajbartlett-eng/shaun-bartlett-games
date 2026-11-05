@@ -14084,6 +14084,13 @@ const VALUE_ENGINE = {
 const DIALOGUE = (() => {
     const el = {};
     let queue = [], index = 0, typing = null, choosing = false, onDone = null, current = null;
+    const FACE = (hair, jacket, extra = '') => `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#e6dcc4" stroke="#2b2316" stroke-width="2"/><path d="M12 80 C14 62 26 57 40 57 C54 57 66 62 68 80 Z" fill="${jacket}" stroke="#2b2316" stroke-width="2"/><path d="M33 57 L40 68 L47 57" fill="#f4ede0" stroke="#2b2316" stroke-width="1.6"/><path d="M26 33 C26 19 54 19 54 33 V42 C54 53 26 53 26 42 Z" fill="#f4ede0" stroke="#2b2316" stroke-width="2"/>${hair}<circle cx="33.5" cy="38.5" r="1.4" fill="#2b2316"/><circle cx="47.5" cy="38.5" r="1.4" fill="#2b2316"/>${extra}<path class="mouth" d="M35 46.5 Q40 49.5 45 46.5" fill="none" stroke="#2b2316" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+    const VOICES = {
+        hartley: { name: 'Mrs Hartley, the bank', svg: FACE('<path d="M24 34 C22 14 58 14 56 34 C52 25 28 25 24 34 Z" fill="#8a8178" stroke="#2b2316" stroke-width="2"/>', '#4f6f9f', '<circle cx="33" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><circle cx="47" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><path d="M37.6 38 H42.4 M28.4 38 H26 M51.6 38 H54" stroke="#2b2316" stroke-width="1.6"/>') },
+        dacre: { name: 'Mr Dacre, Dacre and Sons', svg: FACE('<path d="M22 30 H58 V26 H52 C52 16 28 16 28 26 H22 Z" fill="#2b2316" stroke="#2b2316" stroke-width="2"/>', '#5a4a3a', '<path d="M34 44 Q40 41 46 44" fill="none" stroke="#2b2316" stroke-width="2.4" stroke-linecap="round"/><path d="M37 57 L40 63 L43 57 Z" fill="#a04830"/>') },
+        brandt: { name: 'Nell Brandt, farm manager', svg: FACE('<path d="M23 31 C25 17 55 17 57 31 L59 33 H21 Z" fill="#6f5134" stroke="#2b2316" stroke-width="2"/>', '#4f6f3f', '<path d="M30 34 L36 34 M44 34 L50 34" stroke="#2b2316" stroke-width="1.6" stroke-linecap="round"/><path d="M30 50 Q34 53 40 52 M50 50 Q46 53 40 52" fill="none" stroke="#2b2316" stroke-width="1.2"/><path d="M28 58 Q40 64 52 58" fill="none" stroke="#a04830" stroke-width="3" stroke-linecap="round"/>') },
+    };
+    let shownVoice = null;
     const PORTRAIT = `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#e6dcc4" stroke="#2b2316" stroke-width="2"/><path d="M12 80 C14 62 26 57 40 57 C54 57 66 62 68 80 Z" fill="#4f6f9f" stroke="#2b2316" stroke-width="2"/><path d="M33 57 L40 68 L47 57" fill="#f4ede0" stroke="#2b2316" stroke-width="1.6"/><path d="M26 33 C26 19 54 19 54 33 V42 C54 53 26 53 26 42 Z" fill="#f4ede0" stroke="#2b2316" stroke-width="2"/><path d="M24 34 C22 14 58 14 56 34 C52 25 28 25 24 34 Z" fill="#8a8178" stroke="#2b2316" stroke-width="2"/><circle cx="33" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><circle cx="47" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><path d="M37.6 38 H42.4 M28.4 38 H26 M51.6 38 H54" stroke="#2b2316" stroke-width="1.6"/><circle cx="33.5" cy="38.5" r="1.3" fill="#2b2316"/><circle cx="47.5" cy="38.5" r="1.3" fill="#2b2316"/><path class="mouth" d="M35 46.5 Q40 49.5 45 46.5" fill="none" stroke="#2b2316" stroke-width="1.7" stroke-linecap="round"/></svg>`;
     function init() {
         el.overlay = document.getElementById('dialogueOverlay');
@@ -14097,7 +14104,7 @@ const DIALOGUE = (() => {
         el.choices = document.getElementById('dialogueChoices');
         el.next = document.getElementById('dialogueNextBtn');
         el.skip = document.getElementById('dialogueSkipBtn');
-        el.portrait.innerHTML = PORTRAIT;
+        el.portrait.innerHTML = VOICES.hartley.svg; shownVoice = 'hartley';
         el.next.addEventListener('click', e => { e.stopPropagation(); advance(); });
         el.skip.addEventListener('click', e => { e.stopPropagation(); finish(); });
         el.modal.addEventListener('click', e => { if (e.target.closest('button')) return; advance(); });
@@ -14114,13 +14121,18 @@ const DIALOGUE = (() => {
         queue = (spec.beats || []).map(beatOf);
         index = 0; onDone = done || null; choosing = false;
         el.eyebrow.textContent = spec.eyebrow || '';
-        el.name.textContent = spec.speaker || 'Mrs Hartley, the bank';
         if (UI.topOverlayKey() !== 'dialogueOverlay') UI.open('dialogueOverlay');
         showBeat();
+    }
+    function setVoice(key) {
+        const voice = VOICES[key] || VOICES.hartley;
+        if (shownVoice !== key) { el.portrait.innerHTML = voice.svg; shownVoice = key; }
+        el.name.textContent = (current && current.speaker) || voice.name;
     }
     function showBeat() {
         const beat = queue[index];
         if (!beat) { finish(); return; }
+        setVoice(beat.who || (current && current.voice) || 'hartley');
         el.choices.innerHTML = ''; el.choices.hidden = true; choosing = false;
         el.next.hidden = false;
         el.next.textContent = index === queue.length - 1 && !beat.choices ? (current.finalLabel || 'Continue') : 'Continue';
@@ -14901,7 +14913,10 @@ const LEGACY = (() => {
         const c=campaign.current;if(STATE.phase!==PHASE.BUILD||c.investmentOpened)return;
         syncInvestmentUnlocks();
         FLOW.stopTimer();const dropped=placeRemainingSuppliedAssets();if(dropped)UI.toast(`Time up. ${dropped} supplied ${dropped===1?'piece was':'pieces were'} placed by the bank.`,'warn',2400);
-        c.investmentOpened=true;c.investmentStep=0;c.investmentTurn=c.investmentOrder[0];c.buildSelection=null;event('INVESTMENT_OPENED',{afterBuild:true});clearInvestmentTimer();RENDER.render();renderInvest();UI.open('legacyInvestOverlay');save();
+        c.investmentOpened=true;c.investmentStep=0;c.investmentTurn=c.investmentOrder[0];c.buildSelection=null;event('INVESTMENT_OPENED',{afterBuild:true});clearInvestmentTimer();RENDER.render();
+        const firstCapital=campaign.guided!==false&&UI.el.dialogueOverlay&&!campaign.spoken?.firstCapital&&campaign.players.some(p=>p.capital>0);
+        if(firstCapital){campaign.spoken={...(campaign.spoken||{}),firstCapital:true};save();DIALOGUE.play(firstCapitalScript(),()=>{renderInvest();UI.open('legacyInvestOverlay');save();});return;}
+        renderInvest();UI.open('legacyInvestOverlay');save();
     }
     function completeInvestmentPhase() {
         const c=campaign.current;c.investmentComplete=true;clearInvestmentTimer();UI.close('legacyInvestOverlay');
@@ -15801,7 +15816,8 @@ const LEGACY = (() => {
     function finishUnresolved(reason) {
         if(!campaign||campaign.status!=='playing')return;
         campaign.status='unresolved';campaign.endedAt=new Date().toISOString();campaign.current.unresolvedReason=reason;campaign.current.consent.stage='unresolved';event('CAMPAIGN_UNRESOLVED',{attempt:campaign.current.attempt,reason,division:STATE.outcome?divisionSnapshot():null});
-        FLOW.stopTimer();UI.closeAllOverlays();suspended=null;save();open();
+        FLOW.stopTimer();UI.closeAllOverlays();suspended=null;save();
+        if(campaign.guided!==false&&UI.el.dialogueOverlay)DIALOGUE.play(unresolvedScript(),open);else open();
     }
     let facesPending=null;
     function askFaces(then) {
@@ -15862,7 +15878,9 @@ const LEGACY = (() => {
         if(campaign.status==='complete'){campaign.finalResult=calculateCampaignResult();if(finalProjection.players.some((player,i)=>player.projected!==campaign.finalResult.players[i].projected||player.current!==campaign.finalResult.players[i].current))throw new Error('Final projection did not match the accepted ledger.');campaign.endedAt=acceptedAt;}
         event('SETTLEMENT_COMMITTED',{attempt:campaign.current.attempt,scores,accounting:clone(preview),holdings:holdingsByPlayer.map(groups=>groups.map(group=>({name:group.name,grade:group.grade,score:group.score,income:group.income}))),incomePayments});if(campaign.status==='complete')event('CAMPAIGN_COMPLETED',{finalResult:clone(campaign.finalResult)});
         suspended=null;save();
+        const spokenAfter=campaign.status==='between'&&campaign.guided!==false&&UI.el.dialogueOverlay?afterEstateScript(campaign.history[campaign.history.length-1]):null;
         if(spokenEnding)DIALOGUE.play(endingScript(),()=>{open();ensureFairestGaps();});
+        else if(spokenAfter)DIALOGUE.play(spokenAfter,()=>{open();ensureFairestGaps();});
         else {open();ensureFairestGaps();}
     }
     // Every business on the estate before the fence, and what it paid. Compared at the
@@ -16091,6 +16109,8 @@ const LEGACY = (() => {
                 "I'm sorry for your loss. Both of them, within the year. Your father banked with us for forty years; I knew him a little.",
                 "There is no will. I have looked, and the solicitor has looked. So the law decides: everything passes to the two of you, in equal shares.",
                 "The court has made the bank the administrator. That is me, I'm afraid. I set the deadlines, and I keep the record.",
+                {who:'dacre',text:"Mr Dacre, Dacre and Sons. My condolences. When you're ready to talk about the farm, I'm ready to make an offer."},
+                "He will say that about every one of them. His letters are in the file.",
                 {text:"Ask me anything before we start.",choices:[
                     {label:'How many properties are there?',then:["Six. Your grandparents' farm comes first; its title is already clear. The others come through as probate, tenancies and surveys allow. I will tell you about each as it arrives."]},
                     {label:"Why can't we just split everything down the middle?",then:["Because none of them splits down the middle. A house, a farm, a stretch of river: every line through them costs something. The fairest method I know is the oldest: one of you draws the line, the other chooses the side."]},
@@ -16112,7 +16132,8 @@ const LEGACY = (() => {
                 ]},
             ],
             3:[
-                "The tenant on the working estate has given notice, so the farm is yours to settle. It still earns. Put money back into it and it earns more.",
+                {who:'brandt',text:"Nell Brandt. I ran the working estate for your parents for thirty years, and I've given my notice. It's yours to settle now."},
+                {who:'brandt',text:"It still earns. Put money back into it and it earns more. A barn beside crops, vines beside a winery: pieces that work together pay whoever inherits them."},
                 ...carried,
                 "Capital from your businesses is spent here, after Build and before the roles are decided. As the most Capital either of you has held rises, more pieces become available.",
                 "One thing people forget: whoever inherits the square owns what stands on it, whoever paid for it.",
@@ -16126,8 +16147,9 @@ const LEGACY = (() => {
             5:[
                 "The forestry survey of the uplands is complete, and the land can be settled.",
                 ...carried,
-                `Rock and managed woodland are sites now. A quarry needs two adjacent rock squares and pays ${q} Capital twice. A logging operation needs three connected woodland squares and pays ${lg} three times.`,
-                `Both pay only if inherited whole. They become available at ${DEVELOPMENT.quarry.cost} and ${DEVELOPMENT.logging.cost} Capital held.`,
+                {who:'brandt',text:`Rock and managed woodland are sites up here. A quarry wants two rock squares side by side and pays ${q} Capital twice. A logging operation wants three connected woodland squares and pays ${lg} three times.`},
+                {who:'brandt',text:`Both pay only if inherited whole. A fence through either and it pays nothing.`},
+                `They become available at ${DEVELOPMENT.quarry.cost} and ${DEVELOPMENT.logging.cost} Capital held.`,
             ],
             6:[
                 "The last title has come through.",
@@ -16140,6 +16162,30 @@ const LEGACY = (() => {
             ],
         };
         return {eyebrow:`Estate ${n} of 6 · ${chapters[n-1]}`,beats:scripts[n]||[],finalLabel:n===1?'Shape the land':'Begin the estate'};
+    }
+    function afterEstateScript(record) {
+        const beats=[];
+        const attempt=acceptedAttemptForRecord(record);
+        if(attempt?.cutByBank)beats.push({who:'dacre',text:"Took your time. I'd have had that line drawn in a morning."});
+        const divided=(couldHaveBeen().estates.find(e=>e.round===record.round)?.divided||[]).slice(0,2);
+        for(const d of divided)beats.push({who:'brandt',text:d.development?`The fence went through the ${d.name}. It pays nothing now.`:`The fence went through the ${d.name}. It paid ${d.income} Capital a time; now ${d.afterIncome}.`});
+        if([1,3,5].includes(record.round)&&!record.lost){
+            beats.push({who:'dacre',text:`I'd give you ${record.accounting?.inherited??0} for the pair of plots as they stand. The offer is open until the next estate.`});
+            if(record.round===1)beats.push("He will make an offer after every other estate. The record keeps the number.");
+        }
+        return beats.length?{eyebrow:`After Estate ${record.round}`,beats,finalLabel:'See the record'}:null;
+    }
+    function firstCapitalScript() {
+        return {eyebrow:'Capital in hand',voice:'brandt',beats:[
+            "You've Capital in hand now. Spend it on a piece that works with what's already there and it pays after every estate. Keep it and it still counts at the end.",
+            "Whoever inherits the square owns the piece, whoever paid for it.",
+        ],finalLabel:'Open the catalogue'};
+    }
+    function unresolvedScript() {
+        return {eyebrow:'No choice was made',beats:[
+            {who:'dacre',text:"Sold, then. I'll have the sign up by Friday."},
+            "After costs, nothing comes back to the family. The Legacy ends here, and the record says so.",
+        ],finalLabel:'See the record'};
     }
     function endingScript() {
         return {eyebrow:'After the last estate',beats:["That is the last of them. I will file the record now.","What each of you holds, what the family lost, and how it felt. Read all three."],finalLabel:'See the record'};
