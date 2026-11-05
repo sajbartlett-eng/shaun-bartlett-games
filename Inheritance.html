@@ -2544,6 +2544,13 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .legacy-face-card span {display:block;font-size:13px;color:var(--ink-soft);}
 .legacy-chronicle-faces {font-size:20px;letter-spacing:.08em;margin-right:6px;vertical-align:middle;}
 .legacy-gap-line {font-size:14px;line-height:1.45;margin:6px 0;}
+.legacy-record-kicker {margin:14px 0 6px;font:700 17px var(--hand);color:var(--gold);}
+.legacy-record .legacy-record-line {padding:10px 0;border-bottom:1px solid var(--paper-edge);}
+.legacy-record .legacy-record-line:last-of-type {border-bottom:0;}
+.legacy-record-head {display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.legacy-record-head strong {font-size:15px;}
+.legacy-record .legacy-record-line p {margin:3px 0;font-size:14px;line-height:1.45;}
+.legacy-record-final {margin-top:12px;font:700 16px var(--display);}
 .legacy-choice-panel {display:none;margin:0 0 10px;padding:10px 12px;border:1px dashed var(--gold);border-radius:4px;background:var(--gold-soft);font-size:14px;line-height:1.45;color:var(--ink-soft);}
 .legacy-choice-panel.active {display:block;}
 .legacy-choice-panel strong {color:var(--ink);}
@@ -15066,7 +15073,7 @@ const LEGACY = (() => {
             const latestRecord=campaign.history[campaign.history.length-1];
             html+=`<h3>${complete?'Six estates recorded':unresolved?'Campaign ended without a choice':between?`Estate ${campaign.round} · ${text(latestRecord?.chapter||chapters[campaign.round-1])}`:`Estate ${campaign.round} of 6 · ${chapters[campaign.round-1]}`}</h3>`;
             if(campaign.status==='playing')html+=`<p class="comparison-note">${text(CHAPTER_COPY[campaign.round-1])}</p>`;
-            if(complete)html+=`${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
+            if(complete)html+=`${familyRecordHtml()}${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
             else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no holding payment was made for it. Capital already invested remains spent.</p></div>${ledger()}`;
             else if(between){
                 const latest=campaign.history[campaign.history.length-1];
@@ -15085,6 +15092,7 @@ const LEGACY = (() => {
             }
             html+='<div class="actions">';
             if(unresolved)html+='<button class="btn-primary" data-legacy="unresolved">Review final attempted estate</button>';
+            if(complete)html+='<button class="btn-primary" data-legacy="recordShare">Share the family record</button><button class="btn-secondary" data-legacy="recordText">Download the family record</button>';
             html+='<button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-secondary" data-legacy="download">Download backup</button><button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="leave">Save and return to setup</button></div>';
         }
         if(saveError) html+='<p class="legacy-error">Automatic saving is unavailable. Download a Legacy file before leaving.</p>';
@@ -15131,7 +15139,7 @@ const LEGACY = (() => {
         const baseline=calculateEstateBaseline(STATE);
         campaign.current.baseline=baseline.total;
         event('ESTATE_STARTED',{chapter:chapters[n-1]});event('BASELINE_ESTABLISHED',baseline);
-        busy=false;document.body.classList.add('legacy-active');RENDER.render();save();
+        busy=false;document.body.classList.add('legacy-active');RENDER.render();save();showChapterCard();
     }
     function finishFinalRoleSelection() { return; }
     function estateFingerprint() {
@@ -15305,10 +15313,85 @@ const LEGACY = (() => {
         }
         busy=false;document.body.classList.add('legacy-active');
     }
-    function continueEstate() { if(!suspended)return;const saved=suspended;suspended=null;restoreGame(saved);save(); }
+    function continueEstate() { if(!suspended)return;const saved=suspended;suspended=null;restoreGame(saved);save();showChapterCard(); }
+    // What each estate brings that the siblings have not met before. Rules stated,
+    // numbers from the game's own tables.
+    function chapterNewRule(round) {
+        const q=developmentIncome(DEVELOPMENT.quarry),lg=developmentIncome(DEVELOPMENT.logging);
+        return {
+            1:`Shape the land together first: Water and Road tiles, untimed, then Build as usual. Pieces that sit beside the right neighbours in the same plot form a <strong>holding</strong>, which pays Capital after each estate to whoever inherits it. There is no Capital to spend yet.`,
+            2:`This is the only estate where each sibling may name one family item they care about. It changes no value or rule. Any Capital held can be spent after Build, before roles are decided.`,
+            3:`Capital earned by holdings is spent here, after Build and before roles are decided. As the most Capital a sibling has ever held rises, more pieces become available to them. Whoever inherits a purchased piece's square owns it, whoever paid.`,
+            4:`Coastal or riverside land. Squares near the water are worth more, and a fence that cuts a square off from the water lowers it. Connected access roads add value.`,
+            5:`Rock and managed woodland are sites. A <strong>Quarry</strong> needs two adjacent Rock squares and pays ${q} Capital twice; a <strong>Logging Operation</strong> needs three connected Managed Woodland squares and pays ${lg} Capital three times, if inherited intact. They become available at ${DEVELOPMENT.quarry.cost} and ${DEVELOPMENT.logging.cost} Capital held.`,
+            6:`The last estate. After this division the result stands. Each sibling's final wealth is inherited Property, unspent Capital, and the next three holding payments.`,
+        }[round]||'';
+    }
+    function showChapterCard() {
+        if(!campaign||campaign.status!=='playing'||!campaign.current||campaign.current.chapterCardSeen)return;
+        const fresh=STATE.phase===PHASE.TERRAIN||(STATE.phase===PHASE.BUILD&&!campaign.current.investmentOpened&&STATE.pool.length===CONFIG.PLACEMENT_COUNT);
+        if(!fresh)return;
+        const n=campaign.round,years=yearsPerEstate();
+        const carried=n>1?`<h4 class="legacy-record-kicker">What carries over</h4><div class="legacy-guide-grid">${campaign.players.map(p=>`<div class="legacy-guide-step"><strong>${text(p.name)}</strong><span>Property ${p.property}</span><span>Capital ${p.capital}</span><span>${p.holdings.filter(h=>h.active).length} ${p.holdings.filter(h=>h.active).length===1?'holding paying':'holdings paying'}</span></div>`).join('')}</div>`:'';
+        const dismiss=()=>{
+            campaign.current.chapterCardSeen=true;
+            if(n>=5)campaign.guidance.resourcePrimerSeen=true;
+            if(n===6)campaign.guidance.finalePrimerSeen=true;
+            save();UI.close('tutorialOverlay');UI.focusBoard();
+        };
+        TUTORIAL.openCard({
+            eyebrow:`Estate ${n} of 6${n>1?` · about ${years} years later`:''}`,
+            title:chapters[n-1],
+            body:`<p>${text(CHAPTER_COPY[n-1])}</p><h4 class="legacy-record-kicker">${n===1?'How Family Legacy works':'What is new here'}</h4><p>${chapterNewRule(n)}</p>${carried}`,
+            primary:{label:n===1?'Shape the land':'Begin the estate',action:dismiss},
+            ghost:{label:'Campaign rules',action:()=>{dismiss();showCampaignRules();}},
+        });
+    }
     function leave() {
         save();if(saveError && !confirm('Automatic save failed. Leave anyway? Download a Legacy file first to preserve your progress.'))return;
         clearInvestmentTimer();campaign=null;suspended=null;document.body.classList.remove('legacy-active');busy=true;originalReset.call(FLOW);busy=false;
+    }
+    // The family record: six estates, what moved the gap, how it felt. The thing a family keeps.
+    function recordLines(record,index) {
+        const attempt=acceptedAttemptForRecord(record);
+        const inherited=record.lost?'':`${text(campaign.players[0].name)} inherited ${record.scores?.[0]??0}, ${text(campaign.players[1].name)} ${record.scores?.[1]??0}.`;
+        const after=positionAfter(index),gap=Math.abs(after[0]-after[1]),ahead=after[0]===after[1]?'level':`${text(campaign.players[after[0]>after[1]?0:1].name)} ahead`;
+        const acts=record.lost?['No settlement was accepted; the estate left the family.']:concessionSentences(record);
+        return {acts,inherited,gap,ahead};
+    }
+    function familyRecordHtml() {
+        const rows=campaign.history.map((record,i)=>{
+            const line=recordLines(record,i);
+            return `<div class="legacy-record-line"><div class="legacy-record-head">${facesInline(record.faces)}<strong>${record.round}. ${text(record.chapter)}</strong></div><p>${line.acts.join(' ')} ${line.inherited}</p><p class="comparison-note">Gap after this estate: ${line.gap}, ${line.ahead}.</p></div>`;
+        }).join('');
+        const result=campaign.finalResult;
+        const final=result?`<p class="legacy-record-final">Final wealth: ${campaign.players.map((p,i)=>`${text(p.name)} ${result.players[i].projected}`).join(' · ')}${result.winnerIdx===null?' · level':''}.</p>`:'';
+        return `<div class="legacy-ending legacy-record"><h3>The family record</h3><p class="comparison-note">Six estates, about ${yearsPerEstate()} years apart. The faces are how each sibling said it felt.</p>${rows}${final}</div>`;
+    }
+    function familyRecordText() {
+        const faceWord=(faces,i)=>Number.isInteger(faces?.[i])?`${FACES[faces[i]].emoji} ${FACES[faces[i]].label}`:'not recorded';
+        const lines=[`Family Legacy · ${campaign.players.map(p=>p.name).join(' and ')}`,`Six estates, about ${yearsPerEstate()} years apart.`,''];
+        campaign.history.forEach((record,i)=>{
+            const line=recordLines(record,i);
+            lines.push(`${record.round}. ${record.chapter} · ${campaign.players.map((p,j)=>`${p.name} ${faceWord(record.faces,j)}`).join(' · ')}`);
+            lines.push(`   ${[...line.acts,line.inherited].filter(Boolean).join(' ').replace(/<[^>]+>/g,'')}`);
+            lines.push(`   Gap after this estate: ${line.gap}, ${line.ahead.replace(/<[^>]+>/g,'')}.`,'');
+        });
+        if(campaign.finalResult)lines.push(`Final wealth: ${campaign.players.map((p,i)=>`${p.name} ${campaign.finalResult.players[i].projected}`).join(' · ')}${campaign.finalResult.winnerIdx===null?' · level':''}.`);
+        return lines.join('\n');
+    }
+    function downloadRecord() {
+        if(!campaign)return;
+        const blob=new Blob([familyRecordText()],{type:'text/plain'});
+        const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Family-Record.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+    async function shareRecord() {
+        if(!campaign)return;
+        const textRecord=familyRecordText();
+        try{
+            if(navigator.share){await navigator.share({title:'Our Family Legacy',text:textRecord});return;}
+            await navigator.clipboard.writeText(textRecord);UI.toast('The family record is copied. Paste it anywhere.','good',2600);
+        }catch(_){downloadRecord();}
     }
     function download() {
         if(!campaign)return;
@@ -15572,6 +15655,7 @@ const LEGACY = (() => {
             const act=b.dataset.legacy;
             if(act==='open')open();if(act==='new')newCampaign();if(act==='resumeLocal')loadLocal();if(act==='rules')showCampaignRules();
             if(act==='continue')continueEstate();if(act==='ledger')render();if(act==='unresolved')showUnresolvedHistory();if(act==='download')download();if(act==='leave')leave();
+            if(act==='recordText')downloadRecord();if(act==='recordShare')shareRecord();
             if(act==='close'){UI.close('legacyOverlay');if(suspended)continueEstate();}
             if(act==='finishInvesting')finishInvesting();if(act==='beginFirstEstate')beginFirstEstate();if(act==='beginFamilyHomeChoice')beginFamilyHomeChoice();
             if(act==='next'&&campaign.status==='between'){if(campaign.history.length===1)campaign.guidance.holdingsPrimerSeen=true;if(campaign.round+1>=5)campaign.guidance.resourcePrimerSeen=true;campaign.round++;startEstate();}

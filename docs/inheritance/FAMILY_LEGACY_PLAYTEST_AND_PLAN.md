@@ -121,7 +121,8 @@ The designer then ruled: payments must be proportional to real yields with the y
 ## Progress
 
 - **Done:** P1 (simulator, two runs), E1 (faces after every estate, visible to both, faces only), E2 (the gap thread and concession facts), E3 (the record screen between estates), P16 (holdings visible at Choose and on the estate during Cut), P12 (holding cards in plain words), P2 and P5 on the campaign's own screens (the ceiling retired from the record screen and the ending; the ordinary game's ceiling and awards blocks hidden in the campaign), the two layout breaks in P14, the resume bug (finding 14), and the time scale as a stated rule. The next-chapter guide now opens by default on the record screen.
-- **Next:** P9 and P10 (chapter cards and primers as phase cards for both siblings), then E4 and P13 (the chronicle as the headline of the ending, downloadable and shareable), then the investment screen (P6, P7, P4, P3).
+- **Done next:** P9 and P10 (a chapter card opens every estate for both siblings, naming it, stating what is new in rules, and showing what carries over; the resource and final-settlement primers live there), E4 and P13 (the family record is the headline of the ending: six lines with faces, the acts that moved the gap, the gap after each estate, final wealth; downloadable as text and shareable).
+- **Next:** the investment screen as a decision (P6, P7, P4, P3).
 
 ## Build order
 
