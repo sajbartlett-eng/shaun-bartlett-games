@@ -624,6 +624,13 @@
   //   air   - what the house sounds like from this screen on (room, hush, wind, silent, fade)
   //   eyes  - "close" dims the words after they land, "open" brings them back into focus
   //   cues  - one-off sounds, timed to the line they belong to (line index, extra delay in ms)
+  //   voice - only the words in quotation marks are said out loud. The rest stays in your head.
+  //           id is the file name in assets/audio/what-you-think/ (.mp3).
+  //           space: "close" is at your ear, "room" is across the room, "far" is through a wall,
+  //                  "muffled" is a voice you can't quite place, "call" goes out into the empty house.
+  //           Who speaks: the child (Part 1), an older woman, muffled (Part 2), the same woman,
+  //           clear (Part 3), the narrator grown into a young woman, then a warped voice (Part 4).
+  //           rate below 1 slows and deepens it slightly, above 1 lifts it.
   const PARTS = [
     {
       number: 1,
@@ -645,7 +652,7 @@
         { text: ["That's Daddy's car door.", "Do you hear it?"], timing: "long", cues: [{ line: 0, delay: 700, play: "door" }] },
         { text: ["He'll find me first.", "We'll win."], timing: "beat" },
         { text: "He'll wake up Mummy.", timing: "beat" },
-        { text: "“Daddy?”", timing: "open", background: "light", backgroundEarly: true, air: "silent" },
+        { text: "“Daddy?”", timing: "open", background: "light", backgroundEarly: true, air: "silent", voice: { id: "daddy", delay: 700, space: "call" } },
         { text: "Close your eyes.", timing: "long", background: "dark", air: "hush", eyes: "close" },
         { text: "It will be over soon.", timing: "long", air: "fade" }
       ],
@@ -660,11 +667,11 @@
       screens: [
         { text: "Close your eyes.", timing: "para", air: "room", eyes: "close" },
         { text: ["The sounds are not what you think.", "It's only the wind.", "There's nobody here with us."], timing: "para", cues: [{ line: 1, delay: 0, air: "wind" }] },
-        { text: "“Are you okay?”", timing: "para" },
+        { text: "“Are you okay?”", timing: "para", voice: { id: "are-you-okay", delay: 600, space: "muffled" } },
         { text: "You still won't leave your mountain of soft toys.", timing: "para" },
         { text: ["Daddy's not coming.", "He can't even look at me."], timing: "para" },
         { text: ["I'll stay with you, Josie.", "I won't hide."], timing: "beat" },
-        { text: "“Here's your medicine.”", timing: "para", air: "hush" },
+        { text: "“Here's your medicine.”", timing: "para", air: "hush", voice: { id: "medicine", delay: 600, space: "muffled" } },
         { text: "It will be over soon.", timing: "long", air: "fade" }
       ],
       reference: [[0], [1], [2], [3, 4, 5], [6], [7]]
@@ -676,7 +683,7 @@
         { text: "Close your eyes.", timing: "para", air: "hush", eyes: "close" },
         { text: ["Josie, she's back.", "She's here to help us."], timing: "para" },
         { text: ["Your soft toys are old and frayed, Josie.", "She's teaching me to fix them.", "I'll make you new ones."], timing: "para" },
-        { text: "“Open your eyes.”", timing: "long", eyes: "open" },
+        { text: "“Open your eyes.”", timing: "long", eyes: "open", voice: { id: "open-your-eyes", delay: 300, space: "close" } },
         { text: "I'll be back soon, Josie.", timing: "long", background: "light", air: "fade" }
       ],
       reference: [[0], [1], [2], [3], [4]]
@@ -688,9 +695,9 @@
         { text: "Close your eyes.", timing: "para", background: "dark", air: "hush", eyes: "close" },
         { text: ["Josie, we did it.", "You can go anywhere you like."], timing: "para" },
         { text: ["Open your eyes.", "We have a customer."], timing: "para", background: "light", eyes: "open", air: "room", cues: [{ line: 1, delay: 150, play: "bell" }] },
-        { text: "“Hello. Are you looking for a toy?”", timing: "para" },
+        { text: "“Hello. Are you looking for a toy?”", timing: "para", voice: { id: "hello", delay: 600, space: "room" } },
         { text: "They are familiar.", timing: "para", air: "silent" },
-        { text: "“Do you like to play Hide and Seek?”", timing: "para" },
+        { text: "“Do you like to play Hide and Seek?”", timing: "para", voice: { id: "hide-and-seek", delay: 600, space: "close" } },
         { text: "Close your eyes.", timing: "long", eyes: "close" },
         { text: "It will be over soon.", timing: "long", cues: [{ line: 0, delay: 3400, play: "thud" }] }
       ],
@@ -727,7 +734,7 @@
     try { enabled = localStorage.getItem(SOUND_KEY) !== "off"; } catch {}
 
     let ctx = null;
-    let master, far, near, roomGain, windGain, windFilter;
+    let master, far, near, muffled, hall, roomGain, windGain, windFilter;
     let air = "off";
 
     const LEVELS = { off: 0, silent: 0, fade: 0, hush: 0.05, room: 0.09, wind: 0.11 };
@@ -799,6 +806,20 @@
       farWet.gain.value = 0.55;
       far.connect(farDry).connect(master);
       far.connect(farRoom).connect(farWet).connect(master);
+
+      // Muffled: a voice through blankets or a closed door. The shape of the words, not the person.
+      muffled = ctx.createBiquadFilter();
+      muffled.type = "lowpass";
+      muffled.frequency.value = 680;
+      muffled.Q.value = 0.5;
+      const muffledLevel = ctx.createGain();
+      muffledLevel.gain.value = 1.5;
+      muffled.connect(muffledLevel).connect(near);
+
+      // Hall: the empty house a call goes out into.
+      hall = ctx.createGain();
+      hall.gain.value = 0.5;
+      hall.connect(reverb(3.4, 1.8)).connect(master);
 
       // Room tone: the low hush of a house at night.
       const room = ctx.createBufferSource();
@@ -941,6 +962,48 @@
       }
     };
 
+    // Voices: only the words in quotation marks are said out loud. Made with
+    // tools/what-you-think-voices/make_voices.sh. If a file is missing, the line stays silent.
+    const VOICE_DIR = "assets/audio/what-you-think/";
+    const VOICE_TYPES = ["mp3"];
+    const voices = {};
+
+    function decode(data) {
+      return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
+    }
+
+    async function loadVoice(id, typeIndex = 0) {
+      if (typeIndex >= VOICE_TYPES.length) return;
+      try {
+        const response = await fetch(`${VOICE_DIR}${id}.${VOICE_TYPES[typeIndex]}`);
+        if (!response.ok) throw new Error(response.status);
+        voices[id] = await decode(await response.arrayBuffer());
+      } catch {
+        loadVoice(id, typeIndex + 1);
+      }
+    }
+
+    function loadVoices(ids) {
+      if (!ready()) return;
+      ids.filter(id => !(id in voices)).forEach(id => {
+        voices[id] = null;
+        loadVoice(id);
+      });
+    }
+
+    function speak({ id, space = "room", pan = 0, rate = 1, gain = 1 }) {
+      if (!ready() || !voices[id]) return;
+      const source = ctx.createBufferSource();
+      source.buffer = voices[id];
+      source.playbackRate.value = rate;
+      const destinations = { close: master, room: near, far, muffled, call: master };
+      const out = voice(destinations[space] || near, pan);
+      out.gain.value = gain * (space === "far" ? 1.6 : 1);
+      source.connect(out);
+      if (space === "call") source.connect(hall);
+      source.start(ctx.currentTime + 0.02);
+    }
+
     function play(name, onHit) {
       if (!ready() || !sounds[name]) return;
       sounds[name](ctx.currentTime + 0.02);
@@ -961,6 +1024,8 @@
       start: ready,
       setAir,
       play,
+      loadVoices,
+      speak,
       thud: (level) => { if (ready()) sounds.thud(ctx.currentTime + 0.02, level); },
       toggle
     };
@@ -1051,7 +1116,9 @@
   }
 
   function runCue(cue) {
-    if (cue.air) {
+    if (cue.speak) {
+      Sound.speak(cue.speak);
+    } else if (cue.air) {
       Sound.setAir(cue.air);
     } else if (cue.play === "banging") {
       BANGS.forEach(([ms, level]) => {
@@ -1092,7 +1159,10 @@
     const lines = asLines(screen.text);
     const step = instant ? 0 : screen.inline ? INLINE_REVEAL : LINE_REVEAL;
 
-    (screen.cues || []).forEach(cue => {
+    const cues = [...(screen.cues || [])];
+    if (screen.voice) cues.push({ line: 0, delay: screen.voice.delay || 0, speak: screen.voice });
+
+    cues.forEach(cue => {
       const entry = { cue, fired: false };
       entry.timer = setTimeout(() => fireCue(entry), cue.line * step + (cue.delay || 0));
       pendingCues.push(entry);
@@ -1110,7 +1180,7 @@
     }
 
     // Sit still long enough in the dark and the house answers.
-    if (screen.background === "dark" && !screen.cues && screen.className !== "marker") {
+    if (screen.background === "dark" && !screen.cues && !screen.voice && screen.className !== "marker") {
       idleTimer = setTimeout(() => {
         if (mode === "story" && HOUSE_SOUNDS.includes(Sound.air)) Sound.play("step");
       }, 11000 + Math.random() * 6000);
@@ -1565,6 +1635,7 @@ ${finalStory.trim() || "—"}
 
   function start(useReflections) {
     Sound.start();
+    Sound.loadVoices(PARTS.flatMap(part => part.screens).filter(screen => screen.voice).map(screen => screen.voice.id));
     buildScreens(useReflections);
     mode = "story";
     goTo(0, screens[0].timing);
