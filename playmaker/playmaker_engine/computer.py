@@ -14,6 +14,7 @@ How it values things:
 - Concepts, habits, tunnel vision, card reading, the comfort line and randomness are the level levers
   (computer_levels.json).
 """
+import gc
 import json
 import os
 import random
@@ -139,12 +140,28 @@ def pass_risk(state, passer, receiver):
                 if status[j] == 'direct':
                     cands.append((Action('intercept', 'X', j),))
             if any(st == 'approach' for st in status):
-                for d in movement_actions(pend, 'X', pend.ctx.rules):
-                    if status[d.piece] == 'approach' and is_approach(pend, d):
-                        nxt = apply(pend, d)
-                        if not isinstance(nxt, ChanceNode) and nxt.approach == d.piece and nxt.tok_x > 0 and \
-                                nxt.count('X', 'intercept') < RC.LIMITS['X']['intercept']:
-                            cands.append((d, Action('intercept', 'X', d.piece)))
+                from .actions import can_move_kind, movement_dests
+                a_sq, b_sq = pend.o[passer], pend.o[receiver]
+                tol = pend.ctx.rules.on_line_tolerance
+                for j in range(5):
+                    if status[j] != 'approach':
+                        continue
+                    done = False
+                    for kind in ('move', 'qs', 'sprint'):          # only this defender, only onto the line
+                        if done or not can_move_kind(pend, 'X', j, kind):
+                            continue
+                        for q in movement_dests(pend, 'X', j, kind, pend.ctx.rules):
+                            if not B.on_segment(q, a_sq, b_sq, tol):
+                                continue
+                            d = Action(kind, 'X', j, q, pend.arrows[j]) if kind == 'move' else Action(kind, 'X', j, q)
+                            if not is_approach(pend, d):
+                                continue
+                            nxt = apply(pend, d)
+                            if not isinstance(nxt, ChanceNode) and nxt.approach == j and nxt.tok_x > 0 and \
+                                    nxt.count('X', 'intercept') < RC.LIMITS['X']['intercept']:
+                                cands.append((d, Action('intercept', 'X', j)))
+                                done = True                        # one approach is enough: same roll
+                                break
         for line in cands:
             j = line[-1].piece
             r = 1.0 - float(p_success(pr - pend.ctx.dfn[j].r['intercept'], pend.ctx.rules))
@@ -334,6 +351,8 @@ class Computer(Policy):
         self.queue = None
         self.plan = None
         self.visited = {}           # offence: (squares, ball) reached at its decisions this possession -> times
+        self.aplan = None           # offence: the advantage play being worked (step 3g)
+        self._handover = None       # offence: the board as it left it to the defence (for help_pulled)
         self.picked_off = set()     # offence: passes intercepted this possession, keyed by the full position
         self._last_pass = None
 
@@ -347,6 +366,18 @@ class Computer(Policy):
 
     # -- choose --
     def choose(self, state):
+        """A legal action. Python's cycle collector is paused while it thinks: the search's caches hold
+        millions of small positions, and a full collection walking them cost up to 5 seconds a decision.
+        Positions form no reference cycles, so reference counting still frees them as it goes."""
+        was = gc.isenabled()
+        gc.disable()
+        try:
+            return self._choose(state)
+        finally:
+            if was:
+                gc.enable()
+
+    def _choose(self, state):
         acts = legal_actions(state)
         if len(acts) == 1:
             return acts[0]
@@ -359,6 +390,7 @@ class Computer(Policy):
             a = self.queue[1][0]
             self._queue(state, a, self.queue[1][1:])
             self._note_pass(state, a)
+            self._note_handover(state, a)
             return a
         self.queue = None
         view = seen_state(state, self.side, self.seen)
@@ -371,6 +403,7 @@ class Computer(Policy):
             a = acts[0]
         self._queue(state, a, play.actions[1:] if play is not None else ())
         self._note_pass(state, a)
+        self._note_handover(state, a)
         self.stats['decisions'] += 1
         self.stats['seconds'].append(time.time() - t0)
         return a
@@ -689,8 +722,6 @@ class Computer(Policy):
             kind = self._plan_kind(view, tg)
             self.plan = dict(targets=tg, phase=view.phase, inbound=bool(view.inbound), near=near, type=kind)
             self.notes.append(dict(event='plan', targets=tg))
-            if kind and kind != before:
-                self.notes.append(dict(event='plan_type', plan=kind))
 
     def _plan_bonus(self, view, node_state):
         if not self.plan or not self.plan['targets'] or isinstance(node_state, ChanceNode):
@@ -722,33 +753,18 @@ class Computer(Policy):
             if p is not None and self._patient(view, p, None):
                 return p
         plays = self._with_end(view, acts, self.gen.plays(view, shallow=False))
-        if self.picked_off:
-            spot = self._spot(view)
-            kept = [p for p in plays if not any(a.kind == 'pass' and (spot, a.target) in self.picked_off
-                                                for a in p.actions)]
-            plays = kept or plays
-        if 'never_screens' in self.habits:
-            kept = [p for p in plays if not any(a.kind == 'screen' for a in p.actions)]
-            if len(kept) < len(plays):
-                self._fire('never_screens')
-            plays = kept or plays
-        if 'ignores_mismatch' in self.habits:
-            order = [i for i in list(range(view.ball + 1, 5)) + list(range(view.ball)) if B.on_board(view.o[i])]
-            nxt = order[0] if order else None
-            kept = [p for p in plays if not any(a.kind == 'pass' and a.target != nxt for a in p.actions)]
-            if len(kept) < len(plays):
-                self._fire('ignores_mismatch')
-            plays = kept or plays
-        if 'star_only' in self.habits and self.plan and self.plan['targets']:
-            star = self.plan['targets'][0]['o']
-            kept = [p for p in plays if not any(a.kind == 'pass' and a.target != star for a in p.actions)]
-            plays = kept or plays
+        plays = self._filter_plays(view, plays)
         if 'forces_passes' in self.habits and self.plan and self.plan['targets']:
             t = self.plan['targets'][0]['o']
             fp = next((a for a in acts if a.kind == 'pass' and a.target == t), None)
             if fp is not None:                            # to the primary target whenever legal, whatever the risk
                 self._fire('forces_passes')
                 return Play('habit', (fp,))
+        if self.cfg.get('plays'):
+            chosen = self._advantage_attack(view, acts)
+            if chosen is not None:
+                return chosen
+        self._plan_note(view, None, None)          # the fallback: no advantage play scored above zero
         fn = self._value_fn()
         late = self._late()
         if late:
@@ -801,6 +817,32 @@ class Computer(Policy):
     # -- passing judgement (step 3f) --
     _ALT = {'relocate': 'receiver', 'drive': 'passer', 'dribble': 'passer', 'hesitate': 'passer',
             'screen': 'screen', 'seal': 'screen'}
+
+    def _filter_plays(self, view, plays):
+        """The picked-off memory and the habits that strike plays out (never screens, ignores the mismatch,
+        star only)."""
+        if self.picked_off:
+            spot = self._spot(view)
+            kept = [p for p in plays if not any(a.kind == 'pass' and (spot, a.target) in self.picked_off
+                                                for a in p.actions)]
+            plays = kept or plays
+        if 'never_screens' in self.habits:
+            kept = [p for p in plays if not any(a.kind == 'screen' for a in p.actions)]
+            if len(kept) < len(plays):
+                self._fire('never_screens')
+            plays = kept or plays
+        if 'ignores_mismatch' in self.habits:
+            order = [i for i in list(range(view.ball + 1, 5)) + list(range(view.ball)) if B.on_board(view.o[i])]
+            nxt = order[0] if order else None
+            kept = [p for p in plays if not any(a.kind == 'pass' and a.target != nxt for a in p.actions)]
+            if len(kept) < len(plays):
+                self._fire('ignores_mismatch')
+            plays = kept or plays
+        if 'star_only' in self.habits and self.plan and self.plan['targets']:
+            star = self.plan['targets'][0]['o']
+            kept = [p for p in plays if not any(a.kind == 'pass' and a.target != star for a in p.actions)]
+            plays = kept or plays
+        return plays
 
     def _play_value(self, view, p, node, fn):
         """A play's value. A pass is valued by what the catch gives against the risk after the defence's
@@ -857,9 +899,12 @@ class Computer(Policy):
         if st.side == 'O':
             return self._o_next(st, follow)
         res = []
+        stop = self._stop()
         # the defence's full reply set (recovers, switches, contains, combos too): a reply limited to the
         # ball side would never cover the teammate the next pass goes to, and overrate every alternative
         for q in self._with_end(st, legal_actions(st), self.gen.plays(st, False, light=False)):
+            if stop is not None and res and time.time() > stop:
+                break                                  # out of thinking time: the replies read so far
             n = apply_play(st, q)
             if n is not None:
                 res.append(self._node_value(n, lambda x: self._o_next(x, follow) if (
@@ -873,6 +918,9 @@ class Computer(Policy):
         v = self.ev(s)[0].ev
         if not follow or s.pending or s.inbound or s.tok_o < 1:
             return v
+        stop = self._stop()
+        if stop is not None and time.time() > stop:
+            return v                                   # out of thinking time: no follow-up pass read
         memo = self.__dict__.setdefault('_next_memo', {})
         if s in memo and memo[s][0] is s.ctx:
             return memo[s][1]
@@ -898,6 +946,302 @@ class Computer(Policy):
             memo.clear()
         memo[s] = (s.ctx, best)
         return best
+
+    # ---- step 3g: create an advantage, keep it, finish it -------------------------------------------
+    PASS_KINDS = ('mismatch', 'numbers', 'beaten', 'bad_closeout', 'spent')
+
+    def _maps(self, s):
+        return self.ev.reach(s, reaction_budget(s))
+
+    def _advs(self, s, prev=None):
+        from .advantage import advantages
+        return advantages(s, prev=prev, maps=self._maps(s))
+
+    def _note_handover(self, state, a):
+        """The board as the offence hands the turn to the defence (help_pulled compares against it)."""
+        if self.side != 'O' or state.stage != 'play' or state.side != 'O':
+            return
+        nxt = apply(state, a)
+        if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and not nxt.pending:
+            self._handover = nxt
+        elif isinstance(nxt, ChanceNode) or nxt.pending:
+            self._handover = None
+
+    def _prev(self, view):
+        h = self._handover
+        if h is not None and h.ctx is view.ctx and h.o == view.o:
+            return h
+        return None
+
+    def _exploit(self, s, prev, skip=None):
+        """Offence turn 2: the best finish of an advantage on the board, by the carrier, or by a pass to
+        the attacker who has it (judged by pass_risk; help_pulled only for a level that moves advantages).
+        Returns (value, advantage) or (0, None) when there is none."""
+        known = self.cfg['plays']
+        kinds = self.PASS_KINDS + (('help_pulled',) if 'move_advantage' in known else ())
+        tol = self.cfg.get('pass_risk_tolerance', 1.0)
+        best, which = 0.0, None
+        for a in self._advs(s, prev):
+            if skip and (a['kind'], a['attacker']) in skip:
+                continue                           # it was there already: this play didn't create it
+            if a['attacker'] == s.ball:
+                v = a['value']
+            elif 'pass' in known and a['kind'] in kinds:
+                if s.stage == 'play' and s.side == 'O':
+                    info = pass_risk(s, s.ball, a['attacker'])
+                    if info is None:
+                        continue
+                    v = (1 - info['risk']) * a['value'] + info['risk'] * RC.TURNOVER_POINTS * tol
+                else:
+                    v = a['value']                 # the offence passes next turn
+            else:
+                continue
+            if v > best:
+                best, which = v, a
+        return best, which
+
+    def _tempo(self, view, s):
+        """The clock spent, valued by the patience curve: how far the open-look bar falls meanwhile."""
+        if isinstance(s, ChanceNode) or s.stage == 'over':
+            return 0.0
+        return max(0.0, self._bar(view, False, early=False) - self._bar(s, False, early=False))
+
+    def _adv_value(self, view, node, depth):
+        """A play's score: the best advantage finish reached, plus points banked on the way (a turnover
+        -5, a steal-foul bonus), less the tempo. depth 1 = create only (the board after the play);
+        depth 2 = create, the defence's best reply, then exploit."""
+        from .solver import apply_play
+        if isinstance(node, ChanceNode):
+            return sum(float(p) * self._adv_value(view, sub, depth) for p, _, sub in node.outcomes)
+        if node.stage == 'over':
+            return self.ev(node)[0].ev - self._banked(view)
+        if node.stage != 'play':
+            return self.ev(node)[0].ev - self._banked(view)
+
+        before = None
+        if depth < 2:                      # create only: an advantage counts if the play created it
+            before = {(a['kind'], a['attacker']) for a in self._advs(view, self._prev(view))}
+
+        def score(st, prev):
+            if isinstance(st, ChanceNode):
+                return sum(float(p) * score(sub, prev) for p, _, sub in st.outcomes)
+            if st.stage != 'play':
+                return self.ev(st)[0].ev - self._banked(view)
+            return self._exploit(st, prev, before)[0] + self._banked(st) - self._banked(view) - self._tempo(view, st)
+        if depth < 2 or node.side == 'O':
+            return score(node, None)
+        res = []
+        stop = self._stop()
+        for q in self._with_end(node, legal_actions(node), self.gen.plays(node, False, light=False)):
+            n = apply_play(node, q)
+            if n is not None:
+                res.append(score(n, node))
+            if stop is not None and res and time.time() > stop:
+                break
+        return min(res) if res else score(node, None)
+
+    def _adv_plays(self, view, acts):
+        """Advantage plays, one offence turn each, by type (the level's plays only)."""
+        from .solver import Play
+        known = self.cfg['plays']
+        c = view.ball
+        two = view.tok_o >= 2
+        gen = self.gen.offence_plays(view)
+        out = {k: [] for k in ('shoot', 'dribble', 'screen', 'speed', 'seal', 'cut', 'pass')}
+        out['shoot'] = [p for p in gen if p.actions and p.actions[-1].kind == 'shot']
+        out['dribble'] = [Play('dribble attack', (a,)) for a in acts if a.kind == 'dribble']
+        maps = None
+        for a in acts:
+            if a.kind in ('qs', 'sprint'):              # speed burst: to a square nobody can cleanly contest
+                n = apply(view, a)
+                if isinstance(n, ChanceNode) or n.stage != 'play':
+                    continue
+                from .advantage import looks
+                lk = looks(n, a.piece, self._maps(n))
+                if lk and not any(e['clean'] for e in lk[0][2]):
+                    out['speed'].append(Play('speed burst', (a,)))
+                    if a.piece == c and n.side == 'O':
+                        sh = next((b for b in legal_actions(n) if b.kind == 'shot'), None)
+                        if sh is not None:
+                            out['shoot'].append(Play('speed+shot', (a, sh)))
+            if a.kind in ('move', 'qs') and a.piece != c and B.on_board(a.dest):
+                out['cut'].append(Play('cut', (a,)))
+        # screens: every screener and defender pair the screener can reach this turn
+        for p_ in range(5):
+            if not B.on_board(view.o[p_]) or view.is_screening(p_):
+                continue
+            for a in acts:
+                if a.kind == 'screen' and a.piece == p_:
+                    out['screen'].append(Play('screen', (a,)))
+            if not two:
+                continue
+            for a in acts:
+                if a.kind in ('move', 'qs') and a.piece == p_ and any(B.adjacent(a.dest, xq) for xq in view.x):
+                    n = apply(view, a)
+                    if isinstance(n, ChanceNode) or n.stage != 'play' or n.side != 'O':
+                        continue
+                    for b in legal_actions(n):
+                        if b.kind == 'screen' and b.piece == p_:
+                            out['screen'].append(Play('screen', (a, b)))
+        # post seal: a ▲ post scorer seals a ▼ post defender (the generator's seal plays)
+        for p in gen:
+            if p.concept == 'seal':
+                scr = p.actions[-1]
+                tq = B.add(view.o[scr.piece] if len(p.actions) == 1 else p.actions[0].dest, B.DIRS[scr.target])
+                j = view.x.index(tq) if tq in view.x else None
+                if j is not None and view.ctx.off[scr.piece].bands['shot_post'] == 'H' and \
+                        view.ctx.dfn[j].bands['con_post'] == 'L':
+                    out['seal'].append(p)
+        # passes: only to move an advantage to a better attacker, or finish one
+        kinds = self.PASS_KINDS + (('help_pulled',) if 'move_advantage' in known else ())
+        advs = self._advs(view, self._prev(view))
+        mine = max((a['value'] for a in advs if a['attacker'] == c), default=0.0)
+        seen = set()
+        for a in advs:
+            r = a['attacker']
+            if r == c or r in seen or a['kind'] not in kinds or a['value'] <= mine:
+                continue
+            pa = Action('pass', 'O', c, target=r)
+            if pa in acts:
+                seen.add(r)
+                out['pass'].append(Play('pass to ' + a['kind'], (pa,)))
+        keep = {'shoot': 'shoot', 'dribble': 'dribble', 'pass': 'pass', 'screen': 'screen', 'speed': 'speed',
+                'seal': 'seal', 'cut': 'cut'}
+        return {k: v for k, v in out.items() if keep[k] in known or k == 'shoot'}
+
+    def _advantage_attack(self, view, acts):
+        """Step 3g: the best advantage play. Shots by the shot bars (7.3); every other play by
+        create (the play), reply (the defence's best answer), exploit (the best finish of an advantage),
+        less turnover risk and tempo. None if no play scores above zero (the caller falls back to the raw
+        actions)."""
+        from .solver import Play, apply_play
+        depth = self.cfg.get('advantage_depth', 2)
+        cats = self._adv_plays(view, acts)
+        for k in cats:
+            cats[k] = self._filter_plays(view, cats[k])
+        stop = self._stop()
+        shots = []
+        for p in cats.pop('shoot', []):
+            node = apply_play(view, p)
+            if node is not None:
+                shots.append((self._node_value(node, self._value_fn()), p))
+        scored = []
+        tol = self.cfg.get('pass_risk_tolerance', 1.0)
+        # the one-turn estimates get 40% of the thinking time; the full reads (top three a type) the rest
+        est_stop = None if stop is None else time.time() + 0.4 * max(0.0, stop - time.time())
+        for k, plays in cats.items():
+            est = []
+            for p in plays:
+                if est_stop is not None and est and time.time() > est_stop:
+                    break
+                node = apply_play(view, p)
+                if node is None:
+                    continue
+                if k == 'pass':
+                    info = pass_risk(view, view.ball, p.actions[-1].target)
+                    caught, lost = pass_outcomes(info)
+                    one = lambda st: self._adv_value(view, st, 1)
+                    full = lambda st: self._adv_value(view, st, depth)
+                    v1 = (1 - info['risk']) * one(caught) + info['risk'] * RC.TURNOVER_POINTS * tol
+                    est.append((v1, p, lambda c=caught, i=info, f=full: (1 - i['risk']) * f(c) + i['risk'] * RC.TURNOVER_POINTS * tol))
+                else:
+                    est.append((self._adv_value(view, node, 1), p, lambda n=node: self._adv_value(view, n, depth)))
+            est.sort(key=lambda e: -e[0])
+            for v1, p, full in est[:3]:                 # the top three by a one-turn estimate, then the full read
+                if stop is not None and scored and time.time() > stop:
+                    scored.append((v1, p, k))
+                    continue
+                v = full() if depth >= 2 else v1
+                node = apply_play(view, p)
+                scored.append((v - self._loop_penalty(view, node), p, k))
+        banked = self._banked(view)
+        best = max(scored, key=lambda e: e[0]) if scored else None
+        cv = best[0] if best else 0.0
+        last = self._last_chance(view)
+        if shots:
+            if view.clock <= self.cfg.get('shoot_by', 0) and not last:
+                sp = max(shots, key=lambda vp: vp[0])[1]
+                self._plan_note(view, sp, None)
+                return sp
+            cleared = [(v, p) for v, p in shots if last or v - banked >= self._bar(view, self._contested(view, p))]
+            if cleared:
+                sv, sp = max(cleared, key=lambda vp: vp[0])
+                if sv - banked >= cv - 1e-9:
+                    if not last and 'settles_early' in self.habits and \
+                            sv - banked < self._bar(view, self._contested(view, sp), early=False):
+                        self._fire('settles_early')
+                    self._plan_note(view, sp, None)
+                    return sp
+        if best is None or best[0] <= 0:
+            return None
+        self._plan_note(view, best[1], best[2])
+        return best[1]
+
+    # -- the plan: the advantage play being worked, kept until finished or taken away --
+    def _play_words(self, view, p, kind):
+        a = p.actions[-1]
+        who = lambda i: f'O{i + 1}'
+        if kind == 'screen':
+            tq = B.add(p.actions[0].dest if len(p.actions) > 1 else view.o[a.piece], B.DIRS[a.target])
+            j = view.x.index(tq) if tq in view.x else None
+            man = min((i for i in range(5) if i != a.piece), key=lambda i: (B.cheb(view.x[j], view.o[i]), i)) \
+                if j is not None else None
+            if j is None:
+                return f"Screen: {who(a.piece)} sets the T at {B.sq(tq)}"
+            return f"Screen for a mismatch: {who(a.piece)} screens X{j + 1} off {who(man)}"
+        if kind == 'dribble':
+            return f"Dribble attack: {who(view.ball)} at X{a.target + 1}"
+        if kind == 'speed':
+            return f"Speed burst: {who(a.piece)} {'Sprints' if a.kind == 'sprint' else 'Quick Steps'} to {B.sq(a.dest)}"
+        if kind == 'seal':
+            return f"Post seal: {who(a.piece)} seals for the post entry"
+        if kind == 'cut':
+            return f"Cut: {who(a.piece)} to {B.sq(a.dest)}"
+        if kind == 'pass':
+            return f"Pass to {who(a.target)} for {p.concept.replace('pass to ', '').replace('_', ' ')}"
+        return p.concept
+
+    def _plan_note(self, view, p, kind):
+        """Keep the plan while its attacker still has an advantage; if help moved it, follow it (logged as
+        'advantage moved'); a shot finishes it. Log plan changes only."""
+        from .advantage import describe
+        advs = self._advs(view, self._prev(view)) if view.stage == 'play' else []
+        ap = self.aplan
+        if ap is not None and ap['phase_ok'] and any(a['attacker'] == ap['attacker'] for a in advs):
+            pass                                           # still working it
+        elif ap is not None:
+            moved = [a for a in advs if a['kind'] == 'help_pulled']
+            if moved:
+                a = moved[0]
+                ap['attacker'] = a['attacker']
+                self.notes.append(dict(event='advantage_moved', attacker=a['attacker'], helper=a['helper'],
+                                       shot=a['shot'], text=f"Help came from X{a['helper'] + 1}; the advantage moved to O{a['attacker'] + 1}"))
+            elif ap.get('created'):
+                self.notes.append(dict(event='advantage_gone', text=f"The defence took it away from O{ap['attacker'] + 1}"))
+                self.aplan = ap = None
+            else:
+                ap['created'] = bool(advs)
+        if p is None:
+            return
+        if any(x.kind == 'shot' for x in p.actions):
+            if self.aplan is not None:
+                sh = next(x for x in p.actions if x.kind == 'shot')
+                self.notes.append(dict(event='finish', attacker=sh.piece, shot=sh.shot,
+                                       text=f"Finished: O{sh.piece + 1} {sh.shot}"))
+                self.aplan = None
+            return
+        if self.aplan is not None or kind is None:
+            return
+        from .solver import apply_play
+        node = apply_play(view, p)
+        if isinstance(node, ChanceNode):                   # a dribble or a screen: the advantage it is for
+            node = next((sub for _, lab, sub in node.outcomes if lab == 'success'), node.outcomes[0][2])
+        after = [] if node is None or isinstance(node, ChanceNode) or node.stage != 'play' else self._advs(node)
+        target = after[0]['attacker'] if after else (p.actions[-1].target if p.actions[-1].kind == 'pass' else view.ball)
+        text = self._play_words(view, p, kind)
+        self.aplan = dict(kind=kind, attacker=target, text=text, phase_ok=True, created=bool(after))
+        self.notes.append(dict(event='play', play=kind, attacker=target, text=text,
+                               advantage=describe(after[0]) if after else None))
 
     def _contested(self, view, play):
         """Could a defender still contest this shot after the reaction (as this level reads the reaction)?"""

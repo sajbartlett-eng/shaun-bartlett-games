@@ -103,7 +103,13 @@
         "pass_risk_tolerance": 0.5,
         "pass_alternatives": [
           "receiver"
-        ]
+        ],
+        "plays": [
+          "shoot",
+          "dribble",
+          "pass"
+        ],
+        "advantage_depth": 1
       },
       "starter": {
         "concepts": {
@@ -146,7 +152,16 @@
         ],
         "habits_not": [
           "forces_passes"
-        ]
+        ],
+        "plays": [
+          "shoot",
+          "dribble",
+          "pass",
+          "screen",
+          "speed",
+          "seal"
+        ],
+        "advantage_depth": 2
       },
       "allstar": {
         "concepts": {
@@ -187,7 +202,18 @@
           "passer",
           "screen",
           "two_pass"
-        ]
+        ],
+        "plays": [
+          "shoot",
+          "dribble",
+          "pass",
+          "screen",
+          "speed",
+          "seal",
+          "cut",
+          "move_advantage"
+        ],
+        "advantage_depth": 2
       }
     },
     "habits": [
@@ -201,7 +227,8 @@
     "_patience_about": "Shot bars by the clock (seconds left; a phase is two). A shot goes up only when its value, after the reaction, clears the bar and is worth at least what continuing is estimated to be worth. 'contested': a defender can still contest it; 'open': nobody can. The bars drop each phase; at the last chance there is no bar.",
     "loop_penalty": 2.0,
     "_loop_about": "loop_penalty: points off a non-shot play that ends where the offence already stood earlier this possession (its five squares and the ball), per earlier visit, up to three. shoot_by: from this clock on (Rookie: the phase before the last), the offence takes its best shot rather than keep building; 0 = only the last phase, which has no bar.",
-    "_pass_about": "Step 3f. pass_risk_tolerance multiplies the -5 of a pick-off when a pass is valued (1.0 honest, below 1.0 reckless). pass_alternatives: what the level weighs against a contested pass, each valued with the next turn able to pass: receiver (a cut or relocation to open a lane), passer (move or dribble to change the angle), screen (a screen or seal), two_pass (two shorter clean passes). habits_not: forces_passes is a Rookie habit."
+    "_pass_about": "Step 3f. pass_risk_tolerance multiplies the -5 of a pick-off when a pass is valued (1.0 honest, below 1.0 reckless). pass_alternatives: what the level weighs against a contested pass, each valued with the next turn able to pass: receiver (a cut or relocation to open a lane), passer (move or dribble to change the angle), screen (a screen or seal), two_pass (two shorter clean passes). habits_not: forces_passes is a Rookie habit.",
+    "_plays_about": "Step 3g. plays: the advantage plays the level knows (shoot, dribble attack, pass to move or finish an advantage, screen for a mismatch, speed burst, post seal, cut, and moving the advantage to the attacker the help left). advantage_depth: 1 = create only; 2 = create, the defence's best reply, then exploit."
   },
   "budget_s": {
     "server": 2.0,

@@ -558,8 +558,13 @@ def computer_facts(records):
                     t = r['targets']
                     tx = ', then '.join(f"O{x['o'] + 1} ({x['shot']})" for x in t)
                     out.append(f"Possession {r.get('possession', 1)}: its targets were {tx}.")
-                elif r.get('event') == 'plan_type':
+                elif r.get('event') == 'plan_type':                  # logs from before step 3g
                     out.append(f"It worked a {r['plan']} plan.")
+                elif r.get('event') == 'play':                       # step 3g: the advantage plays it ran
+                    line = r['text'] + '.' + (f" {r['advantage']}." if r.get('advantage') else '')
+                    out.append(line)
+                elif r.get('event') in ('advantage_moved', 'advantage_gone', 'finish'):
+                    out.append(r['text'] + '.')
                 elif r.get('event') == 'replan':
                     out.append(f"It changed plan: {r['why']}.")
     return out

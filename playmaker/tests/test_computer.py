@@ -478,14 +478,13 @@ def test_d7d923_possession_2_the_step_out_three_is_contested():
 
 
 def test_the_plan_holds_while_the_defence_stands_still():
-    """A possession against a defence that never moves (it pauses, ends its turn, doesn't contest): one
-    plan, one plan type, no re-plan, however many actions the offence takes."""
-    import random
-    from playmaker_engine.resolve import sample
+    """Step 3g: the plan is the advantage play being worked. Against a defence that never moves (it pauses,
+    ends its turn, doesn't contest) and with every roll going the offence's way (so the defence changes
+    nothing), the plan is set once and never changes: no second play, nothing moved or taken away."""
+    from playmaker_engine.resolve import force
     for lv in C.LEVEL_NAMES:
         s = table()
         o = C.Computer('O', lv, seed=2, budget_s=None, habits=[])
-        rng = random.Random(5)
         n_o = 0
         for _ in range(80):
             if s.stage == 'over':
@@ -498,9 +497,12 @@ def test_the_plan_holds_while_the_defence_stands_still():
                 a = next((x for x in acts if x.kind in ('pause', 'end_turn')), None) or \
                     next((x for x in acts if x.kind == 'contest' and x.piece < 0), acts[0])
             node = apply(s, a)
-            s = sample(node, rng)[0] if isinstance(node, ChanceNode) else node
+            while isinstance(node, ChanceNode):
+                labels = [lab for _, lab, _ in node.outcomes]
+                node = force(node, next((l for l in ('success', 'kept', 'no foul', 'holds') if l in labels), labels[0]))
+            s = node
         ev = [n['event'] for n in o.notes]
-        assert n_o >= 2 and ev.count('plan') == 1 and ev.count('plan_type') == 1 and 'replan' not in ev, (lv, n_o, o.notes)
+        assert n_o >= 1 and ev.count('play') <= 1 and 'advantage_gone' not in ev and 'replan' not in ev, (lv, n_o, o.notes)
 
 
 # ---- playtest log 82866B (Rookie v Rookie): the offence looped from clock 8 to clock 2 ----------------

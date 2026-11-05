@@ -1,0 +1,1054 @@
+{
+ "neutral": {
+  "spec": [
+   "card",
+   1
+  ],
+  "fields": {
+   "o": [
+    [
+     3,
+     9
+    ],
+    [
+     10,
+     6
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     10,
+     3
+    ],
+    [
+     10,
+     0
+    ]
+   ],
+   "x": [
+    [
+     5,
+     5
+    ],
+    [
+     9,
+     5
+    ],
+    [
+     7,
+     3
+    ],
+    [
+     9,
+     3
+    ],
+    [
+     10,
+     1
+    ]
+   ],
+   "arrows": [
+    0,
+    1,
+    6,
+    2,
+    4
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 2,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  }
+ },
+ "numbers": {
+  "spec": [
+   "card",
+   1
+  ],
+  "fields": {
+   "o": [
+    [
+     2,
+     9
+    ],
+    [
+     13,
+     9
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     10,
+     3
+    ],
+    [
+     10,
+     0
+    ]
+   ],
+   "x": [
+    [
+     5,
+     9
+    ],
+    [
+     9,
+     5
+    ],
+    [
+     7,
+     3
+    ],
+    [
+     9,
+     3
+    ],
+    [
+     10,
+     1
+    ]
+   ],
+   "arrows": [
+    0,
+    1,
+    6,
+    2,
+    4
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 2,
+   "tok_x": 3,
+   "moved_o": 3,
+   "moved_x": 1,
+   "cnt": [
+    1,
+    2,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 2,
+   "turn_moved": 1,
+   "qs_o": 2,
+   "qs_x": 1,
+   "forced": false
+  },
+  "attacker": 0
+ },
+ "spent": {
+  "spec": [
+   "card",
+   1
+  ],
+  "fields": {
+   "o": [
+    [
+     2,
+     9
+    ],
+    [
+     13,
+     9
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     10,
+     3
+    ],
+    [
+     10,
+     0
+    ]
+   ],
+   "x": [
+    [
+     5,
+     9
+    ],
+    [
+     9,
+     5
+    ],
+    [
+     7,
+     3
+    ],
+    [
+     9,
+     3
+    ],
+    [
+     10,
+     1
+    ]
+   ],
+   "arrows": [
+    0,
+    1,
+    6,
+    2,
+    4
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 2,
+   "tok_x": 3,
+   "moved_o": 3,
+   "moved_x": 1,
+   "cnt": [
+    1,
+    2,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 2,
+   "turn_moved": 1,
+   "qs_o": 2,
+   "qs_x": 1,
+   "forced": false
+  },
+  "attacker": 0
+ },
+ "bad_closeout": {
+  "spec": [
+   "card",
+   4
+  ],
+  "fields": {
+   "o": [
+    [
+     14,
+     11
+    ],
+    [
+     17,
+     8
+    ],
+    [
+     11,
+     10
+    ],
+    [
+     10,
+     4
+    ],
+    [
+     9,
+     3
+    ]
+   ],
+   "x": [
+    [
+     13,
+     10
+    ],
+    [
+     16,
+     8
+    ],
+    [
+     11,
+     9
+    ],
+    [
+     13,
+     6
+    ],
+    [
+     10,
+     3
+    ]
+   ],
+   "arrows": [
+    2,
+    2,
+    1,
+    7,
+    7
+   ],
+   "ball": 4,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 3,
+   "tok_x": 4,
+   "moved_o": 8,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [
+    [
+     3,
+     4,
+     false,
+     0
+    ]
+   ],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "P",
+   "beaten": [],
+   "fouls": 1,
+   "bonus5": 1,
+   "tos": 1,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 2,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "attacker": 4
+ },
+ "mismatch": {
+  "spec": [
+   "card",
+   6
+  ],
+  "fields": {
+   "o": [
+    [
+     8,
+     11
+    ],
+    [
+     2,
+     9
+    ],
+    [
+     14,
+     9
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     16,
+     3
+    ]
+   ],
+   "x": [
+    [
+     8,
+     10
+    ],
+    [
+     3,
+     9
+    ],
+    [
+     13,
+     9
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     15,
+     3
+    ]
+   ],
+   "arrows": [
+    0,
+    6,
+    2,
+    6,
+    2
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 6,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 1,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "attacker": 1
+ },
+ "screen": {
+  "spec": [
+   "teams",
+   [
+    "Lockdown",
+    "Shoot and Protect"
+   ]
+  ],
+  "fields": {
+   "o": [
+    [
+     8,
+     11
+    ],
+    [
+     2,
+     9
+    ],
+    [
+     16,
+     7
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     10,
+     3
+    ]
+   ],
+   "x": [
+    [
+     8,
+     10
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     13,
+     8
+    ],
+    [
+     9,
+     4
+    ],
+    [
+     10,
+     4
+    ]
+   ],
+   "arrows": [
+    1,
+    2,
+    6,
+    3,
+    4
+   ],
+   "ball": 4,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 3,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "chosen": "O5 Move to I4",
+  "text": "Screen for a mismatch: O5 screens X4 off O5",
+  "adv": "O5 has a mismatch on X4 (post)"
+ },
+ "move": {
+  "spec": [
+   "teams",
+   [
+    "Run and Gun",
+    "Twin Towers"
+   ]
+  ],
+  "fields": {
+   "o": [
+    [
+     9,
+     2
+    ],
+    [
+     3,
+     9
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     16,
+     3
+    ]
+   ],
+   "x": [
+    [
+     8,
+     10
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     10,
+     8
+    ],
+    [
+     8,
+     3
+    ],
+    [
+     12,
+     3
+    ]
+   ],
+   "arrows": [
+    4,
+    1,
+    6,
+    3,
+    0
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [
+    [
+     1,
+     4,
+     false,
+     0
+    ]
+   ],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 1,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 3,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "prev": {
+   "o": [
+    [
+     9,
+     2
+    ],
+    [
+     3,
+     9
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     16,
+     3
+    ]
+   ],
+   "x": [
+    [
+     8,
+     10
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     10,
+     8
+    ],
+    [
+     8,
+     3
+    ],
+    [
+     13,
+     4
+    ]
+   ],
+   "arrows": [
+    4,
+    1,
+    6,
+    3,
+    0
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [
+    [
+     1,
+     4,
+     false,
+     0
+    ]
+   ],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 1,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 3,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "shooter": 2,
+  "helper": 4
+ },
+ "dribble_40": {
+  "spec": [
+   "card",
+   11
+  ],
+  "fields": {
+   "o": [
+    [
+     17,
+     10
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     11,
+     11
+    ],
+    [
+     10,
+     7
+    ],
+    [
+     5,
+     5
+    ]
+   ],
+   "x": [
+    [
+     16,
+     10
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     11,
+     10
+    ],
+    [
+     11,
+     7
+    ],
+    [
+     6,
+     4
+    ]
+   ],
+   "arrows": [
+    2,
+    6,
+    1,
+    7,
+    1
+   ],
+   "ball": 1,
+   "stage": "play",
+   "side": "O",
+   "clock": 8,
+   "tok_o": 6,
+   "tok_x": 6,
+   "moved_o": 0,
+   "moved_x": 0,
+   "cnt": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": 1,
+   "zeroed": false,
+   "phase": 2,
+   "turn_moved": 0,
+   "qs_o": 0,
+   "qs_x": 0,
+   "forced": false
+  },
+  "dribble": "O2 Dribble vs X2"
+ },
+ "dribble_60": {
+  "spec": [
+   "teams",
+   [
+    "Bucket Brigade",
+    "Lockdown"
+   ]
+  ],
+  "fields": {
+   "o": [
+    [
+     8,
+     6
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     14,
+     9
+    ],
+    [
+     0,
+     3
+    ],
+    [
+     16,
+     3
+    ]
+   ],
+   "x": [
+    [
+     9,
+     12
+    ],
+    [
+     3,
+     8
+    ],
+    [
+     13,
+     8
+    ],
+    [
+     8,
+     5
+    ],
+    [
+     13,
+     4
+    ]
+   ],
+   "arrows": [
+    5,
+    1,
+    7,
+    0,
+    0
+   ],
+   "ball": 0,
+   "stage": "play",
+   "side": "O",
+   "clock": 12,
+   "tok_o": 2,
+   "tok_x": 2,
+   "moved_o": 3,
+   "moved_x": 9,
+   "cnt": [
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "turn_n": 0,
+   "final": false,
+   "lock_o": 0,
+   "lock_x": 0,
+   "screens": [
+    [
+     1,
+     0,
+     false,
+     2
+    ]
+   ],
+   "pending": null,
+   "approach": -1,
+   "shot": null,
+   "prev_wait": "",
+   "beaten": [],
+   "fouls": 0,
+   "bonus5": 0,
+   "tos": 0,
+   "inbound": 0,
+   "target": -1,
+   "zeroed": false,
+   "phase": 1,
+   "turn_moved": 0,
+   "qs_o": 1,
+   "qs_x": 0,
+   "forced": false
+  },
+  "dribble": "O1 Dribble vs X4"
+ }
+}

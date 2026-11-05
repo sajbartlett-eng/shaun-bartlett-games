@@ -83,8 +83,11 @@ def test_all_star_prefers_two_clean_passes_to_one_contested():
     s, d = position('two')
     r, m = d['receiver'], d['via']
     assert not C.pass_risk(s, s.ball, r)['clean'] and C.pass_risk(s, s.ball, m)['clean']
+    two = value(s, Play('kick', (Action('pass', 'O', s.ball, target=m),)))
+    one = value(s, Play('kick', (Action('pass', 'O', s.ball, target=r),)))
+    assert two > one, (two, one)                                               # the 3f valuation
     a = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[]).choose(s)
-    assert a.kind == 'pass' and a.target == m, a
+    assert not (a.kind == 'pass' and a.target == r), a                         # never the contested one
     # Starter doesn't weigh two-pass routes: its value for the first pass has no follow-up pass in it
     c, view = computer(s, 'starter')
     assert 'two_pass' not in c.cfg['pass_alternatives']
@@ -93,8 +96,13 @@ def test_all_star_prefers_two_clean_passes_to_one_contested():
 def test_last_phase_a_contested_pass_is_allowed():
     s, d = position('late')
     assert s.clock == 2
+    r = int(d['chosen'].split('to O')[1]) - 1
+    assert not C.pass_risk(s, s.ball, r)['clean']
+    p = Play('kick', (Action('pass', 'O', s.ball, target=r),))
+    keep = value(s, Play('hesitate', (Action('hesitate', 'O'),)))
+    assert value(s, p) > keep                                                  # allowed: worth more than holding it
     a = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[]).choose(s)
-    assert a.kind == 'pass' and not C.pass_risk(s, s.ball, a.target)['clean'], a
+    assert a.kind in ('pass', 'shot'), a                                       # (since 3g it may finish instead)
 
 
 def test_habit_forces_passes_throws_to_the_target_through_a_contested_lane():

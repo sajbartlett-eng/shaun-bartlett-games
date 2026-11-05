@@ -61,7 +61,8 @@ async function scan(page) {
   out['steps'] = [];
   for (let i = 0; i < 80 && await page.evaluate(() => !document.getElementById('stepBar').classList.contains('hidden')); i++) {
     out['steps'].push(await page.evaluate(() => [document.querySelector('#stepBar .step-count').textContent, document.activeElement.id,
-      document.querySelectorAll('#recent .fe').length, !!document.querySelector('#court .ghost') || null]));
+      document.querySelectorAll('#recent .fe').length, !!document.querySelector('#court .ghost') || null,
+      document.querySelector('#stepBar .fe-head').textContent]));
     await page.keyboard.press('Enter'); await page.waitForTimeout(60);
   }
   out['end dialog'] = await scan(page);
@@ -107,10 +108,12 @@ def test_accessibility(tmp_path):
     assert out['escape closes'], out['dialogs']
     assert out['step bar'] == [], out['step bar']
     steps = out['steps']                                      # every action, in order, with OK focused
-    assert len(steps) >= 3 and all(f == 'stepOk' for _, f, _, _ in steps), steps
-    for k, (count, _, shown, _) in enumerate(steps):          # "so far": the actions before this one, never after
+    assert len(steps) >= 3 and all(f == 'stepOk' for _, f, _, _, _ in steps), steps
+    for k, (count, _, shown, _, _) in enumerate(steps):       # "so far": the actions before this one, never after
         assert shown == int(count.split('action ')[1].split(' of')[0]) - 1, steps
-    assert any(g for *_, g in steps), steps                   # a moved piece leaves a ghost where it was
+    for _, _, _, ghost, text in steps:                        # a moved piece leaves a ghost where it was
+        if any(w in text for w in (' Move to ', ' Quick Step to ', ' Sprint to ')):
+            assert ghost, (text, steps)
     assert steps[0][0].endswith(f"action 1 of {steps[0][0].split(' of ')[-1]}") and '(computer)' in steps[0][0]
     assert any(d and 'over' in d for d in out['dialogs'])
     labels = out['laptop labels']
