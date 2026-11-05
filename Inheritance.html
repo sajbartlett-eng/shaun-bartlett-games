@@ -2549,6 +2549,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 /* Faces: how fairness felt, recorded after every estate and shown beside the facts. */
 .legacy-faces {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 4px;}
 #legacyFacesOverlay .legacy-tools {display:none;}
+#dialogueOverlay .legacy-tools {display:none;}
 .legacy-face-btn {display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:1.5px solid var(--paper-edge);border-radius:4px;background:rgba(243,234,217,.6);cursor:pointer;font:600 12px var(--display);color:var(--ink-soft);min-height:88px;}
 .legacy-face-btn:hover {background:var(--paper-deep);border-color:var(--ink);}
 .legacy-face-btn .emoji {font-size:38px;line-height:1;}
@@ -2569,6 +2570,24 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 .legacy-record .legacy-record-line p {margin:3px 0;font-size:14px;line-height:1.45;}
 .legacy-record-final {margin-top:12px;font:700 16px var(--display);}
 .legacy-metrics-3 {grid-template-columns:repeat(3,minmax(0,1fr));}
+.dialogue-modal {width:min(520px,100%);cursor:pointer;}
+.dialogue-head {display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.dialogue-portrait {width:84px;height:84px;flex:none;}
+.dialogue-portrait svg {width:100%;height:100%;display:block;}
+.dialogue-who h2 {margin:2px 0 0;font-size:22px;}
+.dialogue-line {min-height:4.6em;margin:4px 0 10px;font-size:19px;line-height:1.45;}
+.dialogue-line::after {content:'';display:inline-block;width:.45em;height:1.05em;margin-left:2px;vertical-align:-0.15em;background:var(--ink);opacity:0;}
+.dialogue-modal.typing .dialogue-line::after {opacity:.8;animation:dialogue-blink .8s steps(2) infinite;}
+@keyframes dialogue-blink {to {opacity:0;}}
+.dialogue-choices {display:grid;gap:8px;margin:0 0 12px;}
+.dialogue-choices button {text-align:left;}
+.dialogue-actions {display:flex;gap:10px;align-items:center;}
+.dialogue-actions .btn-primary {flex:1;}
+.dialogue-hint {margin:8px 0 0;text-align:center;font-size:12px;color:var(--ink-faint);}
+.dialogue-portrait .mouth {transform-origin:40px 46px;}
+.dialogue-portrait.speaking .mouth {animation:dialogue-talk .3s steps(2) infinite;}
+@keyframes dialogue-talk {to {transform:scaleY(2.2);}}
+@media (prefers-reduced-motion: reduce) {.dialogue-portrait.speaking .mouth, .dialogue-modal.typing .dialogue-line::after {animation:none;}}
 @keyframes legacy-rise {from {opacity:0;transform:translateY(6px);} to {opacity:1;transform:none;}}
 @keyframes legacy-pop {from {opacity:0;transform:scale(.6);} to {opacity:1;transform:scale(1);}}
 @keyframes legacy-pulse {0% {transform:scale(1);} 40% {transform:scale(1.12);} 100% {transform:scale(1);}}
@@ -3224,6 +3243,22 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 </div></div>
 
 <div class="overlay" id="legacyOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyTitle"><div class="modal"><h2 id="legacyTitle" tabindex="-1">Family Legacy</h2><div id="legacyBody"></div></div></div>
+<div class="overlay" id="dialogueOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="dialogueName">
+    <div class="modal dialogue-modal">
+        <div class="dialogue-head">
+            <div class="dialogue-portrait" id="dialoguePortrait" aria-hidden="true"></div>
+            <div class="dialogue-who"><div class="eyebrow" id="dialogueEyebrow"></div><h2 id="dialogueName"></h2></div>
+        </div>
+        <p class="dialogue-line" id="dialogueLine" aria-live="polite"></p>
+        <div class="dialogue-choices" id="dialogueChoices" hidden></div>
+        <div class="dialogue-actions">
+            <button class="btn-primary" id="dialogueNextBtn">Continue</button>
+            <button class="btn-ghost" id="dialogueSkipBtn">Skip</button>
+        </div>
+        <p class="dialogue-hint">Tap anywhere to continue</p>
+    </div>
+</div>
+
 <div class="overlay" id="legacyFacesOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyFacesTitle"><div class="modal legacy-faces-modal"><div class="eyebrow" id="legacyFacesEyebrow">how did that feel?</div><h2 id="legacyFacesTitle">Sibling</h2><p class="body" id="legacyFacesPrompt"></p><div class="legacy-faces" id="legacyFacesButtons" role="group" aria-label="How did that feel"></div><div class="setup-link-row"><button type="button" class="btn-ghost" id="legacyFacesSkipBtn">Leave it blank</button></div></div></div>
 <div class="overlay" id="legacyInvestOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyInvestTitle"><div class="modal"><div class="eyebrow">after the build · before the division</div><h2 id="legacyInvestTitle" tabindex="-1">Invest in the estate</h2><div id="legacyInvestBody"></div></div></div>
 <input type="file" id="legacyFileInput" accept=".inheritance,application/json" hidden>
@@ -14042,6 +14077,102 @@ const VALUE_ENGINE = {
         node.innerHTML=`<strong>Property inherited: ${generated} of ${ceiling.total} theoretical maximum.</strong><p>${STATE.outcome.unresolved?'Neither sibling chose, so no Property was inherited. ':''}The ceiling is an upper bound, not a target guaranteed by this layout.</p><details><summary>How is the ceiling calculated?</summary><p>Fixed terrain ${ceiling.land} + supplied and purchased assets ${ceiling.printed}${ceiling.links?` + possible connections ${ceiling.links}`:''}${ceiling.development?` + developments ${ceiling.development}`:''}. It uses the terrain already set and does not try different terrain layouts. ${STATE.settings.betterTogether?'Some eligible connections may compete for space. ':''}A fence can remove land or connection value.</p></details>`;
     }
 };
+// A person speaking to you, one line at a time, at about the pace of speech.
+// Tap to finish the line, tap again for the next. Now and then a reply is
+// offered; it never changes the game, only what is said next. Everything a
+// script says is short enough to hear in one breath.
+const DIALOGUE = (() => {
+    const el = {};
+    let queue = [], index = 0, typing = null, choosing = false, onDone = null, current = null;
+    const PORTRAIT = `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#e6dcc4" stroke="#2b2316" stroke-width="2"/><path d="M12 80 C14 62 26 57 40 57 C54 57 66 62 68 80 Z" fill="#4f6f9f" stroke="#2b2316" stroke-width="2"/><path d="M33 57 L40 68 L47 57" fill="#f4ede0" stroke="#2b2316" stroke-width="1.6"/><path d="M26 33 C26 19 54 19 54 33 V42 C54 53 26 53 26 42 Z" fill="#f4ede0" stroke="#2b2316" stroke-width="2"/><path d="M24 34 C22 14 58 14 56 34 C52 25 28 25 24 34 Z" fill="#8a8178" stroke="#2b2316" stroke-width="2"/><circle cx="33" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><circle cx="47" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><path d="M37.6 38 H42.4 M28.4 38 H26 M51.6 38 H54" stroke="#2b2316" stroke-width="1.6"/><circle cx="33.5" cy="38.5" r="1.3" fill="#2b2316"/><circle cx="47.5" cy="38.5" r="1.3" fill="#2b2316"/><path class="mouth" d="M35 46.5 Q40 49.5 45 46.5" fill="none" stroke="#2b2316" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+    function init() {
+        el.overlay = document.getElementById('dialogueOverlay');
+        if (!el.overlay) return;
+        UI.el.dialogueOverlay = el.overlay;
+        el.modal = el.overlay.querySelector('.dialogue-modal');
+        el.portrait = document.getElementById('dialoguePortrait');
+        el.eyebrow = document.getElementById('dialogueEyebrow');
+        el.name = document.getElementById('dialogueName');
+        el.line = document.getElementById('dialogueLine');
+        el.choices = document.getElementById('dialogueChoices');
+        el.next = document.getElementById('dialogueNextBtn');
+        el.skip = document.getElementById('dialogueSkipBtn');
+        el.portrait.innerHTML = PORTRAIT;
+        el.next.addEventListener('click', e => { e.stopPropagation(); advance(); });
+        el.skip.addEventListener('click', e => { e.stopPropagation(); finish(); });
+        el.modal.addEventListener('click', e => { if (e.target.closest('button')) return; advance(); });
+        document.addEventListener('keydown', e => {
+            if (UI.topOverlayKey() !== 'dialogueOverlay') return;
+            if (e.key === 'Enter' || e.key === ' ') { if (e.target.closest('button') && e.target !== el.next) return; e.preventDefault(); advance(); }
+            if (e.key === 'Escape') { e.preventDefault(); finish(); }
+        });
+    }
+    const beatOf = item => typeof item === 'string' ? { text: item } : item;
+    function play(spec, done) {
+        if (!el.overlay) { done && done(); return; }
+        current = spec;
+        queue = (spec.beats || []).map(beatOf);
+        index = 0; onDone = done || null; choosing = false;
+        el.eyebrow.textContent = spec.eyebrow || '';
+        el.name.textContent = spec.speaker || 'Mrs Hartley, the bank';
+        if (UI.topOverlayKey() !== 'dialogueOverlay') UI.open('dialogueOverlay');
+        showBeat();
+    }
+    function showBeat() {
+        const beat = queue[index];
+        if (!beat) { finish(); return; }
+        el.choices.innerHTML = ''; el.choices.hidden = true; choosing = false;
+        el.next.hidden = false;
+        el.next.textContent = index === queue.length - 1 && !beat.choices ? (current.finalLabel || 'Continue') : 'Continue';
+        startTyping(beat.text, () => { if (beat.choices) renderChoices(beat.choices); });
+    }
+    function startTyping(text, after) {
+        stopTyping();
+        const animate = !(typeof STATE !== 'undefined' && STATE.settings && STATE.settings.animate === false);
+        if (!animate) { el.line.textContent = text; after && after(); return; }
+        el.line.textContent = '';
+        el.modal.classList.add('typing'); el.portrait.classList.add('speaking');
+        let i = 0;
+        const timer = setInterval(() => {
+            i += 1;
+            el.line.textContent = text.slice(0, i);
+            if (i >= text.length) { stopTyping(); after && after(); }
+        }, 24);
+        typing = { timer, text, after };
+    }
+    function stopTyping() {
+        if (typing) clearInterval(typing.timer);
+        typing = null;
+        el.modal.classList.remove('typing'); el.portrait.classList.remove('speaking');
+    }
+    function renderChoices(choices) {
+        choosing = true;
+        el.next.hidden = true;
+        el.choices.hidden = false;
+        el.choices.innerHTML = choices.map((c, i) => `<button type="button" class="btn-secondary" data-dialogue-choice="${i}">${escapeHtml(c.label)}</button>`).join('');
+        el.choices.querySelectorAll('[data-dialogue-choice]').forEach(button => button.addEventListener('click', e => {
+            e.stopPropagation();
+            const choice = choices[Number(button.dataset.dialogueChoice)];
+            queue.splice(index + 1, 0, ...(choice.then || []).map(beatOf));
+            choosing = false; index += 1; showBeat();
+        }));
+        UI.focusFirst(el.overlay);
+    }
+    function advance() {
+        if (typing) { const { text, after } = typing; stopTyping(); el.line.textContent = text; after && after(); return; }
+        if (choosing) return;
+        index += 1; showBeat();
+    }
+    function finish() {
+        stopTyping();
+        queue = []; choosing = false;
+        if (UI.topOverlayKey() === 'dialogueOverlay' || el.overlay.classList.contains('open')) UI.close('dialogueOverlay');
+        const done = onDone; onDone = null; current = null;
+        done && done();
+    }
+    return { init, play, finish, isOpen: () => !!el.overlay && el.overlay.classList.contains('open') };
+})();
+
 const LEGACY_UNLOCK = (() => {
     // Family Legacy uses these rules in every estate. The checklist records which
     // each named sibling has already played a game with. It is advice, not a lock:
@@ -14799,7 +14930,7 @@ const LEGACY = (() => {
         if(campaign.round===1&&!campaign.guidance.campaignPrimerSeen){
             clearInvestmentTimer();
             document.getElementById('legacyInvestTitle').textContent=`${c.chapter} is built`;
-            document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">This first estate is built. Businesses that stay together after the cut can earn Capital for the sibling who inherits them. You have no Capital to spend yet, so this estate goes straight to the familiar cut and choice.</p><div class="actions"><button class="btn-primary" data-legacy="beginFirstEstate">Continue to the division</button><button class="btn-secondary" data-legacy="rules">Income and investment rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
+            document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">Built. A business that stays whole after the cut pays whoever inherits it. No Capital yet, so straight to the division.</p><div class="actions"><button class="btn-primary" data-legacy="beginFirstEstate">Continue to the division</button><button class="btn-secondary" data-legacy="rules">Income and investment rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
             renderInvestmentBoard();
             return;
         }
@@ -14872,7 +15003,7 @@ const LEGACY = (() => {
     function showMeaningfulCampaignPrimer() {
         if(!campaign||campaign.round!==2||STATE.phase!==PHASE.MEANINGFUL||campaign.guidance.meaningfulPrimerSeen)return;
         document.getElementById('legacyInvestTitle').textContent='The Family Home';
-        document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">This estate includes belongings tied to the family's history. Here, each sibling may choose one item they care about.</p><div class="legacy-consent-box"><strong>Personal value has no price</strong><p class="legacy-consent-private">Your choice does not change Property, Capital, income or ownership. It becomes part of the family history, so you can see who eventually inherits it.</p></div><p class="comparison-note">Choosing is optional. Afterward, Cutter and Chooser are decided normally and the estate is divided.</p><div class="actions"><button class="btn-primary" data-legacy="beginFamilyHomeChoice">Choose what matters</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
+        document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">Each of you may name one thing in this house you care about.</p><div class="legacy-consent-box"><strong>Personal value has no price</strong><p class="legacy-consent-private">It changes nothing in the game. The record will say who ended up with it.</p></div><p class="comparison-note">Naming is optional.</p><div class="actions"><button class="btn-primary" data-legacy="beginFamilyHomeChoice">Choose what matters</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
         renderInvestmentBoard();UI.open('legacyInvestOverlay');save();
     }
     function beginFamilyHomeChoice() {
@@ -15554,7 +15685,7 @@ const LEGACY = (() => {
         if (!campaign) {
             let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
             const ready=LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value]);
-            html+=`<p class="body">${text(LEGACY_PROLOGUE)}</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. Each estate ends with a face from each of you, and the Legacy ends with the family record: what each of you holds, what the family lost, and how it felt.</p>`+(ready?'':'<p class="body">Enter two different sibling names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+guidedToggleHtml()+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
+            html+=`<p class="body">Your parents left no will, and six properties pass to the two of you in equal shares. The bank administers the estate, sets the deadlines, and keeps the record.</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. Each estate ends with a face from each of you, and the Legacy ends with the family record: what each of you holds, what the family lost, and how it felt.</p>`+(ready?'':'<p class="body">Enter two different sibling names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+guidedToggleHtml()+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
         } else {
             const complete=campaign.status==='complete',unresolved=campaign.status==='unresolved',between=campaign.status==='between';
             const latestRecord=campaign.history[campaign.history.length-1];
@@ -15727,9 +15858,12 @@ const LEGACY = (() => {
             purchasedAssets:clone(campaign.current.purchasedAssets),developments:clone(campaign.current.developments),investedBy:clone(campaign.current.investedBy),
             incomePayments:clone(incomePayments),unlocksEarned:clone(unlocksEarned),capitalAfter:campaign.players.map(player=>player.capital),board});
         campaign.status=campaign.round===6?'complete':'between';
+        const spokenEnding=campaign.status==='complete'&&campaign.guided!==false&&UI.el.dialogueOverlay;
         if(campaign.status==='complete'){campaign.finalResult=calculateCampaignResult();if(finalProjection.players.some((player,i)=>player.projected!==campaign.finalResult.players[i].projected||player.current!==campaign.finalResult.players[i].current))throw new Error('Final projection did not match the accepted ledger.');campaign.endedAt=acceptedAt;}
         event('SETTLEMENT_COMMITTED',{attempt:campaign.current.attempt,scores,accounting:clone(preview),holdings:holdingsByPlayer.map(groups=>groups.map(group=>({name:group.name,grade:group.grade,score:group.score,income:group.income}))),incomePayments});if(campaign.status==='complete')event('CAMPAIGN_COMPLETED',{finalResult:clone(campaign.finalResult)});
-        suspended=null;save();open();ensureFairestGaps();
+        suspended=null;save();
+        if(spokenEnding)DIALOGUE.play(endingScript(),()=>{open();ensureFairestGaps();});
+        else {open();ensureFairestGaps();}
     }
     // Every business on the estate before the fence, and what it paid. Compared at the
     // end with what was inherited intact.
@@ -15943,11 +16077,84 @@ const LEGACY = (() => {
             6:`The last estate. After this division the result stands. Each sibling's final wealth is inherited Property, unspent Capital, and the next three business payments.`,
         }[round]||'';
     }
+    // What the administrator says at the opening of each estate: why it has come
+    // through now (titles clear, tenancies end, claims fail, surveys finish, as
+    // probate actually runs), what carries over, and what is new, one line at a
+    // time. The replies change the next line and nothing else.
+    function chapterScript(n) {
+        const names=campaign.players.map(p=>p.name),years=yearsPerEstate();
+        const q=developmentIncome(DEVELOPMENT.quarry),lg=developmentIncome(DEVELOPMENT.logging);
+        const holds=p=>{const paying=p.holdings.filter(h=>h.active).length;return `${p.name} holds ${p.property} Property and ${p.capital} Capital${paying?`, with ${paying} ${paying===1?'business':'businesses'} paying`:''}.`;};
+        const carried=n>1?[`${years} years on. ${holds(campaign.players[0])} ${holds(campaign.players[1])}`]:[];
+        const scripts={
+            1:[
+                "I'm sorry for your loss. Both of them, within the year. Your father banked with us for forty years; I knew him a little.",
+                "There is no will. I have looked, and the solicitor has looked. So the law decides: everything passes to the two of you, in equal shares.",
+                "The court has made the bank the administrator. That is me, I'm afraid. I set the deadlines, and I keep the record.",
+                {text:"Ask me anything before we start.",choices:[
+                    {label:'How many properties are there?',then:["Six. Your grandparents' farm comes first; its title is already clear. The others come through as probate, tenancies and surveys allow. I will tell you about each as it arrives."]},
+                    {label:"Why can't we just split everything down the middle?",then:["Because none of them splits down the middle. A house, a farm, a stretch of river: every line through them costs something. The fairest method I know is the oldest: one of you draws the line, the other chooses the side."]},
+                    {label:"What happens if we can't agree?",then:["Then I sell it. After costs and the agents' bids, nothing comes back to the family. I would rather not. So would you."]},
+                ]},
+                "Here is how each estate goes. You build it up together first. Then one of you cuts it in two, and the other chooses a half. What you choose, you keep, for good.",
+                "The clock matters. An empty house decays, a farm without a tenant earns nothing, tax falls due. When the clock runs out I draw the line myself, and I draw it badly.",
+                "Pieces that work together in the same plot, crops beside a barn, vines beside a winery, form a business. A business pays whoever inherits it, after every estate. That is the Capital you will spend later.",
+                `The first estate is your grandparents' farm. Shape its water and roads together, then build. There is no Capital to spend yet.`,
+            ],
+            2:[
+                "Probate on the house has cleared. The family home, on the old main road. The one everyone remembers.",
+                ...carried,
+                "Each of you may name one thing in it you care about. It changes no value. It goes in the record, and I will tell you who ended up with it.",
+                {text:"Any Capital from the farm can be spent here, after Build and before the roles are decided.",choices:[
+                    {label:"I don't want anything from that house.",then:["Then name nothing. The record will say so, and that is a statement too."]},
+                    {label:'Can we both want the same thing?',then:["You can. Only one of you will inherit it, and the record will remember who."]},
+                    {label:"Let's begin.",then:[]},
+                ]},
+            ],
+            3:[
+                "The tenant on the working estate has given notice, so the farm is yours to settle. It still earns. Put money back into it and it earns more.",
+                ...carried,
+                "Capital from your businesses is spent here, after Build and before the roles are decided. As the most Capital either of you has held rises, more pieces become available.",
+                "One thing people forget: whoever inherits the square owns what stands on it, whoever paid for it.",
+            ],
+            4:[
+                "Your uncle's boundary claim on the waterside land has failed, and the title is released.",
+                ...carried,
+                "Water decides where the value lies. A fence that puts the shoreline in the other plot takes the frontage with it.",
+                "Roads are different. A fence across a road has a gate, so road access is never lost.",
+            ],
+            5:[
+                "The forestry survey of the uplands is complete, and the land can be settled.",
+                ...carried,
+                `Rock and managed woodland are sites now. A quarry needs two adjacent rock squares and pays ${q} Capital twice. A logging operation needs three connected woodland squares and pays ${lg} three times.`,
+                `Both pay only if inherited whole. They become available at ${DEVELOPMENT.quarry.cost} and ${DEVELOPMENT.logging.cost} Capital held.`,
+            ],
+            6:[
+                "The last title has come through.",
+                ...carried,
+                "After this division the result stands. Each of you ends with inherited Property, unspent Capital, and the next three business payments.",
+                {text:"Anything else before the last one?",choices:[
+                    {label:'Any advice?',then:["Only what the record will show: what the family holds, what it could have held, and where the difference went. I have watched families argue over the first number and never read the third."]},
+                    {label:"Let's finish it.",then:[]},
+                ]},
+            ],
+        };
+        return {eyebrow:`Estate ${n} of 6 · ${chapters[n-1]}`,beats:scripts[n]||[],finalLabel:n===1?'Shape the land':'Begin the estate'};
+    }
+    function endingScript() {
+        return {eyebrow:'After the last estate',beats:["That is the last of them. I will file the record now.","What each of you holds, what the family lost, and how it felt. Read all three."],finalLabel:'See the record'};
+    }
     function showChapterCard() {
         if(!campaign||campaign.status!=='playing'||!campaign.current||campaign.current.chapterCardSeen||campaign.guided===false)return;
         const fresh=STATE.phase===PHASE.TERRAIN||(STATE.phase===PHASE.BUILD&&!campaign.current.investmentOpened&&STATE.pool.length===CONFIG.PLACEMENT_COUNT);
         if(!fresh)return;
-        const n=campaign.round,years=yearsPerEstate();
+        const n=campaign.round;
+        if(UI.el.dialogueOverlay){
+            const dismissSpoken=()=>{campaign.current.chapterCardSeen=true;if(n>=5)campaign.guidance.resourcePrimerSeen=true;if(n===6)campaign.guidance.finalePrimerSeen=true;save();UI.focusBoard();};
+            DIALOGUE.play(chapterScript(n),dismissSpoken);
+            return;
+        }
+        const years=yearsPerEstate();
         const carried=n>1?`<h4 class="legacy-record-kicker">What carries over</h4><div class="legacy-guide-grid">${campaign.players.map(p=>`<div class="legacy-guide-step"><strong>${text(p.name)}</strong><span>Property ${p.property}</span><span>Capital ${p.capital}</span><span>${p.holdings.filter(h=>h.active).length} ${p.holdings.filter(h=>h.active).length===1?'business paying':'businesses paying'}</span></div>`).join('')}</div>`:'';
         const dismiss=()=>{
             campaign.current.chapterCardSeen=true;
@@ -16270,6 +16477,7 @@ const LEGACY = (() => {
         document.getElementById('legacyRecordBtn').hidden=campaign.status!=='playing';
     }
     function bind() {
+        DIALOGUE.init();
         UI.el.legacyOverlay=document.getElementById('legacyOverlay');UI.el.legacyInvestOverlay=document.getElementById('legacyInvestOverlay');UI.el.legacyFacesOverlay=document.getElementById('legacyFacesOverlay');UI.overlayKeys.push('legacyOverlay','legacyInvestOverlay','legacyFacesOverlay');
         document.getElementById('legacyFacesSkipBtn').addEventListener('click',()=>{if(facesPending)facesPending.pick(null);});
         UI.el.inputP1.addEventListener('input',LEGACY_UNLOCK.refresh);UI.el.inputP2.addEventListener('input',LEGACY_UNLOCK.refresh);
