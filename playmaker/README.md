@@ -297,6 +297,47 @@ offence level against the Starter and All-Star defences (648 possessions a run):
 defence, paired: Starter offence −1.2 ± 1.3 against All-Star (target −2), Rookie −3.8 ± 1.9 (target −4).
 The defence levels' concessions in the table further up were measured against the old offence.
 
+**Re-measured after playtest logs D7D923 and 82866B** (the defence and loop fixes above; the full
+3 x 3 matrix, 972 possessions, `solver_results/headtohead_fixed.json`):
+
+| Offence ↓ / Defence → | Rookie | Starter | All-Star |
+|---|---|---|---|
+| **All-Star** | 30.6 ± 1.5 | 28.2 ± 1.6 | 26.6 ± 1.8 |
+| **Starter** | 30.1 ± 1.5 | 26.4 ± 1.7 | 25.4 ± 2.0 |
+| **Rookie** | 27.9 ± 1.8 | 24.3 ± 1.7 | 23.2 ± 2.0 |
+
+| Against the All-Star opponent (99 pairs) | Measured | Target |
+|---|---|---|
+| Starter defence concedes | +1.8 ± 1.7 | +2 |
+| Rookie defence concedes | +4.3 ± 1.7 (separated from Starter: +2.5 ± 1.7) | +4 |
+| Starter offence scores | −1.1 ± 1.6 | −2 |
+| Rookie offence scores | −3.2 ± 1.9 (separated from Starter: −2.1 ± 1.6) | −4 |
+
+Every target is now inside its interval, and the Rookie defence is separated from the Starter defence
+for the first time. The All-Star defence holds the All-Star offence to 26.6 (28.5 before these fixes).
+Contested shots in the first phase: 2% of Rookie shots, 9% of Starter and All-Star shots.
+Thinking time is not capped hard: a few decisions ran to 2 to 4 seconds (the designer prefers a slower,
+better choice).
+
+**Every preset change from the step 3e spec** (`git log` on `computer_levels.json`):
+
+| Preset | Spec | Now | Why |
+|---|---|---|---|
+| Rookie offence concepts | reaction-aware shot value and risk only | all but draining the reaction (plan, lookahead and patience on) | calibration: plan and lookahead brought it to its target; patience is the shot-bar rule (all levels) |
+| Rookie offence habits | 2 | 1 | calibration: with two it nearly always drew "settles for the first shot" and took looks of 12 |
+| Rookie offence reads | position (`role`) | the numbers (`exact`) | calibration |
+| Rookie offence looks ahead | the shot now (0) | the defence's reply (1) | calibration |
+| Rookie offence randomness | 0.15 | 0.03 | calibration |
+| Starter offence reads | ▲ / plain / ▼ (`marks`) | `exact` | calibration: marks cost about 3 points on its own |
+| Starter offence drains the reaction | off | on | calibration |
+| Starter offence randomness | 0.05 | 0 | calibration |
+| All-Star offence and defence look ahead | the solver's search | one turn | calibration: the search is shallow inside a second and did worse |
+| Starter defence keeps a reaction in hand | off | on | calibration: without it, 7.6 more conceded to a draining offence |
+| Starter defence comfort offset | +2 | +3 | calibration |
+| Offence patience, every level | one curve, three modes | shot bars by clock, open and contested; Rookie must shoot by clock 4 | playtests 3A9C33 and 82866B |
+| Offence habit "settles for the first shot" | a fixed bar of 12 | "settles early": the bars one phase ahead | playtest 3A9C33 |
+| Rookie defence habit pool | all five | not "jumps the first pass" | playtest 82866B: it is often the right play |
+
 **Against the All-Star offence** (from the same matrix):
 
 | Defence | Shots declared | Clean contest | Foul roll | No contest | Reaction couldn't change the contest | Comfort line decided |
@@ -319,6 +360,15 @@ is left as it is.
 *Diagnostic, before this tuning:* the value given up per decision against a depth-2 solver judge was
 offence 5.6 / 2.8 / 2.1 and defence 4.1 / 2.1 / 0.9 (Rookie / Starter / All-Star). It isn't used as the
 target because summed per possession it penalises patience.
+
+## The other side's turn, one action at a time
+
+When the computer (or a remote opponent) acts, the page plays its turn back one action at a time.
+The board shows where everything stood after that action, with a dashed ghost where the piece came from.
+A bar says what it did, any dice rolled and what happened. **OK: next action** shows the next one;
+the last says **OK: your turn**. Nothing still to come is shown, so you can try to call the next action
+(a steal? another help defender moving?) before you press OK. The timer, if on, waits until your turn
+is on the board. Each feed entry carries a small board snapshot (`board_json` in `view.py`) for this.
 
 ## Decision timer (step 3d, optional)
 

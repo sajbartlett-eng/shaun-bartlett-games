@@ -164,6 +164,24 @@ def turn_summary(s):
     return f'{who} turn: {left} action{"s" if left != 1 else ""} left · a turn-ender ends it now{extra}'
 
 
+def board_json(s, slots=None):
+    """The board after one action, small enough to keep with every feed entry: the page steps through the
+    other side's turn one action at a time (where each piece stood, arrows, ball, clock, tokens)."""
+    o = []
+    for i, p in enumerate(s.o):
+        sc = s.screen_of(i)
+        o.append(dict(sq=B.sq(p), x=p[0], y=p[1], ball=i == s.ball, locked=s.locked('O', i), moved=s.moved('O', i),
+                      slots=list(slots['O'][i]) if slots else [],
+                      screen=dict(dir=sc[1], t=B.sq(B.add(p, B.DIRS[sc[1]]))) if sc else None))
+    x = [dict(sq=B.sq(p), x=p[0], y=p[1], arrow=s.arrows[i], arrow_name=B.DIR_NAMES[s.arrows[i]],
+              locked=s.locked('X', i), moved=s.moved('X', i), slots=list(slots['X'][i]) if slots else [])
+         for i, p in enumerate(s.x)]
+    return dict(o=o, x=x, clock=s.clock, phase=s.phase, stage=s.stage, tokens=dict(O=s.tok_o, X=s.tok_x),
+                pending=list(s.pending) if s.pending else None, inbound=s.inbound, shot=s.shot,
+                arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) else [], summary=turn_summary(s),
+                bonus=RC.STEAL_FOUL_BONUS * s.bonus5, turnovers=s.tos)
+
+
 def state_json(game, token):
     game.timer_tick()                    # apply any forfeit that fell due before reading the state
     s = game.state
