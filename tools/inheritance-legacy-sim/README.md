@@ -8,7 +8,9 @@ node simulate_legacy.js --runs 100 --profile all        # six profiles, 100 camp
 node simulate_legacy.js --runs 20 --profile aware,greedy --seed 7
 ```
 
-Requires Node and Playwright with Chromium (the same setup the playtests use). Results go to `results/`: `RESULTS.md` (summary table and per-profile detail), `summary.json`, and `runs.json` (every campaign, every estate decision).
+Requires Node and Playwright with Chromium (the same setup the playtests use). Results go to `results/`: `RESULTS.md` (summary table, the "what could have been" table, and per-profile detail), `summary.json`, `runs.json` (every campaign, every estate decision), and `save.json` (one finished campaign's save, so the ending can be opened in a browser).
+
+The scripted siblings pass every chapter card and answer the faces prompt from the estate's result (ahead by 3 or more delighted, ahead content, level flat, behind upset, behind by 3 or more angry), so the family record and the gap strip have data. The "what could have been" table reads the game's own ledger after each campaign: family wealth, what the family could have held, and the four losses the game accounts for (the fence, holdings the fence divided, estates lost, Capital held unspent), plus the fairest fence available against the fence drawn.
 
 ## Profiles
 

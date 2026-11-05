@@ -2551,6 +2551,14 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .legacy-record-head strong {font-size:15px;}
 .legacy-record .legacy-record-line p {margin:3px 0;font-size:14px;line-height:1.45;}
 .legacy-record-final {margin-top:12px;font:700 16px var(--display);}
+.legacy-metrics-3 {grid-template-columns:repeat(3,minmax(0,1fr));}
+.legacy-strip {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 4px;}
+.legacy-strip-col {display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border:1px solid var(--paper-edge);background:var(--paper);min-width:0;}
+.legacy-strip-round {font-size:12px;color:var(--ink-soft);}
+.legacy-strip-gap {font:700 20px var(--mono);}
+.legacy-strip-col .legacy-chronicle-faces {margin:2px 0 0;font-size:17px;letter-spacing:.02em;}
+.legacy-could .legacy-details summary strong {font-family:var(--mono);}
+@media (max-width:420px) {.legacy-metrics-3 {grid-template-columns:1fr 1fr;} .legacy-strip {grid-template-columns:repeat(3,minmax(0,1fr));} .legacy-strip-gap {font-size:18px;}}
 .legacy-choice-panel {display:none;margin:0 0 10px;padding:10px 12px;border:1px dashed var(--gold);border-radius:4px;background:var(--gold-soft);font-size:14px;line-height:1.45;color:var(--ink-soft);}
 .legacy-choice-panel.active {display:block;}
 .legacy-choice-panel strong {color:var(--ink);}
@@ -14426,8 +14434,29 @@ const LEGACY = (() => {
         document.getElementById('legacyInvestBody').innerHTML=`${finale}${firstDecision}${investmentBoardHtml()}${investmentTimerHtml()}<div class="legacy-invest-summary"><strong>${player.capital} Capital available</strong><span>Most Capital held ${player.peakCapital}</span></div><p class="comparison-note">${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')}</p><p class="body">Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate. Roles are not decided yet: whoever inherits a purchased piece's square owns it, whoever paid.</p>${nextUnlock}${alreadyFunded.length?`<div class="legacy-consent-box"><strong>Already purchased for this estate</strong><p class="legacy-consent-private">${alreadyFunded.map(text).join(' · ')}</p></div>`:''}${capacity===0?'<div class="legacy-shop-empty">No empty buildable square remains for another normal asset.</div>':''}${hasAffordable?'<h3>Available now</h3>':'<div class="legacy-shop-empty">Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.</div>'}${affordableAssets.length?`<h4>Additional assets</h4><div class="legacy-shop">${affordableAssets.map(option=>assetButton(option)).join('')}</div>`:''}${affordableDevelopments.length?`<h4>Developments</h4><div class="legacy-shop">${affordableDevelopments.map(option=>developmentButton(option)).join('')}</div>`:''}${otherAssets.length&&capacity>0?`<details class="legacy-shop-more"><summary>Assets to save for</summary><div class="legacy-shop">${otherAssets.map(option=>assetButton(option,true)).join('')}</div></details>`:''}${otherDevelopments.length?`<details class="legacy-shop-more"><summary>Developments to save for</summary><div class="legacy-shop">${otherDevelopments.map(option=>developmentButton(option,true)).join('')}</div></details>`:''}${unavailableDevelopments.length?`<details class="legacy-shop-more"><summary>No suitable site on this estate</summary><ul class="legacy-fact-list">${unavailableDevelopments.join('')}</ul></details>`:''}${bought.length?`<h3>Chosen by ${text(player.name)}</h3><p class="body">${bought.map(text).join(' · ')}</p>`:''}<div class="actions"><button class="btn-primary" data-legacy="finishInvesting">${continueLabel}</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
         renderInvestmentBoard();
     }
+    // The most a sibling's unspent Capital could have earned on this estate, by the game's own
+    // placement test (purchaseConsequence) and income table. Recorded only when they buy nothing.
+    // Nothing is shown until the Legacy ends.
+    function bestAvailablePurchase(turn) {
+        const player=campaign.players[turn],unlocked=new Set(player.unlockedInvestments||[]);
+        let best=null;
+        const consider=candidate=>{if(candidate.gain>0&&(!best||candidate.gain*candidate.payments>best.gain*best.payments))best=candidate;};
+        if(assetPurchaseCapacity()>0)for(const item of INVESTMENT_CATALOGUE){
+            if(item.type!=='asset'||!unlocked.has(item.key)||item.cost>player.capital)continue;
+            const result=purchaseConsequence(item.kind);if(!result)continue;
+            consider({kind:'asset',name:CONFIG.ASSET_NAME[item.kind],cost:item.cost,gain:result.gain,payments:3,where:siteLabel([result.cell]),forms:result.group.name,raises:!!result.was});
+        }
+        for(const [type,spec] of Object.entries(DEVELOPMENT)){
+            if(!unlocked.has(investmentKeyForDevelopment(type))||spec.cost>player.capital||developmentPurchaseCapacity(type)<1)continue;
+            consider({kind:'development',name:spec.name,cost:spec.cost,gain:developmentIncome(spec),payments:spec.payments,where:null,forms:spec.name,raises:false});
+        }
+        return best;
+    }
     function finishInvesting(fromTimer=false) {
         const c=campaign.current;if(!c.investmentOpened||c.investmentComplete)return;if(campaign.round===1&&!campaign.guidance.campaignPrimerSeen){beginFirstEstate();return;}
+        if(!Array.isArray(c.unspentOptions))c.unspentOptions=[null,null];
+        const investor=campaign.players[c.investmentTurn];
+        c.unspentOptions[c.investmentTurn]=investor.capital>0&&c.investedBy[c.investmentTurn]===0?{capital:investor.capital,best:bestAvailablePurchase(c.investmentTurn)}:null;
         if(campaign.players[c.investmentTurn].capital>0||c.investedBy[c.investmentTurn]>0)campaign.guidance.investmentPrimerSeen=true;if(campaign.round===6)campaign.guidance.finalePrimerSeen=true;
         const nextStep=nextFundedInvestmentStep(c.investmentStep);if(nextStep!==null){c.investmentStep=nextStep;c.investmentTurn=c.investmentOrder[nextStep];renderInvest();save();return;}
         completeInvestmentPhase();
@@ -14985,6 +15014,9 @@ const LEGACY = (() => {
         return `<h3>Individual distinctions</h3><div class="legacy-guide-grid">${cards.join('')}${decisionDistinctionsHtml()}</div>`;
     }
     function estateValueComparison(record) {
+        return withBoardGeometry(record.board,()=>estateValueComparisonOnBoardGeometry(record));
+    }
+    function estateValueComparisonOnBoardGeometry(record) {
         const board=record.board,settings=board.settings,developments=record.developments||[];
         const basis={terrain:board.terrain,estateMask:board.estateMask,betterTogether:settings.betterTogether};
         const ceiling=VALUE_ENGINE.ceiling({...basis,grid:board.grid,developments}).total;
@@ -15120,8 +15152,9 @@ const LEGACY = (() => {
             const latestRecord=campaign.history[campaign.history.length-1];
             html+=`<h3>${complete?'Six estates recorded':unresolved?'Campaign ended without a choice':between?`Estate ${campaign.round} · ${text(latestRecord?.chapter||chapters[campaign.round-1])}`:`Estate ${campaign.round} of 6 · ${chapters[campaign.round-1]}`}</h3>`;
             if(campaign.status==='playing')html+=`<p class="comparison-note">${text(CHAPTER_COPY[campaign.round-1])}</p>`;
-            if(complete)html+=`${familyRecordHtml()}${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
-            else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no holding payment was made for it. Capital already invested remains spent.</p></div>${ledger()}`;
+            if(complete||unresolved)ensureFairestGaps();
+            if(complete)html+=`${familyRecordHtml()}${couldHaveBeenHtml()}${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
+            else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no holding payment was made for it. Capital already invested remains spent.</p></div>${campaign.history.length?couldHaveBeenHtml():''}${ledger()}`;
             else if(between){
                 const latest=campaign.history[campaign.history.length-1];
                 if(latest){
@@ -15170,7 +15203,7 @@ const LEGACY = (() => {
         campaign.players.forEach((p,i)=>UI.el['inputP'+(i+1)].value=p.name);
         const firstInvestor=(n-1)%2;
         // Post-Build investment is deliberate: Build reveals the estate before either sibling spends Capital.
-        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
+        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,unspentOptions:[null,null],investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
         // Resource chapters promise real sites for both developments. Retry the
         // seeded estate generation if terrain or rocks leave either one impossible.
         for(let attempt=0;attempt<64;attempt++){
@@ -15263,14 +15296,124 @@ const LEGACY = (() => {
         const incomePayments=accrueEligibleIncome(campaign.round),unlocksEarned=campaign.round<6?syncInvestmentUnlocks():[[],[]];
         const acceptedAttempt=divisionSnapshot(campaign.current.attempt),attempts=campaign.current.firstAttempt?[clone(campaign.current.firstAttempt),acceptedAttempt]:[acceptedAttempt];
         const acceptedAt=new Date().toISOString(),facts=settlementFacts(board,campaign.current.purchasedAssets,campaign.current.developments);
-        campaign.history.push({round:campaign.round,faces:clone(campaign.current.faces||[null,null]),incomeRuleVersion:campaign.incomeRuleVersion,chapter:chapters[campaign.round-1],chapterCharacter:campaign.current.chapterCharacter,acceptedAt,scores,winner,attempts,finalProjection:finalProjection?clone(finalProjection):null,facts,
+        campaign.history.push({round:campaign.round,faces:clone(campaign.current.faces||[null,null]),unspent:clone(campaign.current.unspentOptions||[null,null]),beforeFence:beforeFenceFacts(board),fairest:fairestStraightFence(board),incomeRuleVersion:campaign.incomeRuleVersion,chapter:chapters[campaign.round-1],chapterCharacter:campaign.current.chapterCharacter,acceptedAt,scores,winner,attempts,finalProjection:finalProjection?clone(finalProjection):null,facts,
             accounting:{...clone(preview),preservationPercent:Math.round(preview.preservation*100),lost:0},holdingsAwarded:clone(holdingsByPlayer),
             purchasedAssets:clone(campaign.current.purchasedAssets),developments:clone(campaign.current.developments),investedBy:clone(campaign.current.investedBy),
             incomePayments:clone(incomePayments),unlocksEarned:clone(unlocksEarned),capitalAfter:campaign.players.map(player=>player.capital),board});
         campaign.status=campaign.round===6?'complete':'between';
         if(campaign.status==='complete'){campaign.finalResult=calculateCampaignResult();if(finalProjection.players.some((player,i)=>player.projected!==campaign.finalResult.players[i].projected||player.current!==campaign.finalResult.players[i].current))throw new Error('Final projection did not match the accepted ledger.');campaign.endedAt=acceptedAt;}
         event('SETTLEMENT_COMMITTED',{attempt:campaign.current.attempt,scores,accounting:clone(preview),holdings:holdingsByPlayer.map(groups=>groups.map(group=>({name:group.name,grade:group.grade,score:group.score,income:group.income}))),incomePayments});if(campaign.status==='complete')event('CAMPAIGN_COMPLETED',{finalResult:clone(campaign.finalResult)});
-        suspended=null;save();open();
+        suspended=null;save();open();ensureFairestGaps();
+    }
+    // Every productive group on the estate before the fence, and what it paid. Compared at the
+    // end with what was inherited intact.
+    function beforeFenceFacts(board) {
+        const groups=findProductiveGroups(GAME.activeCells(board.estateMask),board.grid).map(g=>({name:g.name,grade:g.grade,score:g.score,income:g.income,assets:g.assets.map(a=>({c:a.c,r:a.r,kind:a.kind}))}));
+        return {groups,income:groups.reduce((sum,g)=>sum+g.income,0)};
+    }
+    // The fairest straight fence on a recorded board: exact over every edge-to-edge straight line,
+    // scored by the game's own plot scoring with that board's rules. Available on any estate.
+    function fairestStraightFence(board) {
+        if(!board?.grid||!board.estateMask)return null;
+        let best=null;
+        for(const axis of ['v','h'])for(let index=1;index<CONFIG.GRID;index++){
+            const edges=GAME.straightCutEdges(axis,index,board.estateMask);if(!edges.length)continue;
+            const split=GAME.validateCut(edges,board.estateMask);if(!split.ok)continue;
+            const a=GAME.scorePlot(split.plotA,board.grid,board.settings?.betterTogether,board.terrain,board.estateMask).total;
+            const b=GAME.scorePlot(split.plotB,board.grid,board.settings?.betterTogether,board.terrain,board.estateMask).total;
+            const gap=Math.abs(a-b);if(!best||gap<best.gap)best={gap,a,b,basis:'straight'};
+        }
+        return best;
+    }
+    function fairestForRecord(record) {
+        if(record.fairest===undefined)record.fairest=fairestStraightFence(record.board);
+        return record.fairest;
+    }
+    // The fairest fence that was available on each recorded estate, by the game's own solver.
+    // Computed in the background, kept with the record, read only when the Legacy ends. The
+    // solver yields to the referee during play, so an interrupted job restarts on the next call.
+    let fairestActive=null,fairestWaiters=[];
+    function ensureFairestGaps() {
+        return new Promise(resolve=>{fairestWaiters.push(resolve);runFairestQueue();});
+    }
+    function runFairestQueue() {
+        const pending=campaign?.history.find(r=>{const f=withBoardGeometry(r.board,()=>fairestForRecord(r));return !(f&&(f.basis==='exact'||f.exactUnavailable));});
+        if(!pending){fairestActive=null;fairestWaiters.splice(0).forEach(fn=>fn());return;}
+        if(fairestActive&&fairestActive.campaignId===campaign.id&&fairestActive.round===pending.round&&fairestActive.generation===SOLVER.generation)return;
+        const board=pending.board,round=pending.round,campaignId=campaign.id;
+        if((board?.grid?.length||CONFIG.GRID)!==CONFIG.GRID){fairestActive=null;fairestWaiters.splice(0).forEach(fn=>fn());return;}
+        fairestActive={campaignId,round,generation:null};
+        SOLVER.fairestDivision({grid:board.grid,estateMask:board.estateMask,settings:board.settings,terrain:board.terrain,onDone:result=>{
+            const record=campaign&&campaign.id===campaignId?campaign.history.find(r=>r.round===round):null;
+            if(record){record.fairest=result?{gap:result.gap,a:result.a,b:result.b,basis:'exact'}:{...(fairestForRecord(record)||{gap:null,a:null,b:null,basis:'straight'}),exactUnavailable:true};save();refreshCouldHaveBeen();}
+            fairestActive=null;runFairestQueue();
+        }});
+        if(fairestActive)fairestActive.generation=SOLVER.generation;
+    }
+    function refreshCouldHaveBeen() {
+        const el=document.getElementById('legacyCouldHaveBeen');
+        if(el&&campaign&&campaign.history.length)el.outerHTML=couldHaveBeenHtml();
+    }
+    // What could have been, in the game's own numbers. Four things reduce what the family holds;
+    // everything else moves wealth between the siblings. Facts, no verdicts.
+    function couldHaveBeen() {
+        return withBoardGeometry(campaign.history[0]?.board,couldHaveBeenOnBoardGeometry);
+    }
+    function couldHaveBeenOnBoardGeometry() {
+        const estates=campaign.history.map((record,index)=>{
+            const built=record.accounting?.built??0,inherited=record.lost?0:(record.accounting?.inherited??0);
+            const fence=record.lost?0:Math.max(0,built-inherited);
+            const lostEstate=record.lost?(record.accounting?.built||record.lostValue||0):0;
+            const before=record.beforeFence?.groups||[];
+            const awarded=(record.holdingsAwarded||[]).flat().filter(g=>g.type!=='quarry'&&g.type!=='logging');
+            const divided=[];
+            for(const group of before){
+                const after=awarded.filter(g=>(g.assets||[]).some(a=>group.assets.some(x=>x.c===a.c&&x.r===a.r)));
+                const afterIncome=record.lost?0:after.reduce((sum,g)=>sum+g.income,0);
+                if(afterIncome<group.income)divided.push({name:group.name,grade:group.grade,income:group.income,afterIncome,payments:3,lost:(group.income-afterIncome)*3,development:false});
+            }
+            for(const dev of record.developments||[]){
+                if(!dev.placed||!dev.cells.length||!(dev.income>0))continue;
+                const owners=record.lost?[]:[...new Set(dev.cells.map(cell=>ownerForCell(record.board,cell.c,cell.r)).filter(o=>o!==null))];
+                if(owners.length!==1)divided.push({name:dev.name,grade:null,income:dev.income,afterIncome:0,payments:dev.payments,lost:dev.income*dev.payments,development:true});
+            }
+            const unspent=(record.unspent||[null,null]).map((entry,player)=>entry?{player,capital:entry.capital,best:entry.best,foregone:entry.best?entry.best.gain*entry.best.payments:0}:null);
+            const attempt=acceptedAttemptForRecord(record);
+            const a=attempt?.outcome?.scoreA?.total??0,b=attempt?.outcome?.scoreB?.total??0;
+            const after=positionAfter(index);
+            return {round:record.round,chapter:record.chapter,faces:record.faces||[null,null],gapAfter:Math.abs(after[0]-after[1]),ahead:after[0]===after[1]?null:(after[0]>after[1]?0:1),
+                fence,lostEstate,divided,dividedLost:divided.reduce((sum,d)=>sum+d.lost,0),unspent,unspentLost:unspent.reduce((sum,u)=>sum+(u?.foregone||0),0),
+                fenceGap:Math.abs(a-b),fairest:fairestForRecord(record),cutByBank:!!attempt?.cutByBank,lost:!!record.lost,
+                chosenSmaller:!!(attempt?.chosenPlotId&&a!==b&&attempt.chosenPlotId!==(a>b?'A':'B'))};
+        });
+        const sum=key=>estates.reduce((s,e)=>s+e[key],0);
+        const wealth=campaign.finalResult?campaign.finalResult.players.map(p=>p.projected):positionAfter(campaign.history.length-1);
+        const total=wealth[0]+wealth[1],gap=Math.abs(wealth[0]-wealth[1]);
+        const losses={fence:sum('fence'),divided:sum('dividedLost'),lostEstates:sum('lostEstate'),unspent:sum('unspentLost')};
+        const lost=losses.fence+losses.divided+losses.lostEstates+losses.unspent;
+        return {names:campaign.players.map(p=>p.name),estates,wealth,total,gap,ahead:wealth[0]===wealth[1]?null:(wealth[0]>wealth[1]?0:1),losses,lost,potential:total+lost};
+    }
+    function couldHaveBeenLines() {
+        const w=couldHaveBeen(),names=w.names.map(text);
+        const fence=w.estates.filter(e=>e.fence>0).map(e=>`Estate ${e.round}: ${e.fence} Property built before the fence was not inherited.`);
+        const divided=w.estates.flatMap(e=>e.divided.map(d=>`Estate ${e.round}: ${text(d.name)}${d.grade?` (grade ${d.grade})`:''}, ${d.income} Capital a payment before the fence, ${d.afterIncome} after it. ${d.lost} Capital over ${d.payments} payments.`));
+        const lostEstates=w.estates.filter(e=>e.lostEstate>0).map(e=>`Estate ${e.round}: ${e.lostEstate} Property left the family.`);
+        const unspent=w.estates.flatMap(e=>e.unspent.filter(Boolean).map(u=>`Estate ${e.round}: ${names[u.player]} held ${u.capital} Capital and bought nothing. ${u.best?`A ${text(u.best.name)}${u.best.where?` at ${u.best.where}`:''} would have ${u.best.raises?'raised':'formed'} ${text(u.best.forms)}: ${u.best.gain} Capital after each of ${u.best.payments} estates, ${u.foregone} in all, if inherited intact.`:'No productive option was available at that price.'}`));
+        const fences=w.estates.map(e=>({round:e.round,fairest:!e.fairest||e.fairest.gap===null?'not available':`${e.fairest.gap}${e.fairest.basis==='exact'?'':' (straight fences)'}`,fence:`${e.fenceGap}${e.cutByBank?' (bank)':''}`,took:e.lost?'estate lost':e.chosenSmaller?'the smaller plot':e.fenceGap===0?'level plots':'the larger plot'}));
+        return {w,names,fence,divided,lostEstates,unspent,fences};
+    }
+    function couldHaveBeenHtml() {
+        const {w,fence,divided,lostEstates,unspent,fences}=couldHaveBeenLines();
+        const metric=(label,value)=>`<div class="legacy-metric"><span>${label}</span><strong>${value}</strong></div>`;
+        const strip=w.estates.map(e=>`<div class="legacy-strip-col"><span class="legacy-strip-round">${e.round}</span><strong class="legacy-strip-gap">${e.gapAfter}</strong>${facesInline(e.faces)}</div>`).join('');
+        const line=(label,total,items)=>`<details class="legacy-details"><summary>${label} · <strong>${total}</strong></summary><div>${items.length?`<ul class="legacy-fact-list">${items.map(item=>`<li>${item}</li>`).join('')}</ul>`:'<p class="comparison-note">None.</p>'}</div></details>`;
+        const rows=fences.map(f=>`<tr><th scope="row">${f.round}</th><td>${f.fairest}</td><td>${f.fence}</td><td>${f.took}</td></tr>`).join('');
+        return `<div class="legacy-ending legacy-could" id="legacyCouldHaveBeen"><h3>What the family holds</h3><div class="legacy-metrics legacy-metrics-3">${metric('Family wealth',w.total)}${metric('Between the siblings',w.gap)}${metric('Could have held',w.potential)}</div><h4 class="legacy-record-kicker">The gap after each estate, and how it felt</h4><div class="legacy-strip" aria-label="Gap between the siblings after each estate, with both faces">${strip}</div><h4 class="legacy-record-kicker">Where ${w.lost} was lost</h4>${line('The fence',`${w.losses.fence} Property`,fence)}${line('Holdings the fence divided',`${w.losses.divided} Capital`,divided)}${line('Estates that left the family',`${w.losses.lostEstates} Property`,lostEstates)}${line('Capital held unspent',`${w.losses.unspent} Capital`,unspent)}<details class="legacy-details"><summary>The fence, estate by estate</summary><div><div class="legacy-scroll" role="region" aria-label="Fences by estate" tabindex="0"><table class="legacy-table"><caption class="sr-only">Fairest fence available against the fence drawn</caption><thead><tr><th scope="col">Estate</th><th scope="col">Fairest fence available</th><th scope="col">This fence</th><th scope="col">Chooser took</th></tr></thead><tbody>${rows}</tbody></table></div><p class="comparison-note">The fairest fence is the smallest gap any single fence could make on that estate, in Property. Where the estate is too large for the full search, the smallest gap among straight fences is shown and marked. The record does not say whether a wider gap was skill or intent.</p></div></details><p class="comparison-note">Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.</p></div>`;
+    }
+    function couldHaveBeenText() {
+        const {w,fence,divided,lostEstates,unspent,fences}=couldHaveBeenLines(),strip=s=>s.replace(/<[^>]+>/g,'');
+        const lines=['',`Family wealth ${w.total} · between the siblings ${w.gap} · could have held ${w.potential}`,`Gap after each estate: ${w.estates.map(e=>`${e.round}: ${e.gapAfter}`).join(' · ')}`,'',`Where ${w.lost} was lost`,`  The fence: ${w.losses.fence} Property`,...fence.map(x=>`    ${strip(x)}`),`  Holdings the fence divided: ${w.losses.divided} Capital`,...divided.map(x=>`    ${strip(x)}`),`  Estates that left the family: ${w.losses.lostEstates} Property`,...lostEstates.map(x=>`    ${strip(x)}`),`  Capital held unspent: ${w.losses.unspent} Capital`,...unspent.map(x=>`    ${strip(x)}`),'','The fence, estate by estate (fairest available / this fence / chooser took)',...fences.map(f=>`  ${f.round}: ${f.fairest} / ${f.fence} / ${f.took}`),'','Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.'];
+        return lines;
     }
     function makeCurrentPreview() {
         if(!campaign?.current || !STATE.outcome || STATE.outcome.unresolved)return null;
@@ -15425,6 +15568,7 @@ const LEGACY = (() => {
             lines.push(`   Gap after this estate: ${line.gap}, ${line.ahead.replace(/<[^>]+>/g,'')}.`,'');
         });
         if(campaign.finalResult)lines.push(`Final wealth: ${campaign.players.map((p,i)=>`${p.name} ${campaign.finalResult.players[i].projected}`).join(' · ')}${campaign.finalResult.winnerIdx===null?' · level':''}.`);
+        if(campaign.history.length)lines.push(...couldHaveBeenText());
         return lines.join('\n');
     }
     function downloadRecord() {
@@ -15445,7 +15589,19 @@ const LEGACY = (() => {
         const blob=new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'});
         const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Family-Legacy-estate-'+campaign.round+'.inheritance';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     }
+    function withBoardGeometry(board,fn) {
+        const n=board?.grid?.length;
+        if(!n||n===CONFIG.GRID)return fn();
+        const saved={grid:CONFIG.GRID,cell:CONFIG.CELL,margin:CONFIG.MARGIN};
+        CONFIG.GRID=n;CONFIG.CELL=n===CONFIG.IRREGULAR_GRID?68:80;CONFIG.MARGIN=(CONFIG.INTERNAL-CONFIG.GRID*CONFIG.CELL)/2;
+        try{return fn();}finally{CONFIG.GRID=saved.grid;CONFIG.CELL=saved.cell;CONFIG.MARGIN=saved.margin;}
+    }
     function validate(data) {
+        const upgraded=upgradeSave(data);
+        const board=upgraded?.game?.state?.grid?upgraded.game.state:upgraded?.campaign?.history?.[0]?.board;
+        return withBoardGeometry(board,()=>validateWithGeometry(upgraded));
+    }
+    function validateWithGeometry(data) {
         data=upgradeSave(data);
         const fail=()=>{throw new Error('This is not a valid current Family Legacy save. Your current game has not been changed.');};
         if(data?.format===FORMAT&&data?.implementationStage<7)throw new Error('This save predates the factual campaign history and cannot be loaded into the current Family Legacy. Start a new Legacy to use the complete chronicle.');
@@ -15794,7 +15950,7 @@ const LEGACY = (() => {
     }
     return {bind,open,showCampaignRules,save,snapshot,validate,load,recordEstate,startEstate,newCampaign,continueEstate,finishUnresolved,settlementFacts,
         calculateEstateBaseline,calculateBuiltValue,calculateInheritedValue,previewSettlement,
-        findProductiveGroups,gradeProductiveGroup,productiveCapacity,productiveIncome,productiveGroupsForState,PRODUCTIVITY,INVESTMENT_CATALOGUE,syncInvestmentUnlocks,nextUnlockTier,
+        findProductiveGroups,gradeProductiveGroup,productiveCapacity,productiveIncome,productiveGroupsForState,PRODUCTIVITY,INVESTMENT_CATALOGUE,syncInvestmentUnlocks,nextUnlockTier,couldHaveBeen,ensureFairestGaps,bestAvailablePurchase,
         DEVELOPMENT,developmentSites,buyAsset,buyDevelopment,beginPostBuildInvestment,beginFirstEstate,finishInvesting,showMeaningfulCampaignPrimer,beginFamilyHomeChoice,selectBuildItem,placeBuildItem,
         accrueEligibleIncome,holdingsForState,scorePlotWithDevelopments,simulateScheduledIncome,calculateProjectedLegacyWealth,calculateFinalProjection,calculateCampaignResult,investmentStats,chooserChoiceStats,chapterLandTemplate,finishFinalRoleSelection,CHAPTERS,
         get campaign(){return campaign;}};
