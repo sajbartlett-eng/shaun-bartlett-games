@@ -14283,6 +14283,36 @@ const LEGACY = (() => {
         const remainingSites=developmentSites(item.type).filter(site=>site.every(cell=>!reserved.has(`${cell.c},${cell.r}`)));
         return maxDisjointDevelopmentSites(remainingSites)>=remainingSame;
     }
+    // What buying a piece would do on this estate: the best square for it, the
+    // holding it would form or raise, and what that holding would pay. Computed
+    // by placing the piece on each free square and reading the game's own
+    // productive groups. No square helps: it adds its printed value only.
+    function purchaseConsequence(kind) {
+        const spots=buildableCells();
+        const all=GAME.activeCells(STATE.estateMask);
+        const baseGroups=findProductiveGroups(all,STATE.grid),baseIncome=baseGroups.reduce((sum,g)=>sum+g.income,0);
+        let best=null;
+        for(const cell of spots){
+            const prev=STATE.grid[cell.r][cell.c];STATE.grid[cell.r][cell.c]=kind;
+            const groups=findProductiveGroups(all,STATE.grid);
+            STATE.grid[cell.r][cell.c]=prev;
+            const income=groups.reduce((sum,g)=>sum+g.income,0),gain=income-baseIncome;
+            if(gain<=0||(best&&gain<=best.gain))continue;
+            const group=groups.find(g=>g.assets.some(a=>a.c===cell.c&&a.r===cell.r));
+            if(!group)continue;
+            const was=baseGroups.find(b=>b.assets.some(a=>group.assets.some(x=>x.c===a.c&&x.r===a.r)))||null;
+            const partner=group.assets.find(a=>!(a.c===cell.c&&a.r===cell.r)&&Math.abs(a.c-cell.c)+Math.abs(a.r-cell.r)===1);
+            best={gain,cell,group,was,partner};
+        }
+        return best;
+    }
+    function purchaseConsequenceText(kind,cost) {
+        const best=purchaseConsequence(kind);
+        if(!best)return `No productive link on this estate. Adds ${cost} Property wherever it stands.`;
+        const where=`at ${siteLabel([best.cell])}${best.partner?` beside the ${CONFIG.ASSET_NAME[best.partner.kind]}`:''}`;
+        if(best.was)return `Placed ${where} it would raise ${best.was.name} to grade ${best.group.grade}: ${best.group.income} Capital after each of 3 estates, now ${best.was.income}.`;
+        return `Placed ${where} it would form ${best.group.name}: ${best.group.income} Capital after each of 3 estates.`;
+    }
     function assetPurchaseCapacity() {
         return Math.max(0,buildableCells().length-STATE.pool.length-campaign.current.purchasedAssets.length);
     }
@@ -14371,8 +14401,9 @@ const LEGACY = (() => {
         const turn=c.investmentTurn,player=campaign.players[turn],capacity=assetPurchaseCapacity(),unlocked=new Set(player.unlockedInvestments||[]);
         document.getElementById('legacyInvestTitle').textContent=`${player.name}: choose what to buy`;
         const assetOptions=INVESTMENT_CATALOGUE.filter(item=>item.type==='asset'&&unlocked.has(item.key)).map(item=>({kind:item.kind,cost:item.cost,key:item.key}));
-        const assetButton=({kind,cost},disabled=false)=>`<button class="btn-secondary" data-legacy-buy-asset="${kind}" ${disabled?'disabled':''}><strong>${text(CONFIG.ASSET_NAME[kind])} · ${cost} Capital</strong><small>Place later on an empty square · adds ${cost} Property before neighbour effects</small></button>`;
-        const affordableAssets=capacity>0?assetOptions.filter(option=>option.cost<=player.capital):[],otherAssets=assetOptions.filter(option=>!affordableAssets.includes(option));
+        const assetButton=({kind,cost},disabled=false)=>`<button class="btn-secondary" data-legacy-buy-asset="${kind}" ${disabled?'disabled':''}><strong>${text(CONFIG.ASSET_NAME[kind])} · ${cost} Capital</strong><small>${text(purchaseConsequenceText(kind,cost))}</small></button>`;
+        const gainOf=option=>purchaseConsequence(option.kind)?.gain||0;
+        const affordableAssets=(capacity>0?assetOptions.filter(option=>option.cost<=player.capital):[]).sort((x,y)=>gainOf(y)-gainOf(x)||x.cost-y.cost),otherAssets=assetOptions.filter(option=>!affordableAssets.includes(option));
         const developmentOptions=Object.entries(DEVELOPMENT).filter(([type])=>unlocked.has(investmentKeyForDevelopment(type))).map(([type,spec])=>({type,spec,capacity:developmentPurchaseCapacity(type),available:developmentPurchaseCapacity(type)>0}));
         const developmentButton=(option,disabled=false)=>`<button class="btn-secondary" data-legacy-buy-development="${option.type}" ${disabled?'disabled':''}><strong>${text(option.spec.name)} · ${option.spec.cost} Capital</strong><small>${text(developmentRequirementText(option.type))} ${option.capacity} ${option.capacity===1?'site remains':'sites remain'}. Adds ${option.spec.value} Property across its cells.${option.spec.income?` Pays ${option.spec.income} Capital ${option.spec.payments} times if inherited intact.`:''}</small></button>`;
         const affordableDevelopments=developmentOptions.filter(option=>option.available&&option.spec.cost<=player.capital),otherDevelopments=developmentOptions.filter(option=>option.available&&!affordableDevelopments.includes(option));
@@ -14385,11 +14416,14 @@ const LEGACY = (() => {
         const boughtDevelopments=c.developments.filter(dev=>dev.payer===turn).map(dev=>`${dev.name} (${dev.cost})`);
         const bought=[...boughtAssets,...boughtDevelopments];
         const alreadyFunded=[...c.purchasedAssets.filter(item=>item.payer!==turn).map(item=>`${campaign.players[item.payer].name}: ${CONFIG.ASSET_NAME[item.kind]}`),...c.developments.filter(dev=>dev.payer!==turn).map(dev=>`${campaign.players[dev.payer].name}: ${dev.name}`)];
-        const firstDecision=!campaign.guidance.investmentPrimerSeen?`<div class="legacy-consent-box"><strong>Your options grow with your Capital</strong><p class="legacy-consent-private">As the most Capital you have held increases, more investments become available. Once something becomes available, it stays available for the rest of the Legacy. You still need enough Capital to buy it.</p></div>`:'';
+        const other=1-turn,otherSkipped=campaign.players[other].capital<=0&&!c.purchasedAssets.some(item=>item.payer===other)&&!c.developments.some(dev=>dev.payer===other);
+        const otherTier=otherSkipped?nextUnlockTier(other):null;
+        const skippedNote=otherSkipped?`<p class="comparison-note"><strong>${text(campaign.players[other].name)}</strong> has no Capital this estate and is not buying.${otherTier?` ${text(campaign.players[other].name)}'s next options open at ${otherTier.cost} Capital held.`:''}</p>`:'';
+        const firstDecision=skippedNote+(!campaign.guidance.investmentPrimerSeen?`<div class="legacy-consent-box"><strong>Your options grow with your Capital</strong><p class="legacy-consent-private">As the most Capital you have held increases, more investments become available. Once something becomes available, it stays available for the rest of the Legacy. You still need enough Capital to buy it.</p></div>`:'');
         const finale=campaign.round===6&&!campaign.guidance.finalePrimerSeen?`<div class="legacy-consent-box"><strong>This is the Final Settlement</strong><p class="legacy-consent-private">This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three holding payments. Cutter and Chooser are still decided normally.</p></div>`:'';
         const hasAffordable=affordableAssets.length||affordableDevelopments.length,nextStep=nextFundedInvestmentStep(c.investmentStep);
         const continueLabel=nextStep===null?(unplacedInvestmentItems().length?'Continue to placement':'Continue'):'Pass to the other sibling';
-        document.getElementById('legacyInvestBody').innerHTML=`${finale}${firstDecision}${investmentBoardHtml()}${investmentTimerHtml()}<div class="legacy-invest-summary"><strong>${player.capital} Capital available</strong><span>Most Capital held ${player.peakCapital}</span></div><p class="body">Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.</p>${nextUnlock}${alreadyFunded.length?`<div class="legacy-consent-box"><strong>Already purchased for this estate</strong><p class="legacy-consent-private">${alreadyFunded.map(text).join(' · ')}</p></div>`:''}${capacity===0?'<div class="legacy-shop-empty">No empty buildable square remains for another normal asset.</div>':''}${hasAffordable?'<h3>Available now</h3>':'<div class="legacy-shop-empty">Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.</div>'}${affordableAssets.length?`<h4>Additional assets</h4><div class="legacy-shop">${affordableAssets.map(option=>assetButton(option)).join('')}</div>`:''}${affordableDevelopments.length?`<h4>Developments</h4><div class="legacy-shop">${affordableDevelopments.map(option=>developmentButton(option)).join('')}</div>`:''}${otherAssets.length&&capacity>0?`<details class="legacy-shop-more"><summary>Assets to save for</summary><div class="legacy-shop">${otherAssets.map(option=>assetButton(option,true)).join('')}</div></details>`:''}${otherDevelopments.length?`<details class="legacy-shop-more"><summary>Developments to save for</summary><div class="legacy-shop">${otherDevelopments.map(option=>developmentButton(option,true)).join('')}</div></details>`:''}${unavailableDevelopments.length?`<details class="legacy-shop-more"><summary>No suitable site on this estate</summary><ul class="legacy-fact-list">${unavailableDevelopments.join('')}</ul></details>`:''}${bought.length?`<h3>Chosen by ${text(player.name)}</h3><p class="body">${bought.map(text).join(' · ')}</p>`:''}<div class="actions"><button class="btn-primary" data-legacy="finishInvesting">${continueLabel}</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
+        document.getElementById('legacyInvestBody').innerHTML=`${finale}${firstDecision}${investmentBoardHtml()}${investmentTimerHtml()}<div class="legacy-invest-summary"><strong>${player.capital} Capital available</strong><span>Most Capital held ${player.peakCapital}</span></div><p class="comparison-note">${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')}</p><p class="body">Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate. Roles are not decided yet: whoever inherits a purchased piece's square owns it, whoever paid.</p>${nextUnlock}${alreadyFunded.length?`<div class="legacy-consent-box"><strong>Already purchased for this estate</strong><p class="legacy-consent-private">${alreadyFunded.map(text).join(' · ')}</p></div>`:''}${capacity===0?'<div class="legacy-shop-empty">No empty buildable square remains for another normal asset.</div>':''}${hasAffordable?'<h3>Available now</h3>':'<div class="legacy-shop-empty">Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.</div>'}${affordableAssets.length?`<h4>Additional assets</h4><div class="legacy-shop">${affordableAssets.map(option=>assetButton(option)).join('')}</div>`:''}${affordableDevelopments.length?`<h4>Developments</h4><div class="legacy-shop">${affordableDevelopments.map(option=>developmentButton(option)).join('')}</div>`:''}${otherAssets.length&&capacity>0?`<details class="legacy-shop-more"><summary>Assets to save for</summary><div class="legacy-shop">${otherAssets.map(option=>assetButton(option,true)).join('')}</div></details>`:''}${otherDevelopments.length?`<details class="legacy-shop-more"><summary>Developments to save for</summary><div class="legacy-shop">${otherDevelopments.map(option=>developmentButton(option,true)).join('')}</div></details>`:''}${unavailableDevelopments.length?`<details class="legacy-shop-more"><summary>No suitable site on this estate</summary><ul class="legacy-fact-list">${unavailableDevelopments.join('')}</ul></details>`:''}${bought.length?`<h3>Chosen by ${text(player.name)}</h3><p class="body">${bought.map(text).join(' · ')}</p>`:''}<div class="actions"><button class="btn-primary" data-legacy="finishInvesting">${continueLabel}</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
         renderInvestmentBoard();
     }
     function finishInvesting(fromTimer=false) {
@@ -14464,7 +14498,7 @@ const LEGACY = (() => {
         developments.forEach(item=>buttons.push(`<button class="btn-secondary" data-legacy-build-source="development" data-purchase-id="${item.id}" aria-pressed="${selection.source==='development'&&selection.id===item.id}">${text(item.name)}</button>`));
         const remaining=unplacedInvestmentItems().length;
         const itemName=selection.source==='development'?DEVELOPMENT[selection.kind]?.name:CONFIG.ASSET_NAME[selection.kind];
-        el.innerHTML=`<strong>${text(campaign.players[turn].name)} places purchased additions</strong>${investmentTimerHtml()}<div class="legacy-build-buttons">${buttons.join('')}</div><small>${remaining} purchased ${remaining===1?'addition remains':'additions remain'} before the estate can be divided.</small>`;el.classList.add('active');
+        el.innerHTML=`<strong>${text(campaign.players[turn].name)} places purchased additions</strong>${investmentTimerHtml()}<div class="legacy-build-buttons">${buttons.join('')}</div><small>${remaining} purchased ${remaining===1?'addition remains':'additions remain'} before the estate can be divided. Roles are not decided yet; whoever inherits this square will own it, whoever paid.</small>`;el.classList.add('active');
         const source=selection.source==='development'?'special development':selection.source==='purchased'?'purchased with personal Capital':'from the ordinary estate pool';
         const hint=selection.source==='development'?developmentRequirementText(selection.kind):'tap an empty buildable square';
         UI.el.phaseInstruction.innerHTML=`<span class="${turn===0?'p1':'p2'}">${text(campaign.players[turn].name)}</span> is placing <strong>${text(itemName)}</strong><span class="phase-hint">${source} · ${hint}</span>`;
@@ -14719,8 +14753,21 @@ const LEGACY = (() => {
             const names=(keys||[]).map(key=>catalogueItem(key)?.name).filter(Boolean);
             if(names.length)rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[playerIdx].name)} · investment now available</span><strong>${names.map(text).join(', ')}</strong></div>`);
         });
+        for(const item of record.purchasedAssets||[]){
+            if(!item.placed)continue;
+            const owner=ownerForCell(record.board,item.c,item.r);
+            const group=(record.holdingsAwarded||[]).flat().find(g=>(g.assets||[]).some(a=>a.c===item.c&&a.r===item.r));
+            const outcome=owner===null?'no one inherited it':`${text(campaign.players[owner].name)} inherited it (+${item.cost} Property${group?`; part of ${text(group.name)}`:''})`;
+            rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[item.payer].name)} · paid ${item.cost} for the ${text(CONFIG.ASSET_NAME[item.kind])} at ${siteLabel([{c:item.c,r:item.r}])}</span><strong>${outcome}</strong></div>`);
+        }
+        for(const dev of record.developments||[]){
+            if(!dev.placed||!dev.cells.length)continue;
+            const owners=[...new Set(dev.cells.map(cell=>ownerForCell(record.board,cell.c,cell.r)).filter(o=>o!==null))];
+            const outcome=owners.length===1?`${text(campaign.players[owners[0]].name)} inherited it intact (+${dev.value} Property; pays ${dev.income} Capital ${dev.payments} times)`:owners.length?'the fence divided it; it pays nothing':'no one inherited it';
+            rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[dev.payer].name)} · paid ${dev.cost} for the ${text(dev.name)} at ${siteLabel(dev.cells)}</span><strong>${outcome}</strong></div>`);
+        }
         campaign.players.forEach((player,i)=>{
-            const mentioned=rows.some(row=>row.includes(`<span>${text(player.name)} ·`));
+            const mentioned=rows.some(row=>row.includes(text(player.name)));
             if(!mentioned)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · holdings and Capital</span><strong>nothing new this estate</strong></div>`);
         });
         return `<div class="legacy-fact"><h4>What changed</h4>${rows.join('')}</div>`;
