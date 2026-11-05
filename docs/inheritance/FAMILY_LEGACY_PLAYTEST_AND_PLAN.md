@@ -90,13 +90,31 @@ What worked and should not be touched: the Meaningful Assets primer in Estate 2 
 
 **P15. Pace the long screens.** The result and ending screens are long on a phone. The consequence replay's stepper is the proven pattern: one section at a time, Next, Skip to the end.
 
+## The narrative engine
+
+Family Legacy is a story that could be real: a competitive, stressful situation that leaves a family flourishing or broken, and what people remember afterwards is the story, not the ledger. Whether the disparity grew, or someone chose to close it. The game will not dictate actions. It will record how each sibling felt after each estate, on a scale of faces from angry to hysterical, and keep that beside the facts.
+
+This changes the spine of the plan. The chronicle stops being the ending and becomes the thing every screen feeds.
+
+**E1. The face prompt.** After "Record inheritance", each sibling picks one face (angry, upset, flat, content, delighted, hysterical) and may add up to six words, the same cap Meaningful Assets uses. Entered one at a time with the phone passed, or on each device across a distance. Skipping is allowed and recorded as a dash. Rules that keep it inside the hierarchy: no number ever changes because of a face; no copy ever comments on a face ("you seem angry"); no award or distinction is ever computed from faces; faces are shown exactly as recorded, by the sibling's name, nowhere else. The game records; it never reacts. Faces carry a text label for screen readers and never rely on colour alone.
+
+**E2. The gap thread.** Every estate record carries the Property gap and the wealth gap between the siblings before and after, and the facts that moved them: the cut's gap, which plot the chooser took and by how much, income paid, Capital spent. The one voluntary gap-closing act the system can observe is a chooser taking the lower-value plot; it is stated as a fact ("Ben took the smaller plot, by 4"), never as generosity. Cutters' intentions are not knowable and are not guessed at.
+
+**E3. The record screen.** After each estate, one screen replaces the between-estates "What changed" table: the facts of this estate in the family's own words (named assets from Meaningful Assets where they exist), the gap before and after, both faces, then position. It is the page of the family history being written, and it is what P11 becomes.
+
+**E4. The chronicle as the ending, and as the thing you take away.** "Six estates recorded" opens with six lines, one per estate: estate name, what moved the gap, the gap after, the two faces. Then the totals in real quantities, then distinctions. The whole chronicle is downloadable as plain text and shareable as an image, separate from the backup file: a family record rather than a save.
+
+**Recommended, and the designer's call.** Faces are entered privately and shown to both siblings immediately on the record screen. In a real family the unsaid feeling is the thing that breaks it, and a system about fairness between people should surface it. The alternative, hidden until the end, would test whether disclosure changes behaviour, and is a legitimate study design. Pick one deliberately.
+
+**What this does to P1.** The simulator now has a sharper question: can the system produce both arcs? Runs where the gap closes and runs where it breaks open, and a lower-Property choice that is sometimes the better choice for final wealth. If the income lever is too weak, the stress is theatre and the faces will all be flat. The stakes have to be real for the story to be.
+
 ## Build order
 
-1. **Instrument first (P1).** Half a day. Everything in Tiers 2 to 5 is worth doing regardless, but P8 and any income tuning wait for its numbers.
-2. **Cards and primers (P9, P10) and the layout fixes (P14).** The cheapest changes with the largest effect on a first playthrough; no rule changes.
-3. **The Legacy result screen and holding cards (P11, P12, P2, P5).** One screen rebuilt, the ceiling retired.
-4. **The investment screen (P6, P7, P4, P3).** The campaign's real lever, presented as one.
-5. **The ending (P13, P15).**
+1. **Instrument first (P1), with the arc question.** Half a day. Everything below is worth doing regardless, but P8 and any income tuning wait for its numbers.
+2. **The record screen with faces and the gap thread (E1, E2, E3), absorbing P11, P12, P2 and P5.** The spine of the narrative engine, and cheap: a prompt, a table, and the ceiling retired.
+3. **Cards and primers (P9, P10) and the layout fixes (P14).** So the story has a beginning and nobody meets a rule unannounced.
+4. **The chronicle as the ending, downloadable and shareable (E4, P13, P15).**
+5. **The investment screen (P6, P7, P4, P3).** The campaign's real lever, presented as one.
 6. **Rule changes, if P1 says so (P8, income tuning).** Designer's call, with the simulator's numbers beside it.
 
 ## What this playthrough could not test
