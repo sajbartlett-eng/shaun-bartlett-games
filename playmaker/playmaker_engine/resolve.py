@@ -111,7 +111,7 @@ def _turnover(s):
 def new_phase(s, clock):
     return s.with_(clock=clock, tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
-                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0)
+                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0)
 
 
 def complete_pass(s):
@@ -329,6 +329,7 @@ def apply(state, action, check=False):
             s = s.with_(moved_o=s.moved_o | 1 << a.piece) if side == 'O' else s.with_(moved_x=s.moved_x | 1 << a.piece)
         if k in ('qs', 'sprint'):
             s = _inc(s, side, 'qs')
+            s = s.with_(qs_o=s.qs_o | 1 << a.piece) if side == 'O' else s.with_(qs_x=s.qs_x | 1 << a.piece)
         return _after(state, s, side, k)
 
     s = _inc(s, side, k)

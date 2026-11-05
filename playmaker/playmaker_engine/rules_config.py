@@ -102,6 +102,10 @@ class Rules:
     qs_up_to: bool = True
     # OQ-15: a player with Quick Step 0 cannot Sprint.
     sprint_needs_qs: bool = True
+    # OQ-52 (RULED): each player has one Quick Step a phase, and a Sprint uses it ("uses that player's
+    #   Move and Quick Step", trackers). So no Sprint after that player's Quick Step, no Quick Step after
+    #   their Sprint, no second Quick Step. The side's limit of 2 Quick Steps (Sprints count) still applies.
+    qs_once_per_player: bool = True
     # OQ-16 (ruled): who may Challenge a screen.
     #   'on_t'     : only the defender standing on the screen's T square (the one it blocks).
     #   'adjacent' : any defender next to the screener.   'any' : any defender.

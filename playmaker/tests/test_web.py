@@ -306,3 +306,16 @@ def test_consequences_words_for_a_steal(web):
     assert any('Ball kept' in o['text'] for o in consequences(s, kept, Action('steal', 'X', 0)))
     foul = force(node, 'foul')
     assert any('+5' in o['text'] for o in consequences(s, foul, Action('steal', 'X', 0)))
+
+
+def test_a_human_cannot_sprint_after_a_quick_step(web):
+    g = post(web, '/api/new', dict(mode='hotseat', scenario=6, seed=3))
+    tok = dict(code=g['code'], token=g['token'])
+    s = state(web, g)
+    qs = next(a for a in s['legal'] if a['kind'] == 'qs' and a['piece'] == 1)
+    post(web, '/api/act', dict(tok, action=qs))
+    s = state(web, g)
+    assert not any(a['kind'] in ('sprint', 'qs') and a['piece'] == 1 for a in s['legal'])
+    sprint = dict(kind='sprint', side='O', piece=1, dest=[qs['dest'][0], qs['dest'][1] + 1], arrow=-1, target=-1, shot='')
+    r = post(web, '/api/act', dict(tok, action=sprint), ok=False)
+    assert r['status'] == 400 and 'illegal action' in r['error']

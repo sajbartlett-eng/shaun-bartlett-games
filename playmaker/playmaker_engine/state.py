@@ -83,6 +83,8 @@ class GameState:
     zeroed: bool = False      # Hold for One turnover: possession scores 0
     phase: int = 1
     turn_moved: int = 0
+    qs_o: int = 0             # bitmask: players who used their Quick Step this phase (a Sprint uses it too)
+    qs_x: int = 0
     forced: bool = False      # the pending contest is for a forced shot at clock 0       # defenders who moved during this defence turn (inbound pass in the air)
 
     # ---- helpers ----
@@ -109,6 +111,9 @@ class GameState:
 
     def moved(self, side, i):
         return bool((self.moved_o if side == 'O' else self.moved_x) >> i & 1)
+
+    def quick_stepped(self, side, i):
+        return bool((self.qs_o if side == 'O' else self.qs_x) >> i & 1)
 
     @property
     def carrier_pos(self):
@@ -147,6 +152,8 @@ class GameState:
             parts.append(f'R{r.kind}:{r.shot_value}:{r.free_throws}')
         if self.zeroed:
             parts.append('Z')
+        if self.qs_o or self.qs_x:
+            parts.append(f'q{self.qs_o:02x}{self.qs_x:02x}')
         return '|'.join(parts)
 
     def board(self):
