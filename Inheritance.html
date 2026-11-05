@@ -3259,7 +3259,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
     </div>
 </div>
 
-<div class="overlay" id="legacyFacesOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyFacesTitle"><div class="modal legacy-faces-modal"><div class="eyebrow" id="legacyFacesEyebrow">how did that feel?</div><h2 id="legacyFacesTitle">Sibling</h2><p class="body" id="legacyFacesPrompt"></p><div class="legacy-faces" id="legacyFacesButtons" role="group" aria-label="How did that feel"></div><div class="setup-link-row"><button type="button" class="btn-ghost" id="legacyFacesSkipBtn">Leave it blank</button></div></div></div>
+<div class="overlay" id="legacyFacesOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyFacesTitle"><div class="modal legacy-faces-modal"><div class="dialogue-head"><div class="dialogue-portrait" id="legacyFacesPortrait" aria-hidden="true"></div><div class="dialogue-who"><div class="eyebrow" id="legacyFacesEyebrow">how did that feel?</div><h2 id="legacyFacesTitle">Sibling</h2></div></div><p class="body" id="legacyFacesPrompt"></p><div class="legacy-faces" id="legacyFacesButtons" role="group" aria-label="How did that feel"></div><div class="setup-link-row"><button type="button" class="btn-ghost" id="legacyFacesSkipBtn">Leave it blank</button></div></div></div>
 <div class="overlay" id="legacyInvestOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyInvestTitle"><div class="modal"><div class="eyebrow">after the build · before the division</div><h2 id="legacyInvestTitle" tabindex="-1">Invest in the estate</h2><div id="legacyInvestBody"></div></div></div>
 <input type="file" id="legacyFileInput" accept=".inheritance,application/json" hidden>
 <script>
@@ -14088,6 +14088,7 @@ const DIALOGUE = (() => {
     const VOICES = {
         hartley: { name: 'Mrs Hartley, the bank', svg: FACE('<path d="M24 34 C22 14 58 14 56 34 C52 25 28 25 24 34 Z" fill="#8a8178" stroke="#2b2316" stroke-width="2"/>', '#4f6f9f', '<circle cx="33" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><circle cx="47" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><path d="M37.6 38 H42.4 M28.4 38 H26 M51.6 38 H54" stroke="#2b2316" stroke-width="1.6"/>') },
         dacre: { name: 'Mr Dacre, Dacre and Sons', svg: FACE('<path d="M22 30 H58 V26 H52 C52 16 28 16 28 26 H22 Z" fill="#2b2316" stroke="#2b2316" stroke-width="2"/>', '#5a4a3a', '<path d="M34 44 Q40 41 46 44" fill="none" stroke="#2b2316" stroke-width="2.4" stroke-linecap="round"/><path d="M37 57 L40 63 L43 57 Z" fill="#a04830"/>') },
+        counsellor: { name: 'Dr Osei, family counsellor', svg: FACE('<path d="M24 33 C24 17 56 17 56 33 C53 27 47 25 40 25 C33 25 27 27 24 33 Z" fill="#2b2316" stroke="#2b2316" stroke-width="2"/>', '#8d6540', '<circle cx="25.5" cy="45" r="1.6" fill="#c9a24d"/><circle cx="54.5" cy="45" r="1.6" fill="#c9a24d"/><path d="M29 36 Q33 33 37 36 M43 36 Q47 33 51 36" fill="none" stroke="#2b2316" stroke-width="1.5" stroke-linecap="round"/>') },
         brandt: { name: 'Nell Brandt, farm manager', svg: FACE('<path d="M23 31 C25 17 55 17 57 31 L59 33 H21 Z" fill="#6f5134" stroke="#2b2316" stroke-width="2"/>', '#4f6f3f', '<path d="M30 34 L36 34 M44 34 L50 34" stroke="#2b2316" stroke-width="1.6" stroke-linecap="round"/><path d="M30 50 Q34 53 40 52 M50 50 Q46 53 40 52" fill="none" stroke="#2b2316" stroke-width="1.2"/><path d="M28 58 Q40 64 52 58" fill="none" stroke="#a04830" stroke-width="3" stroke-linecap="round"/>') },
     };
     let shownVoice = null;
@@ -14182,7 +14183,7 @@ const DIALOGUE = (() => {
         const done = onDone; onDone = null; current = null;
         done && done();
     }
-    return { init, play, finish, isOpen: () => !!el.overlay && el.overlay.classList.contains('open') };
+    return { init, play, finish, isOpen: () => !!el.overlay && el.overlay.classList.contains('open'), portrait: key => (VOICES[key] || VOICES.hartley).svg, nameOf: key => (VOICES[key] || VOICES.hartley).name };
 })();
 
 const LEGACY_UNLOCK = (() => {
@@ -15775,7 +15776,7 @@ const LEGACY = (() => {
         campaign.players.forEach((p,i)=>UI.el['inputP'+(i+1)].value=p.name);
         const firstInvestor=(n-1)%2;
         // Post-Build investment is deliberate: Build reveals the estate before either sibling spends Capital.
-        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,unspentOptions:[null,null],chapterCardSeen:campaign.guided===false,investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
+        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,counsellorSpoken:false,unspentOptions:[null,null],chapterCardSeen:campaign.guided===false,investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
         // Resource chapters promise real sites for both developments. Retry the
         // seeded estate generation if terrain or rocks leave either one impossible.
         for(let attempt=0;attempt<64;attempt++){
@@ -15828,7 +15829,9 @@ const LEGACY = (() => {
             const name=campaign.players[who].name;
             document.getElementById('legacyFacesEyebrow').textContent=`Estate ${campaign.round} · how did that feel?`;
             document.getElementById('legacyFacesTitle').textContent=name;
-            document.getElementById('legacyFacesPrompt').innerHTML=`${who===1?`<strong>Pass the phone to ${text(name)}.</strong> `:''}Pick the face that fits. It changes nothing in the game. It goes into the family record beside the facts.`;
+            const portrait=document.getElementById('legacyFacesPortrait');if(portrait&&!portrait.innerHTML)portrait.innerHTML=DIALOGUE.portrait('counsellor');
+            document.getElementById('legacyFacesEyebrow').textContent=DIALOGUE.nameOf('counsellor');
+            document.getElementById('legacyFacesPrompt').innerHTML=`${who===1?`<strong>Pass the phone to ${text(name)}.</strong> `:''}${text(name)}, how did that feel? Pick the face that fits. It changes nothing in the game; it goes into the record beside the facts.`;
             document.getElementById('legacyFacesButtons').innerHTML=FACES.map((face,i)=>`<button type="button" class="legacy-face-btn" data-legacy-face="${i}" aria-label="${face.label}"><span class="emoji" aria-hidden="true">${face.emoji}</span><span>${face.label}</span></button>`).join('');
             if(UI.topOverlayKey()!=='legacyFacesOverlay')UI.open('legacyFacesOverlay');else UI.focusFirst(UI.el.legacyFacesOverlay);
         };
@@ -15848,7 +15851,12 @@ const LEGACY = (() => {
     function recordEstate() {
         if(!campaign || campaign.status!=='playing' || STATE.phase!==PHASE.FINAL || !STATE.outcome)return;
         if(campaign.history.some(r=>r.round===campaign.round))return;
-        if(!campaign.current.facesDone){askFaces(recordEstate);return;}
+        if(!campaign.current.facesDone){
+            const spoken=campaign.guided!==false&&UI.el.dialogueOverlay&&!campaign.current.counsellorSpoken;
+            if(spoken){campaign.current.counsellorSpoken=true;save();DIALOGUE.play(counsellorScript(),()=>askFaces(recordEstate));}
+            else askFaces(recordEstate);
+            return;
+        }
         const o=STATE.outcome;
         if(o.unresolved){finishUnresolved('No property was chosen before the bank deadline.');return;}
         // The choice commits the division. A prior save may contain a pending consent screen.
@@ -16106,7 +16114,7 @@ const LEGACY = (() => {
         const carried=n>1?[`${years} years on. ${holds(campaign.players[0])} ${holds(campaign.players[1])}`]:[];
         const scripts={
             1:[
-                "I'm sorry for your loss. Both of them, within the year. Your father banked with us for forty years; I knew him a little.",
+                `${names[0]}, ${names[1]}. I'm sorry for your loss. Both of them, within the year. Your father banked with us for forty years; I knew him a little.`,
                 "There is no will. I have looked, and the solicitor has looked. So the law decides: everything passes to the two of you, in equal shares.",
                 "The court has made the bank the administrator. That is me, I'm afraid. I set the deadlines, and I keep the record.",
                 {who:'dacre',text:"Mr Dacre, Dacre and Sons. My condolences. When you're ready to talk about the farm, I'm ready to make an offer."},
@@ -16170,14 +16178,14 @@ const LEGACY = (() => {
         const divided=(couldHaveBeen().estates.find(e=>e.round===record.round)?.divided||[]).slice(0,2);
         for(const d of divided)beats.push({who:'brandt',text:d.development?`The fence went through the ${d.name}. It pays nothing now.`:`The fence went through the ${d.name}. It paid ${d.income} Capital a time; now ${d.afterIncome}.`});
         if([1,3,5].includes(record.round)&&!record.lost){
-            beats.push({who:'dacre',text:`I'd give you ${record.accounting?.inherited??0} for the pair of plots as they stand. The offer is open until the next estate.`});
+            beats.push({who:'dacre',text:`${campaign.players[0].name}, ${campaign.players[1].name}: I'd give you ${record.accounting?.inherited??0} for the pair of plots as they stand. The offer is open until the next estate.`});
             if(record.round===1)beats.push("He will make an offer after every other estate. The record keeps the number.");
         }
         return beats.length?{eyebrow:`After Estate ${record.round}`,beats,finalLabel:'See the record'}:null;
     }
     function firstCapitalScript() {
         return {eyebrow:'Capital in hand',voice:'brandt',beats:[
-            "You've Capital in hand now. Spend it on a piece that works with what's already there and it pays after every estate. Keep it and it still counts at the end.",
+            `${campaign.players[0].name}, ${campaign.players[1].name}. You've Capital in hand now. Spend it on a piece that works with what's already there and it pays after every estate. Keep it and it still counts at the end.`,
             "Whoever inherits the square owns the piece, whoever paid for it.",
         ],finalLabel:'Open the catalogue'};
     }
@@ -16187,8 +16195,20 @@ const LEGACY = (() => {
             "After costs, nothing comes back to the family. The Legacy ends here, and the record says so.",
         ],finalLabel:'See the record'};
     }
+    // The counsellor's summary: who drew, who chose, by how much. The facts the record
+    // screen will show, said once, to both, before each is asked alone how it felt.
+    function counsellorScript() {
+        const o=STATE.outcome,names=campaign.players.map(p=>p.name);
+        const a=o?.scoreA?.total??0,b=o?.scoreB?.total??0,gap=Math.abs(a-b),favoured=a===b?null:(a>b?'A':'B');
+        const cutter=campaign.players[STATE.cutterIdx]?.name||'',picker=STATE.choiceActor==='cutter'?STATE.cutterIdx:STATE.chooserIdx,chooser=campaign.players[picker]?.name||'';
+        const first=campaign.round===1?`${names[0]}, ${names[1]}. I'm Dr Osei; the court asks me to sit in on these. I'll say what happened, then ask each of you, alone, how it felt. There are no wrong faces.`:`${names[0]}, ${names[1]}. That's ${campaign.current.chapter} settled.`;
+        const drew=STATE.cutByBank?`The bank drew the fence when the time ran out.`:favoured?`${cutter} drew the fence. It favoured Plot ${favoured} by ${gap}.`:`${cutter} drew the fence, and split it evenly.`;
+        const took=STATE.chosenPlotId?`${chooser} took Plot ${STATE.chosenPlotId}${favoured&&STATE.chosenPlotId!==favoured?`, the smaller side by ${gap}`:''}.`:'';
+        return {eyebrow:`Estate ${campaign.round} of 6 · afterwards`,voice:'counsellor',beats:[first,`${drew} ${took}`.trim(),"A word with each of you now, one at a time. The other looks away."],finalLabel:'Begin'};
+    }
     function endingScript() {
-        return {eyebrow:'After the last estate',beats:["That is the last of them. I will file the record now.","What each of you holds, what the family lost, and how it felt. Read all three."],finalLabel:'See the record'};
+        const names=campaign.players.map(p=>p.name);
+        return {eyebrow:'After the last estate',beats:[`${names[0]}, ${names[1]}. That is the last of them. I will file the record now.`,"What each of you holds, what the family lost, and how it felt. Read all three.",{who:'counsellor',text:"The faces are in there too, all twelve. Read those as carefully as the numbers."}],finalLabel:'See the record'};
     }
     function showChapterCard() {
         if(!campaign||campaign.status!=='playing'||!campaign.current||campaign.current.chapterCardSeen||campaign.guided===false)return;
