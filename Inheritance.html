@@ -5120,28 +5120,28 @@ const RENDER = (() => {
         R: [ // Workshop: a hammer standing over an anvil
             op('M-14 1 H12 L10 5 H-2 L-4 11 H-10 L-8 5 H-12 Z', 'fill'),
             op('M-9 13 H5 V15 H-9 Z', 'fill'),
-            op('M0 -4 V-11', 'stroke', null, 2.8),
-            op('M-8 -16 h16 v5.5 h-16 z', 'fill'),
+            { ...op('M0 -4 V-11', 'stroke', null, 2.8), anim: 'hammer', pivot: [0, -3] },
+            { ...op('M-8 -16 h16 v5.5 h-16 z', 'fill'), anim: 'hammer', pivot: [0, -3] },
         ],
         W: [ // Well: a stone ring, two posts, a little roof, the bucket on its rope
             op('M-12 -5 L0 -14 L12 -5', 'stroke', null, 2),
             op('M-8 -5 V4 M8 -5 V4'),
             op('M-11 4 h22 v9 h-22 z M-11 8.5 h22 M-4 4 v4.5 M4 8.5 v4.5'),
             op('M-8 -2 H8 M0 -2 V2', 'stroke', null, 1.8),
-            op('M-3.5 2 h7 v4.5 h-7 z', 'fill'),
+            { ...op('M-3.5 2 h7 v4.5 h-7 z', 'fill'), anim: 'bob', pivot: [0, 0] },
         ],
         B: [ // Beehive: a tall straw skep on a board, one bee at the door
             op('M-10 11 V1 A10 11 0 0 1 10 1 V11 Z'),
             op('M-9.6 5 H9.6', 'stroke', null, 1.8),
             op('M-3 11 V8.5 A3 3 0 0 1 3 8.5 V11', 'fill'),
             op('M-13 11 H13'),
-            op('M8 -11 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0', 'fill'),
-            op('M8.5 -15 l2 3 M13 -15 l-2 3 M6 -10 l-3 1', 'stroke', null, 1.6),
+            { ...op('M8 -11 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0', 'fill'), anim: 'buzz', pivot: [0, 0] },
+            { ...op('M8.5 -15 l2 3 M13 -15 l-2 3 M6 -10 l-3 1', 'stroke', null, 1.6), anim: 'buzz', pivot: [0, 0] },
         ],
         K: [ // Chicken Coop: a hen
             op('M-10 2 C-13 -5 -3 -10 4 -6 C8 -8 11 -8 12 -4 L9 -3 C10 2 6 8 0 8 H-6 Z', 'fill'),
-            op('M3 -8 l1.5 -3.5 l1.5 2.5 l1.5 -3 l1 3.5', 'stroke', null, 1.8),
-            op('M12 -4 l4 1 l-3.5 2', 'fill'),
+            { ...op('M3 -8 l1.5 -3.5 l1.5 2.5 l1.5 -3 l1 3.5', 'stroke', null, 1.8), anim: 'peck', pivot: [4, -2] },
+            { ...op('M12 -4 l4 1 l-3.5 2', 'fill'), anim: 'peck', pivot: [4, -2] },
             op('M-3 8 v5 M2 8 v5 M-5 13 h4 M0 13 h4', 'stroke', null, 1.8),
             op('M7 -4.5 a1.1 1.1 0 1 0 2.2 0 a1.1 1.1 0 1 0 -2.2 0', 'fill', 'alt'),
         ],
@@ -5176,7 +5176,7 @@ const RENDER = (() => {
     const iconAltInk = kind => (iconBaseInk(kind) === ICON_INK_DARK ? ICON_INK_LIGHT : ICON_INK_DARK);
     const iconInkOf = (kind, ink) => ink === 'alt' ? iconAltInk(kind) : (ink || iconBaseInk(kind));
 
-    function drawAssetIcon(kind, cx, cy, target = ctx, scale = 1) {
+    function drawAssetIcon(kind, cx, cy, target = ctx, scale = 1, alive = false) {
         const ops = ASSET_ICON_OPS[kind];
         if (!ops) return;
         const c = target;
@@ -5190,10 +5190,16 @@ const RENDER = (() => {
             const colour = iconInkOf(kind, item.ink);
             const path = iconPath(item.d);
             let moved = false;
-            if (at && item.anim) {
+            if (at && item.anim && (item.anim === 'sway' || alive)) {
                 const [px, py] = item.pivot;
-                const angle = item.anim === 'spin' ? at * 0.7 : Math.sin(at * 1.3 + cx * 0.05 + cy * 0.03) * 0.045;
-                c.save(); c.translate(px, py); c.rotate(angle); c.translate(-px, -py); moved = true;
+                c.save();
+                if (item.anim === 'spin') { c.translate(px, py); c.rotate(at * 0.9); c.translate(-px, -py); }
+                else if (item.anim === 'sway') { c.translate(px, py); c.rotate(Math.sin(at * 1.3 + cx * 0.05 + cy * 0.03) * 0.045); c.translate(-px, -py); }
+                else if (item.anim === 'hammer') { const beat = (at * 1.1) % 1; const strike = beat < 0.18 ? beat / 0.18 : beat < 0.3 ? 1 - (beat - 0.18) / 0.12 : 0; c.translate(px, py); c.rotate(-0.85 * strike); c.translate(-px, -py); }
+                else if (item.anim === 'buzz') { c.translate(Math.sin(at * 7 + cx) * 2.6, Math.cos(at * 5.3 + cy) * 1.8); }
+                else if (item.anim === 'bob') { c.translate(0, Math.sin(at * 2.2 + cx) * 1.6); }
+                else if (item.anim === 'peck') { const beat = (at * 1.6 + cx * 0.1) % 1; const dip = beat < 0.15 ? Math.sin(beat / 0.15 * Math.PI) : 0; c.translate(px, py); c.rotate(0.35 * dip); c.translate(-px, -py); }
+                moved = true;
             }
             if (item.mode === 'fill' || item.mode === 'both') { c.fillStyle = colour; c.fill(path); }
             if (item.mode === 'stroke' || item.mode === 'both') { c.strokeStyle = colour; c.lineWidth = item.width; c.stroke(path); }
@@ -5726,7 +5732,7 @@ const RENDER = (() => {
                 ctx.strokeStyle = 'rgba(43,35,22,0.55)';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
-                drawAssetIcon(v, cx, cy);
+                drawAssetIcon(v, cx, cy, ctx, 1, !snapshotRender && ambientTime() > 0 && sceneFor().alive.has(`${c},${r}`));
                 ctx.beginPath();
                 ctx.arc(cx + 18, cy + 18, 10, 0, Math.PI * 2);
                 ctx.fillStyle = boosted ? '#4f6f9f' : '#2b2316';
@@ -6166,6 +6172,142 @@ const RENDER = (() => {
     // Seconds, for the live board only; 0 for snapshots and when ambient is off, so every
     // static drawing is the same drawing.
     function ambientTime() { return AMBIENT.on && !snapshotRender ? performance.now() / 1000 : 0; }
+    // What is alive on this board, by the rules that score it. A mill turns only
+    // beside crops in its own plot; bees fly only beside an orchard or garden;
+    // a hammer strikes, a bucket rises and a hen pecks only beside something to
+    // work with; cars run on a road that reaches the outside and serves a house;
+    // tractors on one that serves a working farm; the public main road always
+    // carries traffic. Cut a mill off from its crops and it stops: the fence's
+    // cost, visible. Recomputed only when the board changes.
+    const SCENE = { key: null, alive: new Set(), vehicles: [] };
+    function sceneFor() {
+        const key = JSON.stringify([viewState.grid, viewState.terrain, viewState.isCutComplete ? [viewState.plotA, viewState.plotB] : null, !!viewState.settings?.betterTogether]);
+        if (key === SCENE.key) return SCENE;
+        SCENE.key = key; SCENE.alive = new Set(); SCENE.vehicles = [];
+        const grid = viewState.grid, terrain = viewState.terrain, mask = viewState.estateMask, N = CONFIG.GRID;
+        const plotASet = viewState.isCutComplete ? new Set(viewState.plotA.map(p => `${p.c},${p.r}`)) : null;
+        const plotBSet = viewState.isCutComplete ? new Set(viewState.plotB.map(p => `${p.c},${p.r}`)) : null;
+        const plotOf = (c, r) => plotASet ? (plotASet.has(`${c},${r}`) ? plotASet : plotBSet) : null;
+        const neighboursOf = (c, r) => [{ c: c - 1, r }, { c: c + 1, r }, { c, r: r - 1 }, { c, r: r + 1 }].filter(p => GAME.isActiveCell(p.c, p.r, mask));
+        const samePlot = (c, r, p) => { const set = plotOf(c, r); return !set || set.has(`${p.c},${p.r}`); };
+        const bt = !!viewState.settings?.betterTogether;
+        const hasRelation = (c, r, kinds) => bt && neighboursOf(c, r).some(p => samePlot(c, r, p) && kinds.includes(grid[p.r][p.c]));
+        const besideAsset = (c, r, kinds = null) => neighboursOf(c, r).some(p => samePlot(c, r, p) && GAME.isAssetKind(grid[p.r][p.c]) && (!kinds || kinds.includes(grid[p.r][p.c])));
+        const farmAlive = (c, r) => bt && GAME.assetNeighbourBonus(c, r, grid, plotOf(c, r), true) > 0 && ['Y', 'S', 'C', 'V', 'O'].includes(grid[r][c]);
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+            if (!GAME.isActiveCell(c, r, mask)) continue;
+            const v = grid[r][c];
+            let alive = false;
+            if (v === 'M') alive = hasRelation(c, r, ['C']);
+            else if (v === 'B') alive = hasRelation(c, r, ['O', 'D']);
+            else if (v === 'R' || v === 'W') alive = besideAsset(c, r);
+            else if (v === 'K') alive = besideAsset(c, r, ['C', 'D']);
+            if (alive) SCENE.alive.add(`${c},${r}`);
+        }
+        if (!terrain) return SCENE;
+        // Roads: the networks that reach the outside, and who they serve.
+        const accessible = GAME.terrainRoadAccessSet(null, terrain, mask);
+        const isRoad = (c, r) => GAME.isActiveCell(c, r, mask) && terrain[r]?.[c] === 'road';
+        const routeToOutside = start => {
+            const seen = new Map([[`${start.c},${start.r}`, null]]);
+            const queue = [start];
+            while (queue.length) {
+                const cur = queue.shift();
+                if (GAME.isEstateBoundaryCell(cur.c, cur.r, mask) && !(cur.c === start.c && cur.r === start.r)) {
+                    const path = []; let k = `${cur.c},${cur.r}`;
+                    while (k) { const [c, r] = k.split(',').map(Number); path.unshift({ c, r }); k = seen.get(k); }
+                    return path;
+                }
+                for (const n of neighboursOf(cur.c, cur.r)) {
+                    const k = `${n.c},${n.r}`;
+                    if (!isRoad(n.c, n.r) || seen.has(k)) continue;
+                    seen.set(k, `${cur.c},${cur.r}`); queue.push(n);
+                }
+            }
+            return null;
+        };
+        const starts = new Set();
+        const addVehicle = (kind, c, r, phase) => {
+            for (const road of neighboursOf(c, r)) {
+                if (!isRoad(road.c, road.r) || !accessible.has(`${road.c},${road.r}`)) continue;
+                const k = `${kind}:${road.c},${road.r}`;
+                if (starts.has(k)) continue;
+                const path = routeToOutside(road);
+                if (!path || path.length < 2) continue;
+                starts.add(k);
+                SCENE.vehicles.push({ kind, path, loop: false, speed: kind === 'tractor' ? 0.55 : 1.1, phase });
+                return;
+            }
+        };
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+            if (!GAME.isActiveCell(c, r, mask)) continue;
+            const v = grid[r][c];
+            if (v === 'G' || v === 'H') addVehicle('car', c, r, (c * 7 + r * 3) % 5);
+            else if (farmAlive(c, r)) addVehicle('tractor', c, r, (c * 5 + r * 7) % 4);
+        }
+        SCENE.vehicles = SCENE.vehicles.filter(v => v.kind === 'car').slice(0, 3).concat(SCENE.vehicles.filter(v => v.kind === 'tractor').slice(0, 2));
+        // The public main road: traffic both ways, always.
+        const motorway = [];
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (GAME.isActiveCell(c, r, mask) && terrain[r][c] === 'motorway') motorway.push({ c, r });
+        if (motorway.length >= 2) {
+            const ends = motorway.filter(p => motorway.filter(q => GAME.adjacent(p, q)).length === 1);
+            const start = ends[0] || motorway[0];
+            const ordered = [start]; const used = new Set([`${start.c},${start.r}`]);
+            while (true) {
+                const last = ordered[ordered.length - 1];
+                const next = motorway.find(q => !used.has(`${q.c},${q.r}`) && GAME.adjacent(last, q));
+                if (!next) break;
+                ordered.push(next); used.add(`${next.c},${next.r}`);
+            }
+            if (ordered.length >= 2) {
+                SCENE.vehicles.push({ kind: 'car', path: ordered, loop: true, speed: 1.4, phase: 0 });
+                SCENE.vehicles.push({ kind: 'car', path: ordered.slice().reverse(), loop: true, speed: 1.2, phase: 2.1 });
+            }
+        }
+        return SCENE;
+    }
+    function drawVehicle(kind, x, y, angle) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        if (kind === 'tractor') {
+            ctx.fillStyle = '#4f6f3f';
+            ctx.fillRect(-6, -4, 10, 6.8);
+            ctx.fillStyle = '#2b2316';
+            ctx.fillRect(-2.4, -6.6, 4.4, 3);
+            ctx.beginPath(); ctx.arc(-5, 3.2, 3.4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(4.4, 3.8, 2.1, 0, Math.PI * 2); ctx.fill();
+        } else {
+            ctx.fillStyle = '#2b2316';
+            if (typeof ctx.roundRect === 'function') { ctx.beginPath(); ctx.roundRect(-7.5, -3.4, 15, 6.8, 2); ctx.fill(); } else ctx.fillRect(-7.5, -3.4, 15, 6.8);
+            ctx.fillStyle = '#f4ede0';
+            ctx.fillRect(-3.2, -2.3, 5.4, 4.6);
+            ctx.fillStyle = '#2b2316';
+            ctx.fillRect(-1.6, -2.3, 2, 4.6);
+        }
+        ctx.restore();
+    }
+    function drawVehicles() {
+        const at = ambientTime();
+        if (!at) return;
+        const scene = sceneFor();
+        if (!scene.vehicles.length) return;
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        const centre = p => ({ x: m + p.c * s + s / 2, y: m + p.r * s + s / 2 });
+        for (const v of scene.vehicles) {
+            const L = v.path.length;
+            let u, forward = true;
+            if (v.loop) u = ((at * v.speed + v.phase) % L);
+            else { const span = 2 * (L - 1); const w = (at * v.speed + v.phase) % span; forward = w <= L - 1; u = forward ? w : span - w; }
+            const i = Math.min(L - 2, Math.floor(u)), f = u - i;
+            const a = centre(v.path[i]), b = centre(v.path[v.loop ? (i + 1) % L : i + 1]);
+            const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f;
+            const angle = Math.atan2(b.y - a.y, b.x - a.x) + (forward ? 0 : Math.PI);
+            // Keep to the left of the carriageway, as the road's own dashed centre line suggests.
+            const side = 7 * (forward ? 1 : -1);
+            drawVehicle(v.kind, x + Math.sin(angle) * side * -1, y + Math.cos(angle) * side, angle);
+        }
+    }
     function ambientSchedule() {
         if (AMBIENT.timer != null) return;
         AMBIENT.timer = setTimeout(() => {
@@ -6239,6 +6381,7 @@ const RENDER = (() => {
     }
     function drawEffects() {
         if (snapshotRender) return;
+        drawVehicles();
         drawSmoke();
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         for (const item of FX.items) {
