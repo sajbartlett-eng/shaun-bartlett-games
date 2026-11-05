@@ -55,6 +55,8 @@ What is deliberately absent: camera moves, confetti, slow fades on overlays, and
 
 ## The build order
 
+Stage 2 shipped: the renderer notices each event by comparing the live state with the previous frame, so human, bank, online and Legacy moves animate the same way with no hooks in the flows. A placed disc drops in over 180 ms (larger, higher, a looser shadow, then settled); a neighbour whose badge rose shows a "+1" rising for 650 ms, during Build only; the fence inks from 3.5 to 6 px over 320 ms as it becomes final and its gates appear with it; the chosen plot brightens and the other settles back over 260 ms; the final totals count up over 420 ms and end exact. The Legacy record's payment rows rise in sequence, the "+N Capital" pulses once, the gap strip draws left to right and the faces pop. All off under reduced motion; no number moves before it is final.
+
 Stage 1 shipped: the thirteen silhouettes redrawn as path data drawn through Path2D on the canvas and emitted as inline SVG for HTML (the Legacy catalogue shows the piece it sells); a soft shadow under every disc; the board on paper with stippled land whose density follows the value band; plot labels in the hand font. Checked at 22, 26, 36, 48 and 68 px on a phone and a desktop. File size unchanged within a kilobyte.
 
 1. **Icons and the paper board.** New silhouettes as one SVG symbol set, drawn through `Path2D`; hatch fills by value; ink perimeter and fence; Caveat plot labels. Screenshot every asset at 24, 35 and 68 px before shipping.

@@ -2569,6 +2569,16 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 .legacy-record .legacy-record-line p {margin:3px 0;font-size:14px;line-height:1.45;}
 .legacy-record-final {margin-top:12px;font:700 16px var(--display);}
 .legacy-metrics-3 {grid-template-columns:repeat(3,minmax(0,1fr));}
+@keyframes legacy-rise {from {opacity:0;transform:translateY(6px);} to {opacity:1;transform:none;}}
+@keyframes legacy-pop {from {opacity:0;transform:scale(.6);} to {opacity:1;transform:scale(1);}}
+@keyframes legacy-pulse {0% {transform:scale(1);} 40% {transform:scale(1.12);} 100% {transform:scale(1);}}
+.legacy-fact .legacy-income-line {animation:legacy-rise .36s ease-out both;}
+.legacy-fact .legacy-income-line:nth-child(2) {animation-delay:.08s;} .legacy-fact .legacy-income-line:nth-child(3) {animation-delay:.16s;} .legacy-fact .legacy-income-line:nth-child(4) {animation-delay:.24s;} .legacy-fact .legacy-income-line:nth-child(5) {animation-delay:.32s;} .legacy-fact .legacy-income-line:nth-child(n+6) {animation-delay:.4s;}
+.legacy-fact .legacy-income-line strong {display:inline-block;animation:legacy-pulse .5s ease-out .3s both;}
+.legacy-faces-row .legacy-face-card {animation:legacy-pop .32s ease-out both;} .legacy-faces-row .legacy-face-card:nth-child(2) {animation-delay:.12s;}
+.legacy-strip .legacy-strip-col {animation:legacy-rise .3s ease-out both;}
+.legacy-strip .legacy-strip-col:nth-child(2) {animation-delay:.07s;} .legacy-strip .legacy-strip-col:nth-child(3) {animation-delay:.14s;} .legacy-strip .legacy-strip-col:nth-child(4) {animation-delay:.21s;} .legacy-strip .legacy-strip-col:nth-child(5) {animation-delay:.28s;} .legacy-strip .legacy-strip-col:nth-child(6) {animation-delay:.35s;}
+@media (prefers-reduced-motion: reduce) {.legacy-fact .legacy-income-line, .legacy-fact .legacy-income-line strong, .legacy-faces-row .legacy-face-card, .legacy-strip .legacy-strip-col {animation:none;}}
 .asset-icon {vertical-align:middle;margin-right:4px;flex:none;}
 .legacy-strip {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 4px;}
 .legacy-strip-col {display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border:1px solid var(--paper-edge);background:var(--paper);min-width:0;}
@@ -5599,12 +5609,19 @@ const RENDER = (() => {
         if (!viewState.isCutComplete) return;
 
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        const chosen = viewState.chosenPlotId || null;
+        const chooseFx = snapshotRender ? null : fxFind('choose');
+        const t = chosen ? (chooseFx ? ease(fxProgress(chooseFx)) : 1) : 0;
+        const alphaFor = id => {
+            if (!chosen) return 0.14;
+            return id === chosen ? 0.14 + 0.08 * t : 0.14 - 0.05 * t;
+        };
         if (showA) {
-            ctx.fillStyle = 'rgba(63, 111, 106, 0.14)';
+            ctx.fillStyle = `rgba(63, 111, 106, ${alphaFor('A').toFixed(3)})`;
             viewState.plotA.forEach(p => ctx.fillRect(m + p.c * s, m + p.r * s, s, s));
         }
         if (showB) {
-            ctx.fillStyle = 'rgba(141, 101, 64, 0.14)';
+            ctx.fillStyle = `rgba(141, 101, 64, ${alphaFor('B').toFixed(3)})`;
             viewState.plotB.forEach(p => ctx.fillRect(m + p.c * s, m + p.r * s, s, s));
         }
     }
@@ -5677,10 +5694,17 @@ const RENDER = (() => {
                 const totalValue = CONFIG.ASSET_VALUE[v] + bonus;
                 const boosted = bonus > 0;
 
+                const drop = snapshotRender ? null : fxFind('drop', c, r);
+                const settle = drop ? ease(fxProgress(drop)) : 1;
+                const lift = 1 - settle;
                 ctx.save();
-                ctx.shadowColor = 'rgba(43,35,22,0.38)';
-                ctx.shadowBlur = 7;
-                ctx.shadowOffsetY = 2.5;
+                ctx.translate(cx, cy - 4 * lift);
+                ctx.scale(1 + 0.18 * lift, 1 + 0.18 * lift);
+                ctx.translate(-cx, -cy);
+                ctx.save();
+                ctx.shadowColor = `rgba(43,35,22,${0.38 - 0.14 * lift})`;
+                ctx.shadowBlur = 7 + 10 * lift;
+                ctx.shadowOffsetY = 2.5 + 5 * lift;
                 ctx.beginPath();
                 ctx.arc(cx, cy, 28, 0, Math.PI * 2);
                 ctx.fillStyle = style.fill;
@@ -5702,6 +5726,7 @@ const RENDER = (() => {
                 ctx.font = 'bold 12px JetBrains Mono, monospace';
                 ctx.fillStyle = '#f4ede0';
                 ctx.fillText(String(totalValue), cx + 18, cy + 19);
+                ctx.restore();
 
                 if (placementHistoryVisible()) {
                     drawPlacementMark(c, r, viewState.placedBy[r][c]);
@@ -5771,8 +5796,10 @@ const RENDER = (() => {
         if (viewState.cutEdges.length === 0) return;
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         ctx.save();
-        ctx.strokeStyle = '#2b2316';
-        ctx.lineWidth = 6;
+        const ink = snapshotRender ? null : fxFind('ink');
+        const inked = ink ? ease(fxProgress(ink)) : 1;
+        ctx.strokeStyle = viewState.isCutComplete ? '#2b2316' : 'rgba(43,35,22,0.82)';
+        ctx.lineWidth = viewState.isCutComplete ? 3.5 + 2.5 * inked : 4;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.beginPath();
@@ -5791,6 +5818,9 @@ const RENDER = (() => {
     function drawGates() {
         const terrain = viewState.terrain;
         if (!terrain) return;
+        const inkFx = snapshotRender ? null : fxFind('ink');
+        const gateScale = inkFx ? ease(fxProgress(inkFx)) : 1;
+        if (gateScale <= 0.02) return;
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         const roadKind = (c, r) => {
             if (!GAME.isActiveCell(c, r, viewState.estateMask)) return null;
@@ -5811,6 +5841,7 @@ const RENDER = (() => {
             const gateColour = kinds[0] === 'motorway' && kinds[1] === 'motorway' ? null : '#2b2316';
             // The gap: the road surface shows through the fence.
             ctx.save();
+            ctx.translate(mx, my); ctx.scale(gateScale, gateScale); ctx.translate(-mx, -my);
             ctx.strokeStyle = kinds[0] === 'motorway' ? '#5d5a52' : '#b89f72';
             ctx.lineWidth = 7;
             ctx.lineCap = 'butt';
@@ -6075,14 +6106,109 @@ const RENDER = (() => {
         drawCut();
         drawTutorialGhost();
         drawPlotLabels();
+        drawEffects();
         drawCutNodes();
         drawKeyboardCursor();
+    }
+
+    // Every animation on the board means something the system just did: a piece
+    // landed, a neighbour's value rose, the fence became final, a plot was chosen.
+    // The renderer notices each by comparing the live state with the previous
+    // frame, so human, bank, online and Legacy moves all animate the same way.
+    // Each runs for a fixed, short time and never moves a number before it is
+    // final. Reduced motion turns them all off.
+    const FX = {
+        items: [], frame: null,
+        reduced: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        lastGrid: null, lastTotals: null, lastCut: false, lastChosen: null, lastPhase: null,
+    };
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    function fxAdd(item) {
+        if (FX.reduced) return;
+        FX.items.push({ ...item, start: performance.now() });
+        fxSchedule();
+    }
+    function fxSchedule() {
+        if (FX.frame != null) return;
+        FX.frame = requestAnimationFrame(() => {
+            FX.frame = null;
+            const now = performance.now();
+            FX.items = FX.items.filter(item => now - item.start < item.duration);
+            render();
+            if (FX.items.length) fxSchedule();
+        });
+    }
+    function fxProgress(item) { return Math.max(0, Math.min(1, (performance.now() - item.start) / item.duration)); }
+    function fxFind(type, c = null, r = null) {
+        return FX.items.find(item => item.type === type && (c === null || (item.c === c && item.r === r))) || null;
+    }
+    function assetTotals() {
+        const totals = new Map();
+        const plotASet = STATE.isCutComplete ? new Set(STATE.plotA.map(p => `${p.c},${p.r}`)) : null;
+        const plotBSet = STATE.isCutComplete ? new Set(STATE.plotB.map(p => `${p.c},${p.r}`)) : null;
+        for (let r = 0; r < CONFIG.GRID; r++) for (let c = 0; c < CONFIG.GRID; c++) {
+            const v = STATE.grid[r]?.[c];
+            if (!v || !CONFIG.ASSET_VALUE[v]) continue;
+            let bonus = 0;
+            if (STATE.settings.betterTogether) {
+                const key = `${c},${r}`;
+                const plotSet = plotASet ? (plotASet.has(key) ? plotASet : plotBSet) : null;
+                bonus = GAME.assetNeighbourBonus(c, r, STATE.grid, plotSet, true);
+            }
+            totals.set(`${c},${r}`, CONFIG.ASSET_VALUE[v] + bonus);
+        }
+        return totals;
+    }
+    function detectEvents() {
+        const gridKey = JSON.stringify(STATE.grid);
+        const totals = assetTotals();
+        const fresh = FX.lastGrid === null || STATE.phase === PHASE.SETUP || FX.lastPhase === PHASE.SETUP;
+        if (!fresh && gridKey !== FX.lastGrid) {
+            // New pieces drop in; a neighbour whose badge rose says so.
+            for (const [key, total] of totals) {
+                const [c, r] = key.split(',').map(Number);
+                if (!FX.lastTotals || !FX.lastTotals.has(key)) {
+                    if (STATE.phase === PHASE.BUILD || STATE.phase === PHASE.TERRAIN) fxAdd({ type: 'drop', c, r, duration: 180 });
+                } else if (STATE.phase === PHASE.BUILD && total > FX.lastTotals.get(key)) {
+                    fxAdd({ type: 'rise', c, r, delta: total - FX.lastTotals.get(key), duration: 650 });
+                }
+            }
+        }
+        if (!fresh && STATE.isCutComplete && !FX.lastCut) fxAdd({ type: 'ink', duration: 320 });
+        if (!fresh && STATE.chosenPlotId && FX.lastChosen !== STATE.chosenPlotId) fxAdd({ type: 'choose', plot: STATE.chosenPlotId, duration: 260 });
+        FX.lastGrid = gridKey; FX.lastTotals = totals; FX.lastCut = !!STATE.isCutComplete; FX.lastChosen = STATE.chosenPlotId || null; FX.lastPhase = STATE.phase;
+    }
+    // Rising "+1" marks after a placement: the neighbour rule, shown where it happened.
+    function drawEffects() {
+        if (snapshotRender) return;
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        for (const item of FX.items) {
+            if (item.type !== 'rise') continue;
+            const t = ease(fxProgress(item));
+            const x = m + item.c * s + s / 2 + 18, y = m + item.r * s + s / 2 + 18 - 26 * t;
+            ctx.save();
+            ctx.globalAlpha = 1 - t * t;
+            ctx.fillStyle = '#4f6f9f';
+            ctx.beginPath();
+            if (typeof ctx.roundRect === 'function') ctx.roundRect(x - 13, y - 9, 26, 18, 9); else ctx.rect(x - 13, y - 9, 26, 18);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(224,235,248,0.9)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+            ctx.font = 'bold 12px JetBrains Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#f4ede0';
+            ctx.fillText(`+${item.delta}`, x, y + 0.5);
+            ctx.restore();
+        }
     }
 
     function render() {
         ctx = mainCtx;
         viewState = STATE;
         snapshotRender = false;
+        detectEvents();
         renderCore();
     }
 
@@ -7423,6 +7549,22 @@ const UI = {
     focusBoard() {
         RENDER.canvas.focus({ preventScroll: true });
         RENDER.render();
+    },
+
+    // A number that forms in front of the player, once it is final. 400 ms, then exact.
+    countUp(el, to, ms = 400) {
+        if (!el) return;
+        const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        const target = Number(to);
+        if (reduced || !Number.isFinite(target) || target <= 0) { el.textContent = String(to); return; }
+        const start = performance.now();
+        const step = now => {
+            const t = Math.min(1, (now - start) / ms);
+            const eased = 1 - Math.pow(1 - t, 3);
+            el.textContent = String(Math.round(target * eased));
+            if (t < 1) requestAnimationFrame(step); else el.textContent = String(to);
+        };
+        requestAnimationFrame(step);
     },
 
     setSetupOptionsOpen(open) {
@@ -9725,6 +9867,7 @@ UI.renderFinalScoreboard = function () {
             </div>`;
     };
     UI.el.finalScoreboard.innerHTML = scoreDetails(cellHtml('A', o.scoreA) + cellHtml('B', o.scoreB));
+    UI.el.finalScoreboard.querySelectorAll('.plot-total').forEach(el => UI.countUp(el, el.textContent, 420));
     UI.renderFinalEstate();
 
     if (STATE.settings.meaningful) {
