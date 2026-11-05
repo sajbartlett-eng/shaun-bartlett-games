@@ -13737,6 +13737,20 @@ const LEGACY = (() => {
         productiveKeys:Object.freeze(['farm','land','mill','wine','pollination']),
         capacityBlocks:Object.freeze([{score:5,income:1},{score:9,income:2},{score:13,income:3}]),
     });
+    // Time scale. Each estate is settled some years after the last, and a
+    // holding's payment is its yield over those years: about 4% of its value a
+    // year for farmland, orchards, vineyards and managed woodland (USDA ERS
+    // rent-to-value and farm income returns; NCREIF timberland income return),
+    // about 15% a year on invested capital for a quarry (aggregates producers'
+    // reported return on invested capital). At five years per estate this gives
+    // exactly the payments the campaign has used: 1, 2 and 3 Capital for grade
+    // C, B and A holdings and 3 for a Quarry. The number of years is the only
+    // lever; the yields are not exaggerated.
+    const YIELD_PER_YEAR=0.04, DEFAULT_YEARS_PER_ESTATE=5;
+    function yearsPerEstate(c=campaign){const y=Number(c?.yearsPerEstate);return Number.isInteger(y)&&y>=1&&y<=50?y:DEFAULT_YEARS_PER_ESTATE;}
+    function blockIncome(block,ruleVersion=campaign?.incomeRuleVersion??2,c=campaign){if(ruleVersion===1&&block.score===13)return 5;return Math.max(0,Math.round(block.score*YIELD_PER_YEAR*yearsPerEstate(c)));}
+    function developmentIncome(spec,c=campaign){return Math.max(0,Math.round(spec.income*yearsPerEstate(c)/DEFAULT_YEARS_PER_ESTATE));}
+    function requestedYearsPerEstate(){const y=Number(new URLSearchParams(location.search).get('years'));return Number.isInteger(y)&&y>=1&&y<=50?y:DEFAULT_YEARS_PER_ESTATE;}
     const CHAPTERS = Object.freeze([
         {name:'The Country Estate',character:'A rural property with scattered restricted ground',land:['standard'],resources:false},
         {name:'The Family Home',character:'A long-held family property crossed by the old main road',land:['motorway'],resources:false},
@@ -14091,7 +14105,7 @@ const LEGACY = (() => {
     function productiveCapacity(score,ruleVersion=campaign?.incomeRuleVersion??2) {
         const limit=Math.max(0,Math.floor(score)),best=Array.from({length:limit+1},()=>({income:0,units:[]}));
         for(let value=1;value<=limit;value++)for(let blockIndex=0;blockIndex<PRODUCTIVITY.capacityBlocks.length;blockIndex++){
-            const source=PRODUCTIVITY.capacityBlocks[blockIndex],block=ruleVersion===1&&source.score===13?{...source,income:5}:source;if(value<block.score)continue;
+            const source=PRODUCTIVITY.capacityBlocks[blockIndex],block={...source,income:blockIncome(source,ruleVersion)};if(value<block.score)continue;
             const prior=best[value-block.score],candidate={income:prior.income+block.income,units:[...prior.units,blockIndex]};
             if(candidate.income>best[value].income||(candidate.income===best[value].income&&candidate.units.length<best[value].units.length))best[value]=candidate;
         }
@@ -14243,7 +14257,7 @@ const LEGACY = (() => {
         const spec=DEVELOPMENT[type],turn=campaign.current.investmentTurn,player=campaign.players[turn],sites=developmentSites(type);
         if(!campaign.current.investmentOpened||campaign.current.investmentComplete||!spec||!sites.length||developmentPurchaseCapacity(type)<1||!unlockedFor(turn,investmentKeyForDevelopment(type))||player.capital<spec.cost)return;
         player.capital-=spec.cost;campaign.current.invested+=spec.cost;campaign.current.investedBy[turn]+=spec.cost;
-        const dev={id:`${campaign.id}-r${campaign.round}-development-${campaign.current.developments.length}`,type,name:spec.name,payer:turn,cost:spec.cost,value:spec.value,income:spec.income,payments:spec.payments,cells:[],placed:false,bankPlaced:false};
+        const dev={id:`${campaign.id}-r${campaign.round}-development-${campaign.current.developments.length}`,type,name:spec.name,payer:turn,cost:spec.cost,value:spec.value,income:developmentIncome(spec),payments:spec.payments,cells:[],placed:false,bankPlaced:false};
         campaign.current.developments.push(dev);event('DEVELOPMENT_PURCHASED',{payer:turn,type,cost:spec.cost,id:dev.id});RENDER.render();renderInvest();save();
     }
     function siteLabel(cells){return cells.map(cell=>`${String.fromCharCode(65+cell.c)}${cell.r+1}`).join(' + ');}
@@ -14574,7 +14588,7 @@ const LEGACY = (() => {
         retainPanelFocus('legacyOverlay',panel);
         document.getElementById('legacyTitle').textContent='What changes in Family Legacy';
         const older=campaign?.incomeRuleVersion===1;
-        panel.innerHTML=`<p class="legacy-note">Six estates · one continuing inheritance</p><p class="body">Cut and choose works as before. Here, the Property each sibling inherits carries forward. Connected productive assets can also earn Capital for whoever inherits them, so the most valuable plot now may not be the best choice across the Legacy.</p><div class="legacy-guide-grid"><div class="legacy-guide-step"><strong>Income</strong><span>Connected productive groups pay Capital after settlement. A fence can split a group and change what it earns.</span></div><div class="legacy-guide-step"><strong>Investment</strong><span>After Build and before roles are assigned, each sibling may keep or spend their Capital on this estate. Paying does not determine who inherits it.</span></div></div><p class="comparison-note">After Estate 6, the ledger records individual distinctions for final wealth, inherited Property and holding income, alongside shared gains and setbacks. Final wealth = inherited Property + unspent Capital + the next three holding payments.</p><details class="legacy-details"><summary>Holding payments</summary><div><p>Productive group score combines printed asset values and productive links. Other Better Together links can add Property without producing Capital. A grade C group starts at score 5 and pays 1 Capital; grade B starts at 9 and pays 2; grade A starts at 13 and pays ${older?5:3}. A larger group can earn more than one payment each estate.</p><p>${older?'Holdings inherited in this saved Legacy continue paying after each estate.':'A new productive holding pays after the estate where it is inherited and after two more estates. The holding retains its Property value when its payments finish.'} Quarry pays 3 Capital twice and Logging pays 2 Capital three times if inherited intact.</p></div></details><details class="legacy-details"><summary>Investment and ownership</summary><div><p>Investment options unlock as your highest held Capital reaches their prices. Unlocked options stay available. After both siblings buy, the purchased assets are placed on the estate. Investments belong to whoever inherits their cells, regardless of who paid.</p><p>Quarry needs two adjacent Rock cells; Logging needs three connected Managed Woodland cells. Their Property value remains after their scheduled payments finish.</p></div></details><details class="legacy-details"><summary>The Family Home and ending</summary><div><p>Estate 2 alone allows each sibling to name one family item they care about. This does not change Property, Capital, income or ownership.</p><p>Every cut and choice stands. If neither sibling chooses before time runs out, the Legacy ends before a six-estate result is recorded. Exactly three future holding payments count toward final wealth after Estate 6.</p></div></details><div class="actions"><button class="btn-primary" data-legacy="ledger">Back to Family Legacy</button></div>`;
+        panel.innerHTML=`<p class="legacy-note">Six estates · one continuing inheritance</p><p class="body">Cut and choose works as before. Here, the Property each sibling inherits carries forward. Connected productive assets can also earn Capital for whoever inherits them, so the most valuable plot now may not be the best choice across the Legacy.</p><div class="legacy-guide-grid"><div class="legacy-guide-step"><strong>Income</strong><span>Connected productive groups pay Capital after settlement. Each estate is settled about ${yearsPerEstate()} years after the last, and a holding's payment is its yield over those years: about 4% of its value a year, as farmland, orchards and woodland return in reality. A fence can split a group and change what it earns.</span></div><div class="legacy-guide-step"><strong>Investment</strong><span>After Build and before roles are assigned, each sibling may keep or spend their Capital on this estate. Paying does not determine who inherits it.</span></div></div><p class="comparison-note">After Estate 6, the ledger records individual distinctions for final wealth, inherited Property and holding income, alongside shared gains and setbacks. Final wealth = inherited Property + unspent Capital + the next three holding payments.</p><details class="legacy-details"><summary>Holding payments</summary><div><p>Productive group score combines printed asset values and productive links. Other Better Together links can add Property without producing Capital. A grade C group starts at score 5 and pays 1 Capital; grade B starts at 9 and pays 2; grade A starts at 13 and pays ${older?5:3}. A larger group can earn more than one payment each estate.</p><p>${older?'Holdings inherited in this saved Legacy continue paying after each estate.':'A new productive holding pays after the estate where it is inherited and after two more estates. The holding retains its Property value when its payments finish.'} Quarry pays ${developmentIncome(DEVELOPMENT.quarry)} Capital twice and Logging pays ${developmentIncome(DEVELOPMENT.logging)} Capital three times if inherited intact.</p></div></details><details class="legacy-details"><summary>Investment and ownership</summary><div><p>Investment options unlock as your highest held Capital reaches their prices. Unlocked options stay available. After both siblings buy, the purchased assets are placed on the estate. Investments belong to whoever inherits their cells, regardless of who paid.</p><p>Quarry needs two adjacent Rock cells; Logging needs three connected Managed Woodland cells. Their Property value remains after their scheduled payments finish.</p></div></details><details class="legacy-details"><summary>The Family Home and ending</summary><div><p>Estate 2 alone allows each sibling to name one family item they care about. This does not change Property, Capital, income or ownership.</p><p>Every cut and choice stands. If neither sibling chooses before time runs out, the Legacy ends before a six-estate result is recorded. Exactly three future holding payments count toward final wealth after Estate 6.</p></div></details><div class="actions"><button class="btn-primary" data-legacy="ledger">Back to Family Legacy</button></div>`;
     }
     function playerPlotForAttempt(attempt,playerIdx) {
         if(!attempt||!['A','B'].includes(attempt.chosenPlotId))return null;
@@ -14980,7 +14994,7 @@ const LEGACY = (() => {
         let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
         if(stored && !confirm('Start a new Legacy? This replaces the automatic save. Download the existing Legacy first if you want to keep it.'))return;
         const names=[playerName(UI.el.inputP1.value,0),playerName(UI.el.inputP2.value,1)];
-        campaign={id:'legacy-'+Date.now().toString(36),seed:(Date.now()^Math.floor(Math.random()*1e9))>>>0,progressionVersion:5,incomeRuleVersion:2,round:1,status:'playing',legacyGeneratedThroughRound:0,guidance:clone(GUIDANCE_DEFAULTS),players:names.map(name=>({name,property:0,capital:0,peakCapital:0,unlockedInvestments:[],wins:0,holdings:[]})),totals:emptyTotals(),current:null,history:[],events:[],finalResult:null,endedAt:null};
+        campaign={id:'legacy-'+Date.now().toString(36),seed:(Date.now()^Math.floor(Math.random()*1e9))>>>0,progressionVersion:5,incomeRuleVersion:2,yearsPerEstate:requestedYearsPerEstate(),round:1,status:'playing',legacyGeneratedThroughRound:0,guidance:clone(GUIDANCE_DEFAULTS),players:names.map(name=>({name,property:0,capital:0,peakCapital:0,unlockedInvestments:[],wins:0,holdings:[]})),totals:emptyTotals(),current:null,history:[],events:[],finalResult:null,endedAt:null};
         event('CAMPAIGN_STARTED'); startEstate();
     }
     function landTemplateForSeed(seed,round) {
@@ -15182,7 +15196,7 @@ const LEGACY = (() => {
         const number=v=>Number.isFinite(v)&&v>=0&&v<=1e7;
         const signedNumber=v=>Number.isFinite(v)&&Math.abs(v)<=1e7;
         const close=(a,b)=>Math.abs(a-b)<1e-8;
-        if(!c||!s||c.progressionVersion!==5||![1,2].includes(c.incomeRuleVersion)||!Number.isInteger(c.round)||c.round<1||c.round>6||!Number.isInteger(c.legacyGeneratedThroughRound)||c.legacyGeneratedThroughRound<0||c.legacyGeneratedThroughRound>6||!['playing','between','complete','unresolved'].includes(c.status)||!Number.isInteger(c.seed)||!(c.finalResult===null||typeof c.finalResult==='object')||!(c.endedAt===null||(typeof c.endedAt==='string'&&Number.isFinite(Date.parse(c.endedAt)))))fail();
+        if(!c||!s||c.progressionVersion!==5||![1,2].includes(c.incomeRuleVersion)||!(c.yearsPerEstate===undefined||(Number.isInteger(c.yearsPerEstate)&&c.yearsPerEstate>=1&&c.yearsPerEstate<=50))||!Number.isInteger(c.round)||c.round<1||c.round>6||!Number.isInteger(c.legacyGeneratedThroughRound)||c.legacyGeneratedThroughRound<0||c.legacyGeneratedThroughRound>6||!['playing','between','complete','unresolved'].includes(c.status)||!Number.isInteger(c.seed)||!(c.finalResult===null||typeof c.finalResult==='object')||!(c.endedAt===null||(typeof c.endedAt==='string'&&Number.isFinite(Date.parse(c.endedAt)))))fail();
         if(!c.guidance||Object.keys(GUIDANCE_DEFAULTS).some(key=>typeof c.guidance[key]!=='boolean'))fail();
         if(!Array.isArray(c.players)||c.players.length!==2||c.players.some(p=>typeof p.name!=='string'||p.name.length>14||!number(p.property)||!number(p.capital)||!number(p.peakCapital)||!Array.isArray(p.unlockedInvestments)||p.unlockedInvestments.some(key=>!INVESTMENT_KEYS.has(key))||JSON.stringify(p.unlockedInvestments)!==JSON.stringify(canonicalUnlocks(p.unlockedInvestments))||!Number.isInteger(p.wins)||p.wins<0||p.wins>6||!Array.isArray(p.holdings)))fail();
         if(!c.totals||!c.current||!Array.isArray(c.history)||c.history.length>6||!Array.isArray(c.events)||c.events.length>1000||c.events.some(e=>!e||typeof e.type!=='string'||!Number.isInteger(e.round)||e.round<1||e.round>6||typeof e.at!=='string'||!Number.isFinite(Date.parse(e.at))))fail();
@@ -15210,7 +15224,7 @@ const LEGACY = (() => {
             if(!Array.isArray(items)||items.length>20)fail();const ids=new Set(),used=new Set();
             for(const dev of items){
                 const spec=DEVELOPMENT[dev?.type];
-                if(!spec||typeof dev.id!=='string'||ids.has(dev.id)||dev.name!==spec.name||![0,1].includes(dev.payer)||dev.cost!==spec.cost||dev.value!==spec.value||dev.income!==spec.income||dev.payments!==spec.payments||!Array.isArray(dev.cells)||typeof dev.placed!=='boolean'||typeof dev.bankPlaced!=='boolean')fail();
+                if(!spec||typeof dev.id!=='string'||ids.has(dev.id)||dev.name!==spec.name||![0,1].includes(dev.payer)||dev.cost!==spec.cost||dev.value!==spec.value||dev.income!==developmentIncome(spec,c)||dev.payments!==spec.payments||!Array.isArray(dev.cells)||typeof dev.placed!=='boolean'||typeof dev.bankPlaced!=='boolean')fail();
                 ids.add(dev.id);
                 if(!dev.placed){if(dev.cells.length||dev.bankPlaced)fail();continue;}
                 const expectedLen=dev.type==='quarry'?2:3;
@@ -15344,9 +15358,11 @@ const LEGACY = (() => {
         if(c.current.provisional){const expectedPreview=previewSettlement({baseline:c.current.baseline,built:c.current.built,invested:c.current.invested,outcome:s.outcome,chosenPlotId:s.chosenPlotId,choiceActor:s.choiceActor,cutterIdx:s.cutterIdx,chooserIdx:s.chooserIdx});if(!expectedPreview||Object.keys(expectedPreview).some(key=>Array.isArray(expectedPreview[key])?expectedPreview[key].some((x,i)=>x!==c.current.provisional[key][i]):!close(expectedPreview[key],c.current.provisional[key])))fail();}
         if(!Array.isArray(c.current.investmentOrder)||[...c.current.investmentOrder].sort().join(',')!=='0,1'||c.current.investmentTurn!==c.current.investmentOrder[c.current.investmentStep])fail();
         if(c.current.investmentTiming==='postbuild'){if(c.current.investmentOpened&&s.pool.length)fail();if(!c.current.investmentOpened&&(c.current.investmentComplete||c.current.invested!==0||c.current.purchasedAssets.length||c.current.developments.length))fail();}
-        if(s.phase!==PHASE.BUILD&&!c.current.awaitingFinalRoles&&(!c.current.investmentOpened||!c.current.investmentComplete))fail();
-        if(s.phase!==PHASE.BUILD&&!c.current.investmentComplete&&!c.current.awaitingFinalRoles)fail();
-        if(s.phase!==PHASE.BUILD&&!c.current.awaitingFinalRoles&&(c.current.purchasedAssets.some(item=>!item.placed)||s.pool.length))fail();
+        // Estate 1 opens with terrain shaping before Build; a save made then has no investment yet.
+        const beforeDivision=s.phase===PHASE.BUILD||s.phase===PHASE.TERRAIN;
+        if(!beforeDivision&&!c.current.awaitingFinalRoles&&(!c.current.investmentOpened||!c.current.investmentComplete))fail();
+        if(!beforeDivision&&!c.current.investmentComplete&&!c.current.awaitingFinalRoles)fail();
+        if(!beforeDivision&&!c.current.awaitingFinalRoles&&(c.current.purchasedAssets.some(item=>!item.placed)||s.pool.length))fail();
         if(c.current.built!==null){const expectedBuilt=calculateBuiltValue({grid:s.grid,terrain:s.terrain,estateMask:s.estateMask,betterTogether:s.settings.betterTogether,developments:c.current.developments});if(!close(c.current.built,expectedBuilt))fail();}
         if(c.current.provisionalHoldings!==null&&JSON.stringify(c.current.provisionalHoldings)!==JSON.stringify(holdingsForState(s,c.current.developments)))fail();
         return data;

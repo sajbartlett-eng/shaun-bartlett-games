@@ -27,6 +27,7 @@ const RUNS = Number(args.runs || 20);
 const SEED = Number(args.seed || 1);
 const OUT = path.resolve(args.out || path.join(__dirname, 'results'));
 const GAME_FILE = path.resolve(args.game || path.join(__dirname, '..', '..', 'Inheritance.html'));
+const YEARS = Number(args.years || 5);   // years between estates; 5 reproduces the campaign's original payments
 fs.mkdirSync(OUT, { recursive: true });
 
 // A sibling policy: how they build, invest, cut, choose, and which role they want.
@@ -35,7 +36,13 @@ fs.mkdirSync(OUT, { recursive: true });
 //   cut:     fairProperty | fairWealth | random   (straight fences; wealth counts holdings' payments)
 //   choose:  greedy | aware | closer | random     (closer: takes the smaller plot when it costs 2 or less)
 //   role:    cutter | chooser | random
-const P = (build, invest, cut, choose, role = 'random') => ({ build, invest, cut, choose, role });
+//   steward: a wealth lead (Property plus Capital) at or above which the sibling deliberately loses the
+//            estate to keep the family in check: as cutter, the most lopsided straight fence; as chooser,
+//            the plot worth less across the Legacy. Below the lead they play their normal policy.
+//   measured: with steward set, concede by about the size of the lead instead of the whole estate: as
+//            cutter, the straight fence whose long-term gap is closest to the lead; as chooser, the smaller
+//            plot only when the loss does not exceed the lead.
+const P = (build, invest, cut, choose, role = 'random', steward = null, measured = false) => ({ build, invest, cut, choose, role, steward, measured });
 const PROFILES = {
   greedy:   { a: P('random', 'spender', 'fairProperty', 'greedy'), b: P('random', 'spender', 'fairProperty', 'greedy') },
   aware:    { a: P('cluster', 'builder', 'fairProperty', 'aware'), b: P('cluster', 'builder', 'fairProperty', 'aware') },
@@ -43,6 +50,15 @@ const PROFILES = {
   savers:   { a: P('cluster', 'saver', 'fairProperty', 'aware'), b: P('cluster', 'saver', 'fairProperty', 'aware') },
   closer:   { a: P('cluster', 'builder', 'fairWealth', 'closer'), b: P('cluster', 'builder', 'fairWealth', 'closer') },
   chaos:    { a: P('random', 'developer', 'random', 'random'), b: P('random', 'developer', 'random', 'random') },
+  // Keeping the family in check: both siblings concede the estate once ahead by the given lead.
+  steward10: { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10), b: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10) },
+  steward0:  { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 0), b: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 0) },
+  // One steward against one greedy sibling.
+  stewardVsGreedy: { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10), b: P('random', 'spender', 'fairProperty', 'greedy') },
+  // Measured stewards: concede by about the lead, not the whole estate.
+  measured10: { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10, true), b: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10, true) },
+  measured0:  { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 1, true), b: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 1, true) },
+  measuredVsGreedy: { a: P('cluster', 'builder', 'fairProperty', 'aware', 'random', 10, true), b: P('random', 'spender', 'fairProperty', 'greedy') },
 };
 const chosenProfiles = args.profile && args.profile !== 'all' ? String(args.profile).split(',') : Object.keys(PROFILES);
 
@@ -196,8 +212,12 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
       estateStart = { groupsBeforeCut: LEGACY.findProductiveGroups(GAME.activeCells(STATE.estateMask), STATE.grid).length, capitalBefore: c.players.map(p => p.capital), propertyBefore: c.players.map(p => p.property) };
       const me = policyOf(STATE.cutterIdx);
       const fences = COMPUTER.straightFences().map(f => { const split = GAME.validateCut(f.edges, STATE.estateMask); const a = plotValue(split.plotA, devs), b = plotValue(split.plotB, devs); return { ...f, wealthGap: Math.abs(a.total - b.total) }; });
+      const leadOf = idx => (c.players[idx].property + c.players[idx].capital) - (c.players[1 - idx].property + c.players[1 - idx].capital);
+      const conceding = me.steward !== null && me.steward !== undefined && leadOf(STATE.cutterIdx) >= me.steward;
       let fence = null;
-      if (me.cut === 'random') fence = pick(fences);
+      if (conceding && me.measured) { const lead = leadOf(STATE.cutterIdx); fence = fences.sort((x, y) => Math.abs(x.wealthGap - lead) - Math.abs(y.wealthGap - lead))[0]; estateStart.cutterConceded = true; }
+      else if (conceding) { fence = fences.sort((x, y) => y.wealthGap - x.wealthGap)[0]; estateStart.cutterConceded = true; }
+      else if (me.cut === 'random') fence = pick(fences);
       else if (me.cut === 'fairWealth') fence = fences.sort((x, y) => x.wealthGap - y.wealthGap || x.gap - y.gap)[0];
       else fence = fences.sort((x, y) => x.gap - y.gap || x.wealthGap - y.wealthGap)[0];
       const nodes = fence ? COMPUTER.nodePath(fence.edges) : null;
@@ -213,7 +233,11 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
       const longTermBetter = a.total === b.total ? null : (a.total > b.total ? 'A' : 'B');
       const bites = propertyBetter && longTermBetter && propertyBetter !== longTermBetter;
       let choice;
-      if (me.choose === 'random') choice = rng() < 0.5 ? 'A' : 'B';
+      const lead = (c.players[STATE.chooserIdx].property + c.players[STATE.chooserIdx].capital) - (c.players[1 - STATE.chooserIdx].property + c.players[1 - STATE.chooserIdx].capital);
+      const conceding = me.steward !== null && me.steward !== undefined && lead >= me.steward;
+      if (conceding && me.measured) { const smaller = a.total <= b.total ? 'A' : 'B'; const loss = Math.abs(a.total - b.total); choice = loss <= lead ? smaller : (longTermBetter || propertyBetter || 'A'); }
+      else if (conceding) choice = a.total <= b.total ? 'A' : 'B';
+      else if (me.choose === 'random') choice = rng() < 0.5 ? 'A' : 'B';
       else if (me.choose === 'aware') choice = longTermBetter || propertyBetter || 'A';
       else if (me.choose === 'closer') {
         // Takes the smaller plot when that costs 2 or less and the sibling is behind.
@@ -225,6 +249,7 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
       Object.assign(estateStart || (estateStart = {}), {
         plotA: a, plotB: b, propertyGapOfCut: Math.abs(a.property - b.property), bites: !!bites, biteMagnitude: bites ? Math.abs(a.total - b.total) : 0,
         propertyBetter, longTermBetter, choice, tookLongTermBetter: longTermBetter ? choice === longTermBetter : null, tookSmallerProperty: propertyBetter ? choice !== propertyBetter : false,
+        chooserConceded: conceding,
       });
       FLOW.completeChoice(choice);
       continue;
@@ -265,6 +290,7 @@ function summarise(profileName, runs) {
       chooserTookLongTermBetter: pct(decisions.filter(e => e.tookLongTermBetter === true).length, decisions.filter(e => e.tookLongTermBetter !== null).length),
       chooserTookSmallerProperty: pct(decisions.filter(e => e.tookSmallerProperty).length, decisions.length),
       meanPropertyGapOfCut: mean(decisions.map(e => e.propertyGapOfCut)),
+      estatesConceded: pct(estates.filter(e => e.cutterConceded || e.chooserConceded).length, estates.length),
     },
     income: { shareOfFinalWealth: mean(incomeShare), meanTotalPaidPerCampaign: mean(ok.map(r => r.history.reduce((s, h) => s + h.income, 0))), meanFutureIncome: mean(ok.map(r => r.finalResult.reduce((s, p) => s + p.futureIncome, 0))) },
     investment: { phases: investPhases.length, siblingSkippedForNoCapital: pct(skipped.filter(Boolean).length, skipped.length), purchasesPerCampaign: mean(ok.map(r => r.investPhases.reduce((s, p) => s + p.bought[0].length + p.bought[1].length, 0))), capitalSpentPerCampaign: mean(ok.map(r => r.totals.invested)) },
@@ -277,10 +303,10 @@ function summarise(profileName, runs) {
 function markdown(summaries) {
   const r1 = x => Math.round(x * 10) / 10;
   const lines = ['# Family Legacy simulator results', '', `${summaries.reduce((s, x) => s + x.completed, 0)} completed campaigns across ${summaries.length} profiles, played by the real game code with scripted siblings. Generated by tools/inheritance-legacy-sim/simulate_legacy.js.`, ''];
-  lines.push('| Profile | Runs | Lower-Property plot was better | Mean margin when it was | Choosers took long-term better | Took smaller plot | Income share of final wealth | Skipped invest turn (no Capital) | Holdings surviving the cut | Gap closed / steady / widened | Mean final gap | Sibling A wins |');
-  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|');
+  lines.push('| Profile | Runs | Lower-Property plot was better | Mean margin when it was | Choosers took long-term better | Took smaller plot | Income share of final wealth | Skipped invest turn (no Capital) | Holdings surviving the cut | Gap closed / steady / widened | Mean final gap | Sibling A wins | Estates conceded |');
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const s of summaries) {
-    lines.push(`| ${s.profile} | ${s.completed} | ${s.choice.lowerPropertyPlotWasBetter.pct}% of ${s.choice.decisions} | ${r1(s.choice.lowerPropertyPlotWasBetter.meanMargin)} (max ${s.choice.lowerPropertyPlotWasBetter.maxMargin}) | ${s.choice.chooserTookLongTermBetter}% | ${s.choice.chooserTookSmallerProperty}% | ${Math.round(s.income.shareOfFinalWealth * 100)}% | ${s.investment.siblingSkippedForNoCapital}% | ${s.holdings.survivalPct}% | ${s.gap.arcs.closed} / ${s.gap.arcs.steady} / ${s.gap.arcs.widened} | ${r1(s.gap.meanFinalWealthGap)} | ${s.wealth.siblingAWinsPct}% |`);
+    lines.push(`| ${s.profile} | ${s.completed} | ${s.choice.lowerPropertyPlotWasBetter.pct}% of ${s.choice.decisions} | ${r1(s.choice.lowerPropertyPlotWasBetter.meanMargin)} (max ${s.choice.lowerPropertyPlotWasBetter.maxMargin}) | ${s.choice.chooserTookLongTermBetter}% | ${s.choice.chooserTookSmallerProperty}% | ${Math.round(s.income.shareOfFinalWealth * 100)}% | ${s.investment.siblingSkippedForNoCapital}% | ${s.holdings.survivalPct}% | ${s.gap.arcs.closed} / ${s.gap.arcs.steady} / ${s.gap.arcs.widened} | ${r1(s.gap.meanFinalWealthGap)} | ${s.wealth.siblingAWinsPct}% | ${s.choice.estatesConceded}% |`);
   }
   lines.push('', '## Per profile', '');
   for (const s of summaries) {
@@ -299,7 +325,7 @@ function makeRngSrc() {
   page.on('dialog', d => d.accept());
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  await page.goto('file://' + GAME_FILE + '?legacy=open');
+  await page.goto('file://' + GAME_FILE + '?legacy=open&years=' + YEARS);
   await page.waitForTimeout(300);
   await page.evaluate(makeRngSrc());
   const all = [];
@@ -315,11 +341,12 @@ function makeRngSrc() {
       if ((i + 1) % 5 === 0 || i === RUNS - 1) console.log(`${name}: ${i + 1}/${RUNS} (${((Date.now() - t0) / 1000).toFixed(0)}s)${log.errors.length ? ' errors: ' + log.errors.join('; ') : ''}`);
     }
     all.push(...runs);
-    summaries.push(summarise(name, runs));
+    summaries.push(summarise(YEARS === 5 ? name : `${name} @ ${YEARS}y`, runs));
   }
-  fs.writeFileSync(path.join(OUT, 'runs.json'), JSON.stringify(all));
-  fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify(summaries, null, 1));
-  fs.writeFileSync(path.join(OUT, 'RESULTS.md'), markdown(summaries));
+  const tag = YEARS === 5 ? '' : `-${YEARS}y`;
+  fs.writeFileSync(path.join(OUT, `runs${tag}.json`), JSON.stringify(all));
+  fs.writeFileSync(path.join(OUT, `summary${tag}.json`), JSON.stringify(summaries, null, 1));
+  fs.writeFileSync(path.join(OUT, `RESULTS${tag}.md`), markdown(summaries));
   console.log(markdown(summaries).split('\n').slice(0, 6 + summaries.length).join('\n'));
   if (errors.length) console.log('page errors:', errors.slice(0, 5));
   await browser.close();
