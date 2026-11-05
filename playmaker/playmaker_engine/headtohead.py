@@ -59,6 +59,7 @@ def play_one(o_level, x_level, spec, seed, overrides=None, budget_s=None, record
     s = start_state(spec)
     jobs = {}
     react = dict(shots=0, no_tokens=0, no_change=0, clean=0, foul=0, none=0)
+    shot = None                              # the offence's shot: clock when declared, contestable or not
     moved = {}
     t0 = time.time()
     for _ in range(300):
@@ -91,12 +92,15 @@ def play_one(o_level, x_level, spec, seed, overrides=None, budget_s=None, record
                     later = reachable_contest(nxt)
                     if (now[0]['value'] if now else None) == (later[0]['value'] if later else None):
                         react['no_change'] += 1
+        if shot is None and s.stage == 'play' and s.side == 'O' and not isinstance(nxt, ChanceNode) \
+                and nxt.stage in ('reaction', 'contest') and nxt.shot:
+            shot = dict(clock=nxt.clock, contested=bool(reachable_contest(nxt, nxt.ball, nxt.shot)))
         s = nxt
     st = pols['X'].stats
     return dict(o=o_level, x=x_level, spec=spec, seed=seed, points=float(score(s).total) if s.stage == 'over' else None,
                 jobs=jobs, react=react, comfort=st['comfort_decided'], x_decisions=st['decisions'],
                 think_max=max(max(p.stats['seconds'] or [0]) for p in pols.values()),
-                habits={k: p.habits for k, p in pols.items()}, wall=round(time.time() - t0, 2))
+                habits={k: p.habits for k, p in pols.items()}, shot=shot, wall=round(time.time() - t0, 2))
 
 
 def _job(args):
@@ -159,4 +163,26 @@ def reaction_summary(rows, o_level='allstar'):
         d['x_decisions'] += r['x_decisions']
         for k, v in r['jobs'].items():
             d['jobs'][k] = d['jobs'].get(k, 0) + v
+    return out
+
+
+def shot_summary(rows):
+    """Per offence level: shots declared, the share at the first phase (clock 12), the share contested,
+    and the mean clock when the shot went up."""
+    out = {}
+    for r in rows:
+        d = out.setdefault(r['o'], dict(n=0, shots=0, first=0, contested=0, first_contested=0, clock=0))
+        d['n'] += 1
+        sh = r.get('shot')
+        if not sh:
+            continue
+        d['shots'] += 1
+        d['clock'] += sh['clock']
+        d['first'] += sh['clock'] >= 12
+        d['contested'] += sh['contested']
+        d['first_contested'] += sh['clock'] >= 12 and sh['contested']
+    for d in out.values():
+        k = max(1, d['shots'])
+        d.update(first=round(d['first'] / k, 2), contested=round(d['contested'] / k, 2),
+                 first_contested=round(d['first_contested'] / k, 2), clock=round(d['clock'] / k, 1))
     return out

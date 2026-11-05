@@ -604,7 +604,7 @@ class Computer(Policy):
         if self._late():
             fn = self._immediate
         stop = self._stop()
-        scored = []
+        scored, raw = [], {}
         for p in plays:
             if stop is not None and scored and time.time() > stop:
                 break
@@ -612,6 +612,7 @@ class Computer(Policy):
             if node is None:
                 continue
             v = self._node_value(node, fn)
+            raw[p] = v                                    # the bar reads the shot's value, not the plan bonus
             if c.get('plan', True) or 'star_only' in self.habits:
                 v += self._plan_bonus(view, node)
             scored.append((v, p))
@@ -619,46 +620,59 @@ class Computer(Policy):
             return None
         shots = [(v, p) for v, p in scored if any(a.kind == 'shot' for a in p.actions)]
         rest = [(v, p) for v, p in scored if not any(a.kind == 'shot' for a in p.actions)]
-        if 'settles_for_first_shot' in self.habits:
-            ok = [vp for vp in shots if vp[0] >= self.cfg.get('settle_threshold', LEVELS['offence']['settle_threshold'])]
-            if ok:
-                self._fire('settles_for_first_shot')
-                return ok[0][1]
         best = self._pick(scored, True)
-        if best is not None and shots and rest and not any(a.kind == 'shot' for a in best.actions):
-            # 7.3: shoot when the shot (valued after the reaction) is worth at least what continuing is
-            # estimated to be worth: a tie goes to the shot, as continuing's value is only an estimate
-            sv, sp = max(shots, key=lambda vp: vp[0])
-            cv = max(v for v, p in rest)
-            if sv >= cv - 1e-9 and self._patient(view, sp, sv):
-                best = sp
-        if best is not None and any(a.kind == 'shot' for a in best.actions) and rest:
-            sv = max(v for v, p in shots)
-            if not self._patient(view, best, sv):
-                best = self._pick(rest, True)
-        elif best is not None and shots and c.get('patience', True) is False and self.cfg['patience']['mode'] == 'settle':
-            sv, sp = max(shots, key=lambda vp: vp[0])
-            if sv >= self._curve(view):
-                best = sp
+        if best is None or not shots or not rest:
+            self._plan_type(best)
+            return best
+        # 7.3 with a bar: a shot goes up only when it clears the level's bar for the time left (higher for
+        # a look a defender can still contest than for an open one) and is worth at least what continuing
+        # is estimated to be worth (a tie goes to the shot). The bars drop each phase, so a defence that
+        # keeps the good looks covered forces a lesser one late. On the last chance there is no bar.
+        last = self._last_chance(view)
+        is_shot = lambda p: any(a.kind == 'shot' for a in p.actions)
+        cleared = [(v, p) for v, p in shots if last or raw[p] >= self._bar(view, self._contested(view, p))]
+        cv = max(v for v, p in rest)
+        if cleared and max(v for v, p in cleared) >= cv - 1e-9:
+            sv, sp = max(cleared, key=lambda vp: vp[0])
+            if not last and 'settles_early' in self.habits and raw[sp] < self._bar(view, self._contested(view, sp), early=False):
+                self._fire('settles_early')
+            best = sp
+        elif is_shot(best):
+            best = self._pick(rest, True)
         self._plan_type(best)
         return best
 
-    def _curve(self, view):
-        curve = {int(k): v for k, v in self.cfg['patience']['curve'].items()}
-        clocks = sorted(curve)
-        below = [k for k in clocks if k <= view.clock]
-        return curve[below[-1]] if below else curve[clocks[0]]
+    def _contested(self, view, play):
+        """Could a defender still contest this shot after the reaction (as this level reads the reaction)?"""
+        from .solver import apply_play
+        node = apply_play(view, play)
+        if node is None or isinstance(node, ChanceNode) or node.stage not in ('reaction', 'contest') or not node.shot:
+            return False
+        budget = reaction_budget(node) if node.stage == 'reaction' and self.cfg['concepts'].get('reaction', True) else 0
+        return any(e['contest'] > 0 for e in reachable_contest(node, node.ball, node.shot, budget))
+
+    def _chances(self, view):
+        """Clock left in seconds (a phase is two; its tokens reset each phase)."""
+        return view.clock
+
+    def _last_chance(self, view):
+        return self._chances(view) <= RC.PHASE_SECONDS
+
+    def _bar(self, view, contested, early=True):
+        """The shot bar for the time left: 'open' for a look nobody can contest, 'contested' otherwise.
+        The habit settles_early reads the bar one phase ahead."""
+        t = self._chances(view)
+        if early and 'settles_early' in self.habits and t > RC.PHASE_SECONDS:
+            t -= RC.PHASE_SECONDS
+        curve = {int(k): v for k, v in self.cfg['patience']['contested' if contested else 'open'].items()}
+        below = [k for k in sorted(curve) if k <= t]
+        return curve[below[-1]] if below else 0
 
     def _patient(self, view, play, shot_value):
-        """Shoot only above the patience curve while there's clock and tokens to keep building; at the
-        last phase take the best shot rather than let the clock run out."""
-        if not any(a.kind == 'shot' for a in play.actions):
+        """For the solver-search path: the shot clears the bar, or it's the last chance."""
+        if not any(a.kind == 'shot' for a in play.actions) or shot_value is None or self._last_chance(view):
             return True
-        if view.clock <= RC.PHASE_SECONDS or view.tok_o <= 1:
-            return True
-        if shot_value is None:
-            return True
-        return shot_value >= self._curve(view)
+        return shot_value >= self._bar(view, self._contested(view, play))
 
     def _plan_type(self, play):
         if play is None or not self.plan:

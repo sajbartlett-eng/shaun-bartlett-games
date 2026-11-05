@@ -67,7 +67,7 @@
         "concepts": {
           "reaction_shot": true,
           "plan": true,
-          "patience": false,
+          "patience": true,
           "drain": false,
           "risk": true,
           "lookahead": true
@@ -78,15 +78,23 @@
         "lookahead": 1,
         "randomness": 0.03,
         "patience": {
-          "mode": "settle",
-          "curve": {
-            "12": 18,
-            "8": 16,
-            "4": 12,
+          "open": {
+            "12": 24,
+            "10": 22,
+            "8": 20,
+            "6": 17,
+            "4": 15,
+            "2": 0
+          },
+          "contested": {
+            "12": 33,
+            "10": 30,
+            "8": 26,
+            "6": 21,
+            "4": 17,
             "2": 0
           }
-        },
-        "settle_threshold": 18
+        }
       },
       "starter": {
         "concepts": {
@@ -103,11 +111,20 @@
         "lookahead": 1,
         "randomness": 0.0,
         "patience": {
-          "mode": "compare",
-          "curve": {
-            "12": 14,
-            "8": 12,
-            "4": 10,
+          "open": {
+            "12": 27,
+            "10": 25,
+            "8": 22,
+            "6": 19,
+            "4": 16,
+            "2": 0
+          },
+          "contested": {
+            "12": 36,
+            "10": 32,
+            "8": 27,
+            "6": 22,
+            "4": 17,
             "2": 0
           }
         }
@@ -127,24 +144,33 @@
         "lookahead": 1,
         "randomness": 0.0,
         "patience": {
-          "mode": "lookahead",
-          "curve": {
-            "12": 10,
-            "8": 8,
-            "4": 6,
+          "open": {
+            "12": 27,
+            "10": 25,
+            "8": 22,
+            "6": 19,
+            "4": 16,
+            "2": 0
+          },
+          "contested": {
+            "12": 36,
+            "10": 32,
+            "8": 27,
+            "6": 22,
+            "4": 17,
             "2": 0
           }
         }
       }
     },
     "habits": [
-      "settles_for_first_shot",
+      "settles_early",
       "never_screens",
       "ignores_mismatch",
       "star_only"
     ],
-    "settle_threshold": 12,
-    "plan_weight": 1.5
+    "plan_weight": 1.5,
+    "_patience_about": "Shot bars by the clock (seconds left; a phase is two). A shot goes up only when its value, after the reaction, clears the bar and is worth at least what continuing is estimated to be worth. 'contested': a defender can still contest it; 'open': nobody can. The bars drop each phase; at the last chance there is no bar."
   },
   "budget_s": {
     "server": 1.0,
@@ -171,6 +197,7 @@
     "never_leaves_shooter": "never left a ▲ three-point shooter, even when the look was poor",
     "ball_watcher": "turned every help defender's arrow to the ball",
     "jumps_first_pass": "tried to intercept every pass it could",
+    "settles_early": "lowered its shot bar a phase early, taking looks it could have waited on",
     "settles_for_first_shot": "took the first look above a low bar",
     "never_screens": "never set a screen",
     "ignores_mismatch": "passed by position order, not by matchup",

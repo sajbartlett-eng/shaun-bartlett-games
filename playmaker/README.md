@@ -186,7 +186,10 @@ solver results; every choice is worked out at the table from what is in front of
   line). That's "let them shoot it": a ▼ shooter left open is a choice, not a lapse.
 - **The offence picks two targets** (its biggest ▲ edges, the secret target on a Coach's Call card,
   threes only on Need a Three). It builds toward them, re-plans when the defence takes the target away,
-  and shoots when the look beats what continuing is worth. A patience curve stops obviously early shots.
+  and shoots only when the look clears its **shot bar** and beats what continuing is worth. The bar is
+  set by the clock and is higher for a look a defender can still contest than for an open one, so the
+  offence works for an open, high-value shot first. It drops each phase: a defence that keeps the good
+  looks covered forces a lesser one late. On the last phase there is no bar.
 - **Setup:** man-to-man by number, unless a switch puts the best on-ball defender on the most explosive
   creator, or the best three-point contester on the ▲ shooter, and the evaluation says it's worth it.
   The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
@@ -197,17 +200,18 @@ solver results; every choice is worked out at the table from what is in front of
 | | Rookie | Starter | All-Star |
 |---|---|---|---|
 | Defence concepts | the reaction only | all | all |
-| Offence concepts | reaction-aware shot value, risk, lookahead, plan | all | all |
+| Offence concepts | all but draining the reaction | all | all |
 | Habits (drawn per game, named in the review) | defence 2, offence 1 | 1 | none |
 | Tunnel vision (defence) | the 2 attackers nearest the ball | 4 | all 5 |
 | Reads the cards by | defence: position (`role`); offence: the numbers | defence: ▲ / plain / ▼ (`marks`); offence: the numbers | the numbers (`exact`) |
 | Comfort line | 15 + 6 | 15 + 3 | 15 |
 | Looks ahead | defence: the shot on the board now; offence: the defence's reply | the offence's next turn / the defence's reply | the same, with no handicaps |
-| Shot patience | settles for a look of 18 / 16 / 12 (clock 12 / 8 / 4) | waits for 14 / 12 / 10 unless continuing is worth more | the lookahead decides |
+| Shot bar, open look (clock 12 / 10 / 8 / 6 / 4) | 24 / 22 / 20 / 17 / 15 | 27 / 25 / 22 / 19 / 16 | as Starter |
+| Shot bar, contested look | 33 / 30 / 26 / 21 / 17 | 36 / 32 / 27 / 22 / 17 | as Starter |
 | Second-best choice | defence 15%, offence 3% | defence 5%, offence never | never |
 
 Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
-the first pass. Offence habits: settles for the first shot, never screens, ignores the mismatch (passes by
+the first pass. Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
 position order), star only. A habit overrides the choice every time it applies, so it can be scouted and
 beaten. After the game, **About the computer** in the review names the level, the habits drawn, the
 concepts switched off, and the offence's targets and plan. It never appears during play.
@@ -262,6 +266,24 @@ reaction. The settings changed, and why:
   and All-Star passed up the golden position's 27-point line.
 - Unchanged: the Rookie defence preset, the Starter defence's reading, tunnel and habit, the comfort
   line, every habit's behaviour.
+
+**Shot bars (after playtest log 3A9C33).** A Starter v Starter game had both offences pass once and
+shoot a contested three in the first phase. The old rule shot whenever a look beat a low bar (14 at
+Starter, 12 with "settles for the first shot") and the one-turn estimate of continuing, which
+undervalues waiting. Now each level has a bar by clock, higher for a contested look, dropping each
+phase (table above), and the plan bonus no longer counts toward it. "Settles for the first shot"
+became "settles early": the same bars, read one phase ahead. Re-measured on 36 starts x 3 seeds, each
+offence level against the Starter and All-Star defences (648 possessions a run):
+
+| Offence | Points v Starter D, before → after | Points v All-Star D, before → after | Shots in the first phase | Contested shots in the first phase |
+|---|---|---|---|---|
+| Rookie | 21.5 → 25.2 | 20.3 → 24.4 | 55% → 25% | 34% → 1% |
+| Starter | 22.6 → 27.1 | 22.3 → 27.0 | 51% → 25% | 36% → 6% |
+| All-Star | 26.4 → 29.0 | 26.3 → 28.5 | 49% → 28% | 15% → 9% |
+
+(Intervals about ± 1.7. Shares are of all shots.) Waiting pays at every level. Against the All-Star
+defence, paired: Starter offence −1.2 ± 1.3 against All-Star (target −2), Rookie −3.8 ± 1.9 (target −4).
+The defence levels' concessions in the table further up were measured against the old offence.
 
 **Against the All-Star offence** (from the same matrix):
 

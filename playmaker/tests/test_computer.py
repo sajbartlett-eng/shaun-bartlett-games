@@ -204,6 +204,40 @@ def test_patience_and_the_last_phase():
     assert c._patient(late, shot, 9.0)                        # the last phase: take the best shot there is
 
 
+def _log_3a9c33():
+    """Playtest log 3A9C33, possession 1: O1 passes to O2 at clock 12 and the defence pauses. O2's three
+    is worth 27 with X4's clean contest; the old Starter took it at once."""
+    from playmaker_engine.resolve import force
+    s = game_state('Five Out', 'High-Low', ['I11', 'C9', 'O9', 'A3', 'Q3'], ['J10', 'D8', 'O8', 'B4', 'P2'],
+                   ['NW', 'NW', 'N', 'SW', 'NE'])
+    s = force(apply(s, Action('pass', 'O', 0, target=1)), 'success')
+    return apply(s, next(a for a in legal_actions(s) if a.kind == 'pause'))
+
+
+@pytest.mark.parametrize('lv', C.LEVEL_NAMES)
+def test_no_contested_jumper_off_the_first_pass(lv):
+    s = _log_3a9c33()
+    assert s.clock == 12 and s.side == 'O' and s.ball == 1
+    for habits in ([], ['settles_early']):
+        c = C.Computer('O', lv, seed=1, budget_s=None, habits=habits, overrides={'randomness': 0.0})
+        assert c.choose(s).kind != 'shot', (lv, habits)
+
+
+def test_shot_bars_prefer_open_looks_and_drop_each_phase():
+    from playmaker_engine.solver import Play
+    s = _log_3a9c33()
+    for lv in C.LEVEL_NAMES:
+        c = C.Computer('O', lv, seed=1, habits=[])
+        c._context(s)
+        bars = [(c._bar(s.with_(clock=t), False), c._bar(s.with_(clock=t), True)) for t in (12, 10, 8, 6, 4, 2)]
+        assert all(o < x for o, x in bars[:-1]) and bars[-1] == (0, 0), (lv, bars)     # contested needs more
+        assert all(a >= b for a, b in zip(bars, bars[1:])), (lv, bars)                # and the bar only drops
+        assert c._contested(s, Play('shoot', (Action('shot', 'O', 1, shot='three'),)))  # X4 can contest O2
+    early = C.Computer('O', 'starter', seed=1, habits=['settles_early'])
+    early._context(s)
+    assert early._bar(s, True) == c._bar(s.with_(clock=10), True)                   # a phase ahead
+
+
 def test_risk_a_pass_through_a_reachable_lane_is_worth_less():
     from playmaker_engine.solver import Play
     c = C.Computer('O', 'starter', seed=1, budget_s=None, habits=[])
