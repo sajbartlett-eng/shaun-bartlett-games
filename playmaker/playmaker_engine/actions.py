@@ -141,6 +141,8 @@ def can_move_kind(state, side, i, kind):
     if kind in ('qs', 'sprint'):
         if state.count(side, 'qs') >= RC.LIMITS[side]['qs']:
             return False
+        if rules.qs_once_per_player and state.quick_stepped(side, i):
+            return False                    # OQ-52: that player's Quick Step is used (a Sprint uses it too)
     return True
 
 

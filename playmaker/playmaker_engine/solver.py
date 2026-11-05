@@ -119,6 +119,11 @@ def defender_reach(s, d, budget):
     for sc in s.screens:
         scr.append((t_square(s, sc), bool(sc[3] >> d & 1)))
     qs_left = RC.LIMITS['X']['qs'] - s.count('X', 'qs')
+    once = rules.qs_once_per_player
+    if once and s.quick_stepped('X', d):
+        qs_left = 0                          # OQ-52: this defender's Quick Step is used (no Quick Step, no Sprint)
+    if once:
+        qs_left = min(qs_left, 1)            # one Quick Step per player: never two, nor a Quick Step and a Sprint
     can_move = not s.moved('X', d) and not s.locked('X', d)
     two = budget >= 2 and s.tok_x >= 2
     on_board, banned = B.on_board, B.diag_step_banned

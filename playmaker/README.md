@@ -215,6 +215,10 @@ concepts switched off, and the offence's targets and plan. It never appears duri
 **Thinking time:** at most 1 second a decision on the server and 0.45 seconds in the link version,
 the best choice found so far being used when time is up.
 
+*All figures in this section were measured before OQ-52 (one Quick Step per player per phase, a Sprint uses it).
+After it, the board-reading defence keeps more arrows on the ball (52% against 34%): a reaction can no
+longer Quick Step and Sprint the same defender, so the arrow's facing matters more.*
+
 **Calibration: head-to-head.** Each offence level played each defence level on the 16 scenario cards
 and 20 random prescribed-team possessions, 3 seeds each (972 possessions, 22 minutes on two cores at
 play speed). A possession is scored as the game scores it (shot quality, bonuses, turnovers). Mean

@@ -4,6 +4,7 @@ The solver's values are estimates from a short search, so a gap is "where the so
 not a mistake.
 """
 import json
+import re
 
 from .actions import Action
 from .resolve import apply, ChanceNode, force
@@ -32,6 +33,14 @@ def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, b
     return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball)
 
 
+def _same(state, logged):
+    """A replayed state matches its log entry (logs written before OQ-52 have no per-player Quick Step part)."""
+    enc = state.encode()
+    if enc == logged:
+        return True
+    return '|q' not in logged and re.sub(r'\|q[0-9a-f]{4}', '', enc) == logged
+
+
 def register_custom(setup):
     """Custom lineups named in a log's setup record (step 3d), so the log replays anywhere."""
     from .cards import register_team
@@ -58,7 +67,7 @@ def replay(records, on_decision=None):
                 placed_o = (r['squares'], r['ball'])
             else:
                 state = _start(setup, possession, placed_o[0], r['squares'], r['arrows'], placed_o[1])
-                if r.get('start') and state.encode() != r['start']:
+                if r.get('start') and not _same(state, r['start']):
                     raise ValueError('placement replay diverged')
         elif r['type'] == 'possession':
             finals.append((possession, state))
@@ -67,7 +76,7 @@ def replay(records, on_decision=None):
             undo = []
         elif r['type'] == 'undo':
             state = undo.pop()
-            if state.encode() != r['state']:
+            if not _same(state, r['state']):
                 raise ValueError('undo replay diverged')
         elif r['type'] == 'timer' and r.get('event') == 'forfeit':
             from .timer import timer_forfeit
@@ -79,7 +88,7 @@ def replay(records, on_decision=None):
             state = node
             undo = []
             i = j - 1
-            if state.encode() != r['after']:
+            if not _same(state, r['after']):
                 raise ValueError(f'timer forfeit replay diverged: {state.encode()} != {r["after"]}')
         elif r['type'] == 'action':
             a = _action(r['action'])
@@ -97,7 +106,7 @@ def replay(records, on_decision=None):
             undo = [] if rolled else undo + [before]
             state = node
             i = j - 1
-            if state.encode() != r['after']:
+            if not _same(state, r['after']):
                 raise ValueError(f'replay diverged after {a}: {state.encode()} != {r["after"]}')
         i += 1
     finals.append((possession, state))

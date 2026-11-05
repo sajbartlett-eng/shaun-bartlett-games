@@ -1,4 +1,5 @@
 """Board and movement: shapes, blocking, Quick Step, Sprint, locks, arrow lines, screens."""
+import pytest
 from conftest import mk, P, dests
 
 from playmaker_engine import board as B
@@ -190,3 +191,110 @@ def test_post_seal_move_then_screen_same_turn():
     assert s.side == 'O'
     s = apply(s, Action('screen', 'O', 1, target=4))     # T on the defender at I6
     assert s.side == 'X' and B.add(s.o[1], B.DIRS[4]) == s.x[1]
+
+
+# ---- OQ-52 (ruled): one Quick Step per player per phase; a Sprint uses it -------------------------
+
+def _first(s, **kw):
+    from playmaker_engine.actions import legal_actions
+    return next(a for a in legal_actions(s) if all(getattr(a, k) == v for k, v in kw.items()))
+
+
+def _has(s, **kw):
+    from playmaker_engine.actions import legal_actions
+    return any(all(getattr(a, k) == v for k, v in kw.items()) for a in legal_actions(s))
+
+
+def test_no_sprint_after_a_quick_step_and_no_quick_step_after_a_sprint():
+    from playmaker_engine.scenarios import scenario_state
+    from playmaker_engine.resolve import apply
+    s = scenario_state(6)
+    t = apply(s, _first(s, kind='qs', piece=1))
+    assert not _has(t, kind='sprint', piece=1) and not _has(t, kind='qs', piece=1)
+    assert _has(t, kind='move', piece=1)                     # Quick Step then Move: still fine
+    assert _has(t, kind='qs', piece=2)                        # another player's Quick Step: fine
+    u = apply(s, _first(s, kind='sprint', piece=1))
+    assert not _has(u, kind='qs', piece=1) and not _has(u, kind='move', piece=1)
+    m = apply(s, _first(s, kind='move', piece=1))
+    assert _has(m, kind='qs', piece=1) and not _has(m, kind='sprint', piece=1)   # Move then Quick Step: fine
+
+
+def test_the_side_limit_of_two_still_applies_and_the_phase_reset_clears_it():
+    from playmaker_engine.scenarios import scenario_state
+    from playmaker_engine.resolve import apply, new_phase
+    s = scenario_state(6)
+    s = apply(s, _first(s, kind='qs', piece=1))
+    s = apply(s, _first(s, kind='qs', piece=2))
+    if s.side == 'O':
+        assert not _has(s, kind='qs') and not _has(s, kind='sprint')
+    r = new_phase(s, 4)
+    assert r.qs_o == 0 and r.qs_x == 0
+
+
+def test_the_defence_follows_the_same_rule_in_play_and_in_the_reaction():
+    from playmaker_engine.scenarios import scenario_state
+    from playmaker_engine.resolve import apply
+    s = scenario_state(6)
+    s = apply(s, _first(s, kind='hesitate'))
+    assert s.side == 'X'
+    t = apply(s, _first(s, kind='qs', side='X', piece=0))
+    if t.side == 'X':
+        assert not _has(t, kind='sprint', piece=0) and not _has(t, kind='qs', piece=0)
+    # reaction to a declared shot
+    s = scenario_state(6)
+    s = apply(s, _first(s, kind='move', piece=0, dest=(9, 10)))
+    s = apply(s, _first(s, kind='shot'))
+    assert s.stage == 'reaction'
+    qs = [a for a in __import__('playmaker_engine.actions', fromlist=['legal_actions']).legal_actions(s) if a.kind == 'qs']
+    if qs:
+        t = apply(s, qs[0])
+        if t.stage == 'reaction':
+            assert not _has(t, kind='sprint', piece=qs[0].piece) and not _has(t, kind='qs', piece=qs[0].piece)
+
+
+def _phase_moves_ok(log):
+    """In every phase each player Quick Steps or Sprints at most once, and at most 2 per side."""
+    used = {}
+    for before, a, after in log:
+        if before.phase != getattr(after, 'phase', before.phase):
+            pass
+        if a.kind in ('qs', 'sprint'):
+            key = (before.phase, a.side)
+            used.setdefault(key, []).append(a.piece)
+    return all(len(v) == len(set(v)) and len(v) <= 2 for v in used.values()), used
+
+
+@pytest.mark.parametrize('who', ['random', 'greedy', 'rookie', 'starter', 'allstar'])
+def test_every_player_type_follows_the_movement_rules(who):
+    from playmaker_engine.scenarios import scenario_state, SCENARIOS
+    from playmaker_engine.policies import play, RandomPolicy, GreedyPolicy
+    from playmaker_engine.computer import Computer
+    cards = sorted(SCENARIOS) if who in ('random', 'greedy') else [1, 6, 7, 13]
+    for n in cards:
+        for seed in (1, 2) if who in ('random', 'greedy') else (1,):
+            if who == 'random':
+                o, x = RandomPolicy(seed), RandomPolicy(seed + 1)
+            elif who == 'greedy':
+                o, x = GreedyPolicy(), GreedyPolicy()
+            else:
+                o, x = Computer('O', who, seed=seed, budget_s=0.3), Computer('X', who, seed=seed, budget_s=0.3)
+            log = []
+            play(scenario_state(n), o, x, seed=seed, check=lambda b, a, s: log.append((b, a, s)))
+            ok, used = _phase_moves_ok(log)
+            assert ok, (who, n, used)
+
+
+def test_the_solver_reach_never_uses_two_quick_steps_for_one_defender():
+    from playmaker_engine.scenarios import scenario_state
+    from playmaker_engine.solver import defender_reach
+    for n in (6, 7, 13, 15):
+        s = scenario_state(n)
+        for d in range(5):
+            free, fixed = defender_reach(s, d, 2)
+            seqs = list(free.values()) + [q for v in fixed.values() for q in v.values()]
+            assert all(sum(k in ('qs', 'sprint') for k, _ in seq) <= 1 for seq in seqs), (n, d)
+        used = s.with_(qs_x=0b11111)
+        for d in range(5):
+            free, fixed = defender_reach(used, d, 2)
+            seqs = list(free.values()) + [q for v in fixed.values() for q in v.values()]
+            assert all(not any(k in ('qs', 'sprint') for k, _ in seq) for seq in seqs)
