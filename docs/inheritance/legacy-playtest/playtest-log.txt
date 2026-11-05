@@ -1,0 +1,1852 @@
+
+==== [01-r0-setup-legacyOverlay.png] phase=setup overlay=legacyOverlay 
+HUD: Name the siblings, then start
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Across six estates, inherited Property carries forward. Connected productive holdings can also pay Capital, which you may keep or invest in later estates.
+Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. The ending records individual distinctions alongside the family’s gains and setbacks.
+Start a new Legacy
+Income and investment rules
+Load Legacy file
+Back
+BUTTONS: [new] Start a new Legacy | [rules] Income and investment rules | [load] Load Legacy file | [close] Back
+
+==== [02-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Water Any open square · Water 0 · same-plot waterfront +1 · untimed · 8 tiles left
+
+==== [03-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Water Any open square · Water 0 · same-plot waterfront +1 · untimed · 7 tiles left
+
+==== [04-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Road Boundary or beside Road · Road 0 · connected access +1 · untimed · 6 tiles left
+
+==== [05-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Road Boundary or beside Road · Road 0 · connected access +1 · untimed · 5 tiles left
+
+==== [06-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Water Any open square · Water 0 · same-plot waterfront +1 · untimed · 4 tiles left
+
+==== [07-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Water Any open square · Water 0 · same-plot waterfront +1 · untimed · 3 tiles left
+
+==== [08-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Road Boundary or beside Road · Road 0 · connected access +1 · untimed · 2 tiles left
+
+==== [09-r1-terrain-board.png] phase=terrain overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Road Boundary or beside Road · Road 0 · connected access +1 · untimed · 1 tile left
+
+==== [10-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Stables (+3) STILL TO PLACE ×1 Barn ×1 ×2 Well ×2 ×1 Orchard ×1 ×1 Beehive ×1 Tap an empty square to begin · 90s. Land is 1–3; water and road are 0; pieces add their value without replacing the land beneath them.
+
+==== [11-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Manor (+5) STILL TO PLACE ×1 Orchard ×1 ×2 Crops ×2 ×1 Workshop ×1 ×1 Mill ×1 Better Together: Community +1 beside Manor or Cottage · Wine estate +1 beside Vineyard · Estate garden +1 beside Garden. Different relationships stack. · 11 placements left
+
+==== [12-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Barn (+3) STILL TO PLACE ×2 Well ×2 ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 10 placements left
+
+==== [13-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Orchard (+2) STILL TO PLACE ×2 Crops ×2 ×1 Workshop ×1 ×1 Mill ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 9 placements left
+
+==== [14-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Well (+1) STILL TO PLACE ×1 Well ×1 ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Well has no neighbour bonus. · 8 placements left
+
+==== [15-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Crops (+2) STILL TO PLACE ×1 Workshop ×1 ×1 Mill ×1 ×1 Crops ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 7 placements left
+
+==== [16-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Well (+1) STILL TO PLACE ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Well has no neighbour bonus. · 6 placements left
+
+==== [17-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Workshop (+1) STILL TO PLACE ×1 Mill ×1 ×1 Crops ×1 Better Together: Workshop has no neighbour bonus. · 5 placements left
+
+==== [18-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Orchard (+2) STILL TO PLACE ×1 Beehive ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 4 placements left
+
+==== [19-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Mill (+3) STILL TO PLACE ×1 Crops ×1 Better Together: Milling +1 beside Crops. Different relationships stack. · 3 placements left
+
+==== [20-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada is placing Beehive (+1) STILL TO PLACE none Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 2 placements left
+
+==== [21-r1-build-board.png] phase=build overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Crops (+2) STILL TO PLACE none Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 1 placement left
+
+==== [22-r1-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Ben is placing Crops (+2) STILL TO PLACE none Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+The Country Estate is built
+Inspect estate economics
+This first estate is built. Productive groups that stay together after the cut can earn Capital for the sibling who inherits them. You have no Capital to spend yet, so this estate goes straight to the familiar cut and choice.
+Continue to the division
+Income and investment rules
+Save and leave
+BUTTONS: [beginFirstEstate] Continue to the division | [rules] Income and investment rules | [open] Save and leave
+
+==== [23-r1-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [24-r1-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ada won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [25-r1-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ada.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [26-r1-cut-board.png] phase=cut overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ada draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [27-r1-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ben.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+
+==== [28-r1-choose-board.png] phase=choose overlay=none round=1 status=playing capital=0,0 property=0,0
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+
+==== [29-r1-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ada inherits Plot A. Ben inherits Plot B.
+THE FENCE · 2 SQUARES LOST VALUE
+The fence is final. 2 squares lost value because of where it runs.
+Show what changed
+Skip to the result
+Family Legacy
+BUTTONS: #revealContinue Show what changed | #revealSkipBtn Skip to the result | [open] Family Legacy
+
+==== [30-r1-final-finalOverlay.png] phase=final overlay=finalOverlay round=1 status=playing capital=0,0 property=0,0
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ben chose Plot B
+36
+Ada inherited Plot A
+29
+7-point gap · 97% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 65 of 81 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 29
+Ben
+Property 36
+Investment in this estate
+Both siblings kept their Capital.
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Orchard, Barn · Working farm
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ben chose Plot B
+36
+Ada inherited Plot A
+29
+7-point gap · 97% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 65 of 81 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 29
+Ben
+Property 36
+Investment in this estate
+
+Both siblings kept their Capital.
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Orchard, Barn · Working farm
+Record inheritance
+Family Legacy
+
+==== [32-r1-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=1 status=between capital=0,1 property=29,36
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Estate 1 · The Country Estate
+The division
+Ada inherited Plot A
+29
+Ben inherited Plot B
+36
+Together inherited 65 Property. Optimistic ceiling: 81; some possible connections may conflict.
+What changed
+Ben · holdings paid
++1 Capital
+Ben · new holding: Working Farm
+1 Capital after each estate · 3 scheduled payments
+Ben · investment now available
+Beehive, Chicken Coop, Garden, Well, Workshop
+Campaign position
+Ada
+Property 29
+Capital 0
+Ben
+Property 36
+Capital 1
+Your first holding payment
+A new holding pays for the first time now, before the next estate begins.
+About Estate 2: The Family Home
+Begin estate 2
+Holdings and family history
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [next] Begin estate 2 |   | [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== [33-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Mill (+3) STILL TO PLACE ×1 Vineyard ×1 ×1 Orchard ×1 ×1 Cottage ×1 ×1 Chicken Coop ×1 ×1 Beehive ×1 Tap an empty square to begin · 90s. Land is 1; restricted rock and woodland are 0; pieces add their shown value.
+
+==== [34-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Crops (+2) STILL TO PLACE ×1 Orchard ×1 ×1 Garden ×1 ×1 Barn ×1 ×1 Crops ×1 ×1 Workshop ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 11 placements left
+
+==== [35-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Vineyard (+2) STILL TO PLACE ×1 Orchard ×1 ×1 Cottage ×1 ×1 Chicken Coop ×1 ×1 Beehive ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Vineyard · Wine estate +1 beside Manor. Different relationships stack. · 10 placements left
+
+==== [36-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Orchard (+2) STILL TO PLACE ×1 Garden ×1 ×1 Barn ×1 ×1 Crops ×1 ×1 Workshop ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 9 placements left
+
+==== [37-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Orchard (+2) STILL TO PLACE ×1 Cottage ×1 ×1 Chicken Coop ×1 ×1 Beehive ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 8 placements left
+
+==== [38-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Garden (+1) STILL TO PLACE ×1 Barn ×1 ×1 Crops ×1 ×1 Workshop ×1 Better Together: Estate garden +1 beside Manor or Cottage · Pollination +1 beside Beehive. Different relationships stack. · 7 placements left
+
+==== [39-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Cottage (+4) STILL TO PLACE ×1 Chicken Coop ×1 ×1 Beehive ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 6 placements left
+
+==== [40-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Barn (+3) STILL TO PLACE ×1 Crops ×1 ×1 Workshop ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 5 placements left
+
+==== [41-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Chicken Coop (+1) STILL TO PLACE ×1 Beehive ×1 Better Together: Chicken Coop has no neighbour bonus. · 4 placements left
+
+==== [42-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Crops (+2) STILL TO PLACE ×1 Workshop ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 3 placements left
+
+==== [43-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ada is placing Beehive (+1) STILL TO PLACE none Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 2 placements left
+
+==== [44-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Workshop (+1) STILL TO PLACE none Better Together: Workshop has no neighbour bonus. · 1 placement left
+
+==== [45-r2-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=2 status=playing capital=0,1 property=29,36
+HUD: Ben is placing Workshop (+1) STILL TO PLACE none Better Together: Workshop has no neighbour bonus. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Your options grow with your Capital
+As the most Capital you have held increases, more investments become available. Once something becomes available, it stays available for the rest of the Legacy. You still need enough Capital to buy it.
+Inspect estate economics
+Purchase time: 90s remaining
+1 Capital available
+Most Capital held 1
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 2 Capital
+Reach 2 Capital to make Crops, Orchard, Vineyard available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Continue
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [finishInvesting] Continue | [rules] Campaign rules | [open] Save and leave
+ACTION: buy asset [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1 
+
+==== [46-r2-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Ben is placing Workshop (+1) STILL TO PLACE none Better Together: Workshop has no neighbour bonus. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Your options grow with your Capital
+As the most Capital you have held increases, more investments become available. Once something becomes available, it stays available for the rest of the Legacy. You still need enough Capital to buy it.
+Inspect estate economics
+0 Capital available
+Most Capital held 1
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 2 Capital
+Reach 2 Capital to make Crops, Orchard, Vineyard available for the rest of this Legacy.
+Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.
+Assets to save for
+Chosen by Ben
+Beehive (1)
+Continue to placement
+Campaign rules
+Save and leave
+BUTTONS: [finishInvesting] Continue to placement | [rules] Campaign rules | [open] Save and leave
+
+==== [47-r2-build-board.png] phase=build overlay=none round=2 status=playing capital=0,0 property=29,36
+HUD: Ben is placing Beehive purchased with personal Capital · tap an empty buildable square
+BUILD STRIP: Ben places purchased additions Placement time: 60s remaining Purchased: Beehive 1 purchased addition remains before the estate can be divided.
+
+==== [48-r2-meaningful-legacyInvestOverlay.png] phase=meaningful overlay=legacyInvestOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Ada chooses something meaningful Tap an asset to name it, or skip. Both siblings may choose the same asset. No points change.
+OVERLAY TEXT:
+after the build · before the division
+The Family Home
+Inspect estate economics
+This estate includes belongings tied to the family's history. Here, each sibling may choose one item they care about.
+Personal value has no price
+Your choice does not change Property, Capital, income or ownership. It becomes part of the family history, so you can see who eventually inherits it.
+Choosing is optional. Afterward, Cutter and Chooser are decided normally and the estate is divided.
+Choose what matters
+Campaign rules
+Save and leave
+BUTTONS: [beginFamilyHomeChoice] Choose what matters | [rules] Campaign rules | [open] Save and leave
+
+==== [49-r2-meaningful-board.png] phase=meaningful overlay=none round=2 status=playing capital=0,0 property=29,36
+HUD: Ada chooses something meaningful Tap an asset to name it, or skip. Both siblings may choose the same asset. No points change.
+
+==== [50-r2-meaningful-meaningfulOverlay.png] phase=meaningful overlay=meaningfulOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Ada chooses something meaningful Tap an asset to name it, or skip. Both siblings may choose the same asset. No points change.
+OVERLAY TEXT:
+Ada · what matters
+Bring it to life
+You chose the Orchard. The default is enough, or give it the detail that makes it yours.
+What do you call it? optional
+the apple orchard
+the old orchard
+The default name is always valid. Suggestions use the asset and, when relevant, its setting.
+What makes it matter? optional
+Keep it simple
+planted by [person]
+where we picked [fruit]
+where [memory]
+Something else…
+Your story: the Orchard.
+Keep this story
+Choose another asset
+Use default
+Family Legacy
+BUTTONS:  the apple orchard |  the old orchard |  Keep it simple |  planted by [person] |  where we picked [fruit] |  where [memory] |  Something else… | #meaningfulConfirmBtn Keep this story | #meaningfulAgainBtn Choose another asset | #meaningfulSkipNamingBtn Use default | [open] Family Legacy
+
+==== [51-r2-meaningful-board.png] phase=meaningful overlay=none round=2 status=playing capital=0,0 property=29,36
+HUD: Ben chooses something meaningful Tap an asset to name it, or skip. Both siblings may choose the same asset. No points change.
+
+==== [52-r2-meaningful-meaningfulOverlay.png] phase=meaningful overlay=meaningfulOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Ben chooses something meaningful Tap an asset to name it, or skip. Both siblings may choose the same asset. No points change.
+OVERLAY TEXT:
+Ben · what matters
+Bring it to life
+You chose the Beehive. The default is enough, or give it the detail that makes it yours.
+What do you call it? optional
+the family beehives
+Dad’s bees
+The default name is always valid. Suggestions use the asset and, when relevant, its setting.
+What makes it matter? optional
+Keep it simple
+kept by [person]
+where [person] taught me beekeeping
+where [memory]
+Something else…
+Your story: the Beehive.
+Keep this story
+Choose another asset
+Use default
+Family Legacy
+BUTTONS:  the family beehives |  Dad’s bees |  Keep it simple |  kept by [person] |  where [person] taught me beekeeping |  where [memory] |  Something else… | #meaningfulConfirmBtn Keep this story | #meaningfulAgainBtn Choose another asset | #meaningfulSkipNamingBtn Use default | [open] Family Legacy
+
+==== [53-r2-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [54-r2-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ben won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [55-r2-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ben.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [56-r2-cut-board.png] phase=cut overlay=none round=2 status=playing capital=0,0 property=29,36
+HUD: Ben draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [57-r2-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ada.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+TOAST: Edge to edge, but the land isn't actually split. Try again from here, or undo.
+
+==== [58-r2-choose-board.png] phase=choose overlay=none round=2 status=playing capital=0,0 property=29,36
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+TOAST: Edge to edge, but the land isn't actually split. Try again from here, or undo.
+
+==== [59-r2-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ada inherits Plot A. Ben inherits Plot B.
+All 62 points of estate value preserved.
+Ada inherits the Orchard.
+Ben inherits the Beehive.
+Continue to result
+Family Legacy
+BUTTONS: #revealContinue Continue to result | [open] Family Legacy
+
+==== [60-r2-final-finalOverlay.png] phase=final overlay=finalOverlay round=2 status=playing capital=0,0 property=29,36
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ada chose Plot A
+34
+Ben inherited Plot B
+28
+6-point gap · 100% of estate value preserved
+FINAL ESTATE
+YOUR STORY
+Ada chose the higher-value property and inherited the Orchard, the asset that mattered most to them.
+Ben inherited the lower-value property, but gained the Beehive, the asset that mattered most to them.
+See score breakdown
+Property inherited: 62 of 80 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 34
+Ben
+Property 28
+Investment in this estate
+Ben paid for Beehive
+1
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+1. Connected Crops
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 6: 4 from assets + 2 from productive links
+Built from Crops, Crops · Connected land
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ada chose Plot A
+34
+Ben inherited Plot B
+28
+6-point gap · 100% of estate value preserved
+FINAL ESTATE
+YOUR STORY
+
+Ada chose the higher-value property and inherited the Orchard, the asset that mattered most to them.
+
+Ben inherited the lower-value property, but gained the Beehive, the asset that mattered most to them.
+
+See score breakdown
+Property inherited: 62 of 80 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 34
+Ben
+Property 28
+Investment in this estate
+Ben paid for Beehive
+1
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+
+1. Connected Crops
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 6: 4 from assets + 2 from productive links
+Built from Crops, Crops · Connected land
+Record inheritance
+Family Legacy
+
+==== [62-r2-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=2 status=between capital=0,2 property=63,64
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Estate 2 · The Family Home
+The division
+Ada inherited Plot A
+34
+Ben inherited Plot B
+28
+Together inherited 62 Property. Optimistic ceiling: 80; some possible connections may conflict.
+What changed
+Ben · holdings paid
++2 Capital
+Ben · new holding: Connected Crops
+1 Capital after each estate · 3 scheduled payments
+Ben · investment now available
+Crops, Orchard, Vineyard
+Campaign position
+Ada
+Property 63
+Capital 0
+Ben
+Property 64
+Capital 2
+About Estate 3: The Working Estate
+Begin estate 3
+Holdings and family history
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [next] Begin estate 3 |   |   | [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== [63-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Well (+1) STILL TO PLACE ×1 Orchard ×1 ×1 Manor ×1 ×1 Workshop ×1 ×1 Vineyard ×1 ×1 Stables ×1 Tap an empty square to begin · 90s. Land is 1; restricted rock and woodland are 0; pieces add their shown value.
+
+==== [64-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Beehive (+1) STILL TO PLACE ×2 Cottage ×2 ×2 Barn ×2 ×1 Garden ×1 Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 11 placements left
+
+==== [65-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Orchard (+2) STILL TO PLACE ×1 Manor ×1 ×1 Workshop ×1 ×1 Vineyard ×1 ×1 Stables ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 10 placements left
+
+==== [66-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Cottage (+4) STILL TO PLACE ×1 Cottage ×1 ×2 Barn ×2 ×1 Garden ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 9 placements left
+
+==== [67-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Manor (+5) STILL TO PLACE ×1 Workshop ×1 ×1 Vineyard ×1 ×1 Stables ×1 Better Together: Community +1 beside Manor or Cottage · Wine estate +1 beside Vineyard · Estate garden +1 beside Garden. Different relationships stack. · 8 placements left
+
+==== [68-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Cottage (+4) STILL TO PLACE ×2 Barn ×2 ×1 Garden ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 7 placements left
+
+==== [69-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Workshop (+1) STILL TO PLACE ×1 Vineyard ×1 ×1 Stables ×1 Better Together: Workshop has no neighbour bonus. · 6 placements left
+
+==== [70-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Barn (+3) STILL TO PLACE ×1 Barn ×1 ×1 Garden ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 5 placements left
+
+==== [71-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Vineyard (+2) STILL TO PLACE ×1 Stables ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Vineyard · Wine estate +1 beside Manor. Different relationships stack. · 4 placements left
+
+==== [72-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Barn (+3) STILL TO PLACE ×1 Garden ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 3 placements left
+
+==== [73-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ada is placing Stables (+3) STILL TO PLACE none Better Together: Working farm +1 beside Barn. Different relationships stack. · 2 placements left
+
+==== [74-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Garden (+1) STILL TO PLACE none Better Together: Estate garden +1 beside Manor or Cottage · Pollination +1 beside Beehive. Different relationships stack. · 1 placement left
+
+==== [75-r3-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=3 status=playing capital=0,2 property=63,64
+HUD: Ben is placing Garden (+1) STILL TO PLACE none Better Together: Estate garden +1 beside Manor or Cottage · Pollination +1 beside Beehive. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+Purchase time: 90s remaining
+2 Capital available
+Most Capital held 2
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 3 Capital
+Reach 3 Capital to make Barn, Mill, Stables available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Continue
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [finishInvesting] Continue | [rules] Campaign rules | [open] Save and leave
+ACTION: buy asset [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1 
+
+==== [76-r3-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Ben is placing Garden (+1) STILL TO PLACE none Better Together: Estate garden +1 beside Manor or Cottage · Pollination +1 beside Beehive. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+Purchase time: 89s remaining
+1 Capital available
+Most Capital held 2
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 3 Capital
+Reach 3 Capital to make Barn, Mill, Stables available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Assets to save for
+Chosen by Ben
+Beehive (1)
+Continue to placement
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [finishInvesting] Continue to placement | [rules] Campaign rules | [open] Save and leave
+
+==== [77-r3-build-board.png] phase=build overlay=none round=3 status=playing capital=0,1 property=63,64
+HUD: Ben is placing Beehive purchased with personal Capital · tap an empty buildable square
+BUILD STRIP: Ben places purchased additions Placement time: 60s remaining Purchased: Beehive 1 purchased addition remains before the estate can be divided.
+
+==== [78-r3-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [79-r3-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ada won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [80-r3-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ben.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [81-r3-cut-board.png] phase=cut overlay=none round=3 status=playing capital=0,1 property=63,64
+HUD: Ben draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [82-r3-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ada.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+
+==== [83-r3-choose-board.png] phase=choose overlay=none round=3 status=playing capital=0,1 property=63,64
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+
+==== [84-r3-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ada inherits Plot A. Ben inherits Plot B.
+All 60 points of estate value preserved.
+Continue to result
+Family Legacy
+BUTTONS: #revealContinue Continue to result | [open] Family Legacy
+
+==== [85-r3-final-finalOverlay.png] phase=final overlay=finalOverlay round=3 status=playing capital=0,1 property=63,64
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ada chose Plot A
+32
+Ben inherited Plot B
+28
+4-point gap · 100% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 60 of 76 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 32
+Ben
+Property 28
+Investment in this estate
+Ben paid for Beehive
+1
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+This division creates no new holding that earns Capital.
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ada chose Plot A
+32
+Ben inherited Plot B
+28
+4-point gap · 100% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 60 of 76 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 32
+Ben
+Property 28
+Investment in this estate
+Ben paid for Beehive
+1
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+This division creates no new holding that earns Capital.
+
+Record inheritance
+Family Legacy
+
+==== [87-r3-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=3 status=between capital=0,3 property=95,92
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Estate 3 · The Working Estate
+The division
+Ada inherited Plot A
+32
+Ben inherited Plot B
+28
+Together inherited 60 Property. Optimistic ceiling: 76; some possible connections may conflict.
+What changed
+Ben · holdings paid
++2 Capital
+Ben · investment now available
+Barn, Mill, Stables
+Campaign position
+Ada
+Property 95
+Capital 0
+Ben
+Property 92
+Capital 3
+About Estate 4: The Waterside Estate
+Begin estate 4
+Holdings and family history
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [next] Begin estate 4 |   |   |   | [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== [88-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Barn (+3) STILL TO PLACE ×1 Crops ×1 ×1 Cottage ×1 ×1 Workshop ×1 ×1 Orchard ×1 ×1 Beehive ×1 Tap an empty square to begin · 90s. Land is 1; restricted rock and woodland are 0; pieces add their shown value.
+
+==== [89-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Barn (+3) STILL TO PLACE ×2 Vineyard ×2 ×1 Orchard ×1 ×1 Stables ×1 ×1 Well ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 11 placements left
+
+==== [90-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Crops (+2) STILL TO PLACE ×1 Cottage ×1 ×1 Workshop ×1 ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 10 placements left
+
+==== [91-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Vineyard (+2) STILL TO PLACE ×1 Orchard ×1 ×1 Vineyard ×1 ×1 Stables ×1 ×1 Well ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Vineyard · Wine estate +1 beside Manor. Different relationships stack. · 9 placements left
+
+==== [92-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Cottage (+4) STILL TO PLACE ×1 Workshop ×1 ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 8 placements left
+
+==== [93-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Orchard (+2) STILL TO PLACE ×1 Vineyard ×1 ×1 Stables ×1 ×1 Well ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 7 placements left
+
+==== [94-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Workshop (+1) STILL TO PLACE ×1 Orchard ×1 ×1 Beehive ×1 Better Together: Workshop has no neighbour bonus. · 6 placements left
+
+==== [95-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Vineyard (+2) STILL TO PLACE ×1 Stables ×1 ×1 Well ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Vineyard · Wine estate +1 beside Manor. Different relationships stack. · 5 placements left
+
+==== [96-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Orchard (+2) STILL TO PLACE ×1 Beehive ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 4 placements left
+
+==== [97-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Stables (+3) STILL TO PLACE ×1 Well ×1 Better Together: Working farm +1 beside Barn. Different relationships stack. · 3 placements left
+
+==== [98-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ada is placing Beehive (+1) STILL TO PLACE none Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 2 placements left
+
+==== [99-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Well (+1) STILL TO PLACE none Better Together: Well has no neighbour bonus. · 1 placement left
+
+==== [100-r4-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=4 status=playing capital=0,3 property=95,92
+HUD: Ben is placing Well (+1) STILL TO PLACE none Better Together: Well has no neighbour bonus. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+Purchase time: 90s remaining
+3 Capital available
+Most Capital held 3
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 4 Capital
+Reach 4 Capital to make Cottage available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Barn · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Mill · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Stables · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Continue
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [buy:Y] Barn · 3 Capital Place later on an empty square · adds 3 Pro | [buy:M] Mill · 3 Capital Place later on an empty square · adds 3 Pro | [buy:S] Stables · 3 Capital Place later on an empty square · adds 3  | [finishInvesting] Continue | [rules] Campaign rules | [open] Save and leave
+ACTION: buy asset [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1 
+
+==== [101-r4-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Ben is placing Well (+1) STILL TO PLACE none Better Together: Well has no neighbour bonus. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+Purchase time: 89s remaining
+2 Capital available
+Most Capital held 3
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 4 Capital
+Reach 4 Capital to make Cottage available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Assets to save for
+Chosen by Ben
+Beehive (1)
+Continue to placement
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [finishInvesting] Continue to placement | [rules] Campaign rules | [open] Save and leave
+
+==== [102-r4-build-board.png] phase=build overlay=none round=4 status=playing capital=0,2 property=95,92
+HUD: Ben is placing Beehive purchased with personal Capital · tap an empty buildable square
+BUILD STRIP: Ben places purchased additions Placement time: 60s remaining Purchased: Beehive 1 purchased addition remains before the estate can be divided.
+
+==== [103-r4-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [104-r4-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ben won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [105-r4-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ben.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [106-r4-cut-board.png] phase=cut overlay=none round=4 status=playing capital=0,2 property=95,92
+HUD: Ben draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [107-r4-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ada.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+
+==== [108-r4-choose-board.png] phase=choose overlay=none round=4 status=playing capital=0,2 property=95,92
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+
+==== [109-r4-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Ada taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ben inherits Plot A. Ada inherits Plot B.
+THE FENCE · 1 SQUARE LOST VALUE
+The fence is final. One square lost value because of where it runs.
+Show what changed
+Skip to the result
+Family Legacy
+BUTTONS: #revealContinue Show what changed | #revealSkipBtn Skip to the result | [open] Family Legacy
+
+==== [110-r4-final-finalOverlay.png] phase=final overlay=finalOverlay round=4 status=playing capital=0,2 property=95,92
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ada chose Plot B
+36
+Ben inherited Plot A
+33
+3-point gap · 99% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 69 of 82 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 36
+Ben
+Property 33
+Investment in this estate
+Ben paid for Beehive
+1
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Orchard, Barn · Working farm
+2. Connected Vineyard
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 6: 4 from assets + 2 from productive links
+Built from Vineyard, Vineyard · Connected land
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ada chose Plot B
+36
+Ben inherited Plot A
+33
+3-point gap · 99% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 69 of 82 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 36
+Ben
+Property 33
+Investment in this estate
+Ben paid for Beehive
+1
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Orchard, Barn · Working farm
+2. Connected Vineyard
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 6: 4 from assets + 2 from productive links
+Built from Vineyard, Vineyard · Connected land
+Record inheritance
+Family Legacy
+
+==== [112-r4-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=4 status=between capital=0,5 property=131,125
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Estate 4 · The Waterside Estate
+The division
+Ada inherited Plot B
+36
+Ben inherited Plot A
+33
+Together inherited 69 Property. Optimistic ceiling: 82; some possible connections may conflict.
+What changed
+Ben · holdings paid
++3 Capital
+Ben · new holding: Working Farm
+1 Capital after each estate · 3 scheduled payments
+Ben · new holding: Connected Vineyard
+1 Capital after each estate · 3 scheduled payments
+Ben · investment now available
+Cottage, Logging Operation, Manor
+Campaign position
+Ada
+Property 131
+Capital 0
+Ben
+Property 125
+Capital 5
+About Estate 5: The Uplands
+Begin estate 5
+Holdings and family history
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [next] Begin estate 5 |   |   |   |   | [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== [113-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Vineyard (+2) STILL TO PLACE ×1 Chicken Coop ×1 ×1 Beehive ×1 ×1 Well ×1 ×1 Crops ×1 ×1 Stables ×1 Tap an empty square to begin · 90s. Land is 1; restricted rock and woodland are 0; pieces add their shown value.
+
+==== [114-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Mill (+3) STILL TO PLACE ×1 Orchard ×1 ×1 Workshop ×1 ×2 Barn ×2 ×1 Crops ×1 Better Together: Milling +1 beside Crops. Different relationships stack. · 11 placements left
+
+==== [115-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Chicken Coop (+1) STILL TO PLACE ×1 Beehive ×1 ×1 Well ×1 ×1 Crops ×1 ×1 Stables ×1 Better Together: Chicken Coop has no neighbour bonus. · 10 placements left
+
+==== [116-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Orchard (+2) STILL TO PLACE ×1 Workshop ×1 ×2 Barn ×2 ×1 Crops ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 9 placements left
+
+==== [117-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Beehive (+1) STILL TO PLACE ×1 Well ×1 ×1 Crops ×1 ×1 Stables ×1 Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 8 placements left
+
+==== [118-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Workshop (+1) STILL TO PLACE ×2 Barn ×2 ×1 Crops ×1 Better Together: Workshop has no neighbour bonus. · 7 placements left
+
+==== [119-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Well (+1) STILL TO PLACE ×1 Crops ×1 ×1 Stables ×1 Better Together: Well has no neighbour bonus. · 6 placements left
+
+==== [120-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Barn (+3) STILL TO PLACE ×1 Crops ×1 ×1 Barn ×1 Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 5 placements left
+
+==== [121-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Crops (+2) STILL TO PLACE ×1 Stables ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 4 placements left
+
+==== [122-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Crops (+2) STILL TO PLACE ×1 Barn ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 3 placements left
+
+==== [123-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ada is placing Stables (+3) STILL TO PLACE none Better Together: Working farm +1 beside Barn. Different relationships stack. · 2 placements left
+
+==== [124-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Barn (+3) STILL TO PLACE none Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 1 placement left
+
+==== [125-r5-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=5 status=playing capital=0,5 property=131,125
+HUD: Ben is placing Barn (+3) STILL TO PLACE none Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+Purchase time: 90s remaining
+5 Capital available
+Most Capital held 5
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 6 Capital
+Reach 6 Capital to make Quarry available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Barn · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Mill · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Stables · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Cottage · 4 Capital
+Place later on an empty square · adds 4 Property before neighbour effects
+Manor · 5 Capital
+Place later on an empty square · adds 5 Property before neighbour effects
+Developments
+Logging Operation · 5 Capital
+Place later on 3 connected Managed Woodland cells. 1 site remains. Adds 3 Property across its cells. Pays 2 Capital 3 times if inherited intact.
+Continue
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [buy:Y] Barn · 3 Capital Place later on an empty square · adds 3 Pro | [buy:M] Mill · 3 Capital Place later on an empty square · adds 3 Pro | [buy:S] Stables · 3 Capital Place later on an empty square · adds 3  | [buy:H] Cottage · 4 Capital Place later on an empty square · adds 4  | [buy:G] Manor · 5 Capital Place later on an empty square · adds 5 Pr | [dev:logging] Logging Operation · 5 Capital Place later on 3 connected Man | [finishInvesting] Continue | [rules] Campaign rules | [open] Save and leave
+ACTION: buy development [dev:logging] Logging Operation · 5 Capital Place later on 3 connected Man
+
+==== [126-r5-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Ben is placing Barn (+3) STILL TO PLACE none Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+Inspect estate economics
+0 Capital available
+Most Capital held 5
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 6 Capital
+Reach 6 Capital to make Quarry available for the rest of this Legacy.
+Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.
+Assets to save for
+No suitable site on this estate
+Chosen by Ben
+Logging Operation (5)
+Continue to placement
+Campaign rules
+Save and leave
+BUTTONS: [finishInvesting] Continue to placement | [rules] Campaign rules | [open] Save and leave
+
+==== [127-r5-build-board.png] phase=build overlay=none round=5 status=playing capital=0,0 property=131,125
+HUD: Ben is placing Logging Operation special development · Place later on 3 connected Managed Woodland cells.
+BUILD STRIP: Ben places purchased additions Placement time: 60s remaining Logging Operation 1 purchased addition remains before the estate can be divided.
+
+==== [128-r5-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [129-r5-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ada won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [130-r5-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ada.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [131-r5-cut-board.png] phase=cut overlay=none round=5 status=playing capital=0,0 property=131,125
+HUD: Ada draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [132-r5-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ben.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+
+==== [133-r5-choose-board.png] phase=choose overlay=none round=5 status=playing capital=0,0 property=131,125
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+
+==== [134-r5-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ben inherits Plot A. Ada inherits Plot B.
+THE FENCE · 2 SQUARES LOST VALUE
+The fence is final. 2 squares lost value because of where it runs.
+Show what changed
+Skip to the result
+Family Legacy
+BUTTONS: #revealContinue Show what changed | #revealSkipBtn Skip to the result | [open] Family Legacy
+
+==== [135-r5-final-finalOverlay.png] phase=final overlay=finalOverlay round=5 status=playing capital=0,0 property=131,125
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ben chose Plot A
+30
+Ada inherited Plot B
+24
+6-point gap · 96% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 54 of 68 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 24
+Ben
+Property 30
+Investment in this estate
+Ben paid for Logging Operation · B2 + C2 + C3
+5
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+1. Logging Operation
+2 Capital after each estate
+Ben · 3 Capital payments remain
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ben chose Plot A
+30
+Ada inherited Plot B
+24
+6-point gap · 96% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 54 of 68 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 24
+Ben
+Property 30
+Investment in this estate
+Ben paid for Logging Operation · B2 + C2 + C3
+5
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+
+1. Logging Operation
+2 Capital after each estate
+Ben · 3 Capital payments remain
+Record inheritance
+Family Legacy
+
+==== [137-r5-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=5 status=between capital=0,4 property=155,155
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Estate 5 · The Uplands
+The division
+Ada inherited Plot B
+24
+Ben inherited Plot A
+30
+Together inherited 54 Property. Optimistic ceiling: 68; some possible connections may conflict.
+What changed
+Ben · holdings paid
++4 Capital
+Ben · new holding: Logging Operation
+2 Capital after each estate · 3 scheduled payments
+Campaign position
+Ada
+Property 155
+Capital 0
+Ben
+Property 155
+Capital 4
+About Estate 6: The Last Estate
+Begin estate 6
+Holdings and family history
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [next] Begin estate 6 |   |   |   |   |   | [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== [138-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Beehive (+1) STILL TO PLACE ×1 Crops ×1 ×2 Cottage ×2 ×1 Orchard ×1 ×1 Barn ×1 Tap an empty square to begin · 90s. Land is 1; restricted rock and woodland are 0; pieces add their shown value.
+
+==== [139-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Beehive (+1) STILL TO PLACE ×1 Orchard ×1 ×1 Beehive ×1 ×1 Crops ×1 ×1 Well ×1 ×1 Mill ×1 Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 11 placements left
+
+==== [140-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Crops (+2) STILL TO PLACE ×2 Cottage ×2 ×1 Orchard ×1 ×1 Barn ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 10 placements left
+
+==== [141-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Orchard (+2) STILL TO PLACE ×1 Beehive ×1 ×1 Crops ×1 ×1 Well ×1 ×1 Mill ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 9 placements left
+
+==== [142-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Cottage (+4) STILL TO PLACE ×1 Orchard ×1 ×1 Cottage ×1 ×1 Barn ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 8 placements left
+
+==== [143-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Beehive (+1) STILL TO PLACE ×1 Crops ×1 ×1 Well ×1 ×1 Mill ×1 Better Together: Pollination +1 beside Orchard or Garden. Different relationships stack. · 7 placements left
+
+==== [144-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Orchard (+2) STILL TO PLACE ×1 Cottage ×1 ×1 Barn ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Orchard · Pollination +1 beside Beehive. Different relationships stack. · 6 placements left
+
+==== [145-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Crops (+2) STILL TO PLACE ×1 Well ×1 ×1 Mill ×1 Better Together: Working farm +1 beside Barn · Connected land +1 beside Crops · Milling +1 beside Mill. Different relationships stack. · 5 placements left
+
+==== [146-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Cottage (+4) STILL TO PLACE ×1 Barn ×1 Better Together: Community +1 beside Manor or Cottage · Estate garden +1 beside Garden. Different relationships stack. · 4 placements left
+
+==== [147-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Well (+1) STILL TO PLACE ×1 Mill ×1 Better Together: Well has no neighbour bonus. · 3 placements left
+
+==== [148-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ada is placing Barn (+3) STILL TO PLACE none Better Together: Working farm +1 beside Stables, Crops, Vineyard or Orchard. Different relationships stack. · 2 placements left
+
+==== [149-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Mill (+3) STILL TO PLACE none Better Together: Milling +1 beside Crops. Different relationships stack. · 1 placement left
+
+==== [150-r6-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=6 status=playing capital=0,4 property=155,155
+HUD: Ben is placing Mill (+3) STILL TO PLACE none Better Together: Milling +1 beside Crops. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+This is the Final Settlement
+This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three holding payments. Cutter and Chooser are still decided normally.
+Inspect estate economics
+Purchase time: 90s remaining
+4 Capital available
+Most Capital held 5
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 6 Capital
+Reach 6 Capital to make Quarry available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Barn · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Mill · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Stables · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Cottage · 4 Capital
+Place later on an empty square · adds 4 Property before neighbour effects
+Assets to save for
+Developments to save for
+Continue
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [buy:Y] Barn · 3 Capital Place later on an empty square · adds 3 Pro | [buy:M] Mill · 3 Capital Place later on an empty square · adds 3 Pro | [buy:S] Stables · 3 Capital Place later on an empty square · adds 3  | [buy:H] Cottage · 4 Capital Place later on an empty square · adds 4  | [finishInvesting] Continue | [rules] Campaign rules | [open] Save and leave
+ACTION: buy asset [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1 
+
+==== [151-r6-build-legacyInvestOverlay.png] phase=build overlay=legacyInvestOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Ben is placing Mill (+3) STILL TO PLACE none Better Together: Milling +1 beside Crops. Different relationships stack. · 1 placement left
+OVERLAY TEXT:
+after the build · before the division
+Ben: choose what to buy
+This is the Final Settlement
+This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three holding payments. Cutter and Chooser are still decided normally.
+Inspect estate economics
+Purchase time: 89s remaining
+3 Capital available
+Most Capital held 5
+Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate.
+At 6 Capital
+Reach 6 Capital to make Quarry available for the rest of this Legacy.
+Available now
+Additional assets
+Beehive · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Chicken Coop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Garden · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Well · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Workshop · 1 Capital
+Place later on an empty square · adds 1 Property before neighbour effects
+Crops · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Orchard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Vineyard · 2 Capital
+Place later on an empty square · adds 2 Property before neighbour effects
+Barn · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Mill · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Stables · 3 Capital
+Place later on an empty square · adds 3 Property before neighbour effects
+Assets to save for
+Developments to save for
+Chosen by Ben
+Beehive (1)
+Continue to placement
+Campaign rules
+Save and leave
+BUTTONS: [buy:B] Beehive · 1 Capital Place later on an empty square · adds 1  | [buy:K] Chicken Coop · 1 Capital Place later on an empty square · ad | [buy:D] Garden · 1 Capital Place later on an empty square · adds 1 P | [buy:W] Well · 1 Capital Place later on an empty square · adds 1 Pro | [buy:R] Workshop · 1 Capital Place later on an empty square · adds 1 | [buy:C] Crops · 2 Capital Place later on an empty square · adds 2 Pr | [buy:O] Orchard · 2 Capital Place later on an empty square · adds 2  | [buy:V] Vineyard · 2 Capital Place later on an empty square · adds 2 | [buy:Y] Barn · 3 Capital Place later on an empty square · adds 3 Pro | [buy:M] Mill · 3 Capital Place later on an empty square · adds 3 Pro | [buy:S] Stables · 3 Capital Place later on an empty square · adds 3  | [finishInvesting] Continue to placement | [rules] Campaign rules | [open] Save and leave
+
+==== [152-r6-build-board.png] phase=build overlay=none round=6 status=playing capital=0,3 property=155,155
+HUD: Ben is placing Beehive purchased with personal Capital · tap an empty buildable square
+BUILD STRIP: Ben places purchased additions Placement time: 60s remaining Purchased: Beehive 1 purchased addition remains before the estate can be divided.
+
+==== [153-r6-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+decide roles
+Rock, paper, scissors
+Play it off-screen. Who won?
+Ada won
+Ben won
+Family Legacy
+BUTTONS: #rpsP1Btn Ada won | #rpsP2Btn Ben won | [open] Family Legacy
+
+==== [154-r6-rps_post-rpsOverlay.png] phase=rps_post overlay=rpsOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Settle who chooses and who cuts
+OVERLAY TEXT:
+Ben won
+Choose your role
+Which job do you want?
+Cutter
+Draw the fence · wins ties
+Chooser
+Pick the property you want
+Family Legacy
+BUTTONS: #rpsCutBtn Cutter Draw the fence · wins ties | #rpsChooseBtn Chooser Pick the property you want | [open] Family Legacy
+
+==== [155-r6-pass_to_cut-passOverlay.png] phase=pass_to_cut overlay=passOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Pass to Ada
+OVERLAY TEXT:
+phase two
+Pass to the Cutter
+Pass to Ada.
+Draw one fence edge to edge. A tie goes to you.
+60 seconds. If time runs out, the bank makes a simple straight division.
+Start cutting · 60s
+Family Legacy
+BUTTONS: #passContinueBtn Start cutting · 60s | [open] Family Legacy
+
+==== [156-r6-cut-board.png] phase=cut overlay=none round=6 status=playing capital=0,3 property=155,155
+HUD: Ada draws the fence Start on any large perimeter dot. Edge to edge.
+
+==== [157-r6-pass_to_choose-passOverlay.png] phase=pass_to_choose overlay=passOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Pass to Ben
+OVERLAY TEXT:
+phase three
+Pass to the Chooser
+Pass to Ben.
+Pick the half you want. Scores stay hidden until you choose.
+30 seconds. If you do not choose, the Cutter gets the same 30 seconds to choose instead.
+Choose · 30s
+Family Legacy
+BUTTONS: #passContinueBtn Choose · 30s | [open] Family Legacy
+
+==== [158-r6-choose-board.png] phase=choose overlay=none round=6 status=playing capital=0,3 property=155,155
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+
+==== [159-r6-choose-revealOverlay.png] phase=choose overlay=revealOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Ben taps A or B to keep it Scores stay hidden until you choose.
+OVERLAY TEXT:
+The fence is drawn
+What the division changed
+Ada inherits Plot A. Ben inherits Plot B.
+THE FENCE · 6 SQUARES LOST VALUE
+The fence is final. 6 squares lost value because of where it runs.
+Show what changed
+Skip to the result
+Family Legacy
+BUTTONS: #revealContinue Show what changed | #revealSkipBtn Skip to the result | [open] Family Legacy
+
+==== [160-r6-final-finalOverlay.png] phase=final overlay=finalOverlay round=6 status=playing capital=0,3 property=155,155
+HUD: Game complete
+OVERLAY TEXT:
+Inheritance
+THE DIVISION
+Ben chose Plot B
+38
+Ada inherited Plot A
+24
+14-point gap · 91% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 62 of 83 theoretical maximum.
+The ceiling is an upper bound, not a target guaranteed by this layout.
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+No additional awards this game.
+Inheritance
+The choice determines who inherits each property. The estate settles when you continue.
+Ada
+Property 24
+Ben
+Property 38
+Final wealth after this estate
+Sibling Property Capital after Estate 6 Paid now Next 3 payments Final wealth
+Ada 179 1 1 2 182
+Ben 193 8 5 4 205
+Any holding inherited here pays once immediately. That payment is already included in Capital after Estate 6; final wealth then adds the next three payments.
+Investment in this estate
+Ben paid for Beehive
+1
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+Holdings this division would create
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+1. Commercial Orchard
+Grade C · 1 Capital after each estate
+Ada · 3 payments remain · holding score 8: 5 from assets + 3 from productive links
+Built from Orchard, Beehive, Orchard · Pollination
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Barn, Crops · Working farm
+Record inheritance
+Family Legacy
+BUTTONS: #legacyRecordBtn Record inheritance | [open] Family Legacy
+FULL RESULT SCREEN:
+Inheritance
+THE DIVISION
+Ben chose Plot B
+38
+Ada inherited Plot A
+24
+14-point gap · 91% of estate value preserved
+FINAL ESTATE
+See score breakdown
+Property inherited: 62 of 83 theoretical maximum.
+
+The ceiling is an upper bound, not a target guaranteed by this layout.
+
+How is the ceiling calculated?
+AWARDS & ACHIEVEMENTS
+
+No additional awards this game.
+
+Inheritance
+
+The choice determines who inherits each property. The estate settles when you continue.
+
+Ada
+Property 24
+Ben
+Property 38
+Final wealth after this estate
+Sibling Property Capital after Estate 6 Paid now Next 3 payments Final wealth
+Ada 179 1 1 2 182
+Ben 193 8 5 4 205
+
+Any holding inherited here pays once immediately. That payment is already included in Capital after Estate 6; final wealth then adds the next three payments.
+
+Investment in this estate
+Ben paid for Beehive
+1
+
+Paying for an addition does not mean you own it. It stays with the estate until the division.
+
+Holdings this division would create
+
+Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.
+
+1. Commercial Orchard
+Grade C · 1 Capital after each estate
+Ada · 3 payments remain · holding score 8: 5 from assets + 3 from productive links
+Built from Orchard, Beehive, Orchard · Pollination
+1. Working Farm
+Grade C · 1 Capital after each estate
+Ben · 3 payments remain · holding score 7: 5 from assets + 2 from productive links
+Built from Barn, Crops · Working farm
+Record inheritance
+Family Legacy
+
+==== [162-r6-final-legacyOverlay.png] phase=final overlay=legacyOverlay round=6 status=complete capital=1,8 property=179,193
+HUD: Game complete
+OVERLAY TEXT:
+Family Legacy
+Six linked estates · one family history
+Six estates recorded
+Six estates, many outcomes
+Created together across six estates
+Property inherited
+372
+Theoretical ceiling
+470
+79% of an optimistic upper bound. Some possible connections cannot coexist.
+Net change after 9 Capital spent: +12 against the 351 Property in the starting estates. Holding income is separate.
+Shared achievements
+Shared value creation
+Across six estates, inherited Property exceeded starting Property and Capital spent by 12.
+Most value created in one estate
+Estate 1: The Country Estate · net gain +8 after subtracting Capital spent.
+Shared costs and shortfalls
+Cost of division
+11 Property counted before the cuts but no longer counted across the inherited plots.
+From purchased additions
+7 inherited Property gained, of up to 11 possible from the same purchases. Holding income is separate.
+See all six estates
+How these values are calculated
+Individual distinctions
+Wealthiest sibling
+Ben recorded 205 final wealth.
+Most Property inherited
+Ben recorded 193 inherited Property.
+Most holding income
+Ben recorded 21 Capital in paid and scheduled holding income.
+Closest player-made cut
+Estate 4: Ben · 3 points between plots.
+How final wealth was counted
+The family history
+Campaign statistics
+Final ledger
+Holdings
+Campaign rules
+Download backup
+Load Legacy file
+Save and return to setup
+BUTTONS: [rules] Campaign rules | [download] Download backup | [load] Load Legacy file | [leave] Save and return to setup
+
+==== CAMPAIGN COMPLETE
+
+ERRORS: []
