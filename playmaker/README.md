@@ -181,15 +181,25 @@ solver results; every choice is worked out at the table from what is in front of
   and then shoot, with interception risk from the arrow lines. This is the solver's evaluation, so walls,
   lanes and help count, and a spent reaction (the "closeout tax") counts too. Help is not a special
   rule: a defender's square and arrow are worth what they cut from the offence's best look (help gain)
-  minus what they open up on their own man (leave cost).
+  minus what they open up on their own man (leave cost). The Starter and All-Star defences also weigh a
+  dribble at the dice: a won dribble, the defence's answer, then the step-out shot.
+- **The defence's candidates** include containing the carrier's best step-then-shoot squares: a defender
+  next to each, facing it (a step that keeps the arrow facing elsewhere still forces a foul roll).
+  Mid-turn, ending the turn is always a candidate, and no play runs past the turn's action limit.
 - **The comfort line:** the defence won't spend to push the offence's look below 15 (the Okay/Poor
   line). That's "let them shoot it": a ▼ shooter left open is a choice, not a lapse.
 - **The offence picks two targets** (its biggest ▲ edges, the secret target on a Coach's Call card,
-  threes only on Need a Three). It builds toward them, re-plans when the defence takes the target away,
-  and shoots only when the look clears its **shot bar** and beats what continuing is worth. The bar is
+  threes only on Need a Three). The plan is named once from the primary target (isolation, post feed,
+  cut to the rim, swing to the shooter) and changes only when the defence takes the target away. It
+  shoots only when the look clears its **shot bar** and beats what continuing is worth. The bar is
   set by the clock and is higher for a look a defender can still contest than for an open one, so the
   offence works for an open, high-value shot first. It drops each phase: a defence that keeps the good
-  looks covered forces a lesser one late. On the last phase there is no bar.
+  looks covered forces a lesser one late. On the last phase there is no bar. The bar reads the look
+  itself, not points already banked (turnovers, the steal-foul bonus). Rookie takes its best shot from
+  the phase before the last (`shoot_by`).
+- **No loops:** a play that ends where the offence already stood earlier in the possession (its five
+  squares and the ball) loses 2 points per earlier visit (up to 3). A pass that was intercepted is not
+  thrown again from the same position.
 - **Setup:** man-to-man by number, unless a switch puts the best on-ball defender on the most explosive
   creator, or the best three-point contester on the ▲ shooter, and the evaluation says it's worth it.
   The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
@@ -208,10 +218,12 @@ solver results; every choice is worked out at the table from what is in front of
 | Looks ahead | defence: the shot on the board now; offence: the defence's reply | the offence's next turn / the defence's reply | the same, with no handicaps |
 | Shot bar, open look (clock 12 / 10 / 8 / 6 / 4) | 24 / 22 / 20 / 17 / 15 | 27 / 25 / 22 / 19 / 16 | as Starter |
 | Shot bar, contested look | 33 / 30 / 26 / 21 / 17 | 36 / 32 / 27 / 22 / 17 | as Starter |
+| Must shoot by | clock 4 | the last phase | the last phase |
 | Second-best choice | defence 15%, offence 3% | defence 5%, offence never | never |
 
 Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
-the first pass. Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
+the first pass (never drawn at Rookie: at Pass 14 v Intercept 6 an intercept attempt succeeds 60% of the
+time, so it is often the right play). Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
 position order), star only. A habit overrides the choice every time it applies, so it can be scouted and
 beaten. After the game, **About the computer** in the review names the level, the habits drawn, the
 concepts switched off, and the offence's targets and plan. It never appears during play.
@@ -285,6 +297,47 @@ offence level against the Starter and All-Star defences (648 possessions a run):
 defence, paired: Starter offence −1.2 ± 1.3 against All-Star (target −2), Rookie −3.8 ± 1.9 (target −4).
 The defence levels' concessions in the table further up were measured against the old offence.
 
+**Re-measured after playtest logs D7D923 and 82866B** (the defence and loop fixes above; the full
+3 x 3 matrix, 972 possessions, `solver_results/headtohead_fixed.json`):
+
+| Offence ↓ / Defence → | Rookie | Starter | All-Star |
+|---|---|---|---|
+| **All-Star** | 30.6 ± 1.5 | 28.2 ± 1.6 | 26.6 ± 1.8 |
+| **Starter** | 30.1 ± 1.5 | 26.4 ± 1.7 | 25.4 ± 2.0 |
+| **Rookie** | 27.9 ± 1.8 | 24.3 ± 1.7 | 23.2 ± 2.0 |
+
+| Against the All-Star opponent (99 pairs) | Measured | Target |
+|---|---|---|
+| Starter defence concedes | +1.8 ± 1.7 | +2 |
+| Rookie defence concedes | +4.3 ± 1.7 (separated from Starter: +2.5 ± 1.7) | +4 |
+| Starter offence scores | −1.1 ± 1.6 | −2 |
+| Rookie offence scores | −3.2 ± 1.9 (separated from Starter: −2.1 ± 1.6) | −4 |
+
+Every target is now inside its interval, and the Rookie defence is separated from the Starter defence
+for the first time. The All-Star defence holds the All-Star offence to 26.6 (28.5 before these fixes).
+Contested shots in the first phase: 2% of Rookie shots, 9% of Starter and All-Star shots.
+Thinking time is not capped hard: a few decisions ran to 2 to 4 seconds (the designer prefers a slower,
+better choice).
+
+**Every preset change from the step 3e spec** (`git log` on `computer_levels.json`):
+
+| Preset | Spec | Now | Why |
+|---|---|---|---|
+| Rookie offence concepts | reaction-aware shot value and risk only | all but draining the reaction (plan, lookahead and patience on) | calibration: plan and lookahead brought it to its target; patience is the shot-bar rule (all levels) |
+| Rookie offence habits | 2 | 1 | calibration: with two it nearly always drew "settles for the first shot" and took looks of 12 |
+| Rookie offence reads | position (`role`) | the numbers (`exact`) | calibration |
+| Rookie offence looks ahead | the shot now (0) | the defence's reply (1) | calibration |
+| Rookie offence randomness | 0.15 | 0.03 | calibration |
+| Starter offence reads | ▲ / plain / ▼ (`marks`) | `exact` | calibration: marks cost about 3 points on its own |
+| Starter offence drains the reaction | off | on | calibration |
+| Starter offence randomness | 0.05 | 0 | calibration |
+| All-Star offence and defence look ahead | the solver's search | one turn | calibration: the search is shallow inside a second and did worse |
+| Starter defence keeps a reaction in hand | off | on | calibration: without it, 7.6 more conceded to a draining offence |
+| Starter defence comfort offset | +2 | +3 | calibration |
+| Offence patience, every level | one curve, three modes | shot bars by clock, open and contested; Rookie must shoot by clock 4 | playtests 3A9C33 and 82866B |
+| Offence habit "settles for the first shot" | a fixed bar of 12 | "settles early": the bars one phase ahead | playtest 3A9C33 |
+| Rookie defence habit pool | all five | not "jumps the first pass" | playtest 82866B: it is often the right play |
+
 **Against the All-Star offence** (from the same matrix):
 
 | Defence | Shots declared | Clean contest | Foul roll | No contest | Reaction couldn't change the contest | Comfort line decided |
@@ -307,6 +360,15 @@ is left as it is.
 *Diagnostic, before this tuning:* the value given up per decision against a depth-2 solver judge was
 offence 5.6 / 2.8 / 2.1 and defence 4.1 / 2.1 / 0.9 (Rookie / Starter / All-Star). It isn't used as the
 target because summed per possession it penalises patience.
+
+## The other side's turn, one action at a time
+
+When the computer (or a remote opponent) acts, the page plays its turn back one action at a time.
+The board shows where everything stood after that action, with a dashed ghost where the piece came from.
+A bar says what it did, any dice rolled and what happened. **OK: next action** shows the next one;
+the last says **OK: your turn**. Nothing still to come is shown, so you can try to call the next action
+(a steal? another help defender moving?) before you press OK. The timer, if on, waits until your turn
+is on the board. Each feed entry carries a small board snapshot (`board_json` in `view.py`) for this.
 
 ## Decision timer (step 3d, optional)
 

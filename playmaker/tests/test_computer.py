@@ -1,6 +1,7 @@
 """Step 3e: the computer opponent at three levels. It chooses among legal actions only, sees only what a
 human sees, values contests after the defence's legal reaction, and its levels make named mistakes."""
 import json
+import os
 
 import pytest
 from conftest import P
@@ -413,3 +414,154 @@ def test_drain_only_the_reserve_aware_levels_see_the_closeout_tax():
     assert C.LEVELS['offence']['levels']['rookie']['concepts']['drain'] is False
     assert vals['allstar'][1] > vals['allstar'][0]
     assert vals['rookie'][1] == pytest.approx(vals['rookie'][0])
+
+
+# ---- playtest log D7D923 (All-Star v All-Star): two uncontested shots one offence turn away ---------
+
+def _d7d923():
+    from playmaker_engine.review import replay_states
+    recs = [json.loads(l) for l in open(os.path.join(os.path.dirname(__file__), 'data', 'log_D7D923.jsonl'))]
+    return replay_states(recs)
+
+
+def _x_turn(s, level='allstar'):
+    c = C.Computer('X', level, seed=1, budget_s=None, habits=[])
+    while s.stage == 'play' and s.side == 'X':
+        s = apply(s, c.choose(s))
+    return s
+
+
+def test_d7d923_possession_1_the_sprint_layup_is_contested():
+    """Clock 10, X to move with 3 tokens. Before: X3 to O8, then X1 to L10 as the first half of a
+    Move + Quick Step the turn had no room for (one action left); O3 sprinted N7 to K4 for an open layup."""
+    s0, a, _ = _d7d923()[17]
+    assert str(a) == 'X3 Move to O8 facing S'
+    s = _x_turn(s0)
+    sprint = Action('sprint', 'O', 2, P('K4'))
+    assert sprint in legal_actions(s)
+    assert C.reachable_contest(apply(s, sprint), 2, 'layup')
+
+
+def test_a_play_cannot_run_past_the_end_of_its_turn():
+    from playmaker_engine.solver import Play, apply_play
+    s0 = _d7d923()[18][0]                             # X has already taken one of its two actions
+    p = Play('closeout', (Action('move', 'X', 0, P('L10'), 4), Action('qs', 'X', 0, P('N8'))))
+    assert apply(s0, p.actions[0]).side == 'O' and apply_play(s0, p) is None
+
+
+def test_d7d923_possession_2_the_step_out_three_is_contested():
+    """Clock 10, X to move. Before: X2 to G8 facing NE; O1 beat X3 off the dribble, stepped to F10 and hit
+    an open three (33). From the position after the dribble no defence turn could stop it (a full search:
+    the best is X3's steal at 36.7), so the answer has to come a turn earlier: the defence weighs the
+    dribble and guards F10 before it."""
+    from playmaker_engine.resolve import force
+    s0, a, _ = _d7d923()[36]
+    assert str(a) == 'X2 Move to G8 facing NE'
+    s = _x_turn(s0)
+    d = next(x for x in legal_actions(s) if x.kind == 'dribble' and x.piece == 0)
+    s = _x_turn(force(apply(s, d), 'success'))       # O1 wins the dribble; the defence answers
+    mv = Action('move', 'O', 0, P('F10'))
+    assert mv in legal_actions(s)
+    assert C.reachable_contest(apply(s, mv), 0, 'three')
+
+
+def test_the_plan_holds_while_the_defence_stands_still():
+    """A possession against a defence that never moves (it pauses, ends its turn, doesn't contest): one
+    plan, one plan type, no re-plan, however many actions the offence takes."""
+    import random
+    from playmaker_engine.resolve import sample
+    for lv in C.LEVEL_NAMES:
+        s = table()
+        o = C.Computer('O', lv, seed=2, budget_s=None, habits=[])
+        rng = random.Random(5)
+        n_o = 0
+        for _ in range(80):
+            if s.stage == 'over':
+                break
+            if s.stage in ('target', 'pick', 'forced') or (s.side == 'O' and s.stage == 'play'):
+                a = o.choose(s)
+                n_o += 1
+            else:
+                acts = legal_actions(s)
+                a = next((x for x in acts if x.kind in ('pause', 'end_turn')), None) or \
+                    next((x for x in acts if x.kind == 'contest' and x.piece < 0), acts[0])
+            node = apply(s, a)
+            s = sample(node, rng)[0] if isinstance(node, ChanceNode) else node
+        ev = [n['event'] for n in o.notes]
+        assert n_o >= 2 and ev.count('plan') == 1 and ev.count('plan_type') == 1 and 'replan' not in ev, (lv, n_o, o.notes)
+
+
+# ---- playtest log 82866B (Rookie v Rookie): the offence looped from clock 8 to clock 2 ----------------
+
+def _82866b():
+    from playmaker_engine.review import replay_states
+    recs = [json.loads(l) for l in open(os.path.join(os.path.dirname(__file__), 'data', 'log_82866B.jsonl'))]
+    return replay_states(recs)
+
+
+def test_82866b_the_loop_position_ends_in_a_shot():
+    """Clock 4, the third time round the same cycle (O4/O2 pass exchange, Hesitate, O4 A5 + Quick Step
+    A6, O2 Move). Three turnovers (-15) had been banked; the bar used to read them into the look, so a
+    contested three worth 27 counted as 12 and nothing cleared it."""
+    from playmaker_engine.resolve import sample
+    import random
+    sts = _82866b()
+    s, a, _ = sts[54]
+    assert s.clock == 4 and s.tos == 3 and str(a) == 'O4 Pass to O2'
+    c = C.Computer('O', 'rookie', seed=1, budget_s=None, habits=['never_screens'])
+    assert c.choose(s).kind == 'shot'                       # Rookie shoots by the phase before the last
+    for seed in range(1, 4):                                # from the start of the loop (clock 6)
+        s = sts[39][0]
+        o = C.Computer('O', 'rookie', seed=seed, budget_s=None, habits=['never_screens'])
+        x = C.Computer('X', 'rookie', seed=seed, budget_s=None, habits=['nearest_closes_out'])
+        rng = random.Random(seed)
+        shot_clock = None
+        for _ in range(200):
+            if s.stage == 'over':
+                break
+            side = 'O' if (s.stage in ('target', 'pick', 'forced') or (s.side == 'O' and s.stage == 'play')) else 'X'
+            act = (o if side == 'O' else x).choose(s)
+            if act.kind == 'shot' and shot_clock is None:
+                shot_clock = s.clock
+            node = apply(s, act)
+            s = sample(node, rng)[0] if isinstance(node, ChanceNode) else node
+        assert shot_clock is not None and shot_clock >= 4, (seed, shot_clock)
+
+
+def test_82866b_a_picked_off_pass_is_not_thrown_again_from_the_same_spot():
+    """Clock 8: O4 to O2 was intercepted, the ball came back to O4 on the same squares, and O4 threw the
+    same pass into the same lane (intercepted again)."""
+    from playmaker_engine.resolve import force
+    sts = _82866b()
+    s, a, _ = sts[26]
+    assert str(a) == 'O4 Pass to O2'
+    c = C.Computer('O', 'rookie', seed=1, budget_s=None, habits=['never_screens'])
+    c.choose(s)                                            # (whatever it picks now: script the logged pass)
+    c.queue = None
+    c._note_pass(s, a)
+    s2 = apply(s, a)
+    s2 = force(apply(s2, next(x for x in legal_actions(s2) if x.kind == 'intercept')), 'failure')
+    assert s2.side == 'O' and s2.ball == s.ball and s2.o == s.o and s2.tos == s.tos + 1
+    again = c.choose(s2)
+    assert (c._spot(s2), a.target) in c.picked_off            # remembered, so that pass is off the list
+    assert not (again.kind == 'pass' and again.target == a.target), again
+
+
+def test_the_bar_reads_the_look_not_banked_turnovers():
+    s = _log_3a9c33()
+    from playmaker_engine.solver import Play
+    shot = Play('shoot', (Action('shot', 'O', 1, shot='three'),))
+    c = C.Computer('O', 'starter', seed=1, habits=[])
+    c._context(s)
+    v = 27.0                                                 # O2's contested three
+    assert not c._patient(s, shot, v)                        # clock 12: below the contested bar of 36
+    late = s.with_(clock=6, tos=3)
+    assert c._patient(late, shot, v - 15)                    # 27 clears 22 at clock 6, turnovers or not
+
+
+def test_rookie_defence_never_draws_jumps_first_pass():
+    """At Pass 14 v Intercept 6 an intercept attempt succeeds 60% of the time: jumping passes is often
+    right, so it isn't a Rookie mistake. Starter can still draw it."""
+    drawn = {h for seed in range(60) for h in C.Computer('X', 'rookie', seed=seed).habits}
+    assert 'jumps_first_pass' not in drawn and len(drawn) == 4
+    assert any('jumps_first_pass' in C.Computer('X', 'starter', seed=seed).habits for seed in range(60))

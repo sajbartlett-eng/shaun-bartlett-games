@@ -544,8 +544,8 @@ def apply_play(s, play):
     for i, a in enumerate(play.actions):
         if isinstance(node, ChanceNode) or node.stage == 'over':
             return None
-        if i > 0 and not quick_legal(node, a):
-            return None
+        if i > 0 and (node.side != a.side or not quick_legal(node, a)):
+            return None                   # the turn passed (e.g. its action limit), or the action is illegal
         node = apply(node, a)
     if not isinstance(node, ChanceNode) and node.stage in ('play', 'reaction') and node.side == s.side \
             and node.turn_n >= 1 and node.stage == s.stage:
@@ -760,6 +760,38 @@ class Generator:
             if found:
                 out.append(Play('deny', (found,)))
                 singles.append(('deny', found))
+        # contain: the carrier's best looks after a step (Move, Quick Step or Sprint, then shoot) are one
+        # offence turn away; stand next to those squares, facing them, before the turn passes
+        if s.side == 'X' and B.on_board(cp) and not view.pending:
+            for q in self.step_shots(view, c, budget, self.cfg.contain_k):
+                cl = []
+                for d in range(5):
+                    free, fixed = maps[d]
+                    for dr in B.DIRS:
+                        r = (q[0] + dr[0], q[1] + dr[1])
+                        if not B.on_board(r) or r in view.o:
+                            continue
+                        on = B.dir_between(r, q)
+                        seq, clean = free.get(r), True
+                        if seq is None and r in fixed:            # a step that keeps the arrow: facing q, or a foul roll
+                            arrows = fixed[r]
+                            a = on if on in arrows else min(arrows, key=lambda k: len(arrows[k]))
+                            seq, clean = arrows[a], a == on
+                        if not seq or len(seq) > view.tok_x:     # none, or already there
+                            continue
+                        con = max((s.ctx.dfn[d].con(t) for t in RC.ZONE_SHOTS.get(B.zone(q), ())), default=0)
+                        cl.append((not clean, -con, len(seq), B.dist_rim(r), d, tuple(_seq_actions(d, seq, on))))
+                cl.sort(key=lambda x: x[:5])
+                used = set()
+                for _, _, _, _, d, seq in cl:
+                    if d in used:
+                        continue
+                    used.add(d)
+                    out.append(Play('contain', seq))
+                    if len(seq) == 1:
+                        singles.append(('contain', seq[0]))
+                    if len(used) >= 2:
+                        break
         if light:                       # quiescence: plays around the ball only
             return out
         # recover / switch: back to a man, rim side, arrow on him
@@ -791,6 +823,30 @@ class Generator:
                         out.append(Play(f'{k1}+{k2}', (a1, a2)))
                         seen += 1
         return out
+
+    def step_shots(self, s, shooter, budget_x, k):
+        """The k best squares (other than where the carrier stands) the carrier can step to with one
+        movement action and shoot from, by the value of the shot against the defence as it stands."""
+        if k <= 0:
+            return []
+        spos = s.o[shooter]
+        maps = self.ev.reach(s, budget_x)
+        squares = set()
+        st = s.with_(side='O', ball=shooter)
+        for kind in ('move', 'qs', 'sprint'):
+            if can_move_kind(st, 'O', shooter, kind):
+                squares |= set(movement_dests(st, 'O', shooter, kind, s.ctx.rules))
+        scored = []
+        for q in squares:
+            if q == spos or not B.on_board(q):
+                continue
+            sh = s.with_(o=s.o[:shooter] + (q,) + s.o[shooter + 1:])
+            best = max((self.ev.defended(sh, maps, shooter, q, t, budget_x)[0] for t in RC.ZONE_SHOTS[B.zone(q)]),
+                       default=None)
+            if best is not None:
+                scored.append((best, q))
+        scored.sort(key=lambda x: (-x[0], x[1]))
+        return [q for _, q in scored[:k]]
 
     def reaction_plays(self, s):
         out = [Play('no reaction', (Action('end_turn', 'X'),))]

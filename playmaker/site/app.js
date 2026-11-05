@@ -182,6 +182,7 @@ function enterTable() {
 async function refresh(quiet) {
   try {
     const s = await api(`/api/state?code=${G.code}&token=${G.token}`);
+    if (replay) { replay.live = s; return; }       // stepping through the other side's turn: keep the frame
     if (quiet && st && s.version === st.version) return;
     st = s; render();
   } catch (e) { if (!quiet) $('error').textContent = e.message; }
@@ -206,7 +207,8 @@ function render() {
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
-  $('summary').textContent = sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+  $('summary').textContent = replay ? `${sideName(replay.entries[replay.k].side).toUpperCase()} ACTED · ${s.summary}`
+    : sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
   if (s.placing) $('summary').textContent = `SETUP · the ${s.placing.side === 'O' ? 'offence' : 'defence'} places its pieces` + (s.placing.mine ? '' : s.placing.by_ai ? ' (the computer)' : ' · waiting for the other side');
   if (s.timer && s.timer.note) $('summary').textContent += ` · ${s.timer.note}`;
   if (s.timer && s.timer.note && s.timer.note !== lastTimerNote) announce(s.timer.note);
@@ -222,9 +224,11 @@ function render() {
   const k = sel.kind || null;
   if (s.timer && s.can_act && k !== lastSelKind && !busy) timerEvent(k ? 'select' : 'cancel');
   lastSelKind = k;
+  $('actionsPanel').classList.toggle('hidden', !!replay);
+  if (replay) { renderStep(); return; }
   if (scoutModalIfDue()) return;
   if (s.placing) return;
-  if (showFeedIfNew()) return;          // the other side's turn first; the end screen follows
+  if (showFeedIfNew()) return;          // the other side's turn first, one action at a time; the end screen follows
   if (readyIfDue()) return;
   if (s.stage === 'target' && s.can_act) targetModal();
   else if (s.stage === 'over') endModal();
@@ -303,6 +307,7 @@ function renderCourt() {
     c.append(svg('line', { x1: px(a.x) + S / 2, y1: py(a.y) + S / 2, x2: px(b.x) + S / 2, y2: py(b.y) + S / 2, stroke: '#7a4b00', 'stroke-width': 3, 'stroke-dasharray': '3 3' }));
   }
   if (s.placing && s.placing.mine) { placementPieces(c); placementTargets(c); return; }
+  drawGhost(c);
   for (const p of s.o) drawO(c, p);
   for (const p of s.x) drawX(c, p);
   drawTargets(c);
@@ -958,29 +963,81 @@ function newOtherEntries() {
   return fresh.filter(otherSide);
 }
 let lastOther = [];
+// The other side's turn, one action at a time: the board as it stood after each action, a ghost where
+// the piece came from, what it did and what happened. OK shows the next action, then your turn.
+let replay = null;            // {entries, k, live, start}
+let replayPaused = false;
+function frameState(live, e) {
+  const b = e.board;
+  return Object.assign({}, live, {
+    o: live.o.map((p, i) => Object.assign({}, p, b.o[i])), x: live.x.map((p, i) => Object.assign({}, p, b.x[i])),
+    arrow_lines: b.arrow_lines, clock: b.clock, phase: b.phase, tokens: b.tokens, pending: b.pending, inbound: b.inbound,
+    shot: b.shot, bonus: b.bonus, turnovers: b.turnovers, summary: b.summary, legal: [], can_act: false,
+    side_to_act: null, stage: b.stage === 'over' ? 'replay' : b.stage, result: null });
+}
 function showFeedIfNew() {
-  const fresh = newOtherEntries();
+  const fresh = newOtherEntries().filter(e => e.board);
   if (!fresh.length) return false;
   lastOther = fresh;
-  const who = sideName(fresh[0].side);
-  const kids = [el('h2', { text: `${who}${fresh[0].actor === 'ai' ? ' (computer)' : ''}: what just happened` }),
-    ...fresh.map(feedEntry),
-    el('button', { class: 'primary', text: 'Continue', onclick: () => { closeModal(); render(); } })];
-  announce(fresh.map(e => `${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' ')).join(' '));
-  renderRecent(); renderCourt();
-  modal(kids, () => render());
+  const before = (st.feed || []).find(e => e.n === fresh[0].n - 1);      // the board just before the turn
+  replay = { entries: fresh, k: 0, live: st, start: before && before.board && before.possession === fresh[0].possession ? before.board : null };
+  if (st.timer && st.can_act && ['main', 'grace'].includes(st.timer.mode)) { replayPaused = true; timerEvent('pause'); }
+  sel = { side: null, i: null, kind: null, dest: null };
+  st = frameState(replay.live, fresh[0]);
+  render();
   return true;
+}
+function replayPrev() {
+  return replay.k > 0 ? replay.entries[replay.k - 1].board : replay.start;
+}
+function stepOn() {
+  replay.k += 1;
+  if (replay.k < replay.entries.length) { st = frameState(replay.live, replay.entries[replay.k]); render(); return; }
+  const live = replay.live;
+  replay = null; st = live;
+  $('stepBar').classList.add('hidden'); $('stepBar').innerHTML = '';
+  if (replayPaused) { replayPaused = false; timerEvent('resume'); }
+  render();
+  if ($('modal').classList.contains('hidden')) $('actionsPanel').focus();
+}
+function renderStep() {
+  const e = replay.entries[replay.k], n = replay.entries.length, last = replay.k === n - 1;
+  const bar = $('stepBar'); bar.innerHTML = ''; bar.classList.remove('hidden');
+  const yours = last && replay.live.can_act && replay.live.stage !== 'over';
+  const label = !last ? 'OK: next action' : yours ? 'OK: your turn' : replay.live.stage === 'over' ? 'OK: see the result' : 'OK';
+  bar.append(el('div', { class: 'step-count', text: `${sideName(e.side)}${e.actor === 'ai' ? ' (computer)' : ''} · action ${replay.k + 1} of ${n}` }),
+    feedEntry(e), el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn }));
+  announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
+  $('stepOk').focus();
+}
+// where the acting piece came from: a dashed ring and a dashed line to where it is now
+function drawGhost(c) {
+  if (!replay) return;
+  const e = replay.entries[replay.k], prev = replayPrev(), m = e.text.match(/^([OX])(\d)/);
+  if (!prev || !m) return;
+  const side = m[1], i = Number(m[2]) - 1;
+  const was = (side === 'O' ? prev.o : prev.x)[i], now = (side === 'O' ? st.o : st.x)[i];
+  if (!was || !now) return;
+  const ax = px(was.x) + S / 2, ay = py(was.y) + S / 2, bx = px(now.x) + S / 2, by = py(now.y) + S / 2;
+  if (was.sq !== now.sq) {
+    c.append(svg('line', { class: 'ghost', x1: ax, y1: ay, x2: bx, y2: by }));
+    c.append(svg('circle', { class: 'ghost', cx: ax, cy: ay, r: 14 }));
+  } else if (side === 'X' && was.arrow !== now.arrow) {       // turned on the spot: the old arrow, faint
+    const d = DIRS[was.arrow];
+    c.append(svg('line', { class: 'ghost', x1: ax, y1: ay, x2: ax + d[0] * S * 0.8, y2: ay - d[1] * S * 0.8 }));
+  }
 }
 function renderRecent() {
   const box = $('recent'); if (!box) return;
   box.innerHTML = '';
-  if (!lastOther.length) { box.classList.add('hidden'); return; }
+  const shown = replay ? replay.entries.slice(0, replay.k) : lastOther;     // never the actions still to come
+  if (!shown.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
-  box.append(el('h3', { text: `Last turn: ${sideName(lastOther[0].side)}${lastOther[0].actor === 'ai' ? ' (computer)' : ''}` }), ...lastOther.map(feedEntry));
+  box.append(el('h3', { text: `${replay ? 'So far' : 'Last turn'}: ${sideName(shown[0].side)}${shown[0].actor === 'ai' ? ' (computer)' : ''}` }), ...shown.map(feedEntry));
 }
 function actedPieces() {
   const out = new Set();
-  for (const e of lastOther) { const m = e.text.match(/^([OX])(\d)/); if (m) out.add(m[1] + (Number(m[2]) - 1)); }
+  for (const e of (replay ? [replay.entries[replay.k]] : lastOther)) { const m = e.text.match(/^([OX])(\d)/); if (m) out.add(m[1] + (Number(m[2]) - 1)); }
   return out;
 }
 

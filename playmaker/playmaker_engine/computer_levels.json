@@ -14,6 +14,9 @@
           "lanes": false
         },
         "habits": 2,
+        "habits_not": [
+          "jumps_first_pass"
+        ],
         "tunnel": 2,
         "reading": "role",
         "comfort_offset": 6,
@@ -59,7 +62,8 @@
       "never_leaves_shooter",
       "ball_watcher",
       "jumps_first_pass"
-    ]
+    ],
+    "_habits_not_about": "habits_not: habits a level never draws. Rookie: not jumps_first_pass, since at Pass 14 v Intercept 6 an intercept attempt succeeds 60% of the time, so jumping passes is often right, not a beginner's mistake."
   },
   "offence": {
     "levels": {
@@ -94,7 +98,8 @@
             "4": 17,
             "2": 0
           }
-        }
+        },
+        "shoot_by": 4
       },
       "starter": {
         "concepts": {
@@ -127,7 +132,8 @@
             "4": 17,
             "2": 0
           }
-        }
+        },
+        "shoot_by": 0
       },
       "allstar": {
         "concepts": {
@@ -160,7 +166,8 @@
             "4": 17,
             "2": 0
           }
-        }
+        },
+        "shoot_by": 0
       }
     },
     "habits": [
@@ -170,7 +177,9 @@
       "star_only"
     ],
     "plan_weight": 1.5,
-    "_patience_about": "Shot bars by the clock (seconds left; a phase is two). A shot goes up only when its value, after the reaction, clears the bar and is worth at least what continuing is estimated to be worth. 'contested': a defender can still contest it; 'open': nobody can. The bars drop each phase; at the last chance there is no bar."
+    "_patience_about": "Shot bars by the clock (seconds left; a phase is two). A shot goes up only when its value, after the reaction, clears the bar and is worth at least what continuing is estimated to be worth. 'contested': a defender can still contest it; 'open': nobody can. The bars drop each phase; at the last chance there is no bar.",
+    "loop_penalty": 2.0,
+    "_loop_about": "loop_penalty: points off a non-shot play that ends where the offence already stood earlier this possession (its five squares and the ball), per earlier visit, up to three. shoot_by: from this clock on (Rookie: the phase before the last), the offence takes its best shot rather than keep building; 0 = only the last phase, which has no bar."
   },
   "budget_s": {
     "server": 1.0,

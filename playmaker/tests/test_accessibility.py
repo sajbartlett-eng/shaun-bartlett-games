@@ -56,11 +56,19 @@ async function scan(page) {
   out['contest'] = await scan(page);
   const g3 = await post('/api/new', { mode: 'hotseat', scenario: 6, seed: 4, ai: { O: 'greedy', X: 'greedy' } });
   await page.goto(`${base}/?code=${g3.code}&token=${g3.token}`); await page.waitForTimeout(900);
+  // the computer's turns come one action at a time in the step bar, then the end screen
+  out['step bar'] = await scan(page);
+  out['steps'] = [];
+  for (let i = 0; i < 80 && await page.evaluate(() => !document.getElementById('stepBar').classList.contains('hidden')); i++) {
+    out['steps'].push(await page.evaluate(() => [document.querySelector('#stepBar .step-count').textContent, document.activeElement.id,
+      document.querySelectorAll('#recent .fe').length, !!document.querySelector('#court .ghost') || null]));
+    await page.keyboard.press('Enter'); await page.waitForTimeout(60);
+  }
   out['end dialog'] = await scan(page);
   const trap = [];
   for (let i = 0; i < 12; i++) { await page.keyboard.press('Tab'); trap.push(await page.evaluate(() => !!document.activeElement.closest('#modal'))); }
   out['trap'] = trap;
-  // the computer's turn card comes first, then the end screen; Escape closes each in turn
+  // the end screen; Escape closes it
   const heading = () => page.evaluate(() => document.getElementById('modal').classList.contains('hidden') ? null : (document.querySelector('#modalBox h2') || {}).textContent);
   out['dialogs'] = [await heading()];
   for (let i = 0; i < 3 && (await heading()); i++) { await page.keyboard.press('Escape'); await page.waitForTimeout(250); out['dialogs'].push(await heading()); }
@@ -92,12 +100,19 @@ def test_accessibility(tmp_path):
         out = json.loads(r.stdout.strip().splitlines()[-1])
     finally:
         srv.shutdown()
-    for screen in ('laptop start', 'laptop table', 'phone start', 'phone table', 'contest', 'end dialog',
+    for screen in ('laptop start', 'laptop table', 'phone start', 'phone table', 'contest', 'step bar', 'end dialog',
                    'pick lock', 'scout report', 'team builder'):
         assert out[screen] == [], (screen, out[screen])
     assert all(out['trap']), 'focus left the dialog'
     assert out['escape closes'], out['dialogs']
-    assert 'what just happened' in out['dialogs'][0] and any(d and 'over' in d for d in out['dialogs'])
+    assert out['step bar'] == [], out['step bar']
+    steps = out['steps']                                      # every action, in order, with OK focused
+    assert len(steps) >= 3 and all(f == 'stepOk' for _, f, _, _ in steps), steps
+    for k, (count, _, shown, _) in enumerate(steps):          # "so far": the actions before this one, never after
+        assert shown == int(count.split('action ')[1].split(' of')[0]) - 1, steps
+    assert any(g for *_, g in steps), steps                   # a moved piece leaves a ghost where it was
+    assert steps[0][0].endswith(f"action 1 of {steps[0][0].split(' of ')[-1]}") and '(computer)' in steps[0][0]
+    assert any(d and 'over' in d for d in out['dialogs'])
     labels = out['laptop labels']
     assert len(labels) == 10
     assert all(',' in l and ' on ' in l for l in labels)
