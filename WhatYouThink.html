@@ -97,6 +97,37 @@
 
   #text.out { opacity: 0; }
 
+  /* Eyes closing and opening: the words go dim and soft, or come back into focus. */
+  .lid { display: block; }
+
+  .lid.closing {
+    filter: opacity(0.2) blur(1.4px);
+    transition: filter 7s cubic-bezier(0.4, 0, 0.6, 1);
+  }
+
+  .lid.shut {
+    filter: opacity(0.12) blur(5px);
+    transition: none;
+  }
+
+  .lid.opening {
+    filter: none;
+    transition: filter 2.8s cubic-bezier(0.2, 0.6, 0.3, 1);
+  }
+
+  /* Something heavy, somewhere else in the house. */
+  @keyframes thud {
+    0% { transform: translate(0, 0); }
+    18% { transform: translate(1px, 2px); }
+    42% { transform: translate(-1px, -1px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  .lid.thud { animation: thud 260ms ease-out; }
+
+  body.still,
+  body.still #stage { cursor: none; }
+
   .ln {
     display: block;
     opacity: 1;
@@ -442,6 +473,15 @@
   .secondary-start:hover,
   .secondary-start:focus-visible { opacity: 1; }
 
+  .sound-toggle {
+    margin-top: 1.6rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.07em;
+    color: var(--faint);
+  }
+
+  .sound-toggle:hover { transform: none; }
+
   .save-note {
     min-height: 1.2em;
     margin: 0.7rem 0 0;
@@ -528,6 +568,7 @@
       <button class="btn" id="start-interactive">Begin →</button>
       <p class="start-note">Intended experience</p>
       <button class="btn secondary-start" id="start-straight">Read straight through →</button>
+      <button class="btn sound-toggle" id="sound-toggle" aria-pressed="true">Sound on · headphones, lights low</button>
     </div>
   </div>
 </div>
@@ -579,30 +620,34 @@
     "What detail matters most?"
   ];
 
+  // The words are untouched. Everything after `timing` is the score:
+  //   air   - what the house sounds like from this screen on (room, hush, wind, silent, fade)
+  //   eyes  - "close" dims the words after they land, "open" brings them back into focus
+  //   cues  - one-off sounds, timed to the line they belong to (line index, extra delay in ms)
   const PARTS = [
     {
       number: 1,
       markerBackground: "light",
       screens: [
-        { text: "Close your eyes.", timing: "para", background: "dark" },
-        { text: "Don't make a sound.", timing: "beat" },
+        { text: "Close your eyes.", timing: "para", background: "dark", air: "room", eyes: "close" },
+        { text: "Don't make a sound.", timing: "beat", air: "hush" },
         { text: "We're playing hide and seek.", timing: "beat" },
-        { text: ["The sounds are not what you think.", "That's Daddy's car door closing.", "He's home from work."], timing: "para" },
+        { text: ["The sounds are not what you think.", "That's Daddy's car door closing.", "He's home from work."], timing: "para", cues: [{ line: 1, delay: 250, play: "door" }] },
         { text: ["He hasn't called.", "Daddy always calls us."], timing: "long" },
         { text: "Don't make a sound, Josie.", timing: "para" },
         { text: ["I know where you went.", "Where you always go.", "Tucked away beneath your mountain of soft toys."], timing: "beat" },
         { text: ["We pretend we don't know.", "But we do."], timing: "beat" },
         { text: ["It's just a game.", "Right?"], timing: "long" },
-        { text: ["The banging.", "Your screams.", "It's part of the fun."], timing: "beat" },
-        { text: "Josie?", timing: "long" },
-        { text: ["I don't like this game anymore.", "This house is too small.", "We should have stayed together."], timing: "beat" },
+        { text: ["The banging.", "Your screams.", "It's part of the fun."], timing: "beat", air: "room", cues: [{ line: 0, delay: 350, play: "banging" }] },
+        { text: "Josie?", timing: "long", air: "silent" },
+        { text: ["I don't like this game anymore.", "This house is too small.", "We should have stayed together."], timing: "beat", air: "hush" },
         { text: ["Josie...", "I'm sorry."], inline: true, timing: "para" },
-        { text: ["That's Daddy's car door.", "Do you hear it?"], timing: "long" },
+        { text: ["That's Daddy's car door.", "Do you hear it?"], timing: "long", cues: [{ line: 0, delay: 700, play: "door" }] },
         { text: ["He'll find me first.", "We'll win."], timing: "beat" },
         { text: "He'll wake up Mummy.", timing: "beat" },
-        { text: "“Daddy?”", timing: "open", background: "light", backgroundEarly: true },
-        { text: "Close your eyes.", timing: "long", background: "dark" },
-        { text: "It will be over soon.", timing: "long" }
+        { text: "“Daddy?”", timing: "open", background: "light", backgroundEarly: true, air: "silent" },
+        { text: "Close your eyes.", timing: "long", background: "dark", air: "hush", eyes: "close" },
+        { text: "It will be over soon.", timing: "long", air: "fade" }
       ],
       reference: [
         [0], [1], [2], [3], null, [4], [5, 6, 7], null, [8, 9], null,
@@ -613,14 +658,14 @@
       number: 2,
       markerBackground: "dark",
       screens: [
-        { text: "Close your eyes.", timing: "para" },
-        { text: ["The sounds are not what you think.", "It's only the wind.", "There's nobody here with us."], timing: "para" },
+        { text: "Close your eyes.", timing: "para", air: "room", eyes: "close" },
+        { text: ["The sounds are not what you think.", "It's only the wind.", "There's nobody here with us."], timing: "para", cues: [{ line: 1, delay: 0, air: "wind" }] },
         { text: "“Are you okay?”", timing: "para" },
         { text: "You still won't leave your mountain of soft toys.", timing: "para" },
         { text: ["Daddy's not coming.", "He can't even look at me."], timing: "para" },
         { text: ["I'll stay with you, Josie.", "I won't hide."], timing: "beat" },
-        { text: "“Here's your medicine.”", timing: "para" },
-        { text: "It will be over soon.", timing: "long" }
+        { text: "“Here's your medicine.”", timing: "para", air: "hush" },
+        { text: "It will be over soon.", timing: "long", air: "fade" }
       ],
       reference: [[0], [1], [2], [3, 4, 5], [6], [7]]
     },
@@ -628,11 +673,11 @@
       number: 3,
       markerBackground: "dark",
       screens: [
-        { text: "Close your eyes.", timing: "para" },
+        { text: "Close your eyes.", timing: "para", air: "hush", eyes: "close" },
         { text: ["Josie, she's back.", "She's here to help us."], timing: "para" },
         { text: ["Your soft toys are old and frayed, Josie.", "She's teaching me to fix them.", "I'll make you new ones."], timing: "para" },
-        { text: "“Open your eyes.”", timing: "long" },
-        { text: "I'll be back soon, Josie.", timing: "long", background: "light" }
+        { text: "“Open your eyes.”", timing: "long", eyes: "open" },
+        { text: "I'll be back soon, Josie.", timing: "long", background: "light", air: "fade" }
       ],
       reference: [[0], [1], [2], [3], [4]]
     },
@@ -640,14 +685,14 @@
       number: 4,
       markerBackground: "light",
       screens: [
-        { text: "Close your eyes.", timing: "para", background: "dark" },
+        { text: "Close your eyes.", timing: "para", background: "dark", air: "hush", eyes: "close" },
         { text: ["Josie, we did it.", "You can go anywhere you like."], timing: "para" },
-        { text: ["Open your eyes.", "We have a customer."], timing: "para", background: "light" },
+        { text: ["Open your eyes.", "We have a customer."], timing: "para", background: "light", eyes: "open", air: "room", cues: [{ line: 1, delay: 150, play: "bell" }] },
         { text: "“Hello. Are you looking for a toy?”", timing: "para" },
-        { text: "They are familiar.", timing: "para" },
+        { text: "They are familiar.", timing: "para", air: "silent" },
         { text: "“Do you like to play Hide and Seek?”", timing: "para" },
-        { text: "Close your eyes.", timing: "long" },
-        { text: "It will be over soon.", timing: "long" }
+        { text: "Close your eyes.", timing: "long", eyes: "close" },
+        { text: "It will be over soon.", timing: "long", cues: [{ line: 0, delay: 3400, play: "thud" }] }
       ],
       reference: [[0], [1], [2], [3], [4], [5], [6], [7]]
     }
@@ -673,6 +718,253 @@
 
   const byId = id => document.getElementById(id);
   const asLines = value => Array.isArray(value) ? value : [value];
+
+  // ---- The house -------------------------------------------------------------
+  // Every sound is made here, in the browser. Nothing to download, nothing to host.
+  const Sound = (() => {
+    const SOUND_KEY = "whatYouThink.sound";
+    let enabled = true;
+    try { enabled = localStorage.getItem(SOUND_KEY) !== "off"; } catch {}
+
+    let ctx = null;
+    let master, far, near, roomGain, windGain, windFilter;
+    let air = "off";
+
+    const LEVELS = { off: 0, silent: 0, fade: 0, hush: 0.05, room: 0.09, wind: 0.11 };
+
+    function noiseBuffer(seconds, brown) {
+      const length = Math.floor(ctx.sampleRate * seconds);
+      const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const data = buffer.getChannelData(c);
+        let last = 0;
+        for (let i = 0; i < length; i++) {
+          const white = Math.random() * 2 - 1;
+          if (brown) {
+            last = (last + 0.02 * white) / 1.02;
+            data[i] = last * 3.5;
+          } else {
+            data[i] = white;
+          }
+        }
+      }
+      return buffer;
+    }
+
+    function reverb(seconds, decay) {
+      const length = Math.floor(ctx.sampleRate * seconds);
+      const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const data = buffer.getChannelData(c);
+        for (let i = 0; i < length; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+        }
+      }
+      const convolver = ctx.createConvolver();
+      convolver.buffer = buffer;
+      return convolver;
+    }
+
+    function init() {
+      if (ctx || !enabled) return;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) { enabled = false; return; }
+      // Let iPhones play through the silent switch, the way a video would.
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+      ctx = new Ctx();
+
+      const limiter = ctx.createDynamicsCompressor();
+      limiter.threshold.value = -10;
+      limiter.ratio.value = 8;
+      master = ctx.createGain();
+      master.gain.value = 0.9;
+      master.connect(limiter).connect(ctx.destination);
+
+      // Near: in the room with you. Far: through a wall, down the hall.
+      near = ctx.createGain();
+      near.connect(master);
+      const nearRoom = reverb(1.6, 3);
+      const nearWet = ctx.createGain();
+      nearWet.gain.value = 0.18;
+      near.connect(nearRoom).connect(nearWet).connect(master);
+
+      far = ctx.createBiquadFilter();
+      far.type = "lowpass";
+      far.frequency.value = 520;
+      far.Q.value = 0.4;
+      const farDry = ctx.createGain();
+      farDry.gain.value = 0.7;
+      const farRoom = reverb(2.8, 2.2);
+      const farWet = ctx.createGain();
+      farWet.gain.value = 0.55;
+      far.connect(farDry).connect(master);
+      far.connect(farRoom).connect(farWet).connect(master);
+
+      // Room tone: the low hush of a house at night.
+      const room = ctx.createBufferSource();
+      room.buffer = noiseBuffer(6, true);
+      room.loop = true;
+      const roomFilter = ctx.createBiquadFilter();
+      roomFilter.type = "lowpass";
+      roomFilter.frequency.value = 240;
+      roomGain = ctx.createGain();
+      roomGain.gain.value = 0;
+      room.connect(roomFilter).connect(roomGain).connect(master);
+      room.start();
+
+      // Wind: only in Part 2, only when the story says so.
+      const wind = ctx.createBufferSource();
+      wind.buffer = noiseBuffer(6, false);
+      wind.loop = true;
+      windFilter = ctx.createBiquadFilter();
+      windFilter.type = "bandpass";
+      windFilter.frequency.value = 520;
+      windFilter.Q.value = 1.6;
+      const gust = ctx.createOscillator();
+      gust.frequency.value = 0.07;
+      const gustDepth = ctx.createGain();
+      gustDepth.gain.value = 260;
+      gust.connect(gustDepth).connect(windFilter.frequency);
+      windGain = ctx.createGain();
+      windGain.gain.value = 0;
+      wind.connect(windFilter).connect(windGain).connect(master);
+      wind.start();
+      gust.start();
+    }
+
+    function ready() {
+      if (!enabled) return false;
+      init();
+      if (!ctx) return false;
+      if (ctx.state === "suspended") ctx.resume();
+      return true;
+    }
+
+    function setAir(state) {
+      if (!state) return;
+      air = state;
+      if (!ready()) return;
+
+      const now = ctx.currentTime;
+      const room = state === "wind" ? LEVELS.hush : LEVELS[state] ?? 0;
+      const wind = state === "wind" ? LEVELS.wind : 0;
+      // How quickly the house changes: a cut is a held breath, a fade is falling asleep.
+      const speed = state === "silent" ? 0.015 : state === "fade" ? 3 : state === "off" ? 0.6 : 1.4;
+
+      [[roomGain, room], [windGain, wind]].forEach(([node, level]) => {
+        node.gain.cancelScheduledValues(now);
+        node.gain.setValueAtTime(node.gain.value, now);
+        node.gain.setTargetAtTime(level, now, speed);
+      });
+    }
+
+    function voice(destination, pan = 0) {
+      const gain = ctx.createGain();
+      if (ctx.createStereoPanner) {
+        const panner = ctx.createStereoPanner();
+        panner.pan.value = pan;
+        gain.connect(panner).connect(destination);
+      } else {
+        gain.connect(destination);
+      }
+      return gain;
+    }
+
+    function burst(destination, at, { freq, type = "lowpass", q = 0.7, attack = 0.004, length, level, pan }) {
+      const source = ctx.createBufferSource();
+      source.buffer = noiseBuffer(length + 0.1, false);
+      const filter = ctx.createBiquadFilter();
+      filter.type = type;
+      filter.frequency.value = freq;
+      filter.Q.value = q;
+      const out = voice(destination, pan);
+      out.gain.setValueAtTime(0, at);
+      out.gain.linearRampToValueAtTime(level, at + attack);
+      out.gain.exponentialRampToValueAtTime(0.0001, at + length);
+      source.connect(filter).connect(out);
+      source.start(at);
+      source.stop(at + length + 0.05);
+    }
+
+    function body(destination, at, { from, to, length, level, pan }) {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(from, at);
+      osc.frequency.exponentialRampToValueAtTime(to, at + length * 0.6);
+      const out = voice(destination, pan);
+      out.gain.setValueAtTime(0, at);
+      out.gain.linearRampToValueAtTime(level, at + 0.006);
+      out.gain.exponentialRampToValueAtTime(0.0001, at + length);
+      osc.connect(out);
+      osc.start(at);
+      osc.stop(at + length + 0.05);
+    }
+
+    const sounds = {
+      // A car door outside: the latch, then the weight of it.
+      door(at) {
+        const pan = -0.35;
+        burst(far, at, { freq: 2400, type: "bandpass", q: 2, length: 0.05, level: 0.5, pan });
+        body(far, at + 0.012, { from: 120, to: 58, length: 0.42, level: 1.1, pan });
+        burst(far, at + 0.012, { freq: 380, length: 0.36, level: 0.9, pan });
+      },
+      // Something heavy hitting a wall in another room.
+      thud(at, level = 1) {
+        const pan = (Math.random() - 0.5) * 0.5;
+        body(far, at, { from: 95, to: 42, length: 0.55, level: 1.25 * level, pan });
+        burst(far, at, { freq: 260, length: 0.32, level: 0.8 * level, pan });
+      },
+      // A floorboard, near enough to be in the room.
+      step(at) {
+        const pan = Math.random() < 0.5 ? -0.75 : 0.75;
+        body(near, at, { from: 140, to: 80, length: 0.18, level: 0.16, pan });
+        burst(near, at, { freq: 900, type: "bandpass", q: 1.2, length: 0.12, level: 0.07, pan });
+      },
+      // The bell over a shop door. Cheerful. Too cheerful.
+      bell(at) {
+        [0, 0.09, 0.21, 0.36].forEach((offset, hit) => {
+          const strike = at + offset + Math.random() * 0.02;
+          const base = 1480 + hit * 37;
+          [1, 2.76, 5.4].forEach((ratio, partial) => {
+            const osc = ctx.createOscillator();
+            osc.frequency.value = base * ratio;
+            const out = voice(near, 0.2);
+            const level = (0.06 / (partial + 1)) * (1 - hit * 0.18);
+            out.gain.setValueAtTime(0, strike);
+            out.gain.linearRampToValueAtTime(level, strike + 0.003);
+            out.gain.exponentialRampToValueAtTime(0.0001, strike + 1.6 / (partial + 1));
+            osc.connect(out);
+            osc.start(strike);
+            osc.stop(strike + 1.7);
+          });
+        });
+      }
+    };
+
+    function play(name, onHit) {
+      if (!ready() || !sounds[name]) return;
+      sounds[name](ctx.currentTime + 0.02);
+      if (onHit) onHit(name);
+    }
+
+    function toggle() {
+      enabled = !enabled;
+      try { localStorage.setItem(SOUND_KEY, enabled ? "on" : "off"); } catch {}
+      if (enabled) setAir(air);
+      else if (ctx) ctx.suspend();
+      return enabled;
+    }
+
+    return {
+      get enabled() { return enabled; },
+      get air() { return air; },
+      start: ready,
+      setAir,
+      play,
+      thud: (level) => { if (ready()) sounds.thud(ctx.currentTime + 0.02, level); },
+      toggle
+    };
+  })();
 
   function escapeHtml(value) {
     return String(value)
@@ -730,6 +1022,107 @@
   function revealAll() {
     clearTimers();
     text.querySelectorAll(".ln.pending").forEach(line => line.classList.remove("pending"));
+    flushCues();
+  }
+
+  // ---- The score -------------------------------------------------------------
+  // Banging in another room: [ms after the line, loudness]. Uneven on purpose.
+  const BANGS = [[0, 1], [540, 0.85], [1380, 1], [1650, 0.7], [2950, 0.95], [3600, 0.8], [3840, 0.6], [5600, 0.45]];
+  const HOUSE_SOUNDS = ["room", "hush", "wind"];
+
+  let cueTimers = [];
+  let pendingCues = [];
+  let idleTimer = null;
+  let cursorTimer = null;
+
+  function lid() {
+    return text.querySelector(".lid");
+  }
+
+  function felt(kind) {
+    if (!Sound.enabled) return;
+    try { navigator.vibrate?.(kind === "door" ? 35 : 60); } catch {}
+    if (kind !== "thud" || prefersReducedMotion) return;
+    const words = lid();
+    if (!words) return;
+    words.classList.remove("thud");
+    void words.offsetWidth;
+    words.classList.add("thud");
+  }
+
+  function runCue(cue) {
+    if (cue.air) {
+      Sound.setAir(cue.air);
+    } else if (cue.play === "banging") {
+      BANGS.forEach(([ms, level]) => {
+        cueTimers.push(setTimeout(() => {
+          Sound.thud(level);
+          felt("thud");
+        }, ms));
+      });
+    } else {
+      Sound.play(cue.play, felt);
+    }
+  }
+
+  function fireCue(entry) {
+    if (entry.fired) return;
+    entry.fired = true;
+    clearTimeout(entry.timer);
+    runCue(entry.cue);
+  }
+
+  // Tapping ahead brings the sound with the line it belongs to.
+  function flushCues() {
+    pendingCues.filter(entry => entry.cue.line > 0).forEach(fireCue);
+  }
+
+  function clearCues() {
+    cueTimers.forEach(clearTimeout);
+    cueTimers = [];
+    pendingCues.forEach(entry => clearTimeout(entry.timer));
+    pendingCues = [];
+    clearTimeout(idleTimer);
+  }
+
+  function scoreScreen(screen, instant, quiet) {
+    Sound.setAir(screen.air);
+    if (quiet) return;
+
+    const lines = asLines(screen.text);
+    const step = instant ? 0 : screen.inline ? INLINE_REVEAL : LINE_REVEAL;
+
+    (screen.cues || []).forEach(cue => {
+      const entry = { cue, fired: false };
+      entry.timer = setTimeout(() => fireCue(entry), cue.line * step + (cue.delay || 0));
+      pendingCues.push(entry);
+    });
+
+    const words = lid();
+    if (screen.eyes === "close" && words) {
+      cueTimers.push(setTimeout(() => words.classList.add("closing"), (lines.length - 1) * step + 2400));
+    } else if (screen.eyes === "open" && words) {
+      words.classList.add("shut");
+      cueTimers.push(setTimeout(() => {
+        words.classList.remove("shut");
+        words.classList.add("opening");
+      }, 450));
+    }
+
+    // Sit still long enough in the dark and the house answers.
+    if (screen.background === "dark" && !screen.cues && screen.className !== "marker") {
+      idleTimer = setTimeout(() => {
+        if (mode === "story" && HOUSE_SOUNDS.includes(Sound.air)) Sound.play("step");
+      }, 11000 + Math.random() * 6000);
+    }
+  }
+
+  function keepStill() {
+    clearTimeout(cursorTimer);
+    body.classList.remove("still");
+    cursorTimer = setTimeout(() => {
+      if (mode === "story") body.classList.add("still");
+    }, 1800);
   }
 
   function applyBackground(state, immediate = false, hold = BACKGROUND_HOLD) {
@@ -1039,6 +1432,7 @@ ${finalStory.trim() || "—"}
       const spacer = inline && index < lines.length - 1 ? " " : "";
       return `<span class="${classes.join(" ")}">${escapeHtml(line)}</span>${spacer}`;
     }).join("");
+    text.innerHTML = `<span class="lid">${text.innerHTML}</span>`;
     text.className = screen.className || "";
 
     if (instant || lines.length < 2) return;
@@ -1056,10 +1450,10 @@ ${finalStory.trim() || "—"}
     });
   }
 
-  function render(screenNumber, instant = false) {
+  function render(screenNumber, instant = false, quiet = false) {
     const screen = screens[screenNumber];
     clearTimers();
-    body.classList.remove("summing", "acting");
+    body.classList.remove("summing", "acting", "still");
 
     if (screen.reflection !== undefined) {
       renderReflection(screen.reflection);
@@ -1108,8 +1502,11 @@ ${finalStory.trim() || "—"}
       });
     } else {
       renderStoryScreen(screen, instant);
+      scoreScreen(screen, instant, quiet);
+      keepStill();
     }
 
+    if (mode !== "story" || screen.className === "marker") Sound.setAir("off");
     applyBackground(screen.background, instant);
   }
 
@@ -1118,6 +1515,7 @@ ${finalStory.trim() || "—"}
 
     busy = true;
     clearTimers();
+    clearCues();
     const timing = TIMINGS[timingName] || TIMINGS.para;
     const fadeOut = prefersReducedMotion ? 1 : timing.out;
     const fadeIn = prefersReducedMotion ? 1 : timing.in;
@@ -1139,7 +1537,7 @@ ${finalStory.trim() || "—"}
 
       setTimeout(() => {
         screenIndex = nextIndex;
-        render(screenIndex, instant || prefersReducedMotion);
+        render(screenIndex, instant || prefersReducedMotion, instant);
         text.style.transition = `opacity ${fadeIn}ms ease-in-out`;
         text.classList.remove("out");
         busy = false;
@@ -1166,6 +1564,7 @@ ${finalStory.trim() || "—"}
   }
 
   function start(useReflections) {
+    Sound.start();
     buildScreens(useReflections);
     mode = "story";
     goTo(0, screens[0].timing);
@@ -1179,6 +1578,41 @@ ${finalStory.trim() || "—"}
   byId("start-interactive").addEventListener("click", event => {
     event.stopPropagation();
     start(true);
+  });
+
+  const soundToggle = byId("sound-toggle");
+
+  function showSound() {
+    soundToggle.textContent = Sound.enabled ? "Sound on · headphones, lights low" : "Sound off";
+    soundToggle.setAttribute("aria-pressed", String(Sound.enabled));
+  }
+
+  showSound();
+  soundToggle.addEventListener("click", event => {
+    event.stopPropagation();
+    Sound.toggle();
+    showSound();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "m" && event.key !== "M") return;
+    if (event.target.closest?.("textarea")) return;
+    Sound.toggle();
+    showSound();
+  });
+
+  document.addEventListener("mousemove", () => {
+    if (mode === "story") keepStill();
+  });
+
+  // Look away mid-story and the tab calls after you.
+  const pageTitle = document.title;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && screenIndex >= 0 && ["story", "asking"].includes(mode)) {
+      document.title = "Josie?";
+    } else {
+      document.title = pageTitle;
+    }
   });
 
   stage.addEventListener("click", event => {
