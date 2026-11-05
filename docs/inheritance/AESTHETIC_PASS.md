@@ -55,6 +55,8 @@ What is deliberately absent: camera moves, confetti, slow fades on overlays, and
 
 ## The build order
 
+Stage 1 shipped: the thirteen silhouettes redrawn as path data drawn through Path2D on the canvas and emitted as inline SVG for HTML (the Legacy catalogue shows the piece it sells); a soft shadow under every disc; the board on paper with stippled land whose density follows the value band; plot labels in the hand font. Checked at 22, 26, 36, 48 and 68 px on a phone and a desktop. File size unchanged within a kilobyte.
+
 1. **Icons and the paper board.** New silhouettes as one SVG symbol set, drawn through `Path2D`; hatch fills by value; ink perimeter and fence; Caveat plot labels. Screenshot every asset at 24, 35 and 68 px before shipping.
 2. **Event animations.** Place, fence commit with gates, choose with the count-up, the Legacy record's payments and strip.
 3. **Ambient life.** Water, crops, mill, chimney. Paused during Cut; off under reduced motion.

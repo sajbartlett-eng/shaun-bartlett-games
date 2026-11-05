@@ -2569,6 +2569,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 .legacy-record .legacy-record-line p {margin:3px 0;font-size:14px;line-height:1.45;}
 .legacy-record-final {margin-top:12px;font:700 16px var(--display);}
 .legacy-metrics-3 {grid-template-columns:repeat(3,minmax(0,1fr));}
+.asset-icon {vertical-align:middle;margin-right:4px;flex:none;}
 .legacy-strip {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 4px;}
 .legacy-strip-col {display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border:1px solid var(--paper-edge);background:var(--paper);min-width:0;}
 .legacy-strip-round {font-size:12px;color:var(--ink-soft);}
@@ -5060,236 +5061,142 @@ const RENDER = (() => {
         }
     }
 
+    // Every asset is a small drawing in a 32-unit box (-16..16, y down), kept as
+    // SVG path data so the same shape reaches the canvas (through Path2D) and the
+    // HTML (through assetIconSvg). Each kind has one silhouette nobody mistakes at
+    // 24 pixels: the Manor's twin chimneys, the Cottage's round thatch, the Barn's
+    // gambrel roof and crossed door, the horseshoe over the stable door, the Mill's
+    // sails, the Workshop's hammer and anvil, the Well's roof and bucket, the skep
+    // hive, the hen, the wheat heads, the hanging grapes, the orchard crown, the
+    // garden rose. Two-tone: dark ink on the light discs, light ink on the dark.
+    const ICON_INK_DARK = '#2b2316', ICON_INK_LIGHT = '#f4ede0';
+    const op = (d, mode = 'stroke', ink = null, width = 2.2) => ({ d, mode, ink, width });
+    const ASSET_ICON_OPS = {
+        G: [ // Manor
+            op('M-16 -5 L0 -15 L16 -5'),
+            op('M-13 -5 h26 v18 h-26 z'),
+            op('M-10 -12 h3 v7 h-3 z M7 -12 h3 v7 h-3 z'),
+            op('M-3 4 h6 v9 h-6 z'),
+            op('M-9 0 h4 v4 h-4 z M5 0 h4 v4 h-4 z'),
+            op('M-16 13 H16'),
+        ],
+        H: [ // Cottage
+            op('M-15 -1 Q0 -17 15 -1'),
+            op('M-11 -1 h22 v14 h-22 z'),
+            op('M-3 5 h6 v8 h-6 z'),
+            op('M-8 2 h4 v4 h-4 z'),
+            op('M7 -8 v-5 h4 v8'),
+        ],
+        Y: [ // Barn
+            op('M-15 13 V-2 L-11 -9 L0 -13 L11 -9 L15 -2 V13 Z'),
+            op('M-8 1 h16 v12 h-16 z'),
+            op('M-8 1 L8 13 M8 1 L-8 13'),
+            op('M-2 -7 h4 v4 h-4 z'),
+        ],
+        S: [ // Stables
+            op('M-16 -7 L-13 -13 H13 L16 -7 Z'),
+            op('M-14 -7 V13 M14 -7 V13 M-16 13 H16'),
+            op('M-5 4 h10 v9 h-10 z M-5 8 h10'),
+            op('M-3.5 -2 A3.5 3.5 0 1 1 3.5 -2 M-3.5 -2 v2.5 M3.5 -2 v2.5', 'stroke', null, 2),
+        ],
+        M: [ // Mill
+            op('M-7 14 L-5 -3 H5 L7 14 Z'),
+            op('M-6 -3 L0 -8 L6 -3'),
+            op('M-2.5 6 h5 v8 h-5 z'),
+            op('M0 -3 L-12 -15 M0 -3 L12 -15 M0 -3 L-12 9 M0 -3 L12 9'),
+            op('M-12 -15 L-8 -16 M12 -15 L8 -16 M-12 9 L-8 10 M12 9 L8 10 M-7 -10 L-9 -8 M7 -10 L9 -8 M-7 4 L-9 2 M7 4 L9 2', 'stroke', null, 2),
+            op('M-2.2 -3 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0', 'fill'),
+        ],
+        R: [ // Workshop: a hammer standing over an anvil
+            op('M-14 1 H12 L10 5 H-2 L-4 11 H-10 L-8 5 H-12 Z', 'fill'),
+            op('M-9 13 H5 V15 H-9 Z', 'fill'),
+            op('M0 -4 V-11', 'stroke', null, 2.8),
+            op('M-8 -16 h16 v5.5 h-16 z', 'fill'),
+        ],
+        W: [ // Well: a stone ring, two posts, a little roof, the bucket on its rope
+            op('M-12 -5 L0 -14 L12 -5', 'stroke', null, 2),
+            op('M-8 -5 V4 M8 -5 V4'),
+            op('M-11 4 h22 v9 h-22 z M-11 8.5 h22 M-4 4 v4.5 M4 8.5 v4.5'),
+            op('M-8 -2 H8 M0 -2 V2', 'stroke', null, 1.8),
+            op('M-3.5 2 h7 v4.5 h-7 z', 'fill'),
+        ],
+        B: [ // Beehive: a tall straw skep on a board, one bee at the door
+            op('M-10 11 V1 A10 11 0 0 1 10 1 V11 Z'),
+            op('M-9.6 5 H9.6', 'stroke', null, 1.8),
+            op('M-3 11 V8.5 A3 3 0 0 1 3 8.5 V11', 'fill'),
+            op('M-13 11 H13'),
+            op('M8 -11 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0', 'fill'),
+            op('M8.5 -15 l2 3 M13 -15 l-2 3 M6 -10 l-3 1', 'stroke', null, 1.6),
+        ],
+        K: [ // Chicken Coop: a hen
+            op('M-10 2 C-13 -5 -3 -10 4 -6 C8 -8 11 -8 12 -4 L9 -3 C10 2 6 8 0 8 H-6 Z', 'fill'),
+            op('M3 -8 l1.5 -3.5 l1.5 2.5 l1.5 -3 l1 3.5', 'stroke', null, 1.8),
+            op('M12 -4 l4 1 l-3.5 2', 'fill'),
+            op('M-3 8 v5 M2 8 v5 M-5 13 h4 M0 13 h4', 'stroke', null, 1.8),
+            op('M7 -4.5 a1.1 1.1 0 1 0 2.2 0 a1.1 1.1 0 1 0 -2.2 0', 'fill', 'alt'),
+        ],
+        D: [ // Garden: a rose on its stem
+            op('M0 14 Q-1 6 0 0', 'stroke', '#6f8f4e'),
+            op('M-1 7 Q-8 3 -9 8 Q-5 11 -1 8 M0 3 Q7 -1 9 4 Q5 7 1 5', 'stroke', '#6f8f4e'),
+            op('M-4 -7 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M-9.5 -4 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0 M2.7 -4 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0 M-5.7 -12.5 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0 M-1.1 -1 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0', 'stroke', '#f4ede0', 1.9),
+            op('M-1.6 -7 a1.6 1.6 0 1 0 3.2 0 a1.6 1.6 0 1 0 -3.2 0', 'fill', '#f4ede0'),
+        ],
+        C: [ // Crops: three heads of wheat
+            op('M-8 14 V-11 M0 14 V-14 M8 14 V-11', 'stroke', '#4f6f3f'),
+            op('M-13 14 Q0 9 13 14', 'stroke', '#4f6f3f'),
+            op('M-10.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
+            op('M-2.5 -13 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -9 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -5 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -11 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -7 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
+            op('M5.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
+        ],
+        V: [ // Vineyard: a trellis with grapes hanging from the wire
+            op('M-14 -7 H14 M-10 -12 V14 M10 -12 V14', 'stroke', '#4f6f3f'),
+            op('M0 -7 Q-8 -12 -9 -4 Q-4 -3 0 -7', 'stroke', '#4f6f3f', 1.9),
+            op('M0 -7 V-3', 'stroke', '#6f527f', 1.8),
+            op('M-5.2 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-8.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M3.8 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-5.2 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 10 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0', 'fill', '#6f527f'),
+        ],
+        O: [ // Orchard: one tree in fruit
+            op('M0 14 V4 M-5 14 H5', 'stroke', '#6f5134'),
+            op('M-11 3 A6 6 0 0 1 -6 -8 A7 7 0 0 1 6 -8 A6 6 0 0 1 11 3 A5 5 0 0 1 5 7 H-5 A5 5 0 0 1 -11 3 Z', 'stroke', '#4f6f3f'),
+            op('M-7.8 -2 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0 M0.2 -7 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0 M5.2 1 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0 M-3.8 3 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0 M2.2 4 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0', 'fill', '#a04830'),
+        ],
+    };
+    const iconPathCache = new Map();
+    const iconPath = d => { let path = iconPathCache.get(d); if (!path) { path = new Path2D(d); iconPathCache.set(d, path); } return path; };
+    const iconBaseInk = kind => (['Y', 'S', 'M', 'C', 'V', 'O'].includes(kind) ? ICON_INK_DARK : ICON_INK_LIGHT);
+    const iconAltInk = kind => (iconBaseInk(kind) === ICON_INK_DARK ? ICON_INK_LIGHT : ICON_INK_DARK);
+    const iconInkOf = (kind, ink) => ink === 'alt' ? iconAltInk(kind) : (ink || iconBaseInk(kind));
+
     function drawAssetIcon(kind, cx, cy, target = ctx, scale = 1) {
+        const ops = ASSET_ICON_OPS[kind];
+        if (!ops) return;
         const c = target;
         c.save();
         c.translate(cx, cy);
         c.scale(scale, scale);
-        const iconInk = ['Y','S','M','C','V','O'].includes(kind) ? '#2b2316' : '#f4ede0';
-        const ink = (stroke, fill = stroke) => {
-            c.strokeStyle = stroke;
-            c.fillStyle = fill;
-        };
-        ink(iconInk);
-        c.lineWidth = 2.2;
         c.lineCap = 'round';
         c.lineJoin = 'round';
-
-        const flower = (x, y, s = 1) => {
-            c.beginPath();
-            c.arc(x, y, 1.3 * s, 0, Math.PI * 2);
-            c.fill();
-            [[0,-2.3],[2.1,0],[0,2.3],[-2.1,0]].forEach(([dx,dy]) => {
-                c.beginPath();
-                c.arc(x + dx * s, y + dy * s, 1.05 * s, 0, Math.PI * 2);
-                c.fill();
-            });
-        };
-
-        if (kind === 'G') { // Manor — revert to the familiar house, add twin chimneys
-            c.beginPath();
-            c.moveTo(-16, -5); c.lineTo(0, -15); c.lineTo(16, -5);
-            c.stroke();
-            c.strokeRect(-13, -5, 26, 18);
-            c.strokeRect(-10, -12, 3, 7);
-            c.strokeRect(7, -12, 3, 7);
-            c.strokeRect(-3, 4, 6, 9);
-            c.strokeRect(-9, 0, 4, 4);
-            c.strokeRect(5, 0, 4, 4);
-            c.beginPath();
-            c.moveTo(-16, 13); c.lineTo(16, 13);
-            c.stroke();
-        } else if (kind === 'H') { // Cottage — keep it quaint, but simpler and cleaner
-            c.beginPath();
-            c.moveTo(-15, -3); c.lineTo(0, -14); c.lineTo(15, -3);
-            c.stroke();
-            c.strokeRect(-11, -3, 22, 16);
-            c.strokeRect(-3, 5, 6, 8);
-            c.strokeRect(-8, 2, 4, 4);
-            c.beginPath();
-            c.moveTo(7, -9); c.lineTo(7, -15); c.lineTo(11, -15); c.lineTo(11, -6);
-            c.stroke();
-        } else if (kind === 'Y') { // Barn — revert to the original simple barn
-            c.beginPath();
-            c.moveTo(-15, 13); c.lineTo(-15, -3); c.lineTo(-8, -12);
-            c.lineTo(8, -12); c.lineTo(15, -3); c.lineTo(15, 13);
-            c.closePath(); c.stroke();
-            c.strokeRect(-8, 1, 16, 12);
-            c.beginPath();
-            c.moveTo(-8, 1); c.lineTo(8, 13);
-            c.moveTo(8, 1); c.lineTo(-8, 13);
-            c.stroke();
-        } else if (kind === 'S') { // Stables — open-front stable block with two stall doors
-            // Broad shelter roof, deliberately unlike the peaked Barn silhouette.
-            c.beginPath();
-            c.moveTo(-16, -6); c.lineTo(-13, -12); c.lineTo(13, -12); c.lineTo(16, -6);
-            c.closePath();
-            c.stroke();
-
-            // Open-front structure with three bays.
-            c.beginPath();
-            c.moveTo(-13, -6); c.lineTo(-13, 13);
-            c.moveTo(-4, -6); c.lineTo(-4, 13);
-            c.moveTo(4, -6); c.lineTo(4, 13);
-            c.moveTo(13, -6); c.lineTo(13, 13);
-            c.moveTo(-15, 13); c.lineTo(15, 13);
-            c.stroke();
-
-            // Half-height stable doors in the two outside stalls.
-            c.strokeRect(-12, 4, 8, 9);
-            c.strokeRect(4, 4, 8, 9);
-            c.beginPath();
-            c.moveTo(-12, 4); c.lineTo(-4, 13);
-            c.moveTo(-4, 4); c.lineTo(-12, 13);
-            c.moveTo(4, 4); c.lineTo(12, 13);
-            c.moveTo(12, 4); c.lineTo(4, 13);
-            c.stroke();
-        } else if (kind === 'M') { // Mill — compact four-sail windmill
-            c.beginPath();
-            c.moveTo(-7, 14); c.lineTo(-5, -2); c.lineTo(5, -2); c.lineTo(7, 14);
-            c.closePath(); c.stroke();
-            c.strokeRect(-2.5, 5, 5, 9);
-            c.beginPath();
-            c.arc(0, -3, 2.4, 0, Math.PI * 2); c.stroke();
-            [[-12,-15, -2,-5], [12,-15, 2,-5], [-12,9, -2,-1], [12,9, 2,-1]].forEach(([x1,y1,x2,y2]) => {
-                c.beginPath(); c.moveTo(x2, y2); c.lineTo(x1, y1); c.stroke();
-                c.beginPath(); c.moveTo(x1, y1); c.lineTo(x1 + (x1 < 0 ? 4 : -4), y1 + (y1 < 0 ? 1 : -1)); c.stroke();
-            });
-        } else if (kind === 'R') { // Workshop — compact building with bench and tool window
-            c.beginPath();
-            c.moveTo(-15, -7); c.lineTo(0, -13); c.lineTo(15, -7);
-            c.stroke();
-            c.strokeRect(-12, -7, 24, 20);
-            // Wide workshop door.
-            c.strokeRect(-9, 1, 10, 12);
-            c.beginPath();
-            c.moveTo(-9, 5); c.lineTo(1, 5);
-            c.moveTo(-9, 9); c.lineTo(1, 9);
-            c.stroke();
-            // Workbench/tool window to distinguish it from a barn or shed.
-            c.strokeRect(4, -2, 5, 5);
-            c.beginPath();
-            c.moveTo(3, 8); c.lineTo(10, 8);
-            c.moveTo(5, 8); c.lineTo(5, 12);
-            c.moveTo(9, 8); c.lineTo(9, 12);
-            c.stroke();
-        } else if (kind === 'W') { // Well — roofed stone well
-            c.beginPath();
-            c.moveTo(-13, -7); c.lineTo(13, -7); c.lineTo(10, -13); c.lineTo(-10, -13); c.closePath(); c.stroke();
-            c.beginPath();
-            c.moveTo(-10, -7); c.lineTo(-10, 12);
-            c.moveTo(10, -7); c.lineTo(10, 12);
-            c.stroke();
-            c.strokeRect(-8, 3, 16, 10);
-            c.beginPath();
-            c.moveTo(-6, 3); c.lineTo(-6, 0); c.lineTo(6, 0); c.lineTo(6, 3);
-            c.stroke();
-            ink('#7fb3c8');
-            c.beginPath();
-            c.moveTo(-5, 7); c.quadraticCurveTo(0, 5, 5, 7);
-            c.stroke();
-        } else if (kind === 'B') { // Beehive — stacked box hive on a stand
-            ink('#e8c65f');
-            c.strokeRect(-10, -12, 20, 7);
-            c.strokeRect(-11, -4, 22, 7);
-            c.strokeRect(-12, 4, 24, 8);
-            c.beginPath();
-            c.moveTo(-15, -12); c.lineTo(15, -12);
-            c.moveTo(-15, 13); c.lineTo(15, 13);
-            c.moveTo(-8, 13); c.lineTo(-8, 16);
-            c.moveTo(8, 13); c.lineTo(8, 16);
-            c.stroke();
-            c.beginPath(); c.moveTo(-3, -1); c.lineTo(3, -1); c.stroke();
-        } else if (kind === 'K') { // Chicken Coop — raised house and ramp
-            c.beginPath();
-            c.moveTo(-12, -5); c.lineTo(10, -9); c.lineTo(13, -4); c.stroke();
-            c.strokeRect(-10, -4, 20, 15);
-            c.strokeRect(-2, 1, 6, 7);
-            c.beginPath();
-            c.moveTo(-6, 11); c.lineTo(-6, 16);
-            c.moveTo(7, 11); c.lineTo(7, 16);
-            c.moveTo(-2, 8); c.lineTo(-13, 16);
-            c.moveTo(-8, 13); c.lineTo(-5, 15);
-            c.stroke();
-        } else if (kind === 'D') { // Garden — rose with a green stem on the 1-point red field
-            // Stem and leaves carry a natural green accent while the circle still communicates value.
-            ink('#6f8f4e');
-            c.beginPath();
-            c.moveTo(0, 13); c.quadraticCurveTo(-1, 5, 0, -2);
-            c.stroke();
-            c.beginPath();
-            c.moveTo(-1, 6); c.quadraticCurveTo(-8, 2, -9, 7); c.quadraticCurveTo(-5, 10, -1, 7);
-            c.moveTo(0, 3); c.quadraticCurveTo(7, -1, 9, 4); c.quadraticCurveTo(5, 7, 1, 5);
-            c.stroke();
-
-            // Pale rose bloom stays distinct against the red value circle.
-            ink('#f4ede0');
-            c.beginPath();
-            c.arc(0, -7, 7.5, 0, Math.PI * 2);
-            c.stroke();
-            c.beginPath();
-            c.moveTo(-5, -8);
-            c.bezierCurveTo(-2, -14, 4, -13, 5, -8);
-            c.bezierCurveTo(7, -4, 2, -1, -1, -4);
-            c.bezierCurveTo(-5, -2, -8, -7, -5, -8);
-            c.stroke();
-            c.beginPath();
-            c.moveTo(-2, -7); c.bezierCurveTo(0, -10, 4, -9, 3, -6);
-            c.bezierCurveTo(2, -4, -1, -4, -2, -7);
-            c.stroke();
-        } else if (kind === 'C') { // Crops
-            ink('#4f6f3f');
-            [-8, 0, 8].forEach((x, i) => {
-                const top = i === 1 ? -15 : -12;
-                c.beginPath();
-                c.moveTo(x, 14); c.lineTo(x, top);
-                c.stroke();
-                for (let y = top + 3; y <= -1; y += 5) {
-                    c.beginPath();
-                    c.moveTo(x, y); c.lineTo(x - 4, y - 3);
-                    c.moveTo(x, y + 1); c.lineTo(x + 4, y - 2);
-                    c.stroke();
-                }
-            });
-            c.beginPath();
-            c.moveTo(-13, 14); c.quadraticCurveTo(0, 9, 13, 14);
-            c.stroke();
-        } else if (kind === 'V') { // Vineyard — green vine and purple grapes
-            ink('#4f6f3f');
-            c.beginPath();
-            c.moveTo(0, -13); c.lineTo(0, -8);
-            c.stroke();
-            // broad leaf silhouette
-            c.beginPath();
-            c.moveTo(0, -9);
-            c.quadraticCurveTo(-10, -14, -12, -5);
-            c.quadraticCurveTo(-6, -6, -2, -2);
-            c.quadraticCurveTo(4, -6, 9, -8);
-            c.quadraticCurveTo(7, -1, 1, -1);
-            c.stroke();
-            // Purple fruit is a secondary identity cue; the yellow circle still carries the value tier.
-            ink('#6f527f');
-            [[0,-2],[-4,1],[4,1],[-6,5],[-2,5],[2,5],[6,5],[-4,9],[0,9],[4,9],[0,13]].forEach(([x,y]) => {
-                c.beginPath(); c.arc(x, y, 2.05, 0, Math.PI * 2); c.fill();
-            });
-        } else if (kind === 'O') { // Orchard — green crown, warm fruit, dark trunk
-            ink('#6f5134');
-            c.beginPath();
-            c.moveTo(0, 14); c.lineTo(0, 2);
-            c.moveTo(-5, 14); c.lineTo(5, 14);
-            c.stroke();
-            // rounded crown built from overlapping green lobes
-            ink('#4f6f3f');
-            [[-6,-2],[0,-7],[6,-2],[-3,3],[4,3]].forEach(([x,y]) => {
-                c.beginPath(); c.arc(x, y, 6, 0, Math.PI * 2); c.stroke();
-            });
-            // oversized fruit dots stay legible on phone
-            ink('#a04830');
-            [[-6,-4],[2,-8],[7,0],[-2,3],[4,4]].forEach(([x,y]) => {
-                c.beginPath(); c.arc(x, y, 1.8, 0, Math.PI * 2); c.fill();
-            });
+        for (const item of ops) {
+            const colour = iconInkOf(kind, item.ink);
+            const path = iconPath(item.d);
+            if (item.mode === 'fill' || item.mode === 'both') { c.fillStyle = colour; c.fill(path); }
+            if (item.mode === 'stroke' || item.mode === 'both') { c.strokeStyle = colour; c.lineWidth = item.width; c.stroke(path); }
         }
         c.restore();
+    }
+
+    // The same drawing as inline SVG, for HTML: a disc in the asset's colour with
+    // the icon on it. Size in CSS pixels.
+    function assetIconSvg(kind, size = 24, label = '') {
+        const ops = ASSET_ICON_OPS[kind], style = ASSET_STYLE[kind];
+        if (!ops || !style) return '';
+        const paths = ops.map(item => {
+            const colour = iconInkOf(kind, item.ink);
+            const fill = item.mode === 'fill' || item.mode === 'both' ? colour : 'none';
+            const stroke = item.mode === 'stroke' || item.mode === 'both' ? colour : 'none';
+            return `<path d="${item.d}" fill="${fill}" stroke="${stroke}" stroke-width="${item.width}" stroke-linecap="round" stroke-linejoin="round"/>`;
+        }).join('');
+        const aria = label ? `role="img" aria-label="${escapeHtml(label)}"` : 'aria-hidden="true"';
+        return `<svg class="asset-icon" viewBox="-20 -20 40 40" width="${size}" height="${size}" ${aria}><circle r="18" fill="${style.fill}" stroke="rgba(43,35,22,0.55)" stroke-width="1.2"/><g transform="scale(0.82)">${paths}</g></svg>`;
     }
 
     function drawRock(cx, cy, target = ctx, scale = 1) {
@@ -5371,29 +5278,45 @@ const RENDER = (() => {
         c.restore();
     }
 
-    function drawBackground() {
-        ctx.fillStyle = '#87975f';
-        ctx.fillRect(0, 0, CONFIG.INTERNAL, CONFIG.INTERNAL);
-
+    // Land texture: a stipple of ink dots whose density follows the land's value,
+    // so the value bands read as texture as well as colour. Deterministic, so a
+    // redraw never flickers.
+    function drawLandTexture(x, y, size, level) {
+        const alpha = [0, 0.07, 0.11, 0.15, 0.19][Math.max(0, Math.min(4, level))];
+        if (!alpha) return;
         ctx.save();
-        ctx.globalAlpha = 0.08;
-        ctx.fillStyle = '#817a55';
-        for (let i = 0; i < CONFIG.INTERNAL; i += 3) {
-            if ((i * 7919) % 11 < 4) {
-                ctx.fillRect(0, i, CONFIG.INTERNAL, 1);
+        ctx.fillStyle = `rgba(43,35,22,${alpha})`;
+        const step = level >= 3 ? 7 : 9;
+        for (let yy = 4; yy < size - 2; yy += step) {
+            const shift = ((yy / step) | 0) % 2 ? step / 2 : 0;
+            for (let xx = 3 + shift; xx < size - 2; xx += step) {
+                const jitter = ((xx * 31 + yy * 17 + x + y) % 5) - 2;
+                ctx.fillRect(x + xx + jitter * 0.3, y + yy + jitter * 0.2, 1.3, 1.3);
             }
         }
         ctx.restore();
+    }
 
-        if (viewState.estateMask) {
-            const m = CONFIG.MARGIN, s = CONFIG.CELL;
-            ctx.fillStyle = 'rgba(216, 207, 183, 0.97)';
-            for (let r = 0; r < CONFIG.GRID; r++) {
-                for (let c = 0; c < CONFIG.GRID; c++) {
-                    if (!GAME.isActiveCell(c, r, viewState.estateMask)) {
-                        ctx.fillRect(m + c * s, m + r * s, s, s);
-                    }
-                }
+    function drawBackground() {
+        // The plan sits on paper. The margin and any ground outside the estate
+        // are paper; the estate itself is land.
+        ctx.fillStyle = '#e6dcc4';
+        ctx.fillRect(0, 0, CONFIG.INTERNAL, CONFIG.INTERNAL);
+        ctx.save();
+        ctx.globalAlpha = 0.07;
+        ctx.fillStyle = '#6b5a3a';
+        for (let i = 0; i < CONFIG.INTERNAL; i += 3) {
+            if ((i * 7919) % 11 < 4) ctx.fillRect(0, i, CONFIG.INTERNAL, 1);
+        }
+        ctx.restore();
+
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        ctx.fillStyle = '#87975f';
+        for (let r = 0; r < CONFIG.GRID; r++) {
+            for (let c = 0; c < CONFIG.GRID; c++) {
+                if (!GAME.isActiveCell(c, r, viewState.estateMask)) continue;
+                ctx.fillRect(m + c * s, m + r * s, s, s);
+                drawLandTexture(m + c * s, m + r * s, s, 1);
             }
         }
     }
@@ -5529,6 +5452,7 @@ const RENDER = (() => {
                                 ? '#618846'
                                 : '#739251';
                         ctx.fillRect(x, y, size, size);
+                        drawLandTexture(x, y, size, value);
                     }
                     continue;
                 }
@@ -5753,10 +5677,17 @@ const RENDER = (() => {
                 const totalValue = CONFIG.ASSET_VALUE[v] + bonus;
                 const boosted = bonus > 0;
 
+                ctx.save();
+                ctx.shadowColor = 'rgba(43,35,22,0.38)';
+                ctx.shadowBlur = 7;
+                ctx.shadowOffsetY = 2.5;
                 ctx.beginPath();
                 ctx.arc(cx, cy, 28, 0, Math.PI * 2);
                 ctx.fillStyle = style.fill;
                 ctx.fill();
+                ctx.restore();
+                ctx.beginPath();
+                ctx.arc(cx, cy, 28, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(43,35,22,0.55)';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
@@ -6000,7 +5931,7 @@ const RENDER = (() => {
             ctx.strokeStyle = '#f4ede0';
             ctx.lineWidth = 2;
             ctx.stroke();
-            ctx.font = '800 18px Fraunces, Georgia, serif';
+            ctx.font = '700 24px Caveat, "Marker Felt", cursive';
             ctx.fillStyle = '#f4ede0';
             ctx.fillText(id, x, y + 1);
         });
@@ -6193,7 +6124,7 @@ const RENDER = (() => {
         renderRuleSymbols(document.getElementById('rulesContent'));
     }, { passive: true });
 
-    return { render, renderSnapshot, renderRuleSymbols, renderLegendSymbols, renderPhaseSymbols, canvas };
+    return { render, renderSnapshot, renderRuleSymbols, renderLegendSymbols, renderPhaseSymbols, assetIconSvg, canvas };
 })();
 
 const PREVIEW = (() => {
@@ -14518,7 +14449,7 @@ const LEGACY = (() => {
         const turn=c.investmentTurn,player=campaign.players[turn],capacity=assetPurchaseCapacity(),unlocked=new Set(player.unlockedInvestments||[]);
         document.getElementById('legacyInvestTitle').textContent=`${player.name}: choose what to buy`;
         const assetOptions=INVESTMENT_CATALOGUE.filter(item=>item.type==='asset'&&unlocked.has(item.key)).map(item=>({kind:item.kind,cost:item.cost,key:item.key}));
-        const assetButton=({kind,cost},disabled=false)=>`<button class="btn-secondary" data-legacy-buy-asset="${kind}" ${disabled?'disabled':''}><strong>${text(CONFIG.ASSET_NAME[kind])} · ${cost} Capital</strong><small>${text(purchaseConsequenceText(kind,cost))}</small></button>`;
+        const assetButton=({kind,cost},disabled=false)=>`<button class="btn-secondary" data-legacy-buy-asset="${kind}" ${disabled?'disabled':''}><strong>${RENDER.assetIconSvg(kind,26)} ${text(CONFIG.ASSET_NAME[kind])} · ${cost} Capital</strong><small>${text(purchaseConsequenceText(kind,cost))}</small></button>`;
         const gainOf=option=>purchaseConsequence(option.kind)?.gain||0;
         const affordableAssets=(capacity>0?assetOptions.filter(option=>option.cost<=player.capital):[]).sort((x,y)=>gainOf(y)-gainOf(x)||x.cost-y.cost),otherAssets=assetOptions.filter(option=>!affordableAssets.includes(option));
         const developmentOptions=Object.entries(DEVELOPMENT).filter(([type])=>unlocked.has(investmentKeyForDevelopment(type))).map(([type,spec])=>({type,spec,capacity:developmentPurchaseCapacity(type),available:developmentPurchaseCapacity(type)>0}));
