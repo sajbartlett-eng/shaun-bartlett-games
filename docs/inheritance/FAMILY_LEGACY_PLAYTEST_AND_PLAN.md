@@ -144,3 +144,20 @@ The designer then ruled: payments must be proportional to real yields with the y
 ## What this playthrough could not test
 
 A single scripted run with simple policies. It did not exercise: a cutter who deliberately splits a holding, a sibling who saves for a Quarry and places it, the unresolved ending (nobody chooses in time), a loaded backup file, or two humans reading the screens at a table. The simulator in P1 covers the first two; the last needs people.
+
+## The story bible
+
+Three voices, each with one job, none of whom ever addresses one sibling without the other, praises or regrets a choice, or says which plot is better.
+
+- **Mrs Hartley, the bank's administrator.** The law, the deadlines, the record. Opens every estate, states its rules one line at a time, files the record at the end.
+- **Mr Dacre, Dacre and Sons, land agent.** The clock with a face. Polite, prompt, always writing. Appears once at the start, whenever the bank draws the fence because time ran out, when an estate is lost (he buys it), and after Estates 1, 3 and 5 with an offer that is a true number from the game (the Property the pair of plots inherited). Nothing happens when he is ignored; that is the point.
+- **Nell Brandt, farm manager, thirty years on the working estate.** Soil, not law. Explains what a business earns, what a site pays, and tells you when a fence has stopped a mill. Speaks the first time Capital is in hand, at Estate 3 (she is the tenant who gave notice) and Estate 5, and on the record screen when the fence divided a business.
+
+The estates, in the order probate releases them:
+
+1. **The Country Estate.** The grandparents' farm. Title already clear, so it comes first. Empty since the funeral; Dacre's letter is on the table.
+2. **The Family Home.** The parents' house on the old main road, where the siblings grew up. Probate on the house clears. Each may name one thing in it.
+3. **The Working Estate.** The parents' working farm, run by Nell Brandt as tenant-manager. She gives notice to retire, which releases it. It still earns; it earns more with money put back in.
+4. **The Waterside Estate.** Bought by the father late, with the uncle's help on the jetty; the uncle's claim to a share fails and the title is released.
+5. **The Uplands.** Rough ground from the mother's side. The forestry survey of the managed woodland completes, so it can be settled. Quarry and logging sites.
+6. **The Last Estate.** The last title to come through, a property the parents bought together in their final years, with everything the others had.
