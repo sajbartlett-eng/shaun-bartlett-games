@@ -1,0 +1,314 @@
+[
+ {
+  "profile": "greedy",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.30000000000000027,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 63,
+    "pct": 11,
+    "meanMargin": 2.4285714285714284,
+    "maxMargin": 8
+   },
+   "chooserTookLongTermBetter": 87,
+   "chooserTookSmallerProperty": 0,
+   "meanPropertyGapOfCut": 4.401666666666666
+  },
+  "income": {
+   "shareOfFinalWealth": 0.05000785847755131,
+   "meanTotalPaidPerCampaign": 18.09,
+   "meanFutureIncome": 4.47
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 32,
+   "purchasesPerCampaign": 6.85,
+   "capitalSpentPerCampaign": 13.62
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 1.0766666666666667,
+   "groupsSurvivingCut": 0.9866666666666667,
+   "survivalPct": 92,
+   "holdingsPerSiblingAtEnd": 2.96
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 4.26,
+   "meanFinalWealthGap": 10.95,
+   "arcs": {
+    "closed": 14,
+    "steady": 18,
+    "widened": 68
+   }
+  },
+  "wealth": {
+   "meanFinal": 222.865,
+   "meanProperty": 218.395,
+   "meanCapital": 2.235,
+   "siblingAWinsPct": 46,
+   "tiesPct": 2
+  }
+ },
+ {
+  "profile": "aware",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.37699999999999956,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 127,
+    "pct": 21,
+    "meanMargin": 5.960629921259843,
+    "maxMargin": 20
+   },
+   "chooserTookLongTermBetter": 100,
+   "chooserTookSmallerProperty": 21,
+   "meanPropertyGapOfCut": 5.8
+  },
+  "income": {
+   "shareOfFinalWealth": 0.19940602979581432,
+   "meanTotalPaidPerCampaign": 100.9,
+   "meanFutureIncome": 18.89
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 2,
+   "purchasesPerCampaign": 22.48,
+   "capitalSpentPerCampaign": 76.21
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 2.4583333333333335,
+   "groupsSurvivingCut": 2.6866666666666665,
+   "survivalPct": 109,
+   "holdingsPerSiblingAtEnd": 8.06
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 4.57,
+   "meanFinalWealthGap": 19.38,
+   "arcs": {
+    "closed": 10,
+    "steady": 12,
+    "widened": 78
+   }
+  },
+  "wealth": {
+   "meanFinal": 299.89,
+   "meanProperty": 278.1,
+   "meanCapital": 12.345,
+   "siblingAWinsPct": 57,
+   "tiesPct": 3
+  }
+ },
+ {
+  "profile": "mixed",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.3320000000000002,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 94,
+    "pct": 16,
+    "meanMargin": 4.4787234042553195,
+    "maxMargin": 17
+   },
+   "chooserTookLongTermBetter": 91,
+   "chooserTookSmallerProperty": 8,
+   "meanPropertyGapOfCut": 5.683333333333334
+  },
+  "income": {
+   "shareOfFinalWealth": 0.14932696566986509,
+   "meanTotalPaidPerCampaign": 64.75,
+   "meanFutureIncome": 14.51
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 6,
+   "purchasesPerCampaign": 15.12,
+   "capitalSpentPerCampaign": 48.96
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 2.485,
+   "groupsSurvivingCut": 2.4283333333333332,
+   "survivalPct": 98,
+   "holdingsPerSiblingAtEnd": 7.285
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 4.83,
+   "meanFinalWealthGap": 15.9,
+   "arcs": {
+    "closed": 11,
+    "steady": 20,
+    "widened": 69
+   }
+  },
+  "wealth": {
+   "meanFinal": 264.26,
+   "meanProperty": 249.11,
+   "meanCapital": 7.895,
+   "siblingAWinsPct": 49,
+   "tiesPct": 1
+  }
+ },
+ {
+  "profile": "savers",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.30200000000000043,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 99,
+    "pct": 17,
+    "meanMargin": 4.626262626262626,
+    "maxMargin": 16
+   },
+   "chooserTookLongTermBetter": 100,
+   "chooserTookSmallerProperty": 17,
+   "meanPropertyGapOfCut": 5.37
+  },
+  "income": {
+   "shareOfFinalWealth": 0.1585588997175574,
+   "meanTotalPaidPerCampaign": 72.53,
+   "meanFutureIncome": 14.11
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 2,
+   "purchasesPerCampaign": 0,
+   "capitalSpentPerCampaign": 0
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 2.1733333333333333,
+   "groupsSurvivingCut": 2.3,
+   "survivalPct": 106,
+   "holdingsPerSiblingAtEnd": 6.9
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 5.28,
+   "meanFinalWealthGap": 21.24,
+   "arcs": {
+    "closed": 5,
+    "steady": 23,
+    "widened": 72
+   }
+  },
+  "wealth": {
+   "meanFinal": 272.82,
+   "meanProperty": 229.5,
+   "meanCapital": 36.265,
+   "siblingAWinsPct": 50,
+   "tiesPct": 0
+  }
+ },
+ {
+  "profile": "closer",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.36999999999999966,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 126,
+    "pct": 21,
+    "meanMargin": 4.246031746031746,
+    "maxMargin": 17
+   },
+   "chooserTookLongTermBetter": 93,
+   "chooserTookSmallerProperty": 22,
+   "meanPropertyGapOfCut": 7.996666666666667
+  },
+  "income": {
+   "shareOfFinalWealth": 0.19414058302788623,
+   "meanTotalPaidPerCampaign": 97.52,
+   "meanFutureIncome": 17.89
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 2,
+   "purchasesPerCampaign": 21.59,
+   "capitalSpentPerCampaign": 73.33
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 2.4433333333333334,
+   "groupsSurvivingCut": 2.6666666666666665,
+   "survivalPct": 109,
+   "holdingsPerSiblingAtEnd": 8
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 6.18,
+   "meanFinalWealthGap": 21.32,
+   "arcs": {
+    "closed": 13,
+    "steady": 8,
+    "widened": 79
+   }
+  },
+  "wealth": {
+   "meanFinal": 296.5,
+   "meanProperty": 275.46,
+   "meanCapital": 12.095,
+   "siblingAWinsPct": 52,
+   "tiesPct": 2
+  }
+ },
+ {
+  "profile": "chaos",
+  "runs": 100,
+  "completed": 100,
+  "errors": [],
+  "secondsPerRun": 0.2950000000000003,
+  "choice": {
+   "decisions": 600,
+   "lowerPropertyPlotWasBetter": {
+    "count": 5,
+    "pct": 1,
+    "meanMargin": 2.8,
+    "maxMargin": 4
+   },
+   "chooserTookLongTermBetter": 51,
+   "chooserTookSmallerProperty": 49,
+   "meanPropertyGapOfCut": 35.335
+  },
+  "income": {
+   "shareOfFinalWealth": 0.0627856866503731,
+   "meanTotalPaidPerCampaign": 22.76,
+   "meanFutureIncome": 5.68
+  },
+  "investment": {
+   "phases": 500,
+   "siblingSkippedForNoCapital": 32,
+   "purchasesPerCampaign": 7.54,
+   "capitalSpentPerCampaign": 16.74
+  },
+  "holdings": {
+   "groupsOnBoardBeforeCut": 1.1283333333333334,
+   "groupsSurvivingCut": 1.06,
+   "survivalPct": 94,
+   "holdingsPerSiblingAtEnd": 3.495
+  },
+  "gap": {
+   "meanWealthGapAfterEstate1": 35.51,
+   "meanFinalWealthGap": 84.89,
+   "arcs": {
+    "closed": 20,
+    "steady": 5,
+    "widened": 75
+   }
+  },
+  "wealth": {
+   "meanFinal": 223.865,
+   "meanProperty": 218.015,
+   "meanCapital": 3.01,
+   "siblingAWinsPct": 44,
+   "tiesPct": 0
+  }
+ }
+]

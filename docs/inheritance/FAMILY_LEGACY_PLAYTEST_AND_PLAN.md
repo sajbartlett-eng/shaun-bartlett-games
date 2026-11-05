@@ -52,7 +52,7 @@ What worked and should not be touched: the Meaningful Assets primer in Estate 2 
 
 ### Tier 1: System Fidelity
 
-**P1. Measure the economy to tune it, not to prove it.** Build a campaign simulator in the repository (the Playmaker solver programme is the model): seeded campaigns, scripted sibling policies (greedy chooser, holding-aware chooser, holding-builder, saver, spender), 200 runs. Report: how often the lower-Property plot is the better choice across the Legacy and by how much, income as a share of final wealth, how often a sibling reaches an investment phase with no Capital, how often a holding survives the fence, and how often the family closes its gap against how often it widens. The premise is confirmed by Estate 4 of the playtest; the numbers say how often the stakes bite and whether the payment schedule needs adjusting. Finding 13.
+**P1. Measure the economy to tune it, not to prove it. Done: see `LEGACY_SIMULATOR_RESULTS.md`.** Build a campaign simulator in the repository (the Playmaker solver programme is the model): seeded campaigns, scripted sibling policies (greedy chooser, holding-aware chooser, holding-builder, saver, spender), 200 runs. Report: how often the lower-Property plot is the better choice across the Legacy and by how much, income as a share of final wealth, how often a sibling reaches an investment phase with no Capital, how often a holding survives the fence, and how often the family closes its gap against how often it widens. The premise is confirmed by Estate 4 of the playtest; the numbers say how often the stakes bite and whether the payment schedule needs adjusting. Finding 13.
 
 **P2. Replace the unreachable ceiling with real quantities.** On results and in the ledger: value before the fence, Property inherited, Property lost to the fence, Capital spent. Keep the bound only in the "how these values are calculated" explainer, labelled as a bound. When a true best-division referee exists for neighbour-scored estates it can return as "fairest possible"; until then nothing on screen should read as a target. Finding 8.
 
@@ -110,9 +110,13 @@ This changes the spine of the plan. The chronicle stops being the ending and bec
 
 **What this does to P1.** The simulator's question is how often the system produces each arc, families that close the gap and families that break open, and how often the choice between Property now and income later actually bites. Estate 4 of the playtest shows it does; the simulator says how often, so the payment schedule can be tuned for stakes that are felt in most campaigns, not some.
 
+## After the simulator
+
+The first run (600 campaigns, six profiles) is read in `LEGACY_SIMULATOR_RESULTS.md`. In short: the central choice exists in about one estate in five with deliberate play and is worth a few points; income is at most a fifth of final wealth; an empty investment turn is common for naive pairs and rare for skilled ones; straight fences rarely break holdings; and the wealth gap widens in about three campaigns in four whatever the siblings do, because the only voluntary gap-closing act the rules allow is too small to matter. Two decisions are the designer's: how large income should be, and what lever lets a family close its gap on purpose. The simulator measures either in minutes.
+
 ## Build order
 
-1. **Instrument first (P1), with the arc question.** Half a day. Everything below is worth doing regardless, but P8 and any income tuning wait for its numbers.
+1. **Instrument first (P1), with the arc question.** Done. P8 is dropped on its numbers; income size and the gap-closing lever are open decisions with a tool to test them.
 2. **The record screen with faces and the gap thread (E1, E2, E3), absorbing P11, P12, P2 and P5, and holdings visible at Choose (P16).** The spine of the narrative engine, and cheap: a prompt, a table, the ceiling retired, and the central decision made visible.
 3. **Cards and primers (P9, P10) and the layout fixes (P14).** So the story has a beginning and nobody meets a rule unannounced.
 4. **The chronicle as the ending, downloadable and shareable (E4, P13, P15).**
