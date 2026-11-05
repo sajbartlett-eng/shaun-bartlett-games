@@ -86,6 +86,13 @@ header.brand {
     letter-spacing: 0.02em;
 }
 .brand .icons { display: flex; gap: 8px; }
+/* While a match is on, a phone shows the board, not the masthead. */
+@media (max-width: 700px) {
+    body.in-play .brand { padding-top: 4px; padding-bottom: 4px; min-height: 0; }
+    body.in-play .brand h1 { font-size: 18px; }
+    body.in-play .brand .sub { display: none; }
+    body.in-play .legacy-tools { display: none; }
+}
 .icon-btn {
     width: 44px; height: 44px;
     border-radius: 3px;
@@ -2606,7 +2613,13 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 .legacy-strip-col .legacy-chronicle-faces {margin:2px 0 0;font-size:17px;letter-spacing:.02em;}
 .legacy-could .legacy-details summary strong {font-family:var(--mono);}
 @media (max-width:420px) {.legacy-metrics-3 {grid-template-columns:1fr 1fr;} .legacy-strip {grid-template-columns:repeat(3,minmax(0,1fr));} .legacy-strip-gap {font-size:18px;}}
-.legacy-choice-panel {display:none;margin:0 0 10px;padding:10px 12px;border:1px dashed var(--gold);border-radius:4px;background:var(--gold-soft);font-size:14px;line-height:1.45;color:var(--ink-soft);}
+.legacy-choice-panel {display:none;margin:6px 0 2px;padding:0;font-size:14px;line-height:1.45;color:var(--ink-soft);}
+.legacy-choice-panel details {border:1px dashed var(--gold);border-radius:4px;background:var(--gold-soft);padding:6px 10px;}
+.legacy-choice-panel summary {cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;}
+.legacy-choice-panel summary::-webkit-details-marker {display:none;}
+.legacy-choice-panel summary::after {content:'more';margin-left:auto;font-size:12px;color:var(--ink-faint);}
+.legacy-choice-panel details[open] summary::after {content:'less';}
+.legacy-choice-panel details > div {margin-top:6px;}
 .legacy-choice-panel.active {display:block;}
 .legacy-choice-panel strong {color:var(--ink);}
 .legacy-choice-panel .plot-a {color:var(--plot-a);font-weight:700;}
@@ -7811,6 +7824,25 @@ const UI = {
         RENDER.render();
     },
 
+    // The result screen shows the division, the estate and the referee. Everything else
+    // (the ceiling, the story, the achievements) folds under a line, and an empty fold hides.
+    foldFinalExtras() {
+        const folds = [['valueCeilingPanel', 'How much of the estate was kept'], ['finalStory', 'Your story'], ['finalAchievements', 'Achievements']];
+        for (const [id, label] of folds) {
+            const el = document.getElementById(id);
+            if (!el) continue;
+            let wrap = el.parentElement && el.parentElement.classList.contains('final-fold') ? el.parentElement : null;
+            if (!wrap) {
+                wrap = document.createElement('details');
+                wrap.className = 'score-details final-fold';
+                wrap.innerHTML = `<summary>${label}</summary>`;
+                el.parentNode.insertBefore(wrap, el);
+                wrap.appendChild(el);
+            }
+            wrap.hidden = !el.textContent.trim() || el.hidden;
+        }
+    },
+
     // A number that forms in front of the player, once it is final. 400 ms, then exact.
     countUp(el, to, ms = 400) {
         if (!el) return;
@@ -8276,6 +8308,7 @@ const UI = {
     refreshHUD() {
         const s = STATE;
         const e = this.el;
+        document.body.classList.toggle('in-play', s.phase !== PHASE.SETUP);
         this.refreshTimer();
         e.restartBtn.hidden = s.phase === PHASE.SETUP;
 
@@ -10128,6 +10161,7 @@ UI.renderFinalScoreboard = function () {
     };
     UI.el.finalScoreboard.innerHTML = scoreDetails(cellHtml('A', o.scoreA) + cellHtml('B', o.scoreB));
     UI.el.finalScoreboard.querySelectorAll('.plot-total').forEach(el => UI.countUp(el, el.textContent, 420));
+    UI.foldFinalExtras();
     UI.renderFinalEstate();
 
     if (STATE.settings.meaningful) {
@@ -14114,7 +14148,8 @@ const INTERACTION = {
 
 document.querySelector('.app').insertAdjacentHTML('afterbegin','<div class="legacy-tools"><button class="btn-secondary" data-legacy="open">Family Legacy</button></div>');
 document.querySelectorAll('.overlay:not(#legacyOverlay):not(#legacyInvestOverlay) .modal').forEach(modal => modal.insertAdjacentHTML('beforeend','<div class="legacy-tools"><button class="btn-secondary" data-legacy="open">Family Legacy</button></div>'));
-document.getElementById('phasePrimer').insertAdjacentHTML('afterend','<section class="legacy-build-choices" id="legacyBuildChoices" aria-live="polite"></section><section class="legacy-choice-panel" id="legacyChoicePanel" aria-live="polite"></section>');
+document.getElementById('phasePrimer').insertAdjacentHTML('afterend','<section class="legacy-build-choices" id="legacyBuildChoices" aria-live="polite"></section>');
+document.querySelector('.board-wrap').insertAdjacentHTML('afterend','<section class="legacy-choice-panel" id="legacyChoicePanel" aria-live="polite"></section>');
 const VALUE_ENGINE = {
     // The terrain is fixed before Build. This is a strict scoring ceiling, not
     // a claim that every compatible relationship can coexist on this layout.
@@ -15123,6 +15158,14 @@ const LEGACY = (() => {
         ];
         return `${label} ${parts.length?`carries ${parts.join('; ')}.`:'carries no business.'}`;
     }
+    // One line under the board: the businesses and what each pays. The sentences fold away.
+    function holdingsBrief(cells) {
+        const groups=findProductiveGroups(cells,STATE.grid);
+        const inPlot=new Set(cells.map(p=>`${p.c},${p.r}`));
+        const devs=(campaign.current?.developments||[]).filter(dev=>dev.placed&&dev.cells.length&&dev.cells.every(cell=>inPlot.has(`${cell.c},${cell.r}`)));
+        const parts=[...groups.map(g=>`${text(g.name)} ${g.income}`),...devs.map(dev=>`${text(dev.name)} ${dev.income}×${dev.payments}`)];
+        return parts.length?parts.join(' · '):'none';
+    }
     function renderChoicePanel() {
         const el=document.getElementById('legacyChoicePanel');
         if(!el)return;
@@ -15130,10 +15173,10 @@ const LEGACY = (() => {
         el.classList.toggle('active',!!show);
         if(!show){el.innerHTML='';return;}
         if(STATE.phase===PHASE.CUT){
-            el.innerHTML=`${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')} A fence between two of a business's pieces breaks it. Property totals stay hidden.`;
+            el.innerHTML=`<details><summary><strong>Businesses</strong> ${holdingsBrief(GAME.activeCells(STATE.estateMask))}</summary><div>${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')} The number is Capital paid after each estate. A fence between two of a business's pieces breaks it.</div></details>`;
             return;
         }
-        el.innerHTML=`<span class="plot-a">${holdingsLine(STATE.plotA,'Plot A')}</span><br><span class="plot-b">${holdingsLine(STATE.plotB,'Plot B')}</span><br>Property totals stay hidden until you choose. Whoever inherits a business receives its payments.`;
+        el.innerHTML=`<details><summary><span class="plot-a">A</span> ${holdingsBrief(STATE.plotA)} &nbsp;·&nbsp; <span class="plot-b">B</span> ${holdingsBrief(STATE.plotB)}</summary><div><span class="plot-a">${holdingsLine(STATE.plotA,'Plot A')}</span><br><span class="plot-b">${holdingsLine(STATE.plotB,'Plot B')}</span><br>Whoever inherits a business receives its payments.</div></details>`;
     }
     function renderBuildChoices() {
         renderChoicePanel();
@@ -15419,7 +15462,8 @@ const LEGACY = (() => {
             const mentioned=rows.some(row=>row.includes(text(player.name)));
             if(!mentioned)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · businesses and Capital</span><strong>nothing new this estate</strong></div>`);
         });
-        return `<div class="legacy-fact"><h4>What changed</h4>${rows.join('')}</div>`;
+        if(rows.every(row=>row.includes('nothing new this estate')))return '';
+        return `<details class="legacy-details"><summary>What changed</summary><div class="legacy-fact">${rows.join('')}</div></details>`;
     }
     function positionSummaryHtml() {
         return `<div class="legacy-guide-grid">${campaign.players.map(p=>`<div class="legacy-guide-step"><strong>${text(p.name)}</strong><span>Property ${p.property}</span><span>Capital ${p.capital}</span></div>`).join('')}</div>`;
@@ -15773,7 +15817,7 @@ const LEGACY = (() => {
             html+=`<h3>${complete?'Six estates recorded':unresolved?'Campaign ended without a choice':between?`Estate ${campaign.round} · ${text(latestRecord?.chapter||chapters[campaign.round-1])}`:`Estate ${campaign.round} of 6 · ${chapters[campaign.round-1]}`}</h3>`;
             if(campaign.status==='playing')html+=`<p class="comparison-note">${text(CHAPTER_COPY[campaign.round-1])}</p>`;
             if(complete||unresolved)ensureFairestGaps();
-            if(complete)html+=`${familyRecordHtml()}${couldHaveBeenHtml()}${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
+            if(complete)html+=`${familyRecordHtml()}${couldHaveBeenHtml()}<details class="legacy-details"><summary>Distinctions and statistics</summary><div>${finalResultHtml()}</div></details><details class="legacy-details"><summary>Final ledger</summary><div>${ledger()}</div></details>`;
             else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no business payment was made for it. Capital already invested remains spent.</p></div>${campaign.history.length?couldHaveBeenHtml():''}${ledger()}`;
             else if(between){
                 const latest=campaign.history[campaign.history.length-1];
@@ -15783,10 +15827,11 @@ const LEGACY = (() => {
                     html+=gapThreadHtml(campaign.history.length-1);
                     html+=roundChangesHtml(latest);
                 }
-                html+=`<h3>Campaign position</h3>${positionSummaryHtml()}`;
                 if(campaign.history.length===1&&!campaign.guidance.holdingsPrimerSeen&&(latest?.holdingsAwarded||[]).some(groups=>groups&&groups.length))html+='<div class="legacy-consent-box"><strong>Your first business payment</strong><p class="legacy-consent-private">A new business pays for the first time now, before the next estate begins.</p></div>';
-                html+=`<details class="legacy-details" open><summary>About Estate ${campaign.round+1}: ${text(chapters[campaign.round])}</summary><div>${nextChapterGuide(campaign.round+1)}</div></details>`;
-                html+=`<div class="actions"><button class="btn-primary" data-legacy="next">Begin estate ${campaign.round+1}</button></div>${campaignDetailsHtml(true)}`;
+                html+=`<div class="actions"><button class="btn-primary" data-legacy="next">Begin estate ${campaign.round+1}</button></div>`;
+                html+=`<details class="legacy-details"><summary>Where each of you stands</summary><div>${positionSummaryHtml()}</div></details>`;
+                html+=`<details class="legacy-details"><summary>About Estate ${campaign.round+1}: ${text(chapters[campaign.round])}</summary><div>${nextChapterGuide(campaign.round+1)}</div></details>`;
+                html+=campaignDetailsHtml(true);
             } else {
                 html+=`<div class="actions"><button class="btn-primary" data-legacy="continue">Continue estate</button></div>${ledger()}`;
             }
