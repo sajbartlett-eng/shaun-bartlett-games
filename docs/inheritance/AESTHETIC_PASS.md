@@ -53,6 +53,10 @@ The rule for every animation: it must mean something the system just did, it mus
 
 What is deliberately absent: camera moves, confetti, slow fades on overlays, and anything that plays while a timer is counting and a hand is drawing.
 
+## Reading aloud and easier reading
+
+Two Display settings, kept on the device rather than in a match (every estate, training level and online game rebuilds the match settings, and these must survive that and a reload). **Read aloud** uses the voices the device already has, no files and no network: each character is given a different voice where the device offers one, with a pitch and pace of its own either way; a spoken line appears whole instead of typing out; the counsellor's question, the phase instruction when it changes, and the result's headline are read; a character already speaking is never interrupted by the instruction. **Easier reading** changes typeface and spacing only: a plain sans-serif in place of the serif and the handwriting, more space between lines, no italics. Nothing changes size or position, so the phase bar, the timer, the buttons and the board stay where they were; checked at 320, 390, 768 and 1200 pixels for overflow, board position and clipped buttons. The sandbox has no audio, so the voices themselves are checked by what the game asks the device to say.
+
 ## The build order
 
 Stage 4, second pass: a workshop, a well and a chicken coop come alive in a property with occupants, a manor or cottage anywhere in the same plot (the whole estate before the fence), and go still when the fence leaves them without one. Vehicles drive the whole length of their road and back. A Display setting, "Animate the estate", is on by default and off by default when the device asks for reduced motion, where the player can still turn it on; every animation reads it. `RENDER.debugScene()` says why a board is or is not moving. Cars and tractors need roads, which exist only with Terrain or a land template on; a Quick start estate has none.

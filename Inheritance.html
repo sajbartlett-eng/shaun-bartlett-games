@@ -86,6 +86,21 @@ header.brand {
     letter-spacing: 0.02em;
 }
 .brand .icons { display: flex; gap: 8px; }
+/* Easier reading: a plain typeface, more space, no handwriting or italics. Nothing changes size
+   or position, so the phase bar, the timer, the buttons and the board stay where they were. */
+body.easy-reading {
+    --body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --hand: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: 0.01em;
+    word-spacing: 0.06em;
+}
+body.easy-reading .brand h1 { font-family: 'Fraunces', Georgia, serif; }
+body.easy-reading .body, body.easy-reading p, body.easy-reading li, body.easy-reading .dialogue-line, body.easy-reading .option-card .desc,
+body.easy-reading .comparison-note, body.easy-reading .hint, body.easy-reading .legacy-income-line, body.easy-reading .phase-instruction,
+body.easy-reading .legacy-consent-private, body.easy-reading .tutorial-facts li { line-height: 1.7; }
+body.easy-reading em, body.easy-reading i, body.easy-reading .legacy-record-kicker, body.easy-reading .eyebrow { font-style: normal; }
+body.easy-reading .legacy-record-kicker, body.easy-reading .eyebrow, body.easy-reading .story-kicker { font-weight: 700; letter-spacing: 0.04em; }
 /* While a match is on, a phone shows the board, not the masthead. */
 @media (max-width: 700px) {
     body.in-play .brand { padding-top: 4px; padding-bottom: 4px; min-height: 0; }
@@ -3029,6 +3044,20 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
                                 <span class="desc">Shows exact land-value numbers on the board instead of relying only on colour and the legend. Does not change scoring.</span>
                             </span>
                         </button>
+                        <button type="button" class="option-card" data-option="readAloud" aria-pressed="false">
+                            <span class="check"></span>
+                            <span class="label">
+                                <span class="title">Read aloud</span>
+                                <span class="desc">The characters, the phase instruction and the result are spoken with the voices on this device. Each character gets a different voice. Spoken lines appear whole instead of typing out.</span>
+                            </span>
+                        </button>
+                        <button type="button" class="option-card" data-option="easyReading" aria-pressed="false">
+                            <span class="check"></span>
+                            <span class="label">
+                                <span class="title">Easier reading</span>
+                                <span class="desc">A plain typeface with more space between lines and letters, and no handwriting or italics. The board, the numbers and the layout do not change.</span>
+                            </span>
+                        </button>
                         <button type="button" class="option-card" data-option="animate" aria-pressed="false">
                             <span class="check"></span>
                             <span class="label">
@@ -3516,7 +3545,25 @@ const DEFAULT_SETTINGS = Object.freeze({
     lightning: false,
     showLandValues: false,
     animate: !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+    readAloud: false,
+    easyReading: false,
 });
+
+// Display choices (animation, read aloud, easier reading, land values on the
+// board) belong to the device, not to a match: every estate, training level
+// and online game rebuilds the match settings, and these must survive that
+// and a reload. They are mirrored into the settings for the screens that read
+// them there.
+const DISPLAY = (() => {
+    const KEY = 'inheritance.display.v1';
+    const KEYS = ['animate', 'readAloud', 'easyReading', 'showLandValues'];
+    let prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (_) { prefs = {}; }
+    function get(key) { return Object.prototype.hasOwnProperty.call(prefs, key) ? !!prefs[key] : !!DEFAULT_SETTINGS[key]; }
+    function set(key, value) { prefs[key] = !!value; try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (_) {} }
+    function apply(settings) { if (settings) for (const key of KEYS) settings[key] = get(key); return settings; }
+    return { KEYS, get, set, apply };
+})();
 
 const PHASE_TRANSITIONS = Object.freeze({
     [PHASE.SETUP]:          [PHASE.RPS_PRE, PHASE.TERRAIN, PHASE.BUILD],
@@ -6036,7 +6083,7 @@ const RENDER = (() => {
             ctx.strokeStyle = '#f4ede0';
             ctx.lineWidth = 2;
             ctx.stroke();
-            ctx.font = '700 24px Caveat, "Marker Felt", cursive';
+            ctx.font = document.body.classList.contains('easy-reading') ? '700 20px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : '700 24px Caveat, "Marker Felt", cursive';
             ctx.fillStyle = '#f4ede0';
             ctx.fillText(id, x, y + 1);
         });
@@ -6193,7 +6240,7 @@ const RENDER = (() => {
     // final. Reduced motion turns them all off.
     const FX = {
         items: [], frame: null,
-        get reduced() { return !STATE || !STATE.settings || STATE.settings.animate === false; },
+        get reduced() { return !DISPLAY.get('animate'); },
         lastGrid: null, lastTotals: null, lastCut: false, lastChosen: null, lastPhase: null,
     };
     const ease = t => 1 - Math.pow(1 - t, 3);
@@ -7843,10 +7890,25 @@ const UI = {
         }
     },
 
+    // Read the phase instruction when it changes, in the referee's voice, unless a
+    // character is already speaking.
+    lastSpokenInstruction: '',
+    speakInstruction(phase, textContent) {
+        const key = `${phase}|${textContent}`;
+        if (key === this.lastSpokenInstruction) return;
+        this.lastSpokenInstruction = key;
+        if (!SPEECH.enabled() || phase === PHASE.SETUP || this.topOverlayKey() === 'dialogueOverlay') return;
+        const label = document.getElementById('phaseLabel');
+        SPEECH.say(`${label ? label.textContent + '. ' : ''}${textContent}`, 'referee');
+    },
+    applyReadingMode() {
+        document.body.classList.toggle('easy-reading', DISPLAY.get('easyReading'));
+    },
+
     // A number that forms in front of the player, once it is final. 400 ms, then exact.
     countUp(el, to, ms = 400) {
         if (!el) return;
-        const reduced = !STATE.settings || STATE.settings.animate === false;
+        const reduced = !DISPLAY.get('animate');
         const target = Number(to);
         if (reduced || !Number.isFinite(target) || target <= 0) { el.textContent = String(to); return; }
         const start = performance.now();
@@ -7866,6 +7928,7 @@ const UI = {
 
     refreshSetup() {
         const e = this.el;
+        DISPLAY.apply(STATE.settings);
         const modeCopy = FLOW.MODE_COPY[STATE.setupMode];
         e.setupEyebrow.textContent = modeCopy ? (STATE.hasCompletedGame ? `Play again · ${modeCopy[0]}` : modeCopy[0]) : (STATE.hasCompletedGame ? 'Play again' : 'Names and options');
         document.getElementById('setupTitle').textContent = modeCopy ? modeCopy[1] : 'Set up your game';
@@ -8309,6 +8372,8 @@ const UI = {
         const s = STATE;
         const e = this.el;
         document.body.classList.toggle('in-play', s.phase !== PHASE.SETUP);
+        DISPLAY.apply(s.settings);
+        this.applyReadingMode();
         this.refreshTimer();
         e.restartBtn.hidden = s.phase === PHASE.SETUP;
 
@@ -8470,6 +8535,7 @@ const UI = {
         if (TRAINING.on) instruction = TRAINING.instruction(s.phase) || instruction;
         e.phaseInstruction.innerHTML = instruction;
         RENDER.renderPhaseSymbols(e.phaseInstruction);
+        this.speakInstruction(s.phase, e.phaseInstruction.textContent);
         const canvasLabels = {
             [PHASE.TERRAIN]: 'Estate board. Shape the terrain. Water can go on any open square. Roads must be on the boundary or next to an existing road. Use arrows and Enter, or tap.',
             [PHASE.BUILD]: 'Estate board. Tap an empty buildable grass square, or use arrow keys and Enter, to place the current piece.',
@@ -10137,6 +10203,7 @@ UI.renderFinalScoreboard = function () {
     if (gameGap === 0) notes.push(`The scores tied; ties go to the Cutter, ${escapeHtml(STATE.roles.cutter)}.`);
     if (STATE.cutByBank) notes.push(`The bank made the cut after ${escapeHtml(STATE.roles.cutter)} ran out of cutting time.`);
     if (STATE.chooserTimedOut) notes.push(`${escapeHtml(STATE.roles.chooser)} ran out of choosing time, so ${escapeHtml(STATE.roles.cutter)} made the choice instead.`);
+    SPEECH.sayOnce(`final:${STATE.seed || ''}:${chosenPlotId}:${scoreByPlot.A}:${scoreByPlot.B}:${Date.now() >> 14}`, `${STATE.pNames[pickerIdx]} chose Plot ${chosenPlotId}, ${scoreByPlot[chosenPlotId]}. ${STATE.pNames[otherIdx]} inherited Plot ${otherPlotId}, ${scoreByPlot[otherPlotId]}. ${gameGap === 0 ? 'A tied division.' : `A ${gameGap} point gap.`}`, 'referee');
     UI.el.finalDivision.innerHTML = `
         <div class="division-summary">
             <div class="story-kicker">The division</div>
@@ -12990,6 +13057,7 @@ const APP = {
                 if (card.disabled) return;
                 card.classList.toggle('selected');
                 STATE.settings[k] = card.classList.contains('selected');
+                if (DISPLAY.KEYS.includes(k)) { DISPLAY.set(k, STATE.settings[k]); UI.applyReadingMode(); }
                 if (k === 'terrain' && STATE.settings[k]) STATE.settings.landTemplate = 'standard';
                 card.setAttribute('aria-pressed', String(STATE.settings[k]));
                 UI.refreshSetup();
@@ -13861,6 +13929,8 @@ const MATCH_MENU = {
             lightning: false,
             showLandValues: !!settings.showLandValues,
             animate: settings.animate !== false,
+            readAloud: !!settings.readAloud,
+            easyReading: !!settings.easyReading,
             computer: !!settings.computer,
             computerLevel: settings.computerLevel || 'line',
             opponent: ['remote', 'training'].includes(settings.opponent) ? settings.opponent : 'person',
@@ -14173,6 +14243,61 @@ const VALUE_ENGINE = {
         node.innerHTML=`<strong>Property inherited: ${generated} of ${ceiling.total} theoretical maximum.</strong><p>${STATE.outcome.unresolved?'Neither sibling chose, so no Property was inherited. ':''}The ceiling is an upper bound, not a target guaranteed by this layout.</p><details><summary>How is the ceiling calculated?</summary><p>Fixed terrain ${ceiling.land} + supplied and purchased assets ${ceiling.printed}${ceiling.links?` + possible connections ${ceiling.links}`:''}${ceiling.development?` + developments ${ceiling.development}`:''}. It uses the terrain already set and does not try different terrain layouts. ${STATE.settings.betterTogether?'Some eligible connections may compete for space. ':''}A fence can remove land or connection value.</p></details>`;
     }
 };
+// Reading aloud with the voices the device already has. No files, no network.
+// Each character is given a different voice where the device offers one, and a
+// pitch and pace of its own either way. Speech starts on a tap, which is how
+// every spoken screen is reached.
+const SPEECH = (() => {
+    const synth = typeof window !== 'undefined' && window.speechSynthesis ? window.speechSynthesis : null;
+    const PREFS = {
+        hartley: { rate: 0.95, pitch: 1.0, female: true },
+        dacre: { rate: 1.0, pitch: 0.82, female: false },
+        brandt: { rate: 0.9, pitch: 0.9, female: true },
+        counsellor: { rate: 0.95, pitch: 1.08, female: true },
+        referee: { rate: 1.0, pitch: 1.0, female: false },
+    };
+    const FEMALE = /female|samantha|karen|moira|tessa|fiona|victoria|kate|serena|zira|susan|hazel|libby|sonia|emma|olivia|ava|allison|joanna|amy|aria|jenny|martha|anna|catherine|ellen|nicky|flo|shelley|sandy|kathy/i;
+    const MALE = /male|daniel|arthur|oliver|james|ryan|guy|george|thomas|david|mark|alex|fred|tom|brian|aaron|lee|rishi|reed|eddy|rocko|grandpa|ralph/i;
+    let voices = [], assigned = {}, current = null;
+    function loadVoices() { voices = synth ? synth.getVoices() : []; assigned = {}; }
+    if (synth) { loadVoices(); if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', loadVoices); }
+    function enabled() { return !!synth && DISPLAY.get('readAloud'); }
+    function pickVoice(key) {
+        if (assigned[key]) return assigned[key];
+        const pref = PREFS[key] || PREFS.referee;
+        const en = voices.filter(v => /^en/i.test(v.lang));
+        const pool = en.length ? en : voices;
+        const gb = pool.filter(v => /en[-_]gb/i.test(v.lang));
+        const ordered = [...gb, ...pool.filter(v => !gb.includes(v))];
+        const used = new Set(Object.values(assigned).map(v => v.name));
+        const fits = ordered.filter(v => (pref.female ? FEMALE : MALE).test(v.name) && !used.has(v.name));
+        const choice = fits[0] || ordered.find(v => !used.has(v.name)) || ordered[0] || null;
+        if (choice) assigned[key] = choice;
+        return choice;
+    }
+    function stop() { if (synth) { try { synth.cancel(); } catch (_) {} } current = null; }
+    function say(text, key = 'referee', { onstart = null, onend = null } = {}) {
+        const plain = String(text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!enabled() || !plain) { onend && onend(); return false; }
+        stop();
+        let u;
+        try { u = new SpeechSynthesisUtterance(plain); } catch (_) { onend && onend(); return false; }
+        const pref = PREFS[key] || PREFS.referee;
+        const voice = pickVoice(key);
+        if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-GB';
+        u.rate = pref.rate; u.pitch = pref.pitch;
+        u.onstart = () => { if (current === u && onstart) onstart(); };
+        u.onend = () => { if (current === u) { current = null; onend && onend(); } };
+        u.onerror = () => { if (current === u) { current = null; onend && onend(); } };
+        current = u;
+        try { synth.speak(u); } catch (_) { current = null; onend && onend(); return false; }
+        return true;
+    }
+    const spokenOnce = new Set();
+    function sayOnce(id, text, key) { if (spokenOnce.has(id)) return false; spokenOnce.add(id); return say(text, key); }
+    return { say, sayOnce, stop, enabled, voiceNames: () => voices.map(v => `${v.name} (${v.lang})`), assigned: () => Object.fromEntries(Object.entries(assigned).map(([k, v]) => [k, v.name])) };
+})();
+
 // A person speaking to you, one line at a time, at about the pace of speech.
 // Tap to finish the line, tap again for the next. Now and then a reply is
 // offered; it never changes the game, only what is said next. Everything a
@@ -14241,8 +14366,14 @@ const DIALOGUE = (() => {
     }
     function startTyping(text, after) {
         stopTyping();
-        const animate = !(typeof STATE !== 'undefined' && STATE.settings && STATE.settings.animate === false);
-        if (!animate) { el.line.textContent = text; after && after(); return; }
+        if (SPEECH.enabled()) {
+            el.line.textContent = text;
+            el.portrait.classList.add('speaking');
+            SPEECH.say(text, shownVoice || 'hartley', { onend: () => el.portrait.classList.remove('speaking') });
+            after && after();
+            return;
+        }
+        if (!DISPLAY.get('animate')) { el.line.textContent = text; after && after(); return; }
         el.line.textContent = '';
         el.modal.classList.add('typing'); el.portrait.classList.add('speaking');
         let i = 0;
@@ -14274,10 +14405,12 @@ const DIALOGUE = (() => {
     function advance() {
         if (typing) { const { text, after } = typing; stopTyping(); el.line.textContent = text; after && after(); return; }
         if (choosing) return;
+        SPEECH.stop(); el.portrait.classList.remove('speaking');
         index += 1; showBeat();
     }
     function finish() {
         stopTyping();
+        SPEECH.stop(); el.portrait.classList.remove('speaking');
         queue = []; choosing = false;
         if (UI.topOverlayKey() === 'dialogueOverlay' || el.overlay.classList.contains('open')) UI.close('dialogueOverlay');
         const done = onDone; onDone = null; current = null;
@@ -15922,6 +16055,7 @@ const LEGACY = (() => {
             document.getElementById('legacyFacesTitle').textContent=name;
             const portrait=document.getElementById('legacyFacesPortrait');if(portrait&&!portrait.innerHTML)portrait.innerHTML=DIALOGUE.portrait('counsellor');
             document.getElementById('legacyFacesEyebrow').textContent=DIALOGUE.nameOf('counsellor');
+            SPEECH.say(`${name}, how did that feel?`,'counsellor');
             document.getElementById('legacyFacesPrompt').innerHTML=`${who===1?`<strong>Pass the phone to ${text(name)}.</strong> `:''}${text(name)}, how did that feel? Pick the face that fits. It changes nothing in the game; it goes into the record beside the facts.`;
             document.getElementById('legacyFacesButtons').innerHTML=FACES.map((face,i)=>`<button type="button" class="legacy-face-btn" data-legacy-face="${i}" aria-label="${face.label}"><span class="emoji" aria-hidden="true">${face.emoji}</span><span>${face.label}</span></button>`).join('');
             if(UI.topOverlayKey()!=='legacyFacesOverlay')UI.open('legacyFacesOverlay');else UI.focusFirst(UI.el.legacyFacesOverlay);
