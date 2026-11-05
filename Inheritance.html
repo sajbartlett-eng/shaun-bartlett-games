@@ -2524,7 +2524,32 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 .legacy-holding.p2 {border-left-color:var(--p2);}
 .legacy-holding-head {display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
 .legacy-holding small {display:block;color:var(--ink-soft);line-height:1.4;margin-top:4px;}
-.legacy-grade {font:700 13px var(--mono);white-space:nowrap;}
+.legacy-grade {font:700 13px var(--mono);white-space:normal;}
+.legacy-holding-head {flex-wrap:wrap;}
+.legacy-table th:first-child {white-space:nowrap;overflow-wrap:normal;}
+/* The campaign's own result screen: the ordinary game's ceiling and awards blocks do not apply. */
+.legacy-active #valueCeilingPanel,.legacy-active #finalAchievements {display:none;}
+/* Faces: how fairness felt, recorded after every estate and shown beside the facts. */
+.legacy-faces {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 4px;}
+#legacyFacesOverlay .legacy-tools {display:none;}
+.legacy-face-btn {display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:1.5px solid var(--paper-edge);border-radius:4px;background:rgba(243,234,217,.6);cursor:pointer;font:600 12px var(--display);color:var(--ink-soft);min-height:88px;}
+.legacy-face-btn:hover {background:var(--paper-deep);border-color:var(--ink);}
+.legacy-face-btn .emoji {font-size:38px;line-height:1;}
+.legacy-faces-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.legacy-face-card {display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--paper-edge);border-radius:4px;background:rgba(255,255,255,.24);}
+.legacy-face-card.p1 {border-left:5px solid var(--p1);}
+.legacy-face-card.p2 {border-left:5px solid var(--p2);}
+.legacy-face-card .emoji {font-size:44px;line-height:1;}
+.legacy-face-card strong {display:block;font-size:15px;}
+.legacy-face-card span {display:block;font-size:13px;color:var(--ink-soft);}
+.legacy-chronicle-faces {font-size:20px;letter-spacing:.08em;margin-right:6px;vertical-align:middle;}
+.legacy-gap-line {font-size:14px;line-height:1.45;margin:6px 0;}
+.legacy-choice-panel {display:none;margin:0 0 10px;padding:10px 12px;border:1px dashed var(--gold);border-radius:4px;background:var(--gold-soft);font-size:14px;line-height:1.45;color:var(--ink-soft);}
+.legacy-choice-panel.active {display:block;}
+.legacy-choice-panel strong {color:var(--ink);}
+.legacy-choice-panel .plot-a {color:var(--plot-a);font-weight:700;}
+.legacy-choice-panel .plot-b {color:var(--plot-b);font-weight:700;}
+@media (max-width:420px) {.legacy-faces-row {grid-template-columns:1fr;}}
 .legacy-invest-summary {display:flex;justify-content:space-between;gap:12px;align-items:baseline;border-bottom:1px solid var(--paper-edge);padding-bottom:10px;margin-bottom:12px;}
 .legacy-shop {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 16px;}
 .legacy-shop button {text-align:left;min-height:58px;padding:9px;}
@@ -3144,6 +3169,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 </div></div>
 
 <div class="overlay" id="legacyOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyTitle"><div class="modal"><h2 id="legacyTitle" tabindex="-1">Family Legacy</h2><div id="legacyBody"></div></div></div>
+<div class="overlay" id="legacyFacesOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyFacesTitle"><div class="modal legacy-faces-modal"><div class="eyebrow" id="legacyFacesEyebrow">how did that feel?</div><h2 id="legacyFacesTitle">Sibling</h2><p class="body" id="legacyFacesPrompt"></p><div class="legacy-faces" id="legacyFacesButtons" role="group" aria-label="How did that feel"></div><div class="setup-link-row"><button type="button" class="btn-ghost" id="legacyFacesSkipBtn">Leave it blank</button></div></div></div>
 <div class="overlay" id="legacyInvestOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="legacyInvestTitle"><div class="modal"><div class="eyebrow">after the build · before the division</div><h2 id="legacyInvestTitle" tabindex="-1">Invest in the estate</h2><div id="legacyInvestBody"></div></div></div>
 <input type="file" id="legacyFileInput" accept=".inheritance,application/json" hidden>
 <script>
@@ -13568,7 +13594,7 @@ const INTERACTION = {
 
 document.querySelector('.app').insertAdjacentHTML('afterbegin','<div class="legacy-tools"><button class="btn-secondary" data-legacy="open">Family Legacy</button></div>');
 document.querySelectorAll('.overlay:not(#legacyOverlay):not(#legacyInvestOverlay) .modal').forEach(modal => modal.insertAdjacentHTML('beforeend','<div class="legacy-tools"><button class="btn-secondary" data-legacy="open">Family Legacy</button></div>'));
-document.getElementById('phasePrimer').insertAdjacentHTML('afterend','<section class="legacy-build-choices" id="legacyBuildChoices" aria-live="polite"></section>');
+document.getElementById('phasePrimer').insertAdjacentHTML('afterend','<section class="legacy-build-choices" id="legacyBuildChoices" aria-live="polite"></section><section class="legacy-choice-panel" id="legacyChoicePanel" aria-live="polite"></section>');
 const VALUE_ENGINE = {
     // The terrain is fixed before Build. This is a strict scoring ceiling, not
     // a claim that every compatible relationship can coexist on this layout.
@@ -13746,6 +13772,13 @@ const LEGACY = (() => {
     // exactly the payments the campaign has used: 1, 2 and 3 Capital for grade
     // C, B and A holdings and 3 for a Quarry. The number of years is the only
     // lever; the yields are not exaggerated.
+    // How fairness felt. Recorded after every estate, one face per sibling,
+    // shown beside the facts, used for nothing else: no number moves because
+    // of a face, no copy comments on one, no award is computed from them.
+    const FACES=Object.freeze([
+        {key:'angry',emoji:'😠',label:'Angry'},{key:'upset',emoji:'😞',label:'Upset'},{key:'flat',emoji:'😐',label:'Flat'},
+        {key:'content',emoji:'🙂',label:'Content'},{key:'delighted',emoji:'😄',label:'Delighted'},{key:'hysterical',emoji:'🤣',label:'Hysterical'},
+    ]);
     const YIELD_PER_YEAR=0.04, DEFAULT_YEARS_PER_ESTATE=5;
     function yearsPerEstate(c=campaign){const y=Number(c?.yearsPerEstate);return Number.isInteger(y)&&y>=1&&y<=50?y:DEFAULT_YEARS_PER_ESTATE;}
     function blockIncome(block,ruleVersion=campaign?.incomeRuleVersion??2,c=campaign){if(ruleVersion===1&&block.score===13)return 5;return Math.max(0,Math.round(block.score*YIELD_PER_YEAR*yearsPerEstate(c)));}
@@ -14390,7 +14423,30 @@ const LEGACY = (() => {
         const other=1-STATE.turn;
         if(unplacedInvestmentItems(other).length){STATE.turn=other;selectBuildItem();startPlacementTimer(STATE.turn);}
     }
+    function holdingsLine(cells,label) {
+        const groups=findProductiveGroups(cells,STATE.grid);
+        const inPlot=new Set(cells.map(p=>`${p.c},${p.r}`));
+        const devs=(campaign.current?.developments||[]).filter(dev=>dev.placed&&dev.cells.length&&dev.cells.every(cell=>inPlot.has(`${cell.c},${cell.r}`)));
+        const parts=[
+            ...groups.map(g=>`<strong>${text(g.name)}</strong> (${text(g.assets.map(a=>CONFIG.ASSET_NAME[a.kind]).join(', '))}): ${g.income} Capital after each of ${g.remainingPayments??3} estates`),
+            ...devs.map(dev=>`<strong>${text(dev.name)}</strong>: ${dev.income} Capital ${dev.payments} times`),
+        ];
+        return `${label} ${parts.length?`carries ${parts.join('; ')}.`:'carries no holding.'}`;
+    }
+    function renderChoicePanel() {
+        const el=document.getElementById('legacyChoicePanel');
+        if(!el)return;
+        const show=campaign&&!suspended&&(STATE.phase===PHASE.CHOOSE||(STATE.phase===PHASE.CUT&&!STATE.isCutComplete));
+        el.classList.toggle('active',!!show);
+        if(!show){el.innerHTML='';return;}
+        if(STATE.phase===PHASE.CUT){
+            el.innerHTML=`${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')} A fence between two of a holding's pieces breaks it. Property totals stay hidden.`;
+            return;
+        }
+        el.innerHTML=`<span class="plot-a">${holdingsLine(STATE.plotA,'Plot A')}</span><br><span class="plot-b">${holdingsLine(STATE.plotB,'Plot B')}</span><br>Property totals stay hidden until you choose. Whoever inherits a holding receives its payments.`;
+    }
     function renderBuildChoices() {
+        renderChoicePanel();
         const el=document.getElementById('legacyBuildChoices');
         if(!campaign||STATE.phase!==PHASE.BUILD||!campaign.current?.investmentOpened||!campaign.current?.investmentComplete){el.classList.remove('active');el.innerHTML='';return;}
         const selection=campaign.current.buildSelection||selectBuildItem(),turn=STATE.turn,purchases=unplacedPurchases(turn),developments=unplacedDevelopments(turn);
@@ -14602,8 +14658,45 @@ const LEGACY = (() => {
         const attempt=acceptedAttemptForRecord(record),plots=[0,1].map(i=>playerPlotForAttempt(attempt,i));
         const rows=campaign.players.map((player,i)=>`<div class="legacy-income-line"><span>${text(player.name)} inherited Plot ${plots[i]||'?'} </span><strong>${record.scores?.[i]||0}</strong></div>`).join('');
         const finalAttempt=record.attempts?.length===2?'<p class="comparison-note">The estate was settled on the final division.</p>':'';
-        const ceiling=VALUE_ENGINE.ceiling({grid:record.board.grid,terrain:record.board.terrain,estateMask:record.board.estateMask,betterTogether:record.board.settings.betterTogether,developments:record.developments});
-        return `<div class="legacy-fact"><h4>The division</h4>${rows}<p class="comparison-note">Together inherited ${record.accounting.inherited} Property. Optimistic ceiling: ${ceiling.total}; some possible connections may conflict.</p>${finalAttempt}</div>`;
+        const built=record.accounting?.built??0,inherited=record.accounting?.inherited??0,lostToFence=Math.max(0,built-inherited);
+        const acts=concessionSentences(record).map(line=>`<p>${line}</p>`).join('');
+        return `<div class="legacy-fact"><h4>The division</h4>${rows}${acts}<p class="comparison-note">Together inherited ${inherited} of the ${built} Property built before the fence${lostToFence?`; ${lostToFence} lost to the fence`:''}.</p>${finalAttempt}</div>`;
+    }
+    // What the system can see of the acts that moved the gap, stated as facts.
+    function concessionSentences(record) {
+        const attempt=acceptedAttemptForRecord(record);
+        if(!attempt||!attempt.outcome||record.lost)return [];
+        const a=attempt.outcome.scoreA?.total??0,b=attempt.outcome.scoreB?.total??0,gap=Math.abs(a-b);
+        const favoured=a===b?null:(a>b?'A':'B');
+        const cutter=text(campaign.players[attempt.cutterIdx]?.name||''),picker=attempt.choiceActor==='cutter'?attempt.cutterIdx:attempt.chooserIdx,chooser=text(campaign.players[picker]?.name||'');
+        const lines=[];
+        if(attempt.cutByBank)lines.push('The bank drew the fence after time ran out.');
+        else lines.push(favoured?`${cutter} drew the fence. It favoured Plot ${favoured} by ${gap} Property.`:`${cutter} drew the fence. It split the estate evenly.`);
+        if(attempt.chosenPlotId){
+            const tookSmaller=favoured&&attempt.chosenPlotId!==favoured;
+            lines.push(`${chooser} took Plot ${attempt.chosenPlotId}${tookSmaller?`, the smaller plot by ${gap}`:''}.`);
+        }
+        for(const item of record.facts?.funding||[]){
+            const owners=item.recipients||[];
+            if(owners.length===1&&owners[0]!==item.payer)lines.push(`${text(campaign.players[item.payer].name)} paid ${item.cost} Capital for the ${text(item.name)}; ${text(campaign.players[owners[0]].name)} inherited it.`);
+        }
+        return lines;
+    }
+    function positionAfter(index) {
+        // Property and Capital held by each sibling after the record at this index (-1: before any estate).
+        const property=[0,0];
+        for(let i=0;i<=index&&i<campaign.history.length;i++)(campaign.history[i].scores||[]).forEach((v,j)=>{property[j]+=v||0;});
+        const capital=index>=0&&campaign.history[index]?.capitalAfter?campaign.history[index].capitalAfter:[0,0];
+        return property.map((p,j)=>p+(capital[j]||0));
+    }
+    function gapThreadHtml(index) {
+        if(index<0||!campaign.history[index])return '';
+        const before=positionAfter(index-1),after=positionAfter(index);
+        const gapBefore=Math.abs(before[0]-before[1]),gapAfter=Math.abs(after[0]-after[1]);
+        const ahead=after[0]===after[1]?null:(after[0]>after[1]?0:1);
+        const move=gapAfter>gapBefore?`It widened by ${gapAfter-gapBefore}.`:gapAfter<gapBefore?`It closed by ${gapBefore-gapAfter}.`:'It did not move.';
+        const lead=ahead===null?'The siblings are level.':`${text(campaign.players[ahead].name)} is ahead.`;
+        return `<div class="legacy-fact"><h4>The gap</h4><p class="legacy-gap-line">Between the siblings, in Property and Capital: <strong>${gapBefore}</strong> before this estate, <strong>${gapAfter}</strong> after. ${move} ${lead}</p></div>`;
     }
     function roundChangesHtml(record) {
         if(!record)return '';
@@ -14619,7 +14712,10 @@ const LEGACY = (() => {
             const names=(keys||[]).map(key=>catalogueItem(key)?.name).filter(Boolean);
             if(names.length)rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[playerIdx].name)} · investment now available</span><strong>${names.map(text).join(', ')}</strong></div>`);
         });
-        if(!rows.length)return '';
+        campaign.players.forEach((player,i)=>{
+            const mentioned=rows.some(row=>row.includes(`<span>${text(player.name)} ·`));
+            if(!mentioned)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · holdings and Capital</span><strong>nothing new this estate</strong></div>`);
+        });
         return `<div class="legacy-fact"><h4>What changed</h4>${rows.join('')}</div>`;
     }
     function positionSummaryHtml() {
@@ -14886,7 +14982,7 @@ const LEGACY = (() => {
         const gapCopy=gapParts.length?`${gapParts.join('; ')}.`:'All pre-division Property value remained in the family.';
         const lostInvestmentCopy=capitalInLostEstates?` ${capitalInLostEstates} Capital had been invested in estates that later left the family.`:'';
         const roundTable=`<details class="legacy-details"><summary>See all six estates</summary><div><div class="legacy-scroll" role="region" aria-label="Six estate value comparison" tabindex="0"><table class="legacy-table"><caption class="sr-only">Property inherited and possible value by estate</caption><thead><tr><th scope="col">Estate</th><th scope="col">Inherited</th><th scope="col">Ceiling</th><th scope="col">Investment: gained of possible</th></tr></thead><tbody>${estateRows}</tbody><tfoot><tr><th scope="row">All six</th><td>${inherited}</td><td>${ceiling}</td><td>${investmentPotential?`${investmentGenerated} of ${investmentPotential}`:'No purchases'}</td></tr></tfoot></table></div></div></details>`;
-        return `<h3>Created together across six estates</h3><div class="legacy-metrics"><div class="legacy-metric"><span>Property inherited</span><strong>${inherited}</strong></div><div class="legacy-metric"><span>Theoretical ceiling</span><strong>${ceiling}</strong></div></div><p class="comparison-note">${ceilingPct}% of an optimistic upper bound. Some possible connections cannot coexist.</p><p class="comparison-note">Net change after ${invested} Capital spent: ${signed(netCreated)} against the ${baseline} Property in the starting estates. Holding income is separate.</p>${awards?`<h4>Shared achievements</h4><div class="legacy-guide-grid">${awards}</div>`:''}${shortfalls?`<h4>Shared costs and shortfalls</h4><div class="legacy-guide-grid">${shortfalls}</div>`:''}<h4>From purchased additions</h4><p class="comparison-note">${investmentPotential?`${investmentGenerated} inherited Property gained, of up to ${investmentPotential} possible from the same purchases. Holding income is separate.`:'No additions were purchased.'}</p>${roundTable}<details class="legacy-details"><summary>How these values are calculated</summary><div><p>The ceiling uses each estate's terrain as it was set, supplied assets and additions actually purchased. It does not test other purchases or terrain layouts. Some eligible connections compete for space, so the ceiling may be unreachable.</p><p>Investment gained compares the final divisions with those same divisions without the purchased additions. Possible investment value is the extra Property those same additions could theoretically provide, including eligible connections. Neither measure includes purchases not made, unspent Capital or future holding income.</p><p>Before division, the six estates contained ${built} Property; ${notRetained} did not remain after division. ${retainedPct}% of pre-division Property was inherited. ${text(gapCopy+lostInvestmentCopy)}</p><p>The pre-division Property change after subtracting ${invested} Capital spent was ${signed(immediateNet)}. Holding income is counted separately.</p></div></details>`;
+        return `<h3>Created together across six estates</h3><div class="legacy-metrics"><div class="legacy-metric"><span>Property inherited</span><strong>${inherited}</strong></div><div class="legacy-metric"><span>Built before the fences</span><strong>${built}</strong></div></div><p class="comparison-note">${retainedPct}% of what the estates held before division stayed in the family${cutValue?`; ${cutValue} Property was lost to the fences`:''}.</p><p class="comparison-note">Net change after ${invested} Capital spent: ${signed(netCreated)} against the ${baseline} Property in the starting estates. Holding income is separate.</p>${awards?`<h4>Shared achievements</h4><div class="legacy-guide-grid">${awards}</div>`:''}${shortfalls?`<h4>Shared costs and shortfalls</h4><div class="legacy-guide-grid">${shortfalls}</div>`:''}<h4>From purchased additions</h4><p class="comparison-note">${investmentPotential?`${investmentGenerated} inherited Property gained, of up to ${investmentPotential} possible from the same purchases. Holding income is separate.`:'No additions were purchased.'}</p>${roundTable}<details class="legacy-details"><summary>How these values are calculated</summary><div><p>The ceiling uses each estate's terrain as it was set, supplied assets and additions actually purchased. It does not test other purchases or terrain layouts. Some eligible connections compete for space, so the ceiling may be unreachable.</p><p>Investment gained compares the final divisions with those same divisions without the purchased additions. Possible investment value is the extra Property those same additions could theoretically provide, including eligible connections. Neither measure includes purchases not made, unspent Capital or future holding income.</p><p>Before division, the six estates contained ${built} Property; ${notRetained} did not remain after division. ${retainedPct}% of pre-division Property was inherited. ${text(gapCopy+lostInvestmentCopy)}</p><p>The pre-division Property change after subtracting ${invested} Capital spent was ${signed(immediateNet)}. Holding income is counted separately.</p></div></details>`;
     }
 
     function finalResultHtml() {
@@ -14900,14 +14996,17 @@ const LEGACY = (() => {
     const signed=value=>`${value>0?'+':''}${value}`;
     function holdingCard(group,playerIdx,playerName,index=null) {
         if(group.type==='quarry'||group.type==='logging'){
-            const marker=index==null?'':`${index+1}. `,status=group.active?`${group.remainingPayments} Capital payments remain`:'scheduled payments complete';
-            return `<div class="legacy-holding ${playerIdx===0?'p1':'p2'}"><div class="legacy-holding-head"><strong>${marker}${text(group.name)}</strong><span class="legacy-grade">${group.active?`${group.income} Capital after each estate`:'No further income'}</span></div><small>${text(playerName)} · ${status}</small></div>`;
+            const marker=index==null?'':`${index+1}. `;
+            const pays=group.active?`Pays ${text(playerName)} ${group.income} Capital after each of the next ${group.remainingPayments} ${group.remainingPayments===1?'estate':'estates'}.`:`${text(playerName)}'s. Its payments are complete; its Property stays.`;
+            return `<div class="legacy-holding ${playerIdx===0?'p1':'p2'}"><div class="legacy-holding-head"><strong>${marker}${text(group.name)}</strong></div><small>${pays}</small></div>`;
         }
         const assetNames=group.assets.map(asset=>CONFIG.ASSET_NAME[asset.kind]).join(', ');
         const connections=[...new Set(group.relationships.map(rel=>rel.label))].join(', ');
         const marker=index==null?'':`${index+1}. `;
-        const status=group.permanent===false?group.active?`${group.remainingPayments} payments remain`:'payments complete':'ongoing income';
-        return `<div class="legacy-holding ${playerIdx===0?'p1':'p2'}"><div class="legacy-holding-head"><strong>${marker}${text(group.name)}</strong><span class="legacy-grade">Grade ${group.grade} · ${group.active===false?'No further income':`${group.income} Capital after each estate`}</span></div><small>${text(playerName)} · ${status} · holding score ${group.score}: ${group.printedValue} from assets + ${group.relationshipBonus} from productive links</small><small>Built from ${text(assetNames)} · ${text(connections)}</small></div>`;
+        const pays=group.active===false?`${text(playerName)}'s. Its payments are complete; its Property stays.`
+            :group.permanent===false?`Pays ${text(playerName)} ${group.income} Capital after each of the next ${group.remainingPayments} ${group.remainingPayments===1?'estate':'estates'}.`
+            :`Pays ${text(playerName)} ${group.income} Capital after each estate.`;
+        return `<div class="legacy-holding ${playerIdx===0?'p1':'p2'}"><div class="legacy-holding-head"><strong>${marker}${text(group.name)}</strong><span class="legacy-grade">${text(assetNames)} · grade ${group.grade}</span></div><small>${pays}</small></div>`;
     }
     function decisionFactsHtml(attempts=[]) {
         if(!attempts.length)return '';
@@ -14941,7 +15040,7 @@ const LEGACY = (() => {
         if(!campaign.history.length)return '<p class="body">Settled estates will appear here.</p>';
         return `<div class="legacy-chronicle">${campaign.history.map((record,i)=>{
             const story=estateNarrative(record,true);
-            return `<button class="legacy-history legacy-fact" data-legacy-history="${i}"><h4>${record.round}. ${text(record.chapter)}</h4>${story.map(line=>`<p>${line}</p>`).join('')}</button>`;
+            return `<button class="legacy-history legacy-fact" data-legacy-history="${i}"><h4>${facesInline(record.faces)}${record.round}. ${text(record.chapter)}</h4>${story.map(line=>`<p>${line}</p>`).join('')}</button>`;
         }).join('')}</div>`;
     }
     function nextChapterGuide(round) {
@@ -14972,12 +15071,14 @@ const LEGACY = (() => {
             else if(between){
                 const latest=campaign.history[campaign.history.length-1];
                 if(latest){
+                    html+=`<h4 class="legacy-record-kicker">How it felt</h4>${facesRowHtml(latest.faces)}`;
                     html+=roundOutcomeHtml(latest);
+                    html+=gapThreadHtml(campaign.history.length-1);
                     html+=roundChangesHtml(latest);
                 }
                 html+=`<h3>Campaign position</h3>${positionSummaryHtml()}`;
-                if(campaign.history.length===1&&!campaign.guidance.holdingsPrimerSeen)html+='<div class="legacy-consent-box"><strong>Your first holding payment</strong><p class="legacy-consent-private">A new holding pays for the first time now, before the next estate begins.</p></div>';
-                html+=`<details class="legacy-details"><summary>About Estate ${campaign.round+1}: ${text(chapters[campaign.round])}</summary><div>${nextChapterGuide(campaign.round+1)}</div></details>`;
+                if(campaign.history.length===1&&!campaign.guidance.holdingsPrimerSeen&&(latest?.holdingsAwarded||[]).some(groups=>groups&&groups.length))html+='<div class="legacy-consent-box"><strong>Your first holding payment</strong><p class="legacy-consent-private">A new holding pays for the first time now, before the next estate begins.</p></div>';
+                html+=`<details class="legacy-details" open><summary>About Estate ${campaign.round+1}: ${text(chapters[campaign.round])}</summary><div>${nextChapterGuide(campaign.round+1)}</div></details>`;
                 html+=`<div class="actions"><button class="btn-primary" data-legacy="next">Begin estate ${campaign.round+1}</button></div>${campaignDetailsHtml(true)}`;
             } else {
                 html+=`<div class="actions"><button class="btn-primary" data-legacy="continue">Continue estate</button></div>${ledger()}`;
@@ -15014,7 +15115,7 @@ const LEGACY = (() => {
         campaign.players.forEach((p,i)=>UI.el['inputP'+(i+1)].value=p.name);
         const firstInvestor=(n-1)%2;
         // Post-Build investment is deliberate: Build reveals the estate before either sibling spends Capital.
-        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
+        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
         // Resource chapters promise real sites for both developments. Retry the
         // seeded estate generation if terrain or rocks leave either one impossible.
         for(let attempt=0;attempt<64;attempt++){
@@ -15057,9 +15158,36 @@ const LEGACY = (() => {
         campaign.status='unresolved';campaign.endedAt=new Date().toISOString();campaign.current.unresolvedReason=reason;campaign.current.consent.stage='unresolved';event('CAMPAIGN_UNRESOLVED',{attempt:campaign.current.attempt,reason,division:STATE.outcome?divisionSnapshot():null});
         FLOW.stopTimer();UI.closeAllOverlays();suspended=null;save();open();
     }
+    let facesPending=null;
+    function askFaces(then) {
+        const c=campaign.current;
+        if(!Array.isArray(c.faces)||c.faces.length!==2)c.faces=[null,null];
+        let who=0;
+        const show=()=>{
+            const name=campaign.players[who].name;
+            document.getElementById('legacyFacesEyebrow').textContent=`Estate ${campaign.round} · how did that feel?`;
+            document.getElementById('legacyFacesTitle').textContent=name;
+            document.getElementById('legacyFacesPrompt').innerHTML=`${who===1?`<strong>Pass the phone to ${text(name)}.</strong> `:''}Pick the face that fits. It changes nothing in the game. It goes into the family record beside the facts.`;
+            document.getElementById('legacyFacesButtons').innerHTML=FACES.map((face,i)=>`<button type="button" class="legacy-face-btn" data-legacy-face="${i}" aria-label="${face.label}"><span class="emoji" aria-hidden="true">${face.emoji}</span><span>${face.label}</span></button>`).join('');
+            if(UI.topOverlayKey()!=='legacyFacesOverlay')UI.open('legacyFacesOverlay');else UI.focusFirst(UI.el.legacyFacesOverlay);
+        };
+        facesPending={pick(value){c.faces[who]=value;who++;if(who<2){INTERACTION.changed();show();}else{facesPending=null;c.facesDone=true;UI.close('legacyFacesOverlay');save();then();}}};
+        show();
+    }
+    function facesRowHtml(faces,compact=false) {
+        const cards=campaign.players.map((player,i)=>{
+            const face=Number.isInteger(faces?.[i])?FACES[faces[i]]:null;
+            return `<div class="legacy-face-card ${i===0?'p1':'p2'}"><span class="emoji" aria-hidden="true">${face?face.emoji:'·'}</span><div><strong>${text(player.name)}</strong><span>${face?text(face.label):'not recorded'}</span></div></div>`;
+        }).join('');
+        return `<div class="legacy-faces-row" aria-label="How it felt">${cards}</div>`;
+    }
+    function facesInline(faces) {
+        return `<span class="legacy-chronicle-faces" aria-label="How it felt: ${campaign.players.map((p,i)=>`${p.name} ${Number.isInteger(faces?.[i])?FACES[faces[i]].label:'not recorded'}`).join(', ')}">${campaign.players.map((p,i)=>Number.isInteger(faces?.[i])?FACES[faces[i]].emoji:'·').join(' ')}</span>`;
+    }
     function recordEstate() {
         if(!campaign || campaign.status!=='playing' || STATE.phase!==PHASE.FINAL || !STATE.outcome)return;
         if(campaign.history.some(r=>r.round===campaign.round))return;
+        if(!campaign.current.facesDone){askFaces(recordEstate);return;}
         const o=STATE.outcome;
         if(o.unresolved){finishUnresolved('No property was chosen before the bank deadline.');return;}
         // The choice commits the division. A prior save may contain a pending consent screen.
@@ -15080,7 +15208,7 @@ const LEGACY = (() => {
         const incomePayments=accrueEligibleIncome(campaign.round),unlocksEarned=campaign.round<6?syncInvestmentUnlocks():[[],[]];
         const acceptedAttempt=divisionSnapshot(campaign.current.attempt),attempts=campaign.current.firstAttempt?[clone(campaign.current.firstAttempt),acceptedAttempt]:[acceptedAttempt];
         const acceptedAt=new Date().toISOString(),facts=settlementFacts(board,campaign.current.purchasedAssets,campaign.current.developments);
-        campaign.history.push({round:campaign.round,incomeRuleVersion:campaign.incomeRuleVersion,chapter:chapters[campaign.round-1],chapterCharacter:campaign.current.chapterCharacter,acceptedAt,scores,winner,attempts,finalProjection:finalProjection?clone(finalProjection):null,facts,
+        campaign.history.push({round:campaign.round,faces:clone(campaign.current.faces||[null,null]),incomeRuleVersion:campaign.incomeRuleVersion,chapter:chapters[campaign.round-1],chapterCharacter:campaign.current.chapterCharacter,acceptedAt,scores,winner,attempts,finalProjection:finalProjection?clone(finalProjection):null,facts,
             accounting:{...clone(preview),preservationPercent:Math.round(preview.preservation*100),lost:0},holdingsAwarded:clone(holdingsByPlayer),
             purchasedAssets:clone(campaign.current.purchasedAssets),developments:clone(campaign.current.developments),investedBy:clone(campaign.current.investedBy),
             incomePayments:clone(incomePayments),unlocksEarned:clone(unlocksEarned),capitalAfter:campaign.players.map(player=>player.capital),board});
@@ -15285,6 +15413,7 @@ const LEGACY = (() => {
             if(r.round===6)preFinalAccepted={property:[...propertyTotals],capital:[...expectedCapital],holdings:clone(expectedHoldings),wins:[...wins]};
             const lost=r.lost===true;
             if(r.round!==i+1||![1,2].includes(r.incomeRuleVersion??1)||(r.incomeRuleVersion!==undefined&&r.incomeRuleVersion!==c.incomeRuleVersion)||(c.incomeRuleVersion===2&&r.incomeRuleVersion!==2)||r.chapter!==chapters[i]||r.chapterCharacter!==CHAPTERS[i].character||typeof r.acceptedAt!=='string'||!Number.isFinite(Date.parse(r.acceptedAt))||!Array.isArray(r.scores)||r.scores.length!==2||r.scores.some(x=>!number(x))||(lost?r.winner!==null:![0,1].includes(r.winner)))fail();
+            if(r.faces!==undefined&&(!Array.isArray(r.faces)||r.faces.length!==2||r.faces.some(x=>!(x===null||(Number.isInteger(x)&&x>=0&&x<FACES.length)))))fail();
             accounting(r.accounting,true);if(typeof r.accounting.lost!=='number'||!number(r.accounting.lost)||(lost?r.accounting.lost!==r.lostValue||r.lostValue!==r.accounting.built:r.accounting.lost!==0))fail();
             if(r.scores.some((x,j)=>!close(x,r.accounting.playerValues[j])))fail();board(r.board);if(r.board.settings.landTemplate!==expectedChapterLand(r.round))fail();
             purchases(r.purchasedAssets,r.board);developments(r.developments,r.board);
@@ -15428,11 +15557,13 @@ const LEGACY = (() => {
         document.getElementById('legacyRecordBtn').hidden=campaign.status!=='playing';
     }
     function bind() {
-        UI.el.legacyOverlay=document.getElementById('legacyOverlay');UI.el.legacyInvestOverlay=document.getElementById('legacyInvestOverlay');UI.overlayKeys.push('legacyOverlay','legacyInvestOverlay');
+        UI.el.legacyOverlay=document.getElementById('legacyOverlay');UI.el.legacyInvestOverlay=document.getElementById('legacyInvestOverlay');UI.el.legacyFacesOverlay=document.getElementById('legacyFacesOverlay');UI.overlayKeys.push('legacyOverlay','legacyInvestOverlay','legacyFacesOverlay');
+        document.getElementById('legacyFacesSkipBtn').addEventListener('click',()=>{if(facesPending)facesPending.pick(null);});
         UI.el.inputP1.addEventListener('input',LEGACY_UNLOCK.refresh);UI.el.inputP2.addEventListener('input',LEGACY_UNLOCK.refresh);
         document.getElementById('legacyEntryBtn').addEventListener('click',open);
         document.getElementById('legacyRecordBtn').addEventListener('click',recordEstate);
         document.addEventListener('click',e=>{
+            const faceButton=e.target.closest('[data-legacy-face]');if(faceButton){if(facesPending)facesPending.pick(Number(faceButton.dataset.legacyFace));return;}
             const buyAssetButton=e.target.closest('[data-legacy-buy-asset]');if(buyAssetButton){buyAsset(buyAssetButton.dataset.legacyBuyAsset);return;}
             const buyDevelopmentButton=e.target.closest('[data-legacy-buy-development]');if(buyDevelopmentButton){buyDevelopment(buyDevelopmentButton.dataset.legacyBuyDevelopment);return;}
             const buildSource=e.target.closest('[data-legacy-build-source]');if(buildSource){selectBuildItem(buildSource.dataset.legacyBuildSource,buildSource.dataset.purchaseId||null);UI.refreshHUD();RENDER.render();return;}

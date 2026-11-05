@@ -118,6 +118,11 @@ Two runs so far, read in `LEGACY_SIMULATOR_RESULTS.md`. The first (600 campaigns
 
 The designer then ruled: payments must be proportional to real yields with the years between estates as the only lever, and the gap is closed by play, not transfers. The second run (2,700 campaigns) measured both. Real yields put the campaign's existing payments at exactly five years per estate, so the game now carries the time scale as a stated rule (default five, every payment unchanged; ten doubles income and makes the central choice bite in about one estate in four). Deliberate losing keeps a family in check when it is measured to the lead, and oscillates when it is blunt; the rules already provide the levers, and the chooser needs P16 to use them well.
 
+## Progress
+
+- **Done:** P1 (simulator, two runs), E1 (faces after every estate, visible to both, faces only), E2 (the gap thread and concession facts), E3 (the record screen between estates), P16 (holdings visible at Choose and on the estate during Cut), P12 (holding cards in plain words), P2 and P5 on the campaign's own screens (the ceiling retired from the record screen and the ending; the ordinary game's ceiling and awards blocks hidden in the campaign), the two layout breaks in P14, the resume bug (finding 14), and the time scale as a stated rule. The next-chapter guide now opens by default on the record screen.
+- **Next:** P9 and P10 (chapter cards and primers as phase cards for both siblings), then E4 and P13 (the chronicle as the headline of the ending, downloadable and shareable), then the investment screen (P6, P7, P4, P3).
+
 ## Build order
 
 1. **Instrument first (P1), with the arc question.** Done. P8 is dropped on its numbers; income size and the gap-closing lever are open decisions with a tool to test them.
