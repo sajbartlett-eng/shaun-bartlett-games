@@ -61,6 +61,9 @@ def reachable_contest(state, shooter=None, shot=None, budget=None):
     pts = RC.ZONE_POINTS[z]
     card = state.ctx.off[shooter]
     budget = reaction_budget(state) if budget is None else budget
+    rules = state.ctx.rules
+    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single':
+        return _reachable_contest_geo(state, shooter, spos, t, pts, card, budget)
     out = []
     for d in range(5):
         free, fixed = defender_reach(state, d, budget)
@@ -89,6 +92,47 @@ def reachable_contest(state, shooter=None, shot=None, budget=None):
                             value=pf * fp + (1 - pf) * v)
             if best is None or (cand['value'], cand['actions']) < (best['value'], best['actions']):
                 best = cand
+        if best:
+            out.append(best)
+    return sorted(out, key=lambda e: e['value'])
+
+
+def _reachable_contest_geo(state, shooter, spos, t, pts, card, budget):
+    """reachable_contest under a step 3h setting (a wedge, or a positional contest geometry), through
+    geometry.best_terms: each entry also names its category (front / side / behind)."""
+    from . import geometry as G
+    from .solver import defender_reach
+    from .scoring import foul_on_shot_points
+    rules = state.ctx.rules
+    out = []
+    for d in range(5):
+        free, fixed = defender_reach(state, d, budget)
+        best = None
+        for q in set(free) | set(fixed):
+            if not B.adjacent(q, spos) or q in state.o:
+                continue
+            opts = []
+            if q in free:
+                opts.append((None, len(free[q])))
+            opts += [((a,), len(seq)) for a, seq in fixed.get(q, {}).items()]
+            for arrows, ln in opts:
+                bt = G.best_terms(rules, q, arrows, spos)
+                if bt is None:
+                    continue
+                _, foul_roll, penalty, cat, _ = bt
+                c = state.ctx.dfn[d].con(t) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
+                if rules.floor_contest_zero:
+                    c = max(0, c)
+                v = max(0, pts * (card.shot(t) - c))
+                if foul_roll:
+                    pf = state.ctx.dfn[d].r['foul_contest'] / 20.0
+                    fp = float(foul_on_shot_points(card, t, pts, rules)[0])
+                    cand = dict(defender=d, square=B.sq(q), clean=False, actions=ln, contest=c, foul_p=pf,
+                                value=pf * fp + (1 - pf) * v, category=cat)
+                else:
+                    cand = dict(defender=d, square=B.sq(q), clean=True, actions=ln, contest=c, value=v, category=cat)
+                if best is None or (cand['value'], cand['actions']) < (best['value'], best['actions']):
+                    best = cand
         if best:
             out.append(best)
     return sorted(out, key=lambda e: e['value'])

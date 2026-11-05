@@ -1,0 +1,233 @@
+{
+ "children": [
+  [
+   "Play(concept='dribble', actions=(O1 Dribble vs X1,))",
+   11.7,
+   11.7,
+   0.0
+  ],
+  [
+   "Play(concept='drive', actions=(O1 Move to H10,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='drive', actions=(O1 Move to J10,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='drive', actions=(O1 Move to K10,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='drive+shoot', actions=(O1 Move to H10, O1 Shot (three)))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='drive+shoot', actions=(O1 Move to J10, O1 Shot (three)))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='drive+shoot', actions=(O1 Move to K10, O1 Shot (three)))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='hesitate', actions=(O Hesitate,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='kick', actions=(O1 Pass to O2,))",
+   19.6,
+   21.6,
+   0.6
+  ],
+  [
+   "Play(concept='kick', actions=(O1 Pass to O4,))",
+   33.0,
+   33.0,
+   1.0
+  ],
+  [
+   "Play(concept='raw', actions=(O1 Quick Step to H10,))",
+   10.0,
+   10.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O1 Quick Step to J10,))",
+   10.0,
+   10.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T E,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T N,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T NE,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T S,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T SW,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='raw', actions=(O2 Screen, T W,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='relocate', actions=(O4 Move to A2,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='relocate', actions=(O4 Quick Step to A2,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='relocate+kick', actions=(O4 Move to A2, O1 Pass to O4))",
+   21.4,
+   23.4,
+   0.6
+  ],
+  [
+   "Play(concept='relocate+kick', actions=(O4 Quick Step to A2, O1 Pass to O4))",
+   21.4,
+   23.4,
+   0.6
+  ],
+  [
+   "Play(concept='screen', actions=(O1 Screen, T S,))",
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   "Play(concept='screen', actions=(O2 Screen, T SE,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='screen', actions=(O3 Screen, T SW,))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='seal', actions=(O2 Move to D7, O2 Screen, T N))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='seal', actions=(O3 Move to N7, O3 Screen, T N))",
+   9.0,
+   9.0,
+   0.0
+  ],
+  [
+   "Play(concept='swing', actions=(O1 Pass to O3,))",
+   15.0,
+   15.0,
+   0.0
+  ],
+  [
+   "Play(concept='swing', actions=(O1 Pass to O5,))",
+   14.0,
+   14.0,
+   0.0
+  ]
+ ],
+ "evals": {
+  "1": [
+   36.0
+  ],
+  "2": [
+   7.2075
+  ],
+  "3": [
+   21.425
+  ],
+  "4": [
+   3.6
+  ],
+  "5": [
+   27.2
+  ],
+  "6": [
+   24.0
+  ],
+  "7": [
+   24.05
+  ],
+  "8": [
+   20.0
+  ],
+  "9": [
+   24.2125
+  ],
+  "10": [
+   12.01875
+  ],
+  "11": [
+   12.4
+  ],
+  "12": [
+   24.0
+  ],
+  "13": [
+   18.0
+  ],
+  "14": [
+   22.29
+  ],
+  "15": [
+   29.0
+  ],
+  "16": [
+   21.0
+  ]
+ },
+ "reach": {
+  "5": [],
+  "6": [],
+  "12": []
+ }
+}

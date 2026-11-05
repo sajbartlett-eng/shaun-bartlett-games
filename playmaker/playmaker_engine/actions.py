@@ -2,6 +2,7 @@
 from typing import NamedTuple
 
 from . import board as B
+from . import geometry as G
 from . import rules_config as RC
 
 ORDER = ['target', 'pick', 'forced_shot', 'contest', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
@@ -99,7 +100,7 @@ def path_ok(state, side, i, path, rules, occ=None):
         pts = (start,) + tuple(path)
         for j, xp in enumerate(state.x):
             if B.adjacent(xp, start) and (i, j) not in state.beaten:
-                if B.path_crosses_ray(pts, xp, state.arrows[j], strict=rules.arrow_line_strict):
+                if G.path_crosses(rules, pts, xp, state.arrows[j], rules.arrow_line_strict):
                     return False
     return True
 
@@ -162,7 +163,19 @@ def movement_actions(state, side, rules):
                 acts += [_new(Action, ('move', 'X', i, dest, d, -1, '')) for dest in dests for d in range(8)]
             else:
                 acts += [_new(Action, (kind, side, i, dest, -1, -1, '')) for dest in dests]
+                if side == 'X' and kind == 'sprint' and rules.arrow_mode == 'wedge':
+                    # wedge: the run direction is one edge; the other may go either side (-1 = clockwise)
+                    start = pieces[i]
+                    for dest in dests:
+                        r = sprint_dir(start, dest)
+                        acts.append(_new(Action, (kind, side, i, dest, (r - 1) % 8, -1, '')))
     return acts
+
+
+def sprint_dir(start, dest):
+    dx, dy = dest[0] - start[0], dest[1] - start[1]
+    n = max(abs(dx), abs(dy))
+    return B.DIRS.index((dx // n, dy // n))
 
 
 # ---- intercept geometry ---------------------------------------------------------
@@ -175,12 +188,12 @@ def intercept_status(state, j):
     p = state.x[j]
     on = B.on_segment(p, a, b, rules.on_line_tolerance)
     if B.adjacent(p, a):
-        if state.arrows[j] == B.dir_between(p, a):
+        if G.faces(rules, state.arrows[j], p, a):
             return 'direct' if on else None
-        return 'approach' if B.arrow_crosses(p, state.arrows[j], a, b) else None
+        return 'approach' if G.crosses(rules, p, state.arrows[j], a, b) else None
     if on:
         return 'direct'
-    if B.arrow_crosses(p, state.arrows[j], a, b):
+    if G.crosses(rules, p, state.arrows[j], a, b):
         return 'approach'
     return None
 
@@ -253,7 +266,7 @@ def _defence_actions(s, rules, kinds=None):
     ok = (lambda k: True) if kinds is None else (lambda k: k in kinds)
     if ok('steal') and s.count('X', 'steal') < RC.LIMITS['X']['steal']:
         for j, xp in enumerate(s.x):
-            if B.adjacent(xp, cpos) and s.arrows[j] == B.dir_between(xp, cpos):
+            if G.faces(rules, s.arrows[j], xp, cpos):
                 acts.append(Action('steal', 'X', j))
     if ok('challenge') and s.count('X', 'challenge') < RC.LIMITS['X']['challenge']:
         for scr in s.screens:

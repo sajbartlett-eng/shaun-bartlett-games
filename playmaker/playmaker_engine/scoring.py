@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from . import board as B
+from . import geometry as G
 from . import rules_config as RC
 
 
@@ -70,6 +71,7 @@ class ContestOption:
     value: int             # shot value if no foul
     ft: int                # free throws if fouled
     ev: Fraction
+    category: str = ''     # step 3h: front / side / behind (descriptive under the current geometry)
 
 
 def contest_options(state, shooter, shot_type, forced=False):
@@ -90,12 +92,20 @@ def contest_options(state, shooter, shot_type, forced=False):
     for j, xp in enumerate(state.x):
         if not B.adjacent(xp, spos):
             continue
-        c = contest_rating(ctx.dfn[j], shot_type, xp, spos, rules)
-        clean = state.arrows[j] == B.dir_between(xp, spos)
+        eligible, foul_roll, penalty, cat = G.terms(rules, xp, state.arrows[j], spos)
+        if not eligible:
+            continue                    # step 3h geometries: arrow lines off the shooter, no contest
+        if rules.contest_geometry == 'current':
+            c = contest_rating(ctx.dfn[j], shot_type, xp, spos, rules)
+        else:
+            c = ctx.dfn[j].con(shot_type) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
+            if rules.floor_contest_zero:
+                c = max(0, c)
+        clean = not foul_roll
         pf = Fraction(0) if clean else p_foul(ctx.dfn[j].r['foul_contest'], rules)
         v = val(c)
         ev = pf * ft + (1 - pf) * v
-        opts.append(ContestOption(j, c, clean, pf, v, ft, ev))
+        opts.append(ContestOption(j, c, clean, pf, v, ft, ev, cat))
     return opts
 
 

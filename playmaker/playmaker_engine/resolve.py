@@ -159,7 +159,8 @@ def contest_outcome(s, opt, forced):
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules)
     fouled = _terminal(s, Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
-    return chance(f'Contest foul {fr} (X{opt.defender + 1}, arrow off the shooter)',
+    why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
+    return chance(f'Contest foul {fr} (X{opt.defender + 1}, {why})',
                   [(opt.p_foul, 'foul', fouled), (1 - opt.p_foul, 'no foul', made)], 'X')
 
 
@@ -319,7 +320,10 @@ def apply(state, action, check=False):
                 start = state.x[a.piece]
                 dx, dy = a.dest[0] - start[0], a.dest[1] - start[1]
                 n = max(abs(dx), abs(dy))
-                arr[a.piece] = B.DIRS.index((dx // n, dy // n))
+                run = B.DIRS.index((dx // n, dy // n))
+                # wedge (step 3h): the run direction is one edge; a.arrow = run - 1 puts the other edge
+                # anticlockwise, otherwise it goes clockwise (arrow index = run)
+                arr[a.piece] = a.arrow if (s.ctx.rules.arrow_mode == 'wedge' and a.arrow == (run - 1) % 8) else run
             s = s.with_(x=tuple(x), arrows=tuple(arr))
             if k in MOVEMENT and is_approach(state, a):
                 s = s.with_(approach=a.piece)

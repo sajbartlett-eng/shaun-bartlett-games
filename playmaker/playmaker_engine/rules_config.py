@@ -106,6 +106,22 @@ class Rules:
     #   Move and Quick Step", trackers). So no Sprint after that player's Quick Step, no Quick Step after
     #   their Sprint, no second Quick Step. The side's limit of 2 Quick Steps (Sprints count) still applies.
     qs_once_per_player: bool = True
+    # Step 3h (rule test, not adopted): a defender's arrow.
+    #   'single' : one arrow line (the rules as they stand).
+    #   'wedge'  : two arrow lines 45 degrees apart (directions a and a+1 for arrow index a): passes,
+    #              drives, steals and contest facing test either line; a Sprint sets one edge to the run
+    #              direction and the defender picks the side of the other.
+    arrow_mode: str = 'single'
+    # Step 3h (rule test, not adopted): contest quality.
+    #   'current'      : any adjacent defender contests; arrow off the shooter = a foul roll; -3 when the
+    #                    contester is further from the rim than the shooter.
+    #   'wedge_mirror' : facing gates the contest (shooter on an arrow line); Front if the rim square
+    #                    lies in the wedge mirrored backwards, Behind if it lies in the forward wedge,
+    #                    else Side (needs arrow_mode 'wedge').
+    #   'rim_distance' : facing gates the contest; Front if closer to the rim than the shooter, Side if
+    #                    level, Behind if further.
+    #   Front: full contest. Side: a foul roll (Foul contest rating). Behind: a foul roll and the -3.
+    contest_geometry: str = 'current'
     # OQ-16 (ruled): who may Challenge a screen.
     #   'on_t'     : only the defender standing on the screen's T square (the one it blocks).
     #   'adjacent' : any defender next to the screener.   'any' : any defender.

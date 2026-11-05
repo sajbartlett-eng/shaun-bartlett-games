@@ -45,6 +45,9 @@ def contests(state, i, t, maps):
     spos = state.o[i]
     pts = RC.ZONE_POINTS[B.zone(spos)]
     card = state.ctx.off[i]
+    rules = state.ctx.rules
+    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single':
+        return _contests_geo(state, i, t, maps, spos, pts, card)
     out = []
     for d in range(5):
         free, fixed = maps[d]
@@ -66,6 +69,41 @@ def contests(state, i, t, maps):
             cand = dict(defender=d, clean=clean, far=far, contest=c, value=v, square=B.sq(q))
             if best is None or (v, not clean) < (best['value'], not best['clean']):
                 best = cand
+        if best:
+            out.append(best)
+    return sorted(out, key=lambda e: e['value'])
+
+
+def _contests_geo(state, i, t, maps, spos, pts, card):
+    """contests() under a step 3h setting, through geometry.best_terms (far = Behind's -3)."""
+    from . import geometry as G
+    from .scoring import foul_on_shot_points
+    rules = state.ctx.rules
+    out = []
+    for d in range(5):
+        free, fixed = maps[d]
+        best = None
+        for q in set(free) | set(fixed):
+            if not B.adjacent(q, spos) or q in state.o:
+                continue
+            opts = ([None] if q in free else []) + [(a,) for a in fixed.get(q, {})]
+            for arrows in opts:
+                bt = G.best_terms(rules, q, arrows, spos)
+                if bt is None:
+                    continue
+                _, foul_roll, penalty, cat, _ = bt
+                c = state.ctx.dfn[d].con(t) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
+                if rules.floor_contest_zero:
+                    c = max(0, c)
+                v = max(0, pts * (card.shot(t) - c))
+                if foul_roll:
+                    pf = state.ctx.dfn[d].r['foul_contest'] / 20.0
+                    fp = float(foul_on_shot_points(card, t, pts, rules)[0])
+                    v = pf * fp + (1 - pf) * v
+                cand = dict(defender=d, clean=not foul_roll, far=penalty, contest=c, value=v, square=B.sq(q),
+                            category=cat)
+                if best is None or (v, foul_roll) < (best['value'], not best['clean']):
+                    best = cand
         if best:
             out.append(best)
     return sorted(out, key=lambda e: e['value'])
@@ -123,7 +161,11 @@ def advantages(state, prev=None, maps=None):
                 out.append(_adv('mismatch', i, vt, tt, ct[0]['defender']))
                 break
         # bad closeout: the only defender who can reach arrives with a foul roll or the -3
-        if len(cs) == 1 and (not cs[0]['clean'] or cs[0]['far']):
+        if state.ctx.rules.contest_geometry != 'current':
+            if cs and cs[0].get('category') in ('side', 'behind'):     # step 3h: the best contest isn't Front
+                out.append(_adv('bad_closeout', i, v, t, cs[0]['defender'], foul_roll=not cs[0]['clean'],
+                                far=cs[0]['far'], category=cs[0]['category']))
+        elif len(cs) == 1 and (not cs[0]['clean'] or cs[0]['far']):
             out.append(_adv('bad_closeout', i, v, t, cs[0]['defender'], foul_roll=not cs[0]['clean'], far=cs[0]['far']))
         # spent: no tokens, or the likely closeout defender (the nearest) has used his Move
         j = nearest_x(i)

@@ -1,5 +1,6 @@
 """State -> JSON for the browser. Everything shown comes from the engine; nothing here decides a rule."""
 from playmaker_engine import board as B
+from playmaker_engine import geometry as G
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import intercept_status
 from playmaker_engine.cards import OFF, DEF
@@ -47,8 +48,9 @@ def arrow_lines(s):
     out = []
     for j, xp in enumerate(s.x):
         if B.adjacent(xp, c) and (s.ball, j) not in s.beaten:
-            e = B.ray_end(xp, s.arrows[j])
-            out.append(dict(defender=j, start=list(xp), end=[float(e[0]), float(e[1])]))
+            for d in G.lines(s.ctx.rules, s.arrows[j]):        # a wedge (step 3h) has two lines
+                e = B.ray_end(xp, d)
+                out.append(dict(defender=j, start=list(xp), end=[float(e[0]), float(e[1])]))
     return out
 
 
@@ -68,10 +70,17 @@ def shot_chips(s, shooter, t):
     out = []
     for j, xp in enumerate(s.x):
         if B.adjacent(xp, sp):
-            far = ' (further from the rim: −3)' if B.dist_rim(xp) > B.dist_rim(sp) else ''
-            on = s.arrows[j] == B.dir_between(xp, sp)
+            eligible, foul_roll, penalty, cat = G.terms(s.ctx.rules, xp, s.arrows[j], sp)
+            if not eligible:
+                continue                      # step 3h geometries: lines off the shooter, no contest
+            if s.ctx.rules.contest_geometry == 'current':
+                far = ' (further from the rim: −3)' if penalty else ''
+                why = 'arrow off'
+            else:
+                far = ' (behind: −3)' if penalty else ''
+                why = cat
             out.append(f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v contest {rv(s.ctx.dfn[j], "con_" + t)} (X{j + 1}){far}'
-                       + ('' if on else f', arrow off: foul roll on Foul {rv(s.ctx.dfn[j], "foul_contest")}'))
+                       + ('' if not foul_roll else f', {why}: foul roll on Foul {rv(s.ctx.dfn[j], "foul_contest")}'))
     if not out:
         out.append(f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v no contester next to the shooter now')
     return out

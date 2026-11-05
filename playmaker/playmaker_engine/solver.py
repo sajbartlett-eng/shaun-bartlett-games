@@ -14,6 +14,7 @@ import time
 from dataclasses import dataclass, field
 
 from . import board as B
+from . import geometry as G
 from . import rules_config as RC
 from .actions import Action, legal_actions, movement_dests, can_move_kind, MOVEMENT, intercept_status, t_square
 from .resolve import apply, ChanceNode
@@ -167,8 +168,11 @@ def defender_reach(s, d, budget):
         add_free(q, [('move', q)])
     for q in qss:
         add_fixed(q, arrow, [('qs', q)])
+    wedge = rules.arrow_mode == 'wedge'
     for q, dr in sprints.items():
         add_fixed(q, dr, [('sprint', q)])
+        if wedge:                          # step 3h: the other edge on the anticlockwise side
+            add_fixed(q, (dr - 1) % 8, [('sprint', q, (dr - 1) % 8)])
     if two:
         if qs_left >= 1 and qs > 0:
             for m in list(moves) + ([start] if can_move else []):
@@ -184,10 +188,14 @@ def defender_reach(s, d, budget):
                 if can_move:
                     for q, dr in dests(q1, 'sprint').items():
                         add_fixed(q, dr, [('qs', q1), ('sprint', q)])
+                        if wedge:
+                            add_fixed(q, (dr - 1) % 8, [('qs', q1), ('sprint', q, (dr - 1) % 8)])
         if qs_left >= 2 and qs > 0:
             for q1, dr1 in sprints.items():
                 for q in dests(q1, 'qs'):
                     add_fixed(q, dr1, [('sprint', q1), ('qs', q)])
+                    if wedge:
+                        add_fixed(q, (dr1 - 1) % 8, [('sprint', q1, (dr1 - 1) % 8), ('qs', q)])
     return free, fixed
 
 
@@ -233,6 +241,8 @@ class Evaluator:
     def defended(self, s, maps, shooter, spos, t, budget, forced=False):
         """Defence's best answer to a shot by `shooter` from spos (shot type t).
         Returns (ev, look, p30, kind) where kind names the answer ('open', 'clean', 'side', 'steal')."""
+        if s.ctx.rules.contest_geometry != 'current':
+            return self._defended_geo(s, maps, shooter, spos, t, budget, forced)
         ctx, rules = s.ctx, s.ctx.rules
         card = ctx.off[shooter]
         pts = RC.ZONE_POINTS[B.zone(spos)]
@@ -289,6 +299,75 @@ class Evaluator:
                                 best, best_ev = (ev, ev, pf * fp30 + (1 - pf) * (v >= 30), 'side'), ev
                             break
                 if steal_ok and clean_len is not None and clean_len + 1 <= budget and tok >= clean_len + 1:
+                    pf = dcard.r['foul_steal'] / 20.0
+                    pk = pk_cache.get(d)
+                    if pk is None:
+                        pk = pk_cache[d] = float(p_success(card.r['dribble'] - dcard.r['steal'], rules))
+                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * RC.TURNOVER_POINTS)
+                    if ev < best_ev:
+                        best = (ev, pf * fp + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
+                        best_ev = ev
+        return best
+
+    def _defended_geo(self, s, maps, shooter, spos, t, budget, forced=False):
+        """defended() under the step 3h contest geometries: only a defender who ends with the shooter on
+        an arrow line contests; Front is a full contest, Side a foul roll, Behind a foul roll and the -3
+        (geometry.terms decides, from the arrows each reach path can end with)."""
+        ctx, rules = s.ctx, s.ctx.rules
+        card = ctx.off[shooter]
+        pts = RC.ZONE_POINTS[B.zone(spos)]
+        rating = card.shot(t)
+        if ctx.three_only and pts != 3:
+            return 0.0, 0.0, 0.0, None
+        floor = forced or rules.floor_declared_shot
+        fp = float(foul_on_shot_points(card, t, pts, rules)[0])
+        fp30 = fp >= 30
+        v0 = pts * rating
+        best = (float(v0), float(v0), 1.0 if v0 >= 30 else 0.0, 'open')
+        best_ev = best[0]
+        steal_ok = s.count('X', 'steal') < RC.LIMITS['X']['steal']
+        tok = s.tok_x
+        idx = maps.index
+        occ_o = s.o
+        sx, sy = spos
+        con_key = 'con_' + t
+        pk_cache = {}
+        for dx, dy in B.DIRS:
+            q = (sx + dx, sy + dy)
+            ents = idx.get(q)
+            if not ents or q in occ_o:
+                continue
+            for d, fl, fx in ents:
+                dcard = ctx.dfn[d]
+                opts = []
+                if fl is not None and fl <= budget:
+                    opts.append((None, fl))
+                opts += [((a,), ln) for a, ln in fx if ln <= budget]
+                facing_len = None
+                for arrows, ln in opts:
+                    bt = G.best_terms(rules, q, arrows, spos)
+                    if bt is None:
+                        continue                           # lines off the shooter: no contest
+                    _, foul_roll, penalty, _, _ = bt
+                    facing_len = ln if facing_len is None else min(facing_len, ln)
+                    c = dcard.r[con_key] - (RC.FAR_CONTEST_PENALTY if penalty else 0)
+                    if rules.floor_contest_zero and c < 0:
+                        c = 0
+                    v = pts * (rating - c)
+                    if floor and v < 0:
+                        v = 0
+                    v = float(v)
+                    if foul_roll:
+                        pf = dcard.r['foul_contest'] / 20.0
+                        ev = pf * fp + (1 - pf) * v
+                        cand = (ev, ev, pf * fp30 + (1 - pf) * (v >= 30), 'side')
+                    else:
+                        cand = (v, v, 1.0 if v >= 30 else 0.0, 'clean')
+                    if cand[0] < best_ev:
+                        best, best_ev = cand, cand[0]
+                if steal_ok and facing_len is not None and facing_len + 1 <= budget and tok >= facing_len + 1:
+                    c = dcard.r[con_key]
+                    v = float(max(0, pts * (rating - c)) if floor else pts * (rating - c))
                     pf = dcard.r['foul_steal'] / 20.0
                     pk = pk_cache.get(d)
                     if pk is None:
@@ -508,12 +587,24 @@ class Play:
         return ' then '.join(str(a) for a in self.actions if a.kind != 'end_turn') or str(self.actions[0])
 
 
+def _contest_arrow(rules, q, sp):
+    """The arrow a defender arriving on q with a Move sets to contest a shooter on sp: facing him, and
+    under the step 3h geometries the wedge with the best contest category."""
+    if rules.contest_geometry == 'current' and rules.arrow_mode == 'single':
+        return B.dir_between(q, sp)
+    bt = G.best_terms(rules, q, None, sp)
+    return bt[4] if bt else B.dir_between(q, sp)
+
+
 def _seq_actions(d, seq, arrow):
     """Turn a reach sequence into engine actions (the Move's arrow set to `arrow`)."""
     out = []
-    for kind, q in seq:
+    for item in seq:
+        kind, q = item[0], item[1]
         if kind == 'move':
             out.append(Action('move', 'X', d, q, arrow if arrow is not None else 0))
+        elif len(item) > 2:                                    # a wedge Sprint's chosen other edge
+            out.append(Action(kind, 'X', d, q, item[2]))
         else:
             out.append(Action(kind, 'X', d, q))
     return out
@@ -533,8 +624,8 @@ def quick_legal(s, a):
         return a.dest in movement_dests(s, a.side, a.piece, a.kind, s.ctx.rules)
     if a.kind == 'steal':
         cp = s.o[s.ball]
-        return (s.tok_x > 0 and s.count('X', 'steal') < RC.LIMITS['X']['steal'] and B.adjacent(s.x[a.piece], cp)
-                and s.arrows[a.piece] == B.dir_between(s.x[a.piece], cp))
+        return (s.tok_x > 0 and s.count('X', 'steal') < RC.LIMITS['X']['steal']
+                and G.faces(s.ctx.rules, s.arrows[a.piece], s.x[a.piece], cp))
     return a in legal_actions(s)
 
 
@@ -717,7 +808,7 @@ class Generator:
                 seq = free.get(q)
                 if seq is None or not B.on_board(q):
                     continue
-                on = B.dir_between(q, cp)
+                on = _contest_arrow(s.ctx.rules, q, cp)
                 acts_seq = _seq_actions(d, seq, on)
                 score_c = max((s.ctx.dfn[d].con(t) for t in RC.ZONE_SHOTS.get(B.zone(cp), ()) ), default=0)
                 cl.append((score_c, -len(seq), d, acts_seq))
@@ -752,7 +843,7 @@ class Generator:
                     continue
                 xp = view.x[d]
                 for arr in range(8):
-                    if arr != view.arrows[d] and B.arrow_crosses(xp, arr, a_, b_):
+                    if arr != view.arrows[d] and G.crosses(rules, xp, arr, a_, b_):
                         found = Action('move', 'X', d, xp, arr)
                         break
                 if found:
@@ -771,12 +862,18 @@ class Generator:
                         r = (q[0] + dr[0], q[1] + dr[1])
                         if not B.on_board(r) or r in view.o:
                             continue
-                        on = B.dir_between(r, q)
+                        on = _contest_arrow(s.ctx.rules, r, q)
                         seq, clean = free.get(r), True
                         if seq is None and r in fixed:            # a step that keeps the arrow: facing q, or a foul roll
                             arrows = fixed[r]
-                            a = on if on in arrows else min(arrows, key=lambda k: len(arrows[k]))
-                            seq, clean = arrows[a], a == on
+                            fa = [k for k in arrows if G.faces(s.ctx.rules, k, r, q)]
+                            if fa:
+                                a = min(fa, key=lambda k: len(arrows[k]))
+                            elif s.ctx.rules.contest_geometry != 'current':
+                                continue                          # step 3h: no contest with the lines off him
+                            else:
+                                a = min(arrows, key=lambda k: len(arrows[k]))
+                            seq, clean = arrows[a], a in fa
                         if not seq or len(seq) > view.tok_x:     # none, or already there
                             continue
                         con = max((s.ctx.dfn[d].con(t) for t in RC.ZONE_SHOTS.get(B.zone(q), ())), default=0)
@@ -862,7 +959,7 @@ class Generator:
                 q = (sp[0] + dr[0], sp[1] + dr[1])
                 if not B.on_board(q):
                     continue
-                on = B.dir_between(q, sp)
+                on = _contest_arrow(s.ctx.rules, q, sp)
                 seq = free.get(q)
                 if seq is not None and len(seq) <= budget:
                     acts_seq = _seq_actions(d, seq, on)
@@ -871,7 +968,10 @@ class Generator:
                         out.append(Play('closeout+steal', (acts_seq[0], Action('steal', 'X', d))))
                 for arr, fseq in fixed.get(q, {}).items():
                     if fseq and len(fseq) <= budget:
-                        out.append(Play('closeout (side-on)' if arr != on else 'closeout', tuple(_seq_actions(d, fseq, None))))
+                        facing = G.faces(s.ctx.rules, arr, q, sp)
+                        if not facing and s.ctx.rules.contest_geometry != 'current':
+                            continue                       # step 3h: lines off the shooter can't contest
+                        out.append(Play('closeout (side-on)' if not facing else 'closeout', tuple(_seq_actions(d, fseq, None))))
         return out
 
 

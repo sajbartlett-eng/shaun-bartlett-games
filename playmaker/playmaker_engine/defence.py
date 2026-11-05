@@ -13,6 +13,7 @@ It plays only from the legal actions, reads only the board and the cards (what a
 looks at the offence's secret Coach's Call target.
 """
 from . import board as B
+from . import geometry as G
 from .actions import legal_actions
 from .policies import Policy, GreedyPolicy, expected
 from .resolve import apply, ChanceNode
@@ -27,15 +28,16 @@ def arrow_job(state, j):
     xp, a = state.x[j], state.arrows[j]
     cp = state.o[state.ball]          # off the court during an inbound: only the lanes matter then
     inside = B.on_board(cp)
-    if B.adjacent(xp, cp) and a == B.dir_between(xp, cp):
+    R = state.ctx.rules
+    if G.faces(R, a, xp, cp):
         return 'on_ball'
     rim = B.RIM
-    if inside and B.adjacent(xp, cp) and B.arrow_crosses(xp, a, cp, rim):
+    if inside and B.adjacent(xp, cp) and G.crosses(R, xp, a, cp, rim):
         return 'wall'
     for i, op in enumerate(state.o):
-        if i != state.ball and B.on_board(op) and B.arrow_crosses(xp, a, cp, op):
+        if i != state.ball and B.on_board(op) and G.crosses(R, xp, a, cp, op):
             return 'lane'
-    if inside and B.arrow_crosses(xp, a, cp, rim):
+    if inside and G.crosses(R, xp, a, cp, rim):
         return 'help'
     others = [op for i, op in enumerate(state.o) if i != state.ball and B.on_board(op)]
     if others:

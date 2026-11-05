@@ -195,3 +195,18 @@ def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path, l
     assert out['ai'], out                                    # the computer defence acted
     from playmaker_engine.computer import LEVELS
     assert max(out['think']) < LEVELS['budget_s']['browser'] * 1.5, out['think']
+
+
+def test_every_engine_module_the_game_loads_is_in_the_browser_bundle():
+    """A module the link version needs but the bundle leaves out only fails in the browser: play a short
+    computer game (which loads the lazy imports), then check every engine module that got loaded."""
+    import sys
+    from playmaker_web.build_site import ENGINE_FILES
+    from playmaker_web.game import Game
+    Game(mode='hotseat', scenario=6, seed=3, level='pro', ai=dict(O='allstar', X='allstar'))
+    loaded = {m.split('.')[-1] + '.py' for m in sys.modules
+              if m.startswith('playmaker_engine.') and m.count('.') == 1}
+    research = {'solver_report.py', 'solver_round2.py', 'solver_fixes.py', 'headtohead.py', 'rule_test_3h.py',
+                'calibrate.py', 'soak.py', 'defence_check.py', 'pause_examples.py', 'analysis.py'}
+    missing = sorted(loaded - set(ENGINE_FILES) - research)
+    assert not missing, missing
