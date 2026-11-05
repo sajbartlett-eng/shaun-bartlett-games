@@ -2805,7 +2805,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
             <button type="button" class="menu-card menu-primary" id="welcomeContinueBtn" data-menu="quick"><span class="menu-title">Quick start</span><span class="menu-desc">Play a game now. New rules are offered one at a time as you go.</span></button>
             <button type="button" class="menu-card" data-menu="custom"><span class="menu-title">Custom game</span><span class="menu-desc">Choose the shape, the set and the rules that interest you now.</span></button>
             <button type="button" class="menu-card" data-menu="training"><span class="menu-title">Training</span><span class="menu-desc">Build the intuition to master Inheritance. Generated estates, level by level.</span></button>
-            <button type="button" class="menu-card" data-menu="legacy"><span class="menu-title">Family Legacy</span><span class="menu-desc">Six linked estates, one family history. Property carries forward and holdings pay.</span></button>
+            <button type="button" class="menu-card" data-menu="legacy"><span class="menu-title">Family Legacy</span><span class="menu-desc">No will, six estates, two siblings. What you keep, what the family loses, and how it felt.</span></button>
             <button type="button" class="menu-card" data-menu="remote"><span class="menu-title">Someone far away</span><span class="menu-desc">Two devices, one estate, a room code.</span></button>
             <button type="button" class="menu-card" id="welcomeTutorialBtn" data-menu="tutorial"><span class="menu-title">Chapter Zero</span><span class="menu-desc">First time? Learn by playing one guided estate in a few minutes.</span></button>
         </div>
@@ -2927,7 +2927,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
                         </button>
                         <button type="button" class="option-card radio" data-land-template="motorway" role="radio" aria-checked="false" tabindex="-1">
                             <span class="check"></span>
-                            <span class="label"><span class="title">Main Road</span><span class="desc">Land beside the main road is worth 2. If the fence cuts that square off from the road, it drops to the normal value of 1.</span></span>
+                            <span class="label"><span class="title">Main Road</span><span class="desc">Land beside the main road is worth 2. The road is public, so a fence beside it changes nothing.</span></span>
                         </button>
                     </div>
                 </div>
@@ -2952,7 +2952,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
                         <span class="check"></span>
                         <span class="label">
                             <span class="title">Terrain</span>
-                            <span class="desc">Shape the land with water and roads. Nearby land gains value unless cut off by the fence.</span>
+                            <span class="desc">Shape the land with water and roads. Land beside water gains value unless the fence puts the water on the other side. A fence across a road has a gate, so road access is never lost.</span>
                         </span>
                     </button>
                     <h3>Try a Twist</h3>
@@ -3984,11 +3984,14 @@ const GAME = {
         return [...CONFIG.TERRAIN_PLACEMENT];
     },
 
+    // Roads are shared ways. Where a fence crosses one there is a gate, and a
+    // right of way runs with the land, so a road reaches the outside through
+    // either plot. The plot is accepted for callers' convenience and ignored.
     terrainRoadAccessSet(plotSet, terrain, estateMask = null) {
         const accessible = new Set();
         if (!terrain) return accessible;
         const N = CONFIG.GRID;
-        const inPlot = (c, r) => !plotSet || plotSet.has(`${c},${r}`);
+        const inPlot = () => true;
         const queue = [];
 
         for (let r = 0; r < N; r++) {
@@ -4125,10 +4128,9 @@ const GAME = {
         // rule while preserving some view/location value for coast and river land.
         if (plotSet) {
             const template = GAME.terrainTemplateKind(terrain);
+            // The main road is public: a fence beside it changes nothing.
             if (template === 'waterfront' && surface === 'land3' && !samePlotFeature('water')) {
                 baseValue = Math.max(1, baseValue - 1);
-            } else if (template === 'motorway' && surface === 'land2' && !samePlotFeature('motorway')) {
-                baseValue = 1;
             } else if (template === 'seaside' && ['land2','land3','land4'].includes(surface)
                 && !GAME.seasideLandKeepsCoastConnection(c, r, terrain, plotSet, estateMask)) {
                 baseValue = Math.max(1, baseValue - 1);
@@ -4140,13 +4142,15 @@ const GAME = {
             const nc = c + m.dc, nr = r + m.dr;
             if (nc < 0 || nc >= CONFIG.GRID || nr < 0 || nr >= CONFIG.GRID) continue;
             const key = `${nc},${nr}`;
-            if (plotSet && !plotSet.has(key)) continue;
-            if (surface === 'grass' && terrain[nr][nc] === 'water') water = true;
+            const sameSide = !plotSet || plotSet.has(key);
+            if (surface === 'grass' && terrain[nr][nc] === 'water' && sameSide) water = true;
             if (terrain[nr][nc] === 'road' && accessibleRoads.has(key)) road = true;
         }
 
-        // Standard Terrain water is a +1 local feature. Connected road access
-        // always adds +1, with all land capped at 4.
+        // Standard Terrain water is a +1 local feature, lost if the fence puts
+        // the water on the other side. A road beside the square adds +1 when it
+        // reaches the outside, whichever side of a fence it lies: a gate keeps
+        // it open. All land is capped at 4.
         return Math.min(4, baseValue + (water ? 1 : 0) + (road ? 1 : 0));
     },
 
@@ -5847,7 +5851,64 @@ const RENDER = (() => {
             ctx.lineTo(m + b[0] * s, m + b[1] * s);
         });
         ctx.stroke();
+        drawGates();
         ctx.restore();
+    }
+
+    // Where the fence crosses a road, a gate: a gap in the fence with two posts
+    // and a bar. Where it crosses the public main road, the road carries on.
+    function drawGates() {
+        const terrain = viewState.terrain;
+        if (!terrain) return;
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        const roadKind = (c, r) => {
+            if (!GAME.isActiveCell(c, r, viewState.estateMask)) return null;
+            const kind = terrain[r]?.[c];
+            return kind === 'road' || kind === 'motorway' ? kind : null;
+        };
+        viewState.cutEdges.forEach(k => {
+            const [a, b] = k.split('-').map(t => t.split(',').map(Number));
+            const vertical = a[0] === b[0];
+            const c0 = Math.min(a[0], b[0]), r0 = Math.min(a[1], b[1]);
+            const cells = vertical ? [[c0 - 1, r0], [c0, r0]] : [[c0, r0 - 1], [c0, r0]];
+            const kinds = cells.map(([c, r]) => roadKind(c, r));
+            if (!kinds[0] || !kinds[1]) return;
+            const x0 = m + a[0] * s, y0 = m + a[1] * s, x1 = m + b[0] * s, y1 = m + b[1] * s;
+            const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+            const ux = (x1 - x0) / s, uy = (y1 - y0) / s;   // along the fence
+            const half = s * 0.22;
+            const gateColour = kinds[0] === 'motorway' && kinds[1] === 'motorway' ? null : '#2b2316';
+            // The gap: the road surface shows through the fence.
+            ctx.save();
+            ctx.strokeStyle = kinds[0] === 'motorway' ? '#5d5a52' : '#b89f72';
+            ctx.lineWidth = 7;
+            ctx.lineCap = 'butt';
+            ctx.beginPath();
+            ctx.moveTo(mx - ux * half, my - uy * half);
+            ctx.lineTo(mx + ux * half, my + uy * half);
+            ctx.stroke();
+            if (gateColour) {
+                // Two posts across the fence line and one bar between them.
+                const px = -uy, py = ux;   // across the fence
+                const post = s * 0.14;
+                ctx.strokeStyle = gateColour;
+                ctx.lineCap = 'round';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (const sign of [-1, 1]) {
+                    const cx = mx + ux * half * sign, cy = my + uy * half * sign;
+                    ctx.moveTo(cx - px * post, cy - py * post);
+                    ctx.lineTo(cx + px * post, cy + py * post);
+                }
+                ctx.stroke();
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(mx - ux * half, my - uy * half + py * post * 0.5);
+                ctx.lineTo(mx + ux * half, my + uy * half - py * post * 0.5);
+                ctx.stroke();
+            }
+            ctx.restore();
+        });
     }
 
     function drawChallengeGhost() {
@@ -7236,9 +7297,9 @@ const UI = {
 
         const landTemplate = s.landTemplate || 'standard';
         const templateCopy = {
-            seaside: 'Beachfront land is 4; the next two bands are 3, the next two are 2, and the rest is 1. If cut off from the coast, land loses 1 value, minimum 1. Connected road access can add +1, maximum 4.',
-            waterfront: 'Land beside the river is 3. If cut off from the river, it falls to 2. Connected road access can add +1, maximum 4.',
-            motorway: 'Land beside the main road is 2. If cut off from the road, it falls to 1.',
+            seaside: 'Beachfront land is 4; the next two bands are 3, the next two are 2, and the rest is 1. If cut off from the coast, land loses 1 value, minimum 1. Connected road access can add +1, maximum 4. A fence across a road has a gate; the road stays open.',
+            waterfront: 'Land beside the river is 3. If cut off from the river, it falls to 2. Connected road access can add +1, maximum 4. A fence across a road has a gate; the road stays open.',
+            motorway: 'Land beside the main road is 2. The road is public, so a fence beside it changes nothing.',
         }[landTemplate] || '';
         const terrainBuildCopy = s.terrain
             ? 'Together place 4 Water and 4 Road tiles. Each Road must connect to the estate boundary or another Road. Terrain is untimed. '
@@ -7356,7 +7417,7 @@ const UI = {
             <div class="rules-section">
                 <h3>What the land is worth</h3>
                 <p class="body" style="margin:0;">${templateCopy || (s.terrain
-                    ? 'Land value and asset value stack on the same square. If a fence cuts a land square off from a feature that raised its value, that square loses 1 value for that feature, to a minimum of 1.'
+                    ? 'Land value and asset value stack on the same square. If a fence puts the water that raised a square\'s value on the other side, that square loses 1 value for it, to a minimum of 1. Roads are different: a fence across a road has a gate, and the main road is public, so road value is never lost to a fence.'
                     : 'Land is worth <strong>1</strong> per ordinary square. A piece adds the value shown on its badge.')}</p>
                 <div class="rule-symbol-list">
                     <div class="rule-value-group">Land</div>
@@ -11439,14 +11500,14 @@ const TRAINING = {
         { name: 'Better Together', estate: { irregular: true, betterTogether: true }, fence: { kind: 'wonky', turns: [2, 6], gap: [3, 6] }, time: 30,
           intro: 'bt', rule: 'Neighbouring pieces in the same plot add +1 per relationship. The fence breaks bonds it crosses.' },
         { name: 'Waterfront', estate: { irregular: true, landTemplate: 'waterfront' }, fence: { kind: 'wonky', turns: [2, 7], gap: [3, 6] }, time: 30,
-          intro: 'A river runs through the estate. Land beside the river is worth 3 instead of 1. If the fence cuts such a square off from the river, it drops to 2. A connected access road can add +1, to a maximum of 4. River and road squares themselves are worth 0. The legend under the board shows the bands.',
+          intro: 'A river runs through the estate. Land beside the river is worth 3 instead of 1. If the fence puts the river on the other side, it drops to 2. A connected access road can add +1, to a maximum of 4, and a fence across the road has a gate, so that is never lost. River and road squares themselves are worth 0. The legend under the board shows the bands.',
           rule: 'Riverside land 3; cut off from the river 2; road access +1; river and roads 0.' },
         { name: 'Seaside, expanded set', estate: { irregular: true, landTemplate: 'seaside', randomAssets: true }, fence: { kind: 'wonky', turns: [3, 8], gap: [3, 6] }, time: 25,
           intro: 'The coast runs along one edge. Beachfront land is 4; the next two bands are 3, the next two are 2, the rest is 1. If the fence cuts a square off from the coast, it loses 1 (never below 1). New pieces appear too: Cottage +4, Stables and Mill +3, Vineyard and Orchard +2, Well, Beehive, Chicken Coop and Garden +1. The legend shows them all.',
           rule: 'Beach 4, then 3, 3, 2, 2, 1. Cut off from the coast: minus 1. Pieces show their value.' },
         { name: 'Everything, fast', estate: { irregular: true, landTemplate: 'motorway', randomAssets: true, betterTogether: true, rocks: true }, fence: { kind: 'wonky', turns: [3, 9], gap: [3, 5] }, time: 20,
-          intro: 'A main road crosses the estate: land beside it is worth 2, and drops to 1 if the fence cuts it off from the road. Restricted land, Better Together and the expanded set are all in play, and the clock is shorter.',
-          rule: 'Roadside land 2, cut off from the road 1. Rock 0. Same-plot neighbours +1 per relationship.' },
+          intro: 'A main road crosses the estate: land beside it is worth 2 whichever side of the fence it lies, because the road is public. Restricted land, Better Together and the expanded set are all in play, and the clock is shorter.',
+          rule: 'Roadside land 2 on either side of the fence. Rock 0. Same-plot neighbours +1 per relationship.' },
     ],
     CUT_LEVELS: [
         { name: 'Within 4', estate: { irregular: false }, within: 4, time: 90,
@@ -11466,7 +11527,7 @@ const TRAINING = {
         { name: 'Better Together, small estate', estate: { small: 'offset', betterTogether: true }, within: 2, time: 60,
           intro: 'bt', rule: 'Same-plot neighbours add +1 per relationship. A fence between them breaks the bond.' },
         { name: 'Waterfront, small estate', estate: { small: 'band', landTemplate: 'waterfront' }, within: 2, time: 60,
-          intro: 'A river runs through a smaller estate. Land beside the river is worth 3; cut off from the river by your fence it drops to 2. A connected access road adds +1 (maximum 4). River and road squares are 0.',
+          intro: 'A river runs through a smaller estate. Land beside the river is worth 3; with the river on the other side of your fence it drops to 2. A connected access road adds +1 (maximum 4) on either side of the fence: a gate keeps it open. River and road squares are 0.',
           rule: 'Riverside land 3; cut off from the river 2; road access +1; river and roads 0.' },
         { name: 'Perfect, fast', estate: { irregular: true }, within: 0, time: 45,
           intro: 'Match the smallest gap exactly. 45 seconds.', rule: 'Only green squares are land. Match the smallest gap.' },
@@ -12897,16 +12958,13 @@ const ESTATE_REVIEW = {
                 if (template === 'waterfront' && surface === 'land3' && !sameSide('water')) {
                     addPartners(across.filter(p => terrain[p.r][p.c] === 'water'));
                     causes.push('cut off from the river');
-                } else if (template === 'motorway' && surface === 'land2' && !sameSide('motorway')) {
-                    addPartners(across.filter(p => terrain[p.r][p.c] === 'motorway'));
-                    causes.push('cut off from the main road');
                 } else if (template === 'seaside' && ['land2', 'land3', 'land4'].includes(surface)
                     && !GAME.seasideLandKeepsCoastConnection(c, r, terrain, own, estateMask)) {
                     causes.push('cut off from the coast');
                 }
                 const roads = neighbours.filter(p => terrain[p.r][p.c] === 'road');
                 const hadRoad = roads.some(p => wholeRoads.has(key(p)));
-                const hasRoad = roads.some(p => own.has(key(p)) && ownRoads.has(key(p)));
+                const hasRoad = roads.some(p => ownRoads.has(key(p)));
                 if (hadRoad && !hasRoad) {
                     const cut = roads.filter(p => !own.has(key(p)));
                     addPartners(cut.length ? cut : roads);
@@ -13346,11 +13404,11 @@ const MATCH_MENU = {
             },
             motorway: {
                 label: 'Main Road Estate',
-                copy: 'Land beside the main road is worth more, but drops back to normal if the fence cuts it off from the road.',
+                copy: 'Land beside the main road is worth more. The road is public, so a fence beside it changes nothing.',
             },
             waterfront: {
                 label: 'Waterfront Estate',
-                copy: 'River frontage is worth more, and road access can raise it again. A fence can reduce either bonus by cutting the connection.',
+                copy: 'River frontage is worth more, and road access can raise it again. A fence can take the river frontage away; the road stays open through a gate.',
             },
         })[kind] || null;
     },
@@ -13829,13 +13887,13 @@ const LEGACY = (() => {
         capacityBlocks:Object.freeze([{score:5,income:1},{score:9,income:2},{score:13,income:3}]),
     });
     // Time scale. Each estate is settled some years after the last, and a
-    // holding's payment is its yield over those years: about 4% of its value a
+    // business's payment is its yield over those years: about 4% of its value a
     // year for farmland, orchards, vineyards and managed woodland (USDA ERS
     // rent-to-value and farm income returns; NCREIF timberland income return),
     // about 15% a year on invested capital for a quarry (aggregates producers'
     // reported return on invested capital). At five years per estate this gives
     // exactly the payments the campaign has used: 1, 2 and 3 Capital for grade
-    // C, B and A holdings and 3 for a Quarry. The number of years is the only
+    // C, B and A businesses and 3 for a Quarry. The number of years is the only
     // lever; the yields are not exaggerated.
     // How fairness felt. Recorded after every estate, one face per sibling,
     // shown beside the facts, used for nothing else: no number moves because
@@ -13857,13 +13915,14 @@ const LEGACY = (() => {
         {name:'The Uplands',character:'Rough ground with exposed rock and managed woodland',land:['standard'],resources:true},
         {name:'The Last Estate',character:'The final inheritance, where premium land and resource sites meet',land:['motorway','seaside','waterfront'],resources:true},
     ]);
+    const LEGACY_PROLOGUE = 'Your parents died within a year of each other and left no will. Six properties, held by the family for generations, pass to the two of you in equal shares under the law. The court has made the bank the administrator, and the bank sets the deadlines. Every estate must be settled: a house left empty decays, a farm without a tenant earns nothing, tax falls due, and the agents are already writing with offers. Each estate is divided the one way both of you can accept: one cuts, the other chooses. If neither of you chooses in time, the bank sells the estate to settle its costs and nothing comes back. Gain the largest inheritance you can without shattering the family that built it.';
     const CHAPTER_COPY = Object.freeze([
-        'An old rural property. Before anything is built, the siblings shape its water and road access together.',
-        'The house everyone remembers, divided now by the old main road.',
-        'There is money to be made here, if someone is willing to put money back into it.',
-        'A beautiful piece of land, with the water deciding where much of its value lies.',
-        'Rough country. Rock, woodland, and opportunities that come with a cost.',
-        'One inheritance remains.'
+        'The first of the six. Your grandparents farmed it; the house has stood empty since the funeral, and the agent\'s letter is on the table. Shape its water and roads together, then build, then divide.',
+        'The house everyone remembers, on the old main road. Each of you may name one thing here you care about. It changes no value, and it goes into the record.',
+        'A farm that still earns, if someone puts money back into it. Capital your businesses have paid can be spent here, and whoever inherits the ground keeps what was built on it.',
+        'Coast or river. The water decides where the value lies, and a fence can take the frontage from you.',
+        'Rough country: rock and managed woodland. A quarry or a logging operation pays for years, if it is inherited whole.',
+        'The last of the six. After this the record stands: what each of you holds, what the family lost, and how it felt.'
     ]);
     const INVESTMENT_CATALOGUE = Object.freeze([
         ...Object.keys(CONFIG.ASSET_NAME).map(kind=>Object.freeze({key:`asset:${kind}`,type:'asset',kind,name:CONFIG.ASSET_NAME[kind],cost:CONFIG.ASSET_VALUE[kind],value:CONFIG.ASSET_VALUE[kind]})),
@@ -13994,7 +14053,7 @@ const LEGACY = (() => {
             draftStory: UI.meaningfulDraft?.storyId || 'none', inputs };
     }
     function payload() {
-        return { format:FORMAT, version:18, implementationStage:18, savedAt:new Date().toISOString(),
+        return { format:FORMAT, version:19, implementationStage:19, savedAt:new Date().toISOString(),
             campaign:clone(campaign), game: suspended || snapshot() };
     }
     function upgradeSave(data) {
@@ -14107,7 +14166,7 @@ const LEGACY = (() => {
         }
         if(upgraded?.format===FORMAT&&upgraded.version===16&&upgraded.implementationStage===16){
             const c=upgraded.campaign;
-            if((c?.history?.length||0)>0||c?.round>1)throw new Error('This Legacy used delayed holding income. Start a new Legacy so holdings can pay immediately from the estate in which they are inherited without rewriting earlier economic decisions.');
+            if((c?.history?.length||0)>0||c?.round>1)throw new Error('This Legacy used delayed business income. Start a new Legacy so businesses can pay immediately from the estate in which they are inherited without rewriting earlier economic decisions.');
             if(c)c.progressionVersion=5;
             upgraded.version=17;upgraded.implementationStage=17;
         }
@@ -14222,7 +14281,7 @@ const LEGACY = (() => {
         if(keys.has('land')&&assets.has('V'))return 'Connected Vineyard';
         if(keys.has('land')&&assets.has('O'))return 'Connected Orchard';
         if(keys.has('land'))return 'Connected Crops';
-        return 'Productive Holding';
+        return 'Family Business';
     }
     function findProductiveGroups(cells,grid,ruleVersion=campaign?.incomeRuleVersion??2) {
         const inProperty=new Set(cells.map(p=>`${p.c},${p.r}`));
@@ -14342,9 +14401,9 @@ const LEGACY = (() => {
         return maxDisjointDevelopmentSites(remainingSites)>=remainingSame;
     }
     // What buying a piece would do on this estate: the best square for it, the
-    // holding it would form or raise, and what that holding would pay. Computed
+    // business it would form or raise, and what that business would pay. Computed
     // by placing the piece on each free square and reading the game's own
-    // productive groups. No square helps: it adds its printed value only.
+    // businesses. No square helps: it adds its printed value only.
     function purchaseConsequence(kind) {
         const spots=buildableCells();
         const all=GAME.activeCells(STATE.estateMask);
@@ -14395,10 +14454,10 @@ const LEGACY = (() => {
         const groups=findProductiveGroups(GAME.activeCells(STATE.estateMask),STATE.grid);
         const income=groups.reduce((sum,group)=>sum+group.income,0);
         const groupCopy=groups.length
-            ? groups.map(group=>`${text(group.name)} (holding score ${group.score}, pays ${group.income} Capital per estate if inherited intact${group.permanent===false?', three times':''})`).join(' · ')
-            : 'No connected productive holding has formed yet.';
-        const incomeCopy=groups.length?`Together these groups could pay ${income} Capital after this estate if inherited intact${campaign.incomeRuleVersion===2?', and up to twice more after later estates':' and after later estates'}. A cut through a group can reduce or remove its payment. Holding score measures its assets and productive links; it is not the Property of the parcel it occupies.`:'Connected productive holdings can earn Capital for whoever inherits them. A holding score measures assets and productive links, not parcel Property.';
-        return `<div class="legacy-invest-board"><canvas id="legacyInvestCanvas" width="600" height="600" aria-label="Current estate"></canvas></div><details class="legacy-details" data-estate-potential ${detailsOpen?'open':''}><summary>Inspect estate economics</summary><div><p class="body"><strong>Placed now: ${value} Property.</strong> This is the undivided estate's value before a fence. New purchases count after they are placed. A division can change land and neighbour value.</p><p class="body"><strong>Productive holdings on this board</strong><br>${groupCopy}</p><p class="comparison-note">${incomeCopy}</p></div></details>`;
+            ? groups.map(group=>`${text(group.name)} (business score ${group.score}, pays ${group.income} Capital per estate if inherited intact${group.permanent===false?', three times':''})`).join(' · ')
+            : 'No connected business has formed yet.';
+        const incomeCopy=groups.length?`Together these groups could pay ${income} Capital after this estate if inherited intact${campaign.incomeRuleVersion===2?', and up to twice more after later estates':' and after later estates'}. A cut through a group can reduce or remove its payment. Business score measures its assets and productive links; it is not the Property of the parcel it occupies.`:'Connected businesses can earn Capital for whoever inherits them. A business score measures assets and productive links, not parcel Property.';
+        return `<div class="legacy-invest-board"><canvas id="legacyInvestCanvas" width="600" height="600" aria-label="Current estate"></canvas></div><details class="legacy-details" data-estate-potential ${detailsOpen?'open':''}><summary>Inspect estate economics</summary><div><p class="body"><strong>Placed now: ${value} Property.</strong> This is the undivided estate's value before a fence. New purchases count after they are placed. A division can change land and neighbour value.</p><p class="body"><strong>Businesses on this board</strong><br>${groupCopy}</p><p class="comparison-note">${incomeCopy}</p></div></details>`;
     }
     function renderInvestmentBoard(){const canvas=document.getElementById('legacyInvestCanvas');if(!canvas)return;RENDER.renderSnapshot(canvas,{...snapshot().state,legacyDevelopments:clone(campaign.current.developments),legacyPurchasedAssets:clone(campaign.current.purchasedAssets)});}
     function placeRemainingSuppliedAssets() {
@@ -14408,7 +14467,7 @@ const LEGACY = (() => {
     }
     function beginPostBuildInvestment() {
         // INTENTIONAL FLOW: invest after the completed Build and before RPS/role assignment.
-        // Players should see the actual estate, productive groups and missing links before risking Capital.
+        // Players should see the actual estate, businesses and missing links before risking Capital.
         const c=campaign.current;if(STATE.phase!==PHASE.BUILD||c.investmentOpened)return;
         syncInvestmentUnlocks();
         FLOW.stopTimer();const dropped=placeRemainingSuppliedAssets();if(dropped)UI.toast(`Time up. ${dropped} supplied ${dropped===1?'piece was':'pieces were'} placed by the bank.`,'warn',2400);
@@ -14441,7 +14500,7 @@ const LEGACY = (() => {
         if(campaign.round===1&&!campaign.guidance.campaignPrimerSeen){
             clearInvestmentTimer();
             document.getElementById('legacyInvestTitle').textContent=`${c.chapter} is built`;
-            document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">This first estate is built. Productive groups that stay together after the cut can earn Capital for the sibling who inherits them. You have no Capital to spend yet, so this estate goes straight to the familiar cut and choice.</p><div class="actions"><button class="btn-primary" data-legacy="beginFirstEstate">Continue to the division</button><button class="btn-secondary" data-legacy="rules">Income and investment rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
+            document.getElementById('legacyInvestBody').innerHTML=`${investmentBoardHtml()}<p class="body">This first estate is built. Businesses that stay together after the cut can earn Capital for the sibling who inherits them. You have no Capital to spend yet, so this estate goes straight to the familiar cut and choice.</p><div class="actions"><button class="btn-primary" data-legacy="beginFirstEstate">Continue to the division</button><button class="btn-secondary" data-legacy="rules">Income and investment rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
             renderInvestmentBoard();
             return;
         }
@@ -14451,7 +14510,7 @@ const LEGACY = (() => {
         if(fundedStep===null){
             clearInvestmentTimer();
             document.getElementById('legacyInvestTitle').textContent=`${c.chapter}: no Capital to spend`;
-            const finale=campaign.round===6&&!campaign.guidance.finalePrimerSeen?`<div class="legacy-consent-box"><strong>This is the Final Settlement</strong><p class="legacy-consent-private">This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three holding payments. Cutter and Chooser are still decided normally.</p></div>`:'';
+            const finale=campaign.round===6&&!campaign.guidance.finalePrimerSeen?`<div class="legacy-consent-box"><strong>This is the Final Settlement</strong><p class="legacy-consent-private">This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three business payments. Cutter and Chooser are still decided normally.</p></div>`:'';
             document.getElementById('legacyInvestBody').innerHTML=`${finale}${investmentBoardHtml()}<p class="body">Neither sibling has Capital available, so this estate goes straight to the division.</p><div class="actions"><button class="btn-primary" data-legacy="finishInvesting">Continue</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
             renderInvestmentBoard();
             return;
@@ -14478,7 +14537,7 @@ const LEGACY = (() => {
         const otherTier=otherSkipped?nextUnlockTier(other):null;
         const skippedNote=otherSkipped?`<p class="comparison-note"><strong>${text(campaign.players[other].name)}</strong> has no Capital this estate and is not buying.${otherTier?` ${text(campaign.players[other].name)}'s next options open at ${otherTier.cost} Capital held.`:''}</p>`:'';
         const firstDecision=skippedNote+(!campaign.guidance.investmentPrimerSeen?`<div class="legacy-consent-box"><strong>Your options grow with your Capital</strong><p class="legacy-consent-private">As the most Capital you have held increases, more investments become available. Once something becomes available, it stays available for the rest of the Legacy. You still need enough Capital to buy it.</p></div>`:'');
-        const finale=campaign.round===6&&!campaign.guidance.finalePrimerSeen?`<div class="legacy-consent-box"><strong>This is the Final Settlement</strong><p class="legacy-consent-private">This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three holding payments. Cutter and Chooser are still decided normally.</p></div>`:'';
+        const finale=campaign.round===6&&!campaign.guidance.finalePrimerSeen?`<div class="legacy-consent-box"><strong>This is the Final Settlement</strong><p class="legacy-consent-private">This is the last estate. After the Cutter divides it and the Chooser chooses, the result stands. You will see each sibling's inherited Property, remaining Capital and next three business payments. Cutter and Chooser are still decided normally.</p></div>`:'';
         const hasAffordable=affordableAssets.length||affordableDevelopments.length,nextStep=nextFundedInvestmentStep(c.investmentStep);
         const continueLabel=nextStep===null?(unplacedInvestmentItems().length?'Continue to placement':'Continue'):'Pass to the other sibling';
         document.getElementById('legacyInvestBody').innerHTML=`${finale}${firstDecision}${investmentBoardHtml()}${investmentTimerHtml()}<div class="legacy-invest-summary"><strong>${player.capital} Capital available</strong><span>Most Capital held ${player.peakCapital}</span></div><p class="comparison-note">${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')}</p><p class="body">Choose what you want to buy, then continue. After both siblings finish buying, you will place those additions on the estate. Roles are not decided yet: whoever inherits a purchased piece's square owns it, whoever paid.</p>${nextUnlock}${alreadyFunded.length?`<div class="legacy-consent-box"><strong>Already purchased for this estate</strong><p class="legacy-consent-private">${alreadyFunded.map(text).join(' · ')}</p></div>`:''}${capacity===0?'<div class="legacy-shop-empty">No empty buildable square remains for another normal asset.</div>':''}${hasAffordable?'<h3>Available now</h3>':'<div class="legacy-shop-empty">Nothing available to you is affordable or usable on this estate. Keeping your Capital still counts toward final wealth.</div>'}${affordableAssets.length?`<h4>Additional assets</h4><div class="legacy-shop">${affordableAssets.map(option=>assetButton(option)).join('')}</div>`:''}${affordableDevelopments.length?`<h4>Developments</h4><div class="legacy-shop">${affordableDevelopments.map(option=>developmentButton(option)).join('')}</div>`:''}${otherAssets.length&&capacity>0?`<details class="legacy-shop-more"><summary>Assets to save for</summary><div class="legacy-shop">${otherAssets.map(option=>assetButton(option,true)).join('')}</div></details>`:''}${otherDevelopments.length?`<details class="legacy-shop-more"><summary>Developments to save for</summary><div class="legacy-shop">${otherDevelopments.map(option=>developmentButton(option,true)).join('')}</div></details>`:''}${unavailableDevelopments.length?`<details class="legacy-shop-more"><summary>No suitable site on this estate</summary><ul class="legacy-fact-list">${unavailableDevelopments.join('')}</ul></details>`:''}${bought.length?`<h3>Chosen by ${text(player.name)}</h3><p class="body">${bought.map(text).join(' · ')}</p>`:''}<div class="actions"><button class="btn-primary" data-legacy="finishInvesting">${continueLabel}</button><button class="btn-secondary" data-legacy="rules">Campaign rules</button><button class="btn-ghost" data-legacy="open">Save and leave</button></div>`;
@@ -14551,7 +14610,7 @@ const LEGACY = (() => {
             ...groups.map(g=>`<strong>${text(g.name)}</strong> (${text(g.assets.map(a=>CONFIG.ASSET_NAME[a.kind]).join(', '))}): ${g.income} Capital after each of ${g.remainingPayments??3} estates`),
             ...devs.map(dev=>`<strong>${text(dev.name)}</strong>: ${dev.income} Capital ${dev.payments} times`),
         ];
-        return `${label} ${parts.length?`carries ${parts.join('; ')}.`:'carries no holding.'}`;
+        return `${label} ${parts.length?`carries ${parts.join('; ')}.`:'carries no business.'}`;
     }
     function renderChoicePanel() {
         const el=document.getElementById('legacyChoicePanel');
@@ -14560,10 +14619,10 @@ const LEGACY = (() => {
         el.classList.toggle('active',!!show);
         if(!show){el.innerHTML='';return;}
         if(STATE.phase===PHASE.CUT){
-            el.innerHTML=`${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')} A fence between two of a holding's pieces breaks it. Property totals stay hidden.`;
+            el.innerHTML=`${holdingsLine(GAME.activeCells(STATE.estateMask),'This estate')} A fence between two of a business's pieces breaks it. Property totals stay hidden.`;
             return;
         }
-        el.innerHTML=`<span class="plot-a">${holdingsLine(STATE.plotA,'Plot A')}</span><br><span class="plot-b">${holdingsLine(STATE.plotB,'Plot B')}</span><br>Property totals stay hidden until you choose. Whoever inherits a holding receives its payments.`;
+        el.innerHTML=`<span class="plot-a">${holdingsLine(STATE.plotA,'Plot A')}</span><br><span class="plot-b">${holdingsLine(STATE.plotB,'Plot B')}</span><br>Property totals stay hidden until you choose. Whoever inherits a business receives its payments.`;
     }
     function renderBuildChoices() {
         renderChoicePanel();
@@ -14762,9 +14821,9 @@ const LEGACY = (() => {
     function showCampaignRules() {
         if(UI.topOverlayKey()!=='legacyOverlay')open();
         retainPanelFocus('legacyOverlay',panel);
-        document.getElementById('legacyTitle').textContent='What changes in Family Legacy';
+        document.getElementById('legacyTitle').textContent='How Family Legacy works';
         const older=campaign?.incomeRuleVersion===1;
-        panel.innerHTML=`<p class="legacy-note">Six estates · one continuing inheritance</p><p class="body">Cut and choose works as before. Here, the Property each sibling inherits carries forward. Connected productive assets can also earn Capital for whoever inherits them, so the most valuable plot now may not be the best choice across the Legacy.</p><div class="legacy-guide-grid"><div class="legacy-guide-step"><strong>Income</strong><span>Connected productive groups pay Capital after settlement. Each estate is settled about ${yearsPerEstate()} years after the last, and a holding's payment is its yield over those years: about 4% of its value a year, as farmland, orchards and woodland return in reality. A fence can split a group and change what it earns.</span></div><div class="legacy-guide-step"><strong>Investment</strong><span>After Build and before roles are assigned, each sibling may keep or spend their Capital on this estate. Paying does not determine who inherits it.</span></div></div><p class="comparison-note">After Estate 6, the ledger records individual distinctions for final wealth, inherited Property and holding income, alongside shared gains and setbacks. Final wealth = inherited Property + unspent Capital + the next three holding payments.</p><details class="legacy-details"><summary>Holding payments</summary><div><p>Productive group score combines printed asset values and productive links. Other Better Together links can add Property without producing Capital. A grade C group starts at score 5 and pays 1 Capital; grade B starts at 9 and pays 2; grade A starts at 13 and pays ${older?5:3}. A larger group can earn more than one payment each estate.</p><p>${older?'Holdings inherited in this saved Legacy continue paying after each estate.':'A new productive holding pays after the estate where it is inherited and after two more estates. The holding retains its Property value when its payments finish.'} Quarry pays ${developmentIncome(DEVELOPMENT.quarry)} Capital twice and Logging pays ${developmentIncome(DEVELOPMENT.logging)} Capital three times if inherited intact.</p></div></details><details class="legacy-details"><summary>Investment and ownership</summary><div><p>Investment options unlock as your highest held Capital reaches their prices. Unlocked options stay available. After both siblings buy, the purchased assets are placed on the estate. Investments belong to whoever inherits their cells, regardless of who paid.</p><p>Quarry needs two adjacent Rock cells; Logging needs three connected Managed Woodland cells. Their Property value remains after their scheduled payments finish.</p></div></details><details class="legacy-details"><summary>The Family Home and ending</summary><div><p>Estate 2 alone allows each sibling to name one family item they care about. This does not change Property, Capital, income or ownership.</p><p>Every cut and choice stands. If neither sibling chooses before time runs out, the Legacy ends before a six-estate result is recorded. Exactly three future holding payments count toward final wealth after Estate 6.</p></div></details><div class="actions"><button class="btn-primary" data-legacy="ledger">Back to Family Legacy</button></div>`;
+        panel.innerHTML=`<p class="legacy-note">No will · six estates · two siblings</p><p class="body">${text(LEGACY_PROLOGUE)}</p><h4 class="legacy-record-kicker">The words the Legacy uses</h4><div class="legacy-guide-grid"><div class="legacy-guide-step"><strong>Property</strong><span>The value of the land and buildings you inherit. It carries forward from estate to estate.</span></div><div class="legacy-guide-step"><strong>Business</strong><span>Pieces that work together in the same plot: crops beside a barn, vines beside a winery. A business pays whoever inherits it Capital after each estate.</span></div><div class="legacy-guide-step"><strong>Capital</strong><span>Cash. Businesses pay it. Keep it, or spend it on new pieces for the next estate. Unspent Capital counts toward final wealth.</span></div><div class="legacy-guide-step"><strong>Final wealth</strong><span>Inherited Property, unspent Capital, and the next three business payments.</span></div></div><p class="body">Cut and choose works as before. The most valuable plot now may not be the best choice across the Legacy: a plot with a business in it keeps paying.</p><div class="legacy-guide-grid"><div class="legacy-guide-step"><strong>Income</strong><span>Connected businesses pay Capital after settlement. Each estate is settled about ${yearsPerEstate()} years after the last, and a business's payment is its yield over those years: about 4% of its value a year, as farmland, orchards and woodland return in reality. A fence can split a group and change what it earns.</span></div><div class="legacy-guide-step"><strong>Investment</strong><span>After Build and before roles are assigned, each sibling may keep or spend their Capital on this estate. Paying does not determine who inherits it.</span></div></div><p class="comparison-note">After Estate 6, the ledger records individual distinctions for final wealth, inherited Property and business income, alongside shared gains and setbacks. Final wealth = inherited Property + unspent Capital + the next three business payments.</p><details class="legacy-details"><summary>Business payments</summary><div><p>Business score combines printed asset values and productive links. Other Better Together links can add Property without producing Capital. A grade C group starts at score 5 and pays 1 Capital; grade B starts at 9 and pays 2; grade A starts at 13 and pays ${older?5:3}. A larger group can earn more than one payment each estate.</p><p>${older?'Businesses inherited in this saved Legacy continue paying after each estate.':'A new business pays after the estate where it is inherited and after two more estates. The business retains its Property value when its payments finish.'} Quarry pays ${developmentIncome(DEVELOPMENT.quarry)} Capital twice and Logging pays ${developmentIncome(DEVELOPMENT.logging)} Capital three times if inherited intact.</p></div></details><details class="legacy-details"><summary>Investment and ownership</summary><div><p>Investment options unlock as your highest held Capital reaches their prices. Unlocked options stay available. After both siblings buy, the purchased assets are placed on the estate. Investments belong to whoever inherits their cells, regardless of who paid.</p><p>Quarry needs two adjacent Rock cells; Logging needs three connected Managed Woodland cells. Their Property value remains after their scheduled payments finish.</p></div></details><details class="legacy-details"><summary>The Family Home and ending</summary><div><p>Estate 2 alone allows each sibling to name one family item they care about. This does not change Property, Capital, income or ownership.</p><p>Every cut and choice stands. If neither sibling chooses before time runs out, the Legacy ends before a six-estate result is recorded. Exactly three future business payments count toward final wealth after Estate 6.</p></div></details><div class="actions"><button class="btn-primary" data-legacy="ledger">Back to Family Legacy</button></div>`;
     }
     function playerPlotForAttempt(attempt,playerIdx) {
         if(!attempt||!['A','B'].includes(attempt.chosenPlotId))return null;
@@ -14774,7 +14833,7 @@ const LEGACY = (() => {
     }
     function roundOutcomeHtml(record) {
         if(!record)return '';
-        if(record.lost)return `<div class="legacy-fact"><h4>Estate lost</h4><p>No settlement was accepted. Neither sibling inherited property or a new holding from this estate.</p></div>`;
+        if(record.lost)return `<div class="legacy-fact"><h4>Estate lost</h4><p>No settlement was accepted. Neither sibling inherited property or a new business from this estate.</p></div>`;
         const attempt=acceptedAttemptForRecord(record),plots=[0,1].map(i=>playerPlotForAttempt(attempt,i));
         const rows=campaign.players.map((player,i)=>`<div class="legacy-income-line"><span>${text(player.name)} inherited Plot ${plots[i]||'?'} </span><strong>${record.scores?.[i]||0}</strong></div>`).join('');
         const finalAttempt=record.attempts?.length===2?'<p class="comparison-note">The estate was settled on the final division.</p>':'';
@@ -14823,10 +14882,10 @@ const LEGACY = (() => {
         const rows=[];
         const income=[0,0];
         for(const payment of record.incomePayments||[])income[payment.player]=(income[payment.player]||0)+(payment.amount||0);
-        campaign.players.forEach((player,i)=>{if(income[i]>0)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · holdings paid</span><strong>+${income[i]} Capital</strong></div>`);});
+        campaign.players.forEach((player,i)=>{if(income[i]>0)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · businesses paid</span><strong>+${income[i]} Capital</strong></div>`);});
         (record.holdingsAwarded||[]).forEach((groups,playerIdx)=>(groups||[]).forEach(group=>{
             const detail=group.permanent===false?`${group.income} Capital after each estate · ${group.remainingPayments??group.payments??''} scheduled payments`:`Grade ${group.grade} · ${group.income} Capital after each estate`;
-            rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[playerIdx].name)} · new holding: ${text(group.name)}</span><strong>${text(detail)}</strong></div>`);
+            rows.push(`<div class="legacy-income-line"><span>${text(campaign.players[playerIdx].name)} · new business: ${text(group.name)}</span><strong>${text(detail)}</strong></div>`);
         }));
         (record.unlocksEarned||[]).forEach((keys,playerIdx)=>{
             const names=(keys||[]).map(key=>catalogueItem(key)?.name).filter(Boolean);
@@ -14847,7 +14906,7 @@ const LEGACY = (() => {
         }
         campaign.players.forEach((player,i)=>{
             const mentioned=rows.some(row=>row.includes(text(player.name)));
-            if(!mentioned)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · holdings and Capital</span><strong>nothing new this estate</strong></div>`);
+            if(!mentioned)rows.push(`<div class="legacy-income-line"><span>${text(player.name)} · businesses and Capital</span><strong>nothing new this estate</strong></div>`);
         });
         return `<div class="legacy-fact"><h4>What changed</h4>${rows.join('')}</div>`;
     }
@@ -14862,8 +14921,8 @@ const LEGACY = (() => {
             accounting=`<details class="legacy-details"><summary>Estate totals</summary><div><div class="legacy-metrics"><div class="legacy-metric"><span>Starting estate value</span><strong>${t.baseline}</strong></div><div class="legacy-metric"><span>Value before division</span><strong>${t.built}</strong></div><div class="legacy-metric"><span>Property inherited</span><strong>${t.inherited}</strong></div><div class="legacy-metric"><span>Property that left the family</span><strong>${lost}</strong></div><div class="legacy-metric"><span>Built value retained</span><strong>${preservation}%</strong></div><div class="legacy-metric"><span>Capital invested</span><strong>${t.invested}</strong></div><div class="legacy-metric"><span>Net Property change</span><strong>${signed(t.netCreated)}</strong></div></div></div></details>`;
         }
         const history=includeHistory?`<h3>Family history</h3>${chronicleHtml()}`:'';
-        const summary=includeHistory?'Holdings and family history':'Holdings';
-        return `<details class="legacy-details"><summary>${summary}</summary><div>${holdings?`<h3>Holdings</h3><div class="legacy-holdings">${holdings}</div>`:'<p class="comparison-note">No holdings are earning Capital yet.</p>'}${accounting}${history}</div></details>`;
+        const summary=includeHistory?'Businesses and family history':'Businesses';
+        return `<details class="legacy-details"><summary>${summary}</summary><div>${holdings?`<h3>Businesses</h3><div class="legacy-holdings">${holdings}</div>`:'<p class="comparison-note">No businesses are earning Capital yet.</p>'}${accounting}${history}</div></details>`;
     }
     function ledger() {
         if(campaign.status==='complete')return campaignDetailsHtml(false,false);
@@ -14994,7 +15053,7 @@ const LEGACY = (() => {
         const player=campaign.players[playerIdx],stats=investmentStats(playerIdx,resultPlayer);
         let investmentLine='Made no investments during the Legacy.';
         if(stats.invested>0)investmentLine=`Spent ${stats.invested} Capital across ${stats.purchases} ${stats.purchases===1?'investment':'investments'}.`;
-        const incomeLine=`Holdings paid ${stats.paidIncome} Capital during the six estates. The final calculation includes ${stats.futureIncome} more from the next three scheduled payments.`;
+        const incomeLine=`Businesses paid ${stats.paidIncome} Capital during the six estates. The final calculation includes ${stats.futureIncome} more from the next three scheduled payments.`;
         const fundedParts=[];
         if(stats.selfFunded)fundedParts.push(`${stats.selfFunded} Capital went into additions ${player.name} inherited`);
         if(stats.siblingFunded)fundedParts.push(`${stats.siblingFunded} Capital went into additions the other sibling inherited`);
@@ -15009,7 +15068,7 @@ const LEGACY = (() => {
         const stats=[investmentStats(0,result.players[0]),investmentStats(1,result.players[1])],rows=[];
         const add=(label,a,b,suffix='')=>{if(a===b)return;const i=a>b?0:1;rows.push(`<li><strong>${label}:</strong> ${text(campaign.players[i].name)} (${plainNumber(i===0?a:b)}${suffix})</li>`);};
         add('More Capital invested',stats[0].invested,stats[1].invested);
-        add('More holding income',stats[0].holdingIncome,stats[1].holdingIncome);
+        add('More business income',stats[0].holdingIncome,stats[1].holdingIncome);
         add('More lower-value Chooser picks',stats[0].chooser.lower,stats[1].chooser.lower);
         add('More Capital spent on additions inherited by the other sibling',stats[0].siblingFunded,stats[1].siblingFunded);
         if(!rows.length)return '';
@@ -15047,7 +15106,7 @@ const LEGACY = (() => {
         if(longViews.length){
             const strongest=Math.max(...longViews.map(choice=>choice.advantage));
             const examples=longViews.filter(choice=>choice.advantage===strongest).map(choice=>`Estate ${choice.round}: ${text(campaign.players[choice.chooser].name)} chose ${choice.propertyGap} less Property for ${choice.extraIncome} more scheduled Capital`).join('; ');
-            cards.push(`<div class="legacy-fact"><h4>Income over Property</h4><p>${examples}. From this estate alone, Property plus its new holdings' scheduled Capital was ${strongest} higher for the chosen plot.</p></div>`);
+            cards.push(`<div class="legacy-fact"><h4>Income over Property</h4><p>${examples}. From this estate alone, Property plus its new businesses' scheduled Capital was ${strongest} higher for the chosen plot.</p></div>`);
         }
         return cards.join('');
     }
@@ -15060,7 +15119,7 @@ const LEGACY = (() => {
         const incomes=result.players.map((player,i)=>investmentStats(i,player).holdingIncome);
         const cards=[award('Wealthiest sibling',result.players.map(player=>player.projected),'final wealth'),
             award('Most Property inherited',result.players.map(player=>player.property),'inherited Property')];
-        if(incomes.some(value=>value>0))cards.push(award('Most holding income',incomes,'Capital in paid and scheduled holding income'));
+        if(incomes.some(value=>value>0))cards.push(award('Most business income',incomes,'Capital in paid and scheduled business income'));
         return `<h3>Individual distinctions</h3><div class="legacy-guide-grid">${cards.join('')}${decisionDistinctionsHtml()}</div>`;
     }
     function estateValueComparison(record) {
@@ -15104,10 +15163,10 @@ const LEGACY = (() => {
         const awards=[
             netCreated>0?`<div class="legacy-fact"><h4>Shared value creation</h4><p>Across six estates, inherited Property exceeded starting Property and Capital spent by ${netCreated}.</p></div>`:'',
             bestNet>0?`<div class="legacy-fact"><h4>Most value created in one estate</h4><p>${bestEstates} · net gain +${bestNet} after subtracting Capital spent.</p></div>`:'',
-            investmentGenerated>invested?`<div class="legacy-fact"><h4>Investments exceeded their cost</h4><p>The purchased additions contributed ${investmentGenerated} inherited Property for ${invested} Capital spent, before any holding income.</p></div>`:''
+            investmentGenerated>invested?`<div class="legacy-fact"><h4>Investments exceeded their cost</h4><p>The purchased additions contributed ${investmentGenerated} inherited Property for ${invested} Capital spent, before any business income.</p></div>`:''
         ].filter(Boolean).join('');
         const shortfalls=[
-            netCreated<0?`<div class="legacy-fact"><h4>Shared value shortfall</h4><p>Inherited Property fell ${-netCreated} below starting Property plus Capital spent. Holding income is counted separately.</p></div>`:'',
+            netCreated<0?`<div class="legacy-fact"><h4>Shared value shortfall</h4><p>Inherited Property fell ${-netCreated} below starting Property plus Capital spent. Business income is counted separately.</p></div>`:'',
             cutValue>0?`<div class="legacy-fact"><h4>Cost of division</h4><p>${cutValue} Property counted before the cuts but no longer counted across the inherited plots.</p></div>`:'',
             lostEstateValue>0?`<div class="legacy-fact"><h4>Estates left behind</h4><p>${lostEstateValue} Property in unsettled estates was never inherited.</p></div>`:''
         ].filter(Boolean).join('');
@@ -15118,7 +15177,7 @@ const LEGACY = (() => {
         const gapCopy=gapParts.length?`${gapParts.join('; ')}.`:'All pre-division Property value remained in the family.';
         const lostInvestmentCopy=capitalInLostEstates?` ${capitalInLostEstates} Capital had been invested in estates that later left the family.`:'';
         const roundTable=`<details class="legacy-details"><summary>See all six estates</summary><div><div class="legacy-scroll" role="region" aria-label="Six estate value comparison" tabindex="0"><table class="legacy-table"><caption class="sr-only">Property inherited and possible value by estate</caption><thead><tr><th scope="col">Estate</th><th scope="col">Inherited</th><th scope="col">Ceiling</th><th scope="col">Investment: gained of possible</th></tr></thead><tbody>${estateRows}</tbody><tfoot><tr><th scope="row">All six</th><td>${inherited}</td><td>${ceiling}</td><td>${investmentPotential?`${investmentGenerated} of ${investmentPotential}`:'No purchases'}</td></tr></tfoot></table></div></div></details>`;
-        return `<h3>Created together across six estates</h3><div class="legacy-metrics"><div class="legacy-metric"><span>Property inherited</span><strong>${inherited}</strong></div><div class="legacy-metric"><span>Built before the fences</span><strong>${built}</strong></div></div><p class="comparison-note">${retainedPct}% of what the estates held before division stayed in the family${cutValue?`; ${cutValue} Property was lost to the fences`:''}.</p><p class="comparison-note">Net change after ${invested} Capital spent: ${signed(netCreated)} against the ${baseline} Property in the starting estates. Holding income is separate.</p>${awards?`<h4>Shared achievements</h4><div class="legacy-guide-grid">${awards}</div>`:''}${shortfalls?`<h4>Shared costs and shortfalls</h4><div class="legacy-guide-grid">${shortfalls}</div>`:''}<h4>From purchased additions</h4><p class="comparison-note">${investmentPotential?`${investmentGenerated} inherited Property gained, of up to ${investmentPotential} possible from the same purchases. Holding income is separate.`:'No additions were purchased.'}</p>${roundTable}<details class="legacy-details"><summary>How these values are calculated</summary><div><p>The ceiling uses each estate's terrain as it was set, supplied assets and additions actually purchased. It does not test other purchases or terrain layouts. Some eligible connections compete for space, so the ceiling may be unreachable.</p><p>Investment gained compares the final divisions with those same divisions without the purchased additions. Possible investment value is the extra Property those same additions could theoretically provide, including eligible connections. Neither measure includes purchases not made, unspent Capital or future holding income.</p><p>Before division, the six estates contained ${built} Property; ${notRetained} did not remain after division. ${retainedPct}% of pre-division Property was inherited. ${text(gapCopy+lostInvestmentCopy)}</p><p>The pre-division Property change after subtracting ${invested} Capital spent was ${signed(immediateNet)}. Holding income is counted separately.</p></div></details>`;
+        return `<h3>Created together across six estates</h3><div class="legacy-metrics"><div class="legacy-metric"><span>Property inherited</span><strong>${inherited}</strong></div><div class="legacy-metric"><span>Built before the fences</span><strong>${built}</strong></div></div><p class="comparison-note">${retainedPct}% of what the estates held before division stayed in the family${cutValue?`; ${cutValue} Property was lost to the fences`:''}.</p><p class="comparison-note">Net change after ${invested} Capital spent: ${signed(netCreated)} against the ${baseline} Property in the starting estates. Business income is separate.</p>${awards?`<h4>Shared achievements</h4><div class="legacy-guide-grid">${awards}</div>`:''}${shortfalls?`<h4>Shared costs and shortfalls</h4><div class="legacy-guide-grid">${shortfalls}</div>`:''}<h4>From purchased additions</h4><p class="comparison-note">${investmentPotential?`${investmentGenerated} inherited Property gained, of up to ${investmentPotential} possible from the same purchases. Business income is separate.`:'No additions were purchased.'}</p>${roundTable}<details class="legacy-details"><summary>How these values are calculated</summary><div><p>The ceiling uses each estate's terrain as it was set, supplied assets and additions actually purchased. It does not test other purchases or terrain layouts. Some eligible connections compete for space, so the ceiling may be unreachable.</p><p>Investment gained compares the final divisions with those same divisions without the purchased additions. Possible investment value is the extra Property those same additions could theoretically provide, including eligible connections. Neither measure includes purchases not made, unspent Capital or future business income.</p><p>Before division, the six estates contained ${built} Property; ${notRetained} did not remain after division. ${retainedPct}% of pre-division Property was inherited. ${text(gapCopy+lostInvestmentCopy)}</p><p>The pre-division Property change after subtracting ${invested} Capital spent was ${signed(immediateNet)}. Business income is counted separately.</p></div></details>`;
     }
 
     function finalResultHtml() {
@@ -15126,7 +15185,7 @@ const LEGACY = (() => {
         const scoreRows=result.players.map((player,i)=>`<tr><th scope="row">${text(campaign.players[i].name)}</th><td>${player.property}</td><td>${player.capital}</td><td>+${player.scheduledIncome}</td><td><strong>${player.projected}</strong></td></tr>`).join('');
         const history=campaign.history.map(record=>`<li><strong>${record.round}. ${text(record.chapter)}</strong> ${estateNarrative(record,true).join(' ')}</li>`).join('');
         const profiles=result.players.map((player,i)=>investmentProfileHtml(i,player)).join('');
-        return `<div class="legacy-ending"><h3>Six estates, many outcomes</h3>${familyOutcomeRevealHtml()}${individualDistinctionsHtml(result)}<details class="legacy-details"><summary>How final wealth was counted</summary><div><div class="legacy-scroll" role="region" aria-label="Final wealth breakdown" tabindex="0"><table class="legacy-table"><caption class="sr-only">Final wealth by sibling</caption><thead><tr><th scope="col">Sibling</th><th scope="col">Property</th><th scope="col">Unspent Capital</th><th scope="col">Next 3 payments</th><th scope="col">Final wealth</th></tr></thead><tbody>${scoreRows}</tbody></table></div><p class="comparison-note">Final wealth = inherited Property + unspent Capital + the next three holding payments. Matching totals share the highest wealth distinction.</p></div></details>${history?`<details class="legacy-details"><summary>The family history</summary><div><ul class="legacy-fact-list">${history}</ul></div></details>`:''}<details class="legacy-details"><summary>Campaign statistics</summary><div><p class="comparison-note">These statistics do not change the recorded outcomes.</p><h3>How each sibling played</h3><div class="legacy-guide-grid">${profiles}</div>${campaignDistinctionsHtml(result)}${investmentProgressHtml()}</div></details></div>`;
+        return `<div class="legacy-ending"><h3>Six estates, many outcomes</h3>${familyOutcomeRevealHtml()}${individualDistinctionsHtml(result)}<details class="legacy-details"><summary>How final wealth was counted</summary><div><div class="legacy-scroll" role="region" aria-label="Final wealth breakdown" tabindex="0"><table class="legacy-table"><caption class="sr-only">Final wealth by sibling</caption><thead><tr><th scope="col">Sibling</th><th scope="col">Property</th><th scope="col">Unspent Capital</th><th scope="col">Next 3 payments</th><th scope="col">Final wealth</th></tr></thead><tbody>${scoreRows}</tbody></table></div><p class="comparison-note">Final wealth = inherited Property + unspent Capital + the next three business payments. Matching totals share the highest wealth distinction.</p></div></details>${history?`<details class="legacy-details"><summary>The family history</summary><div><ul class="legacy-fact-list">${history}</ul></div></details>`:''}<details class="legacy-details"><summary>Campaign statistics</summary><div><p class="comparison-note">These statistics do not change the recorded outcomes.</p><h3>How each sibling played</h3><div class="legacy-guide-grid">${profiles}</div>${campaignDistinctionsHtml(result)}${investmentProgressHtml()}</div></details></div>`;
     }
 
     const signed=value=>`${value>0?'+':''}${value}`;
@@ -15169,7 +15228,7 @@ const LEGACY = (() => {
         return rows.length?`<h3>Family items</h3><ul class="legacy-fact-list">${rows.join('')}</ul>`:'';
     }
     function incomeFactsHtml(payments=[]) {
-        if(!payments.length)return '<p class="body">No holding paid after this settlement.</p>';
+        if(!payments.length)return '<p class="body">No business paid after this settlement.</p>';
         return payments.map(payment=>`<div class="legacy-income-line"><span>${text(campaign.players[payment.player].name)} · ${text(payment.name)}${payment.exhausted?' · final scheduled payment':''}</span><strong>+${payment.amount}</strong></div>`).join('');
     }
     function chronicleHtml() {
@@ -15182,7 +15241,7 @@ const LEGACY = (() => {
     function nextChapterGuide(round) {
         const copy={
             2:'This is the only estate where each sibling may name one family item they care about. The choice changes no financial value or rule.',
-            3:'By now, holdings may have started earning Capital. As the most Capital a sibling has held rises, more investments become available.',
+            3:'By now, businesses may have started earning Capital. As the most Capital a sibling has held rises, more investments become available.',
             4:'This estate is coastal or riverside. Water and access affect land value, but there are no special water-site developments in this version.',
             5:'Rock and managed woodland create sites for Quarries and Logging Operations. Whether these are available depends on how much Capital each sibling has held. Quarry and Logging pay a fixed number of times if inherited intact.',
             6:'The last estate combines premium land with resource sites. Each sibling brings the investment options that have become available to them. Cutter and Chooser are still decided normally.'
@@ -15196,7 +15255,7 @@ const LEGACY = (() => {
         if (!campaign) {
             let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
             const ready=LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value]);
-            html+='<p class="body">Across six estates, inherited Property carries forward. Connected productive holdings can also pay Capital, which you may keep or invest in later estates.</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. The ending records individual distinctions alongside the family’s gains and setbacks.</p>'+(ready?'':'<p class="body">Enter two different sibling names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+guidedToggleHtml()+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
+            html+=`<p class="body">${text(LEGACY_PROLOGUE)}</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. Each estate ends with a face from each of you, and the Legacy ends with the family record: what each of you holds, what the family lost, and how it felt.</p>`+(ready?'':'<p class="body">Enter two different sibling names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+guidedToggleHtml()+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
         } else {
             const complete=campaign.status==='complete',unresolved=campaign.status==='unresolved',between=campaign.status==='between';
             const latestRecord=campaign.history[campaign.history.length-1];
@@ -15204,7 +15263,7 @@ const LEGACY = (() => {
             if(campaign.status==='playing')html+=`<p class="comparison-note">${text(CHAPTER_COPY[campaign.round-1])}</p>`;
             if(complete||unresolved)ensureFairestGaps();
             if(complete)html+=`${familyRecordHtml()}${couldHaveBeenHtml()}${finalResultHtml()}<h3>Final ledger</h3>${ledger()}`;
-            else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no holding payment was made for it. Capital already invested remains spent.</p></div>${campaign.history.length?couldHaveBeenHtml():''}${ledger()}`;
+            else if(unresolved)html+=`<div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(campaign.current.unresolvedReason||'The settlement was not completed.')}</p><p>Nothing from this estate was inherited, and no business payment was made for it. Capital already invested remains spent.</p></div>${campaign.history.length?couldHaveBeenHtml():''}${ledger()}`;
             else if(between){
                 const latest=campaign.history[campaign.history.length-1];
                 if(latest){
@@ -15214,7 +15273,7 @@ const LEGACY = (() => {
                     html+=roundChangesHtml(latest);
                 }
                 html+=`<h3>Campaign position</h3>${positionSummaryHtml()}`;
-                if(campaign.history.length===1&&!campaign.guidance.holdingsPrimerSeen&&(latest?.holdingsAwarded||[]).some(groups=>groups&&groups.length))html+='<div class="legacy-consent-box"><strong>Your first holding payment</strong><p class="legacy-consent-private">A new holding pays for the first time now, before the next estate begins.</p></div>';
+                if(campaign.history.length===1&&!campaign.guidance.holdingsPrimerSeen&&(latest?.holdingsAwarded||[]).some(groups=>groups&&groups.length))html+='<div class="legacy-consent-box"><strong>Your first business payment</strong><p class="legacy-consent-private">A new business pays for the first time now, before the next estate begins.</p></div>';
                 html+=`<details class="legacy-details" open><summary>About Estate ${campaign.round+1}: ${text(chapters[campaign.round])}</summary><div>${nextChapterGuide(campaign.round+1)}</div></details>`;
                 html+=`<div class="actions"><button class="btn-primary" data-legacy="next">Begin estate ${campaign.round+1}</button></div>${campaignDetailsHtml(true)}`;
             } else {
@@ -15373,7 +15432,7 @@ const LEGACY = (() => {
         event('SETTLEMENT_COMMITTED',{attempt:campaign.current.attempt,scores,accounting:clone(preview),holdings:holdingsByPlayer.map(groups=>groups.map(group=>({name:group.name,grade:group.grade,score:group.score,income:group.income}))),incomePayments});if(campaign.status==='complete')event('CAMPAIGN_COMPLETED',{finalResult:clone(campaign.finalResult)});
         suspended=null;save();open();ensureFairestGaps();
     }
-    // Every productive group on the estate before the fence, and what it paid. Compared at the
+    // Every business on the estate before the fence, and what it paid. Compared at the
     // end with what was inherited intact.
     function beforeFenceFacts(board) {
         const groups=findProductiveGroups(GAME.activeCells(board.estateMask),board.grid).map(g=>({name:g.name,grade:g.grade,score:g.score,income:g.income,assets:g.assets.map(a=>({c:a.c,r:a.r,kind:a.kind}))}));
@@ -15476,11 +15535,11 @@ const LEGACY = (() => {
         const strip=w.estates.map(e=>`<div class="legacy-strip-col"><span class="legacy-strip-round">${e.round}</span><strong class="legacy-strip-gap">${e.gapAfter}</strong>${facesInline(e.faces)}</div>`).join('');
         const line=(label,total,items)=>`<details class="legacy-details"><summary>${label} · <strong>${total}</strong></summary><div>${items.length?`<ul class="legacy-fact-list">${items.map(item=>`<li>${item}</li>`).join('')}</ul>`:'<p class="comparison-note">None.</p>'}</div></details>`;
         const rows=fences.map(f=>`<tr><th scope="row">${f.round}</th><td>${f.fairest}</td><td>${f.fence}</td><td>${f.took}</td></tr>`).join('');
-        return `<div class="legacy-ending legacy-could" id="legacyCouldHaveBeen"><h3>What the family holds</h3><div class="legacy-metrics legacy-metrics-3">${metric('Family wealth',w.total)}${metric('Between the siblings',w.gap)}${metric('Could have held',w.potential)}</div><h4 class="legacy-record-kicker">The gap after each estate, and how it felt</h4><div class="legacy-strip" aria-label="Gap between the siblings after each estate, with both faces">${strip}</div><h4 class="legacy-record-kicker">Where ${w.lost} was lost</h4>${line('The fence',`${w.losses.fence} Property`,fence)}${line('Holdings the fence divided',`${w.losses.divided} Capital`,divided)}${line('Estates that left the family',`${w.losses.lostEstates} Property`,lostEstates)}${line('Capital held unspent',`${w.losses.unspent} Capital`,unspent)}<details class="legacy-details"><summary>The fence, estate by estate</summary><div><div class="legacy-scroll" role="region" aria-label="Fences by estate" tabindex="0"><table class="legacy-table"><caption class="sr-only">Fairest fence available against the fence drawn</caption><thead><tr><th scope="col">Estate</th><th scope="col">Fairest fence available</th><th scope="col">This fence</th><th scope="col">Chooser took</th></tr></thead><tbody>${rows}</tbody></table></div><p class="comparison-note">The fairest fence is the smallest gap any single fence could make on that estate, in Property. Where the estate is too large for the full search, the smallest gap among straight fences is shown and marked. The record does not say whether a wider gap was skill or intent.</p></div></details><p class="comparison-note">Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.</p></div>`;
+        return `<div class="legacy-ending legacy-could" id="legacyCouldHaveBeen"><h3>What the family holds</h3><div class="legacy-metrics legacy-metrics-3">${metric('Family wealth',w.total)}${metric('Between the siblings',w.gap)}${metric('Could have held',w.potential)}</div><h4 class="legacy-record-kicker">The gap after each estate, and how it felt</h4><div class="legacy-strip" aria-label="Gap between the siblings after each estate, with both faces">${strip}</div><h4 class="legacy-record-kicker">Where ${w.lost} was lost</h4>${line('The fence',`${w.losses.fence} Property`,fence)}${line('Businesses the fence divided',`${w.losses.divided} Capital`,divided)}${line('Estates that left the family',`${w.losses.lostEstates} Property`,lostEstates)}${line('Capital held unspent',`${w.losses.unspent} Capital`,unspent)}<details class="legacy-details"><summary>The fence, estate by estate</summary><div><div class="legacy-scroll" role="region" aria-label="Fences by estate" tabindex="0"><table class="legacy-table"><caption class="sr-only">Fairest fence available against the fence drawn</caption><thead><tr><th scope="col">Estate</th><th scope="col">Fairest fence available</th><th scope="col">This fence</th><th scope="col">Chooser took</th></tr></thead><tbody>${rows}</tbody></table></div><p class="comparison-note">The fairest fence is the smallest gap any single fence could make on that estate, in Property. Where the estate is too large for the full search, the smallest gap among straight fences is shown and marked. The record does not say whether a wider gap was skill or intent.</p></div></details><p class="comparison-note">Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.</p></div>`;
     }
     function couldHaveBeenText() {
         const {w,fence,divided,lostEstates,unspent,fences}=couldHaveBeenLines(),strip=s=>s.replace(/<[^>]+>/g,'');
-        const lines=['',`Family wealth ${w.total} · between the siblings ${w.gap} · could have held ${w.potential}`,`Gap after each estate: ${w.estates.map(e=>`${e.round}: ${e.gapAfter}`).join(' · ')}`,'',`Where ${w.lost} was lost`,`  The fence: ${w.losses.fence} Property`,...fence.map(x=>`    ${strip(x)}`),`  Holdings the fence divided: ${w.losses.divided} Capital`,...divided.map(x=>`    ${strip(x)}`),`  Estates that left the family: ${w.losses.lostEstates} Property`,...lostEstates.map(x=>`    ${strip(x)}`),`  Capital held unspent: ${w.losses.unspent} Capital`,...unspent.map(x=>`    ${strip(x)}`),'','The fence, estate by estate (fairest available / this fence / chooser took)',...fences.map(f=>`  ${f.round}: ${f.fairest} / ${f.fence} / ${f.took}`),'','Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.'];
+        const lines=['',`Family wealth ${w.total} · between the siblings ${w.gap} · could have held ${w.potential}`,`Gap after each estate: ${w.estates.map(e=>`${e.round}: ${e.gapAfter}`).join(' · ')}`,'',`Where ${w.lost} was lost`,`  The fence: ${w.losses.fence} Property`,...fence.map(x=>`    ${strip(x)}`),`  Businesses the fence divided: ${w.losses.divided} Capital`,...divided.map(x=>`    ${strip(x)}`),`  Estates that left the family: ${w.losses.lostEstates} Property`,...lostEstates.map(x=>`    ${strip(x)}`),`  Capital held unspent: ${w.losses.unspent} Capital`,...unspent.map(x=>`    ${strip(x)}`),'','The fence, estate by estate (fairest available / this fence / chooser took)',...fences.map(f=>`  ${f.round}: ${f.fairest} / ${f.fence} / ${f.took}`),'','Who took the larger plot is not on this list. Choosing a plot moves Property between the siblings and changes nothing the family holds.'];
         return lines;
     }
     function makeCurrentPreview() {
@@ -15509,7 +15568,7 @@ const LEGACY = (() => {
         const first=r.attempts.length===2?r.attempts[0]:null,firstSummary=first?`<h3>First proposed division</h3><canvas id="legacyFirstAttemptCanvas" width="600" height="600" aria-label="First refused division"></canvas><h3>${r.lost?'Final rejected division':'Accepted final division'}</h3>`:'';
         const narrative=estateNarrative(r,false).map(line=>`<p>${line}</p>`).join('');
         const accountingDetail=campaign.status==='complete'?`<details class="legacy-details"><summary>Estate totals</summary><div class="legacy-metrics"><div class="legacy-metric"><span>Starting value</span><strong>${a.baseline}</strong></div><div class="legacy-metric"><span>Before division</span><strong>${a.built}</strong></div><div class="legacy-metric"><span>Inherited</span><strong>${a.inherited}</strong></div><div class="legacy-metric"><span>Value retained</span><strong>${a.preservationPercent}%</strong></div><div class="legacy-metric"><span>Capital invested</span><strong>${a.invested}</strong></div><div class="legacy-metric"><span>Net Property change</span><strong>${signed(a.netCreated)}</strong></div></div></details>`:'';
-        panel.innerHTML=`<p class="legacy-note">Estate ${r.round} · ${text(r.chapter)}</p><p class="comparison-note">${text(CHAPTER_COPY[r.round-1])}</p><div class="legacy-fact"><h4>What happened</h4>${narrative}</div>${firstSummary}<canvas id="legacyHistoryCanvas" width="600" height="600" aria-label="${r.lost?'Estate lost after failed settlement':'Recorded accepted estate'}"></canvas><details class="legacy-details"><summary>${r.attempts.some(attempt=>attempt.decisions.some(Boolean))?'Settlement decisions':'The cut and choice'}</summary><div>${decisionFactsHtml(r.attempts)}</div></details><details class="legacy-details"><summary>Investment, holdings and income</summary><div>${fundingFactsHtml(r.facts)}${meaningfulFactsHtml(r.facts)}${holdings?`<h3>Holdings created</h3><div class="legacy-holdings">${holdings}</div>`:`<h3>Holdings created</h3><p class="body">${r.lost?'None. The estate left the family.':'No new holding from this division earns Capital.'}</p>`}<h3>Income paid after settlement</h3>${incomeFactsHtml(r.incomePayments)}</div></details>${accountingDetail}<button class="btn-secondary" data-legacy="ledger">Back to Family Legacy</button>`;
+        panel.innerHTML=`<p class="legacy-note">Estate ${r.round} · ${text(r.chapter)}</p><p class="comparison-note">${text(CHAPTER_COPY[r.round-1])}</p><div class="legacy-fact"><h4>What happened</h4>${narrative}</div>${firstSummary}<canvas id="legacyHistoryCanvas" width="600" height="600" aria-label="${r.lost?'Estate lost after failed settlement':'Recorded accepted estate'}"></canvas><details class="legacy-details"><summary>${r.attempts.some(attempt=>attempt.decisions.some(Boolean))?'Settlement decisions':'The cut and choice'}</summary><div>${decisionFactsHtml(r.attempts)}</div></details><details class="legacy-details"><summary>Investment, businesses and income</summary><div>${fundingFactsHtml(r.facts)}${meaningfulFactsHtml(r.facts)}${holdings?`<h3>Businesses created</h3><div class="legacy-holdings">${holdings}</div>`:`<h3>Businesses created</h3><p class="body">${r.lost?'None. The estate left the family.':'No new business from this division earns Capital.'}</p>`}<h3>Income paid after settlement</h3>${incomeFactsHtml(r.incomePayments)}</div></details>${accountingDetail}<button class="btn-secondary" data-legacy="ledger">Back to Family Legacy</button>`;
         const historyCanvas=document.getElementById('legacyHistoryCanvas');
         RENDER.renderSnapshot(historyCanvas,{...r.board,phase:PHASE.CHOOSE,cutNodes:[]});
         drawProductiveHighlights(historyCanvas,r.holdingsAwarded,r.board.grid.length);
@@ -15522,7 +15581,7 @@ const LEGACY = (() => {
         const attempts=[];if(current.firstAttempt)attempts.push(current.firstAttempt);
         if(board.outcome&&!board.outcome.unresolved&&current.provisional)attempts.push({...divisionSnapshot(current.attempt),decisions:clone(current.consent.decisions)});
         const facts=settlementFacts(board,current.purchasedAssets,current.developments);
-        panel.innerHTML=`<p class="legacy-note">Final attempted estate · Estate ${campaign.round}</p><h3>${text(current.chapter)}</h3><div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(current.unresolvedReason)}</p><p>The Legacy ended without a choice and neither sibling won. Nothing from this estate was inherited, and no holding payment was made for it. ${current.invested} Capital spent before the division remains spent.</p></div><canvas id="legacyUnresolvedCanvas" width="600" height="600" aria-label="Final attempted estate"></canvas>${decisionFactsHtml(attempts)}${fundingFactsHtml(facts)}${meaningfulFactsHtml(facts)}<button class="btn-secondary" data-legacy="ledger">Back to Family Legacy</button>`;
+        panel.innerHTML=`<p class="legacy-note">Final attempted estate · Estate ${campaign.round}</p><h3>${text(current.chapter)}</h3><div class="legacy-ending"><h3>No settlement was recorded</h3><p>${text(current.unresolvedReason)}</p><p>The Legacy ended without a choice and neither sibling won. Nothing from this estate was inherited, and no business payment was made for it. ${current.invested} Capital spent before the division remains spent.</p></div><canvas id="legacyUnresolvedCanvas" width="600" height="600" aria-label="Final attempted estate"></canvas>${decisionFactsHtml(attempts)}${fundingFactsHtml(facts)}${meaningfulFactsHtml(facts)}<button class="btn-secondary" data-legacy="ledger">Back to Family Legacy</button>`;
         const canvas=document.getElementById('legacyUnresolvedCanvas');RENDER.renderSnapshot(canvas,{...board,phase:PHASE.CHOOSE,cutNodes:[]});
     }
     function restoreGame(saved) {
@@ -15577,12 +15636,12 @@ const LEGACY = (() => {
     function chapterNewRule(round) {
         const q=developmentIncome(DEVELOPMENT.quarry),lg=developmentIncome(DEVELOPMENT.logging);
         return {
-            1:`Shape the land together first: Water and Road tiles, untimed, then Build as usual. Pieces that sit beside the right neighbours in the same plot form a <strong>holding</strong>, which pays Capital after each estate to whoever inherits it. There is no Capital to spend yet.`,
+            1:`Shape the land together first: Water and Road tiles, untimed, then Build as usual. Pieces that work together in the same plot (crops beside a barn, vines beside a winery) form a <strong>business</strong>, which pays Capital to whoever inherits it after each estate. There is no Capital to spend yet.`,
             2:`This is the only estate where each sibling may name one family item they care about. It changes no value or rule. Any Capital held can be spent after Build, before roles are decided.`,
-            3:`Capital earned by holdings is spent here, after Build and before roles are decided. As the most Capital a sibling has ever held rises, more pieces become available to them. Whoever inherits a purchased piece's square owns it, whoever paid.`,
-            4:`Coastal or riverside land. Squares near the water are worth more, and a fence that cuts a square off from the water lowers it. Connected access roads add value.`,
+            3:`Capital your businesses have paid is spent here, after Build and before roles are decided. As the most Capital a sibling has ever held rises, more pieces become available to them. Whoever inherits a purchased piece's square owns it, whoever paid.`,
+            4:`Coastal or riverside land. Squares near the water are worth more, and a fence that puts the water on the other side lowers them. Connected access roads add value on either side of a fence: where the fence crosses a road there is a gate.`,
             5:`Rock and managed woodland are sites. A <strong>Quarry</strong> needs two adjacent Rock squares and pays ${q} Capital twice; a <strong>Logging Operation</strong> needs three connected Managed Woodland squares and pays ${lg} Capital three times, if inherited intact. They become available at ${DEVELOPMENT.quarry.cost} and ${DEVELOPMENT.logging.cost} Capital held.`,
-            6:`The last estate. After this division the result stands. Each sibling's final wealth is inherited Property, unspent Capital, and the next three holding payments.`,
+            6:`The last estate. After this division the result stands. Each sibling's final wealth is inherited Property, unspent Capital, and the next three business payments.`,
         }[round]||'';
     }
     function showChapterCard() {
@@ -15590,7 +15649,7 @@ const LEGACY = (() => {
         const fresh=STATE.phase===PHASE.TERRAIN||(STATE.phase===PHASE.BUILD&&!campaign.current.investmentOpened&&STATE.pool.length===CONFIG.PLACEMENT_COUNT);
         if(!fresh)return;
         const n=campaign.round,years=yearsPerEstate();
-        const carried=n>1?`<h4 class="legacy-record-kicker">What carries over</h4><div class="legacy-guide-grid">${campaign.players.map(p=>`<div class="legacy-guide-step"><strong>${text(p.name)}</strong><span>Property ${p.property}</span><span>Capital ${p.capital}</span><span>${p.holdings.filter(h=>h.active).length} ${p.holdings.filter(h=>h.active).length===1?'holding paying':'holdings paying'}</span></div>`).join('')}</div>`:'';
+        const carried=n>1?`<h4 class="legacy-record-kicker">What carries over</h4><div class="legacy-guide-grid">${campaign.players.map(p=>`<div class="legacy-guide-step"><strong>${text(p.name)}</strong><span>Property ${p.property}</span><span>Capital ${p.capital}</span><span>${p.holdings.filter(h=>h.active).length} ${p.holdings.filter(h=>h.active).length===1?'business paying':'businesses paying'}</span></div>`).join('')}</div>`:'';
         const dismiss=()=>{
             campaign.current.chapterCardSeen=true;
             if(n>=5)campaign.guidance.resourcePrimerSeen=true;
@@ -15600,7 +15659,7 @@ const LEGACY = (() => {
         TUTORIAL.openCard({
             eyebrow:`Estate ${n} of 6${n>1?` · about ${years} years later`:''}`,
             title:chapters[n-1],
-            body:`<p>${text(CHAPTER_COPY[n-1])}</p><h4 class="legacy-record-kicker">${n===1?'How Family Legacy works':'What is new here'}</h4><p>${chapterNewRule(n)}</p>${carried}`,
+            body:`${n===1?`<p>${text(LEGACY_PROLOGUE)}</p>`:''}<p>${text(CHAPTER_COPY[n-1])}</p><h4 class="legacy-record-kicker">${n===1?'How Family Legacy works':'What is new here'}</h4><p>${chapterNewRule(n)}</p>${carried}`,
             primary:{label:n===1?'Shape the land':'Begin the estate',action:dismiss},
             ghost:{label:'Campaign rules',action:()=>{dismiss();showCampaignRules();}},
         });
@@ -15673,7 +15732,8 @@ const LEGACY = (() => {
         data=upgradeSave(data);
         const fail=()=>{throw new Error('This is not a valid current Family Legacy save. Your current game has not been changed.');};
         if(data?.format===FORMAT&&data?.implementationStage<7)throw new Error('This save predates the factual campaign history and cannot be loaded into the current Family Legacy. Start a new Legacy to use the complete chronicle.');
-        if(!data||data.format!==FORMAT||data.version!==18||data.implementationStage!==18)fail();
+        if(data?.format===FORMAT&&data?.version===18)throw new Error('This Legacy was recorded before fences had gates, when a fence could cut a road. Its estates cannot be rescored under the current rule. Start a new Legacy.');
+        if(!data||data.format!==FORMAT||data.version!==19||data.implementationStage!==19)fail();
         const c=data.campaign,g=data.game,s=g?.state;
         const number=v=>Number.isFinite(v)&&v>=0&&v<=1e7;
         const signedNumber=v=>Number.isFinite(v)&&Math.abs(v)<=1e7;
@@ -15886,12 +15946,12 @@ const LEGACY = (() => {
     }
     function holdingsPreviewHtml(holdingsByPlayer) {
         const cards=holdingsByPlayer.flatMap((groups,i)=>groups.map((group,index)=>holdingCard(group,i,campaign.players[i].name,index))).join('');
-        return cards?`<h3>Holdings this division would create</h3><p class="comparison-note">Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.</p><div class="legacy-holdings">${cards}</div>`:`<h3>Holdings this division would create</h3><p class="body">This division creates no new holding that earns Capital.</p>`;
+        return cards?`<h3>Businesses this division would create</h3><p class="comparison-note">Dashed outlines show connected productive assets. Development badges mark fixed-payment developments.</p><div class="legacy-holdings">${cards}</div>`:`<h3>Businesses this division would create</h3><p class="body">This division creates no new business that earns Capital.</p>`;
     }
     function finalProjectionHtml(projection=campaign.current?.finalProjection) {
         if(!projection)return '';
         const rows=projection.players.map((player,i)=>`<tr><th scope="row">${text(campaign.players[i].name)}</th><td>${player.property}</td><td>${player.capital}</td><td>${player.currentRoundIncome}</td><td>${player.futureIncome}</td><td><strong>${player.projected}</strong></td></tr>`).join('');
-        return `<h3>Final wealth after this estate</h3><div class="legacy-scroll"><table class="legacy-table"><thead><tr><th>Sibling</th><th>Property</th><th>Capital after Estate 6</th><th>Paid now</th><th>Next 3 payments</th><th>Final wealth</th></tr></thead><tbody>${rows}</tbody></table></div><p class="comparison-note">Any holding inherited here pays once immediately. That payment is already included in Capital after Estate 6; final wealth then adds the next three payments.</p>`;
+        return `<h3>Final wealth after this estate</h3><div class="legacy-scroll"><table class="legacy-table"><thead><tr><th>Sibling</th><th>Property</th><th>Capital after Estate 6</th><th>Paid now</th><th>Next 3 payments</th><th>Final wealth</th></tr></thead><tbody>${rows}</tbody></table></div><p class="comparison-note">Any business inherited here pays once immediately. That payment is already included in Capital after Estate 6; final wealth then adds the next three payments.</p>`;
     }
     function renderAccountingPreview() {
         const el=document.getElementById('legacyAccountingPreview');
