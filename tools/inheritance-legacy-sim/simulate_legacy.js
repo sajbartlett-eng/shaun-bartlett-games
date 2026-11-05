@@ -160,6 +160,20 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
       if (!UI.el.rpsRoleButtons.hidden) { const w = STATE.rpsWinnerIdx; const pref = policyOf(w).role; const role = pref === 'random' ? (rng() < 0.5 ? 'cutter' : 'chooser') : pref; (role === 'cutter' ? UI.el.rpsCutBtn : UI.el.rpsChooseBtn).click(); continue; }
     }
     if (top === 'passOverlay') { UI.el.passContinueBtn.click(); continue; }
+    if (top === 'tutorialOverlay') { UI.el.tutorialPrimaryBtn.click(); continue; }
+    if (top === 'legacyFacesOverlay') {
+      // A face from the estate's result for whoever is being asked: ahead by 3 or more delighted, ahead content,
+      // level flat, behind upset, behind by 3 or more angry. Scripted feeling, so the record strip has data.
+      const c = campaignState();
+      const asked = document.getElementById('legacyFacesTitle').textContent.trim();
+      const idx = c.players.findIndex(p => p.name === asked);
+      const picker = STATE.choiceActor === 'cutter' ? STATE.cutterIdx : STATE.chooserIdx;
+      const mine = (idx === picker) === (STATE.chosenPlotId === 'A') ? STATE.outcome.scoreA.total : STATE.outcome.scoreB.total;
+      const theirs = STATE.outcome.scoreA.total + STATE.outcome.scoreB.total - mine;
+      const d = mine - theirs, face = d >= 3 ? 4 : d > 0 ? 3 : d === 0 ? 2 : d > -3 ? 1 : 0;
+      if (!clickButton(`[data-legacy-face="${face}"]`)) { log.errors.push('faces overlay stuck'); break; }
+      continue;
+    }
     if (top === 'revealOverlay') { ESTATE_REVIEW.finishReveal(); continue; }
     if (top === 'meaningfulOverlay') { FLOW.confirmMeaningfulDefault(); continue; }
     if (top === 'finalOverlay') {
@@ -264,6 +278,12 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
   log.history = c.history.map(h => ({ round: h.round, scores: h.scores, winner: h.winner, capitalAfter: h.capitalAfter, income: (h.incomePayments || []).reduce((s, x) => s + x.amount, 0), holdingsAwarded: (h.holdingsAwarded || []).map(g => g.length), invested: h.investedBy }));
   log.finalResult = c.finalResult ? c.finalResult.players.map(p => ({ property: p.property, capital: p.capital, futureIncome: p.scheduledIncome, projected: p.projected })) : null;
   log.totals = c.totals;
+  try { log.save = localStorage.getItem('inheritance.familyLegacy.current'); } catch (e) { log.save = null; }
+  // What could have been, by the game's own ledger (the fairest fence per estate is solved in the background; wait for it).
+  await LEGACY.ensureFairestGaps();
+  const w = LEGACY.couldHaveBeen();
+  log.couldHaveBeen = { total: w.total, gap: w.gap, potential: w.potential, lost: w.lost, losses: w.losses,
+    estates: w.estates.map(e => ({ round: e.round, fence: e.fence, dividedLost: e.dividedLost, unspentLost: e.unspentLost, fenceGap: e.fenceGap, fairestGap: e.fairest ? e.fairest.gap : null, chosenSmaller: e.chosenSmaller, gapAfter: e.gapAfter })) };
   return log;
 };
 
@@ -296,6 +316,16 @@ function summarise(profileName, runs) {
     investment: { phases: investPhases.length, siblingSkippedForNoCapital: pct(skipped.filter(Boolean).length, skipped.length), purchasesPerCampaign: mean(ok.map(r => r.investPhases.reduce((s, p) => s + p.bought[0].length + p.bought[1].length, 0))), capitalSpentPerCampaign: mean(ok.map(r => r.totals.invested)) },
     holdings: { groupsOnBoardBeforeCut: mean(groupsBefore), groupsSurvivingCut: mean(groupsAfter), survivalPct: pct(groupsAfter.reduce((a, b) => a + b, 0), groupsBefore.reduce((a, b) => a + b, 0)), holdingsPerSiblingAtEnd: mean(ok.flatMap(r => r.players.map(p => p.holdings))) },
     gap: { meanWealthGapAfterEstate1: mean(gapAfter1), meanFinalWealthGap: mean(finalGap), arcs: { closed: pct(arcs.filter(a => a === 'closed').length, arcs.length), steady: pct(arcs.filter(a => a === 'steady').length, arcs.length), widened: pct(arcs.filter(a => a === 'widened').length, arcs.length) } },
+    couldHaveBeen: (() => {
+      const ws = ok.map(r => r.couldHaveBeen).filter(Boolean), es = ws.flatMap(w => w.estates), known = es.filter(e => e.fairestGap !== null);
+      return {
+        meanFamilyWealth: mean(ws.map(w => w.total)), meanCouldHaveHeld: mean(ws.map(w => w.potential)), meanLost: mean(ws.map(w => w.lost)),
+        lostPctOfPotential: pct(ws.reduce((s, w) => s + w.lost, 0), ws.reduce((s, w) => s + w.potential, 0)),
+        losses: { fence: mean(ws.map(w => w.losses.fence)), holdingsDivided: mean(ws.map(w => w.losses.divided)), lostEstates: mean(ws.map(w => w.losses.lostEstates)), unspent: mean(ws.map(w => w.losses.unspent)) },
+        fairestKnownPct: pct(known.length, es.length), meanFairestGap: mean(known.map(e => e.fairestGap)), meanFenceGap: mean(known.map(e => e.fenceGap)),
+        fenceAtFairestPct: pct(known.filter(e => e.fenceGap === e.fairestGap).length, known.length),
+      };
+    })(),
     wealth: { meanFinal: mean(ok.flatMap(r => r.finalResult.map(p => p.projected))), meanProperty: mean(ok.flatMap(r => r.finalResult.map(p => p.property))), meanCapital: mean(ok.flatMap(r => r.finalResult.map(p => p.capital))), siblingAWinsPct: pct(ok.filter(r => r.finalResult[0].projected > r.finalResult[1].projected).length, ok.length), tiesPct: pct(ok.filter(r => r.finalResult[0].projected === r.finalResult[1].projected).length, ok.length) },
   };
 }
@@ -307,6 +337,13 @@ function markdown(summaries) {
   lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const s of summaries) {
     lines.push(`| ${s.profile} | ${s.completed} | ${s.choice.lowerPropertyPlotWasBetter.pct}% of ${s.choice.decisions} | ${r1(s.choice.lowerPropertyPlotWasBetter.meanMargin)} (max ${s.choice.lowerPropertyPlotWasBetter.maxMargin}) | ${s.choice.chooserTookLongTermBetter}% | ${s.choice.chooserTookSmallerProperty}% | ${Math.round(s.income.shareOfFinalWealth * 100)}% | ${s.investment.siblingSkippedForNoCapital}% | ${s.holdings.survivalPct}% | ${s.gap.arcs.closed} / ${s.gap.arcs.steady} / ${s.gap.arcs.widened} | ${r1(s.gap.meanFinalWealthGap)} | ${s.wealth.siblingAWinsPct}% | ${s.choice.estatesConceded}% |`);
+  }
+  lines.push('', '## What could have been', '', 'Family wealth is both siblings\' final wealth together. "Could have held" adds back the four losses the game can account for: Property not inherited because of the fence, payments from holdings the fence divided, estates that left the family, and the best available purchase a sibling with Capital did not make. The fairest fence is the solver\'s smallest possible gap on that estate; "not available" estates are too large for the plot-by-plot search.', '');
+  lines.push('| Profile | Family wealth | Could have held | Lost | Lost % | Fence | Holdings divided | Lost estates | Unspent Capital | Fairest known | Mean fairest gap | Mean fence gap | Fence at fairest |');
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+  for (const s of summaries) {
+    const c = s.couldHaveBeen;
+    lines.push(`| ${s.profile} | ${r1(c.meanFamilyWealth)} | ${r1(c.meanCouldHaveHeld)} | ${r1(c.meanLost)} | ${c.lostPctOfPotential}% | ${r1(c.losses.fence)} | ${r1(c.losses.holdingsDivided)} | ${r1(c.losses.lostEstates)} | ${r1(c.losses.unspent)} | ${c.fairestKnownPct}% | ${r1(c.meanFairestGap)} | ${r1(c.meanFenceGap)} | ${c.fenceAtFairestPct}% |`);
   }
   lines.push('', '## Per profile', '');
   for (const s of summaries) {
@@ -344,6 +381,9 @@ function makeRngSrc() {
     summaries.push(summarise(YEARS === 5 ? name : `${name} @ ${YEARS}y`, runs));
   }
   const tag = YEARS === 5 ? '' : `-${YEARS}y`;
+  const keep = all.find(r => r.status === 'complete' && r.save);
+  if (keep) fs.writeFileSync(path.join(OUT, `save${tag}.json`), keep.save);
+  all.forEach(r => { delete r.save; });
   fs.writeFileSync(path.join(OUT, `runs${tag}.json`), JSON.stringify(all));
   fs.writeFileSync(path.join(OUT, `summary${tag}.json`), JSON.stringify(summaries, null, 1));
   fs.writeFileSync(path.join(OUT, `RESULTS${tag}.md`), markdown(summaries));
