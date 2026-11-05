@@ -206,3 +206,82 @@ def summary(R=None):
         if v != 'A' and 'A' in out:
             out[v]['changed'] = [n for n in CARDS if out[v]['verdicts'].get(n) != out['A']['verdicts'].get(n)]
     return out
+
+
+# ---- the PDF ------------------------------------------------------------------------------------------
+
+def _table(head, rows):
+    h = ''.join(f'<th>{x}</th>' for x in head)
+    b = ''.join('<tr>' + ''.join(f'<td>{x}</td>' for x in r) + '</tr>' for r in rows)
+    return f'<table><thead><tr>{h}</tr></thead><tbody>{b}</tbody></table>'
+
+
+def html(S, findings, recommendation, notes=''):
+    V = list(VARIANTS)
+    pct = lambda x: f'{100 * x:.0f}%'
+    f2 = lambda x: '' if x is None else f'{x:.2f}'
+    f1 = lambda x: '' if x is None else f'{x:.1f}'
+    parts = []
+    parts.append('<h2>1. Who contests, and from where</h2><p>Shots in the play-outs (All-Star v All-Star, 2 seeds '
+                 'from each of the 16 cards and the golden position). Under A the category is descriptive (by rim '
+                 'distance, the measure the current −3 uses); there a contest is "clean" or a foul roll by facing.</p>')
+    parts.append(_table(['Variant', 'Shots', 'Front', 'Side', 'Behind', 'No eligible contester', 'Contest declined'],
+                        [[NAMES[v], S[v]['shots']] + [pct(S[v]['share'][c]) for c in ('front', 'side', 'behind', 'none', 'declined')] for v in V]))
+    parts.append('<h2>2. Foul rolls and and-ones</h2>')
+    parts.append(_table(['Variant', 'Contest foul rolls / possession', 'Fouls given / possession', 'And-ones / possession'],
+                        [[NAMES[v], f2(S[v]['per_poss']['foul_rolls']), f2(S[v]['per_poss']['fouls']), f2(S[v]['per_poss']['and_ones'])] for v in V]))
+    parts.append('<h2>3. Passing lanes and drives</h2><p>A Dribble is how a ball carrier crosses an adjacent '
+                 'defender\'s arrow line, so Dribbles per possession is the measure of drives the lines force.</p>')
+    parts.append(_table(['Variant', 'Interceptions tried / possession', 'Interceptions won / possession', 'Dribbles / possession'],
+                        [[NAMES[v], f2(S[v]['per_poss']['icpt_tried']), f2(S[v]['per_poss']['icpt_won']), f2(S[v]['per_poss']['dribbles'])] for v in V]))
+    parts.append('<h2>4. Possession value and bands</h2><p>Solver values: the 16 cards at a short budget (one '
+                 'complete search level, seed 0) and the golden position (seeds 0 and 1). Play-out values are '
+                 'the points scored.</p>')
+    bands = ['Excellent', 'Great', 'Good', 'Okay', 'Poor']
+    parts.append(_table(['Variant', 'Cards: mean value', 'Golden (2 seeds)', 'Play-outs: mean points'] + [f'Cards {b}' for b in bands],
+                        [[NAMES[v], f1(S[v]['card_value']), ' / '.join(f1(x) for x in S[v]['golden']), f1(S[v]['play_value'])]
+                         + [S[v]['card_bands'].get(b, 0) for b in bands] for v in V]))
+    parts.append('<h2>5. Plan change rate (the context test)</h2><p>Each card re-solved with the two other matchups '
+                 'round 2 used; the rate is how often the best first play changes. Lower means the card\'s plan '
+                 'depends less on who is playing.</p>')
+    parts.append(_table(['Variant', 'Plan change rate', 'Pairs'], [[NAMES[v], pct(S[v]['context_rate'] or 0), S[v]['context_pairs']] for v in V]))
+    parts.append('<h2>6. How shot reactions were spent</h2>')
+    parts.append(_table(['Variant', 'Reaction actions', 'Turning on the spot', 'Moving', 'Other (steal)'],
+                        [[NAMES[v], S[v]['reacts'], pct(S[v]['react_turn']), pct(S[v]['react_move']),
+                          pct(max(0.0, 1 - S[v]['react_turn'] - S[v]['react_move'])) if S[v]['reacts'] else '0%'] for v in V]))
+    parts.append('<h2>7. Card verdicts that change from A</h2>')
+    rows = []
+    for n in CARDS:
+        a = S['A']['verdicts'].get(n, '')
+        rows.append([n, a] + [S[v]['verdicts'].get(n, '') + (' *' if S[v]['verdicts'].get(n) != a else '') for v in V[1:]])
+    parts.append(_table(['Card', 'A'] + [NAMES[v] for v in V[1:]], rows))
+    parts.append('<p>* differs from A. At this budget the two seeds agree on '
+                 + ', '.join(f'{S[v]["seeds_agree"]}/16 ({v})' for v in V) + ' verdicts.</p>')
+    css = ('body{font-family:Helvetica,Arial,sans-serif;font-size:11px;margin:28px;color:#1d1b18}'
+           'h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;margin:18px 0 6px}'
+           'table{border-collapse:collapse;width:100%;margin:4px 0 8px}th,td{border:1px solid #bbb;padding:3px 6px;text-align:left}'
+           'th{background:#eee}.box{border:2px solid #1d1b18;padding:8px 10px;margin:10px 0}')
+    return (f'<!doctype html><html><head><meta charset="utf-8"><title>Rule test 3h</title><style>{css}</style></head><body>'
+            f'<h1>Step 3h: wedge and positional contests, a short comparison</h1>'
+            f'<p>Four variants, built as engine settings and not adopted. Short budget: one complete solver level '
+            f'per position (10 s budget), 2 seeds; play-outs at the computer\'s 0.5 s budget.</p>'
+            f'<div class="box"><b>Findings.</b> {findings}</div><div class="box"><b>Recommendation.</b> {recommendation}</div>'
+            + ''.join(parts) + (f'<h2>Notes</h2><p>{notes}</p>' if notes else '') + '</body></html>')
+
+
+def write_pdf(findings, recommendation, notes='', path=None):
+    S = summary()
+    docs = os.path.join(os.path.dirname(RESULTS), 'docs')
+    path = path or os.path.join(docs, 'Rule_Test_3h.pdf')
+    h = html(S, findings, recommendation, notes)
+    hp = path.replace('.pdf', '.html')
+    open(hp, 'w').write(h)
+    import subprocess
+    js = os.path.join(RESULTS, '_pdf.js')
+    open(js, 'w').write("const { chromium } = require('playwright'); (async () => { const [s, o] = process.argv.slice(2); "
+                        "const b = await chromium.launch(); const p = await b.newPage(); await p.goto('file://' + s); "
+                        "await p.pdf({ path: o, format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', "
+                        "left: '10mm', right: '10mm' } }); await b.close(); })();")
+    subprocess.run(['node', js, hp, path], check=True)
+    os.remove(js)
+    return path, S

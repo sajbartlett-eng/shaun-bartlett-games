@@ -416,6 +416,19 @@ the last says **OK: your turn**. Nothing still to come is shown, so you can try 
 (a steal? another help defender moving?) before you press OK. The timer, if on, waits until your turn
 is on the board. Each feed entry carries a small board snapshot (`board_json` in `view.py`) for this.
 
+## Rule settings under test (step 3h, not adopted)
+
+Two settings in `rules_config.py`, off by default, for the designer to compare (`docs/Rule_Test_3h.pdf`,
+draft rulebook wording in `docs/Step3h_rulebook_drafts.md`):
+- `arrow_mode`: `'single'` (now) or `'wedge'`. A wedge is two arrow lines 45° apart, and every arrow
+  rule uses either line.
+- `contest_geometry`: `'current'` (now), `'wedge_mirror'` or `'rim_distance'`. With either new value,
+  facing gates the contest. Position then sets its quality: Front is a full contest, Side a foul roll,
+  and Behind a foul roll plus the −3.
+
+`geometry.py` answers every arrow and contest question for the rules, the computer and the solver. With
+the defaults everything is as before: the golden solver search is identical (`tests/test_wedge.py`).
+
 ## Decision timer (step 3d, optional)
 
 Off by default. The table game slows decisions far below basketball pace; the timer brings some

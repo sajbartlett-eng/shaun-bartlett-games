@@ -109,6 +109,15 @@ Evidence is in `SOLVER_REPORT.md` and `solver_results/runs.json`. Priority label
 | 57 | **An open shot by a shooter without a ▲ is not one of the six states.** Numbers counts only ▲ shooters, and a lone defender who simply can't get there is neither a bad closeout nor a spent defence. | D7D923 possession 1: the sprint to K4 scores as an advantage only through Spent defence (X3 had used his Move). The shot plays still value any open look directly, so the computer takes it, but a play that creates one isn't credited as an advantage. | Fidelity of the computer's search | **Designer ruling:** add "open look" (nobody can reach a contest) as a seventh state? |
 | 58 | **Spent defence: "the likely closeout defender".** | Taken as the defender nearest the shooter. With two defenders at the same distance the lower number is used. | Legibility | None unless a different reading is intended. |
 
+## I. Wedge and positional contests (step 3h, a rule test)
+
+| # | Finding | Evidence | Affects | What to decide |
+|---|---|---|---|---|
+| 59 | **On this grid the rim square is never contested from the Side.** The spec expects a shooter on I2 to meet Side or Behind contests. Distance to the rim is counted in king moves, so every neighbour of I2 is 1 away and the shooter 0: under `rim_distance` all eight neighbours are Behind. Under `wedge_mirror` a defender must face the shooter, so the rim (the shooter's own square) lies in the forward wedge: also Behind. | `test_a_shooter_on_the_rim_square_never_meets_a_front_contest` | Legibility, the foul and the −3 at the rim | **Designer ruling:** is every contest at the rim meant to be Behind (a foul roll and −3), or should a defender level with the shooter (H2, J2) count as Side? |
+| 60 | **King-move distance makes many contests Side under `rim_distance`.** A defender diagonally beside the shooter is often level with him by king moves, so the "same distance" band is wide. | `geometry.category`; see the comparison PDF for the share of Side contests. | Legibility, foul-roll frequency | **Designer ruling:** king moves (as the −3 rule counts now), or straight-line distance, which makes Side rarer? |
+| 61 | **`wedge_mirror` edges and the defender on the rim square.** A rim square exactly on a wedge edge counts as inside (the spec). A defender standing on I2 has no direction to the rim; the engine calls him Front (between shooter and basket). | `geometry.category` | Legibility | Confirm both readings. |
+| 62 | **A Sprint's wedge.** The run direction is one edge, and the defender chooses the side of the other. A Sprint straight at the shooter therefore always faces him, and the choice of side decides Front or Side under `wedge_mirror`. | `actions.movement_actions`, `resolve` | Player agency | None, unless the choice should be fixed (for example, always the side toward the rim). |
+
 ## F. Playtest build (steps 3 and 3b)
 
 Legibility questions raised by the interface; none changes a rule.
