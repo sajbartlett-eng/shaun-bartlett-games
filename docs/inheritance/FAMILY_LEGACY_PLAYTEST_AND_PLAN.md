@@ -44,7 +44,7 @@ Findings are tagged by the tier they fall under: **F** fidelity, **N** neutralit
 
 **12. "Six estates recorded" is a good ending in the wrong order.** The ledger leads with the family total against the unreachable bound, then shared achievements, shared costs, individual distinctions, and only then "The family history", collapsed. The chronicle is the story; it should be the headline. Screenshot 07. **L**
 
-**13. The income lever may be too small to carry the campaign's central choice.** The campaign's premise is that "the most valuable plot now may not be the best choice across the Legacy". In this run holding income decided 12 of a 23-point final gap and was never large enough to make the lower-Property plot the better choice. One run is not a measurement, and the driver bought only cheap pieces. It is enough to say the premise has not been checked. **F**
+**13. The campaign's central choice is real, and the chooser cannot see it.** The premise is that "the most valuable plot now may not be the best choice across the Legacy", and the run bears it out. In Estate 4 Ada chose Plot B at 36 Property; Plot A was 33 and carried two holdings, Working Farm and Connected Vineyard, each paying 1 Capital three times. Plot A was worth 39 across the Legacy against 36. The lower-Property plot was the better choice by 3 and the chooser took the other one. Nothing on the Choose screen told her: Property totals are rightly hidden, but which holdings each plot would carry, and what they pay, is structure on the board that the game already knows and shows only after the choice. With payments of 1, 2 or 3 Capital three times, a grade C holding outweighs a Property gap of up to 2, grade B up to 5, grade A up to 8, and a Quarry or Logging Operation 6. **F, A, L**
 
 What worked and should not be touched: the Meaningful Assets primer in Estate 2 (clear, placed at the right moment, and the story it produces is good), the between-estates "What changed" table, the position summary, "Paying does not mean you own it" as a rule, the save and backup flow, and the consequence replay, which ran correctly on every estate.
 
@@ -52,11 +52,13 @@ What worked and should not be touched: the Meaningful Assets primer in Estate 2 
 
 ### Tier 1: System Fidelity
 
-**P1. Measure the economy before polishing it.** Build a campaign simulator in the repository (the Playmaker solver programme is the model): seeded campaigns, scripted sibling policies (greedy chooser, holding-builder, saver, spender), 200 runs. Report: income as a share of final wealth, how often a sibling reaches an investment phase with no Capital, how often a holding survives the fence, how often the higher-Property plot loses on final wealth. If the last number is near zero the premise is decorative and the income rule needs tuning before any screen is redesigned. Finding 13.
+**P1. Measure the economy to tune it, not to prove it.** Build a campaign simulator in the repository (the Playmaker solver programme is the model): seeded campaigns, scripted sibling policies (greedy chooser, holding-aware chooser, holding-builder, saver, spender), 200 runs. Report: how often the lower-Property plot is the better choice across the Legacy and by how much, income as a share of final wealth, how often a sibling reaches an investment phase with no Capital, how often a holding survives the fence, and how often the family closes its gap against how often it widens. The premise is confirmed by Estate 4 of the playtest; the numbers say how often the stakes bite and whether the payment schedule needs adjusting. Finding 13.
 
 **P2. Replace the unreachable ceiling with real quantities.** On results and in the ledger: value before the fence, Property inherited, Property lost to the fence, Capital spent. Keep the bound only in the "how these values are calculated" explainer, labelled as a bound. When a true best-division referee exists for neighbour-scored estates it can return as "fairest possible"; until then nothing on screen should read as a target. Finding 8.
 
 **P3. Account for every purchase.** After each estate, one line per purchase: what was paid, where it was placed, who inherited it, what Property it added, which holding it joined or formed and what that holding will pay. The ending's "7 inherited Property gained, of up to 11 possible" becomes the sum of lines the player has already read. Finding 5.
+
+**P16. Show each plot's holdings at the moment of choice.** During Choose in Family Legacy, beside the board: "Plot A carries Working Farm and Connected Vineyard: 1 Capital each after this estate and two more. Plot B carries no holding." Property totals stay hidden, as they must; the holdings are visible structure the game already draws after the choice. This is the campaign's central decision made legible at the only moment it can be made. Finding 13.
 
 **P4. Show the skipped turn.** When a sibling has no Capital at an investment phase, their screen says so, shows what the other sibling is buying as it happens, and states what their next unlock would cost. Finding 4.
 
@@ -96,7 +98,7 @@ Family Legacy is a story that could be real: a competitive, stressful situation 
 
 This changes the spine of the plan. The chronicle stops being the ending and becomes the thing every screen feeds.
 
-**E1. The face prompt.** After "Record inheritance", each sibling picks one face (angry, upset, flat, content, delighted, hysterical) and may add up to six words, the same cap Meaningful Assets uses. Entered one at a time with the phone passed, or on each device across a distance. Skipping is allowed and recorded as a dash. Rules that keep it inside the hierarchy: no number ever changes because of a face; no copy ever comments on a face ("you seem angry"); no award or distinction is ever computed from faces; faces are shown exactly as recorded, by the sibling's name, nowhere else. The game records; it never reacts. Faces carry a text label for screen readers and never rely on colour alone.
+**E1. The face prompt.** After "Record inheritance", each sibling picks one face (angry, upset, flat, content, delighted, hysterical). Faces only, no words: the ending paints the emotional journey from the faces beside the facts, and nobody is asked to write. Entered one at a time with the phone passed, or on each device across a distance. Skipping is allowed and recorded as a dash. Rules that keep it inside the hierarchy: no number ever changes because of a face; no copy ever comments on a face ("you seem angry"); no award or distinction is ever computed from faces; faces are shown exactly as recorded, by the sibling's name, nowhere else. The game records; it never reacts. Faces carry a text label for screen readers and never rely on colour alone.
 
 **E2. The gap thread.** Every estate record carries the Property gap and the wealth gap between the siblings before and after, and the facts that moved them: the cut's gap, which plot the chooser took and by how much, income paid, Capital spent. The one voluntary gap-closing act the system can observe is a chooser taking the lower-value plot; it is stated as a fact ("Ben took the smaller plot, by 4"), never as generosity. Cutters' intentions are not knowable and are not guessed at.
 
@@ -106,12 +108,12 @@ This changes the spine of the plan. The chronicle stops being the ending and bec
 
 **Recommended, and the designer's call.** Faces are entered privately and shown to both siblings immediately on the record screen. In a real family the unsaid feeling is the thing that breaks it, and a system about fairness between people should surface it. The alternative, hidden until the end, would test whether disclosure changes behaviour, and is a legitimate study design. Pick one deliberately.
 
-**What this does to P1.** The simulator now has a sharper question: can the system produce both arcs? Runs where the gap closes and runs where it breaks open, and a lower-Property choice that is sometimes the better choice for final wealth. If the income lever is too weak, the stress is theatre and the faces will all be flat. The stakes have to be real for the story to be.
+**What this does to P1.** The simulator's question is how often the system produces each arc, families that close the gap and families that break open, and how often the choice between Property now and income later actually bites. Estate 4 of the playtest shows it does; the simulator says how often, so the payment schedule can be tuned for stakes that are felt in most campaigns, not some.
 
 ## Build order
 
 1. **Instrument first (P1), with the arc question.** Half a day. Everything below is worth doing regardless, but P8 and any income tuning wait for its numbers.
-2. **The record screen with faces and the gap thread (E1, E2, E3), absorbing P11, P12, P2 and P5.** The spine of the narrative engine, and cheap: a prompt, a table, and the ceiling retired.
+2. **The record screen with faces and the gap thread (E1, E2, E3), absorbing P11, P12, P2 and P5, and holdings visible at Choose (P16).** The spine of the narrative engine, and cheap: a prompt, a table, the ceiling retired, and the central decision made visible.
 3. **Cards and primers (P9, P10) and the layout fixes (P14).** So the story has a beginning and nobody meets a rule unannounced.
 4. **The chronicle as the ending, downloadable and shareable (E4, P13, P15).**
 5. **The investment screen (P6, P7, P4, P3).** The campaign's real lever, presented as one.
