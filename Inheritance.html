@@ -2997,6 +2997,13 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
                                 <span class="desc">Shows exact land-value numbers on the board instead of relying only on colour and the legend. Does not change scoring.</span>
                             </span>
                         </button>
+                        <button type="button" class="option-card" data-option="animate" aria-pressed="false">
+                            <span class="check"></span>
+                            <span class="label">
+                                <span class="title">Animate the estate</span>
+                                <span class="desc">Pieces move only when the rule that gives them value is met: a mill turns beside crops, cars use a road that serves a house, a workshop works in a property with occupants. Off by default when your device asks for reduced motion. Does not change scoring.</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3459,6 +3466,7 @@ const DEFAULT_SETTINGS = Object.freeze({
     meaningful: false,
     lightning: false,
     showLandValues: false,
+    animate: !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
 });
 
 const PHASE_TRANSITIONS = Object.freeze({
@@ -6136,7 +6144,7 @@ const RENDER = (() => {
     // final. Reduced motion turns them all off.
     const FX = {
         items: [], frame: null,
-        reduced: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        get reduced() { return !STATE || !STATE.settings || STATE.settings.animate === false; },
         lastGrid: null, lastTotals: null, lastCut: false, lastChosen: null, lastPhase: null,
     };
     const ease = t => 1 - Math.pow(1 - t, 3);
@@ -6174,8 +6182,9 @@ const RENDER = (() => {
     function ambientTime() { return AMBIENT.on && !snapshotRender ? performance.now() / 1000 : 0; }
     // What is alive on this board, by the rules that score it. A mill turns only
     // beside crops in its own plot; bees fly only beside an orchard or garden;
-    // a hammer strikes, a bucket rises and a hen pecks only beside something to
-    // work with; cars run on a road that reaches the outside and serves a house;
+    // a hammer strikes, a bucket rises and a hen pecks only in a property with
+    // occupants, a manor or cottage in the same plot (the whole estate before
+    // the fence); cars run on a road that reaches the outside and serves a house;
     // tractors on one that serves a working farm; the public main road always
     // carries traffic. Cut a mill off from its crops and it stops: the fence's
     // cost, visible. Recomputed only when the board changes.
@@ -6194,37 +6203,43 @@ const RENDER = (() => {
         const hasRelation = (c, r, kinds) => bt && neighboursOf(c, r).some(p => samePlot(c, r, p) && kinds.includes(grid[p.r][p.c]));
         const besideAsset = (c, r, kinds = null) => neighboursOf(c, r).some(p => samePlot(c, r, p) && GAME.isAssetKind(grid[p.r][p.c]) && (!kinds || kinds.includes(grid[p.r][p.c])));
         const farmAlive = (c, r) => bt && GAME.assetNeighbourBonus(c, r, grid, plotOf(c, r), true) > 0 && ['Y', 'S', 'C', 'V', 'O'].includes(grid[r][c]);
+        const dwellings = [];
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (GAME.isActiveCell(c, r, mask) && (grid[r][c] === 'G' || grid[r][c] === 'H')) dwellings.push({ c, r });
+        const occupied = (c, r) => { const set = plotOf(c, r); return dwellings.some(d => !set || set.has(`${d.c},${d.r}`)); };
         for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
             if (!GAME.isActiveCell(c, r, mask)) continue;
             const v = grid[r][c];
             let alive = false;
             if (v === 'M') alive = hasRelation(c, r, ['C']);
             else if (v === 'B') alive = hasRelation(c, r, ['O', 'D']);
-            else if (v === 'R' || v === 'W') alive = besideAsset(c, r);
-            else if (v === 'K') alive = besideAsset(c, r, ['C', 'D']);
+            else if (v === 'R' || v === 'W' || v === 'K') alive = occupied(c, r);
             if (alive) SCENE.alive.add(`${c},${r}`);
         }
         if (!terrain) return SCENE;
         // Roads: the networks that reach the outside, and who they serve.
         const accessible = GAME.terrainRoadAccessSet(null, terrain, mask);
         const isRoad = (c, r) => GAME.isActiveCell(c, r, mask) && terrain[r]?.[c] === 'road';
+        // The longest run of road reachable from the start: a vehicle drives the whole
+        // way up and back, which reads as traffic rather than a twitch.
         const routeToOutside = start => {
             const seen = new Map([[`${start.c},${start.r}`, null]]);
+            const depth = new Map([[`${start.c},${start.r}`, 0]]);
             const queue = [start];
+            let far = start;
             while (queue.length) {
                 const cur = queue.shift();
-                if (GAME.isEstateBoundaryCell(cur.c, cur.r, mask) && !(cur.c === start.c && cur.r === start.r)) {
-                    const path = []; let k = `${cur.c},${cur.r}`;
-                    while (k) { const [c, r] = k.split(',').map(Number); path.unshift({ c, r }); k = seen.get(k); }
-                    return path;
-                }
+                const ck = `${cur.c},${cur.r}`;
+                if (depth.get(ck) > depth.get(`${far.c},${far.r}`)) far = cur;
                 for (const n of neighboursOf(cur.c, cur.r)) {
                     const k = `${n.c},${n.r}`;
                     if (!isRoad(n.c, n.r) || seen.has(k)) continue;
-                    seen.set(k, `${cur.c},${cur.r}`); queue.push(n);
+                    seen.set(k, ck); depth.set(k, depth.get(ck) + 1); queue.push(n);
                 }
             }
-            return null;
+            if (far === start) return null;
+            const path = []; let k = `${far.c},${far.r}`;
+            while (k) { const [c, r] = k.split(',').map(Number); path.unshift({ c, r }); k = seen.get(k); }
+            return path;
         };
         const starts = new Set();
         const addVehicle = (kind, c, r, phase) => {
@@ -6452,8 +6467,14 @@ const RENDER = (() => {
         renderRuleSymbols(document.getElementById('rulesContent'));
     }, { passive: true });
 
+    // For support and tests: why the board is or is not moving right now.
+    function debugScene() {
+        const scene = sceneFor();
+        return { ambient: AMBIENT.on, active: ambientActive(), reduced: FX.reduced, phase: STATE.phase, timerRunning: STATE.timerRunning, overlay: UI.topOverlayKey ? UI.topOverlayKey() : null,
+            visibility: document.visibilityState, alive: [...scene.alive], vehicles: scene.vehicles.map(v => ({ kind: v.kind, length: v.path.length, loop: v.loop })) };
+    }
     ambientSchedule();
-    return { render, renderSnapshot, renderRuleSymbols, renderLegendSymbols, renderPhaseSymbols, assetIconSvg, canvas };
+    return { render, renderSnapshot, renderRuleSymbols, renderLegendSymbols, renderPhaseSymbols, assetIconSvg, debugScene, canvas };
 })();
 
 const PREVIEW = (() => {
@@ -7757,7 +7778,7 @@ const UI = {
     // A number that forms in front of the player, once it is final. 400 ms, then exact.
     countUp(el, to, ms = 400) {
         if (!el) return;
-        const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        const reduced = !STATE.settings || STATE.settings.animate === false;
         const target = Number(to);
         if (reduced || !Number.isFinite(target) || target <= 0) { el.textContent = String(to); return; }
         const start = performance.now();
@@ -13709,6 +13730,7 @@ const MATCH_MENU = {
             meaningful: false,
             lightning: false,
             showLandValues: !!settings.showLandValues,
+            animate: settings.animate !== false,
             computer: !!settings.computer,
             computerLevel: settings.computerLevel || 'line',
             opponent: ['remote', 'training'].includes(settings.opponent) ? settings.opponent : 'person',
