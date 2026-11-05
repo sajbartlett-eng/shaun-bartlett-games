@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What You Think</title>
+<style>
+  :root {
+    --paper: #f4f2ed;
+    --ink: #1a1815;
+    --night: #000;
+    --night-ink: #dcd8d0;
+    --quiet-light: #6b675f;
+    --quiet-dark: #77736c;
+    --faint-light: #a8a49c;
+    --faint-dark: #4a4844;
+    --rule-light: #d6d1c7;
+    --rule-dark: #292824;
+    --soft-dark: #918c84;
+    --meta-light: #8d8880;
+    --warn-dark: #5d5954;
+    --source-dark: #9a968e;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  body {
+    --bg: var(--night);
+    --fg: var(--night-ink);
+    --muted: var(--quiet-dark);
+    --faint: var(--faint-dark);
+    --rule: var(--rule-dark);
+    --action: var(--soft-dark);
+    --byline: var(--quiet-dark);
+    --opening-byline: var(--quiet-dark);
+    --meta: var(--faint-dark);
+    --warning: var(--warn-dark);
+    --source: var(--source-dark);
+    --source-gap: var(--warn-dark);
+    --input-rule: var(--faint-dark);
+    --focus-rule: var(--meta-light);
+
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.light {
+    --bg: var(--paper);
+    --fg: var(--ink);
+    --muted: var(--quiet-light);
+    --faint: var(--faint-light);
+    --rule: var(--rule-light);
+    --action: var(--quiet-light);
+    --byline: var(--faint-light);
+    --opening-byline: var(--meta-light);
+    --meta: var(--meta-light);
+    --warning: var(--quiet-light);
+    --source: var(--quiet-light);
+    --source-gap: var(--faint-light);
+    --input-rule: var(--rule-light);
+    --focus-rule: var(--quiet-light);
+  }
+
+  #stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+
+  #text {
+    max-width: 31.5ch;
+    width: 100%;
+    font-size: 1.34rem;
+    line-height: 1.66;
+    text-align: left;
+    opacity: 1;
+    transform: translateY(-5vh);
+  }
+
+  #text.out { opacity: 0; }
+
+  .ln {
+    display: block;
+    opacity: 1;
+    transition: opacity 700ms ease-in-out;
+  }
+
+  .ln + .ln { margin-top: 1.02em; }
+  .ln.pending { opacity: 0; }
+  .ln.inline { display: inline; }
+  .ln.inline + .ln.inline { margin-top: 0; }
+
+  .marker {
+    font-size: 0.76rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .title {
+    font-size: 2.15rem;
+    line-height: 1.12;
+    margin: 0 0 0.85rem;
+    font-weight: normal;
+    letter-spacing: -0.015em;
+  }
+
+  .byline,
+  .prompt {
+    margin: 0;
+    font-size: 0.84rem;
+    letter-spacing: 0.09em;
+    color: var(--byline);
+  }
+
+  .opening-byline {
+    font-size: 0.8rem;
+    letter-spacing: 0.035em;
+    color: var(--opening-byline);
+  }
+
+  .prompt { margin-top: 3.2rem; }
+
+  .warn {
+    margin: 1.5rem 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: var(--warning);
+    font-style: italic;
+  }
+
+  .duration {
+    margin: 0.45rem 0 0;
+    font-size: 0.76rem;
+    letter-spacing: 0.025em;
+    color: var(--meta);
+  }
+
+  body.asking,
+  body.summing,
+  body.doc {
+    overflow: auto;
+    touch-action: auto;
+  }
+
+  body.asking #stage,
+  body.summing #stage,
+  body.doc #stage {
+    align-items: flex-start;
+    height: auto;
+    min-height: 100%;
+    padding: clamp(3.75rem, 10vh, 6.5rem) 1.5rem 6rem;
+    cursor: default;
+  }
+
+  body.asking #text,
+  body.summing #text {
+    max-width: 31.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    transform: none;
+  }
+
+  .r-part,
+  .sum-head {
+    font-size: 0.69rem;
+    letter-spacing: 0.19em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .r-part { margin: 0 0 1.35rem; }
+  .sum-head { margin: 0 0 2rem; }
+
+  .r-prompt {
+    max-width: 25ch;
+    margin: 0 0 0.55rem;
+    font-size: 1.38rem;
+    line-height: 1.48;
+  }
+
+  .r-hint {
+    margin: 0 0 1.05rem;
+    font-size: 0.81rem;
+    line-height: 1.48;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .r-box,
+  .sum-box {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: none;
+    color: inherit;
+    border: 0;
+    border-bottom: 1px solid var(--input-rule);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.55;
+    resize: vertical;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .r-box {
+    min-height: 3.4rem;
+    padding: 0.45rem 0 0.65rem;
+    margin: 0 0 1.15rem;
+  }
+
+  .sum-box {
+    min-height: 4.4rem;
+    padding: 0.45rem 0 0.7rem;
+    margin: 0 0 2.3rem;
+  }
+
+  .r-box:focus,
+  .sum-box:focus {
+    outline: none;
+    border-bottom-color: var(--focus-rule);
+  }
+
+  .r-tools { margin: 0.15rem 0 0.8rem; }
+
+  .r-link {
+    display: block;
+    width: 100%;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0.55rem 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 0.055em;
+    color: var(--muted);
+    text-align: left;
+    cursor: pointer;
+    transition: color 250ms ease;
+  }
+
+  .r-link:hover { color: var(--fg); }
+  .r-link:focus-visible,
+  .btn:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 0.3rem;
+  }
+
+  .r-assist,
+  .r-source {
+    margin: 0.05rem 0 1.1rem;
+    padding: 0.85rem 0 0.05rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .r-assist { color: var(--muted); }
+  .r-source {
+    margin-bottom: 1.35rem;
+    padding-top: 1rem;
+    color: var(--source);
+  }
+
+  .r-assist[hidden],
+  .r-source[hidden] { display: none; }
+
+  .r-assist p {
+    margin: 0 0 0.55rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .r-assist p::before {
+    content: "·";
+    display: inline-block;
+    width: 0.9rem;
+    color: var(--faint);
+  }
+
+  .r-source-head {
+    margin: 0 0 1rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .r-source p {
+    max-width: 34ch;
+    margin: 0 0 0.78rem;
+    font-size: 0.9rem;
+    line-height: 1.56;
+  }
+
+  .r-source .r-source-gap { color: var(--source-gap); }
+
+  .r-review-title {
+    max-width: 28ch;
+    margin: 0 0 1.45rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+
+  .r-card {
+    margin: 0 0 1.35rem;
+    padding: 0 0 1.1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .r-card-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.67rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .r-card-label-revision { margin-top: 1rem; }
+
+  .r-card-text {
+    margin: 0;
+    font-size: 1.03rem;
+    line-height: 1.58;
+  }
+
+  .r-empty {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .r-edit-label {
+    display: block;
+    margin: 1.15rem 0 0.3rem;
+    font-size: 0.69rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .r-actions { margin-top: 1.5rem; }
+  .r-actions .btn { margin-right: 1.25rem; }
+
+  .btn {
+    display: inline-block;
+    min-height: 2.75rem;
+    margin: 0.65rem 0 0;
+    padding: 0.7rem 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    font: inherit;
+    font-size: 0.84rem;
+    line-height: 1.35;
+    letter-spacing: 0.075em;
+    color: var(--action);
+    text-align: left;
+    cursor: pointer;
+    transition: color 250ms ease, transform 250ms ease;
+  }
+
+  .btn:hover {
+    color: var(--fg);
+    transform: translateX(0.18rem);
+  }
+
+  .sum-close {
+    max-width: 29ch;
+    margin: 2.5rem 0 2.8rem;
+    font-size: 1.08rem;
+    line-height: 1.62;
+    color: var(--action);
+  }
+
+  .sum-ask {
+    max-width: 35ch;
+    margin: 0 0 0.85rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--action);
+    font-style: italic;
+  }
+
+  body.acting {
+    overflow: auto;
+    touch-action: auto;
+  }
+
+  body.acting #stage { cursor: default; }
+
+  .final-note {
+    max-width: 30ch;
+    margin: 1.8rem 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--action);
+  }
+
+  .final-actions { margin-top: 2.1rem; }
+
+  .final-actions .btn {
+    display: block;
+    width: auto;
+    margin: 0.1rem 0 0.35rem;
+    text-align: left;
+  }
+
+  .opening-actions { margin-top: 2.6rem; }
+  .opening-actions .btn { margin-bottom: 0; }
+
+  .start-note {
+    margin: -0.05rem 0 0.55rem;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    letter-spacing: 0.07em;
+    color: var(--faint);
+  }
+
+  .secondary-start {
+    opacity: 0.62;
+    font-size: 0.81rem;
+  }
+
+  .secondary-start:hover,
+  .secondary-start:focus-visible { opacity: 1; }
+
+  .save-note {
+    min-height: 1.2em;
+    margin: 0.7rem 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: var(--meta);
+  }
+
+  body.doc {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  body.doc #text {
+    max-width: 31.5ch;
+    font-size: 1.08rem;
+    line-height: 1.66;
+    transform: none;
+  }
+
+  .doc-head {
+    margin: 2.6rem 0 1.35rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .doc-head:first-child { margin-top: 0; }
+  .doc-p { margin: 0 0 1.22rem; }
+  .doc-gap { margin: 0 0 1.22rem; color: var(--faint); }
+  .doc-restart { margin-top: 3rem; }
+
+  @media (min-width: 700px) {
+    #stage {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+
+    #text {
+      max-width: 31ch;
+      font-size: 1.52rem;
+      transform: translateY(-5.5vh);
+    }
+
+    .title { font-size: 2.75rem; }
+
+    body.asking #text,
+    body.summing #text {
+      max-width: 32rem;
+      font-size: 1.03rem;
+      transform: none;
+    }
+
+    body.doc #text {
+      max-width: 31.5ch;
+      font-size: 1.16rem;
+      transform: none;
+    }
+  }
+
+  @media (max-height: 620px) {
+    #text { transform: translateY(-2.5vh); }
+
+    body.asking #text,
+    body.summing #text,
+    body.doc #text { transform: none; }
+
+    body.asking #stage,
+    body.summing #stage,
+    body.doc #stage { padding-top: 3.25rem; }
+  }
+</style>
+
+</head>
+<body class="light">
+<div id="stage">
+  <div id="text">
+    <p class="title">What You Think</p>
+    <p class="byline opening-byline">An interactive short story by Shaun Bartlett</p>
+    <p class="warn">For mature readers · Implied violence</p>
+    <p class="duration">Approx. 10 minutes</p>
+    <div class="final-actions opening-actions">
+      <button class="btn" id="start-interactive">Begin →</button>
+      <p class="start-note">Intended experience</p>
+      <button class="btn secondary-start" id="start-straight">Read straight through →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const TIMINGS = {
+    beat: { out: 380, gap: 220, in: 420 },
+    para: { out: 800, gap: 600, in: 800 },
+    long: { out: 900, gap: 2400, in: 900 },
+    break: { out: 900, gap: 3400, in: 1100 },
+    jolt: { out: 0, gap: 2600, in: 1100, jolt: true },
+    open: { out: 900, gap: 3200, in: 1100 }
+  };
+
+  const LINE_REVEAL = 1600;
+  const INLINE_REVEAL = 900;
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const BACKGROUND_HOLD = prefersReducedMotion ? 200 : 1600;
+  const BACKGROUND_FADE = prefersReducedMotion ? 1 : 2000;
+
+  const REFLECTIONS = [
+    { part: 1, prompt: "What do you think happened?" },
+    {
+      part: 2,
+      prompt: "What do you think happened here?",
+      review: "Do you still think Part 1 happened the way you thought it did?",
+      reviewParts: [1]
+    },
+    {
+      part: 3,
+      prompt: "What do you think happened here?",
+      review: "Do you still think the earlier parts happened the way you thought they did?",
+      reviewParts: [1, 2]
+    },
+    {
+      part: 4,
+      prompt: "What do you think happened?",
+      review: "Do you still think the beginning happened the way you thought it did?",
+      reviewParts: [1]
+    }
+  ];
+
+  const REFLECTION_PROMPTS = [
+    "What do you think happened?",
+    "What led you to that?",
+    "What detail matters most?"
+  ];
+
+  const PARTS = [
+    {
+      number: 1,
+      markerBackground: "light",
+      screens: [
+        { text: "Close your eyes.", timing: "para", background: "dark" },
+        { text: "Don't make a sound.", timing: "beat" },
+        { text: "We're playing hide and seek.", timing: "beat" },
+        { text: ["The sounds are not what you think.", "That's Daddy's car door closing.", "He's home from work."], timing: "para" },
+        { text: ["He hasn't called.", "Daddy always calls us."], timing: "long" },
+        { text: "Don't make a sound, Josie.", timing: "para" },
+        { text: ["I know where you went.", "Where you always go.", "Tucked away beneath your mountain of soft toys."], timing: "beat" },
+        { text: ["We pretend we don't know.", "But we do."], timing: "beat" },
+        { text: ["It's just a game.", "Right?"], timing: "long" },
+        { text: ["The banging.", "Your screams.", "It's part of the fun."], timing: "beat" },
+        { text: "Josie?", timing: "long" },
+        { text: ["I don't like this game anymore.", "This house is too small.", "We should have stayed together."], timing: "beat" },
+        { text: ["Josie...", "I'm sorry."], inline: true, timing: "para" },
+        { text: ["That's Daddy's car door.", "Do you hear it?"], timing: "long" },
+        { text: ["He'll find me first.", "We'll win."], timing: "beat" },
+        { text: "He'll wake up Mummy.", timing: "beat" },
+        { text: "“Daddy?”", timing: "open", background: "light", backgroundEarly: true },
+        { text: "Close your eyes.", timing: "long", background: "dark" },
+        { text: "It will be over soon.", timing: "long" }
+      ],
+      reference: [
+        [0], [1], [2], [3], null, [4], [5, 6, 7], null, [8, 9], null,
+        [10, 11], [12], null, [13, 14], [15], null, [16], null, [17], [18]
+      ]
+    },
+    {
+      number: 2,
+      markerBackground: "dark",
+      screens: [
+        { text: "Close your eyes.", timing: "para" },
+        { text: ["The sounds are not what you think.", "It's only the wind.", "There's nobody here with us."], timing: "para" },
+        { text: "“Are you okay?”", timing: "para" },
+        { text: "You still won't leave your mountain of soft toys.", timing: "para" },
+        { text: ["Daddy's not coming.", "He can't even look at me."], timing: "para" },
+        { text: ["I'll stay with you, Josie.", "I won't hide."], timing: "beat" },
+        { text: "“Here's your medicine.”", timing: "para" },
+        { text: "It will be over soon.", timing: "long" }
+      ],
+      reference: [[0], [1], [2], [3, 4, 5], [6], [7]]
+    },
+    {
+      number: 3,
+      markerBackground: "dark",
+      screens: [
+        { text: "Close your eyes.", timing: "para" },
+        { text: ["Josie, she's back.", "She's here to help us."], timing: "para" },
+        { text: ["Your soft toys are old and frayed, Josie.", "She's teaching me to fix them.", "I'll make you new ones."], timing: "para" },
+        { text: "“Open your eyes.”", timing: "long" },
+        { text: "I'll be back soon, Josie.", timing: "long", background: "light" }
+      ],
+      reference: [[0], [1], [2], [3], [4]]
+    },
+    {
+      number: 4,
+      markerBackground: "light",
+      screens: [
+        { text: "Close your eyes.", timing: "para", background: "dark" },
+        { text: ["Josie, we did it.", "You can go anywhere you like."], timing: "para" },
+        { text: ["Open your eyes.", "We have a customer."], timing: "para", background: "light" },
+        { text: "“Hello. Are you looking for a toy?”", timing: "para" },
+        { text: "They are familiar.", timing: "para" },
+        { text: "“Do you like to play Hide and Seek?”", timing: "para" },
+        { text: "Close your eyes.", timing: "long" },
+        { text: "It will be over soon.", timing: "long" }
+      ],
+      reference: [[0], [1], [2], [3], [4], [5], [6], [7]]
+    }
+  ];
+
+  const responses = REFLECTIONS.map(() => ({ initial: "", current: "", revisions: [] }));
+  const text = document.getElementById("text");
+  const stage = document.getElementById("stage");
+  const body = document.body;
+
+  let screens = [];
+  let interactive = true;
+  let screenIndex = -1;
+  let busy = false;
+  let timers = [];
+  let pendingLines = 0;
+  let mode = "title";
+  let finalStory = "";
+  let targetBackground = "light";
+  let backgroundTimer = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  const byId = id => document.getElementById(id);
+  const asLines = value => Array.isArray(value) ? value : [value];
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function buildScreens(useReflections) {
+    interactive = useReflections;
+    const built = [];
+
+    PARTS.forEach((part, reflectionIndex) => {
+      built.push({
+        text: `Part ${part.number}`,
+        className: "marker",
+        timing: "break",
+        background: part.markerBackground
+      });
+
+      built.push(...part.screens.map(screen => ({ ...screen })));
+
+      if (useReflections) {
+        const lastPart = reflectionIndex === PARTS.length - 1;
+        built.push({
+          reflection: reflectionIndex,
+          timing: lastPart ? "jolt" : "break",
+          ...(lastPart ? { background: "dark" } : {})
+        });
+      }
+    });
+
+    if (useReflections) built.push({ summary: true, timing: "break" });
+
+    built.push({
+      final: true,
+      timing: useReflections ? "break" : "jolt",
+      ...(useReflections ? {} : { background: "dark" })
+    });
+    built.push({ document: true, timing: "para", background: "light" });
+
+    let background = "light";
+    screens = built.map(screen => {
+      background = screen.background || background;
+      return { ...screen, background };
+    });
+  }
+
+  function clearTimers() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    pendingLines = 0;
+  }
+
+  function revealAll() {
+    clearTimers();
+    text.querySelectorAll(".ln.pending").forEach(line => line.classList.remove("pending"));
+  }
+
+  function applyBackground(state, immediate = false, hold = BACKGROUND_HOLD) {
+    if (state === targetBackground) return;
+    targetBackground = state;
+
+    if (backgroundTimer) clearTimeout(backgroundTimer);
+
+    if (immediate) {
+      body.style.transition = "none";
+      body.classList.toggle("light", state === "light");
+      void body.offsetWidth;
+      return;
+    }
+
+    backgroundTimer = setTimeout(() => {
+      body.style.transition = `background-color ${BACKGROUND_FADE}ms ease-in-out, color ${BACKGROUND_FADE}ms ease-in-out`;
+      body.classList.toggle("light", state === "light");
+    }, hold);
+  }
+
+  function referenceBlocks(part) {
+    return part.reference.map(group => {
+      if (group === null) return { type: "gap", text: "..." };
+
+      const paragraph = group
+        .flatMap(index => asLines(part.screens[index].text))
+        .join(" ");
+
+      return { type: "paragraph", text: paragraph };
+    });
+  }
+
+  function documentHtml() {
+    const parts = PARTS.map(part => {
+      const blocks = referenceBlocks(part).map(block => {
+        const className = block.type === "gap" ? "doc-gap" : "doc-p";
+        return `<p class="${className}">${escapeHtml(block.text)}</p>`;
+      }).join("");
+
+      return `<p class="doc-head">Part ${part.number}</p>${blocks}`;
+    }).join("");
+
+    return `${parts}<div class="doc-restart"><button class="btn" id="d-again">Read it again →</button></div>`;
+  }
+
+  function partReferenceHtml(partNumber) {
+    const part = PARTS.find(item => item.number === partNumber);
+    if (!part) return "";
+
+    const blocks = referenceBlocks(part).map(block => {
+      const className = block.type === "gap" ? ' class="r-source-gap"' : "";
+      return `<p${className}>${escapeHtml(block.text)}</p>`;
+    }).join("");
+
+    return `<div class="r-source-head">Part ${part.number}</div>${blocks}`;
+  }
+
+  function promptHelpHtml() {
+    return REFLECTION_PROMPTS.map(prompt => `<p>${escapeHtml(prompt)}</p>`).join("");
+  }
+
+  function responseValue(index) {
+    return responses[index].current || responses[index].initial || "";
+  }
+
+  function savePartResponse(reflectionIndex, value) {
+    const response = responses[reflectionIndex];
+    const trimmed = value.trim();
+
+    if (!response.initial && !response.current) {
+      response.initial = trimmed;
+      response.current = trimmed;
+      return;
+    }
+
+    if (trimmed !== responseValue(reflectionIndex)) {
+      response.revisions.push({ afterPart: REFLECTIONS[reflectionIndex].part, value: trimmed });
+      response.current = trimmed;
+    }
+  }
+
+  function reviewIndexes(reflectionIndex) {
+    return (REFLECTIONS[reflectionIndex].reviewParts || []).map(part => part - 1);
+  }
+
+  function continueAfterReflection() {
+    body.classList.remove("asking");
+    mode = "story";
+    goTo(screenIndex + 1, screens[screenIndex + 1].timing);
+  }
+
+  function renderReview(reflectionIndex) {
+    const reflection = REFLECTIONS[reflectionIndex];
+    const indexes = reviewIndexes(reflectionIndex);
+    const cards = indexes.map(index => {
+      const value = responseValue(index);
+      const emptyClass = value ? "" : " r-empty";
+      return `
+        <div class="r-card">
+          <p class="r-card-label">Earlier, after Part ${REFLECTIONS[index].part}, you thought</p>
+          <p class="r-card-text${emptyClass}">${escapeHtml(value || "You left this open.")}</p>
+        </div>`;
+    }).join("");
+
+    text.innerHTML = `
+      <p class="r-part">After Part ${reflection.part}</p>
+      <p class="r-review-title">${escapeHtml(reflection.review)}</p>
+      ${cards}
+      <div class="r-actions">
+        <button class="btn" id="r-yes">Yes →</button>
+        <button class="btn" id="r-no">No, change it →</button>
+      </div>`;
+    text.className = "";
+
+    byId("r-yes").addEventListener("click", event => {
+      event.stopPropagation();
+      continueAfterReflection();
+    });
+
+    byId("r-no").addEventListener("click", event => {
+      event.stopPropagation();
+      renderRevision(reflectionIndex, indexes);
+    });
+  }
+
+  function renderRevision(reflectionIndex, indexes) {
+    const reflection = REFLECTIONS[reflectionIndex];
+    const fields = indexes.map(index => `
+      <label class="r-edit-label" for="r-edit-${index}">Part ${REFLECTIONS[index].part}</label>
+      <textarea class="r-box" id="r-edit-${index}" rows="2">${escapeHtml(responseValue(index))}</textarea>`
+    ).join("");
+
+    text.innerHTML = `
+      <p class="r-part">After Part ${reflection.part}</p>
+      <p class="r-review-title">Change only what no longer fits.</p>
+      <p class="r-hint">A few words is enough. You can leave anything unchanged.</p>
+      ${fields}
+      <button class="btn" id="r-update">Continue →</button>`;
+    text.className = "";
+
+    byId("r-update").addEventListener("click", event => {
+      event.stopPropagation();
+
+      indexes.forEach(index => {
+        const before = responseValue(index);
+        const field = byId(`r-edit-${index}`);
+        const after = field ? field.value.trim() : before;
+
+        if (after !== before) {
+          responses[index].revisions.push({ afterPart: reflection.part, value: after });
+          responses[index].current = after;
+        }
+      });
+
+      continueAfterReflection();
+    });
+  }
+
+  function renderReflection(reflectionIndex) {
+    const reflection = REFLECTIONS[reflectionIndex];
+    const current = responseValue(reflectionIndex);
+
+    text.innerHTML = `
+      <p class="r-part">After Part ${reflection.part}</p>
+      <p class="r-prompt">${escapeHtml(reflection.prompt)}</p>
+      <p class="r-hint">A few words is enough. You can leave it blank.</p>
+      <textarea class="r-box" id="r-box" rows="2">${escapeHtml(current)}</textarea>
+      <div class="r-tools">
+        <button class="r-link" id="r-prompts" aria-expanded="false" aria-controls="r-prompt-help">Need a prompt? ▾</button>
+        <div class="r-assist" id="r-prompt-help" hidden>${promptHelpHtml()}</div>
+        <button class="r-link" id="r-show" aria-expanded="false" aria-controls="r-source">Show Part ${reflection.part} ▾</button>
+        <div class="r-source" id="r-source" hidden>${partReferenceHtml(reflection.part)}</div>
+      </div>
+      <button class="btn" id="r-go">Continue →</button>`;
+    text.className = "";
+    mode = "asking";
+    body.classList.add("asking");
+
+    byId("r-prompts").addEventListener("click", function (event) {
+      event.stopPropagation();
+      const help = byId("r-prompt-help");
+      const opening = help.hidden;
+      help.hidden = !opening;
+      this.setAttribute("aria-expanded", String(opening));
+      this.textContent = opening ? "Hide prompts ▴" : "Need a prompt? ▾";
+    });
+
+    byId("r-show").addEventListener("click", function (event) {
+      event.stopPropagation();
+      const source = byId("r-source");
+      const opening = source.hidden;
+      source.hidden = !opening;
+      this.setAttribute("aria-expanded", String(opening));
+      this.textContent = `${opening ? "Hide" : "Show"} Part ${reflection.part} ${opening ? "▴" : "▾"}`;
+    });
+
+    byId("r-go").addEventListener("click", event => {
+      event.stopPropagation();
+      const box = byId("r-box");
+      savePartResponse(reflectionIndex, box?.value ?? "");
+
+      if (reflectionIndex === 0) continueAfterReflection();
+      else renderReview(reflectionIndex);
+    });
+  }
+
+  function summaryCloseText() {
+    const revised = responses.some(response => response.revisions.length > 0);
+    const answered = responses.some(response => response.initial || response.current);
+
+    if (revised) return "The earlier words did not change. What you thought they meant did.";
+    if (answered) return "You read it the same way from the first part to the last.";
+    return "You kept your reading to yourself.";
+  }
+
+  function summaryHtml() {
+    const cards = REFLECTIONS.map((reflection, index) => {
+      const response = responses[index];
+      const initialClass = response.initial ? "" : " r-empty";
+      const revisions = response.revisions.map(revision => {
+        const revisionClass = revision.value ? "" : " r-empty";
+        return `
+          <p class="r-card-label r-card-label-revision">After Part ${revision.afterPart}, you changed it to</p>
+          <p class="r-card-text${revisionClass}">${escapeHtml(revision.value || "You left this open.")}</p>`;
+      }).join("");
+
+      return `
+        <div class="r-card">
+          <p class="r-card-label">After Part ${reflection.part}</p>
+          <p class="r-card-text${initialClass}">${escapeHtml(response.initial || "You left this open.")}</p>
+          ${revisions}
+        </div>`;
+    }).join("");
+
+    return `
+      <p class="sum-head">What you thought</p>
+      ${cards}
+      <p class="sum-close">${escapeHtml(summaryCloseText())}</p>
+      <p class="sum-ask">If the story in your head still does not fit these notes, write it once, from beginning to end.</p>
+      <textarea class="sum-box" id="sum-box" rows="3"></textarea>
+      <button class="btn" id="sum-go">Continue →</button>`;
+  }
+
+  function finalHtml() {
+    const emailButton = interactive
+      ? '<button class="btn" id="f-email">Email your answers to Shaun →</button>'
+      : "";
+
+    return `
+      <p class="title">What You Think</p>
+      <p class="byline">Shaun Bartlett</p>
+      <p class="final-note">You have a story now. Read it again and see if it holds.</p>
+      <p class="final-note">Thank you for your honest participation.</p>
+      <div class="final-actions">
+        <button class="btn" id="f-text">Read it against your story →</button>
+        <button class="btn" id="f-again">Start over →</button>
+        ${emailButton}
+        <p class="save-note" id="f-note"></p>
+      </div>`;
+  }
+
+  function responseRecord() {
+    const entries = REFLECTIONS.map((reflection, index) => {
+      const response = responses[index];
+      const revisions = response.revisions.map(revision =>
+        `Changed after Part ${revision.afterPart}
+> ${revision.value || "—"}
+`
+      ).join("");
+
+      return `After Part ${reflection.part}
+> ${response.initial || "—"}
+${revisions}
+`;
+    }).join("");
+
+    return `What You Think — reader responses
+${new Date().toISOString().slice(0, 10)}
+
+${entries}The story I read:
+${finalStory.trim() || "—"}
+`;
+  }
+
+  function emailResponses(note) {
+    const subject = "What You Think — reader responses";
+    const href = `mailto:shaun.aj.bartlett@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(responseRecord())}`;
+
+    try {
+      window.location.href = href;
+      note.textContent = "Your email app should open with your answers ready to send.";
+    } catch {
+      note.textContent = "Couldn't open your email app here.";
+    }
+  }
+
+  function renderStoryScreen(screen, instant) {
+    mode = "story";
+    const lines = asLines(screen.text);
+    const inline = Boolean(screen.inline);
+
+    text.innerHTML = lines.map((line, index) => {
+      const classes = ["ln"];
+      if (inline) classes.push("inline");
+      if (index > 0 && !instant) classes.push("pending");
+      const spacer = inline && index < lines.length - 1 ? " " : "";
+      return `<span class="${classes.join(" ")}">${escapeHtml(line)}</span>${spacer}`;
+    }).join("");
+    text.className = screen.className || "";
+
+    if (instant || lines.length < 2) return;
+
+    const lineElements = [...text.querySelectorAll(".ln")];
+    const step = inline ? INLINE_REVEAL : LINE_REVEAL;
+    pendingLines = lines.length - 1;
+
+    lineElements.slice(1).forEach((line, index) => {
+      const timer = setTimeout(() => {
+        line.classList.remove("pending");
+        pendingLines--;
+      }, step * (index + 1));
+      timers.push(timer);
+    });
+  }
+
+  function render(screenNumber, instant = false) {
+    const screen = screens[screenNumber];
+    clearTimers();
+    body.classList.remove("summing", "acting");
+
+    if (screen.reflection !== undefined) {
+      renderReflection(screen.reflection);
+    } else if (screen.summary) {
+      text.innerHTML = summaryHtml();
+      text.className = "";
+      mode = "summary";
+      body.classList.add("summing");
+
+      byId("sum-go").addEventListener("click", event => {
+        event.stopPropagation();
+        finalStory = byId("sum-box")?.value ?? "";
+        body.classList.remove("summing");
+        mode = "story";
+        goTo(screenIndex + 1, screens[screenIndex + 1].timing);
+      });
+    } else if (screen.final) {
+      text.innerHTML = finalHtml();
+      text.className = "";
+      mode = "final";
+      body.classList.add("acting");
+
+      const note = byId("f-note");
+      byId("f-text").addEventListener("click", event => {
+        event.stopPropagation();
+        body.classList.remove("acting");
+        mode = "story";
+        goTo(screenIndex + 1, screens[screenIndex + 1].timing);
+      });
+      byId("f-again").addEventListener("click", event => {
+        event.stopPropagation();
+        location.reload();
+      });
+      byId("f-email")?.addEventListener("click", event => {
+        event.stopPropagation();
+        emailResponses(note);
+      });
+    } else if (screen.document) {
+      text.innerHTML = documentHtml();
+      text.className = "";
+      mode = "doc";
+      body.classList.add("doc");
+      byId("d-again").addEventListener("click", event => {
+        event.stopPropagation();
+        location.reload();
+      });
+    } else {
+      renderStoryScreen(screen, instant);
+    }
+
+    applyBackground(screen.background, instant);
+  }
+
+  function goTo(nextIndex, timingName, instant = false) {
+    if (busy) return;
+
+    busy = true;
+    clearTimers();
+    const timing = TIMINGS[timingName] || TIMINGS.para;
+    const fadeOut = prefersReducedMotion ? 1 : timing.out;
+    const fadeIn = prefersReducedMotion ? 1 : timing.in;
+
+    if (timing.jolt && !prefersReducedMotion) {
+      text.style.transition = "none";
+      text.classList.add("out");
+      applyBackground(screens[nextIndex].background, true);
+      void text.offsetWidth;
+    } else {
+      text.style.transition = `opacity ${fadeOut}ms ease-in-out`;
+      text.classList.add("out");
+    }
+
+    setTimeout(() => {
+      if (screens[nextIndex].backgroundEarly && !instant) {
+        applyBackground(screens[nextIndex].background, false, 0);
+      }
+
+      setTimeout(() => {
+        screenIndex = nextIndex;
+        render(screenIndex, instant || prefersReducedMotion);
+        text.style.transition = `opacity ${fadeIn}ms ease-in-out`;
+        text.classList.remove("out");
+        busy = false;
+      }, timing.gap);
+    }, fadeOut);
+  }
+
+  function next() {
+    if (mode !== "story" || busy) return;
+    if (pendingLines > 0) {
+      revealAll();
+      return;
+    }
+    if (screenIndex >= screens.length - 1) return;
+
+    goTo(screenIndex + 1, screens[screenIndex + 1].timing);
+  }
+
+  function previous() {
+    if (mode !== "story" || busy || screenIndex <= 0) return;
+    if (screens[screenIndex - 1].reflection !== undefined) return;
+
+    goTo(screenIndex - 1, "beat", true);
+  }
+
+  function start(useReflections) {
+    buildScreens(useReflections);
+    mode = "story";
+    goTo(0, screens[0].timing);
+  }
+
+  byId("start-straight").addEventListener("click", event => {
+    event.stopPropagation();
+    start(false);
+  });
+
+  byId("start-interactive").addEventListener("click", event => {
+    event.stopPropagation();
+    start(true);
+  });
+
+  stage.addEventListener("click", event => {
+    if (event.detail === 0) return;
+    next();
+  });
+
+  document.addEventListener("touchstart", event => {
+    touchStartX = event.changedTouches[0].screenX;
+    touchStartY = event.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.addEventListener("touchend", event => {
+    if (mode !== "story") return;
+
+    const dx = event.changedTouches[0].screenX - touchStartX;
+    const dy = event.changedTouches[0].screenY - touchStartY;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    if (ax < 40 && ay < 40) {
+      next();
+      return;
+    }
+
+    const direction = ax >= ay ? dx : dy;
+    if (direction < 0) next();
+    else previous();
+  }, { passive: true });
+
+  document.addEventListener("keydown", event => {
+    if (mode !== "story") return;
+
+    if ([" ", "ArrowRight", "ArrowDown", "Enter"].includes(event.key)) {
+      event.preventDefault();
+      next();
+    } else if (["ArrowLeft", "ArrowUp", "Backspace"].includes(event.key)) {
+      event.preventDefault();
+      previous();
+    }
+  });
+})();
+</script>
+</body>
+</html>
