@@ -3254,6 +3254,7 @@ body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
         <div class="dialogue-actions">
             <button class="btn-primary" id="dialogueNextBtn">Continue</button>
             <button class="btn-ghost" id="dialogueSkipBtn">Skip</button>
+            <button class="btn-ghost" id="dialogueExtraBtn" hidden></button>
         </div>
         <p class="dialogue-hint">Tap anywhere to continue</p>
     </div>
@@ -11999,6 +12000,29 @@ const TRAINING = {
         return `<p>${escapeHtml(level.intro)}</p>`;
     },
 
+    // The same intro as spoken lines: sentences in pairs, the Better Together table as one line per piece.
+    introBeats(level) {
+        if (!level.intro) return [];
+        if (level.intro === 'bt') {
+            const present = new Set(STATE.grid.flat().filter(kind => GAME.isAssetKind(kind)));
+            const lines = Object.entries(CONFIG.BETTER_TOGETHER)
+                .filter(([kind, relationships]) => CONFIG.ASSET_NAME[kind] && relationships.length && present.has(kind))
+                .map(([kind, relationships]) => `${GAME.assetName(kind)}: ${relationships.map(rel => {
+                    const names = rel.with.map(k => GAME.assetName(k));
+                    return `${rel.label} +1 beside ${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`}`;
+                }).join('; ')}.`);
+            return [
+                'Pieces that sit beside the right neighbours in the same plot add value. Each relationship type adds +1 once per piece, and different types stack.',
+                'A fence between two neighbours breaks their bond, so a plot can be worth less than its pieces suggest.',
+                ...(lines.length ? [`On this estate: ${lines.join(' ')}`] : []),
+            ];
+        }
+        const sentences = level.intro.match(/[^.!?]+[.!?]+(\s|$)/g) || [level.intro];
+        const beats = [];
+        for (let i = 0; i < sentences.length; i += 2) beats.push(sentences.slice(i, i + 2).join('').trim());
+        return beats;
+    },
+
     showIntro(then) {
         const levels = this.levels(this.track);
         const index = levels.indexOf(this.level);
@@ -12006,6 +12030,14 @@ const TRAINING = {
         const goal = this.track === 'cut'
             ? `Finish within ${this.level.within} ${this.level.within === 1 ? 'point' : 'points'} of the smallest gap possible. ${this.level.time} seconds.`
             : `Keep the plot worth more. ${this.level.time} seconds.`;
+        if (typeof DIALOGUE !== 'undefined' && UI.el.dialogueOverlay) {
+            DIALOGUE.play({
+                eyebrow: `Training · ${cap} · Level ${index + 1} of ${levels.length} · ${this.level.name}`, voice: 'referee', finalLabel: 'Begin',
+                beats: [...this.introBeats(this.level), `${goal} Three successes unlock the next level.`],
+                extra: { label: 'Stop training', action: () => this.stop() },
+            }, then);
+            return;
+        }
         TUTORIAL.openCard({
             eyebrow: `Training · ${cap} · Level ${index + 1} of ${levels.length}`,
             title: this.level.name,
@@ -12465,6 +12497,24 @@ const TUTORIAL = {
 
     showIntro() {
         const pieces = `${GAME.assetName('G')} +${CONFIG.ASSET_VALUE.G}, ${GAME.assetName('Y')} +${CONFIG.ASSET_VALUE.Y} and ${GAME.assetName('C')} +${CONFIG.ASSET_VALUE.C}`;
+        if (typeof DIALOGUE !== 'undefined' && UI.el.dialogueOverlay) {
+            DIALOGUE.play({
+                eyebrow: 'Chapter Zero · one small estate', voice: 'referee', finalLabel: 'Start building',
+                beats: [
+                    'A short, untimed game on a small estate. Play both siblings yourself, or pass the phone.',
+                    `Build first. Take turns placing six pieces: a ${pieces} each. Every square of land is worth 1. Nobody knows yet who will cut and who will choose.`,
+                    'Then a coin toss sets the roles. The Cutter draws one fence from edge to edge.',
+                    'The Chooser sees the fence, then keeps either plot. The Cutter keeps the other. The higher-value plot wins; a tie goes to the Cutter.',
+                    { text: 'Anything you want to ask first?', choices: [
+                        { label: 'Why would the Cutter want an even split?', then: ['Because the Chooser takes the better half. The only way the Cutter keeps anything is to make the halves worth the same, and then the tie goes to the Cutter.'] },
+                        { label: 'Do we only play it once?', then: ['Twice. After the first division you swap chairs and divide the same estate again, so each of you sits in both seats.'] },
+                        { label: 'No. Start building.', then: [] },
+                    ] },
+                    'At the end I check every fence that could have been drawn and report the smallest gap that was possible. No score against you, no judgement.',
+                ],
+            }, () => UI.focusBoard());
+            return;
+        }
         this.openCard({
             eyebrow: 'Chapter Zero',
             title: 'One small estate',
@@ -12491,6 +12541,17 @@ const TUTORIAL = {
         STATE.rpsWinnerIdx = -1;
         this.solve();
         FLOW.sync();
+        if (typeof DIALOGUE !== 'undefined' && UI.el.dialogueOverlay) {
+            DIALOGUE.play({
+                eyebrow: 'Chapter Zero · the coin', voice: 'referee', finalLabel: 'Continue',
+                beats: [
+                    `The coin lands. ${this.name(cutterIdx)} cuts. ${this.name(1 - cutterIdx)} chooses.`,
+                    'The Cutter draws one fence from edge to edge. The Chooser sees it before picking a plot.',
+                    'Land is 1 per square. Pieces add their printed value. Scores stay hidden until the choice is made. A tie goes to the Cutter.',
+                ],
+            }, () => FLOW.passToCut());
+            return;
+        }
         this.openCard({
             eyebrow: 'Chapter Zero · the coin',
             title: 'Roles are set',
@@ -14088,6 +14149,7 @@ const DIALOGUE = (() => {
     const VOICES = {
         hartley: { name: 'Mrs Hartley, the bank', svg: FACE('<path d="M24 34 C22 14 58 14 56 34 C52 25 28 25 24 34 Z" fill="#8a8178" stroke="#2b2316" stroke-width="2"/>', '#4f6f9f', '<circle cx="33" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><circle cx="47" cy="38" r="4.6" fill="none" stroke="#2b2316" stroke-width="1.6"/><path d="M37.6 38 H42.4 M28.4 38 H26 M51.6 38 H54" stroke="#2b2316" stroke-width="1.6"/>') },
         dacre: { name: 'Mr Dacre, Dacre and Sons', svg: FACE('<path d="M22 30 H58 V26 H52 C52 16 28 16 28 26 H22 Z" fill="#2b2316" stroke="#2b2316" stroke-width="2"/>', '#5a4a3a', '<path d="M34 44 Q40 41 46 44" fill="none" stroke="#2b2316" stroke-width="2.4" stroke-linecap="round"/><path d="M37 57 L40 63 L43 57 Z" fill="#a04830"/>') },
+        referee: { name: 'The referee', svg: `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#e6dcc4" stroke="#2b2316" stroke-width="2"/><rect x="18" y="18" width="44" height="44" fill="#87975f" stroke="#2b2316" stroke-width="2"/><path d="M18 33 H62 M18 47 H62 M33 18 V62 M47 18 V62" stroke="rgba(43,35,22,0.25)" stroke-width="1"/><path d="M40 18 V33 L26 33 V62" fill="none" stroke="#2b2316" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M48 44 H58 M53 44 V54" stroke="#f4ede0" stroke-width="2.4" stroke-linecap="round"/></svg>` },
         counsellor: { name: 'Dr Osei, family counsellor', svg: FACE('<path d="M24 33 C24 17 56 17 56 33 C53 27 47 25 40 25 C33 25 27 27 24 33 Z" fill="#2b2316" stroke="#2b2316" stroke-width="2"/>', '#8d6540', '<circle cx="25.5" cy="45" r="1.6" fill="#c9a24d"/><circle cx="54.5" cy="45" r="1.6" fill="#c9a24d"/><path d="M29 36 Q33 33 37 36 M43 36 Q47 33 51 36" fill="none" stroke="#2b2316" stroke-width="1.5" stroke-linecap="round"/>') },
         brandt: { name: 'Nell Brandt, farm manager', svg: FACE('<path d="M23 31 C25 17 55 17 57 31 L59 33 H21 Z" fill="#6f5134" stroke="#2b2316" stroke-width="2"/>', '#4f6f3f', '<path d="M30 34 L36 34 M44 34 L50 34" stroke="#2b2316" stroke-width="1.6" stroke-linecap="round"/><path d="M30 50 Q34 53 40 52 M50 50 Q46 53 40 52" fill="none" stroke="#2b2316" stroke-width="1.2"/><path d="M28 58 Q40 64 52 58" fill="none" stroke="#a04830" stroke-width="3" stroke-linecap="round"/>') },
     };
@@ -14105,6 +14167,8 @@ const DIALOGUE = (() => {
         el.choices = document.getElementById('dialogueChoices');
         el.next = document.getElementById('dialogueNextBtn');
         el.skip = document.getElementById('dialogueSkipBtn');
+        el.extra = document.getElementById('dialogueExtraBtn');
+        el.extra.addEventListener('click', e => { e.stopPropagation(); const action = current && current.extra && current.extra.action; stopTyping(); queue = []; choosing = false; onDone = null; current = null; UI.close('dialogueOverlay'); action && action(); });
         el.portrait.innerHTML = VOICES.hartley.svg; shownVoice = 'hartley';
         el.next.addEventListener('click', e => { e.stopPropagation(); advance(); });
         el.skip.addEventListener('click', e => { e.stopPropagation(); finish(); });
@@ -14122,6 +14186,7 @@ const DIALOGUE = (() => {
         queue = (spec.beats || []).map(beatOf);
         index = 0; onDone = done || null; choosing = false;
         el.eyebrow.textContent = spec.eyebrow || '';
+        el.extra.hidden = !spec.extra; el.extra.textContent = spec.extra ? spec.extra.label : '';
         if (UI.topOverlayKey() !== 'dialogueOverlay') UI.open('dialogueOverlay');
         showBeat();
     }
