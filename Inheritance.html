@@ -16182,8 +16182,8 @@ const LEGACY = (() => {
                 `${names[0]}, ${names[1]}. I'm sorry for your loss. Both of them, within the year. Your father banked with us for forty years; I knew him a little.`,
                 "There is no will. I have looked, and the solicitor has looked. So the law decides: everything passes to the two of you, in equal shares.",
                 "The court has made the bank the administrator. That is me, I'm afraid. I set the deadlines, and I keep the record.",
-                {who:'dacre',text:"Mr Dacre, Dacre and Sons. My condolences. When you're ready to talk about the farm, I'm ready to make an offer."},
-                "He will say that about every one of them. His letters are in the file.",
+                {who:'dacre',text:"Mr Dacre, Dacre and Sons. My condolences. If any of it comes to sale, I'll be the one buying."},
+                "He will be. If no choice is made on an estate before its deadline, I sell it to settle the costs, and he is the buyer who is ready.",
                 {text:"Ask me anything before we start.",choices:[
                     {label:'How many properties are there?',then:["Six. Your grandparents' farm comes first; its title is already clear. The others come through as probate, tenancies and surveys allow. I will tell you about each as it arrives."]},
                     {label:"Why can't we just split everything down the middle?",then:["Because none of them splits down the middle. A house, a farm, a stretch of river: every line through them costs something. The fairest method I know is the oldest: one of you draws the line, the other chooses the side."]},
@@ -16236,16 +16236,12 @@ const LEGACY = (() => {
         };
         return {eyebrow:`Estate ${n} of 6 · ${chapters[n-1]}`,beats:scripts[n]||[],finalLabel:n===1?'Shape the land':'Begin the estate'};
     }
+    // After an estate, only what someone has to say: the farm manager, when the fence divided a
+    // business. The land agent makes no offers; the bank sells, and he buys, only when no choice is made.
     function afterEstateScript(record) {
         const beats=[];
-        const attempt=acceptedAttemptForRecord(record);
-        if(attempt?.cutByBank)beats.push({who:'dacre',text:"Took your time. I'd have had that line drawn in a morning."});
         const divided=(couldHaveBeen().estates.find(e=>e.round===record.round)?.divided||[]).slice(0,2);
         for(const d of divided)beats.push({who:'brandt',text:d.development?`The fence went through the ${d.name}. It pays nothing now.`:`The fence went through the ${d.name}. It paid ${d.income} Capital a time; now ${d.afterIncome}.`});
-        if([1,3,5].includes(record.round)&&!record.lost){
-            beats.push({who:'dacre',text:`${campaign.players[0].name}, ${campaign.players[1].name}: I'd give you ${record.accounting?.inherited??0} for the pair of plots as they stand. The offer is open until the next estate.`});
-            if(record.round===1)beats.push("He will make an offer after every other estate. The record keeps the number.");
-        }
         return beats.length?{eyebrow:`After Estate ${record.round}`,beats,finalLabel:'See the record'}:null;
     }
     function firstCapitalScript() {
