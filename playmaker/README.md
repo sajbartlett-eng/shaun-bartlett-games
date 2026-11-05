@@ -200,6 +200,20 @@ solver results; every choice is worked out at the table from what is in front of
 - **No loops:** a play that ends where the offence already stood earlier in the possession (its five
   squares and the ball) loses 2 points per earlier visit (up to 3). A pass that was intercepted is not
   thrown again from the same position.
+- **Passing judgement (step 3f).** A Pass ends the offence's turn and the defence answers before it
+  resolves, so a lane is **clean** only if no defender can legally get an Intercept on it in that turn:
+  on the line, or by an approach (a Move, Quick Step or Sprint onto the line by a defender whose arrow
+  crosses it, then Intercept), with the defence's tokens, unused Moves, locks and the intercept limit as
+  the rules have them (`pass_risk` in `computer.py`, worked out from the legal actions). Otherwise it is
+  **contested**, at the best interception chance any defender can reach, 1 − P(d20 ≤ Pass − Intercept).
+  A pass is worth (1 − risk) × the position after the catch (valued after the defence's reply) − risk ×
+  5 × `pass_risk_tolerance` (Rookie 0.5, Starter 0.8, All-Star 1.0). The pick-off counts as the −5
+  alone, not as the play-on position it leaves (OQ-54). Against a contested pass the computer weighs its
+  alternatives, each valued with the next turn able to pass, after the defence's full reply: moving the
+  receiver to open a lane (every level), moving the passer or dribbling, and a screen or seal (Starter and
+  All-Star), and two shorter clean passes (All-Star). Each extra pass costs a turn: the defence answers
+  it before the catch is valued. Rookie can draw the habit **forces passes**: it passes to its primary
+  target whenever the pass is legal, whatever the risk.
 - **Setup:** man-to-man by number, unless a switch puts the best on-ball defender on the most explosive
   creator, or the best three-point contester on the ▲ shooter, and the evaluation says it's worth it.
   The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
@@ -223,13 +237,13 @@ solver results; every choice is worked out at the table from what is in front of
 
 Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
 the first pass (never drawn at Rookie: at Pass 14 v Intercept 6 an intercept attempt succeeds 60% of the
-time, so it is often the right play). Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
+time, so it is often the right play). Offence habits: settles early (reads its shot bar one phase ahead), forces passes (Rookie only), never screens, ignores the mismatch (passes by
 position order), star only. A habit overrides the choice every time it applies, so it can be scouted and
 beaten. After the game, **About the computer** in the review names the level, the habits drawn, the
 concepts switched off, and the offence's targets and plan. It never appears during play.
 
-**Thinking time:** at most 1 second a decision on the server and 0.45 seconds in the link version,
-the best choice found so far being used when time is up.
+**Thinking time:** about 2 seconds a decision on the server and in the link version (raised in step
+3f), the best choice found so far being used when time is up.
 
 *All figures in this section were measured before OQ-52 (one Quick Step per player per phase, a Sprint uses it).
 After it, the board-reading defence keeps more arrows on the ball (52% against 34%): a reaction can no

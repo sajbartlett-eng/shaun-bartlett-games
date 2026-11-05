@@ -268,15 +268,27 @@ def test_golden_position_all_star_finds_a_line_worth_27():
     for a in (Action('move', 'O', 2, P('N7')), Action('move', 'O', 0, P('G10')), Action('move', 'X', 4, P('N6'), 0),
               Action('move', 'X', 0, P('H9'), 7)):
         s = apply(s, a)
-    c = C.Computer('O', 'allstar', seed=1, budget_s=3.0, habits=[])
+    c = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
     a = c.choose(s)
     se = Searcher(with_config(eval_turns=1, top_k_raw=0, endgame_tokens=-1))
     se.root_depth = 2
     se.value(s, 2)
     e = se.tt[(s, 2)]
-    mine = [v[0].ev for p, v in e.children if p.actions[0] == a]
-    assert mine and max(mine) >= 27 - 1e-6, (a, mine)                     # the step-back three: QS O8, then shoot
-    assert c.queue and c.queue[1] and c.queue[1][0].kind == 'shot'
+    assert max(v[0].ev for p, v in e.children) >= 27 - 1e-6        # the line exists: QS O8, then the three
+    # All-Star sees it (valued 27, a shot winning any tie), and goes past it only for a play it values more:
+    # since step 3f the next turn's passes count, so a screen that sets up a clean pass to O2 is worth 30
+    from playmaker_engine.solver import Play, apply_play
+    c2 = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
+    c2._context(s)
+    view = C.seen_state(s, 'O', c2.seen)
+    c2._ensure_plan(view)
+    val = lambda p: c2._play_value(view, p, apply_play(view, p), c2._value_fn())
+    step_back = val(Play('drive+shoot', (Action('qs', 'O', 2, P('O8')), Action('shot', 'O', 2, shot='three'))))
+    assert abs(step_back - 27) < 1e-6, step_back
+    if c.queue and c.queue[1] and c.queue[1][0].kind == 'shot':
+        return
+    chosen = max(val(p) for p in c2.gen.plays(view, shallow=False) if p.actions[0] == a)
+    assert chosen > step_back, (a, chosen)
 
 
 # ---- section 8: levels, habits, tunnel vision, card reading, no cheating -------------------------

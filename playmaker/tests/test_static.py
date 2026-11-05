@@ -184,7 +184,8 @@ const [url, level] = process.argv.slice(2);
 
 @pytest.mark.parametrize('level', ['rookie', 'starter', 'allstar'])
 def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path, level):
-    """Each computer level plays in the link version (on the phone profile), under a second per decision."""
+    """Each computer level plays in the link version (on the phone profile), within its thinking budget
+    (computer_levels.json budget_s.browser, with a margin for the step after the deadline)."""
     (tmp_path / 'ai.js').write_text(NODE_AI)
     url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
     r = subprocess.run(['node', str(tmp_path / 'ai.js'), url, level], capture_output=True, text=True, timeout=600)
@@ -192,4 +193,5 @@ def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path, l
     out = json.loads(r.stdout.strip().splitlines()[-1])
     print(f'browser {level}: think s per decision', out['think'], 'ms per human action', [round(t) for t in out['times']])
     assert out['ai'], out                                    # the computer defence acted
-    assert max(out['think']) < 1.0, out['think']
+    from playmaker_engine.computer import LEVELS
+    assert max(out['think']) < LEVELS['budget_s']['browser'] * 1.5, out['think']

@@ -93,6 +93,85 @@ def reachable_contest(state, shooter=None, shot=None, budget=None):
     return sorted(out, key=lambda e: e['value'])
 
 
+# ---- passing judgement (step 3f) ------------------------------------------------------------------
+
+_PASS_CACHE = {}
+
+
+def pass_risk(state, passer, receiver):
+    """A pass judged after the defence's reply. A Pass ends the offence's turn and the defence answers
+    before it resolves, so the lane is clean only if no defender can legally get an Intercept on it in
+    that turn: directly (on the line) or by an approach (a Move, Quick Step or Sprint onto the line by a
+    defender whose arrow already crosses it, then Intercept), with the defence's tokens, unused Moves,
+    locks and the intercept limit as the rules have them. Computed from the legal actions, so it is the
+    rules' own answer. Returns None if the pass isn't legal, else a dict: clean, risk (the best
+    interception chance any defender can reach: 1 - P(d20 <= Pass - Intercept)), by (that defender),
+    line (the defence's actions for it), pending (the state with the ball in the air)."""
+    from .actions import is_approach
+    from .scoring import p_success
+    key = (state, id(state.ctx), passer, receiver)         # positions compare equal across contexts
+    hit = _PASS_CACHE.get(key)
+    if hit is not None and hit['ctx'] is state.ctx:
+        return hit
+    a = Action('pass', 'O', passer, target=receiver)
+    if state.stage != 'play' or state.side != 'O' or state.ball != passer or a not in legal_actions(state):
+        return None
+    pend = apply(state, a)
+    out = dict(clean=True, risk=0.0, by=None, line=(), pending=pend, ctx=state.ctx)
+    if not isinstance(pend, ChanceNode) and pend.pending:
+        from .actions import inbound_held, intercept_status, movement_actions
+        pr = pend.ctx.off[passer].r['pass']
+        if pend.inbound:                       # inbound passes (OQ-35): ask the legal actions directly
+            cands = []
+            for d in legal_actions(pend):
+                if d.kind == 'intercept':
+                    cands.append((d,))
+                elif d.kind in MOVEMENT and is_approach(pend, d):
+                    nxt = apply(pend, d)
+                    icpt = Action('intercept', 'X', d.piece)
+                    if not isinstance(nxt, ChanceNode) and icpt in legal_actions(nxt):
+                        cands.append((d, icpt))
+        else:                                  # the same answer as the legal actions, computed directly
+            cands = []
+            can = pend.count('X', 'intercept') < RC.LIMITS['X']['intercept'] and pend.tok_x > 0
+            status = [intercept_status(pend, j) for j in range(5)] if can else [None] * 5
+            for j in range(5):
+                if status[j] == 'direct':
+                    cands.append((Action('intercept', 'X', j),))
+            if any(st == 'approach' for st in status):
+                for d in movement_actions(pend, 'X', pend.ctx.rules):
+                    if status[d.piece] == 'approach' and is_approach(pend, d):
+                        nxt = apply(pend, d)
+                        if not isinstance(nxt, ChanceNode) and nxt.approach == d.piece and nxt.tok_x > 0 and \
+                                nxt.count('X', 'intercept') < RC.LIMITS['X']['intercept']:
+                            cands.append((d, Action('intercept', 'X', d.piece)))
+        for line in cands:
+            j = line[-1].piece
+            r = 1.0 - float(p_success(pr - pend.ctx.dfn[j].r['intercept'], pend.ctx.rules))
+            if out['clean'] or r > out['risk'] or (r == out['risk'] and len(line) < len(out['line'])):
+                out.update(clean=False, risk=r, by=j, line=line)
+    if len(_PASS_CACHE) > 20000:
+        _PASS_CACHE.clear()
+    _PASS_CACHE[key] = out
+    return out
+
+
+def pass_outcomes(info):
+    """The two positions a pass can lead to, by the rules: caught (the defence's interception attempt
+    failed, or there was none) and picked off (a turnover; the ball stays with the passer and play goes
+    on, OQ-1). Picked off is None for a clean lane."""
+    from .resolve import complete_pass, force
+    pend = info['pending']
+    if isinstance(pend, ChanceNode) or not pend.pending:
+        return pend, None
+    if info['clean']:
+        return complete_pass(pend), None          # it lands at the start of the defence's turn
+    node = pend
+    for d in info['line']:
+        node = apply(node, d)
+    return force(node, 'success'), force(node, 'failure')
+
+
 # ---- what a side can see; card reading (section 8 lever 4) ----------------------------------------
 
 def _positions():
@@ -664,8 +743,15 @@ class Computer(Policy):
             star = self.plan['targets'][0]['o']
             kept = [p for p in plays if not any(a.kind == 'pass' and a.target != star for a in p.actions)]
             plays = kept or plays
+        if 'forces_passes' in self.habits and self.plan and self.plan['targets']:
+            t = self.plan['targets'][0]['o']
+            fp = next((a for a in acts if a.kind == 'pass' and a.target == t), None)
+            if fp is not None:                            # to the primary target whenever legal, whatever the risk
+                self._fire('forces_passes')
+                return Play('habit', (fp,))
         fn = self._value_fn()
-        if self._late():
+        late = self._late()
+        if late:
             fn = self._immediate
         stop = self._stop()
         scored, raw = [], {}
@@ -675,7 +761,7 @@ class Computer(Policy):
             node = apply_play(view, p)
             if node is None:
                 continue
-            v = self._node_value(node, fn)
+            v = self._node_value(node, fn) if late else self._play_value(view, p, node, fn)
             raw[p] = v                                    # the bar reads the shot's value, not the plan bonus
             if c.get('plan', True) or 'star_only' in self.habits:
                 v += self._plan_bonus(view, node)
@@ -710,6 +796,107 @@ class Computer(Policy):
             best = sp
         elif is_shot(best):
             best = self._pick(rest, True)
+        return best
+
+    # -- passing judgement (step 3f) --
+    _ALT = {'relocate': 'receiver', 'drive': 'passer', 'dribble': 'passer', 'hesitate': 'passer',
+            'screen': 'screen', 'seal': 'screen'}
+
+    def _play_value(self, view, p, node, fn):
+        """A play's value. A pass is valued by what the catch gives against the risk after the defence's
+        reply (pass_risk); the alternatives this level weighs (moving the receiver, moving the passer or
+        dribbling, a screen or seal) are valued with the offence's next turn able to pass, so a cut that
+        opens a clean lane is worth that lane. Everything else as before."""
+        alts = self.cfg.get('pass_alternatives', [])
+        if p.actions and p.actions[-1].kind == 'pass' and not view.inbound:
+            v = self._pass_play_value(view, p, follow='two_pass' in alts)
+            if v is not None:
+                return v
+        if self._ALT.get(p.concept) in alts:
+            return self._node_value(node, lambda st: self._after_value(st, True))
+        return self._node_value(node, fn)
+
+    @staticmethod
+    def _banked(s):
+        return RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos
+
+    def _pick_off_value(self, pre):
+        """Step 3f, section 2: a pass is valued (1 - risk) x the catch - risk x 5. A pick-off counts as the
+        -5 alone (scaled by the level's pass_risk_tolerance: 1.0 honest, below 1.0 reckless), on top of
+        what is already banked, not as the position it leaves: under OQ-1 the turnover plays on, and that
+        position is often worth more to the offence than the catch (the interceptor has left his man and
+        spent two tokens), which would make every contested pass nearly free."""
+        return self._banked(pre) + RC.TURNOVER_POINTS * self.cfg.get('pass_risk_tolerance', 1.0)
+
+    def _pass_play_value(self, view, p, follow):
+        """(1 - risk) x the position after the catch (valued after the defence's reply) + risk x the
+        pick-off (see _pick_off_value)."""
+        pre = view
+        for a in p.actions[:-1]:
+            pre = apply(pre, a)
+            if isinstance(pre, ChanceNode) or pre.stage != 'play' or pre.side != 'O':
+                return None
+        a = p.actions[-1]
+        info = pass_risk(pre, a.piece, a.target)
+        if info is None:
+            return None
+        caught, lost = pass_outcomes(info)
+        cv = self._node_value(caught, lambda st: self._after_value(st, follow))
+        if lost is None:
+            return cv
+        return (1 - info['risk']) * cv + info['risk'] * self._pick_off_value(pre)
+
+    def _after_value(self, st, follow):
+        """A position after the offence's play: the defence's best reply (its ball-side plays), then the
+        offence's next action; with follow, that next action may be a pass (valued the same way)."""
+        from .solver import apply_play
+        if isinstance(st, ChanceNode):
+            return self._node_value(st, lambda x: self._after_value(x, follow))
+        if st.stage != 'play':
+            return self.ev(st)[0].ev
+        if st.side == 'O':
+            return self._o_next(st, follow)
+        res = []
+        # the defence's full reply set (recovers, switches, contains, combos too): a reply limited to the
+        # ball side would never cover the teammate the next pass goes to, and overrate every alternative
+        for q in self._with_end(st, legal_actions(st), self.gen.plays(st, False, light=False)):
+            n = apply_play(st, q)
+            if n is not None:
+                res.append(self._node_value(n, lambda x: self._o_next(x, follow) if (
+                    not isinstance(x, ChanceNode) and x.stage == 'play' and x.side == 'O') else self.ev(x)[0].ev))
+        return min(res) if res else self._o_next(st, follow)
+
+    def _o_next(self, s, follow):
+        """The offence to act: its best action now (the evaluation), or with follow a pass to any
+        teammate, judged after the defence's reply like the first one (the extra pass costs a turn: the
+        defence answers it before the catch is valued)."""
+        v = self.ev(s)[0].ev
+        if not follow or s.pending or s.inbound or s.tok_o < 1:
+            return v
+        memo = self.__dict__.setdefault('_next_memo', {})
+        if s in memo and memo[s][0] is s.ctx:
+            return memo[s][1]
+        budget_x = reaction_budget(s)
+        reply = lambda t: self.ev._reply(t)[0].ev if (not isinstance(t, ChanceNode) and t.stage == 'play'
+                                                      and t.side == 'X') else self.ev(t)[0].ev
+        best = v
+        for r in range(5):
+            if r == s.ball or not B.on_board(s.o[r]):
+                continue
+            if self.ev.carrier_look(s, r, budget_x, True)[0] + RC.STEAL_FOUL_BONUS * s.bonus5 \
+                    + RC.TURNOVER_POINTS * s.tos <= best:
+                continue                       # even an open catch there can't beat what it has
+            info = pass_risk(s, s.ball, r)
+            if info is None:
+                continue
+            caught, lost = pass_outcomes(info)
+            cv = self._node_value(caught, reply)
+            if lost is not None:
+                cv = (1 - info['risk']) * cv + info['risk'] * self._pick_off_value(s)
+            best = max(best, cv)
+        if len(memo) > 20000:
+            memo.clear()
+        memo[s] = (s.ctx, best)
         return best
 
     def _contested(self, view, play):
