@@ -5113,8 +5113,8 @@ const RENDER = (() => {
             op('M-7 14 L-5 -3 H5 L7 14 Z'),
             op('M-6 -3 L0 -8 L6 -3'),
             op('M-2.5 6 h5 v8 h-5 z'),
-            op('M0 -3 L-12 -15 M0 -3 L12 -15 M0 -3 L-12 9 M0 -3 L12 9'),
-            op('M-12 -15 L-8 -16 M12 -15 L8 -16 M-12 9 L-8 10 M12 9 L8 10 M-7 -10 L-9 -8 M7 -10 L9 -8 M-7 4 L-9 2 M7 4 L9 2', 'stroke', null, 2),
+            { ...op('M0 -3 L-12 -15 M0 -3 L12 -15 M0 -3 L-12 9 M0 -3 L12 9'), anim: 'spin', pivot: [0, -3] },
+            { ...op('M-12 -15 L-8 -16 M12 -15 L8 -16 M-12 9 L-8 10 M12 9 L8 10 M-7 -10 L-9 -8 M7 -10 L9 -8 M-7 4 L-9 2 M7 4 L9 2', 'stroke', null, 2), anim: 'spin', pivot: [0, -3] },
             op('M-2.2 -3 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0', 'fill'),
         ],
         R: [ // Workshop: a hammer standing over an anvil
@@ -5152,17 +5152,17 @@ const RENDER = (() => {
             op('M-1.6 -7 a1.6 1.6 0 1 0 3.2 0 a1.6 1.6 0 1 0 -3.2 0', 'fill', '#f4ede0'),
         ],
         C: [ // Crops: three heads of wheat
-            op('M-8 14 V-11 M0 14 V-14 M8 14 V-11', 'stroke', '#4f6f3f'),
+            { ...op('M-8 14 V-11 M0 14 V-14 M8 14 V-11', 'stroke', '#4f6f3f'), anim: 'sway', pivot: [0, 14] },
             op('M-13 14 Q0 9 13 14', 'stroke', '#4f6f3f'),
-            op('M-10.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
-            op('M-2.5 -13 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -9 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -5 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -11 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -7 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
-            op('M5.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'),
+            { ...op('M-10.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-10.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-6.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'), anim: 'sway', pivot: [0, 14] },
+            { ...op('M-2.5 -13 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -9 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M-2.5 -5 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -11 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M1.5 -7 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'), anim: 'sway', pivot: [0, 14] },
+            { ...op('M5.5 -10 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -6 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M5.5 -2 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -8 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0 M9.5 -4 a1.7 1.7 0 1 0 3.4 0 a1.7 1.7 0 1 0 -3.4 0', 'fill', '#4f6f3f'), anim: 'sway', pivot: [0, 14] },
         ],
         V: [ // Vineyard: a trellis with grapes hanging from the wire
             op('M-14 -7 H14 M-10 -12 V14 M10 -12 V14', 'stroke', '#4f6f3f'),
-            op('M0 -7 Q-8 -12 -9 -4 Q-4 -3 0 -7', 'stroke', '#4f6f3f', 1.9),
-            op('M0 -7 V-3', 'stroke', '#6f527f', 1.8),
-            op('M-5.2 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-8.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M3.8 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-5.2 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 10 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0', 'fill', '#6f527f'),
+            { ...op('M0 -7 Q-8 -12 -9 -4 Q-4 -3 0 -7', 'stroke', '#4f6f3f', 1.9), anim: 'sway', pivot: [0, -7] },
+            { ...op('M0 -7 V-3', 'stroke', '#6f527f', 1.8), anim: 'sway', pivot: [0, -7] },
+            { ...op('M-5.2 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 -2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-8.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M3.8 2 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-5.2 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M0.8 6 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 M-2.2 10 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0', 'fill', '#6f527f'), anim: 'sway', pivot: [0, -7] },
         ],
         O: [ // Orchard: one tree in fruit
             op('M0 14 V4 M-5 14 H5', 'stroke', '#6f5134'),
@@ -5185,11 +5185,19 @@ const RENDER = (() => {
         c.scale(scale, scale);
         c.lineCap = 'round';
         c.lineJoin = 'round';
+        const at = target === ctx ? ambientTime() : 0;
         for (const item of ops) {
             const colour = iconInkOf(kind, item.ink);
             const path = iconPath(item.d);
+            let moved = false;
+            if (at && item.anim) {
+                const [px, py] = item.pivot;
+                const angle = item.anim === 'spin' ? at * 0.7 : Math.sin(at * 1.3 + cx * 0.05 + cy * 0.03) * 0.045;
+                c.save(); c.translate(px, py); c.rotate(angle); c.translate(-px, -py); moved = true;
+            }
             if (item.mode === 'fill' || item.mode === 'both') { c.fillStyle = colour; c.fill(path); }
             if (item.mode === 'stroke' || item.mode === 'both') { c.strokeStyle = colour; c.lineWidth = item.width; c.stroke(path); }
+            if (moved) c.restore();
         }
         c.restore();
     }
@@ -5485,11 +5493,14 @@ const RENDER = (() => {
                     ctx.save();
                     ctx.strokeStyle = 'rgba(244,237,224,0.38)';
                     ctx.lineWidth = 1.5;
+                    const at = ambientTime();
                     for (const yy of [0.38, 0.62]) {
+                        const drift = at ? Math.sin(at * 1.6 + c * 0.9 + r * 0.6 + yy * 4) * 1.4 : 0;
+                        const swell = at ? Math.cos(at * 1.1 + c * 0.5 + r * 0.8) * 0.8 : 0;
                         ctx.beginPath();
-                        ctx.moveTo(x + 10, y + size * yy);
-                        ctx.quadraticCurveTo(x + size * 0.35, y + size * (yy - 0.08), x + size * 0.52, y + size * yy);
-                        ctx.quadraticCurveTo(x + size * 0.70, y + size * (yy + 0.08), x + size - 10, y + size * yy);
+                        ctx.moveTo(x + 10 + drift, y + size * yy);
+                        ctx.quadraticCurveTo(x + size * 0.35 + drift, y + size * (yy - 0.08) - swell, x + size * 0.52 + drift, y + size * yy);
+                        ctx.quadraticCurveTo(x + size * 0.70 + drift, y + size * (yy + 0.08) + swell, x + size - 10 + drift, y + size * yy);
                         ctx.stroke();
                     }
                     ctx.restore();
@@ -6139,6 +6150,31 @@ const RENDER = (() => {
         });
     }
     function fxProgress(item) { return Math.max(0, Math.min(1, (performance.now() - item.start) / item.duration)); }
+    // Ambient life exists for engagement alone, so it keeps out of the way: it
+    // runs only on the live board, with no overlay open, never while the Cut
+    // clock is running, never under reduced motion, and never on a badge, a plot
+    // boundary or a fence. Water drifts, crops and vines sway a pixel, the mill
+    // turns, the manor's chimney smokes. About twelve frames a second.
+    const AMBIENT = { timer: null, on: false };
+    function ambientActive() {
+        if (FX.reduced || document.visibilityState !== 'visible') return false;
+        if (!STATE || STATE.phase === PHASE.SETUP) return false;
+        if (STATE.phase === PHASE.CUT && STATE.timerRunning) return false;
+        if (UI.topOverlayKey && UI.topOverlayKey()) return false;
+        return true;
+    }
+    // Seconds, for the live board only; 0 for snapshots and when ambient is off, so every
+    // static drawing is the same drawing.
+    function ambientTime() { return AMBIENT.on && !snapshotRender ? performance.now() / 1000 : 0; }
+    function ambientSchedule() {
+        if (AMBIENT.timer != null) return;
+        AMBIENT.timer = setTimeout(() => {
+            AMBIENT.timer = null;
+            const on = ambientActive();
+            if (on || AMBIENT.on) { AMBIENT.on = on; render(); }
+            ambientSchedule();
+        }, AMBIENT.on ? 85 : 400);
+    }
     function fxFind(type, c = null, r = null) {
         return FX.items.find(item => item.type === type && (c === null || (item.c === c && item.r === r))) || null;
     }
@@ -6179,8 +6215,31 @@ const RENDER = (() => {
         FX.lastGrid = gridKey; FX.lastTotals = totals; FX.lastCut = !!STATE.isCutComplete; FX.lastChosen = STATE.chosenPlotId || null; FX.lastPhase = STATE.phase;
     }
     // Rising "+1" marks after a placement: the neighbour rule, shown where it happened.
+    function drawSmoke() {
+        const at = ambientTime();
+        if (!at) return;
+        const m = CONFIG.MARGIN, s = CONFIG.CELL;
+        ctx.save();
+        for (let r = 0; r < CONFIG.GRID; r++) for (let c = 0; c < CONFIG.GRID; c++) {
+            const v = viewState.grid[r]?.[c];
+            if (v !== 'G' && v !== 'H') continue;
+            if (!GAME.isActiveCell(c, r, viewState.estateMask)) continue;
+            const cx = m + c * s + s / 2 + (v === 'G' ? -8.5 : 9), cy = m + r * s + s / 2 - 13;
+            for (let i = 0; i < 3; i++) {
+                const phase = ((at * 0.35 + i / 3 + c * 0.13 + r * 0.07) % 1);
+                const px = cx + Math.sin(phase * 6 + i) * 2.5, py = cy - 6 - phase * 22;
+                ctx.globalAlpha = 0.34 * (1 - phase);
+                ctx.fillStyle = '#f4ede0';
+                ctx.beginPath();
+                ctx.arc(px, py, 1.6 + phase * 2.6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        ctx.restore();
+    }
     function drawEffects() {
         if (snapshotRender) return;
+        drawSmoke();
         const m = CONFIG.MARGIN, s = CONFIG.CELL;
         for (const item of FX.items) {
             if (item.type !== 'rise') continue;
@@ -6250,6 +6309,7 @@ const RENDER = (() => {
         renderRuleSymbols(document.getElementById('rulesContent'));
     }, { passive: true });
 
+    ambientSchedule();
     return { render, renderSnapshot, renderRuleSymbols, renderLegendSymbols, renderPhaseSymbols, assetIconSvg, canvas };
 })();
 
