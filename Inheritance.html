@@ -14366,44 +14366,25 @@ const LEGACY_UNLOCK = (() => {
         const names=[UI.el.inputP1.value,UI.el.inputP2.value],unlocked=ready(names),status=document.getElementById('legacyUnlockStatus');
         let saved=false;try{saved=!!localStorage.getItem('inheritance.familyLegacy.current');}catch(_){}
         let html;
-        if(!validPair(names)){
-            html='<p>Family Legacy is for two named siblings. Enter two different names above. Every estate uses Better Together, Restricted Land, the Expanded Estate, and Terrain or a land template; a game with each first is recommended, not required. The Legacy explains each as it arrives.</p>';
-        } else if(allMet(names)){
-            html=`<p><strong>${esc(names[0].trim())}</strong> and <strong>${esc(names[1].trim())}</strong> have played a game with every rule Family Legacy uses.</p>`;
-        } else {
-            html=`<p>Every Legacy estate uses the rules below. A game with each first is recommended, not required: the Legacy explains each as it arrives. After a game, <strong>Add a Challenge</strong> stacks them one at a time.</p>${checklistHtml(names)}`;
-        }
+        html=validPair(names)
+            ?'<p>Every estate uses Better Together, Restricted Land, the Expanded Estate, and Terrain or a land template. The administrator explains each as it arrives.</p>'
+            :'<p>Family Legacy is for two named siblings. Enter two different names above.</p>';
         if(persistenceError)html+='<p>Progress could not be saved on this device.</p>';
         status.innerHTML=html;
         const button=document.getElementById('legacyEntryBtn');button.disabled=!unlocked&&!saved;button.textContent=unlocked?'Family Legacy · Six linked estates':saved?'Resume saved Family Legacy':'Family Legacy · Name two siblings';
         document.querySelectorAll('.legacy-tools').forEach(el=>el.hidden=!unlocked&&!saved);
     }
     // After a normal game: record it and say what it counted for.
+    // After a normal game: record the rules played, say nothing. The Legacy opens for any two names.
     function afterGame(names,settings){
         const box=document.getElementById('legacyProgress');
-        if(!box)return;
-        if(!validPair(names)){
-            box.hidden=false;
-            box.innerHTML='<div class="story-kicker">Family Legacy</div><p>Games count toward Family Legacy when both siblings are named. Name them in setup next time.</p>';
-            return;
-        }
-        const newly=record(names,settings)||[];
-        const after=allMet(names);
-        const gainedLines=newly.filter(n=>n.gained.length).map(n=>`<strong>${esc(n.name.trim())}</strong> ticked ${n.gained.map(r=>esc(r.label)).join(' and ')}.`);
-        let html='<div class="story-kicker">Family Legacy</div>';
-        if(after){
-            html+=`<p>${gainedLines.join(' ')} ${esc(names[0].trim())} and ${esc(names[1].trim())} have now played a game with every rule Family Legacy uses. It is in setup.</p>`;
-        } else {
-            const needed=stillNeeded(names).map(({rule,who})=>`${esc(rule.label)} (${who.length===2?'both':esc(who[0].trim())})`);
-            html+=`<p>${gainedLines.length?gainedLines.join(' '):'Nothing new ticked this game.'} Not yet played: ${needed.join(' · ')}. Family Legacy is open in setup either way; Add a Challenge below adds a rule to the next game.</p>`;
-        }
-        box.hidden=false;
-        box.innerHTML=html;
+        if(box)box.hidden=true;
+        if(validPair(names))record(names,settings);
     }
     // In the Add a Challenge menu, mark the additions that still count toward the unlock.
     function tagAdditions(){
         const names=STATE.pNames;
-        const needed=validPair(names)&&!allMet(names)?new Set(stillNeeded(names).map(n=>n.rule.key)):new Set();
+        const needed=new Set();
         document.querySelectorAll('[data-addition-row]').forEach(row=>{
             const need=needed.has(ADDITION_KEYS[row.dataset.additionRow]);
             let tag=row.querySelector('.legacy-tag');
