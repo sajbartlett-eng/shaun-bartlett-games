@@ -1,0 +1,432 @@
+[
+ {
+  "n": 6,
+  "offence": "O1 Pass to O4",
+  "position": "play:X|c6|t5/6|OI11,C9,O9,A3,Q3|XI10N,D9W,N9E,B3W,P3E|b1|m0000|n01000000000|u0|L0000|P1>4|f0+0-0",
+  "board": "          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n14        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n13        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n12        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n11        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      O1*    \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n10        \u00b7      \u00b7      \u00b7      \u00b7      3      3      3      3      X1N    3      3      3      3      \u00b7      \u00b7      \u00b7      \u00b7\n 9        \u00b7      \u00b7      O2     X2W    3      L      L      L      L      L      L      L      3      X3E    O3     \u00b7      \u00b7\n 8        \u00b7      3      3      L      L      L      L      L      L      L      L      L      L      L      3      3      \u00b7\n 7        3      3      L      L      L      M      M      M      M      M      M      M      L      L      L      3      3\n 6        3      L      L      L      M      M      M      M      M      M      M      M      M      L      L      L      3\n 5        3      L      L      M      M      M      M      M      M      M      M      M      M      M      L      L      3\n 4        3      L      L      M      M      M      K      K      K      K      K      M      M      M      L      L      3\n 3        O4     X4W    L      M      M      M      K      K      K      K      K      M      M      M      L      X5E    O5\n 2        3      L      L      M      M      M      K      K      K      K      K      M      M      M      L      L      3\n 1        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n\n          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n6. Need a Three | clock 6 | phase 1 | tokens O 5 X 6 | to act: X (play)\nZones: K rim  M mid/floater  L long two  3 three  \u00b7 plain wood.  O1* ball, Tx screen T side, L locked, X arrows by compass.",
+  "depth": 1,
+  "best": "X2 Move to C8 facing SW",
+  "options": [
+   [
+    26.0,
+    "X2 Move to C8 facing SW",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to B7 facing E",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to B7 facing SE",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to B7 facing S",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to C7 facing SW",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to C7 facing W",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to B8 facing SE",
+    "raw"
+   ],
+   [
+    26.0,
+    "X2 Move to B8 facing S",
+    "raw"
+   ],
+   [
+    30.0,
+    "X Pause",
+    "pause"
+   ],
+   [
+    30.0,
+    "X1 Move to I10 facing W",
+    "deny"
+   ],
+   [
+    30.0,
+    "X1 Move to I10 facing SE",
+    "deny"
+   ],
+   [
+    31.150000000000002,
+    "X4 Steal",
+    "steal"
+   ],
+   [
+    33.0,
+    "X4 Move to A4 facing S",
+    "closeout"
+   ],
+   [
+    33.0,
+    "X4 Move to B4 facing SW",
+    "closeout"
+   ],
+   [
+    33.0,
+    "X4 Move to B3 facing W",
+    "closeout"
+   ],
+   [
+    33.0,
+    "X4 Move to B2 facing NW",
+    "closeout"
+   ],
+   [
+    33.0,
+    "X4 Move to C3 facing W",
+    "help from two passes away"
+   ],
+   [
+    33.0,
+    "X4 Move to A4 facing S then X1 Move to I10 facing W",
+    "closeout+deny"
+   ],
+   [
+    33.0,
+    "X4 Move to A4 facing S then X2 Move to D9 facing SW",
+    "closeout+deny"
+   ],
+   [
+    33.0,
+    "X4 Move to A4 facing S then X1 Move to I10 facing SE",
+    "closeout+deny"
+   ],
+   [
+    33.0,
+    "X4 Move to B4 facing SW then X1 Move to I10 facing W",
+    "closeout+deny"
+   ],
+   [
+    33.0,
+    "X4 Move to B4 facing SW then X1 Move to I10 facing SE",
+    "closeout+deny"
+   ],
+   [
+    33.0,
+    "X4 Move to B3 facing W then X1 Move to I10 facing W",
+    "closeout+deny"
+   ],
+   [
+    37.28,
+    "X2 Move to D9 facing SW",
+    "deny"
+   ],
+   [
+    39.0,
+    "X4 Move to B4 facing SW then X2 Move to D9 facing SW",
+    "closeout+deny"
+   ]
+  ]
+ },
+ {
+  "n": 5,
+  "offence": "O2 Pass to O3",
+  "position": "play:X|c4|t5/6|OD11,@9,A4,F8,G3|XE10W,A9W,B5SW,E7N,H3W|b2|m0000|n01000000000|u0|L0000|P2>3|f0+0-0|i1",
+  "board": "          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n14        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n13        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n12        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n11        \u00b7      \u00b7      \u00b7      O1     \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n10        \u00b7      \u00b7      \u00b7      \u00b7      X1W    3      3      3      3      3      3      3      3      \u00b7      \u00b7      \u00b7      \u00b7\n 9 O2*    X2W    \u00b7      3      3      3      L      L      L      L      L      L      L      3      3      3      \u00b7      \u00b7\n 8        \u00b7      3      3      L      L      O4     L      L      L      L      L      L      L      L      3      3      \u00b7\n 7        3      3      L      L      X4N    M      M      M      M      M      M      M      L      L      L      3      3\n 6        3      L      L      L      M      M      M      M      M      M      M      M      M      L      L      L      3\n 5        3      X3SW   L      M      M      M      M      M      M      M      M      M      M      M      L      L      3\n 4        O3     L      L      M      M      M      K      K      K      K      K      M      M      M      L      L      3\n 3        3      L      L      M      M      M      O5     X5W    K      K      K      M      M      M      L      L      3\n 2        3      L      L      M      M      M      K      K      K      K      K      M      M      M      L      L      3\n 1        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n\n          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n5. Sideline, Late | clock 4 | phase 1 | tokens O 5 X 6 | to act: X (play) | inbound phase 1\nZones: K rim  M mid/floater  L long two  3 three  \u00b7 plain wood.  O1* ball, Tx screen T side, L locked, X arrows by compass.",
+  "depth": 1,
+  "best": "X3 Move to B4 facing W",
+  "options": [
+   [
+    15.0,
+    "X3 Move to B4 facing W",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing N",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing NE",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing E",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing SE",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing S",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing SW",
+    "raw"
+   ],
+   [
+    15.0,
+    "X3 Move to D3 facing W",
+    "raw"
+   ],
+   [
+    27.2,
+    "X Pause",
+    "pause"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW",
+    "closeout"
+   ],
+   [
+    27.2,
+    "X2 Move to A9 facing W",
+    "closeout"
+   ],
+   [
+    27.2,
+    "X2 Move to A8 facing NW",
+    "closeout"
+   ],
+   [
+    27.2,
+    "X1 Move to B10 facing SW then X1 Quick Step to A10",
+    "closeout"
+   ],
+   [
+    27.2,
+    "X1 Move to B10 facing SW",
+    "help from two passes away"
+   ],
+   [
+    27.2,
+    "X2 Move to B9 facing W",
+    "help"
+   ],
+   [
+    27.2,
+    "X3 Move to B7 facing NW",
+    "help from two passes away"
+   ],
+   [
+    27.2,
+    "X4 Move to B7 facing NW",
+    "help from two passes away"
+   ],
+   [
+    27.2,
+    "X2 Move to A9 facing N",
+    "deny"
+   ],
+   [
+    27.2,
+    "X1 Move to E10 facing SW",
+    "deny"
+   ],
+   [
+    27.2,
+    "X1 Move to E10 facing S",
+    "deny"
+   ],
+   [
+    27.2,
+    "X1 Move to E8 facing E",
+    "switch"
+   ],
+   [
+    27.2,
+    "X2 Move to C10 facing NE",
+    "switch"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X1 Move to B10 facing SW",
+    "closeout+help"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X3 Move to B7 facing NW",
+    "closeout+help"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X4 Move to B7 facing NW",
+    "closeout+help"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X1 Move to E10 facing SW",
+    "closeout+deny"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X1 Move to E10 facing S",
+    "closeout+deny"
+   ],
+   [
+    27.2,
+    "X2 Move to A10 facing SW then X1 Move to E8 facing E",
+    "closeout+switch"
+   ],
+   [
+    27.2,
+    "X2 Move to A9 facing W then X1 Move to B10 facing SW",
+    "closeout+help"
+   ],
+   [
+    27.2,
+    "X2 Move to A9 facing W then X3 Move to B7 facing NW",
+    "closeout+help"
+   ]
+  ]
+ },
+ {
+  "n": 10,
+  "offence": "O1 Sprint to L8",
+  "position": "play:X|c4|t3/4|OL8,D9,N9,F7,J3|XI10N,E8N,M8N,G6NW,J2N|b1|m0100|n10200000000|u0|L0000|f0+0-0",
+  "board": "          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n14        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n13        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n12        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n11        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n10        \u00b7      \u00b7      \u00b7      \u00b7      3      3      3      3      X1N    3      3      3      3      \u00b7      \u00b7      \u00b7      \u00b7\n 9        \u00b7      \u00b7      3      O2     3      L      L      L      L      L      L      L      3      O3     3      \u00b7      \u00b7\n 8        \u00b7      3      3      L      X2N    L      L      L      L      L      L      O1*    X3N    L      3      3      \u00b7\n 7        3      3      L      L      L      O4     M      M      M      M      M      M      L      L      L      3      3\n 6        3      L      L      L      M      M      X4NW   M      M      M      M      M      M      L      L      L      3\n 5        3      L      L      M      M      M      M      M      M      M      M      M      M      M      L      L      3\n 4        3      L      L      M      M      M      K      K      K      K      K      M      M      M      L      L      3\n 3        3      L      L      M      M      M      K      K      K      O5     K      M      M      M      L      L      3\n 2        3      L      L      M      M      M      K      K      K      X5N    K      M      M      M      L      L      3\n 1        \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7      \u00b7\n\n          A      B      C      D      E      F      G      H      I      J      K      L      M      N      O      P      Q\n10. Late Clock Reset | clock 4 | phase 1 | tokens O 3 X 4 | to act: X (play)\nZones: K rim  M mid/floater  L long two  3 three  \u00b7 plain wood.  O1* ball, Tx screen T side, L locked, X arrows by compass.",
+  "depth": 1,
+  "best": "X4 Move to J6 facing E",
+  "options": [
+   [
+    15.0,
+    "X4 Move to J6 facing E",
+    "raw"
+   ],
+   [
+    15.0,
+    "X4 Move to J6 facing SE",
+    "raw"
+   ],
+   [
+    15.0,
+    "X4 Move to I4 facing E",
+    "raw"
+   ],
+   [
+    15.0,
+    "X4 Move to I4 facing SE",
+    "raw"
+   ],
+   [
+    15.0,
+    "X4 Move to I5 facing SE",
+    "raw"
+   ],
+   [
+    15.0,
+    "X5 Move to J2 facing NW",
+    "raw"
+   ],
+   [
+    15.0,
+    "X5 Move to I2 facing N",
+    "raw"
+   ],
+   [
+    15.0,
+    "X5 Move to I2 facing NE",
+    "raw"
+   ],
+   [
+    19.5,
+    "X Pause",
+    "pause"
+   ],
+   [
+    19.5,
+    "X3 Move to M9 facing SW",
+    "closeout"
+   ],
+   [
+    19.5,
+    "X3 Move to M8 facing W",
+    "closeout"
+   ],
+   [
+    19.5,
+    "X1 Move to I10 facing SE",
+    "deny"
+   ],
+   [
+    19.5,
+    "X1 Move to K8 facing E",
+    "recover"
+   ],
+   [
+    19.5,
+    "X1 Move to G8 facing SW",
+    "switch"
+   ],
+   [
+    21.0,
+    "X3 Move to L9 facing S",
+    "closeout"
+   ],
+   [
+    21.0,
+    "X3 Move to M6 facing NW",
+    "help"
+   ],
+   [
+    21.0,
+    "X3 Move to M8 facing NW",
+    "deny"
+   ],
+   [
+    21.0,
+    "X3 Move to M9 facing SW then X1 Move to I10 facing SE",
+    "closeout+deny"
+   ],
+   [
+    22.475,
+    "X4 Move to J6 facing NE",
+    "help from two passes away"
+   ],
+   [
+    24.0,
+    "X3 Move to L9 facing S then X1 Move to I10 facing SE",
+    "closeout+deny"
+   ],
+   [
+    24.0,
+    "X3 Move to L9 facing S then X1 Move to K8 facing E",
+    "closeout+recover"
+   ],
+   [
+    24.0,
+    "X3 Move to L9 facing S then X1 Move to G8 facing SW",
+    "closeout+switch"
+   ],
+   [
+    26.0,
+    "X4 Move to J6 facing NE then X4 Quick Step to K7",
+    "closeout"
+   ],
+   [
+    26.0,
+    "X3 Move to L9 facing S then X4 Move to J6 facing NE",
+    "closeout+help"
+   ],
+   [
+    26.0,
+    "X3 Move to M9 facing SW then X4 Move to J6 facing NE",
+    "closeout+help"
+   ]
+  ]
+ }
+]

@@ -61,3 +61,47 @@ done ["target", 8, 600, 0, 2]: value 20.48 (605.7s)
 done ["target", 8, 600, 0, 3]: value 20.00 (604.2s)
 done ["target", 8, 600, 0, 4]: value 19.09 (601.6s)
 done ["coachvec", 8, 600, 0]: value 20.48 (601.5s)
+done ["target", 9, 600, 0, 0]: value 21.00 (601.0s)
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from playmaker_engine.solver_report import round3d_jobs, run_jobs; run_jobs(round3d_jobs(), workers=3, store='runs_3d.json')
+                                                                       ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/pm-web-v2/playmaker/playmaker_engine/solver_report.py", line 318, in run_jobs
+    done = json.load(f)
+             ~~~~~~~^^^
+  File "/usr/local/lib/python3.13/concurrent/futures/_base.py", line 453, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/concurrent/futures/_base.py", line 402, in __get_result
+    raise self._exception
+concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending.
+done ["context", 7, 120, 0, ["Twin Towers", "Run and Gun"]]: value 25.58 (130.5s)
+done ["context", 13, 120, 0, ["Run and Gun", "Twin Towers"]]: value 21.57 (130.9s)
+done ["context", 10, 120, 0, ["Iron Wall", "Ball Movement"]]: value 18.00 (132.1s)
+done ["context", 6, 120, 0, ["Twin Towers", "Run and Gun"]]: value 21.00 (120.4s)
+done ["context", 4, 120, 0, ["Run and Gun", "Twin Towers"]]: value 20.85 (120.1s)
+done ["context", 10, 120, 0, ["Ball Movement", "Iron Wall"]]: value 26.00 (121.9s)
+done ["context", 1, 120, 0, ["Ball Movement", "Iron Wall"]]: value 30.00 (120.2s)
+done ["context", 14, 120, 0, ["Run and Gun", "Twin Towers"]]: value 18.00 (120.3s)
+done ["context", 16, 120, 0, ["Twin Towers", "Run and Gun"]]: value 24.00 (121.0s)
+done ["context", 15, 120, 0, ["Twin Towers", "Bucket Brigade"]]: value 29.00 (120.3s)
+done ["context", 10, 120, 0, ["Twin Towers", "Run and Gun"]]: value 24.00 (124.1s)
+stale context done Thu Nov  5 00:14:51 UTC 2026
+done ["target", 9, 600, 0, 2]: value 21.50 (600.9s)
+done ["target", 9, 600, 0, 1]: value 26.00 (601.1s)
+done ["target", 9, 600, 0, 3]: value 22.11 (601.9s)
+done ["target", 9, 600, 0, 4]: value 24.82 (600.8s)
+done ["coachvec", 9, 600, 0]: value 26.00 (600.8s)
+done ["target", 11, 600, 0, 0]: value 22.76 (600.3s)
+done ["target", 11, 600, 0, 1]: value 28.76 (600.8s)
+done ["target", 11, 600, 0, 2]: value 22.76 (601.3s)
+done ["target", 11, 600, 0, 3]: value 27.00 (601.3s)
+done ["target", 11, 600, 0, 4]: value 22.76 (600.4s)
+done ["rule7b", 3, 600, 0]: value 21.43 (600.6s)
+done ["coachvec", 11, 600, 0]: value 28.76 (601.3s)
+done ["rule7b", 2, 600, 0]: value 16.60 (600.3s)
+done ["rule7b", 9, 600, 0]: value 24.82 (600.5s)
+done ["rule7b", 8, 600, 0]: value 20.00 (600.8s)
+done ["rule7b", 11, 600, 0]: value 28.76 (600.5s)
+done ["rule7b", 12, 600, 0]: value 21.75 (600.7s)
+round3d done Thu Nov  5 01:15:19 UTC 2026

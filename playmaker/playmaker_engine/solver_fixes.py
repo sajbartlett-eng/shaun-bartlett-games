@@ -109,3 +109,29 @@ CANDIDATES = {
          ('X2 plays O2 straight up on D9 (arrow on him) instead of denying from D8.', move_x(2, 'D9', 2))],
 }
 FIXES = {}
+
+
+# Round 2 (step 2b section 5): setup-only fixes for every non-Puzzle card, re-solved at full budget (600 s).
+CANDIDATES_R2 = {
+    13: [('Swap X1 and X3: the Defensive PG (contest 4 on threes) takes O3 at O9, the Small Forward (6) takes O1.', swap_x(1, 3)),
+         ('Defence team Lockdown -> Pace and Space (contest 4 on threes for the wing).', defence_team('Pace and Space'))],
+    7: [('Defence team Bucket Brigade -> Lockdown: real three-point contesters on both corner shooters.', defence_team('Lockdown')),
+        ('Swap X3 and X4: the Post Scorer PF (contest 5 on threes) starts on O3 at P8.', swap_x(3, 4))],
+    6: [('Defence team Iron Wall -> Lockdown: contest 5 on O2 the sharpshooter and 6 on O4 in the corner.', defence_team('Lockdown')),
+        ('Swap X2 and X3: the Defensive SF (contest 6 on threes) takes O2, the sharpshooter.', swap_x(2, 3))],
+    5: [('X3 plays O3 straight up on B4 (arrow on him) instead of sagging on B5.', move_x(3, 'B4', 3)),
+        ('Defence team Five Out -> Lockdown.', defence_team('Lockdown'))],
+    1: [('X1 starts on F6 and X2 on L7: both wing defenders outside their men, cutting the path to the arc.',
+         both(move_x(1, 'F6', 1), move_x(2, 'L7', 2))),
+        ('Defence team Iron Wall -> Lockdown.', defence_team('Lockdown'))],
+    10: [('Clock 4 -> 6: one more phase, so more than one way in.', clock(6)),
+         ('X4 sags to F6 (a step off O4 toward the lane).', move_x(4, 'F6', 4))],
+    3: [('X5 takes K4, between O5 and the rim: the post entry is denied.', move_x(5, 'K4', 5)),
+        ('Swap X4 and X5: the bigger defender on the post, the other on O4 at K10.', swap_x(4, 5))],
+    4: [('X3 sags to L8, a step off O3: one lane opens.', move_x(3, 'L8', 3)),
+        ('Clock 8 -> 10: one more phase against the denial.', clock(10))],
+    8: [('Defence team Pace and Space -> Iron Wall.', defence_team('Iron Wall')),
+        ('Defence team Pace and Space -> Bucket Brigade (no stopper).', defence_team('Bucket Brigade'))],
+    16: [('X1 takes H10, the locked star\'s step-back spot.', move_x(1, 'H10', 1)),
+         ('Defence team Iron Wall -> Lockdown.', defence_team('Lockdown'))],
+}

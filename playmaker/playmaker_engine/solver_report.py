@@ -279,6 +279,12 @@ def _job(args):
         text, fix = CANDIDATES[n][extra]
         r = solve_card(n, budget, seed, setup=fix, target=_best_target(n))
         r['fix'] = text
+    elif kind == 'fix2':                      # round 2 fixes: extra = [candidate index, target or None]
+        from .solver_fixes import CANDIDATES_R2
+        i, tgt = extra
+        text, fix = CANDIDATES_R2[n][i]
+        r = solve_card(n, budget, seed, setup=fix, target=tgt)
+        r['fix'] = text
     elif kind == 'target':                    # Coach's Call: one target, its own full budget
         r = solve_card(n, budget, seed, target=extra)
     elif kind == 'coachvec':
@@ -730,3 +736,23 @@ STALE_3D = [2, 3, 8, 9, 11, 12]
 
 def round3d_jobs(short=120, long=600, seeds=5):
     return [j for j in round2_jobs(short, long, seeds) if j[1] in STALE_3D]
+
+
+def stale_context_jobs():
+    """Round-2 context runs on the other cards that swapped in a team rebuilt in step 3d: re-run too."""
+    rebuilt = {'Twin Towers', 'Ball Movement'}
+    return [j for j in round2_jobs() if j[0] == 'context' and j[1] not in STALE_3D and rebuilt & set(j[4])]
+
+
+
+def fix2_jobs(targets, cards=None, budget=600):
+    """Round-2 fix runs: every candidate of every listed card, at the full long budget, seed 0.
+    targets: {card: best known target} for Coach's Call cards (from the round-2 results)."""
+    from .solver_fixes import CANDIDATES_R2
+    jobs = []
+    for n, cands in CANDIDATES_R2.items():
+        if cards and n not in cards:
+            continue
+        for i in range(len(cands)):
+            jobs.append(('fix2', n, budget, 0, [i, targets.get(n)]))
+    return jobs
