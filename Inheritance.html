@@ -2499,6 +2499,8 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
 #legacyUnlockStatus { margin-top: 8px; }
 #legacyUnlockStatus p { margin: 6px 0; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
 #legacyUnlockStatus code { font-family: var(--mono); font-size: 12px; }
+.legacy-toggle {display:flex;align-items:center;gap:8px;margin:10px 0;font-size:14px;line-height:1.4;cursor:pointer;}
+.legacy-toggle input {width:18px;height:18px;margin:0;accent-color:var(--gold);}
 .legacy-checklist { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
 .legacy-checklist th, .legacy-checklist td { padding: 6px 4px; border-bottom: 1px solid var(--paper-edge); text-align: left; vertical-align: top; }
 .legacy-checklist thead th { font-family: var(--display); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
@@ -13634,9 +13636,10 @@ const VALUE_ENGINE = {
     }
 };
 const LEGACY_UNLOCK = (() => {
-    // Family Legacy assumes both siblings have met the rules every one of its
-    // estates uses. The gate is that list, nothing more: one completed game
-    // under each rule, in any mix and any order, tracked per named sibling.
+    // Family Legacy uses these rules in every estate. The checklist records which
+    // each named sibling has already played a game with. It is advice, not a lock:
+    // the campaign opens for any two named siblings, and its own chapter cards and
+    // first-time notes carry the onboarding.
     const KEY='inheritance.familyLegacy.players.v2', OLD_KEY='inheritance.familyLegacy.players.v1';
     const REQUIREMENTS = Object.freeze([
         { key:'betterTogether', label:'Better Together', why:'every Legacy estate scores neighbours', test:s=>!!s.betterTogether },
@@ -13679,7 +13682,8 @@ const LEGACY_UNLOCK = (() => {
     const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...records.values()]));persistenceError=false;}catch(_){persistenceError=true;}};
     function progress(name){return records.get(key(name))||{name,completed:0,met:emptyMet()};}
     function missing(name){const p=progress(name);return REQUIREMENTS.filter(r=>!p.met[r.key]);}
-    function ready(names){return validPair(names)&&(testAccess()||names.every(name=>missing(name).length===0));}
+    function ready(names){return validPair(names);}
+    function allMet(names){return validPair(names)&&names.every(name=>missing(name).length===0);}
     function record(names,settings){
         if(!validPair(names))return null;
         const newly=[];
@@ -13711,18 +13715,16 @@ const LEGACY_UNLOCK = (() => {
         const names=[UI.el.inputP1.value,UI.el.inputP2.value],unlocked=ready(names),status=document.getElementById('legacyUnlockStatus');
         let saved=false;try{saved=!!localStorage.getItem('inheritance.familyLegacy.current');}catch(_){}
         let html;
-        if(unlocked){
-            html=testAccess()
-                ?'<p>Family Legacy is open on this page for testing (<code>?legacy=open</code>).</p>'
-                :`<p>Family Legacy is unlocked for <strong>${esc(names[0].trim())}</strong> and <strong>${esc(names[1].trim())}</strong>.</p>`;
-        } else if(!validPair(names)){
-            html='<p>Family Legacy unlocks for two named siblings once each has completed a game with Better Together, Restricted Land, the Expanded Estate, and Terrain or a land template. Enter two different names above to start the checklist. Chapter Zero and Training do not count; games across a distance do.</p>';
+        if(!validPair(names)){
+            html='<p>Family Legacy is for two named siblings. Enter two different names above. Every estate uses Better Together, Restricted Land, the Expanded Estate, and Terrain or a land template; a game with each first is recommended, not required. The Legacy explains each as it arrives.</p>';
+        } else if(allMet(names)){
+            html=`<p><strong>${esc(names[0].trim())}</strong> and <strong>${esc(names[1].trim())}</strong> have played a game with every rule Family Legacy uses.</p>`;
         } else {
-            html=`<p>Unlocks when both have completed a game with each rule below, in any mix and any order. After a game, <strong>Add a Challenge</strong> stacks them one at a time.</p>${checklistHtml(names)}`;
+            html=`<p>Every Legacy estate uses the rules below. A game with each first is recommended, not required: the Legacy explains each as it arrives. After a game, <strong>Add a Challenge</strong> stacks them one at a time.</p>${checklistHtml(names)}`;
         }
         if(persistenceError)html+='<p>Progress could not be saved on this device.</p>';
         status.innerHTML=html;
-        const button=document.getElementById('legacyEntryBtn');button.disabled=!unlocked&&!saved;button.textContent=unlocked?'Family Legacy · Six linked estates':saved?'Resume saved Family Legacy':'Family Legacy · Locked';
+        const button=document.getElementById('legacyEntryBtn');button.disabled=!unlocked&&!saved;button.textContent=unlocked?'Family Legacy · Six linked estates':saved?'Resume saved Family Legacy':'Family Legacy · Name two siblings';
         document.querySelectorAll('.legacy-tools').forEach(el=>el.hidden=!unlocked&&!saved);
     }
     // After a normal game: record it and say what it counted for.
@@ -13734,17 +13736,15 @@ const LEGACY_UNLOCK = (() => {
             box.innerHTML='<div class="story-kicker">Family Legacy</div><p>Games count toward Family Legacy when both siblings are named. Name them in setup next time.</p>';
             return;
         }
-        const before=ready(names);
         const newly=record(names,settings)||[];
-        const after=ready(names);
+        const after=allMet(names);
         const gainedLines=newly.filter(n=>n.gained.length).map(n=>`<strong>${esc(n.name.trim())}</strong> ticked ${n.gained.map(r=>esc(r.label)).join(' and ')}.`);
         let html='<div class="story-kicker">Family Legacy</div>';
-        if(after&&!testAccess()){
-            html+=`<p>${gainedLines.join(' ')} <strong>Family Legacy is unlocked</strong> for ${esc(names[0].trim())} and ${esc(names[1].trim())}. It is in setup.</p>`;
-            if(!before)UI.toast('Family Legacy unlocked for these players.','good',4000);
+        if(after){
+            html+=`<p>${gainedLines.join(' ')} ${esc(names[0].trim())} and ${esc(names[1].trim())} have now played a game with every rule Family Legacy uses. It is in setup.</p>`;
         } else {
             const needed=stillNeeded(names).map(({rule,who})=>`${esc(rule.label)} (${who.length===2?'both':esc(who[0].trim())})`);
-            html+=`<p>${gainedLines.length?gainedLines.join(' '):'Nothing new ticked this game.'} Still needed: ${needed.join(' · ')}. Add a Challenge below adds a rule to the next game.</p>`;
+            html+=`<p>${gainedLines.length?gainedLines.join(' '):'Nothing new ticked this game.'} Not yet played: ${needed.join(' · ')}. Family Legacy is open in setup either way; Add a Challenge below adds a rule to the next game.</p>`;
         }
         box.hidden=false;
         box.innerHTML=html;
@@ -13752,11 +13752,11 @@ const LEGACY_UNLOCK = (() => {
     // In the Add a Challenge menu, mark the additions that still count toward the unlock.
     function tagAdditions(){
         const names=STATE.pNames;
-        const needed=validPair(names)&&!ready(names)?new Set(stillNeeded(names).map(n=>n.rule.key)):new Set();
+        const needed=validPair(names)&&!allMet(names)?new Set(stillNeeded(names).map(n=>n.rule.key)):new Set();
         document.querySelectorAll('[data-addition-row]').forEach(row=>{
             const need=needed.has(ADDITION_KEYS[row.dataset.additionRow]);
             let tag=row.querySelector('.legacy-tag');
-            if(need&&!tag){tag=document.createElement('span');tag.className='legacy-tag';tag.textContent='counts toward Family Legacy';const target=row.querySelector('span')||row;target.appendChild(tag);}
+            if(need&&!tag){tag=document.createElement('span');tag.className='legacy-tag';tag.textContent='used in Family Legacy';const target=row.querySelector('span')||row;target.appendChild(tag);}
             if(!need&&tag)tag.remove();
         });
     }
@@ -14700,7 +14700,7 @@ const LEGACY = (() => {
     function open() {
         if(!campaign&&!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){
             let saved=false;try{saved=!!localStorage.getItem(KEY);}catch(_){}
-            if(!saved){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is locked. The checklist in setup shows what each sibling still needs.','warn',3800);return;}
+            if(!saved){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is for two named siblings. Enter two different names in setup.','warn',3800);return;}
         }
         if (campaign && !suspended) {
             suspended=snapshot();
@@ -15146,7 +15146,7 @@ const LEGACY = (() => {
         if (!campaign) {
             let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
             const ready=LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value]);
-            html+='<p class="body">Across six estates, inherited Property carries forward. Connected productive holdings can also pay Capital, which you may keep or invest in later estates.</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. The ending records individual distinctions alongside the family’s gains and setbacks.</p>'+(ready?'':'<p class="body">Enter two qualified names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
+            html+='<p class="body">Across six estates, inherited Property carries forward. Connected productive holdings can also pay Capital, which you may keep or invest in later estates.</p><p class="comparison-note">Cut and choose still decides ownership. The new choice is between Property now, income later, and what to invest. The ending records individual distinctions alongside the family’s gains and setbacks.</p>'+(ready?'':'<p class="body">Enter two different sibling names on the start screen to begin a new Legacy. You can still resume an existing saved Legacy.</p>')+guidedToggleHtml()+'<div class="actions">'+(ready?'<button class="btn-primary" data-legacy="new">Start a new Legacy</button>':'')+'<button class="btn-secondary" data-legacy="rules">Income and investment rules</button>'+(stored?'<button class="btn-secondary" data-legacy="resumeLocal">Resume autosave</button>':'')+'<button class="btn-secondary" data-legacy="load">Load Legacy file</button><button class="btn-ghost" data-legacy="close">Back</button></div>';
         } else {
             const complete=campaign.status==='complete',unresolved=campaign.status==='unresolved',between=campaign.status==='between';
             const latestRecord=campaign.history[campaign.history.length-1];
@@ -15170,6 +15170,7 @@ const LEGACY = (() => {
             } else {
                 html+=`<div class="actions"><button class="btn-primary" data-legacy="continue">Continue estate</button></div>${ledger()}`;
             }
+            if(!complete&&!unresolved)html+=guidedToggleHtml();
             html+='<div class="actions">';
             if(unresolved)html+='<button class="btn-primary" data-legacy="unresolved">Review final attempted estate</button>';
             if(complete)html+='<button class="btn-primary" data-legacy="recordShare">Share the family record</button><button class="btn-secondary" data-legacy="recordText">Download the family record</button>';
@@ -15178,12 +15179,29 @@ const LEGACY = (() => {
         if(saveError) html+='<p class="legacy-error">Automatic saving is unavailable. Download a Legacy file before leaving.</p>';
         panel.innerHTML=html;
     }
+    // Chapter cards and first-time notes are on by default. Off skips them for people who have been
+    // through a Legacy; the rules, the record and the ending are unchanged.
+    const GUIDED_KEY='inheritance.familyLegacy.guided';
+    function guidedPreference() {
+        if(campaign&&typeof campaign.guided==='boolean')return campaign.guided;
+        try{return localStorage.getItem(GUIDED_KEY)!=='0';}catch(_){return true;}
+    }
+    function setGuided(on) {
+        try{localStorage.setItem(GUIDED_KEY,on?'1':'0');}catch(_){}
+        if(!campaign)return;
+        campaign.guided=on;
+        if(!on){for(const key of Object.keys(GUIDANCE_DEFAULTS))campaign.guidance[key]=true;if(campaign.current)campaign.current.chapterCardSeen=true;}
+        save();
+    }
+    function guidedToggleHtml() {
+        return `<label class="legacy-toggle"><input type="checkbox" data-legacy-guided ${guidedPreference()?'checked':''}><span>Chapter cards and first-time notes${campaign?' (off skips the ones not yet shown)':''}</span></label>`;
+    }
     function newCampaign() {
-        if(!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is locked. The checklist in setup shows what each sibling still needs.','warn',3600);return;}
+        if(!LEGACY_UNLOCK.ready([UI.el.inputP1.value,UI.el.inputP2.value])){LEGACY_UNLOCK.refresh();UI.toast('Family Legacy is for two named siblings. Enter two different names in setup.','warn',3600);return;}
         let stored=false;try{stored=!!localStorage.getItem(KEY)||!!localStorage.getItem(STAGE_ONE_KEY);}catch(_){}
         if(stored && !confirm('Start a new Legacy? This replaces the automatic save. Download the existing Legacy first if you want to keep it.'))return;
         const names=[playerName(UI.el.inputP1.value,0),playerName(UI.el.inputP2.value,1)];
-        campaign={id:'legacy-'+Date.now().toString(36),seed:(Date.now()^Math.floor(Math.random()*1e9))>>>0,progressionVersion:5,incomeRuleVersion:2,yearsPerEstate:requestedYearsPerEstate(),round:1,status:'playing',legacyGeneratedThroughRound:0,guidance:clone(GUIDANCE_DEFAULTS),players:names.map(name=>({name,property:0,capital:0,peakCapital:0,unlockedInvestments:[],wins:0,holdings:[]})),totals:emptyTotals(),current:null,history:[],events:[],finalResult:null,endedAt:null};
+        campaign={id:'legacy-'+Date.now().toString(36),seed:(Date.now()^Math.floor(Math.random()*1e9))>>>0,progressionVersion:5,incomeRuleVersion:2,yearsPerEstate:requestedYearsPerEstate(),round:1,status:'playing',legacyGeneratedThroughRound:0,guided:guidedPreference(),guidance:guidedPreference()?clone(GUIDANCE_DEFAULTS):Object.fromEntries(Object.keys(GUIDANCE_DEFAULTS).map(key=>[key,true])),players:names.map(name=>({name,property:0,capital:0,peakCapital:0,unlockedInvestments:[],wins:0,holdings:[]})),totals:emptyTotals(),current:null,history:[],events:[],finalResult:null,endedAt:null};
         event('CAMPAIGN_STARTED'); startEstate();
     }
     function landTemplateForSeed(seed,round) {
@@ -15203,7 +15221,7 @@ const LEGACY = (() => {
         campaign.players.forEach((p,i)=>UI.el['inputP'+(i+1)].value=p.name);
         const firstInvestor=(n-1)%2;
         // Post-Build investment is deliberate: Build reveals the estate before either sibling spends Capital.
-        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,unspentOptions:[null,null],investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
+        campaign.status='playing';campaign.current={round:n,chapter:chapters[n-1],chapterCharacter:CHAPTERS[n-1].character,baseline:null,built:null,invested:0,investedBy:[0,0],provisional:null,provisionalHoldings:null,purchasedAssets:[],developments:[],faces:[null,null],facesDone:false,unspentOptions:[null,null],chapterCardSeen:campaign.guided===false,investmentOrder:[firstInvestor,1-firstInvestor],investmentStep:0,investmentTurn:firstInvestor,investmentOpened:false,investmentTiming:'postbuild',investmentComplete:false,buildSelection:null,attempt:1,firstAttempt:null,finalAttemptRoleRule:null,unresolvedReason:null,finalProjection:null,awaitingFinalRoles:false,finalRoleBasis:null,consent:{stage:'idle',decisions:[null,null],turn:0,recutVotes:[null,null],resolver:null}};
         // Resource chapters promise real sites for both developments. Retry the
         // seeded estate generation if terrain or rocks leave either one impossible.
         for(let attempt=0;attempt<64;attempt++){
@@ -15518,7 +15536,7 @@ const LEGACY = (() => {
         }[round]||'';
     }
     function showChapterCard() {
-        if(!campaign||campaign.status!=='playing'||!campaign.current||campaign.current.chapterCardSeen)return;
+        if(!campaign||campaign.status!=='playing'||!campaign.current||campaign.current.chapterCardSeen||campaign.guided===false)return;
         const fresh=STATE.phase===PHASE.TERRAIN||(STATE.phase===PHASE.BUILD&&!campaign.current.investmentOpened&&STATE.pool.length===CONFIG.PLACEMENT_COUNT);
         if(!fresh)return;
         const n=campaign.round,years=yearsPerEstate();
@@ -15610,7 +15628,7 @@ const LEGACY = (() => {
         const number=v=>Number.isFinite(v)&&v>=0&&v<=1e7;
         const signedNumber=v=>Number.isFinite(v)&&Math.abs(v)<=1e7;
         const close=(a,b)=>Math.abs(a-b)<1e-8;
-        if(!c||!s||c.progressionVersion!==5||![1,2].includes(c.incomeRuleVersion)||!(c.yearsPerEstate===undefined||(Number.isInteger(c.yearsPerEstate)&&c.yearsPerEstate>=1&&c.yearsPerEstate<=50))||!Number.isInteger(c.round)||c.round<1||c.round>6||!Number.isInteger(c.legacyGeneratedThroughRound)||c.legacyGeneratedThroughRound<0||c.legacyGeneratedThroughRound>6||!['playing','between','complete','unresolved'].includes(c.status)||!Number.isInteger(c.seed)||!(c.finalResult===null||typeof c.finalResult==='object')||!(c.endedAt===null||(typeof c.endedAt==='string'&&Number.isFinite(Date.parse(c.endedAt)))))fail();
+        if(!c||!s||c.progressionVersion!==5||!(c.guided===undefined||typeof c.guided==='boolean')||![1,2].includes(c.incomeRuleVersion)||!(c.yearsPerEstate===undefined||(Number.isInteger(c.yearsPerEstate)&&c.yearsPerEstate>=1&&c.yearsPerEstate<=50))||!Number.isInteger(c.round)||c.round<1||c.round>6||!Number.isInteger(c.legacyGeneratedThroughRound)||c.legacyGeneratedThroughRound<0||c.legacyGeneratedThroughRound>6||!['playing','between','complete','unresolved'].includes(c.status)||!Number.isInteger(c.seed)||!(c.finalResult===null||typeof c.finalResult==='object')||!(c.endedAt===null||(typeof c.endedAt==='string'&&Number.isFinite(Date.parse(c.endedAt)))))fail();
         if(!c.guidance||Object.keys(GUIDANCE_DEFAULTS).some(key=>typeof c.guidance[key]!=='boolean'))fail();
         if(!Array.isArray(c.players)||c.players.length!==2||c.players.some(p=>typeof p.name!=='string'||p.name.length>14||!number(p.property)||!number(p.capital)||!number(p.peakCapital)||!Array.isArray(p.unlockedInvestments)||p.unlockedInvestments.some(key=>!INVESTMENT_KEYS.has(key))||JSON.stringify(p.unlockedInvestments)!==JSON.stringify(canonicalUnlocks(p.unlockedInvestments))||!Number.isInteger(p.wins)||p.wins<0||p.wins>6||!Array.isArray(p.holdings)))fail();
         if(!c.totals||!c.current||!Array.isArray(c.history)||c.history.length>6||!Array.isArray(c.events)||c.events.length>1000||c.events.some(e=>!e||typeof e.type!=='string'||!Number.isInteger(e.round)||e.round<1||e.round>6||typeof e.at!=='string'||!Number.isFinite(Date.parse(e.at))))fail();
@@ -15848,6 +15866,7 @@ const LEGACY = (() => {
         UI.el.inputP1.addEventListener('input',LEGACY_UNLOCK.refresh);UI.el.inputP2.addEventListener('input',LEGACY_UNLOCK.refresh);
         document.getElementById('legacyEntryBtn').addEventListener('click',open);
         document.getElementById('legacyRecordBtn').addEventListener('click',recordEstate);
+        document.addEventListener('change',e=>{const toggle=e.target.closest('[data-legacy-guided]');if(toggle)setGuided(toggle.checked);});
         document.addEventListener('click',e=>{
             const faceButton=e.target.closest('[data-legacy-face]');if(faceButton){if(facesPending)facesPending.pick(Number(faceButton.dataset.legacyFace));return;}
             const buyAssetButton=e.target.closest('[data-legacy-buy-asset]');if(buyAssetButton){buyAsset(buyAssetButton.dataset.legacyBuyAsset);return;}
