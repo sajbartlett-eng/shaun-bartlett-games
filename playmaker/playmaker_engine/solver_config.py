@@ -14,6 +14,7 @@ class SolverConfig:
     relocate_k: int = 2              # off-ball relocations per node
     closeout_k: int = 4              # closeouts per node (outside the reaction to a shot)
     combo_k: int = 3                 # defence two-action combos built from the top single plays
+    contain_k: int = 2               # the carrier's best step-then-shoot squares the defence plays to contain
     # ---- guided search ----
     beam: int = 6                    # plays kept per node below the root (ordered by evaluation)
     root_beam: int = 40              # plays kept at the root

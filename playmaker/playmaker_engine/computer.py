@@ -225,7 +225,7 @@ class Computer(Policy):
             else:
                 self.cfg[k] = v
         self.rng = random.Random(seed * 7919 + (1 if side == 'O' else 2))
-        pool = part['habits']
+        pool = [h for h in part['habits'] if h not in self.cfg.get('habits_not', [])]
         self.habits = list(habits) if habits is not None else self.rng.sample(pool, self.cfg['habits'])
         self.budget_s = BUDGET['active'] if budget_s == 'active' else budget_s
         self.comfort = (LEVELS['defence']['comfort_line'] + self.cfg.get('comfort_offset', 0)) if side == 'X' else None
@@ -254,6 +254,9 @@ class Computer(Policy):
         self.Searcher = Searcher
         self.queue = None
         self.plan = None
+        self.visited = {}           # offence: (squares, ball) reached at its decisions this possession -> times
+        self.picked_off = set()     # offence: passes intercepted this possession, keyed by the full position
+        self._last_pass = None
 
     def describe(self):
         """For the log and the review: level, habits drawn, concepts switched off."""
@@ -269,11 +272,14 @@ class Computer(Policy):
         if len(acts) == 1:
             return acts[0]
         self._context(state)
+        if self.side == 'O' and state.stage == 'play' and state.side == 'O':
+            self._remember(state)
         t0 = time.time()
         self._deadline = t0 + self.budget_s if self.budget_s else None
         if self.queue and self.queue[0] == state and self.queue[1] and self.queue[1][0] in acts:
             a = self.queue[1][0]
             self._queue(state, a, self.queue[1][1:])
+            self._note_pass(state, a)
             return a
         self.queue = None
         view = seen_state(state, self.side, self.seen)
@@ -285,9 +291,36 @@ class Computer(Policy):
         if a not in acts:
             a = acts[0]
         self._queue(state, a, play.actions[1:] if play is not None else ())
+        self._note_pass(state, a)
         self.stats['decisions'] += 1
         self.stats['seconds'].append(time.time() - t0)
         return a
+
+    # -- offence memory over the possession: no loops, no repeating a pass that was just picked off --
+    @staticmethod
+    def _spot(state):
+        return (state.o, state.x, state.arrows, state.ball)
+
+    def _remember(self, state):
+        if self._last_pass is not None and state.tos > self._last_pass[2]:
+            self.picked_off.add(self._last_pass[:2])
+        self._last_pass = None
+        k = (state.o, state.ball)
+        self.visited[k] = self.visited.get(k, 0) + 1
+
+    def _note_pass(self, state, a):
+        if self.side == 'O' and a.kind == 'pass':
+            self._last_pass = (self._spot(state), a.target, state.tos)
+
+    def _loop_penalty(self, view, node):
+        """No progress: a play that ends where the offence already stood earlier this possession (its five
+        squares and the ball) loses this much per earlier visit (at most three)."""
+        w = self.cfg.get('loop_penalty', LEVELS['offence'].get('loop_penalty', 0))
+        if not w or isinstance(node, ChanceNode):
+            return 0.0
+        k = (node.o, node.pending[1] if node.pending else node.ball)
+        n = self.visited.get(k, 0) - (1 if k == (view.o, view.ball) else 0)
+        return w * min(3, max(0, n))
 
     def _queue(self, state, a, rest):
         nxt = apply(state, a)
@@ -314,8 +347,21 @@ class Computer(Policy):
         if la == 0:
             return self._immediate
         if self.side == 'X':
-            return lambda s: self.ev(s)[0].ev
+            return self._threat
         return lambda s: (self.ev._reply(s)[0].ev if s.stage == 'play' and s.side == 'X' else self.ev(s)[0].ev)
+
+    def _threat(self, s):
+        """The defence's view of the offence's next turn: its best action (a shot, a step and a shot, a pass
+        and a shot), or a dribble at the dice, with the defence's reply after it (a won dribble can open a
+        step-out shot a turn later)."""
+        from .solver import expected
+        v = self.ev(s)[0].ev
+        if s.stage != 'play' or s.side != 'O' or s.tok_o < 1:
+            return v
+        for a in legal_actions(s):
+            if a.kind == 'dribble':
+                v = max(v, expected(apply(s, a), self.ev._reply)[0].ev)
+        return v
 
     def _rank(self, view, plays, fn, maximise, stop):
         from .solver import apply_play
@@ -340,6 +386,16 @@ class Computer(Policy):
         if len(ranked) > 1 and self.rng.random() < self.cfg['randomness']:
             return ranked[1][1]
         return ranked[0][1]
+
+    @staticmethod
+    def _with_end(view, acts, plays):
+        """Mid-turn (one action already taken), stopping is a choice too: the generator builds plays for a
+        fresh turn and leaves it out."""
+        from .solver import Play
+        end = next((a for a in acts if a.kind == 'end_turn'), None)
+        if end is not None and view.stage == 'play' and view.turn_n >= 1 and not any(p.actions == (end,) for p in plays):
+            plays = list(plays) + [Play('end', (end,))]
+        return plays
 
     def _stop(self):
         return getattr(self, '_deadline', None)
@@ -370,7 +426,7 @@ class Computer(Policy):
             p = self._search(view)
             if p is not None:
                 return self._habit_rewrite(view, p)
-        plays = self.gen.plays(view, shallow=False)
+        plays = self._with_end(view, acts, self.gen.plays(view, shallow=False))
         if view.stage in ('reaction', 'contest') or view.pending:
             have = {p.actions for p in plays}
             plays += [Play('single', (a,)) for a in acts if (a,) not in have]
@@ -550,8 +606,12 @@ class Computer(Policy):
         if reset:
             tg = self.targets(view)
             near = min(range(5), key=lambda j: B.cheb(view.x[j], view.o[tg[0]['o']])) if tg else None
-            self.plan = dict(targets=tg, phase=view.phase, inbound=bool(view.inbound), near=near, type=None)
+            before = self.plan['type'] if self.plan else None
+            kind = self._plan_kind(view, tg)
+            self.plan = dict(targets=tg, phase=view.phase, inbound=bool(view.inbound), near=near, type=kind)
             self.notes.append(dict(event='plan', targets=tg))
+            if kind and kind != before:
+                self.notes.append(dict(event='plan_type', plan=kind))
 
     def _plan_bonus(self, view, node_state):
         if not self.plan or not self.plan['targets'] or isinstance(node_state, ChanceNode):
@@ -581,9 +641,13 @@ class Computer(Policy):
         if self.cfg['lookahead'] == 'solver':
             p = self._search(view)
             if p is not None and self._patient(view, p, None):
-                self._plan_type(p)
                 return p
-        plays = self.gen.plays(view, shallow=False)
+        plays = self._with_end(view, acts, self.gen.plays(view, shallow=False))
+        if self.picked_off:
+            spot = self._spot(view)
+            kept = [p for p in plays if not any(a.kind == 'pass' and (spot, a.target) in self.picked_off
+                                                for a in p.actions)]
+            plays = kept or plays
         if 'never_screens' in self.habits:
             kept = [p for p in plays if not any(a.kind == 'screen' for a in p.actions)]
             if len(kept) < len(plays):
@@ -615,6 +679,8 @@ class Computer(Policy):
             raw[p] = v                                    # the bar reads the shot's value, not the plan bonus
             if c.get('plan', True) or 'star_only' in self.habits:
                 v += self._plan_bonus(view, node)
+            if not any(a.kind == 'shot' for a in p.actions):
+                v -= self._loop_penalty(view, node)
             scored.append((v, p))
         if not scored:
             return None
@@ -622,24 +688,28 @@ class Computer(Policy):
         rest = [(v, p) for v, p in scored if not any(a.kind == 'shot' for a in p.actions)]
         best = self._pick(scored, True)
         if best is None or not shots or not rest:
-            self._plan_type(best)
             return best
         # 7.3 with a bar: a shot goes up only when it clears the level's bar for the time left (higher for
         # a look a defender can still contest than for an open one) and is worth at least what continuing
         # is estimated to be worth (a tie goes to the shot). The bars drop each phase, so a defence that
         # keeps the good looks covered forces a lesser one late. On the last chance there is no bar.
+        # The bar reads the look itself, not points already banked this possession (turnovers, the
+        # steal-foul bonus). From the level's shoot_by clock on, the best shot goes up whatever it is.
         last = self._last_chance(view)
+        banked = RC.STEAL_FOUL_BONUS * view.bonus5 + RC.TURNOVER_POINTS * view.tos
         is_shot = lambda p: any(a.kind == 'shot' for a in p.actions)
-        cleared = [(v, p) for v, p in shots if last or raw[p] >= self._bar(view, self._contested(view, p))]
+        if view.clock <= self.cfg.get('shoot_by', 0) and not last:
+            return max(shots, key=lambda vp: vp[0])[1]
+        cleared = [(v, p) for v, p in shots if last or raw[p] - banked >= self._bar(view, self._contested(view, p))]
         cv = max(v for v, p in rest)
         if cleared and max(v for v, p in cleared) >= cv - 1e-9:
             sv, sp = max(cleared, key=lambda vp: vp[0])
-            if not last and 'settles_early' in self.habits and raw[sp] < self._bar(view, self._contested(view, sp), early=False):
+            if not last and 'settles_early' in self.habits and \
+                    raw[sp] - banked < self._bar(view, self._contested(view, sp), early=False):
                 self._fire('settles_early')
             best = sp
         elif is_shot(best):
             best = self._pick(rest, True)
-        self._plan_type(best)
         return best
 
     def _contested(self, view, play):
@@ -672,17 +742,21 @@ class Computer(Policy):
         """For the solver-search path: the shot clears the bar, or it's the last chance."""
         if not any(a.kind == 'shot' for a in play.actions) or shot_value is None or self._last_chance(view):
             return True
-        return shot_value >= self._bar(view, self._contested(view, play))
+        banked = RC.STEAL_FOUL_BONUS * view.bonus5 + RC.TURNOVER_POINTS * view.tos
+        return shot_value - banked >= self._bar(view, self._contested(view, play))
 
-    def _plan_type(self, play):
-        if play is None or not self.plan:
-            return
-        kind = {'dribble': 'isolation', 'drive': 'isolation', 'drive+shoot': 'isolation', 'seal': 'post feed',
-                'screen': 'screen for the target', 'kick': 'drive and kick', 'relocate+kick': 'drive and kick',
-                'swing': 'swing', 'relocate': 'swing', 'shoot': 'shot', 'hesitate': 'swing'}.get(play.concept)
-        if kind and kind != 'shot' and self.plan.get('type') != kind:
-            self.plan['type'] = kind
-            self.notes.append(dict(event='plan_type', plan=kind))
+    @staticmethod
+    def _plan_kind(view, targets):
+        """The plan, named once from the primary target (it changes only when the plan does): the carrier
+        is the target (isolation), a post-up target (post feed), a rim target off the ball (cut to the
+        rim), or a jump-shooter off the ball (swing to the shooter)."""
+        if not targets:
+            return None
+        t = targets[0]
+        if t['o'] == view.ball:
+            return 'isolation'
+        return {'post': 'post feed', 'layup': 'cut to the rim', 'dunk': 'cut to the rim',
+                'floater': 'cut to the rim'}.get(t['shot'], 'swing to the shooter')
 
 
 def make(side, level, seed=0, **kw):

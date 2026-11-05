@@ -181,15 +181,25 @@ solver results; every choice is worked out at the table from what is in front of
   and then shoot, with interception risk from the arrow lines. This is the solver's evaluation, so walls,
   lanes and help count, and a spent reaction (the "closeout tax") counts too. Help is not a special
   rule: a defender's square and arrow are worth what they cut from the offence's best look (help gain)
-  minus what they open up on their own man (leave cost).
+  minus what they open up on their own man (leave cost). The Starter and All-Star defences also weigh a
+  dribble at the dice: a won dribble, the defence's answer, then the step-out shot.
+- **The defence's candidates** include containing the carrier's best step-then-shoot squares: a defender
+  next to each, facing it (a step that keeps the arrow facing elsewhere still forces a foul roll).
+  Mid-turn, ending the turn is always a candidate, and no play runs past the turn's action limit.
 - **The comfort line:** the defence won't spend to push the offence's look below 15 (the Okay/Poor
   line). That's "let them shoot it": a ▼ shooter left open is a choice, not a lapse.
 - **The offence picks two targets** (its biggest ▲ edges, the secret target on a Coach's Call card,
-  threes only on Need a Three). It builds toward them, re-plans when the defence takes the target away,
-  and shoots only when the look clears its **shot bar** and beats what continuing is worth. The bar is
+  threes only on Need a Three). The plan is named once from the primary target (isolation, post feed,
+  cut to the rim, swing to the shooter) and changes only when the defence takes the target away. It
+  shoots only when the look clears its **shot bar** and beats what continuing is worth. The bar is
   set by the clock and is higher for a look a defender can still contest than for an open one, so the
   offence works for an open, high-value shot first. It drops each phase: a defence that keeps the good
-  looks covered forces a lesser one late. On the last phase there is no bar.
+  looks covered forces a lesser one late. On the last phase there is no bar. The bar reads the look
+  itself, not points already banked (turnovers, the steal-foul bonus). Rookie takes its best shot from
+  the phase before the last (`shoot_by`).
+- **No loops:** a play that ends where the offence already stood earlier in the possession (its five
+  squares and the ball) loses 2 points per earlier visit (up to 3). A pass that was intercepted is not
+  thrown again from the same position.
 - **Setup:** man-to-man by number, unless a switch puts the best on-ball defender on the most explosive
   creator, or the best three-point contester on the ▲ shooter, and the evaluation says it's worth it.
   The on-ball arrow is on the carrier unless walling the carrier's best drive is worth more. The others'
@@ -208,10 +218,12 @@ solver results; every choice is worked out at the table from what is in front of
 | Looks ahead | defence: the shot on the board now; offence: the defence's reply | the offence's next turn / the defence's reply | the same, with no handicaps |
 | Shot bar, open look (clock 12 / 10 / 8 / 6 / 4) | 24 / 22 / 20 / 17 / 15 | 27 / 25 / 22 / 19 / 16 | as Starter |
 | Shot bar, contested look | 33 / 30 / 26 / 21 / 17 | 36 / 32 / 27 / 22 / 17 | as Starter |
+| Must shoot by | clock 4 | the last phase | the last phase |
 | Second-best choice | defence 15%, offence 3% | defence 5%, offence never | never |
 
 Defence habits: always force middle, nearest closes out, never leaves a ▲ shooter, ball watcher, jumps
-the first pass. Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
+the first pass (never drawn at Rookie: at Pass 14 v Intercept 6 an intercept attempt succeeds 60% of the
+time, so it is often the right play). Offence habits: settles early (reads its shot bar one phase ahead), never screens, ignores the mismatch (passes by
 position order), star only. A habit overrides the choice every time it applies, so it can be scouted and
 beaten. After the game, **About the computer** in the review names the level, the habits drawn, the
 concepts switched off, and the offence's targets and plan. It never appears during play.
