@@ -161,6 +161,7 @@ const IN_PAGE = async ({ profile, runIndex, seed }) => {
     }
     if (top === 'passOverlay') { UI.el.passContinueBtn.click(); continue; }
     if (top === 'tutorialOverlay') { UI.el.tutorialPrimaryBtn.click(); continue; }
+    if (top === 'dialogueOverlay') { DIALOGUE.finish(); continue; }
     if (top === 'legacyFacesOverlay') {
       // A face from the estate's result for whoever is being asked: ahead by 3 or more delighted, ahead content,
       // level flat, behind upset, behind by 3 or more angry. Scripted feeling, so the record strip has data.
