@@ -1374,8 +1374,23 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
     font-size: 13px;
     color: var(--ink);
 }
-.welcome-actions { margin-top: 10px; }
-.welcome-actions .btn-primary { width: 100%; }
+.welcome-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.menu-card { text-align: left; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; min-height: 72px; font: inherit; border-radius: 0; }
+.menu-card:hover { background: var(--paper-deep); }
+.menu-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.menu-card .menu-title { font-family: var(--display); font-weight: 700; font-size: 16px; line-height: 1.2; }
+.menu-card .menu-desc { font-size: 12.5px; line-height: 1.35; color: var(--ink-soft); }
+.menu-card.menu-primary { grid-column: 1 / -1; background: var(--ink); color: var(--paper); }
+.menu-card.menu-primary:hover { background: var(--ink-soft); }
+.menu-card.menu-primary .menu-desc { color: var(--paper-edge); }
+@media (max-width: 380px) { .welcome-menu { grid-template-columns: 1fr; } .menu-card { min-height: 0; } }
+/* The setup screen shows what the chosen way of playing needs. */
+body[data-setup-mode] .opponent-choice { display: none; }
+body[data-setup-mode]:not([data-setup-mode="legacy"]) .legacy-entry, body[data-setup-mode]:not([data-setup-mode="legacy"]) #legacyUnlockStatus { display: none; }
+body[data-setup-mode="quick"] .setup-options, body[data-setup-mode="training"] .setup-options, body[data-setup-mode="remote"] .setup-options, body[data-setup-mode="legacy"] .setup-options { display: none; }
+body[data-setup-mode="legacy"] .setup-primary, body[data-setup-mode="legacy"] .setup-preview { display: none; }
+body[data-setup-mode="training"] .setup-preview { display: none; }
+body[data-setup-mode="legacy"] .legacy-entry { margin-top: 20px; }
 .welcome-credit {
     margin-top: 12px;
     text-align: center;
@@ -2786,9 +2801,13 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
             </div>
         </section>
         </div>
-        <div class="welcome-actions">
-            <button class="btn-primary" id="welcomeContinueBtn">Set up your game</button>
-            <button class="btn-secondary" id="welcomeTutorialBtn">Learn by playing · Chapter Zero</button>
+        <div class="welcome-menu" role="group" aria-label="How do you want to play">
+            <button type="button" class="menu-card menu-primary" id="welcomeContinueBtn" data-menu="quick"><span class="menu-title">Quick start</span><span class="menu-desc">Play a game now. New rules are offered one at a time as you go.</span></button>
+            <button type="button" class="menu-card" data-menu="custom"><span class="menu-title">Custom game</span><span class="menu-desc">Choose the shape, the set and the rules that interest you now.</span></button>
+            <button type="button" class="menu-card" data-menu="training"><span class="menu-title">Training</span><span class="menu-desc">Build the intuition to master Inheritance. Generated estates, level by level.</span></button>
+            <button type="button" class="menu-card" data-menu="legacy"><span class="menu-title">Family Legacy</span><span class="menu-desc">Six linked estates, one family history. Property carries forward and holdings pay.</span></button>
+            <button type="button" class="menu-card" data-menu="remote"><span class="menu-title">Someone far away</span><span class="menu-desc">Two devices, one estate, a room code.</span></button>
+            <button type="button" class="menu-card" id="welcomeTutorialBtn" data-menu="tutorial"><span class="menu-title">Chapter Zero</span><span class="menu-desc">First time? Learn by playing one guided estate in a few minutes.</span></button>
         </div>
         <div class="setup-link-row"><button class="btn-ghost" id="welcomeRulesBtn">How to play</button></div>
         <div class="welcome-credit">Designed by <strong>Shaun Bartlett</strong> · © 2026</div>
@@ -2987,6 +3006,7 @@ canvas:focus-visible { box-shadow: inset 0 0 0 4px var(--gold); }
         </div>
 
         <div class="setup-link-row">
+            <button class="btn-ghost" id="setupMenuBtn">Menu</button>
             <button class="btn-ghost" id="setupRulesBtn">How to play this setup</button>
         </div>
     </div>
@@ -7420,7 +7440,13 @@ const UI = {
 
     refreshSetup() {
         const e = this.el;
-        e.setupEyebrow.textContent = STATE.hasCompletedGame ? 'Play again' : 'Names and options';
+        const modeCopy = FLOW.MODE_COPY[STATE.setupMode];
+        e.setupEyebrow.textContent = modeCopy ? (STATE.hasCompletedGame ? `Play again · ${modeCopy[0]}` : modeCopy[0]) : (STATE.hasCompletedGame ? 'Play again' : 'Names and options');
+        document.getElementById('setupTitle').textContent = modeCopy ? modeCopy[1] : 'Set up your game';
+        document.querySelector('.setup-intro').textContent = modeCopy ? modeCopy[2] : 'Name the siblings, choose how you want to play, then begin.';
+        const legacyEntry = document.getElementById('legacyEntryBtn');
+        legacyEntry.classList.toggle('btn-primary', STATE.setupMode === 'legacy');
+        legacyEntry.classList.toggle('btn-secondary', STATE.setupMode !== 'legacy');
 
         const shapeSummary = `Shape: ${STATE.settings.irregular ? 'Irregular' : 'Basic Square'}`;
         const setSummary = `Set: ${STATE.settings.randomAssets ? 'Expanded Estate' : 'Standard Estate'}`;
@@ -8346,11 +8372,38 @@ const FLOW = {
         FLOW.sync();
     },
 
-    continueFromWelcome() {
-        if (STATE.phase !== PHASE.SETUP || UI.topOverlayKey() !== 'welcomeOverlay') return;
-        UI.close('welcomeOverlay');
+    continueFromWelcome() { this.chooseMode('quick'); },
+
+    // The menu's choice decides what the setup screen shows: names and Play for a
+    // quick start; the rules panel open for a custom game; the ladders for training;
+    // the room panel for play across a distance; the Legacy entry for a Legacy.
+    MODE_COPY: {
+        quick: ['Quick start', 'Name the siblings and play', 'After each game you can add a rule for the next one.'],
+        custom: ['Custom game', 'Configure the game you want', 'Name the siblings and choose the shape, the set and the rules.'],
+        training: ['Training', 'Build the intuition', 'One player, no opponent. Pick a ladder.'],
+        legacy: ['Family Legacy', 'Six linked estates, one family history', 'Name the siblings, then open the Legacy.'],
+        remote: ['Someone far away', 'Two devices, one estate', 'One of you hosts a room; the other joins with the code or the link.'],
+    },
+    chooseMode(mode) {
+        if (STATE.phase !== PHASE.SETUP) return;
+        if (mode === 'tutorial') { TUTORIAL.start(); return; }
+        if (!this.MODE_COPY[mode]) mode = 'quick';
+        STATE.settings.opponent = mode === 'training' ? 'training' : mode === 'remote' ? 'remote' : 'person';
+        STATE.settings.computer = false;
+        STATE.setupMode = mode;
+        document.body.dataset.setupMode = mode;
+        if (UI.topOverlayKey() === 'welcomeOverlay') UI.close('welcomeOverlay');
+        UI.setSetupOptionsOpen(mode === 'custom');
         UI.refreshSetup();
-        UI.open('setupOverlay');
+        if (UI.topOverlayKey() !== 'setupOverlay') UI.open('setupOverlay');
+        if (mode === 'legacy') { LEGACY_UNLOCK.refresh(); setTimeout(() => document.getElementById('legacyEntryBtn')?.scrollIntoView({ block: 'center' }), 60); }
+    },
+    backToMenu() {
+        if (STATE.phase !== PHASE.SETUP) return;
+        if (NET.active) { UI.openRestartConfirm(); return; }
+        if (UI.topOverlayKey() === 'setupOverlay') UI.close('setupOverlay');
+        UI.open('welcomeOverlay');
+        PREVIEW.startWelcome();
     },
 
     startGame() {
@@ -11945,7 +11998,6 @@ const TUTORIAL = {
 
     bind() {
         const e = UI.el;
-        e.welcomeTutorialBtn.addEventListener('click', () => TUTORIAL.start());
         e.tutorialPrimaryBtn.addEventListener('click', () => TUTORIAL.fire('primary'));
         e.tutorialSecondaryBtn.addEventListener('click', () => TUTORIAL.fire('secondary'));
         e.tutorialGhostBtn.addEventListener('click', () => TUTORIAL.fire('ghost'));
@@ -12401,7 +12453,8 @@ const APP = {
 
         UI.el.undoBtn.addEventListener('click', INPUT.undo);
 
-        UI.el.welcomeContinueBtn.addEventListener('click', () => FLOW.continueFromWelcome());
+        document.querySelectorAll('[data-menu]').forEach(button => button.addEventListener('click', () => FLOW.chooseMode(button.dataset.menu)));
+        document.getElementById('setupMenuBtn').addEventListener('click', () => FLOW.backToMenu());
         UI.el.welcomeRulesBtn.addEventListener('click', () => UI.openRules({ basic: true }));
         const assetSetCards = [...document.querySelectorAll('.option-card[data-asset-set]')];
         assetSetCards.forEach((card, index) => {
@@ -12600,10 +12653,7 @@ const APP = {
         // A link from the website can open straight into Chapter Zero.
         if (/[?&]chapter=zero(&|$)/.test(location.search)) TUTORIAL.start();
         // A shared room link opens the setup screen ready to join.
-        if (/[?&]join=/.test(location.search)) {
-            STATE.settings.opponent = 'remote';
-            FLOW.continueFromWelcome();
-        }
+        if (/[?&]join=/.test(location.search)) FLOW.chooseMode('remote');
     }
 };
 
