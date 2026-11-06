@@ -1,4 +1,5 @@
 """The preview pack's golden game, regression ceilings, play() determinism and the soak."""
+import pytest
 import os
 import re
 import subprocess
@@ -95,6 +96,7 @@ def test_legacy_ceilings_reproduced_exactly():
         assert (mine[n][0], mine[n][2]) == (g, top), n
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_engine_ceilings_recorded():
     from playmaker_engine.analysis import engine_ceilings
     eng = engine_ceilings([6, 10, 14])
@@ -103,6 +105,7 @@ def test_engine_ceilings_recorded():
     assert eng[14] == (None, None)              # Hold for One: no shot before the final phase
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_two_action_reaction_closes_the_gap():
     # Late Clock Reset: one reaction action leaves O1's three worth 12.75; with two actions X4
     # Moves (arrow set) and Quick Steps in to contest clean: 3.

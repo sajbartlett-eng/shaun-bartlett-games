@@ -147,7 +147,7 @@ def test_arrow_line_strict_crossing_unit():
 
 def screen_state(xpos, beaten=0, rule=None):
     # Screener O2 at I6 with its T to the south: the T square is I5.
-    rules = with_rules(screen_rule=rule) if rule else None
+    rules = with_rules(screen_geometry=rule) if rule else None
     return mk(['A14', 'I6', 'E14', 'G14', 'C14'], ['Q14', xpos, 'O14', 'M14', 'K14'], ['N'] * 5,
               side='X', screens=((1, 4, False, beaten),), rules=rules)
 
@@ -174,6 +174,7 @@ def test_beaten_screen_cross_t_but_not_stop():
     assert 'I5' not in beat                 # but can't stop on it
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_screener_cannot_move_and_flips_back_after_next_offence_turn():
     s = mk(['I11', 'I6', 'E14', 'G14', 'C14'], ['Q14', 'I5', 'O14', 'M14', 'K14'], ['N'] * 5)
     s = apply(s, Action('screen', 'O', 1, target=4))
@@ -292,7 +293,7 @@ def test_the_solver_reach_never_uses_two_quick_steps_for_one_defender():
         for d in range(5):
             free, fixed = defender_reach(s, d, 2)
             seqs = list(free.values()) + [q for v in fixed.values() for q in v.values()]
-            assert all(sum(k in ('qs', 'sprint') for k, _ in seq) <= 1 for seq in seqs), (n, d)
+            assert all(sum(step[0] in ('qs', 'sprint') for step in seq) <= 1 for seq in seqs), (n, d)
         used = s.with_(qs_x=0b11111)
         for d in range(5):
             free, fixed = defender_reach(used, d, 2)

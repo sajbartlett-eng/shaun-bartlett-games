@@ -21,12 +21,18 @@ TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 
 
+# These positions were built for single arrows (step 3i). Under the wedge (the default since the follow-up
+# rulings) every defender covers a second line and the positions mean something else, so they keep the single
+# arrow; the screen, drive and intercept rulings apply as everywhere. The wedge is tested in test_rulings_3i.py.
+RULES = RC.with_rules(arrow_mode='single')
+
+
 def board(off, dfn, o, x, arrows, ball=0, **kw):
-    return game_state(off, dfn, o, x, arrows, ball=ball, check=False).with_(**kw)
+    return game_state(off, dfn, o, x, arrows, ball=ball, rules=RULES, check=False).with_(**kw)
 
 
 def lineup(off_cards, dfn_cards, o, x, arrows, ball=0, **kw):
-    ctx = Context(off_cards, dfn_cards, title='step 3i test', kind='GAME', off_team='test', def_team='test')
+    ctx = Context(off_cards, dfn_cards, RULES, title='step 3i test', kind='GAME', off_team='test', def_team='test')
     return GameState(ctx=ctx, o=tuple(P(q) for q in o), x=tuple(P(q) for q in x),
                      arrows=tuple(B.DIR_NAMES.index(a) for a in arrows), ball=ball, **kw)
 
@@ -82,7 +88,7 @@ WEAK = [TT[0], TT[4], TT[2], TT[3], TT[4]]                       # a poor three-
 def _threat(level, on, x2='D8', cards=None, **kw):
     s = board('Twin Towers', 'High-Low', TABLE_O, ['I10', x2, 'N8', 'G4', 'N4'], ['N', 'NW', 'NW', 'N', 'N'], **kw)
     if cards:
-        s = s.with_(ctx=Context(cards, s.ctx.dfn, s.ctx.rules, title='t', kind='GAME', off_team='t', def_team='High-Low'))
+        s = s.with_(ctx=Context(cards, s.ctx.dfn, RULES, title='t', kind='GAME', off_team='t', def_team='High-Low'))
     c = C.Computer('X', level, seed=1, budget_s=None, habits=[])
     c.cfg = dict(c.cfg, offball_threat=on)
     c._context(s)

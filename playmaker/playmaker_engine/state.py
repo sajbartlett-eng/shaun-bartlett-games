@@ -86,7 +86,9 @@ class GameState:
     qs_o: int = 0             # bitmask: players who used their Quick Step this phase (a Sprint uses it too)
     qs_x: int = 0
     forced: bool = False      # the pending contest is for a forced shot at clock 0
-    react_moved: int = 0      # step 3i (late_closeout test): defenders who moved square in the reaction to a shot       # defenders who moved during this defence turn (inbound pass in the air)
+    react_moved: int = 0      # step 3i (late_closeout test): defenders who moved square in the reaction to a shot
+    turn_lead: int = -1       # OQ-29 ruling: the offence player whose Move opened this turn (he may Screen next)
+    turn_x: tuple = ()        # intercept ruling: the defence's squares and arrows at the start of its turn
 
     # ---- helpers ----
     def count(self, side, kind):
@@ -157,6 +159,8 @@ class GameState:
             parts.append(f'q{self.qs_o:02x}{self.qs_x:02x}')
         if self.react_moved:
             parts.append(f'v{self.react_moved:02x}')
+        if self.turn_lead >= 0:
+            parts.append(f'g{self.turn_lead + 1}')
         return '|'.join(parts)
 
     def board(self):

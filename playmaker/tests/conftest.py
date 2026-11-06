@@ -27,3 +27,14 @@ def dests(acts, kind, piece, side=None):
 def golden():
     from playmaker_engine.soak import golden_setup
     return golden_setup()
+
+
+import pytest as _pytest
+
+
+@_pytest.fixture
+def legacy_rules(monkeypatch):
+    """The rules as they were before the step 3i follow-up rulings (single arrow, two-turn screens, arrow-line
+    drives, the interceptor left on the line), for tests that record that behaviour."""
+    from playmaker_engine import rules_config as RC
+    monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.LEGACY_3I))

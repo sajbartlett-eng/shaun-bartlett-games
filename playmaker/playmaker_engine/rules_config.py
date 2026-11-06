@@ -81,10 +81,28 @@ class Rules:
     #                        square or cuts the T square's corner (T is one of the two
     #                        squares the diagonal passes between).
     #   'from_t_only'      : only diagonal steps that start on the T square are banned.
-    screen_rule: str = 'from_t_or_corner'
+    screen_geometry: str = 'from_t_or_corner'
+    # OQ-29 (RULED, step 3i follow-up): how long a screen lasts and when it can be set.
+    #   'hold_until_move' : a Screen is the turn's first action, or its second straight after that same
+    #                       player's Move; it ends the turn and lasts until the screener moves (he may Move at
+    #                       any time), a Challenge beats it (removed for every defender) or the phase ends.
+    #   'two_turns'       : the old engine: any time in the turn; the screener can't move; it flips back after
+    #                       the offence's next turn and survives the phase reset; a beaten Challenge lets that
+    #                       one defender through.
+    screen_rule: str = 'hold_until_move'
     # OQ-10: arrow line. A ball carrier move is illegal only if its path goes from one
     #   side of the ray to the other (touching or stepping onto the line is fine).
     arrow_line_strict: bool = True
+    # Drives (RULED, step 3i follow-up). 'zone': the ball carrier may enter a square in the zone of a defender
+    #   adjacent to him at the start of the movement, but no square of the path before the destination may
+    #   lie in it, unless he beat that defender with a Dribble this phase. 'arrow_line': the old rule (the
+    #   path may not cross the defender's arrow line).
+    drive_rule: str = 'zone'
+    # Intercept outcome (RULED, step 3i follow-up). True: an Intercept that wins (-5, the ball stays with the
+    #   passer) puts the interceptor back on the square and arrow he had at the start of the defence's turn
+    #   (his Move stays used); one that misses leaves him where he moved, on the pass line. False: the old
+    #   engine (he stays on the pass line either way).
+    intercept_return: bool = True
     # OQ-11: a 1 straight + 1 diagonal Move may go in either order.
     move_either_order: bool = True
     # OQ-12 (ruled: the defence chooses any adjacent defender): contest choice.
@@ -106,12 +124,12 @@ class Rules:
     #   Move and Quick Step", trackers). So no Sprint after that player's Quick Step, no Quick Step after
     #   their Sprint, no second Quick Step. The side's limit of 2 Quick Steps (Sprints count) still applies.
     qs_once_per_player: bool = True
-    # Step 3h (rule test, not adopted): a defender's arrow.
-    #   'single' : one arrow line (the rules as they stand).
+    # A defender's arrow (RULED, step 3i follow-up: the wedge is the default).
+    #   'single' : one arrow line (the step 3h rules; kept available).
     #   'wedge'  : two arrow lines 45 degrees apart (directions a and a+1 for arrow index a): passes,
     #              drives, steals and contest facing test either line; a Sprint sets one edge to the run
     #              direction and the defender picks the side of the other.
-    arrow_mode: str = 'single'
+    arrow_mode: str = 'wedge'
     # Step 3h (rule test, not adopted): contest quality.
     #   'current'      : any adjacent defender contests; arrow off the shooter = a foul roll; -3 when the
     #                    contester is further from the rim than the shooter.
@@ -169,6 +187,11 @@ class Rules:
     #   look can then never help the defence. False = free throws only.
     and_one: bool = True
 
+
+# The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
+# records these settings in its setup line; a log from before them replays with the old values.
+RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout')
+LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False)
 
 DEFAULT_RULES = Rules()
 

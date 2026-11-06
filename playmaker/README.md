@@ -527,12 +527,44 @@ the last says **OK: your turn**. Nothing still to come is shown, so you can try 
 (a steal? another help defender moving?) before you press OK. The timer, if on, waits until your turn
 is on the board. Each feed entry carries a small board snapshot (`board_json` in `view.py`) for this.
 
+## Rulings from the live test (step 3i follow-up)
+
+These are the defaults now (`rules_config.py`; the old behaviour of each stays available as a setting):
+
+- **Screens** (OQ-29, `screen_rule='hold_until_move'`): a Screen marks the T square, whether or not a
+  defender stands on it, and no defender may move diagonally round the screener from or through it. It
+  must be the turn's first action, or its second straight after that same player's Move, and it ends the
+  turn. It lasts until the screener moves (he may Move at any time), a Challenge beats it (gone for every
+  defender) or the phase ends. A failed Challenge locks the challenger. So the offence can set the screen,
+  let the defence answer, use it with one movement and end the turn (the screen stays up, the defence must
+  answer again), and only then release the screener to roll or pop.
+- **The double arrow** (`arrow_mode='wedge'`): two arrow lines 45° apart. A contest is clean if the
+  shooter is on either line, otherwise a foul roll; the −3 when the contester is further from the rim;
+  a Steal on either line; a Sprint sets one edge to its run and the defender picks the other.
+- **Zones of influence** (`actions.zone`): the squares along each arrow line a defender could reach
+  with one movement, from what he has left (a Move; a Sprint if his Move and Quick Step are both there; a
+  Quick Step once his Move is used; a locked defender only his Quick Step), stopping at the first player.
+- **Drives** (`drive_rule='zone'`): the ball carrier may end a movement in the zone of a defender next to
+  him, but not pass through it, unless he beat that defender with a Dribble this phase.
+- **Intercepts** (`intercept_return=True`): an Intercept that wins (−5, the ball stays with the passer)
+  puts the interceptor back where he started the defence's turn; one that misses leaves him on the pass
+  line, out of position.
+
+**On the board, always, for both players, at every detail level** (`docs/zones_mid_phase.png`): each
+defender's zone hatched along his arrow lines (a lighter dashed square for the Sprint extension), outlined
+and numbered for its defender so overlaps stay readable; each active screen's T and the diagonal steps it
+blocks; a small M and Q on every piece once its Move or Quick Step is used, beside the lock badge; and,
+when you select an attacker, every square he can still reach this phase. Shot charts stay in the scout
+report and the card panel.
+
+A log records these settings; a log from before them replays with the old ones.
+
 ## Rule settings under test (step 3h, not adopted)
 
 Two settings in `rules_config.py`, off by default, for the designer to compare (`docs/Rule_Test_3h.pdf`,
 draft rulebook wording in `docs/Step3h_rulebook_drafts.md`):
-- `arrow_mode`: `'single'` (now) or `'wedge'`. A wedge is two arrow lines 45° apart, and every arrow
-  rule uses either line.
+- `arrow_mode`: `'wedge'` (the default since the step 3i follow-up) or `'single'`. A wedge is two arrow
+  lines 45° apart, and every arrow rule uses either line.
 - `contest_geometry`: `'current'` (now), `'wedge_mirror'` or `'rim_distance'`. With either new value,
   facing gates the contest. Position then sets its quality: Front is a full contest, Side a foul roll,
   and Behind a foul roll plus the −3.

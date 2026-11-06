@@ -200,6 +200,7 @@ class Game:
                   custom=self.custom or None, experimental=self.experimental or None,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
+                  rules={k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
                   start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):

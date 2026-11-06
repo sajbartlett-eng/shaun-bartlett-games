@@ -1509,7 +1509,7 @@ class Computer(Policy):
     # ---- step 3i: the goal-directed offence ----------------------------------------------------------
     _MARK = {'in': ('in', 'r'), 'out': ('out', 'r'), 'gap': ('in', 'r'), 'shift': ('shift', 's'), 'under': ('base', 'r'),
              'give': ('give', 'r'), 'go': ('go', 'c'), 'drive': ('drive', 'c'), 'cut': ('back', 'r'), 'off': ('off', 'r'),
-             'screen': ('screened', 'sc')}
+             'screen': ('screened', 'sc'), 'use': ('used', 'c')}
 
     def _goal_trigger(self, view):
         """A roll that went the wrong way since the offence's last decision: a pass picked off or a steal
@@ -1585,11 +1585,15 @@ class Computer(Policy):
                 plays = []                            # a screen ends with the phase: set it when the pass can follow
             if not plays:
                 end = next((a for a in acts if a.kind == 'end_turn'), None)
-                if no_pass and end is not None and k == 0:
+                first = step['id'] in ('screen', 'seal') and view.turn_n > 0 and \
+                    view.ctx.rules.screen_rule == 'hold_until_move'
+                if (no_pass or first) and end is not None and k == 0:
                     from .solver import Play
+                    why = ("a screen is the turn's first action" if first else
+                           f"{step['words']} needs a pass this phase can't give")
                     self.notes.append(dict(event='goal_wait', id=cur['entry']['id'],
-                                           text=f"Waited for the next phase: {step['words']} needs a pass this phase can't give"))
-                    return Play('wait', (end,))       # the plan's step needs the next phase's passes
+                                           text=f"Waited for the next turn: {why}"))
+                    return Play('wait', (end,))       # the plan's step needs the next turn or phase
                 if step['finish'] or self.cfg.get('goal_strict', True):
                     return None                       # this step can't be taken this turn: other plays meanwhile
                 continue

@@ -51,6 +51,7 @@ def test_a_lane_open_now_but_reachable_by_move_then_intercept_is_contested():
     assert abs(info['risk'] - (1 - max(0, min(20, gap)) / 20)) < 1e-9
 
 
+@pytest.mark.usefixtures('legacy_rules')   # a position built for single arrows (step 3f)
 def test_a_lane_nobody_can_reach_is_clean():
     s, d = position('prefer_clean')
     info = C.pass_risk(s, s.ball, d['clean'])
@@ -67,6 +68,7 @@ def test_all_star_prefers_the_clean_pass_to_an_equal_threat():
     assert not (a.kind == 'pass' and a.target == d['contested']), a
 
 
+@pytest.mark.usefixtures('legacy_rules')   # a position built for single arrows (step 3f)
 def test_all_star_takes_the_cut_that_opens_the_lane_over_the_contested_pass():
     s, d = position('cut')
     r = d['receiver']

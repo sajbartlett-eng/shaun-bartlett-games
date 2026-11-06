@@ -16,7 +16,7 @@ pass back out.
 """
 from . import board as B
 from . import rules_config as RC
-from .actions import Action, can_move_kind, intercept_status, is_approach, movement_dests
+from .actions import Action, can_move_kind, intercept_status, is_approach, movement_dests, zone
 
 
 def reaction_budget(state):
@@ -47,7 +47,8 @@ def capacity(state, j):
                 steals_left=max(0, lim['steal'] - state.count('X', 'steal')),
                 can_turn=can_move,              # only a Move sets the arrow; a Quick Step keeps it
                 movements=kinds,                # what he can still use to move at all
-                reaction=reaction_budget(state))
+                reaction=reaction_budget(state),
+                zone=zone(state, j))             # his zone of influence (actions.zone, the ruled definition)
 
 
 def _pending(state, passer, receiver):

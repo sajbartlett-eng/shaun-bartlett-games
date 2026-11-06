@@ -54,6 +54,44 @@ def arrow_lines(s):
     return out
 
 
+def influence(s):
+    """Everything the board shows always, to both players at every detail level (step 3i follow-up):
+    each defender's zone of influence (the movement that reaches each square: a Move or Quick Step solid,
+    a Sprint as the lighter extension), each active screen's T and the diagonal steps it blocks, capacity
+    badges (Move used, Quick Step used, locked) for every piece, and each attacker's movement reach this
+    phase (shown when he is selected)."""
+    from playmaker_engine.actions import zone, movement_dests, can_move_kind
+    rules = s.ctx.rules
+    zones = []
+    for j in range(5):
+        z = zone(s, j)
+        zones.append(dict(defender=j, lines=list(G.lines(rules, s.arrows[j])),
+                          squares=[dict(sq=B.sq(q), x=q[0], y=q[1], kind=k) for q, k in sorted(z.items())]))
+    screens = []
+    for sc in s.screens:
+        t = B.add(s.o[sc[0]], B.DIRS[sc[1]])
+        blocked = []
+        for a in [t] + [B.add(t, d) for d in B.DIRS]:
+            for d in B.DIRS:
+                b = B.add(a, d)
+                if B.on_board(a) and B.on_board(b) and B.diag_step_banned(a, b, t, rules):
+                    if [b[0], b[1], a[0], a[1]] not in blocked:
+                        blocked.append([a[0], a[1], b[0], b[1]])
+        screens.append(dict(screener=sc[0], t=dict(sq=B.sq(t), x=t[0], y=t[1]), blocked=blocked))
+    st = s if (s.side == 'O' and s.stage == 'play') else s.with_(side='O', stage='play')
+    reach = []
+    for i in range(5):
+        sq = set()
+        for kind in ('move', 'qs', 'sprint'):
+            if can_move_kind(st, 'O', i, kind):
+                sq |= set(movement_dests(st, 'O', i, kind, rules))
+        reach.append([dict(sq=B.sq(q), x=q[0], y=q[1]) for q in sorted(sq)])
+    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i)) for i in range(5)],
+                  X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j)) for j in range(5)])
+    return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
+                drive_rule=rules.drive_rule)
+
+
 def rv(card, name):
     """A rating as the card prints it: value plus its ▲ / ▼ mark."""
     return f'{card.r[name]}{MARK[card.bands[name]]}'
@@ -190,8 +228,9 @@ def board_json(s, slots=None):
          for i, p in enumerate(s.x)]
     return dict(o=o, x=x, clock=s.clock, phase=s.phase, stage=s.stage, tokens=dict(O=s.tok_o, X=s.tok_x),
                 pending=list(s.pending) if s.pending else None, inbound=s.inbound, shot=s.shot,
-                arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) else [], summary=turn_summary(s),
-                bonus=RC.STEAL_FOUL_BONUS * s.bonus5, turnovers=s.tos)
+                arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) and s.ctx.rules.drive_rule == 'arrow_line' else [],
+                summary=turn_summary(s), bonus=RC.STEAL_FOUL_BONUS * s.bonus5, turnovers=s.tos,
+                influence=influence(s) if s.stage != 'over' else None)
 
 
 def state_json(game, token):
@@ -245,7 +284,8 @@ def state_json(game, token):
                 clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final,
                 tokens=dict(O=s.tok_o, X=s.tok_x), limits=limits, inbound=s.inbound, inbounder=ctx.inbounder,
                 pending=list(s.pending) if s.pending else None, shot=s.shot,
-                o=pieces_o, x=pieces_x, zones=zones(), arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) else [],
+                o=pieces_o, x=pieces_x, zones=zones(),
+                arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) and ctx.rules.drive_rule == 'arrow_line' else [],
                 bonus=RC.STEAL_FOUL_BONUS * s.bonus5, turnovers=s.tos, fouls=s.fouls,
                 target=(s.target if show_target else ('secret' if s.target >= 0 else None)),
                 summary=turn_summary(s), rolls=game.rolls, result=result, scores=game.scores, match=game.match,
@@ -256,7 +296,8 @@ def state_json(game, token):
                 feed=game.feed[-40:], feed_n=len(game.feed),
                 level=game.level, scout=scout_json(game, seat), matchups=matchups(s),
                 custom=game.custom or None, experimental=game.experimental,
-                bands=[dict(name=n, low=lo) for n, lo in RC.BANDS])
+                bands=[dict(name=n, low=lo) for n, lo in RC.BANDS], screen_rule=ctx.rules.screen_rule,
+                influence=influence(s))
     if game.timer:
         out['timer'] = game.timer_json()
     return out

@@ -244,7 +244,7 @@ def diag_step_banned(a, b, t_sq, rules):
         return False
     if a == t_sq:
         return True
-    if rules.screen_rule == 'from_t_or_corner':
+    if rules.screen_geometry == 'from_t_or_corner':
         if (a[0], b[1]) == t_sq or (b[0], a[1]) == t_sq:
             return True
     return False

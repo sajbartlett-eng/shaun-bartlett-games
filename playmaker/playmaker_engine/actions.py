@@ -75,7 +75,36 @@ def t_square(state, screen):
     return B.add(state.o[i], B.DIRS[d])
 
 
-def path_ok(state, side, i, path, rules, occ=None):
+def zone(state, j):
+    """Defender j's zone of influence (ruled, step 3i follow-up): the squares along each of his arrow
+    directions that he could reach with one movement in that direction, with his remaining capacity: a Move
+    if unused; a Sprint if his Move and Quick Step are both available; a Quick Step only once his Move is
+    used; a locked defender keeps only his Quick Step reach (and can't turn). It stops at the first square
+    another player stands on. {square: 'move' | 'qs' | 'sprint'}, the movement that reaches it (solid for a
+    Move or Quick Step, the lighter extension for a Sprint)."""
+    rules = state.ctx.rules
+    start = state.x[j]
+    dests = {}
+    for kind in ('move', 'qs', 'sprint'):
+        if can_move_kind(state, 'X', j, kind) and (kind != 'qs' or state.ctx.dfn[j].qs > 0):
+            dests[kind] = movement_dests(state, 'X', j, kind, rules)
+    occ = state.occupied()
+    out = {}
+    for d in G.lines(rules, state.arrows[j]):
+        step = B.DIRS[d]
+        q = start
+        while True:
+            q = B.add(q, step)
+            if not B.on_board(q) or q in occ:
+                break
+            kind = next((k for k in ('move', 'qs', 'sprint') if k in dests and q in dests[k]), None)
+            if kind is None:
+                break
+            out[q] = kind
+    return out
+
+
+def path_ok(state, side, i, path, rules, occ=None, zones=None):
     """Is this movement path legal for player i of side?"""
     start = state.o[i] if side == 'O' else state.x[i]
     if occ is None:
@@ -97,12 +126,26 @@ def path_ok(state, side, i, path, rules, occ=None):
                 if B.diag_step_banned(a, b, tsq, rules):
                     return False
     elif i == state.ball:
+        if rules.drive_rule == 'zone':       # ruled: may end in an adjacent defender's zone, not pass through it
+            if zones is None:
+                zones = carrier_zones(state, i)
+            for q in path[:-1]:
+                if any(q in z for z in zones.values()):
+                    return False
+            return True
         pts = (start,) + tuple(path)
         for j, xp in enumerate(state.x):
             if B.adjacent(xp, start) and (i, j) not in state.beaten:
                 if G.path_crosses(rules, pts, xp, state.arrows[j], rules.arrow_line_strict):
                     return False
     return True
+
+
+def carrier_zones(state, i):
+    """The zones that restrict ball carrier i: those of the defenders adjacent to him, unless beaten."""
+    start = state.o[i]
+    return {j: set(zone(state, j)) for j, xp in enumerate(state.x)
+            if B.adjacent(xp, start) and (i, j) not in state.beaten}
 
 
 def movement_dests(state, side, i, kind, rules):
@@ -117,11 +160,12 @@ def movement_dests(state, side, i, kind, rules):
         paths = B.sprint_paths(start, card.qs, rules)
     out = {}
     occ = state.occupied()
+    zs = carrier_zones(state, i) if side == 'O' and i == state.ball and rules.drive_rule == 'zone' else None
     for d, path in paths:
         dest = path[-1]
         if dest in out:
             continue
-        if path_ok(state, side, i, path, rules, occ):
+        if path_ok(state, side, i, path, rules, occ, zs):
             out[dest] = d
     return out
 
@@ -132,8 +176,8 @@ def can_move_kind(state, side, i, kind):
     if state.tokens(side) <= 0:
         return False
     if side == 'O':
-        if state.is_screening(i):
-            return False
+        if state.is_screening(i) and rules.screen_rule == 'two_turns':
+            return False                    # the old rule: the screener can't move while his screen stands
         if i == state.ctx.inbounder and state.inbound:      # inbounder can't move until the ball is in
             return False
     if kind in ('move', 'sprint'):
@@ -246,6 +290,8 @@ def _offence_actions(s, rules):
         for i, p in enumerate(s.o):
             if not B.on_board(p) or s.is_screening(i):
                 continue
+            if rules.screen_rule == 'hold_until_move' and not (s.turn_n == 0 or (s.turn_n == 1 and s.turn_lead == i)):
+                continue                     # OQ-29: first action, or second straight after his own Move
             if i == ctx.inbounder and s.inbound:
                 continue
             if i == carrier and not rules.carrier_can_screen:

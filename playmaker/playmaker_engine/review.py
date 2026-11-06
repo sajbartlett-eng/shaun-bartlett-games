@@ -26,11 +26,19 @@ def _action(d):
                   int(d.get('arrow', -1)), int(d.get('target', -1)), d.get('shot', '') or '')
 
 
+def log_rules(setup):
+    """The rules a log was played with: its recorded settings, or (a log from before the step 3i follow-up
+    rulings) the old screens, single arrow, arrow-line drives and interceptor left on the line."""
+    from . import rules_config as RC
+    return RC.with_rules(**(setup.get('rules') or RC.LEGACY_3I))
+
+
 def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
+    rules = log_rules(setup)
     if setup.get('scenario'):
-        return scenario_state(setup['scenario'])
+        return scenario_state(setup['scenario'], rules=rules)
     off, dfn = setup['teams'] if possession == 1 else setup['teams'][::-1]
-    return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball)
+    return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=rules)
 
 
 def _same(state, logged):

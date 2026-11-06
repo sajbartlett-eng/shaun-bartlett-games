@@ -144,6 +144,7 @@ def test_two_or_three_results():
     assert sc5.look >= 30 and sc5.late_clock == 'tie'
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_late_clock_reset_constraints():
     s = scenario_state(10)
     assert (s.tok_o, s.tok_x, s.clock) == (4, 4, 4)

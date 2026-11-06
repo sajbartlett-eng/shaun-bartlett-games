@@ -2,6 +2,7 @@
 lines 45 degrees apart; contest_geometry 'wedge_mirror' / 'rim_distance' make facing gate the contest and
 position set its quality (Front full, Side a foul roll, Behind a foul roll and the -3). With the defaults
 nothing changes (the golden solver search is identical)."""
+import pytest
 import json
 import os
 
@@ -62,7 +63,7 @@ def test_a_sprint_sets_one_edge_to_the_run_and_the_defender_picks_the_other():
     run = sprint_dir(s.x[0], dest)
     ends = {G.lines(WEDGE, apply(s, a).arrows[0]) for a in both}
     assert all(run in e for e in ends) and len(ends) == 2, ends       # the run is an edge either way
-    single = board(o, x, ['S', 'NE', 'NW', 'N', 'N']).with_(side='X')
+    single = board(o, x, ['S', 'NE', 'NW', 'N', 'N'], RC.with_rules(arrow_mode='single')).with_(side='X')
     assert len([a for a in legal_actions(single) if a.kind == 'sprint' and a.piece == 0 and a.dest == dest]) == 1
 
 
@@ -153,7 +154,7 @@ def test_the_minus_three_is_for_behind_only_and_never_twice():
 def test_wedge_mirror_needs_the_wedge():
     import pytest
     with pytest.raises(ValueError):
-        G.check(RC.with_rules(contest_geometry='wedge_mirror'))
+        G.check(RC.with_rules(contest_geometry='wedge_mirror', arrow_mode='single'))
     G.check(MIRROR)
 
 
@@ -170,6 +171,7 @@ def test_reachable_contest_and_the_advantage_states_read_the_category():
         assert any(a['kind'] == 'bad_closeout' and a['attacker'] == 0 for a in advantages(s))
 
 
+@pytest.mark.usefixtures('legacy_rules')   # the record of the step 3h defaults (the wedge is the default since 3i)
 def test_defaults_are_unchanged_the_golden_solver_search_is_identical():
     from playmaker_engine.soak import golden_setup
     from playmaker_engine.solver import Searcher, Evaluator

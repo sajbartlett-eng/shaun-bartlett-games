@@ -1,0 +1,164 @@
+{
+ "old (legacy)": {
+  "replayed": 261,
+  "changed": 0,
+  "examples": [
+   [
+    "[\"solve\", 3, 120, 1]",
+    [
+     1,
+     "X3 Move to Q9 facing E"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 2]",
+    [
+     2,
+     "O1 Dribble vs X1"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 4]",
+    [
+     2,
+     "O1 Pass to O5"
+    ]
+   ]
+  ]
+ },
+ "screen ruling only": {
+  "replayed": 261,
+  "changed": 0,
+  "examples": [
+   [
+    "[\"solve\", 3, 120, 1]",
+    [
+     1,
+     "X3 Move to Q9 facing E"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 2]",
+    [
+     2,
+     "O1 Dribble vs X1"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 4]",
+    [
+     2,
+     "O1 Pass to O5"
+    ]
+   ]
+  ]
+ },
+ "drive ruling only": {
+  "replayed": 261,
+  "changed": 0,
+  "examples": [
+   [
+    "[\"solve\", 3, 120, 1]",
+    [
+     1,
+     "X3 Move to Q9 facing E"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 2]",
+    [
+     2,
+     "O1 Dribble vs X1"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 4]",
+    [
+     2,
+     "O1 Pass to O5"
+    ]
+   ]
+  ]
+ },
+ "intercept ruling only": {
+  "replayed": 261,
+  "changed": 0,
+  "examples": [
+   [
+    "[\"solve\", 3, 120, 1]",
+    [
+     1,
+     "X3 Move to Q9 facing E"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 2]",
+    [
+     2,
+     "O1 Dribble vs X1"
+    ]
+   ],
+   [
+    "[\"target\", 8, 600, 0, 4]",
+    [
+     2,
+     "O1 Pass to O5"
+    ]
+   ]
+  ]
+ },
+ "wedge only": {
+  "replayed": 223,
+  "changed": 38,
+  "examples": [
+   [
+    "[\"solve\", 10, 120, 1]",
+    [
+     0,
+     "O1 Sprint to M11"
+    ]
+   ],
+   [
+    "[\"solve\", 10, 120, 0]",
+    [
+     0,
+     "O1 Sprint to M11"
+    ]
+   ],
+   [
+    "[\"solve\", 10, 120, 2]",
+    [
+     0,
+     "O1 Sprint to L8"
+    ]
+   ]
+  ]
+ },
+ "all four (the new defaults)": {
+  "replayed": 254,
+  "changed": 7,
+  "examples": [
+   [
+    "[\"solve\", 10, 120, 1]",
+    [
+     0,
+     "O1 Sprint to M11"
+    ]
+   ],
+   [
+    "[\"solve\", 10, 120, 0]",
+    [
+     0,
+     "O1 Sprint to M11"
+    ]
+   ],
+   [
+    "[\"solve\", 10, 120, 3]",
+    [
+     0,
+     "O1 Sprint to M11"
+    ]
+   ]
+  ]
+ }
+}

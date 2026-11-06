@@ -213,3 +213,64 @@ def test_every_engine_module_the_game_loads_is_in_the_browser_bundle():
                 'agreement.py', 'matchups.py'}        # loaded by other tests' research tools in a full run
     missing = sorted(loaded - set(ENGINE_FILES) - research)
     assert not missing, missing
+
+
+NODE_ZONES = r"""
+const { chromium } = require('playwright');
+const [url, shot] = process.argv.slice(2);
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => console.error('pageerror', e.message));
+  await page.goto(url);
+  await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
+  await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
+  await page.click('#create'); await page.waitForTimeout(1200);
+  const count = () => page.evaluate(() => {
+    const per = {};
+    for (const t of document.querySelectorAll('svg .influence text.zonenum')) per[t.textContent] = (per[t.textContent] || 0) + 1;
+    return { zones: document.querySelectorAll('svg .influence rect.zone').length, per,
+             badges: document.querySelectorAll('svg rect.capbadge').length,
+             vw: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth };
+  });
+  const before = await count();
+  // the offence Hesitates (its turn ends), then a defender with a zone uses his Move: turns in place
+  const moved = await page.evaluate(async () => {
+    const s0 = await window.PM_BACKEND(`/api/state?code=${G.code}&token=${G.token}`);
+    const h = s0.legal.find(a => a.kind === 'hesitate');
+    await window.PM_BACKEND('/api/act', { code: G.code, token: G.token, action: h });
+    const s1 = await window.PM_BACKEND(`/api/state?code=${G.code}&token=${G.token}`);
+    // the defender with a zone and the shortest Quick Step: his zone shrinks most once his Move is used
+    const z = s1.influence.zones.filter(z => z.squares.length).map(z => z.defender);
+    const j = z.sort((a, b) => s1.x[a].card.qs - s1.x[b].card.qs || a - b)[0];
+    const mv = s1.legal.find(a => a.kind === 'move' && a.piece === j && a.dest[0] === s1.x[j].x && a.dest[1] === s1.x[j].y && a.arrow === s1.x[j].arrow)
+            || s1.legal.find(a => a.kind === 'move' && a.piece === j && a.dest[0] === s1.x[j].x && a.dest[1] === s1.x[j].y);
+    await window.PM_BACKEND('/api/act', { code: G.code, token: G.token, action: mv });
+    await refresh();
+    return { j, before: s1.influence.zones[j].squares.length };
+  });
+  await page.waitForTimeout(600);
+  const after = await count();
+  await page.screenshot({ path: shot, fullPage: false });
+  console.log(JSON.stringify({ before, after, moved }));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });
+"""
+
+
+def test_zones_render_shrink_after_a_move_and_fit_a_phone(static_site, tmp_path):
+    """The zones of influence are always on: shaded for every defender, shrinking once his Move is used
+    (with the M badge), and the board stays inside a 412 x 915 phone screen with no sideways scroll."""
+    (tmp_path / 'zones.js').write_text(NODE_ZONES)
+    shot = os.path.join(ROOT, 'docs', 'zones_mid_phase.png')
+    url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
+    r = subprocess.run(['node', str(tmp_path / 'zones.js'), url, shot], capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stderr[-1500:]
+    res = json.loads(r.stdout.strip().splitlines()[-1])
+    b, a, j = res['before'], res['after'], str(res['moved']['j'] + 1)
+    assert b['zones'] > 0 and b['per'].get(j, 0) > 0, res
+    assert a['per'].get(j, 0) < b['per'][j], res                     # his zone shrank once his Move was used
+    assert a['badges'] > b['badges'], res                           # and his piece shows the used Move
+    for v in (b, a):
+        assert v['scroll'] <= v['vw'], res                          # nothing scrolls sideways

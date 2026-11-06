@@ -109,7 +109,9 @@ def _turnover(s):
 
 
 def new_phase(s, clock):
-    return s.with_(clock=clock, tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
+    if s.ctx.rules.screen_rule == 'hold_until_move':
+        s = s.with_(screens=())                  # OQ-29: a screen ends with the phase
+    return s.with_(clock=clock, turn_lead=-1, turn_x=(), tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
                    beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0)
 
@@ -211,6 +213,8 @@ def end_phase(s):
 
 
 def _age_screens(s):
+    if s.ctx.rules.screen_rule == 'hold_until_move':
+        return s                             # OQ-29: a screen holds until the screener moves
     keep = tuple((i, d, False, m) for i, d, f, m in s.screens if f)
     return s.with_(screens=keep)
 
@@ -222,7 +226,8 @@ def end_turn(s, side, kind=''):
         return resolve_shot(s)
     if side == 'O':
         s = _age_screens(s)
-        s = s.with_(side='X', turn_n=0, prev_wait='H' if kind == 'hesitate' else '', final=s.tok_o == 0, turn_moved=0)
+        s = s.with_(side='X', turn_n=0, prev_wait='H' if kind == 'hesitate' else '', final=s.tok_o == 0, turn_moved=0,
+                    turn_lead=-1, turn_x=(s.x, s.arrows) if s.ctx.rules.intercept_return else ())
         if s.tok_x <= 0:
             return end_phase(s)
         return s
@@ -234,7 +239,7 @@ def end_turn(s, side, kind=''):
     s = s.with_(prev_wait='P' if kind == 'pause' else '', approach=-1)
     if s.final:
         return end_phase(s)
-    return s.with_(side='O', turn_n=0)
+    return s.with_(side='O', turn_n=0, turn_lead=-1, turn_x=())
 
 
 def _after(prev, s, side, kind):
@@ -310,6 +315,11 @@ def apply(state, action, check=False):
             o = list(s.o)
             o[a.piece] = a.dest
             s = s.with_(o=tuple(o))
+            if s.is_screening(a.piece):          # OQ-29: the screener's movement ends his screen
+                s = s.with_(screens=tuple(x for x in s.screens if x[0] != a.piece))
+            if (k == 'move' and state.turn_n == 0 and state.side == 'O' and state.stage == 'play'
+                    and s.ctx.rules.screen_rule == 'hold_until_move'):
+                s = s.with_(turn_lead=a.piece)   # he may Screen as the turn's second action
         else:
             x = list(s.x)
             x[a.piece] = a.dest
@@ -381,7 +391,12 @@ def apply(state, action, check=False):
             ok_node = ok                                   # inbound pass landed: new phase
         else:
             ok_node = _after(state, ok, side, k)
-        lost = _turnover(s.with_(pending=None, approach=-1))   # ball stays with the passer
+        back = s
+        if s.ctx.rules.intercept_return and state.turn_x:  # ruled: a successful interceptor goes back to where he
+            sx, sa = state.turn_x                          # stood at the start of the defence's turn (Move still used)
+            j = a.piece
+            back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
+        lost = _turnover(back.with_(pending=None, approach=-1))   # ball stays with the passer
         lost_node = lost if lost.stage == 'over' else _after(state, lost, side, k)
         return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[a.piece].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{a.piece + 1})', [
             (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
@@ -390,7 +405,10 @@ def apply(state, action, check=False):
         scr = s.screen_of(a.target)
         p = p_success(O[a.target].r['screen'] - X[a.piece].r['challenge'], rules)
         holds = _lock(s, 'X', a.piece)
-        fails = s.with_(screens=tuple((i, d, f, m | (1 << a.piece) if i == a.target else m) for i, d, f, m in s.screens))
+        if rules.screen_rule == 'hold_until_move':   # OQ-29: a Challenge that wins removes the screen for everyone
+            fails = s.with_(screens=tuple(x for x in s.screens if x[0] != a.target))
+        else:
+            fails = s.with_(screens=tuple((i, d, f, m | (1 << a.piece) if i == a.target else m) for i, d, f, m in s.screens))
         return chance(f'Screen {O[a.target].r["screen"]} v Challenge {X[a.piece].r["challenge"]} (O{a.target + 1}, X{a.piece + 1})', [
             (p, 'success', _after(state, holds, side, k)),
             (1 - p, 'failure', _after(state, fails, side, k))], 'O')

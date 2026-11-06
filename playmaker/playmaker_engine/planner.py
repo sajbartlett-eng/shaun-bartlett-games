@@ -252,6 +252,14 @@ def screen_plays(s, sc, d):
     return [_play('screen', *p.actions) for p in seal_plays(s, sc, d)]
 
 
+def use_plays(s, c):
+    """The carrier uses a screen with one movement and ends his turn (the screen stays up)."""
+    end = Action('end_turn', 'O')
+    mv = [a for a in _o_moves(s, c, ('move', 'qs', 'sprint'))]
+    mv.sort(key=lambda m: (-_shot_value(s.ctx.off[c], m.dest), m.dest))
+    return [_play('use the screen', m, end) for m in mv[:3]]
+
+
 def passes_to(s, r):
     return [_play('pass', Action('pass', 'O', s.ball, target=r))] if s.ball != r else []
 
@@ -580,8 +588,10 @@ def _ball_screen(s, e, mem):
     v = e.get('variant')
     out = []
     for sc in range(5):
-        if sc == c or not B.on_board(s.o[sc]) or s.is_screening(sc):
+        if sc == c or not B.on_board(s.o[sc]):
             continue
+        if s.is_screening(sc) and _screen_t(s, sc) != s.x[d]:
+            continue                                   # screening someone else
         if v == 'roll' and off[sc].bands['shot_layup'] != 'H' and off[sc].bands['shot_dunk'] != 'H':
             continue
         if v in ('pop', 'ghost') and off[sc].bands['shot_three'] != 'H' and off[sc].bands['shot_long'] != 'H':
@@ -607,9 +617,10 @@ def _ball_screen(s, e, mem):
             if not screened and B.cheb(s.o[sc], s.x[d]) > 2:   # too far to Move next to X{d} and screen in one turn
                 steps.append(_step('approach', f'O{sc + 1} came up to screen X{d + 1}', False,
                                    lambda sc=sc, d=d: [_play('approach', m) for m in sorted(
-                                       (m for m in _o_moves(s, sc, ('move', 'qs', 'sprint')) if B.cheb(m.dest, s.x[d]) <= 2),
+                                       (m for m in _o_moves(s, sc, ('move', 'qs', 'sprint')) if B.cheb(m.dest, s.x[d]) < B.cheb(s.o[sc], s.x[d])),
                                        key=lambda m: (B.cheb(m.dest, s.x[d]), m.dest))[:2]]))
-            steps.append(_step('screen', f'O{sc + 1} screened X{d + 1}', screened or s.locked('X', d), lambda sc=sc, d=d: screen_plays(s, sc, d)))
+            held = screened or s.locked('X', d) or (s.ctx.rules.screen_rule == 'hold_until_move' and s.is_screening(sc))
+            steps.append(_step('screen', f'O{sc + 1} screened X{d + 1}', held, lambda sc=sc, d=d: screen_plays(s, sc, d)))
             if v == 'spain':
                 back = [j for j in range(5) if j not in (c, sc) and B.on_board(s.o[j]) and not s.is_screening(j)]
                 d2 = _guard(s, sc)
@@ -617,12 +628,24 @@ def _ball_screen(s, e, mem):
                     b2 = min(back, key=lambda j: B.cheb(s.o[j], s.x[d2]))
                     steps.append(_step('back', f'O{b2 + 1} back-screened X{d2 + 1}', False, lambda b2=b2, d2=d2: screen_plays(s, b2, d2)))
 
-            def finish(c=c, sc=sc, v=v):
-                out_ = [_play('use the screen', *p) for p in _drive_plays(s, c)]
+            # single-action turns (OQ-29 ruling): the carrier uses the screen with one movement and ends his
+            # turn, keeping the screen up so the defence must answer again; then the screener is released
+            steps.append(_step('use', f'O{c + 1} came off the screen', bool(mem.get(f'used{c}')),
+                               lambda c=c: use_plays(s, c)))
+
+            def release(c=c, sc=sc, v=v):
+                out_ = []
                 if v in ('roll', 'pop', 'spain', 'rescreen'):
-                    out_ += passes_to(s, sc)
+                    spots = [m for m in _o_moves(s, sc, ('move', 'qs', 'sprint'))
+                             if (B.zone(m.dest) == '3') == (v == 'pop')]
+                    spots.sort(key=lambda m: (B.dist_rim(m.dest) if v != 'pop' else -_shot_value(off[sc], m.dest), m.dest))
+                    for m in spots[:2]:
+                        out_.append(_play('roll' if v != 'pop' else 'pop', m))
+                        out_.append(_play('roll' if v != 'pop' else 'pop', m, Action('pass', 'O', c, target=sc)))
+                out_ += [_play('attack off the screen', *p) for p in _drive_plays(s, c)]
                 return out_
-            steps.append(_step('use', f'O{c + 1} came off the screen', False, finish, finish=True))
+            steps.append(_step('release', 'released O{} to {}'.format(sc + 1, 'pop' if v == 'pop' else 'roll') if v in ('roll', 'pop', 'spain', 'rescreen')
+                               else f'O{c + 1} attacked off the screen', False, release, finish=True))
             edge = max(max((_shot_value(off[c], q) for q in _reach_squares(s, c)), default=0),
                        _shot_value(off[sc], RC.RIM) if v in ('roll', 'spain') else _shot_value(off[sc], (2, 9)) if v == 'pop' else 0)
 
@@ -630,8 +653,8 @@ def _ball_screen(s, e, mem):
             """Off the screen the carrier's best look from a movement; with a roll or pop, the screener's at the
             rim or the arc too. Two options: the defence takes away the better, so it is worth the other."""
             drive = max((look_value(after, c, q) for q in _reach_squares(after, c)), default=0.0)
-            # a screener can't move until his screen flips back after the offence's next turn (OQ-29), so the
-            # roll or pop comes a turn after the drive: valued from the board with the screen flipped
+            # the roll or pop comes after the carrier has used the screen (and, under the old two-turn rule,
+            # once the screen has flipped back): valued from the board with the screen gone
             flipped = after.with_(screens=tuple(x for x in after.screens if x[0] != sc))
             reach = [m.dest for m in _o_moves(flipped, sc, ('move', 'qs', 'sprint'))]
             if v in ('roll', 'spain', 'rescreen'):        # the roll: toward the rim as far as one movement goes
@@ -690,8 +713,10 @@ def _screen_switch(s, e, mem):
             xc, xs = orig                              # bind as before the switch: xc was on the carrier
         elif mem.get(f'switched{sc}'):
             continue                                   # switched back: the condition is broken
-        held = switched or _screen_t(s, sc) == s.x[xc]
+        held = switched or _screen_t(s, sc) == s.x[xc] or (s.ctx.rules.screen_rule == 'hold_until_move' and s.is_screening(sc))
         steps = [_step('screen', f'O{sc + 1} screened X{xc + 1}', held, lambda sc=sc, xc=xc: screen_plays(s, sc, xc))]
+        steps.append(_step('use', f'O{c + 1} came off the screen', switched or bool(mem.get(f'used{c}')),
+                           lambda: use_plays(s, c)))
 
         def read(sc=sc, xc=xc, xs=xs, switched=switched):
             if not switched:                           # no switch: attack X{xc} stuck behind the screen
@@ -747,7 +772,7 @@ def _offball_screen(s, e, mem):
         screened = _screen_t(s, sc) == s.x[d] or s.locked('X', d)
         steps = [_step('screen', f'O{sc + 1} screened X{d + 1}', screened, lambda sc=sc, d=d: screen_plays(s, sc, d))]
         steps.append(_step('off', f'O{r + 1} came off the screen', bool(mem.get(f'off{r}')),
-                           lambda r=r, d=d: [_play('off the screen', m) for m in sorted(
+                           lambda r=r, d=d: [_play('off the screen', m, Action('end_turn', 'O')) for m in sorted(
                                (m for m in _o_moves(s, r) if B.cheb(m.dest, s.x[d]) > B.cheb(s.o[r], s.x[d]) and _shot_value(off[r], m.dest) > 0),
                                key=lambda m: (-_shot_value(off[r], m.dest), m.dest))[:2]]))
         hold, risk = holder_chain(s, r, avoid=(sc,))
@@ -892,7 +917,7 @@ def _fresh(st):
                     cnt=ZERO_COUNTS, moved_o=0, qs_o=0)
 
 
-def simulate(s, steps):
+def simulate(s, steps, regen=None):
     """The expected board after a goal's steps up to its finish: each step's first playable play, every
     roll going the offence's way, the defence standing still. Returns (board, P(every roll), steps run) or
     (None, 0, n) if a step can't be played."""
@@ -905,6 +930,10 @@ def simulate(s, steps):
         if step['finish']:
             break
         plays = [pl for pl in step['plays']() if apply_play(st, pl) is not None]
+        if not plays and regen is not None and n > 0:
+            # an earlier step moved someone this step's plays were planned around: re-plan it on this board
+            again = next((x for x in regen(st) if x['id'] == step['id']), None)
+            plays = [pl for pl in again['plays']() if apply_play(st, pl) is not None] if again else []
         if not plays:
             return None, 0.0, n
         pl = plays[0]
@@ -1030,7 +1059,10 @@ def _goals(s, level, mems=None, target=None, keep=None):
                 if live and not _first_playable(todo):
                     seen[sig] = (None, 0.0, 0)         # its next step can't be taken on this board
                 else:
-                    seen[sig] = simulate(s, todo) if live else (s, 1.0, 0)
+                    regen = (lambda b, e=g['entry'], key=g['key']: next(
+                        (x['steps'] for x in PATTERNS[e['pattern']](b, e, mems.get(e['id'], {}))
+                         if (e['id'],) + tuple(sorted(x['bind'].items())) == key), []))
+                    seen[sig] = simulate(s, todo, regen) if live else (s, 1.0, 0)
             after, p, n = seen[sig]
             if after is None:
                 continue                               # a later step can't be played either

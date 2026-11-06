@@ -25,6 +25,10 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 RESULTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'solver_results')
+# The 2 x 2 rule test (step 3i follow-up, Part E): single arrow or wedge, each with late_closeout off and on, on the
+# corrected rules (screens hold until the screener moves, drives through a zone, the interceptor's return)
+CELLS = {'single': dict(arrow_mode='single'), 'single_late': dict(arrow_mode='single', late_closeout=True),
+         'wedge': dict(arrow_mode='wedge'), 'wedge_late': dict(arrow_mode='wedge', late_closeout=True)}
 PAIRS = [('allstar', 'allstar'), ('rookie', 'allstar'), ('starter', 'allstar'), ('allstar', 'rookie'), ('allstar', 'starter')]
 
 
@@ -55,7 +59,8 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
     from .resolve import apply, ChanceNode, sample
     from .scoring import score, contest_options, shot_points
     BUDGET['active'] = budget_s
-    rules = RC.with_rules(late_closeout=True) if variant == 'late_closeout' else None
+    rules = (RC.with_rules(**CELLS[variant]) if variant in CELLS else
+             RC.with_rules(late_closeout=True) if variant == 'late_closeout' else None)
     s = start_state(spec, rules)
     pols = {'O': Computer('O', o_level, seed=seed), 'X': Computer('X', x_level, seed=seed)}
     rng = random.Random(seed * 1009 + 7)
@@ -63,6 +68,7 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
     pend = None                                   # the pass in the air: clean when thrown?
     cpasses = []
     think = {'O': [], 'X': []}
+    turn_acts = 0                                 # token actions in the offence turn under way
     t0 = time.time()
     for _ in range(400):
         if s.stage == 'over':
@@ -87,6 +93,10 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
             if not clean and info is not None:          # the thrower's own valuation, for the diagnosis
                 pend['diag'] = _valuation(pols['O'], s, info)
                 cpasses.append(pend['diag'])
+        if a.side == 'X' and a.kind == 'pause':
+            st['x_pauses'] += 1
+        if a.side == 'O' and s.stage == 'play' and a.kind not in ('end_turn', 'forfeit', 'target', 'pick'):
+            turn_acts += 1
         node = apply(s, a)
         while isinstance(node, ChanceNode):
             nxt, lab = sample(node, rng)
@@ -110,6 +120,11 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
                 st['steal_tried'] += 1
                 st['steal_won'] += lab == 'stolen'
             node = nxt
+        if s.side == 'O' and s.stage == 'play' and (node.stage != 'play' or node.side != 'O' or node.phase != s.phase):
+            if turn_acts:                           # an offence turn ended: how many actions it used
+                st['o_turns'] += 1
+                st['o_turns_one'] += turn_acts == 1
+            turn_acts = 0
         if a.side == 'O' and node.stage != 'over' and node.phase == s.phase:
             spent = s.tok_o - node.tok_o
             if spent > 0:
@@ -123,6 +138,7 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
                     pend['diag']['completed'] = True
             pend = None
         s = node
+    st['phases'] = s.phase
     sc = score(s) if s.stage == 'over' else None
     for d in cpasses:
         d['final'] = float(sc.total) if sc else None
@@ -157,8 +173,39 @@ def diag_jobs(random_n=14, seeds=(1, 2, 3, 4)):
     return [('allstar', 'allstar', sp, sd, v) for v in ('default', 'late_closeout') for sp in starts(random_n) for sd in seeds]
 
 
+def verdict(cell, n, budget=15.0, seed=0):
+    """A scenario card's solver verdict under a cell's rules."""
+    from . import rules_config as RC
+    from .solver_report import solve_card
+    t0 = time.time()
+    r = solve_card(n, budget, seed, rules=RC.with_rules(**CELLS[cell]))
+    keep = {k: r.get(k) for k in ('value', 'look', 'p30', 'verdict', 'best_label', 'depth')}
+    keep['first'] = r['line'][0]['text'] if r.get('line') else ''
+    keep['wall'] = round(time.time() - t0, 1)
+    return keep
+
+
 def _job(args):
+    if args[0] == 'verdict':
+        return args, verdict(args[1], args[2])
     return args, play(*args)
+
+
+def grid_jobs(per_cell=120, verdicts=True):
+    """All-Star v All-Star in each of the four cells (the 16 cards and random prescribed-team possessions,
+    seeds 1 to 4: 30 starts x 4 = 120), and the 16 cards' solver verdicts in each."""
+    sp = starts(14)
+    seeds = (1, 2, 3, 4)
+    plays = [(sp[i % len(sp)], seeds[i // len(sp)]) for i in range(per_cell)]
+    out = []
+    if verdicts:
+        for cell in CELLS:
+            for n in range(1, 17):
+                out.append(('verdict', cell, n))
+    for st_, sd in plays:
+        for cell in CELLS:
+            out.append(('allstar', 'allstar', st_, sd, cell))
+    return out
 
 
 def jobs(random_n=4, seeds=(1, 2), variant=True):
@@ -174,11 +221,11 @@ def jobs(random_n=4, seeds=(1, 2), variant=True):
     return out
 
 
-def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None, diag=False):
+def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None, diag=False, grid=0):
     path = os.path.join(RESULTS, store)
     done = json.load(open(path)) if os.path.exists(path) else {}
-    js = diag_jobs() if diag else jobs(random_n, seeds, variant)
-    todo = [j for j in js if key(*j) not in done]
+    js = grid_jobs(grid) if grid else diag_jobs() if diag else jobs(random_n, seeds, variant)
+    todo = [j for j in js if json.dumps(list(j)) not in done and key(*j) not in done]
     if limit:
         todo = todo[:limit]
     t0 = time.time()
@@ -187,13 +234,14 @@ def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, l
         futs = [ex.submit(_job, j) for j in todo]
         for k, f in enumerate(as_completed(futs), 1):
             args, r = f.result()
-            done[key(*args)] = r
+            done[json.dumps(list(args)) if args[0] == 'verdict' else key(*args)] = r
             with open(path + '.tmp', 'w') as fh:
                 json.dump(done, fh)
             os.replace(path + '.tmp', path)
             el = time.time() - t0
-            print(f'{k}/{len(todo)} {args[0]} v {args[1]} {args[2]} s{args[3]} {args[4]}: {r["points"]} '
-                  f'({r["wall"]}s; {el / k * (len(todo) - k) / 60:.0f} min left)', flush=True)
+            what = (f'verdict {args[1]} card {args[2]}: {r["verdict"]} {r["value"]}' if args[0] == 'verdict' else
+                    f'{args[0]} v {args[1]} {args[2]} s{args[3]} {args[4]}: {r["points"]}')
+            print(f'{k}/{len(todo)} {what} ({r["wall"]}s; {el / k * (len(todo) - k) / 60:.0f} min left)', flush=True)
     return done
 
 
@@ -250,8 +298,9 @@ if __name__ == '__main__':
     ap.add_argument('--estimate', action='store_true')
     ap.add_argument('--limit', type=int)
     ap.add_argument('--diag', action='store_true', help='the late-closeout diagnosis (120 + 120 possessions)')
+    ap.add_argument('--grid', type=int, default=0, help='the 2 x 2 run: possessions a cell (and the card verdicts)')
     a = ap.parse_args()
     if a.estimate:
         print(estimate(workers=a.workers))
     else:
-        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit, a.diag)
+        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit, a.diag, a.grid)

@@ -86,6 +86,7 @@ def test_defence_last_token_ends_phase_at_once():
     assert s.phase == 2 and s.clock == 10 and s.side == 'O'
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_reset_clears_tokens_locks_keeps_pieces_and_screens():
     s = base(side='X', tok_x=1, lock_o=0b1, lock_x=0b10, screens=((2, 4, False, 0),), cnt=tuple([1] * len(ZERO_COUNTS)))
     s2 = apply(s, Action('qs', 'X', 0, P('I9')) if False else Action('move', 'X', 3, P('G5'), 0))

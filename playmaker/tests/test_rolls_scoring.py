@@ -1,4 +1,5 @@
 """Chance nodes, intercept geometry, Dribble, Challenge, Steal, contests and scoring."""
+import pytest
 from fractions import Fraction as F
 
 from conftest import mk, P
@@ -111,6 +112,7 @@ def test_dribble_probabilities_and_results():
     assert {a.kind for a in legal_actions(lose.with_(side='O', turn_n=0))} >= {'pass'}
 
 
+@pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_challenge_screen():
     s = base(side='X', screens=((2, 5, False, 0),))         # O3 at O9, T to the SW on X3 at N8
     node = apply(s, Action('challenge', 'X', 2, target=2))

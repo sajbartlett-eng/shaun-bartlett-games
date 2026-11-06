@@ -278,6 +278,9 @@ function renderTracker(id, side) {
   box.append(el('div', { text: 'Per-phase limits used (Move: once per player)' }), lim);
   const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
   if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
+  if (side === 'O') box.append(el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
+    ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
+    : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }));
 }
 
 function renderCourt() {
@@ -298,6 +301,7 @@ function renderCourt() {
   for (let x = 0; x < 17; x++) { const t = svg('text', { class: 'axis', x: px(x) + S / 2 - 4, y: PADY - 6 }); t.textContent = COLS[x]; c.append(t); }
   courtLines(c);
   const rim = svg('circle', { cx: px(8) + S / 2, cy: py(2) + S / 2, r: 9, fill: 'none', stroke: '#c0392b', 'stroke-width': 3 }); c.append(rim);
+  drawInfluence(c);
   // arrow lines the ball carrier can't cross (shown to both players)
   const carrier = s.o.find(p => p.ball);
   if (sel.side === 'O' && carrier && sel.i === carrier.i) {
@@ -378,21 +382,88 @@ function drawO(c, p, opts) {
     g.append(svg('path', { d: `M${cx + 4.5} ${cy - 12} H${cx + 19.5} M${cx + 12} ${cy - 19.5} V${cy - 4.5}`, stroke: '#3a1d00', 'stroke-width': 1.2 }));
   }
   if (p.locked) lockBadge(g, cx, cy);
+  capacityBadges(g, 'O', p, cx, cy);
   c.append(g);
 }
 
 function drawX(c, p, opts) {
   const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('X', p.i, opts);
   // the arrow: a wedge from the piece's edge reaching about a third of a square into the next square
-  const d = DIRS[p.arrow], ux = d[0], uy = -d[1];
-  const reach = S / 2 + S / 3;                                 // edge of this square + a third of the next
-  const tip = [cx + ux * reach, cy + uy * reach];
-  const len = Math.hypot(ux, uy), nx = -uy / len, ny = ux / len, bx = cx + ux * 9 / len, by = cy + uy * 9 / len;
-  g.append(svg('polygon', { class: 'arrowhead', points: `${tip[0]},${tip[1]} ${bx + nx * 11},${by + ny * 11} ${bx - nx * 11},${by - ny * 11}`, fill: '#111', stroke: '#fff', 'stroke-width': 1.5 }));
+  const inf = st.influence, wedge = inf && inf.arrow_mode === 'wedge';
+  for (const a of (wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow])) {     // the wedge: two arrows, 45 degrees apart
+    const d = DIRS[a], ux = d[0], uy = -d[1];
+    const reach = S / 2 + S / 3;                               // edge of this square + a third of the next
+    const tip = [cx + ux * reach, cy + uy * reach];
+    const len = Math.hypot(ux, uy), nx = -uy / len, ny = ux / len, bx = cx + ux * 9 / len, by = cy + uy * 9 / len;
+    const w = wedge ? 8 : 11;
+    g.append(svg('polygon', { class: 'arrowhead', points: `${tip[0]},${tip[1]} ${bx + nx * w},${by + ny * w} ${bx - nx * w},${by - ny * w}`, fill: '#111', stroke: '#fff', 'stroke-width': 1.5 }));
+  }
   g.append(svg('circle', { class: 'halo', cx, cy, r: 19 }));
   g.append(svg('circle', { class: 'ring', cx, cy, r: 14, fill: '#1a1a1a', stroke: '#000', 'stroke-width': 2 }));
   const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }); t.textContent = p.i + 1; g.append(t);
   if (p.locked) lockBadge(g, cx, cy);
+  capacityBadges(g, 'X', p, cx, cy);
+  c.append(g);
+}
+
+// Capacity badges on every piece, always on: a used Move (M) and a used Quick Step (Q), struck through.
+function capacityBadges(g, side, p, cx, cy) {
+  const b = st.influence && st.influence.badges && st.influence.badges[side][p.i];
+  if (!b) return;
+  const marks = [];
+  if (b.move) marks.push('M');
+  if (b.qs) marks.push('Q');
+  marks.forEach((m, k) => {
+    const x = cx + 6 + k * 13, y = cy + 6;
+    g.append(svg('rect', { class: 'capbadge', x, y, width: 12, height: 12, rx: 2, fill: '#fff', stroke: '#1d1b18', 'stroke-width': 1.2 }));
+    const t = svg('text', { x: x + 6, y: y + 9.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#1d1b18', 'aria-hidden': 'true' }); t.textContent = m; g.append(t);
+    g.append(svg('line', { x1: x + 1, y1: y + 11, x2: x + 11, y2: y + 1, stroke: '#1d1b18', 'stroke-width': 1.2 }));
+  });
+}
+
+// Zones of influence (every defender, along his arrow lines, out to his current reach), active screens and
+// the diagonal steps they block, and the selected attacker's movement reach. Always on, for both players.
+// Patterns, not colour alone: hatched for a Move or Quick Step, a lighter dashed square for the Sprint
+// extension, each square outlined and numbered for its defender so overlaps stay distinguishable.
+function drawInfluence(c) {
+  const inf = st.influence;
+  if (!inf) return;
+  const defs = svg('defs', {});
+  const pat = svg('pattern', { id: 'zhatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+  pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(30,60,140,0.16)' }));
+  pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(20,40,110,0.55)', 'stroke-width': 2 }));
+  const pat2 = svg('pattern', { id: 'zsprint', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+  pat2.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: 'rgba(20,40,110,0.30)', 'stroke-width': 1.5 }));
+  const pat3 = svg('pattern', { id: 'zscreen', width: 6, height: 6, patternUnits: 'userSpaceOnUse' });
+  pat3.append(svg('path', { d: 'M0 3 H6 M3 0 V6', stroke: 'rgba(120,40,0,0.6)', 'stroke-width': 1.4 }));
+  defs.append(pat, pat2, pat3);
+  c.append(defs);
+  const g = svg('g', { class: 'influence', 'aria-hidden': 'true' });
+  const count = {};
+  for (const z of inf.zones) {
+    for (const q of z.squares) {
+      const k = count[q.sq] = (count[q.sq] || 0) + 1, inset = 1 + (k - 1) * 3;
+      const sprint = q.kind === 'sprint';
+      g.append(svg('rect', { class: 'zone ' + (sprint ? 'zone-sprint' : 'zone-move'), x: px(q.x) + inset, y: py(q.y) + inset,
+        width: S - 2 * inset, height: S - 2 * inset, fill: `url(#${sprint ? 'zsprint' : 'zhatch'})`,
+        stroke: 'rgba(20,40,110,0.75)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
+      const t = svg('text', { class: 'zonenum', x: px(q.x) + 3 + (k - 1) * 8, y: py(q.y) + S - 4, 'font-size': 9, 'font-weight': 'bold', fill: '#14286e' });
+      t.textContent = z.defender + 1; g.append(t);
+    }
+  }
+  for (const sc of inf.screens) {
+    g.append(svg('rect', { class: 'screen-t', x: px(sc.t.x) + 2, y: py(sc.t.y) + 2, width: S - 4, height: S - 4, fill: 'url(#zscreen)', stroke: '#783c00', 'stroke-width': 1.5 }));
+    const t = svg('text', { x: px(sc.t.x) + S - 9, y: py(sc.t.y) + 11, 'font-size': 10, 'font-weight': 'bold', fill: '#783c00' }); t.textContent = 'T'; g.append(t);
+    for (const [ax, ay, bx, by] of sc.blocked) {     // a blocked diagonal step: a small cross on the corner it cuts
+      const mx = (px(ax) + px(bx)) / 2 + S / 2, my = (py(ay) + py(by)) / 2 + S / 2;
+      g.append(svg('path', { class: 'screen-block', d: `M${mx - 4} ${my - 4} L${mx + 4} ${my + 4} M${mx - 4} ${my + 4} L${mx + 4} ${my - 4}`, stroke: '#783c00', 'stroke-width': 2 }));
+    }
+  }
+  if (sel.side === 'O' && sel.i !== null && sel.i !== undefined && inf.reach[sel.i]) {
+    for (const q of inf.reach[sel.i]) {
+      g.append(svg('circle', { class: 'reach', cx: px(q.x) + S / 2, cy: py(q.y) + S / 2, r: 5, fill: 'none', stroke: '#1b5e20', 'stroke-width': 2, 'stroke-dasharray': '2 2' }));
+    }
+  }
   c.append(g);
 }
 
@@ -973,7 +1044,7 @@ function frameState(live, e) {
   const b = e.board;
   return Object.assign({}, live, {
     o: live.o.map((p, i) => Object.assign({}, p, b.o[i])), x: live.x.map((p, i) => Object.assign({}, p, b.x[i])),
-    arrow_lines: b.arrow_lines, clock: b.clock, phase: b.phase, tokens: b.tokens, pending: b.pending, inbound: b.inbound,
+    arrow_lines: b.arrow_lines, influence: b.influence || live.influence, clock: b.clock, phase: b.phase, tokens: b.tokens, pending: b.pending, inbound: b.inbound,
     shot: b.shot, bonus: b.bonus, turnovers: b.turnovers, summary: b.summary, legal: [], can_act: false,
     side_to_act: null, stage: b.stage === 'over' ? 'replay' : b.stage, result: null });
 }
