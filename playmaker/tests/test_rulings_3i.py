@@ -1,5 +1,6 @@
 """Step 3i follow-up rulings: screens hold until the screener moves (OQ-29), zones of influence and the wedge,
 drives through an adjacent defender's zone, and where a successful interceptor ends up."""
+import pytest
 from conftest import P
 
 from playmaker_engine import board as B
@@ -190,6 +191,7 @@ def _approach():
     return s, t
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling (a successful intercept now ends the possession)
 def test_a_successful_intercept_puts_the_interceptor_back_and_the_ball_stays_with_the_passer():
     s, t = _approach()
     start_sq, start_arrow = s.x[2], s.arrows[2]
@@ -200,6 +202,7 @@ def test_a_successful_intercept_puts_the_interceptor_back_and_the_ball_stays_wit
     assert won.x[2] == start_sq and won.arrows[2] == start_arrow and won.moved('X', 2)
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_a_failed_intercept_leaves_the_interceptor_on_the_pass_line():
     s, t = _approach()
     node = apply(t, Action('intercept', 'X', 2))
@@ -208,7 +211,7 @@ def test_a_failed_intercept_leaves_the_interceptor_on_the_pass_line():
 
 
 def test_the_old_engine_left_the_interceptor_on_the_line():
-    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(intercept_return=False), check=False)
+    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(intercept_return=False, intercept_rule='approach'), check=False)
     s = act(s, Action('pass', 'O', 0, target=2))
     ap = next(a for a in legal_actions(s) if a.side == 'X' and a.piece == 2 and a.kind in MOVEMENT and is_approach(s, a))
     t = apply(s, ap)

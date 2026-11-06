@@ -43,6 +43,8 @@ class Action(NamedTuple):
         if k == 'shot':
             return f'{who} Shot ({self.shot})'
         if k == 'intercept':
+            if self.dest is not None:
+                return f"{who} Intercept, jumping the lane to {B.sq(self.dest)} ({'Move' if self.target == 0 else 'Quick Step'})"
             return f'{who} Intercept'
         if k == 'challenge':
             return f'{who} Challenge screen of O{self.target + 1}'
@@ -224,9 +226,166 @@ def sprint_dir(start, dest):
 
 # ---- intercept geometry ---------------------------------------------------------
 
-def intercept_status(state, j):
-    """'direct', 'approach' or None for defender j against the pending pass."""
+# ---- interception (OQ-72 ruling, intercept_rule='ring_jump') --------------------------------
+
+def passer_ring(state):
+    """The squares next to the passer of the pending pass: no Intercept happens on any of them."""
+    a = state.o[state.pending[0]]
+    return {B.add(a, d) for d in B.DIRS}
+
+
+def lane_crossing(p, d, a, b):
+    """Where the arrow ray from p in direction d meets the pass segment a-b: the number of ray squares to the
+    crossing square (the first ray square at or past the geometric intersection), or None. A diagonal pass
+    can't slip between two corner-touching ray squares: the next square along the ray catches it."""
+    import math
+    dx, dy = B.DIRS[d]
+    ex, ey = b[0] - a[0], b[1] - a[1]
+    den = dx * ey - dy * ex
+    if den == 0:
+        return None                                   # the ray runs parallel to the pass
+    wx, wy = a[0] - p[0], a[1] - p[1]
+    t = (wx * ey - wy * ex) / den
+    u = (wx * dy - wy * dx) / den
+    if t <= 1e-9 or u <= 1e-9 or u >= 1 - 1e-9:
+        return None
+    return max(1, math.ceil(t - 1e-9))
+
+
+def through_you(state, j):
+    """Defender j may Intercept the pending pass where he stands: the line passes through his square, he isn't
+    in the passer's ring, and he hasn't moved this defence turn (a movement is only a movement)."""
     rules = state.ctx.rules
+    passer, recv = state.pending
+    p = state.x[j]
+    if p in passer_ring(state) or state.turn_moved >> j & 1:
+        return False
+    return B.on_segment(p, state.o[passer], state.o[recv], rules.on_line_tolerance)
+
+
+def lane_jumps(state, j):
+    """Defender j's lane jumps against the pending pass: [(crossing square, 'move' | 'qs')], each one straight
+    Move or Quick Step along one of his arrow lines to the crossing square, with that movement unused."""
+    rules = state.ctx.rules
+    p = state.x[j]
+    ring = passer_ring(state)
+    if p in ring:
+        return []                                     # a defender next to the passer can't Intercept
+    passer, recv = state.pending
+    a, b = state.o[passer], state.o[recv]
+    occ = state.occupied()
+    out = []
+    for d in G.lines(rules, state.arrows[j]):
+        k = lane_crossing(p, d, a, b)
+        if k is None:
+            continue
+        path = tuple(B.add(p, (B.DIRS[d][0] * n, B.DIRS[d][1] * n)) for n in range(1, k + 1))
+        q = path[-1]
+        if not B.on_board(q) or q in ring or q in occ:
+            continue
+        for kind in ('move', 'qs'):
+            if not can_move_kind(state, 'X', j, kind):
+                continue
+            if kind == 'qs' and state.ctx.dfn[j].qs <= 0:
+                continue
+            shapes = B.move_paths(p, rules) if kind == 'move' else B.qs_paths(p, state.ctx.dfn[j].qs, rules)
+            if not any(tuple(sh) == path for sh in shapes):
+                continue                              # beyond his straight reach of that kind
+            if path_ok(state, 'X', j, list(path), rules, occ):
+                out.append((q, kind))
+    return out
+
+
+def intercept_actions(state):
+    """Every Intercept open to the defence against the pending pass: through a defender's square
+    (Action('intercept', 'X', j)) or a lane jump (dest = the crossing square, target 0 a Move, 1 a Quick Step)."""
+    out = []
+    for j in range(5):
+        if through_you(state, j):
+            out.append(Action('intercept', 'X', j))
+        for q, kind in lane_jumps(state, j):
+            out.append(Action('intercept', 'X', j, dest=q, target=0 if kind == 'move' else 1))
+    return out
+
+
+def follow_jumps(state):
+    """The defence's two-action answers: a movement by a defender (the pass still in the air), then a lane
+    jump from his new square with the straight reach he has left. [(movement, intercept)]."""
+    from .resolve import apply, ChanceNode
+    if state.tok_x < 2 or state.turn_n != 0:
+        return []
+    rules = state.ctx.rules
+    passer, recv = state.pending
+    a, b = state.o[passer], state.o[recv]
+    ring = passer_ring(state)
+    out = []
+    for m in movement_actions(state, 'X', rules):
+        if m.kind == 'sprint' or m.dest in ring:
+            continue                                  # a Sprint leaves no straight reach to jump with
+        j = m.piece
+        # what straight reach he has left after this movement: a Quick Step after a Move, a Move after a Quick Step
+        if m.kind == 'move':
+            arrow, left = m.arrow, state.ctx.dfn[j].qs
+            if left <= 0 or state.quick_stepped('X', j) or state.count('X', 'qs') >= RC.LIMITS['X']['qs']:
+                continue
+        else:
+            arrow, left = state.arrows[j], None   # a Move: 3 straight or 2 diagonal
+            if state.moved('X', j) or state.locked('X', j):
+                continue
+        hit = False
+        for d in G.lines(rules, arrow):
+            k = lane_crossing(m.dest, d, a, b)
+            if k is None:
+                continue
+            reach = left if left is not None else (RC.MOVE_STRAIGHT if d % 2 == 0 else RC.MOVE_DIAGONAL)
+            if k <= reach:
+                hit = True
+                break
+        if not hit:
+            continue
+        nxt = apply(state, m)
+        if isinstance(nxt, ChanceNode) or nxt.side != 'X' or not nxt.pending:
+            continue
+        for q, kind in lane_jumps(nxt, j):
+            out.append((m, Action('intercept', 'X', j, dest=q, target=0 if kind == 'move' else 1)))
+    return out
+
+
+def lane_marks(pend):
+    """For the interface: every way the defence can Intercept the pending pass, exactly as the legal actions
+    allow it. [{defender, how: 'through' | 'jump' | 'follow', sq: where the Intercept happens, by: 'Move' |
+    'Quick Step' | None, via: the follow movement's square}], and the passer's ring (no Intercept there)."""
+    if pend.count('X', 'intercept') >= RC.LIMITS['X']['intercept'] or pend.tok_x <= 0:
+        return [], sorted(passer_ring(pend))
+    out = []
+    for a in intercept_actions(pend):
+        out.append(dict(defender=a.piece, how='through' if a.dest is None else 'jump',
+                        sq=pend.x[a.piece] if a.dest is None else a.dest,
+                        by=None if a.dest is None else ('Move' if a.target == 0 else 'Quick Step'), via=None))
+    seen = set()
+    for m, a in follow_jumps(pend):
+        k = (a.piece, a.dest)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(dict(defender=a.piece, how='follow', sq=a.dest, by='Move' if a.target == 0 else 'Quick Step', via=m.dest))
+    return out, sorted(passer_ring(pend))
+
+
+def _seg_dist(q, a, b):
+    """Chebyshev distance from square q to the nearest point of the segment a-b (sampled)."""
+    n = max(abs(b[0] - a[0]), abs(b[1] - a[1]), 1) * 2
+    return min(max(abs(q[0] - (a[0] + (b[0] - a[0]) * i / n)), abs(q[1] - (a[1] + (b[1] - a[1]) * i / n))) for i in range(n + 1))
+
+
+def intercept_status(state, j):
+    """'direct', 'approach' or None for defender j against the pending pass. Under the OQ-72 ruling:
+    'direct' = through his square, 'approach' = a lane jump open to him now."""
+    rules = state.ctx.rules
+    if rules.intercept_rule == 'ring_jump':
+        if through_you(state, j):
+            return 'direct'
+        return 'approach' if lane_jumps(state, j) else None
     passer, recv = state.pending
     a, b = state.o[passer], state.o[recv]
     p = state.x[j]
@@ -360,7 +519,26 @@ def legal_actions(state):
         if s.turn_n >= 1:
             acts.append(Action('end_turn', 'O'))
     else:
-        if s.pending:
+        if s.pending and rules.intercept_rule == 'ring_jump':
+            # OQ-72 ruling: an Intercept through a defender's square or by a lane jump; any movement keeps the
+            # pass in the air (a defender may follow, then jump); any other action lands the pass first
+            can_icpt = s.count('X', 'intercept') < RC.LIMITS['X']['intercept'] and s.tok_x > 0
+            if can_icpt:
+                acts += intercept_actions(s)
+            if is_inbound_pass(s) and not inbound_held(s):
+                if s.turn_n == 0:
+                    acts += movement_actions(s, 'X', rules)      # follow, then jump
+                acts.append(Action('end_turn', 'X'))             # let the inbound pass in
+            else:
+                acts += movement_actions(s, 'X', rules)          # the pass stays in the air
+                view = s if inbound_held(s) else completed_view(s)
+                others = [a for a in _defence_actions(view, rules) if a.kind not in MOVEMENT]
+                if inbound_held(s):
+                    others = [a for a in others if a.kind != 'steal']
+                acts += others                                   # these land the pass first
+                if s.turn_n >= 1:
+                    acts.append(Action('end_turn', 'X'))
+        elif s.pending:
             can_icpt = s.count('X', 'intercept') < RC.LIMITS['X']['intercept'] and s.tok_x > 0
             if s.turn_n == 0 and can_icpt:
                 for j in range(5):
@@ -417,7 +595,10 @@ def inbound_tie_candidates(state):
 
 
 def is_approach(state, a):
-    """Is this defender movement an approach onto the pending pass line?"""
+    """Is this defender movement an approach onto the pending pass line? (The old rule only: under the OQ-72
+    ruling the lane jump is the Intercept itself, and any other movement is only a movement.)"""
+    if state.ctx.rules.intercept_rule == 'ring_jump':
+        return False
     if not (state.pending and a.side == 'X' and a.kind in MOVEMENT and state.turn_n == 0):
         return False
     if state.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:

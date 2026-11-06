@@ -202,6 +202,7 @@ def test_inbound_defence_gets_a_normal_turn():
     assert 'end_turn' not in kinds and 'move' in kinds and 'steal' not in kinds   # 1 or 2 real actions
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_inbound_move_then_intercept():
     from playmaker_engine.actions import intercept_status, is_approach
     s = _inbound_pass_card4()
@@ -216,6 +217,7 @@ def test_inbound_move_then_intercept():
     assert lost.inbound and lost.ball == 1 and lost.tos == 1
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_inbound_sprint_then_intercept():
     from playmaker_engine.actions import is_approach
     s = _inbound_pass_card4()

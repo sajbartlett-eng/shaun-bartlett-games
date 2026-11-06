@@ -772,10 +772,13 @@ class Game:
         self.last_decision = time.time()
         text = rec['action']['text']
         from .view import board_json
-        self.feed.append(dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
-                              outcomes=consequences(before, node, a), possession=self.possession,
-                              clock=before.clock, phase=before.phase, version=self.version,
-                              board=board_json(node, self.slots)))
+        entry = dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
+                     outcomes=consequences(before, node, a), possession=self.possession,
+                     clock=before.clock, phase=before.phase, version=self.version,
+                     board=board_json(node, self.slots))
+        if not self.feed or self.feed[-1]['possession'] != self.possession:
+            entry['before'] = board_json(before, self.slots)     # the first of a possession: where it all stood
+        self.feed.append(entry)
         if node.stage == 'over':
             self._end_possession()
         self._timer_decision()

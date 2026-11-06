@@ -11,11 +11,16 @@ from playmaker_engine.scenarios import scenario_state
 
 @pytest.fixture(scope='module')
 def profiles():
-    """46 possessions (30 table-setup games across team pairings, the 16 scenario cards), greedy offence."""
+    """46 possessions (30 table-setup games across team pairings, the 16 scenario cards), greedy offence.
+    Played under the intercept rule before the OQ-72 ruling: since it, a greedy offence's first contested pass
+    usually ends the possession (a successful Intercept ends it at -5), leaving a handful of defence moves."""
+    from playmaker_engine import rules_config as RC
     from playmaker_engine.defence_check import job_profile
     from playmaker_engine.computer import Computer
-    return dict(greedy=job_profile(GreedyPolicy()), reader=job_profile(ReadingDefence(budget_s=None)),
-                starter=job_profile(Computer('X', 'starter', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)))
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach'))
+        return dict(greedy=job_profile(GreedyPolicy()), reader=job_profile(ReadingDefence(budget_s=None)),
+                    starter=job_profile(Computer('X', 'starter', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)))
 
 
 def _share(c, *keys):
@@ -72,6 +77,7 @@ def test_a_reaction_turns_to_face_the_shooter():
     assert chosen.piece >= 0 and opt.clean, (chosen, opt)
 
 
+@pytest.mark.usefixtures('old_intercepts')   # defence_set.json was built (and solved) under the old intercept rule
 def test_the_defence_agrees_with_the_solver_more_often():
     from playmaker_engine.defence_check import PATH, grade, load
     if not os.path.exists(PATH):

@@ -169,7 +169,15 @@ def pass_risk(state, passer, receiver):
     if not isinstance(pend, ChanceNode) and pend.pending:
         from .actions import inbound_held, intercept_status, movement_actions
         pr = pend.ctx.off[passer].r['pass']
-        if pend.inbound:                       # inbound passes (OQ-35): ask the legal actions directly
+        if pend.ctx.rules.intercept_rule == 'ring_jump':
+            # OQ-72 ruling: the engine's own Intercepts (through a square, a lane jump), and a movement followed
+            # by a lane jump from the new square (the pass stays in the air while the defence moves)
+            from .actions import intercept_actions, follow_jumps
+            can = pend.count('X', 'intercept') < RC.LIMITS['X']['intercept'] and pend.tok_x > 0
+            cands = [(d,) for d in intercept_actions(pend)] if can else []
+            if can:
+                cands += list(follow_jumps(pend))
+        elif pend.inbound:                     # inbound passes (OQ-35): ask the legal actions directly
             cands = []
             for d in legal_actions(pend):
                 if d.kind == 'intercept':

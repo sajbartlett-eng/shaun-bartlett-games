@@ -546,9 +546,15 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   Quick Step once his Move is used; a locked defender only his Quick Step), stopping at the first player.
 - **Drives** (`drive_rule='zone'`): the ball carrier may end a movement in the zone of a defender next to
   him, but not pass through it, unless he beat that defender with a Dribble this phase.
-- **Intercepts** (`intercept_return=True`): an Intercept that wins (−5, the ball stays with the passer)
-  puts the interceptor back where he started the defence's turn; one that misses leaves him on the pass
-  line, out of position.
+- **Intercepts** (OQ-72, `intercept_rule='ring_jump'`): no Intercept on any square next to the passer (a
+  defender there Steals instead). **Through you:** a defender the pass passes through may Intercept, whatever
+  his facing. **Jump the lane:** the Intercept is itself one straight Move or Quick Step along an arrow line
+  to where it meets the pass (the first square past the crossing), spending the movement it uses; no Sprint,
+  no turn. Any other movement is only a movement, and the pass stays in the air: a defender may follow first
+  and jump from his new square. A successful Intercept ends the possession at −5; a missed one leaves him on
+  the crossing square with his Move used. When you select Pass, each lane shows who can intercept it and
+  how (through his square, a jump to the crossing square, or a move then a jump), and the passer's ring is
+  marked intercept-free.
 
 **On the board, always, for both players, at every detail level** (`docs/zones_mid_phase.png`): each
 defender's zone hatched along his arrow lines (a lighter dashed square for the Sprint extension), outlined

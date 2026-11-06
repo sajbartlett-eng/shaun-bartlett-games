@@ -450,6 +450,8 @@ class Evaluator:
                 return self(landed)
             if ctx.hold_for_one:
                 lost_v = tuple(Val(0.0) for _ in self.targets)
+            elif ctx.rules.intercept_rule == 'ring_jump':      # OQ-72: a successful Intercept ends the possession
+                lost_v = tuple(Val(base + RC.TURNOVER_POINTS) for _ in self.targets)
             else:
                 lost_v = self(lost)
             return mix([(p, self(landed)), (1 - p, lost_v)])
@@ -774,6 +776,9 @@ class Generator:
                     out.append(Play('intercept', (a,)))
                 elif a.kind in MOVEMENT and is_approach(s, a):
                     out.append(Play('approach+intercept', (a, Action('intercept', 'X', a.piece))))
+            if rules.intercept_rule == 'ring_jump':                 # OQ-72: follow, then jump the lane
+                from .actions import follow_jumps
+                out += [Play('follow+jump', pair) for pair in follow_jumps(s)]
             from .actions import inbound_held
             if s.inbound and s.pending[0] == s.ctx.inbounder:
                 if not inbound_held(s):

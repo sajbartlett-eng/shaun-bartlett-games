@@ -61,6 +61,14 @@ def lane_reach(state, j, passer, receiver):
     p = _pending(state, passer, receiver)
     if p.tok_x <= 0 or p.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:
         return None
+    if p.ctx.rules.intercept_rule == 'ring_jump':
+        # OQ-72 ruling: 'direct' through his square, 'approach' a lane jump (now, or after a movement)
+        from .actions import through_you, lane_jumps, follow_jumps
+        if through_you(p, j):
+            return 'direct'
+        if lane_jumps(p, j) or any(m.piece == j for m, _ in follow_jumps(p)):
+            return 'approach'
+        return None
     st = intercept_status(p, j)
     if st == 'direct':
         return 'direct'

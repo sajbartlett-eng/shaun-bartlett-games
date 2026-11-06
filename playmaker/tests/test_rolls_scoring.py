@@ -38,6 +38,7 @@ def test_roll_bounds_and_example():
     assert p_success(25, alt) == F(19, 20) and p_success(-3, alt) == F(1, 20)
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_pass_18_v_intercept_5_is_13_in_20():
     s = apply(base(), Action('pass', 'O', 0, target=2))      # O1 ppgC Pass 18 -> O3
     assert s.side == 'X' and s.pending == (0, 2)
@@ -60,6 +61,7 @@ def test_on_line_defender_intercepts_facing_any_way():
     assert [a.piece for a in icpts(s)] == [2]
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_arrow_across_must_reach_line_first():
     s = apply(base(), Action('pass', 'O', 0, target=2))
     assert icpts(s) == []                                    # X3's arrow crosses, but it isn't on the line
@@ -67,6 +69,7 @@ def test_arrow_across_must_reach_line_first():
     assert icpts(s2) == [] and s2.ball == 2 and s2.pending is None   # the pass landed
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_defender_without_arrow_across_cannot_approach():
     # X5 at N4 arrow N: its ray (N5..N14) misses the I11->O9 segment. Moving onto the line is just a move.
     s = apply(base(), Action('pass', 'O', 0, target=2))
@@ -74,6 +77,7 @@ def test_defender_without_arrow_across_cannot_approach():
     assert s2.pending is None and s2.ball == 2
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_adjacent_passer_arrow_on_passer_only_stops_pass_through_its_square():
     # X1 at I10, arrow N at the passer I11.
     s = apply(base(), Action('pass', 'O', 0, target=2))              # pass I11 -> O9: not through I10
@@ -83,6 +87,7 @@ def test_adjacent_passer_arrow_on_passer_only_stops_pass_through_its_square():
     assert [a.piece for a in icpts(s2)] == [0]
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling
 def test_adjacent_passer_counts_only_through_its_arrow():
     # Pass I11 -> A7. X1 at H11 is adjacent to the passer and its centre is on the line, but its
     # arrow (N) neither points at the passer nor crosses the pass: it cannot intercept.

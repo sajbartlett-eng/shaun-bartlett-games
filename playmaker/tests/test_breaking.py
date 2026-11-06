@@ -21,10 +21,10 @@ TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 
 
-# These positions were built for single arrows (step 3i). Under the wedge (the default since the follow-up
+# These positions were built for single arrows and the intercept rule of step 3i. Under the wedge (the default since the follow-up
 # rulings) every defender covers a second line and the positions mean something else, so they keep the single
 # arrow; the screen, drive and intercept rulings apply as everywhere. The wedge is tested in test_rulings_3i.py.
-RULES = RC.with_rules(arrow_mode='single')
+RULES = RC.with_rules(arrow_mode='single', intercept_rule='approach')   # and the lanes as they were (OQ-72 ruling)
 
 
 def board(off, dfn, o, x, arrows, ball=0, **kw):

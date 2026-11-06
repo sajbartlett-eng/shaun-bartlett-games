@@ -148,7 +148,17 @@ def legal_json(s, acts):
         d = action_to_json(a)
         if a.kind in CHANCE_KINDS or (a.kind == 'end_turn' and s.stage == 'reaction'):
             d['roll'] = chance_preview(s, a)
-        if a.kind == 'pass':
+        if a.kind == 'pass' and s.ctx.rules.intercept_rule == 'ring_jump':
+            from playmaker_engine.actions import lane_marks
+            from playmaker_engine.resolve import apply as _apply
+            pend = _apply(s, a)
+            marks, ring = lane_marks(pend) if getattr(pend, 'pending', None) else ([], [])
+            d['threats'] = [dict(defender=m['defender'], how=m['how'], sq=B.sq(m['sq']), x=m['sq'][0], y=m['sq'][1],
+                                 by=m['by'], via=B.sq(m['via']) if m['via'] else None) for m in marks]
+            d['ring'] = [dict(sq=B.sq(q), x=q[0], y=q[1]) for q in ring if B.on_board(q)]
+            uniq = sorted({t['defender'] for t in d['threats']})
+            d['chips'] = [f'Pass {rv(s.ctx.off[a.piece], "pass")} v Intercept {rv(s.ctx.dfn[j], "intercept")} (X{j + 1})' for j in uniq]
+        elif a.kind == 'pass':
             pend = s.with_(pending=(a.piece, a.target))
             d['threats'] = [dict(defender=j, how=intercept_status(pend, j)) for j in range(5)
                             if intercept_status(pend, j)]

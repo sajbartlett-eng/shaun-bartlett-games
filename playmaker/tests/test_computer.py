@@ -114,6 +114,7 @@ def test_every_clean_contest_is_a_real_legal_reaction():
 
 # ---- sections 2-5: reserve, help, comfort line, paint, setup ------------------------------------
 
+@pytest.mark.usefixtures('old_intercepts')   # positions from greedy games under the old intercept rule
 def test_reserve_all_star_holds_its_last_token_more_than_a_level_without_reserve():
     from playmaker_engine.defence_check import play_positions
     spent = {}

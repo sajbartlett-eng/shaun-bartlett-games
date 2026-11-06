@@ -18,7 +18,8 @@ from playmaker_engine.scoring import choose_contest
 DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'playmaker_engine', 'data')
 
 
-def test_golden_game(golden):
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling (a scripted line)
+def test_golden_game(old_intercepts, golden):
     s = golden
     assert s.ctx.off_team == 'Five Out' and s.ctx.def_team == 'High-Low'
     # Offence: O1 passes to O3.

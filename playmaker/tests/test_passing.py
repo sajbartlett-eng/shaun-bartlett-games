@@ -95,6 +95,7 @@ def test_all_star_prefers_two_clean_passes_to_one_contested():
     assert 'two_pass' not in c.cfg['pass_alternatives']
 
 
+@pytest.mark.usefixtures('old_intercepts')   # a step 3f position, valued when a pick-off played on
 def test_last_phase_a_contested_pass_is_allowed():
     s, d = position('late')
     assert s.clock == 2

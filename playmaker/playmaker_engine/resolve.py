@@ -98,6 +98,11 @@ def _terminal(s, result, zeroed=False):
     return s.with_(stage='over', side='-', result=result, zeroed=s.zeroed or zeroed, pending=None, shot=None)
 
 
+def rules_ij(state):
+    """The OQ-72 interception ruling is in force (a defence movement keeps the pass in the air)."""
+    return state.ctx.rules.intercept_rule == 'ring_jump'
+
+
 def _turnover(s):
     """A turnover that plays on (OQ-1), or ends the possession."""
     s = s.with_(tos=s.tos + 1)
@@ -303,7 +308,7 @@ def apply(state, action, check=False):
 
     # A pending pass lands at the start of the defence's turn unless this action answers it.
     if side == 'X' and s.pending and not inbound_held(state):
-        answering = k == 'intercept' or (k in MOVEMENT and is_approach(state, a))
+        answering = k == 'intercept' or (k in MOVEMENT and (is_approach(state, a) or rules_ij(state)))
         if not answering:
             phase = s.phase
             s = complete_pass(s)
@@ -382,6 +387,30 @@ def apply(state, action, check=False):
         return chance(f'Dribble {O[s.ball].r["dribble"]} v Agility {X[a.target].r["agility"]} (O{s.ball + 1} v X{a.target + 1})', [
             (p, 'success', _after(state, win, side, k)),
             (1 - p, 'failure', _after(state, lose, side, k))], 'O')
+
+    if k == 'intercept' and rules.intercept_rule == 'ring_jump':
+        # OQ-72 ruling: a lane jump moves him straight along his arrow to the crossing square (facing kept),
+        # spending the Move or Quick Step it uses; through his square, he stays put
+        passer, recv = s.pending
+        j = a.piece
+        if a.dest is not None:
+            x = list(s.x)
+            x[j] = a.dest
+            s = s.with_(x=tuple(x))
+            if a.target == 0:
+                s = s.with_(moved_x=s.moved_x | 1 << j)
+            else:
+                cnt = list(s.cnt)
+                cnt[CI['x_qs']] += 1
+                s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
+        p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
+        ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
+        ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)
+        won = s.with_(pending=None, approach=-1, tos=s.tos + 1)
+        lost_node = (_terminal(won, Result('turnover_end'), zeroed=True) if s.ctx.hold_for_one
+                     else _terminal(won, Result('turnover_end')))   # the possession ends at -5
+        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[j].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
+            (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
 
     if k == 'intercept':
         passer, recv = s.pending

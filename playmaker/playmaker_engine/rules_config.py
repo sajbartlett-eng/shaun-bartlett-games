@@ -103,6 +103,17 @@ class Rules:
     #   (his Move stays used); one that misses leaves him where he moved, on the pass line. False: the old
     #   engine (he stays on the pass line either way).
     intercept_return: bool = True
+    # Interception (RULED, closes OQ-72). 'ring_jump':
+    #   the passer's ring: no Intercept on any square next to the passer (a defender there Steals instead);
+    #   through you: a defender the pass line passes through may Intercept, whatever his facing;
+    #   jumping the lane: the Intercept is itself one straight Move or Quick Step along an arrow line, ending
+    #   on the first ray square at or past where the pass crosses the ray (not in the ring), spending the
+    #   movement it uses; no Sprint, no turn. Other defence movements are only movements: the pass stays in
+    #   the air, so a defender may follow first and jump from his new square with what straight reach he
+    #   has left. Success ends the possession at -5; failure leaves him on the crossing square, Move used.
+    # 'approach': the old rule (on the line with any arrow; arrow across plus one movement; on the passer,
+    #   only a pass through him; a successful interception plays on).
+    intercept_rule: str = 'ring_jump'
     # OQ-11: a 1 straight + 1 diagonal Move may go in either order.
     move_either_order: bool = True
     # OQ-12 (ruled: the defence chooses any adjacent defender): contest choice.
@@ -190,8 +201,9 @@ class Rules:
 
 # The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
 # records these settings in its setup line; a log from before them replays with the old values.
-RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout')
-LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False)
+RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule')
+LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
+                 intercept_rule='approach')
 
 DEFAULT_RULES = Rules()
 

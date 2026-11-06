@@ -106,6 +106,7 @@ def test_remote_two_clients_see_the_same_game(web):
         assert 'waiting' in r1
 
 
+@pytest.mark.usefixtures('old_intercepts')   # the intercept rule before the OQ-72 ruling (a scripted line)
 def test_golden_game_through_the_api(web):
     # Seed 1: the first roll comes up 3, so the intercept on O1 -> O3 fails for the defence (pass completes).
     g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], seed=1))
@@ -281,7 +282,7 @@ def test_the_computers_turn_is_reported_with_rolls_and_results(web):
     s = state(web, g)
     # O1 passes to O2: X2 stands on that line, so the computer intercepts
     a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['target'] == 1)
-    assert any(t['how'] == 'direct' for t in a['threats'])
+    assert any(t['how'] == 'through' for t in a['threats'])          # X2's square is on the line
     r = post(web, '/api/act', dict(tok, action=a))
     feed = r['state']['feed']
     ai = [e for e in feed if e['actor'] == 'ai']

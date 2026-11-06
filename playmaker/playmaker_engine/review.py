@@ -30,7 +30,10 @@ def log_rules(setup):
     """The rules a log was played with: its recorded settings, or (a log from before the step 3i follow-up
     rulings) the old screens, single arrow, arrow-line drives and interceptor left on the line."""
     from . import rules_config as RC
-    return RC.with_rules(**(setup.get('rules') or RC.LEGACY_3I))
+    rec = setup.get('rules')
+    if not rec:
+        return RC.with_rules(**RC.LEGACY_3I)
+    return RC.with_rules(**dict({'intercept_rule': 'approach'}, **rec))   # logs from before the OQ-72 ruling
 
 
 def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):

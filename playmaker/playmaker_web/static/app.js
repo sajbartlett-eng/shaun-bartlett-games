@@ -278,6 +278,10 @@ function renderTracker(id, side) {
   box.append(el('div', { text: 'Per-phase limits used (Move: once per player)' }), lim);
   const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
   if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
+  box.append(el('div', { class: 'waits interceptrule' }, [
+    el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
+    el('div', { text: 'Jump the lane: one straight Move or Quick Step along your arrow to where it meets the pass. No Sprint, no turn.' }),
+    el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' })]));
   if (side === 'O') box.append(el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
     ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
     : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }));
@@ -459,6 +463,23 @@ function drawInfluence(c) {
       g.append(svg('path', { class: 'screen-block', d: `M${mx - 4} ${my - 4} L${mx + 4} ${my + 4} M${mx - 4} ${my + 4} L${mx + 4} ${my - 4}`, stroke: '#783c00', 'stroke-width': 2 }));
     }
   }
+  if (sel.side === 'O' && sel.kind === 'pass') {
+    const passes = (st.legal || []).filter(a => a.kind === 'pass' && a.piece === sel.i);
+    const ring = (passes[0] && passes[0].ring) || [];
+    for (const q of ring) {         // the passer's ring: no Intercept on any of these squares
+      g.append(svg('rect', { class: 'ring-free', x: px(q.x) + 3, y: py(q.y) + 3, width: S - 6, height: S - 6, fill: 'rgba(40,140,60,0.10)',
+        stroke: '#1b5e20', 'stroke-width': 1.5, 'stroke-dasharray': '1 3' }));
+      const t = svg('text', { x: px(q.x) + S / 2, y: py(q.y) + S - 5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#1b5e20' }); t.textContent = 'no int'; g.append(t);
+    }
+    for (const a of passes) for (const th of (a.threats || [])) {
+      if (th.x === undefined) continue;
+      const cx = px(th.x) + S / 2, cy = py(th.y) + S / 2;
+      g.append(svg('circle', { class: 'icpt-mark icpt-' + th.how, cx, cy, r: th.how === 'follow' ? 6 : 8, fill: '#fff', stroke: '#8b0000', 'stroke-width': th.how === 'follow' ? 1 : 2,
+        'stroke-dasharray': th.how === 'through' ? '' : th.how === 'jump' ? '4 2' : '1 2' }));
+      const t = svg('text', { x: cx, y: cy + 3.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#8b0000' });
+      t.textContent = th.defender + 1; g.append(t);
+    }
+  }
   if (sel.side === 'O' && sel.i !== null && sel.i !== undefined && inf.reach[sel.i]) {
     for (const q of inf.reach[sel.i]) {
       g.append(svg('circle', { class: 'reach', cx: px(q.x) + S / 2, cy: py(q.y) + S / 2, r: 5, fill: 'none', stroke: '#1b5e20', 'stroke-width': 2, 'stroke-dasharray': '2 2' }));
@@ -549,7 +570,18 @@ function renderActions() {
         } else tb.append(el('span', { class: 'note', text: `Click a highlighted square (${new Set(ka.map(a => a.dest.join())).size} legal). Movement doesn't end the turn.` }));
       } else if (sel.kind === 'pass') {
         for (const a of ka) {
-          const th = (a.threats || []).map(t => `X${t.defender + 1} ${t.how === 'direct' ? 'on the line' : 'arrow across (must move onto the line first)'}`);
+          const by = {};
+          for (const t of (a.threats || [])) (by[t.defender] = by[t.defender] || []).push(t);
+          const th = Object.keys(by).sort().map(j => {
+            const ts = by[j], parts = [];
+            const thr = ts.filter(t => t.how === 'through'), jmp = ts.filter(t => t.how === 'jump'), fol = ts.filter(t => t.how === 'follow');
+            if (thr.length) parts.push(`through his square (${thr[0].sq})`);
+            if (jmp.length) parts.push('jumps the lane to ' + [...new Set(jmp.map(t => `${t.sq} (${t.by})`))].join(' or '));
+            if (fol.length) parts.push(`moves, then jumps (${new Set(fol.map(t => t.sq)).size} crossing square${new Set(fol.map(t => t.sq)).size === 1 ? '' : 's'})`);
+            const old = ts.filter(t => t.how === 'direct' || t.how === 'approach');
+            if (old.length) parts.push(old[0].how === 'direct' ? 'on the line' : 'arrow across (must move onto the line first)');
+            return `X${Number(j) + 1} ${parts.join('; ')}`;
+          });
           tb.append(el('div', { class: 'opt' }, [actionButton(a, `Pass to O${a.target + 1}`), el('span', { class: 'note', text: th.length ? ' Can intercept: ' + th.join('; ') : ' No defender can intercept this pass' }), chips(a)]));
         }
       } else if (sel.kind === 'shot') {
@@ -1053,7 +1085,7 @@ function showFeedIfNew() {
   if (!fresh.length) return false;
   lastOther = fresh;
   const before = (st.feed || []).find(e => e.n === fresh[0].n - 1);      // the board just before the turn
-  replay = { entries: fresh, k: 0, live: st, start: before && before.board && before.possession === fresh[0].possession ? before.board : null };
+  replay = { entries: fresh, k: 0, live: st, start: before && before.board && before.possession === fresh[0].possession ? before.board : (fresh[0].before || null) };
   if (st.timer && st.can_act && ['main', 'grace'].includes(st.timer.mode)) { replayPaused = true; timerEvent('pause'); }
   sel = { side: null, i: null, kind: null, dest: null };
   st = frameState(replay.live, fresh[0]);
