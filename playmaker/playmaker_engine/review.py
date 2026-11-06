@@ -565,6 +565,16 @@ def computer_facts(records):
                     out.append(line)
                 elif r.get('event') in ('advantage_moved', 'advantage_gone', 'finish'):
                     out.append(r['text'] + '.')
+                elif r.get('event') in ('goal_finish',):              # step 3i: the goal and its chain
+                    out.append(r['text'])
+                elif r.get('event') in ('goal_reassess', 'vcut'):
+                    out.append(r['text'] + '.')
                 elif r.get('event') == 'replan':
                     out.append(f"It changed plan: {r['why']}.")
+        else:
+            objs = [r for r in records if r['type'] == 'computer' and r.get('side') == 'X' and r.get('event') == 'objectives']
+            for r in objs[:4]:
+                out.append(r['text'] + '.')
+            if len(objs) > 4:
+                out.append(f'(The defence re-ranked its objectives {len(objs) - 4} more times.)')
     return out

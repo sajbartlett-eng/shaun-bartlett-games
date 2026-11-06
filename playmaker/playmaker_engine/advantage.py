@@ -20,9 +20,10 @@ The six states:
 from . import board as B
 from . import rules_config as RC
 
-KINDS = ('beaten', 'mismatch', 'help_pulled', 'bad_closeout', 'spent', 'numbers')
+KINDS = ('beaten', 'mismatch', 'help_pulled', 'bad_closeout', 'spent', 'numbers', 'overloaded')
 WORDS = {'beaten': 'beat his man', 'mismatch': 'a mismatch', 'help_pulled': 'help pulled off him',
-         'bad_closeout': 'a bad closeout', 'spent': 'a spent defence', 'numbers': 'numbers'}
+         'bad_closeout': 'a bad closeout', 'spent': 'a spent defence', 'numbers': 'numbers',
+         'overloaded': 'a defender with two jobs'}
 
 
 def reaction_budget(state):
@@ -46,7 +47,7 @@ def contests(state, i, t, maps):
     pts = RC.ZONE_POINTS[B.zone(spos)]
     card = state.ctx.off[i]
     rules = state.ctx.rules
-    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single':
+    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single' or rules.late_closeout:
         return _contests_geo(state, i, t, maps, spos, pts, card)
     out = []
     for d in range(5):
@@ -91,7 +92,8 @@ def _contests_geo(state, i, t, maps, spos, pts, card):
                 bt = G.best_terms(rules, q, arrows, spos)
                 if bt is None:
                     continue
-                _, foul_roll, penalty, cat, _ = bt
+                moved = q != state.x[d] or (state.stage == 'reaction' and state.react_moved >> d & 1)
+                _, foul_roll, penalty, cat = G.late(rules, moved, t, bt[:4])
                 c = state.ctx.dfn[d].con(t) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
                 if rules.floor_contest_zero:
                     c = max(0, c)
@@ -131,7 +133,7 @@ def _adv(kind, attacker, value, shot, defender=None, **kw):
     return dict(kind=kind, attacker=attacker, value=float(value), shot=shot, defender=defender, **kw)
 
 
-def advantages(state, prev=None, maps=None):
+def advantages(state, prev=None, maps=None, dilemma=False):
     """Every advantage on the board: a list of dicts (kind, attacker, value, shot, defender), best first.
     prev is the board before the defence's last turn (for help_pulled); without it that state is skipped."""
     if state.stage == 'over' or not B.on_board(state.o[state.ball]):
@@ -200,7 +202,77 @@ def advantages(state, prev=None, maps=None):
             if left:
                 i = max(left, key=lambda a: tri[a][0][0])
                 out.append(_adv('numbers', i, tri[i][0][0], tri[i][0][1], None, shooters=len(att), cover=cover))
+    if dilemma:
+        out += _overloaded(state, maps, L)
     return sorted(out, key=lambda a: (-a['value'], KINDS.index(a['kind']), a['attacker']))
+
+
+def _without(cs, j, open_value):
+    rest = [c for c in cs if c['defender'] != j]
+    return rest[0]['value'] if rest else open_value
+
+
+def _overloaded(state, maps, L):
+    """Step 3i, C3: one defender is the only answer to two threats this phase (the closeout on a ▲
+    shooter, the help on the carrier's best drive, a passing lane). Valued as the threat he leaves
+    open after the defence's best single choice: the lesser of the two values with him gone."""
+    from .actions import can_move_kind, movement_dests
+    from .capacity import lane_reach
+    off = state.ctx.off
+    c = state.ball
+    threats = []                                   # (job, attacker, answering defenders, value without j)
+    for i in range(5):
+        hs = [(v, t, cs) for v, t, cs in L[i] if off[i].bands['shot_' + t] == 'H']
+        if not hs:
+            continue
+        v, t, cs = hs[0]
+        ans = {e['defender'] for e in cs if e['clean']}
+        open_v = float(RC.ZONE_POINTS[B.zone(state.o[i])] * off[i].shot(t))
+        threats.append((f'closeout on O{i + 1}', i, ans, lambda j, cs=cs, o=open_v: _without(cs, j, o), t))
+    st = state.with_(side='O')
+    best_q = None
+    if B.on_board(state.o[c]) and state.tok_o > 0:
+        for kind in ('move', 'qs', 'sprint'):
+            if not can_move_kind(st, 'O', c, kind):
+                continue
+            for q in movement_dests(st, 'O', c, kind, state.ctx.rules):
+                z = B.zone(q)
+                if not RC.ZONE_SHOTS.get(z) or q in state.x:
+                    continue
+                t = max(RC.ZONE_SHOTS[z], key=lambda k: off[c].shot(k))
+                v = RC.ZONE_POINTS[z] * off[c].shot(t)
+                if best_q is None or (v, -B.dist_rim(q)) > (best_q[0], -B.dist_rim(best_q[1])):
+                    best_q = (v, q, t)
+    if best_q:
+        v, q, t = best_q
+        sh = state.with_(o=state.o[:c] + (q,) + state.o[c + 1:])
+        cs = contests(sh, c, t, maps)
+        ans = {e['defender'] for e in cs if e['clean']}
+        threats.append((f'help on O{c + 1}\'s drive', c, ans, lambda j, cs=cs, o=float(v): _without(cs, j, o), t))
+    for r in range(5):
+        if r == c or not L[r]:
+            continue
+        ans = {j for j in range(5) if lane_reach(state, j, c, r)}
+        v = L[r][0][0]
+        threats.append((f'the lane to O{r + 1}', r, ans, lambda j, v=v: v, L[r][0][1]))
+    out = []
+    for j in range(5):
+        mine = [th for th in threats if th[2] == {j}]
+        best = None
+        for a in range(len(mine)):
+            for b in range(a + 1, len(mine)):
+                A, Bt = mine[a], mine[b]
+                if A[1] == Bt[1]:
+                    continue                            # two jobs means two different attackers
+                va, vb = A[3](j), Bt[3](j)
+                left = A if va <= vb else Bt          # the defence covers the bigger one
+                val = min(va, vb)
+                if best is None or val > best[0]:
+                    best = (val, left, (A[0], Bt[0]))
+        if best:
+            val, left, jobs = best
+            out.append(_adv('overloaded', left[1], val, left[4], j, jobs=list(jobs)))
+    return out
 
 
 def _max_cover(att, can):
@@ -225,4 +297,6 @@ def describe(adv):
     d = f" on X{adv['defender'] + 1}" if adv.get('defender') is not None and adv['kind'] != 'help_pulled' else ''
     if adv['kind'] == 'help_pulled':
         return f"Help came from X{adv['helper'] + 1}; {who} was left for a {adv['shot']}"
+    if adv['kind'] == 'overloaded':
+        return f"X{adv['defender'] + 1} had two jobs ({' and '.join(adv['jobs'])}); {who} was left for a {adv['shot']}"
     return f"{who} has {WORDS[adv['kind']]}{d}, for a {adv['shot']}"

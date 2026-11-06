@@ -276,6 +276,8 @@ function renderTracker(id, side) {
   box.append(tb);
   const lim = el('div', { class: 'limits' }, s.limits[side].map(l => el('span', { class: l.used >= l.limit ? 'full' : '', text: `${KIND_NAME[l.kind] || l.kind} ${l.used}/${l.limit}` })));
   box.append(el('div', { text: 'Per-phase limits used (Move: once per player)' }), lim);
+  const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
+  if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
 }
 
 function renderCourt() {

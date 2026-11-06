@@ -101,8 +101,11 @@ def test_last_phase_a_contested_pass_is_allowed():
     p = Play('kick', (Action('pass', 'O', s.ball, target=r),))
     keep = value(s, Play('hesitate', (Action('hesitate', 'O'),)))
     assert value(s, p) > keep                                                  # allowed: worth more than holding it
-    a = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[]).choose(s)
-    assert a.kind in ('pass', 'shot'), a                                       # (since 3g it may finish instead)
+    c = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
+    a = c.choose(s)
+    play = [n for n in c.notes if n['event'] == 'play']
+    # since 3g it may finish instead; since 3i it may move the receiver out first and pass in the same turn
+    assert a.kind in ('pass', 'shot') or (play and play[-1].get('text') == 'V-cut out and catch'), (a, play)
 
 
 def test_habit_forces_passes_throws_to_the_target_through_a_contested_lane():

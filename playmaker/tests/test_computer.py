@@ -224,19 +224,33 @@ def test_no_contested_jumper_off_the_first_pass(lv):
         assert c.choose(s).kind != 'shot', (lv, habits)
 
 
-def test_shot_bars_prefer_open_looks_and_drop_each_phase():
-    from playmaker_engine.solver import Play
+def test_one_shot_bar_that_drops_each_phase():
+    """Step 3i: one patience curve on the value after the reaction (no separate contested curve)."""
     s = _log_3a9c33()
     for lv in C.LEVEL_NAMES:
         c = C.Computer('O', lv, seed=1, habits=[])
         c._context(s)
-        bars = [(c._bar(s.with_(clock=t), False), c._bar(s.with_(clock=t), True)) for t in (12, 10, 8, 6, 4, 2)]
-        assert all(o < x for o, x in bars[:-1]) and bars[-1] == (0, 0), (lv, bars)     # contested needs more
-        assert all(a >= b for a, b in zip(bars, bars[1:])), (lv, bars)                # and the bar only drops
-        assert c._contested(s, Play('shoot', (Action('shot', 'O', 1, shot='three'),)))  # X4 can contest O2
+        bars = [c._bar(s.with_(clock=t)) for t in (12, 10, 8, 6, 4, 2)]
+        assert bars[-1] == 0 and all(a >= b for a, b in zip(bars, bars[1:])), (lv, bars)
+        assert c._bar(s, True) == c._bar(s, False)                                       # contested or not
     early = C.Computer('O', 'starter', seed=1, habits=['settles_early'])
     early._context(s)
-    assert early._bar(s, True) == c._bar(s.with_(clock=10), True)                   # a phase ahead
+    assert early._bar(s) == c._bar(s.with_(clock=10))                                  # a phase ahead
+
+
+def test_a_contested_30_is_taken_over_an_open_28_when_both_clear_the_bar():
+    """Clock 12, nothing better reachable: the shot with the higher value after the reaction goes up."""
+    from playmaker_engine.solver import Play
+    s = _log_3a9c33()
+    assert s.clock == 12
+    for lv in ('starter', 'allstar'):
+        c = C.Computer('O', lv, seed=1, habits=[])
+        c._context(s)
+        contested = Play('shoot', (Action('shot', 'O', 1, shot='three'),))
+        open_look = Play('drive+shoot', (Action('move', 'O', 1, P('C10')), Action('shot', 'O', 1, shot='three')))
+        assert c._bar(s) <= 28
+        assert c._choose_shot(s, [(28.0, open_look), (30.0, contested)], cv=0.0) == contested
+        assert c._choose_shot(s, [(27.0, contested)], cv=0.0) is None                   # under the bar: keep building
 
 
 def test_risk_a_pass_through_a_reachable_lane_is_worth_less():
@@ -287,8 +301,11 @@ def test_golden_position_all_star_finds_a_line_worth_27():
     assert abs(step_back - 27) < 1e-6, step_back
     if c.queue and c.queue[1] and c.queue[1][0].kind == 'shot':
         return
-    chosen = max(val(p) for p in c2.gen.plays(view, shallow=False) if p.actions[0] == a)
-    assert chosen > step_back, (a, chosen)
+    mine = [val(p) for p in c2.gen.plays(view, shallow=False) if p.actions[0] == a]
+    if mine:
+        assert max(mine) > step_back, (a, mine)
+    else:                                   # an advantage play (step 3g) or a goal's step (3i), chosen by its own score
+        assert any(n['event'] in ('play', 'goal_step') for n in c.notes), (a, c.notes)
 
 
 # ---- section 8: levels, habits, tunnel vision, card reading, no cheating -------------------------

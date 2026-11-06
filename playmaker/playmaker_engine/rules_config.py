@@ -122,6 +122,12 @@ class Rules:
     #                    level, Behind if further.
     #   Front: full contest. Side: a foul roll (Foul contest rating). Behind: a foul roll and the -3.
     contest_geometry: str = 'current'
+    # OQ-63 (RULED, step 3i): the ball carrier can't Screen (a handoff is a short pass, not a screen).
+    carrier_can_screen: bool = False
+    # Step 3i (rule test, not adopted): a contester who used a reaction movement (Move, Sprint or Quick
+    #   Step) to reach the contest is late: at the rim, post or floater a foul roll; on a mid-range, long
+    #   two or three the -3 and no foul roll. One who was already adjacent (and only turns) contests as now.
+    late_closeout: bool = False
     # OQ-16 (ruled): who may Challenge a screen.
     #   'on_t'     : only the defender standing on the screen's T square (the one it blocks).
     #   'adjacent' : any defender next to the screener.   'any' : any defender.

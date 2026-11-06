@@ -95,7 +95,12 @@ def contest_options(state, shooter, shot_type, forced=False):
         eligible, foul_roll, penalty, cat = G.terms(rules, xp, state.arrows[j], spos)
         if not eligible:
             continue                    # step 3h geometries: arrow lines off the shooter, no contest
-        if rules.contest_geometry == 'current':
+        if rules.late_closeout and state.react_moved >> j & 1:
+            eligible, foul_roll, penalty, cat = G.late(rules, True, shot_type, (eligible, foul_roll, penalty, cat))
+            c = ctx.dfn[j].con(shot_type) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
+            if rules.floor_contest_zero:
+                c = max(0, c)
+        elif rules.contest_geometry == 'current':
             c = contest_rating(ctx.dfn[j], shot_type, xp, spos, rules)
         else:
             c = ctx.dfn[j].con(shot_type) - (RC.FAR_CONTEST_PENALTY if penalty else 0)

@@ -241,7 +241,7 @@ class Evaluator:
     def defended(self, s, maps, shooter, spos, t, budget, forced=False):
         """Defence's best answer to a shot by `shooter` from spos (shot type t).
         Returns (ev, look, p30, kind) where kind names the answer ('open', 'clean', 'side', 'steal')."""
-        if s.ctx.rules.contest_geometry != 'current':
+        if s.ctx.rules.contest_geometry != 'current' or s.ctx.rules.late_closeout:
             return self._defended_geo(s, maps, shooter, spos, t, budget, forced)
         ctx, rules = s.ctx, s.ctx.rules
         card = ctx.off[shooter]
@@ -348,7 +348,8 @@ class Evaluator:
                     bt = G.best_terms(rules, q, arrows, spos)
                     if bt is None:
                         continue                           # lines off the shooter: no contest
-                    _, foul_roll, penalty, _, _ = bt
+                    _, foul_roll, penalty, _, _ = G.late(rules, q != s.x[d] or (s.stage == 'reaction' and s.react_moved >> d & 1),
+                                                         t, bt[:4]) + (bt[4],)
                     facing_len = ln if facing_len is None else min(facing_len, ln)
                     c = dcard.r[con_key] - (RC.FAR_CONTEST_PENALTY if penalty else 0)
                     if rules.floor_contest_zero and c < 0:

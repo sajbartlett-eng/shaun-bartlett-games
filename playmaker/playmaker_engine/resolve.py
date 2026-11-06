@@ -111,7 +111,7 @@ def _turnover(s):
 def new_phase(s, clock):
     return s.with_(clock=clock, tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
-                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0)
+                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0)
 
 
 def complete_pass(s):
@@ -325,6 +325,8 @@ def apply(state, action, check=False):
                 # anticlockwise, otherwise it goes clockwise (arrow index = run)
                 arr[a.piece] = a.arrow if (s.ctx.rules.arrow_mode == 'wedge' and a.arrow == (run - 1) % 8) else run
             s = s.with_(x=tuple(x), arrows=tuple(arr))
+            if state.stage == 'reaction' and a.dest != state.x[a.piece]:
+                s = s.with_(react_moved=s.react_moved | 1 << a.piece)     # late_closeout test: moved to contest
             if k in MOVEMENT and is_approach(state, a):
                 s = s.with_(approach=a.piece)
             if state.pending:

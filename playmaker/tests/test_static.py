@@ -154,20 +154,21 @@ def test_phone_layout_fits_galaxy_portrait(static_site, tmp_path):
 
 NODE_AI = r"""
 const { chromium, devices } = require('playwright');
-const [url, level] = process.argv.slice(2);
+const [url, level, side] = process.argv.slice(2);
 (async () => {
   const b = await chromium.launch(); const page = await (await b.newContext({ ...devices['Galaxy S9+'] })).newPage();
   page.on('pageerror', e => console.error('pageerror', e.message));
   await page.goto(url);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
-  const out = await page.evaluate(async (lvl) => {
+  const out = await page.evaluate(async ([lvl, side]) => {
     const t0 = performance.now();
-    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: 1, seed: 9, level: 'pro', ai: { X: lvl } });
+    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', scenario: 1, seed: 9, level: 'pro', ai: { [side]: lvl } });
     const times = [];
     for (let i = 0; i < 8; i++) {
       const s = await window.PM_BACKEND(`/api/state?code=${g.code}&token=${g.token}`);
       if (s.stage === 'over' || !s.legal.length) break;
-      const a = s.legal.find(x => x.kind === 'pass') || s.legal.find(x => x.kind === 'hesitate') || s.legal[0];
+      const a = side === 'X' ? (s.legal.find(x => x.kind === 'pass') || s.legal.find(x => x.kind === 'hesitate') || s.legal[0])
+                             : (s.legal.find(x => x.kind === 'pause') || s.legal.find(x => x.kind === 'end_turn') || s.legal[0]);
       const t = performance.now();
       await window.PM_BACKEND('/api/act', { code: g.code, token: g.token, action: a });
       times.push(performance.now() - t);
@@ -175,24 +176,25 @@ const [url, level] = process.argv.slice(2);
     const log = await window.PM_BACKEND(`/api/log?code=${g.code}`);
     const ai = log.filter(r => r.type === 'action' && r.actor === 'ai');
     return { times, ai: ai.map(r => r.action.text), think: ai.map(r => r.think_s || 0) };
-  }, level);
+  }, [level, side]);
   console.log(JSON.stringify(out));
   await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
 """
 
 
+@pytest.mark.parametrize('side', ['X', 'O'])
 @pytest.mark.parametrize('level', ['rookie', 'starter', 'allstar'])
-def test_the_computer_defence_runs_in_the_browser_build(static_site, tmp_path, level):
-    """Each computer level plays in the link version (on the phone profile), within its thinking budget
-    (computer_levels.json budget_s.browser, with a margin for the step after the deadline)."""
+def test_the_computer_runs_in_the_browser_build(static_site, tmp_path, level, side):
+    """Each computer level plays in the link version (on the phone profile), on defence and on offence, within
+    its thinking budget (computer_levels.json budget_s.browser, with a margin for the step after the deadline)."""
     (tmp_path / 'ai.js').write_text(NODE_AI)
     url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
-    r = subprocess.run(['node', str(tmp_path / 'ai.js'), url, level], capture_output=True, text=True, timeout=600)
+    r = subprocess.run(['node', str(tmp_path / 'ai.js'), url, level, side], capture_output=True, text=True, timeout=900)
     assert r.returncode == 0, r.stderr[-800:]
     out = json.loads(r.stdout.strip().splitlines()[-1])
-    print(f'browser {level}: think s per decision', out['think'], 'ms per human action', [round(t) for t in out['times']])
-    assert out['ai'], out                                    # the computer defence acted
+    print(f'browser {level} {side}: think s per decision', out['think'], 'ms per human action', [round(t) for t in out['times']])
+    assert out['ai'], out                                    # the computer acted
     from playmaker_engine.computer import LEVELS
     assert max(out['think']) < LEVELS['budget_s']['browser'] * 1.5, out['think']
 
@@ -207,6 +209,7 @@ def test_every_engine_module_the_game_loads_is_in_the_browser_bundle():
     loaded = {m.split('.')[-1] + '.py' for m in sys.modules
               if m.startswith('playmaker_engine.') and m.count('.') == 1}
     research = {'solver_report.py', 'solver_round2.py', 'solver_fixes.py', 'headtohead.py', 'rule_test_3h.py',
-                'calibrate.py', 'soak.py', 'defence_check.py', 'pause_examples.py', 'analysis.py'}
+                'calibrate.py', 'soak.py', 'defence_check.py', 'pause_examples.py', 'analysis.py',
+                'agreement.py', 'matchups.py'}        # loaded by other tests' research tools in a full run
     missing = sorted(loaded - set(ENGINE_FILES) - research)
     assert not missing, missing

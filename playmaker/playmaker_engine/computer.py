@@ -8,9 +8,11 @@ How it values things:
 - A contest is valued after the defence's legal reaction (`reachable_contest`): a defender with their
   Move unused, not locked and a token in the pool can still get adjacent and facing once the shot is
   declared; Quick Step keeps the facing, a Sprint faces the way it ran.
-- A position is valued by the offence's best next action against it (shoot now, drive, or pass and
-  then shoot), the solver's evaluation. A level may instead use the solver's search at a short budget
-  (lookahead 'solver'); calibration found the one-turn ranking stronger within the time limit.
+- A position is valued by the solver's one-turn evaluation (eval_turns 1, kick_weight 0): the ball
+  carrier's best look, from where he stands or after one Move, Quick Step or Sprint, after the
+  defence's reaction. Teammates' looks count through the offence's pass valuation (pass_risk, steps 3f
+  and 3g) and, for the Starter and All-Star defences, the off-ball threat term in _threat (step 3i).
+  A level may instead use the solver's search at a short budget (lookahead 'solver'); none does.
 - Concepts, habits, tunnel vision, card reading, the comfort line and randomness are the level levers
   (computer_levels.json).
 """
@@ -62,7 +64,7 @@ def reachable_contest(state, shooter=None, shot=None, budget=None):
     card = state.ctx.off[shooter]
     budget = reaction_budget(state) if budget is None else budget
     rules = state.ctx.rules
-    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single':
+    if rules.contest_geometry != 'current' or rules.arrow_mode != 'single' or rules.late_closeout:
         return _reachable_contest_geo(state, shooter, spos, t, pts, card, budget)
     out = []
     for d in range(5):
@@ -119,7 +121,8 @@ def _reachable_contest_geo(state, shooter, spos, t, pts, card, budget):
                 bt = G.best_terms(rules, q, arrows, spos)
                 if bt is None:
                     continue
-                _, foul_roll, penalty, cat, _ = bt
+                moved = q != state.x[d] or (state.stage == 'reaction' and state.react_moved >> d & 1)
+                _, foul_roll, penalty, cat = G.late(rules, moved, t, bt[:4])
                 c = state.ctx.dfn[d].con(t) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
                 if rules.floor_contest_zero:
                     c = max(0, c)
@@ -318,9 +321,34 @@ def _evaluator_class():
         reserve: see that a spent token or Move loses the reaction (off: always assume a reaction);
         tunnel: only the N attackers nearest the ball are a threat."""
 
-        def __init__(self, cfg, reaction=True, reserve=True, tunnel=5):
+        def __init__(self, cfg, reaction=True, reserve=True, tunnel=5, rotations=False):
             super().__init__(cfg)
-            self.reaction, self.reserve, self.tunnel = reaction, reserve, tunnel
+            self.reaction, self.reserve, self.tunnel, self.rotations = reaction, reserve, tunnel, rotations
+
+        def _reply(self, s):
+            """The defence's best reply (ball-side plays, eval_reply_k + 2 of them), then the one-turn
+            evaluation. With rotations (step 3i), a help step and a switch or recover by another defender
+            are always among the candidates: the third defender who rotates."""
+            if not self.rotations or s.stage != 'play' or s.side != 'X':
+                return super()._reply(s)
+            from .solver import apply_play, expected
+            gen = self._gen
+            plays = list(gen.plays(s, False, light=True)[:self.cfg.eval_reply_k + 2])
+            have = {p.actions for p in plays}
+            extra = []
+            for p in gen.plays(s, False, light=False):
+                if p.concept in ('help', 'switch', 'recover') and p.actions not in have and \
+                        not any(q.concept == p.concept for q in extra):
+                    extra.append(p)
+            res = []
+            for p in plays + extra:
+                node = apply_play(s, p)
+                if node is not None:
+                    res.append(expected(node, self._one))
+            if not res:
+                return self._one(s)
+            res.sort(key=lambda vs: vs[0].ev)
+            return res[0]
 
         def reach(self, s, budget):
             if not self.reaction:
@@ -387,8 +415,9 @@ class Computer(Policy):
         reaction = c.get('reaction', c.get('reaction_shot', True))
         reserve = c.get('reserve', True) if self.side == 'X' else c.get('drain', True)
         # no root-wide raw action scan and no exact endgame hand-off: neither watches the clock
-        self.ecfg = with_config(eval_turns=1, top_k_raw=0, endgame_tokens=-1, eval_reply_k=2)
-        self.ev = _evaluator_class()(self.ecfg, reaction=reaction, reserve=reserve, tunnel=self.cfg['tunnel'])
+        self.ecfg = with_config(eval_turns=1, top_k_raw=0, endgame_tokens=-1, eval_reply_k=self.cfg.get('reply_k', 2))
+        self.ev = _evaluator_class()(self.ecfg, reaction=reaction, reserve=reserve, tunnel=self.cfg['tunnel'],
+                                     rotations=self.cfg.get('rotations', False))
         self.gen = Generator(self.ecfg, self.ev)
         self.ev._gen = self.gen
         self.Searcher = Searcher
@@ -396,6 +425,12 @@ class Computer(Policy):
         self.plan = None
         self.visited = {}           # offence: (squares, ball) reached at its decisions this possession -> times
         self.aplan = None           # offence: the advantage play being worked (step 3g)
+        self.goal = None            # offence: the goal being worked (step 3i)
+        self.goal_mem = {}          # offence: per goal, the steps already taken that the board can't show
+        self._goal_snap = None
+        self._goal_cool = False
+        self._vcut_watch = None
+        self._objectives = None     # defence: the last logged objectives
         self._handover = None       # offence: the board as it left it to the defence (for help_pulled)
         self.picked_off = set()     # offence: passes intercepted this possession, keyed by the full position
         self._last_pass = None
@@ -507,9 +542,13 @@ class Computer(Policy):
         return lambda s: (self.ev._reply(s)[0].ev if s.stage == 'play' and s.side == 'X' else self.ev(s)[0].ev)
 
     def _threat(self, s):
-        """The defence's view of the offence's next turn: its best action (a shot, a step and a shot, a pass
-        and a shot), or a dribble at the dice, with the defence's reply after it (a won dribble can open a
-        step-out shot a turn later)."""
+        """The defence's view of the offence's next turn, with the offence to act: the ball carrier's best
+        look (a shot from where he stands, or after one Move, Quick Step or Sprint, after the reaction);
+        a dribble at the dice, with the defence's reply after it (a won dribble can open a step-out shot a
+        turn later); and, for a level with offball_threat (Starter, All-Star, step 3i), a pass to each
+        teammate: the defence's turn after the pass (its remaining tokens and Moves), the reaction, the
+        catch weighted by pass_risk. Without that term an open shooter off the ball cost the defence
+        nothing until the pass landed."""
         from .solver import expected
         v = self.ev(s)[0].ev
         if s.stage != 'play' or s.side != 'O' or s.tok_o < 1:
@@ -517,7 +556,42 @@ class Computer(Policy):
         for a in legal_actions(s):
             if a.kind == 'dribble':
                 v = max(v, expected(apply(s, a), self.ev._reply)[0].ev)
+        if self.cfg.get('offball_threat'):
+            v = max(v, self._pass_threat(s, v))
         return v
+
+    def _pass_threat(self, s, best):
+        """The offence's best pass and catch from s (offence to act): (1 - risk) x the catch, valued after
+        the defence's reply and the reaction, + risk x the pick-off (banked points - 5)."""
+        memo = self.__dict__.setdefault('_threat_memo', {})
+        hit = memo.get(s)
+        if hit is not None and hit[0] is s.ctx:
+            return hit[1]
+        budget_x = reaction_budget(s)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos
+        reply = lambda t: self.ev._reply(t)[0].ev if (not isinstance(t, ChanceNode) and t.stage == 'play'
+                                                     and t.side == 'X') else self.ev(t)[0].ev
+        out = best
+        stop = self._stop()
+        for r in range(5):
+            if r == s.ball or not B.on_board(s.o[r]):
+                continue
+            if stop is not None and time.time() > stop:
+                break
+            if self.ev.carrier_look(s, r, budget_x, True)[0] + banked <= out:
+                continue                       # even an open catch there can't beat the threat already seen
+            info = pass_risk(s, s.ball, r)
+            if info is None:
+                continue
+            caught, lost = pass_outcomes(info)
+            cv = self._node_value(caught, reply)
+            if lost is not None:
+                cv = (1 - info['risk']) * cv + info['risk'] * (banked + RC.TURNOVER_POINTS)
+            out = max(out, cv)
+        if len(memo) > 20000:
+            memo.clear()
+        memo[s] = (s.ctx, out)
+        return out
 
     def _rank(self, view, plays, fn, maximise, stop):
         from .solver import apply_play
@@ -583,6 +657,8 @@ class Computer(Policy):
             if p is not None:
                 return self._habit_rewrite(view, p)
         plays = self._with_end(view, acts, self.gen.plays(view, shallow=False))
+        if self.cfg.get('objectives') and view.stage == 'play' and not view.pending:
+            plays = plays + self._objective_plays(view, acts)
         if view.stage in ('reaction', 'contest') or view.pending:
             have = {p.actions for p in plays}
             plays += [Play('single', (a,)) for a in acts if (a,) not in have]
@@ -804,6 +880,10 @@ class Computer(Policy):
             if fp is not None:                            # to the primary target whenever legal, whatever the risk
                 self._fire('forces_passes')
                 return Play('habit', (fp,))
+        if self.cfg.get('goals'):
+            chosen = self._goal_attack(view, acts)
+            if chosen is not None:
+                return chosen
         if self.cfg.get('plays'):
             chosen = self._advantage_attack(view, acts)
             if chosen is not None:
@@ -841,22 +921,40 @@ class Computer(Policy):
         # keeps the good looks covered forces a lesser one late. On the last chance there is no bar.
         # The bar reads the look itself, not points already banked this possession (turnovers, the
         # steal-foul bonus). From the level's shoot_by clock on, the best shot goes up whatever it is.
-        last = self._last_chance(view)
-        banked = RC.STEAL_FOUL_BONUS * view.bonus5 + RC.TURNOVER_POINTS * view.tos
         is_shot = lambda p: any(a.kind == 'shot' for a in p.actions)
-        if view.clock <= self.cfg.get('shoot_by', 0) and not last:
-            return max(shots, key=lambda vp: vp[0])[1]
-        cleared = [(v, p) for v, p in shots if last or raw[p] - banked >= self._bar(view, self._contested(view, p))]
         cv = max(v for v, p in rest)
-        if cleared and max(v for v, p in cleared) >= cv - 1e-9:
-            sv, sp = max(cleared, key=lambda vp: vp[0])
-            if not last and 'settles_early' in self.habits and \
-                    raw[sp] - banked < self._bar(view, self._contested(view, sp), early=False):
-                self._fire('settles_early')
-            best = sp
-        elif is_shot(best):
+        sp = self._choose_shot(view, shots, cv, cv_banked=True, bar_value=lambda v, p: raw[p])
+        if sp is not None:
+            return sp
+        if is_shot(best):
             best = self._pick(rest, True)
         return best
+
+    def _choose_shot(self, view, shots, cv, cv_banked=False, bar_value=None):
+        """7.3 with a bar. shots: [(value, play)], each value after the reaction and including the points
+        banked this possession; cv: the best value of continuing (including the banked points when
+        cv_banked, else without them). A shot goes up when it clears the level's bar for the time left
+        and is worth at least what continuing is estimated to be worth (a tie goes to the shot); the best
+        such shot is taken, contested or not (one curve, step 3i: the value already takes off the
+        contest). The bar reads the look itself, not points already banked (turnovers, the steal-foul
+        bonus). From the level's shoot_by clock on, the best shot goes up whatever it is; on the last
+        chance there is no bar. Returns the play, or None to keep building."""
+        if not shots:
+            return None
+        last = self._last_chance(view)
+        banked = self._banked(view)
+        if view.clock <= self.cfg.get('shoot_by', 0) and not last:
+            return max(shots, key=lambda vp: vp[0])[1]
+        bv = bar_value or (lambda v, p: v)
+        cleared = [(v, p) for v, p in shots if last or bv(v, p) - banked >= self._bar(view)]
+        if not cleared:
+            return None
+        sv, sp = max(cleared, key=lambda vp: vp[0])
+        if (sv if cv_banked else sv - banked) < cv - 1e-9:
+            return None
+        if not last and 'settles_early' in self.habits and bv(sv, sp) - banked < self._bar(view, early=False):
+            self._fire('settles_early')
+        return sp
 
     # -- passing judgement (step 3f) --
     _ALT = {'relocate': 'receiver', 'drive': 'passer', 'dribble': 'passer', 'hesitate': 'passer',
@@ -999,7 +1097,7 @@ class Computer(Policy):
 
     def _advs(self, s, prev=None):
         from .advantage import advantages
-        return advantages(s, prev=prev, maps=self._maps(s))
+        return advantages(s, prev=prev, maps=self._maps(s), dilemma='dilemma' in self.cfg.get('plays', ()))
 
     def _note_handover(self, state, a):
         """The board as the offence hands the turn to the defence (help_pulled compares against it)."""
@@ -1042,13 +1140,56 @@ class Computer(Policy):
                 continue
             if v > best:
                 best, which = v, a
+        if any(k in known for k in ('vcut', 'shift', 'baseline', 'backcut')):
+            v, a = self._step_out_catch(s, tol)
+            if v > best:
+                best, which = v, a
+        return best, which
+
+    def _step_out_catch(self, s, tol):
+        """A receiver steps out (Move or Quick Step) and catches, where his defender can no longer turn
+        (Move spent, or locked): the V-cut's payoff. (1 - risk) x his look after the catch - risk x 5."""
+        from .actions import can_move_kind, movement_dests
+        from .advantage import looks
+        best, which = 0.0, None
+        if s.stage != 'play' or s.side != 'O' or s.tok_o < 2 or s.count('O', 'pass') >= RC.LIMITS['O']['pass']:
+            return best, which
+        off = s.ctx.off
+        for r in range(5):
+            if r == s.ball or not B.on_board(s.o[r]):
+                continue
+            d = min(range(5), key=lambda j: (B.cheb(s.x[j], s.o[r]), j))
+            if can_move_kind(s, 'X', d, 'move'):
+                continue                          # his man can still turn and answer: no payoff to read
+            cand = []
+            for kind in ('move', 'qs'):
+                if can_move_kind(s, 'O', r, kind):
+                    for q in movement_dests(s, 'O', r, kind, s.ctx.rules):
+                        if B.on_board(q) and q not in s.x and RC.ZONE_SHOTS.get(B.zone(q)):
+                            v = max(RC.ZONE_POINTS[B.zone(q)] * off[r].shot(t) for t in RC.ZONE_SHOTS[B.zone(q)])
+                            cand.append((v, kind, q))
+            if not cand:
+                continue
+            v0, kind, q = max(cand)
+            s2 = apply(s, Action(kind, 'O', r, q))
+            if isinstance(s2, ChanceNode) or s2.stage != 'play' or s2.side != 'O':
+                continue
+            info = pass_risk(s2, s2.ball, r)
+            if info is None:
+                continue
+            lk = looks(s2, r, self._maps(s2))
+            if not lk:
+                continue
+            v = (1 - info['risk']) * lk[0][0] + info['risk'] * RC.TURNOVER_POINTS * tol
+            if v > best:
+                best, which = v, dict(kind='step_out', attacker=r, value=v, shot=lk[0][1], defender=d)
         return best, which
 
     def _tempo(self, view, s):
         """The clock spent, valued by the patience curve: how far the open-look bar falls meanwhile."""
         if isinstance(s, ChanceNode) or s.stage == 'over':
             return 0.0
-        return max(0.0, self._bar(view, False, early=False) - self._bar(s, False, early=False))
+        return max(0.0, self._bar(view, early=False) - self._bar(s, early=False))
 
     def _adv_value(self, view, node, depth):
         """A play's score: the best advantage finish reached, plus points banked on the way (a turnover
@@ -1151,7 +1292,82 @@ class Computer(Policy):
                 out['pass'].append(Play('pass to ' + a['kind'], (pa,)))
         keep = {'shoot': 'shoot', 'dribble': 'dribble', 'pass': 'pass', 'screen': 'screen', 'speed': 'speed',
                 'seal': 'seal', 'cut': 'cut'}
-        return {k: v for k, v in out.items() if keep[k] in known or k == 'shoot'}
+        out = {k: v for k, v in out.items() if keep[k] in known or k == 'shoot'}
+        out.update(self._movement_plays(view, acts, known, out.get('screen', [])))
+        return out
+
+    MOVEMENT_KINDS = ('vcut', 'shift', 'baseline', 'backcut', 'offscreen')
+
+    def _movement_plays(self, view, acts, known, screens):
+        """Step 3i, C2: off-ball movement templates for every off-ball attacker (not every square):
+        V-cut (a Move in this phase, a Move out the next, or a Quick Step out now, with the catch);
+        shift away (a ▲ three-point shooter moves along the arc away from his defender); baseline cut
+        (along the baseline under the rim to the far side); back cut (behind a defender whose arrow
+        faces the ball, to the rim); and screens aimed at the defender who answers a lane or the help.
+        The tokens they spend are not waste: what they make the defence spend is valued by create,
+        reply, exploit."""
+        from .solver import Play
+        from .capacity import lanes, help_reach
+        out = {k: [] for k in self.MOVEMENT_KINDS if k in known}
+        if not out or view.stage != 'play' or view.side != 'O' or not B.on_board(view.o[view.ball]):
+            return out
+        c = view.ball
+        ball = view.o[c]
+        off = view.ctx.off
+        val = lambda i, q: max((RC.ZONE_POINTS[B.zone(q)] * off[i].shot(t) for t in RC.ZONE_SHOTS.get(B.zone(q), ())), default=0)
+        mv = {}
+        for a in acts:
+            if a.kind in MOVEMENT and a.piece != c and B.on_board(a.dest) and a.dest not in view.x:
+                mv.setdefault(a.piece, []).append(a)
+        can_pass = any(a.kind == 'pass' for a in acts)
+        for i, moves in mv.items():
+            me = view.o[i]
+            d = min(range(5), key=lambda j: (B.cheb(view.x[j], me), j))
+            xd = view.x[d]
+            if 'vcut' in out:
+                ins = [a for a in moves if a.kind == 'move' and (B.dist_rim(a.dest) < B.dist_rim(me) or B.cheb(a.dest, xd) < B.cheb(me, xd))]
+                if ins:
+                    a = min(ins, key=lambda a: (B.dist_rim(a.dest), B.cheb(a.dest, xd), a.dest))
+                    out['vcut'].append(Play('V-cut in', (a,)))
+                outs = [a for a in moves if a.kind in ('move', 'qs') and val(i, a.dest) > 0 and B.cheb(a.dest, xd) > B.cheb(me, xd)]
+                if outs:
+                    a = max(outs, key=lambda a: (val(i, a.dest), B.cheb(a.dest, xd), a.dest))
+                    out['vcut'].append(Play('V-cut out', (a,)))
+                    if can_pass and view.tok_o >= 2:
+                        out['vcut'].append(Play('V-cut out and catch', (a, Action('pass', 'O', c, target=i))))
+            if 'shift' in out and off[i].bands['shot_three'] == 'H':
+                sh = [a for a in moves if B.zone(a.dest) == '3' and B.cheb(a.dest, xd) > B.cheb(me, xd)
+                      and B.cheb(a.dest, ball) >= B.cheb(me, ball)]
+                if sh:
+                    a = max(sh, key=lambda a: (B.cheb(a.dest, xd), B.cheb(a.dest, ball), a.dest))
+                    out['shift'].append(Play('shift away', (a,)))
+            if 'baseline' in out and me[1] <= 3:
+                side = me[0] - RC.RIM[0]
+                bl = [a for a in moves if a.dest[1] <= 2 and (abs(a.dest[0] - RC.RIM[0]) < abs(side)
+                                                             or (a.dest[0] - RC.RIM[0]) * side < 0)]
+                if bl:
+                    a = max(bl, key=lambda a: ((a.dest[0] - RC.RIM[0]) * side < 0, abs(a.dest[0] - RC.RIM[0]) if
+                                               (a.dest[0] - RC.RIM[0]) * side < 0 else -abs(a.dest[0] - RC.RIM[0]), a.dest))
+                    out['baseline'].append(Play('baseline cut', (a,)))
+            if 'backcut' in out:
+                toward = B.dir_between(xd, (xd[0] + (ball[0] > xd[0]) - (ball[0] < xd[0]),
+                                            xd[1] + (ball[1] > xd[1]) - (ball[1] < xd[1]))) if ball != xd else None
+                facing_ball = toward is not None and (view.arrows[d] - toward) % 8 in (0, 1, 7)
+                if facing_ball:
+                    bc = [a for a in moves if a.kind in ('move', 'sprint') and B.zone(a.dest) == 'K'
+                          and B.dist_rim(a.dest) < B.dist_rim(me) and B.cheb(a.dest, ball) >= B.cheb(xd, ball)]
+                    if bc:
+                        a = min(bc, key=lambda a: (B.dist_rim(a.dest), a.dest))
+                        out['backcut'].append(Play('back cut', (a,)))
+        if 'offscreen' in out and screens:
+            answer = {j for j in range(5) if lanes(view, j)} | {j for j in range(5) if any(help_reach(view, j).values())}
+            for p in screens:
+                scr = p.actions[-1]
+                frm = p.actions[0].dest if len(p.actions) > 1 else view.o[scr.piece]
+                tq = B.add(frm, B.DIRS[scr.target])
+                if tq in view.x and view.x.index(tq) in answer:
+                    out['offscreen'].append(Play('off-ball screen', p.actions))
+        return out
 
     def _advantage_attack(self, view, acts):
         """Step 3g: the best advantage play. Shots by the shot bars (7.3); every other play by
@@ -1201,21 +1417,10 @@ class Computer(Policy):
         banked = self._banked(view)
         best = max(scored, key=lambda e: e[0]) if scored else None
         cv = best[0] if best else 0.0
-        last = self._last_chance(view)
-        if shots:
-            if view.clock <= self.cfg.get('shoot_by', 0) and not last:
-                sp = max(shots, key=lambda vp: vp[0])[1]
-                self._plan_note(view, sp, None)
-                return sp
-            cleared = [(v, p) for v, p in shots if last or v - banked >= self._bar(view, self._contested(view, p))]
-            if cleared:
-                sv, sp = max(cleared, key=lambda vp: vp[0])
-                if sv - banked >= cv - 1e-9:
-                    if not last and 'settles_early' in self.habits and \
-                            sv - banked < self._bar(view, self._contested(view, sp), early=False):
-                        self._fire('settles_early')
-                    self._plan_note(view, sp, None)
-                    return sp
+        sp = self._choose_shot(view, shots, cv)
+        if sp is not None:
+            self._plan_note(view, sp, None)
+            return sp
         if best is None or best[0] <= 0:
             return None
         self._plan_note(view, best[1], best[2])
@@ -1287,6 +1492,206 @@ class Computer(Policy):
         self.notes.append(dict(event='play', play=kind, attacker=target, text=text,
                                advantage=describe(after[0]) if after else None))
 
+    # ---- step 3i: the goal-directed offence ----------------------------------------------------------
+    _MARK = {'in': ('in', 'r'), 'out': ('out', 'r'), 'gap': ('in', 'r'), 'shift': ('shift', 's'), 'under': ('base', 'r'),
+             'give': ('give', 'r'), 'go': ('go', 'c'), 'drive': ('drive', 'c'), 'cut': ('back', 'r'), 'off': ('off', 'r'),
+             'screen': ('screened', 'sc')}
+
+    def _goal_trigger(self, view):
+        """A roll that went the wrong way since the offence's last decision: a pass picked off or a steal
+        (a turnover), a Dribble lost (an attacker newly locked), a screen beaten (a Challenge won)."""
+        snap, now = self._goal_snap, (view.phase, view.tos, view.lock_o, view.screens)
+        self._goal_snap = now
+        if snap is None:
+            return None
+        phase, tos, lock_o, screens = snap
+        if view.tos > tos:
+            return 'a pass was picked off or the ball stolen'
+        if phase == view.phase and view.lock_o & ~lock_o:
+            return 'a Dribble was lost'
+        if phase == view.phase:
+            before = {(i, d): m for i, d, f, m in screens}
+            for i, d, f, m in view.screens:
+                if (i, d) in before and m & ~before[(i, d)]:
+                    return 'a screen was beaten'
+        return None
+
+    TRANSIENT = ('help_pulled', 'beaten', 'bad_closeout', 'spent', 'overloaded')
+
+    def _goal_attack(self, view, acts):
+        """Work the goal: keep it (or pick the best on the list), take the current step's best play by
+        create, reply, exploit, and log the chain. A shot that clears the bar and beats the plan's value
+        still goes up (the patience curve governs the shot)."""
+        from .planner import goals as plan_goals
+        from .solver import apply_play
+        if view.stage != 'play' or view.side != 'O' or not B.on_board(view.o[view.ball]):
+            return None
+        self._watch_vcut(view)
+        if getattr(self, '_goal_cool', False):
+            self._goal_cool = False
+            return None                       # just after a finish: shoot or move the advantage, not a new plan
+        target = view.target if view.ctx.coach_call and view.target >= 0 else None
+        ranked = plan_goals(view, self.level, self.goal_mem, target=target)
+        cur = self._goal_choose(view, ranked)
+        if cur is None:
+            return None
+        # a shot that clears the bar and is worth the plan
+        gen = self.gen.offence_plays(view)
+        shots = []
+        for p in gen:
+            if p.actions and p.actions[-1].kind == 'shot':
+                n = apply_play(view, p)
+                if n is not None:
+                    shots.append((self._node_value(n, self._value_fn()), p))
+        sp = self._choose_shot(view, shots, cur['score'])
+        if sp is not None:
+            self._goal_done(view, 'a shot went up first')
+            self._plan_note(view, sp, None)
+            return sp
+        # an advantage the defence will take away next turn (help pulled, a beaten or spent defender, a bad
+        # closeout, a dilemma) is taken now when it is worth the plan: the advantage path plays it. Its value is
+        # after the defence's best answer; the plan's score is an open-shot estimate, so it is taken at 0.8.
+        # Mismatches and numbers last, and are what the goals build on, so they don't interrupt the plan
+        live = [a for a in self._advs(view, self._handover) if a['kind'] in self.TRANSIENT and a['value'] >= 0.8 * cur['score']]
+        if live:
+            from .advantage import describe
+            self.notes.append(dict(event='goal_hold', id=cur['entry']['id'],
+                                   text=f"Held the goal to take an advantage now: {describe(live[0])}"))
+            return None
+        for step in cur['todo']:
+            plays = [p for p in step['plays']() if p.actions and p.actions[0] in acts and apply_play(view, p) is not None]
+            plays = self._goal_filter(view, plays)
+            if not plays:
+                if step['finish'] or self.cfg.get('goal_strict', True):
+                    return None                       # this step can't be taken this turn: other plays meanwhile
+                continue
+            depth = self.cfg.get('advantage_depth', 2)
+            best, bv = None, None
+            for p in plays:
+                node = apply_play(view, p)
+                v = self._adv_value(view, node, depth) if p.actions[-1].kind != 'pass' else \
+                    self._goal_pass_value(view, p, depth)
+                if bv is None or v > bv:
+                    best, bv = p, v
+            self._goal_mark(cur, step)
+            self.notes.append(dict(event='goal_step', id=cur['entry']['id'], step=step['id'], text=step['words'][0].upper() + step['words'][1:]))
+            if not self.goal['chain'] or self.goal['chain'][-1] != step['words']:
+                self.goal['chain'].append(step['words'])     # a seal set again after the phase turned is one step
+            if step['finish']:
+                self._goal_done(view, None)
+            return best
+        return None
+
+    def _goal_filter(self, view, plays):
+        """A goal's step plays, struck out strictly: a pass only on a clean lane (a contested pass is the
+        advantage valuation's call, not the plan's), no pass just picked off from this spot, and the habits."""
+        plays = self._filter_plays(view, plays)
+        spot = self._spot(view) if self.picked_off else None
+        out = []
+        for p in plays:
+            ok, st = True, view
+            for a in p.actions:
+                if a.kind == 'pass' and not isinstance(st, ChanceNode):
+                    info = pass_risk(st, a.piece, a.target)
+                    if info is None or not info['clean'] or (st is view and spot is not None and (spot, a.target) in self.picked_off):
+                        ok = False
+                if a.kind == 'screen' and 'never_screens' in self.habits:
+                    ok = False
+                if not ok or isinstance(st, ChanceNode):
+                    break
+                st = apply(st, a)
+            if ok:
+                out.append(p)
+        return out
+
+    def _goal_pass_value(self, view, p, depth):
+        info = pass_risk(view, view.ball, p.actions[-1].target)
+        if info is None:
+            return -99.0
+        caught, lost = pass_outcomes(info)
+        tol = self.cfg.get('pass_risk_tolerance', 1.0)
+        return (1 - info['risk']) * self._adv_value(view, caught, depth) + info['risk'] * RC.TURNOVER_POINTS * tol
+
+    def _goal_choose(self, view, ranked):
+        g = self.goal
+        why = self._goal_trigger(view) if g else None
+        if g is not None:
+            self._goal_snap = (view.phase, view.tos, view.lock_o, view.screens)
+        cur = next((x for x in ranked if g and x['key'] == g['key']), None) if g else None
+        if g and not why:
+            if cur is None:
+                why = "the defence broke a condition that can't be restored in time"
+            elif ranked and ranked[0]['key'] != g['key'] and ranked[0]['score'] > cur['score'] + max(3.0, 0.15 * cur['score']):
+                why = f"a better goal became cheaper ({ranked[0]['words']})"
+        if g and why:
+            self.notes.append(dict(event='goal_reassess', id=g['id'], why=why,
+                                   text=f"Changed goal from {g['words']}: {why}"))
+            self.goal = None
+            cur = None
+        if self.goal is None:
+            if not ranked:
+                return None
+            cur = ranked[0]
+            self.goal = dict(key=cur['key'], id=cur['entry']['id'], words=cur['words'], chain=[], score=cur['score'])
+            self._goal_snap = (view.phase, view.tos, view.lock_o, view.screens)
+            self.notes.append(dict(event='goal', id=cur['entry']['id'], name=cur['entry']['name'], remaining=cur['remaining'],
+                                   text=f"Goal: {cur['words']} ({cur['entry']['name']}, {cur['remaining']} step{'s' if cur['remaining'] != 1 else ''})"))
+        self.goal['score'] = cur['score']
+        return cur
+
+    def _goal_mark(self, cur, step):
+        m = self._MARK.get(step['id'])
+        if m:
+            prefix, role = m
+            i = cur['bind'].get(role)
+            if i is not None:
+                self.goal_mem.setdefault(cur['entry']['id'], {})[f'{prefix}{i}'] = True
+                if step['id'] == 'in' and 'd' in cur['bind']:
+                    self._vcut_watch = (i, cur['bind']['d'])
+
+    def _goal_done(self, view, why):
+        if self.goal is None:
+            return
+        g = self.goal
+        if g['chain']:
+            chain = ', '.join(g['chain'])
+            text = f"Goal: {g['words']}. {chain[0].upper() + chain[1:]}." + (f' Then {why}.' if why else '')
+        else:
+            text = f"Goal: {g['words']}: {why or 'finished at once'}."
+        self.notes.append(dict(event='goal_finish', id=g['id'], text=text))
+        self.goal = None
+        self.goal_mem.pop(g['id'], None)
+        if why is None:
+            self._goal_cool = True         # the finish made the advantage: its exploit is the advantage path's
+
+    def _watch_vcut(self, view):
+        """After a V-cut in, the review line says what the defender did."""
+        w = self._vcut_watch
+        if not w:
+            return
+        r, d = w
+        self._vcut_watch = None
+        from .actions import can_move_kind
+        if view.moved('X', d) and not can_move_kind(view, 'X', d, 'move'):
+            self.notes.append(dict(event='vcut', text=f"O{r + 1} V-cut: X{d + 1} followed in and couldn't step out to the pass"))
+        else:
+            self.notes.append(dict(event='vcut', text=f"O{r + 1} V-cut: X{d + 1} didn't follow, and O{r + 1} had the inside"))
+
+    # ---- step 3i: the defence's objectives -----------------------------------------------------------
+    def _objective_plays(self, view, acts):
+        from .planner import defence_objectives, objective_plays
+        objs = defence_objectives(view, self.level)
+        words = [o['words'] for o in objs]
+        if words != self._objectives:
+            self._objectives = words
+            if words:
+                self.notes.append(dict(event='objectives', items=words,
+                                       text='Defence objectives: ' + '; '.join(words)))
+        out = []
+        for o in objs[:3]:
+            out += objective_plays(view, o, acts)
+        return out
+
     def _contested(self, view, play):
         """Could a defender still contest this shot after the reaction (as this level reads the reaction)?"""
         from .solver import apply_play
@@ -1303,13 +1708,14 @@ class Computer(Policy):
     def _last_chance(self, view):
         return self._chances(view) <= RC.PHASE_SECONDS
 
-    def _bar(self, view, contested, early=True):
-        """The shot bar for the time left: 'open' for a look nobody can contest, 'contested' otherwise.
-        The habit settles_early reads the bar one phase ahead."""
+    def _bar(self, view, contested=None, early=True):
+        """The shot bar for the time left: one patience curve on the shot's value after the reaction
+        (step 3i: the value already takes off the contest, so there is no separate contested curve; the
+        contested argument is ignored). The habit settles_early reads the bar one phase ahead."""
         t = self._chances(view)
         if early and 'settles_early' in self.habits and t > RC.PHASE_SECONDS:
             t -= RC.PHASE_SECONDS
-        curve = {int(k): v for k, v in self.cfg['patience']['contested' if contested else 'open'].items()}
+        curve = {int(k): v for k, v in self.cfg['patience']['bar'].items()}
         below = [k for k in sorted(curve) if k <= t]
         return curve[below[-1]] if below else 0
 
@@ -1318,7 +1724,7 @@ class Computer(Policy):
         if not any(a.kind == 'shot' for a in play.actions) or shot_value is None or self._last_chance(view):
             return True
         banked = RC.STEAL_FOUL_BONUS * view.bonus5 + RC.TURNOVER_POINTS * view.tos
-        return shot_value - banked >= self._bar(view, self._contested(view, play))
+        return shot_value - banked >= self._bar(view)
 
     @staticmethod
     def _plan_kind(view, targets):

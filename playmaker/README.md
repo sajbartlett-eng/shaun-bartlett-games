@@ -189,7 +189,7 @@ solver results; every choice is worked out at the table from what is in front of
 - **The comfort line:** the defence won't spend to push the offence's look below 15 (the Okay/Poor
   line). That's "let them shoot it": a ▼ shooter left open is a choice, not a lapse.
 - **The offence thinks in advantages (step 3g).** It creates one, keeps it when help arrives, and
-  finishes it. An advantage is one of six things on the board, each belonging to one attacker and worth
+  finishes it. An advantage is one of seven things on the board, each belonging to one attacker and worth
   the shot it opens (after the defence's reaction):
   - **Beaten defender:** a defender is locked (he lost a Dribble, or a Screen held him) and can't
     contest the shot of the man he was guarding.
@@ -203,6 +203,10 @@ solver results; every choice is worked out at the table from what is in front of
     Move.
   - **Numbers:** more ▲ shooters standing in their zones than defenders who can reach a clean contest
     on them.
+  - **Overloaded defender (step 3i, All-Star):** one defender is the only answer to two threats this
+    phase: the help on the drive and the closeout on his shooter, or two passing lanes. It is worth the
+    job he has to leave, after the defence's best single choice ("X5 had two jobs (help on O4's drive and
+    the lane to O2); O2 was left for a three").
 
   Its plays, one turn each: **shoot**; **dribble attack** (valued by the chance to win and what the win
   opens: a 40% dribble that frees a shooter beats a 60% one that leads nowhere); **screen for a
@@ -217,9 +221,10 @@ solver results; every choice is worked out at the table from what is in front of
   the advantage is finished or the defence takes it away. If help moves the advantage to another
   attacker, the plan follows it ("Help came from X5; the advantage moved to O5"). The targets (the two
   biggest ▲ edges, the Coach's Call target, threes on Need a Three) still steer it, and it shoots only
-  when the look clears its **shot bar** and beats what continuing is worth. The bar is set by the clock
-  and is higher for a look a defender can still contest than for an open one. It drops each phase: a
-  defence that keeps the good looks covered forces a lesser one late. On the last phase there is no bar.
+  when the look clears its **shot bar** and beats what continuing is worth. The bar is set by the clock,
+  one bar for every look (step 3i: a contested 30 is taken over an open 28 when both clear it, because
+  the look is already valued after the defence's reaction). It drops each phase: a defence that keeps
+  the good looks covered forces a lesser one late. On the last phase there is no bar.
   The bar reads the look itself, not points already banked (turnovers, the steal-foul bonus). Rookie
   takes its best shot from the phase before the last (`shoot_by`).
 - **No loops:** a play that ends where the offence already stood earlier in the possession (its five
@@ -255,10 +260,12 @@ solver results; every choice is worked out at the table from what is in front of
 | Reads the cards by | defence: position (`role`); offence: the numbers | defence: ▲ / plain / ▼ (`marks`); offence: the numbers | the numbers (`exact`) |
 | Comfort line | 15 + 6 | 15 + 3 | 15 |
 | Looks ahead | defence: the shot on the board now; offence: the defence's reply | the offence's next turn / the defence's reply | the same, with no handicaps |
-| Shot bar, open look (clock 12 / 10 / 8 / 6 / 4) | 24 / 22 / 20 / 17 / 15 | 27 / 25 / 22 / 19 / 16 | as Starter |
-| Shot bar, contested look | 33 / 30 / 26 / 21 / 17 | 36 / 32 / 27 / 22 / 17 | as Starter |
+| Shot bar (clock 12 / 10 / 8 / 6 / 4 / 2), step 3i | 28 / 28 / 24 / 20 / 16 / none | 28 / 28 / 25 / 21 / 17 / none | as Starter |
 | Must shoot by | clock 4 | the last phase | the last phase |
-| Advantage plays known | shoot, dribble attack, pass | + screen, speed burst, post seal | + cut, moving the advantage |
+| Advantage plays known | shoot, dribble attack, pass | + screen, speed burst, post seal, V-cut, shift away | + cut, moving the advantage, baseline cut, back cut, off-ball screens, the dilemma |
+| Goals (step 3i) | 4 goals, tried directly | 14 goals, chained one condition deep | every goal in the library, chained fully |
+| Defence: off-ball threat, reply width (step 3i) | off; 2 replies | on; 3 replies, rotations | on; 4 replies, rotations |
+| Defence objectives (step 3i) | 3 | 8 | all 9 |
 | Advantage lookahead | create only (the board after the play) | create, reply, exploit | create, reply, exploit |
 | Second-best choice | defence 15%, offence 3% | defence 5%, offence never | never |
 
@@ -407,6 +414,80 @@ is left as it is.
 offence 5.6 / 2.8 / 2.1 and defence 4.1 / 2.1 / 0.9 (Rookie / Starter / All-Star). It isn't used as the
 target because summed per possession it penalises patience.
 
+## How the computer plays, step 3i: capacity, off-ball movement, dilemmas
+
+**Capacity.** The computer reads what each defender can still do this phase from the rules alone
+(`capacity.py`): his Move, his Quick Step, a Sprint, whether he is locked, the side's tokens and its
+Intercepts and Steals left. The fact that matters most: once a defender has used his Move he can only
+Quick Step, and a Quick Step can't turn the arrow. So a defender who followed a cut in is left facing
+the wrong way to answer the pass back out. From that come three reaches: can he answer a pass (on the
+line, or by turning across it and stepping onto it), can he get to the help around the ball or the rim,
+and can he still close out cleanly on his man.
+
+**The defence values the open man off the ball.** Before step 3i an open shooter cost the defence
+nothing until the pass landed. Now the Starter and All-Star defences count the pass and the catch:
+what the offence gets if it throws to each teammate, after the defence's reply and the reaction, at the
+pass's risk. A ▲ shooter left two squares from a defender who still has his Move costs a little; the
+same shooter with no one able to recover costs more; a ▼ shooter in the same spot costs nothing the
+comfort line would notice. The defence also looks at more replies (Starter 3, All-Star 4), including a
+third defender rotating over.
+
+**Goals.** The offence picks a goal from a library of real basketball (`goal_library.json`, written up
+in `GOAL_LIBRARY.md`: post entries, cuts, drive and kick, ball screens, screens to switch, clock and
+situation) and works out what has to be true for it. For a post entry: the post player holds a seal,
+a passer stands where the entry lane is clean, and that passer has the ball. It chains backwards from
+there: if X5 is fronting so the strong-side entry isn't clean, the ball has to swing to the weak side;
+if those swing lanes aren't clean, the receivers move first to open them. Each step is played by the
+usual create, reply, exploit lookahead. The goal only changes when a roll goes the wrong way, the
+defence breaks a condition that can't be restored in time, or a better goal becomes clearly cheaper;
+it never changes on noise. A goal that can't finish in the clock left is dropped. Rookie tries its goal
+directly, Starter chains one condition deep, All-Star the whole way. The review prints the chain:
+"Goal: O5 in the post on X5. O2 moved to open the lane, O3 moved to open the lane, swung the ball to
+O2, swung the ball to O3, O5 sealed X5, entry to O5."
+
+**The defence doesn't know the plan.** It builds its own ranked objectives from what the offence could
+be building toward on the board ("keep the ball out of O5's post", "close out on O2's three", "protect
+the rim"), weighted by their value and how close the board is to them, and re-ranks them as the board
+changes. The review shows both lists side by side.
+
+**Off-ball movement.** The offence now generates these for every off-ball player and doesn't treat the
+tokens they spend as wasted, because what they make the defence spend is what they buy:
+- **V-cut:** a Move in, then a Move out next phase. If the defender follows in, his Move is gone and he
+  is facing in: the pass back out is clean ("O2 V-cut: X2 followed in and couldn't step out to the
+  pass"). If he doesn't follow, the cutter has the inside.
+- **Shift away:** a ▲ three-point shooter slides along the arc away from his defender. Follow, and he
+  can't help on the ball; stay, and the shooter is open.
+- **Baseline cut:** along the baseline under the rim to the other side. The chaser ends up behind and
+  can't answer the pass on the far side.
+- **Back cut:** behind a defender whose arrow faces the ball.
+- **Off-ball screens** aimed at the defender who would answer the lane or the help.
+
+**Dilemmas.** When one defender is the only answer to two threats, All-Star sees it and attacks the
+job he has to give up. The defence sees the same thing from its side and prefers to hand one of the
+jobs to a teammate who still has his Move: a rotation.
+
+**Measured (step 3i, `python3 -m playmaker_engine.sim3i`, `solver_results/sim3i.json`).** One run after
+every change: five pairings, the 16 scenario cards and 4 random prescribed-team possessions, 2 seeds
+(200 possessions, plus 40 with `late_closeout`). The before figures come from the same harness on the
+step 3h code (`solver_results/sim3i_before.json`). Before → after, 40 possessions a cell (points about ± 3):
+
+| | All-Star O v All-Star D | Rookie O v All-Star D | Starter O v All-Star D | All-Star O v Rookie D | All-Star O v Starter D |
+|---|---|---|---|---|---|
+| Points per possession | 26.2 → 20.4 | 19.9 → 21.5 | 26.9 → 22.3 | 28.3 → 29.1 | 29.0 → 25.0 |
+| Offence tokens spent off the ball | 33% → 56% | 44% → 37% | 32% → 50% | 30% → 53% | 33% → 56% |
+| Passes clean when thrown | 73% → 79% | 60% → 74% | 59% → 77% | 78% → 80% | 73% → 86% |
+| Contested passes completed | 44% → 54% | 21% → 37% | 50% → 52% | 43% → 38% | 53% → 57% |
+| Interceptions per 100 possessions | 25 → 28 | 38 → 30 | 30 → 25 | 20 → 33 | 20 → 15 |
+| Shooting fouls, share of shots | 3% → 0% | 0% → 0% | 3% → 0% | 0% → 9% | 3% → 0% |
+| Shots with no eligible contester | 26% → 17% | 20% → 27% | 36% → 21% | 39% → 38% | 31% → 32% |
+
+The offence now spends about half its tokens off the ball and throws more passes, more of them clean.
+Against the unchanged Rookie defence the All-Star offence scores the same as before (+0.8), so the drop
+against the Starter and All-Star defences is those defences getting better: they now count the open man
+off the ball and look at more replies. NBA reference points: about 8 steals per 100 possessions (here
+15 to 33 interceptions), shooting fouls on about 8.5% of shots (here 0 to 9%), about 39% of threes wide
+open (here 14% to 47% of threes with no eligible contester).
+
 ## The other side's turn, one action at a time
 
 When the computer (or a remote opponent) acts, the page plays its turn back one action at a time.
@@ -428,6 +509,25 @@ draft rulebook wording in `docs/Step3h_rulebook_drafts.md`):
 
 `geometry.py` answers every arrow and contest question for the rules, the computer and the solver. With
 the defaults everything is as before: the golden solver search is identical (`tests/test_wedge.py`).
+
+Step 3i adds one more, also off by default: `late_closeout`. A contester who used a reaction movement
+(Move, Sprint or Quick Step) to reach the contest is late: at the rim, post or floater he contests with
+a foul roll; on a mid-range, long two or three he contests with the −3 and no foul roll. One who was
+already next to the shooter and only turns contests as before.
+
+| All-Star v All-Star, 40 possessions | Default | `late_closeout` |
+|---|---|---|
+| Points per possession | 20.4 | 24.2 |
+| Shots with no eligible contester (threes) | 17% (14%) | 39% (43%) |
+| Shooting fouls, share of shots (twos) | 0% (0%) | 7% (29%) |
+| Passes clean when thrown | 79% | 51% |
+| Interceptions per 100 possessions | 28 | 73 |
+
+Late closeouts make the catch worth more, so the offence throws into more contested lanes and more of
+them are picked off; it still scores more.
+
+**Ruled in step 3i:** the ball carrier can't Screen (OQ-63; `carrier_can_screen`, default False). No
+saved golden line or test used a carrier screen.
 
 ## Decision timer (step 3d, optional)
 

@@ -116,3 +116,18 @@ def new_geometry(rules):
 def check(rules):
     if rules.contest_geometry == 'wedge_mirror' and rules.arrow_mode != 'wedge':
         raise ValueError("contest_geometry 'wedge_mirror' needs arrow_mode 'wedge'")
+
+
+LATE_RIM = ('layup', 'dunk', 'post', 'floater')
+
+
+def late(rules, moved, shot_type, t):
+    """Step 3i rule test (late_closeout): a contester who moved square in the reaction is late. At the rim,
+    post or floater he contests with a foul roll; on a mid-range, long two or three with the -3 and no
+    foul roll. One who was already adjacent (and only turns) is set, and contests as before. t is
+    (eligible, foul_roll, penalty, category); returns it adjusted. The -3 is applied once."""
+    if not rules.late_closeout or not moved or not t[0]:
+        return t
+    if shot_type in LATE_RIM:
+        return (t[0], True, t[2], t[3])
+    return (t[0], False, True, t[3])

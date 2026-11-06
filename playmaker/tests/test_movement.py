@@ -298,3 +298,18 @@ def test_the_solver_reach_never_uses_two_quick_steps_for_one_defender():
             free, fixed = defender_reach(used, d, 2)
             seqs = list(free.values()) + [q for v in fixed.values() for q in v.values()]
             assert all(not any(k in ('qs', 'sprint') for k, _ in seq) for seq in seqs)
+
+
+def test_the_ball_carrier_has_no_legal_screen():
+    """Ruled in step 3i (OQ-63): the ball carrier can't Screen; teammates still can."""
+    from playmaker_engine import rules_config as RC
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.soak import golden_setup
+    s = golden_setup()
+    acts = legal_actions(s)
+    assert not any(a.kind == 'screen' and a.piece == s.ball for a in acts)
+    assert any(a.kind == 'screen' and a.piece != s.ball for a in acts)
+    old = s.with_(ctx=s.ctx.__class__(s.ctx.off, s.ctx.dfn, RC.with_rules(carrier_can_screen=True), s.ctx.title, s.ctx.kind,
+                                      s.ctx.scenario, s.ctx.card_clock, s.ctx.inbounder, s.ctx.coach_call, s.ctx.three_only,
+                                      s.ctx.two_or_three, s.ctx.hold_for_one, s.ctx.off_team, s.ctx.def_team))
+    assert any(a.kind == 'screen' and a.piece == old.ball for a in legal_actions(old))

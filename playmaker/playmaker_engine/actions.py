@@ -248,6 +248,8 @@ def _offence_actions(s, rules):
                 continue
             if i == ctx.inbounder and s.inbound:
                 continue
+            if i == carrier and not rules.carrier_can_screen:
+                continue                     # ruled (step 3i): the ball carrier can't Screen
             for d in range(8):
                 if B.on_board(B.add(p, B.DIRS[d])):
                     acts.append(Action('screen', 'O', i, target=d))

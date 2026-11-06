@@ -168,6 +168,9 @@ def turn_summary(s):
     who = 'Offence' if s.side == 'O' else 'Defence'
     left = min(2 - s.turn_n, s.tokens(s.side))
     extra = ' · final turn of the phase' if s.side == 'X' and s.final else ''
+    wk = 'pause' if s.side == 'X' else 'hesitate'
+    wait = RC.LIMITS[s.side][wk]
+    extra += f" · {wk.capitalize()}: {wait} a phase{' (used)' if s.count(s.side, wk) >= wait else ''}"
     if s.pending:
         extra += ' · a pass is in the air'
     return f'{who} turn: {left} action{"s" if left != 1 else ""} left · a turn-ender ends it now{extra}'

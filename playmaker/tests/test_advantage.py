@@ -73,7 +73,7 @@ def test_each_state_is_found():
     assert 'help_pulled' not in kinds(s)                       # needs the board before the move
     hp = [a for a in advantages(s, prev=prev) if a['kind'] == 'help_pulled']
     assert hp and hp[0]['attacker'] == d['shooter'] and hp[0]['helper'] == d['helper']
-    assert set(KINDS) == {'beaten', 'mismatch', 'help_pulled', 'bad_closeout', 'spent', 'numbers'}
+    assert set(KINDS) == {'beaten', 'mismatch', 'help_pulled', 'bad_closeout', 'spent', 'numbers', 'overloaded'}
 
 
 def test_an_advantage_is_valued_at_the_shot_after_the_reaction():
@@ -87,13 +87,16 @@ def test_an_advantage_is_valued_at_the_shot_after_the_reaction():
 # ---- the plays ---------------------------------------------------------------------------------------
 
 def test_all_star_screens_for_a_mismatch_over_a_contested_pass():
+    """Step 3g: O5, the ball carrier, screened X4 off O1 for a mismatch. Step 3i ruled that the carrier
+    can't Screen (OQ-63), so that play is gone; what stays is that All-Star doesn't throw the contested pass."""
     s, d = position('screen')
     assert any(not i['clean'] for i in (C.pass_risk(s, s.ball, r) for r in range(5) if r != s.ball) if i)
-    c = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
-    a = c.choose(s)
-    play = [n for n in c.notes if n['event'] == 'play'][-1]
-    assert play['play'] == 'screen' and 'mismatch' in play['advantage'], play
-    assert not (a.kind == 'pass' and not C.pass_risk(s, s.ball, a.target)['clean']), a
+    assert not any(a.kind == 'screen' and a.piece == s.ball for a in legal_actions(s))
+    for goals in (False, True):
+        c = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
+        c.cfg = dict(c.cfg, goals=goals)
+        a = c.choose(s)
+        assert not (a.kind == 'pass' and not C.pass_risk(s, s.ball, a.target)['clean']), (goals, a)
 
 
 def test_d7d923_the_speed_burst_to_k4_is_an_advantage_play():
@@ -166,8 +169,9 @@ def test_82866b_the_loop_plays_score_nothing():
 def test_levels_map_the_play_types():
     L = C.LEVELS['offence']['levels']
     assert L['rookie']['plays'] == ['shoot', 'dribble', 'pass'] and L['rookie']['advantage_depth'] == 1
-    assert set(L['starter']['plays']) == {'shoot', 'dribble', 'pass', 'screen', 'speed', 'seal'}
-    assert set(L['allstar']['plays']) - set(L['starter']['plays']) == {'cut', 'move_advantage'}
+    assert set(L['starter']['plays']) == {'shoot', 'dribble', 'pass', 'screen', 'speed', 'seal', 'vcut', 'shift'}
+    assert set(L['allstar']['plays']) - set(L['starter']['plays']) == {'cut', 'move_advantage', 'baseline', 'backcut',
+                                                                       'offscreen', 'dilemma'}
     assert L['starter']['advantage_depth'] == L['allstar']['advantage_depth'] == 2
 
 

@@ -1,0 +1,1148 @@
+{
+ "_about": "Step 3i goal library: the offence's goals and the defence's objectives, from GOAL_LIBRARY.md. Edit freely: words, levels and answers are data. 'pattern' names the code that reads the board for a goal (planner.py); 'variant' picks its form. built=false entries are listed with the reason.",
+ "levels": {
+  "rookie": {
+   "offence": [
+    "A1",
+    "A2",
+    "A3",
+    "A4"
+   ],
+   "chain_depth": 0,
+   "defence": [
+    "DO-contain",
+    "DO-pressure",
+    "DO-front"
+   ]
+  },
+  "starter": {
+   "offence": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "C1",
+    "C3",
+    "D1",
+    "D2",
+    "E2"
+   ],
+   "chain_depth": 1,
+   "defence": [
+    "DO-contain",
+    "DO-pressure",
+    "DO-front",
+    "DO-closeout",
+    "DO-deny",
+    "DO-rim",
+    "DO-noswitch",
+    "DO-rotate"
+   ]
+  },
+  "allstar": {
+   "offence": "all",
+   "chain_depth": 6,
+   "defence": "all"
+  }
+ },
+ "offence": [
+  {
+   "id": "A1",
+   "family": "A",
+   "name": "Post entry",
+   "pattern": "post_entry",
+   "variant": null,
+   "level": "rookie",
+   "words": "O{p} in the post on X{d}",
+   "edge": "a ▲ post scorer against a ▼ post contest",
+   "conditions": [
+    "the post player holds a seal on their defender",
+    "a passer has a clean entry lane",
+    "the passer has the ball"
+   ],
+   "chain": [
+    "move to the block",
+    "swing to the side with the clean angle if needed (A1a)",
+    "seal",
+    "enter"
+   ],
+   "finish": "a post shot, or a kick-out if help comes",
+   "answers": [
+    "front the post (gives up the lob or a high-low)",
+    "three-quarter front",
+    "dig with a guard (gives up the kick-out)"
+   ],
+   "built": true
+  },
+  {
+   "id": "A1a",
+   "family": "A",
+   "name": "Re-entry angle",
+   "pattern": "post_entry",
+   "variant": "far_side",
+   "level": "allstar",
+   "words": "O{p} in the post from the far side",
+   "edge": "the post is fronted on one side",
+   "conditions": [
+    "each swing pass is clean (the receivers move first)",
+    "the re-seal from the far side",
+    "a clean entry lane"
+   ],
+   "chain": [
+    "receivers move to open the lanes",
+    "two swing passes",
+    "re-seal",
+    "enter"
+   ],
+   "finish": "a post shot",
+   "answers": [
+    "three-quarter front the other side"
+   ],
+   "built": true
+  },
+  {
+   "id": "A2",
+   "family": "A",
+   "name": "High-low",
+   "pattern": "high_low",
+   "variant": null,
+   "level": "starter",
+   "words": "high-low: O{h} to O{p}",
+   "edge": "a post player sealing low and a teammate at the high post who can pass",
+   "conditions": [
+    "the high player has the ball",
+    "the low player holds a seal on the side away from him",
+    "the lane between them is clean"
+   ],
+   "chain": [
+    "enter to the high post",
+    "seal low",
+    "pass down"
+   ],
+   "finish": "a post shot or a layup",
+   "answers": [
+    "front low (gives up a lob, or the high player's shot)",
+    "sink the high player's defender (gives up his mid-range)"
+   ],
+   "built": true
+  },
+  {
+   "id": "A3",
+   "family": "A",
+   "name": "Isolation",
+   "pattern": "isolation",
+   "variant": null,
+   "level": "rookie",
+   "words": "O{c} isolates X{d}",
+   "edge": "the carrier's Dribble beats an adjacent defender's Agility with a shot past him",
+   "conditions": [
+    "the carrier is adjacent to the defender",
+    "help is spent or far",
+    "space beyond the arrow line"
+   ],
+   "chain": [
+    "clear the side",
+    "Dribble",
+    "move into the zone"
+   ],
+   "finish": "a shot",
+   "answers": [
+    "wall the drive",
+    "help early (gives up the helper's player)",
+    "load to the ball side (gives up the weak-side three)"
+   ],
+   "built": true
+  },
+  {
+   "id": "A4",
+   "family": "A",
+   "name": "Spot-up three",
+   "pattern": "spot_up",
+   "variant": null,
+   "level": "rookie",
+   "words": "O{s} spots up for a three",
+   "edge": "a ▲ three-point shooter with his defender out of clean reach",
+   "conditions": [
+    "the shooter is on a three square",
+    "a clean lane to him",
+    "no clean contest reachable in the reaction"
+   ],
+   "chain": [
+    "empty the closeout",
+    "the pass"
+   ],
+   "finish": "a three",
+   "answers": [
+    "stay home (gives up the drive or the post)",
+    "top-lock or deny (gives up the back cut)"
+   ],
+   "built": true
+  },
+  {
+   "id": "A5",
+   "family": "A",
+   "name": "Mid-range in the gap",
+   "pattern": "ball_screen",
+   "variant": "gap",
+   "level": "allstar",
+   "words": "O{c} pulls up in the gap off O{sc}'s screen",
+   "edge": "the carrier's ▲ mid-range or floater",
+   "conditions": [
+    "the carrier reaches a mid-range square with only a Behind or foul-roll contest"
+   ],
+   "chain": [
+    "ball screen",
+    "step into the gap"
+   ],
+   "finish": "a mid-range shot or floater",
+   "answers": [
+    "at the level or hedge (gives up the roll)",
+    "a switch (gives up a mismatch)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B1",
+   "family": "B",
+   "name": "V-cut",
+   "pattern": "get_open",
+   "variant": "vcut",
+   "level": "starter",
+   "words": "O{r} V-cuts",
+   "edge": "a receiver's defender who will follow",
+   "conditions": [
+    "the defender spent his Move following in, or stays and gives up the inside"
+   ],
+   "chain": [
+    "Move in (this phase)",
+    "Move out to the catch spot (next phase)"
+   ],
+   "finish": "a clean pass to the receiver",
+   "answers": [
+    "don't follow, sag (gives up the inside cut)",
+    "follow and recover next phase (spends the Move)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B2",
+   "family": "B",
+   "name": "L-cut",
+   "pattern": "get_open",
+   "variant": "lcut",
+   "level": "starter",
+   "words": "O{r} L-cuts",
+   "edge": "as B1, at the elbow or wing",
+   "conditions": [
+    "as B1"
+   ],
+   "chain": [
+    "Move up the lane line",
+    "out to the wing"
+   ],
+   "finish": "a clean catch",
+   "answers": [
+    "as B1"
+   ],
+   "built": true
+  },
+  {
+   "id": "B3",
+   "family": "B",
+   "name": "Backdoor cut",
+   "pattern": "backdoor",
+   "variant": null,
+   "level": "starter",
+   "words": "O{r} cuts backdoor on X{d}",
+   "edge": "a defender whose arrow faces the ball or the lane",
+   "conditions": [
+    "a path behind that defender to the rim zone",
+    "a lane to it he can't answer"
+   ],
+   "chain": [
+    "Move toward the ball",
+    "Move or Sprint behind him to the rim"
+   ],
+   "finish": "a layup",
+   "answers": [
+    "play off the catch (gives up a clean catch)",
+    "help-side tag at the rim (gives up the helper's player)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B3a",
+   "family": "B",
+   "name": "Dribble-at backdoor",
+   "pattern": "backdoor",
+   "variant": null,
+   "level": "allstar",
+   "words": "dribble-at backdoor",
+   "edge": "the carrier moves at an overplaying defender, pushing him back",
+   "conditions": [],
+   "chain": [],
+   "finish": "a layup",
+   "answers": [],
+   "built": false,
+   "not_built": "A carrier's move can't push a defender back: defenders move only on their own turn. The plain backdoor (B3) covers the cut."
+  },
+  {
+   "id": "B4",
+   "family": "B",
+   "name": "Shift away",
+   "pattern": "shift_away",
+   "variant": null,
+   "level": "starter",
+   "words": "O{s} shifts away from X{d}",
+   "edge": "a ▲ three-point shooter whose defender is the nearest help on the ball",
+   "conditions": [
+    "the defender must choose between following and helping"
+   ],
+   "chain": [
+    "Move the shooter away along the arc"
+   ],
+   "finish": "the ball attacks the help job, or the shooter catches",
+   "answers": [
+    "a rotation that hands one job to a defender with capacity left"
+   ],
+   "built": true
+  },
+  {
+   "id": "B5",
+   "family": "B",
+   "name": "Baseline cut",
+   "pattern": "baseline_cut",
+   "variant": null,
+   "level": "allstar",
+   "words": "O{r} cuts along the baseline",
+   "edge": "a defender who must chase through traffic",
+   "conditions": [
+    "at the end the chaser is Behind or facing away"
+   ],
+   "chain": [
+    "Move along the baseline under the rim",
+    "Move out to the far corner next phase"
+   ],
+   "finish": "a corner three, or a layup",
+   "answers": [
+    "switch or bump the cutter (gives up that defender's player)",
+    "trail and recover (spends capacity)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B6",
+   "family": "B",
+   "name": "Give and go",
+   "pattern": "give_go",
+   "variant": null,
+   "level": "allstar",
+   "words": "O{c} gives and goes with O{r}",
+   "edge": "the passer's defender relaxes after the pass",
+   "conditions": [
+    "a path in front of him to the rim"
+   ],
+   "chain": [
+    "Pass",
+    "Move to the rim next turn"
+   ],
+   "finish": "a return pass and a layup",
+   "answers": [
+    "jump to the ball (spends a Move)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B7",
+   "family": "B",
+   "name": "Shallow cut",
+   "pattern": "get_open",
+   "variant": "shallow",
+   "level": "allstar",
+   "words": "O{r} shallow-cuts",
+   "edge": "the carrier needs the side cleared",
+   "conditions": [],
+   "chain": [
+    "Move inside the carrier, out to the corner or wing"
+   ],
+   "finish": "space, or a clean safety pass",
+   "answers": [
+    "stay connected (capacity)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B8",
+   "family": "B",
+   "name": "45 cut into the gap",
+   "pattern": "get_open",
+   "variant": "gap",
+   "level": "allstar",
+   "words": "O{r} cuts into the gap",
+   "edge": "the help-side defender is occupied",
+   "conditions": [],
+   "chain": [
+    "Move into the gap behind the defence"
+   ],
+   "finish": "a layup or floater from a pass",
+   "answers": [
+    "the low man rotates (gives up the weak-side corner)"
+   ],
+   "built": true
+  },
+  {
+   "id": "B9",
+   "family": "B",
+   "name": "Veer cut",
+   "pattern": "get_open",
+   "variant": "veer",
+   "level": "allstar",
+   "words": "O{r} veer-cuts",
+   "edge": "a defender who reacts to approach",
+   "conditions": [],
+   "chain": [
+    "Move toward the defender",
+    "Move away next phase"
+   ],
+   "finish": "a clean catch",
+   "answers": [
+    "as B1"
+   ],
+   "built": true
+  },
+  {
+   "id": "C1",
+   "family": "C",
+   "name": "Drain the closeout",
+   "pattern": "spot_up",
+   "variant": "drain",
+   "level": "starter",
+   "words": "drain X{d} for O{s}'s three",
+   "edge": "a ▲ shooter with exactly one defender able to close out cleanly",
+   "conditions": [
+    "that defender's Move is spent, or the pool can't reach"
+   ],
+   "chain": [
+    "reversals, cuts or drives that make him spend"
+   ],
+   "finish": "the pass and the three",
+   "answers": [
+    "rotate a fresh defender",
+    "hold a reaction in reserve"
+   ],
+   "built": true
+  },
+  {
+   "id": "C2",
+   "family": "C",
+   "name": "Two-job defender",
+   "pattern": "shift_away",
+   "variant": "dilemma",
+   "level": "allstar",
+   "words": "X{d} has two jobs: O{s} or the drive",
+   "edge": "one defender is the only answer to two threats",
+   "conditions": [
+    "the offence can attack either threat after the defence chooses"
+   ],
+   "chain": [
+    "B4 or B5 to create it",
+    "attack the job the reply leaves"
+   ],
+   "finish": "a drive, or the shooter's shot",
+   "answers": [
+    "a rotation that hands one job to a defender with capacity left"
+   ],
+   "built": true
+  },
+  {
+   "id": "C3",
+   "family": "C",
+   "name": "Drive and kick",
+   "pattern": "drive_kick",
+   "variant": null,
+   "level": "starter",
+   "words": "O{c} drives and kicks",
+   "edge": "the carrier's drive pulls help off a ▲ shooter",
+   "conditions": [
+    "the helper has committed",
+    "the kick lane is clean"
+   ],
+   "chain": [
+    "A3 or D1 to the paint",
+    "kick",
+    "an extra pass if the closeout rotates"
+   ],
+   "finish": "a three",
+   "answers": [
+    "stunt and recover (capacity)",
+    "X-out rotation (needs two defenders with capacity)"
+   ],
+   "built": true
+  },
+  {
+   "id": "C4",
+   "family": "C",
+   "name": "Skip pass",
+   "pattern": "spot_up",
+   "variant": "skip",
+   "level": "allstar",
+   "words": "skip to O{s}",
+   "edge": "the defence has shrunk to the ball side",
+   "conditions": [
+    "a clean lane to the weak side over the top"
+   ],
+   "chain": [
+    "receivers move first to open the lane",
+    "the skip"
+   ],
+   "finish": "a three",
+   "answers": [
+    "the weak-side defender plays the lane (gives up his man's cut)"
+   ],
+   "built": true
+  },
+  {
+   "id": "C5",
+   "family": "C",
+   "name": "Overload one side",
+   "pattern": "overload",
+   "variant": null,
+   "level": "allstar",
+   "words": "overload the {side} side",
+   "edge": "more threats on one side than defenders who can reach them",
+   "conditions": [],
+   "chain": [
+    "move three attackers to one side"
+   ],
+   "finish": "an open player on that side, or a skip",
+   "answers": [
+    "zone the far side (gives up the skip)"
+   ],
+   "built": true
+  },
+  {
+   "id": "D1",
+   "family": "D",
+   "name": "Pick and roll",
+   "pattern": "ball_screen",
+   "variant": "roll",
+   "level": "starter",
+   "words": "O{sc} screens X{d} for O{c} and rolls",
+   "edge": "a carrier who can attack and a screener who finishes at the rim",
+   "conditions": [
+    "the screen holds on the carrier's defender, or he beats it and loses position"
+   ],
+   "chain": [
+    "screener next to the carrier's defender",
+    "Screen",
+    "carrier past",
+    "roll"
+   ],
+   "finish": "the carrier's shot, the pass to the roller, or a kick",
+   "answers": [
+    "drop",
+    "at the level",
+    "hedge",
+    "blitz",
+    "switch (gives up E1)",
+    "ice"
+   ],
+   "built": true
+  },
+  {
+   "id": "D2",
+   "family": "D",
+   "name": "Pick and pop",
+   "pattern": "ball_screen",
+   "variant": "pop",
+   "level": "starter",
+   "words": "O{sc} screens for O{c} and pops",
+   "edge": "a screener with ▲ three or long two",
+   "conditions": [],
+   "chain": [
+    "as D1, the screener to the arc"
+   ],
+   "finish": "a catch-and-shoot three",
+   "answers": [
+    "switch",
+    "at the level and recover (capacity)"
+   ],
+   "built": true
+  },
+  {
+   "id": "D3",
+   "family": "D",
+   "name": "Slip",
+   "pattern": "ball_screen",
+   "variant": "slip",
+   "level": "allstar",
+   "words": "O{sc} slips to the rim",
+   "edge": "the screener's defender commits early",
+   "conditions": [],
+   "chain": [
+    "to the screen spot",
+    "instead of screening, to the rim"
+   ],
+   "finish": "a pass and a layup",
+   "answers": [
+    "a weak-side tag at the rim"
+   ],
+   "built": true
+  },
+  {
+   "id": "D4",
+   "family": "D",
+   "name": "Ghost screen",
+   "pattern": "ball_screen",
+   "variant": "ghost",
+   "level": "allstar",
+   "words": "O{sc} ghosts to the arc",
+   "edge": "as D3, for a popping shooter",
+   "conditions": [],
+   "chain": [
+    "approach as if to screen",
+    "out to three"
+   ],
+   "finish": "a three",
+   "answers": [
+    "stay home with the screener"
+   ],
+   "built": true
+  },
+  {
+   "id": "D5",
+   "family": "D",
+   "name": "Spain pick and roll",
+   "pattern": "ball_screen",
+   "variant": "spain",
+   "level": "allstar",
+   "words": "Spain action for O{c}",
+   "edge": "a D1 position where the roller's defender drops",
+   "conditions": [],
+   "chain": [
+    "D1",
+    "a second Screen by a third player on the dropping defender"
+   ],
+   "finish": "the roll, or the back-screener popping",
+   "answers": [
+    "switch the back screen"
+   ],
+   "built": true
+  },
+  {
+   "id": "D6",
+   "family": "D",
+   "name": "Re-screen",
+   "pattern": "ball_screen",
+   "variant": "rescreen",
+   "level": "allstar",
+   "words": "O{sc} re-screens for O{c}",
+   "edge": "the on-ball defender beat the first screen",
+   "conditions": [],
+   "chain": [
+    "reset",
+    "Screen from the other side"
+   ],
+   "finish": "as D1",
+   "answers": [
+    "as D1"
+   ],
+   "built": true
+  },
+  {
+   "id": "D7",
+   "family": "D",
+   "name": "Handoff",
+   "pattern": "handoff",
+   "variant": null,
+   "level": "allstar",
+   "words": "O{c} hands off to O{r}",
+   "edge": "a receiver who attacks off the catch, and a passer whose piece blocks the chaser",
+   "conditions": [
+    "the passer is adjacent to the receiver",
+    "the short lane is clean",
+    "the passer's square lies across the chaser's path"
+   ],
+   "chain": [
+    "carrier next to the receiver",
+    "pass",
+    "the receiver moves past the passer"
+   ],
+   "finish": "a drive, a pull-up or a three",
+   "answers": [
+    "switch the handoff",
+    "jump the handoff"
+   ],
+   "built": true
+  },
+  {
+   "id": "E1",
+   "family": "E",
+   "name": "Screen to switch",
+   "pattern": "screen_switch",
+   "variant": null,
+   "level": "allstar",
+   "words": "screen X{d} so X{d2} picks up O{a}",
+   "edge": "the switch leaves a ▼ defender on a ▲ attacker",
+   "conditions": [
+    "the screen holds or forces the other defender to pick up",
+    "the attacker has the matching edge"
+   ],
+   "chain": [
+    "screen",
+    "reposition (post up or isolate)"
+   ],
+   "finish": "A1 or A3",
+   "answers": [
+    "switch back (needs capacity)",
+    "dig or double (C3 follows)"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2",
+   "family": "E",
+   "name": "Off-ball screen",
+   "pattern": "offball_screen",
+   "variant": "any",
+   "level": "starter",
+   "words": "O{sc} screens X{d} for O{r}",
+   "edge": "a ▲ shooter or cutter whose defender can be screened",
+   "conditions": [
+    "the screen holds or diverts him, so the cutter catches before a clean contest"
+   ],
+   "chain": [
+    "Screen with the T on the cutter's defender",
+    "the cutter moves off it"
+   ],
+   "finish": "A4, A1 or B3",
+   "answers": [
+    "chase over the top (Challenge, a Move, the facing)",
+    "shoot the gap",
+    "switch",
+    "top-lock"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2a",
+   "family": "E",
+   "name": "Off-ball screen: down screen",
+   "pattern": "offball_screen",
+   "variant": "down screen",
+   "level": "allstar",
+   "words": "down screen: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the down screen geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2b",
+   "family": "E",
+   "name": "Off-ball screen: pin-down",
+   "pattern": "offball_screen",
+   "variant": "pin-down",
+   "level": "allstar",
+   "words": "pin-down: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the pin-down geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2c",
+   "family": "E",
+   "name": "Off-ball screen: flare",
+   "pattern": "offball_screen",
+   "variant": "flare",
+   "level": "allstar",
+   "words": "flare: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the flare geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2d",
+   "family": "E",
+   "name": "Off-ball screen: back screen",
+   "pattern": "offball_screen",
+   "variant": "back screen",
+   "level": "allstar",
+   "words": "back screen: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the back screen geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2e",
+   "family": "E",
+   "name": "Off-ball screen: UCLA",
+   "pattern": "offball_screen",
+   "variant": "UCLA",
+   "level": "allstar",
+   "words": "UCLA: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the UCLA geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2f",
+   "family": "E",
+   "name": "Off-ball screen: stagger",
+   "pattern": "offball_screen",
+   "variant": "stagger",
+   "level": "allstar",
+   "words": "stagger: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the stagger geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2g",
+   "family": "E",
+   "name": "Off-ball screen: double",
+   "pattern": "offball_screen",
+   "variant": "double",
+   "level": "allstar",
+   "words": "double: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the double geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2h",
+   "family": "E",
+   "name": "Off-ball screen: floppy",
+   "pattern": "offball_screen",
+   "variant": "floppy",
+   "level": "allstar",
+   "words": "floppy: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the floppy geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2i",
+   "family": "E",
+   "name": "Off-ball screen: cross screen",
+   "pattern": "offball_screen",
+   "variant": "cross screen",
+   "level": "allstar",
+   "words": "cross screen: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the cross screen geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2j",
+   "family": "E",
+   "name": "Off-ball screen: zipper",
+   "pattern": "offball_screen",
+   "variant": "zipper",
+   "level": "allstar",
+   "words": "zipper: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the zipper geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2k",
+   "family": "E",
+   "name": "Off-ball screen: corner pin",
+   "pattern": "offball_screen",
+   "variant": "corner pin",
+   "level": "allstar",
+   "words": "corner pin: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the corner pin geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E2l",
+   "family": "E",
+   "name": "Off-ball screen: screen the screener",
+   "pattern": "offball_screen",
+   "variant": "screen the screener",
+   "level": "allstar",
+   "words": "screen the screener: O{sc} for O{r}",
+   "edge": "as E2",
+   "conditions": [],
+   "chain": [
+    "the screen the screener geometry"
+   ],
+   "finish": "as E2",
+   "answers": [
+    "as E2"
+   ],
+   "built": true
+  },
+  {
+   "id": "E3",
+   "family": "E",
+   "name": "Speed against slow feet",
+   "pattern": "speed",
+   "variant": null,
+   "level": "allstar",
+   "words": "O{a} beats X{d} for speed",
+   "edge": "Quick Step 2 against a defender with Quick Step 0",
+   "conditions": [],
+   "chain": [
+    "a Sprint or a straight-line burst to a square he can't reach"
+   ],
+   "finish": "a shot or a catch",
+   "answers": [
+    "help from a faster defender"
+   ],
+   "built": true
+  },
+  {
+   "id": "F1",
+   "family": "F",
+   "name": "Late clock",
+   "pattern": "modifier",
+   "variant": "late_clock",
+   "level": "rookie",
+   "words": "late clock",
+   "edge": "one phase left",
+   "conditions": [],
+   "chain": [],
+   "finish": "only goals that finish now rank",
+   "answers": [],
+   "built": true
+  },
+  {
+   "id": "F2",
+   "family": "F",
+   "name": "Need a Three",
+   "pattern": "modifier",
+   "variant": "need_three",
+   "level": "rookie",
+   "words": "need a three",
+   "edge": "the card",
+   "conditions": [],
+   "chain": [],
+   "finish": "only goals that finish in a three score",
+   "answers": [],
+   "built": true
+  },
+  {
+   "id": "F3",
+   "family": "F",
+   "name": "Coach's Call",
+   "pattern": "modifier",
+   "variant": "coach_call",
+   "level": "rookie",
+   "words": "coach's call",
+   "edge": "the card",
+   "conditions": [],
+   "chain": [],
+   "finish": "the target's goals carry the card's bonus",
+   "answers": [],
+   "built": true
+  },
+  {
+   "id": "F4",
+   "family": "F",
+   "name": "Inbounds",
+   "pattern": "modifier",
+   "variant": "inbound",
+   "level": "rookie",
+   "words": "inbounds",
+   "edge": "an inbound",
+   "conditions": [],
+   "chain": [],
+   "finish": "the first pass: B1, B2, B3 or E2 into a clean lane",
+   "answers": [],
+   "built": true
+  }
+ ],
+ "defence": [
+  {
+   "id": "DO-contain",
+   "group": "on the ball",
+   "words": "contain O{c}",
+   "counters": [
+    "A3",
+    "D1"
+   ],
+   "level": "rookie",
+   "gives_up": "the opposite direction"
+  },
+  {
+   "id": "DO-pressure",
+   "group": "on the ball",
+   "words": "pressure O{c}",
+   "counters": [
+    "slow ball movement"
+   ],
+   "level": "rookie",
+   "gives_up": "a Steal foul, the drive past"
+  },
+  {
+   "id": "DO-front",
+   "group": "the post",
+   "words": "keep the ball out of O{p}'s post",
+   "counters": [
+    "A1",
+    "A2",
+    "E1"
+   ],
+   "level": "rookie",
+   "gives_up": "the lob, the high-low"
+  },
+  {
+   "id": "DO-closeout",
+   "group": "off the ball",
+   "words": "close out on O{s}'s three",
+   "counters": [
+    "A4",
+    "C1",
+    "C4",
+    "B4"
+   ],
+   "level": "starter",
+   "gives_up": "help on the ball"
+  },
+  {
+   "id": "DO-deny",
+   "group": "off the ball",
+   "words": "deny O{r} the catch",
+   "counters": [
+    "B1",
+    "B2",
+    "B9",
+    "E2"
+   ],
+   "level": "starter",
+   "gives_up": "the backdoor"
+  },
+  {
+   "id": "DO-rim",
+   "group": "off the ball",
+   "words": "protect the rim",
+   "counters": [
+    "B3",
+    "B5",
+    "B6",
+    "B8",
+    "D1",
+    "D3"
+   ],
+   "level": "starter",
+   "gives_up": "the weak-side corner"
+  },
+  {
+   "id": "DO-noswitch",
+   "group": "ball screens",
+   "words": "don't switch X{d2} onto O{a}",
+   "counters": [
+    "E1",
+    "D1"
+   ],
+   "level": "starter",
+   "gives_up": "a moment on the ball"
+  },
+  {
+   "id": "DO-rotate",
+   "group": "rotations",
+   "words": "help the helper",
+   "counters": [
+    "C2",
+    "C3"
+   ],
+   "level": "starter",
+   "gives_up": "the next player along"
+  },
+  {
+   "id": "DO-reserve",
+   "group": "capacity",
+   "words": "keep a reaction in hand",
+   "counters": [
+    "C1"
+   ],
+   "level": "allstar",
+   "gives_up": "a step of help now"
+  }
+ ]
+}
