@@ -445,6 +445,36 @@ directly, Starter chains one condition deep, All-Star the whole way. The review 
 "Goal: O5 in the post on X5. O2 moved to open the lane, O3 moved to open the lane, swung the ball to
 O2, swung the ball to O3, O5 sealed X5, entry to O5."
 
+**Set-ups and finishes (step 3i follow-up).** Every goal in the library is tagged. A **finish** (post
+entry, high-low, isolation, spot-up three, drive and kick, the pick and roll and pop, speed) is worth its
+own shot: the engine plays the goal's steps out on the board (every roll going the offence's way, the
+defence standing still), then reads the finish off the defence's real reach, after its reaction. A
+**set-up** (the cuts, the far-side swing, draining the closeout, the overload, off-ball screens, the
+handoff, the screen to switch) is worth nothing by itself. It is worth the chance its rolls work × what
+the offence keeps on the board it leaves, less the steps it costs. Where it opens several finishes, the
+defence takes away the most dangerous one, so it is worth the next best. A set-up that opens nothing
+better than what is already there is worth nothing. No goal has a fixed score.
+
+- **The screen to switch (E1)** holds two branches. If O5's screen makes the defence switch, (a) O5 posts
+  up the smaller defender, with the guard spacing out to drag the big to the arc, or (b) the guard attacks
+  the slower big off the dribble. The switch is worth the lesser, because the defence covers the bigger.
+  If it doesn't switch, the guard attacks the man stuck behind the screen. The defence takes the worse
+  reply for the offence, and the plan reads that reply off the matchups before taking its next step.
+  Switching back breaks the goal. A switch between two defenders with the same ratings is worth nothing.
+- **Timing:** the plan is about squares; whether a step can be taken this turn is a separate call. If
+  the phase's two passes are used up, the offence waits for the next phase rather than playing something
+  else. It also doesn't set a seal or a screen that would end before the pass could follow.
+- **The pick and roll (D1, D2)** rarely starts: the screener must be within one movement of the ball
+  handler's defender, and a screener can't move until his screen flips back after the offence's next
+  turn (OQ-29). So the roll comes a turn after the drive, with the defence answering in between.
+
+**Matchups.** The computer keeps a record of who guards whom (`guarding.py`). It is set when the
+possession starts (the closest one-to-one pairing, man-to-man by number on a tie) and changes only by
+an explicit decision: a **switch** (two defenders each take the other's man by their own movement) or a
+**replacement** (a locked or out-of-reach defender's man taken by the teammate next to him). A screen,
+cut or drive by the offence changes nothing by itself. The offence reads the same record off the
+squares and arrows.
+
 **The defence doesn't know the plan.** It builds its own ranked objectives from what the offence could
 be building toward on the board ("keep the ball out of O5's post", "close out on O2's three", "protect
 the rim"), weighted by their value and how close the board is to them, and re-ranks them as the board

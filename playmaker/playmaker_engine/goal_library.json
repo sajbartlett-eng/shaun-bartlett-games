@@ -77,7 +77,8 @@
     "three-quarter front",
     "dig with a guard (gives up the kick-out)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "A1a",
@@ -103,7 +104,8 @@
    "answers": [
     "three-quarter front the other side"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "A2",
@@ -129,7 +131,8 @@
     "front low (gives up a lob, or the high player's shot)",
     "sink the high player's defender (gives up his mid-range)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "A3",
@@ -156,7 +159,8 @@
     "help early (gives up the helper's player)",
     "load to the ball side (gives up the weak-side three)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "A4",
@@ -181,7 +185,8 @@
     "stay home (gives up the drive or the post)",
     "top-lock or deny (gives up the back cut)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "A5",
@@ -204,7 +209,8 @@
     "at the level or hedge (gives up the roll)",
     "a switch (gives up a mismatch)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "B1",
@@ -227,7 +233,8 @@
     "don't follow, sag (gives up the inside cut)",
     "follow and recover next phase (spends the Move)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B2",
@@ -249,7 +256,8 @@
    "answers": [
     "as B1"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B3",
@@ -273,7 +281,8 @@
     "play off the catch (gives up a clean catch)",
     "help-side tag at the rim (gives up the helper's player)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B3a",
@@ -289,7 +298,8 @@
    "finish": "a layup",
    "answers": [],
    "built": false,
-   "not_built": "A carrier's move can't push a defender back: defenders move only on their own turn. The plain backdoor (B3) covers the cut."
+   "not_built": "A carrier's move can't push a defender back: defenders move only on their own turn. The plain backdoor (B3) covers the cut.",
+   "role": "setup"
   },
   {
    "id": "B4",
@@ -310,7 +320,8 @@
    "answers": [
     "a rotation that hands one job to a defender with capacity left"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B5",
@@ -333,7 +344,8 @@
     "switch or bump the cutter (gives up that defender's player)",
     "trail and recover (spends capacity)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B6",
@@ -355,7 +367,8 @@
    "answers": [
     "jump to the ball (spends a Move)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B7",
@@ -374,7 +387,8 @@
    "answers": [
     "stay connected (capacity)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B8",
@@ -393,7 +407,8 @@
    "answers": [
     "the low man rotates (gives up the weak-side corner)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "B9",
@@ -413,7 +428,8 @@
    "answers": [
     "as B1"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "C1",
@@ -435,7 +451,8 @@
     "rotate a fresh defender",
     "hold a reaction in reserve"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "C2",
@@ -457,7 +474,8 @@
    "answers": [
     "a rotation that hands one job to a defender with capacity left"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "C3",
@@ -482,7 +500,8 @@
     "stunt and recover (capacity)",
     "X-out rotation (needs two defenders with capacity)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "C4",
@@ -504,7 +523,8 @@
    "answers": [
     "the weak-side defender plays the lane (gives up his man's cut)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "C5",
@@ -523,7 +543,8 @@
    "answers": [
     "zone the far side (gives up the skip)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "D1",
@@ -552,7 +573,8 @@
     "switch (gives up E1)",
     "ice"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D2",
@@ -572,7 +594,8 @@
     "switch",
     "at the level and recover (capacity)"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D3",
@@ -592,7 +615,8 @@
    "answers": [
     "a weak-side tag at the rim"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D4",
@@ -612,7 +636,8 @@
    "answers": [
     "stay home with the screener"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D5",
@@ -632,7 +657,8 @@
    "answers": [
     "switch the back screen"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D6",
@@ -652,7 +678,8 @@
    "answers": [
     "as D1"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "D7",
@@ -678,7 +705,8 @@
     "switch the handoff",
     "jump the handoff"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E1",
@@ -687,7 +715,7 @@
    "pattern": "screen_switch",
    "variant": null,
    "level": "allstar",
-   "words": "screen X{d} so X{d2} picks up O{a}",
+   "words": "O{sc} screens X{d} to switch X{d2} onto O{c}",
    "edge": "the switch leaves a ▼ defender on a ▲ attacker",
    "conditions": [
     "the screen holds or forces the other defender to pick up",
@@ -702,7 +730,8 @@
     "switch back (needs capacity)",
     "dig or double (C3 follows)"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2",
@@ -727,7 +756,8 @@
     "switch",
     "top-lock"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2a",
@@ -746,7 +776,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2b",
@@ -765,7 +796,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2c",
@@ -784,7 +816,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2d",
@@ -803,7 +836,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2e",
@@ -822,7 +856,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2f",
@@ -841,7 +876,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2g",
@@ -860,7 +896,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2h",
@@ -879,7 +916,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2i",
@@ -898,7 +936,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2j",
@@ -917,7 +956,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2k",
@@ -936,7 +976,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E2l",
@@ -955,7 +996,8 @@
    "answers": [
     "as E2"
    ],
-   "built": true
+   "built": true,
+   "role": "setup"
   },
   {
    "id": "E3",
@@ -974,7 +1016,8 @@
    "answers": [
     "help from a faster defender"
    ],
-   "built": true
+   "built": true,
+   "role": "finish"
   },
   {
    "id": "F1",
@@ -989,7 +1032,8 @@
    "chain": [],
    "finish": "only goals that finish now rank",
    "answers": [],
-   "built": true
+   "built": true,
+   "role": "modifier"
   },
   {
    "id": "F2",
@@ -1004,7 +1048,8 @@
    "chain": [],
    "finish": "only goals that finish in a three score",
    "answers": [],
-   "built": true
+   "built": true,
+   "role": "modifier"
   },
   {
    "id": "F3",
@@ -1019,7 +1064,8 @@
    "chain": [],
    "finish": "the target's goals carry the card's bonus",
    "answers": [],
-   "built": true
+   "built": true,
+   "role": "modifier"
   },
   {
    "id": "F4",
@@ -1034,7 +1080,8 @@
    "chain": [],
    "finish": "the first pass: B1, B2, B3 or E2 into a clean lane",
    "answers": [],
-   "built": true
+   "built": true,
+   "role": "modifier"
   }
  ],
  "defence": [
@@ -1144,5 +1191,6 @@
    "level": "allstar",
    "gives_up": "a step of help now"
   }
- ]
+ ],
+ "_roles": "role: 'finish' goals are valued by their own finish (the shot after the defence's reaction, from the expected board once their steps are played); 'setup' goals have no value of their own: P(their rolls) x what the offence keeps on the board they leave, after the defence denies the most dangerous finish they unlock, less the steps' cost."
 }

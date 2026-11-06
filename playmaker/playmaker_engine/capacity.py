@@ -10,8 +10,9 @@ pass back out.
   lane_reach(state, j, passer, r)    can j answer a pass passer -> r: 'direct' (on the line), 'approach'
                                      (arrow across it, then one legal movement onto it), or None
   help_reach(state, j)               contest squares around the ball and the rim j can reach in a reaction
-  closeout_reach(state, j, a=None)   can j reach a clean contest on attacker a (default: the attacker he is
-                                     guarding, read as the nearest one, OPEN_QUESTIONS 55)
+  closeout_reach(state, j, a=None, matchups=None)
+                                     can j reach a clean contest on attacker a (default: the attacker he is
+                                     guarding, from the matchup record when given, guarding.py, OQ-67a)
 """
 from . import board as B
 from . import rules_config as RC
@@ -22,8 +23,11 @@ def reaction_budget(state):
     return min(2, state.tok_x) if state.tok_x > 0 else 0
 
 
-def guarded(state, j):
-    """The attacker defender j is guarding: the nearest on the board (lower number on a tie)."""
+def guarded(state, j, matchups=None):
+    """The attacker defender j is guarding: from the matchup record (guarding.py) when there is one, else
+    the nearest on the board (lower number on a tie)."""
+    if matchups is not None:
+        return matchups[j]
     on = [i for i in range(5) if B.on_board(state.o[i])]
     return min(on, key=lambda i: (B.cheb(state.x[j], state.o[i]), i)) if on else None
 
@@ -116,10 +120,10 @@ def help_reach(state, j):
     return out
 
 
-def closeout_reach(state, j, attacker=None):
+def closeout_reach(state, j, attacker=None, matchups=None):
     """Can j reach a clean contest (adjacent and facing) on the attacker's best shot in a reaction?"""
     from .advantage import contests, looks
-    a = guarded(state, j) if attacker is None else attacker
+    a = guarded(state, j, matchups) if attacker is None else attacker
     if a is None or not B.on_board(state.o[a]):
         return False
     from .advantage import reach_maps
@@ -130,11 +134,11 @@ def closeout_reach(state, j, attacker=None):
     return any(c['defender'] == j and c['clean'] for c in lk[0][2])
 
 
-def summary(state, j):
+def summary(state, j, matchups=None):
     """capacity plus the three reaches, for logging and tests."""
     c = capacity(state, j)
     c['lanes'] = lanes(state, j)
     c['help'] = sorted(B.sq(q) for q, facing in help_reach(state, j).items())
-    c['closeout'] = closeout_reach(state, j)
-    c['guarding'] = guarded(state, j)
+    c['closeout'] = closeout_reach(state, j, matchups=matchups)
+    c['guarding'] = guarded(state, j, matchups)
     return c

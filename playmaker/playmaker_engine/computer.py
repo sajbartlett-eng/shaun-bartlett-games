@@ -434,6 +434,8 @@ class Computer(Policy):
         self._handover = None       # offence: the board as it left it to the defence (for help_pulled)
         self.picked_off = set()     # offence: passes intercepted this possession, keyed by the full position
         self._last_pass = None
+        self.matchups = None        # who guards whom: m[j] = the attacker defender j guards (guarding.py)
+        self._mm_last = None
 
     def describe(self):
         """For the log and the review: level, habits drawn, concepts switched off."""
@@ -456,11 +458,23 @@ class Computer(Policy):
             if was:
                 gc.enable()
 
+    def _track_matchups(self, state):
+        """The matchup record: set at the possession's start, then changed only by the defence's explicit
+        switches and replacements (guarding.py). The offence reads the same thing off the squares and arrows."""
+        from . import guarding
+        last = self._mm_last
+        if self.matchups is None or last is None:
+            self.matchups = guarding.initial(state)
+        elif state.x != last.x or state.arrows != last.arrows or state.lock_x != last.lock_x:
+            self.matchups = guarding.update(self.matchups, last, state)
+        self._mm_last = state
+
     def _choose(self, state):
         acts = legal_actions(state)
+        self._context(state)
+        self._track_matchups(state)
         if len(acts) == 1:
             return acts[0]
-        self._context(state)
         if self.side == 'O' and state.stage == 'play' and state.side == 'O':
             self._remember(state)
         t0 = time.time()
@@ -1531,10 +1545,13 @@ class Computer(Policy):
             self._goal_cool = False
             return None                       # just after a finish: shoot or move the advantage, not a new plan
         target = view.target if view.ctx.coach_call and view.target >= 0 else None
-        ranked = plan_goals(view, self.level, self.goal_mem, target=target)
+        ranked = plan_goals(view, self.level, self.goal_mem, target=target, matchups=self.matchups,
+                            keep=self.goal['key'] if self.goal else None)
         cur = self._goal_choose(view, ranked)
         if cur is None:
             return None
+        if cur.get('remember'):                       # what the goal needs to recall later (E1: who was on whom)
+            self.goal_mem.setdefault(cur['entry']['id'], {}).update(cur['remember'])
         # a shot that clears the bar and is worth the plan
         gen = self.gen.offence_plays(view)
         shots = []
@@ -1549,19 +1566,30 @@ class Computer(Policy):
             self._plan_note(view, sp, None)
             return sp
         # an advantage the defence will take away next turn (help pulled, a beaten or spent defender, a bad
-        # closeout, a dilemma) is taken now when it is worth the plan: the advantage path plays it. Its value is
-        # after the defence's best answer; the plan's score is an open-shot estimate, so it is taken at 0.8.
-        # Mismatches and numbers last, and are what the goals build on, so they don't interrupt the plan
-        live = [a for a in self._advs(view, self._handover) if a['kind'] in self.TRANSIENT and a['value'] >= 0.8 * cur['score']]
+        # closeout, a dilemma) is taken now when it is worth more than the plan: the advantage path plays it.
+        # Both values are after the defence's reaction. Mismatches and numbers last, and are what the goals
+        # build on, so they don't interrupt the plan
+        live = [a for a in self._advs(view, self._handover) if a['kind'] in self.TRANSIENT and a['value'] > cur['score']
+                and a['attacker'] != cur['att']]          # the goal's own attacker: the plan is how it gets used
         if live:
             from .advantage import describe
             self.notes.append(dict(event='goal_hold', id=cur['entry']['id'],
                                    text=f"Held the goal to take an advantage now: {describe(live[0])}"))
             return None
-        for step in cur['todo']:
+        for k, step in enumerate(cur['todo']):
             plays = [p for p in step['plays']() if p.actions and p.actions[0] in acts and apply_play(view, p) is not None]
             plays = self._goal_filter(view, plays)
+            nxt = cur['todo'][k + 1] if k + 1 < len(cur['todo']) else None
+            no_pass = view.count('O', 'pass') >= RC.LIMITS['O']['pass']
+            if plays and step['id'] in ('seal', 'screen') and no_pass and nxt is not None and nxt['finish']:
+                plays = []                            # a screen ends with the phase: set it when the pass can follow
             if not plays:
+                end = next((a for a in acts if a.kind == 'end_turn'), None)
+                if no_pass and end is not None and k == 0:
+                    from .solver import Play
+                    self.notes.append(dict(event='goal_wait', id=cur['entry']['id'],
+                                           text=f"Waited for the next phase: {step['words']} needs a pass this phase can't give"))
+                    return Play('wait', (end,))       # the plan's step needs the next phase's passes
                 if step['finish'] or self.cfg.get('goal_strict', True):
                     return None                       # this step can't be taken this turn: other plays meanwhile
                 continue
@@ -1680,7 +1708,7 @@ class Computer(Policy):
     # ---- step 3i: the defence's objectives -----------------------------------------------------------
     def _objective_plays(self, view, acts):
         from .planner import defence_objectives, objective_plays
-        objs = defence_objectives(view, self.level)
+        objs = defence_objectives(view, self.level, matchups=self.matchups)
         words = [o['words'] for o in objs]
         if words != self._objectives:
             self._objectives = words
@@ -1689,7 +1717,7 @@ class Computer(Policy):
                                        text='Defence objectives: ' + '; '.join(words)))
         out = []
         for o in objs[:3]:
-            out += objective_plays(view, o, acts)
+            out += objective_plays(view, o, acts, matchups=self.matchups)
         return out
 
     def _contested(self, view, play):

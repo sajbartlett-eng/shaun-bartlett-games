@@ -61,6 +61,7 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
     rng = random.Random(seed * 1009 + 7)
     st = Counter()
     pend = None                                   # the pass in the air: clean when thrown?
+    cpasses = []
     think = {'O': [], 'X': []}
     t0 = time.time()
     for _ in range(400):
@@ -83,6 +84,9 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
             st['passes'] += 1
             st['passes_clean'] += clean
             pend = dict(clean=clean)
+            if not clean and info is not None:          # the thrower's own valuation, for the diagnosis
+                pend['diag'] = _valuation(pols['O'], s, info)
+                cpasses.append(pend['diag'])
         node = apply(s, a)
         while isinstance(node, ChanceNode):
             nxt, lab = sample(node, rng)
@@ -94,6 +98,8 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
                 if pend is not None and not pend['clean']:
                     st['contested_resolved'] += 1
                     st['contested_completed'] += lab == 'success'
+                    if pend.get('diag') is not None:
+                        pend['diag']['completed'] = lab == 'success'
                 pend = None
             elif what.startswith('Contest foul'):
                 st['foul_rolls'] += 1
@@ -113,15 +119,42 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
             if not pend['clean']:                   # a contested pass no one tried to intercept: completed
                 st['contested_resolved'] += 1
                 st['contested_completed'] += 1
+                if pend.get('diag') is not None:
+                    pend['diag']['completed'] = True
             pend = None
         s = node
     sc = score(s) if s.stage == 'over' else None
+    for d in cpasses:
+        d['final'] = float(sc.total) if sc else None
     goals = [n['id'] for n in pols['O'].notes if n.get('event') == 'goal']
     return dict(o=o_level, x=x_level, spec=spec, seed=seed, variant=variant, counts=dict(st),
-                points=float(sc.total) if sc else None, goals=goals,
+                points=float(sc.total) if sc else None, goals=goals, cpasses=cpasses,
                 think_max={k: round(max(v or [0]), 2) for k, v in think.items()},
                 think_mean={k: round(sum(v) / len(v), 3) if v else 0 for k, v in think.items()},
                 wall=round(time.time() - t0, 1))
+
+
+def _valuation(comp, s, info):
+    """How the offence values a contested pass under the rules it plays: P(complete), the catch (its
+    create/reply/exploit value of the caught position, after the defence's reply), the pick-off (-5 plus
+    points already banked) and the expected value."""
+    from . import rules_config as RC
+    from .computer import pass_outcomes
+    caught, _ = pass_outcomes(info)
+    try:
+        catch = float(comp._adv_value(s, caught, comp.cfg.get('advantage_depth', 2)))
+    except Exception:
+        catch = None
+    p = 1.0 - float(info['risk'])
+    banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos
+    lost = banked + RC.TURNOVER_POINTS
+    return dict(p=round(p, 3), catch=catch, lost=lost, clock=s.clock,
+                ev=round(p * catch + (1 - p) * lost, 2) if catch is not None else None, completed=None)
+
+
+def diag_jobs(random_n=14, seeds=(1, 2, 3, 4)):
+    """The late-closeout diagnosis: All-Star v All-Star, default and late_closeout, 120 possessions each."""
+    return [('allstar', 'allstar', sp, sd, v) for v in ('default', 'late_closeout') for sp in starts(random_n) for sd in seeds]
 
 
 def _job(args):
@@ -141,10 +174,11 @@ def jobs(random_n=4, seeds=(1, 2), variant=True):
     return out
 
 
-def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None):
+def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None, diag=False):
     path = os.path.join(RESULTS, store)
     done = json.load(open(path)) if os.path.exists(path) else {}
-    todo = [j for j in jobs(random_n, seeds, variant) if key(*j) not in done]
+    js = diag_jobs() if diag else jobs(random_n, seeds, variant)
+    todo = [j for j in js if key(*j) not in done]
     if limit:
         todo = todo[:limit]
     t0 = time.time()
@@ -215,8 +249,9 @@ if __name__ == '__main__':
     ap.add_argument('--no-variant', action='store_true')
     ap.add_argument('--estimate', action='store_true')
     ap.add_argument('--limit', type=int)
+    ap.add_argument('--diag', action='store_true', help='the late-closeout diagnosis (120 + 120 possessions)')
     a = ap.parse_args()
     if a.estimate:
         print(estimate(workers=a.workers))
     else:
-        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit)
+        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit, a.diag)

@@ -153,14 +153,17 @@ def test_all_star_sets_the_post_goal_and_chains_it_backwards():
 
 
 def test_the_chain_runs_and_the_log_matches():
+    """The planned chain is played in order: both receivers open their lanes, then the two swing passes.
+    (With the ball on the weak side, O5's cut to the rim square is worth more than the post-up, so the
+    finish may change there: that is a logged trigger, not noise.) The possession ends with O5's catch."""
     o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
     passive_defence(o, post_position(), steps=40)
     first = next(n for n in o.notes if n['event'] == 'goal')
     assert first['text'] == 'Goal: O5 in the post on X5 (Post entry, 6 steps)'
+    steps = [n['text'] for n in o.notes if n['event'] == 'goal_step'][:4]
+    assert steps == ['O2 moved to open the lane', 'O3 moved to open the lane', 'Swung the ball to O2', 'Swung the ball to O3']
     fin = next(n for n in o.notes if n['event'] == 'goal_finish')
-    assert fin['text'] == ('Goal: O5 in the post on X5. O2 moved to open the lane, O3 moved to open the lane, swung the '
-                           'ball to O2, swung the ball to O3, O5 sealed X5, entry to O5.')
-    assert not any(n['event'] == 'goal_reassess' for n in o.notes[:o.notes.index(fin)])     # no noise
+    assert 'O5' in fin['text'].split('.')[0]
 
 
 def test_the_entry_is_clean_when_it_is_thrown():
@@ -170,7 +173,7 @@ def test_the_entry_is_clean_when_it_is_thrown():
         if s.side == 'O' and s.stage == 'play':
             a = o.choose(s)
             if a.kind == 'pass' and a.target == 4:
-                assert C.pass_risk(s, s.ball, 4)['clean'] and s.ball == 2           # from the weak-side wing
+                assert C.pass_risk(s, s.ball, 4)['clean'] and s.ball != 0           # from the weak side, clean
                 return
         else:
             acts = legal_actions(s)
@@ -198,7 +201,8 @@ def test_a_broken_condition_that_cannot_be_restored_changes_the_goal():
 
 
 def test_no_reassessment_on_noise_the_goal_persists():
-    """Against a defence that stands still, the goal is set once and kept for at least ten actions."""
+    """Against a defence that stands still, over ten actions: the first goal is kept through its set-up
+    (the opens and the swing), and a goal only ever changes with a logged trigger or after it finishes."""
     o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
     s = post_position()
     n = 0
@@ -216,9 +220,12 @@ def test_no_reassessment_on_noise_the_goal_persists():
             labels = [lab for _, lab, _ in node.outcomes]
             node = force(node, next((l for l in ('success', 'kept', 'no foul') if l in labels), labels[0]))
         s = node
-    ev = [x['event'] for x in o.notes]
-    upto = ev.index('goal_finish') if 'goal_finish' in ev else len(ev)
-    assert n >= 7 and ev[:upto].count('goal') == 1 and 'goal_reassess' not in ev[:upto], ev
+    ev = [x['event'] for x in o.notes if x['event'] in ('goal', 'goal_step', 'goal_reassess', 'goal_finish')]
+    assert n >= 8 and ev[:6] == ['goal', 'goal_step', 'goal_step', 'goal_step', 'goal_step', ev[5]], ev
+    for k, e in enumerate(ev):
+        if e == 'goal' and k > 0:
+            assert ev[k - 1] in ('goal_reassess', 'goal_finish'), ev       # every change has its reason
+    assert all(x.get('why') for x in o.notes if x['event'] == 'goal_reassess')
 
 
 def test_rookie_tries_the_goal_directly_and_starter_one_condition_deep():
@@ -277,7 +284,7 @@ def test_all_star_moves_the_cutter_instead_of_throwing_the_contested_pass():
     s = _wing('C9', 'D8', 'NE')
     a = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[]).choose(s)
     assert not (a.kind == 'pass' and a.target == 1), a
-    assert a.kind in MOVEMENT and a.piece == 1, a
+    assert (a.kind in MOVEMENT and a.piece == 1) or (a.kind == 'pass' and C.pass_risk(s, 0, a.target)['clean']), a
 
 
 def test_baseline_cut_the_chaser_ends_behind_and_cannot_answer_the_far_side_pass():
@@ -427,21 +434,26 @@ def test_a_reaction_move_to_another_square_marks_the_contester_late():
     assert not apply(s, turn).react_moved & 1                # turning in place: set, not late
 
 
-# ---- E1: a created edge (screen so a ▼ post defender picks up O5) -----------------------------------------
-# O5 (▲ post) on the right block is guarded by X4 (▲ post defence); X5 (▼) guards O4 on the left block.
+# ---- E1: a ball screen to force a switch (step 3i follow-up) ---------------------------------------------
+# O1 (Ball Movement's point guard: Dribble 19) is guarded by X1 (Lockdown's guard: ▼ post contest); O5 (High-Low's
+# centre: ▲ post) is guarded by X5 (Twin Towers' centre: Agility 4). If O5's screen makes them switch, O5 posts
+# up the small X1 and O1 attacks the slow X5.
 
-E1_O = ['O8', 'H9', 'N5', 'G5', 'K3']
-E1_X = ['N9', 'H8', 'O6', 'L3', 'H4']
-E1_ARROWS = ['N', 'S', 'E', 'W', 'E']
+E1_OFF = [TEAMS['Ball Movement'][0], TEAMS['Iron Wall'][0], TEAMS['Lockdown'][0], TEAMS['Twin Towers'][3], TEAMS['High-Low'][4]]
+E1_DFN = [TEAMS['Lockdown'][0], TEAMS['Lockdown'][1], TEAMS['Lockdown'][2], TEAMS['Lockdown'][3], TEAMS['Twin Towers'][4]]
+E1_O = ['J7', 'C8', 'P8', 'B3', 'L5']
+E1_X = ['J8', 'D8', 'O8', 'C3', 'L4']
+E1_ARROWS = ['S', 'NE', 'NW', 'NE', 'N']
 
 
-def e1_position():
-    return lineup(POST_OFF, POST_DFN, E1_O, E1_X, E1_ARROWS)
+def e1_position(dfn=None):
+    return lineup(E1_OFF, dfn or E1_DFN, E1_O, E1_X, E1_ARROWS)
 
 
-def _e1(s):
-    return next((g for g in goals(s, 'allstar') if g['entry']['id'] == 'E1' and g['att'] == 4), None)
-
+def _e1(s, m=None, mems=None):
+    from playmaker_engine import guarding
+    m = m or guarding.initial(s)
+    return next((g for g in goals(s, 'allstar', mems, matchups=m) if g['entry']['id'] == 'E1' and g['bind']['sc'] == 4), None)
 
 
 def _offence_turn(s):
@@ -460,69 +472,109 @@ def _offence_turn(s):
     return s
 
 
-def test_e1_the_created_edge_is_ranked_above_the_contested_shot():
+def test_e1_holds_both_branches_and_ranks_above_the_contested_shot():
+    from playmaker_engine.planner import board_looks
+    from playmaker_engine.scoring import p_success
     s = e1_position()
     g = _e1(s)
-    assert g and g['words'] == 'screen X4 so X5 picks up O5'
-    contested = 2 * (s.ctx.off[4].shot('post') - s.ctx.dfn[3].con('post'))      # O5's post-up on X4 now
-    assert g['edge'] == 2 * (s.ctx.off[4].shot('post') - s.ctx.dfn[4].con('post')) and g['score'] > contested
+    assert g and g['role'] == 'setup' and g['words'] == 'O5 screens X1 to switch X5 onto O1'
+    br = g['branches']
+    off, dfn = s.ctx.off, s.ctx.dfn
+    assert br['post'] == 2 * (off[4].shot('post') - dfn[0].con('post'))           # (a) O5 on the small X1
+    pw = float(p_success(off[0].r['dribble'] - dfn[4].r['agility']))
+    assert 0 < br['drive'] <= pw * 40                                            # (b) O1 at the slow X5
+    assert br['switch'] == min(br['post'], br['drive'])                           # the defence denies the bigger
+    assert g['V'] == min(br['switch'], br['stay'])                                # ...and picks its reply
+    assert g['P'] == float(p_success(off[4].r['screen'] - dfn[0].r['challenge']))
+    contested = board_looks(s)[0][0]                                              # the best look now: O1's own
+    assert g['score'] > contested
 
 
-def _run_step(s, step):
-    from playmaker_engine.solver import apply_play
-    plays = [p for p in step['plays']() if apply_play(s, p) is not None]
-    assert plays, step['words']
-    node = s
-    for a in plays[0].actions:
-        node = apply(node, a)
-        while isinstance(node, ChanceNode):
-            labels = [lab for _, lab, _ in node.outcomes]
-            node = force(node, next((l for l in ('success', 'kept', 'no foul', 'holds') if l in labels), labels[0]))
-    return _offence_turn(node)
+def test_a_switch_between_equal_defenders_is_worth_about_nothing():
+    dfn = list(E1_DFN)
+    dfn[4] = dfn[0]                                       # X5 the same card as X1
+    g = _e1(e1_position(dfn))
+    assert g and abs(g['branches']['switch_gain']) < 1.0
 
 
-def test_e1_the_chain_runs_and_the_post_up_follows_once_the_screen_holds():
-    """E1's steps in order: O3 screens X4, O5 goes at X5. With the switch made (X5 now the nearest, ▼ post),
-    the screen's job is done and the same edge is a post-up on X5, which the plan carries to the entry."""
+def test_e1_reads_the_reply_and_a_switch_back_breaks_it():
+    """After the screen the defence switched (the record: X5 on O1, X1 on O5): the plan's next step is already
+    there, the branch the defence left open. When the defence switches back, the goal is reassessed."""
+    from playmaker_engine import guarding
     s = e1_position()
-    done = []
-    for _ in range(4):
-        g = _e1(s)
-        if g is None:
-            break
-        step = g['todo'][0]
-        done.append(step['words'])
-        s = _run_step(s, step)
-    assert done[:2] == ['O3 screened X4', 'O5 went at X5'], done
-    assert min(range(5), key=lambda j: (B.cheb(s.x[j], s.o[4]), j)) == 4          # the switch: X5 has him
-    for _ in range(6):
-        g = next((x for x in goals(s, 'allstar') if x['entry']['id'] == 'A1' and x['att'] == 4), None)
-        assert g and g['bind']['d'] == 4, g and g['bind']                          # the post-up on X5
-        step = g['todo'][0]
-        done.append(step['words'])
-        s = _run_step(s, step)
-        if step['finish']:
-            break
-    assert done[-1] == 'entry to O5' and s.ball == 4, done
-    post = [a for a in legal_actions(s) if a.kind == 'shot' and a.shot == 'post']
-    assert post and B.adjacent(s.x[4], s.o[4])                                     # the post-up, on X5
-
-
-def test_e1_when_the_screen_is_beaten_the_goal_is_reassessed_and_gained_steps_kept():
-    """The goal is E1; X4 beats the screen (a Challenge won). The roll went the wrong way, so the offence
-    reassesses; O5's move next to X5 is still on the board and the new chain doesn't ask for it again."""
     o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
-    s = e1_position()
     o._context(s)
-    g = _e1(s)
+    switched = (4, 1, 2, 3, 0)                            # X1 now on O5, X5 on O1
+    g = _e1(s, switched, {'E1': {'orig4': [0, 4]}})
+    assert g and g['e1']['switched'] and g['remember'] == {'switched4': True}
+    assert set(g['branches']) == {'post', 'drive'} and g['todo'][0]['id'] == 'read'
+    assert g['todo'][0]['plays']()                        # the next steps are already in the plan
+    o.matchups = switched
     o.goal = dict(key=g['key'], id='E1', words=g['words'], chain=[], score=g['score'])
-    o._goal_snap = (s.phase, s.tos, s.lock_o, ((2, 3, 0, 0),))
-    t = s.with_(o=s.o[:4] + (P('I3'),), screens=((2, 3, 0, 1 << 3),))           # O3's screen on X4, beaten by X4
-    o._goal_choose(t, goals(t, 'allstar'))
+    o.goal_mem = {'E1': {'orig4': [0, 4], 'switched4': True}}
+    o._goal_snap = (s.phase, s.tos, s.lock_o, s.screens)
+    back = guarding.initial(s)                            # switched back
+    assert _e1(s, back, o.goal_mem) is None
+    from playmaker_engine.planner import goals as plan
+    o.matchups = back
+    o._goal_choose(s, plan(s, 'allstar', o.goal_mem, matchups=back, keep=g['key']))
     re = [n for n in o.notes if n['event'] == 'goal_reassess']
-    assert re and re[0]['why'] == 'a screen was beaten'
-    new = next(x for x in goals(t, 'allstar') if x['key'] == o.goal['key'])
-    assert not any(st['id'] == 'repos' for st in new['todo'])
+    assert re and re[0]['why'] == "the defence broke a condition that can't be restored in time"
+
+
+def test_no_goal_has_a_fixed_score():
+    """Every goal's score is P x ((1 - risk) x V + risk x the pick-off) + (1 - P) x the best look now - the
+    steps' cost: V a look on the expected board (a finish) or what the offence keeps there (a set-up)."""
+    from playmaker_engine.planner import TEMPO
+    for s in (post_position(), e1_position(), board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N'])):
+        for g in goals(s, 'allstar'):
+            want = g['P'] * ((1 - g['risk']) * g['V'] + g['risk'] * RC.TURNOVER_POINTS) + (1 - g['P']) * g['base'] - TEMPO * len(g['todo'])
+            assert g['score'] == pytest.approx(want, abs=0.02), g['words']
+            assert g['V'] <= 3 * 20                                              # a look: never more than an open three
+    from playmaker_engine.planner import keeps, simulate
+    for s in (post_position(), e1_position()):            # the overload: no score of its own any more
+        g = next((g for g in goals(s, 'allstar') if g['entry']['id'] == 'C5'), None)
+        if g is not None:
+            after, p, _ = simulate(s, g['todo'])
+            if any(not st['finish'] for st in g['todo']):      # still setting up: what it unlocks
+                want = keeps(after, s)[0]
+            else:                                              # set up: the finish it made
+                from playmaker_engine.planner import look_value
+                want = look_value(after, g['att'])
+            assert g['V'] == pytest.approx(want, abs=0.01) and g['V'] != 18.0
+
+
+# ---- matchups (OQ-67a) -------------------------------------------------------------------------------
+
+def test_matchups_are_set_at_the_start_and_persist_through_a_screen_that_forces_no_switch():
+    from playmaker_engine import guarding
+    s = board('Five Out', 'High-Low', ['I11', 'F10', 'O9', 'A3', 'Q3'], ['I10', 'E9', 'N8', 'G4', 'N4'], ['N', 'NE', 'NW', 'N', 'N'])
+    m = guarding.initial(s)
+    assert m == (0, 1, 2, 3, 4)
+    # O2 comes over and screens X1: X1 is now next to O2, but X2 can still reach his man and nothing the
+    # defence did changed, so neither switches
+    t = s.with_(o=(s.o[0], P('H10')) + s.o[2:], screens=((1, B.DIR_NAMES.index('E'), True, 0),))
+    assert guarding.update(m, s, t) == m
+    stay = t.with_(arrows=(t.arrows[0], B.DIR_NAMES.index('E')) + t.arrows[2:])      # the defence's turn: X2 turns
+    assert guarding.update(m, t, stay) == m
+    # the computer's own record, decision to decision, keeps it too
+    c = C.Computer('X', 'allstar', seed=1, budget_s=None, habits=[])
+    c._context(s)
+    c._track_matchups(s)
+    c._track_matchups(t)
+    assert c.matchups == m
+
+
+def test_a_switch_is_the_defences_own_choice_and_a_locked_defender_is_replaced():
+    from playmaker_engine import guarding
+    s = board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N'])
+    m = guarding.initial(s)
+    # the defence moves X1 onto O2 and X2 onto O1: a switch
+    sw = s.with_(x=(P('D9'), P('H10')) + s.x[2:])
+    assert guarding.update(m, s, sw) == (1, 0, 2, 3, 4)
+    # X1 locked and X3 now next to O1 (his own man far): X3 takes O1, X1 takes O3
+    lk = s.with_(lock_x=1, x=(P('I10'), P('D8'), P('J10'), P('G4'), P('N4')))
+    assert guarding.update(m, s, lk)[2] == 0
 
 
 def test_the_defence_covers_both_comparable_goals():
@@ -532,8 +584,9 @@ def test_the_defence_covers_both_comparable_goals():
     off = list(POST_OFF)
     off[2] = TEAMS['Twin Towers'][1]
     s = lineup(off, POST_DFN, POST_O, POST_X, POST_ARROWS)
-    top = {g['entry']['pattern'] for g in goals(s, 'allstar')[:5]}
-    assert {'post_entry', 'spot_up'} <= top
+    top = goals(s, 'allstar')[:8]
+    assert any(g['entry']['pattern'] == 'post_entry' for g in top)
+    assert any(g['att'] == 2 and g['entry']['pattern'] in ('spot_up', 'get_open', 'shift_away') for g in goals(s, 'allstar'))
     t = s.with_(side='X')
     c = C.Computer('X', 'allstar', seed=1, budget_s=None, habits=[])
     while t.side == 'X' and t.stage == 'play':

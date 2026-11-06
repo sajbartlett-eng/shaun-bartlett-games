@@ -49,6 +49,16 @@ def level_objectives(level):
 
 # ---- board helpers -------------------------------------------------------------------------------------
 
+_M = None            # the matchup record of the computer asking (guarding.py), set while goals() runs
+
+
+def _guard(s, i):
+    """The defender guarding attacker i: from the matchup record when there is one, else the nearest."""
+    if _M is not None and i in _M:
+        return _M.index(i)
+    return _nearest_x(s, s.o[i])
+
+
 def _nearest_x(s, sq, exclude=()):
     c = [j for j in range(5) if j not in exclude]
     return min(c, key=lambda j: (B.cheb(s.x[j], sq), j)) if c else None
@@ -81,8 +91,9 @@ def lane_clean(s, a, b):
 
 
 def _o_moves(s, i, kinds=('move', 'qs')):
-    """Movement actions offence piece i could make on an offence turn now."""
-    st = s if (s.side == 'O' and s.stage == 'play') else s.with_(side='O', stage='play')
+    """Movement actions offence piece i could make on an offence turn, as in a fresh phase: the plan is
+    about squares; whether a step can be taken this turn or waits for the next phase is the executor's call."""
+    st = _fresh(s)
     out = []
     for kind in kinds:
         if can_move_kind(st, 'O', i, kind):
@@ -211,10 +222,11 @@ def swing_steps(s, path):
 
 
 def seal_plays(s, p, d):
-    """O{p} seals X{d}: a Screen with the T on him, after a Move next to him if needed (rim side first)."""
+    """O{p} seals X{d}: a Screen with the T on him, after a Move next to him if needed (rim side first).
+    As in a fresh phase (the executor waits if it can't be set this turn)."""
     out = []
     xd = s.x[d]
-    st = s if (s.side == 'O' and s.stage == 'play') else s.with_(side='O', stage='play')
+    st = _fresh(s)
     from .actions import legal_actions
     from .resolve import apply, ChanceNode
     if B.adjacent(s.o[p], xd):
@@ -274,7 +286,7 @@ def _post_entry(s, e, mem):
     for p in range(5):
         if not B.on_board(s.o[p]) or off[p].bands['shot_post'] != 'H':
             continue
-        d = _nearest_x(s, s.o[p])
+        d = _guard(s, p)
         diff = 2 * (off[p].shot('post') - dfn[d].con('post'))
         if dfn[d].bands['con_post'] != 'L' and diff < 16:
             continue
@@ -305,7 +317,7 @@ def _high_low(s, e, mem):
     for p in range(5):
         if not B.on_board(s.o[p]) or off[p].bands['shot_post'] != 'H':
             continue
-        d = _nearest_x(s, s.o[p])
+        d = _guard(s, p)
         edge = 2 * (off[p].shot('post') - dfn[d].con('post'))
         if edge < 12:
             continue
@@ -331,7 +343,7 @@ def _isolation(s, e, mem):
     c = s.ball
     if not B.on_board(s.o[c]):
         return []
-    d = _nearest_x(s, s.o[c])
+    d = _guard(s, c)
     pw = float(p_success(off[c].r['dribble'] - dfn[d].r['agility'], s.ctx.rules))
     best = max((_shot_value(off[c], q) for q in _reach_squares(s, c)), default=0)
     edge = pw * best
@@ -343,7 +355,12 @@ def _isolation(s, e, mem):
                        lambda c=c, d=d: [_play('square up', m) for m in _o_moves(s, c, ('move',)) if B.adjacent(m.dest, s.x[d])][:2]))
     steps.append(_step('dribble', f'O{c + 1} attacked X{d + 1} off the dribble', False,
                        lambda c=c, d=d: [_play('dribble attack', Action('dribble', 'O', c, target=d))], finish=True, risk=1 - pw))
-    return [dict(bind=dict(c=c, d=d), att=c, edge=float(edge), steps=steps, shot='any', words=_ws(e['words'], c=c, d=d))]
+
+    def value(after, c=c, d=d, pw=pw):                 # a won Dribble locks X{d}: the best look then
+        beat = after.with_(lock_x=after.lock_x | 1 << d)
+        return pw * max((look_value(beat, c, q) for q in _reach_squares(beat, c)), default=0.0)
+    return [dict(bind=dict(c=c, d=d), att=c, edge=float(edge), steps=steps, shot='any', value=value,
+                 words=_ws(e['words'], c=c, d=d))]
 
 
 def _reach_squares(s, i):
@@ -362,7 +379,7 @@ def _spot_up(s, e, mem):
     for sh in range(5):
         if sh == s.ball or not B.on_board(s.o[sh]) or off[sh].bands['shot_three'] != 'H':
             continue
-        d = _nearest_x(s, s.o[sh])
+        d = _guard(s, sh)
         edge = 3 * off[sh].shot('three')
         steps = []
         on3 = B.zone(s.o[sh]) == '3'
@@ -399,7 +416,7 @@ def _get_open(s, e, mem):
     for r in range(5):
         if r == s.ball or not B.on_board(s.o[r]) or s.is_screening(r):
             continue
-        d = _nearest_x(s, s.o[r])
+        d = _guard(s, r)
         best_out = max((_shot_value(off[r], m.dest) for m in _o_moves(s, r)), default=0)
         if best_out <= 0:
             continue
@@ -426,7 +443,7 @@ def _get_open(s, e, mem):
         hold, risk = holder_chain(s, r)
         steps += hold
         steps.append(_step('catch', f'the catch by O{r + 1}', False, lambda r=r: passes_to(s, r), finish=True, risk=risk))
-        out.append(dict(bind=dict(r=r, d=d), att=r, edge=float(best_out) * 0.8, steps=steps, shot='any',
+        out.append(dict(bind=dict(r=r, d=d), att=r, edge=float(best_out), steps=steps, shot='any',
                         words=_ws(e['words'], r=r, d=d)))
     return out
 
@@ -438,14 +455,14 @@ def _backdoor(s, e, mem):
     for r in range(5):
         if r == c or not B.on_board(s.o[r]):
             continue
-        d = _nearest_x(s, s.o[r])
+        d = _guard(s, r)
         xd = s.x[d]
         if ball == xd:
             continue
         toward = B.dir_between(xd, (xd[0] + (ball[0] > xd[0]) - (ball[0] < xd[0]), xd[1] + (ball[1] > xd[1]) - (ball[1] < xd[1])))
         if (s.arrows[d] - toward) % 8 not in (0, 1, 7):
             continue
-        edge = _shot_value(s.ctx.off[r], RC.RIM, ('layup', 'dunk')) * 0.85     # help can still meet him at the rim
+        edge = _shot_value(s.ctx.off[r], RC.RIM, ('layup', 'dunk'))
         cut = mem.get(f'back{r}')
         steps = [_step('cut', f'O{r + 1} cut behind X{d + 1}', bool(cut) or B.zone(s.o[r]) == 'K',
                        lambda r=r, xd=xd: [_play('back cut', m) for m in sorted(
@@ -463,7 +480,7 @@ def _shift_away(s, e, mem):
     for sh in range(5):
         if sh == c or not B.on_board(s.o[sh]) or off[sh].bands['shot_three'] != 'H':
             continue
-        d = _nearest_x(s, s.o[sh])
+        d = _guard(s, sh)
         others = [j for j in range(5) if j != d]
         if B.cheb(s.x[d], s.o[c]) > min(B.cheb(s.x[j], s.o[c]) for j in others) + 1:
             continue                      # he isn't the nearest help on the ball
@@ -479,7 +496,7 @@ def _shift_away(s, e, mem):
                 return [_play('drive', *p) for p in _drive_plays(s, c)]
             return passes_to(s, sh)
         steps.append(_step('attack', f'attacked the job X{d + 1} gave up', False, attack, finish=True))
-        out.append(dict(bind=dict(s=sh, d=d), att=sh, edge=float(3 * off[sh].shot('three')) * 0.9, steps=steps, shot='three',
+        out.append(dict(bind=dict(s=sh, d=d), att=sh, edge=float(3 * off[sh].shot('three')), steps=steps, shot='three',
                         words=_ws(e['words'], s=sh, d=d)))
     return out
 
@@ -502,7 +519,7 @@ def _baseline_cut(s, e, mem):
         side = s.o[r][0] - RC.RIM[0]
         if side == 0:
             continue
-        d = _nearest_x(s, s.o[r])
+        d = _guard(s, r)
         went = mem.get(f'base{r}')
         steps = [_step('under', f'O{r + 1} cut along the baseline', bool(went) or (s.o[r][0] - RC.RIM[0]) * side < 0,
                        lambda r=r: [_play('baseline cut', m) for m in sorted(
@@ -516,7 +533,7 @@ def _baseline_cut(s, e, mem):
         hold, risk = holder_chain(s, r)
         steps += hold
         steps.append(_step('catch', f'the catch by O{r + 1}', False, lambda r=r: passes_to(s, r), finish=True, risk=risk))
-        out.append(dict(bind=dict(r=r, d=d), att=r, edge=float(3 * s.ctx.off[r].shot('three')) * 0.8, steps=steps, shot='three',
+        out.append(dict(bind=dict(r=r, d=d), att=r, edge=float(3 * s.ctx.off[r].shot('three')), steps=steps, shot='three',
                         words=_ws(e['words'], r=r, d=d)))
     return out
 
@@ -533,7 +550,7 @@ def _give_go(s, e, mem):
                            lambda c=c: [_play('cut to the rim', m) for m in sorted(
                                (m for m in _o_moves(s, c) if B.zone(m.dest) == 'K'), key=lambda m: (B.dist_rim(m.dest), m.dest))[:2]]))
         steps.append(_step('return', f'the return pass to O{c + 1}', False, lambda c=c: passes_to(s, c), finish=True))
-        out.append(dict(bind=dict(c=c, r=r), att=c, edge=float(_shot_value(s.ctx.off[c], RC.RIM, ('layup', 'dunk'))) * 0.7,
+        out.append(dict(bind=dict(c=c, r=r), att=c, edge=float(_shot_value(s.ctx.off[c], RC.RIM, ('layup', 'dunk'))),
                         steps=steps, shot='layup', words=_ws(e['words'], c=c, r=r)))
         break
     return out
@@ -550,7 +567,7 @@ def _drive_kick(s, e, mem):
     sh = max(shooters, key=lambda i: off[i].shot('three'))
     steps = [_step('drive', f'O{c + 1} drove', bool(mem.get(f'drive{c}')), lambda c=c: [_play('drive', *p) for p in _drive_plays(s, c)])]
     steps.append(_step('kick', f'the kick to O{sh + 1}', False, lambda sh=sh: passes_to(s, sh), finish=True))
-    return [dict(bind=dict(c=c, s=sh), att=sh, edge=float(3 * off[sh].shot('three')) * 0.75, steps=steps, shot='three',
+    return [dict(bind=dict(c=c, s=sh), att=sh, edge=float(3 * off[sh].shot('three')), steps=steps, shot='three',
                  words=_ws(e['words'], c=c, s=sh))]
 
 
@@ -559,7 +576,7 @@ def _ball_screen(s, e, mem):
     if not B.on_board(s.o[c]):
         return []
     off = s.ctx.off
-    d = _nearest_x(s, s.o[c])
+    d = _guard(s, c)
     v = e.get('variant')
     out = []
     for sc in range(5):
@@ -581,16 +598,21 @@ def _ball_screen(s, e, mem):
                                lambda sc=sc, zone=zone: [_play('slip' if zone == 'K' else 'ghost', m) for m in sorted(
                                    (m for m in _o_moves(s, sc) if B.zone(m.dest) == zone), key=lambda m: (B.dist_rim(m.dest), m.dest))[:2]]))
             steps.append(_step('catch', f'the pass to O{sc + 1}', False, lambda sc=sc: passes_to(s, sc), finish=True))
-            edge = _shot_value(off[sc], RC.RIM if v == 'slip' else (2, 9)) * 0.85
+            edge = _shot_value(off[sc], RC.RIM if v == 'slip' else (2, 9))
         else:
             t = _screen_t(s, sc)
             screened = t is not None and t == s.x[d]
             if v == 'rescreen' and not mem.get(f'screened{sc}'):
                 continue
+            if not screened and B.cheb(s.o[sc], s.x[d]) > 2:   # too far to Move next to X{d} and screen in one turn
+                steps.append(_step('approach', f'O{sc + 1} came up to screen X{d + 1}', False,
+                                   lambda sc=sc, d=d: [_play('approach', m) for m in sorted(
+                                       (m for m in _o_moves(s, sc, ('move', 'qs', 'sprint')) if B.cheb(m.dest, s.x[d]) <= 2),
+                                       key=lambda m: (B.cheb(m.dest, s.x[d]), m.dest))[:2]]))
             steps.append(_step('screen', f'O{sc + 1} screened X{d + 1}', screened or s.locked('X', d), lambda sc=sc, d=d: screen_plays(s, sc, d)))
             if v == 'spain':
                 back = [j for j in range(5) if j not in (c, sc) and B.on_board(s.o[j]) and not s.is_screening(j)]
-                d2 = _nearest_x(s, s.o[sc], exclude=(d,))
+                d2 = _guard(s, sc)
                 if back and d2 is not None:
                     b2 = min(back, key=lambda j: B.cheb(s.o[j], s.x[d2]))
                     steps.append(_step('back', f'O{b2 + 1} back-screened X{d2 + 1}', False, lambda b2=b2, d2=d2: screen_plays(s, b2, d2)))
@@ -602,11 +624,29 @@ def _ball_screen(s, e, mem):
                 return out_
             steps.append(_step('use', f'O{c + 1} came off the screen', False, finish, finish=True))
             edge = max(max((_shot_value(off[c], q) for q in _reach_squares(s, c)), default=0),
-                       _shot_value(off[sc], RC.RIM) if v in ('roll', 'spain') else _shot_value(off[sc], (2, 9)) if v == 'pop' else 0) * 0.85
+                       _shot_value(off[sc], RC.RIM) if v in ('roll', 'spain') else _shot_value(off[sc], (2, 9)) if v == 'pop' else 0)
+
+        def value(after, c=c, sc=sc, v=v):
+            """Off the screen the carrier's best look from a movement; with a roll or pop, the screener's at the
+            rim or the arc too. Two options: the defence takes away the better, so it is worth the other."""
+            drive = max((look_value(after, c, q) for q in _reach_squares(after, c)), default=0.0)
+            # a screener can't move until his screen flips back after the offence's next turn (OQ-29), so the
+            # roll or pop comes a turn after the drive: valued from the board with the screen flipped
+            flipped = after.with_(screens=tuple(x for x in after.screens if x[0] != sc))
+            reach = [m.dest for m in _o_moves(flipped, sc, ('move', 'qs', 'sprint'))]
+            if v in ('roll', 'spain', 'rescreen'):        # the roll: toward the rim as far as one movement goes
+                near = min((B.dist_rim(q) for q in reach), default=99)
+                spots = [q for q in reach if B.dist_rim(q) <= near + 1]
+            elif v == 'pop':
+                spots = [q for q in reach if B.zone(q) == '3']
+            else:
+                return drive if v != 'gap' else max((look_value(after, c, q, ('mid', 'floater')) for q in _reach_squares(after, c)), default=0.0)
+            other = max((look_value(flipped, sc, q) for q in spots), default=0.0)
+            return min(drive, other)
         out.append(dict(bind=dict(c=c, sc=sc, d=d), att=c, edge=float(edge), steps=steps, shot='any',
-                        words=_ws(e['words'], c=c, sc=sc, d=d)))
+                        value=value if v not in ('slip', 'ghost') else None, words=_ws(e['words'], c=c, sc=sc, d=d)))
     out.sort(key=lambda g: -g['edge'])
-    return out[:1]
+    return out[:2]
 
 
 def _handoff(s, e, mem):
@@ -620,55 +660,76 @@ def _handoff(s, e, mem):
                        lambda c=c, r=r: [_play('to the handoff', m) for m in _o_moves(s, c, ('move',)) if B.adjacent(m.dest, s.o[r])][:2])]
         steps.append(_step('hand', f'O{c + 1} handed off to O{r + 1}', False, lambda r=r: passes_to(s, r)))
         steps.append(_step('go', f'O{r + 1} came off the handoff', False, lambda r=r: [], finish=True))
-        out.append(dict(bind=dict(c=c, r=r), att=r, edge=float(max((_shot_value(s.ctx.off[r], q) for q in _reach_squares(s, r)), default=0)) * 0.7,
+        out.append(dict(bind=dict(c=c, r=r), att=r, edge=float(max((_shot_value(s.ctx.off[r], q) for q in _reach_squares(s, r)), default=0)),
                         steps=steps, shot='any', words=_ws(e['words'], c=c, r=r)))
     out.sort(key=lambda g: -g['edge'])
     return out[:1]
 
 
 def _screen_switch(s, e, mem):
-    off, dfn = s.ctx.off, s.ctx.dfn
+    """E1, a ball screen to force a switch. O{sc} screens X{xc}, the carrier's man. If the defence switches,
+    two finishes open: (a) O{sc} posts up the smaller X{xc}, with the carrier spacing out to drag X{xs} to
+    the arc; (b) the carrier attacks the slower X{xs} off the dribble. The defence denies the more dangerous,
+    so the switch is worth the lesser. If it doesn't switch, the carrier attacks with X{xc} behind the
+    screen. The defence takes whichever reply is worse for the offence. The plan holds both branches and
+    reads the reply off the matchup record; a switch back breaks the goal."""
+    c = s.ball
+    if not B.on_board(s.o[c]):
+        return []
+    xc = _guard(s, c)
     out = []
-    for a in range(5):
-        if not B.on_board(s.o[a]):
+    for sc in range(5):
+        if sc == c or not B.on_board(s.o[sc]):
             continue
-        n1 = _nearest_x(s, s.o[a])
-        n2 = _nearest_x(s, s.o[a], exclude=(n1,))
-        screened = lambda j: s.locked('X', j) or any(_screen_t(s, i) == s.x[j] for i in range(5) if i != a)
-        found = None
-        # (d, d2): the guard to screen off and the weak defender to pick him up; once the switch is made the
-        # weak one is the nearest and the screened one second, which is the same goal half done
-        for d, d2 in ((n1, n2), (n2, n1)):
-            if d2 is None or (d == n2 and not screened(d)):
-                continue
-            for t in ('post', 'three', 'layup'):
-                if off[a].bands['shot_' + t] == 'H' and dfn[d2].bands['con_' + t] == 'L' and dfn[d].bands['con_' + t] != 'L':
-                    found = (d, d2, t)
-                    break
-            if found:
-                break
-        if not found:
+        xs = _guard(s, sc)
+        if xs is None or xs == xc:
             continue
-        d, d2, t = found
-        sc = _screener(s, d, (a, s.ball))
-        if sc is None:
-            continue
-        held = s.locked('X', d)
-        steps = [_step('screen', f'O{sc + 1} screened X{d + 1}', held or (_screen_t(s, sc) == s.x[d]), lambda sc=sc, d=d: screen_plays(s, sc, d))]
-        zone = {'post': 'K', 'three': '3', 'layup': 'K'}[t]
-        steps.append(_step('repos', f'O{a + 1} went at X{d2 + 1}', B.zone(s.o[a]) == zone and B.cheb(s.o[a], s.x[d2]) <= 1,
-                           lambda a=a, d2=d2, zone=zone: [_play('reposition', m) for m in sorted(
-                               (m for m in _o_moves(s, a) if B.zone(m.dest) == zone), key=lambda m: (B.cheb(m.dest, s.x[d2]), m.dest))[:2]]))
-        hold, risk = holder_chain(s, a, avoid=(sc,)) if a != s.ball else ([], 0.0)
-        steps += hold
-        if a == s.ball:
-            steps.append(_step('exploit', f'O{a + 1} attacked X{d2 + 1}', False, lambda a=a: [_play('attack', *p) for p in _drive_plays(s, a)], finish=True))
-        else:
-            steps.append(_step('exploit', f'the pass to O{a + 1} on X{d2 + 1}', False, lambda a=a: passes_to(s, a), finish=True, risk=risk))
-        pts = 3 if t == 'three' else 2
-        out.append(dict(bind=dict(a=a, d=d, d2=d2, sc=sc), att=a, edge=float(pts * (off[a].shot(t) - dfn[d2].con(t))), steps=steps,
-                        shot=t, words=_ws(e['words'], a=a, d=d, d2=d2)))
+        orig = mem.get(f'orig{sc}')                    # who was on whom when the plan started
+        switched = bool(orig) and _M is not None and _M[orig[1]] == c and _M[orig[0]] == sc
+        if switched:
+            xc, xs = orig                              # bind as before the switch: xc was on the carrier
+        elif mem.get(f'switched{sc}'):
+            continue                                   # switched back: the condition is broken
+        held = switched or _screen_t(s, sc) == s.x[xc]
+        steps = [_step('screen', f'O{sc + 1} screened X{xc + 1}', held, lambda sc=sc, xc=xc: screen_plays(s, sc, xc))]
+
+        def read(sc=sc, xc=xc, xs=xs, switched=switched):
+            if not switched:                           # no switch: attack X{xc} stuck behind the screen
+                return [_play('attack the screen', *p) for p in _drive_plays(s, c)]
+            a_v, b_v = _e1_branches(s, c, sc, xc, xs, switched=True, hypo=False)
+            if a_v >= b_v:                             # the defence left the post-up open
+                if lane_clean(s, c, sc):
+                    return passes_to(s, sc)
+                return seal_plays(s, sc, xc) or passes_to(s, sc)
+            return [_play('attack the big', *p) for p in _drive_plays(s, c)]
+        steps.append(_step('read', f'read the switch (O{sc + 1} on X{xc + 1}, or O{c + 1} on X{xs + 1})', False, read, finish=True))
+        bound = max(2.0 * s.ctx.off[sc].shot('post'), max((_shot_value(s.ctx.off[c], q) for q in _reach_squares(s, c)), default=0))
+        out.append(dict(bind=dict(c=c, sc=sc), att=c, edge=float(bound), steps=steps, shot='any', role_value='e1',
+                        e1=dict(c=c, sc=sc, xc=xc, xs=xs, switched=switched),
+                        remember={f'switched{sc}': True} if switched else ({} if orig else {f'orig{sc}': [xc, xs]}),
+                        words=_ws(e['words'], c=c, sc=sc, d=xc, d2=xs)))
     return out
+
+
+def _e1_branches(s, c, sc, xc, xs, switched, hypo=True):
+    """The two finishes a switch opens, valued from the cards: (a) O{sc} posting up X{xc} (the carrier's
+    spacing keeps X{xs} at the arc, so no help); (b) the carrier beating X{xs} off the dribble, then his
+    best look with X{xs} beaten. With switched=False, the same finishes against the matchups as they are."""
+    from .scoring import p_success
+    off, dfn = s.ctx.off, s.ctx.dfn
+    post_d, drive_d = (xc, xs) if switched else (xs, xc)
+    t = s
+    if switched and hypo:                              # the switch not made yet: the two trade men (and squares)
+        x, ar = list(s.x), list(s.arrows)
+        x[xc], x[xs] = s.x[xs], s.x[xc]
+        ar[xc], ar[xs] = s.arrows[xs], s.arrows[xc]
+        t = s.with_(x=tuple(x), arrows=tuple(ar))
+    a_v = max(0.0, 2.0 * (off[sc].shot('post') - dfn[post_d].con('post')))
+    pw = float(p_success(off[c].r['dribble'] - dfn[drive_d].r['agility'], s.ctx.rules))
+    beat = t.with_(lock_x=t.lock_x | 1 << drive_d)
+    win = max((look_value(beat, c, q) for q in _reach_squares(beat, c)), default=0.0)
+    b_v = pw * win
+    return a_v, b_v
 
 
 def _offball_screen(s, e, mem):
@@ -679,7 +740,7 @@ def _offball_screen(s, e, mem):
             continue
         if off[r].bands['shot_three'] != 'H' and off[r].bands['shot_layup'] != 'H':
             continue
-        d = _nearest_x(s, s.o[r])
+        d = _guard(s, r)
         sc = _screener(s, d, (r, s.ball))
         if sc is None:
             continue
@@ -692,7 +753,7 @@ def _offball_screen(s, e, mem):
         hold, risk = holder_chain(s, r, avoid=(sc,))
         steps += hold
         steps.append(_step('catch', f'the catch by O{r + 1}', False, lambda r=r: passes_to(s, r), finish=True, risk=risk))
-        out.append(dict(bind=dict(r=r, sc=sc, d=d), att=r, edge=float(max(3 * off[r].shot('three'), 2 * off[r].shot('layup'))) * 0.8,
+        out.append(dict(bind=dict(r=r, sc=sc, d=d), att=r, edge=float(max(3 * off[r].shot('three'), 2 * off[r].shot('layup'))),
                         steps=steps, shot='any', words=_ws(e['words'], r=r, sc=sc, d=d)))
     out.sort(key=lambda g: -g['edge'])
     return out[:2]
@@ -703,7 +764,7 @@ def _speed(s, e, mem):
     for a in range(5):
         if not B.on_board(s.o[a]) or s.ctx.off[a].qs < 2:
             continue
-        d = _nearest_x(s, s.o[a])
+        d = _guard(s, a)
         if s.ctx.dfn[d].qs > 0:
             continue
         steps = [_step('burst', f'O{a + 1} burst away from X{d + 1}', False,
@@ -716,7 +777,7 @@ def _speed(s, e, mem):
             steps.append(_step('catch', f'the catch by O{a + 1}', False, lambda a=a: passes_to(s, a), finish=True, risk=risk))
         else:
             steps[-1]['finish'] = True
-        out.append(dict(bind=dict(a=a, d=d), att=a, edge=float(max((_shot_value(s.ctx.off[a], q) for q in _reach_squares(s, a)), default=0)) * 0.8,
+        out.append(dict(bind=dict(a=a, d=d), att=a, edge=float(max((_shot_value(s.ctx.off[a], q) for q in _reach_squares(s, a)), default=0)),
                         steps=steps, shot='any', words=_ws(e['words'], a=a, d=d)))
     return out
 
@@ -734,9 +795,9 @@ def _overload(s, e, mem):
                            lambda cand=cand: [_play('overload', m) for i in cand for m in _o_moves(s, i)
                                               if (m.dest[0] - RC.RIM[0]) * side > 0][:3]))
     steps.append(_step('find', 'found the open player', False, lambda: [], finish=True))
-    # the edge: the best look on that side if the help can't cover everyone, discounted like the other kick-outs
+    # a set-up: valued by what the offence keeps on the board it leaves (no score of its own)
     side_players = [i for i in range(5) if B.on_board(s.o[i]) and (s.o[i][0] - RC.RIM[0]) * side > 0] or [c]
-    edge = 0.7 * max(_shot_value(s.ctx.off[i], s.o[i]) for i in side_players)
+    edge = max(_shot_value(s.ctx.off[i], s.o[i]) for i in side_players)
     return [dict(bind=dict(side=side), att=c, edge=float(edge), steps=steps, shot='any', words=_ws(e['words'], side='right' if side > 0 else 'left'))]
 
 
@@ -749,14 +810,120 @@ PATTERNS = dict(post_entry=_post_entry, high_low=_high_low, isolation=_isolation
 # ---- goals: instantiate, rank, cut to the level's chain depth --------------------------------------------
 
 ROLL_STEPS = ('seal', 'screen', 'back', 'dribble')       # steps that need a roll to go the offence's way
-STEP_KEEP = dict(roll=0.9, plain=0.97)                  # how much of the edge survives each step still to take
+TEMPO = 0.5                # points a step costs: the clock and tokens it uses, which the shot bar also charges
 
 
-def _keep(todo):
-    k = 1.0
-    for st in todo:
-        k *= STEP_KEEP['roll' if st['id'] in ROLL_STEPS else 'plain']
-    return k
+def look_value(s, i, sq=None, types=None):
+    """Attacker i's best look (after the defence's reaction, by the engine's own reach maps), from sq."""
+    from .advantage import looks, reach_maps
+    t = s if sq is None or sq == s.o[i] else s.with_(o=s.o[:i] + (sq,) + s.o[i + 1:])
+    if sq is not None and sq != s.o[i] and (sq in s.x or sq in s.o):
+        return 0.0
+    # the defenders' reach on the board as it stands (one attacker stepping elsewhere barely changes it)
+    maps = _cached(_MAPS, (s, s.ctx), lambda: reach_maps(s))
+    lk = _cached(_LOOKS, (t, t.ctx, i), lambda: looks(t, i, maps))
+    vals = [v for v, ty, _ in lk if types is None or ty in types]
+    return float(max(vals, default=0.0))
+
+
+_LOOKS = {}
+_MAPS = {}
+
+
+def board_looks(s):
+    """What each attacker's best look is worth to the offence on this board, best first: the carrier's
+    (from where he stands or after a movement), and each teammate's as far as a pass from the carrier can
+    deliver it (in full on a clean lane; on a contested one, (1 - risk) x the look + risk x the pick-off)."""
+    return _cached(_BOARD, (s, s.ctx), lambda: _board_looks(s))
+
+
+_BOARD = {}
+
+
+def _board_looks(s):
+    out = []
+    for i in range(5):
+        if not B.on_board(s.o[i]):
+            continue
+        v = look_value(s, i)
+        if i == s.ball:
+            v = max([v] + [look_value(s, i, m.dest) for m in _o_moves(s, i, ('move', 'qs'))])
+        else:
+            info = lane(s, s.ball, i)
+            r = 1.0 if info is None else float(info['risk'])
+            v = (1.0 - r) * v + r * RC.TURNOVER_POINTS
+        out.append((v, i))
+    return sorted(out, reverse=True)
+
+
+def keeps(after, now):
+    """What the offence keeps on `after` once the defence denies the most dangerous finish the set-up
+    unlocked: with two or more unlocked (better than on `now`), the best of the rest; else the best."""
+    base = {i: v for v, i in board_looks(now)}
+    lk = board_looks(after)
+    unlocked = [(v, i) for v, i in lk if v > base.get(i, 0.0) + 1.0]
+    if not unlocked:
+        return 0.0, unlocked                           # it unlocks nothing: a set-up has no value of its own
+    if len(unlocked) >= 2 and lk[0] in unlocked:
+        return lk[1][0], unlocked
+    return lk[0][0], unlocked
+
+
+def _roll_p(st, play):
+    """The chance a play's roll goes the offence's way (a Screen against a Challenge, a Dribble)."""
+    from .scoring import p_success
+    p = 1.0
+    off, dfn = st.ctx.off, st.ctx.dfn
+    for a in play.actions:
+        if a.kind == 'screen':
+            t = B.add(st.o[a.piece] if a is play.actions[0] else play.actions[0].dest, B.DIRS[a.target])
+            if t in st.x:
+                j = st.x.index(t)
+                p *= float(p_success(off[a.piece].r['screen'] - dfn[j].r['challenge'], st.ctx.rules))
+        elif a.kind == 'dribble':
+            p *= float(p_success(off[a.piece].r['dribble'] - dfn[a.target].r['agility'], st.ctx.rules))
+    return p
+
+
+def _fresh(st):
+    """The offence to act again (the defence standing still between the plan's steps)."""
+    from .state import ZERO_COUNTS
+    return st.with_(side='O', stage='play', turn_n=0, pending=None, approach=-1, tok_o=RC.TOKENS_PER_PHASE,
+                    cnt=ZERO_COUNTS, moved_o=0, qs_o=0)
+
+
+def simulate(s, steps):
+    """The expected board after a goal's steps up to its finish: each step's first playable play, every
+    roll going the offence's way, the defence standing still. Returns (board, P(every roll), steps run) or
+    (None, 0, n) if a step can't be played."""
+    from .resolve import apply, ChanceNode, force, complete_pass
+    from .solver import apply_play
+    st = _fresh(s)
+    p = 1.0
+    n = 0
+    for step in steps:
+        if step['finish']:
+            break
+        plays = [pl for pl in step['plays']() if apply_play(st, pl) is not None]
+        if not plays:
+            return None, 0.0, n
+        pl = plays[0]
+        p *= _roll_p(st, pl)
+        node = st
+        for a in pl.actions:
+            node = apply(node, a)
+            while isinstance(node, ChanceNode):
+                labels = [lab for _, lab, _ in node.outcomes]
+                node = force(node, next((l for l in ('success', 'kept', 'no foul') if l in labels), labels[0]))
+            if node.pending:
+                node = complete_pass(node)
+                while isinstance(node, ChanceNode):
+                    node = force(node, [lab for _, lab, _ in node.outcomes][0])
+            if node.stage != 'play':
+                return None, 0.0, n
+        st = _fresh(node)
+        n += 1
+    return st, p, n
 
 
 def _first_playable(todo):
@@ -772,19 +939,62 @@ def actions_left(s):
     return s.tok_o + phases_after * RC.TOKENS_PER_PHASE
 
 
-def goals(s, level, mems=None, target=None):
-    """Every goal of the level's library on this board, ranked. Each: entry, key, bind, att, edge,
-    steps (cut to the level's chain depth), remaining (steps not yet done), score. Cached per board."""
-    key = (s, s.ctx, level, json.dumps(mems or {}, sort_keys=True), target)
-    return _cached(_GOALS, key, lambda: _goals(s, level, mems, target))
+FULL_VALUES = 99           # goals simulated in full a board, by their upper bound (the rest aren't ranked)
 
 
-def _goals(s, level, mems=None, target=None):
+def goals(s, level, mems=None, target=None, matchups=None, keep=None):
+    """Every goal of the level's library on this board, ranked. Each: entry, key, bind, att, steps (cut to
+    the level's chain depth), remaining, and its value: P (every roll going the offence's way), V (the
+    finish, or for a set-up what the offence keeps), risk, cost, score and gain (over the best look now).
+    matchups: the asking computer's record (guarding.py). Cached per board."""
+    key = (s, s.ctx, level, json.dumps(mems or {}, sort_keys=True), target, matchups, keep)
+    return _cached(_GOALS, key, lambda: _with_matchups(matchups, lambda: _goals(s, level, mems, target, keep)))
+
+
+def _with_matchups(m, fn):
+    global _M
+    old, _M = _M, m
+    try:
+        return fn()
+    finally:
+        _M = old
+
+
+TYPES = {'post': ('post',), 'three': ('three',), 'layup': ('layup', 'dunk'), 'any': None}
+
+
+def _finish_value(g, after):
+    if g.get('value') is not None:
+        return float(g['value'](after))
+    return look_value(after, g['att'], types=TYPES.get(g['shot']))
+
+
+def _e1_value(g, s, after):
+    """E1: after the screen, the defence chooses: switch (worth the lesser of the two finishes it opens)
+    or stay (the carrier attacks the man behind the screen). It takes the worse one for the offence."""
+    e = g['e1']
+    c, sc, xc, xs = e['c'], e['sc'], e['xc'], e['xs']
+    if e['switched']:                                  # the reply is in: attack the branch left open
+        a_v, b_v = _e1_branches(s, c, sc, xc, xs, switched=True, hypo=False)
+        g['branches'] = dict(post=a_v, drive=b_v)
+        return max(a_v, b_v)
+    a_v, b_v = _e1_branches(after, c, sc, xc, xs, switched=True)
+    a0, b0 = _e1_branches(after, c, sc, xc, xs, switched=False)
+    stay = max((look_value(after, c, q) for q in _reach_squares(after, c)), default=0.0)
+    switch = min(a_v, b_v)
+    g['branches'] = dict(post=a_v, drive=b_v, switch=switch, stay=stay, switch_gain=switch - min(a0, b0))
+    return min(switch, stay)
+
+
+def _goals(s, level, mems=None, target=None, keep=None):
     mems = mems or {}
     depth = chain_depth(level)
-    out = []
     left = actions_left(s)
     inbound = bool(s.inbound) and s.ball == s.ctx.inbounder
+    now = board_looks(s)
+    base = now[0][0] if now else 0.0                   # the best look on the board now
+    out = []
+    cands = []
     for e in level_goals(level):
         if inbound and e['id'] not in ('B1', 'B2', 'B3', 'E2'):
             continue                                   # F4: the first pass into a clean lane
@@ -797,22 +1007,54 @@ def _goals(s, level, mems=None, target=None):
                 todo = [st for st in todo if st['finish']] or todo[-1:]
             elif depth == 1:
                 todo = todo[-2:]
-            g.update(entry=e, key=(e['id'],) + tuple(sorted(g['bind'].items())), todo=todo, remaining=len(todo))
+            g.update(entry=e, key=(e['id'],) + tuple(sorted(g['bind'].items())), todo=todo, remaining=len(todo),
+                     role=e.get('role', 'finish'))
             if g['remaining'] > left:
                 continue                               # the chain doesn't fit the clock
             if s.clock <= RC.PHASE_SECONDS and (g['remaining'] > s.tok_o or (todo and not todo[0]['finish'])):
                 continue                               # F1: late clock, only a goal that finishes now
-            if s.side == 'O' and s.stage == 'play' and not _first_playable(todo):
-                continue                               # its next step can't be taken on this board
-            risk = sum(st['risk'] for st in todo)
-            if todo and todo[0]['finish'] and g['att'] != s.ball and not any(st['risk'] for st in todo):
-                info = lane(s, s.ball, g['att'])          # a finish pass straight from the carrier: its own risk
-                risk += (info['risk'] if info else 1.0)
-            bonus = 0.0
-            if s.ctx.coach_call and target is not None and g['att'] == target:
-                bonus = 8.0                            # F3: the target's goals carry the card's bonus
-            risk = min(1.0, risk)
-            g['score'] = (1.0 - risk) * g['edge'] * _keep(todo) + risk * RC.TURNOVER_POINTS + bonus
+            bonus = 8.0 if (s.ctx.coach_call and target is not None and g['att'] == target) else 0.0   # F3
+            cands.append((max(g['edge'], base) + bonus, g))
+    # the upper bound of a goal is its finish open, or the best look now: only the best bounds get the full
+    # simulation, and the goal being worked always does
+    cands.sort(key=lambda bg: -bg[0])
+    live = s.side == 'O' and s.stage == 'play'
+    seen = {}
+    for bound, g in cands:
+        todo = g['todo']
+        sig = (g['entry']['pattern'], tuple(sorted(g['bind'].items())), tuple(st['id'] for st in todo))
+        if sig not in seen and len(seen) >= FULL_VALUES and g['key'] != keep:
+            continue
+        if True:
+            if sig not in seen:                        # variants with the same steps share one simulation
+                if live and not _first_playable(todo):
+                    seen[sig] = (None, 0.0, 0)         # its next step can't be taken on this board
+                else:
+                    seen[sig] = simulate(s, todo) if live else (s, 1.0, 0)
+            after, p, n = seen[sig]
+            if after is None:
+                continue                               # a later step can't be played either
+            # a finish pass from whoever has the ball on the expected board: its own risk
+            risk = 0.0
+            fin = todo[-1] if todo and todo[-1]['finish'] else None
+            if fin is not None and g['att'] != after.ball and fin['id'] not in ('read', 'go', 'find', 'attack', 'dribble', 'exploit', 'burst', 'use'):
+                info = lane(after, after.ball, g['att'])
+                risk = info['risk'] if info else 1.0
+            if g.get('role_value') == 'e1':
+                v = _e1_value(g, s, after)
+            elif g['role'] == 'setup' and any(not st['finish'] for st in todo):
+                v, unlocked = keeps(after, s)
+                g['unlocked'] = [i for _, i in unlocked]
+            elif g['role'] == 'setup':                 # its set-up is done: what is left is the finish it made
+                v = look_value(after, g['att'], types=TYPES.get(g['shot']))
+            else:
+                v = _finish_value(g, after)
+            bonus = 8.0 if (s.ctx.coach_call and target is not None and g['att'] == target) else 0.0
+            cost = TEMPO * len(todo)
+            vr = (1.0 - risk) * v + risk * RC.TURNOVER_POINTS
+            g['score'] = p * vr + (1.0 - p) * base - cost + bonus
+            g.update(P=round(p, 3), V=round(v, 2), risk=round(risk, 3), cost=cost, gain=round(g['score'] - base - bonus, 2),
+                     base=base, edge=round(v, 2))
             out.append(g)
     out.sort(key=lambda g: (-g['score'], g['key']))
     return out
@@ -826,12 +1068,12 @@ _COUNTER = {'post_entry': 'DO-front', 'high_low': 'DO-front', 'screen_switch': '
             'drive_kick': 'DO-rotate', 'handoff': 'DO-contain', 'speed': 'DO-contain', 'overload': 'DO-rotate'}
 
 
-def defence_objectives(s, level, k=4):
+def defence_objectives(s, level, k=4, matchups=None):
     """What the offence could be building toward, read from the board and the cards only (the defence
     doesn't know the plan), as the defence's ranked objectives: value to the offence x closeness."""
     allowed = set(level_objectives(level))
     seen = {}
-    for g in goals(s, 'allstar'):
+    for g in goals(s, 'allstar', matchups=matchups):
         oid = _COUNTER.get(g['entry']['pattern'])
         if oid not in allowed:
             continue
@@ -839,7 +1081,7 @@ def defence_objectives(s, level, k=4):
         who = dict(p=b.get('p', b.get('a', g['att'])), s=b.get('s', g['att']), r=b.get('r', g['att']),
                    c=b.get('c', s.ball), a=b.get('a', g['att']), d2=b.get('d2', 0))
         words = _ws(OBJECTIVES[oid]['words'], **who)
-        weight = g['edge'] / (1.0 + g['remaining'])
+        weight = max(0.0, g['V']) / (1.0 + g['remaining'])
         key = (oid, words)
         if key not in seen or weight > seen[key]['weight']:
             seen[key] = dict(id=oid, words=words, weight=round(weight, 2), att=g['att'], goal=g['entry']['id'], bind=b)
@@ -849,8 +1091,12 @@ def defence_objectives(s, level, k=4):
     return out[:k]
 
 
-def objective_plays(s, obj, acts):
+def objective_plays(s, obj, acts, matchups=None):
     """Defence plays that serve an objective (candidates; the evaluation still decides)."""
+    return _with_matchups(matchups, lambda: _objective_plays(s, obj, acts))
+
+
+def _objective_plays(s, obj, acts):
     from .solver import Play
     out = []
     att = obj.get('att')
@@ -858,7 +1104,7 @@ def objective_plays(s, obj, acts):
         return out
     ball = s.o[s.ball]
     me = s.o[att]
-    d = _nearest_x(s, me)
+    d = _guard(s, att) if _M is not None else _nearest_x(s, me)
     face = lambda q, to: B.nearest_dir(q, to)
     mv = [a for a in acts if a.kind == 'move' and a.side == 'X']
     if obj['id'] == 'DO-front':
