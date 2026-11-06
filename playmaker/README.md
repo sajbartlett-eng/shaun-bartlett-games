@@ -559,6 +559,25 @@ report and the card panel.
 
 A log records these settings; a log from before them replays with the old ones.
 
+**The 2 × 2 rule test** (`python3 -m playmaker_engine.sim3i --grid 100`, `solver_results/grid3i.json`): All-Star v
+All-Star on the corrected rules, single arrow or wedge, each with `late_closeout` off and on, 97 possessions a
+cell (the 16 cards and random prescribed teams, 4 seeds). `late_closeout` stays off until the designer rules.
+
+| | Single, late off | Single, late on | Wedge, late off | Wedge, late on |
+|---|---|---|---|---|
+| Points per possession | 22.5 ± 2.1 | 23.6 ± 3.0 | 22.0 ± 2.2 | 21.7 ± 2.9 |
+| Deflections per 100 (failed passes) | 57 | 72 | 74 | 112 |
+| Interceptions per 100 | 30 | 42 | 54 | 71 |
+| Contested passes a possession | 0.61 | 0.87 | 1.11 | 1.31 |
+| Contested passes completed, valued / actual | 44% / 51% | 41% / 51% | 41% / 52% | 43% / 46% |
+| Catch value, valued / points after a completed one | 17.1 / 25.0 | 22.2 / 22.5 | 15.7 / 25.4 | 24.3 / 24.7 |
+| Shooting fouls, twos / threes | 0% / 0% | 13% / 0% | 0% / 2% | 5% / 0% |
+| Threes with no eligible contester | 40% | 50% | 30% | 63% |
+| Offence tokens off the ball | 50% | 54% | 50% | 54% |
+| Offence turns of one action | 57% | 51% | 57% | 52% |
+| Defence Pauses a phase | 0.66 | 0.69 | 0.66 | 0.59 |
+
+
 ## Rule settings under test (step 3h, not adopted)
 
 Two settings in `rules_config.py`, off by default, for the designer to compare (`docs/Rule_Test_3h.pdf`,

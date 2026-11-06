@@ -225,7 +225,8 @@ def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, l
     path = os.path.join(RESULTS, store)
     done = json.load(open(path)) if os.path.exists(path) else {}
     js = grid_jobs(grid) if grid else diag_jobs() if diag else jobs(random_n, seeds, variant)
-    todo = [j for j in js if json.dumps(list(j)) not in done and key(*j) not in done]
+    jkey = lambda j: json.dumps(list(j)) if j[0] == 'verdict' else key(*j)
+    todo = [j for j in js if jkey(j) not in done]
     if limit:
         todo = todo[:limit]
     t0 = time.time()
