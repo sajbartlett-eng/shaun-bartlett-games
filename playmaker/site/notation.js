@@ -181,7 +181,14 @@ window.PMNotation = (function () {
     return [ax + ux * r0, ay + uy * r0, bx - ux * r1, by - uy * r1];
   }
   let TAG = 1;                        // the turn tags' size (diagrams draw them a little larger than the live board)
+  let placedTags = [];                // where tags have gone, so a new one that would land on another nudges aside
   function numberTag(g, x, y, n, ink) {
+    const r = 7.5 * TAG, min = 2.1 * r;
+    const tries = [[0, 0], [0, -min], [0, min], [-min, 0], [min, 0], [-min, -min], [min, min], [min, -min], [-min, min]];
+    for (const [dx, dy] of tries) {
+      if (!placedTags.some(([px0, py0]) => Math.hypot(px0 - (x + dx), py0 - (y + dy)) < min)) { x += dx; y += dy; break; }
+    }
+    placedTags.push([x, y]);
     const grp = svg('g', { class: 'turnno' });
     grp.append(svg('circle', { cx: x, cy: y, r: 7.5 * TAG, fill: '#fff', stroke: ink, 'stroke-width': 1.4 * TAG }));
     grp.append(svg('text', { x, y: y + 3.6 * TAG, 'text-anchor': 'middle', 'font-size': 9.5 * TAG, 'font-weight': 'bold', fill: ink, 'aria-hidden': 'true' }, String(n)));
@@ -202,6 +209,7 @@ window.PMNotation = (function () {
   function marks(root, list, opts) {
     opts = opts || {};
     TAG = opts.tag || 1;
+    placedTags = [];
     const g = svg('g', { class: 'marks', 'aria-hidden': 'true' });
     const passLines = {};             // receiver square -> the pass line's end, so an intercept can slash it
     for (const m of list) {

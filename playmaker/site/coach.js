@@ -1,6 +1,5 @@
 // Coach Vision and the Referee: the two voices of Playmaker. The coach teaches reads (scouting, goals,
-// mismatches, shot quality); the referee makes the calls (rolls, fouls, turnovers, the clock). Both speak
-// (Web Speech, optional) and always show their words. The guided rules course is a sequence of lessons, each
+// mismatches, shot quality); the referee makes the calls (rolls, fouls, turnovers, the clock). They write; nothing is spoken. The guided rules course is a sequence of lessons, each
 // with a whiteboard drawn by the notation library. Nothing here decides a rule.
 'use strict';
 window.PMCoach = (function () {
@@ -61,29 +60,8 @@ window.PMCoach = (function () {
     return g;
   }
 
-  // ---- speech -------------------------------------------------------------------------------------------
-  const speech = {
-    on() { try { return localStorage.getItem('pm_voice') !== '0'; } catch (e) { return true; } },
-    set(v) { try { localStorage.setItem('pm_voice', v ? '1' : '0'); } catch (e) { /* ignore */ } if (!v) this.stop(); },
-    available() { return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'; },
-    stop() { if (this.available()) try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ } },
-    voice(who) {
-      const vs = window.speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
-      if (!vs.length) return null;
-      const pick = (re) => vs.find(v => re.test(v.name));
-      return who === 'coach' ? (pick(/Daniel|Google UK English Male|Male|Alex|Fred/i) || vs[0]) : (pick(/Samantha|Google UK English Female|Female|Karen|Moira/i) || vs[vs.length - 1]);
-    },
-    say(who, text) {
-      if (!this.on() || !this.available() || !text) return;
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text.replace(/[▲▼]/g, '').replace(/\s*·\s*/g, '. '));
-        const v = this.voice(who); if (v) u.voice = v;
-        u.rate = 1.0; u.pitch = who === 'coach' ? 0.95 : 1.1; u.lang = 'en-GB';
-        window.speechSynthesis.speak(u);
-      } catch (e) { /* speech is optional */ }
-    },
-  };
+  // ---- no speech: the characters write, they don't talk ----------------------------------------------
+  const speech = { on() { return false; }, set() {}, available() { return false; }, stop() {}, say() {} };
 
   // A character's line: avatar, name tag, the words in a bubble (also read to screen readers).
   function line(who, text, opts) {
@@ -92,7 +70,6 @@ window.PMCoach = (function () {
     const box = el('div', { class: `speak speak-${who}` + (opts.compact ? ' compact' : '') }, [
       el('div', { class: 'speak-av' }, [avatar(who, opts.compact ? 48 : 84), el('div', { class: 'speak-name', text: name })]),
       el('div', { class: 'bubble', role: opts.live === false ? null : 'status', 'aria-live': opts.live === false ? null : 'polite' }, [el('p', { text })])]);
-    if (opts.speak !== false) speech.say(who, text);
     return box;
   }
 
@@ -176,12 +153,10 @@ window.PMCoach = (function () {
     container.innerHTML = '';
     const box = el('section', { class: 'course', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'courseTitle' });
     container.append(box);
-    const voiceBtn = () => el('button', { class: 'small', 'aria-pressed': speech.on() ? 'true' : 'false', text: speech.on() ? 'Voice: on' : 'Voice: off',
-      onclick: e => { speech.set(!speech.on()); e.currentTarget.textContent = speech.on() ? 'Voice: on' : 'Voice: off'; e.currentTarget.setAttribute('aria-pressed', speech.on() ? 'true' : 'false'); if (speech.on()) speech.say(LESSONS[k].who, LESSONS[k].text); } });
     function show() {
       const L = LESSONS[k];
       box.innerHTML = '';
-      box.append(el('div', { class: 'course-head' }, [el('h2', { id: 'courseTitle', text: `${k + 1}. ${L.title}` }), el('span', { class: 'course-count', text: `${k + 1} of ${LESSONS.length}` }), voiceBtn()]));
+      box.append(el('div', { class: 'course-head' }, [el('h2', { id: 'courseTitle', text: `${k + 1}. ${L.title}` }), el('span', { class: 'course-count', text: `${k + 1} of ${LESSONS.length}` })]));
       box.append(el('div', { class: 'course-body' }, [line(L.who, L.text), el('div', { class: 'course-board diagrambox' }, [board(L)])]));
       if (L.cards && opts.cardsEl) box.append(opts.cardsEl());
       box.append(el('div', { class: 'course-nav' }, [

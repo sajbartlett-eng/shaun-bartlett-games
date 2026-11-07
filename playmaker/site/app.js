@@ -251,8 +251,7 @@ function render() {
     ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []),
-    el('button', { class: 'small', text: 'Play story', onclick: showStory }),
-    el('button', { class: 'small', 'aria-pressed': playVoice() ? 'true' : 'false', text: playVoice() ? 'Referee voice: on' : 'Referee voice: off', onclick: e => { try { localStorage.setItem('pm_voice_play', playVoice() ? '0' : '1'); } catch (x) { /* ignore */ } render(); } }));
+    el('button', { class: 'small', text: 'Play story', onclick: showStory }));
   renderCoachLine();
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = replay ? `${sideName(replay.entries[replay.k].side).toUpperCase()} ACTED · ${s.summary}`
@@ -394,6 +393,9 @@ function pieceLabel(side, p) {
   if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
   if (side === 'X') bits.push(`arrow pointing ${COMPASS[p.arrow]}`);
   if (p.locked) bits.push('locked');
+  const b = st.influence && st.influence.badges && st.influence.badges[side] && st.influence.badges[side][p.i];
+  if (b && b.move) bits.push('Move used');
+  if (b && b.qs) bits.push('Quick Step used');
   if (sel.side === side && sel.i === p.i) bits.push('selected');
   const n = pieceActs(side, p.i).length;
   if (st.can_act && n) bits.push(`${n} legal action${n === 1 ? '' : 's'}`);
@@ -416,18 +418,18 @@ function pieceGroup(side, i, opts) {
 function drawO(c, p, opts) {
   const g = pieceGroup('O', p.i, opts);
   PM.pieceO(g, p.x, p.y, p.i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null });
-  const b = st.influence && st.influence.badges && st.influence.badges.O[p.i];
-  PM.tags(g, p.x, p.y, b, p.locked);
   c.append(g);
+  const b = st.influence && st.influence.badges && st.influence.badges.O[p.i];
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked); c.append(tg);
 }
 
 function drawX(c, p, opts) {
   const g = pieceGroup('X', p.i, opts);
   const wedge = st.influence && st.influence.arrow_mode === 'wedge';
   PM.pieceX(g, p.x, p.y, p.i + 1, wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
-  const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
-  PM.tags(g, p.x, p.y, b, p.locked);
   c.append(g);
+  const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked); c.append(tg);
 }
 
 // Zones of influence (every defender, along his arrow line, out to his current reach), active screens and the
@@ -632,18 +634,17 @@ async function submit(a) {
 
 function confirmRoll(a) {
   return new Promise(res => {
-    modal([el('h2', { text: a.text }), PMCoach.line('ref', 'This one goes to the dice. ' + a.roll.map(t => t.text.replace(/^(Offence|Defence) rolls: /, '')).join(' Then ') + '.', { compact: true, speak: playVoice(), live: false }),
+    modal([el('h2', { text: a.text }), PMCoach.line('ref', 'This one goes to the dice. ' + a.roll.map(t => t.text.replace(/^(Offence|Defence) rolls: /, '')).join(' Then ') + '.', { compact: true, speak: false, live: false }),
       el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text]))),
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
       el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
 }
 
-function playVoice() { try { return localStorage.getItem('pm_voice_play') === '1'; } catch (e) { return false; } }
 function showRolls(rolls) {
   return new Promise(res => {
     const call = rolls.map(r => `${r.what.replace(/ \(.*\)$/, '')}: rolled ${r.face}, ${r.picked}.`).join(' ');
-    const box = [el('h2', { text: 'The call' }), PMCoach.line('ref', call, { compact: true, speak: playVoice(), live: false })];
+    const box = [el('h2', { text: 'The call' }), PMCoach.line('ref', call, { compact: true, speak: false, live: false })];
     for (const r of rolls) {
       const ok = r.face <= r.need;
       box.push(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }), el('span', { text: `${r.text} → rolled ${r.face}: ${r.picked}` })]));
@@ -674,7 +675,7 @@ function endModal() {
     'A Poor result. Look at the story: where did the possession lose its goal?';
   const kids = [el('h2', { text: s.full ? `Possession ${s.possession} over` : 'Possession over' }),
     el('p', {}, [el('span', { class: 'band ' + r.band, text: `${r.total} · ${r.band}` }), ' ', el('span', { class: 'note', text: r.detail || '' })]),
-    PMCoach.line('coach', verdict, { compact: true, speak: playVoice(), live: false }),
+    PMCoach.line('coach', verdict, { compact: true, speak: false, live: false }),
     el('table', { class: 'bk' }, rows.map(([k, v]) => el('tr', {}, [el('td', { text: k }), el('td', { text: String(v) })])))];
   if (s.scenario) kids.push(el('p', { text: `Goal (look 30+): ${r.goal_met ? 'met' : 'missed'} (look ${r.look})` + (r.late_clock ? ` · result: ${r.late_clock}` : '') }));
   if (s.target !== null && s.target !== undefined && s.target !== 'secret' && s.target >= 0) kids.push(el('p', { text: `The secret target was O${s.target + 1}.` }));
@@ -1119,7 +1120,7 @@ function renderStep() {
   const calls = e.outcomes.filter(o => o.tone !== 'info').map(o => o.text);
   const call = e.rolls.length ? e.rolls.map(r => `${r.what.replace(/ \(.*\)$/, '')}: rolled ${r.face}, ${r.picked}.`).join(' ') + (calls.length ? ' ' + calls.join(' ') : '') : calls.join(' ');
   bar.append(el('div', { class: 'step-count', text: `${sideName(e.side)}${e.actor === 'ai' ? ' (computer)' : ''} · action ${replay.k + 1} of ${n}` }),
-    feedEntry(e), call ? PMCoach.line('ref', call, { compact: true, speak: playVoice(), live: false }) : null,
+    feedEntry(e), call ? PMCoach.line('ref', call, { compact: true, speak: false, live: false }) : null,
     el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn }));
   announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
   $('stepOk').focus();
@@ -1337,20 +1338,46 @@ if ($('level')) { $('level').addEventListener('change', showLevelNote); showLeve
 
 
 // ---------------------------------------------------------------- Coach Vision on the sideline
+// The coach reads the board from the cards both players can see: for each attacker and the defender on him
+// (the matchup the squares and arrows show), the shot where the attacker's rating beats the contest by most,
+// counted as points x (shot - contest). That edge is the mismatch; the line names it and the shot it leads to.
+const SHOT_PTS = { Layup: 2, Dunk: 2, Post: 2, Mid: 2, Floater: 2, 'Long 2': 2, Three: 3 };
+const SHOT_WHERE = { Layup: 'at the rim', Dunk: 'at the rim', Post: 'on the block', Mid: 'from mid-range', Floater: 'from the paint', 'Long 2': 'from a long two', Three: 'behind the arc' };
+function boardEdges(s) {
+  const out = [];
+  const rating = (card, name) => { for (const g of card.groups) for (const r of g.ratings) if (r.name === name) return r; return null; };
+  for (const o of s.o) {
+    const js = (s.matchups.O || [])[o.i] || []; if (!js.length || !o.card) continue;
+    const x = s.x[js[0]];
+    for (const name of Object.keys(SHOT_PTS)) {
+      const sh = rating(o.card, name), con = rating(x.card, 'v ' + name);
+      if (!sh || !con) continue;
+      const edge = SHOT_PTS[name] * (sh.value - con.value);
+      out.push({ o: o.i, x: x.i, shot: name, edge, sh, con, mismatch: sh.band === 'H' && con.band !== 'H' || con.band === 'L' && sh.band !== 'L' });
+    }
+  }
+  return out.sort((a, b) => b.edge - a.edge);
+}
 let coachSaid = null;
 function renderCoachLine() {
   const box = $('coachLine'); if (!box) return;
   box.innerHTML = '';
-  const s = st; if (!s || !s.can_act || s.stage === 'over' || replay) return;
+  const s = st; if (!s || !s.can_act || s.stage === 'over' || replay || s.placing || !s.matchups) return;
   const side = s.side_to_act, mine = s.scout && s.scout.mine;
+  const edges = boardEdges(s), best = edges.find(e => e.mismatch) || edges[0];
+  const show = e => `O${e.o + 1}'s ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against X${e.x + 1}'s contest ${e.con.value}${e.con.mark}: a clean look ${SHOT_WHERE[e.shot]} is worth ${SHOT_PTS[e.shot]} × ${e.sh.value - e.con.value} = ${e.edge}`;
   let text = null;
-  if (side === 'O' && mine && mine.hunt) text = `Your call was to hunt O${mine.hunt.o} against X${mine.hunt.x}. Get him the ball where no arrow can reach the lane, then make X${mine.hunt.x} guard him.`;
-  else if (side === 'X' && mine && mine.protect) text = `Your call was to protect X${mine.protect.x}. Don't leave him with two jobs: keep help beside him and his arrow on his man.`;
-  else if (side === 'O' && s.level === 'learn') text = 'Pick a goal before you pick an action: which matchup is ours, and what shot does it lead to?';
-  else if (side === 'X' && s.level === 'learn') text = 'Read the arrows: every pass lane either has a defender who can reach it, or it doesn\'t.';
+  if (side === 'O' && best && best.edge > 0) {
+    text = `The mismatch on the board: ${show(best)}. ` + (best.o === (s.o.find(p => p.ball) || {}).i ? 'He has the ball: get him to that spot with no arrow on him.' : `Get O${best.o + 1} the ball where no arrow can reach the lane, and keep X${best.x + 1} on him.`);
+    if (mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
+  } else if (side === 'X' && best && best.edge > 0) {
+    text = `Their edge on the board: ${show(best)}. Keep X${best.x + 1}'s arrow on him, or switch a better contester onto him before the catch.`;
+    if (mine && mine.protect) text += ` Your call was to protect X${mine.protect.x}: don't leave him with two jobs.`;
+  } else if (side === 'O') text = 'No mismatch on the board right now. Move the defence first: a screen or a cut that makes a defender choose.';
+  else if (side === 'X') text = 'No edge for them on the board. Keep your shape: every lane answered, every arrow on a man.';
   if (!text) return;
-  const key = `${s.possession}:${s.phase}:${side}`;
-  box.append(PMCoach.line('coach', text, { compact: true, speak: false, live: coachSaid !== key }));
+  const key = `${s.possession}:${s.phase}:${side}:${s.turn}`;
+  box.append(PMCoach.line('coach', text, { compact: true, live: coachSaid !== key }));
   coachSaid = key;
 }
 
