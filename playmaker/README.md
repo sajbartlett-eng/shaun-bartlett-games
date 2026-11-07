@@ -110,7 +110,8 @@ python -m playmaker_web                 # serves http://localhost:8765 (add --po
 Open the page and pick a path (see *The coach's clipboard* above). *Play a friend* offers **Full game** (two
 possessions, sides swap, the preview pack's table setup), **Scenario card** (any of the 16) or **One
 possession**, then **Hot-seat** (one screen) or **Remote**. *Play the computer* picks the level (Rookie,
-Starter, All-Star) and which seat you start in.
+Starter, All-Star) and which seat you start in. The start screen remembers those choices and the
+scouting level from your last game in this browser, and offers to resume a game left open.
 
 - **Playing:** click one of your players (or Tab to it and press Enter), then an action. Only the
   engine's legal actions are offered. Squares, receivers and T directions light up; defenders pick an
