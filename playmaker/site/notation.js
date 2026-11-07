@@ -148,7 +148,7 @@ window.PMNotation = (function () {
     if (b && b.qs) marks.push('Q');
     marks.forEach((m, k) => {
       const tx = X + 8 + k * 12, ty = Y + 7;
-      g.append(svg('rect', { class: 'captag', x: tx, y: ty, width: 11, height: 11, rx: 2, fill: '#fff', stroke: INK, 'stroke-width': 1 }));
+      g.append(svg('rect', { class: 'capbadge captag', x: tx, y: ty, width: 11, height: 11, rx: 2, fill: '#fff', stroke: INK, 'stroke-width': 1 }));
       g.append(svg('text', { x: tx + 5.5, y: ty + 8.8, 'text-anchor': 'middle', 'font-size': 8.5, 'font-weight': 'bold', fill: INK, 'aria-hidden': 'true' }, m));
       g.append(svg('line', { x1: tx + 1, y1: ty + 10, x2: tx + 10, y2: ty + 1, stroke: INK, 'stroke-width': 1.1 }));
     });

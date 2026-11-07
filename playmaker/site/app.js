@@ -1116,8 +1116,11 @@ function renderStep() {
   const bar = $('stepBar'); bar.innerHTML = ''; bar.classList.remove('hidden');
   const yours = last && replay.live.can_act && replay.live.stage !== 'over';
   const label = !last ? 'OK: next action' : yours ? 'OK: your turn' : replay.live.stage === 'over' ? 'OK: see the result' : 'OK';
+  const calls = e.outcomes.filter(o => o.tone !== 'info').map(o => o.text);
+  const call = e.rolls.length ? e.rolls.map(r => `${r.what.replace(/ \(.*\)$/, '')}: rolled ${r.face}, ${r.picked}.`).join(' ') + (calls.length ? ' ' + calls.join(' ') : '') : calls.join(' ');
   bar.append(el('div', { class: 'step-count', text: `${sideName(e.side)}${e.actor === 'ai' ? ' (computer)' : ''} · action ${replay.k + 1} of ${n}` }),
-    feedEntry(e), el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn }));
+    feedEntry(e), call ? PMCoach.line('ref', call, { compact: true, speak: playVoice(), live: false }) : null,
+    el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn }));
   announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
   $('stepOk').focus();
 }
