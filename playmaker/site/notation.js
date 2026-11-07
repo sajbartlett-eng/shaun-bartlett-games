@@ -184,9 +184,12 @@ window.PMNotation = (function () {
   let placedTags = [];                // where tags have gone, so a new one that would land on another nudges aside
   function numberTag(g, x, y, n, ink) {
     const r = 7.5 * TAG, min = 2.1 * r;
-    const tries = [[0, 0], [0, -min], [0, min], [-min, 0], [min, 0], [-min, -min], [min, min], [min, -min], [-min, min]];
+    // first the spot asked for, then a ring of eight around it, then a wider ring: the first that sits clear of
+    // every other tag and of every piece (pieces carry their own keep-out radius) takes it
+    const tries = [[0, 0]];
+    for (const k of [1, 1.7]) for (const a of [-90, 90, 180, 0, -135, 45, -45, 135]) tries.push([Math.cos(a * Math.PI / 180) * min * k, Math.sin(a * Math.PI / 180) * min * k]);
     for (const [dx, dy] of tries) {
-      if (!placedTags.some(([px0, py0]) => Math.hypot(px0 - (x + dx), py0 - (y + dy)) < min)) { x += dx; y += dy; break; }
+      if (!placedTags.some(([px0, py0, keep]) => Math.hypot(px0 - (x + dx), py0 - (y + dy)) < (keep || min))) { x += dx; y += dy; break; }
     }
     placedTags.push([x, y]);
     const grp = svg('g', { class: 'turnno' });
@@ -209,7 +212,7 @@ window.PMNotation = (function () {
   function marks(root, list, opts) {
     opts = opts || {};
     TAG = opts.tag || 1;
-    placedTags = [];
+    placedTags = (opts.avoid || []).map(([x, y]) => [x, y, 14 + 7.5 * TAG + 1]);   // the pieces: a tag never sits on one
     const g = svg('g', { class: 'marks', 'aria-hidden': 'true' });
     const passLines = {};             // receiver square -> the pass line's end, so an intercept can slash it
     for (const m of list) {
@@ -327,7 +330,8 @@ window.PMNotation = (function () {
     start.o.forEach((p, i) => { const [x, y] = sqXY(p.sq); const g = svg('g', { class: 'piece' }); pieceO(g, x, y, i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null }); pg.append(g); });
     start.x.forEach((p, i) => { const [x, y] = sqXY(p.sq); const g = svg('g', { class: 'piece' }); pieceX(g, x, y, i + 1, arrowsMode ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]); pg.append(g); });
     root.append(pg);
-    marks(root, marksList, { numbers: true, tag: 1.25 });
+    const avoid = [...start.o, ...start.x].map(p => { const [x, y] = sqXY(p.sq); return [cx(x), cy(y)]; });
+    marks(root, marksList, { numbers: true, tag: 1.25, avoid });
     if (opts.title) {
       root.setAttribute('viewBox', `0 -34 ${W} ${H + 34}`);
       root.append(svg('text', { class: 'dtitle', x: PADX, y: -12 }, opts.title));

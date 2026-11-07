@@ -47,7 +47,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .topbar .title { font-family: var(--marker); font-weight: bold; font-size: 22px; flex: 1; margin: 0; }
 .clock { display: flex; flex-direction: column; align-items: center; min-width: 54px; }
 .clock .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #d9d4cb; } .big { font-family: var(--marker); font-size: 26px; font-weight: bold; line-height: 1; }
-.meta { font-size: 13px; text-align: right; color: #ece7de; max-width: 320px; }
+.meta { font-size: 13px; text-align: right; color: #ece7de; max-width: 420px; }
 .meta button { color: #fff; background: transparent; border-color: #c8cfdd; box-shadow: none; }
 .meta button:hover { background: rgba(255,255,255,.12); }
 .summary { padding: 8px 16px; background: #fff7d6; border-bottom: 2px solid var(--line); font-weight: 600; font-size: 15px; }
@@ -121,6 +121,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .die { display: inline-flex; width: 54px; height: 54px; border: 3px solid var(--ink); border-radius: 10px; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; margin: 6px; font-family: var(--marker); background: #fff; }
 .die.roll { animation: spin .6s ease-out; } @keyframes spin { from { transform: rotate(-360deg) scale(.4); } to { transform: none; } }
 .die.black { background: var(--red); color: #fff; border-color: var(--red); }
+.rollrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
 .die.small { width: 32px; height: 32px; font-size: 17px; border-width: 2px; border-radius: 6px; margin: 0 4px; vertical-align: middle; }
 .band { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: bold; color: var(--ink); font-family: var(--marker); font-size: 19px; }
 .band.Poor { background: var(--poor); } .band.Okay { background: var(--okay); } .band.Good { background: var(--good); }
