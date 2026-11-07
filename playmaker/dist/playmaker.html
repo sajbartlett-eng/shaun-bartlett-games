@@ -2366,14 +2366,23 @@ async function loadReview() {
   box.innerHTML = ''; box.append(el('h3', { text: 'Review' }), el('p', { class: 'note', text: 'Working out the review (a few seconds)…' }));
   let r; try { r = await api('/api/review', { code: G.code, token: G.token }); } catch (e) { box.append(el('p', { text: e.message })); return; }
   box.innerHTML = '';
-  box.append(el('h3', { text: 'Review' }));
   const sides = ['O', 'X'];
-  const pickText = (side, p) => [p.hunt ? `hunt O${p.hunt.o} v X${p.hunt.x}` : null, p.protect ? `protect #${p.protect.x}` : null].filter(Boolean).join('; ');
-  box.append(el('h4', { text: '1. Your plan against the board' }), el('ul', {}, sides.map(side => el('li', { text:
-    `${side === 'O' ? 'Offence' : 'Defence'}: ${r.picks[side] ? 'your call: ' + pickText(side, r.picks[side]) : 'no call made'} · team sheet: ${[r.engine[side].hunt ? 'hunt ' + r.engine[side].hunt.text : null, r.engine[side].protect ? 'protect ' + r.engine[side].protect.text : null].filter(Boolean).join('; ')}` }))));
-  box.append(el('h4', { text: '2. What the board offered' }), el('p', { class: 'note', text: 'The biggest ▲ shot edges against the contester eligible at that moment, at any decision point.' }),
-    el('ul', {}, r.advantages.length ? r.advantages.map(a => el('li', { text: `${a.text} (clock ${a.clock}): ${a.used ? 'used (that shot was taken)' : 'not used'}` })) : [el('li', { text: 'No ▲ shot was on the board.' })]));
-  box.append(el('h4', { text: '3. Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
+  const pickText = (side, p) => [p.hunt ? `hunt O${p.hunt.o} v X${p.hunt.x}` : null, p.protect ? `protect X${p.protect.x}` : null].filter(Boolean).join('; ');
+  // the coach reads the review first: the call you made against the biggest edge the board offered
+  const best = r.advantages[0];
+  const calls = sides.filter(side => r.picks[side]).map(side => `${side === 'O' ? 'offence' : 'defence'}, ${pickText(side, r.picks[side])}`).join('; on ');
+  const read = (calls ? `Your call: on ${calls}. ` : 'No call was made before tip-off. ')
+    + (best ? `The biggest edge the board offered was ${best.text} at clock ${best.clock}, and it was ${best.used ? 'taken' : 'not taken'}.` : 'No ▲ shot came onto the board: the defence kept its shape all possession.')
+    + (r.solver && r.solver.length ? ` The solver would have played ${r.solver.length === 1 ? 'one decision' : r.solver.length + ' decisions'} differently; the list is below.` : '');
+  box.append(PMCoach.line('coach', read, { compact: true, speak: false, live: false }));
+  // the plan against the team sheet: one row a side
+  box.append(el('h4', { text: 'The plan against the team sheet' }), el('table', { class: 'bk' }, sides.map(side => el('tr', {}, [
+    el('td', { text: side === 'O' ? 'Offence' : 'Defence' }),
+    el('td', { text: r.picks[side] ? pickText(side, r.picks[side]) : 'no call made' }),
+    el('td', { class: 'note', text: 'team sheet: ' + ([r.engine[side].hunt ? 'hunt ' + r.engine[side].hunt.text : null, r.engine[side].protect ? 'protect ' + r.engine[side].protect.text : null].filter(Boolean).join('; ') || 'none') })]))));
+  box.append(el('h4', { text: 'What the board offered' }), el('p', { class: 'note', text: 'The biggest ▲ shot edges against the contester eligible at that moment, at any decision point.' }),
+    el('ul', {}, r.advantages.length ? r.advantages.map(a => el('li', { text: `${a.text} (clock ${a.clock}): ${a.used ? 'taken' : 'not taken'}` })) : [el('li', { text: 'No ▲ shot was on the board.' })]));
+  box.append(el('h4', { text: 'Where the solver disagreed (estimates)' }), el('p', { class: 'note', text: r.solver_note }));
   if (r.solver) box.append(el('ul', {}, r.solver.length ? r.solver.map(x => el('li', { text: `Estimate · clock ${x.clock}, ${x.side === 'O' ? 'offence' : 'defence'}: played "${x.played}"; the solver preferred "${x.solver}" (about ${x.gap.toFixed(1)} points, estimate)` }))
     : [el('li', { text: 'Estimate: no decision differed by more than half a point.' })]));
   if (r.computer && r.computer.length) {
@@ -2387,7 +2396,6 @@ async function loadReview() {
     for (const t of r.in_play) box.append(el('p', {}, [el('b', { text: t.team })]), el('ul', { class: 'inplay' }, t.items.map(it =>
       el('li', { class: it.tested ? '' : 'untested', text: `${it.who === t.team ? t.team : it.who} ${it.line}: ${it.text}` }))));
   }
-  box.append(el('h4', { text: '4. Reflect' }), el('p', { text: 'Was your setup and plan the right one for these two teams? (Answer it with the feedback below.)' }));
 }
 
 // Detail level: a short option name, explained underneath (long option text overflows phone screens).
