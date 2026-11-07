@@ -1,6 +1,7 @@
 // Playmaker playtest table. Renders from the server's state JSON; never decides a rule itself.
 'use strict';
-const S = 36, PADX = 24, PADY = 20, COLS = 'ABCDEFGHIJKLMNOPQ';
+const PM = window.PMNotation;
+const S = PM.S, PADX = PM.PADX, PADY = PM.PADY, COLS = PM.COLS;
 const DIRS = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]];
 const DIRN = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 const ZCOL = { K: 'var(--rim)', '3': 'var(--three)', M: 'var(--mid)', L: 'var(--long)', '.': 'var(--wood)' };
@@ -41,7 +42,7 @@ const svg = (tag, attrs = {}) => {
   return e;
 };
 const sqName = (x, y) => (x === -1 ? '@' : x === 17 ? 'R' : COLS[x]) + y;
-const px = x => PADX + (x + 1) * S, py = y => PADY + (14 - y) * S;
+const px = PM.px, py = PM.py;
 
 async function api(path, body) {
   if (window.PM_BACKEND) return window.PM_BACKEND(path, body);      // the in-browser (Pyodide) build
@@ -79,11 +80,49 @@ async function initStart() {
   const showHc = () => { $('timerBRow').classList.toggle('hidden', !($('hcA').checked && $('hcB').checked)); };
   $('hcA').onchange = showHc; $('hcB').onchange = showHc;
   $('create').onclick = create; if ($('join')) $('join').onclick = join;
+  initPaths(showKind);
   const q = new URLSearchParams(location.search);
   if (q.get('code') && q.get('token')) { G = { code: q.get('code'), token: q.get('token') }; enterTable(); return; }
   if (q.get('code')) $('joinCode').value = q.get('code');
   const saved = localStorage.getItem('pm_game');
   if (saved && q.has('resume')) { G = JSON.parse(saved); enterTable(); }
+}
+
+// ---------------------------------------------------------------- the paths: learn, the computer, a friend, a card
+let path = null;
+function initPaths(showKind) {
+  const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Take the course and I'll walk you through the whiteboard, the rules and how to read a matchup. Otherwise pick a game.", { speak: false, live: false });
+  $('startCoach').append(greet);
+  document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
+  let done = false; try { done = localStorage.getItem('pm_course_done') === '1'; } catch (e) { /* ignore */ }
+  if (done) choosePath('computer', showKind, true);
+}
+function choosePath(which, showKind, quiet) {
+  path = which;
+  document.querySelectorAll('button.path').forEach(b => b.setAttribute('aria-pressed', b.dataset.path === which ? 'true' : 'false'));
+  if (which === 'learn') { startCourse(showKind); return; }
+  $('setup').classList.remove('hidden');
+  const scenario = which === 'scenario', computer = which === 'computer';
+  $('kind').value = scenario ? 'scenario' : 'full';
+  $('aiRow').classList.toggle('hidden', !computer && !scenario);
+  $('aiSeatRow').classList.toggle('hidden', !computer);
+  $('modeRow').classList.toggle('hidden', computer);
+  if (computer) $('mode').value = 'hotseat';
+  if (scenario) { $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild); $('aiLevel').value = $('aiLevel').value || 'rookie'; }
+  $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
+  showKind();
+  if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = $('setup').querySelector('select'); if (f) f.focus({ preventScroll: true }); }
+}
+function startCourse(showKind) {
+  const box = $('course'); box.classList.remove('hidden');
+  $('start').setAttribute('aria-hidden', 'true');
+  PMCoach.course(box, { cardsEl: courseCards, onDone: () => { box.classList.add('hidden'); box.innerHTML = ''; $('start').removeAttribute('aria-hidden'); choosePath('computer', showKind); $('level').value = 'learn'; showLevelNote(); } });
+}
+function courseCards() {
+  if (!OPTS) return null;
+  const t = OPTS.teams.find(x => x.name === OPTS.first_game[0]) || OPTS.teams[0];
+  const cards = t.cards.slice(0, 2).map(k => OPTS.cards.find(c => c.key === k)).filter(Boolean);
+  return el('p', { class: 'note', text: `For example, ${t.name}'s cards: ${cards.map(c => `${c.role} (${c.tier})`).join(', ')}. In a game the cards sit beside the court with every rating.` });
 }
 
 // ---------------------------------------------------------------- custom team builder (step 3d)
@@ -132,6 +171,12 @@ function builderStatus() {
 async function create() {
   const k = $('kind').value, mode = $('mode').value;
   const body = { mode, level: $('level').value, ai: { O: $('aiO').value || null, X: $('aiX').value || null } };
+  if (path === 'computer' && $('aiLevel').value) {
+    const me = $('aiSeat').value;                      // the computer is the other player; it follows the swap
+    body.ai = { [me === 'O' ? 'B' : 'A']: $('aiLevel').value };
+  } else if (path === 'scenario' && $('aiLevel').value) {
+    body.ai = { X: $('aiLevel').value };               // on a card the human attacks; the computer defends
+  }
   if ($('seed').value) body.seed = Number($('seed').value);
   const tA = $('timerA').value ? Number($('timerA').value) : null;
   const hc = $('hcA').checked && $('hcB').checked;
@@ -205,7 +250,10 @@ function render() {
     ...(ai ? [el('div', { text: `Computer ${ai}` })] : []),
     ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
-    ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []));
+    ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []),
+    el('button', { class: 'small', text: 'Play story', onclick: showStory }),
+    el('button', { class: 'small', 'aria-pressed': playVoice() ? 'true' : 'false', text: playVoice() ? 'Referee voice: on' : 'Referee voice: off', onclick: e => { try { localStorage.setItem('pm_voice_play', playVoice() ? '0' : '1'); } catch (x) { /* ignore */ } render(); } }));
+  renderCoachLine();
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = replay ? `${sideName(replay.entries[replay.k].side).toUpperCase()} ACTED · ${s.summary}`
     : sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
@@ -225,10 +273,11 @@ function render() {
   if (s.timer && s.can_act && k !== lastSelKind && !busy) timerEvent(k ? 'select' : 'cancel');
   lastSelKind = k;
   $('actionsPanel').classList.toggle('hidden', !!replay);
-  if (replay) { renderStep(); return; }
+  if (replay) { renderStep(); diagramDue(); return; }
   if (scoutModalIfDue()) return;
   if (s.placing) return;
   if (showFeedIfNew()) return;          // the other side's turn first, one action at a time; the end screen follows
+  if (diagramDue()) return;             // a phase just ended: its diagram, then Continue
   if (readyIfDue()) return;
   if (s.stage === 'target' && s.can_act) targetModal();
   else if (s.stage === 'over') endModal();
@@ -278,76 +327,69 @@ function renderTracker(id, side) {
   box.append(el('div', { text: 'Per-phase limits used (Move: once per player)' }), lim);
   const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
   if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
-  box.append(el('div', { class: 'waits interceptrule' }, [
-    el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
-    el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
-    el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' }),
-    el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]));
-  box.append(el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }));
-  if (side === 'O') box.append(el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
-    ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
-    : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }));
+  const rules = el('details', { class: 'rulesbox' }, [el('summary', { text: 'Rule reminders' }),
+    el('div', { class: 'waits interceptrule' }, [
+      el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
+      el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
+      el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' }),
+      el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]),
+    el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }),
+    side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
+      ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
+      : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }) : null]);
+  box.append(rules);
 }
+
+// The defender reach (zones of influence) can be hidden by a player who finds it busy; the rules don't change.
+function showReach() { try { return localStorage.getItem('pm_reach') !== '0'; } catch (e) { return true; } }
 
 function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
-  const W = PADX + 19 * S + 4, H = PADY + 15 * S + 22;
-  c.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  PM.court(c, s.zones, { axes: true });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
-  for (let y = 1; y <= 14; y++) {
-    for (let x = 0; x < 17; x++) {
-      const z = s.zones[y - 1][x];
-      c.append(svg('rect', { class: 'cell', x: px(x), y: py(y), width: S, height: S, fill: ZCOL[z] }));
-      if (ZLBL[z]) { const t = svg('text', { class: 'zonelbl', x: px(x) + 2, y: py(y) + 11, 'aria-hidden': 'true' }); t.textContent = ZLBL[z]; c.append(t); }
-    }
-    const t = svg('text', { class: 'axis', x: 2, y: py(y) + S / 2 + 4 }); t.textContent = y; c.append(t);
-  }
-  for (let x = 0; x < 17; x++) { const t = svg('text', { class: 'axis', x: px(x) + S / 2 - 4, y: PADY - 6 }); t.textContent = COLS[x]; c.append(t); }
-  courtLines(c);
-  const rim = svg('circle', { cx: px(8) + S / 2, cy: py(2) + S / 2, r: 9, fill: 'none', stroke: '#c0392b', 'stroke-width': 3 }); c.append(rim);
   drawInfluence(c);
-  // arrow lines the ball carrier can't cross (shown to both players)
+  // arrow lines the ball carrier can't cross (the old drive rule only)
   const carrier = s.o.find(p => p.ball);
   if (sel.side === 'O' && carrier && sel.i === carrier.i) {
     for (const l of s.arrow_lines) c.append(svg('line', { x1: px(l.start[0]) + S / 2, y1: py(l.start[1]) + S / 2, x2: px(l.end[0]) + S / 2, y2: py(l.end[1]) + S / 2, stroke: '#222', 'stroke-width': 3, 'stroke-dasharray': '6 4' }));
   }
-  // pending pass line
-  if (s.pending) {
-    const a = s.o[s.pending[0]], b = s.o[s.pending[1]];
-    c.append(svg('line', { x1: px(a.x) + S / 2, y1: py(a.y) + S / 2, x2: px(b.x) + S / 2, y2: py(b.y) + S / 2, stroke: '#7a4b00', 'stroke-width': 3, 'stroke-dasharray': '3 3' }));
-  }
   if (s.placing && s.placing.mine) { placementPieces(c); placementTargets(c); return; }
   drawGhost(c);
+  PM.marks(c, turnMarks(), { numbers: true });          // the turn in play, in notation (resets when the turn ends)
+  // a pass still in the air that no mark covers yet (the defence is answering it)
+  if (s.pending && !turnMarks().some(m => m.kind === 'pass')) {
+    const a = s.o[s.pending[0]], b = s.o[s.pending[1]];
+    c.append(svg('line', { x1: px(a.x) + S / 2, y1: py(a.y) + S / 2, x2: px(b.x) + S / 2, y2: py(b.y) + S / 2, stroke: PM.INK, 'stroke-width': 2.6, 'stroke-dasharray': '8 6', opacity: 0.85 }));
+  }
   for (const p of s.o) drawO(c, p);
   for (const p of s.x) drawX(c, p);
   drawTargets(c);
 }
 
-// The printed board's court lines, fitted to the board art (grid units: u from column A's left edge,
-// v from row 14's top edge). Decoration only: the zones and squares decide every rule.
-function courtLines(c) {
-  const X = u => PADX + S + u * S, Y = v => PADY + v * S;
-  const g = svg('g', { class: 'courtlines', 'aria-hidden': 'true' });
-  const line = (u1, v1, u2, v2, extra) => g.append(svg('line', { x1: X(u1), y1: Y(v1), x2: X(u2), y2: Y(v2), ...(extra || {}) }));
-  // three-point line: corners straight up from the baseline, then an arc over the top of row 9
-  const a = 7.55, b = 5.05, cv = 10;
-  g.append(svg('path', { d: `M ${X(8.5 - a)} ${Y(14)} L ${X(8.5 - a)} ${Y(cv)} A ${a * S} ${b * S} 0 0 1 ${X(8.5 + a)} ${Y(cv)} L ${X(8.5 + a)} ${Y(14)}` }));
-  // the key (columns G to K, up to the top of row 6), its hash marks, the free-throw circle
-  g.append(svg('path', { d: `M ${X(6)} ${Y(14)} L ${X(6)} ${Y(8)} L ${X(11)} ${Y(8)} L ${X(11)} ${Y(14)}` }));
-  for (const v of [10, 11, 12]) { line(5.8, v, 6, v); line(11, v, 11.2, v); }
-  g.append(svg('path', { d: `M ${X(6.5)} ${Y(8)} A ${2 * S} ${2 * S} 0 0 1 ${X(10.5)} ${Y(8)}` }));
-  g.append(svg('path', { d: `M ${X(6.5)} ${Y(8)} A ${2 * S} ${2 * S} 0 0 0 ${X(10.5)} ${Y(8)}`, 'stroke-dasharray': '7 6' }));
-  // backboard and the half-court circle at the top edge
-  line(7.7, 13, 9.3, 13); line(8.5, 12.75, 8.5, 13);
-  g.append(svg('path', { d: `M ${X(6.4)} ${Y(0)} A ${2.1 * S} ${2.1 * S} 0 0 0 ${X(10.6)} ${Y(0)}` }));
-  c.append(g);
+// The marks of the turn in play: the acting side's actions so far in its current turn. During the step-through
+// of the other side's turn, the actions stepped so far of that turn. They reset when the turn ends.
+function turnMarks() {
+  if (replay) {
+    const e = replay.entries[replay.k];
+    return replay.entries.slice(0, replay.k + 1).filter(x => x.possession === e.possession && x.phase === e.phase && x.turn === e.turn && x.side === e.side)
+      .map(x => x.mark).filter(Boolean);
+  }
+  const side = st.side_to_act;
+  if (!side || st.stage === 'over' || st.turn == null) return [];
+  const out = [];
+  for (let k = (st.feed || []).length - 1; k >= 0; k--) {
+    const e = st.feed[k];
+    if (e.side !== side || e.possession !== st.possession || e.phase !== st.phase || e.turn !== st.turn) break;
+    if (e.mark) out.unshift(e.mark);
+  }
+  return out;
 }
 
 function pieceLabel(side, p) {
   const z = st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';
-  const bits = [`${side}${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
+  const bits = [`${side}${p.i + 1}, number ${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
   if (side === 'O' && p.ball) bits.push('has the ball');
   if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
   if (side === 'X') bits.push(`arrow pointing ${COMPASS[p.arrow]}`);
@@ -372,95 +414,44 @@ function pieceGroup(side, i, opts) {
 }
 
 function drawO(c, p, opts) {
-  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('O', p.i, opts);
-  if (p.screen) {
-    const d = DIRS[p.screen.dir];
-    g.append(svg('line', { x1: cx, y1: cy, x2: cx + d[0] * S * 0.62, y2: cy - d[1] * S * 0.62, stroke: '#111', 'stroke-width': 5 }));
-    const nx = -d[1], ny = d[0];
-    const ex = cx + d[0] * S * 0.62, ey = cy - d[1] * S * 0.62;
-    g.append(svg('line', { x1: ex - nx * 9, y1: ey + ny * 9, x2: ex + nx * 9, y2: ey - ny * 9, stroke: '#111', 'stroke-width': 5 }));
-  }
-  g.append(svg('circle', { class: 'halo', cx, cy, r: 19 }));
-  g.append(svg('circle', { class: 'ring', cx, cy, r: 15, fill: '#fff', stroke: '#1d1b18', 'stroke-width': 2.5 }));
-  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 'bold', 'aria-hidden': 'true' }); t.textContent = p.i + 1; g.append(t);
-  if (p.ball) {          // the ball: an orange disc with a dark outline (readable on every zone colour)
-    g.append(svg('circle', { cx: cx + 12, cy: cy - 12, r: 7.5, fill: '#e07a1f', stroke: '#3a1d00', 'stroke-width': 2.5 }));
-    g.append(svg('path', { d: `M${cx + 4.5} ${cy - 12} H${cx + 19.5} M${cx + 12} ${cy - 19.5} V${cy - 4.5}`, stroke: '#3a1d00', 'stroke-width': 1.2 }));
-  }
-  if (p.locked) lockBadge(g, cx, cy);
-  capacityBadges(g, 'O', p, cx, cy);
+  const g = pieceGroup('O', p.i, opts);
+  PM.pieceO(g, p.x, p.y, p.i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null });
+  const b = st.influence && st.influence.badges && st.influence.badges.O[p.i];
+  PM.tags(g, p.x, p.y, b, p.locked);
   c.append(g);
 }
 
 function drawX(c, p, opts) {
-  const cx = px(p.x) + S / 2, cy = py(p.y) + S / 2, g = pieceGroup('X', p.i, opts);
-  // the arrow: a wedge from the piece's edge reaching about a third of a square into the next square
-  const inf = st.influence, wedge = inf && inf.arrow_mode === 'wedge';
-  for (const a of (wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow])) {     // the wedge: two arrows, 45 degrees apart
-    const d = DIRS[a], ux = d[0], uy = -d[1];
-    const reach = S / 2 + S / 3;                               // edge of this square + a third of the next
-    const tip = [cx + ux * reach, cy + uy * reach];
-    const len = Math.hypot(ux, uy), nx = -uy / len, ny = ux / len, bx = cx + ux * 9 / len, by = cy + uy * 9 / len;
-    const w = wedge ? 8 : 11;
-    g.append(svg('polygon', { class: 'arrowhead', points: `${tip[0]},${tip[1]} ${bx + nx * w},${by + ny * w} ${bx - nx * w},${by - ny * w}`, fill: '#111', stroke: '#fff', 'stroke-width': 1.5 }));
-  }
-  g.append(svg('circle', { class: 'halo', cx, cy, r: 19 }));
-  g.append(svg('circle', { class: 'ring', cx, cy, r: 14, fill: '#1a1a1a', stroke: '#000', 'stroke-width': 2 }));
-  const t = svg('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }); t.textContent = p.i + 1; g.append(t);
-  if (p.locked) lockBadge(g, cx, cy);
-  capacityBadges(g, 'X', p, cx, cy);
+  const g = pieceGroup('X', p.i, opts);
+  const wedge = st.influence && st.influence.arrow_mode === 'wedge';
+  PM.pieceX(g, p.x, p.y, p.i + 1, wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
+  const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
+  PM.tags(g, p.x, p.y, b, p.locked);
   c.append(g);
 }
 
-// Capacity badges on every piece, always on: a used Move (M) and a used Quick Step (Q), struck through.
-function capacityBadges(g, side, p, cx, cy) {
-  const b = st.influence && st.influence.badges && st.influence.badges[side][p.i];
-  if (!b) return;
-  const marks = [];
-  if (b.move) marks.push('M');
-  if (b.qs) marks.push('Q');
-  marks.forEach((m, k) => {
-    const x = cx + 6 + k * 13, y = cy + 6;
-    g.append(svg('rect', { class: 'capbadge', x, y, width: 12, height: 12, rx: 2, fill: '#fff', stroke: '#1d1b18', 'stroke-width': 1.2 }));
-    const t = svg('text', { x: x + 6, y: y + 9.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#1d1b18', 'aria-hidden': 'true' }); t.textContent = m; g.append(t);
-    g.append(svg('line', { x1: x + 1, y1: y + 11, x2: x + 11, y2: y + 1, stroke: '#1d1b18', 'stroke-width': 1.2 }));
-  });
-}
-
-// Zones of influence (every defender, along his arrow lines, out to his current reach), active screens and
-// the diagonal steps they block, and the selected attacker's movement reach. Always on, for both players.
-// Patterns, not colour alone: hatched for a Move or Quick Step, a lighter dashed square for the Sprint
-// extension, each square outlined and numbered for its defender so overlaps stay distinguishable.
+// Zones of influence (every defender, along his arrow line, out to his current reach), active screens and the
+// diagonal steps they block, the passer's ring and intercept marks when a pass is being chosen, and the selected
+// attacker's movement reach. Patterns, not colour alone; each zone square numbered for its defender.
 function drawInfluence(c) {
   const inf = st.influence;
   if (!inf) return;
-  const defs = svg('defs', {});
-  const pat = svg('pattern', { id: 'zhatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
-  pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(30,60,140,0.16)' }));
-  pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(20,40,110,0.55)', 'stroke-width': 2 }));
-  const pat2 = svg('pattern', { id: 'zsprint', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
-  pat2.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: 'rgba(20,40,110,0.30)', 'stroke-width': 1.5 }));
-  const pat3 = svg('pattern', { id: 'zscreen', width: 6, height: 6, patternUnits: 'userSpaceOnUse' });
-  pat3.append(svg('path', { d: 'M0 3 H6 M3 0 V6', stroke: 'rgba(120,40,0,0.6)', 'stroke-width': 1.4 }));
-  defs.append(pat, pat2, pat3);
-  c.append(defs);
   const g = svg('g', { class: 'influence', 'aria-hidden': 'true' });
   const count = {};
-  for (const z of inf.zones) {
+  for (const z of (showReach() ? inf.zones : [])) {
     for (const q of z.squares) {
       const k = count[q.sq] = (count[q.sq] || 0) + 1, inset = 1 + (k - 1) * 3;
       const sprint = q.kind === 'sprint';
       g.append(svg('rect', { class: 'zone ' + (sprint ? 'zone-sprint' : 'zone-move'), x: px(q.x) + inset, y: py(q.y) + inset,
         width: S - 2 * inset, height: S - 2 * inset, fill: `url(#${sprint ? 'zsprint' : 'zhatch'})`,
-        stroke: 'rgba(20,40,110,0.75)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
-      const t = svg('text', { class: 'zonenum', x: px(q.x) + 3 + (k - 1) * 8, y: py(q.y) + S - 4, 'font-size': 9, 'font-weight': 'bold', fill: '#14286e' });
-      t.textContent = z.defender + 1; g.append(t);
+        stroke: 'rgba(31,42,68,0.6)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
+      const t = svg('text', { class: 'zonenum', x: px(q.x) + 3 + (k - 1) * 8, y: py(q.y) + S - 4 }); t.textContent = z.defender + 1; g.append(t);
     }
   }
   for (const sc of inf.screens) {
     g.append(svg('rect', { class: 'screen-t', x: px(sc.t.x) + 2, y: py(sc.t.y) + 2, width: S - 4, height: S - 4, fill: 'url(#zscreen)', stroke: '#783c00', 'stroke-width': 1.5 }));
-    const t = svg('text', { x: px(sc.t.x) + S - 9, y: py(sc.t.y) + 11, 'font-size': 10, 'font-weight': 'bold', fill: '#783c00' }); t.textContent = 'T'; g.append(t);
-    for (const [ax, ay, bx, by] of sc.blocked) {     // a blocked diagonal step: a small cross on the corner it cuts
+    const t = svg('text', { class: 'zonenum', x: px(sc.t.x) + S - 9, y: py(sc.t.y) + 11, fill: '#783c00' }); t.textContent = 'T'; g.append(t);
+    for (const [ax, ay, bx, by] of sc.blocked) {
       const mx = (px(ax) + px(bx)) / 2 + S / 2, my = (py(ay) + py(by)) / 2 + S / 2;
       g.append(svg('path', { class: 'screen-block', d: `M${mx - 4} ${my - 4} L${mx + 4} ${my + 4} M${mx - 4} ${my + 4} L${mx + 4} ${my - 4}`, stroke: '#783c00', 'stroke-width': 2 }));
     }
@@ -468,18 +459,17 @@ function drawInfluence(c) {
   if (sel.side === 'O' && sel.kind === 'pass') {
     const passes = (st.legal || []).filter(a => a.kind === 'pass' && a.piece === sel.i);
     const ring = (passes[0] && passes[0].ring) || [];
-    for (const q of ring) {         // the passer's ring: no Intercept on any of these squares
-      g.append(svg('rect', { class: 'ring-free', x: px(q.x) + 3, y: py(q.y) + 3, width: S - 6, height: S - 6, fill: 'rgba(40,140,60,0.10)',
+    for (const q of ring) {
+      g.append(svg('rect', { class: 'ring-free', x: px(q.x) + 3, y: py(q.y) + 3, width: S - 6, height: S - 6, fill: 'rgba(40,140,60,0.12)',
         stroke: '#1b5e20', 'stroke-width': 1.5, 'stroke-dasharray': '1 3' }));
-      const t = svg('text', { x: px(q.x) + S / 2, y: py(q.y) + S - 5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#1b5e20' }); t.textContent = 'no int'; g.append(t);
+      const t = svg('text', { x: px(q.x) + S / 2, y: py(q.y) + S - 5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#1b5e20' }); t.textContent = 'safe'; g.append(t);
     }
     for (const a of passes) for (const th of (a.threats || [])) {
       if (th.x === undefined) continue;
       const cx = px(th.x) + S / 2, cy = py(th.y) + S / 2;
-      g.append(svg('circle', { class: 'icpt-mark icpt-' + th.how, cx, cy, r: th.how === 'follow' ? 6 : 8, fill: '#fff', stroke: '#8b0000', 'stroke-width': th.how === 'follow' ? 1 : 2,
-        'stroke-dasharray': th.how === 'through' ? '' : th.how === 'jump' ? '4 2' : '1 2' }));
-      const t = svg('text', { x: cx, y: cy + 3.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#8b0000' });
-      t.textContent = th.defender + 1; g.append(t);
+      g.append(svg('circle', { class: 'icpt-mark icpt-' + th.how, cx, cy, r: 8, fill: '#fff', stroke: PM.RED, 'stroke-width': 2,
+        'stroke-dasharray': th.how === 'through' ? '' : '4 2' }));
+      const t = svg('text', { x: cx, y: cy + 3.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: PM.RED }); t.textContent = th.defender + 1; g.append(t);
     }
   }
   if (sel.side === 'O' && sel.i !== null && sel.i !== undefined && inf.reach[sel.i]) {
@@ -488,11 +478,6 @@ function drawInfluence(c) {
     }
   }
   c.append(g);
-}
-
-function lockBadge(g, cx, cy) {
-  g.append(svg('rect', { x: cx - 21, y: cy + 5, width: 26, height: 13, rx: 3, fill: '#4a4a4a', stroke: '#1d1b18', 'stroke-width': 1.5 }));
-  const t = svg('text', { x: cx - 8, y: cy + 15, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }); t.textContent = 'LOCK'; g.append(t);
 }
 
 // ---------------------------------------------------------------- selection and actions
@@ -614,6 +599,8 @@ function renderActions() {
 
 function addUndo() {
   const s = st;
+  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
+    onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   if (s.stage === 'over') return;
   if (s.mode === 'hotseat' && s.can_undo) $('sideButtons').append(el('button', { text: 'Undo (only before a roll)', onclick: undo }));
   if (s.mode === 'remote' && s.can_undo) $('sideButtons').append(el('button', { text: s.undo_votes.length ? `Undo requested by ${s.undo_votes.join(', ')}: agree` : 'Request undo (both must agree)', onclick: undo }));
@@ -645,16 +632,18 @@ async function submit(a) {
 
 function confirmRoll(a) {
   return new Promise(res => {
-    modal([el('h2', { text: a.text }), el('p', { text: 'This action needs a roll. The server rolls the d20 (seeded); you never roll on this page.' }),
+    modal([el('h2', { text: a.text }), PMCoach.line('ref', 'This one goes to the dice. ' + a.roll.map(t => t.text.replace(/^(Offence|Defence) rolls: /, '')).join(' Then ') + '.', { compact: true, speak: playVoice(), live: false }),
       el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text]))),
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
       el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
 }
 
+function playVoice() { try { return localStorage.getItem('pm_voice_play') === '1'; } catch (e) { return false; } }
 function showRolls(rolls) {
   return new Promise(res => {
-    const box = [el('h2', { text: 'Roll' })];
+    const call = rolls.map(r => `${r.what.replace(/ \(.*\)$/, '')}: rolled ${r.face}, ${r.picked}.`).join(' ');
+    const box = [el('h2', { text: 'The call' }), PMCoach.line('ref', call, { compact: true, speak: playVoice(), live: false })];
     for (const r of rolls) {
       const ok = r.face <= r.need;
       box.push(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }), el('span', { text: `${r.text} → rolled ${r.face}: ${r.picked}` })]));
@@ -678,33 +667,45 @@ function endModal() {
   const r = st.result, s = st;
   const rows = [['Shot value', r.shot_value], ['Free throws (or and-one)', r.free_throws], ['Foul bonus', r.bonus],
     ['Turnovers', `${r.turnovers} (${r.turnover_points})`], ["Coach's Call bonus", r.coach_bonus]];
+  const verdict = r.band === 'Excellent' ? 'An Excellent look: that is the shot every goal is built for.' :
+    r.band === 'Great' ? 'A Great look. One more step of the plan and it is Excellent.' :
+    r.band === 'Good' ? 'A Good look. Ask where the better shot was: a mismatch you set up but did not use?' :
+    r.band === 'Okay' ? 'An Okay look. The defence kept its shape; next time build the advantage before the clock builds the pressure.' :
+    'A Poor result. Look at the story: where did the possession lose its goal?';
   const kids = [el('h2', { text: s.full ? `Possession ${s.possession} over` : 'Possession over' }),
-    el('p', {}, [el('span', { class: 'band ' + r.band, text: `${r.total} · ${r.band}` })]),
-    el('table', { class: 'bk' }, rows.map(([k, v]) => el('tr', {}, [el('td', { text: k }), el('td', { text: String(v) })]))),
-    el('p', { text: r.detail || '' })];
+    el('p', {}, [el('span', { class: 'band ' + r.band, text: `${r.total} · ${r.band}` }), ' ', el('span', { class: 'note', text: r.detail || '' })]),
+    PMCoach.line('coach', verdict, { compact: true, speak: playVoice(), live: false }),
+    el('table', { class: 'bk' }, rows.map(([k, v]) => el('tr', {}, [el('td', { text: k }), el('td', { text: String(v) })])))];
   if (s.scenario) kids.push(el('p', { text: `Goal (look 30+): ${r.goal_met ? 'met' : 'missed'} (look ${r.look})` + (r.late_clock ? ` · result: ${r.late_clock}` : '') }));
   if (s.target !== null && s.target !== undefined && s.target !== 'secret' && s.target >= 0) kids.push(el('p', { text: `The secret target was O${s.target + 1}.` }));
-  if (s.full && s.possession === 1) kids.push(el('button', { class: 'primary', text: 'Start possession 2 (sides swap)', onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; render(); } }));
   if (s.match) {
     const m = s.match;
     kids.push(el('h3', { text: `Match: A ${m.A} · B ${m.B} → ${m.winner === 'tie' ? 'still tied' : 'player ' + m.winner + ' wins'}` }));
     if (m.tiebreak) kids.push(el('p', { text: `Tiebreak: A rolled ${m.tiebreak.A.roll} (needs ${m.tiebreak.A.need} or less), B rolled ${m.tiebreak.B.roll} (needs ${m.tiebreak.B.need} or less).` }));
   }
-  if (s.feedback_due) kids.push(el('section', { id: 'reviewBox', class: 'review' }, [el('h3', { text: 'Review' }),
-    s.level === 'pro' ? el('button', { text: 'Show the full review', onclick: loadReview }) : el('p', { class: 'note', text: 'Loading the review…' })]));
-  if (s.feedback_due && s.level !== 'pro') setTimeout(loadReview, 0);
-  if (s.feedback_due && !s.feedback_done) {
-    const areas = s.feedback_questions.map((q, i) => el('label', {}, [el('div', { text: `${i + 1}. ${q}` }), el('textarea', { id: 'fb' + i })]));
-    areas.push(el('label', {}, [el('div', { text: 'Was your setup and plan the right one for these two teams?' }), el('textarea', { id: 'fbReflect' })]));
-    kids.push(el('h3', { text: 'Feedback (saved with the game log)' }), ...areas,
-      el('button', { class: 'primary', text: 'Send feedback', onclick: async () => {
-        const answers = {}; s.feedback_questions.forEach((q, i) => { answers[i] = $('fb' + i).value; });
-        answers.reflect = $('fbReflect').value;
-        await api('/api/feedback', { code: G.code, token: G.token, answers }); st.feedback_done = true; closeModal(); endModal(); } }));
+  const nav = el('div', { class: 'buttons' }, [
+    s.full && s.possession === 1 ? el('button', { class: 'primary', text: 'Start possession 2 (sides swap)', onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; phasesInit = false; render(); } }) : null,
+    el('button', { class: s.full && s.possession === 1 ? '' : 'primary', text: 'The story of the play', onclick: () => { closeModal(); showStory(); } }),
+    el('button', { text: 'Close', onclick: closeModal }),
+    el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } })]);
+  kids.push(nav);
+  if (s.feedback_due) {
+    const rv = el('details', { class: 'endsec' }, [el('summary', { text: 'Review: your plan against the board' }), el('section', { id: 'reviewBox', class: 'review' }, [
+      s.level === 'pro' ? el('button', { text: 'Show the full review', onclick: loadReview }) : el('p', { class: 'note', text: 'Loading the review…' })])]);
+    rv.addEventListener('toggle', () => { if (rv.open && s.level !== 'pro' && !rv.dataset.loaded) { rv.dataset.loaded = '1'; loadReview(); } });
+    kids.push(rv);
+    if (!s.feedback_done) {
+      const areas = s.feedback_questions.map((q, i) => el('label', {}, [el('div', { text: `${i + 1}. ${q}` }), el('textarea', { id: 'fb' + i })]));
+      areas.push(el('label', {}, [el('div', { text: 'Was your setup and plan the right one for these two teams?' }), el('textarea', { id: 'fbReflect' })]));
+      kids.push(el('details', { class: 'endsec' }, [el('summary', { text: 'Feedback for the designer (saved with the game log)' }), ...areas,
+        el('button', { class: 'primary', text: 'Send feedback', onclick: async () => {
+          const answers = {}; s.feedback_questions.forEach((q, i) => { answers[i] = $('fb' + i).value; });
+          answers.reflect = $('fbReflect').value;
+          await api('/api/feedback', { code: G.code, token: G.token, answers }); st.feedback_done = true; closeModal(); endModal(); } })]));
+    }
+    kids.push(el('details', { class: 'endsec' }, [el('summary', { text: 'Game log' }), el('p', { class: 'note', text: s.static ? 'The log lives in this browser tab. Download it, or copy it to paste into an email.' : `Saved on the server in playtest_logs/${s.log_name}.` }),
+      el('button', { text: 'Download log', onclick: downloadLog }), el('button', { text: 'Copy log', onclick: copyLog })]));
   }
-  if (s.feedback_due) kids.push(el('h3', { text: 'Game log' }), el('p', { class: 'note', text: s.static ? 'The log lives in this browser tab. Download it, or copy it to paste into an email.' : `Saved on the server in playtest_logs/${s.log_name}.` }),
-    el('button', { text: 'Download log', onclick: downloadLog }), el('button', { text: 'Copy log', onclick: copyLog }));
-  kids.push(el('button', { text: 'Close', onclick: closeModal }), el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } }));
   announce(`Possession over: ${r.total}, ${r.band}.`);
   modal(kids, () => {});
 }
@@ -747,16 +748,19 @@ function modal(kids, cancel, opts) {
   $('modal').classList.toggle('readyscreen', !!opts.ready);
   const b = $('modalBox'); b.innerHTML = ''; b.append(...kids.filter(k => k != null));
   const h = b.querySelector('h1, h2, h3');
-  if (h) { h.id = 'modalTitle'; $('modal').setAttribute('aria-labelledby', 'modalTitle'); }
+  if (h) { h.id = 'modalTitle'; h.setAttribute('tabindex', '-1'); $('modal').setAttribute('aria-labelledby', 'modalTitle'); }
   modalReturn = document.activeElement; modalCancel = cancel || null;
   $('modal').classList.remove('hidden'); document.body.classList.add('modal-open');
   for (const id of ['table', 'start']) $(id).setAttribute('aria-hidden', 'true');
-  const f = b.querySelector('button, textarea, input'); if (f) f.focus();
+  b.scrollTop = 0;
+  const f = b.querySelector('button, textarea, input');
+  if (opts.focus) opts.focus.focus(); else if (h && b.scrollHeight > b.clientHeight) h.focus({ preventScroll: true }); else if (f) f.focus({ preventScroll: true });
 }
 function closeModal() {
   if (modalPaused) { modalPaused = false; timerEvent('resume'); }
   $('modal').classList.remove('readyscreen');
   $('modal').classList.add('hidden'); document.body.classList.remove('modal-open');
+  $('modalBox').innerHTML = '';
   for (const id of ['table', 'start']) $(id).removeAttribute('aria-hidden');
   if (modalReturn && document.contains(modalReturn)) modalReturn.focus();
   modalCancel = null;
@@ -1079,7 +1083,7 @@ function frameState(live, e) {
   return Object.assign({}, live, {
     o: live.o.map((p, i) => Object.assign({}, p, b.o[i])), x: live.x.map((p, i) => Object.assign({}, p, b.x[i])),
     arrow_lines: b.arrow_lines, influence: b.influence || live.influence, clock: b.clock, phase: b.phase, tokens: b.tokens, pending: b.pending, inbound: b.inbound,
-    shot: b.shot, bonus: b.bonus, turnovers: b.turnovers, summary: b.summary, legal: [], can_act: false,
+    shot: b.shot, bonus: b.bonus, turnovers: b.turnovers, summary: b.summary, legal: [], can_act: false, turn: e.turn,
     side_to_act: null, stage: b.stage === 'over' ? 'replay' : b.stage, result: null });
 }
 function showFeedIfNew() {
@@ -1327,3 +1331,92 @@ const LEVEL_NOTE = {
 };
 function showLevelNote() { const n = $('levelNote'); if (n) n.textContent = LEVEL_NOTE[$('level').value] || ''; }
 if ($('level')) { $('level').addEventListener('change', showLevelNote); showLevelNote(); }
+
+
+// ---------------------------------------------------------------- Coach Vision on the sideline
+let coachSaid = null;
+function renderCoachLine() {
+  const box = $('coachLine'); if (!box) return;
+  box.innerHTML = '';
+  const s = st; if (!s || !s.can_act || s.stage === 'over' || replay) return;
+  const side = s.side_to_act, mine = s.scout && s.scout.mine;
+  let text = null;
+  if (side === 'O' && mine && mine.hunt) text = `Your call was to hunt O${mine.hunt.o} against X${mine.hunt.x}. Get him the ball where no arrow can reach the lane, then make X${mine.hunt.x} guard him.`;
+  else if (side === 'X' && mine && mine.protect) text = `Your call was to protect X${mine.protect.x}. Don't leave him with two jobs: keep help beside him and his arrow on his man.`;
+  else if (side === 'O' && s.level === 'learn') text = 'Pick a goal before you pick an action: which matchup is ours, and what shot does it lead to?';
+  else if (side === 'X' && s.level === 'learn') text = 'Read the arrows: every pass lane either has a defender who can reach it, or it doesn\'t.';
+  if (!text) return;
+  const key = `${s.possession}:${s.phase}:${side}`;
+  box.append(PMCoach.line('coach', text, { compact: true, speak: false, live: coachSaid !== key }));
+  coachSaid = key;
+}
+
+// ---------------------------------------------------------------- the play story: one diagram per phase
+// When a phase ends its diagram appears (every turn's actions in notation, numbered by turn), and Continue
+// moves on. The story so far is always a tap away; each diagram can be saved as an image.
+let lastShown = {};               // possession -> the highest phase whose diagram has been shown
+let diagramOpen = false, phasesInit = false;
+function pendingPhase() {
+  if (!st || st.placing || !st.possession) return null;
+  const limit = st.stage === 'over' ? st.phase : st.phase - 1;
+  if (!phasesInit) { phasesInit = true; lastShown[st.possession] = st.stage === 'over' ? st.phase : limit; return null; }
+  const done = lastShown[st.possession] || 0;
+  return done < limit ? { possession: st.possession, phase: done + 1 } : null;
+}
+function diagramDue() {
+  const due = pendingPhase();
+  if (!due || diagramOpen) return !!due;
+  if (!$('modal').classList.contains('hidden')) return true;    // another dialog first (a roll, a handover)
+  diagramOpen = true;
+  showPhaseDiagram(due).catch(() => { diagramOpen = false; lastShown[due.possession] = due.phase; });
+  return true;
+}
+function phaseTitle(p) { return `Phase ${p.phase}`; }
+function phaseSub(p) { return `clock ${p.clock}${p.end_clock != null && p.end_clock !== p.clock ? ' to ' + p.end_clock : ''}${p.over ? ' · possession over' : ''}`; }
+function phaseWords(p) {
+  const out = [];
+  for (const e of p.entries) for (const o of (e.outcomes || [])) if (o.tone !== 'info' || /lands|New phase/.test(o.text)) out.push(o.text);
+  return out;
+}
+async function showPhaseDiagram(due) {
+  const story = await api(`/api/story?code=${G.code}`);
+  const p = story.phases.find(x => x.possession === due.possession && x.phase === due.phase);
+  if (!p || !p.start) { diagramOpen = false; lastShown[due.possession] = due.phase; render(); return; }
+  const dia = PM.phaseDiagram(st.zones, p.start, p.entries, { title: phaseTitle(p), subtitle: phaseSub(p), arrowMode: story.arrow_mode });
+  const words = phaseWords(p);
+  const kids = [el('h2', { text: `${phaseTitle(p)} on the whiteboard` }),
+    el('p', { class: 'note', text: 'Every action of the phase in coaching notation: black for the offence, red for the defence, each marked with its turn number. The board shows where the phase started.' }),
+    el('div', { class: 'diagrambox' }, [dia]),
+    words.length ? el('ul', { class: 'phasewords' }, words.map(w => el('li', { text: w }))) : null,
+    el('div', { class: 'buttons' }, [
+      el('button', { class: 'primary', id: 'phaseContinue', text: 'Continue', onclick: () => { lastShown[due.possession] = due.phase; diagramOpen = false; closeModal(); render(); } }),
+      el('button', { text: 'Save as image', onclick: () => saveDiagram(dia, `${st.code}_possession${p.possession}_phase${p.phase}.png`) }),
+      el('button', { text: 'The story so far', onclick: () => { lastShown[due.possession] = due.phase; diagramOpen = false; closeModal(); showStory(); } })])];
+  modal(kids, () => { lastShown[due.possession] = due.phase; diagramOpen = false; render(); });
+  announce(`${phaseTitle(p)} over. ${words.join(' ')}`);
+  const b = $('phaseContinue'); if (b) b.focus();
+}
+async function saveDiagram(dia, name) {
+  try {
+    const blob = await PM.toPng(dia, 2);
+    const a = el('a', { href: URL.createObjectURL(blob), download: name }); document.body.append(a); a.click(); a.remove();
+  } catch (e) { alert(e.message); }
+}
+async function showStory() {
+  let story; try { story = await api(`/api/story?code=${G.code}`); } catch (e) { alert(e.message); return; }
+  const kids = [el('h2', { text: 'The story of the play' }),
+    el('p', { class: 'note', text: `${story.teams[0]} v ${story.teams[1]}. One diagram a phase (two seconds of play); each action carries its turn number.` })];
+  const dias = [];
+  for (const p of story.phases) {
+    if (!p.start) continue;
+    const dia = PM.phaseDiagram(st.zones, p.start, p.entries, { title: `Possession ${p.possession} · ${phaseTitle(p)}`, subtitle: phaseSub(p), arrowMode: story.arrow_mode });
+    dias.push([dia, p]);
+    kids.push(el('section', { class: 'storyphase' }, [el('div', { class: 'diagrambox' }, [dia]),
+      el('ul', { class: 'phasewords' }, p.entries.filter(e => e.mark).map(e => el('li', { text: `${e.side === 'O' ? 'O' : 'X'} turn ${e.turn}: ${e.text}` })))]));
+  }
+  if (!dias.length) kids.push(el('p', { text: 'No phase has been played yet.' }));
+  kids.push(el('div', { class: 'buttons' }, [
+    dias.length ? el('button', { text: 'Save all as images', onclick: async () => { for (const [d, p] of dias) await saveDiagram(d, `${st.code}_possession${p.possession}_phase${p.phase}.png`); } }) : null,
+    el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); render(); } })]));
+  modal(kids, () => render());
+}

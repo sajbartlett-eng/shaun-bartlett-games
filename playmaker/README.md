@@ -63,16 +63,54 @@ then publishes them. To rebuild by hand: `python -m playmaker_web.build_site`.
 - **Server version:** `playmaker/playtest_logs/<date>_<code>.jsonl`, written as you play.
 - Either log works with `python -m playmaker_engine review <file>.jsonl`.
 
+## The coach's clipboard (the interface)
+
+The page is a coach's clipboard: a whiteboard court with Xs and Os in marker, paper sheets for the cards and
+trackers, and two characters. **Coach Vision** teaches the reads (scouting, goals, mismatches, shot quality);
+the **Referee** makes every call (rolls, fouls, turnovers, the clock). Both show their words; both can speak
+(Web Speech, a toggle; off by default in play, on in the course).
+
+- **Start screen:** four paths. *Learn the rules* is a guided course of fourteen lessons, each with a
+  whiteboard drawn in notation and read by the coach or the referee (`docs/clipboard_course.png`). *Play the
+  computer* (the computer takes the other player's seat and follows the swap of sides), *Play a friend* and
+  *Scenario cards*. The timer, the seed and the computer-by-side settings are under *More options*.
+- **Notation, live:** every action is drawn on the court as a coach draws it: a solid line with an arrowhead
+  for a cut, a zigzag for a dribble, a dashed line for a pass, a line ending in a bar for a screen (the T),
+  a line to the rim with a small ball for a shot; a defender's new facing as an arrowhead, red marks at the
+  point of contact for an intercept, steal or challenge (a slash when the ball is lost), an arc over the
+  shooter for a contest. Black for the offence, red for the defence. The marks of the turn in play stay on
+  the court until the turn ends; the other side's turn is stepped through one action at a time with its
+  marks drawn as it goes (`docs/clipboard_turn.png`).
+- **One diagram a phase:** when a phase (two seconds) ends, its diagram appears: the board as the phase
+  started, every action of the phase, each line carrying its turn number (the first offence turn and the
+  defence's answer are both 1, the next pair 2, and so on). Continue moves on; *Save as image* downloads it;
+  *Play story* shows every phase so far and saves them all (`docs/clipboard_phase.png`,
+  `docs/clipboard_story.png`). The story is also what the end screen leads with.
+- **The coach on the sideline:** on your turn a line from Coach Vision restates your scouting call (the
+  matchup to hunt, the weakness to protect). The referee reads each roll before it is thrown and calls the
+  result; in the step-through he calls the other side's rolls and turnovers.
+- **Legibility and access:** body text in a plain sans at 15 px, the marker hand for headings and the board;
+  zone washes are pale and every square is labelled on the live court; dialogs open at their title and trap
+  focus; pieces and targets are buttons with full names; the defender reach (zones of influence) can be
+  hidden; `prefers-reduced-motion` and forced colours are respected; an axe-core audit of every screen
+  reports no violations. Phones get a single column with the court first and tabs for the panels
+  (`docs/clipboard_phone.png`).
+
+Everything drawn comes from the engine's state and the actions it accepted: the web layer records a
+notation mark for each action (`playmaker_web/game.py: notation`) and the drawing library
+(`playmaker_web/static/notation.js`) is shared by the live court, the step-through, the diagrams and the
+course, so they can't drift apart.
+
 ## Playtest in the browser (step 3)
 
 ```
 python -m playmaker_web                 # serves http://localhost:8765 (add --port N to change it)
 ```
 
-Open the page, pick **Full game** (two possessions, sides swap, the preview pack's table setup),
-**Scenario card** (any of the 16) or **One possession**, then **Hot-seat** (one screen) or **Remote**.
-Tick *computer plays offence/defence* to play alone against the test opponent (the greedy baseline:
-it is a sparring partner, not a strong player).
+Open the page and pick a path (see *The coach's clipboard* above). *Play a friend* offers **Full game** (two
+possessions, sides swap, the preview pack's table setup), **Scenario card** (any of the 16) or **One
+possession**, then **Hot-seat** (one screen) or **Remote**. *Play the computer* picks the level (Rookie,
+Starter, All-Star) and which seat you start in.
 
 - **Playing:** click one of your players (or Tab to it and press Enter), then an action. Only the
   engine's legal actions are offered. Squares, receivers and T directions light up; defenders pick an
