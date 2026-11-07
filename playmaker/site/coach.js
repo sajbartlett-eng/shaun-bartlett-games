@@ -94,7 +94,7 @@ window.PMCoach = (function () {
       board: { o: SET.o, x: SET.x, marks: [M('move', 'O', 1, 'C9', 'E7'), M('qs', 'O', 3, 'A3', 'A5')] } },
     { id: 'arrows', who: 'coach', title: 'Defenders face one way',
       text: "Each X has an arrow: the way he is facing. It decides what he can contest, who he can steal from, and where he can jump a pass. The hatched squares are his reach along that arrow this phase. Read the arrows before every pass: a defender facing away from the lane is a defender who is not there.",
-      board: { o: SET.o, x: [X('I10', 'N'), X('D8', 'E'), X('N8', 'NW'), X('G4', 'N'), X('N4', 'N')] } },
+      board: { o: SET.o, x: [X('I10', 'N'), X('D8', 'E'), X('N8', 'NW'), X('G4', 'N'), X('N4', 'N')], reach: [['E8', 2], ['F8', 2], ['G8', 2], ['M9', 3], ['L10', 3], ['J10', 1], ['I9', 1]] } },
     { id: 'pass', who: 'coach', title: 'Passing and the lane',
       text: "A pass is a dashed line. Once you declare it, the pass line is fixed and the defence answers before it lands. A defender standing on the line can intercept, whatever he faces. One who can reach the line with a single straight movement along his arrow may jump the lane, then intercept. The squares next to you are safe: nobody intercepts there, though they can try a steal.",
       board: { o: SET.o, x: SET.x, marks: [M('pass', 'O', 0, 'I11', 'I11', { target: 'O9' }), M('move', 'X', 2, 'N8', 'L10', { arrow_from: 7, arrow_to: 7 }), M('intercept', 'X', 2, 'L10', 'L10', { target: 'O9', pass_from: 'I11' })] } },
@@ -141,6 +141,15 @@ window.PMCoach = (function () {
     const pg = svg('g');
     b.o.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceO(g, x, y, i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null }); pg.append(g); });
     b.x.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceX(g, x, y, i + 1, [p.arrow]); pg.append(g); });
+    if (b.reach) {                   // a defender's reach along his arrow, as the live board hatches it
+      const g = svg('g', { 'aria-hidden': 'true' });
+      for (const [sq, n] of b.reach) {
+        const [x, y] = PM.sqXY(sq);
+        g.append(svg('rect', { x: PM.px(x) + 1, y: PM.py(y) + 1, width: PM.S - 2, height: PM.S - 2, fill: 'url(#zhatch)', stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1 }));
+        g.append(svg('text', { class: 'zonenum', x: PM.px(x) + 3, y: PM.py(y) + PM.S - 4 }, String(n)));
+      }
+      root.append(g);
+    }
     root.append(pg);
     if (b.marks) PM.marks(root, b.marks, { numbers: true });
     return root;

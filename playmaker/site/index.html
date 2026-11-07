@@ -15,6 +15,7 @@
 <main id="start" class="panel start">
   <h1>Playmaker <span class="sub">the coach's clipboard</span></h1>
   <div id="startCoach"></div>
+  <div id="resumeRow"></div>
   <nav class="paths" aria-label="How do you want to play?">
     <button class="path" data-path="learn"><span class="path-title">Learn the rules</span><span class="path-sub">A guided course with Coach Vision: ten minutes, with the whiteboard.</span></button>
     <button class="path" data-path="computer"><span class="path-title">Play the computer</span><span class="path-sub">Two possessions, sides swap. Rookie to practise your reads, All-Star for the full test.</span></button>
@@ -98,8 +99,6 @@
     <main id="tableMain">
       <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
       <div id="coachLine" class="coachline"></div>
-      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
-      <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <section id="stepBar" class="stepbar hidden" aria-live="polite" aria-label="The other side's turn, one action at a time"></section>
       <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
         <div id="phoneTimer" class="phoneonly"></div>
@@ -110,6 +109,8 @@
         <div id="sideButtons" class="buttons"></div>
         <div id="error" class="error" role="alert"></div>
       </section>
+      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
+      <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <div id="scenarioCard" class="scenariocard hidden"></div>
       <nav class="tabs phoneonly" aria-label="Panels">
         <button data-tab="off" class="active">Offence tracker</button><button data-tab="def">Defence tracker</button><button data-tab="cards">Cards</button><button data-tab="log">Log</button>

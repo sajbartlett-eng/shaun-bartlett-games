@@ -94,7 +94,9 @@ function initPaths(showKind) {
   const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Take the course and I'll walk you through the whiteboard, the rules and how to read a matchup. Otherwise pick a game.", { speak: false, live: false });
   $('startCoach').append(greet);
   document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
-  let done = false; try { done = localStorage.getItem('pm_course_done') === '1'; } catch (e) { /* ignore */ }
+  let done = false, saved = null; try { done = localStorage.getItem('pm_course_done') === '1'; saved = JSON.parse(localStorage.getItem('pm_game') || 'null'); } catch (e) { /* ignore */ }
+  if (saved && saved.code) $('resumeRow').append(el('button', { text: `Resume the last game (${saved.code})`, onclick: async () => {
+    try { await api(`/api/state?code=${saved.code}&token=${saved.token}`); G = saved; enterTable(); } catch (e) { $('resumeRow').innerHTML = ''; $('resumeRow').append(el('p', { class: 'note', text: 'That game is no longer on this server.' })); } } }));
   if (done) choosePath('computer', showKind, true);
 }
 function choosePath(which, showKind, quiet) {
@@ -108,7 +110,8 @@ function choosePath(which, showKind, quiet) {
   $('aiSeatRow').classList.toggle('hidden', !computer);
   $('modeRow').classList.toggle('hidden', computer);
   if (computer) $('mode').value = 'hotseat';
-  if (scenario) { $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild); $('aiLevel').value = $('aiLevel').value || 'rookie'; }
+  if (scenario && !$('aiLevel').querySelector('option[value=""]')) $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild);
+  if (!scenario) { const none = $('aiLevel').querySelector('option[value=""]'); if (none) none.remove(); }
   $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
   showKind();
   if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = $('setup').querySelector('select'); if (f) f.focus({ preventScroll: true }); }
@@ -446,7 +449,7 @@ function drawInfluence(c) {
       const sprint = q.kind === 'sprint';
       g.append(svg('rect', { class: 'zone ' + (sprint ? 'zone-sprint' : 'zone-move'), x: px(q.x) + inset, y: py(q.y) + inset,
         width: S - 2 * inset, height: S - 2 * inset, fill: `url(#${sprint ? 'zsprint' : 'zhatch'})`,
-        stroke: 'rgba(31,42,68,0.6)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
+        stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
       const t = svg('text', { class: 'zonenum', x: px(q.x) + 3 + (k - 1) * 8, y: py(q.y) + S - 4 }); t.textContent = z.defender + 1; g.append(t);
     }
   }
@@ -614,6 +617,7 @@ async function undo() {
 }
 
 async function submit(a) {
+  if (busy) return;                      // a second tap while the first action is in flight is ignored, not sent stale
   $('error').textContent = '';
   if (a.roll && a.roll.length) {
     const ok = await confirmRoll(a);
