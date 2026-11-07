@@ -412,10 +412,48 @@ def mti_approach(state, a):
 
 
 def approach_moves(state, j=None):
-    """The movements that open 'move, then Intercept' against the pending pass (all defenders, or j)."""
-    if not state.pending or state.turn_n != 0:
+    """The movements that open 'move, then Intercept' against the pending pass (all defenders, or j): built from
+    the geometry (the square where each arrow line meets the pass) rather than every movement on the board."""
+    if not state.pending or state.turn_n != 0 or state.stage != 'play':
         return []
-    return [a for a in movement_actions(state, 'X', state.ctx.rules) if (j is None or a.piece == j) and mti_approach(state, a)]
+    rules = state.ctx.rules
+    passer, recv = state.pending
+    pa, pb = state.o[passer], state.o[recv]
+    ring = passer_ring(state)
+    occ = state.occupied()
+    out = []
+    for jj in (range(5) if j is None else (j,)):
+        p = state.x[jj]
+        qs = state.ctx.dfn[jj].qs
+        for d in G.lines(rules, state.arrows[jj]):
+            n = lane_meet(p, d, pa, pb)
+            if not n:
+                continue
+            path = tuple(B.add(p, (B.DIRS[d][0] * k, B.DIRS[d][1] * k)) for k in range(1, n + 1))
+            q = path[-1]
+            if not B.on_board(q) or q in ring or q in occ:
+                continue
+            for kind in ('move', 'qs', 'sprint'):
+                if not can_move_kind(state, 'X', jj, kind):
+                    continue
+                if kind == 'move':
+                    shapes = B.move_paths(p, rules)
+                elif kind == 'qs':
+                    shapes = B.qs_paths(p, qs, rules) if qs > 0 else []
+                else:
+                    shapes = [sp for _, sp in B.sprint_paths(p, qs, rules)] if (qs > 0 or not rules.sprint_needs_qs) else []
+                if not any(tuple(sh) == path for sh in shapes):
+                    continue
+                if kind == 'move':
+                    cands = [_new(Action, ('move', 'X', jj, q, a, -1, '')) for a in range(8)]
+                elif kind == 'qs':
+                    cands = [_new(Action, ('qs', 'X', jj, q, -1, -1, ''))]
+                else:
+                    cands = [_new(Action, ('sprint', 'X', jj, q, -1, -1, ''))]
+                    if rules.arrow_mode == 'wedge':
+                        cands.append(_new(Action, ('sprint', 'X', jj, q, (d - 1) % 8, -1, '')))
+                out += [c for c in cands if mti_approach(state, c)]
+    return out
 
 
 def lane_marks(pend):
