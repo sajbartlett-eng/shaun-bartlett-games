@@ -280,8 +280,10 @@ function renderTracker(id, side) {
   if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
   box.append(el('div', { class: 'waits interceptrule' }, [
     el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
-    el('div', { text: 'Jump the lane: one straight Move or Quick Step along your arrow to where it meets the pass. No Sprint, no turn.' }),
-    el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' })]));
+    el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
+    el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' }),
+    el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]));
+  box.append(el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }));
   if (side === 'O') box.append(el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
     ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
     : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }));
@@ -576,7 +578,7 @@ function renderActions() {
             const ts = by[j], parts = [];
             const thr = ts.filter(t => t.how === 'through'), jmp = ts.filter(t => t.how === 'jump'), fol = ts.filter(t => t.how === 'follow');
             if (thr.length) parts.push(`through his square (${thr[0].sq})`);
-            if (jmp.length) parts.push('jumps the lane to ' + [...new Set(jmp.map(t => `${t.sq} (${t.by})`))].join(' or '));
+            if (jmp.length) parts.push('one straight movement along his arrow onto the line at ' + [...new Set(jmp.map(t => `${t.sq} (${t.by})`))].join(' or ') + ', then Intercept');
             if (fol.length) parts.push(`moves, then jumps (${new Set(fol.map(t => t.sq)).size} crossing square${new Set(fol.map(t => t.sq)).size === 1 ? '' : 's'})`);
             const old = ts.filter(t => t.how === 'direct' || t.how === 'approach');
             if (old.length) parts.push(old[0].how === 'direct' ? 'on the line' : 'arrow across (must move onto the line first)');
