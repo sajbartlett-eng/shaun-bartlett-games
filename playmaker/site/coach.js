@@ -93,25 +93,25 @@ window.PMCoach = (function () {
       text: "A Move goes up to three squares straight or two on the diagonal, once per player each phase. A Quick Step is a short burst, as many squares as the card says. A Sprint is a Move plus the Quick Step in one straight line. Solid lines with an arrowhead are cuts: here O2 cuts in and O4 lifts.",
       board: { o: SET.o, x: SET.x, marks: [M('move', 'O', 1, 'C9', 'E7'), M('qs', 'O', 3, 'A3', 'A5')] } },
     { id: 'arrows', who: 'coach', title: 'Defenders face one way',
-      text: "Each X has an arrow: the way he is facing. It decides what he can contest, who he can steal from, and where he can jump a pass. The hatched squares are his reach along that arrow this phase. Read the arrows before every pass: a defender facing away from the lane is a defender who is not there.",
+      text: "Each X has an arrow: the way the defender is facing. It decides what that defender can contest, who they can steal from, and where they can jump a pass. The hatched squares are the reach along that arrow this phase. Read the arrows before every pass: a defender facing away from the lane is a defender who is not there.",
       board: { o: SET.o, x: [X('I10', 'N'), X('D8', 'E'), X('N8', 'NW'), X('G4', 'N'), X('N4', 'N')], reach: [['E8', 2], ['F8', 2], ['G8', 2], ['M9', 3], ['L10', 3], ['J10', 1], ['I9', 1]] } },
     { id: 'pass', who: 'coach', title: 'Passing and the lane',
-      text: "A pass is a dashed line. Once you declare it, the pass line is fixed and the defence answers before it lands. A defender standing on the line can intercept, whatever he faces. One who can reach the line with a single straight movement along his arrow may jump the lane, then intercept. The squares next to you are safe: nobody intercepts there, though they can try a steal.",
+      text: "A pass is a dashed line. Once you declare it, the pass line is fixed and the defence answers before it lands. A defender standing on the line can intercept, whichever way they face. One who can reach the line with a single straight movement along the arrow may jump the lane, then intercept. The squares next to you are safe: nobody intercepts there, though they can try a steal.",
       board: { o: SET.o, x: SET.x, marks: [M('pass', 'O', 0, 'I11', 'I11', { target: 'O9' }), M('move', 'X', 2, 'N8', 'L10', { arrow_from: 7, arrow_to: 7 }), M('intercept', 'X', 2, 'L10', 'L10', { target: 'O9', pass_from: 'I11' })] } },
     { id: 'pickoff', who: 'ref', title: 'The call on a pick-off',
       text: "When a defender intercepts, we roll. Pass rating against Intercept rating: the pass completes on a twenty-sided die roll at or under the difference. If it is picked off: minus five, the clock loses two seconds, the ball goes back to the passer and play goes on. In the last phase a pick-off ends the possession at nothing.",
       board: { o: SET.o, x: SET.x, marks: [M('pass', 'O', 0, 'I11', 'I11', { target: 'O9', result: 'picked off' }), M('intercept', 'X', 2, 'L10', 'L10', { target: 'O9', result: 'picked off' })] } },
     { id: 'dribble', who: 'coach', title: 'The dribble',
-      text: "The zigzag is a dribble: you attack the defender in front of you. Your Dribble against his Agility. Win it and he is locked, frozen for the phase, and you may drive through his zone. Lose it and you are locked instead: no more dribbling, so pass or shoot.",
+      text: "The zigzag is a dribble: you attack the defender in front of you. Your Dribble against their Agility. Win it and the defender is locked, frozen for the phase, and you may drive through that zone. Lose it and you are locked instead: no more dribbling, so pass or shoot.",
       board: { o: SET.o, x: SET.x, marks: [M('dribble', 'O', 0, 'I11', 'I11', { target: 'I10', result: 'won' })] } },
     { id: 'screen', who: 'coach', title: 'Screens',
-      text: "A screen is a line ending in a bar, the T. The screener stands still and the T square blocks the defender from cutting through the corner. Set it as your first action, or second straight after your own Move; it ends your turn and holds until you move again. The defence can challenge it: his Challenge against your Screen rating.",
+      text: "A screen is a line ending in a bar, the T. The screener stands still and the T square blocks the defender from cutting through the corner. Set it as your first action, or second straight after your own Move; it ends your turn and holds until you move again. The defence can challenge it: the defender's Challenge against your Screen rating.",
       board: { o: [O('I11', { ball: true }), O('J10', { screen: { dir: DIR('W') } }), O('O9'), O('A3'), O('Q3')], x: SET.x, marks: [M('screen', 'O', 1, 'J10', 'J10', { target: 'I10', dir: DIR('W') })] } },
     { id: 'shot', who: 'ref', title: 'Shots and the contest',
-      text: "Declare a shot and the defence gets a reaction: up to two actions. Then one defender next to the shooter may contest. Facing the shooter, the contest is clean: the look is the points times the shot rating less the contest rating. Facing away, he risks a foul. We do not roll for makes; we score the quality of the look. Thirty or more is Excellent.",
+      text: "Declare a shot and the defence gets a reaction: up to two actions. Then one defender next to the shooter may contest. Facing the shooter, the contest is clean: the look is the points times the shot rating less the contest rating. Facing away, the contester risks a foul. We do not roll for makes; we score the quality of the look. Thirty or more is Excellent.",
       board: { o: SET.o, x: SET.x, marks: [M('shot', 'O', 0, 'I11', 'I11', { target: 'I2', shot: 'three' }), M('contest', 'X', 0, 'I10', 'I10', { target: 'I11' })] } },
     { id: 'steal', who: 'ref', title: 'Steals',
-      text: "A defender next to the ball with his arrow on the carrier may try a steal. First a foul roll on his Foul rating: a foul gives the offence five, and a second one gives free throws. Then his Steal against the carrier's Dribble. Stolen: minus five and two seconds, and the ball stays with the carrier. On a declared shot a steal cancels the shot.",
+      text: "A defender next to the ball with the arrow on the carrier may try a steal. First a foul roll on the defender's Foul rating: a foul gives the offence five, and a second one gives free throws. Then the defender's Steal against the carrier's Dribble. Stolen: minus five and two seconds, and the ball stays with the carrier. On a declared shot a steal cancels the shot.",
       board: { o: SET.o, x: SET.x, marks: [M('steal', 'X', 0, 'I10', 'I10', { target: 'I11', result: 'stolen' })] } },
     { id: 'cards', who: 'coach', title: 'Scouting the cards',
       text: "Every player is a card. The triangles are what matters: up is above average, down is below. Scouting is finding the pairings where our up meets their down. Hunt that matchup. And find where their up meets our down, and protect it.",
@@ -141,7 +141,7 @@ window.PMCoach = (function () {
     const pg = svg('g');
     b.o.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceO(g, x, y, i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null }); pg.append(g); });
     b.x.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceX(g, x, y, i + 1, [p.arrow]); pg.append(g); });
-    if (b.reach) {                   // a defender's reach along his arrow, as the live board hatches it
+    if (b.reach) {                   // a defender's reach along the arrow, as the live board hatches it
       const g = svg('g', { 'aria-hidden': 'true' });
       for (const [sq, n] of b.reach) {
         const [x, y] = PM.sqXY(sq);
