@@ -186,7 +186,7 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
 .recent h3 { margin: 0 0 4px; }
 .fe { padding: 6px 0; border-top: 1px solid var(--line); } .fe:first-of-type { border-top: none; }
 .fe-head { font-weight: bold; font-size: 15px; }
-.fe-roll { margin: 4px 0 2px 6px; font-size: 14px; }
+.fe-roll { margin: 4px 0 2px 6px; font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .fe-out { margin: 4px 0 0 6px; padding: 4px 8px; border-left: 6px solid #8b7f6b; background: #f4f1ea; font-weight: bold; font-size: 15px; }
 .fe-out.bad_O { border-left-color: #b3261e; background: #fbe9e7; }
 .fe-out.good_O { border-left-color: #2e6b3a; background: #e7f2e8; }

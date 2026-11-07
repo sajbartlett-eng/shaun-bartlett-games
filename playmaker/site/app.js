@@ -737,7 +737,7 @@ async function renderLog() {
     const ol = $('log'); ol.innerHTML = '';
     for (const r of log.slice(-60)) {
       if (r.type === 'action') ol.append(el('li', { text: `[${r.actor}] ${r.action.text}` }));
-      else if (r.type === 'roll') ol.append(el('li', {}, [rollerChip(r.roller), ` rolled ${r.face}: ${r.text.replace(/^(Offence|Defence) rolls: /, '')} → ${r.picked}`]));
+      else if (r.type === 'roll') ol.append(el('li', {}, [rollerChip(r.roller), ` ${r.text.replace(/^(Offence|Defence) rolls: /, '')}. `, el('strong', { text: `Rolled ${r.face}: ${r.picked}.` })]));
       else if (r.type === 'placement') ol.append(el('li', { text: `[${r.actor}] ${r.side === 'O' ? 'Offence' : 'Defence'} placed: ${r.squares.join(' ')}` }));
       else if (r.type === 'end') ol.append(el('li', { text: `Possession ${r.possession}: ${r.score.total} (${r.score.band})` }));
       else if (r.type === 'possession') ol.append(el('li', { text: 'Second possession: sides swap' }));
@@ -1064,7 +1064,7 @@ function feedEntry(e) {
   for (const r of e.rolls) {
     const ok = r.face <= r.need;
     kids.push(el('div', { class: 'fe-roll' }, [rollerChip(r.roller), el('span', { class: 'die small' + (r.roller === 'X' ? ' black' : ''), text: r.face }),
-      ` ${r.what}: ${r.first} on ${r.need} or less → rolled ${r.face}: `, el('strong', { text: r.picked.toUpperCase() })]));
+      el('span', {}, [`${r.what}: ${r.first} on ${r.need} or less. `, el('strong', { text: `Rolled ${r.face}: ${r.picked}.` })])]));
   }
   for (const o of e.outcomes) kids.push(el('div', { class: 'fe-out ' + o.tone, text: o.text }));
   return el('div', { class: 'fe' + (e.rolls.length || e.outcomes.some(o => o.tone !== 'info') ? ' big' : '') }, kids);
@@ -1124,9 +1124,9 @@ function renderStep() {
   const label = !last ? 'OK: next action' : yours ? 'OK: your turn' : replay.live.stage === 'over' ? 'OK: see the result' : 'OK';
   const calls = e.outcomes.filter(o => o.tone !== 'info').map(o => o.text);
   const call = e.rolls.length ? e.rolls.map(r => `${r.what.replace(/ \(.*\)$/, '')}: rolled ${r.face}, ${r.picked}.`).join(' ') + (calls.length ? ' ' + calls.join(' ') : '') : calls.join(' ');
-  bar.append(el('div', { class: 'step-count', text: `${sideName(e.side)}${e.actor === 'ai' ? ' (computer)' : ''} · action ${replay.k + 1} of ${n}` }),
+  bar.append(...[el('div', { class: 'step-count', text: `${sideName(e.side)}${e.actor === 'ai' ? ' (computer)' : ''} · action ${replay.k + 1} of ${n}` }),
     feedEntry(e), call ? PMCoach.line('ref', call, { compact: true, speak: false, live: false }) : null,
-    el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn }));
+    el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn })].filter(Boolean));   // no call, no referee line (and never a "null")
   announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
   $('stepOk').focus();
 }
@@ -1420,8 +1420,8 @@ async function showPhaseDiagram(due) {
   const dia = PM.phaseDiagram(st.zones, p.start, p.entries, { title: phaseTitle(p), subtitle: phaseSub(p), arrowMode: story.arrow_mode });
   const words = phaseWords(p);
   const kids = [el('h2', { text: `${phaseTitle(p)} on the whiteboard` }),
-    el('p', { class: 'note', text: 'Every action of the phase in coaching notation: black for the offence, red for the defence, each marked with its turn number. The board shows where the phase started.' }),
     el('div', { class: 'diagrambox' }, [dia]),
+    el('p', { class: 'note small', text: 'Black: offence. Red: defence. Each mark carries its turn number; the board is where the phase started.' }),
     words.length ? el('ul', { class: 'phasewords' }, words.map(w => el('li', { text: w }))) : null,
     el('div', { class: 'buttons' }, [
       el('button', { class: 'primary', id: 'phaseContinue', text: 'Continue', onclick: () => { lastShown[due.possession] = due.phase; diagramOpen = false; closeModal(); render(); } }),
