@@ -294,3 +294,4 @@ details.rulesbox summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 details.rulesbox .waits { font-size: 12.5px; }
 details.endsec { margin: 8px 0; border-top: 1px dashed var(--line); padding-top: 4px; }
 details.endsec summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+@media (max-width: 820px) { button.small { min-height: 44px; font-size: 14px; padding: 6px 12px; } }
