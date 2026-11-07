@@ -118,7 +118,7 @@ const [url, shot] = process.argv.slice(2);
   const page = await ctx.newPage();
   await page.goto(url);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
-  await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
+  await page.click('button.path[data-path=friend]'); await page.waitForTimeout(300); await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
   await page.click('#create'); await page.waitForTimeout(1200);
   await page.click('g.piece[aria-label^="O1,"]'); await page.waitForTimeout(400);
   const res = await page.evaluate(() => {
@@ -225,7 +225,7 @@ const [url, shot] = process.argv.slice(2);
   page.on('pageerror', e => console.error('pageerror', e.message));
   await page.goto(url);
   await page.waitForSelector('#loading', { state: 'detached', timeout: 120000 });
-  await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
+  await page.click('button.path[data-path=friend]'); await page.waitForTimeout(300); await page.selectOption('#kind', 'single'); await page.selectOption('#level', 'pro');
   await page.click('#create'); await page.waitForTimeout(1200);
   const count = () => page.evaluate(() => {
     const per = {};

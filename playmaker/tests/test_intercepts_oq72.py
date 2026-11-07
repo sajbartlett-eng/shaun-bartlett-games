@@ -18,7 +18,7 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 
 
-RJ = RC.with_rules(intercept_rule='ring_jump', turnover_cost='legacy')
+RJ = RC.with_rules(intercept_rule='ring_jump', turnover_cost='legacy', arrow_mode='wedge')   # built for the wedge
 
 
 def board(o=TABLE_O, x=TABLE_X, arrows=ARROWS, **kw):
