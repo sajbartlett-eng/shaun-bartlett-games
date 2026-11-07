@@ -65,7 +65,8 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .summary[data-side=X] { border-left: 12px solid var(--red); }
 
 /* ---- the table ---- */
-.tablegrid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 10px; padding: 10px; align-items: start; }
+.tablegrid { display: grid; grid-template-columns: 290px minmax(0, 1fr) 290px; gap: 10px; padding: 10px; align-items: start; }
+@media (min-width: 1500px) { .tablegrid { grid-template-columns: 320px minmax(0, 1fr) 320px; } }
 .side { background: var(--sheet); border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); }
 .side h2 .team { font-weight: normal; color: var(--muted); font-size: 15px; font-family: var(--sans); }
 .cards { display: grid; gap: 5px; }
@@ -88,7 +89,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .waits { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); color: #3b3a36; }
 #tableMain { display: flex; flex-direction: column; align-items: center; }
 #tableMain { position: relative; }
-.clipboard { position: relative; width: 100%; max-width: 780px; background: var(--sheet); border-radius: 12px; padding: 22px 10px 10px; box-shadow: var(--shadow); }
+.clipboard { position: relative; width: 100%; max-width: 900px; background: var(--sheet); border-radius: 12px; padding: 22px 10px 10px; box-shadow: var(--shadow); }
 #court { width: 100%; height: auto; background: transparent; display: block; }
 
 /* the whiteboard court (drawn by notation.js) */
@@ -97,7 +98,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .axis { font-size: 11px; fill: #5a554c; font-weight: 700; }
 .courtlines path, .courtlines line { fill: none; stroke: var(--navy); stroke-width: 2.6; stroke-linecap: round; pointer-events: none; }
 .num { font-size: 16px; font-weight: 700; fill: var(--ink); } .xnum { font-size: 11px; fill: var(--red); }
-.zonenum { font-size: 9px; font-weight: 700; fill: #14286e; }
+.zonenum { font-size: 8.5px; font-weight: 700; fill: #2a3d7a; opacity: .8; }
 .dtitle { font-size: 19px; font-weight: 700; fill: var(--ink); } .dsub { font-size: 12px; fill: #5a554c; }
 .target { fill: rgba(255,255,255,.5); stroke: var(--hi); stroke-width: 3; cursor: pointer; }
 .target:focus, .target:hover { fill: rgba(255,255,255,.9); stroke-width: 4.5; outline: none; }
@@ -115,8 +116,8 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .ghost circle { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 3 3; opacity: .45; }
 .ghost text { font-size: 13px; font-weight: 700; fill: var(--ink); opacity: .45; }
 
-.scenariocard { margin-top: 10px; background: var(--sheet); border-radius: 10px; padding: 10px 14px; max-width: 780px; width: 100%; box-shadow: var(--shadow); }
-.actions { padding: 10px 12px; background: var(--sheet); border-radius: 10px; margin-top: 10px; width: 100%; max-width: 780px; box-shadow: var(--shadow); }
+.scenariocard { margin-top: 10px; background: var(--sheet); border-radius: 10px; padding: 10px 14px; max-width: 900px; width: 100%; box-shadow: var(--shadow); }
+.actions { padding: 10px 12px; background: var(--sheet); border-radius: 10px; margin-top: 10px; width: 100%; max-width: 900px; box-shadow: var(--shadow); }
 .selected { font-weight: 600; margin-bottom: 6px; font-size: 16px; }
 .error { color: var(--warn); font-weight: bold; }
 .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 14px; }
@@ -190,7 +191,7 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
 }
 
 /* the other side's turn, made visible */
-.recent { width: 100%; max-width: 780px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--ink); border-radius: 10px; padding: 8px 12px; box-shadow: var(--shadow); }
+.recent { width: 100%; max-width: 900px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--ink); border-radius: 10px; padding: 8px 12px; box-shadow: var(--shadow); }
 .recent h3 { margin: 0 0 4px; }
 .fe { padding: 6px 0; border-top: 1px solid var(--line); } .fe:first-of-type { border-top: none; }
 .fe-head { font-weight: bold; font-size: 15px; }
@@ -201,14 +202,14 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
 .fe-out.bad_X { border-left-color: #2e6b3a; background: #e7f2e8; }
 .fe-out.good_X { border-left-color: #b3261e; background: #fbe9e7; }
 .fe-out.end { border-left-color: var(--ink); background: #fff6d8; }
-.stepbar { position: sticky; bottom: 0; z-index: 20; width: 100%; max-width: 780px; margin-top: 10px; background: #fffbe8;
+.stepbar { position: sticky; bottom: 0; z-index: 20; width: 100%; max-width: 900px; margin-top: 10px; background: #fffbe8;
   border: 3px solid var(--ink); border-radius: 10px; padding: 8px 12px; box-shadow: 0 -2px 8px rgba(0,0,0,.25); }
 .stepbar .step-count { font-weight: bold; font-size: 0.95em; margin-bottom: 4px; font-family: var(--marker); }
 .stepbar button { margin-top: 6px; width: 100%; min-height: 44px; font-size: 1.05em; }
 @media (max-width: 820px) { .stepbar { position: fixed; left: 0; right: 0; bottom: 0; max-width: none; border-radius: 0; } .recent { max-width: none; } }
 
 /* the card panel and matchup, the scout report, the custom team builder */
-.compare { width: 100%; max-width: 780px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--hi); border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); }
+.compare { width: 100%; max-width: 900px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--hi); border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); }
 .cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .cmp-head h3 { margin: 0; flex: 1 1 100%; }
 .cmp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
 .chips { margin: 2px 0 4px 4px; } .vchip { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 9px; border: 1.5px solid var(--ink); border-radius: 12px; background: #fff; font-size: 13px; }
@@ -280,7 +281,7 @@ details.more { margin: 8px 0; } details.more summary { cursor: pointer; font-wei
 .speak-ref .bubble { border-color: var(--red); } .speak-ref .bubble::before { border-right-color: var(--red); }
 .speak.compact .bubble { font-size: 14.5px; padding: 6px 10px; border-radius: 10px; }
 .speak.compact .bubble::before { top: 16px; } .speak.compact .bubble::after { top: 18px; }
-.coachline { width: 100%; max-width: 780px; margin-top: 8px; }
+.coachline { width: 100%; max-width: 900px; margin-top: 8px; }
 .coachline:empty { display: none; }
 #course { position: fixed; inset: 0; z-index: 30; background: var(--desk); overflow: auto; padding: 16px; }
 .course { max-width: 1100px; margin: 0 auto; background: var(--sheet); border-radius: 12px; padding: 16px 20px 18px; box-shadow: var(--shadow); }
@@ -306,6 +307,8 @@ details.endsec { margin: 8px 0; border-top: 1px dashed var(--line); padding-top:
 details.endsec summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
 @media (max-width: 820px) { button.small { min-height: 44px; font-size: 14px; padding: 6px 12px; } }
 
+#resumeRow:empty { display: none; } #resumeRow { margin: 4px 0 8px; }
+
 </style>
 </head>
 <body>
@@ -314,6 +317,7 @@ details.endsec summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
 <main id="start" class="panel start">
   <h1>Playmaker <span class="sub">the coach's clipboard</span></h1>
   <div id="startCoach"></div>
+  <div id="resumeRow"></div>
   <nav class="paths" aria-label="How do you want to play?">
     <button class="path" data-path="learn"><span class="path-title">Learn the rules</span><span class="path-sub">A guided course with Coach Vision: ten minutes, with the whiteboard.</span></button>
     <button class="path" data-path="computer"><span class="path-title">Play the computer</span><span class="path-sub">Two possessions, sides swap. Rookie to practise your reads, All-Star for the full test.</span></button>
@@ -397,8 +401,6 @@ details.endsec summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
     <main id="tableMain">
       <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
       <div id="coachLine" class="coachline"></div>
-      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
-      <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <section id="stepBar" class="stepbar hidden" aria-live="polite" aria-label="The other side's turn, one action at a time"></section>
       <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
         <div id="phoneTimer" class="phoneonly"></div>
@@ -409,6 +411,8 @@ details.endsec summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
         <div id="sideButtons" class="buttons"></div>
         <div id="error" class="error" role="alert"></div>
       </section>
+      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
+      <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <div id="scenarioCard" class="scenariocard hidden"></div>
       <nav class="tabs phoneonly" aria-label="Panels">
         <button data-tab="off" class="active">Offence tracker</button><button data-tab="def">Defence tracker</button><button data-tab="cards">Cards</button><button data-tab="log">Log</button>
@@ -512,8 +516,8 @@ window.PMNotation = (function () {
     f.append(svg('feDisplacementMap', { in: 'SourceGraphic', in2: 'n', scale: 2.2, xChannelSelector: 'R', yChannelSelector: 'G' }));
     d.append(f);
     const pat = svg('pattern', { id: 'zhatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
-    pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(31,42,68,0.07)' }));
-    pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1.6 }));
+    pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(31,42,68,0.05)' }));
+    pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(31,42,68,0.34)', 'stroke-width': 1.4 }));
     const pat2 = svg('pattern', { id: 'zsprint', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
     pat2.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: 'rgba(31,42,68,0.28)', 'stroke-width': 1.3 }));
     const pat3 = svg('pattern', { id: 'zscreen', width: 6, height: 6, patternUnits: 'userSpaceOnUse' });
@@ -940,7 +944,7 @@ window.PMCoach = (function () {
       board: { o: SET.o, x: SET.x, marks: [M('move', 'O', 1, 'C9', 'E7'), M('qs', 'O', 3, 'A3', 'A5')] } },
     { id: 'arrows', who: 'coach', title: 'Defenders face one way',
       text: "Each X has an arrow: the way he is facing. It decides what he can contest, who he can steal from, and where he can jump a pass. The hatched squares are his reach along that arrow this phase. Read the arrows before every pass: a defender facing away from the lane is a defender who is not there.",
-      board: { o: SET.o, x: [X('I10', 'N'), X('D8', 'E'), X('N8', 'NW'), X('G4', 'N'), X('N4', 'N')] } },
+      board: { o: SET.o, x: [X('I10', 'N'), X('D8', 'E'), X('N8', 'NW'), X('G4', 'N'), X('N4', 'N')], reach: [['E8', 2], ['F8', 2], ['G8', 2], ['M9', 3], ['L10', 3], ['J10', 1], ['I9', 1]] } },
     { id: 'pass', who: 'coach', title: 'Passing and the lane',
       text: "A pass is a dashed line. Once you declare it, the pass line is fixed and the defence answers before it lands. A defender standing on the line can intercept, whatever he faces. One who can reach the line with a single straight movement along his arrow may jump the lane, then intercept. The squares next to you are safe: nobody intercepts there, though they can try a steal.",
       board: { o: SET.o, x: SET.x, marks: [M('pass', 'O', 0, 'I11', 'I11', { target: 'O9' }), M('move', 'X', 2, 'N8', 'L10', { arrow_from: 7, arrow_to: 7 }), M('intercept', 'X', 2, 'L10', 'L10', { target: 'O9', pass_from: 'I11' })] } },
@@ -987,6 +991,15 @@ window.PMCoach = (function () {
     const pg = svg('g');
     b.o.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceO(g, x, y, i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null }); pg.append(g); });
     b.x.forEach((p, i) => { const [x, y] = PM.sqXY(p.sq); const g = svg('g', { class: 'piece' }); PM.pieceX(g, x, y, i + 1, [p.arrow]); pg.append(g); });
+    if (b.reach) {                   // a defender's reach along his arrow, as the live board hatches it
+      const g = svg('g', { 'aria-hidden': 'true' });
+      for (const [sq, n] of b.reach) {
+        const [x, y] = PM.sqXY(sq);
+        g.append(svg('rect', { x: PM.px(x) + 1, y: PM.py(y) + 1, width: PM.S - 2, height: PM.S - 2, fill: 'url(#zhatch)', stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1 }));
+        g.append(svg('text', { class: 'zonenum', x: PM.px(x) + 3, y: PM.py(y) + PM.S - 4 }, String(n)));
+      }
+      root.append(g);
+    }
     root.append(pg);
     if (b.marks) PM.marks(root, b.marks, { numbers: true });
     return root;
@@ -1124,7 +1137,9 @@ function initPaths(showKind) {
   const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Take the course and I'll walk you through the whiteboard, the rules and how to read a matchup. Otherwise pick a game.", { speak: false, live: false });
   $('startCoach').append(greet);
   document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
-  let done = false; try { done = localStorage.getItem('pm_course_done') === '1'; } catch (e) { /* ignore */ }
+  let done = false, saved = null; try { done = localStorage.getItem('pm_course_done') === '1'; saved = JSON.parse(localStorage.getItem('pm_game') || 'null'); } catch (e) { /* ignore */ }
+  if (saved && saved.code) $('resumeRow').append(el('button', { text: `Resume the last game (${saved.code})`, onclick: async () => {
+    try { await api(`/api/state?code=${saved.code}&token=${saved.token}`); G = saved; enterTable(); } catch (e) { $('resumeRow').innerHTML = ''; $('resumeRow').append(el('p', { class: 'note', text: 'That game is no longer on this server.' })); } } }));
   if (done) choosePath('computer', showKind, true);
 }
 function choosePath(which, showKind, quiet) {
@@ -1138,7 +1153,8 @@ function choosePath(which, showKind, quiet) {
   $('aiSeatRow').classList.toggle('hidden', !computer);
   $('modeRow').classList.toggle('hidden', computer);
   if (computer) $('mode').value = 'hotseat';
-  if (scenario) { $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild); $('aiLevel').value = $('aiLevel').value || 'rookie'; }
+  if (scenario && !$('aiLevel').querySelector('option[value=""]')) $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild);
+  if (!scenario) { const none = $('aiLevel').querySelector('option[value=""]'); if (none) none.remove(); }
   $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
   showKind();
   if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = $('setup').querySelector('select'); if (f) f.focus({ preventScroll: true }); }
@@ -1476,7 +1492,7 @@ function drawInfluence(c) {
       const sprint = q.kind === 'sprint';
       g.append(svg('rect', { class: 'zone ' + (sprint ? 'zone-sprint' : 'zone-move'), x: px(q.x) + inset, y: py(q.y) + inset,
         width: S - 2 * inset, height: S - 2 * inset, fill: `url(#${sprint ? 'zsprint' : 'zhatch'})`,
-        stroke: 'rgba(31,42,68,0.6)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
+        stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1, 'stroke-dasharray': sprint ? '3 2' : '' }));
       const t = svg('text', { class: 'zonenum', x: px(q.x) + 3 + (k - 1) * 8, y: py(q.y) + S - 4 }); t.textContent = z.defender + 1; g.append(t);
     }
   }
@@ -1644,6 +1660,7 @@ async function undo() {
 }
 
 async function submit(a) {
+  if (busy) return;                      // a second tap while the first action is in flight is ignored, not sent stale
   $('error').textContent = '';
   if (a.roll && a.roll.length) {
     const ok = await confirmRoll(a);

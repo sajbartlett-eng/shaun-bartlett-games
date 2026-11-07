@@ -43,8 +43,8 @@ window.PMNotation = (function () {
     f.append(svg('feDisplacementMap', { in: 'SourceGraphic', in2: 'n', scale: 2.2, xChannelSelector: 'R', yChannelSelector: 'G' }));
     d.append(f);
     const pat = svg('pattern', { id: 'zhatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
-    pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(31,42,68,0.07)' }));
-    pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(31,42,68,0.45)', 'stroke-width': 1.6 }));
+    pat.append(svg('rect', { width: 6, height: 6, fill: 'rgba(31,42,68,0.05)' }));
+    pat.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'rgba(31,42,68,0.34)', 'stroke-width': 1.4 }));
     const pat2 = svg('pattern', { id: 'zsprint', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
     pat2.append(svg('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: 'rgba(31,42,68,0.28)', 'stroke-width': 1.3 }));
     const pat3 = svg('pattern', { id: 'zscreen', width: 6, height: 6, patternUnits: 'userSpaceOnUse' });
