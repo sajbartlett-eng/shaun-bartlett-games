@@ -1,7 +1,10 @@
 """The interception ruling as refined (intercept_rule='move_then_intercept', the default) and what a turnover costs
 (turnover_cost='minus5_lose_phase', the default, intercepts and steals alike): jumping the lane with one straight
 movement along the arrow, then the Intercept; through you; anything else first lands the pass; the passer's
-ring; the pass angle; the cost; steals in play and on a shot; the catch spot; the pass-lane marks."""
+ring; the pass angle; the cost; steals in play and on a shot; the catch spot; the pass-lane marks.
+The positions were built under the earlier reading of "on the line" (the middle half of the square) and a lane-jump
+Move that could turn; they are pinned to that reading (RC.PRE_RULEBOOK). tests/test_rulebook_nov.py holds the
+rulebook reading: the line through the centre, and the facing kept."""
 from fractions import Fraction as F
 
 import pytest
@@ -20,7 +23,7 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 # The positions were built under the wedge (two arrow lines give more to test); the rule's mechanics are the same
 # under the single arrow, which is the default, and the single-arrow case is tested too.
-WEDGE = RC.with_rules(arrow_mode='wedge')
+WEDGE = RC.with_rules(arrow_mode='wedge', **RC.PRE_RULEBOOK)     # the positions were built under the pre-rulebook line reading
 
 
 def board(o=TABLE_O, x=TABLE_X, arrows=ARROWS, rules=None, **kw):
@@ -78,14 +81,14 @@ def test_a_straight_quick_step_and_a_sprint_along_the_arrow_also_open_it():
 
 
 def test_under_the_single_arrow_only_the_one_line_meets_the_pass():
-    s = passed(board(rules=RC.Rules()), 2)                 # the default: X3's single arrow NW meets I11 -> O9 on L10
+    s = passed(board(rules=RC.with_rules(**RC.PRE_RULEBOOK)), 2)   # the single arrow: X3's single arrow NW meets I11 -> O9 on L10
     assert {m.dest for m in approach_moves(s, 2)} == {P('L10')}
     t = apply(s, mv(s, 2, 'L10'))
     assert t.approach == 2 and icpts(t) == [Action('intercept', 'X', 2)]
 
 
 def test_off_the_arrow_a_turned_path_or_two_movements_do_not():
-    single = RC.with_rules(arrow_mode='single')
+    single = RC.with_rules(arrow_mode='single', **RC.PRE_RULEBOOK)
     s = passed(board(rules=single), 2)                     # single arrow NW: N9 is off his arrow
     t = apply(s, mv(s, 2, 'N9'))
     assert not t.pending and t.ball == 2 and not icpts(t)
@@ -198,7 +201,7 @@ def test_a_failed_intercept_strands_him_on_the_line_with_his_move_used():
 @pytest.mark.parametrize('cost,tos,clock_lost,ends', [('minus5', 1, 0, False), ('minus10', 2, 0, False),
                                                       ('lose_phase', 0, 2, False), ('end_possession', 1, 0, True)])
 def test_the_other_costs(cost, tos, clock_lost, ends):
-    s, t, node = _jumped(rules=RC.with_rules(turnover_cost=cost, arrow_mode='wedge'))
+    s, t, node = _jumped(rules=RC.with_rules(turnover_cost=cost, arrow_mode='wedge', **RC.PRE_RULEBOOK))
     won = force(node, 'failure')
     assert won.tos == tos and (won.stage == 'over') == ends
     if not ends:

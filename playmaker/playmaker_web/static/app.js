@@ -99,6 +99,11 @@ function initPaths(showKind) {
     try { await api(`/api/state?code=${saved.code}&token=${saved.token}`); G = saved; enterTable(); } catch (e) { $('resumeRow').innerHTML = ''; $('resumeRow').append(el('p', { class: 'note', text: 'That game is no longer on this server.' })); } } }));
   if (done) choosePath('computer', showKind, true);
 }
+// Setup, step 2 of the rulebook: roll the d20; the higher roll attacks first (player A, the offence tracker).
+if ($('rollFirst')) $('rollFirst').addEventListener('click', () => {
+  let a, b; do { a = 1 + Math.floor(Math.random() * 20); b = 1 + Math.floor(Math.random() * 20); } while (a === b);
+  $('rollResult').textContent = `Rolled ${a} and ${b}: the ${a > b ? 'first' : 'second'} roller attacks first and is player A, on the offence tracker.`;
+});
 function choosePath(which, showKind, quiet) {
   path = which;
   document.querySelectorAll('button.path').forEach(b => b.setAttribute('aria-pressed', b.dataset.path === which ? 'true' : 'false'));
@@ -109,6 +114,7 @@ function choosePath(which, showKind, quiet) {
   $('aiRow').classList.toggle('hidden', !computer && !scenario);
   $('aiSeatRow').classList.toggle('hidden', !computer);
   $('modeRow').classList.toggle('hidden', computer);
+  $('rollRow').classList.toggle('hidden', which !== 'friend');      // the rulebook's setup: the higher d20 attacks first
   if (computer) $('mode').value = 'hotseat';
   // the last game's choices come back: the computer's level, your seat and the scouting level
   try {

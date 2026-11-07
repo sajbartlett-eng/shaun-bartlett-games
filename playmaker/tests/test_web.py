@@ -277,12 +277,13 @@ def test_computer_places_man_to_man(web):
 def test_the_computers_turn_is_reported_with_rolls_and_results(web):
     """Against the computer, its steals and intercepts come back to the page with their rolls and what
     happened, not only in the log."""
-    g = post(web, '/api/new', dict(mode='hotseat', scenario=6, seed=3, ai=dict(X='greedy')))
+    g = post(web, '/api/new', dict(mode='hotseat', scenario=3, seed=3, ai=dict(X='greedy')))
     tok = dict(code=g['code'], token=g['token'])
     s = state(web, g)
-    # O1 passes to O2: X2 stands on that line, so the computer intercepts
+    # card 3: a defender stands on the line of the pass to O2 (the line passes through his square's centre), so the
+    # computer intercepts
     a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['target'] == 1)
-    assert any(t['how'] == 'through' for t in a['threats'])          # X2's square is on the line
+    assert any(t['how'] == 'through' for t in a['threats'])          # his square is on the line
     r = post(web, '/api/act', dict(tok, action=a))
     feed = r['state']['feed']
     ai = [e for e in feed if e['actor'] == 'ai']

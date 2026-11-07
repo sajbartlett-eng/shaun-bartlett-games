@@ -50,4 +50,5 @@ else as it is now."""
     import os
     from playmaker_engine import rules_config as RC
     if not os.environ.get('PM_LIVE_RULES'):          # PM_LIVE_RULES=1: re-validate under the live rules
-        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach', turnover_cost='legacy'))
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach', turnover_cost='legacy',
+                                                               **RC.PRE_RULEBOOK))

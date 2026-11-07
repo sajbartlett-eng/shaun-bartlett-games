@@ -81,6 +81,7 @@ def test_all_star_takes_the_cut_that_opens_the_lane_over_the_contested_pass():
     assert not (a.kind == 'pass' and a.target == r), a
 
 
+@pytest.mark.usefixtures('legacy_rules')   # a step 3f position (the direct pass is contested under the reading of the line it was built for)
 def test_all_star_prefers_two_clean_passes_to_one_contested():
     s, d = position('two')
     r, m = d['receiver'], d['via']

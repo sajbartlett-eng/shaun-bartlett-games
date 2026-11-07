@@ -2,7 +2,12 @@
 the minus5_lose_phase turnover cost). test_breaking.py keeps the step 3i positions as the record, and 31 of its 39 tests
 pass unchanged under the live rules too (PM_LIVE_RULES=1). These are the other 8, rebuilt where the live rules changed
 what a position shows: the post-entry chain (X1 now intercepts through his square on the swing lanes, so he stands
-off them, facing the baseline), the rotation (X2 faces up the wing), and the goal score's clock-aware pick-off."""
+off them, facing the baseline), the rotation (X2 faces up the wing), and the goal score's clock-aware pick-off.
+
+The rulebook revision of Nov 2026 narrowed 'through you' to the line through the square's centre (OQ-13) and kept a
+lane jump's facing (OQ-76); these positions were built under the earlier reading of the line, so they are pinned to it
+as the record (PM_LIVE_RULES=1 re-validates them under the current reading)."""
+import os
 import pytest
 from conftest import P
 
@@ -18,7 +23,7 @@ from playmaker_engine.resolve import apply, ChanceNode, force
 from playmaker_engine.scenarios import game_state
 from playmaker_engine.state import Context, GameState
 
-LIVE = RC.Rules()
+LIVE = RC.Rules() if os.environ.get('PM_LIVE_RULES') else RC.with_rules(**RC.PRE_RULEBOOK)
 TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 
@@ -57,7 +62,9 @@ def passive_defence(o, s, steps=80):
 
 def test_these_are_the_live_rules():
     assert LIVE.intercept_rule == 'move_then_intercept' and LIVE.turnover_cost == 'minus5_lose_phase'
-    assert LIVE.arrow_mode == 'single' and LIVE == RC.DEFAULT_RULES
+    assert LIVE.arrow_mode == 'single'
+    # the positions are pinned to the pre-rulebook line reading; everything else is the live default
+    assert RC.with_rules(**RC.PRE_RULEBOOK) == LIVE or LIVE == RC.DEFAULT_RULES
 
 
 # ---- the goal chain on the post position ----------------------------------------------------------------

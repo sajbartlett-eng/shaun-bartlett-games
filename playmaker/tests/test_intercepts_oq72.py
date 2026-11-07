@@ -18,7 +18,7 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 
 
-RJ = RC.with_rules(intercept_rule='ring_jump', turnover_cost='legacy', arrow_mode='wedge')   # built for the wedge
+RJ = RC.with_rules(intercept_rule='ring_jump', turnover_cost='legacy', arrow_mode='wedge', **RC.PRE_RULEBOOK)   # built for the wedge, under the pre-rulebook line reading
 
 
 def board(o=TABLE_O, x=TABLE_X, arrows=ARROWS, **kw):
@@ -134,7 +134,7 @@ def test_under_the_wedge_each_arrow_line_can_jump_a_lane():
     lines = {B.dir_between(s.x[2], B.add(s.x[2], ((a.dest[0] - s.x[2][0]) // 2, (a.dest[1] - s.x[2][1]) // 2)))
              for a in icpts(s, 2)}
     assert lines == {B.DIR_NAMES.index('NW'), B.DIR_NAMES.index('N')}
-    single = passed(game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(arrow_mode='single', intercept_rule='ring_jump', turnover_cost='legacy'), check=False), 2)
+    single = passed(game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(arrow_mode='single', intercept_rule='ring_jump', turnover_cost='legacy', **RC.PRE_RULEBOOK), check=False), 2)
     assert {a.dest for a in icpts(single, 2)} == {P('L10')}          # one arrow: NW only
 
 

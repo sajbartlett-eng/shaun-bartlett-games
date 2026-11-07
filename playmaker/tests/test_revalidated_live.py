@@ -2,7 +2,11 @@
 they were written to check under the live rules (move-then-intercept, minus5_lose_phase, the wedge). The pinned
 copies stay as the record. Pinned tests that still pass under the live rules (the golden game and its API line,
 the inbound intercepts, the reserve, the cut that opens a lane, ...) are not repeated; rule-mechanics records
-whose live versions exist elsewhere (test_intercepts_mti.py, test_rulings_3i.py, test_wedge.py) neither."""
+whose live versions exist elsewhere (test_intercepts_mti.py, test_rulings_3i.py, test_wedge.py) neither.
+
+The rulebook revision of Nov 2026 narrowed 'through you' to the line through the square's centre (OQ-13) and kept a
+lane jump's facing (OQ-76). These positions were built under the earlier reading of the line, so they run pinned to it
+as the record (RC.PRE_RULEBOOK); PM_LIVE_RULES=1 re-validates them under the current reading."""
 import json
 import os
 
@@ -10,6 +14,12 @@ import pytest
 
 from playmaker_engine import computer as C
 from playmaker_engine import rules_config as RC
+
+
+@pytest.fixture(autouse=True)
+def _pre_rulebook_line(monkeypatch):
+    if not os.environ.get('PM_LIVE_RULES'):
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_RULEBOOK))
 from playmaker_engine.actions import Action
 from playmaker_engine.solver import Play, apply_play
 
@@ -17,7 +27,7 @@ X1, X2, X3, X4, X5 = 1, 2, 4, 8, 16
 
 
 def test_these_tests_run_under_the_live_rules():
-    r = RC.DEFAULT_RULES
+    r = RC.DEFAULT_RULES                     # the live rules, pinned only to the pre-rulebook reading of the line
     assert r.intercept_rule == 'move_then_intercept' and r.turnover_cost == 'minus5_lose_phase' and r.arrow_mode == 'single'
 
 
@@ -91,10 +101,16 @@ def live_profiles():
     from playmaker_engine.defence import ReadingDefence
     from playmaker_engine.defence_check import job_profile, profile_starts
     from playmaker_engine.policies import GreedyPolicy
-    starts = profile_starts()[:10]
-    off = lambda: C.Computer('O', 'rookie', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)
-    return dict(greedy=job_profile(GreedyPolicy(), starts, offence=off()),
-                reader=job_profile(ReadingDefence(budget_s=None), starts, offence=off()))
+    mp = pytest.MonkeyPatch()                      # module scope: the pin above is function-scoped
+    if not os.environ.get('PM_LIVE_RULES'):
+        mp.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_RULEBOOK))
+    try:
+        starts = profile_starts()[:10]
+        off = lambda: C.Computer('O', 'rookie', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)
+        yield dict(greedy=job_profile(GreedyPolicy(), starts, offence=off()),
+                   reader=job_profile(ReadingDefence(budget_s=None), starts, offence=off()))
+    finally:
+        mp.undo()
 
 
 def _share(c, *keys):

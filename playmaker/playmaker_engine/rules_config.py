@@ -140,10 +140,16 @@ class Rules:
     #   'player'    : (RULED, step 3b) the defence chooses: contest with any adjacent defender, or not.
     contest_choice: str = 'player'
     # ---- new questions found while building (OPEN_QUESTIONS.md 13+) ----
-    # OQ-13: a square is 'on the pass line' if its centre lies within this distance of
-    #   the segment (0.5 = the line goes through the middle half of the square;
-    #   0 = exact centre, as check_scenarios.py does).
-    on_line_tolerance: float = 0.5
+    # OQ-13 (RULED by the rulebook, Nov 2026): "Through you: the line passes through your square's centre."
+    #   0 = the pass line passes exactly through the square's centre (as check_scenarios.py does; rows,
+    #   columns, diagonals and the rational lines between); 0.5 was the engine's earlier reading (the line
+    #   through the middle half of the square). Only 'through you' uses it under move_then_intercept: a lane
+    #   jump is geometry (lane_meet).
+    on_line_tolerance: float = 0
+    # OQ-76 (RULED by the rulebook, Nov 2026): "Jump the lane: one straight Move, Quick Step or Sprint along your
+    #   arrow, keeping your facing." True: the Move half of move-then-intercept keeps the defender's arrow (a
+    #   Sprint always did, a Quick Step never turns). False: the engine before the ruling (the Move could turn).
+    lane_jump_keeps_facing: bool = True
     # OQ-14: Quick Step may be shorter than the card value (up to 2, not exactly 2).
     qs_up_to: bool = True
     # OQ-15: a player with Quick Step 0 cannot Sprint.
@@ -224,9 +230,12 @@ class Rules:
 # The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
 # records these settings in its setup line; a log from before them replays with the old values.
 RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule',
-            'turnover_cost')
+            'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing')
 LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
-                 intercept_rule='approach', turnover_cost='legacy')
+                 intercept_rule='approach', turnover_cost='legacy', on_line_tolerance=0.5, lane_jump_keeps_facing=False)
+# A log from before the rulebook revision of Nov 2026 (no on_line_tolerance / lane_jump_keeps_facing in its setup
+# line) replays with the readings it was played under.
+PRE_RULEBOOK = dict(on_line_tolerance=0.5, lane_jump_keeps_facing=False)
 TURNOVER_COSTS = ('minus5_lose_phase', 'minus5', 'minus10', 'lose_phase', 'end_possession', 'legacy')
 INTERCEPT_RULES = ('move_then_intercept', 'ring_jump', 'approach')
 

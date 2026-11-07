@@ -111,7 +111,8 @@ Open the page and pick a path (see *The coach's clipboard* above). *Play a frien
 possessions, sides swap, the preview pack's table setup), **Scenario card** (any of the 16) or **One
 possession**, then **Hot-seat** (one screen) or **Remote**. *Play the computer* picks the level (Rookie,
 Starter, All-Star) and which seat you start in. The start screen remembers those choices and the
-scouting level from your last game in this browser, and offers to resume a game left open.
+scouting level from your last game in this browser, and offers to resume a game left open. *Play a friend* can
+roll the d20 for who attacks first, as the rulebook's setup does: the higher roll is player A, on the offence tracker.
 
 - **Playing:** click one of your players (or Tab to it and press Enter), then an action. Only the
   engine's legal actions are offered. Squares, receivers and T directions light up; defenders pick an
@@ -599,6 +600,7 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   clock loses one phase; the phase goes on with the same tokens and actions; on the last phase the
   possession scores 0. The ball stays with the passer or the carrier; a stolen shot is cancelled and doesn't
   use the phase's shot. `'minus5'`, `'minus10'`, `'lose_phase'` and `'end_possession'` are available.
+- **The rulebook revision** (`reference/Playmaker_Rulebook.pdf`, Nov 2026; the previous text is `Playmaker_Rulebook_v0.pdf`) was checked clause by clause against the engine, the computer and the course. It codifies the rulings above (the adjacent contester of the defence's choice, screens that hold until the screener moves, zones and drives, move-then-intercept with the passer's ring, −5 and two seconds on a turnover, the and-one). Two things changed to match it: a lane jump keeps the defender's facing, a Move included (OQ-76), and *through you* means the pass line passes through the square's centre (OQ-13, `on_line_tolerance=0`). `tests/test_rulebook_nov.py` pins both. The centre reading is narrower than the engine's earlier middle-half reading: four of the 16 cards (1, 6, 7, 15) lose their opening standing threat, which OPEN_QUESTIONS 13 records; the earlier reading is one setting away. Tests built on the earlier reading run pinned to it (`RC.PRE_RULEBOOK`), and a log from before the revision replays under it.
 
 **On the board, always, for both players, at every detail level** (`docs/zones_mid_phase.png`): each
 defender's zone hatched along his arrow lines (a lighter dashed square for the Sprint extension), outlined

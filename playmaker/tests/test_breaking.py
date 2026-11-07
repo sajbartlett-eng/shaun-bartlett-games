@@ -26,7 +26,8 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 # arrow; the screen, drive and intercept rulings apply as everywhere. The wedge is tested in test_rulings_3i.py.
 import os as _os
 RULES = (RC.Rules() if _os.environ.get('PM_LIVE_RULES')                 # PM_LIVE_RULES=1: under the live rules
-         else RC.with_rules(arrow_mode='single', intercept_rule='approach', turnover_cost='legacy'))   # the lanes as they were
+         else RC.with_rules(arrow_mode='single', intercept_rule='approach', turnover_cost='legacy',
+                            **RC.PRE_RULEBOOK))                                           # the lanes as they were
 
 
 def board(off, dfn, o, x, arrows, ball=0, **kw):

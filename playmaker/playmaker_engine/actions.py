@@ -382,7 +382,7 @@ def mti_approach(state, a):
     as the defence's first action, from his starting square straight along one of his arrow lines, whose path
     crosses or ends on the pass line, ending on the square where it meets it (lane_meet: the square holding
     the intersection, or the next one at a diagonal corner: the corner-slip fix), not next to the passer, a Sprint keeping his
-    facing, with a token left for the Intercept."""
+    facing, a Move too (the rulebook: "keeping your facing"), with a token left for the Intercept."""
     if not (state.pending and a.side == 'X' and a.kind in MOVEMENT and state.turn_n == 0 and state.stage == 'play'):
         return False
     if state.count('X', 'intercept') >= RC.LIMITS['X']['intercept'] or state.tok_x < 2:
@@ -407,6 +407,8 @@ def mti_approach(state, a):
         keep = a.arrow if (rules.arrow_mode == 'wedge' and a.arrow == (d - 1) % 8) else d
         if keep != state.arrows[j]:
             return False                              # a Sprint along the arrow keeps his facing
+    elif a.kind == 'move' and rules.lane_jump_keeps_facing and a.arrow != state.arrows[j]:
+        return False                                  # rulebook: a lane jump keeps your facing (a Move may not turn)
     path = [B.add(p, (B.DIRS[d][0] * k, B.DIRS[d][1] * k)) for k in range(1, n + 1)]
     return path_ok(state, 'X', j, path, rules, state.occupied())
 
@@ -445,7 +447,8 @@ def approach_moves(state, j=None):
                 if not any(tuple(sh) == path for sh in shapes):
                     continue
                 if kind == 'move':
-                    cands = [_new(Action, ('move', 'X', jj, q, a, -1, '')) for a in range(8)]
+                    cands = ([_new(Action, ('move', 'X', jj, q, state.arrows[jj], -1, ''))] if rules.lane_jump_keeps_facing
+                             else [_new(Action, ('move', 'X', jj, q, a, -1, '')) for a in range(8)])   # facing kept
                 elif kind == 'qs':
                     cands = [_new(Action, ('qs', 'X', jj, q, -1, -1, ''))]
                 else:

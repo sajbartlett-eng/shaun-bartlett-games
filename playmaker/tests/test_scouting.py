@@ -316,10 +316,10 @@ def test_detail_levels_gate_the_picks(web):
 
 
 def test_matched_value_chips_during_a_pass(web):
-    g = post(web, '/api/new', dict(mode='hotseat', scenario=6, seed=3, level='pro'))
+    g = post(web, '/api/new', dict(mode='hotseat', scenario=3, seed=3, level='pro'))   # card 3: X1 stands on the swing lane
     s = get(web, f'/api/state?code={g["code"]}&token={g["token"]}')
-    a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['target'] == 1)
-    assert a['chips'] and re.match(r'Pass \d+[▲▼]? v Intercept \d+[▲▼]? \(X\d\)', a['chips'][0])
+    a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['chips'])      # a pass some defender can answer
+    assert re.match(r'Pass \d+[▲▼]? v Intercept \d+[▲▼]? \(X\d\)', a['chips'][0])
     assert all('%' not in c and '=' not in c for c in a['chips'])
 
 
