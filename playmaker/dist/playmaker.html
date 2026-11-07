@@ -1158,6 +1158,15 @@ function choosePath(which, showKind, quiet) {
   $('aiSeatRow').classList.toggle('hidden', !computer);
   $('modeRow').classList.toggle('hidden', computer);
   if (computer) $('mode').value = 'hotseat';
+  // the last game's choices come back: the computer's level, your seat and the scouting level
+  try {
+    const last = JSON.parse(localStorage.getItem('pm_setup') || 'null');
+    if (last) {
+      if (computer && last.aiLevel && $('aiLevel').querySelector(`option[value="${last.aiLevel}"]`)) $('aiLevel').value = last.aiLevel;
+      if (computer && last.aiSeat) $('aiSeat').value = last.aiSeat;
+      if (last.level && $('level').querySelector(`option[value="${last.level}"]`)) $('level').value = last.level;
+    }
+  } catch (e) { /* private mode */ }
   if (scenario && !$('aiLevel').querySelector('option[value=""]')) $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild);
   if (!scenario) { const none = $('aiLevel').querySelector('option[value=""]'); if (none) none.remove(); }
   $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
@@ -1229,6 +1238,7 @@ async function create() {
     body.ai = { X: $('aiLevel').value };               // on a card the human attacks; the computer defends
   }
   if ($('seed').value) body.seed = Number($('seed').value);
+  try { localStorage.setItem('pm_setup', JSON.stringify({ aiLevel: $('aiLevel').value, aiSeat: $('aiSeat').value, level: $('level').value })); } catch (e) { /* ignore */ }
   const tA = $('timerA').value ? Number($('timerA').value) : null;
   const hc = $('hcA').checked && $('hcB').checked;
   const tB = hc ? ($('timerB').value ? Number($('timerB').value) : null) : tA;
