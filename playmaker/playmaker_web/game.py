@@ -93,10 +93,15 @@ def consequences(before, after, a):
     """What an action changed, in plain words (from the state difference, so it is always true)."""
     out = []
     if after.tos > before.tos:
+        lost = before.clock - after.clock if after.stage != 'over' and after.clock < before.clock else 0
+        tail = f' and {lost} seconds off the clock' if lost else ''
+        if after.stage == 'over' and after.zeroed and a.kind in ('intercept', 'steal'):
+            tail = ' on the last phase: the possession scores 0'
         if a.kind == 'intercept':
-            out.append(('bad_O', 'Pass intercepted: turnover, −5. The ball goes back to the passer.'))
+            out.append(('bad_O', f'Pass intercepted: turnover, −5{tail}. The ball goes back to the passer.'))
         elif a.kind == 'steal':
-            out.append(('bad_O', 'Stolen: turnover, −5. Play on.'))
+            what = 'Shot stolen: cancelled. ' if before.stage == 'reaction' and after.stage != 'over' else 'Stolen: '
+            out.append(('bad_O', f'{what}turnover, −5{tail}. Play on.'))
         else:
             out.append(('bad_O', 'Turnover, −5.'))
     if after.bonus5 > before.bonus5:

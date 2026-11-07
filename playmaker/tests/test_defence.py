@@ -18,7 +18,8 @@ def profiles():
     from playmaker_engine.defence_check import job_profile
     from playmaker_engine.computer import Computer
     with pytest.MonkeyPatch.context() as mp:
-        mp.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach'))
+        if not os.environ.get('PM_LIVE_RULES'):
+            mp.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach', turnover_cost='legacy'))
         return dict(greedy=job_profile(GreedyPolicy()), reader=job_profile(ReadingDefence(budget_s=None)),
                     starter=job_profile(Computer('X', 'starter', seed=1, habits=[], overrides={'randomness': 0.0}, budget_s=None)))
 

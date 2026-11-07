@@ -103,17 +103,34 @@ class Rules:
     #   (his Move stays used); one that misses leaves him where he moved, on the pass line. False: the old
     #   engine (he stays on the pass line either way).
     intercept_return: bool = True
-    # Interception (RULED, closes OQ-72). 'ring_jump':
-    #   the passer's ring: no Intercept on any square next to the passer (a defender there Steals instead);
-    #   through you: a defender the pass line passes through may Intercept, whatever his facing;
-    #   jumping the lane: the Intercept is itself one straight Move or Quick Step along an arrow line, ending
-    #   on the first ray square at or past where the pass crosses the ray (not in the ring), spending the
-    #   movement it uses; no Sprint, no turn. Other defence movements are only movements: the pass stays in
-    #   the air, so a defender may follow first and jump from his new square with what straight reach he
-    #   has left. Success ends the possession at -5; failure leaves him on the crossing square, Move used.
-    # 'approach': the old rule (on the line with any arrow; arrow across plus one movement; on the passer,
-    #   only a pass through him; a successful interception plays on).
-    intercept_rule: str = 'ring_jump'
+    # Interception (RULED, the OQ-72 refinement). 'move_then_intercept':
+    #   the pass line is fixed from passer to receiver once the pass is declared;
+    #   one defender answers in the defence's turn: (a) one Move, Quick Step or Sprint from his starting square,
+    #   straight along one of his arrow lines, whose path crosses or ends on the pass line, ending on the
+    #   pass-line square it meets (the corner-slip fix: a diagonal pass can't slip between corner-touching
+    #   squares), a Sprint keeping his facing; then the Intercept (the defence's whole turn); or (b) through
+    #   you: the line passes through his square, and the Intercept is his first action, whatever his facing;
+    #   anything else first and the pass completes before that action: no other defender's action creates
+    #   or opens an Intercept;
+    #   the passer's ring: no Intercept on any square next to the passer (a defender there Steals instead).
+    #   A failed Intercept (the pass completes) leaves him on the pass line with his Move used. What a
+    #   successful one costs is turnover_cost.
+    # 'ring_jump': the first OQ-72 ruling (the Intercept is itself a straight Move or Quick Step, a defender
+    #   may follow first, success ends the possession). 'approach': the rule before OQ-72. Both kept so old
+    #   logs replay.
+    intercept_rule: str = 'move_then_intercept'
+    # What a successful Intercept or Steal costs the offence (RULED, play-on; intercepts and steals alike).
+    #   'minus5_lose_phase' : -5 and the shot clock loses one phase (2 seconds); the current phase goes on
+    #                         with the same tokens and actions left; in the final phase the possession ends
+    #                         and scores 0. The ball stays with the passer (an Intercept) or the carrier (a
+    #                         Steal); a Steal on a declared shot cancels the shot (it doesn't use the phase's
+    #                         shot) and play goes on.
+    #   'minus5' | 'minus10' : the points only, play on.   'lose_phase' : the clock only (no points).
+    #   'end_possession'     : the possession ends at -5.
+    #   'legacy'             : the engine before this ruling (an Intercept as its intercept_rule says; a Steal
+    #                          in play -5 and play on, on a declared shot the possession ends at -5).
+    #   The old name intercept_cost is an alias (with_rules accepts it; Rules.intercept_cost reads it).
+    turnover_cost: str = 'minus5_lose_phase'
     # OQ-11: a 1 straight + 1 diagonal Move may go in either order.
     move_either_order: bool = True
     # OQ-12 (ruled: the defence chooses any adjacent defender): contest choice.
@@ -198,16 +215,27 @@ class Rules:
     #   look can then never help the defence. False = free throws only.
     and_one: bool = True
 
+    @property
+    def intercept_cost(self):
+        return self.turnover_cost
+
 
 # The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
 # records these settings in its setup line; a log from before them replays with the old values.
-RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule')
+RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule',
+            'turnover_cost')
 LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
-                 intercept_rule='approach')
+                 intercept_rule='approach', turnover_cost='legacy')
+TURNOVER_COSTS = ('minus5_lose_phase', 'minus5', 'minus10', 'lose_phase', 'end_possession', 'legacy')
+INTERCEPT_RULES = ('move_then_intercept', 'ring_jump', 'approach')
 
 DEFAULT_RULES = Rules()
 
 
 def with_rules(**changes):
-    """A copy of the default rules with some settings changed."""
+    """A copy of the default rules with some settings changed (intercept_cost is the old name of
+    turnover_cost)."""
+    if 'intercept_cost' in changes:
+        changes = dict(changes)
+        changes['turnover_cost'] = changes.pop('intercept_cost')
     return replace(DEFAULT_RULES, **changes)

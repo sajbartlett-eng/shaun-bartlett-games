@@ -546,15 +546,20 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   Quick Step once his Move is used; a locked defender only his Quick Step), stopping at the first player.
 - **Drives** (`drive_rule='zone'`): the ball carrier may end a movement in the zone of a defender next to
   him, but not pass through it, unless he beat that defender with a Dribble this phase.
-- **Intercepts** (OQ-72, `intercept_rule='ring_jump'`): no Intercept on any square next to the passer (a
-  defender there Steals instead). **Through you:** a defender the pass passes through may Intercept, whatever
-  his facing. **Jump the lane:** the Intercept is itself one straight Move or Quick Step along an arrow line
-  to where it meets the pass (the first square past the crossing), spending the movement it uses; no Sprint,
-  no turn. Any other movement is only a movement, and the pass stays in the air: a defender may follow first
-  and jump from his new square. A successful Intercept ends the possession at −5; a missed one leaves him on
-  the crossing square with his Move used. When you select Pass, each lane shows who can intercept it and
-  how (through his square, a jump to the crossing square, or a move then a jump), and the passer's ring is
-  marked intercept-free.
+- **Intercepts** (OQ-73, `intercept_rule='move_then_intercept'`): the pass line is fixed once the pass is
+  declared. One defender answers in the defence's turn: **one movement, then Intercept** (a single Move, Quick
+  Step or Sprint from his starting square, straight along either arrow line, ending where it meets the pass
+  line; a Sprint keeps his facing; then the Intercept, the defence's whole turn), or **through you** (the line
+  passes through his square: the Intercept is his first action, whatever his facing). Anything else first and
+  the pass completes before it. No Intercept on any square next to the passer: he Steals instead. A missed
+  Intercept leaves him on the line with his Move used. When you select Pass, each lane shows who can
+  intercept it and how (through his square, or his one straight movement and the square he'd land on), and
+  the passer's ring is marked intercept-free. (`'ring_jump'`, the first OQ-72 rule, and `'approach'` are kept
+  so old logs replay.)
+- **Turnovers** (OQ-74, `turnover_cost='minus5_lose_phase'`, intercepts and steals alike): −5 and the shot
+  clock loses one phase; the phase goes on with the same tokens and actions; on the last phase the
+  possession scores 0. The ball stays with the passer or the carrier; a stolen shot is cancelled and doesn't
+  use the phase's shot. `'minus5'`, `'minus10'`, `'lose_phase'` and `'end_possession'` are available.
 
 **On the board, always, for both players, at every detail level** (`docs/zones_mid_phase.png`): each
 defender's zone hatched along his arrow lines (a lighter dashed square for the Sprint extension), outlined

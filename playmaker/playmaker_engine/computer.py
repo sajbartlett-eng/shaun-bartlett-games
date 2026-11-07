@@ -177,6 +177,21 @@ def pass_risk(state, passer, receiver):
             cands = [(d,) for d in intercept_actions(pend)] if can else []
             if can:
                 cands += list(follow_jumps(pend))
+        elif pend.ctx.rules.intercept_rule == 'move_then_intercept':
+            # the refined ruling: through his square as the first action, or one straight movement along his
+            # arrow onto the line, then Intercept; nothing else opens one
+            from .actions import through_you, approach_moves, lane_meet
+            from . import geometry as G
+            cands = []
+            if pend.count('X', 'intercept') < RC.LIMITS['X']['intercept'] and pend.tok_x > 0:
+                a_sq, b_sq = pend.o[passer], pend.o[receiver]
+                for j in range(5):
+                    if through_you(pend, j):
+                        cands.append((Action('intercept', 'X', j),))
+                    elif pend.tok_x >= 2 and any(lane_meet(pend.x[j], d, a_sq, b_sq) for d in G.lines(pend.ctx.rules, pend.arrows[j])):
+                        mv = approach_moves(pend, j)
+                        if mv:
+                            cands.append((mv[0], Action('intercept', 'X', j)))
         elif pend.inbound:                     # inbound passes (OQ-35): ask the legal actions directly
             cands = []
             for d in legal_actions(pend):
@@ -608,7 +623,9 @@ class Computer(Policy):
             caught, lost = pass_outcomes(info)
             cv = self._node_value(caught, reply)
             if lost is not None:
-                cv = (1 - info['risk']) * cv + info['risk'] * (banked + RC.TURNOVER_POINTS)
+                from .resolve import pickoff_value
+                keep = self.ev.carrier_look(s, s.ball, budget_x, False)[0]
+                cv = (1 - info['risk']) * cv + info['risk'] * pickoff_value(s, keep)
             out = max(out, cv)
         if len(memo) > 20000:
             memo.clear()
@@ -1026,13 +1043,29 @@ class Computer(Policy):
     def _banked(s):
         return RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos
 
-    def _pick_off_value(self, pre):
-        """Step 3f, section 2: a pass is valued (1 - risk) x the catch - risk x 5. A pick-off counts as the
-        -5 alone (scaled by the level's pass_risk_tolerance: 1.0 honest, below 1.0 reckless), on top of
-        what is already banked, not as the position it leaves: under OQ-1 the turnover plays on, and that
-        position is often worth more to the offence than the catch (the interceptor has left his man and
-        spent two tokens), which would make every contested pass nearly free."""
-        return self._banked(pre) + RC.TURNOVER_POINTS * self.cfg.get('pass_risk_tolerance', 1.0)
+    def _keep(self, s):
+        """What the ball carrier has where he stands (his best look after the reaction, relative to banked):
+        what play-on leaves him after a pick-off."""
+        if s.stage != 'play' or s.side != 'O' or s.pending:
+            return 0.0
+        memo = self.__dict__.setdefault('_keep_memo', {})
+        hit = memo.get(s)
+        if hit is not None and hit[0] is s.ctx:
+            return hit[1]
+        v = self.ev.carrier_look(s, s.ball, reaction_budget(s), False)[0]
+        if len(memo) > 20000:
+            memo.clear()
+        memo[s] = (s.ctx, v)
+        return v
+
+    def _pick_off_value(self, pre, relative=False):
+        """A pick-off under turnover_cost (resolve.pickoff_value): -5 (scaled by the level's
+        pass_risk_tolerance: 1.0 honest, below 1.0 reckless) and two seconds, the ball still with the passer
+        (what he has where he stands); in the final phase the possession scores 0, so a contested pass costs
+        the most late. Not the position it leaves: that one has the interceptor sent back with his Move
+        used, which would make every contested pass nearly free (step 3f)."""
+        from .resolve import pickoff_value
+        return pickoff_value(pre, self._keep(pre), self.cfg.get('pass_risk_tolerance', 1.0), relative)
 
     def _pass_play_value(self, view, p, follow):
         """(1 - risk) x the position after the catch (valued after the defence's reply) + risk x the
@@ -1155,7 +1188,7 @@ class Computer(Policy):
                     info = pass_risk(s, s.ball, a['attacker'])
                     if info is None:
                         continue
-                    v = (1 - info['risk']) * a['value'] + info['risk'] * RC.TURNOVER_POINTS * tol
+                    v = (1 - info['risk']) * a['value'] + info['risk'] * self._pick_off_value(s, True)
                 else:
                     v = a['value']                 # the offence passes next turn
             else:
@@ -1202,7 +1235,7 @@ class Computer(Policy):
             lk = looks(s2, r, self._maps(s2))
             if not lk:
                 continue
-            v = (1 - info['risk']) * lk[0][0] + info['risk'] * RC.TURNOVER_POINTS * tol
+            v = (1 - info['risk']) * lk[0][0] + info['risk'] * self._pick_off_value(s2, True)
             if v > best:
                 best, which = v, dict(kind='step_out', attacker=r, value=v, shot=lk[0][1], defender=d)
         return best, which
@@ -1353,7 +1386,15 @@ class Computer(Policy):
                     out['vcut'].append(Play('V-cut in', (a,)))
                 outs = [a for a in moves if a.kind in ('move', 'qs') and val(i, a.dest) > 0 and B.cheb(a.dest, xd) > B.cheb(me, xd)]
                 if outs:
-                    a = max(outs, key=lambda a: (val(i, a.dest), B.cheb(a.dest, xd), a.dest))
+                    # the catch spot by intercept exposure first (can a defender reach the line from there?)
+                    from .planner import lane, _moved
+                    top = sorted(outs, key=lambda a: (-val(i, a.dest), a.dest))[:6]
+                    expo = {a: 0.0 for a in top}
+                    if view.ctx.rules.intercept_rule == 'move_then_intercept':
+                        for a in top:
+                            info = lane(_moved(view, a), c, i)
+                            expo[a] = 1.0 if info is None else float(info['risk'])
+                    a = min(top, key=lambda a: (expo[a], -val(i, a.dest), -B.cheb(a.dest, xd), a.dest))
                     out['vcut'].append(Play('V-cut out', (a,)))
                     if can_pass and view.tok_o >= 2:
                         out['vcut'].append(Play('V-cut out and catch', (a, Action('pass', 'O', c, target=i))))
@@ -1424,8 +1465,9 @@ class Computer(Policy):
                     caught, lost = pass_outcomes(info)
                     one = lambda st: self._adv_value(view, st, 1)
                     full = lambda st: self._adv_value(view, st, depth)
-                    v1 = (1 - info['risk']) * one(caught) + info['risk'] * RC.TURNOVER_POINTS * tol
-                    est.append((v1, p, lambda c=caught, i=info, f=full: (1 - i['risk']) * f(c) + i['risk'] * RC.TURNOVER_POINTS * tol))
+                    po = self._pick_off_value(view, True)
+                    v1 = (1 - info['risk']) * one(caught) + info['risk'] * po
+                    est.append((v1, p, lambda c=caught, i=info, f=full, po=po: (1 - i['risk']) * f(c) + i['risk'] * po))
                 else:
                     est.append((self._adv_value(view, node, 1), p, lambda n=node: self._adv_value(view, n, depth)))
             est.sort(key=lambda e: -e[0])
@@ -1650,7 +1692,7 @@ class Computer(Policy):
             return -99.0
         caught, lost = pass_outcomes(info)
         tol = self.cfg.get('pass_risk_tolerance', 1.0)
-        return (1 - info['risk']) * self._adv_value(view, caught, depth) + info['risk'] * RC.TURNOVER_POINTS * tol
+        return (1 - info['risk']) * self._adv_value(view, caught, depth) + info['risk'] * self._pick_off_value(view, True)
 
     def _goal_choose(self, view, ranked):
         g = self.goal

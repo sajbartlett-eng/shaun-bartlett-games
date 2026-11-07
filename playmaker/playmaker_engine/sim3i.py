@@ -29,6 +29,11 @@ RESULTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # corrected rules (screens hold until the screener moves, drives through a zone, the interceptor's return)
 CELLS = {'single': dict(arrow_mode='single'), 'single_late': dict(arrow_mode='single', late_closeout=True),
          'wedge': dict(arrow_mode='wedge'), 'wedge_late': dict(arrow_mode='wedge', late_closeout=True)}
+GRID = ('single', 'single_late', 'wedge', 'wedge_late')
+# The turnover-cost variants (intercepts and steals alike), on the single-arrow, late-closeout-on cell; the default
+# ('minus5_lose_phase') is that cell of the 2 x 2
+COSTS = {f'cost_{c}': dict(arrow_mode='single', late_closeout=True, turnover_cost=c) for c in ('minus5', 'minus10', 'lose_phase')}
+CELLS.update(COSTS)
 PAIRS = [('allstar', 'allstar'), ('rookie', 'allstar'), ('starter', 'allstar'), ('allstar', 'rookie'), ('allstar', 'starter')]
 
 
@@ -139,6 +144,9 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
             pend = None
         s = node
     st['phases'] = s.phase
+    st['tos'] = s.tos                             # -5 units banked (one per -5; minus10 banks two)
+    st['shot_clock'] = int(s.stage == 'over' and s.result is not None and s.result.kind == 'forced')
+    st['turnovers'] = st['icpt_won'] + st['steal_won']
     sc = score(s) if s.stage == 'over' else None
     for d in cpasses:
         d['final'] = float(sc.total) if sc else None
@@ -152,8 +160,9 @@ def play(o_level, x_level, spec, seed, variant='default', budget_s=2.0):
 
 def _valuation(comp, s, info):
     """How the offence values a contested pass under the rules it plays: P(complete), the catch (its
-    create/reply/exploit value of the caught position, after the defence's reply), the pick-off (-5 plus
-    points already banked) and the expected value."""
+    create/reply/exploit value of the caught position, after the defence's reply), the pick-off as the
+    computer prices it (turnover_cost: -5 and two seconds with the ball kept, 0 in the final phase), and the
+    expected value, all relative to what is banked; the clock it was thrown at."""
     from . import rules_config as RC
     from .computer import pass_outcomes
     caught, _ = pass_outcomes(info)
@@ -162,8 +171,7 @@ def _valuation(comp, s, info):
     except Exception:
         catch = None
     p = 1.0 - float(info['risk'])
-    banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos
-    lost = banked + RC.TURNOVER_POINTS
+    lost = float(comp._pick_off_value(s, True))
     return dict(p=round(p, 3), catch=catch, lost=lost, clock=s.clock,
                 ev=round(p * catch + (1 - p) * lost, 2) if catch is not None else None, completed=None)
 
@@ -191,7 +199,25 @@ def _job(args):
     return args, play(*args)
 
 
-def grid_jobs(per_cell=120, verdicts=True):
+def level_jobs(n=40):
+    """Rookie and Starter offence against the All-Star defence on the defaults (wedge, late_closeout off)."""
+    sp = starts(14)
+    plays = [(sp[i % len(sp)], (1, 2, 3, 4)[i // len(sp)]) for i in range(n)]
+    return [(lv, 'allstar', st_, sd, 'wedge') for lv in ('rookie', 'starter') for st_, sd in plays]
+
+
+def cost_jobs(per_cell=60, verdicts=True):
+    """All-Star v All-Star under each turnover-cost variant, and the cards' verdicts."""
+    return grid_jobs(per_cell, verdicts, cells=tuple(COSTS))
+
+
+def g_jobs(grid=80, costs=60, levels=40):
+    """The confirming run after the move-then-intercept and turnover-cost rulings: the 2 x 2, the cost variants,
+    the offence check."""
+    return grid_jobs(grid) + cost_jobs(costs) + level_jobs(levels)
+
+
+def grid_jobs(per_cell=120, verdicts=True, cells=GRID):
     """All-Star v All-Star in each of the four cells (the 16 cards and random prescribed-team possessions,
     seeds 1 to 4: 30 starts x 4 = 120), and the 16 cards' solver verdicts in each."""
     sp = starts(14)
@@ -199,11 +225,11 @@ def grid_jobs(per_cell=120, verdicts=True):
     plays = [(sp[i % len(sp)], seeds[i // len(sp)]) for i in range(per_cell)]
     out = []
     if verdicts:
-        for cell in CELLS:
+        for cell in cells:
             for n in range(1, 17):
                 out.append(('verdict', cell, n))
     for st_, sd in plays:
-        for cell in CELLS:
+        for cell in cells:
             out.append(('allstar', 'allstar', st_, sd, cell))
     return out
 
@@ -221,10 +247,12 @@ def jobs(random_n=4, seeds=(1, 2), variant=True):
     return out
 
 
-def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None, diag=False, grid=0):
+def run(store='sim3i.json', workers=3, random_n=4, seeds=(1, 2), variant=True, limit=None, diag=False, grid=0, levels=0,
+        g=None):
     path = os.path.join(RESULTS, store)
     done = json.load(open(path)) if os.path.exists(path) else {}
-    js = grid_jobs(grid) if grid else diag_jobs() if diag else jobs(random_n, seeds, variant)
+    js = (g_jobs(*g) if g else level_jobs(levels) if levels else grid_jobs(grid) if grid else diag_jobs() if diag else
+          jobs(random_n, seeds, variant))
     jkey = lambda j: json.dumps(list(j)) if j[0] == 'verdict' else key(*j)
     todo = [j for j in js if jkey(j) not in done]
     if limit:
@@ -300,8 +328,11 @@ if __name__ == '__main__':
     ap.add_argument('--limit', type=int)
     ap.add_argument('--diag', action='store_true', help='the late-closeout diagnosis (120 + 120 possessions)')
     ap.add_argument('--grid', type=int, default=0, help='the 2 x 2 run: possessions a cell (and the card verdicts)')
+    ap.add_argument('--levels', type=int, default=0, help='Rookie and Starter offence v All-Star defence: possessions each')
+    ap.add_argument('--g', type=int, nargs=3, metavar=('GRID', 'COSTS', 'LEVELS'),
+                    help='the confirming run: possessions a 2 x 2 cell, a cost variant, an offence level')
     a = ap.parse_args()
     if a.estimate:
         print(estimate(workers=a.workers))
     else:
-        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit, a.diag, a.grid)
+        run(a.store, a.workers, a.random, tuple(a.seeds), not a.no_variant, a.limit, a.diag, a.grid, a.levels, a.g)

@@ -211,7 +211,7 @@ def test_a_failed_intercept_leaves_the_interceptor_on_the_pass_line():
 
 
 def test_the_old_engine_left_the_interceptor_on_the_line():
-    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(intercept_return=False, intercept_rule='approach'), check=False)
+    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(intercept_return=False, intercept_rule='approach', turnover_cost='legacy'), check=False)
     s = act(s, Action('pass', 'O', 0, target=2))
     ap = next(a for a in legal_actions(s) if a.side == 'X' and a.piece == 2 and a.kind in MOVEMENT and is_approach(s, a))
     t = apply(s, ap)

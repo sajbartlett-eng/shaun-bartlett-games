@@ -148,7 +148,7 @@ def legal_json(s, acts):
         d = action_to_json(a)
         if a.kind in CHANCE_KINDS or (a.kind == 'end_turn' and s.stage == 'reaction'):
             d['roll'] = chance_preview(s, a)
-        if a.kind == 'pass' and s.ctx.rules.intercept_rule == 'ring_jump':
+        if a.kind == 'pass' and s.ctx.rules.intercept_rule in ('ring_jump', 'move_then_intercept'):
             from playmaker_engine.actions import lane_marks
             from playmaker_engine.resolve import apply as _apply
             pend = _apply(s, a)

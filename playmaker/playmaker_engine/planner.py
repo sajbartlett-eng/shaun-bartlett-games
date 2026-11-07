@@ -443,16 +443,50 @@ def _get_open(s, e, mem):
                                     or B.cheb(m.dest, s.x[d]) < B.cheb(s.o[r], s.x[d])),
                                    key=lambda m: (B.dist_rim(m.dest), m.dest))[:2]]))
             stepped = mem.get(f'out{r}')
-            steps.append(_step('out', f'O{r + 1} stepped out', bool(stepped),
-                               lambda r=r, d=d: [_play('V-cut out', m) for m in sorted(
-                                   (m for m in _o_moves(s, r) if B.cheb(m.dest, s.x[d]) > B.cheb(s.o[r], s.x[d])
-                                    and _shot_value(off[r], m.dest) > 0),
-                                   key=lambda m: (-_shot_value(off[r], m.dest), m.dest))[:2]]))
+            if s.ctx.rules.intercept_rule == 'move_then_intercept':
+                spots = catch_spots(s, r, d)          # the catch spot by intercept exposure, then the look
+                steps.append(_step('out', f'O{r + 1} stepped out', bool(stepped),
+                                   lambda spots=spots: [_play('V-cut out', m) for _, _, m in spots[:2]]))
+            else:
+                steps.append(_step('out', f'O{r + 1} stepped out', bool(stepped),
+                                   lambda r=r, d=d: [_play('V-cut out', m) for m in sorted(
+                                       (m for m in _o_moves(s, r) if B.cheb(m.dest, s.x[d]) > B.cheb(s.o[r], s.x[d])
+                                        and _shot_value(off[r], m.dest) > 0),
+                                       key=lambda m: (-_shot_value(off[r], m.dest), m.dest))[:2]]))
         hold, risk = holder_chain(s, r)
+        if e.get('variant') != 'gap' and not mem.get(f'out{r}') and s.ctx.rules.intercept_rule == 'move_then_intercept':
+            spots = catch_spots(s, r, d)
+            if spots and spots[0][0] < 1.0:
+                hold, risk = [], spots[0][0]       # the catch is thrown to the spot the cut picked
         steps += hold
         steps.append(_step('catch', f'the catch by O{r + 1}', False, lambda r=r: passes_to(s, r), finish=True, risk=risk))
         out.append(dict(bind=dict(r=r, d=d), att=r, edge=float(best_out), steps=steps, shot='any',
                         words=_ws(e['words'], r=r, d=d)))
+    return out
+
+
+def catch_spots(s, r, d, k=6):
+    """Where a V-cut, L-cut or lift catches the ball: receiver r's moves away from his defender d to a square
+    he can score from, ranked by intercept exposure first (the risk on the pass from the carrier to that
+    square: can any defender reach the line with one straight movement along his arrow, or is it through
+    his square?), then the look. [(risk, look, move)]. A V-cut controls where the ball is caught safely,
+    not only whether the receiver is open."""
+    return _cached(_SPOTS, (s, s.ctx, r, d, k), lambda: _catch_spots(s, r, d, k))
+
+
+_SPOTS = {}
+
+
+def _catch_spots(s, r, d, k):
+    off = s.ctx.off
+    cands = [m for m in _o_moves(s, r) if B.cheb(m.dest, s.x[d]) > B.cheb(s.o[r], s.x[d]) and _shot_value(off[r], m.dest) > 0]
+    cands.sort(key=lambda m: (-_shot_value(off[r], m.dest), m.dest))
+    out = []
+    for m in cands[:k]:
+        info = lane(_moved(s, m), s.ball, r) if B.on_board(s.o[s.ball]) and s.ball != r else None
+        risk = 1.0 if info is None else float(info['risk'])
+        out.append((risk, float(_shot_value(off[r], m.dest)), m))
+    out.sort(key=lambda x: (x[0], -x[1], x[2].dest))
     return out
 
 
@@ -866,7 +900,9 @@ _BOARD = {}
 
 
 def _board_looks(s):
+    from .resolve import pickoff_value
     out = []
+    keep = look_value(s, s.ball) if B.on_board(s.o[s.ball]) else 0.0
     for i in range(5):
         if not B.on_board(s.o[i]):
             continue
@@ -876,9 +912,18 @@ def _board_looks(s):
         else:
             info = lane(s, s.ball, i)
             r = 1.0 if info is None else float(info['risk'])
-            v = (1.0 - r) * v + r * RC.TURNOVER_POINTS
+            v = (1.0 - r) * v + r * pickoff_value(s, keep, relative=True)     # picked off: the passer keeps the ball
         out.append((v, i))
     return sorted(out, reverse=True)
+
+
+def _pick(after, risk):
+    """A pick-off of the finish pass, from the board the set-up leaves (relative to banked): -5 and two
+    seconds, the passer keeping the ball (his look there); the whole possession in the final phase."""
+    if not risk or after.stage != 'play' or not B.on_board(after.o[after.ball]):
+        return float(RC.TURNOVER_POINTS)
+    from .resolve import pickoff_value
+    return pickoff_value(after, look_value(after, after.ball), relative=True)
 
 
 def keeps(after, now):
@@ -1083,10 +1128,11 @@ def _goals(s, level, mems=None, target=None, keep=None):
                 v = _finish_value(g, after)
             bonus = 8.0 if (s.ctx.coach_call and target is not None and g['att'] == target) else 0.0
             cost = TEMPO * len(todo)
-            vr = (1.0 - risk) * v + risk * RC.TURNOVER_POINTS
+            pick = _pick(after, risk)
+            vr = (1.0 - risk) * v + risk * pick
             g['score'] = p * vr + (1.0 - p) * base - cost + bonus
             g.update(P=round(p, 3), V=round(v, 2), risk=round(risk, 3), cost=cost, gain=round(g['score'] - base - bonus, 2),
-                     base=base, edge=round(v, 2))
+                     base=base, edge=round(v, 2), pick=pick)
             out.append(g)
     out.sort(key=lambda g: (-g['score'], g['key']))
     return out
@@ -1148,6 +1194,19 @@ def _objective_plays(s, obj, acts):
         cand = [a for a in mv if a.piece == d and B.adjacent(a.dest, me) and a.arrow == B.dir_between(a.dest, me)]
         cand.sort(key=lambda a: (-B.dist_rim(me) + B.dist_rim(a.dest), a.dest))
         out += [Play('close out' if obj['id'] == 'DO-closeout' else 'deny', (a,)) for a in cand[:1]]
+        if obj['id'] == 'DO-deny' and att != s.ball:
+            # the lane itself: a square and arrow from which he is on the pass line, or one straight movement
+            # along his arrow reaches it, when the pass comes (his Move spent by this one)
+            from .capacity import lane_reach
+            mid = ((ball[0] + me[0]) / 2, (ball[1] + me[1]) / 2)
+            near = sorted((a for a in mv if a.piece == d and not B.adjacent(a.dest, ball)),
+                          key=lambda a: (max(abs(a.dest[0] - mid[0]), abs(a.dest[1] - mid[1])), a.dest, a.arrow))[:12]
+            for a in near:
+                t = s.with_(x=s.x[:d] + (a.dest,) + s.x[d + 1:], arrows=s.arrows[:d] + (a.arrow,) + s.arrows[d + 1:],
+                            moved_x=s.moved_x | 1 << d, side='O', turn_n=0, stage='play', pending=None)
+                if lane_reach(t, d, s.ball, att):
+                    out.append(Play('deny the lane', (a,)))
+                    break
     elif obj['id'] == 'DO-rim':
         rim = RC.RIM
         cand = [a for a in mv if B.cheb(a.dest, rim) <= 1 and a.arrow == face(a.dest, ball)]

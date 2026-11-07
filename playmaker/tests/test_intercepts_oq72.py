@@ -1,5 +1,6 @@
-"""The interception ruling (closes OQ-72): the passer's ring, through you, jumping the lane, follow then jump,
-the outcomes, and the pass-lane marks the interface shows."""
+"""The first interception ruling (OQ-72, intercept_rule='ring_jump'): the passer's ring, through you, jumping the
+lane, follow then jump, the outcomes, and the pass-lane marks. Kept as the record of that rule (old logs replay
+under it); the live rule, move_then_intercept, is tested in test_intercepts_mti.py."""
 from fractions import Fraction as F
 
 from conftest import P
@@ -17,8 +18,11 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 
 
+RJ = RC.with_rules(intercept_rule='ring_jump', turnover_cost='legacy')
+
+
 def board(o=TABLE_O, x=TABLE_X, arrows=ARROWS, **kw):
-    return game_state('Five Out', 'High-Low', o, x, arrows, check=False).with_(**kw)
+    return game_state('Five Out', 'High-Low', o, x, arrows, rules=RJ, check=False).with_(**kw)
 
 
 def passed(s, r):
@@ -29,8 +33,8 @@ def icpts(s, j=None):
     return [a for a in legal_actions(s) if a.kind == 'intercept' and (j is None or a.piece == j)]
 
 
-def test_the_default():
-    assert RC.Rules().intercept_rule == 'ring_jump'
+def test_the_rule_is_kept():
+    assert RJ.intercept_rule == 'ring_jump' and 'ring_jump' in RC.INTERCEPT_RULES
 
 
 # ---- the passer's ring --------------------------------------------------------------------------------
@@ -130,7 +134,7 @@ def test_under_the_wedge_each_arrow_line_can_jump_a_lane():
     lines = {B.dir_between(s.x[2], B.add(s.x[2], ((a.dest[0] - s.x[2][0]) // 2, (a.dest[1] - s.x[2][1]) // 2)))
              for a in icpts(s, 2)}
     assert lines == {B.DIR_NAMES.index('NW'), B.DIR_NAMES.index('N')}
-    single = passed(game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(arrow_mode='single'), check=False), 2)
+    single = passed(game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=RC.with_rules(arrow_mode='single', intercept_rule='ring_jump', turnover_cost='legacy'), check=False), 2)
     assert {a.dest for a in icpts(single, 2)} == {P('L10')}          # one arrow: NW only
 
 
@@ -180,3 +184,21 @@ def test_the_pass_lane_marks_match_exactly_what_the_engine_allows():
                 continue
             later |= {(a.piece, a.dest) for a in icpts(t, m.piece) if a.dest is not None}
         assert {(m['defender'], m['sq']) for m in marks if m['how'] == 'follow'} == later, r
+
+
+def test_a_teammates_movement_does_not_open_a_jump():
+    """X1 on M9 blocks X3's NW line (N8 -> M9 -> L10) to the pass O1 -> O3; X3 can only jump north, to N10.
+    X1 moves out of the way: X3's NW jump to L10 would now be clear, but it would follow a teammate's movement,
+    not his own, so it isn't legal. X1 himself, having moved, may jump from his new square."""
+    s = passed(board(x=['M9', 'D8', 'N8', 'G4', 'N4'], arrows=['S', 'NE', 'NW', 'N', 'N']), 2)
+    assert {a.dest for a in icpts(s, 2)} == {P('N10')}
+    path = {P('M9'), P('L10'), P('N9'), P('N10')}
+    away = next(a for a in legal_actions(s) if a.kind == 'move' and a.piece == 0 and a.dest not in path
+                and a.dest not in passer_ring(s) and B.cheb(a.dest, P('M9')) >= 2)
+    t = apply(s, away)
+    assert t.pending and t.turn_n == 1
+    assert not icpts(t, 2)                                   # no jump for X3 after X1's movement
+    from playmaker_engine.actions import lane_jumps
+    assert P('L10') in {q for q, _ in lane_jumps(t, 2)}       # though the geometry would allow it now
+    marks, _ = lane_marks(s)
+    assert (2, P('L10')) not in {(m['defender'], m['sq']) for m in marks}

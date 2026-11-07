@@ -102,6 +102,8 @@ def _value(node, three_only):
     if node.stage in ('contest', 'forced'):
         return _value(settle(node), three_only)
     r = node.result
+    if r is None and node.stage == 'play' and node.tos > 0:
+        return Fraction(RC.TURNOVER_POINTS)            # a stolen shot (play on since the turnover-cost ruling): the look is lost
     if r is None:
         raise ValueError('unresolved')
     if r.kind == 'steal':

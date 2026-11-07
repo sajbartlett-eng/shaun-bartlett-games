@@ -113,6 +113,49 @@ def _turnover(s):
     return s
 
 
+LOSE_PHASE = ('minus5_lose_phase', 'lose_phase')
+COST_UNITS = {'minus5_lose_phase': 1, 'minus5': 1, 'minus10': 2, 'lose_phase': 0, 'end_possession': 1}
+
+
+def pickoff(s):
+    """What a successful Intercept or Steal costs (turnover_cost). s: the state after it, the ball already
+    with the passer or carrier. Returns the state play goes on from, or a terminal state. The -5s are banked
+    in s.tos (one per -5)."""
+    cost = s.ctx.rules.turnover_cost
+    if cost == 'legacy':
+        return _turnover(s)
+    s = s.with_(tos=s.tos + COST_UNITS[cost])
+    if s.ctx.hold_for_one:
+        return _terminal(s, Result('turnover_end'), zeroed=True)
+    if cost == 'end_possession':
+        return _terminal(s, Result('turnover_end'))
+    if cost in LOSE_PHASE:
+        if s.clock <= RC.PHASE_SECONDS:             # the final phase: the possession ends and scores 0
+            return _terminal(s, Result('turnover_end'), zeroed=True)
+        s = s.with_(clock=s.clock - RC.PHASE_SECONDS)   # the phase goes on, tokens and actions as they were
+    return s
+
+
+def pickoff_value(pre, keep, tol=1.0, relative=False):
+    """What a pick-off (a successful Intercept or Steal) is worth to the offence, for the computer's pricing.
+    pre: the offence to act, before the pass. keep: what the ball carrier has where he is (his best look,
+    relative to what is banked): with play-on, the ball stays with him. Under turnover_cost: -5 (x tol, the
+    level's pass_risk_tolerance) and, with the clock cost, two seconds gone; in the final phase the whole
+    possession is gone (0). relative: the value less what pre has banked."""
+    banked = RC.STEAL_FOUL_BONUS * pre.bonus5 + RC.TURNOVER_POINTS * pre.tos
+    rules = pre.ctx.rules
+    cost = rules.turnover_cost
+    if pre.ctx.hold_for_one:
+        v = 0.0
+    elif rules.intercept_rule == 'ring_jump' or cost in ('legacy', 'end_possession'):
+        v = banked + RC.TURNOVER_POINTS * tol           # the possession ends (or, legacy, valued as if it did)
+    elif cost in LOSE_PHASE and pre.clock <= RC.PHASE_SECONDS:
+        v = 0.0                                         # the final phase: the possession scores 0
+    else:
+        v = banked + RC.TURNOVER_POINTS * COST_UNITS[cost] * tol + keep
+    return v - banked if relative else v
+
+
 def new_phase(s, clock):
     if s.ctx.rules.screen_rule == 'hold_until_move':
         s = s.with_(screens=())                  # OQ-29: a screen ends with the phase
@@ -414,8 +457,10 @@ def apply(state, action, check=False):
 
     if k == 'intercept':
         passer, recv = s.pending
-        p = p_success(O[passer].r['pass'] - X[a.piece].r['intercept'], rules)
-        ok = complete_pass(s)
+        j = a.piece
+        mti = rules.intercept_rule == 'move_then_intercept'
+        p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
+        ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j) if mti else s)   # missed: on the line, Move used
         if ok.phase != s.phase:
             ok_node = ok                                   # inbound pass landed: new phase
         else:
@@ -423,11 +468,13 @@ def apply(state, action, check=False):
         back = s
         if s.ctx.rules.intercept_return and state.turn_x:  # ruled: a successful interceptor goes back to where he
             sx, sa = state.turn_x                          # stood at the start of the defence's turn (Move still used)
-            j = a.piece
             back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
-        lost = _turnover(back.with_(pending=None, approach=-1))   # ball stays with the passer
+        if mti:
+            lost = pickoff(back.with_(pending=None, approach=-1, moved_x=back.moved_x | 1 << j))   # ball with the passer
+        else:
+            lost = _turnover(back.with_(pending=None, approach=-1))   # ball stays with the passer
         lost_node = lost if lost.stage == 'over' else _after(state, lost, side, k)
-        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[a.piece].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{a.piece + 1})', [
+        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[j].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
             (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
 
     if k == 'challenge':
@@ -447,21 +494,29 @@ def apply(state, action, check=False):
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
         pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
         fs = s.with_(fouls=s.fouls + 1)
+        legacy = rules.turnover_cost == 'legacy'
         if s.stage == 'reaction':
             pts = shot_points(s.o[carrier])
             card = O[carrier]
             fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules)
             foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, card.shot(s.shot), 0, a.piece, 0,
                                               fpts, and1))
-            stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
-                                    zeroed=s.ctx.hold_for_one)
+            if legacy:
+                stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
+                                        zeroed=s.ctx.hold_for_one)
+            else:
+                # ruled: a stolen shot is cancelled (it doesn't use the phase's shot) and play goes on
+                cnt = list(s.cnt)
+                cnt[CI['shot']] = max(0, cnt[CI['shot']] - 1)
+                st = pickoff(s.with_(stage='play', shot=None, cnt=tuple(cnt)))
+                stolen_node = st if st.stage == 'over' else _after(state.with_(stage='play'), st, side, k)
         else:
             if fs.fouls >= 2:
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))
             else:
                 foul_node = _after(state, fs.with_(bonus5=fs.bonus5 + 1), side, k)
-            st = _turnover(s)
+            st = _turnover(s) if legacy else pickoff(s)
             stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
         kept_node = _after(state, s, side, k)
         inner = chance(f'Dribble {O[carrier].r["dribble"]} v Steal {X[a.piece].r["steal"]} (O{carrier + 1} v X{a.piece + 1})',

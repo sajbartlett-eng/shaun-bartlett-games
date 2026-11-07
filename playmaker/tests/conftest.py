@@ -36,13 +36,18 @@ import pytest as _pytest
 def legacy_rules(monkeypatch):
     """The rules as they were before the step 3i follow-up rulings (single arrow, two-turn screens, arrow-line
     drives, the interceptor left on the line), for tests that record that behaviour."""
+    import os
     from playmaker_engine import rules_config as RC
-    monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.LEGACY_3I))
+    if not os.environ.get('PM_LIVE_RULES'):          # PM_LIVE_RULES=1: re-validate under the live rules
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.LEGACY_3I))
 
 
 @_pytest.fixture
 def old_intercepts(monkeypatch):
     """The intercept rule before the OQ-72 ruling (on the line; arrow across plus one movement; on the passer only
-    through him; a successful interception plays on), everything else as it is now."""
+    through him; a successful interception plays on at -5, a steal on a shot ends the possession), everything
+else as it is now."""
+    import os
     from playmaker_engine import rules_config as RC
-    monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach'))
+    if not os.environ.get('PM_LIVE_RULES'):          # PM_LIVE_RULES=1: re-validate under the live rules
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach', turnover_cost='legacy'))

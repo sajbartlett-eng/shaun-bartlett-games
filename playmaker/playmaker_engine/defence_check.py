@@ -233,8 +233,8 @@ def profile_starts():
     return starts + [scenario_state(n) for n in sorted(SCENARIOS)]
 
 
-def job_profile(defence, starts=None):
-    """Greedy offence v `defence` over the starts. Returns ({'play': Counter, 'reaction': Counter}, mean
+def job_profile(defence, starts=None, offence=None):
+    """`offence` (greedy by default) v `defence` over the starts. Returns ({'play': Counter, 'reaction': Counter}, mean
     offence score). A defender's job is read when the defence's turn (or reaction) ends, so a closeout
     that turns first and then steps in counts as one arrow on the shooter."""
     import collections
@@ -260,5 +260,5 @@ def job_profile(defence, starts=None):
                     if stg == 'reaction' or B.on_board(ref.o[ref.ball]):
                         jobs[stg][arrow_job(ref, j)] += 1
                 moved.clear()
-        totals.append(float(play(st, GreedyPolicy(), defence, seed=1, check=check)['score'].total))
+        totals.append(float(play(st, offence or GreedyPolicy(), defence, seed=1, check=check)['score'].total))
     return jobs, sum(totals) / len(totals)

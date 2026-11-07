@@ -33,7 +33,8 @@ def log_rules(setup):
     rec = setup.get('rules')
     if not rec:
         return RC.with_rules(**RC.LEGACY_3I)
-    return RC.with_rules(**dict({'intercept_rule': 'approach'}, **rec))   # logs from before the OQ-72 ruling
+    # logs from before the OQ-72 ruling (no intercept_rule) or before the turnover-cost ruling
+    return RC.with_rules(**dict({'intercept_rule': 'approach', 'turnover_cost': 'legacy'}, **rec))
 
 
 def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):

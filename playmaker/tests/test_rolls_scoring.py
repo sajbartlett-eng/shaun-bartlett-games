@@ -161,18 +161,32 @@ def test_second_steal_foul_free_throws():
     assert end.stage == 'over' and sc.free_throws == 2 * s.ctx.off[0].r['free_throw'] and sc.bonus == 5
 
 
-def test_steal_after_declared_shot():
+def _stolen_shot():
     s = base(o=['I9', 'C9', 'O9', 'A3', 'Q3'], x=['I8', 'D8', 'N8', 'G4', 'N4'])
     r = apply(s, Action('shot', 'O', 0, shot='long'))
     node = apply(r, Action('move', 'X', 0, P('I8'), 0))       # X1 turns its arrow onto the shooter
-    st = apply(node, Action('steal', 'X', 0))
+    return s, apply(node, Action('steal', 'X', 0))
+
+
+def test_steal_after_declared_shot():
+    """Since the turnover-cost ruling: a stolen shot is cancelled (it doesn't use the phase's shot), -5 and two
+    seconds, the ball stays with the shooter and play goes on. Fouls and the kept ball as before."""
+    s, st = _stolen_shot()
     foul = force(st, 'foul')
     o = s.ctx.off[0]
     assert foul.stage == 'over' and score(foul).free_throws == max(2 * o.r['free_throw'], 2 * o.shot('long'))
     stolen = force(st, 'no foul', 'stolen')
-    assert stolen.result.kind == 'steal' and score(stolen).total == -5
+    assert stolen.stage == 'play' and stolen.side == 'O' and stolen.ball == 0 and stolen.shot is None
+    assert stolen.tos == 1 and stolen.clock == s.clock - 2 and stolen.count('O', 'shot') == 0
     kept = settle(force(st, 'no foul', 'kept'))
     assert kept.stage == 'over' and kept.result.kind == 'shot'       # then the contest
+
+
+@pytest.mark.usefixtures('old_intercepts')   # the record: before the turnover-cost ruling a stolen shot ended it
+def test_steal_after_declared_shot_before_the_turnover_cost_ruling():
+    s, st = _stolen_shot()
+    stolen = force(st, 'no foul', 'stolen')
+    assert stolen.result.kind == 'steal' and score(stolen).total == -5
 
 
 # ---- contest and free throws -----------------------------------------------------------

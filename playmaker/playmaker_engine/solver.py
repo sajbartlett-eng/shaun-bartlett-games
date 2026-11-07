@@ -23,6 +23,13 @@ from .solver_config import DEFAULT
 from .state import CI
 
 
+
+def _stolen(s, v):
+    """A stolen declared shot, relative to banked: the shot is cancelled and the carrier keeps the ball (his
+    look v), less the turnover cost; in the final phase the possession scores 0 (resolve.pickoff_value)."""
+    from .resolve import pickoff_value
+    return pickoff_value(s, v, relative=True)
+
 class Timeout(Exception):
     pass
 
@@ -303,7 +310,7 @@ class Evaluator:
                     pk = pk_cache.get(d)
                     if pk is None:
                         pk = pk_cache[d] = float(p_success(card.r['dribble'] - dcard.r['steal'], rules))
-                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * RC.TURNOVER_POINTS)
+                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * _stolen(s, v))   # a stolen shot: turnover_cost
                     if ev < best_ev:
                         best = (ev, pf * fp + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
                         best_ev = ev
@@ -373,7 +380,7 @@ class Evaluator:
                     pk = pk_cache.get(d)
                     if pk is None:
                         pk = pk_cache[d] = float(p_success(card.r['dribble'] - dcard.r['steal'], rules))
-                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * RC.TURNOVER_POINTS)
+                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * _stolen(s, v))   # a stolen shot: turnover_cost
                     if ev < best_ev:
                         best = (ev, pf * fp + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
                         best_ev = ev
@@ -445,7 +452,11 @@ class Evaluator:
             if s.inbound and s.pending[0] == ctx.inbounder:
                 from .resolve import complete_pass
                 landed = complete_pass(s)
-            lost = s.with_(pending=None, approach=-1, tos=s.tos + 1)
+            if ctx.rules.intercept_rule == 'move_then_intercept':
+                from .resolve import pickoff
+                lost = pickoff(s.with_(pending=None, approach=-1))     # -5, two seconds, the ball with the passer
+            else:
+                lost = s.with_(pending=None, approach=-1, tos=s.tos + 1)
             if p >= 1.0:
                 return self(landed)
             if ctx.hold_for_one:
