@@ -67,8 +67,7 @@ then publishes them. To rebuild by hand: `python -m playmaker_web.build_site`.
 
 The page is a coach's clipboard: a whiteboard court with Xs and Os in marker, paper sheets for the cards and
 trackers, and two characters. **Coach Vision** teaches the reads (scouting, goals, mismatches, shot quality);
-the **Referee** makes every call (rolls, fouls, turnovers, the clock). Both show their words; both can speak
-(Web Speech, a toggle; off by default in play, on in the course).
+the **Referee** makes every call (rolls, fouls, turnovers, the clock). They write; nothing is spoken.
 
 - **Start screen:** four paths. *Learn the rules* is a guided course of fourteen lessons, each with a
   whiteboard drawn in notation and read by the coach or the referee (`docs/clipboard_course.png`). *Play the
@@ -86,8 +85,9 @@ the **Referee** makes every call (rolls, fouls, turnovers, the clock). Both show
   defence's answer are both 1, the next pair 2, and so on). Continue moves on; *Save as image* downloads it;
   *Play story* shows every phase so far and saves them all (`docs/clipboard_phase.png`,
   `docs/clipboard_story.png`). The story is also what the end screen leads with.
-- **The coach on the sideline:** on your turn a line from Coach Vision restates your scouting call (the
-  matchup to hunt, the weakness to protect). The referee reads each roll before it is thrown and calls the
+- **The coach on the sideline:** on your turn a line from Coach Vision reads the board from the cards both
+  players see: the biggest edge between an attacker and the defender on him (points × (shot − contest)),
+  the spot it is worth taking from, and how it compares with your scouting call (`docs/clipboard_coach.png`). The referee reads each roll before it is thrown and calls the
   result; in the step-through he calls the other side's rolls and turnovers.
 - **Legibility and access:** body text in a plain sans at 15 px, the marker hand for headings and the board;
   zone washes are pale and every square is labelled on the live court; dialogs open at their title and trap
