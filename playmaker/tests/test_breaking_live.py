@@ -1,8 +1,8 @@
-"""Step 3i behaviours under the live rules (the wedge, hold-until-move screens, zone drives, move-then-intercept and
-the minus5_lose_phase turnover cost). test_breaking.py keeps the step 3i positions (single arrow, the old
-intercept rule) as the record, and 26 of its 39 tests pass unchanged under the live rules too (PM_LIVE_RULES=1).
-These are the other 13, rebuilt where the live rules changed what a position shows: mostly the wedge (each
-defender covers a second line) and the new geometry (one straight movement along an arrow onto the line)."""
+"""Step 3i behaviours under the live rules (single arrow, hold-until-move screens, zone drives, move-then-intercept and
+the minus5_lose_phase turnover cost). test_breaking.py keeps the step 3i positions as the record, and 31 of its 39 tests
+pass unchanged under the live rules too (PM_LIVE_RULES=1). These are the other 8, rebuilt where the live rules changed
+what a position shows: the post-entry chain (X1 now intercepts through his square on the swing lanes, so he stands
+off them, facing the baseline), the rotation (X2 faces up the wing), and the goal score's clock-aware pick-off."""
 import pytest
 from conftest import P
 
@@ -11,7 +11,7 @@ from playmaker_engine import computer as C
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
 from playmaker_engine.advantage import advantages, describe
-from playmaker_engine.capacity import capacity, lane_reach, lanes, help_reach, closeout_reach
+from playmaker_engine.capacity import capacity
 from playmaker_engine.cards import TEAMS
 from playmaker_engine.planner import goals
 from playmaker_engine.resolve import apply, ChanceNode, force
@@ -57,85 +57,22 @@ def passive_defence(o, s, steps=80):
 
 def test_these_are_the_live_rules():
     assert LIVE.intercept_rule == 'move_then_intercept' and LIVE.turnover_cost == 'minus5_lose_phase'
-    assert LIVE.arrow_mode == 'wedge' and LIVE == RC.DEFAULT_RULES
-
-
-# ---- capacity --------------------------------------------------------------------------------------------
-
-def test_after_a_move_the_defender_cannot_turn_and_only_quick_steps():
-    """High-Low's X1 (Quick Step 2). After a Move to H10 facing W (wedge W + NW, off the carrier, so no Steal):
-    only a Quick Step, which keeps the facing."""
-    s = apply(board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N']), Action('end_turn', 'O'))
-    c = capacity(s, 0)
-    assert c['can_turn'] and c['movements'] == ['move', 'qs', 'sprint'] and c['reaction'] == 2
-    mv = next(a for a in legal_actions(s) if a.kind == 'move' and a.piece == 0 and a.dest == P('H10')
-              and a.arrow == B.DIR_NAMES.index('W'))
-    t = apply(s, mv)
-    c = capacity(t, 0)
-    assert not c['move_left'] and not c['can_turn'] and c['movements'] == ['qs'] and c['tokens'] == 5
-    assert {a.kind for a in legal_actions(t) if a.piece == 0} == {'qs'}
-
-
-def test_the_three_reaches():
-    """X2's wedge (NE + E) answers the pass to O2 and, along E, the one to O4 too."""
-    s = board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N'])
-    assert lanes(s, 1) == {1: 'approach', 3: 'approach'}
-    assert lane_reach(s, 1, 0, 1) == 'approach'
-    assert closeout_reach(s, 1)
-    assert any(help_reach(s, 3).values()) and not help_reach(s, 4)
-
-
-# ---- the off-ball threat --------------------------------------------------------------------------------
-# O2 (a ▲ three-point shooter) two squares from X2, who faces away (S: wedge S + SW) with his Move left: no
-# straight line of his reaches the pass, but he can close out on the catch.
-
-TT = list(TEAMS['Twin Towers'])
-WEAK = [TT[0], TT[4], TT[2], TT[3], TT[4]]
-
-
-def _threat(level, on, cards=None, **kw):
-    s = board('Twin Towers', 'High-Low', TABLE_O, ['I10', 'E7', 'N8', 'G4', 'N4'], ['N', 'S', 'NW', 'N', 'N'], **kw)
-    if cards:
-        s = s.with_(ctx=Context(cards, s.ctx.dfn, LIVE, title='t', kind='GAME', off_team='t', def_team='High-Low'))
-    c = C.Computer('X', level, seed=1, budget_s=None, habits=[])
-    c.cfg = dict(c.cfg, offball_threat=on)
-    c._context(s)
-    return c._threat(s), c, s
-
-
-@pytest.mark.parametrize('lv', ['starter', 'allstar'])
-def test_an_open_shooter_off_the_ball_raises_the_defence_value(lv):
-    with_term, _, s = _threat(lv, True)
-    assert C.pass_risk(s, 0, 1)['clean'] and closeout_reach(s, 1)
-    assert with_term > _threat(lv, False)[0]
-
-
-@pytest.mark.parametrize('lv', ['starter', 'allstar'])
-def test_with_no_defender_able_to_recover_it_raises_it_more(lv):
-    assert _threat(lv, True, moved_x=2, qs_x=2)[0] > _threat(lv, True)[0]
-
-
-@pytest.mark.parametrize('lv', ['starter', 'allstar'])
-def test_a_poor_shooter_in_the_same_spot_changes_it_less_than_the_comfort_line(lv):
-    strong = _threat(lv, True)[0] - _threat(lv, False)[0]
-    weak_on, c, _ = _threat(lv, True, cards=WEAK)
-    weak_off = _threat(lv, False, cards=WEAK)[0]
-    assert weak_on - weak_off < strong
-    assert max(weak_on, c.comfort) - max(weak_off, c.comfort) < 1.0
+    assert LIVE.arrow_mode == 'single' and LIVE == RC.DEFAULT_RULES
 
 
 # ---- the goal chain on the post position ----------------------------------------------------------------
-# The step 3i post position (O5, ▲ post, on the right block against a ▼ post X5 fronting him). Under the live
-# rules X1 on M8 is through-you on both swing lanes, and X5 jumps the entry: so the chain runs from the entry
-# backwards through the seal to O5 moving to open his own lane.
+# The step 3i post position (O5, ▲ post, on the right block against a ▼ post X5 fronting him), with O2 a square
+# higher and X1 facing the baseline: X1 can't jump either swing lane from where he stands, so the chain is the
+# full one: both receivers open their lanes, two swings, the seal, the entry.
 
 BB = TEAMS['Bucket Brigade']
 POST_OFF = [TEAMS['Iron Wall'][0], TEAMS['Lockdown'][0], TEAMS['Iron Wall'][3], TEAMS['Twin Towers'][3], TEAMS['High-Low'][4]]
 POST_DFN = [BB[0], BB[1], BB[4], BB[3], BB[2]]
 POST_O = ['O8', 'H8', 'C5', 'B3', 'K3']
+POST_O = ['O8', 'H9', 'C5', 'B3', 'K3']
 POST_X = ['M8', 'G6', 'E7', 'A2', 'L4']
-POST_ARROWS = ['E', 'E', 'E', 'NE', 'NE']
-CHAIN = ['O5 moved to open the lane', 'O5 sealed X5', 'entry to O5']
+POST_ARROWS = ['S', 'E', 'E', 'NE', 'NE']
+CHAIN = ['O2 moved to open the lane', 'O3 moved to open the lane', 'swung the ball to O2', 'swung the ball to O3', 'O5 sealed X5', 'entry to O5']
 
 
 def post_position(**kw):
@@ -171,7 +108,7 @@ def test_the_chain_runs_and_the_log_matches():
     o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
     passive_defence(o, post_position(), steps=40)
     ev = _events(o)
-    assert ev[0]['text'] == 'Goal: O5 in the post on X5 (Post entry, 3 steps)'
+    assert ev[0]['text'] == 'Goal: O5 in the post on X5 (Post entry, 6 steps)'
     assert ev[1]['event'] == 'goal_step' and ev[1]['text'] == CHAIN[0]
     fins = 0
     for k, e in enumerate(ev):
@@ -227,31 +164,15 @@ def test_no_goal_has_a_fixed_score():
     assert pickoff_value(s.with_(clock=2), 12.0, relative=True) == 0.0       # the final phase: 0
 
 
-# ---- the V-cut: the defender who doesn't follow --------------------------------------------------------
-
-def _wing(o2, x2, a2, **kw):
-    return board('Five Out', 'High-Low', ['I11', o2, 'O9', 'A3', 'Q3'], ['I10', x2, 'N8', 'G4', 'N4'], ['N', a2, 'NW', 'N', 'N'], **kw)
-
-
-def test_v_cut_a_defender_who_does_not_follow_leaves_the_inside_open():
-    """O2 cuts in to E7; X2 stays on D8 facing up the wing (N: wedge N + NE). Neither line reaches the pass to
-    E7: the inside is open. Facing NE he would have had the E line, and stepped straight onto it (F8)."""
-    stay = _wing('E7', 'D8', 'N')
-    assert lane_reach(stay, 1, 0, 1) is None and C.pass_risk(stay, 0, 1)['clean']
-    facing = _wing('E7', 'D8', 'NE')
-    info = C.pass_risk(facing, 0, 1)
-    assert lane_reach(facing, 1, 0, 1) == 'approach' and info['line'][0].dest == P('F8')
-
-
 # ---- rotations -------------------------------------------------------------------------------------------
 # The step 3i playout position (Bucket Brigade v Lockdown); X1, X4 and X5 have used their Moves. Under the live
-# rules X3 is the one with two jobs: help on O1's drive and the lane to O3. X2 (Move left) stands on C8 facing up
-# the wing; turning him takes the lane off X3.
+# rules X3 is the one with two jobs: help on O1's drive and the lane to O3. X2 (Move left) faces up the wing;
+# turning him takes the lane off X3.
 
 def _rotation():
-    s = board('Bucket Brigade', 'Lockdown', ['I6', 'D7', 'O9', 'D2', 'Q2'], ['H7', 'C8', 'N8', 'I5', 'J6'],
+    s = board('Bucket Brigade', 'Lockdown', ['I6', 'D7', 'O9', 'D2', 'Q2'], ['H7', 'D8', 'N8', 'I5', 'J6'],
               ['W', 'N', 'NW', 'NW', 'W'], clock=10)
-    return s.with_(tok_o=1, tok_x=1, moved_o=24, moved_x=25, cnt=(0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1), lock_o=1, phase=2, qs_x=1)
+    return s.with_(tok_o=1, tok_x=2, moved_o=24, moved_x=25, cnt=(0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1), lock_o=1, phase=2, qs_x=1)
 
 
 def test_the_defence_hands_a_job_to_a_defender_with_capacity_left():

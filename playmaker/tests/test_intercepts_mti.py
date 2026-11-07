@@ -18,10 +18,13 @@ from playmaker_engine.scoring import score
 TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
+# The positions were built under the wedge (two arrow lines give more to test); the rule's mechanics are the same
+# under the single arrow, which is the default, and the single-arrow case is tested too.
+WEDGE = RC.with_rules(arrow_mode='wedge')
 
 
 def board(o=TABLE_O, x=TABLE_X, arrows=ARROWS, rules=None, **kw):
-    return game_state('Five Out', 'High-Low', o, x, arrows, rules=rules, check=False).with_(**kw)
+    return game_state('Five Out', 'High-Low', o, x, arrows, rules=rules or WEDGE, check=False).with_(**kw)
 
 
 def passed(s, r):
@@ -39,7 +42,7 @@ def mv(s, j, sq, kind='move', arrow=None):
 
 def test_the_defaults_and_the_kept_settings():
     r = RC.Rules()
-    assert r.intercept_rule == 'move_then_intercept' and r.turnover_cost == 'minus5_lose_phase'
+    assert r.intercept_rule == 'move_then_intercept' and r.turnover_cost == 'minus5_lose_phase' and r.arrow_mode == 'single'
     assert r.intercept_cost == r.turnover_cost                                       # the old name
     assert RC.with_rules(intercept_cost='minus10').turnover_cost == 'minus10'
     assert set(RC.INTERCEPT_RULES) >= {'move_then_intercept', 'ring_jump', 'approach'}
@@ -72,6 +75,13 @@ def test_a_straight_quick_step_and_a_sprint_along_the_arrow_also_open_it():
     assert t.arrows[0] == s.arrows[0] and Action('intercept', 'X', 0) in icpts(t)
     turned = [m for m in legal_actions(s) if m.kind == 'sprint' and m.piece == 0 and m.dest == P('K10') and m not in sp]
     assert turned and all(not mti_approach(s, m) for m in turned)        # a Sprint that turns him doesn't
+
+
+def test_under_the_single_arrow_only_the_one_line_meets_the_pass():
+    s = passed(board(rules=RC.Rules()), 2)                 # the default: X3's single arrow NW meets I11 -> O9 on L10
+    assert {m.dest for m in approach_moves(s, 2)} == {P('L10')}
+    t = apply(s, mv(s, 2, 'L10'))
+    assert t.approach == 2 and icpts(t) == [Action('intercept', 'X', 2)]
 
 
 def test_off_the_arrow_a_turned_path_or_two_movements_do_not():
@@ -188,7 +198,7 @@ def test_a_failed_intercept_strands_him_on_the_line_with_his_move_used():
 @pytest.mark.parametrize('cost,tos,clock_lost,ends', [('minus5', 1, 0, False), ('minus10', 2, 0, False),
                                                       ('lose_phase', 0, 2, False), ('end_possession', 1, 0, True)])
 def test_the_other_costs(cost, tos, clock_lost, ends):
-    s, t, node = _jumped(rules=RC.with_rules(turnover_cost=cost))
+    s, t, node = _jumped(rules=RC.with_rules(turnover_cost=cost, arrow_mode='wedge'))
     won = force(node, 'failure')
     assert won.tos == tos and (won.stage == 'over') == ends
     if not ends:

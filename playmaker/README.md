@@ -538,7 +538,7 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   defender) or the phase ends. A failed Challenge locks the challenger. So the offence can set the screen,
   let the defence answer, use it with one movement and end the turn (the screen stays up, the defence must
   answer again), and only then release the screener to roll or pop.
-- **The double arrow** (`arrow_mode='wedge'`): two arrow lines 45° apart. A contest is clean if the
+- **The double arrow** (`arrow_mode='wedge'`, kept available; the single arrow is the default again): two arrow lines 45° apart. A contest is clean if the
   shooter is on either line, otherwise a foul roll; the −3 when the contester is further from the rim;
   a Steal on either line; a Sprint sets one edge to its run and the defender picks the other.
 - **Zones of influence** (`actions.zone`): the squares along each arrow line a defender could reach
@@ -593,7 +593,7 @@ cell (the 16 cards and random prescribed teams, 4 seeds). `late_closeout` stays 
 
 Two settings in `rules_config.py`, off by default, for the designer to compare (`docs/Rule_Test_3h.pdf`,
 draft rulebook wording in `docs/Step3h_rulebook_drafts.md`):
-- `arrow_mode`: `'wedge'` (the default since the step 3i follow-up) or `'single'`. A wedge is two arrow
+- `arrow_mode`: `'single'` (the default: the designer's ruling after the move-then-intercept run, where the single arrow with late closeout off was the cell closest to basketball) or `'wedge'`. A wedge is two arrow
   lines 45° apart, and every arrow rule uses either line.
 - `contest_geometry`: `'current'` (now), `'wedge_mirror'` or `'rim_distance'`. With either new value,
   facing gates the contest. Position then sets its quality: Front is a full contest, Side a foul roll,

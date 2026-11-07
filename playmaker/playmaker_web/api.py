@@ -60,6 +60,8 @@ def handle(manager, method, path, query=None, body=None):
                 return 200, (legal_json(g.state, g.legal()) if g.can_act(q.get('token')) else [])
             if path == '/api/log':
                 return 200, manager.get(q.get('code')).read_log()
+            if path == '/api/story':
+                return 200, manager.get(q.get('code')).story()
             if path == '/api/options':
                 return 200, options(manager)
             return 404, dict(error='not found')

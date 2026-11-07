@@ -28,18 +28,20 @@ def bundle():
     return dict(version=1, files=files)
 
 
+JS_FILES = ['notation.js', 'coach.js', 'app.js']       # in load order; index.html names them in this order
+
+
 def page(inline=False):
     html = open(os.path.join(STATIC, 'index.html')).read()
     adapter = open(os.path.join(STATIC, 'pyodide-adapter.js')).read()
-    app = open(os.path.join(STATIC, 'app.js')).read()
     css = open(os.path.join(STATIC, 'style.css')).read()
+    tags = ''.join(f'<script src="{f}"></script>\n' for f in JS_FILES)
     if not inline:
-        return html.replace('<script src="app.js"></script>',
-                            '<script src="pyodide-adapter.js"></script>\n<script src="app.js"></script>')
+        return html.replace(tags, '<script src="pyodide-adapter.js"></script>\n' + tags)
     data = json.dumps(bundle()).replace('</', '<\\/')
     html = html.replace('<link rel="stylesheet" href="style.css">', f'<style>\n{css}\n</style>')
-    return html.replace('<script src="app.js"></script>',
-                        f'<script>window.PM_BUNDLE = {data};</script>\n<script>\n{adapter}\n</script>\n<script>\n{app}\n</script>')
+    scripts = ''.join(f'<script>\n{open(os.path.join(STATIC, f)).read()}\n</script>\n' for f in JS_FILES)
+    return html.replace(tags, f'<script>window.PM_BUNDLE = {data};</script>\n<script>\n{adapter}\n</script>\n{scripts}')
 
 
 def build(out_site=None, out_dist=None):
@@ -49,7 +51,7 @@ def build(out_site=None, out_dist=None):
     os.makedirs(out_dist, exist_ok=True)
     with open(os.path.join(out_site, 'index.html'), 'w') as f:
         f.write(page())
-    for name in ('app.js', 'style.css', 'pyodide-adapter.js'):
+    for name in JS_FILES + ['style.css', 'pyodide-adapter.js']:
         with open(os.path.join(STATIC, name)) as src, open(os.path.join(out_site, name), 'w') as dst:
             dst.write(src.read())
     with open(os.path.join(out_site, 'engine_bundle.json'), 'w') as f:

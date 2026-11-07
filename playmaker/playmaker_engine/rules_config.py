@@ -152,12 +152,13 @@ class Rules:
     #   Move and Quick Step", trackers). So no Sprint after that player's Quick Step, no Quick Step after
     #   their Sprint, no second Quick Step. The side's limit of 2 Quick Steps (Sprints count) still applies.
     qs_once_per_player: bool = True
-    # A defender's arrow (RULED, step 3i follow-up: the wedge is the default).
-    #   'single' : one arrow line (the step 3h rules; kept available).
+    # A defender's arrow (RULED: back to the single arrow after the move-then-intercept run, where the single
+    #   arrow with late closeout off was the cell closest to basketball; the wedge is kept available).
+    #   'single' : one arrow line.
     #   'wedge'  : two arrow lines 45 degrees apart (directions a and a+1 for arrow index a): passes,
     #              drives, steals and contest facing test either line; a Sprint sets one edge to the run
     #              direction and the defender picks the side of the other.
-    arrow_mode: str = 'wedge'
+    arrow_mode: str = 'single'
     # Step 3h (rule test, not adopted): contest quality.
     #   'current'      : any adjacent defender contests; arrow off the shooter = a foul roll; -3 when the
     #                    contester is further from the rim than the shooter.

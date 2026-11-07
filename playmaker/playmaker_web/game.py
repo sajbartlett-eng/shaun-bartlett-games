@@ -134,6 +134,61 @@ def consequences(before, after, a):
     return [dict(tone=t, text=x) for t, x in out]
 
 
+def notation(before, after, a, turn):
+    """The play-diagram mark for one action, in hand-drawn basketball notation terms (the web layer reads it
+    off the before and after states; the engine decides nothing here): kind, side, piece, from and to
+    squares, a target square where the action points at one (a pass receiver, the T square, the rim, the
+    defender dribbled at), the turn number within the phase, and what came of it."""
+    k = a.kind
+    side = a.side
+    if k in ('end_turn', 'forfeit', 'target', 'pick') or a.piece is None or a.piece < 0 and k not in ('pause', 'hesitate'):
+        return None
+    # a defence action other than an Intercept lands a pending pass first: the carrier it acts on is the receiver
+    carrier = before.pending[1] if (before.pending and side == 'X' and k != 'intercept') else before.ball
+    pieces_b = before.o if side == 'O' else before.x
+    pieces_a = after.o if side == 'O' else after.x
+    i = a.piece if a.piece is not None and a.piece >= 0 else (before.ball if side == 'O' else None)
+    frm = B.sq(pieces_b[i]) if i is not None and B.on_board(pieces_b[i]) else None
+    to = B.sq(pieces_a[i]) if i is not None and B.on_board(pieces_a[i]) else frm
+    m = dict(kind=k, side=side, piece=i, frm=frm, to=to, target=None, turn=turn, result=None)
+    if k in ('move', 'qs', 'sprint'):
+        if side == 'X':
+            m['arrow_from'], m['arrow_to'] = before.arrows[i], after.arrows[i]
+    elif k == 'pass':
+        m['target'] = B.sq(before.o[a.target])
+        m['receiver'] = a.target
+        m['result'] = 'landed' if after.ball == a.target else ('in the air' if after.pending else 'intercepted')
+    elif k == 'dribble':
+        m['target'] = B.sq(before.x[a.target])
+        m['defender'] = a.target
+        m['result'] = 'won' if after.locked('X', a.target) and not before.locked('X', a.target) else 'lost' if after.locked('O', before.ball) and not before.locked('O', before.ball) else 'even'
+    elif k == 'screen':
+        m['target'] = B.sq(B.add(before.o[i], B.DIRS[a.target]))
+        m['dir'] = a.target
+    elif k in ('shot', 'forced_shot'):
+        m['target'] = B.sq(RC.RIM)
+        m['shot'] = a.shot
+    elif k == 'intercept':
+        passer, recv = before.pending
+        m['target'] = B.sq(before.o[recv])
+        m['pass_from'] = B.sq(before.o[passer])
+        m['result'] = 'picked off' if after.tos > before.tos else 'missed'
+    elif k == 'steal':
+        m['target'] = B.sq(before.o[carrier])
+        m['result'] = 'stolen' if after.tos > before.tos else ('foul' if after.fouls > before.fouls or after.bonus5 > before.bonus5 else 'kept')
+    elif k == 'challenge':
+        m['target'] = B.sq(before.o[a.target])
+        m['result'] = 'beaten' if after.locked('X', i) and not before.locked('X', i) else 'through'
+    elif k == 'contest':
+        if i is None or a.piece < 0:
+            return dict(kind='no_contest', side='X', piece=None, frm=None, to=None, target=None, turn=turn, result=None)
+        m['target'] = B.sq(before.o[carrier])
+    elif k in ('hesitate', 'pause'):
+        m['frm'] = m['to'] = B.sq(before.o[carrier])
+        m['piece'] = carrier if side == 'O' else None
+    return m
+
+
 def man_to_man(o_squares, ball):
     """The computer's defensive placement: each X on the empty square next to its man that is closest
     to the rim (ties: compass order N, NE, E...), arrow on its man."""
@@ -171,19 +226,23 @@ class Game:
         self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
         self.rng = random.Random(self.seed)
         self.rules = rules
-        self.ai = {k: v for k, v in (ai or {}).items() if v}
-        self.ai = {side: {'greedy': 'starter', 'reader': 'starter'}.get(kind, kind) for side, kind in self.ai.items()}
-        self.policies = {side: self._policy(side, kind) for side, kind in self.ai.items()}
+        # the computer: by side (O / X, fixed for the game) or by player (A / B: it follows the player across the
+        # swap of sides in a full game, so "play the computer" means one opponent all match)
+        raw = {k: {'greedy': 'starter', 'reader': 'starter'}.get(v, v) for k, v in (ai or {}).items() if v}
+        self.ai_players = {k: v for k, v in raw.items() if k in ('A', 'B')}
+        self.ai_sides = {k: v for k, v in raw.items() if k in ('O', 'X')}
+        self.possession = 1
+        self._set_ai()
         self.tokens = {'both': secrets.token_hex(8)} if mode == 'hotseat' else {}
         self.seats = {}
         self.version = 0
-        self.possession = 1
         self.scores = []                 # finished possessions: dict
         self.undo = []                   # [(state, rng_state, phase_slots)] since the last roll
         self.undo_votes = set()
         self.rolls = []
         self.feed = []                   # every action with its rolls and consequences, for the page
         self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
+        self.turn_no = 0                 # the offence turn number within the phase (its defence answer shares it)
         self.last_decision = time.time()
         self.lock = threading.RLock()
         self.feedback = None
@@ -201,7 +260,7 @@ class Game:
         self.reflection = None
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
-                  ai=self.ai, possession=self.possession, place=self.place_on, level=self.level,
+                  ai=self.ai, ai_players=self.ai_players or None, possession=self.possession, place=self.place_on, level=self.level,
                   custom=self.custom or None, experimental=self.experimental or None,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
@@ -212,6 +271,13 @@ class Game:
                 self._save_picks(side, self._engine_picks(side), actor='ai')
         if not self.picks_pending():
             self._begin_possession()
+
+    def _set_ai(self):
+        """self.ai and self.policies for this possession: the fixed sides plus the players' sides now."""
+        att = 'A' if self.possession == 1 else 'B'
+        by_player = {('O' if p == att else 'X'): v for p, v in self.ai_players.items()}
+        self.ai = dict(self.ai_sides, **by_player)
+        self.policies = {side: self._policy(side, kind) for side, kind in self.ai.items()}
 
     def _policy(self, side, kind):
         """The computer for a side: 'rookie', 'starter' or 'allstar' (step 3e; 'greedy' means starter, from
@@ -465,6 +531,7 @@ class Game:
         self.undo, self.undo_votes = [], set()
         if node.phase != before.phase:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
+            self.turn_no = 0
         self.rolls = rolls
         self.version += 1
         left = node.tokens(side) if node.stage in ('play', 'reaction') and node.side == side else None
@@ -744,11 +811,16 @@ class Game:
             node, rolls = resolve_chance(node, self.rng)
             self.undo = []
         else:
-            self.undo.append((before, self.rng.getstate(), json.dumps(self.slots)))
+            self.undo.append((before, self.rng.getstate(), json.dumps(self.slots), self.turn_no))
         if a.kind not in ('end_turn', 'forfeit', 'target', 'pick'):
             self.slots[a.side][a.piece if a.piece >= 0 else 0].append(a.kind)
+        if a.side == 'O' and before.turn_n == 0 and before.stage in ('play', 'target', 'pick', 'forced'):
+            self.turn_no += 1            # a new offence turn in this phase
+        turn = self.turn_no
+        mark = notation(before, node, a, turn)
         if node.phase != before.phase:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
+            self.turn_no = 0
         self.state = node
         self.rolls = rolls
         self.undo_votes = set()
@@ -780,7 +852,7 @@ class Game:
         entry = dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
                      outcomes=consequences(before, node, a), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
-                     board=board_json(node, self.slots))
+                     turn=turn, mark=mark, board=board_json(node, self.slots))
         if not self.feed or self.feed[-1]['possession'] != self.possession:
             entry['before'] = board_json(before, self.slots)     # the first of a possession: where it all stood
         self.feed.append(entry)
@@ -824,9 +896,10 @@ class Game:
                     return dict(waiting='undo needs both players: waiting for the other side')
             elif self.seat_of(token) is None:
                 raise GameError('unknown player token')
-            st, rs, slots = self.undo.pop()
+            st, rs, slots, turn_no = self.undo.pop()
             if self.feed:
                 self.feed.pop()
+            self.turn_no = turn_no
             self.state = st
             self.rng.setstate(rs)
             self.slots = {k: {int(i): v for i, v in d.items()} for k, d in json.loads(slots).items()}
@@ -858,12 +931,14 @@ class Game:
             if not (self.full and self.possession == 1 and self.state.stage == 'over'):
                 raise GameError('no next possession')
             self.possession = 2
+            self._set_ai()
             self.state = self._possession_state()
             self.undo, self.rolls = [], []
             self.feed.append(dict(n=len(self.feed) + 1, actor='system', side='-', kind='possession',
                                   text='Possession 2: sides swap', rolls=[], outcomes=[], possession=2,
                                   clock=self.state.clock, phase=self.state.phase, version=self.version + 1))
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
+            self.turn_no = 0
             self.version += 1
             self._log('possession', possession=2, teams=self.teams[::-1], start=self.state.encode())
             self._begin_possession()
@@ -895,6 +970,33 @@ class Game:
                   answers=[dict(question=q, answer=answers.get(str(i), '')) for i, q in enumerate(FEEDBACK_QUESTIONS)],
                   reflection=dict(question=REFLECT_QUESTION, answer=answers.get('reflect', '')))
 
+    # ---- the play story: one diagram per phase ----
+    def story(self):
+        """Every possession's phases: the board at the phase's start (squares, ball, screens, arrows), the
+        clock, and the phase's actions with their notation marks and turn numbers."""
+        out = []
+        cur = None
+        prev_board = None
+        for e in self.feed:
+            if e.get('actor') == 'system':
+                prev_board = None
+                continue
+            key = (e['possession'], e['phase'])
+            if cur is None or (cur['possession'], cur['phase']) != key:
+                start = e.get('before') or prev_board
+                cur = dict(possession=e['possession'], phase=e['phase'], clock=e['clock'], start=_start_json(start), entries=[])
+                out.append(cur)
+            cur['entries'].append(dict(n=e['n'], side=e['side'], actor=e['actor'], turn=e.get('turn'), text=e['text'],
+                                       kind=e['kind'], mark=e.get('mark'),
+                                       rolls=[dict(face=r['face'], need=r['need'], picked=r['picked'], roller=r['roller']) for r in e.get('rolls', [])],
+                                       outcomes=e.get('outcomes', [])))
+            cur['end_clock'] = e['board']['clock'] if e.get('board') else None
+            cur['over'] = bool(e.get('board')) and e['board'].get('stage') == 'over'
+            prev_board = e.get('board')
+        return dict(possessions=sorted({p['possession'] for p in out}), phases=out,
+                    arrow_mode=self.state.ctx.rules.arrow_mode, teams=self.teams, title=self.state.ctx.title,
+                    scores=self.scores)
+
     # ---- log ----
     def _log(self, kind, **data):
         data = dict(type=kind, time=round(time.time(), 3), code=self.code, **data)
@@ -904,6 +1006,13 @@ class Game:
     def read_log(self):
         with open(self.log_path) as f:
             return [json.loads(line) for line in f]
+
+
+def _start_json(b):
+    if not b:
+        return None
+    return dict(o=[dict(sq=p['sq'], ball=p['ball'], screen=p.get('screen')) for p in b['o']],
+                x=[dict(sq=p['sq'], arrow=p['arrow']) for p in b['x']])
 
 
 def _score_json(sc):

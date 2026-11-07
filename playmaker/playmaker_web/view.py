@@ -291,7 +291,7 @@ def state_json(game, token):
     out = dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
                 side_to_act=game.side_to_act(), ai=game.ai, title=ctx.title, scenario=sc_info, full=game.full,
                 possession=game.possession, attacker=game.offence_player(), teams=[ctx.off_team, ctx.def_team],
-                clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final,
+                clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final, turn=game.turn_no,
                 tokens=dict(O=s.tok_o, X=s.tok_x), limits=limits, inbound=s.inbound, inbounder=ctx.inbounder,
                 pending=list(s.pending) if s.pending else None, shot=s.shot,
                 o=pieces_o, x=pieces_x, zones=zones(),

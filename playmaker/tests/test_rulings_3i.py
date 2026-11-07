@@ -14,6 +14,9 @@ TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
 
 
+WEDGE = RC.with_rules(arrow_mode='wedge')     # the zone tests were built for the wedge (two lines); it is kept available
+
+
 def table(**kw):
     return game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, check=False).with_(**kw)
 
@@ -48,7 +51,7 @@ def pass_turn(s):
 def test_the_new_defaults():
     r = RC.Rules()
     assert (r.screen_rule, r.arrow_mode, r.contest_geometry, r.drive_rule, r.intercept_return, r.late_closeout) == \
-        ('hold_until_move', 'wedge', 'current', 'zone', True, False)
+        ('hold_until_move', 'single', 'current', 'zone', True, False)
 
 
 # ---- screens (OQ-29) ------------------------------------------------------------------------------
@@ -122,20 +125,20 @@ def test_the_old_two_turn_rule_is_still_available():
 # ---- zones of influence -----------------------------------------------------------------------
 
 def test_a_zone_runs_along_both_wedge_lines():
-    s = table()
+    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=WEDGE, check=False)
     z = zone(s, 1)                              # X2 on D8, wedge NE + E
     dirs = {B.dir_between(s.x[1], q) if B.adjacent(s.x[1], q) else None for q in z}
     assert P('E9') in z and P('E8') in z and {B.DIR_NAMES.index('NE'), B.DIR_NAMES.index('E')} <= dirs
 
 
 def test_a_zone_ends_at_an_occupied_square():
-    s = table().with_(o=(P('I11'), P('F8')) + tuple(P(q) for q in TABLE_O[2:]))
+    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=WEDGE, check=False).with_(o=(P('I11'), P('F8')) + tuple(P(q) for q in TABLE_O[2:]))
     z = zone(s, 1)                              # O2 on F8, two squares east of X2
     assert P('E8') in z and P('F8') not in z and P('G8') not in z
 
 
 def test_a_used_move_shrinks_the_zone_to_quick_step_reach_and_a_lock_keeps_only_that():
-    s = table()
+    s = game_state('Five Out', 'High-Low', TABLE_O, TABLE_X, ARROWS, rules=WEDGE, check=False)
     full = zone(s, 0)                           # X1 (High-Low's guard: Quick Step 2)
     moved = zone(s.with_(moved_x=1), 0)
     locked = zone(s.with_(lock_x=1), 0)

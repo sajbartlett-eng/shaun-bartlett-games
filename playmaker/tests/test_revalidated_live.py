@@ -18,25 +18,25 @@ X1, X2, X3, X4, X5 = 1, 2, 4, 8, 16
 
 def test_these_tests_run_under_the_live_rules():
     r = RC.DEFAULT_RULES
-    assert r.intercept_rule == 'move_then_intercept' and r.turnover_cost == 'minus5_lose_phase' and r.arrow_mode == 'wedge'
+    assert r.intercept_rule == 'move_then_intercept' and r.turnover_cost == 'minus5_lose_phase' and r.arrow_mode == 'single'
 
 
 # ---- ceilings (test_golden_and_regression) ----------------------------------------------------------------
 
 def test_engine_ceilings_under_the_live_rules():
-    """Recorded under the live rules. Late Clock Reset's first-turn ceiling is 8 (12.75 under the step 3i rules):
-    the wedge covers the step the single arrow left open."""
+    """Recorded under the live rules (single arrow, move then intercept). Late Clock Reset's first-turn ceiling is
+    12.75, as under the step 3i rules (the wedge had it at 8: a second line covered the step)."""
     from fractions import Fraction as F
     from playmaker_engine.analysis import engine_ceilings
     eng = engine_ceilings([6, 10, 14])
     assert eng[6][0][0] == 9 and eng[6][1][0] == 30
-    assert eng[10][0][0] == F(8)
+    assert eng[10][0][0] == F(51, 4)
     assert eng[14] == (None, None)
 
 
 def test_the_reaction_closes_the_gap_under_the_live_rules():
-    """Late Clock Reset: O1's three is contested clean by the reaction (3). The step 3i rules needed a second
-    reaction action for that; the wedge gets there with one Sprint."""
+    """Late Clock Reset: with two reaction actions (a Move that sets the arrow, then a Quick Step in) O1's three
+    is contested clean: 3."""
     from playmaker_engine.analysis import two_action_ceilings
     gift = two_action_ceilings([10], parts=('gift',))[10][0]
     assert gift[0] == 3

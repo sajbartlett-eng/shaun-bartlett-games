@@ -3,54 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Playmaker Playtest</title>
+<title>Playmaker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#actionsPanel">Skip to the actions</a>
 <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 <main id="start" class="panel start">
-  <h1>Playmaker <span class="sub">playtest table</span></h1>
-  <p class="note">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
+  <h1>Playmaker <span class="sub">the coach's clipboard</span></h1>
+  <div id="startCoach"></div>
+  <nav class="paths" aria-label="How do you want to play?">
+    <button class="path" data-path="learn"><span class="path-title">Learn the rules</span><span class="path-sub">A guided course with Coach Vision: ten minutes, with the whiteboard.</span></button>
+    <button class="path" data-path="computer"><span class="path-title">Play the computer</span><span class="path-sub">Two possessions, sides swap. Rookie to practise your reads, All-Star for the full test.</span></button>
+    <button class="path" data-path="friend"><span class="path-title">Play a friend</span><span class="path-sub">Across one screen, or two browsers with a code.</span></button>
+    <button class="path" data-path="scenario"><span class="path-title">Scenario cards</span><span class="path-sub">Sixteen set pieces: one possession each, with a goal to hit.</span></button>
+  </nav>
   <div class="startgrid">
-    <section>
-      <h2>New game</h2>
+    <section id="setup" class="setup hidden" aria-live="polite">
+      <h2 id="setupTitle">Set up the game</h2>
       <label>Play <select id="kind">
         <option value="full">Full game: two possessions, swap sides</option>
         <option value="scenario">Scenario card</option>
         <option value="single">One possession</option>
       </select></label>
       <label id="scenarioRow">Card <select id="scenario"></select></label>
+      <p id="scenarioText" class="note"></p>
       <div id="teamsRow"><label>Teams <select id="teamA"></select> v <select id="teamB"></select></label>
         <div class="builders"><div id="builder0" class="builder hidden"></div><div id="builder1" class="builder hidden"></div></div>
         <p class="note exp" id="builderWarn" role="status"></p></div>
-      <label>Where <select id="mode">
+      <div id="aiRow">
+        <label>The computer plays <select id="aiLevel"><option value="rookie">Rookie: makes beginner mistakes you can learn to spot</option><option value="starter">Starter: solid, with one habit to find</option><option value="allstar">All-Star: plays the full read</option></select></label>
+        <label id="aiSeatRow">You start on <select id="aiSeat"><option value="O">offence (the computer defends first)</option><option value="X">defence (the computer attacks first)</option></select></label>
+      </div>
+      <label id="modeRow">Where <select id="mode">
         <option value="hotseat">Hot-seat: two players, this screen</option>
         <option value="remote">Remote: two browsers, join by code</option>
       </select></label>
-      <label>Detail level <select id="level">
-        <option value="learn">Learn</option>
-        <option value="scout" selected>Scout</option>
-        <option value="pro">Pro</option>
+      <label>Scouting level <select id="level">
+        <option value="learn">Learn: the full scout report before tip-off</option>
+        <option value="scout" selected>Scout: make your call from the cards, then see the report</option>
+        <option value="pro">Pro: cards only</option>
       </select></label>
       <p class="note" id="levelNote"></p>
-      <fieldset><legend>Decision timer (optional)</legend>
-        <label>Seconds per decision <select id="timerA"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
-        <p class="note">Each full period without an action costs the acting side 1 token. Selecting an action gives 15 seconds to finish it. Hot-seat: a Ready screen at each handover.</p>
-        <label><input type="checkbox" id="hcA"> Handicap: player A agrees</label>
-        <label><input type="checkbox" id="hcB"> Handicap: player B agrees</label>
-        <label id="timerBRow" class="hidden">Player B's timer <select id="timerB"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
-        <p class="note">Player A is on offence in possession 1. Separate settings need both players to tick the handicap.</p>
-        <label><input type="checkbox" id="timerSound"> Sound cue at 10 seconds</label>
-      </fieldset>
-      <label>Seed <input id="seed" type="number" placeholder="random"></label>
-      <fieldset><legend>Computer opponent</legend>
-        <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
-        <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
-        <p class="note">Rookie: makes beginner mistakes you can learn to spot. Starter: solid, with one habit to find. All-Star: plays the full read.</p>
-      </fieldset>
-      <button id="create" class="primary">Start</button>
-      <p id="scenarioText" class="note"></p>
+      <details class="more">
+        <summary>More options: the decision timer, the seed, the computer by side</summary>
+        <fieldset><legend>Decision timer (optional)</legend>
+          <label>Seconds per decision <select id="timerA"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
+          <p class="note">Each full period without an action costs the acting side 1 token. Selecting an action gives 15 seconds to finish it. Hot-seat: a Ready screen at each handover.</p>
+          <label><input type="checkbox" id="hcA"> Handicap: player A agrees</label>
+          <label><input type="checkbox" id="hcB"> Handicap: player B agrees</label>
+          <label id="timerBRow" class="hidden">Player B's timer <select id="timerB"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
+          <p class="note">Player A is on offence in possession 1. Separate settings need both players to tick the handicap.</p>
+          <label><input type="checkbox" id="timerSound"> Sound cue at 10 seconds</label>
+        </fieldset>
+        <label>Seed <input id="seed" type="number" placeholder="random"></label>
+        <fieldset><legend>The computer by side (instead of by player)</legend>
+          <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
+          <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
+        </fieldset>
+      </details>
+      <button id="create" class="primary big">Start</button>
     </section>
     <section id="joinBox">
       <h2>Join a remote game</h2>
@@ -60,7 +75,9 @@
       <p class="note">The player who starts a remote game picks a seat too; the code appears at the top of the table.</p>
     </section>
   </div>
+  <p class="note small">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
 </main>
+<div id="course" class="hidden"></div>
 
 <div id="table" class="hidden">
   <header class="topbar">
@@ -79,7 +96,8 @@
       <div id="offTracker" class="tracker tab-off"></div>
     </aside>
     <main id="tableMain">
-      <svg id="court" role="group" aria-label="Court"></svg>
+      <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
+      <div id="coachLine" class="coachline"></div>
       <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
       <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <section id="stepBar" class="stepbar hidden" aria-live="polite" aria-label="The other side's turn, one action at a time"></section>
@@ -110,6 +128,8 @@
 </div>
 
 <div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modalbox" id="modalBox"></div></div>
+<script src="notation.js"></script>
+<script src="coach.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
