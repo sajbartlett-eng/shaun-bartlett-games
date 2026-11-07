@@ -72,7 +72,10 @@ the **Referee** makes every call (rolls, fouls, turnovers, the clock). They writ
 - **Start screen:** four paths. *Learn the rules* is a guided course of fourteen lessons, each with a
   whiteboard drawn in notation and read by the coach or the referee (`docs/clipboard_course.png`). *Play the
   computer* (the computer takes the other player's seat and follows the swap of sides), *Play a friend* and
-  *Scenario cards*. The timer, the seed and the computer-by-side settings are under *More options*.
+  *Scenario cards*. The timer, the dice seed (a number that makes the referee's dice repeat, for replaying or
+  sharing a game) and the computer-by-side settings are under *More options*. Every move the course draws is
+  checked against the engine (`tests/test_course_boards.py`): no lesson shows an illegal cut, and lesson 4's
+  hatched reach is the engine's own zone.
 - **Notation, live:** every action is drawn on the court as a coach draws it: a solid line with an arrowhead
   for a cut, a zigzag for a dribble, a dashed line for a pass, a line ending in a bar for a screen (the T),
   a line to the rim with a small ball for a shot; a defender's new facing as an arrowhead, red marks at the
@@ -86,11 +89,22 @@ the **Referee** makes every call (rolls, fouls, turnovers, the clock). They writ
   *Play story* shows every phase so far and saves them all (`docs/clipboard_phase.png`,
   `docs/clipboard_story.png`). The story is also what the end screen leads with.
 - **The coach on the sideline:** on your turn a line from Coach Vision reads the board from the cards both
-  players see: the biggest edge between an attacker and the defender on him (points × (shot − contest)),
-  the spot it is worth taking from, and how it compares with your scouting call (`docs/clipboard_coach.png`). The referee reads each roll before it is thrown and calls the
+  players see: the biggest edge between an attacker and the defender on that attacker (points × (shot − contest)),
+  the spot it is worth taking from, and how it compares with your scouting call (`docs/clipboard_coach.png`).
+  Select a piece and the line becomes that matchup's read, cue then rule: the edge, then what the defender's
+  arrow allows (on the attacker: a steal and a clean contest; next to but facing away: a clean catch and a
+  foul risk on the contest; off: a clean catch, shoot before the arrow comes). Once a possession is over, its
+  story carries the feedback under each phase: the best ▲ look the board offered in that phase and whether it was
+  taken (never during play: the page judges nothing while the possession runs). This is the loop the coaching
+  literature on reads describes: teach the read, repeat the decision, build the habit.
+- **What is on screen when:** the table shows what the current decision needs. Player cards fold to one line
+  (their ▲ and ▼ ratings) and open as a pair, the selected piece and its matchup, under the coach line; a tap
+  on a card's head opens or folds it by hand. Shot-zone labels appear when a shot is on offer, or on request
+  (the colours stay). The status bar's rule reminders drop off after six turns in a browser (the full line is
+  the bar's tooltip). The trackers list only the per-phase limits in use. The referee reads each roll before it is thrown and calls the
   result; in the step-through he calls the other side's rolls and turnovers.
 - **Legibility and access:** body text in a plain sans at 15 px, the marker hand for headings and the board;
-  zone washes are pale and every square is labelled on the live court; dialogs open at their title and trap
+  zone washes are pale and the court's squares are labelled when a shot is on offer or on request; dialogs open at their title and trap
   focus; pieces and targets are buttons with full names; the defender reach (zones of influence) can be
   hidden; `prefers-reduced-motion` and forced colours are respected; an axe-core audit of every screen
   reports no violations. Phones get a single column with the court first and tabs for the panels

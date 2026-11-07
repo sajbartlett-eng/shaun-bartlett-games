@@ -51,7 +51,7 @@
       </select></label>
       <p class="note" id="levelNote"></p>
       <details class="more">
-        <summary>More options: the decision timer, the seed, the computer by side</summary>
+        <summary>More options: the decision timer, the dice seed, the computer by side</summary>
         <fieldset><legend>Decision timer (optional)</legend>
           <label>Seconds per decision <select id="timerA"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
           <p class="note">Each full period without an action costs the acting side 1 token. Selecting an action gives 15 seconds to finish it. Hot-seat: a Ready screen at each handover.</p>
@@ -61,7 +61,8 @@
           <p class="note">Player A is on offence in possession 1. Separate settings need both players to tick the handicap.</p>
           <label><input type="checkbox" id="timerSound"> Sound cue at 10 seconds</label>
         </fieldset>
-        <label>Seed <input id="seed" type="number" placeholder="random"></label>
+        <label>Dice seed (optional) <input id="seed" type="number" placeholder="fresh dice"></label>
+        <p class="note">A number here fixes the referee's dice: the same seed with the same actions gives the same rolls, so a game can be replayed or shared. Leave it blank for fresh dice.</p>
         <fieldset><legend>The computer by side (instead of by player)</legend>
           <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
           <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
@@ -100,6 +101,7 @@
     <main id="tableMain">
       <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
       <div id="coachLine" class="coachline"></div>
+      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
       <section id="stepBar" class="stepbar hidden" aria-live="polite" aria-label="The other side's turn, one action at a time"></section>
       <section class="actions" id="actionsPanel" tabindex="-1" aria-label="Actions">
         <div id="phoneTimer" class="phoneonly"></div>
@@ -110,7 +112,6 @@
         <div id="sideButtons" class="buttons"></div>
         <div id="error" class="error" role="alert"></div>
       </section>
-      <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
       <section id="recent" class="recent hidden" aria-label="The other side's last turn"></section>
       <div id="scenarioCard" class="scenariocard hidden"></div>
       <nav class="tabs phoneonly" aria-label="Panels">

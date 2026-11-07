@@ -849,10 +849,16 @@ class Game:
         self.last_decision = time.time()
         text = rec['action']['text']
         from .view import board_json
+        from playmaker_engine.review import best_look
         entry = dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
                      outcomes=consequences(before, node, a), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
                      turn=turn, mark=mark, board=board_json(node, self.slots))
+        # the read the board offered before this action (the best ▲ look): kept aside, never in a play payload
+        # (neutrality: the page judges nothing during play); the story releases it once the possession is over
+        if a.kind != 'target':
+            self.looks = getattr(self, 'looks', {})
+            self.looks[entry['n']] = best_look(before)
         if not self.feed or self.feed[-1]['possession'] != self.possession:
             entry['before'] = board_json(before, self.slots)     # the first of a possession: where it all stood
         self.feed.append(entry)
@@ -993,6 +999,18 @@ class Game:
             cur['end_clock'] = e['board']['clock'] if e.get('board') else None
             cur['over'] = bool(e.get('board')) and e['board'].get('stage') == 'over'
             prev_board = e.get('board')
+            look = getattr(self, 'looks', {}).get(e['n'])
+            if look and (cur.get('look') is None or look['value'] > cur['look']['value']):
+                cur['look'] = dict(look)
+            if e['kind'] in ('shot', 'forced_shot') and cur.get('look') and e.get('mark') and e['mark'].get('piece') == cur['look']['o'] - 1:
+                cur['look']['taken'] = True
+        # the feedback stays out of a possession still being played: only a finished possession carries its looks
+        finished = {p['possession'] for p in out if p.get('over')} | {p['possession'] for p in out if p['possession'] < self.possession}
+        for p in out:
+            if p['possession'] not in finished:
+                p.pop('look', None)                  # absent: not released yet
+            else:
+                p.setdefault('look', None)           # None: released, and no ▲ look came onto the board
         return dict(possessions=sorted({p['possession'] for p in out}), phases=out,
                     arrow_mode=self.state.ctx.rules.arrow_mode, teams=self.teams, title=self.state.ctx.title,
                     scores=self.scores)

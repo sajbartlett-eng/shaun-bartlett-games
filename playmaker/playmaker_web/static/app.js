@@ -274,7 +274,7 @@ function render() {
   renderCoachLine();
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = replay ? `${sideName(replay.entries[replay.k].side).toUpperCase()} ACTED · ${s.summary}`
-    : sideChip + s.summary + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
+    : sideChip + briefSummary(s) + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
   if (s.placing) $('summary').textContent = `SETUP · the ${s.placing.side === 'O' ? 'offence' : 'defence'} places its pieces` + (s.placing.mine ? '' : s.placing.by_ai ? ' (the computer)' : ' · waiting for the other side');
   if (s.timer && s.timer.note) $('summary').textContent += ` · ${s.timer.note}`;
   if (s.timer && s.timer.note && s.timer.note !== lastTimerNote) announce(s.timer.note);
@@ -311,22 +311,61 @@ function cardEl(c, side, label, extra) {
   return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [head, ...groups, extra || null]);
 }
 
+const pinnedCards = new Set();          // cards a player opened by hand (the rest show one line until they matter)
+function openCards() {
+  // the pair that matters now: the selected piece (or the one being compared, or the ball carrier) and its matchup
+  const open = new Set(pinnedCards);
+  const focus = sel.side && sel.i != null ? { side: sel.side, i: sel.i } : compare ? { side: compare.side, i: compare.i }
+    : (st.o.find(p => p.ball) ? { side: 'O', i: st.o.find(p => p.ball).i } : null);
+  if (focus) {
+    open.add(focus.side + focus.i);
+    const js = ((st.matchups || {})[focus.side] || [])[focus.i] || [];
+    if (js.length) open.add((focus.side === 'O' ? 'X' : 'O') + js[0]);
+  }
+  return open;
+}
+function cardSummary(c) {
+  const ups = [], downs = [];
+  for (const g of c.groups) for (const r of g.ratings) { if (r.band === 'H') ups.push(`${SHORT[r.name] || r.name} ${r.value}`); else if (r.band === 'L') downs.push(`${SHORT[r.name] || r.name} ${r.value}`); }
+  const bits = [];
+  if (ups.length) bits.push(el('span', { class: 'H', text: '▲ ' + ups.slice(0, 4).join(', ') + (ups.length > 4 ? '…' : '') }));
+  if (downs.length) bits.push(el('span', { class: 'L', text: '▼ ' + downs.slice(0, 4).join(', ') + (downs.length > 4 ? '…' : '') }));
+  if (!bits.length) bits.push(el('span', { text: 'average across the card' }));
+  return el('div', { class: 'cardsum' }, bits.flatMap((b, k) => k ? [' · ', b] : [b]));
+}
 function renderCards(id, pieces, side) {
   const box = $(id); box.innerHTML = '';
   box.append(el('div', { class: 'key' }, [el('span', { class: 'H', text: '▲ above average' }), ' ', el('span', { text: 'plain = average' }), ' ', el('span', { class: 'L', text: '▼ below average' })]));
+  const open = openCards();
   for (const p of pieces) {
-    const c = p.card;
-    const head = el('div', { class: 'head' }, [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), el('span', { text: `QS ${c.qs}` })]);
+    const c = p.card, key = side + p.i, isOpen = open.has(key);
+    const head = el('button', { class: 'head', type: 'button', 'aria-expanded': isOpen ? 'true' : 'false',
+      onclick: () => { if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
+      [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), el('span', { text: `QS ${c.qs}` }),
+        el('span', { class: 'sr-only', text: isOpen ? ', full card; press to fold' : ', one line; press to open the card' })]);
     const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
       el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
         ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
       el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
         'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
     const note = side === 'O' && st.inbound_note && p.i === st.inbounder ? el('div', { class: 'inbnote', text: st.inbound_note }) : null;
-    box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}` }, [head, ...groups, note]));
+    const folded = pinnedCards.has('-' + key) || !isOpen;           // '-' + key: folded by hand although it matters now
+    box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}${folded ? ' collapsed' : ''}` },
+      [head, folded ? cardSummary(c) : null, ...groups, note]));
   }
 }
 
+let lastTurnKey = null, turnsSeen = 0;
+function briefSummary(s) {
+  // the state stays; the rule reminders ("a turn-ender ends it now", "Hesitate: 1 a phase") drop off once a player
+  // has seen six turns in this browser (the full line stays in the bar's tooltip)
+  const key = `${s.possession}:${s.phase}:${s.side_to_act}:${s.turn}`;
+  if (key !== lastTurnKey) { lastTurnKey = key; try { turnsSeen = Number(localStorage.getItem('pm_turns') || 0) + 1; localStorage.setItem('pm_turns', String(turnsSeen)); } catch (e) { turnsSeen += 1; } }
+  const parts = (s.summary || '').split(' · ');
+  if (turnsSeen <= 6 || parts.length <= 2) { $('summary').removeAttribute('title'); return s.summary; }
+  $('summary').setAttribute('title', s.summary);
+  return parts.slice(0, 2).join(' · ');
+}
 function renderTracker(id, side) {
   const s = st, box = $(id); box.innerHTML = '';
   const pool = el('div', { class: 'pool', title: `${s.tokens[side]} of 6 tokens left` });
@@ -341,8 +380,11 @@ function renderTracker(id, side) {
     tb.append(el('tr', {}, [el('td', { text: `${side}${p.i + 1}` }), el('td', {}, chips.length ? chips : ['–'])]));
   }
   box.append(tb);
-  const lim = el('div', { class: 'limits' }, s.limits[side].map(l => el('span', { class: l.used >= l.limit ? 'full' : '', text: `${KIND_NAME[l.kind] || l.kind} ${l.used}/${l.limit}` })));
-  box.append(el('div', { text: 'Per-phase limits used (Move: once per player)' }), lim);
+  const used = s.limits[side].filter(l => l.used > 0);
+  if (used.length) {
+    const lim = el('div', { class: 'limits' }, used.map(l => el('span', { class: l.used >= l.limit ? 'full' : '', text: `${KIND_NAME[l.kind] || l.kind} ${l.used}/${l.limit}` })));
+    box.append(el('div', { text: 'Per-phase limits used' }), lim);
+  } else box.append(el('div', { class: 'note', text: 'No per-phase limits used yet (Move: once per player).' }));
   const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
   if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
   const rules = el('details', { class: 'rulesbox' }, [el('summary', { text: 'Rule reminders' }),
@@ -360,11 +402,18 @@ function renderTracker(id, side) {
 
 // The defender reach (zones of influence) can be hidden by a player who finds it busy; the rules don't change.
 function showReach() { try { return localStorage.getItem('pm_reach') !== '0'; } catch (e) { return true; } }
+// the shot-zone labels: on when a shot is on offer, or when the player asks for them; the colours stay
+function zonesShown() {
+  let pref = null; try { pref = localStorage.getItem('pm_zones'); } catch (e) { /* ignore */ }
+  if (pref === '1') return true;
+  if (pref === '0') return false;
+  return !!(st && (st.legal || []).some(a => a.kind === 'shot' || a.kind === 'forced_shot'));
+}
 
 function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
-  PM.court(c, s.zones, { axes: true });
+  PM.court(c, s.zones, { axes: true, plain: !zonesShown() });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   drawInfluence(c);
@@ -622,6 +671,8 @@ function addUndo() {
   const s = st;
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
+  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
+    onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   if (s.stage === 'over') return;
   if (s.mode === 'hotseat' && s.can_undo) $('sideButtons').append(el('button', { text: 'Undo (only before a roll)', onclick: undo }));
   if (s.mode === 'remote' && s.can_undo) $('sideButtons').append(el('button', { text: s.undo_votes.length ? `Undo requested by ${s.undo_votes.join(', ')}: agree` : 'Request undo (both must agree)', onclick: undo }));
@@ -1244,9 +1295,12 @@ function teamLinesEl(t) {
 }
 
 function sideListEl(t, side) {
-  const rows = t.players.filter(p => p[side].strengths.length || p[side].weaknesses.length).map(p =>
+  // all five, in order: a player with nothing to say on this side still gets a row, so the report never looks short
+  const rows = t.players.map(p =>
     el('div', { class: 'prow' }, [chartEl(p.chart[side], `${side === 'off' ? 'Shooting' : 'Contests'} chart for ${p.num} ${p.short}`),
-      el('div', { class: 'ptext' }, [el('div', { class: 'pname', text: `${p.num} ${p.short}` }), ...phraseLines(p[side])])]));
+      el('div', { class: 'ptext' }, [el('div', { class: 'pname', text: `${p.num} ${p.short}` }),
+        ...(p[side].strengths.length || p[side].weaknesses.length ? phraseLines(p[side])
+          : [el('div', { class: 'note', text: side === 'off' ? 'Average everywhere on offence: no edge to hunt, none to hide.' : 'Average everywhere on defence: nothing to attack, nothing to lean on.' })])])]));
   const d = el('details', { class: 'sidelist' }, [el('summary', { text: `${t.name}: on ${side === 'off' ? 'offence' : 'defence'}` }),
     ...(rows.length ? rows : [el('p', { class: 'note', text: 'Nobody stands out on this side.' })])]);
   return d;
@@ -1396,7 +1450,25 @@ function renderCoachLine() {
   const edges = boardEdges(s), best = edges.find(e => e.mismatch) || edges[0];
   const show = e => `O${e.o + 1}'s ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against X${e.x + 1}'s contest ${e.con.value}${e.con.mark}: a clean look ${SHOT_WHERE[e.shot]} is worth ${SHOT_PTS[e.shot]} × ${e.sh.value - e.con.value} = ${e.edge}`;
   let text = null;
-  if (side === 'O' && best && best.edge > 0) {
+  const pick = sel.side === side && sel.i != null ? sel : null;
+  if (pick) {                                   // a piece is selected: the read for that matchup, cue then rule
+    const e = edges.find(x => (side === 'O' ? x.o : x.x) === pick.i);
+    if (e) {
+      const o = s.o[e.o], x = s.x[e.x], on = isArrowOn(x, o), near = Math.max(Math.abs(o.x - x.x), Math.abs(o.y - x.y)) === 1;
+      if (side === 'O') {
+        text = `O${e.o + 1} v X${e.x + 1}: ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against contest ${e.con.value}${e.con.mark}, worth ${e.edge} ${SHOT_WHERE[e.shot]}. `
+          + (on ? `X${e.x + 1}'s arrow is on O${e.o + 1}: a steal is on and the contest is clean. Move the arrow first: a cut, a screen, or the ball to someone else.`
+            : near ? `X${e.x + 1} is next to O${e.o + 1} but facing away: a catch here is clean, and a contest risks a foul.`
+            : `X${e.x + 1} is off O${e.o + 1}: the catch is clean. Get the ball there and shoot before the arrow comes.`);
+      } else {
+        text = `X${e.x + 1} on O${e.o + 1}: their ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against your contest ${e.con.value}${e.con.mark}${e.edge > 0 ? `, worth ${e.edge} to them` : ', nothing for them'}. `
+          + (on ? `Your arrow is on O${e.o + 1}: you contest cleanly and may steal. Hold it.`
+            : near ? `You are next to O${e.o + 1} but facing away: turn the arrow with your Move, or the contest costs a foul roll.`
+            : `You are off O${e.o + 1}: one straight movement along your arrow onto the lane picks the pass off; otherwise close out before the catch.`);
+      }
+    }
+  }
+  if (text) { /* the selection read stands */ } else if (side === 'O' && best && best.edge > 0) {
     text = `The mismatch on the board: ${show(best)}. ` + (best.o === (s.o.find(p => p.ball) || {}).i ? `O${best.o + 1} has the ball: get to that spot with no arrow on O${best.o + 1}.` : `Get O${best.o + 1} the ball where no arrow can reach the lane, and keep X${best.x + 1} as the matchup.`);
     if (mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
   } else if (side === 'X' && best && best.edge > 0) {
@@ -1431,6 +1503,13 @@ function diagramDue() {
   return true;
 }
 function phaseTitle(p) { return `Phase ${p.phase}`; }
+// the feedback loop: the best ▲ look the board offered in the phase, and whether it was taken
+function lookLine(p) {
+  if (p.look === undefined) return null;          // the possession is still being played: no judgement during play
+  if (!p.look) return PMCoach.line('coach', 'No ▲ look came onto the board this phase: the defence kept every shooter covered, or nobody was in a shot zone.', { compact: true, live: false });
+  const L = p.look;
+  return PMCoach.line('coach', `The best look this phase: ${L.text}, at clock ${L.clock}. ` + (L.taken ? 'Taken: that is the read.' : 'Not taken. Next time that is the shot to build towards.'), { compact: true, live: false });
+}
 function phaseSub(p) { return `clock ${p.clock}${p.end_clock != null && p.end_clock !== p.clock ? ' to ' + p.end_clock : ''}${p.over ? ' · possession over' : ''}`; }
 function phaseWords(p) {
   const out = [];
@@ -1446,7 +1525,7 @@ async function showPhaseDiagram(due) {
   const kids = [el('h2', { text: `${phaseTitle(p)} on the whiteboard` }),
     el('div', { class: 'diagrambox' }, [dia]),
     el('p', { class: 'note small', text: 'Black: offence. Red: defence. Each mark carries its turn number; the board is where the phase started.' }),
-    words.length ? el('ul', { class: 'phasewords' }, words.map(w => el('li', { text: w }))) : null,
+    lookLine(p), words.length ? el('ul', { class: 'phasewords' }, words.map(w => el('li', { text: w }))) : null,
     el('div', { class: 'buttons' }, [
       el('button', { class: 'primary', id: 'phaseContinue', text: 'Continue', onclick: () => { lastShown[due.possession] = due.phase; diagramOpen = false; closeModal(); render(); } }),
       el('button', { text: 'Save as image', onclick: () => saveDiagram(dia, `${st.code}_possession${p.possession}_phase${p.phase}.png`) }),
@@ -1471,7 +1550,7 @@ async function showStory() {
     const dia = PM.phaseDiagram(st.zones, p.start, p.entries, { title: `Possession ${p.possession} · ${phaseTitle(p)}`, subtitle: phaseSub(p), arrowMode: story.arrow_mode });
     dias.push([dia, p]);
     kids.push(el('section', { class: 'storyphase' }, [el('div', { class: 'diagrambox' }, [dia]),
-      el('ul', { class: 'phasewords' }, p.entries.filter(e => e.mark).map(e => el('li', { text: `${e.side === 'O' ? 'O' : 'X'} turn ${e.turn}: ${e.text}` })))]));
+      lookLine(p), el('ul', { class: 'phasewords' }, p.entries.filter(e => e.mark).map(e => el('li', { text: `${e.side === 'O' ? 'O' : 'X'} turn ${e.turn}: ${e.text}` })))]));
   }
   if (!dias.length) kids.push(el('p', { text: 'No phase has been played yet.' }));
   kids.push(el('div', { class: 'buttons' }, [

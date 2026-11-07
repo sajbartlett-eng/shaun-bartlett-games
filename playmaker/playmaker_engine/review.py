@@ -186,6 +186,40 @@ def _replay_all(records, fn):
     replay(orig, on_decision=fn)
 
 
+def best_look(state):
+    """The best ▲ look the board offers at this moment: a ▲ shooter's shot value against the contester eligible now
+    (an adjacent defender, the one giving the lowest value; none = contest 0). None when there is no ▲ shooter in
+    a shot zone. The same arithmetic board_advantages uses over a whole log."""
+    from . import board as B
+    from . import rules_config as RC
+    from .scoring import contest_rating
+    if state.stage not in ('play', 'reaction') or not B.on_board(state.o[state.ball]):
+        return None
+    best = None
+    for i, p in enumerate(state.o):
+        if not B.on_board(p):
+            continue
+        z = B.zone(p)
+        for t in RC.ZONE_SHOTS[z]:
+            card = state.ctx.off[i]
+            if card.bands['shot_' + t] != 'H':
+                continue
+            pts = RC.ZONE_POINTS[z]
+            opts = [(0, None)]
+            for j, xp in enumerate(state.x):
+                if B.adjacent(xp, p):
+                    opts.append((contest_rating(state.ctx.dfn[j], t, xp, p, state.ctx.rules), j))
+            c, j = max(opts, key=lambda o: o[0])
+            v = pts * (card.shot(t) - c)
+            if best is None or v > best['value']:
+                best = dict(o=i + 1, square=B.sq(p), shot=t, rating=card.shot(t), contest=c,
+                            contester=(j + 1) if j is not None else None, value=v, clock=state.clock, phase=state.phase,
+                            text=f'O{i + 1} {t} {card.shot(t)}▲ on {B.sq(p)} v '
+                                 + (f'X{j + 1} contest {c}' if j is not None else 'no eligible contester')
+                                 + f': {pts} × ({card.shot(t)} − {c}) = {v}')
+    return best
+
+
 def board_advantages(records, k=3):
     """The biggest matchup advantages the board offered: a ▲ shooter's shot value against the contester
     eligible at that moment (an adjacent defender, the one giving the lowest value; none = contest 0),
