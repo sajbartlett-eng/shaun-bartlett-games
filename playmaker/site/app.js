@@ -333,7 +333,7 @@ function renderTracker(id, side) {
     el('div', { class: 'waits interceptrule' }, [
       el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
       el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
-      el('div', { text: 'Next to the passer: no intercept on any square around him. Steal instead.' }),
+      el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
       el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]),
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
@@ -435,7 +435,7 @@ function drawX(c, p, opts) {
   const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked); c.append(tg);
 }
 
-// Zones of influence (every defender, along his arrow line, out to his current reach), active screens and the
+// Zones of influence (every defender, along the arrow line, out to the current reach), active screens and the
 // diagonal steps they block, the passer's ring and intercept marks when a pass is being chosen, and the selected
 // attacker's movement reach. Patterns, not colour alone; each zone square numbered for its defender.
 function drawInfluence(c) {
@@ -567,8 +567,8 @@ function renderActions() {
           const th = Object.keys(by).sort().map(j => {
             const ts = by[j], parts = [];
             const thr = ts.filter(t => t.how === 'through'), jmp = ts.filter(t => t.how === 'jump'), fol = ts.filter(t => t.how === 'follow');
-            if (thr.length) parts.push(`through his square (${thr[0].sq})`);
-            if (jmp.length) parts.push('one straight movement along his arrow onto the line at ' + [...new Set(jmp.map(t => `${t.sq} (${t.by})`))].join(' or ') + ', then Intercept');
+            if (thr.length) parts.push(`through X${j}'s own square (${thr[0].sq})`);
+            if (jmp.length) parts.push('one straight movement along the arrow onto the line at ' + [...new Set(jmp.map(t => `${t.sq} (${t.by})`))].join(' or ') + ', then Intercept');
             if (fol.length) parts.push(`moves, then jumps (${new Set(fol.map(t => t.sq)).size} crossing square${new Set(fol.map(t => t.sq)).size === 1 ? '' : 's'})`);
             const old = ts.filter(t => t.how === 'direct' || t.how === 'approach');
             if (old.length) parts.push(old[0].how === 'direct' ? 'on the line' : 'arrow across (must move onto the line first)');
@@ -638,8 +638,8 @@ async function submit(a) {
 
 function confirmRoll(a) {
   return new Promise(res => {
-    modal([el('h2', { text: a.text }), PMCoach.line('ref', 'This one goes to the dice. ' + a.roll.map(t => t.text.replace(/^(Offence|Defence) rolls: /, '')).join(' Then ') + '.', { compact: true, speak: false, live: false }),
-      el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text]))),
+    modal([el('h2', { text: a.text }), PMCoach.line('ref', a.roll.length > 1 ? 'This one goes to the dice, twice.' : 'This one goes to the dice.', { compact: true, speak: false, live: false }),
+      el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text.replace(/^(Offence|Defence) rolls: /, '')]))),
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
       el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
@@ -1177,8 +1177,8 @@ function renderCompare() {
   const opps = (st.matchups[side] || [])[i] || [];
   const k = Math.min(compare.k, Math.max(0, opps.length - 1));
   const opp = opps.length ? (oppSide === 'O' ? st.o : st.x)[opps[k]] : null;
-  const how = opp ? (side === 'O' ? (st.x[opps[k]].arrow !== undefined && opps.length && isArrowOn(st.x[opps[k]], mine) ? 'arrow on him' : 'nearest defender')
-                                  : (isArrowOn(mine, opp) ? 'his arrow is on this player' : 'nearest attacker')) : '';
+  const how = opp ? (side === 'O' ? (st.x[opps[k]].arrow !== undefined && opps.length && isArrowOn(st.x[opps[k]], mine) ? 'arrow on this player' : 'nearest defender')
+                                  : (isArrowOn(mine, opp) ? 'arrow on this player' : 'nearest attacker')) : '';
   box.classList.remove('hidden');
   box.append(el('div', { class: 'cmp-head' }, [el('h3', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
     opps.length > 1 ? el('button', { text: `Next matchup (${k + 1} of ${opps.length})`, onclick: () => { compare.k = (k + 1) % opps.length; renderCompare(); } }) : null,
@@ -1342,7 +1342,7 @@ if ($('level')) { $('level').addEventListener('change', showLevelNote); showLeve
 
 
 // ---------------------------------------------------------------- Coach Vision on the sideline
-// The coach reads the board from the cards both players can see: for each attacker and the defender on him
+// The coach reads the board from the cards both players can see: for each attacker and the defender on that attacker
 // (the matchup the squares and arrows show), the shot where the attacker's rating beats the contest by most,
 // counted as points x (shot - contest). That edge is the mismatch; the line names it and the shot it leads to.
 const SHOT_PTS = { Layup: 2, Dunk: 2, Post: 2, Mid: 2, Floater: 2, 'Long 2': 2, Three: 3 };
@@ -1372,11 +1372,11 @@ function renderCoachLine() {
   const show = e => `O${e.o + 1}'s ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against X${e.x + 1}'s contest ${e.con.value}${e.con.mark}: a clean look ${SHOT_WHERE[e.shot]} is worth ${SHOT_PTS[e.shot]} × ${e.sh.value - e.con.value} = ${e.edge}`;
   let text = null;
   if (side === 'O' && best && best.edge > 0) {
-    text = `The mismatch on the board: ${show(best)}. ` + (best.o === (s.o.find(p => p.ball) || {}).i ? 'He has the ball: get him to that spot with no arrow on him.' : `Get O${best.o + 1} the ball where no arrow can reach the lane, and keep X${best.x + 1} on him.`);
+    text = `The mismatch on the board: ${show(best)}. ` + (best.o === (s.o.find(p => p.ball) || {}).i ? `O${best.o + 1} has the ball: get to that spot with no arrow on O${best.o + 1}.` : `Get O${best.o + 1} the ball where no arrow can reach the lane, and keep X${best.x + 1} as the matchup.`);
     if (mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
   } else if (side === 'X' && best && best.edge > 0) {
-    text = `Their edge on the board: ${show(best)}. Keep X${best.x + 1}'s arrow on him, or switch a better contester onto him before the catch.`;
-    if (mine && mine.protect) text += ` Your call was to protect X${mine.protect.x}: don't leave him with two jobs.`;
+    text = `Their edge on the board: ${show(best)}. Keep X${best.x + 1}'s arrow on O${best.o + 1}, or switch a better contester onto O${best.o + 1} before the catch.`;
+    if (mine && mine.protect) text += ` Your call was to protect X${mine.protect.x}: don't leave X${mine.protect.x} with two jobs.`;
   } else if (side === 'O') text = 'No mismatch on the board right now. Move the defence first: a screen or a cut that makes a defender choose.';
   else if (side === 'X') text = 'No edge for them on the board. Keep your shape: every lane answered, every arrow on a man.';
   if (!text) return;
