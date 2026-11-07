@@ -57,7 +57,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .topbar .title { font-family: var(--marker); font-weight: bold; font-size: 22px; flex: 1; margin: 0; }
 .clock { display: flex; flex-direction: column; align-items: center; min-width: 54px; }
 .clock .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #d9d4cb; } .big { font-family: var(--marker); font-size: 26px; font-weight: bold; line-height: 1; }
-.meta { font-size: 13px; text-align: right; color: #ece7de; max-width: 320px; }
+.meta { font-size: 13px; text-align: right; color: #ece7de; max-width: 420px; }
 .meta button { color: #fff; background: transparent; border-color: #c8cfdd; box-shadow: none; }
 .meta button:hover { background: rgba(255,255,255,.12); }
 .summary { padding: 8px 16px; background: #fff7d6; border-bottom: 2px solid var(--line); font-weight: 600; font-size: 15px; }
@@ -131,6 +131,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .die { display: inline-flex; width: 54px; height: 54px; border: 3px solid var(--ink); border-radius: 10px; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; margin: 6px; font-family: var(--marker); background: #fff; }
 .die.roll { animation: spin .6s ease-out; } @keyframes spin { from { transform: rotate(-360deg) scale(.4); } to { transform: none; } }
 .die.black { background: var(--red); color: #fff; border-color: var(--red); }
+.rollrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
 .die.small { width: 32px; height: 32px; font-size: 17px; border-width: 2px; border-radius: 6px; margin: 0 4px; vertical-align: middle; }
 .band { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: bold; color: var(--ink); font-family: var(--marker); font-size: 19px; }
 .band.Poor { background: var(--poor); } .band.Okay { background: var(--okay); } .band.Good { background: var(--good); }
@@ -657,9 +658,12 @@ window.PMNotation = (function () {
   let placedTags = [];                // where tags have gone, so a new one that would land on another nudges aside
   function numberTag(g, x, y, n, ink) {
     const r = 7.5 * TAG, min = 2.1 * r;
-    const tries = [[0, 0], [0, -min], [0, min], [-min, 0], [min, 0], [-min, -min], [min, min], [min, -min], [-min, min]];
+    // first the spot asked for, then a ring of eight around it, then a wider ring: the first that sits clear of
+    // every other tag and of every piece (pieces carry their own keep-out radius) takes it
+    const tries = [[0, 0]];
+    for (const k of [1, 1.7]) for (const a of [-90, 90, 180, 0, -135, 45, -45, 135]) tries.push([Math.cos(a * Math.PI / 180) * min * k, Math.sin(a * Math.PI / 180) * min * k]);
     for (const [dx, dy] of tries) {
-      if (!placedTags.some(([px0, py0]) => Math.hypot(px0 - (x + dx), py0 - (y + dy)) < min)) { x += dx; y += dy; break; }
+      if (!placedTags.some(([px0, py0, keep]) => Math.hypot(px0 - (x + dx), py0 - (y + dy)) < (keep || min))) { x += dx; y += dy; break; }
     }
     placedTags.push([x, y]);
     const grp = svg('g', { class: 'turnno' });
@@ -682,7 +686,7 @@ window.PMNotation = (function () {
   function marks(root, list, opts) {
     opts = opts || {};
     TAG = opts.tag || 1;
-    placedTags = [];
+    placedTags = (opts.avoid || []).map(([x, y]) => [x, y, 14 + 7.5 * TAG + 1]);   // the pieces: a tag never sits on one
     const g = svg('g', { class: 'marks', 'aria-hidden': 'true' });
     const passLines = {};             // receiver square -> the pass line's end, so an intercept can slash it
     for (const m of list) {
@@ -800,7 +804,8 @@ window.PMNotation = (function () {
     start.o.forEach((p, i) => { const [x, y] = sqXY(p.sq); const g = svg('g', { class: 'piece' }); pieceO(g, x, y, i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null }); pg.append(g); });
     start.x.forEach((p, i) => { const [x, y] = sqXY(p.sq); const g = svg('g', { class: 'piece' }); pieceX(g, x, y, i + 1, arrowsMode ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]); pg.append(g); });
     root.append(pg);
-    marks(root, marksList, { numbers: true, tag: 1.25 });
+    const avoid = [...start.o, ...start.x].map(p => { const [x, y] = sqXY(p.sq); return [cx(x), cy(y)]; });
+    marks(root, marksList, { numbers: true, tag: 1.25, avoid });
     if (opts.title) {
       root.setAttribute('viewBox', `0 -34 ${W} ${H + 34}`);
       root.append(svg('text', { class: 'dtitle', x: PADX, y: -12 }, opts.title));
@@ -1289,7 +1294,7 @@ function render() {
   $('poss').textContent = s.full ? `${s.possession} of 2` : '1';
   if (s.full) { const t = s.scores.map(x => `${x.attacker}: ${x.total}`).join(' · '); $('score').textContent = t || '0'; }
   else $('score').textContent = String(s.bonus - 5 * s.turnovers);
-  const LV = { rookie: 'Rookie (makes beginner mistakes you can learn to spot)', starter: 'Starter (solid, with one habit to find)', allstar: 'All-Star (plays the full read)', baseline: 'baseline' };
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', baseline: 'baseline' };
   const ai = Object.entries(s.ai || {}).map(([k, v]) => `${k === 'O' ? 'offence' : 'defence'}: ${LV[v] || v}`).join('; ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
@@ -1402,7 +1407,7 @@ function renderCourt() {
   }
   if (s.placing && s.placing.mine) { placementPieces(c); placementTargets(c); return; }
   drawGhost(c);
-  PM.marks(c, turnMarks(), { numbers: true });          // the turn in play, in notation (resets when the turn ends)
+  PM.marks(c, turnMarks(), { numbers: true, avoid: [...st.o, ...st.x].map(p => [px(p.x) + S / 2, py(p.y) + S / 2]) });          // the turn in play, in notation (resets when the turn ends)
   // a pass still in the air that no mark covers yet (the defence is answering it)
   if (s.pending && !turnMarks().some(m => m.kind === 'pass')) {
     const a = s.o[s.pending[0]], b = s.o[s.pending[1]];
@@ -1694,7 +1699,8 @@ function showRolls(rolls) {
     const box = [el('h2', { text: 'The call' }), PMCoach.line('ref', call, { compact: true, speak: false, live: false })];
     for (const r of rolls) {
       const ok = r.face <= r.need;
-      box.push(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }), el('span', { text: `${r.text} → rolled ${r.face}: ${r.picked}` })]));
+      box.push(el('div', { class: 'rollrow' }, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }),
+        el('span', {}, [r.text.replace(/^(Offence|Defence) rolls: /, '') + ' ', el('strong', { text: `Rolled ${r.face}: ${r.picked}.` })])]));
     }
     box.push(el('button', { class: 'primary', text: 'Continue', onclick: () => { closeModal(); res(); } }));
     announce(rolls.map(r => `${r.text}. Rolled ${r.face}: ${r.picked}.`).join(' '));

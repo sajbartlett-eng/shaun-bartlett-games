@@ -246,7 +246,7 @@ function render() {
   $('poss').textContent = s.full ? `${s.possession} of 2` : '1';
   if (s.full) { const t = s.scores.map(x => `${x.attacker}: ${x.total}`).join(' · '); $('score').textContent = t || '0'; }
   else $('score').textContent = String(s.bonus - 5 * s.turnovers);
-  const LV = { rookie: 'Rookie (makes beginner mistakes you can learn to spot)', starter: 'Starter (solid, with one habit to find)', allstar: 'All-Star (plays the full read)', baseline: 'baseline' };
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', baseline: 'baseline' };
   const ai = Object.entries(s.ai || {}).map(([k, v]) => `${k === 'O' ? 'offence' : 'defence'}: ${LV[v] || v}`).join('; ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),
@@ -359,7 +359,7 @@ function renderCourt() {
   }
   if (s.placing && s.placing.mine) { placementPieces(c); placementTargets(c); return; }
   drawGhost(c);
-  PM.marks(c, turnMarks(), { numbers: true });          // the turn in play, in notation (resets when the turn ends)
+  PM.marks(c, turnMarks(), { numbers: true, avoid: [...st.o, ...st.x].map(p => [px(p.x) + S / 2, py(p.y) + S / 2]) });          // the turn in play, in notation (resets when the turn ends)
   // a pass still in the air that no mark covers yet (the defence is answering it)
   if (s.pending && !turnMarks().some(m => m.kind === 'pass')) {
     const a = s.o[s.pending[0]], b = s.o[s.pending[1]];
@@ -651,7 +651,8 @@ function showRolls(rolls) {
     const box = [el('h2', { text: 'The call' }), PMCoach.line('ref', call, { compact: true, speak: false, live: false })];
     for (const r of rolls) {
       const ok = r.face <= r.need;
-      box.push(el('div', {}, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }), el('span', { text: `${r.text} → rolled ${r.face}: ${r.picked}` })]));
+      box.push(el('div', { class: 'rollrow' }, [rollerChip(r.roller), el('span', { class: 'die roll' + (r.roller === 'X' ? ' black' : ''), text: r.face }),
+        el('span', {}, [r.text.replace(/^(Offence|Defence) rolls: /, '') + ' ', el('strong', { text: `Rolled ${r.face}: ${r.picked}.` })])]));
     }
     box.push(el('button', { class: 'primary', text: 'Continue', onclick: () => { closeModal(); res(); } }));
     announce(rolls.map(r => `${r.text}. Rolled ${r.face}: ${r.picked}.`).join(' '));
