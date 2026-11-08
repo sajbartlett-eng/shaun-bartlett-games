@@ -37,14 +37,15 @@ def log_rules(setup):
     # rulebook revision (no on_line_tolerance / lane_jump_keeps_facing)
     if 'on_line_tolerance' in rec and 'receiver_denial' not in rec:
         rec = {**RC.PRE_DENIAL, **rec}             # recorded the rulebook readings, from before the denial ruling
-    return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec})
+    extra = {'digital': True} if setup.get('match_format') == 'digital' else {}   # step 3m: the digital format
+    return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec, **extra})
 
 
 def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
     rules = log_rules(setup)
     if setup.get('scenario'):
         return scenario_state(setup['scenario'], rules=rules)
-    off, dfn = setup['teams'] if possession == 1 else setup['teams'][::-1]
+    off, dfn = setup['teams'] if possession % 2 == 1 else setup['teams'][::-1]     # sides swap every possession
     return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=rules)
 
 

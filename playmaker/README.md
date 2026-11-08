@@ -213,6 +213,39 @@ and `docs/playtest_scout_reveal.png` (read the cards first), `docs/playtest_lear
 `docs/playtest_team_builder.png`, `docs/playtest_report_in_play.png`, `docs/playtest_card_compare_phone.png`,
 `docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
 
+## Step 3m: the decision engine, digital matches, player records and the trainer
+
+**The digital match** (`match_format='digital'`, the app's default): N possessions per side (4, 8 or 12; 8 by
+default), sides alternating, the higher total wins; rosters and growth tags stay fixed. A turnover (a successful
+Intercept, a successful Steal, also on a declared shot, and shot-clock expiry) ends the possession and scores 0; steal
+fouls are unchanged. Setup is fast: accept the engine's proposed setup, repeat your last one, or place by hand. The
+score strip shows each possession's points, TO or FT. `'tabletop'` keeps the printed rules exactly (`Rules.digital`
+is False by default). Scenario cards are unchanged.
+
+**The decision engine** (`decide.py`, `search.py`, `goals.py`, `agent.py`, `labels.py`; every tunable number in
+`data/ai_profiles.json`): no scripted plays, positions or distances. Two measurements: THREAT (each attacker's best
+delivered shot over squares and routes, against the contest that arrives in time) and COVERAGE (each defender's
+candidate responses, contest, lane or blocking, and the best cover that minimises the best uncovered threat). The
+position value is the best of the shot now, the best look the defence can't cover in its next turn, and a coarse table
+(`data/vcoarse.json`, solved by backward induction over the phases from engine self-play: `python3 -m
+playmaker_engine.selfplay seed`). Search plays whole turns: geometry-generated, ordered by THREAT, beam per level,
+alpha-beta with Star2 at chance nodes, iterative deepening under the level's time budget, a Zobrist transposition
+table, killer and history moves. Goals are predicates over THREAT and COVERAGE held with hysteresis; every switch is
+logged with its reason. The goal library is now a recogniser of finished sequences (and "unnamed action"). The
+engine runs in Python (the same code as the rules) and, in the browser build, in a Web Worker.
+
+**Players and records** (`static/records.js`): named profiles and every match record in IndexedDB (schema version 1),
+export and import to one JSON file, head to head, results against the computer by level x age x standard.
+
+**The trainer** (`trainer.py`, `static/trainer.js`): every human turn group graded against the All-Star best (value
+lost, bands, accuracy), Shapley credit per action with the defence's reply re-solved (direct, indirect naming the
+defender who moved, risk), the timing check (reorderings), goals in plain words, a 1 to 3 point summary after each
+possession (faded as the rating rises), "Why?" for any turn group, the skill table by category, Glicko-2 against fixed
+computer anchors, and advancement and practice suggestions at the configured thresholds.
+
+Tests: `tests/test_step3m.py`. The exam: `python3 -m playmaker_engine.exam`. The aggregate check: `python3 -m
+playmaker_engine.selfplay aggregate`.
+
 ## Playing levels and roster modes (step 3l)
 
 No rule of play changes. Two dials before you build teams, the same for both sides, change only which ratings the cards

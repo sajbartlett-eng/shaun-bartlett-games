@@ -30,7 +30,8 @@ class Manager:
                  roster=body.get('roster', 'prescribed'), lineups=body.get('lineups'), deal=body.get('deal'),
                  random_for=body.get('random', 'both'), coherent=bool(body.get('coherent')),
                  draft=self.drafts.get(str(body.get('draft') or '').upper()),
-                 match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8))
+                 match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8),
+                 scouting=body.get('scouting'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -113,6 +114,30 @@ def draft_call(manager, body):
     return draft_json(manager, did, dr)
 
 
+def rate_call(body):
+    """/api/rate (step 3m D6): a profile's Glicko-2 update after a match, its match score, its expected score against
+    the anchor, and the advancement and practice suggestions. body: {player: {rating, rd, vol}, opponent: {rating, rd}
+    or {level, age}, my_total, opp_total, possessions, level, age, median_loss, recent_scores, weakest}."""
+    from playmaker_engine import trainer as TR
+    pl = body.get('player') or dict(rating=TR.TC['glicko']['rating'], rd=TR.TC['glicko']['rd'], vol=TR.TC['glicko']['vol'])
+    opp = body.get('opponent') or {}
+    if 'rating' not in opp:
+        opp = dict(rating=TR.anchor(body.get('level', 'starter'), body.get('age', 'senior')), rd=30.0)
+    score = TR.match_score(float(body.get('my_total', 0)), float(body.get('opp_total', 0)), int(body.get('possessions', 8)))
+    new = TR.update_rating(pl, [(opp['rating'], opp.get('rd', 30.0), score)])
+    exp = TR.expected(pl['rating'], pl['rd'], opp['rating'], opp.get('rd', 30.0))
+    recent = list(body.get('recent_scores') or []) + [score]
+    sug = TR.suggestions(new, body.get('level', 'starter'), body.get('age', 'senior'), float(body.get('median_loss', 9.9)),
+                         recent, body.get('weakest')) if body.get('level') else []
+    return dict(player=new, score=round(score, 3), expected=round(exp, 3), suggestions=sug,
+                fade_every=TR.fade_every(new['rating']))
+
+
+def trainer_info():
+    from playmaker_engine.trainer import TC
+    return dict(fade=TC['fade'], bands=dict(inaccuracy=TC['inaccuracy'], mistake=TC['mistake'], blunder=TC['blunder']))
+
+
 def levels_info():
     from playmaker_engine import levels as LV, rosters as RO
     return dict(ages=[dict(id=a, words=LV.AGE_WORDS[a]) for a in LV.AGE_ORDER],
@@ -127,7 +152,7 @@ def options(manager):
     return dict(static=manager.static,
                 teams=[dict(name=n, tagline=TEAM_TAGLINES[n], cards=[c.key for c in TEAMS[n]]) for n in PRESCRIBED],
                 cards=[dict(key=c.key, role=c.role, tier=c.tier, position=position(c), num=c.num) for c in CARDS.values()],
-                first_game=list(FIRST_GAME), levels=levels_info(),
+                first_game=list(FIRST_GAME), levels=levels_info(), trainer=trainer_info(),
                 scenarios=[dict(n=n, title=s['title'], kind=s['kind'], clock=s['clock'], text=s['text'],
                                 off=s['off'], dfn=s['dfn']) for n, s in SCENARIOS.items()])
 
@@ -151,6 +176,8 @@ def handle(manager, method, path, query=None, body=None):
             if path == '/api/options':
                 return 200, options(manager)
             return 404, dict(error='not found')
+        if path == '/api/rate':
+            return 200, rate_call(body)
         if path == '/api/deal':
             return 200, deal_json(body)
         if path == '/api/roster':
@@ -193,6 +220,10 @@ def handle(manager, method, path, query=None, body=None):
         if path == '/api/timer':
             g.timer_event(tok, body.get('event'))
             return 200, dict(state=state_json(g, tok))
+        if path == '/api/trainer':
+            return 200, g.trainer_read(tok, body.get('possession'))
+        if path == '/api/why':
+            return 200, g.trainer_why(tok, body.get('possession'), body.get('group', 0), body.get('player'))
         if path == '/api/feedback':
             g.save_feedback(tok, body.get('answers') or {})
             return 200, dict(ok=True)

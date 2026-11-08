@@ -250,7 +250,7 @@ class Look:
     released before the defence has a turn (shoot or drive this turn), so no response can cover it. vals[t][d]:
     the expected shot value of type t if defender d contests (the best contest he reaches in time), open[t] if
     nobody does."""
-    __slots__ = ('i', 'c', 'route', 'p', 'now', 'open', 'vals', 'types', 'minex', 'base')
+    __slots__ = ('i', 'c', 'route', 'p', 'now', 'open', 'vals', 'types', 'minex', 'base', 'replies')
 
     def finish(self):
         """Precompute, per shot type, the best contest without each defender (minex[j][t]) and the look's value."""
@@ -273,8 +273,9 @@ class Look:
             best = max(best, v)
         self.base = self.p * best
 
-    def swapped(self, j, vals):
-        """The look's value with defender j's contest replaced by vals (None: he can't contest it)."""
+    def swapped(self, j, vals, p=None):
+        """The look's value with defender j's contest replaced by vals (None: he can't contest it), and the delivery
+        chance replaced by p (his response changed the lane)."""
         mx = self.minex[j]
         best = 0.0
         for t in self.types:
@@ -283,10 +284,12 @@ class Look:
                 v = vals[t]
             if v > best:
                 best = v
-        return self.p * best
+        return (self.p if p is None else p) * best
 
-    def __init__(self, i, c, route, p, now):
+    def __init__(self, i, c, route, p, now, replies=None):
         self.i, self.c, self.route, self.p, self.now = i, c, route, p, now
+        # B0/B2: the defence replies (turns of at most 2 actions) before this look can be released
+        self.replies = (0 if now else 1) if replies is None else replies
 
 
 class Read:
@@ -415,20 +418,26 @@ class Read:
             z = B.zone(c)
             if z not in SHOOT:
                 continue
+            # B0/B2: count the offence's actions. The ball handler can move then shoot in one turn; a receiver catches
+            # and shoots where he stands after the pass (one defence reply between); a receiver who must move first
+            # and can't fit the move and the pass into this turn needs a later turn (another reply)
             if i == s.ball:
                 if n == 0 and shot_ok and (left_now >= 1):
                     lk = Look(i, c, 'shoot', 1.0, self.o_to_act)
                 elif n == 1 and shot_ok and left_now >= 2 and s.tok_o >= 2:
                     lk = Look(i, c, 'drive', 1.0, self.o_to_act)
                 else:
-                    lk = Look(i, c, 'later', self.cfg['later_p'], False)
+                    lk = Look(i, c, 'later', self.cfg['later_p'], False, replies=1 if self.o_to_act else 2)
             else:
-                if n == 1 and not (left_now >= 2 and s.tok_o >= 2):
-                    continue
                 p = self.pass_p(i, c)
                 if p <= 0:
                     continue
-                lk = Look(i, c, 'catch' if n == 0 else 'cut', p, False)
+                if n == 0:
+                    lk = Look(i, c, 'catch', p, False, replies=1)
+                elif left_now >= 2 and s.tok_o >= 2 and self.o_to_act:
+                    lk = Look(i, c, 'cut', p, False, replies=1)
+                else:
+                    lk = Look(i, c, 'cut', p * self.cfg['later_p'], False, replies=2)
             lk.types = RC.ZONE_SHOTS[z]
             pts = RC.ZONE_POINTS[z]
             lk.open = {t: pts * card.shot(t) for t in lk.types}
@@ -467,11 +476,21 @@ class Read:
         free, fixed = geo_reach(s.x[j], s.arrows[j], s.ctx.dfn[j].qs, can_move, qs_left, self.rules)
         occ = set(s.o) | set(s.x)
         spots = [lk.c for i in self.att_o for lk in self.looks[i][:3] if not lk.now]
+        bp = s.o[s.ball]
+        lanes = set()
+        for i in self.att_o:
+            for lk in self.looks[i][:2]:
+                if lk.route in ('catch', 'cut') and B.on_board(bp):
+                    lanes |= lane_squares(bp, lk.c, 0.5)
+        if B.on_board(bp):                             # and the ball handler's way to the rim
+            lanes |= lane_squares(bp, RC.RIM, 0.5)
         cands = []
         for q, n in free.items():
             if n > 1 or (q in occ and q != s.x[j]):
                 continue
             near = [c for c in spots if B.cheb(q, c) <= 2 and c != q]
+            if not near and q in lanes:
+                near = [bp] if q != bp else []
             if not near:
                 continue
             c0 = min(near, key=lambda c: (B.cheb(q, c), c))      # face the nearest look: the arrow that answers it
@@ -491,11 +510,37 @@ class Read:
                     cx, cy = lk.c
                     sq.update((x, y) for x in range(cx - 3, cx + 4) for y in range(cy - 3, cy + 4))
             near[i] = sq
+        carrier = s.ball
+        leave_cache = {}
+        front = lambda p_: (carrier in self.att_o and B.cheb(p_, s.o[carrier]) <= 2 and
+                            B.dist_rim(p_) < B.dist_rim(s.o[carrier]))
         for q, a, used in cands:
             cm = self._contest(j, q, a, used)
             left = dict(base)
             gain = 0.0
+            moved_state = None
+            into, out_of = q != s.x[j] and front(q), q != s.x[j] and front(s.x[j]) and not front(q)
+            blocks = into or out_of                     # steps into, or out of, the ball handler's way
+            if blocks:
+                # standing in the ball handler's way blocks squares and adds a zone; leaving it opens them: re-read his
+                # looks (once per defender for leaving, wherever he goes)
+                if out_of and j in leave_cache:
+                    left[carrier] = leave_cache[j]
+                else:
+                    at = q if into else (-9, -9)
+                    moved = s.with_(x=s.x[:j] + (at,) + s.x[j + 1:], arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:])
+                    sub = Read.__new__(Read)
+                    sub.__dict__.update(self.__dict__)
+                    sub.s = moved
+                    sub._cm = dict(self._cm)
+                    sub._cm[j] = cm if into else {}
+                    left[carrier] = max((lk.base for lk in sub._looks(carrier)), default=0.0)
+                    if out_of:
+                        leave_cache[j] = left[carrier]
+                gain += max(0.0, base[carrier] - left[carrier])
             for i in self.att_o:
+                if i == carrier and blocks:
+                    continue
                 if q not in near[i]:
                     continue                     # out of his reach after this response: unchanged
                 best = 0.0
@@ -504,7 +549,14 @@ class Read:
                         v = lk.base
                     else:
                         row = cm.get(lk.c)
-                        v = lk.swapped(j, self._vals(lk, j, row) if row is not None else None)
+                        p_new = None
+                        if lk.route in ('catch', 'cut') and q != s.x[j]:
+                            if moved_state is None:
+                                moved_state = s.with_(x=s.x[:j] + (q,) + s.x[j + 1:],
+                                                      arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
+                                                      moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
+                            p_new = _lane_p(moved_state, i, lk.c)       # his response changes the lane
+                        v = lk.swapped(j, self._vals(lk, j, row) if row is not None else None, p_new)
                     if v > best:
                         best = v
                 left[i] = best
@@ -525,7 +577,10 @@ class Read:
         R = {j: self.responses(j) for j in self.att_x}
         threats = list(self.att_o)
         base = {i: self.threat[i]['value'] for i in threats}
-        best = [max(base.values(), default=0.0), {}, dict(base)]
+        # minimise the best uncovered threat (the offence needs only one open look); among equal covers, the one that
+        # leaves the least threat in total (so a defender still answers the lesser threats)
+        key0 = (round(max(base.values(), default=0.0), 6), round(sum(base.values()), 6))
+        best = [key0, {}, dict(base)]
         opts = [(j, idx) for j in self.att_x for idx in range(1, len(R[j]))]
 
         def score(chosen):
@@ -537,21 +592,21 @@ class Read:
                     if lv < v:
                         v = lv
                 res[i] = v
-            return max(res.values(), default=0.0), res
+            return (round(max(res.values(), default=0.0), 6), round(sum(res.values()), 6)), res
         for a in range(len(opts)):
             ch = [opts[a]]
-            v, res = score(ch)
-            if v < best[0] - 1e-9:
-                best = [v, {j: R[j][idx][0] for j, idx in ch}, res]
+            k, res = score(ch)
+            if k < best[0]:
+                best = [k, {j: R[j][idx][0] for j, idx in ch}, res]
             if movers >= 2:
                 for b in range(a + 1, len(opts)):
                     if opts[b][0] == opts[a][0]:
                         continue
                     ch2 = ch + [opts[b]]
-                    v, res = score(ch2)
-                    if v < best[0] - 1e-9:
-                        best = [v, {j: R[j][idx][0] for j, idx in ch2}, res]
-        self._cover = dict(value=best[0], choice=best[1], residual=best[2], R=R)
+                    k, res = score(ch2)
+                    if k < best[0]:
+                        best = [k, {j: R[j][idx][0] for j, idx in ch2}, res]
+        self._cover = dict(value=best[0][0], choice=best[1], residual=best[2], R=R)
         return self._cover
 
     def overloads(self):
@@ -572,6 +627,24 @@ class Read:
                     if not both:
                         out.append(dict(defender=j, a=a, b=b, value=min(base[a], base[b])))
         out.sort(key=lambda o: -o['value'])
+        return out
+
+    def hinges(self):
+        """Hinge defenders (addendum B3): the only defender who reduces two threats, and one of his responses
+        reduces both. Not a dilemma: the defence's key piece, and a target for the offence."""
+        cv = self.cover()
+        R = cv['R']
+        base = {i: self.threat[i]['value'] for i in self.att_o}
+        threats = [i for i in self.att_o if base[i] > 0]
+        reducers = {i: [j for j in self.att_x if any(left[i] < base[i] - 1e-9 for _, left in R[j][1:])] for i in threats}
+        out = []
+        for j in self.att_x:
+            only = [i for i in threats if reducers[i] == [j]]
+            for x in range(len(only)):
+                for y in range(x + 1, len(only)):
+                    a, b = only[x], only[y]
+                    if any(left[a] < base[a] - 1e-9 and left[b] < base[b] - 1e-9 for _, left in R[j][1:]):
+                        out.append(dict(defender=j, a=a, b=b, value=min(base[a], base[b])))
         return out
 
     def gravity(self, i):
@@ -620,7 +693,10 @@ class Read:
         top = max(res.values(), default=0.0)
         ties = [i for i in res if res[i] >= top - 1e-9]
         cont = (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
-        return banked + max(sn or 0.0, now, cont, vcoarse(s))
+        coarse = vcoarse(s)
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            cont = coarse = 0.0         # no offence turn is left before the clock runs out: only a shot now counts
+        return banked + max(sn or 0.0, now, cont, coarse)
 
 
 @lru_cache(maxsize=100000)
@@ -738,14 +814,67 @@ _PP = {}
 
 # ---- the coarse value table (B4) -------------------------------------------------------------------------------------
 
+def capacity(s):
+    """The defence's spent capacity, summarised (addendum B4): how many defenders can still close out (a Move or a
+    Quick Step left, and tokens) from the perimeter (long-two, three and beyond) and from the paint (the rim and
+    mid-range zones)."""
+    return _capacity(s.x, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], s.ctx.rules.qs_once_per_player)
+
+
+def _capacity(xs, moved_x, qs_x, lock_x, tok_x, x_qs_used, once=True):
+    per = paint = 0
+    if tok_x <= 0:
+        return 0, 0
+    for j, q in enumerate(xs):
+        can_move = not (moved_x >> j & 1) and not (lock_x >> j & 1)
+        can_qs = x_qs_used < RC.LIMITS['X']['qs'] and not (once and qs_x >> j & 1)
+        if not (can_move or can_qs) or not B.on_board(q):
+            continue
+        if B.zone(q) in ('K', 'M'):
+            paint += 1
+        else:
+            per += 1
+    return min(per, 3), min(paint, 2)
+
+
 def coarse_key(s):
-    """(ball zone, defended?, phase, offence tokens bucket): the coarsened state."""
-    bp = s.o[s.ball]
+    """(ball zone, defended?, phase, offence tokens bucket, capacity): the coarsened state."""
+    return _key(s.o[s.ball], any(B.adjacent(xp, s.o[s.ball]) for xp in s.x), s.clock, s.tok_o, capacity(s))
+
+
+def _key(bp, defended, clock, tok_o, cap):
     z = B.zone(bp) if B.on_board(bp) else '.'
-    defended = any(B.adjacent(xp, bp) for xp in s.x)
-    tok = 0 if s.tok_o <= 0 else 1 if s.tok_o <= 2 else 2 if s.tok_o <= 4 else 3
-    phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
-    return f'{z}|{int(defended)}|{phase}|{tok}'
+    tok = 0 if tok_o <= 0 else 1 if tok_o <= 2 else 2 if tok_o <= 4 else 3
+    phase = min(6, max(1, (RC.START_CLOCK - clock) // RC.PHASE_SECONDS + 1))
+    return f'{z}|{int(defended)}|{phase}|{tok}|{cap[0]}{cap[1]}'
+
+
+def key_from_encode(enc):
+    """The coarse key of a state from its one-line encoding (state.encode), so stored snapshots can be re-solved."""
+    f = {}
+    for part in enc.split('|'):
+        if part.startswith('c') and part[1:].isdigit():
+            f['clock'] = int(part[1:])
+        elif part.startswith('t') and '/' in part:
+            a, b = part[1:].split('/')
+            f['tok_o'], f['tok_x'] = int(a), int(b)
+        elif part.startswith('O') and ',' in part:
+            f['o'] = [B.parse_sq(q) for q in part[1:].split(',')]
+        elif part.startswith('X') and ',' in part:
+            f['x'] = [B.parse_sq(q.rstrip('NESW')) for q in part[1:].split(',')]
+        elif part.startswith('b') and part[1:].isdigit():
+            f['ball'] = int(part[1:]) - 1
+        elif part.startswith('m') and len(part) == 5:
+            f['moved_x'] = int(part[3:5], 16)
+        elif part.startswith('n') and part[1:].isdigit():
+            f['x_qs'] = int(part[1:][6])
+        elif part.startswith('L') and len(part) == 5:
+            f['lock_x'] = int(part[3:5], 16)
+        elif part.startswith('q') and len(part) == 5:
+            f['qs_x'] = int(part[3:5], 16)
+    bp = f['o'][f['ball']]
+    cap = _capacity(f['x'], f.get('moved_x', 0), f.get('qs_x', 0), f.get('lock_x', 0), f['tok_x'], f.get('x_qs', 0))
+    return _key(bp, any(B.adjacent(xp, bp) for xp in f['x']), f['clock'], f['tok_o'], cap)
 
 
 _TABLES = {}
@@ -758,7 +887,11 @@ def vcoarse(s, age='senior', standard='pro'):
     tab = _TABLES.get(lv)
     if tab is None:
         tab = _load_table(lv)
-    return tab.get(coarse_key(s), tab.get('_phase' + coarse_key(s).split('|')[2], 0.0))
+    k = coarse_key(s)
+    if k in tab:
+        return tab[k]
+    short = '|'.join(k.split('|')[:4])                # the key without the capacity summary
+    return tab.get(short, tab.get('_phase' + k.split('|')[2], 0.0))
 
 
 def _load_table(lv):
@@ -785,6 +918,10 @@ def solve_coarse(records):
             by_phase[p].setdefault(k, []).append((nxt, final))
     V = {}
     prior = 8
+    if records and records[0][0] and records[0][0][0].count('|') >= 4:
+        # solve the table without the capacity summary first: the fallback for capacity keys never seen
+        V.update({k: v for k, v in solve_coarse([(['|'.join(k.split('|')[:4]) for k in keys], f)
+                                                 for keys, f in records]).items() if not k.startswith('_')})
     for p in range(6, 0, -1):
         rows = by_phase[p]
         tot = []

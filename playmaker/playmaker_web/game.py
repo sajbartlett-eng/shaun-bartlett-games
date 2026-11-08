@@ -213,7 +213,7 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None, match_format='tabletop', per_side=8):
+                 draft=None, match_format='tabletop', per_side=8, scouting=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -254,6 +254,7 @@ class Game:
         self.ai_players = {k: v for k, v in raw.items() if k in ('A', 'B')}
         self.ai_sides = {k: v for k, v in raw.items() if k in ('O', 'X')}
         self.possession = 1
+        self.scouting = scouting if isinstance(scouting, dict) else None    # step 3m: the All-Star reads the human
         self._set_ai()
         self.tokens = {'both': secrets.token_hex(8)} if mode == 'hotseat' else {}
         self.seats = {}
@@ -431,6 +432,7 @@ class Game:
             if draft.age != age:
                 age = draft.age
             stds = {'A': draft.standards[1], 'B': draft.standards[2]}
+            handicap = stds['A'] != stds['B']
             for i in range(2):
                 entries[i] = list(draft.roster(i + 1))
             out.update(draft=draft.log)
@@ -1247,6 +1249,70 @@ class Game:
             m['winner'] = 'A' if a['total'] > b['total'] else 'B'
         self.match = m
         self._log('match', **m)
+
+    # ---- step 3m Part D: the trainer ----
+    def human_players(self):
+        return [p for p in ('A', 'B') if p not in self.ai_players and not (self.ai_sides and len(self.ai_sides) == 2)]
+
+    def trainer_read(self, token, possession=None, budget=None):
+        """The trainer's read of one finished possession for each human player in it: every turn group graded
+        (snapshots for replays), the 1 to 3 point summary, the possession's accuracy."""
+        from playmaker_engine import trainer as TR
+        from playmaker_engine.labels import possession_events, recognise
+        if self.seat_of(token) is None:
+            raise GameError('unknown player token')
+        possession = int(possession or self.possession)
+        done = [x['possession'] for x in self.scores]
+        if possession not in done:
+            raise GameError('the trainer reads a possession once it is over')
+        cache = getattr(self, '_trainer', {})
+        if possession in cache:
+            return cache[possession]
+        events = dict(possession_events(self.read_log())).get(possession, [])
+        att = 'A' if possession % 2 == 1 else 'B'
+        sides = {'O': att, 'X': 'B' if att == 'A' else 'A'}
+        out = dict(possession=possession, players={}, labels=recognise(events))
+        for side, player in sides.items():
+            if side in self.ai:
+                continue
+            b = budget if budget is not None else TR.TC.get('budget_s', 0.15)
+            r = TR.read_possession(events, side, budget=b)
+            out['players'][player] = dict(side=side, **r)
+        cache[possession] = out
+        self._trainer = cache
+        self._log('trainer', possession=possession,
+                  accuracy={p: v['accuracy'] for p, v in out['players'].items()},
+                  summary={p: [x['text'] for x in v['summary']] for p, v in out['players'].items()})
+        return out
+
+    def trainer_why(self, token, possession, group, player=None):
+        """'Why?' for one turn group: goals, credits, the defence's reply and the better option, at a deeper read."""
+        from playmaker_engine import trainer as TR
+        from playmaker_engine.labels import possession_events
+        from playmaker_engine.state import GameState
+        rd = self.trainer_read(token, possession)
+        player = player or next(iter(rd['players']), None)
+        if player not in rd['players']:
+            raise GameError('no human turn groups in that possession')
+        groups = rd['players'][player]['groups']
+        if not 0 <= int(group) < len(groups):
+            raise GameError('no such turn group')
+        g = groups[int(group)]
+        events = dict(possession_events(self.read_log())).get(int(possession), [])
+        s = events[g['index']][0]
+        acts = [e[1] for e in events[g['index']:g['index'] + len(g['actions'])]]
+        why = dict(group=g, goal=TR.goal_read(s, acts, budget=0.6))
+        if acts and acts[0].side == 'O' and s.stage == 'play':
+            c1 = TR.credit(s, acts, depth=1, budget=0.4)
+            c2 = TR.credit(s, acts, depth=2, budget=0.6)
+            why['credits'] = c1
+            why['flags'] = TR.flags(s, acts, c1, c2)
+        n = None
+        from playmaker_engine.search import play_turn
+        after = play_turn(s, acts)
+        val, rep, _ = TR._reply(after if not hasattr(after, 'outcomes') else after.outcomes[0][2], 1, 0.4)
+        why['reply'] = [str(a) for a in (rep or ())]
+        return why
 
     def save_feedback(self, token, answers):
         if self.seat_of(token) is None:

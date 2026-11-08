@@ -29,7 +29,7 @@ def bundle():
     return dict(version=1, files=files)
 
 
-JS_FILES = ['notation.js', 'coach.js', 'app.js']       # in load order; index.html names them in this order
+JS_FILES = ['notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js']       # in load order; index.html names them in this order
 
 
 def page(inline=False):

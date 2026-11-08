@@ -114,14 +114,14 @@ def count_by_shape(standard, flex=True):
 _TEMPLATES = {}
 
 
-def deal_one(standard, rng, coherent=False, exclude=(), age='senior'):
+def deal_one(standard, rng, coherent=False, exclude=(), age='senior', tries=10000):
     """A uniformly random legal roster (B2, flex allowed as often as legality allows): a pattern in proportion to its
     rosters, then cards uniformly within it. coherent: redealt until it covers the four jobs. [(key, slot)]"""
     if standard not in _TEMPLATES:
         ts = _templates(standard, True)
         _TEMPLATES[standard] = (ts, list(itertools.accumulate(n for _, _, n in ts)))
     ts, cum = _TEMPLATES[standard]
-    for _ in range(10000):
+    for _ in range(tries):
         pos, tiers, _n = ts[_bisect(cum, rng.random() * cum[-1])]
         groups = {}
         for s, (p, t) in enumerate(zip(pos, tiers), start=1):
@@ -241,11 +241,29 @@ def deal(age='senior', standard='pro', coherent=False, seed=None, code=None):
         seed = random.randrange(36 ** 6)
     code = make_code(age, standard, coherent, seed)
     rng = random.Random(code)
-    while True:                       # step 3m: one card pool, so the matchup plays with one printed deck. Both teams
-        home = deal_one(standard, rng, coherent, age=age)    # are dealt independently and redealt together if they
-        away = deal_one(standard, rng, coherent, age=age)    # share a card: uniform over legal disjoint pairs
-        if not {k for k, _ in home} & {k for k, _ in away}:
-            break
+    home = away = None
+    try:
+        # step 3m: one card pool, so the matchup plays with one printed deck. Both teams are dealt independently and
+        # redealt together if they share a card (uniform over legal disjoint pairs); where coherent rosters are so
+        # rare that pairs keep sharing (junior amateur), the second team is dealt from the cards the first left
+        for _ in range(200):
+            home = deal_one(standard, rng, coherent, age=age)
+            away = deal_one(standard, rng, coherent, age=age)
+            if not {k for k, _ in home} & {k for k, _ in away}:
+                break
+        else:
+            for _ in range(50):
+                home = deal_one(standard, rng, coherent, age=age)
+                try:
+                    away = deal_one(standard, rng, coherent, exclude={k for k, _ in home}, age=age, tries=400)
+                    break
+                except RuntimeError:
+                    continue
+            else:
+                raise RuntimeError
+    except RuntimeError:
+        raise ValueError(f"No {'coherent ' if coherent else ''}{STANDARDS[standard]['name'].lower()} {age} deal gives "
+                         f"two teams from one deck. Try a pure deal.")
     tags = [deal_growth(rng), deal_growth(rng)] if age == 'junior' else None
     return dict(code=code, age=age, standard=standard, coherent=coherent, seed=seed, rosters=[home, away], tags=tags)
 
