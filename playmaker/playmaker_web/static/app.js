@@ -205,6 +205,7 @@ async function create() {
   if (k === 'scenario') body.scenario = Number($('scenario').value);
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
+    if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     body.custom = [0, 1].filter(i => body.teams[i] === '__custom').map(i => ({ slot: i, name: $(`bName${i}`).value || 'Custom', cards: customCards(i) }));
     body.custom.forEach(c => { body.teams[c.slot] = c.name; });
   }
@@ -983,6 +984,10 @@ function placeInit(P) {
     place = { side: 'O', squares, ball: st.o.findIndex(p => p.ball), arrows: [], pick: null, orig: squares.slice() };
   } else {
     const occ = new Set(P.offence || []);
+    if (P.draft) {                                   // man-to-man against the offence on the floor
+      place = { side: 'X', squares: P.draft.squares.slice(), ball: null, arrows: P.draft.arrows.slice(), pick: null, orig: P.draft.squares.slice() };
+      return;
+    }
     const squares = st.x.map(p => (occ.has(p.sq) ? null : p.sq));
     place = { side: 'X', squares, ball: null, arrows: st.x.map((p, i) => (squares[i] ? p.arrow : null)), pick: null, orig: st.x.map(p => p.sq) };
   }
@@ -1052,7 +1057,7 @@ function renderPlacement() {
   if (problem) confirm.setAttribute('disabled', 'disabled');
   $('sideButtons').append(confirm,
     el('button', { text: 'Start again', onclick: () => { place = null; renderPlacement(); renderCourt(); } }),
-    el('button', { text: 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }),
+    el('button', { text: Object.keys(s.ai || {}).length ? 'Use the standard setup for my side' : 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }),
     ...(problem ? [el('p', { class: 'note', role: 'status', text: problem })] : []));
 }
 async function confirmPlacement() {

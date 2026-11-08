@@ -21,7 +21,11 @@ const base = process.argv[2];
     await p.selectOption('#kind', 'single'); await p.selectOption('#level', level);
     await p.evaluate(() => { document.getElementById('seed').value = '11'; });
     await p.click('#create'); await p.waitForTimeout(1200);
-    const tip = await p.$('#modal:not(.hidden) button.primary:has-text("Tip off")'); if (tip) { await tip.click(); await p.waitForTimeout(400); }
+    for (let k = 0; k < 4; k++) {                                              // the report, then your own setup (step 3k)
+      if (await p.$('#modal:not(.hidden) button.primary')) { await p.click('#modal:not(.hidden) button.primary').catch(() => {}); await p.waitForTimeout(600); continue; }
+      if (await p.$('#sideButtons button:has-text("standard setup")')) { await p.click('#sideButtons button:has-text("standard setup")').catch(() => {}); await p.waitForTimeout(1500); continue; }
+      break;
+    }
     out[level] = { coach: (await p.evaluate(() => document.getElementById('coachLine').innerText)).trim(),
                    canAct: await p.evaluate(() => typeof st !== 'undefined' && !!st.can_act) };
     await p.close();

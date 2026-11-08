@@ -600,6 +600,14 @@ def computer_facts(records):
         if off:
             line += f" It " + '; it '.join(off) + '.'
         out.append(line)
+        for r in records:                                    # step 3k: the setup, in plain words
+            if r['type'] == 'computer' and r.get('side') == side and r.get('event') == 'setup' and r.get('text'):
+                lines = r['text'] if isinstance(r['text'], list) else [r['text']]
+                if side == 'X':
+                    lines = [l for l in lines if l.startswith('Put ') or ' sagged ' in l or ' denied ' in l or ' fronted ' in l
+                             or 'protect the rim' in l or 'only answer' in l]
+                pre = f"Possession {r['possession']}: " if r.get('possession') else ''
+                out.append(pre + 'Setup. ' + ' '.join(lines))
         if side == 'O':
             plans = [r for r in records if r['type'] == 'computer' and r.get('side') == 'O']
             for r in plans:

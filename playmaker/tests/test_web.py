@@ -260,18 +260,21 @@ def test_placement_rules_and_preview_shortcut(web):
 
 
 def test_computer_places_man_to_man(web):
-    # the board-reading defence: man-to-man squares, arrows chosen (step 3e); the baseline: arrows on the man
-    for kind, on_man in (('greedy', False), ('baseline', True)):
+    # the baseline: man-to-man, arrows on the man. The computer (step 3k): its own matchups and a job for each defender
+    # (help and sag defenders stand off their man by design), logged with the reasons
+    for kind in ('greedy', 'baseline'):
         g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=8, ai=dict(X=kind)))
         tok = dict(code=g['code'], token=g['token'])
         post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
         s = state(web, g)
         assert s['placing'] is None
-        facing = []
-        for o, x in zip(s['o'], s['x']):
-            assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
-            facing.append(B.DIRS[x['arrow']] == (o['x'] - x['x'], o['y'] - x['y']))
-        assert all(facing) if on_man else not all(facing), (kind, facing)
+        if kind == 'baseline':
+            for o, x in zip(s['o'], s['x']):
+                assert max(abs(o['x'] - x['x']), abs(o['y'] - x['y'])) == 1       # next to its man
+                assert B.DIRS[x['arrow']] == (o['x'] - x['x'], o['y'] - x['y'])   # arrow on him
+        else:
+            rec = [r for r in get(web, f'/api/log?code={g["code"]}') if r['type'] == 'computer' and r.get('event') == 'setup']
+            assert rec and len(rec[-1]['matchup']) == 5 and len(rec[-1]['jobs']) == 5 and rec[-1]['text']
 
 
 def test_the_computers_turn_is_reported_with_rolls_and_results(web):

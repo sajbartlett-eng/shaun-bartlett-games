@@ -487,7 +487,10 @@ class Computer(Policy):
         from . import guarding
         last = self._mm_last
         if self.matchups is None or last is None:
-            self.matchups = guarding.initial(state)
+            sp = getattr(self, 'setup_perm', None)
+            # step 3k: the matchups the defence chose at setup are the record's start (OQ-67), not the nearest man
+            self.matchups = tuple(sp) if (sp is not None and self.side == 'X') else guarding.initial(state)
+            self.setup_perm = None
         elif state.x != last.x or state.arrows != last.arrows or state.lock_x != last.lock_x:
             self.matchups = guarding.update(self.matchups, last, state)
         self._mm_last = state

@@ -623,6 +623,27 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   is covered (`Computer._threat(exclude=...)`). The offence acts first, so the strongest lever is setup step 5: the
   computer's placement answers that lane before the first pass (`_deny_at_setup`). Rookie does not use it. No rule
   changed. `tests/test_deny_catch.py`; `playmaker_engine/deny_report.py` measures a pairing before and after.
+- **The computer's setup** (step 3k, `playmaker_engine/setup.py`; no rule changes). Where the computer places its own
+  side (full games, custom teams and quick games against the computer; scenario cards keep their fixed setups; a human
+  always places their own side, with a one-tap standard setup for it), the offence sets up from the cards alone and
+  the defence from the offence's placement.
+  *Offence:* the goals are ranked from the cards against the defenders the offence expects (the defence's best
+  assignment): threes, post entries, high-lows, isolations, pick and rolls, handoffs. Formations come from principles:
+  spacing (no two attackers within 2 squares unless a goal needs it), corners filled for a drive or kick, the lane kept
+  open, post players on the block, screeners next to the ball, shooters on their three squares; the shape is named when
+  one fits (five out, four out one in, horns, high-low, spread pick and roll, overload). All-Star scores each setup
+  against the defence's best response to it (its matchups and jobs) and chooses among those within 1.5 of the best;
+  Starter builds the top goal's formation; Rookie keeps the fixed formation with the ball on the best creator. The ball
+  goes to whoever fits the goal (the best creator for a pick and roll or isolation, a passer for a post entry, a shooter
+  for a handoff), never only O1.
+  *Defence:* all 120 assignments, the one leaving the offence the lowest best edge (cards: shot against contest,
+  Dribble against Agility); then a job for each defender: contain the ball, wall the drive, deny an up shooter (receiver
+  denial), front an up post scorer, help in a gap, or sag off a down shooter when the comfort line allows and he can
+  recover in one movement. Coherence checks: someone can reach the rim, every likely drive has a wall or help, a
+  defender who is the only answer to two threats is logged, the reserve is intact. The chosen matchups start the
+  matchup record (OQ-67). Starter uses contain, help and sag; Rookie is man-to-man by number.
+  The review's "About the computer" explains each setup in plain words. `tests/test_setup_3k.py`;
+  `playmaker_engine/setup_check.py` compares new and current setups.
 - **Receiver denial** (the designer's ruling, `receiver_denial=True`): a pass may not travel through the square of a
   defender next to the receiver. The lane is blocked, not interceptable, whatever his facing; "through" is the pass
   line within half a square of his centre (`receiver_denial_tol=0.5`). Defenders elsewhere on the line are unchanged.

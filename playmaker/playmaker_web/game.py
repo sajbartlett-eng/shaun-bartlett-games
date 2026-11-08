@@ -653,19 +653,33 @@ class Game:
     def _auto_place(self):
         """The computer places for its side: the preview squares on offence; on defence man-to-man squares,
         with arrows chosen by the board-reading defence (or on each man, for the baseline)."""
+        from playmaker_engine import setup as SU
         while self.placing and self.placing in self.ai:
             if self.placing == 'O':
-                self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
+                comp = self.policies.get('O')
+                if getattr(comp, 'name', '') == 'computer':
+                    # step 3k: the offence's setup from the cards alone (it places first and never sees the defence)
+                    make = lambda o_sq, ball, xq, ar: self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xq], ar, ball)
+                    r = SU.offence_setup(comp, make, seed=(self.seed or 0) * 31 + self.possession)
+                    self._log('computer', side='O', event='setup', possession=self.possession, squares=[B.sq(q) for q in r['squares']],
+                              ball=r['ball'], shape=r['shape'], goal=(r['goal'] or {}).get('kind'), seconds=r['seconds'],
+                              candidates=r['candidates'], within=r['within'], text=r['reasons'])
+                    self._place_side('O', r['squares'], r['ball'], None, actor='ai')
+                else:
+                    self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
             else:
                 xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
                 comp = self.policies.get('X')
                 if getattr(comp, 'name', '') == 'computer':
-                    # step 3e: matchups, the on-ball arrow and help positions chosen by the computer's evaluation
-                    from playmaker_engine.computer import place_defence
+                    # step 3k: matchups (all 120), a job for each defender, the coherence checks
                     o_sq, ball = self.placed['O']
                     build = lambda xq, ar: self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xq], ar, ball)
-                    xs, arrows, perm = place_defence(comp, o_sq, ball, build)
-                    self._log('computer', side='X', event='setup', matchup=[f'X{j + 1} on O{perm[j] + 1}' for j in range(5)])
+                    r = SU.defence_setup(comp, o_sq, ball, build)
+                    xs, arrows, perm = r['xs'], r['arrows'], r['perm']
+                    comp.setup_perm = tuple(perm)
+                    self._log('computer', side='X', event='setup', possession=self.possession,
+                              matchup=[f'X{j + 1} on O{perm[j] + 1}' for j in range(5)], jobs={f'X{j + 1}': r['jobs'][j] for j in range(5)},
+                              seconds=r['seconds'], text=r['reasons'] + r['notes'])
                 self._place_side('X', xs, None, arrows, actor='ai')
 
     def place(self, token, body):
@@ -678,6 +692,17 @@ class Game:
             if seat is None:
                 raise GameError('unknown player token')
             if body.get('preview'):
+                if self.ai:
+                    # against the computer: the standard setup for the human's own side only; the computer places its own
+                    if self.placing in self.ai:
+                        raise GameError('the computer places this side')
+                    if self.placing == 'O':
+                        self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='human')
+                    else:
+                        xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
+                        self._place_side('X', xs, None, arrows, actor='human')
+                    self._auto_place()
+                    return
                 if seat != 'both' and seat != self.placing:
                     raise GameError('the preview shortcut sets both sides: use it in hot-seat or before joining')
                 self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='human')
