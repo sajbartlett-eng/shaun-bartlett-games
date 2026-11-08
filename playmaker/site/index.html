@@ -32,11 +32,45 @@
       </select></label>
       <label id="scenarioRow">Card <select id="scenario"></select></label>
       <p id="scenarioText" class="note"></p>
-      <div id="teamsRow"><label>Teams <select id="teamA"></select> v <select id="teamB"></select></label>
-        <div class="builders"><div id="builder0" class="builder hidden"></div><div id="builder1" class="builder hidden"></div></div>
-        <p class="note exp" id="builderWarn" role="status"></p></div>
+      <fieldset id="levelsRow" class="levels"><legend>Playing level: the same for both sides</legend>
+        <label>Age <select id="age"><option value="senior">Senior</option><option value="youth">Elite youth (U18 to U20)</option><option value="junior">Junior (U14 to U16)</option></select></label>
+        <p class="note" id="ageNote"></p>
+        <label id="standardRow">Standard <select id="standard"><option value="pro">Pro</option><option value="semi_pro">Semi-pro</option><option value="amateur">Amateur</option></select></label>
+        <p class="note" id="standardNote"></p>
+        <p class="note"><a href="docs/Playmaker_Playing_Levels.pdf" target="_blank" rel="noopener">The playing levels sheet (PDF)</a> · <button type="button" class="linkbtn" id="levelsPage">Levels and rosters, in short</button></p>
+      </fieldset>
+      <div id="teamsRow">
+        <label>Teams <select id="roster">
+          <option value="prescribed">Prescribed teams</option>
+          <option value="build">Build your teams (rules on)</option>
+          <option value="free">Your team (rules off)</option>
+          <option value="random">Random deal</option>
+          <option value="draft">Draft</option>
+        </select></label>
+        <p class="note" id="rosterNote"></p>
+        <div id="prescribedRow"><label>Prescribed <select id="teamA"></select> v <select id="teamB"></select></label></div>
+        <div id="buildRow" class="hidden">
+          <label id="handicapRow"><input type="checkbox" id="handicap"> Handicap: a different standard for each side</label>
+          <label id="standardBRow" class="hidden">Away standard <select id="standardB"><option value="pro">Pro</option><option value="semi_pro">Semi-pro</option><option value="amateur">Amateur</option></select></label>
+          <div class="builders"><div id="builder0" class="builder"></div><div id="builder1" class="builder"></div></div>
+        </div>
+        <div id="randomRow" class="hidden">
+          <label>Deal for <select id="randomFor"><option value="both">both teams</option><option value="yours">your team only</option><option value="opponent">the opponent only</option></select></label>
+          <label>Kind <select id="coherent"><option value="1">Coherent: every team has a creator, two shooters, a rim anchor and a stopper</option><option value="0">Pure: any legal roster, all equally likely</option></select></label>
+          <p><button type="button" id="dealBtn">Deal</button> <button type="button" id="challengeBtn">Challenge me</button></p>
+          <label>Enter code <input id="dealCode" maxlength="10" placeholder="SPP-0ABC12" autocomplete="off"></label>
+          <p><button type="button" id="dealCodeBtn">Deal from this code</button></p>
+          <div id="dealOut" role="status"></div>
+        </div>
+        <div id="draftRow" class="hidden">
+          <p class="note">Home is player A, Away is player B. Pick order: Home, Away, Away, Home, Home, Away, Away, Home, Home, Away.</p>
+          <p><button type="button" id="draftBtn">Start the draft</button></p>
+          <div id="draftBoard" class="draftboard"></div>
+        </div>
+        <p class="note exp" id="builderWarn" role="status"></p>
+      </div>
       <div id="aiRow">
-        <label>The computer plays <select id="aiLevel"><option value="rookie">Rookie: makes beginner mistakes you can learn to spot</option><option value="starter">Starter: solid, with one habit to find</option><option value="allstar">All-Star: plays the full read</option></select></label>
+        <label>Computer level: how well the computer reads the play <select id="aiLevel"><option value="rookie">Rookie: makes beginner mistakes you can learn to spot</option><option value="starter">Starter: solid, with one habit to find</option><option value="allstar">All-Star: plays the full read</option></select></label>
         <label id="aiSeatRow">You start on <select id="aiSeat"><option value="O">offence (the computer defends first)</option><option value="X">defence (the computer attacks first)</option></select></label>
       </div>
       <label id="modeRow">Where <select id="mode">

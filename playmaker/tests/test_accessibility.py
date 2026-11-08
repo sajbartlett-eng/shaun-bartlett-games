@@ -84,7 +84,7 @@ async function scan(page) {
   out['scout report'] = await scan(ph);
   await ph.goto(base + '/'); await ph.waitForTimeout(500);
   await ph.click('button.path[data-path=friend]'); await ph.waitForTimeout(300);
-  await ph.selectOption('#teamA', '__custom'); await ph.selectOption('#teamB', '__custom'); await ph.waitForTimeout(200);
+  await ph.selectOption('#age', 'junior'); await ph.selectOption('#roster', 'free'); await ph.waitForTimeout(600);
   out['team builder'] = await scan(ph);
   console.log(JSON.stringify(out));
   await b.close();

@@ -57,11 +57,22 @@ def _same(state, logged):
 
 
 def register_custom(setup):
-    """Custom lineups named in a log's setup record (step 3d), so the log replays anywhere."""
-    from .cards import register_team
+    """Register the custom lineups a log names, so the replay reads the same cards. Step 3l: a game at another age or
+    from a built, random or drafted roster logs each team as it played (key, slot, growth tag) with the age; the
+    teams are rebuilt with levels.effective_card, so the replay reads the same ratings."""
+    from .cards import register_team, register_cards
     for name, keys in (setup.get('custom') or {}).items():
         if register_team(name, keys) != name:
             raise ValueError(f'custom team {name} clashes with another lineup of that name')
+    lv = setup.get('levels') or {}
+    if lv.get('lineups'):
+        from .levels import from_spec, on_time
+        for name, spec in lv['lineups'].items():
+            cards = from_spec(spec, lv.get('age', 'senior'))
+            if register_cards(name, cards) != name:
+                raise ValueError(f'team {name} clashes with another lineup of that name')
+            if (lv.get('tags') or {}).get(name):
+                register_cards(name + ' (tags face down)', on_time(cards))
 
 
 def replay(records, on_decision=None):

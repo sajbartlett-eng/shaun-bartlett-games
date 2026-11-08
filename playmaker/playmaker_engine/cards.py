@@ -34,10 +34,13 @@ OFF, DEF = DATA.OFF, DATA.DEF
 
 
 class Card:
-    __slots__ = ('key', 'num', 'role', 'tier', 'tagline', 'qs', 'r', 'bands')
+    # num: the card's printed position (1 PG .. 5 C). slot: the slot it fills on its team (it sets the piece: O4 is
+    # slot 4); age and growth: the playing level (levels.py); flex: it plays a position up or down.
+    __slots__ = ('key', 'num', 'role', 'tier', 'tagline', 'qs', 'r', 'bands', 'age', 'growth', 'slot', 'flex')
 
     def __init__(self, key, num, role, tier, tagline, qs, off, dfn):
         self.key, self.num, self.role, self.tier, self.tagline, self.qs = key, num, role, tier, tagline, qs
+        self.age, self.growth, self.slot, self.flex = 'senior', None, num, False
         vals = DATA.parse(off) + DATA.parse(dfn)
         names = OFF + DEF
         self.r = {n: v for n, (v, _) in zip(names, vals)}
@@ -79,4 +82,21 @@ def register_team(name, keys):
         TEAMS[n] = [CARDS[k] for k in keys]
         TEAM_TAGLINES[n] = 'Custom team'
         CUSTOM[n] = keys
+    return n
+
+
+def register_cards(name, cards, tagline='Custom team'):
+    """Add a lineup of Card objects as they play (step 3l: effective cards, slot order) to TEAMS and return the name it
+    is registered under. Same rule as register_team: the same name with the same cards is reused, else ' (2)' ..."""
+    sig = lambda cs: [(c.key, getattr(c, 'age', 'senior'), getattr(c, 'growth', None), getattr(c, 'slot', c.num))
+                      for c in cs]
+    cards = list(cards)
+    base = ' '.join(str(name or '').split())[:40] or 'Custom'
+    n, i = base, 2
+    while n in TEAMS and sig(TEAMS[n]) != sig(cards):
+        n, i = f'{base} ({i})', i + 1
+    if n not in TEAMS:
+        TEAMS[n] = cards
+        TEAM_TAGLINES[n] = tagline
+        CUSTOM[n] = [c.key for c in cards]
     return n

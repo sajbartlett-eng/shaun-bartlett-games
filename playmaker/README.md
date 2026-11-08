@@ -213,6 +213,37 @@ and `docs/playtest_scout_reveal.png` (read the cards first), `docs/playtest_lear
 `docs/playtest_team_builder.png`, `docs/playtest_report_in_play.png`, `docs/playtest_card_compare_phone.png`,
 `docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
 
+## Playing levels and roster modes (step 3l)
+
+No rule of play changes. Two dials before you build teams, the same for both sides, change only which ratings the cards
+carry; the roster mode changes only how the teams are picked. `playmaker_engine/data/levels_data.py` is the source of
+truth (pure literals, copied unedited from the designer's handoff); the printed sheet is
+`playmaker_web/static/docs/Playmaker_Playing_Levels.pdf`, linked from the new-game screen.
+
+- **Age.** Senior: the pro cards. Elite youth (U20): the pro cards plus every shot and free throw −1, Steal and Intercept
+  +1, marks unchanged. Junior (U16): the U16 cards plus growth tags (each team 1 Early, 3 On time, 1 Late, dealt at
+  roster lock, face down to the opponent until setup begins, turned up before the offence places). A tag changes the
+  numbers, never the marks. Clamps: ratings 0 to 19 (Pass 20), Quick Step 0 to 2.
+- **Standard.** Pro BBBBB · ABBBC · AABCC; semi-pro BBBBC · ABBCC; amateur BBCCC · ACCCC. The prescribed teams are pro.
+- **One function.** `levels.effective_card(card, age, growth_tag, slot)` builds every card as it plays. A game registers
+  its two teams as those cards, so the engine, the scout report, the team sheet, hunt and protect, the computer (its
+  band middles come from the deck at that age) and the card panel all read the same numbers. The setup log records
+  `levels` (age, standard, roster mode, deal code, growth tags, each lineup as key, slot and tag, strength totals, draft
+  picks with reasons), and the review rebuilds the teams from it.
+- **Roster modes.** Prescribed; Build (rules on: five different cards, a shape of the standard, at most one card one
+  position up or down, the slot sets the piece, so a centre in slot 4 is O4 and shows "playing the 4"); Your team
+  (rules off: any five cards, duplicates, hand-set growth tags at junior); Random (both, yours or the opponent's;
+  coherent or pure; uniform over legal rosters; a deal code like `JAC-002N9C` gives the same rosters and tags again;
+  the scout report for both teams opens before setup); Draft (snake 1, 2, 2, 1, 1, 2, 2, 1, 1, 2; every pick names its
+  slot and must leave a completable legal roster; the computer gives a reason for every pick). Both strength totals
+  show, with "Uneven teams: Home +2" when they differ; nothing is blocked. The handicap option gives each side its own
+  standard when building with the rules on.
+- **Legal rosters** (card-to-slot assignments): pro 159,375 without flex, 1,369,375 with; semi-pro 109,375 and 939,375;
+  amateur 46,875 and 386,875.
+
+Tests: `tests/test_levels_3l.py` (unit tests and one browser check at 412 × 915; no simulations). Screenshots:
+`docs/levels_new_game.png`, `docs/levels_draft_board.png`, `docs/levels_junior_card.png`, `docs/levels_junior_board.png`.
+
 ## How the computer plays (step 3e)
 
 Pick **Computer plays offence / defence: Rookie, Starter or All-Star** at the start. Each side's level is

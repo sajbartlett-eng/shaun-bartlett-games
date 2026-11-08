@@ -141,8 +141,14 @@ window.PMNotation = (function () {
     g.append(grp);
   }
   // Capacity tags (a used Move or Quick Step) and the lock, as small marker tags under the piece.
-  function tags(g, x, y, b, locked) {
+  function tags(g, x, y, b, locked, growth) {
     const X = cx(x), Y = cy(y);
+    if (growth === 'early' || growth === 'late') {     // step 3l: a junior's growth tag, E or L, at the top left
+      const tx = X - 23, ty = Y - 23;
+      g.append(svg('rect', { class: 'growbadge ' + growth, x: tx, y: ty, width: 13, height: 13, rx: 6.5,
+        fill: growth === 'early' ? '#1f6f3f' : '#7a4a12', stroke: '#fff', 'stroke-width': 1.2 }));
+      g.append(svg('text', { x: tx + 6.5, y: ty + 10, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }, growth === 'early' ? 'E' : 'L'));
+    }
     const marks = [];
     if (b && b.move) marks.push('M');
     if (b && b.qs) marks.push('Q');

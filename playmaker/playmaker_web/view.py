@@ -3,7 +3,7 @@ from playmaker_engine import board as B
 from playmaker_engine import geometry as G
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import intercept_status
-from playmaker_engine.cards import OFF, DEF
+from playmaker_engine.cards import OFF, DEF, TEAMS
 from playmaker_engine.scenarios import SCENARIOS
 from playmaker_engine.scoring import score, choose_contest, shot_points, foul_on_shot_points, band, contest_options
 
@@ -34,8 +34,14 @@ def card_json(card, side):
     groups = [dict(name='Actions', ratings=[dict(name='Quick Step', value=card.qs, band='A', mark='')]
                    + [r(n) for n in GROUPS[side][0][1]]),
               dict(name=GROUPS[side][1][0], ratings=[r(n) for n in GROUPS[side][1][1]])]
+    from playmaker_engine import levels as LV
+    grow = getattr(card, 'growth', None)
     return dict(key=card.key, role=card.role, tier=card.tier, tagline=card.tagline, qs=card.qs,
-                ratings=[r(n) for n in names], groups=groups)
+                ratings=[r(n) for n in names], groups=groups,
+                label=LV.card_label(card), age=getattr(card, 'age', 'senior'), slot=getattr(card, 'slot', card.num),
+                printed=card.num, flex=LV.flex_words(card),
+                growth=grow if grow in ('early', 'late') else None,
+                growth_words=LV.growth_words(grow) if grow in ('early', 'late') else None)
 
 
 def zones():
@@ -258,6 +264,8 @@ def state_json(game, token):
     ctx = s.ctx
     seat = game.seat_of(token)
     can = game.can_act(token)
+    seen_o, seen_x = game.seen_cards(ctx.off_team, seat) if ctx.off_team in TEAMS else ctx.off, \
+        game.seen_cards(ctx.def_team, seat) if ctx.def_team in TEAMS else ctx.dfn
     show_target = s.stage == 'over' or seat == 'O' or (game.mode == 'hotseat' and False)
     pieces_o = []
     for i, p in enumerate(s.o):
@@ -265,12 +273,12 @@ def state_json(game, token):
         pieces_o.append(dict(i=i, sq=B.sq(p), x=p[0], y=p[1], ball=i == s.ball, locked=s.locked('O', i),
                              moved=s.moved('O', i), slots=game.slots['O'][i],
                              screen=dict(dir=sc[1], t=B.sq(B.add(p, B.DIRS[sc[1]]))) if sc else None,
-                             card=card_json(ctx.off[i], 'O')))
+                             card=card_json(seen_o[i], 'O')))
     pieces_x = []
     for i, p in enumerate(s.x):
         pieces_x.append(dict(i=i, sq=B.sq(p), x=p[0], y=p[1], arrow=s.arrows[i], arrow_name=B.DIR_NAMES[s.arrows[i]],
                              locked=s.locked('X', i), moved=s.moved('X', i), slots=game.slots['X'][i],
-                             card=card_json(ctx.dfn[i], 'X')))
+                             card=card_json(seen_x[i], 'X')))
     limits = {side: [dict(kind=k, used=s.count(side, k), limit=v) for k, v in RC.LIMITS[side].items()]
               for side in ('O', 'X')}
     sc_info = None
@@ -319,12 +327,32 @@ def state_json(game, token):
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
                 level=game.level, scout=scout_json(game, seat), matchups=matchups(s), denied=denied_json(s),
-                custom=game.custom or None, experimental=game.experimental,
+                custom=game.custom or None, experimental=game.experimental, levels=levels_json(game, seat),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS], screen_rule=ctx.rules.screen_rule,
                 influence=influence(s))
     if game.timer:
         out['timer'] = game.timer_json()
     return out
+
+
+def levels_json(game, seat):
+    """Step 3l: the dials and roster mode this game is played at, the strength totals and the growth tags (each team's
+    tags only once they are face up, or to their own player)."""
+    lv = game.levels
+    if not lv:
+        return None
+    from playmaker_engine import levels as LV
+    tags = {}
+    for side in ('O', 'X'):
+        t = game.team_of(side)
+        if (lv.get('tags') or {}).get(t) and (game.tags_revealed() or side in game._viewer_sides(seat)):
+            tags[t] = lv['tags'][t]
+    std = lv.get('standard')
+    return dict(age=lv['age'], age_words=LV.AGE_WORDS[lv['age']], roster=lv['roster'], standard=std,
+                standard_words=LV.STANDARD_WORDS[std] if isinstance(std, str) else None,
+                deal=lv.get('deal'), coherent=lv.get('coherent'), random=lv.get('random'),
+                strength=lv.get('strength'), uneven=lv.get('uneven'), tags=tags or None,
+                revealed=game.tags_revealed(), draft=lv.get('draft'))
 
 
 def _scenario_rules(c):
@@ -354,7 +382,7 @@ def scout_json(game, seat=None):
     """The pre-game report (identical for both players) and the pick status (picks stay private).
     At Scout level the report is only sent once this client's picks are locked."""
     from playmaker_engine.scouting import report
-    rep = (report(game.team_of('O'), game.team_of('X'), game.level, full=game.full)
+    rep = (report(game.seen_team('O', seat), game.seen_team('X', seat), game.level, full=game.full)
            if game.report_visible(seat) else None)
     return dict(report=rep, locked=game.level == 'scout' and rep is not None,
                 mine=game.picks.get(seat) if seat in ('O', 'X') else None, needs={side: game.picks_needed(side) for side in ('O', 'X')},

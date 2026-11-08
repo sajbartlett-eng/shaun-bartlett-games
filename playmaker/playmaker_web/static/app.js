@@ -62,15 +62,14 @@ async function initStart() {
   }
   OPTS = o;
   for (const t of o.teams) { $('teamA').append(el('option', { value: t.name, text: t.name })); $('teamB').append(el('option', { value: t.name, text: t.name })); }
-  for (const id of ['teamA', 'teamB']) $(id).append(el('option', { value: '__custom', text: 'Custom team…' }));
   $('teamA').value = o.first_game[0]; $('teamB').value = o.first_game[1];
-  for (const [id, slot] of [['teamA', 0], ['teamB', 1]]) $(id).addEventListener('change', () => builder(slot));
-  builder(0); builder(1);
+  initLevels();
   for (const s of o.scenarios) $('scenario').append(el('option', { value: s.n, text: `${s.n}. ${s.title} (${s.kind}, clock ${s.clock})` }));
   const showKind = () => {
     const k = $('kind').value;
     $('scenarioRow').classList.toggle('hidden', k !== 'scenario');
     $('teamsRow').classList.toggle('hidden', k === 'scenario');
+    $('levelsRow').classList.toggle('hidden', k === 'scenario');
     const s = o.scenarios.find(x => String(x.n) === $('scenario').value);
     $('scenarioText').textContent = k === 'scenario' && s ? `${s.text} O: ${s.off}. X: ${s.dfn}.` :
       k === 'full' ? 'Two possessions on the preview table setup; each player attacks once. Higher total wins.' :
@@ -143,47 +142,191 @@ function courseCards() {
   return el('p', { class: 'note', text: `For example, ${t.name}'s cards: ${cards.map(c => `${c.role} (${c.tier})`).join(', ')}. In a game the cards sit beside the court with every rating.` });
 }
 
-// ---------------------------------------------------------------- custom team builder (step 3d)
+// ---------------------------------------------------------------- step 3l: the two dials and the roster modes
 let OPTS = null;
 const POS = ['PG', 'SG', 'SF', 'PF', 'C'];
-const LEGAL_SHAPES = ['BBBBB', 'ABBBC', 'AABCC'];
-function customCards(slot) { return POS.map(p => $(`b${slot}${p}`).value); }
-function builder(slot) {
-  const box = $(`builder${slot}`), on = $(slot ? 'teamB' : 'teamA').value === '__custom';
-  box.classList.toggle('hidden', !on);
-  if (!on) { builderStatus(); return; }
-  if (box.dataset.built) { builderStatus(); return; }
-  box.dataset.built = '1';
-  const load = el('select', { id: `bLoad${slot}`, onchange: () => {
-    const t = OPTS.teams.find(x => x.name === load.value); if (!t) return;
-    POS.forEach((p, i) => { $(`b${slot}${p}`).value = t.cards[i]; }); builderStatus();
-  } }, [el('option', { value: '', text: 'Start from a prescribed team…' }), ...OPTS.teams.map(t => el('option', { value: t.name, text: t.name }))]);
-  box.append(el('h3', { text: `Custom team ${slot ? 'B' : 'A'}` }),
-    el('label', {}, ['Name ', el('input', { id: `bName${slot}`, value: 'Custom', maxlength: 30 })]),
-    el('label', {}, ['Load ', load]),
-    ...POS.map(p => el('label', {}, [`${p} `, el('select', { id: `b${slot}${p}`, onchange: builderStatus },
-      OPTS.cards.filter(c => c.position === p).map(c => el('option', { value: c.key, text: `${c.role} (${c.tier})` })))])),
-    el('p', { class: 'note', id: `bShape${slot}`, role: 'status' }));
-  const start = OPTS.teams.find(t => t.name === OPTS.first_game[slot]);
-  POS.forEach((p, i) => { $(`b${slot}${p}`).value = start.cards[i]; });
-  builderStatus();
-}
-function builderStatus() {
-  const tier = k => OPTS.cards.find(c => c.key === k).tier;
-  const cardsOf = slot => {
-    const v = $(slot ? 'teamB' : 'teamA').value;
-    if (v === '__custom') return $(`b${slot}PG`) ? customCards(slot) : [];
-    const t = OPTS.teams.find(x => x.name === v); return t ? t.cards : [];
+const TIER_V = { A: 1, B: 0, C: -1 };
+const STD_NAME = { pro: 'pro', semi_pro: 'semi-pro', amateur: 'amateur' };
+let lastDeal = null, draftId = null, draftState = null;
+const card = k => OPTS.cards.find(c => c.key === k);
+const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
+function rosterMode() { return $('roster').value; }
+function teamName(i) { return i ? 'Away' : 'Home'; }
+function stdOf(i) { return i && $('handicap').checked && rosterMode() === 'build' ? $('standardB').value : $('standard').value; }
+function initLevels() {
+  const L = OPTS.levels;
+  const words = (list, id) => (list.find(x => x.id === id) || {}).words || '';
+  const show = () => {
+    $('ageNote').textContent = words(L.ages, $('age').value);
+    $('standardNote').textContent = words(L.standards, $('standard').value) +
+      (rosterMode() === 'prescribed' ? ' The prescribed teams are pro teams: the standard applies to built, random and drafted teams.' : '');
+    const m = rosterMode();
+    $('rosterNote').textContent = L.rosters[m] || '';
+    $('prescribedRow').classList.toggle('hidden', m !== 'prescribed' && !(m === 'random' && $('randomFor').value !== 'both'));
+    $('buildRow').classList.toggle('hidden', m !== 'build' && m !== 'free');
+    $('handicapRow').classList.toggle('hidden', m !== 'build');
+    $('standardBRow').classList.toggle('hidden', !(m === 'build' && $('handicap').checked));
+    $('randomRow').classList.toggle('hidden', m !== 'random');
+    $('draftRow').classList.toggle('hidden', m !== 'draft');
+    if (m === 'build' || m === 'free') { builder(0); builder(1); }
+    builderStatus();
   };
-  for (const slot of [0, 1]) {
-    const p = $(`bShape${slot}`); if (!p || $(slot ? 'teamB' : 'teamA').value !== '__custom') continue;
-    const shape = customCards(slot).map(tier).sort().join('');
-    p.textContent = LEGAL_SHAPES.includes(shape) ? `Tier shape ${shape}: a legal shape.` :
-      `Tier shape ${shape}: not a legal shape (BBBBB, ABBBC or AABCC). Allowed, but the game is labelled experimental in the log.`;
-    p.classList.toggle('exp', !LEGAL_SHAPES.includes(shape));
+  for (const id of ['age', 'standard', 'standardB', 'roster', 'handicap', 'randomFor', 'teamA', 'teamB']) $(id).addEventListener('change', () => {
+    if (['age', 'standard', 'roster'].includes(id)) { lastDeal = null; $('dealOut').innerHTML = ''; }
+    if (['age', 'standard', 'standardB', 'roster', 'handicap'].includes(id)) { draftId = null; draftState = null; $('draftBoard').innerHTML = ''; }
+    show();
+  });
+  $('levelsPage').onclick = levelsPage;
+  $('dealBtn').onclick = () => doDeal();
+  $('challengeBtn').onclick = () => { $('coherent').value = '0'; $('randomFor').value = 'both'; show(); doDeal(); };
+  $('dealCodeBtn').onclick = () => doDeal($('dealCode').value);
+  $('draftBtn').onclick = startDraft;
+  show();
+}
+function levelsPage() {
+  const L = OPTS.levels;
+  modal([el('h2', { text: 'Levels and rosters' }),
+    el('p', { text: L.intro }),
+    el('h3', { text: 'Age' }), ...L.ages.map(a => el('p', { text: a.words })),
+    el('h3', { text: 'Standard' }), ...L.standards.map(x => el('p', { text: x.words })), el('p', { class: 'note', text: L.standard_note }),
+    el('h3', { text: 'Growth tags (junior)' }), el('div', { class: 'growbox' }, [el('p', { text: L.growth_box }), el('p', { text: L.growth.early }), el('p', { text: L.growth.late }),
+      el('p', { text: 'Each tag stays face down until setup begins, then all ten are turned up before the offence places. A tag changes the numbers, never the marks.' })]),
+    el('h3', { text: 'Picking the teams' }), ...Object.values(L.rosters).map(w => el('p', { text: w })),
+    el('p', {}, [el('a', { href: L.sheet, target: '_blank', rel: 'noopener', text: 'The full playing levels sheet (PDF)' })]),
+    el('button', { class: 'primary', text: 'Close', onclick: closeModal })], closeModal);
+}
+
+// Build (rules on) and Your team (rules off): one select per slot; the slot sets the piece number.
+function slotOptions(slot, free) {
+  const opts = [];
+  for (const c of OPTS.cards) {
+    const off = Math.abs(c.num - slot);
+    if (!free && off > 1) continue;
+    opts.push(el('option', { value: c.key, text: `${c.role} (${c.tier})${c.num !== slot ? ` · playing the ${slot}` : ''}` }));
   }
-  const a = cardsOf(0), b = cardsOf(1), both = a.filter(k => b.includes(k));
-  $('builderWarn').textContent = both.length ? `Both sides use ${both.map(k => OPTS.cards.find(c => c.key === k).role + ' (' + tier(k) + ')').join(', ')}: the table game would need two card sets. Allowed here.` : '';
+  if (free) return opts;
+  return opts.sort((x, y) => (card(x.value).num !== slot) - (card(y.value).num !== slot));
+}
+function builderCards(i) { return [1, 2, 3, 4, 5].map(s => [$(`b${i}s${s}`).value, s]); }
+function builder(i) {
+  const box = $(`builder${i}`), free = rosterMode() === 'free', junior = $('age').value === 'junior';
+  const sig = `${free}-${junior}`;
+  if (box.dataset.built === sig) return;
+  const keep = box.dataset.built ? builderCards(i) : null, name = box.dataset.built ? $(`bName${i}`).value : teamName(i);
+  box.dataset.built = sig; box.innerHTML = '';
+  const load = el('select', { id: `bLoad${i}`, onchange: () => {
+    const t = OPTS.teams.find(x => x.name === load.value); if (!t) return;
+    t.cards.forEach((k, n) => { $(`b${i}s${n + 1}`).value = k; }); builderStatus();
+  } }, [el('option', { value: '', text: 'Start from a prescribed team…' }), ...OPTS.teams.map(t => el('option', { value: t.name, text: t.name }))]);
+  box.append(el('h3', { text: `${teamName(i)} team` }),
+    el('label', {}, ['Name ', el('input', { id: `bName${i}`, value: name, maxlength: 24 })]),
+    el('label', {}, ['Load ', load]),
+    ...[1, 2, 3, 4, 5].map(s => el('div', { class: 'slotrow' }, [
+      el('label', {}, [`Slot ${s} (${POS[s - 1]}) `, el('select', { id: `b${i}s${s}`, onchange: builderStatus }, slotOptions(s, free))]),
+      free && junior ? el('label', { class: 'tagpick' }, ['Growth ', el('select', { id: `b${i}t${s}`, 'aria-label': `Slot ${s} growth tag` },
+        [['on_time', 'On time'], ['early', 'Early'], ['late', 'Late']].map(([v, t]) => el('option', { value: v, text: t })))]) : null])),
+    el('p', { class: 'note', id: `bShape${i}`, role: 'status' }));
+  const start = OPTS.teams.find(t => t.name === OPTS.first_game[i]);
+  [1, 2, 3, 4, 5].forEach(s => { $(`b${i}s${s}`).value = keep ? keep[s - 1][0] : start.cards[s - 1]; if (!$(`b${i}s${s}`).value) $(`b${i}s${s}`).selectedIndex = 0; });
+}
+let checkSeq = 0;
+async function builderStatus() {
+  const m = rosterMode(), seq = ++checkSeq;
+  const tiers = keys => keys.reduce((n, k) => n + TIER_V[card(k).tier], 0);
+  let totals = null;
+  if (m === 'build' || m === 'free') {
+    totals = [];
+    for (const i of [0, 1]) {
+      const ents = builderCards(i);
+      const r = await api('/api/roster', { cards: ents, standard: stdOf(i), rules: m === 'build' });
+      if (seq !== checkSeq) return;
+      const p = $(`bShape${i}`);
+      const head = `Tier shape ${r.shape} · strength ${signed(r.strength)}${m === 'build' ? ` (${STD_NAME[stdOf(i)]})` : ''}. `;
+      p.textContent = head + (r.problems.length ? r.problems.join(' ') : m === 'build' ? 'A legal roster.' : 'Ready.');
+      p.classList.toggle('exp', r.problems.length > 0);
+      totals.push(r.strength);
+    }
+  } else if (m === 'random' && lastDeal) totals = lastDeal.strength;
+  else if (m === 'draft' && draftState && draftState.done) totals = [draftState.strength['1'], draftState.strength['2']];
+  const w = $('builderWarn'); w.textContent = '';
+  if (totals) {
+    const d = totals[0] - totals[1];
+    w.textContent = `Strength: Home ${signed(totals[0])}, Away ${signed(totals[1])}.` + (d ? ` Uneven teams: ${d > 0 ? 'Home' : 'Away'} +${Math.abs(d)}.` : ' Even teams.');
+    w.classList.toggle('exp', d !== 0);
+  }
+}
+
+// Random deal (B4): the code reproduces the rosters and the growth tags; the scout report opens before setup.
+function rosterList(r) {
+  return el('ol', { class: 'rosterlist' }, r.map(e => el('li', { text: `${e.role} (${e.tier})${e.flex ? ' · ' + e.flex : ''}` })));
+}
+async function doDeal(code) {
+  try {
+    const d = await api('/api/deal', code ? { code } : { age: $('age').value, standard: $('standard').value, coherent: $('coherent').value === '1' });
+    lastDeal = d;
+    if (code) { $('age').value = d.age; $('standard').value = d.standard; $('coherent').value = d.coherent ? '1' : '0'; }
+    const out = $('dealOut'); out.innerHTML = '';
+    out.append(el('p', {}, ['Deal code ', el('strong', { class: 'dealcode', text: d.code }), ` · ${d.coherent ? 'coherent' : 'pure'} · ${STD_NAME[d.standard]} · ${d.age}`]),
+      el('div', { class: 'dealteams' }, [el('div', {}, [el('h3', { text: `Home (strength ${signed(d.strength[0])})` }), rosterList(d.rosters[0])]),
+        el('div', {}, [el('h3', { text: `Away (strength ${signed(d.strength[1])})` }), rosterList(d.rosters[1])])]),
+      d.tags_note ? el('p', { class: 'note', text: d.tags_note }) : null,
+      el('p', {}, [el('button', { type: 'button', text: 'Scout report for both teams', onclick: () => dealReport(d) })]));
+    builderStatus();
+    dealReport(d);
+  } catch (e) { $('dealOut').textContent = e.message; }
+}
+function dealReport(d) {
+  modal([el('h2', { text: `Scout report: deal ${d.code}` }),
+    el('p', { class: 'note', text: 'Both teams as dealt. Read them before setup.' + (d.tags_note ? ' Growth tags stay face down until setup begins.' : '') }),
+    ...reportEl(d.report),
+    el('button', { class: 'primary', text: 'Start the game', onclick: () => { closeModal(); create(); } }),
+    el('button', { text: 'Close', onclick: closeModal })], closeModal);
+}
+
+// Draft (B5): snake order; each pick names its slot; the computer gives its reason for every pick.
+function draftHuman() { return path === 'computer' && $('aiLevel').value ? ($('aiSeat').value === 'O' ? 1 : 2) : null; }
+async function startDraft() {
+  const stds = $('handicap').checked ? { A: $('standard').value, B: $('standardB').value } : null;
+  const h = draftHuman();
+  try {
+    draftState = await api('/api/draft', { new: { standard: $('standard').value, standards: stds, age: $('age').value,
+      computer: h ? $('aiLevel').value : null, human: h || 1 } });
+    draftId = draftState.id; renderDraft();
+  } catch (e) { $('draftBoard').textContent = e.message; }
+}
+async function draftPick(key, slot) {
+  try { draftState = await api('/api/draft', { id: draftId, key, slot }); renderDraft(); }
+  catch (e) { renderDraft(e.message); }
+}
+function renderDraft(err) {
+  const d = draftState, box = $('draftBoard'); box.innerHTML = '';
+  if (!d) return;
+  const side = n => (n === 1 ? 'Home' : 'Away');
+  const taken = new Set([...d.rosters['1'], ...d.rosters['2']].map(e => e.key));
+  box.append(el('p', { class: 'draftturn', role: 'status', text: d.done ? 'Draft done. Start the game when ready.' :
+    `Pick ${d.picks.length + 1} of ${d.order.length}: ${side(d.turn)}${d.human.includes(d.turn) ? '' : ' (computer)'}` }));
+  if (err) box.append(el('p', { class: 'error', role: 'alert', text: err }));
+  box.append(el('div', { class: 'draftteams' }, [1, 2].map(n => el('div', { class: 'draftteam' }, [
+    el('h3', { text: `${side(n)} (${STD_NAME[d.standard[n]]})` }),
+    el('ol', {}, [1, 2, 3, 4, 5].map(s => { const e = d.rosters[String(n)].find(x => x.slot === s);
+      return el('li', { text: `Slot ${s}: ${e ? `${e.role} (${e.tier})${e.flex ? ' · ' + e.flex : ''}` : '—'}` }); }))]))));
+  if (!d.done && d.human.includes(d.turn)) {
+    const mine = d.rosters[String(d.turn)].map(e => e.slot);
+    for (const [n, p] of POS.entries()) {
+      const cards = OPTS.cards.filter(c => c.num === n + 1 && !taken.has(c.key));
+      const det = el('details', { class: 'draftpos' }, [el('summary', { text: `${p}: ${cards.length} left` }),
+        el('ul', {}, cards.map(c => el('li', {}, [el('span', { class: 'dcard', text: `${c.role} (${c.tier})` }),
+          ...[c.num - 1, c.num, c.num + 1].filter(s => s >= 1 && s <= 5 && !mine.includes(s)).map(s => {
+            const ok = (d.slots[c.key] || []).includes(s);
+            return el('button', { type: 'button', class: 'small' + (ok ? '' : ' dim'), 'aria-label': `${c.role} (${c.tier}) in slot ${s}${s !== c.num ? `, playing the ${s}` : ''}${ok ? '' : ', not allowed'}`,
+              text: s === c.num ? `Slot ${s}` : `Slot ${s} · playing the ${s}`, onclick: () => draftPick(c.key, s) });
+          })])))]);
+      box.append(det);
+    }
+  }
+  if (d.picks.length) box.append(el('details', { class: 'draftlog', open: '' }, [el('summary', { text: 'Picks so far' }),
+    el('ol', {}, d.picks.map(p => el('li', { text: `${side(p.side)}: ${p.role} (${p.tier}), slot ${p.slot}${p.reason ? '. ' + p.reason : ''}` })))]));
+  builderStatus();
 }
 
 async function create() {
@@ -206,8 +349,19 @@ async function create() {
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
-    body.custom = [0, 1].filter(i => body.teams[i] === '__custom').map(i => ({ slot: i, name: $(`bName${i}`).value || 'Custom', cards: customCards(i) }));
-    body.custom.forEach(c => { body.teams[c.slot] = c.name; });
+    const m = rosterMode();
+    body.age = $('age').value; body.roster = m;
+    body.standard = m === 'build' && $('handicap').checked ? { A: $('standard').value, B: $('standardB').value } : $('standard').value;
+    if (m === 'build' || m === 'free') body.lineups = [0, 1].map(i => ({ name: $(`bName${i}`).value || teamName(i), cards: builderCards(i),
+      tags: m === 'free' && body.age === 'junior' ? [1, 2, 3, 4, 5].map(s => $(`b${i}t${s}`).value) : null }));
+    if (m === 'random') {
+      if (!lastDeal) { await doDeal(); return; }     // deal first: the scout report for both teams opens before setup
+      body.deal = lastDeal.code; body.random = $('randomFor').value; body.coherent = lastDeal.coherent;
+    }
+    if (m === 'draft') {
+      if (!draftState || !draftState.done) { alert('Finish the draft first.'); return; }
+      body.draft = draftId;
+    }
   }
   try {
     const r = await api('/api/new', body);
@@ -302,14 +456,24 @@ function render() {
   else if (s.stage === 'over') endModal();
 }
 
+// Step 3l: what the level changes on a card: 'U16 · TIER A' / 'U20 · TIER A', the growth tag (E or L) and a flex slot.
+function levelBits(c) {
+  const out = [];
+  if (c.label && c.label !== `TIER ${c.tier}`) out.push(el('span', { class: 'agelabel', text: c.label }));
+  if (c.growth) out.push(el('span', { class: 'growchip ' + c.growth, title: c.growth_words, text: c.growth === 'early' ? 'E' : 'L',
+    'aria-label': `growth tag ${c.growth}` }));
+  if (c.flex) out.push(el('span', { class: 'flexchip', text: c.flex }));
+  return out;
+}
 function cardEl(c, side, label, extra) {
-  const head = el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), el('span', { text: `QS ${c.qs}` })]);
+  const head = el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` })]);
   const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
     el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
       ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
     el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
       'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
-  return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [head, ...groups, extra || null]);
+  const grow = c.growth_words ? el('div', { class: 'grownote', text: c.growth_words }) : null;
+  return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [head, ...groups, grow, extra || null]);
 }
 
 const pinnedCards = new Set();          // cards a player opened by hand (the rest show one line until they matter)
@@ -342,7 +506,7 @@ function renderCards(id, pieces, side) {
     const c = p.card, key = side + p.i, isOpen = open.has(key);
     const head = el('button', { class: 'head', type: 'button', 'aria-expanded': isOpen ? 'true' : 'false',
       onclick: () => { if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
-      [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), el('span', { text: `QS ${c.qs}` }),
+      [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` }),
         el('span', { class: 'sr-only', text: isOpen ? ', full card; press to fold' : ', one line; press to open the card' })]);
     const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
       el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
@@ -351,8 +515,9 @@ function renderCards(id, pieces, side) {
         'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
     const note = side === 'O' && st.inbound_note && p.i === st.inbounder ? el('div', { class: 'inbnote', text: st.inbound_note }) : null;
     const folded = pinnedCards.has('-' + key) || !isOpen;           // '-' + key: folded by hand although it matters now
+    const grow = c.growth_words && !folded ? el('div', { class: 'grownote', text: c.growth_words }) : null;
     box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}${folded ? ' collapsed' : ''}` },
-      [head, folded ? cardSummary(c) : null, ...groups, note]));
+      [head, folded ? cardSummary(c) : null, ...groups, grow, note]));
   }
 }
 
@@ -459,6 +624,8 @@ function turnMarks() {
 function pieceLabel(side, p) {
   const z = st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';
   const bits = [`${side}${p.i + 1}, number ${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
+  if (p.card && p.card.growth) bits.push(`growth tag ${p.card.growth}`);
+  if (p.card && p.card.flex) bits.push(p.card.flex);
   if (side === 'O' && p.ball) bits.push('has the ball');
   if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
   if (side === 'X') bits.push(`arrow pointing ${COMPASS[p.arrow]}`);
@@ -490,7 +657,7 @@ function drawO(c, p, opts) {
   PM.pieceO(g, p.x, p.y, p.i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null });
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.O[p.i];
-  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked); c.append(tg);
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, p.card && p.card.growth); c.append(tg);
 }
 
 function drawX(c, p, opts) {
@@ -499,7 +666,7 @@ function drawX(c, p, opts) {
   PM.pieceX(g, p.x, p.y, p.i + 1, wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
-  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked); c.append(tg);
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, p.card && p.card.growth); c.append(tg);
 }
 
 // Zones of influence (every defender, along the arrow line, out to the current reach), active screens and the

@@ -11,7 +11,11 @@ from fractions import Fraction
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions, intercept_status
-from playmaker_engine.cards import TEAMS, FIRST_GAME
+from playmaker_engine.cards import TEAMS, FIRST_GAME, TEAM_TAGLINES
+
+
+def TEAM_TAGLINES_OR(name):
+    return TEAM_TAGLINES.get(name, 'Custom team')
 from playmaker_engine.policies import GreedyPolicy
 from playmaker_engine.resolve import apply, ChanceNode
 from playmaker_engine.scenarios import SCENARIOS, scenario_state, game_state, setup_errors
@@ -206,7 +210,9 @@ def man_to_man(o_squares, ball):
 
 class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
-                 place=False, code=None, level='scout', custom=None, timer=None, clock=None):
+                 place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
+                 standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
+                 draft=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -218,12 +224,14 @@ class Game:
         self.full = full and scenario is None
         self.teams = list(teams or FIRST_GAME)
         self.custom, self.experimental = {}, []
+        self.hidden_teams = {}
         if custom and not scenario:
             self._register_custom(custom)
+        self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
+        self.levels = self._build_levels(age, standard, roster, lineups, deal, random_for, coherent, draft, ai)
         for t in self.teams:
             if t not in TEAMS:
                 raise GameError(f'no team {t}')
-        self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
         self.rng = random.Random(self.seed)
         self.rules = rules
         # the computer: by side (O / X, fixed for the game) or by player (A / B: it follows the player across the
@@ -261,7 +269,7 @@ class Game:
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
                   ai=self.ai, ai_players=self.ai_players or None, possession=self.possession, place=self.place_on, level=self.level,
-                  custom=self.custom or None, experimental=self.experimental or None,
+                  custom=self.custom or None, experimental=self.experimental or None, levels=self.levels,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
                   rules={k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
@@ -309,6 +317,159 @@ class Game:
             if ''.join(sorted(CARDS[k].tier for k in keys)) not in ('BBBBB', 'ABBBC', 'AABCC'):
                 self.experimental.append(name)
 
+    def _build_levels(self, age, standard, roster, lineups, deal, random_for, coherent, draft, ai):
+        """Step 3l: the two dials (Age, Standard) and the roster mode. Sets self.teams to the teams as they play
+        (effective cards registered in TEAMS) and returns what the log records. The rules of play never change.
+          roster  prescribed  the prescribed teams (Age applies, Standard doesn't)
+                  build       lineups, rules on: five different cards, a shape of the standard, at most one flex
+                  free        lineups, rules off ("Your team"): any five cards, duplicates, hand-set growth tags
+                  random      a deal (code or new), for both teams, yours or the opponent's (coherent or pure)
+                  draft       a finished Draft (rosters.Draft), its picks and reasons logged"""
+        from playmaker_engine import levels as LV, rosters as RO
+        from playmaker_engine.cards import register_cards
+        age = age or 'senior'
+        if age not in LV.AGE_ORDER:
+            raise GameError('age: senior, youth or junior')
+        if roster not in ('prescribed', 'build', 'free', 'random', 'draft'):
+            raise GameError('roster mode: prescribed, build, free, random or draft')
+        stds = standard if isinstance(standard, dict) else {'A': standard or 'pro', 'B': standard or 'pro'}
+        stds = {p: stds.get(p) or 'pro' for p in ('A', 'B')}
+        if any(v not in LV.STANDARD_ORDER for v in stds.values()):
+            raise GameError('standard: pro, semi_pro or amateur')
+        handicap = stds['A'] != stds['B']
+        if handicap and roster != 'build':
+            raise GameError('a different standard for each side is the handicap option, for building with the rules on')
+        if self.scenario:
+            if age != 'senior' or roster != 'prescribed':
+                raise GameError('scenario cards are played with the senior pro cards')
+            return None
+        if age == 'senior' and roster == 'prescribed':
+            return None                                      # the default: exactly the game before step 3l
+        tag_rng = random.Random(f'growth-{self.seed}')
+        names = ['Home', 'Away']
+        entries, tags, given_tags, out = [None, None], [None, None], [None, None], dict(age=age, roster=roster)
+        human = next((p for p in ('A', 'B') if p not in (ai or {})), 'A')
+        if roster == 'prescribed':
+            for i, t in enumerate(self.teams):
+                if t not in TEAMS:
+                    raise GameError(f'no team {t}')
+                names[i] = t
+                entries[i] = [(c.key, n + 1) for n, c in enumerate(TEAMS[t])]
+        elif roster in ('build', 'free'):
+            if not lineups or len(lineups) != 2:
+                raise GameError('two lineups: [home, away]')
+            for i, lu in enumerate(lineups):
+                lu = lu if isinstance(lu, dict) else dict(cards=lu)
+                raw = lu.get('cards') or []
+                ents = [(e[0], int(e[1])) if isinstance(e, (list, tuple)) else (e, n + 1) for n, e in enumerate(raw)]
+                std = stds['AB'[i]]
+                bad = RO.problems(ents, std, rules=roster == 'build')
+                if bad:
+                    raise GameError(f"{lu.get('name') or names[i]}: " + ' '.join(bad))
+                entries[i] = ents
+                names[i] = ' '.join(str(lu.get('name') or names[i]).split())[:24] or names[i]
+                if lu.get('tags') and roster == 'free' and age == 'junior':
+                    tg = lu['tags']
+                    tg = {int(k): v for k, v in tg.items()} if isinstance(tg, dict) else {n + 1: v for n, v in enumerate(tg)}
+                    if any(v not in LV.TAGS for v in tg.values()):
+                        raise GameError('growth tags: early, on_time or late')
+                    given_tags[i] = [tg.get(s, 'on_time') for s in range(1, 6)]
+        elif roster == 'random':
+            if random_for not in ('both', 'yours', 'opponent'):
+                raise GameError('random: both, yours or opponent')
+            try:
+                d = RO.deal(age, stds['A'], bool(coherent), seed=None if deal else self.rng_seed_for_deal(), code=deal)
+            except ValueError as e:
+                raise GameError(str(e))
+            age = d['age']
+            stds = {'A': d['standard'], 'B': d['standard']}
+            out.update(deal=d['code'], standard=d['standard'], coherent=d['coherent'], random=random_for)
+            mine = 'AB'.index(human)
+            dealt = {0, 1} if random_for == 'both' else ({mine} if random_for == 'yours' else {1 - mine})
+            for i in range(2):
+                if i in dealt:
+                    entries[i] = list(d['rosters'][i])
+                    names[i] = ('Home', 'Away')[i] + ' (dealt)'
+                    if d['tags']:
+                        given_tags[i] = list(d['tags'][i])
+                else:
+                    t = self.teams[i]
+                    if t not in TEAMS:
+                        raise GameError(f'no team {t}')
+                    names[i] = t
+                    entries[i] = [(c.key, n + 1) for n, c in enumerate(TEAMS[t])]
+        else:                                                # draft
+            if draft is None or not draft.done():
+                raise GameError('finish the draft first')
+            if draft.age != age:
+                age = draft.age
+            stds = {'A': draft.standards[1], 'B': draft.standards[2]}
+            for i in range(2):
+                entries[i] = list(draft.roster(i + 1))
+            out.update(draft=draft.log)
+        if age == 'junior':
+            for i in range(2):
+                tags[i] = given_tags[i] or LV.deal_growth(tag_rng)
+        out['age'] = age
+        if roster != 'prescribed':
+            out['standard'] = stds['A'] if not handicap else dict(stds)
+        label = LV.LABEL[age]
+        lineups_out, teams_out, hidden = {}, [], {}
+        for i in range(2):
+            tg = {s: t for s, t in zip(range(1, 6), tags[i])} if tags[i] else {}
+            cards = LV.team(entries[i], age, tg)
+            nm = names[i] + (f' {label}' if label else '')
+            if roster != 'prescribed' and names[0] == names[1]:
+                nm = f"{names[i]} {'AB'[i]}" + (f' {label}' if label else '')
+            reg = register_cards(nm, cards, tagline=TEAM_TAGLINES_OR(names[i]))
+            teams_out.append(reg)
+            lineups_out[reg] = LV.lineup_spec(cards)
+            if tags[i]:
+                hidden[reg] = register_cards(reg + ' (tags face down)', LV.on_time(cards), tagline=TEAM_TAGLINES_OR(names[i]))
+        self.teams = teams_out
+        self.hidden_teams = hidden
+        out['lineups'] = lineups_out
+        out['tags'] = {t: tags[i] for i, t in enumerate(teams_out)} if age == 'junior' else None
+        if roster in ('build', 'free', 'random', 'draft'):
+            st = [RO.strength([k for k, _ in entries[i]]) for i in range(2)]
+            out['strength'] = {teams_out[i]: st[i] for i in range(2)}
+            if st[0] != st[1]:
+                lead = 0 if st[0] > st[1] else 1
+                out['uneven'] = f"Uneven teams: {('Home', 'Away')[lead]} +{abs(st[0] - st[1])}"
+        return out
+
+    def rng_seed_for_deal(self):
+        """A new deal's seed from the game seed (the deal code carries it, so the code alone reproduces the deal)."""
+        return random.Random(f'deal-{self.seed}').randrange(36 ** 6)
+
+    # ---- growth tags: face down until setup begins (step 3l) ----
+    def tags_revealed(self):
+        return getattr(self, '_revealed', False) or not getattr(self, 'hidden_teams', None)
+
+    def seen_team(self, side, seat=None):
+        """The team name a viewer reads for this side (possession 1 seats): with the growth tags face down until setup
+        begins, the opponent's team is its on-time cards. seat None: a neutral view (both teams face down)."""
+        name = self.team_of(side)
+        if self.tags_revealed() or name not in self.hidden_teams:
+            return name
+        mine = self._viewer_sides(seat)
+        return name if side in mine else self.hidden_teams[name]
+
+    def seen_cards(self, team, seat=None):
+        """The cards of a team (by name) as this viewer reads them now (face-down growth tags read as on time)."""
+        if self.tags_revealed() or team not in self.hidden_teams:
+            return TEAMS[team]
+        side = 'O' if team == self.team_of('O') else 'X'
+        return TEAMS[team] if side in self._viewer_sides(seat) else TEAMS[self.hidden_teams[team]]
+
+    def _viewer_sides(self, seat):
+        if seat in ('O', 'X'):
+            return {seat}
+        if seat == 'both':
+            humans = {s for s in ('O', 'X') if s not in self.ai}
+            return humans if len(humans) == 1 else set()
+        return set()
+
     def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
@@ -348,7 +509,8 @@ class Game:
 
     def _engine_picks(self, side):
         from playmaker_engine.scouting import hunt_protect
-        mine, theirs = TEAMS[self.team_of(side)], TEAMS[self.team_of('X' if side == 'O' else 'O')]
+        other = 'X' if side == 'O' else 'O'
+        mine, theirs = TEAMS[self.team_of(side)], TEAMS[self.seen_team(other, side)]   # their tags still face down
         out = {}
         if 'hunt' in self.picks_needed(side):
             h = hunt_protect(mine, theirs)['hunt']
@@ -642,6 +804,10 @@ class Game:
 
     # ---- placement (rulebook setup steps 4 and 5) ----
     def _begin_possession(self):
+        if self.hidden_teams and not getattr(self, '_revealed', False):
+            self._revealed = True                    # setup begins: the growth tags are turned face up
+            self.version += 1
+            self._log('reveal', tags=self.levels.get('tags'))
         if self.place_on:
             self.placing, self.placed = 'O', {}
             self.version += 1

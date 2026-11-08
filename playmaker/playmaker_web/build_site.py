@@ -11,8 +11,9 @@ STATIC = os.path.join(ROOT, 'playmaker_web', 'static')
 ENGINE_FILES = ['__init__.py', 'rules_config.py', 'board.py', 'cards.py', 'state.py', 'actions.py', 'resolve.py',
                 'scoring.py', 'scenarios.py', 'policies.py', 'review.py', 'scouting.py', 'scout_phrases.json', 'timer.py',
                 'defence.py', 'solver.py', 'solver_config.py',
-                'computer.py', 'computer_levels.json', 'advantage.py', 'geometry.py', 'capacity.py', 'guarding.py', 'planner.py', 'goal_library.json']
-DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json']
+                'computer.py', 'computer_levels.json', 'advantage.py', 'geometry.py', 'capacity.py', 'guarding.py', 'planner.py', 'goal_library.json',
+                'setup.py', 'levels.py', 'rosters.py']
+DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json', 'levels_data.py', 'teamtools.py']
 WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py']
 
 
@@ -53,6 +54,10 @@ def build(out_site=None, out_dist=None):
         f.write(page())
     for name in JS_FILES + ['style.css', 'pyodide-adapter.js']:
         with open(os.path.join(STATIC, name)) as src, open(os.path.join(out_site, name), 'w') as dst:
+            dst.write(src.read())
+    os.makedirs(os.path.join(out_site, 'docs'), exist_ok=True)          # step 3l: the playing levels sheet
+    for name in os.listdir(os.path.join(STATIC, 'docs')):
+        with open(os.path.join(STATIC, 'docs', name), 'rb') as src, open(os.path.join(out_site, 'docs', name), 'wb') as dst:
             dst.write(src.read())
     with open(os.path.join(out_site, 'engine_bundle.json'), 'w') as f:
         json.dump(bundle(), f)

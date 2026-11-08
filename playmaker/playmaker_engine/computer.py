@@ -267,45 +267,55 @@ def _positions():
 
 
 _POS = None
-_MIDS = None
+_MIDS = {}
 
 
-def _mids():
-    """Middle value of each band of each rating, and each position's typical band and QS, from the 75 cards."""
-    global _MIDS, _POS
-    if _MIDS is None:
+def _mids(age='senior'):
+    """Middle value of each band of each rating, and each position's typical band and QS, from the 75 cards as they play
+    at this age (step 3l: the U16 cards at junior; the pro cards plus the youth modifier at youth)."""
+    global _POS
+    if age not in _MIDS:
         _POS = _positions()
+        from .levels import effective_card
+        deck = [effective_card(c, age) for c in CARDS.values()]
         vals, by_pos = {}, {}
-        for c in CARDS.values():
+        for c in deck:
             for r, v in c.r.items():
                 vals.setdefault((r, c.bands[r]), []).append(v)
                 by_pos.setdefault((_POS[c.key], r), []).append(c.bands[r])
         mid = {k: round(sum(v) / len(v)) for k, v in vals.items()}
         typical = {k: max(set(v), key=v.count) for k, v in by_pos.items()}
         qs = {}
-        for c in CARDS.values():
+        for c in deck:
             qs.setdefault(_POS[c.key], []).append(c.qs)
         qs = {p: sorted(v)[len(v) // 2] for p, v in qs.items()}
-        _MIDS = (mid, typical, qs)
-    return _MIDS
+        _MIDS[age] = (mid, typical, qs)
+    return _MIDS[age]
 
 
 class SeenCard:
     """A card as the computer reads it at its level: 'exact' (the numbers), 'marks' (only ▲ / plain / ▼:
     every rating is the middle of its band) or 'role' (judged by position: the position's typical band)."""
-    __slots__ = ('key', 'num', 'role', 'tier', 'tagline', 'qs', 'r', 'bands')
+    __slots__ = ('key', 'num', 'role', 'tier', 'tagline', 'qs', 'r', 'bands', 'age', 'growth', 'slot', 'flex')
 
     def __init__(self, card, reading):
-        mid, typical, qs = _mids()
+        age = getattr(card, 'age', 'senior') or 'senior'
+        mid, typical, qs = _mids(age)
         self.key, self.num, self.role, self.tier, self.tagline = card.key, card.num, card.role, card.tier, card.tagline
+        self.age, self.growth = age, getattr(card, 'growth', None)
+        self.slot, self.flex = getattr(card, 'slot', card.num), getattr(card, 'flex', False)
+        # step 3l: the band mids are the age's (junior cards, or pro + the youth modifier); a revealed growth tag is
+        # read too (it changes the numbers the marks stand for)
+        from .levels import GROWTH, clamp
+        grow = GROWTH.get(self.growth, {}) if age == 'junior' else {}
         if reading == 'marks':
             self.bands = dict(card.bands)
             self.qs = card.qs
         else:                                   # role
             pos = _POS[card.key]
             self.bands = {r: typical[(pos, r)] for r in card.r}
-            self.qs = qs[pos]
-        self.r = {r: mid[(r, b)] for r, b in self.bands.items()}
+            self.qs = clamp('qs', qs[pos] + grow.get('qs', 0))
+        self.r = {r: clamp(r, mid[(r, b)] + grow.get(r, 0)) for r, b in self.bands.items()}
 
     def shot(self, t):
         return self.r['shot_' + t]
