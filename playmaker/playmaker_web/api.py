@@ -29,7 +29,8 @@ class Manager:
                  age=body.get('age', 'senior'), standard=body.get('standard', 'pro'),
                  roster=body.get('roster', 'prescribed'), lineups=body.get('lineups'), deal=body.get('deal'),
                  random_for=body.get('random', 'both'), coherent=bool(body.get('coherent')),
-                 draft=self.drafts.get(str(body.get('draft') or '').upper()))
+                 draft=self.drafts.get(str(body.get('draft') or '').upper()),
+                 match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -210,8 +211,9 @@ def dispatch(method, path, query_json='{}', body_json='{}'):
     global _STATIC
     if _STATIC is None:
         _STATIC = Manager(static=True)
-        from playmaker_engine import defence, computer
-        defence.DEFAULT_BUDGET_S = 1.2       # Python in the browser is several times slower: think less per move
-        computer.BUDGET['active'] = computer.BUDGET['browser']
+        from playmaker_engine import agent
+        # the decision engine's budgets are per decision on the device (ai_profiles.json time_budget_s); the search is
+        # anytime, so the browser simply searches less deep in the same time
+        agent.SCALE['value'] = agent.CONFIG['eval'].get('browser_budget_scale', 1.0)
     status, obj = handle(_STATIC, method, path, json.loads(query_json or '{}'), json.loads(body_json or '{}'))
     return json.dumps(dict(status=status, body=obj), default=str)

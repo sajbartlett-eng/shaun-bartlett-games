@@ -1,0 +1,44 @@
+{
+  "_about": "Step 3m B8: every tunable number of the decision engine and the trainer, by difficulty. Age stays in the ratings (step 3l), never here. Tune only these and the evaluation constants against the exam (B9); never ratings or rules.",
+  "profiles": {
+    "rookie": {
+      "depth": [1, 2], "beam": 8, "opponent_model": 0.2, "noise": 5.0,
+      "attention": 2, "reaction_delay": "previous_board", "goal_margin_m0": 8, "variety_margin": 0,
+      "time_budget_s": 0.3, "scout_human": false
+    },
+    "starter": {
+      "depth": [2, 3], "beam": 16, "opponent_model": 0.6, "noise": 2.5,
+      "attention": 4, "reaction_delay": "own_attention", "goal_margin_m0": 4, "variety_margin": 1,
+      "time_budget_s": 1.0, "scout_human": false
+    },
+    "allstar": {
+      "depth": [4, 6], "beam": 24, "opponent_model": 1.0, "noise": 0.5,
+      "attention": 5, "reaction_delay": "current", "goal_margin_m0": 1, "variety_margin": 2,
+      "time_budget_s": 2.5, "scout_human": true
+    }
+  },
+  "eval": {
+    "_about": "Evaluation constants (game units). responses_per_defender: k in B3. later_p: the delivery chance of a look that needs another offence turn (the defence may still answer it). continuation: the share of the best residual threat the leaf credits (the rest is the chance the possession doesn't reach it).",
+    "responses_per_defender": 3,
+    "later_p": 0.7,
+    "continuation": 0.85,
+    "franks_weights": {"man": 0.62, "ball": 0.11, "rim": 0.27},
+    "value_bounds": [-10, 60],
+    "browser_budget_scale": 1.0
+  },
+  "trainer": {
+    "_about": "Step 3m Part D. Bands in game units of value lost; calibrate from stored games.",
+    "inaccuracy": 1.0, "mistake": 3.0, "blunder": 6.0, "blunder_turnover_pp": 20,
+    "minimal_value": 1.0, "minimal_alternative": 3.0, "reveal": 3.0,
+    "summary_points": 3,
+    "fade": [[0, 1600, 1], [1600, 1800, 2], [1800, 9999, 3]],
+    "glicko": {"rating": 1500, "rd": 350, "vol": 0.06, "tau": 0.5},
+    "match_score_scale": 10.0,
+    "advance_rd": 80, "practice_below": 0.3, "practice_matches": 5, "practice_clear_accuracy": 80,
+    "anchors": {
+      "rookie/senior": 1350, "starter/senior": 1600, "allstar/senior": 1850,
+      "rookie/youth": 1330, "starter/youth": 1580, "allstar/youth": 1830,
+      "rookie/junior": 1300, "starter/junior": 1550, "allstar/junior": 1800
+    }
+  }
+}

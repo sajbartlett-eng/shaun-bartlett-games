@@ -591,8 +591,40 @@ def timer_stats(paths=None, out=print, min_games=20):
 # ---- "About the computer" (step 3e): plain facts from the log, after the game ------------------
 
 def computer_facts(records):
-    """Name each computer side's level, the habits drawn and the concepts switched off, and the
-    offence's plan and targets, from the log."""
+    """Step 3m: each computer side's level, its setup reasons, the goals it held and every goal switch with its reason,
+    the depth its search reached, and (All-Star) what it scouted from the human's stored games. Logs from steps 3e to
+    3k keep their old wording."""
+    setup = next((r for r in records if r['type'] == 'setup'), {})
+    comp = setup.get('computer') or {}
+    if comp and not any('engine' in (d or {}) for d in comp.values()):
+        return _computer_facts_3e(records)
+    out = []
+    for side in ('O', 'X'):
+        d = comp.get(side)
+        if not d:
+            continue
+        who = 'offence' if side == 'O' else 'defence'
+        out.append(f"The computer {who} played at {d['level'].replace('allstar', 'All-Star').title() if d['level'] != 'allstar' else 'All-Star'} level "
+                   f"(search to {d['profile']['depth'][1]} turns, {d['profile']['beam']} turns kept per turn, "
+                   f"{d['profile']['time_budget_s']} s a decision).")
+        if d.get('scouting'):
+            out.append(d['scouting'])
+        for r in records:
+            if r['type'] == 'computer' and r.get('side') == side and r.get('event') == 'setup' and r.get('text'):
+                pre = f"Possession {r['possession']}: " if r.get('possession') else ''
+                out.append(pre + 'Setup. ' + r['text'])
+        decs = [r for r in records if r['type'] == 'computer' and r.get('side') == side and r.get('event') == 'decision']
+        if decs:
+            deep = max(r.get('depth', 0) for r in decs)
+            out.append(f"It made {len(decs)} decisions; its search reached {deep} turn{'s' if deep != 1 else ''} ahead.")
+        for r in records:
+            if r['type'] == 'computer' and r.get('side') == side and r.get('event') == 'goal':
+                out.append(f"Clock {r.get('clock')}: {r['reason'][0].upper() + r['reason'][1:]}.")
+    return out
+
+
+def _computer_facts_3e(records):
+    """The step 3e to 3k wording, for logs from before step 3m."""
     from .computer import LEVELS
     setup = next((r for r in records if r['type'] == 'setup'), {})
     comp = setup.get('computer') or {}

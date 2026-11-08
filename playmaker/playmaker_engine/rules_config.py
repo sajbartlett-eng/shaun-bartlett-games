@@ -227,6 +227,10 @@ class Rules:
     #   scores the higher of the free throws and the shot's uncontested value. Fouling a good
     #   look can then never help the defence. False = free throws only.
     and_one: bool = True
+    # Step 3m Part A: the digital match format. A turnover (a successful Intercept, a successful Steal, including on
+    #   a declared shot, and shot-clock expiry) ends the possession and it scores 0. Steal fouls are unchanged.
+    #   False = the printed (tabletop) rules.
+    digital: bool = False
 
     @property
     def intercept_cost(self):

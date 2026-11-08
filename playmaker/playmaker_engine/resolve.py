@@ -106,7 +106,7 @@ def rules_ij(state):
 def _turnover(s):
     """A turnover that plays on (OQ-1), or ends the possession."""
     s = s.with_(tos=s.tos + 1)
-    if s.ctx.hold_for_one:
+    if s.ctx.hold_for_one or s.ctx.rules.digital:
         return _terminal(s, Result('turnover_end'), zeroed=True)
     if s.ctx.rules.turnover_play_on == 'end':
         return _terminal(s, Result('turnover_end'))
@@ -125,7 +125,7 @@ def pickoff(s):
     if cost == 'legacy':
         return _turnover(s)
     s = s.with_(tos=s.tos + COST_UNITS[cost])
-    if s.ctx.hold_for_one:
+    if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital format: every turnover ends the possession at 0
         return _terminal(s, Result('turnover_end'), zeroed=True)
     if cost == 'end_possession':
         return _terminal(s, Result('turnover_end'))
@@ -254,7 +254,7 @@ def end_phase(s):
     clock = s.clock - RC.PHASE_SECONDS
     if clock <= 0:
         s = s.with_(clock=0, tos=s.tos + 1, phase=s.phase)
-        if s.ctx.hold_for_one:
+        if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital: shot-clock expiry is a turnover, scores 0
             return _terminal(s, Result('turnover_end'), zeroed=True)
         return resolve_shot(s, forced=True)
     return new_phase(s, clock)
@@ -452,7 +452,7 @@ def apply(state, action, check=False):
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
         ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)
         won = s.with_(pending=None, approach=-1, tos=s.tos + 1)
-        lost_node = (_terminal(won, Result('turnover_end'), zeroed=True) if s.ctx.hold_for_one
+        lost_node = (_terminal(won, Result('turnover_end'), zeroed=True) if s.ctx.hold_for_one or rules.digital
                      else _terminal(won, Result('turnover_end')))   # the possession ends at -5
         return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[j].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
             (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
@@ -503,9 +503,9 @@ def apply(state, action, check=False):
             fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules)
             foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, card.shot(s.shot), 0, a.piece, 0,
                                               fpts, and1))
-            if legacy:
+            if legacy or rules.digital:
                 stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
-                                        zeroed=s.ctx.hold_for_one)
+                                        zeroed=s.ctx.hold_for_one or rules.digital)
             else:
                 # ruled: a stolen shot is cancelled (it doesn't use the phase's shot) and play goes on
                 cnt = list(s.cnt)

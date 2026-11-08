@@ -1,0 +1,808 @@
+"""Step 3m Part B1-B4: the decision engine's two measurements and its position value.
+
+Basketball is meant to emerge from value and search, not from scripted plays: nothing here names a play, a position or
+a distance. Every number is in the game's units (shot value = points x (rating - contest); x20 = expected points).
+
+  Reach (B1)     reach(s, side, i): where a player can stand after 0, 1 or 2 of his side's actions (Move, Quick Step,
+                 Sprint, within his remaining capacity). Exact (the rules' own movement and blocking: actions.
+                 movement_dests, solver.defender_reach) at the root; at the search's leaves a cached geometric reach
+                 that ignores blocking by other pieces (it never decides legality: the search only plays legal actions).
+                 contest_map(d): for every square c, the fewest defender actions to reach a legal contest of a shot
+                 from c, per contest kind (with or without the -3 for standing further from the rim; clean, or a foul
+                 roll when the arrow is off the shooter).
+  THREAT (B2)    the best delivered shot each attacker can get: max over squares c and delivery routes r (shoot now,
+                 drive and shoot, catch here, cut and catch) of P_deliver x the shot value against the best contest
+                 that arrives in time (the defence's actions before the release: the reaction to a declared shot, plus a
+                 full defence turn when the shot needs a pass or another turn). The arg-max square and route are kept.
+  COVERAGE (B3)  each defender's candidate responses (a square and an arrow within his next turn), the cover matrix
+                 R[j][resp][i] = THREAT(i) left if j makes that response, and the best cover: one response per
+                 defender, at most the defence's actions in its next turn moving, minimising the best uncovered
+                 threat. Overloads and dilemmas, and each attacker's gravity, come from the same matrix.
+  Value (B4)     V_leaf = max(ShotNow, sum_i w_i x residual_i, Vcoarse[ball zone, defended, phase, tokens]); w is the
+                 offence's best-response distribution over the residual threats (all weight on the best, ties split).
+"""
+import json
+import os
+from functools import lru_cache
+
+from . import board as B
+from . import geometry as G
+from . import rules_config as RC
+from .scoring import p_success, p_foul, foul_on_shot_points
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+INF = 99
+SHOOT = {'K', 'M', 'L', '3'}
+NEAR = [d for d in B.DIRS]
+
+
+# ---- reach (B1) ------------------------------------------------------------------------------------------------------
+
+@lru_cache(maxsize=None)
+def _geo_paths(kind, frm, qs, rules):
+    """Movement destinations from frm ignoring other pieces: {dest: run direction or None}."""
+    if kind == 'move':
+        raw = [(None, p) for p in B.move_paths(frm, rules)]
+    elif kind == 'qs':
+        raw = [(None, p) for p in B.qs_paths(frm, qs, rules)]
+    else:
+        raw = list(B.sprint_paths(frm, qs, rules))
+    out = {}
+    for dr, p in raw:
+        if all(B.on_board(q) for q in p) and p[-1] not in out:
+            out[p[-1]] = dr
+    return out
+
+
+@lru_cache(maxsize=200000)
+def geo_reach(frm, arrow, qs, can_move, qs_left, rules):
+    """(free, fixed) like solver.defender_reach, from geometry alone: free[sq] = actions (a Move was used: any arrow);
+    fixed[sq] = {arrow: actions}. Up to two actions."""
+    free, fixed = {}, {frm: {arrow: 0}}
+
+    def add_free(q, n):
+        if free.get(q, INF) > n:
+            free[q] = n
+
+    def add_fixed(q, a, n):
+        cur = fixed.setdefault(q, {})
+        if cur.get(a, INF) > n:
+            cur[a] = n
+    moves = _geo_paths('move', frm, qs, rules) if can_move else {}
+    qss = _geo_paths('qs', frm, qs, rules) if qs_left >= 1 and qs > 0 else {}
+    sprints = _geo_paths('sprint', frm, qs, rules) if can_move and qs_left >= 1 and qs > 0 else {}
+    if can_move:
+        add_free(frm, 1)
+        for q in moves:
+            add_free(q, 1)
+            if qs_left >= 1 and qs > 0:
+                for q2 in _geo_paths('qs', q, qs, rules):
+                    add_free(q2, 2)
+    for q in qss:
+        add_fixed(q, arrow, 1)
+        if can_move:
+            for q2 in _geo_paths('move', q, qs, rules):
+                add_free(q2, 2)
+    for q, dr in sprints.items():
+        add_fixed(q, dr, 1)
+    return free, fixed
+
+
+def _caps(s, side, i):
+    """(can_move, quick steps left) for a player now, by the rules' limits."""
+    rules = s.ctx.rules
+    if s.tokens(side) <= 0:
+        return False, 0
+    can_move = not s.moved(side, i) and not s.locked(side, i)
+    if side == 'O' and i == s.ctx.inbounder and s.inbound:
+        return False, 0
+    qs_left = RC.LIMITS[side]['qs'] - s.count(side, 'qs')
+    if rules.qs_once_per_player:
+        qs_left = 0 if s.quick_stepped(side, i) else min(qs_left, 1)
+    return can_move, qs_left
+
+
+def defender_map(s, d, exact=False):
+    """(free, fixed) reach for defender d with action counts (0 = where he stands, with his arrow)."""
+    if exact:
+        from .solver import defender_reach
+        free, fixed = defender_reach(s, d, 2)
+        return ({q: len(seq) for q, seq in free.items()},
+                {q: {a: len(seq) for a, seq in arrs.items()} for q, arrs in fixed.items()})
+    can_move, qs_left = _caps(s, 'X', d)
+    if s.tok_x <= 0:
+        return {}, {s.x[d]: {s.arrows[d]: 0}}
+    return geo_reach(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, s.ctx.rules)
+
+
+def attacker_reach(s, i, exact=False):
+    """{square: actions} for attacker i (0 = where he stands), up to two of the offence's actions. Exact: the rules'
+    movement (blocking, screens, the ball carrier's zones); else cached geometry."""
+    out = {s.o[i]: 0}
+    can_move, qs_left = _caps(s, 'O', i)
+    if not B.on_board(s.o[i]) or s.tok_o <= 0:
+        return out
+    card = s.ctx.off[i]
+    if exact:
+        from .actions import movement_dests, can_move_kind
+        rules = s.ctx.rules
+        for kind in ('move', 'qs', 'sprint'):
+            if can_move_kind(s, 'O', i, kind):
+                for q in movement_dests(s, 'O', i, kind, rules):
+                    out.setdefault(q, 1)
+        if s.tok_o >= 2:
+            for q in [q for q, n in out.items() if n == 1]:
+                for q2 in _geo_paths('qs' if can_move else 'move', q, card.qs, rules):
+                    if q2 not in out and q2 not in s.x and q2 not in s.o:
+                        out[q2] = 2
+        return out
+    free, fixed = geo_reach(s.o[i], 0, card.qs, can_move, qs_left, s.ctx.rules)
+    for q, n in free.items():
+        out.setdefault(q, n)
+    for q, arrs in fixed.items():
+        n = min(arrs.values())
+        if out.get(q, INF) > n:
+            out[q] = n
+    occ = set(s.o) | set(s.x)
+    return {q: n for q, n in out.items() if n == 0 or q not in occ}
+
+
+# Contest kinds, best first for the defence: (penalty, foul roll). Each map: square c -> [actions for each kind].
+KINDS = ((False, False), (False, True), (True, False), (True, True))
+
+
+@lru_cache(maxsize=400000)
+def _terms(rules, q, a, c):
+    e, foul, pen, _ = G.terms(rules, q, a, c)
+    return e, foul, pen
+
+
+def contest_map(rules, free, fixed):
+    """c -> [fewest actions for each contest kind (KINDS order)], from a defender's reach maps."""
+    out = {}
+    for q, n in free.items():                 # after a Move: any arrow; face the shooter
+        for dx, dy in NEAR:
+            c = (q[0] + dx, q[1] + dy)
+            if not B.on_board(c):
+                continue
+            e, foul, pen = _terms(rules, q, B.dir_between(q, c), c)
+            if not e:
+                continue
+            k = KINDS.index((pen, foul))
+            row = out.get(c)
+            if row is None:
+                row = out[c] = [INF] * 4
+            if row[k] > n:
+                row[k] = n
+    for q, arrs in fixed.items():
+        for a, n in arrs.items():
+            for dx, dy in NEAR:
+                c = (q[0] + dx, q[1] + dy)
+                if not B.on_board(c):
+                    continue
+                e, foul, pen = _terms(rules, q, a, c)
+                if not e:
+                    continue
+                k = KINDS.index((pen, foul))
+                row = out.get(c)
+                if row is None:
+                    row = out[c] = [INF] * 4
+                if row[k] > n:
+                    row[k] = n
+    return out
+
+
+@lru_cache(maxsize=200000)
+def _cmap_cached(rules, frm, arrow, qs, can_move, qs_left):
+    free, fixed = geo_reach(frm, arrow, qs, can_move, qs_left, rules)
+    return contest_map(rules, free, fixed)
+
+
+# ---- shot values -------------------------------------------------------------------------------------------------------
+
+def shot_value(card, dcards, t, c, contests, window, rules):
+    """Expected shot value of `card` shooting type t from c, the defence choosing its best contest among defenders
+    that can reach a contest within `window` actions. contests: {d: row}. Returns (value, best defender or -1)."""
+    pts = RC.ZONE_POINTS[B.zone(c)]
+    r = card.shot(t)
+    best, who = pts * r, -1
+    ft = None
+    for d, row in contests.items():
+        if row is None:
+            continue
+        for k, n in enumerate(row):
+            if n > window:
+                continue
+            pen, foul = KINDS[k]
+            con = dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
+            if rules.floor_contest_zero:
+                con = max(0, con)
+            v = pts * (r - con)
+            if rules.floor_declared_shot:
+                v = max(0, v)
+            if foul:
+                if ft is None:
+                    ft = foul_on_shot_points(card, t, pts, rules)[0]
+                pf = float(p_foul(dcards[d].r['foul_contest'], rules))
+                v = pf * ft + (1 - pf) * v
+            if v < best:
+                best, who = v, d
+    return best, who
+
+
+def best_shot(card, dcards, c, contests, window, rules):
+    """(value, type, contester) for the best shot type from c."""
+    z = B.zone(c)
+    if z not in SHOOT:
+        return 0.0, None, -1
+    best = (-1.0, None, -1)
+    for t in RC.ZONE_SHOTS[z]:
+        v, who = shot_value(card, dcards, t, c, contests, window, rules)
+        if v > best[0]:
+            best = (v, t, who)
+    return best
+
+
+# ---- the board read: THREAT and COVERAGE -----------------------------------------------------------------------------
+
+class Look:
+    """One way attacker i can shoot: from square c by route r, delivered with probability p. now=True: the shot is
+    released before the defence has a turn (shoot or drive this turn), so no response can cover it. vals[t][d]:
+    the expected shot value of type t if defender d contests (the best contest he reaches in time), open[t] if
+    nobody does."""
+    __slots__ = ('i', 'c', 'route', 'p', 'now', 'open', 'vals', 'types', 'minex', 'base')
+
+    def finish(self):
+        """Precompute, per shot type, the best contest without each defender (minex[j][t]) and the look's value."""
+        self.minex = {}
+        best = 0.0
+        for j in range(5):
+            row = {}
+            for t in self.types:
+                v = self.open[t]
+                for d, vals in self.vals.items():
+                    if d != j and t in vals and vals[t] < v:
+                        v = vals[t]
+                row[t] = v
+            self.minex[j] = row
+        for t in self.types:
+            v = self.open[t]
+            for vals in self.vals.values():
+                if t in vals and vals[t] < v:
+                    v = vals[t]
+            best = max(best, v)
+        self.base = self.p * best
+
+    def swapped(self, j, vals):
+        """The look's value with defender j's contest replaced by vals (None: he can't contest it)."""
+        mx = self.minex[j]
+        best = 0.0
+        for t in self.types:
+            v = mx[t]
+            if vals and t in vals and vals[t] < v:
+                v = vals[t]
+            if v > best:
+                best = v
+        return self.p * best
+
+    def __init__(self, i, c, route, p, now):
+        self.i, self.c, self.route, self.p, self.now = i, c, route, p, now
+
+
+class Read:
+    """One position's THREAT, COVERAGE, overloads and the leaf value, from the offence's point of view.
+    exact: the rules' own reach and pass outcomes (the root, the trainer); else cached geometry (the leaves).
+    attention: (attackers, defenders) to evaluate (None = all): Rookie and Starter read only those nearest the ball."""
+
+    def __init__(self, s, exact=False, attention=None, k=None, cfg=None, looks_per=None):
+        self.s = s
+        self.exact = exact
+        self.rules = s.ctx.rules
+        self.cfg = cfg or CONFIG['eval']
+        self.k = k if k is not None else self.cfg['responses_per_defender']
+        self.L = looks_per or self.cfg.get('looks_per_attacker', 6)
+        att = attention or (range(5), range(5))
+        self.att_o, self.att_x = list(att[0]), list(att[1])
+        self.dcards = s.ctx.dfn
+        self.o_to_act = s.side == 'O' and s.stage == 'play'
+        self.react = min(2, s.tok_x) if s.tok_x > 0 else 0
+        self._cm = {d: self._contest(d) for d in range(5)}
+        self.looks = {i: self._looks(i) for i in self.att_o}
+        self.threat = {i: self._best(self.looks[i]) for i in self.att_o}
+        self._cover = None
+
+    # -- contest maps
+    def _contest(self, d, at=None, arrow=None, used=None):
+        s = self.s
+        if not B.on_board(s.x[d]):
+            return {}
+        if at is None and self.exact:
+            free, fixed = defender_map(s, d, exact=True)
+            return contest_map(self.rules, free, fixed)
+        can_move, qs_left = _caps(s, 'X', d)
+        frm, a = s.x[d], s.arrows[d]
+        if at is not None:                    # after a response: what is left of his capacity for the reaction
+            frm, a = at, arrow
+            if used == 'move':
+                can_move = False
+            elif used in ('qs', 'sprint'):
+                qs_left = 0
+                can_move = can_move and used == 'qs'
+            if s.tok_x <= 2:
+                can_move, qs_left = False, 0
+        elif s.tok_x <= 0:
+            return contest_map(self.rules, {}, {frm: {a: 0}})
+        return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left)
+
+    def _vals(self, look, d, row):
+        """Expected value per shot type if defender d (contest row `row`) contests look within the reaction."""
+        out = {}
+        if row is None:
+            return None
+        card = self.s.ctx.off[look.i]
+        pts = RC.ZONE_POINTS[B.zone(look.c)]
+        rules = self.rules
+        for t in look.types:
+            r = card.shot(t)
+            best = None
+            for k, n in enumerate(row):
+                if n > self.react:
+                    continue
+                pen, foul = KINDS[k]
+                con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
+                if rules.floor_contest_zero:
+                    con = max(0, con)
+                v = pts * (r - con)
+                if rules.floor_declared_shot:
+                    v = max(0, v)
+                if foul:
+                    ft = foul_on_shot_points(card, t, pts, rules)[0]
+                    pf = float(p_foul(self.dcards[d].r['foul_contest'], rules))
+                    v = pf * ft + (1 - pf) * v
+                if best is None or v < best:
+                    best = v
+            if best is not None:
+                out[t] = best
+        return out or None
+
+    def _value(self, look, swap=None):
+        """The look's value, the defence contesting with its best defender (swap: {d: replacement vals})."""
+        best = 0.0
+        for t in look.types:
+            v = look.open[t]
+            for d, vals in look.vals.items():
+                if swap and d in swap:
+                    vals = swap[d]
+                if vals and t in vals and vals[t] < v:
+                    v = vals[t]
+            if swap:
+                for d, vals in swap.items():
+                    if d not in look.vals and vals and t in vals and vals[t] < v:
+                        v = vals[t]
+            if v > best:
+                best = v
+        return look.p * best
+
+    # -- the looks (B2)
+    def pass_p(self, i, c):
+        s = self.s
+        if i == s.ball:
+            return 1.0
+        if s.count('O', 'pass') >= RC.LIMITS['O']['pass']:
+            return 0.0
+        if self.exact and c == s.o[i]:
+            return _pass_prob(s, i)
+        return _lane_p(s, i, c)
+
+    def _looks(self, i):
+        s, rules = self.s, self.rules
+        if not B.on_board(s.o[i]):
+            return []
+        card = s.ctx.off[i]
+        left_now = (2 - s.turn_n) if self.o_to_act else 2
+        shot_ok = s.count('O', 'shot') < RC.LIMITS['O']['shot']
+        out = []
+        if i == s.ball:
+            reach = {s.o[i]: 0}
+            from .actions import movement_dests, can_move_kind
+            for kind in ('move', 'qs', 'sprint'):
+                if can_move_kind(s, 'O', i, kind):
+                    for q in movement_dests(s, 'O', i, kind, rules):
+                        reach.setdefault(q, 1)
+        else:
+            reach = {q: n for q, n in attacker_reach(s, i).items() if n <= 1}
+        for c, n in reach.items():
+            z = B.zone(c)
+            if z not in SHOOT:
+                continue
+            if i == s.ball:
+                if n == 0 and shot_ok and (left_now >= 1):
+                    lk = Look(i, c, 'shoot', 1.0, self.o_to_act)
+                elif n == 1 and shot_ok and left_now >= 2 and s.tok_o >= 2:
+                    lk = Look(i, c, 'drive', 1.0, self.o_to_act)
+                else:
+                    lk = Look(i, c, 'later', self.cfg['later_p'], False)
+            else:
+                if n == 1 and not (left_now >= 2 and s.tok_o >= 2):
+                    continue
+                p = self.pass_p(i, c)
+                if p <= 0:
+                    continue
+                lk = Look(i, c, 'catch' if n == 0 else 'cut', p, False)
+            lk.types = RC.ZONE_SHOTS[z]
+            pts = RC.ZONE_POINTS[z]
+            lk.open = {t: pts * card.shot(t) for t in lk.types}
+            lk.vals = {}
+            for d in self.att_x:
+                v = self._vals(lk, d, self._cm[d].get(c))
+                if v:
+                    lk.vals[d] = v
+            lk.finish()
+            out.append((lk.base, lk))
+        out.sort(key=lambda r: -r[0])
+        return [lk for _, lk in out[:self.L]]
+
+    def _best(self, looks, swap=None, now_only=False):
+        best, arg = 0.0, None
+        for lk in looks:
+            if now_only and not lk.now:
+                continue
+            v = lk.base if (not swap or lk.now) else self._value(lk, swap)
+            if v > best + 1e-9:
+                best, arg = v, lk
+        if arg is None:
+            return dict(value=0.0, sq=None, route='none', p=0.0, now=False)
+        return dict(value=best, sq=arg.c, route=arg.route, p=arg.p, now=arg.now, type=max(arg.types, key=lambda t: arg.open[t]))
+
+    # -- COVERAGE (B3)
+    def responses(self, j):
+        """Defender j's top-k responses in his next turn (a square and an arrow, by Move or Quick Step), each with
+        the threat left on every attacker; standing still first."""
+        s = self.s
+        base = {i: self.threat[i]['value'] for i in self.att_o}
+        still = ((s.x[j], s.arrows[j], None), base)
+        if self.k <= 0 or s.tok_x <= 0 or not B.on_board(s.x[j]) or not any(not lk.now for i in self.att_o for lk in self.looks[i]):
+            return [still]
+        can_move, qs_left = _caps(s, 'X', j)
+        free, fixed = geo_reach(s.x[j], s.arrows[j], s.ctx.dfn[j].qs, can_move, qs_left, self.rules)
+        occ = set(s.o) | set(s.x)
+        spots = [lk.c for i in self.att_o for lk in self.looks[i][:3] if not lk.now]
+        cands = []
+        for q, n in free.items():
+            if n > 1 or (q in occ and q != s.x[j]):
+                continue
+            near = [c for c in spots if B.cheb(q, c) <= 2 and c != q]
+            if not near:
+                continue
+            c0 = min(near, key=lambda c: (B.cheb(q, c), c))      # face the nearest look: the arrow that answers it
+            cands.append((q, B.nearest_dir(q, c0), 'move'))
+        for q, arrs in fixed.items():
+            if q in occ and q != s.x[j]:
+                continue
+            for a, n in arrs.items():
+                if n == 1 and any(B.cheb(q, c) <= 2 for c in spots):
+                    cands.append((q, a, 'qs'))
+        out = []
+        near = {}
+        for i in self.att_o:
+            sq = set()
+            for lk in self.looks[i]:
+                if not lk.now:
+                    cx, cy = lk.c
+                    sq.update((x, y) for x in range(cx - 3, cx + 4) for y in range(cy - 3, cy + 4))
+            near[i] = sq
+        for q, a, used in cands:
+            cm = self._contest(j, q, a, used)
+            left = dict(base)
+            gain = 0.0
+            for i in self.att_o:
+                if q not in near[i]:
+                    continue                     # out of his reach after this response: unchanged
+                best = 0.0
+                for lk in self.looks[i]:
+                    if lk.now:
+                        v = lk.base
+                    else:
+                        row = cm.get(lk.c)
+                        v = lk.swapped(j, self._vals(lk, j, row) if row is not None else None)
+                    if v > best:
+                        best = v
+                left[i] = best
+                gain += max(0.0, base[i] - best)
+            if gain > 1e-9:
+                out.append((gain, (q, a, used), left))
+        out.sort(key=lambda r: -r[0])
+        return [still] + [(r[1], r[2]) for r in out[:self.k]]
+
+    def cover(self):
+        """The best cover: one response per defender, at most the defence's actions in its next turn moving
+        (a Move or Quick Step each), minimising the best uncovered threat (residual(i) = the least threat any chosen
+        response leaves on i). Returns dict(value, choice {j: response}, residual {i: value}, R)."""
+        if self._cover is not None:
+            return self._cover
+        s = self.s
+        movers = min(2, s.tok_x) if not self.o_to_act or True else 0
+        R = {j: self.responses(j) for j in self.att_x}
+        threats = list(self.att_o)
+        base = {i: self.threat[i]['value'] for i in threats}
+        best = [max(base.values(), default=0.0), {}, dict(base)]
+        opts = [(j, idx) for j in self.att_x for idx in range(1, len(R[j]))]
+
+        def score(chosen):
+            res = {}
+            for i in threats:
+                v = base[i]
+                for j, idx in chosen:
+                    lv = R[j][idx][1][i]
+                    if lv < v:
+                        v = lv
+                res[i] = v
+            return max(res.values(), default=0.0), res
+        for a in range(len(opts)):
+            ch = [opts[a]]
+            v, res = score(ch)
+            if v < best[0] - 1e-9:
+                best = [v, {j: R[j][idx][0] for j, idx in ch}, res]
+            if movers >= 2:
+                for b in range(a + 1, len(opts)):
+                    if opts[b][0] == opts[a][0]:
+                        continue
+                    ch2 = ch + [opts[b]]
+                    v, res = score(ch2)
+                    if v < best[0] - 1e-9:
+                        best = [v, {j: R[j][idx][0] for j, idx in ch2}, res]
+        self._cover = dict(value=best[0], choice=best[1], residual=best[2], R=R)
+        return self._cover
+
+    def overloads(self):
+        """Overloaded defenders: Xj is the only defender whose responses reduce each of two threats, and none of his
+        responses reduces both. Dilemma(j; a, b) = min(residual without j (a), (b)): the threat he must concede."""
+        cv = self.cover()
+        R = cv['R']
+        out = []
+        base = {i: self.threat[i]['value'] for i in self.att_o}
+        threats = [i for i in self.att_o if base[i] > 0]
+        reducers = {i: [j for j in self.att_x if any(left[i] < base[i] - 1e-9 for _, left in R[j][1:])] for i in threats}
+        for j in self.att_x:
+            only = [i for i in threats if reducers[i] == [j]]
+            for x in range(len(only)):
+                for y in range(x + 1, len(only)):
+                    a, b = only[x], only[y]
+                    both = any(left[a] < base[a] - 1e-9 and left[b] < base[b] - 1e-9 for _, left in R[j][1:])
+                    if not both:
+                        out.append(dict(defender=j, a=a, b=b, value=min(base[a], base[b])))
+        out.sort(key=lambda o: -o['value'])
+        return out
+
+    def gravity(self, i):
+        """Attacker i's gravity: the change in the best uncovered threat among the other attackers when i is
+        replaced by an inert body on his square (his looks removed; the cover re-solved)."""
+        cv = self.cover()
+        others = [k for k in self.att_o if k != i]
+        with_i = max((cv['residual'][k] for k in others), default=0.0)
+        inert = Read.__new__(Read)
+        inert.__dict__.update(self.__dict__)
+        inert.att_o = others
+        inert.looks = {k: self.looks[k] for k in others}
+        inert.threat = {k: self.threat[k] for k in others}
+        inert._cover = None
+        without = inert.cover()['value']
+        return without - with_i
+
+    # -- value (B4)
+    def shot_now(self):
+        """The carrier's shot declared now, against the reaction, or None if he can't shoot now."""
+        if not self.o_to_act:
+            return None
+        for lk in self.looks.get(self.s.ball, []):
+            if lk.route == 'shoot':
+                return lk.base
+        return None
+
+    def leaf(self):
+        """V_leaf from the offence's point of view (expected possession value, game units): the best of the shot
+        now, the best look the defence can't cover in its next turn (released this turn: uncoverable), and the
+        coarse table."""
+        s = self.s
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        if s.pending:
+            # a pass in the air: the catch (the receiver with the ball, the defence still to answer) weighted by the
+            # chance it arrives, and the turnover
+            passer, recv = s.pending
+            p = _lane_p(s.with_(ball=passer), recv, s.o[recv])
+            caught = Read(s.with_(ball=recv, pending=None), attention=None if len(self.att_o) == 5 else
+                          (self.att_o, self.att_x), k=self.k, cfg=self.cfg, looks_per=self.L).leaf()
+            return p * caught + (1 - p) * turnover_value(s)
+        sn = self.shot_now()
+        now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
+        cv = self.cover()
+        res = cv['residual']
+        top = max(res.values(), default=0.0)
+        ties = [i for i in res if res[i] >= top - 1e-9]
+        cont = (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
+        return banked + max(sn or 0.0, now, cont, vcoarse(s))
+
+
+@lru_cache(maxsize=100000)
+def lane_squares(a, c, tol):
+    """Squares strictly between a and c whose centre lies within tol of the pass segment (board.on_segment, in
+    floats)."""
+    out = []
+    vx, vy = c[0] - a[0], c[1] - a[1]
+    L2 = vx * vx + vy * vy
+    if L2 == 0:
+        return frozenset()
+    for x in range(min(a[0], c[0]), max(a[0], c[0]) + 1):
+        for y in range(min(a[1], c[1]), max(a[1], c[1]) + 1):
+            p = (x, y)
+            if p == a or p == c:
+                continue
+            wx, wy = x - a[0], y - a[1]
+            dot = wx * vx + wy * vy
+            if dot <= 0 or dot >= L2:
+                continue
+            cross = vx * wy - vy * wx
+            if (cross == 0) if tol == 0 else (cross * cross < tol * tol * L2):
+                out.append(p)
+    return frozenset(out)
+
+
+@lru_cache(maxsize=200000)
+def _one_action(frm, arrow, qs, can_move, qs_left, rules):
+    """The squares a defender stands on now or after one Move or Quick Step (geometry)."""
+    free, fixed = geo_reach(frm, arrow, qs, can_move, qs_left, rules)
+    return frozenset([frm] + [q for q, n in free.items() if n <= 1] + [q for q, arr in fixed.items() if min(arr.values()) <= 1])
+
+
+_LP = {}
+
+
+def turnover_value(s):
+    """What a pick-off leaves the offence: 0 in the digital format or the final phase; else -5 and the clock cost,
+    then the coarse value of playing on."""
+    if s.ctx.rules.digital or s.ctx.hold_for_one or s.clock <= RC.PHASE_SECONDS:
+        return 0.0
+    banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * (s.tos + 1)
+    return banked + vcoarse(s.with_(clock=s.clock - RC.PHASE_SECONDS))
+
+
+def _lane_p(s, i, c):
+    """P(a pass to attacker i at c arrives), from geometry: 0 if a defender next to c stands on the lane (receiver
+    denial); else 1 - the best Intercept chance of a defender who stands on the lane or can step onto it with a
+    Move or Quick Step."""
+    key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6])
+    hit = _LP.get(key)
+    if hit is None:
+        if len(_LP) > 300000:
+            _LP.clear()
+        hit = _LP[key] = _lane_p_calc(s, i, c)
+    return hit
+
+
+def _lane_p_calc(s, i, c):
+    rules = s.ctx.rules
+    a = s.o[s.ball]
+    if not (B.on_board(a) and B.on_board(c)):
+        return 0.0
+    if rules.receiver_denial:
+        den = lane_squares(a, c, float(rules.receiver_denial_tol))
+        if any(xp in den and B.adjacent(xp, c) for xp in s.x):
+            return 0.0
+    lane = lane_squares(a, c, 0.5)
+    if not lane:
+        return 1.0
+    passer = s.ctx.off[s.ball].r['pass']
+    worst = 0.0
+    for d, xp in enumerate(s.x):
+        can_move, qs_left = _caps(s, 'X', d)
+        if lane.isdisjoint(_one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)):
+            continue
+        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        if pi > worst:
+            worst = pi
+    return 1.0 - worst
+
+
+def _pass_prob(s, i):
+    """P(a pass from the carrier to attacker i now arrives): 0 if not legal; else 1 - the best Intercept chance
+    over the defence's legal intercepts once it is in the air (the rules' own options)."""
+    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens)
+    if key in _PP:
+        return _PP[key]
+    from .actions import Action, legal_actions
+    from .resolve import apply, ChanceNode
+    st = s.with_(side='O', stage='play', turn_n=0, tok_o=max(1, s.tok_o), pending=None)
+    a = Action('pass', 'O', s.ball, target=i)
+    try:
+        if a not in legal_actions(st):
+            p = 0.0
+        else:
+            nxt = apply(st, a)
+            worst = 0.0
+            if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and nxt.pending:
+                for b in legal_actions(nxt):
+                    if b.kind == 'intercept':
+                        worst = max(worst, 1 - float(p_success(s.ctx.off[s.ball].r['pass'] - s.ctx.dfn[b.piece].r['intercept'],
+                                                               s.ctx.rules)))
+            p = 1.0 - worst
+    except Exception:
+        p = 0.0
+    if len(_PP) > 200000:
+        _PP.clear()
+    _PP[key] = p
+    return p
+
+
+_PP = {}
+
+
+# ---- the coarse value table (B4) -------------------------------------------------------------------------------------
+
+def coarse_key(s):
+    """(ball zone, defended?, phase, offence tokens bucket): the coarsened state."""
+    bp = s.o[s.ball]
+    z = B.zone(bp) if B.on_board(bp) else '.'
+    defended = any(B.adjacent(xp, bp) for xp in s.x)
+    tok = 0 if s.tok_o <= 0 else 1 if s.tok_o <= 2 else 2 if s.tok_o <= 4 else 3
+    phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
+    return f'{z}|{int(defended)}|{phase}|{tok}'
+
+
+_TABLES = {}
+
+
+def vcoarse(s, age='senior', standard='pro'):
+    """The coarse value of a state, from vcoarse.json (solved by backward induction over the phases from stored
+    possessions: engine self-play to seed, refined from stored games), by age and standard."""
+    lv = getattr(s.ctx, 'levels_key', None) or (age, standard)
+    tab = _TABLES.get(lv)
+    if tab is None:
+        tab = _load_table(lv)
+    return tab.get(coarse_key(s), tab.get('_phase' + coarse_key(s).split('|')[2], 0.0))
+
+
+def _load_table(lv):
+    path = os.path.join(HERE, 'data', 'vcoarse.json')
+    tab = {}
+    try:
+        allt = json.load(open(path))
+        tab = allt.get(f'{lv[0]}/{lv[1]}') or allt.get('senior/pro') or {}
+    except (OSError, ValueError):
+        tab = {}
+    _TABLES[lv] = tab
+    return tab
+
+
+def solve_coarse(records):
+    """Backward induction over the 6 phases. records: possessions as [(coarse key at each turn group start), ...,
+    final score]. V(k at phase p) = mean over transitions from k of V(next key) (or the final score at the end),
+    solved from the last phase back, shrunk toward the phase mean for rare keys."""
+    by_phase = {p: {} for p in range(1, 7)}
+    for keys, final in records:
+        for n, k in enumerate(keys):
+            nxt = keys[n + 1] if n + 1 < len(keys) else None
+            p = int(k.split('|')[2])
+            by_phase[p].setdefault(k, []).append((nxt, final))
+    V = {}
+    prior = 8
+    for p in range(6, 0, -1):
+        rows = by_phase[p]
+        tot = []
+        for k, trs in rows.items():
+            vals = [V.get(nk, final) if nk else final for nk, final in trs]
+            tot += vals
+        pm = sum(tot) / len(tot) if tot else 0.0
+        V[f'_phase{p}'] = round(pm, 2)
+        for k, trs in rows.items():
+            vals = [V.get(nk, final) if nk else final for nk, final in trs]
+            V[k] = round((sum(vals) + prior * pm) / (len(vals) + prior), 2)
+    return V
+
+
+# ---- config ----------------------------------------------------------------------------------------------------------
+
+def load_config():
+    return json.load(open(os.path.join(HERE, 'data', 'ai_profiles.json')))
+
+
+CONFIG = load_config()

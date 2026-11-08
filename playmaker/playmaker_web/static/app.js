@@ -152,7 +152,7 @@ const card = k => OPTS.cards.find(c => c.key === k);
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 function rosterMode() { return $('roster').value; }
 function teamName(i) { return i ? 'Away' : 'Home'; }
-function stdOf(i) { return i && $('handicap').checked && rosterMode() === 'build' ? $('standardB').value : $('standard').value; }
+function stdOf(i) { return i && $('handicap').checked && ['build', 'draft'].includes(rosterMode()) ? $('standardB').value : $('standard').value; }
 function initLevels() {
   const L = OPTS.levels;
   const words = (list, id) => (list.find(x => x.id === id) || {}).words || '';
@@ -163,9 +163,10 @@ function initLevels() {
     const m = rosterMode();
     $('rosterNote').textContent = L.rosters[m] || '';
     $('prescribedRow').classList.toggle('hidden', m !== 'prescribed' && !(m === 'random' && $('randomFor').value !== 'both'));
-    $('buildRow').classList.toggle('hidden', m !== 'build' && m !== 'free');
-    $('handicapRow').classList.toggle('hidden', m !== 'build');
-    $('standardBRow').classList.toggle('hidden', !(m === 'build' && $('handicap').checked));
+    $('buildRow').classList.toggle('hidden', m !== 'build' && m !== 'free' && m !== 'draft');
+    $('handicapRow').classList.toggle('hidden', m !== 'build' && m !== 'draft');
+    $('standardBRow').classList.toggle('hidden', !((m === 'build' || m === 'draft') && $('handicap').checked));
+    $('buildRow').querySelector('.builders').classList.toggle('hidden', m === 'draft');
     $('randomRow').classList.toggle('hidden', m !== 'random');
     $('draftRow').classList.toggle('hidden', m !== 'draft');
     if (m === 'build' || m === 'free') { builder(0); builder(1); }

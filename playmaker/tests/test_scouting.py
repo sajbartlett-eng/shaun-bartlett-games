@@ -411,12 +411,16 @@ def test_custom_team_game_logs_experimental_and_replays(web):
     assert [t['name'] for t in rep['teams']] == ['Lab Five', 'Lab Two']
     log = get(web, f'/api/log?code={g["code"]}')
     setup = log[0]
-    assert setup['custom'] == {'Lab Five': custom[0]['cards'], 'Lab Two': custom[1]['cards']}
+    # step 3m Part 0: the old route goes through the slot-based builder (card n in slot n); an illegal shape plays
+    # with the rules off and stays labelled experimental
+    assert setup['levels']['roster'] == 'free'
+    assert {n: [k for k, _, _ in spec] for n, spec in setup['levels']['lineups'].items()} == \
+        {'Lab Five': custom[0]['cards'], 'Lab Two': custom[1]['cards']}
     assert setup['experimental'] == ['Lab Five']
     r = post(web, '/api/review', dict(code=g['code'], token=g['token']))
     assert r['in_play'] and r['engine']['O']['hunt']
-    bad = dict(slot=0, name='Bad', cards=['shsB', 'apgA', 'scsfB', 'pspfB', 'rpcA'])               # positions out of order
-    assert post(web, '/api/new', dict(mode='hotseat', teams=['a', 'b'], custom=[bad]), ok=False)['status'] == 400
+    bad = dict(slot=0, name='Bad', cards=['shsB', 'apgA', 'scsfB', 'pspfB', 'nonsense'])          # not a card
+    assert post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], custom=[bad]), ok=False)['status'] == 400
 
 
 def test_the_report_in_play_counts_match_the_log(web):

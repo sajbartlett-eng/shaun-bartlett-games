@@ -6,12 +6,13 @@ import random
 import secrets
 import threading
 import time
+from dataclasses import replace
 from fractions import Fraction
 
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions, intercept_status
-from playmaker_engine.cards import TEAMS, FIRST_GAME, TEAM_TAGLINES
+from playmaker_engine.cards import TEAMS, FIRST_GAME, TEAM_TAGLINES, CARDS as CARDS_ALL
 
 
 def TEAM_TAGLINES_OR(name):
@@ -212,7 +213,7 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None):
+                 draft=None, match_format='tabletop', per_side=8):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -221,12 +222,25 @@ class Game:
         self.level = level
         self.mode = mode
         self.scenario = scenario
+        # step 3m Part A: 'digital' = N possessions per side, alternating, turnovers end the possession at 0;
+        # 'tabletop' = the printed rules (one possession each in a full game)
+        if match_format not in ('tabletop', 'digital'):
+            raise GameError("match format: 'digital' or 'tabletop'")
+        self.match_format = 'tabletop' if scenario else match_format
+        if self.match_format == 'digital':
+            if int(per_side) not in (4, 8, 12):
+                raise GameError('a digital match is 4, 8 or 12 possessions per side')
+            full = True
+            rules = replace(rules or RC.DEFAULT_RULES, digital=True)
+        self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
         self.full = full and scenario is None
+        self.n_poss = 2 * self.per_side if self.full else 1
+        self.last_setup = {}             # (player, side) -> the human's last setup, for "repeat my last setup"
         self.teams = list(teams or FIRST_GAME)
         self.custom, self.experimental = {}, []
         self.hidden_teams = {}
         if custom and not scenario:
-            self._register_custom(custom)
+            roster, lineups = self._redirect_custom(custom)
         self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
         self.levels = self._build_levels(age, standard, roster, lineups, deal, random_for, coherent, draft, ai)
         for t in self.teams:
@@ -268,6 +282,7 @@ class Game:
         self.reflection = None
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
+                  match_format=self.match_format, per_side=self.per_side,
                   ai=self.ai, ai_players=self.ai_players or None, possession=self.possession, place=self.place_on, level=self.level,
                   custom=self.custom or None, experimental=self.experimental or None, levels=self.levels,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
@@ -282,7 +297,7 @@ class Game:
 
     def _set_ai(self):
         """self.ai and self.policies for this possession: the fixed sides plus the players' sides now."""
-        att = 'A' if self.possession == 1 else 'B'
+        att = 'A' if self.possession % 2 == 1 else 'B'
         by_player = {('O' if p == att else 'X'): v for p, v in self.ai_players.items()}
         self.ai = dict(self.ai_sides, **by_player)
         self.policies = {side: self._policy(side, kind) for side, kind in self.ai.items()}
@@ -293,29 +308,33 @@ class Game:
         kind = {'greedy': 'starter', 'reader': 'starter'}.get(kind, kind)
         if kind == 'baseline':
             return GreedyPolicy()
-        from playmaker_engine.computer import Computer, LEVEL_NAMES
-        if kind not in LEVEL_NAMES:
+        from playmaker_engine.agent import Agent, LEVELS
+        if kind not in LEVELS:
             raise GameError('computer level: rookie, starter or allstar')
-        return Computer(side, kind, seed=self.seed)
+        return Agent(side, kind, seed=self.seed, scouting=getattr(self, 'scouting', None))
 
     # ---- setup ----
-    def _register_custom(self, custom):
-        """custom: [{slot: 0 or 1, name, cards: [5 keys, PG..C]}]. One card per position; a tier shape
-        outside BBBBB / ABBBC / AABCC is allowed but labelled experimental."""
-        from playmaker_engine.cards import register_team, CARDS
-        from playmaker_engine.scouting import position, POSITIONS
+    def _redirect_custom(self, custom):
+        """The old custom-team route (step 3d: [{slot: 0 or 1, name, cards: [5 keys]}]) is retired (step 3m Part 0):
+        it goes through the slot-based builder, card n in slot n. A legal pro roster plays with the rules on; any
+        other plays with the rules off and is labelled experimental, as before."""
+        from playmaker_engine import rosters as RO
+        lineups = [None, None]
         for c in custom:
             slot = int(c.get('slot', 0))
             keys = list(c.get('cards') or [])
-            if slot not in (0, 1) or len(keys) != 5 or any(k not in CARDS for k in keys):
-                raise GameError('a custom team is five cards, one per position')
-            if [position(CARDS[k]) for k in keys] != POSITIONS:
-                raise GameError('a custom team needs one card per position, in order PG, SG, SF, PF, C')
-            name = register_team(c.get('name') or 'Custom', keys)
-            self.teams[slot] = name
-            self.custom[name] = keys
-            if ''.join(sorted(CARDS[k].tier for k in keys)) not in ('BBBBB', 'ABBBC', 'AABCC'):
-                self.experimental.append(name)
+            if slot not in (0, 1) or len(keys) != 5 or any(k not in CARDS_ALL for k in keys):
+                raise GameError('a custom team is five cards')
+            lineups[slot] = dict(name=c.get('name') or 'Custom', cards=[(k, n + 1) for n, k in enumerate(keys)])
+        for i in range(2):
+            if lineups[i] is None:
+                t = self.teams[i]
+                if t not in TEAMS:
+                    raise GameError(f'no team {t}')
+                lineups[i] = dict(name=t, cards=[(c.key, n + 1) for n, c in enumerate(TEAMS[t])])
+        legal = [RO.legal(lu['cards'], 'pro') for lu in lineups]
+        self.experimental = [lu['name'] for lu, ok in zip(lineups, legal) if not ok]
+        return ('build' if all(legal) else 'free'), lineups
 
     def _build_levels(self, age, standard, roster, lineups, deal, random_for, coherent, draft, ai):
         """Step 3l: the two dials (Age, Standard) and the roster mode. Sets self.teams to the teams as they play
@@ -337,7 +356,7 @@ class Game:
         if any(v not in LV.STANDARD_ORDER for v in stds.values()):
             raise GameError('standard: pro, semi_pro or amateur')
         handicap = stds['A'] != stds['B']
-        if handicap and roster != 'build':
+        if handicap and roster not in ('build', 'draft'):
             raise GameError('a different standard for each side is the handicap option, for building with the rules on')
         if self.scenario:
             if age != 'senior' or roster != 'prescribed':
@@ -386,9 +405,17 @@ class Game:
             out.update(deal=d['code'], standard=d['standard'], coherent=d['coherent'], random=random_for)
             mine = 'AB'.index(human)
             dealt = {0, 1} if random_for == 'both' else ({mine} if random_for == 'yours' else {1 - mine})
+            kept = set()
+            for i in range(2):
+                if i not in dealt and self.teams[i] in TEAMS:
+                    kept = {c.key for c in TEAMS[self.teams[i]]}
             for i in range(2):
                 if i in dealt:
                     entries[i] = list(d['rosters'][i])
+                    if kept & {k for k, _ in entries[i]}:
+                        # one card pool: redeal this side from the code without the prescribed team's cards
+                        entries[i] = RO.deal_one(d['standard'], random.Random(f"{d['code']}|{sorted(kept)}"),
+                                                 d['coherent'], exclude=kept, age=d['age'])
                     names[i] = ('Home', 'Away')[i] + ' (dealt)'
                     if d['tags']:
                         given_tags[i] = list(d['tags'][i])
@@ -473,7 +500,7 @@ class Game:
     def _possession_state(self, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
-        off, dfn = (self.teams if self.possession == 1 else self.teams[::-1])
+        off, dfn = (self.teams if self.possession % 2 == 1 else self.teams[::-1])
         return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules)
 
     # ---- the pre-game scouting call (hunt one matchup, protect one weakness) ----
@@ -817,36 +844,44 @@ class Game:
         self._timer_decision()
 
     def _auto_place(self):
-        """The computer places for its side: the preview squares on offence; on defence man-to-man squares,
-        with arrows chosen by the board-reading defence (or on each man, for the baseline)."""
-        from playmaker_engine import setup as SU
+        """The computer places its side (step 3m B6): the offence by the placement that maximises the position's value
+        against the defence's best reply (it never sees the real defence); the defence by best cover. The baseline
+        (an old policy without a setup) uses the preview squares and man-to-man."""
+        from playmaker_engine import agent as AG
         while self.placing and self.placing in self.ai:
+            comp = self.policies.get(self.placing)
+            level = getattr(comp, 'level', None)
+            seed = (self.seed or 0) * 31 + self.possession
+            budget = self._setup_budget(level)
             if self.placing == 'O':
-                comp = self.policies.get('O')
-                if getattr(comp, 'name', '') == 'computer':
-                    # step 3k: the offence's setup from the cards alone (it places first and never sees the defence)
-                    make = lambda o_sq, ball, xq, ar: self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xq], ar, ball)
-                    r = SU.offence_setup(comp, make, seed=(self.seed or 0) * 31 + self.possession)
-                    self._log('computer', side='O', event='setup', possession=self.possession, squares=[B.sq(q) for q in r['squares']],
-                              ball=r['ball'], shape=r['shape'], goal=(r['goal'] or {}).get('kind'), seconds=r['seconds'],
-                              candidates=r['candidates'], within=r['within'], text=r['reasons'])
+                if level:
+                    r = AG.propose_offence(self._possession_state, seed, self.levels_key(), budget=budget, level=level)
+                    self._log('computer', side='O', event='setup', possession=self.possession,
+                              squares=[B.sq(q) for q in r['squares']], ball=r['ball'], value=r['value'],
+                              candidates=r['candidates'], within=r['within'], text=r['text'])
                     self._place_side('O', r['squares'], r['ball'], None, actor='ai')
                 else:
                     self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
             else:
-                xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
-                comp = self.policies.get('X')
-                if getattr(comp, 'name', '') == 'computer':
-                    # step 3k: matchups (all 120), a job for each defender, the coherence checks
-                    o_sq, ball = self.placed['O']
-                    build = lambda xq, ar: self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in xq], ar, ball)
-                    r = SU.defence_setup(comp, o_sq, ball, build)
-                    xs, arrows, perm = r['xs'], r['arrows'], r['perm']
-                    comp.setup_perm = tuple(perm)
+                o_sq, ball = self.placed['O']
+                if level:
+                    r = AG.propose_defence(self._possession_state, o_sq, ball, seed + 7, self.levels_key(), budget=budget,
+                                           level=level)
+                    comp.setup_perm = tuple(r['perm'])
                     self._log('computer', side='X', event='setup', possession=self.possession,
-                              matchup=[f'X{j + 1} on O{perm[j] + 1}' for j in range(5)], jobs={f'X{j + 1}': r['jobs'][j] for j in range(5)},
-                              seconds=r['seconds'], text=r['reasons'] + r['notes'])
-                self._place_side('X', xs, None, arrows, actor='ai')
+                              matchup=[f'X{j + 1} on O{r["perm"][j] + 1}' for j in range(5)], value=r['value'], text=r['text'])
+                    self._place_side('X', r['squares'], None, r['arrows'], actor='ai')
+                else:
+                    xs, arrows = man_to_man(o_sq, ball)
+                    self._place_side('X', xs, None, arrows, actor='ai')
+
+    def _setup_budget(self, level):
+        """Setup thinking time: instant-feeling in the digital format (a fraction of the level's decision budget)."""
+        from playmaker_engine import agent as AG
+        if not level:
+            return 0.0
+        b = AG.profile(level)['time_budget_s'] * AG.SCALE['value']
+        return b * (0.4 if self.match_format == 'digital' else 1.0)
 
     def place(self, token, body):
         with self.lock:
@@ -857,6 +892,27 @@ class Game:
             seat = self.seat_of(token)
             if seat is None:
                 raise GameError('unknown player token')
+            if body.get('repeat'):
+                # step 3m Part A: repeat this player's last setup on this side (legality unchanged)
+                if seat != 'both' and seat != self.placing:
+                    raise GameError(f'the {"offence" if self.placing == "O" else "defence"} is placing')
+                last = self.last_setup.get((self._player_of(self.placing), self.placing))
+                if not last:
+                    raise GameError('no earlier setup on this side to repeat')
+                sq, ball, arrows = last
+                self._place_side(self.placing, sq, ball, arrows, actor='human')
+                self._auto_place()
+                return
+            if body.get('propose'):
+                # step 3m Part A: accept the engine's proposed setup for this side
+                if seat != 'both' and seat != self.placing:
+                    raise GameError(f'the {"offence" if self.placing == "O" else "defence"} is placing')
+                if self.placing in self.ai:
+                    raise GameError('the computer places this side')
+                prop = self.proposal(self.placing)
+                self._place_side(self.placing, prop['squares'], prop.get('ball'), prop.get('arrows'), actor='human')
+                self._auto_place()
+                return
             if body.get('preview'):
                 if self.ai:
                     # against the computer: the standard setup for the human's own side only; the computer places its own
@@ -885,6 +941,28 @@ class Game:
             arrows = body.get('arrows')
             self._place_side(self.placing, squares, body.get('ball'), arrows, actor='human')
             self._auto_place()
+
+    def proposal(self, side):
+        """The engine's proposed setup for a side (step 3m B6): {squares, ball} on offence, {squares, arrows} on
+        defence. Cached per possession and side."""
+        key = (self.possession, side, tuple(map(tuple, self.placed['O'][0])) if side == 'X' else None)
+        cache = getattr(self, '_proposals', {})
+        if key not in cache:
+            from playmaker_engine import agent as AG
+            if side == 'O':
+                r = AG.propose_offence(self._possession_state, self.seed * 31 + self.possession, self.levels_key())
+                cache[key] = dict(squares=r['squares'], ball=r['ball'], text=r.get('text', ''))
+            else:
+                o_sq, ball = self.placed['O']
+                r = AG.propose_defence(self._possession_state, o_sq, ball, self.seed * 37 + self.possession, self.levels_key())
+                cache[key] = dict(squares=r['squares'], arrows=r['arrows'], text=r.get('text', ''))
+            self._proposals = cache
+        return cache[key]
+
+    def levels_key(self):
+        lv = self.levels or {}
+        std = lv.get('standard', 'pro')
+        return (lv.get('age', 'senior'), std if isinstance(std, str) else 'pro')
 
     def _place_side(self, side, squares, ball, arrows, actor):
         if len(squares) != 5 or len(set(squares)) != 5:
@@ -915,6 +993,9 @@ class Game:
             self.state = self._possession_state([B.sq(q) for q in o_sq], [B.sq(q) for q in squares],
                                                 arrows, ball)
             self.placing = None
+        if actor == 'human':
+            self.last_setup[(self._player_of(side), side)] = (list(squares), ball if side == 'O' else None,
+                                                             list(arrows) if side == 'X' else None)
         self._log('placement', possession=self.possession, side=side, actor=actor,
                   squares=[B.sq(q) for q in squares], ball=ball if side == 'O' else None,
                   arrows=[B.DIR_NAMES[a] for a in arrows] if side == 'X' else None,
@@ -926,7 +1007,7 @@ class Game:
 
     def offence_player(self):
         """Which player (A or B) is attacking this possession."""
-        return 'A' if self.possession == 1 else 'B'
+        return 'A' if self.possession % 2 == 1 else 'B'
 
     # ---- seats ----
     def join(self, seat):
@@ -950,7 +1031,7 @@ class Game:
         """The feedback form appears once: at the end of the match, a scenario or a single possession."""
         if self.state.stage != 'over' or self.placing:
             return False
-        return (not self.full) or self.possession == 2
+        return (not self.full) or self.possession == self.n_poss
 
     def side_to_act(self):
         if self.placing or self.picks_pending():
@@ -1118,31 +1199,39 @@ class Game:
             final = (r.rating, max(0, r.contest))
         self.scores.append(dict(possession=self.possession, attacker=self.offence_player(), total=sc.total,
                                 band=sc.band, detail=sc.detail, breakdown=_score_json(sc),
-                                target=self.state.target, final_shot=final))
+                                target=self.state.target, final_shot=final, ended=r.kind if r else None))
         self._log('end', possession=self.possession, score=_score_json(sc), target=self.state.target)
-        if self.full and self.possession == 2:
+        if self.full and self.possession == self.n_poss:
             self._finish_match()
 
     def next_possession(self, token):
         with self.lock:
             if self.seat_of(token) is None:
                 raise GameError('unknown player token')
-            if not (self.full and self.possession == 1 and self.state.stage == 'over'):
+            if not (self.full and self.possession < self.n_poss and self.state.stage == 'over'):
                 raise GameError('no next possession')
-            self.possession = 2
+            self.possession += 1
             self._set_ai()
             self.state = self._possession_state()
             self.undo, self.rolls = [], []
             self.feed.append(dict(n=len(self.feed) + 1, actor='system', side='-', kind='possession',
-                                  text='Possession 2: sides swap', rolls=[], outcomes=[], possession=2,
+                                  text=f'Possession {self.possession}: sides swap', rolls=[], outcomes=[], possession=self.possession,
                                   clock=self.state.clock, phase=self.state.phase, version=self.version + 1))
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.turn_no = 0
             self.version += 1
-            self._log('possession', possession=2, teams=self.teams[::-1], start=self.state.encode())
+            self._log('possession', possession=self.possession,
+                      teams=self.teams if self.possession % 2 == 1 else self.teams[::-1], start=self.state.encode())
             self._begin_possession()
 
     def _finish_match(self):
+        if self.match_format == 'digital':
+            tot = {p: sum(x['total'] for x in self.scores if x['attacker'] == p) for p in ('A', 'B')}
+            m = dict(A=tot['A'], B=tot['B'], format='digital', per_side=self.per_side,
+                     winner='A' if tot['A'] > tot['B'] else 'B' if tot['B'] > tot['A'] else 'tie')
+            self.match = m
+            self._log('match', **m)
+            return
         a, b = self.scores[0], self.scores[1]
         m = dict(A=a['total'], B=b['total'])
         if a['total'] == b['total']:

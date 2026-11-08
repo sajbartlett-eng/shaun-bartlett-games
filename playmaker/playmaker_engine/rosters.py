@@ -114,7 +114,7 @@ def count_by_shape(standard, flex=True):
 _TEMPLATES = {}
 
 
-def deal_one(standard, rng, coherent=False, exclude=()):
+def deal_one(standard, rng, coherent=False, exclude=(), age='senior'):
     """A uniformly random legal roster (B2, flex allowed as often as legality allows): a pattern in proportion to its
     rosters, then cards uniformly within it. coherent: redealt until it covers the four jobs. [(key, slot)]"""
     if standard not in _TEMPLATES:
@@ -137,7 +137,7 @@ def deal_one(standard, rng, coherent=False, exclude=()):
         if not ok:
             continue
         entries.sort(key=lambda e: e[1])
-        if coherent and not coherent_ok([k for k, _ in entries]):
+        if coherent and not coherent_ok([k for k, _ in entries], age):
             continue
         return entries
     raise RuntimeError('no roster could be dealt')
@@ -157,24 +157,44 @@ def _bisect(cum, x):
 # ---- the four jobs (teamtools.jobs, the existing definitions, by card) ----------------------------------------------
 
 _TT = None
+# The four jobs as the data tools define them on the pro cards (teamtools.jobs): a rating at or above a threshold.
+JOB_TESTS = {'creator': (('dribble', 17), ('pass', 17)), 'shooter': (('shot_three', 10),),
+             'anchor': (('con_layup', 10), ('con_dunk', 11)), 'stopper': (('agility', 8),)}
+_AGE_CUT = {}
 
 
-def jobs(key):
-    """teamtools.jobs(k): creator, shooter, anchor, stopper, as the data tools define them (by card)."""
-    global _TT
-    if _TT is None:
-        _TT = CD._load('teamtools', {'data': CD.DATA})
-    return _TT.jobs(key)
+def _cut(rating, pro_cut, age):
+    """Step 3m Part 0: a job threshold at the playing age. The pro threshold is carried over as the same share of the
+    deck: the cut at this age is the value that the same number of the 75 cards (as they play at this age) reach as
+    reach the pro cut on the pro cards. So a junior team's shooters are the cards that shoot well among juniors."""
+    key = (rating, pro_cut, age)
+    if key not in _AGE_CUT:
+        if age == 'senior':
+            _AGE_CUT[key] = pro_cut
+        else:
+            from .levels import effective_card
+            share = sum(1 for c in CD.CARDS.values() if c.r[rating] >= pro_cut)
+            vals = sorted((effective_card(k, age).r[rating] for k in CD.CARDS), reverse=True)
+            best = min(range(0, 21), key=lambda t: (abs(sum(1 for v in vals if v >= t) - share), -t))
+            _AGE_CUT[key] = best
+    return _AGE_CUT[key]
 
 
-def cover(keys):
-    J = [jobs(k) for k in keys]
+def jobs(key, age='senior'):
+    """creator, shooter, anchor, stopper for one card at the playing age (effective ratings, no growth tag: the tags
+    are dealt after the rosters). At senior age this is exactly teamtools.jobs."""
+    c = CD.CARDS[key] if age == 'senior' else __import__('playmaker_engine.levels', fromlist=['x']).effective_card(key, age)
+    return {job: any(c.r[r] >= _cut(r, cut, age) for r, cut in tests) for job, tests in JOB_TESTS.items()}
+
+
+def cover(keys, age='senior'):
+    J = [jobs(k, age) for k in keys]
     return dict(creator=sum(j['creator'] for j in J) >= 1, shooters=sum(j['shooter'] for j in J) >= 2,
                 anchor=sum(j['anchor'] for j in J) >= 1, stopper=sum(j['stopper'] for j in J) >= 1)
 
 
-def coherent_ok(keys):
-    return all(cover(keys).values())
+def coherent_ok(keys, age='senior'):
+    return all(cover(keys, age).values())
 
 
 # ---- deal codes ----------------------------------------------------------------------------------------------------
@@ -221,8 +241,11 @@ def deal(age='senior', standard='pro', coherent=False, seed=None, code=None):
         seed = random.randrange(36 ** 6)
     code = make_code(age, standard, coherent, seed)
     rng = random.Random(code)
-    home = deal_one(standard, rng, coherent)
-    away = deal_one(standard, rng, coherent)
+    while True:                       # step 3m: one card pool, so the matchup plays with one printed deck. Both teams
+        home = deal_one(standard, rng, coherent, age=age)    # are dealt independently and redealt together if they
+        away = deal_one(standard, rng, coherent, age=age)    # share a card: uniform over legal disjoint pairs
+        if not {k for k, _ in home} & {k for k, _ in away}:
+            break
     tags = [deal_growth(rng), deal_growth(rng)] if age == 'junior' else None
     return dict(code=code, age=age, standard=standard, coherent=coherent, seed=seed, rosters=[home, away], tags=tags)
 
@@ -346,8 +369,8 @@ class Draft:
             raise DraftError('No legal pick is left.')
         mine = list(self.rosters[side].values())
         theirs = list(self.rosters[3 - side].values())
-        need_me = _needs(mine)
-        need_them = _needs(theirs)
+        need_me = _needs(mine, self.age)
+        need_them = _needs(theirs, self.age)
         left = [k for k in CD.CARDS if k not in self.taken]
         best = None
         for key, slot in cands:
@@ -356,7 +379,7 @@ class Draft:
             why = [f'the strongest card left ({v:.1f})'] if level == 'rookie' else []
             if level in ('starter', 'allstar'):
                 fit = 0.0
-                j = jobs(key)
+                j = jobs(key, self.age)
                 for job, short in need_me.items():
                     if short > 0 and j[_JOB_KEY[job]]:
                         fit += 3.0
@@ -370,10 +393,10 @@ class Draft:
                 v += fit
             if level == 'allstar':
                 deny = 0.0
-                j = jobs(key)
+                j = jobs(key, self.age)
                 for job, short in need_them.items():
                     if short > 0 and j[_JOB_KEY[job]]:
-                        others = sum(1 for k in left if k != key and jobs(k)[_JOB_KEY[job]])
+                        others = sum(1 for k in left if k != key and jobs(k, self.age)[_JOB_KEY[job]])
                         deny += 2.0 / (1 + others) * 5
                         why.append(f'denies them a {job} ({others} left after this)')
                 v += deny
@@ -391,8 +414,8 @@ class Draft:
 _JOB_KEY = {'creator': 'creator', 'shooter': 'shooter', 'anchor': 'anchor', 'stopper': 'stopper'}
 
 
-def _needs(keys):
-    J = [jobs(k) for k in keys]
+def _needs(keys, age='senior'):
+    J = [jobs(k, age) for k in keys]
     return dict(creator=1 - sum(j['creator'] for j in J), shooter=2 - sum(j['shooter'] for j in J),
                 anchor=1 - sum(j['anchor'] for j in J), stopper=1 - sum(j['stopper'] for j in J))
 

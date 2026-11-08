@@ -312,7 +312,8 @@ def state_json(game, token):
                     if s.inbound else None)
     out = dict(code=game.code, mode=game.mode, version=game.version, seat=seat, can_act=can,
                 side_to_act=game.side_to_act(), ai=game.ai, title=ctx.title, scenario=sc_info, full=game.full,
-                possession=game.possession, attacker=game.offence_player(), teams=[ctx.off_team, ctx.def_team],
+                possession=game.possession, attacker=game.offence_player(), match_format=game.match_format,
+                n_poss=game.n_poss, per_side=game.per_side, strip=score_strip(game), teams=[ctx.off_team, ctx.def_team],
                 clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final, turn=game.turn_no,
                 tokens=dict(O=s.tok_o, X=s.tok_x), limits=limits, inbound=s.inbound, inbounder=ctx.inbounder,
                 pending=list(s.pending) if s.pending else None, shot=s.shot,
@@ -333,6 +334,17 @@ def state_json(game, token):
     if game.timer:
         out['timer'] = game.timer_json()
     return out
+
+
+def score_strip(game):
+    """Step 3m Part A: each possession's result for the score strip (points, 'TO' or 'FT') and the running totals."""
+    out, tot = [], dict(A=0, B=0)
+    for x in game.scores:
+        kind = ('TO' if x.get('ended') in ('turnover_end', 'steal') else 'FT' if x.get('ended') == 'free_throws'
+                else str(x['total']))
+        tot[x['attacker']] += x['total']
+        out.append(dict(possession=x['possession'], attacker=x['attacker'], total=x['total'], mark=kind))
+    return dict(entries=out, totals=tot)
 
 
 def levels_json(game, seat):
