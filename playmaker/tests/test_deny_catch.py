@@ -49,7 +49,8 @@ def lanes_to(s, att):
         if p == att or not B.on_board(s.o[p]):
             continue
         h = s.with_(ball=p, side='O', stage='play', turn_n=0, pending=None, approach=-1, tok_o=max(1, s.tok_o))
-        out[p] = any(lane_reach(h, j, p, att) for j in range(5))
+        from playmaker_engine.capacity import lane_answered
+        out[p] = lane_answered(h, p, att)                  # denied outright, or interceptable
     return out
 
 
@@ -95,4 +96,5 @@ def test_all_star_placement_covers_the_lane_to_the_threat():
     et = elite_threat(s)
     if et is None:
         return                                           # the placement itself removed the threat: fine
-    assert any(lane_reach(s, j, 0, et['att']) for j in range(5)), f"O1's lane to O{et['att'] + 1} is open at setup: {[B.sq(q) for q in xs]} {arrows}"
+    from playmaker_engine.capacity import lane_answered
+    assert lane_answered(s, 0, et['att']), f"O1's lane to O{et['att'] + 1} is open at setup: {[B.sq(q) for q in xs]} {arrows}"

@@ -78,6 +78,9 @@ def play(o_level, x_level, off, dfn, seed, budget_s, place=False):
         xs, arrows, perm = place_defence(pols['X'], o_sq, 0, build)
         s = build(xs, arrows)
     shot = None
+    post = dict(attempted=0, completed=0)
+    picks = 0
+    entry = None                                         # a post entry in the air: the receiver
     for _ in range(300):
         if s.stage == 'over':
             break
@@ -85,13 +88,22 @@ def play(o_level, x_level, off, dfn, seed, budget_s, place=False):
         a = pols[side].choose(s)
         node = apply(s, a)
         nxt = sample(node, rng)[0] if isinstance(node, ChanceNode) else node
+        if a.side == 'O' and a.kind == 'pass' and B.zone(s.o[a.target]) == 'K':
+            post['attempted'] += 1                       # a pass to a receiver in the paint: a post entry
+            entry = a.target
+        if a.kind == 'intercept' and nxt.tos > s.tos:
+            picks += 1                                   # an interception won
+        if entry is not None and not getattr(nxt, 'pending', None) and a.kind != 'pass':
+            if nxt.ball == entry and nxt.tos == s.tos:
+                post['completed'] += 1
+            entry = None
         if a.side == 'O' and a.kind in ('shot', 'forced_shot'):
             shot = dict(shooter=a.piece + 1, type=a.shot or (nxt.shot if hasattr(nxt, 'shot') else ''), square=B.sq(s.o[a.piece]),
                         clock=s.clock, forced=a.kind == 'forced_shot')
         s = nxt
     r = score(s) if s.stage == 'over' else None
     res = s.result if s.stage == 'over' else None
-    return dict(seed=seed, points=float(r.total) if r else None, shot=shot,
+    return dict(seed=seed, points=float(r.total) if r else None, shot=shot, post=post, picks=picks,
                 result=dict(kind=getattr(res, 'kind', None)) if res is not None else None)
 
 
@@ -119,6 +131,9 @@ def main():
     print(f"possessions ending with an O2 three: {o2_three}/{n} = {100 * o2_three / n:.0f}%")
     tot = sum(r['points'] or 0 for r in rows)
     print(f"points: {tot:.0f} total, {tot / n:.1f} a possession")
+    pa = sum(r['post']['attempted'] for r in rows); pc = sum(r['post']['completed'] for r in rows)
+    print(f"post entries: {pa} attempted, {pc} completed")
+    print(f"interceptions: {sum(r['picks'] for r in rows)} in {n} possessions = {100 * sum(r['picks'] for r in rows) / n:.0f} per 100")
     for k, c in ends.most_common():
         print(f"  {k}: {c} ({100 * c / n:.0f}%), {pts[k]:.0f} points ({100 * pts[k] / max(1, tot):.0f}% of the points)")
     if args.store:

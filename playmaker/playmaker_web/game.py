@@ -799,7 +799,9 @@ class Game:
                 raise GameError(f'malformed action: {e}')
             legal = self.legal()
             if a not in legal:
-                raise GameError(f'illegal action: {a} is not among the {len(legal)} legal actions now')
+                from playmaker_engine.actions import why_illegal
+                why = why_illegal(self.state, a) if self.state.stage != 'over' else None
+                raise GameError(f'illegal action: {a}: {why}' if why else f'illegal action: {a} is not among the {len(legal)} legal actions now')
             return self._apply(a, legal, actor='human')
 
     def _apply(self, a, legal, actor):

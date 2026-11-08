@@ -1,3 +1,4 @@
+import pytest
 """Step 3g: an offence that creates advantages. advantages() labels the board; the offence's candidates are
 advantage plays (shoot, dribble attack, screen, speed burst, post seal, cut, pass to move or finish an
 advantage) scored by create, reply, exploit. Positions come from computer playouts and the playtest logs
@@ -86,6 +87,7 @@ def test_an_advantage_is_valued_at_the_shot_after_the_reaction():
 
 # ---- the plays ---------------------------------------------------------------------------------------
 
+@pytest.mark.usefixtures('pre_denial')   # a step 3g position: under receiver denial the contested pass is a blocked lane
 def test_all_star_screens_for_a_mismatch_over_a_contested_pass():
     """Step 3g: O5, the ball carrier, screened X4 off O1 for a mismatch. Step 3i ruled that the carrier
     can't Screen (OQ-63), so that play is gone; what stays is that All-Star doesn't throw the contested pass."""

@@ -715,11 +715,11 @@ class Computer(Policy):
             # elite catch whose lane is covered after the play (a defender through him, or one straight movement
             # along an arrow onto it) taken out of the offence's options
             atts = tuple(self._deny_att)
-            from .capacity import lane_reach
+            from .capacity import lane_held
             def covered(t):
                 if t.stage != 'play' or t.side != 'O':
                     return ()
-                return frozenset(a for a in atts if t.ball != a and B.on_board(t.o[a]) and any(lane_reach(t, j, t.ball, a) for j in range(5)))
+                return frozenset(a for a in atts if t.ball != a and B.on_board(t.o[a]) and lane_held(t, t.ball, a))
             fn_deny = lambda t: (lambda c: self._threat(t, exclude=c) if c else fn(t))(covered(t))
             scored += self._rank(view, deny, fn_deny, False, self._stop())
         if not scored:
@@ -844,6 +844,81 @@ class Computer(Policy):
             pass
         return best
 
+    def _answer_denial(self, view, acts, plays):
+        """Receiver denial: the ball's lane to a target is blocked by a defender next to him. The answers: move the
+        receiver off the line (and pass if the new lane is open), a backdoor cut (the receiver goes toward the rim past
+        the denier), change the passer's angle (the carrier moves, then passes), and screen the denier. Each is valued
+        as any play is; the best answer is taken when it beats every other play this turn."""
+        from .actions import denier, legal_actions as _legal
+        from .solver import Play, apply_play
+        if view.stage != 'play' or view.side != 'O' or view.pending:
+            return None
+        tg = [t['o'] for t in (self.plan or {}).get('targets', [])] if self.plan else []
+        denied = [r for r in range(5) if r != view.ball and denier(view, view.ball, r) is not None]
+        hunted = [r for r in denied if r in tg] or [r for r in denied if view.ctx.off[r].bands['shot_three'] == 'H']
+        if not hunted:
+            return None
+        cp = view.o[view.ball]
+        answers = []
+        for r in hunted:
+            d = denier(view, view.ball, r)
+            dpos = view.x[d]
+            for a in acts:
+                if a.kind not in MOVEMENT or a.side != 'O':
+                    continue
+                if a.piece == r:
+                    t = apply(view, a)
+                    if isinstance(t, ChanceNode):
+                        continue
+                    backdoor = B.dist_rim(a.dest) < min(B.dist_rim(view.o[r]), B.dist_rim(dpos))
+                    if denier(t, view.ball, r) is None or backdoor:
+                        ps = [p for p in _legal(t) if p.kind == 'pass' and p.target == r]
+                        answers.append(Play('backdoor' if backdoor else 'off the line', (a,) + tuple(ps[:1])))
+                        if ps:
+                            answers.append(Play('backdoor' if backdoor else 'off the line', (a,)))
+                elif a.piece == view.ball:
+                    t = apply(view, a)
+                    if isinstance(t, ChanceNode) or denier(t, view.ball, r) is not None:
+                        continue
+                    ps = [p for p in _legal(t) if p.kind == 'pass' and p.target == r]
+                    if ps:
+                        answers.append(Play('new angle', (a, ps[0])))
+                elif B.cheb(a.dest, dpos) == 1 and a.piece != r:
+                    t = apply(view, a)
+                    if isinstance(t, ChanceNode):
+                        continue
+                    sc = [p for p in _legal(t) if p.kind == 'screen' and p.piece == a.piece]
+                    answers += [Play('screen the denier', (a, p)) for p in sc[:2]]
+            for p in acts:
+                if p.kind == 'screen' and p.piece not in (r, view.ball) and B.cheb(view.o[p.piece], dpos) == 1:
+                    answers.append(Play('screen the denier', (p,)))
+        if not answers:
+            return None
+        fn = self._value_fn()
+        stop = self._stop()
+        scored = []
+        seen = set()
+        for p in answers + [p for p in plays if not any(a.kind == 'shot' for a in p.actions)]:
+            if p.actions in seen:
+                continue
+            seen.add(p.actions)
+            if stop is not None and scored and time.time() > stop:
+                break
+            node = apply_play(view, p)
+            if node is None:
+                continue
+            scored.append((self._play_value(view, p, node, fn) + self._plan_bonus(view, node), p))
+        shots = [p for p in plays if any(a.kind == 'shot' for a in p.actions)]
+        for p in shots:                                   # a shot now stays an option: never answer instead of a better shot
+            node = apply_play(view, p)
+            if node is not None:
+                scored.append((self._node_value(node, fn), p))
+        best = self._pick(scored, True)
+        if best is None or best.concept not in ('off the line', 'backdoor', 'new angle', 'screen the denier'):
+            return None
+        self.notes.append(dict(event='denial', text=f'Answer to the denial: {best.concept}'))
+        return best
+
     # ---- offence ----
     def targets(self, view):
         """Primary and secondary targets: the two largest edges, each a player's ▲ shot type against the
@@ -935,6 +1010,10 @@ class Computer(Policy):
             if fp is not None:                            # to the primary target whenever legal, whatever the risk
                 self._fire('forces_passes')
                 return Play('habit', (fp,))
+        if self.cfg.get('goals') or self.cfg.get('plays'):
+            chosen = self._answer_denial(view, acts, plays)
+            if chosen is not None:
+                return chosen
         if self.cfg.get('goals'):
             chosen = self._goal_attack(view, acts)
             if chosen is not None:
@@ -1947,7 +2026,7 @@ def _deny_at_setup(comp, build, o_squares, ball, perm, xs, arrows, stop):
     """Setup step 5, the catches to deny in order: for each elite threat (best first) whose lane from the ball is
     still open, the body that answers it (the top-lock by his guard, or a lane body) that leaves the offence the
     least, with every covered catch taken out of the offence's options."""
-    from .capacity import lane_reach
+    from .capacity import lane_held as lane_answered      # held against the offence's move before the pass
     from .planner import elite_threats
     s0 = build(xs, arrows)
     comp._context(s0)
@@ -1959,14 +2038,15 @@ def _deny_at_setup(comp, build, o_squares, ball, perm, xs, arrows, stop):
         if time.time() > stop:
             break
         t0 = build(xs, arrows)
-        if any(lane_reach(t0, j, ball, att) for j in range(5)):
+        if lane_answered(t0, ball, att):
             continue                                     # already answered by the bodies placed so far
         xs, arrows, best_v = _deny_one(comp, build, o_squares, ball, perm, xs, arrows, stop, att, threats)
     return xs, arrows, best_v
 
 
 def _deny_one(comp, build, o_squares, ball, perm, xs, arrows, stop, att, threats):
-    from .capacity import lane_reach
+    from .capacity import lane_answered, lane_held
+    lane_reach = lambda t, j, p, r: lane_answered(t, p, r)          # denial or an intercept: either answers the lane
     me = o_squares[att]
     cp = o_squares[ball]
     jb = perm.index(ball)
@@ -1976,7 +2056,7 @@ def _deny_one(comp, build, o_squares, ball, perm, xs, arrows, stop, att, threats
         s = build(xq, ar)
         comp._context(s)
         t = s.with_(ctx=comp.seen)
-        covered = frozenset(a for a in threats if any(lane_reach(t, j, t.ball, a) for j in range(5)))
+        covered = frozenset(a for a in threats if lane_held(t, t.ball, a))
         v = comp._threat(t, exclude=covered) if covered else comp._threat(t)
         return (max(v, comp.comfort) + 1e-3 * v) if comp.comfort is not None else v
 

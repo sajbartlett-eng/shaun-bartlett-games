@@ -1184,9 +1184,9 @@ def defence_objectives(s, level, k=4, matchups=None):
     allowed = set(level_objectives(level))
     seen = {}
     if 'DO-denycatch' in allowed:
-        from .capacity import lane_reach
+        from .capacity import lane_held
         for et in _with_matchups(matchups, lambda: elite_threats(s)):
-            if s.side == 'X' and any(lane_reach(s.with_(side='O', turn_n=0, stage='play', pending=None), j, s.ball, et['att']) for j in range(5)):
+            if s.side == 'X' and lane_held(s.with_(side='O', turn_n=0, stage='play', pending=None), s.ball, et['att']):
                 continue                                  # the lane to him is already answered: nothing to add
             words = _ws(OBJECTIVES['DO-denycatch']['words'], r=et['att'])
             seen[('DO-denycatch', words)] = dict(id='DO-denycatch', words=words, weight=round(et['value'] + 1.0, 2),
@@ -1225,11 +1225,15 @@ def _objective_plays(s, obj, acts):
     d = _guard(s, att) if _M is not None else _nearest_x(s, me)
     face = lambda q, to: B.nearest_dir(q, to)
     mv = [a for a in acts if a.kind == 'move' and a.side == 'X']
+    from .actions import denier as _denier
+    def denies(a):                                        # after this movement, is the ball's lane to him denied?
+        t = s.with_(x=s.x[:a.piece] + (a.dest,) + s.x[a.piece + 1:])
+        return _denier(t, s.ball, att) == a.piece
     if obj['id'] == 'DO-front':
         cand = [a for a in mv if a.piece == d and B.adjacent(a.dest, me) and B.cheb(a.dest, ball) < B.cheb(me, ball)
                 and a.arrow == face(a.dest, ball)]
-        cand.sort(key=lambda a: (B.cheb(a.dest, ball), a.dest))
-        out += [Play('front the post', (a,)) for a in cand[:1]]
+        cand.sort(key=lambda a: (not denies(a), B.cheb(a.dest, ball), a.dest))     # fronting on the line denies the entry
+        out += [Play('front the post', (a,)) for a in cand[:2]]
     elif obj['id'] in ('DO-closeout', 'DO-deny'):
         cand = [a for a in mv if a.piece == d and B.adjacent(a.dest, me) and a.arrow == B.dir_between(a.dest, me)]
         cand.sort(key=lambda a: (-B.dist_rim(me) + B.dist_rim(a.dest), a.dest))
@@ -1267,13 +1271,13 @@ def _objective_plays(s, obj, acts):
                 lane_direct.append(a)
             elif lr == 'approach':
                 lane_jump.append(a)
-            if j == d and B.adjacent(a.dest, me) and a.arrow == B.dir_between(a.dest, me):
-                guard_plays.append(a)                      # face-guard; top-lock when nearer the ball than he is
+            if j == d and B.adjacent(a.dest, me) and (a.arrow == B.dir_between(a.dest, me) or denies(a)):
+                guard_plays.append(a)                      # face-guard; on the ball's line it denies the catch outright
             elif j != d and B.cheb(a.dest, me) <= 2 and a.arrow == B.nearest_dir(a.dest, me) and B.cheb(a.dest, me) < B.cheb(s.x[j], me):
                 shade.append(a)
         lane_direct.sort(key=lambda a: (B.cheb(a.dest, me), a.dest, a.arrow))
         lane_jump.sort(key=lambda a: (B.cheb(a.dest, me), a.dest, a.arrow))
-        guard_plays.sort(key=lambda a: (B.cheb(a.dest, ball), a.dest))
+        guard_plays.sort(key=lambda a: (not denies(a), B.cheb(a.dest, ball), a.dest))
         shade.sort(key=lambda a: (B.cheb(a.dest, me), a.dest))
         for a in lane_direct[:3] + lane_jump[:2] + guard_plays[:2] + shade[:1]:
             out.append(Play('deny the catch', (a,)))

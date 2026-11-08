@@ -142,6 +142,15 @@ def matchups(s):
                 X=[pick(p, s.o, arrow_me=s.arrows[i]) for i, p in enumerate(s.x)])
 
 
+def denied_json(s):
+    """The carrier's denied lanes (receiver denial): a pass that would go through a defender next to the receiver."""
+    from playmaker_engine.actions import denied_lanes
+    if s.stage not in ('play',) or s.ball is None or s.ball < 0 or not B.on_board(s.o[s.ball]):
+        return []
+    return [dict(receiver=d['receiver'], defender=d['defender'], rsq=B.sq(s.o[d['receiver']]), dsq=B.sq(s.x[d['defender']]))
+            for d in denied_lanes(s)]
+
+
 def legal_json(s, acts):
     out = []
     for a in acts:
@@ -304,7 +313,7 @@ def state_json(game, token):
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
-                level=game.level, scout=scout_json(game, seat), matchups=matchups(s),
+                level=game.level, scout=scout_json(game, seat), matchups=matchups(s), denied=denied_json(s),
                 custom=game.custom or None, experimental=game.experimental,
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS], screen_rule=ctx.rules.screen_rule,
                 influence=influence(s))

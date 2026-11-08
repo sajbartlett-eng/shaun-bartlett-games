@@ -623,6 +623,15 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   is covered (`Computer._threat(exclude=...)`). The offence acts first, so the strongest lever is setup step 5: the
   computer's placement answers that lane before the first pass (`_deny_at_setup`). Rookie does not use it. No rule
   changed. `tests/test_deny_catch.py`; `playmaker_engine/deny_report.py` measures a pairing before and after.
+- **Receiver denial** (the designer's ruling, `receiver_denial=True`): a pass may not travel through the square of a
+  defender next to the receiver. The lane is blocked, not interceptable, whatever his facing; "through" is the pass
+  line within half a square of his centre (`receiver_denial_tol=0.5`). Defenders elsewhere on the line are unchanged.
+  A denied pass is not among the legal actions and is refused with the reason (`actions.why_illegal`). The computer
+  defence's deny objective uses it (the face-guard on the ball's line, fronting the post on it), and its setup does too;
+  the offence answers a denied target by moving the receiver off the line, a backdoor cut, changing the passer's angle,
+  or screening the denier (`Computer._answer_denial`). With Pass selected the page draws each denied lane stopped by a
+  bar at the denier, ringed, and lists it; the trackers carry "Denied: a pass can't go through a defender next to the
+  receiver." `tests/test_receiver_denial.py`.
 - **Coach Vision during play** shows at Learn level only, and there it reads neutrally for both sides in the same
   form (the threat, the offence's read, the defence's read); at Scout and Pro the page shows no coach line during
   play (`tests/test_coach_gate.py`).

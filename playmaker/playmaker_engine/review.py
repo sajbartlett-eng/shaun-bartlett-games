@@ -35,6 +35,8 @@ def log_rules(setup):
         return RC.with_rules(**RC.LEGACY_3I)
     # logs from before the OQ-72 ruling (no intercept_rule), before the turnover-cost ruling, or before the
     # rulebook revision (no on_line_tolerance / lane_jump_keeps_facing)
+    if 'on_line_tolerance' in rec and 'receiver_denial' not in rec:
+        rec = {**RC.PRE_DENIAL, **rec}             # recorded the rulebook readings, from before the denial ruling
     return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec})
 
 

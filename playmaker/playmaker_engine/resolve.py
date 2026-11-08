@@ -321,7 +321,9 @@ def apply(state, action, check=False):
     if check:
         from .actions import legal_actions
         if action not in legal_actions(state):
-            raise ValueError(f'illegal action {action} in {state.encode()}')
+            from .actions import why_illegal
+            why = why_illegal(state, action)
+            raise ValueError(f'illegal action {action}' + (f' ({why})' if why else '') + f' in {state.encode()}')
     s = state
     a = action
     side = a.side

@@ -228,6 +228,44 @@ def sprint_dir(start, dest):
 
 # ---- interception (OQ-72 ruling, intercept_rule='ring_jump') --------------------------------
 
+def denier(state, passer, receiver):
+    """Receiver denial (the designer's ruling): the defender next to the receiver whose square the pass from passer
+    to receiver would travel through (the line within receiver_denial_tol of his centre, strictly between the two),
+    whatever his facing; None when the lane is not denied. Nearest the receiver first when two qualify."""
+    rules = state.ctx.rules
+    if not rules.receiver_denial or passer == receiver:
+        return None
+    a, b = state.o[passer], state.o[receiver]
+    if not (B.on_board(a) and B.on_board(b)):
+        return None
+    hits = [j for j, xp in enumerate(state.x) if B.adjacent(xp, b) and B.on_segment(xp, a, b, rules.receiver_denial_tol)]
+    return min(hits, key=lambda j: (B.cheb(state.x[j], b), j)) if hits else None
+
+
+def denied_lanes(state):
+    """For the interface and the computer: the carrier's denied lanes, [{receiver, defender}]."""
+    if state.ball is None or state.ball < 0:
+        return []
+    out = []
+    for r in range(5):
+        if r == state.ball:
+            continue
+        d = denier(state, state.ball, r)
+        if d is not None:
+            out.append(dict(receiver=r, defender=d))
+    return out
+
+
+def why_illegal(state, a):
+    """A reason for refusing an action that is not legal now, when the rules give a specific one (else None)."""
+    if a.kind == 'pass' and a.side == 'O':
+        d = denier(state, a.piece, a.target)
+        if d is not None:
+            return (f'denied: the pass from O{a.piece + 1} to O{a.target + 1} would go through X{d + 1}, '
+                    f'who is next to the receiver (a pass can\'t go through a defender next to the receiver)')
+    return None
+
+
 def passer_ring(state):
     """The squares next to the passer of the pending pass: no Intercept happens on any of them."""
     a = state.o[state.pending[0]]
@@ -555,7 +593,7 @@ def _offence_actions(s, rules):
     # Pass
     if s.count('O', 'pass') < RC.LIMITS['O']['pass']:
         for r in range(5):
-            if r != carrier:
+            if r != carrier and denier(s, carrier, r) is None:      # receiver denial: a blocked lane is no pass
                 acts.append(Action('pass', 'O', carrier, target=r))
     pass_only = inbounder_has_it and rules.inbounder_pass_only
     # Shot

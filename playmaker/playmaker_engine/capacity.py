@@ -95,6 +95,33 @@ def lane_reach(state, j, passer, receiver):
     return None
 
 
+def lane_answered(state, passer, receiver):
+    """Is the lane passer -> receiver answered by the defence: denied outright (a defender next to the receiver on the
+    line: receiver denial) or interceptable by some defender (lane_reach)?"""
+    from .actions import denier
+    if denier(state, passer, receiver) is not None:
+        return True
+    return any(lane_reach(state, j, passer, receiver) for j in range(5))
+
+
+def lane_held(state, passer, receiver):
+    """Is the lane passer -> receiver held against the offence's turn: answered now (lane_answered) and still answered
+    after any one movement by the passer or the receiver (the offence moves before it passes: a new angle, or the
+    receiver off the line)? state: the offence to act."""
+    from .actions import legal_actions, MOVEMENT
+    from .resolve import apply, ChanceNode
+    if not lane_answered(state, passer, receiver):
+        return False
+    if state.stage != 'play' or state.side != 'O' or state.ball != passer:
+        return True
+    for a in legal_actions(state):
+        if a.kind in MOVEMENT and a.piece in (passer, receiver):
+            t = apply(state, a)
+            if not isinstance(t, ChanceNode) and t.stage == 'play' and not lane_answered(t, t.ball, receiver):
+                return False
+    return True
+
+
 def lanes(state, j):
     """The passes from the ball carrier that defender j can still answer: {receiver: 'direct'|'approach'}."""
     out = {}

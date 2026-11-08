@@ -52,3 +52,13 @@ else as it is now."""
     if not os.environ.get('PM_LIVE_RULES'):          # PM_LIVE_RULES=1: re-validate under the live rules
         monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(intercept_rule='approach', turnover_cost='legacy',
                                                                **RC.PRE_RULEBOOK))
+
+
+@_pytest.fixture
+def pre_denial(monkeypatch):
+    """The rules before the receiver-denial ruling (a pass through a defender next to the receiver was a through-you
+    intercept, not a blocked lane), everything else as it is now: for positions built before the ruling."""
+    import os
+    from playmaker_engine import rules_config as RC
+    if not os.environ.get('PM_LIVE_RULES'):
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_DENIAL))

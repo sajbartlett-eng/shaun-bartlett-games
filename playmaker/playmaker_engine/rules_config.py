@@ -150,6 +150,12 @@ class Rules:
     #   arrow, keeping your facing." True: the Move half of move-then-intercept keeps the defender's arrow (a
     #   Sprint always did, a Quick Step never turns). False: the engine before the ruling (the Move could turn).
     lane_jump_keeps_facing: bool = True
+    # Receiver denial (RULED by the designer, Nov 2026): a pass may not travel through the square of a defender next
+    #   to the receiver: the lane is blocked, not interceptable, whatever his facing. "Through" is the pass line within
+    #   receiver_denial_tol of the defender's centre (half a square), strictly between passer and receiver. Defenders
+    #   elsewhere on the line are unchanged (through-you intercept, the roll as normal). False: no denial.
+    receiver_denial: bool = True
+    receiver_denial_tol: float = 0.5
     # OQ-14: Quick Step may be shorter than the card value (up to 2, not exactly 2).
     qs_up_to: bool = True
     # OQ-15: a player with Quick Step 0 cannot Sprint.
@@ -230,12 +236,15 @@ class Rules:
 # The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
 # records these settings in its setup line; a log from before them replays with the old values.
 RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule',
-            'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing')
+            'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing', 'receiver_denial', 'receiver_denial_tol')
 LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
-                 intercept_rule='approach', turnover_cost='legacy', on_line_tolerance=0.5, lane_jump_keeps_facing=False)
+                 intercept_rule='approach', turnover_cost='legacy', on_line_tolerance=0.5, lane_jump_keeps_facing=False,
+                 receiver_denial=False)
 # A log from before the rulebook revision of Nov 2026 (no on_line_tolerance / lane_jump_keeps_facing in its setup
 # line) replays with the readings it was played under.
-PRE_RULEBOOK = dict(on_line_tolerance=0.5, lane_jump_keeps_facing=False)
+PRE_RULEBOOK = dict(on_line_tolerance=0.5, lane_jump_keeps_facing=False, receiver_denial=False)
+# A log from before the receiver-denial ruling replays without it (a log recording the rulebook readings but not it).
+PRE_DENIAL = dict(receiver_denial=False)
 TURNOVER_COSTS = ('minus5_lose_phase', 'minus5', 'minus10', 'lose_phase', 'end_possession', 'legacy')
 INTERCEPT_RULES = ('move_then_intercept', 'ring_jump', 'approach')
 
