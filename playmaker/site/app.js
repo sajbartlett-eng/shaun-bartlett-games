@@ -392,6 +392,7 @@ function renderTracker(id, side) {
       el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
       el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
       el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
+      el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
       el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]),
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
@@ -534,6 +535,17 @@ function drawInfluence(c) {
         stroke: '#1b5e20', 'stroke-width': 1.5, 'stroke-dasharray': '1 3' }));
       const t = svg('text', { x: px(q.x) + S / 2, y: py(q.y) + S - 5, 'text-anchor': 'middle', 'font-size': 7.5, fill: '#1b5e20' }); t.textContent = 'safe'; g.append(t);
     }
+    const from = st.o[sel.i];
+    for (const d of (st.denied || [])) {
+      const r = st.o[d.receiver], x = st.x[d.defender];
+      const ax = px(from.x) + S / 2, ay = py(from.y) + S / 2, bx = px(x.x) + S / 2, by = py(x.y) + S / 2;
+      const len = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / len, uy = (by - ay) / len;
+      const ex = bx - ux * 14, ey = by - uy * 14;
+      g.append(svg('line', { class: 'denied-lane', x1: ax + ux * 16, y1: ay + uy * 16, x2: ex, y2: ey, stroke: PM.RED, 'stroke-width': 2.2, 'stroke-dasharray': '6 5', opacity: 0.85 }));
+      g.append(svg('line', { class: 'denied-bar', x1: ex - uy * 10, y1: ey + ux * 10, x2: ex + uy * 10, y2: ey - ux * 10, stroke: PM.RED, 'stroke-width': 3.5, 'stroke-linecap': 'round' }));
+      g.append(svg('circle', { class: 'denier', cx: bx, cy: by, r: 16, fill: 'none', stroke: PM.RED, 'stroke-width': 2.4 }));
+      const t = svg('text', { x: px(r.x) + S / 2, y: py(r.y) - 3, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: PM.RED }); t.textContent = 'denied'; g.append(t);
+    }
     for (const a of passes) for (const th of (a.threats || [])) {
       if (th.x === undefined) continue;
       const cx = px(th.x) + S / 2, cy = py(th.y) + S / 2;
@@ -613,7 +625,9 @@ function renderActions() {
     const acts = pieceActs(sel.side, sel.i);
     const p = (sel.side === 'O' ? s.o : s.x)[sel.i];
     $('selected').textContent = `${sel.side}${sel.i + 1} (${p.card.role}) on ${p.sq}` + (acts.length ? '' : ': no legal action for this player now');
-    for (const k of [...new Set(acts.map(a => a.kind))]) {
+    const kinds = [...new Set(acts.map(a => a.kind))];
+    if (sel.side === 'O' && p.ball && (s.denied || []).length && !kinds.includes('pass')) kinds.unshift('pass');   // every lane denied: still show why
+    for (const k of kinds) {
       const b = el('button', { class: (sel.kind === k ? 'active ' : '') + (ENDERS.includes(k) ? 'ender' : ''), text: KIND_NAME[k] + (ENDERS.includes(k) ? ' (ends turn)' : ''),
         onclick: () => { sel.kind = k; sel.dest = null; render(); } });
       $('kindButtons').append(b);
@@ -640,6 +654,10 @@ function renderActions() {
             return `X${Number(j) + 1} ${parts.join('; ')}`;
           });
           tb.append(el('div', { class: 'opt' }, [actionButton(a, `Pass to O${a.target + 1}`), el('span', { class: 'note', text: th.length ? ' Can intercept: ' + th.join('; ') : ' No defender can intercept this pass' }), chips(a)]));
+        }
+        for (const d of (s.denied || [])) {
+          tb.append(el('div', { class: 'opt denied' }, [el('button', { disabled: 'disabled', text: `Pass to O${d.receiver + 1}: denied` }),
+            el('span', { class: 'note', text: ` Blocked: X${d.defender + 1} on ${d.dsq} is next to O${d.receiver + 1} and the pass would go through that square. Move O${d.receiver + 1} off the line, cut backdoor, change the passer's angle, or screen X${d.defender + 1}.` })]));
         }
       } else if (sel.kind === 'shot') {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Shoot: ${a.shot}`), chips(a)]));
