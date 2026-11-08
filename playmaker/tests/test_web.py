@@ -274,17 +274,17 @@ def test_computer_places_man_to_man(web):
                 assert B.DIRS[x['arrow']] == (o['x'] - x['x'], o['y'] - x['y'])   # arrow on him
         else:
             rec = [r for r in get(web, f'/api/log?code={g["code"]}') if r['type'] == 'computer' and r.get('event') == 'setup']
-            assert rec and len(rec[-1]['matchup']) == 5 and len(rec[-1]['jobs']) == 5 and rec[-1]['text']
+            assert rec and len(rec[-1]['matchup']) == 5 and 'value' in rec[-1] and rec[-1]['text']   # step 3m: best cover
 
 
 def test_the_computers_turn_is_reported_with_rolls_and_results(web):
     """Against the computer, its steals and intercepts come back to the page with their rolls and what
     happened, not only in the log."""
-    g = post(web, '/api/new', dict(mode='hotseat', scenario=3, seed=3, ai=dict(X='greedy')))
+    # step 3m: the reporting is under test, not the choice; the baseline defence intercepts on card 3
+    g = post(web, '/api/new', dict(mode='hotseat', scenario=3, seed=3, ai=dict(X='baseline')))
     tok = dict(code=g['code'], token=g['token'])
     s = state(web, g)
-    # card 3: a defender stands on the line of the pass to O2 (the line passes through his square's centre), so the
-    # computer intercepts
+    # card 3: a defender stands on the line of the pass to O2 (the line passes through his square's centre)
     a = next(a for a in s['legal'] if a['kind'] == 'pass' and a['target'] == 1)
     assert any(t['how'] == 'through' for t in a['threats'])          # his square is on the line
     r = post(web, '/api/act', dict(tok, action=a))

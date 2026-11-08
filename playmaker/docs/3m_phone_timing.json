@@ -1,0 +1,78 @@
+{
+ "rows": {
+  "rookie": {
+   "decisions": 2,
+   "median_s": 0.987,
+   "max_s": 0.987,
+   "depth": 1,
+   "leaves_per_s": 7.6
+  },
+  "starter": {
+   "decisions": 2,
+   "median_s": 1.346,
+   "max_s": 1.346,
+   "depth": 1,
+   "leaves_per_s": 19.2
+  },
+  "allstar": {
+   "decisions": 2,
+   "median_s": 2.733,
+   "max_s": 2.733,
+   "depth": 1,
+   "leaves_per_s": 26.2
+  }
+ },
+ "raw": {
+  "rookie": {
+   "wall": 1.6784000000003725,
+   "decisions": [
+    {
+     "seconds": 0.987,
+     "depth": 1,
+     "partial": 0,
+     "leaves": 3
+    },
+    {
+     "seconds": 0.591,
+     "depth": 1,
+     "partial": 0,
+     "leaves": 9
+    }
+   ]
+  },
+  "starter": {
+   "wall": 2.5152999999988825,
+   "decisions": [
+    {
+     "seconds": 1.346,
+     "depth": 1,
+     "partial": 0,
+     "leaves": 16
+    },
+    {
+     "seconds": 1.159,
+     "depth": 1,
+     "partial": 1,
+     "leaves": 32
+    }
+   ]
+  },
+  "allstar": {
+   "wall": 5.38389999999851,
+   "decisions": [
+    {
+     "seconds": 2.733,
+     "depth": 1,
+     "partial": 1,
+     "leaves": 48
+    },
+    {
+     "seconds": 2.641,
+     "depth": 1,
+     "partial": 2,
+     "leaves": 93
+    }
+   ]
+  }
+ }
+}

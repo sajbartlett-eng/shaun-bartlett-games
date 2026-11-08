@@ -332,7 +332,10 @@ def credit(s, acts, depth=0, budget=0.4, horizon='phase'):
 def flags(s, acts, credits_d, credits_d1):
     """Credit flags, kept only when they agree at depth d and d+1 (sign and band)."""
     out = []
+    offball = {str(a) for a in acts if a.kind in ('move', 'qs', 'sprint') and a.piece != s.ball}
     for c, c1 in zip(credits_d, credits_d1):
+        if c['action'] not in offball:
+            continue                                  # the off-ball flags are for off-ball movement only
         if c.get('drain', 0) >= TC['inaccuracy'] and c1.get('drain', 0) >= TC['inaccuracy'] and c.get('drained') is not None:
             out.append(dict(kind='drain', action=c['action'], value=c['drain'],
                             text=f"X{c['drained'] + 1} used his {c['drained_what']} answering {c['action']}, so he can't "
@@ -614,16 +617,16 @@ def summary(graded):
                                       -g['grade']['loss']))
     good = [f for f in best.get('flags', []) if f['kind'] == 'off_ball']
     pts.append(dict(kind='best', group=best['group'], text=good[0]['text'] if good else
-                    f"Your best decision: {'; '.join(best['actions'])} (value {best['grade']['value']:+.1f}"
+                    f"Your best decision, turn group {best['group'] + 1}: {'; '.join(best['actions'])} (value {best['grade']['value']:+.1f}"
                     + (', the best option there).' if best['grade']['loss'] <= 1e-9 else f", {best['grade']['loss']:.1f} from the best).")))
     needs = sorted([g for g in graded if g is not best and g['grade']['band'] in ('mistake', 'blunder', 'inaccuracy')],
                    key=lambda g: -g['grade']['loss'])
     for g in needs[:2]:
         gr = g['grade']
         if gr['side'] == 'O':
-            bits = [f"{'; '.join(g['actions'])}: after the defence's best answer, your best look was {gr['value']:+.1f}."]
+            bits = [f"Turn group {g['group'] + 1}, {'; '.join(g['actions'])}: after the defence's best answer, your best look was {gr['value']:+.1f}."]
         else:
-            bits = [f"{'; '.join(g['actions'])}: it left the offence a best look of {gr['value']:+.1f}."]
+            bits = [f"Turn group {g['group'] + 1}, {'; '.join(g['actions'])}: it left the offence a best look of {gr['value']:+.1f}."]
         if gr.get('better'):
             bits.append(f"Better: {'; '.join(gr['better'])} ({gr['best']:+.1f}, {gr['loss']:.1f} "
                         f"{'more' if gr['side'] == 'O' else 'less for the offence'}).")

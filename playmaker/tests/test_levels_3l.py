@@ -323,6 +323,8 @@ def test_deal_codes_round_trip_with_tags():
     for age in LV.AGE_ORDER:
         for std in LV.STANDARD_ORDER:
             for coherent in (True, False):
+                if (age, std, coherent) == ('junior', 'amateur', True):
+                    continue                  # step 3m: one card pool; no such pair exists (tested in test_step3m)
                 d = RO.deal(age, std, coherent)
                 again = RO.deal(code=d['code'])
                 assert again == d
@@ -330,8 +332,8 @@ def test_deal_codes_round_trip_with_tags():
                 assert (d['tags'] is not None) == (age == 'junior')
     with pytest.raises(ValueError, match='looks like'):
         RO.read_code('nonsense')
-    g1 = Game(roster='random', deal='JAC-002N9C', level='learn', seed=1)
-    g2 = Game(roster='random', deal='JAC-002N9C', level='learn', seed=99)
+    g1 = Game(roster='random', deal='JMC-002N9C', level='learn', seed=1)
+    g2 = Game(roster='random', deal='JMC-002N9C', level='learn', seed=99)
     assert [[(c.key, c.slot, c.growth) for c in TEAMS[t]] for t in g1.teams] == \
            [[(c.key, c.slot, c.growth) for c in TEAMS[t]] for t in g2.teams]
 

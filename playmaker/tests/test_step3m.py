@@ -329,6 +329,19 @@ def test_an_early_cut_is_flagged_with_a_legal_reorder():
             n = TR._reply(n, 0, 0.4)[2]                                       # the defence's reply between
 
 
+def test_horizon_credit_on_the_capacity_drain_board():
+    from playmaker_engine import trainer as TR
+    from playmaker_engine.exam import p16
+    _, s, _ = p16()
+    a = Action('move', 'O', 2, dest=B.parse_sq('G9'))           # O3 lifts: X2 must answer it
+    assert a in legal_actions(s)
+    one = TR.credit(s, [a], horizon='reply')[0]
+    phase = TR.credit(s, [a], horizon='phase')[0]
+    assert abs(one['phi']) < 1.0                                 # over one reply: about 0 (one for one is neutral)
+    assert phase['phi'] > 1.0 and phase['drain'] > 0              # over the phase: positive, through the drain channel
+    assert phase['drained'] is not None and phase['drained_what']
+
+
 def test_thresholds_and_fading():
     from playmaker_engine import trainer as TR
     a = TR.anchor('allstar', 'senior')
@@ -428,3 +441,30 @@ def test_records_survive_reload_round_trip_and_head_to_head_sums(tmp_path):
     assert h['ppp'][s] == pytest.approx(612 / 24) and len(h['last']) == 3 and h['last'][0]['winner'] == 'tie'
     assert out['h2h']['vc'] == [dict(level='starter', age='junior', standard='pro', played=1, won=0, lost=1, tied=0,
                                      **{'for': 150, 'against': 170})]
+
+
+# ---- B9: the exam ------------------------------------------------------------------------------------------------------
+# All-Star results asserted at the full time budget. Boards the engine does not yet pass are marked expected-to-fail
+# with the reason, so they show in every run (the report lists what All-Star, Starter and Rookie did on each).
+EXAM_OPEN = {
+    1: 'the defence does not yet put a defender on the ball-rim line (it covers the corner threes first)',
+    3: 'the low man does not yet step up to help on the beaten drive',
+    4: 'the overload is not detected: X5 can still reach either threat in the reaction',
+    5: 'the receiver drives in both closeout boards',
+    7: 'the clock change does not change the choice (the coarse value at phase 6 is still high)',
+    8: 'the denied receiver does not cut backdoor',
+    9: 'neither the kick nor the corner relocation is chosen',
+    11: 'the contested-pass boards do not separate early from late',
+    13: 'the attacker in the driving lane is not moved out of it',
+    16: 'All-Star does not yet find the drain sequence in its first turn',
+}
+
+
+@pytest.mark.parametrize('n', list(range(1, 18)))
+def test_exam_position(n):
+    from playmaker_engine import exam as EX
+    AG.SCALE['value'] = 1.0
+    desc, ok, what = EX.run_position(n, 'allstar')
+    if not ok and n in EXAM_OPEN:
+        pytest.xfail(f'{EXAM_OPEN[n]} ({what})')
+    assert ok, (desc, what)

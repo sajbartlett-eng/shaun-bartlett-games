@@ -69,7 +69,7 @@ const PMTrainer = (() => {
   // ---- "Why?" (D5): goals, credits, the defence's reply and the better option, with the board
   function boardEl(enc, better) {
     const m = /\|O([^|]+)\|X([^|]+)\|b(\d)/.exec(enc || '');
-    if (!m || !window.PM) return null;
+    if (!m) return null;
     const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
     const W = 17, H = 14, S = 22;
     svg.setAttribute('viewBox', `0 0 ${W * S + 10} ${H * S + 10}`); svg.setAttribute('class', 'whyboard'); svg.setAttribute('role', 'img');

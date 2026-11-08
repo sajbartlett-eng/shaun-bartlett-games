@@ -144,7 +144,7 @@ def p5():
 
 
 def p6():
-    s = board(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'C7', 'O7', 'H6', 'P3'], ['N', 'W', 'E', 'N', 'E'], ball=3)
+    s = board(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'D9', 'O7', 'H6', 'P3'], ['N', 'W', 'E', 'N', 'E'], ball=3)
 
     def check(t, s=s):
         ok = t[0].piece == 3 and t[0].kind in ('shot', 'move', 'qs', 'sprint', 'dribble')
@@ -265,17 +265,20 @@ def p16():
     """Capacity drain (addendum): no single off-ball move gains after one reply, but a sequence over the phase drains
     a defender's capacity and opens a shot. The board: O2 an elite shooter on the wing; X2 sags to the elbow and is
     the only defender who can answer cuts into his side, so every answer spends his Move or Quick Step."""
-    s = board(['I11', 'B7', 'H9', 'A3', 'Q3'], ['I10', 'E7', 'H8', 'C4', 'P3'], ['N', 'W', 'N', 'W', 'E'])
+    s = board(['I11', 'B7', 'H9', 'D3', 'Q3'], ['I10', 'F7', 'H8', 'E3', 'P3'], ['N', 'W', 'N', 'W', 'E'])
 
     def check(lt):
         from .trainer import credit
         t, line = lt['turn'], lt['line']
-        reply = [credit(s, [a], horizon='reply')[0]['phi'] for a in t if a.side == 'O' and a.piece not in (s.ball,)
-                 and a.kind in ('move', 'qs', 'sprint')]
+        offball = [a for a in t if a.side == 'O' and a.piece != s.ball and a.kind in ('move', 'qs', 'sprint')]
+        reply = credit(s, offball[:1], horizon='reply')[0]['phi'] if offball else None
+        phase = credit(s, offball[:1], horizon='phase')[0] if offball else None
         drained = lt['drained']
-        ok = bool(line) and drained and lt['gain'] >= 3.0
+        ok = bool(offball) and drained and lt['gain'] >= 3.0 and phase is not None and phase['drain'] > 0
         return ok, (f"line: {' / '.join(line) or 'none'}; X2 capacity spent: {'yes' if drained else 'no'}; "
-                    f"value {lt['start']:+.1f} to {lt['end']:+.1f}; one-reply credit of the first move {reply[0] if reply else 0:+.1f}")
+                    f"value {lt['start']:+.1f} to {lt['end']:+.1f}; first off-ball move credit "
+                    + (f"{reply:+.1f} over one reply, {phase['phi']:+.1f} over the phase (drain {phase['drain']:+.1f})"
+                       if phase else 'none: no off-ball move in its first turn'))
     return 'Capacity drain: off-ball moves over the phase drain X2 and open O2', s, check
 
 
@@ -298,8 +301,10 @@ def p17():
                 for lk in lks:
                     if lk.route == 'shoot' and lk.c != b.o[i]:
                         bad.append('a shot from a square he is not on')
-                    if lk.route == 'drive' and (not o_to_act or b.turn_n > 0):
+                    if lk.route == 'drive' and lk.now and not (o_to_act and b.turn_n == 0):
                         bad.append('a drive and shot that needs three actions')
+                    if lk.route in ('drive', 'shoot') and not lk.now and lk.replies < 1:
+                        bad.append('a later drive with no defence reply before it')
                     if i != b.ball and lk.replies < 1:
                         bad.append('a receiver shooting without a defence reply')
                     if lk.route == 'cut' and not (o_to_act and b.turn_n == 0) and lk.replies < 2:

@@ -62,3 +62,14 @@ def pre_denial(monkeypatch):
     from playmaker_engine import rules_config as RC
     if not os.environ.get('PM_LIVE_RULES'):
         monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_DENIAL))
+
+
+@pytest.fixture(autouse=True)
+def _quick_decisions():
+    """Step 3m: the decision engine thinks for its level's time budget (ai_profiles.json). Tests check what it does,
+    not how long it thinks, so the budgets are scaled down here (the exam sets full budgets itself)."""
+    from playmaker_engine import agent as AG
+    old = AG.SCALE['value']
+    AG.SCALE['value'] = 0.05
+    yield
+    AG.SCALE['value'] = old

@@ -36,7 +36,7 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
     pd = AG.propose_defence(make, po['squares'], po['ball'], seed + 1, budget=setup_budget, level=levels[1])
     s = make([B.sq(q) for q in po['squares']], [B.sq(q) for q in pd['squares']], pd['arrows'], po['ball'])
     agents = {'O': AG.Agent('O', levels[0], seed=seed), 'X': AG.Agent('X', levels[1], seed=seed + 7)}
-    keys, snaps, events = [], [], []
+    keys, snaps, events, triples, geo = [], [], [], [], []
     for _ in range(400):
         if s.stage == 'over':
             break
@@ -44,6 +44,7 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
         if side == 'O' and s.stage == 'play' and s.turn_n == 0:
             keys.append(coarse_key(s))
             snaps.append(s.encode())
+            geo.append(positions(s))
         a = agents[side].choose(s)
         node = apply(s, a)
         rolled = None
@@ -57,12 +58,98 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
                            shot=dict(contest=nxt.result.contest, points=nxt.result.points, kind=nxt.result.kind,
                                      contester=nxt.result.contester)
                            if not isinstance(nxt, ChanceNode) and nxt.stage == 'over' and nxt.result else None))
+        triples.append((s, a, nxt))
         s = nxt
     from .scoring import score
+    from .labels import recognise, unnamed
     sc = score(s).total if s.stage == 'over' else 0
+    try:
+        labs = recognise(triples)
+        un = unnamed(triples, labs)
+    except Exception as e:                                  # reported, never hidden
+        labs, un = [], [dict(label='recogniser error', text=repr(e))]
     return dict(off=off, dfn=dfn, seed=seed, keys=keys, score=sc, result=s.result.kind if s.result else None,
-                snapshots=snaps, events=events,
+                snapshots=snaps, events=events, geometry=geo, labels=[l['label'] for l in labs], unnamed=un,
                 decisions=[n for ag in agents.values() for n in ag.notes if n.get('event') == 'decision'])
+
+
+def positions(s):
+    """Franks-style geometry at an offence decision: the on-ball defender (nearest the ball) against the ball-rim
+    line, and each help defender's depth (0 = at the rim, 1 = at his man) and shading toward the ball. A defender's
+    man is the attacker nearest him (each attacker once)."""
+    import math
+    rim = RC.RIM
+    bp = s.o[s.ball]
+    onb = min(range(5), key=lambda j: (B.cheb(s.x[j], bp), j))
+    out = {}
+    vx, vy = bp[0] - rim[0], bp[1] - rim[1]
+    L = math.hypot(vx, vy) or 1.0
+    q = s.x[onb]
+    t = ((q[0] - rim[0]) * vx + (q[1] - rim[1]) * vy) / (L * L)
+    off = abs((q[0] - rim[0]) * vy - (q[1] - rim[1]) * vx) / L
+    out['onball'] = dict(t=round(t, 3), off_line=round(off, 3), on_line=off <= 0.5 and 0 < t < 1)
+    taken = {s.ball}
+    helps = []
+    for j in sorted(range(5), key=lambda j: B.cheb(s.x[j], bp)):
+        if j == onb:
+            continue
+        man = min((i for i in range(5) if i not in taken), key=lambda i: (B.cheb(s.x[j], s.o[i]), i), default=None)
+        if man is None:
+            continue
+        taken.add(man)
+        m = s.o[man]
+        mx, my = m[0] - rim[0], m[1] - rim[1]
+        Lm = math.hypot(mx, my) or 1.0
+        p = s.x[j]
+        depth = ((p[0] - rim[0]) * mx + (p[1] - rim[1]) * my) / (Lm * Lm)
+        cross = ((p[0] - rim[0]) * my - (p[1] - rim[1]) * mx) / Lm
+        ball_side = ((bp[0] - rim[0]) * my - (bp[1] - rim[1]) * mx)
+        shade = cross * (1 if ball_side < 0 else -1) * -1
+        helps.append(dict(depth=round(depth, 3), shade=round(shade, 3)))
+    out['help'] = helps
+    return out
+
+
+def aggregate(rows):
+    """The aggregate check (B9) against REFERENCE_real_basketball_targets.md: averages over the possessions."""
+    import statistics as st
+    from collections import Counter
+    ok = [r for r in rows if 'error' not in r]
+    geo = [g for r in ok for g in r['geometry']]
+    helps = [h for g in geo for h in g['help']]
+    onb = [g['onball'] for g in geo]
+    shots = [(e['phase'], e['shot']) for r in ok for e in r['events'] if e['shot']]
+    by_phase = {}
+    for ph, sh in shots:
+        d = by_phase.setdefault(ph, dict(n=0, tight=0, points=0))
+        d['n'] += 1
+        d['tight'] += 1 if sh['contester'] >= 0 and sh['contest'] >= 3 else 0
+    ppp = {}
+    for r in ok:
+        ph = r['events'][-1]['phase'] if r['events'] else 0
+        ppp.setdefault(ph, []).append(r['score'])
+    ev = [e for r in ok for e in r['events']]
+    steals = [e for e in ev if e['kind'] == 'steal']
+    ints = [e for e in ev if e['kind'] == 'intercept']
+    dribbles = [e for e in ev if e['kind'] == 'dribble']
+    lab = Counter(l for r in ok for l in r['labels'])
+    un = [dict(seed=r['seed'], off=r['off'], dfn=r['dfn'], **u) for r in ok for u in r['unnamed']]
+    return dict(
+        possessions=len(ok), errors=len(rows) - len(ok),
+        points_per_possession=round(st.mean(r['score'] for r in ok), 2) if ok else None,
+        help_depth=round(st.mean(h['depth'] for h in helps), 3) if helps else None,
+        help_shade=round(st.mean(h['shade'] for h in helps), 3) if helps else None,
+        onball_on_line=round(sum(o['on_line'] for o in onb) / len(onb), 3) if onb else None,
+        onball_depth=round(st.mean(o['t'] for o in onb), 3) if onb else None,
+        drive_success=round(sum('success' in (e['roll'] or '') for e in dribbles) / len(dribbles), 3) if dribbles else None,
+        dribbles=len(dribbles),
+        tight_by_phase={ph: round(d['tight'] / d['n'], 3) for ph, d in sorted(by_phase.items())},
+        shots_by_phase={ph: d['n'] for ph, d in sorted(by_phase.items())},
+        points_by_end_phase={ph: round(st.mean(v), 1) for ph, v in sorted(ppp.items())},
+        steal_attempts=len(steals), steal_success=sum((e['roll'] or '').endswith('stolen') for e in steals),
+        intercept_attempts=len(ints), intercept_success=sum('failure' in (e['roll'] or '') for e in ints),
+        turnovers_per_possession=round(sum(r['result'] in ('turnover_end', 'steal') for r in ok) / len(ok), 3) if ok else None,
+        labels=dict(lab.most_common()), unnamed=un)
 
 
 def _job(args):
@@ -122,6 +209,12 @@ def main():
     rows = run(a.n, levels, a.scale, a.workers, a.cap, a.store)
     bad = [r for r in rows if 'error' in r]
     print(f'{len(rows)} possessions, {len(bad)} errors', bad[:3])
+    if a.what == 'aggregate':
+        rep = aggregate(rows)
+        print(json.dumps({k: v for k, v in rep.items() if k != 'unnamed'}, indent=1))
+        print('unnamed actions:', len(rep['unnamed']))
+        if a.store:
+            json.dump(rep, open(a.store.replace('.json', '_report.json'), 'w'), indent=1)
     if a.what == 'seed':
         V = write_table([r for r in rows if 'error' not in r])
         print('phase means', {k: v for k, v in V.items() if k.startswith('_phase')})

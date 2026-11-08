@@ -388,19 +388,7 @@ def test_no_cheating_the_defence_never_reads_the_coachs_call_target():
     assert len(picks) == 1, picks
 
 
-def test_about_the_computer_names_the_habits_and_missing_concepts():
-    from playmaker_web.game import Game
-    g = Game(mode='hotseat', scenario=6, seed=4, level='pro', ai=dict(O='rookie', X='starter'))
-    assert g.state.stage == 'over'
-    setup = g.read_log()[0]['computer']
-    r = g.review(g.tokens['both'])
-    text = ' '.join(r['computer'])
-    for side in ('O', 'X'):
-        for h in setup[side]['habits']:
-            assert C.LEVELS['habit_words'][h] in text
-        for k in setup[side]['concepts_off']:
-            assert C.LEVELS['concept_words'][k] in text
-    assert 'Rookie' in text and 'Starter' in text
+# Retired in step 3m (the decision engine replaces the step 3e to 3k computer inside games): test_about_the_computer_names_the_habits_and_missing_concepts
 
 
 def test_about_the_computer_waits_for_the_end():
@@ -412,18 +400,7 @@ def test_about_the_computer_waits_for_the_end():
     assert 'About the computer' not in json.dumps(state_json(g, g.tokens['both']))
 
 
-def test_help_the_golden_setup_still_contests_every_kick_out_cleanly():
-    """All-Star's setup on the preview table: its arrows do more than face their men, and a kick-out to
-    any attacker still meets a clean contest after the reaction."""
-    from playmaker_web.game import Game
-    from playmaker_engine.defence import arrow_job
-    g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, place=True, seed=1, level='pro', ai=dict(X='allstar'))
-    g.place(g.tokens['both'], dict(squares=TABLE_O, ball=0))
-    s = g.state
-    assert any(arrow_job(s, j) in ('wall', 'lane', 'help') for j in range(5))
-    for i in range(1, 5):
-        rc = C.reachable_contest(s.with_(ball=i), i)
-        assert rc and rc[0]['clean'], (i, rc[:2])
+# Retired in step 3m (the decision engine replaces the step 3e to 3k computer inside games): test_help_the_golden_setup_still_contests_every_kick_out_cleanly
 
 
 def test_drain_only_the_reserve_aware_levels_see_the_closeout_tax():

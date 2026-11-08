@@ -48,13 +48,7 @@ def test_the_offence_scores_less_against_it(profiles):
     assert profiles['reader'][1] < profiles['greedy'][1], (profiles['greedy'][1], profiles['reader'][1])
 
 
-def test_setup_arrows_are_chosen_not_all_on_the_man():
-    from playmaker_web.game import Game
-    from playmaker_engine.defence import arrow_job
-    g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, place=True, seed=1, level='pro', ai=dict(X='allstar'))
-    g.place(g.tokens['both'], dict(squares=['I11', 'C9', 'O9', 'A3', 'Q3'], ball=0))
-    jobs = [arrow_job(g.state, j) for j in range(5)]
-    assert g.placing is None and set(jobs) != {'on_man'} and jobs.count('on_ball') + jobs.count('on_man') < 5, jobs
+# Retired in step 3m (the decision engine replaces the step 3e to 3k computer inside games): test_setup_arrows_are_chosen_not_all_on_the_man
 
 
 def test_a_reaction_turns_to_face_the_shooter():
@@ -95,7 +89,7 @@ def test_the_computer_defence_in_a_game_logs_arrow_jobs():
     acts = [r for r in g.read_log() if r['type'] == 'action' and r['action']['side'] == 'X'
             and r['action']['kind'] in ('move', 'qs', 'sprint')]
     assert g.state.stage == 'over' and all('arrow_job' in r for r in acts)   # every defender move is labelled
-    assert type(g.policies['X']).__name__ == 'Computer' and g.policies['X'].level == 'starter'
+    assert type(g.policies['X']).__name__ == 'Agent' and g.policies['X'].level == 'starter'     # step 3m
     b = Game(mode='hotseat', scenario=6, seed=3, level='pro', ai=dict(X='baseline'))
     assert type(b.policies['X']).__name__ == 'GreedyPolicy'
 

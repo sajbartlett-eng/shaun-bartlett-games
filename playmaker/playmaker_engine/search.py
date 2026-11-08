@@ -386,11 +386,21 @@ class Searcher:
     def root(self, s, max_depth, min_depth=1):
         """Iterative deepening. Returns (scored turns [(value, turn)], depth reached, the principal turn)."""
         side = actor(s)
-        root_read = Read(s, exact=True)
-        ts = turns(s, self.p['beam'], read=root_read, evaluate=self.quick, deadline=None)
-        deadline, self.deadline = self.deadline, float('inf')      # the first ply always completes
-        results = [(self.leaf(play_turn(s, t)) if not isinstance(play_turn(s, t), ChanceNode)
-                    else self.value(play_turn(s, t), 0, VMIN, VMAX), t) for _, t in ts]
+        budget = self.deadline - time.time()
+        root_read = Read(s, exact=budget >= 0.8)            # the rules' exact reach when the budget allows
+        ts = turns(s, self.p['beam'], read=root_read, evaluate=self.quick, deadline=None,
+                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1)
+        deadline, self.deadline = self.deadline, float('inf')
+        results = []
+        sign = 1 if side == 'O' else -1
+        for k, (q, t) in enumerate(ts):
+            # the first ply: each turn's leaf; once the deadline passes (and the first three have their leaf), the
+            # rest keep their ordering value
+            if k >= 3 and time.time() > deadline:
+                results.append((sign * q, t))
+                continue
+            n = play_turn(s, t)
+            results.append((self.leaf(n) if not isinstance(n, ChanceNode) else self.value(n, 0, VMIN, VMAX), t))
         self.deadline = deadline
         reached = 1
         self.partial = 0

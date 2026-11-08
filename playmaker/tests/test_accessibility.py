@@ -109,7 +109,9 @@ def test_accessibility(tmp_path):
     assert out['escape closes'], out['dialogs']
     assert out['step bar'] == [], out['step bar']
     steps = out['steps']                                      # every action, in order, with OK focused
-    assert len(steps) >= 3 and all(f == 'stepOk' for _, f, _, _, _ in steps), steps
+    # step 3m: a long computer turn can cross a phase, and the phase diagram's Continue takes focus between steps
+    assert len(steps) >= 3 and all(f in ('stepOk', 'phaseContinue') for _, f, _, _, _ in steps), steps
+    assert sum(f == 'stepOk' for _, f, _, _, _ in steps) >= len(steps) - 2, steps
     for k, (count, _, shown, _, _) in enumerate(steps):       # "so far": the actions before this one, never after
         assert shown == int(count.split('action ')[1].split(' of')[0]) - 1, steps
     for _, _, _, ghost, text in steps:                        # a moved piece leaves a ghost where it was

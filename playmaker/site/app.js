@@ -64,15 +64,25 @@ async function initStart() {
   for (const t of o.teams) { $('teamA').append(el('option', { value: t.name, text: t.name })); $('teamB').append(el('option', { value: t.name, text: t.name })); }
   $('teamA').value = o.first_game[0]; $('teamB').value = o.first_game[1];
   initLevels();
+  fillProfiles();
+  for (const id of ['playersBtn', 'playersBtn2']) if ($(id)) $(id).onclick = () => playersPage();
+  for (const id of ['profA', 'profB']) $(id).addEventListener('change', async () => {
+    if ($(id).value !== '__new') return;
+    const name = prompt('Name for the new player'); if (!name) { $(id).value = ''; return; }
+    const p = await PMRecords.createProfile(name); await fillProfiles(); $(id).value = p.id;
+  });
+  $('format').addEventListener('change', () => { $('perSideRow').classList.toggle('hidden', $('format').value !== 'digital'); });
   for (const s of o.scenarios) $('scenario').append(el('option', { value: s.n, text: `${s.n}. ${s.title} (${s.kind}, clock ${s.clock})` }));
   const showKind = () => {
     const k = $('kind').value;
     $('scenarioRow').classList.toggle('hidden', k !== 'scenario');
     $('teamsRow').classList.toggle('hidden', k === 'scenario');
     $('levelsRow').classList.toggle('hidden', k === 'scenario');
+    $('formatRow').classList.toggle('hidden', k !== 'full');
+    $('perSideRow').classList.toggle('hidden', $('format').value !== 'digital');
     const s = o.scenarios.find(x => String(x.n) === $('scenario').value);
     $('scenarioText').textContent = k === 'scenario' && s ? `${s.text} O: ${s.off}. X: ${s.dfn}.` :
-      k === 'full' ? 'Two possessions on the preview table setup; each player attacks once. Higher total wins.' :
+      k === 'full' ? 'Sides swap every possession; the higher total wins. Digital: several possessions each and a turnover scores 0. Tabletop: one possession each, the printed rules.' :
       'One possession on the preview table setup.';
   };
   $('kind').onchange = showKind; $('scenario').onchange = showKind; showKind();
@@ -113,6 +123,8 @@ function choosePath(which, showKind, quiet) {
   $('aiRow').classList.toggle('hidden', !computer && !scenario);
   $('aiSeatRow').classList.toggle('hidden', !computer);
   $('modeRow').classList.toggle('hidden', computer);
+  $('profBRow').classList.toggle('hidden', which !== 'friend');
+  $('profARow').firstChild.textContent = which === 'friend' ? 'Player A ' : 'Your profile ';
   $('rollRow').classList.toggle('hidden', which !== 'friend');      // the rulebook's setup: the higher d20 attacks first
   if (computer) $('mode').value = 'hotseat';
   // the last game's choices come back: the computer's level, your seat and the scouting level
@@ -152,7 +164,7 @@ const card = k => OPTS.cards.find(c => c.key === k);
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 function rosterMode() { return $('roster').value; }
 function teamName(i) { return i ? 'Away' : 'Home'; }
-function stdOf(i) { return i && $('handicap').checked && rosterMode() === 'build' ? $('standardB').value : $('standard').value; }
+function stdOf(i) { return i && $('handicap').checked && ['build', 'draft'].includes(rosterMode()) ? $('standardB').value : $('standard').value; }
 function initLevels() {
   const L = OPTS.levels;
   const words = (list, id) => (list.find(x => x.id === id) || {}).words || '';
@@ -163,9 +175,10 @@ function initLevels() {
     const m = rosterMode();
     $('rosterNote').textContent = L.rosters[m] || '';
     $('prescribedRow').classList.toggle('hidden', m !== 'prescribed' && !(m === 'random' && $('randomFor').value !== 'both'));
-    $('buildRow').classList.toggle('hidden', m !== 'build' && m !== 'free');
-    $('handicapRow').classList.toggle('hidden', m !== 'build');
-    $('standardBRow').classList.toggle('hidden', !(m === 'build' && $('handicap').checked));
+    $('buildRow').classList.toggle('hidden', m !== 'build' && m !== 'free' && m !== 'draft');
+    $('handicapRow').classList.toggle('hidden', m !== 'build' && m !== 'draft');
+    $('standardBRow').classList.toggle('hidden', !((m === 'build' || m === 'draft') && $('handicap').checked));
+    $('buildRow').querySelector('.builders').classList.toggle('hidden', m === 'draft');
     $('randomRow').classList.toggle('hidden', m !== 'random');
     $('draftRow').classList.toggle('hidden', m !== 'draft');
     if (m === 'build' || m === 'free') { builder(0); builder(1); }
@@ -348,6 +361,7 @@ async function create() {
   if (k === 'scenario') body.scenario = Number($('scenario').value);
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
+    if (k === 'full') { body.match_format = $('format').value; body.per_side = Number($('perSide').value); }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
     body.age = $('age').value; body.roster = m;
@@ -363,9 +377,17 @@ async function create() {
       body.draft = draftId;
     }
   }
+  const humans = matchPlayers(body);
+  if (path === 'computer' && $('aiLevel').value === 'allstar' && humans.mine && humans.mine.profile) {
+    try {                                          // the All-Star scouts the human's completed stored games (B8)
+      const done = (await PMRecords.matches()).filter(m => m.done && PMRecords.sideOf(m, humans.mine.profile));
+      if (done.length) body.scouting = PMTrainer.scouting(await PMRecords.groupsOf(humans.mine.profile), done.length);
+    } catch (e) { /* no records in this browser */ }
+  }
   try {
     const r = await api('/api/new', body);
     G = { code: r.code, token: r.token };
+    try { G.rec = await startRecord(r.code, body, humans.players); } catch (e) { G.rec = null; }
     if (mode === 'remote') {
       const seat = await askSeat(r.code);
       G.token = (await api('/api/join', { code: r.code, seat })).token;
@@ -414,9 +436,12 @@ function render() {
   document.title = `${$('title').textContent} · Playmaker playtest`;
   $('clock').textContent = s.inbound ? `${s.clock} (frozen)` : s.clock;
   $('phase').textContent = s.phase + (s.inbound ? ` · inbound ${s.inbound}` : '');
-  $('poss').textContent = s.full ? `${s.possession} of 2` : '1';
-  if (s.full) { const t = s.scores.map(x => `${x.attacker}: ${x.total}`).join(' · '); $('score').textContent = t || '0'; }
+  $('poss').textContent = s.full ? `${s.possession} of ${s.n_poss || 2}` : '1';
+  if (s.full && s.strip) $('score').textContent = `A ${s.strip.totals.A} · B ${s.strip.totals.B}`;
+  else if (s.full) { const t = s.scores.map(x => `${x.attacker}: ${x.total}`).join(' · '); $('score').textContent = t || '0'; }
   else $('score').textContent = String(s.bonus - 5 * s.turnovers);
+  renderStrip(s);
+  if (s.scores && s.scores.length > (trainerSeen || 0)) onPossessionOver(s);
   const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', baseline: 'baseline' };
   const ai = Object.entries(s.ai || {}).map(([k, v]) => `${k === 'O' ? 'offence' : 'defence'}: ${LV[v] || v}`).join('; ');
   $('meta').innerHTML = '';
@@ -943,11 +968,13 @@ function endModal() {
     if (m.tiebreak) kids.push(el('p', { text: `Tiebreak: A rolled ${m.tiebreak.A.roll} (needs ${m.tiebreak.A.need} or less), B rolled ${m.tiebreak.B.roll} (needs ${m.tiebreak.B.need} or less).` }));
   }
   const nav = el('div', { class: 'buttons' }, [
-    s.full && s.possession === 1 ? el('button', { class: 'primary', text: 'Start possession 2 (sides swap)', onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; phasesInit = false; render(); } }) : null,
-    el('button', { class: s.full && s.possession === 1 ? '' : 'primary', text: 'The story of the play', onclick: () => { closeModal(); showStory(); } }),
+    s.full && s.possession < (s.n_poss || 2) ? el('button', { class: 'primary', id: 'nextPoss', text: `Start possession ${s.possession + 1} of ${s.n_poss || 2} (sides swap)`, onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; phasesInit = false; render(); } }) : null,
+    el('button', { class: s.full && s.possession < (s.n_poss || 2) ? '' : 'primary', text: 'The story of the play', onclick: () => { closeModal(); showStory(); } }),
     el('button', { text: 'Close', onclick: closeModal }),
     el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } })]);
   kids.push(nav);
+  kids.splice(2, 0, el('div', { id: 'trainerBox' }, trainerBoxKids(s.possession)));
+  if (s.match && G.rec) kids.splice(3, 0, el('div', { id: 'ratingBox' }, ratingKids()));
   if (s.feedback_due) {
     const rv = el('details', { class: 'endsec' }, [el('summary', { text: 'Review: your plan against the board' }), el('section', { id: 'reviewBox', class: 'review' }, [
       s.level === 'pro' ? el('button', { text: 'Show the full review', onclick: loadReview }) : el('p', { class: 'note', text: 'Loading the review…' })])]);
@@ -1222,7 +1249,10 @@ function renderPlacement() {
   const problem = placeProblem(P);
   const confirm = el('button', { class: 'primary', text: `Confirm the ${who.toLowerCase()} setup`, onclick: confirmPlacement });
   if (problem) confirm.setAttribute('disabled', 'disabled');
+  const fast = async body => { try { const r = await api('/api/place', Object.assign({ code: G.code, token: G.token }, body)); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } };
   $('sideButtons').append(confirm,
+    el('button', { text: 'Accept the proposed setup', onclick: () => fast({ propose: true }) }),
+    el('button', { text: 'Repeat my last setup', onclick: () => fast({ repeat: true }) }),
     el('button', { text: 'Start again', onclick: () => { place = null; renderPlacement(); renderCourt(); } }),
     el('button', { text: Object.keys(s.ai || {}).length ? 'Use the standard setup for my side' : 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }),
     ...(problem ? [el('p', { class: 'note', role: 'status', text: problem })] : []));
@@ -1748,4 +1778,162 @@ async function showStory() {
     dias.length ? el('button', { text: 'Save all as images', onclick: async () => { for (const [d, p] of dias) await saveDiagram(d, `${st.code}_possession${p.possession}_phase${p.phase}.png`); } }) : null,
     el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); render(); } })]));
   modal(kids, () => render());
+}
+
+
+// ---------------------------------------------------------------- step 3m: the match strip, records and the trainer
+let trainerSeen = null;                  // how many finished possessions the trainer has read for this page
+const trainerReads = {};                 // possession -> the trainer's read
+function renderStrip(s) {
+  const box = $('strip'); if (!box) return;
+  box.innerHTML = '';
+  if (!s.full || !s.strip) return;
+  for (const e of s.strip.entries) box.append(el('span', { class: `chip ${e.attacker} ${e.mark === 'TO' ? 'to' : e.mark === 'FT' ? 'ft' : ''}`, title: `Possession ${e.possession}: player ${e.attacker} ${e.mark === 'TO' ? 'turned it over' : e.mark === 'FT' ? 'went to the line' : 'scored ' + e.total}`,
+    text: `${e.attacker} ${e.mark === 'FT' ? 'FT ' + e.total : e.mark}` }));
+  const left = (s.n_poss || 2) - s.strip.entries.length;
+  for (let k = 0; k < left; k++) box.append(el('span', { class: 'chip empty', 'aria-hidden': 'true', text: '·' }));
+}
+async function fillProfiles() {
+  let ps = [];
+  try { ps = await PMRecords.profiles(); } catch (e) { ps = []; }
+  for (const id of ['profA', 'profB']) {
+    const cur = $(id).value; $(id).innerHTML = '';
+    $(id).append(el('option', { value: '', text: 'No profile' }), ...ps.map(p => el('option', { value: p.id, text: `${p.name} (${Math.round(p.rating)})` })),
+      el('option', { value: '__new', text: 'New player…' }));
+    if (cur && ps.some(p => p.id === cur)) $(id).value = cur;
+  }
+  try { const last = JSON.parse(localStorage.getItem('pm_profiles') || 'null'); if (last) { if (last.A && ps.some(p => p.id === last.A)) $('profA').value = last.A; if (last.B && ps.some(p => p.id === last.B)) $('profB').value = last.B; } } catch (e) { /* ignore */ }
+}
+function matchPlayers(body) {
+  const pa = $('profA').value && $('profA').value !== '__new' ? $('profA').value : null;
+  const pb = $('profB').value && $('profB').value !== '__new' ? $('profB').value : null;
+  try { localStorage.setItem('pm_profiles', JSON.stringify({ A: pa, B: pb })); } catch (e) { /* ignore */ }
+  const name = id => { const o = id && document.querySelector(`#profA option[value="${id}"]`); return o ? o.textContent.replace(/ \(\d+\)$/, '') : null; };
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star' };
+  const players = { A: { profile: null, name: 'Player A' }, B: { profile: null, name: 'Player B' } };
+  let mine = null;
+  if (path === 'computer' && body.ai && (body.ai.A || body.ai.B)) {
+    const me = body.ai.A ? 'B' : 'A', other = me === 'A' ? 'B' : 'A';
+    players[me] = { profile: pa, name: name(pa) || 'You' }; players[other] = { computer: body.ai[other], name: `Computer (${LV[body.ai[other]]})` };
+    mine = players[me];
+  } else {
+    players.A = { profile: pa, name: name(pa) || 'Player A' }; players.B = { profile: pb, name: name(pb) || 'Player B' };
+  }
+  return { players, mine };
+}
+async function startRecord(code, body, players) {
+  if (!players.A.profile && !players.B.profile) return null;
+  const rec = { id: `m${Date.now().toString(36)}${code}`, code, date: new Date().toISOString(), format: body.match_format || 'tabletop',
+    per_side: body.per_side || (body.full ? 1 : 1), settings: { age: body.age || 'senior', standard: typeof body.standard === 'string' ? body.standard : 'pro',
+      roster: body.roster || 'prescribed', deal: body.deal || null, level: body.level, mode: body.mode, teams: body.teams || null },
+    players, trainer: {}, scores: [], totals: { A: 0, B: 0 }, done: false };
+  await PMRecords.saveMatch(rec);
+  return rec.id;
+}
+function humanPlayers() { return ['A', 'B'].filter(p => !(st.ai && Object.keys(st.ai).length === 2) && !isComputer(p)); }
+function isComputer(p) {
+  const side = st.attacker === p ? 'O' : 'X';
+  return !!(st.ai && st.ai[side]);
+}
+function trainerBoxKids(poss) {
+  const read = trainerReads[poss];
+  if (!read) return Object.keys(st.ai || {}).length === 2 ? [] : [el('p', { class: 'note', role: 'status', text: 'The trainer is reading this possession…' })];
+  const out = [];
+  for (const p of Object.keys(read.players || {})) {
+    if (!summaryDue(p, poss)) continue;
+    const e = PMTrainer.summaryEl(read, p, openWhy); if (e) out.push(e);
+  }
+  if (!out.length && Object.keys(read.players || {}).length) out.push(el('p', { class: 'note', text: 'The trainer read this possession (in the match review).' }));
+  return out;
+}
+let profileRatings = {};
+function summaryDue(player, poss) {
+  // fade the summaries as the player's rating rises: every possession at first, then every 2 or 3 (D5)
+  const r = profileRatings[player] || 1500, fade = (OPTS && OPTS.trainer && OPTS.trainer.fade) || [[0, 1600, 1], [1600, 1800, 2], [1800, 9999, 3]];
+  const n = (fade.find(([lo, hi]) => r >= lo && r < hi) || [0, 0, 1])[2];
+  return n <= 1 || poss % n === 0 || poss === (st.n_poss || 2);
+}
+async function onPossessionOver(s) {
+  const n = s.scores.length;
+  if (trainerSeen === null) { trainerSeen = n - 1; }
+  if (n <= trainerSeen) return;
+  trainerSeen = n;
+  const poss = s.scores[n - 1].possession;
+  let rec = null;
+  try { rec = G.rec ? await PMRecords.match(G.rec) : null; } catch (e) { rec = null; }
+  if (rec) { for (const p of ['A', 'B']) if (rec.players[p] && rec.players[p].profile) { const pr = await PMRecords.profile(rec.players[p].profile); if (pr) profileRatings[p] = pr.rating; } }
+  if (Object.keys(s.ai || {}).length < 2) {
+    try { trainerReads[poss] = await api('/api/trainer', { code: G.code, token: G.token, possession: poss }); }
+    catch (e) { trainerReads[poss] = { possession: poss, players: {}, error: e.message }; }
+    const box = $('trainerBox'); if (box && st.possession === poss) { box.innerHTML = ''; box.append(...trainerBoxKids(poss)); }
+  }
+  if (rec) {
+    rec.scores = s.scores.map(x => ({ possession: x.possession, attacker: x.attacker, total: x.total, ended: x.ended }));
+    rec.totals = s.strip ? s.strip.totals : rec.totals;
+    if (trainerReads[poss]) rec.trainer[poss] = trainerReads[poss];
+    if (s.match) await finishRecord(rec, s);
+    await PMRecords.saveMatch(rec);
+  }
+}
+let ratingNotes = [];
+async function finishRecord(rec, s) {
+  if (rec.done) return;
+  rec.done = true; rec.winner = s.match.winner; rec.totals = { A: s.match.A, B: s.match.B };
+  ratingNotes = [];
+  for (const p of ['A', 'B']) {
+    const me = rec.players[p]; if (!me || !me.profile) continue;
+    const pr = await PMRecords.profile(me.profile); if (!pr) continue;
+    const o = rec.players[p === 'A' ? 'B' : 'A'];
+    let opponent = null;
+    if (o && o.profile) { const op = await PMRecords.profile(o.profile); if (op) opponent = { rating: op.rating, rd: op.rd }; }
+    const gs = await PMRecords.groupsOf(pr.id);
+    const losses = gs.slice(-60).map(g => g.loss).sort((a, b) => a - b);
+    const med = losses.length ? losses[losses.length >> 1] : 9.9;
+    try {
+      const r = await api('/api/rate', { player: { rating: pr.rating, rd: pr.rd, vol: pr.vol }, opponent, my_total: rec.totals[p], opp_total: rec.totals[p === 'A' ? 'B' : 'A'],
+        possessions: rec.per_side, level: o && o.computer ? o.computer : null, age: rec.settings.age, median_loss: med,
+        recent_scores: (pr.scores || []).slice(-4), weakest: PMTrainer.weakest(gs) });
+      ratingNotes.push(`${pr.name}: rating ${Math.round(pr.rating)} → ${Math.round(r.player.rating)} (± ${Math.round(r.player.rd)}); match score ${r.score.toFixed(2)}.`);
+      for (const sgg of r.suggestions) ratingNotes.push(sgg.kind === 'practice' ? `Practice for ${pr.name}: ${sgg.how} ${sgg.why}` : sgg.text);
+      Object.assign(pr, r.player); pr.scores = (pr.scores || []).concat([r.score]); pr.suggestions = r.suggestions;
+      await PMRecords.saveProfile(pr);
+    } catch (e) { ratingNotes.push(`${pr.name}: the rating could not be updated (${e.message}).`); }
+  }
+  const box = $('ratingBox'); if (box) { box.innerHTML = ''; box.append(...ratingKids()); }
+}
+function ratingKids() { return ratingNotes.length ? [el('h3', { text: 'Ratings' }), ...ratingNotes.map(t => el('p', { text: t }))] : []; }
+async function openWhy(poss, group, player) {
+  modal([el('p', { class: 'note', role: 'status', text: 'Reading the turn group…' })], closeModal);
+  try {
+    const w = await api('/api/why', { code: G.code, token: G.token, possession: poss, group, player });
+    modal([...PMTrainer.whyEl(w), el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); if (st.stage === 'over') endModal(); } })], closeModal);
+  } catch (e) { modal([el('p', { text: e.message }), el('button', { text: 'Close', onclick: closeModal })], closeModal); }
+}
+async function playersPage() {
+  const ps = await PMRecords.profiles();
+  const list = el('ul', { class: 'profiles' }, ps.map(p => el('li', {}, [el('strong', { text: p.name }), ` rating ${Math.round(p.rating)} ± ${Math.round(p.rd)} `,
+    el('button', { class: 'small', text: 'Trainer', onclick: async () => modal([...(await PMTrainer.profileEl(p.id)), el('button', { class: 'primary', text: 'Back', onclick: playersPage })], closeModal) }),
+    el('button', { class: 'small', text: 'Rename', onclick: async () => { const n = prompt('New name', p.name); if (n) { await PMRecords.renameProfile(p.id, n); await fillProfiles(); playersPage(); } } }),
+    el('button', { class: 'small', text: 'Delete', onclick: async () => { if (confirm(`Delete ${p.name}? Their matches stay in the records.`)) { await PMRecords.deleteProfile(p.id); await fillProfiles(); playersPage(); } } })])));
+  const sel = id => el('select', { id }, ps.map(p => el('option', { value: p.id, text: p.name })));
+  const s1 = sel('h2hA'), s2 = sel('h2hB'); if (ps.length > 1) s2.value = ps[1].id;
+  const file = el('input', { type: 'file', accept: 'application/json,.json', id: 'importFile', 'aria-label': 'Records file to import' });
+  modal([el('h2', { text: 'Players and records' }),
+    ps.length ? list : el('p', { class: 'note', text: 'No players yet.' }),
+    el('button', { text: 'New player', onclick: async () => { const n = prompt('Name for the new player'); if (n) { await PMRecords.createProfile(n); await fillProfiles(); playersPage(); } } }),
+    el('h3', { text: 'Head to head' }),
+    ps.length > 1 ? el('p', {}, [s1, ' v ', s2, ' ', el('button', { text: 'Show', onclick: async () => modal([...(await PMTrainer.headToHeadEl(s1.value, s2.value)), el('button', { class: 'primary', text: 'Back', onclick: playersPage })], closeModal) })])
+      : el('p', { class: 'note', text: 'Two players are needed.' }),
+    el('h3', { text: 'Export and import' }),
+    el('p', { class: 'note', text: 'One JSON file holds every player and match on this device. Importing it reproduces them exactly.' }),
+    el('button', { text: 'Export records', onclick: async () => {
+      const data = JSON.stringify(await PMRecords.exportAll());
+      const a = el('a', { href: URL.createObjectURL(new Blob([data], { type: 'application/json' })), download: `playmaker_records_${new Date().toISOString().slice(0, 10)}.json` });
+      document.body.append(a); a.click(); a.remove(); } }),
+    el('label', {}, ['Import ', file]),
+    el('button', { text: 'Import (replace these records)', onclick: async () => {
+      const f = file.files && file.files[0]; if (!f) { alert('Choose a records file first.'); return; }
+      try { const r = await PMRecords.importAll(JSON.parse(await f.text()), true); alert(`Imported ${r.profiles} players and ${r.matches} matches.`); await fillProfiles(); playersPage(); }
+      catch (e) { alert(e.message); } } }),
+    el('button', { class: 'primary', text: 'Close', onclick: closeModal })], closeModal);
 }

@@ -26,10 +26,22 @@
     <section id="setup" class="setup hidden" aria-live="polite">
       <h2 id="setupTitle">Set up the game</h2>
       <label>Play <select id="kind">
-        <option value="full">Full game: two possessions, swap sides</option>
+        <option value="full">A match: sides swap every possession</option>
         <option value="scenario">Scenario card</option>
         <option value="single">One possession</option>
       </select></label>
+      <div id="formatRow">
+        <label>Format <select id="format">
+          <option value="digital">Digital: several possessions each, a turnover scores 0</option>
+          <option value="tabletop">Tabletop: one possession each, the printed rules</option>
+        </select></label>
+        <label id="perSideRow">Possessions each <select id="perSide"><option value="4">4</option><option value="8" selected>8</option><option value="12">12</option></select></label>
+      </div>
+      <div id="playersRow" class="players">
+        <label id="profARow">Player A <select id="profA"></select></label>
+        <label id="profBRow">Player B <select id="profB"></select></label>
+        <button type="button" class="linkbtn" id="playersBtn">Players, records and the trainer</button>
+      </div>
       <label id="scenarioRow">Card <select id="scenario"></select></label>
       <p id="scenarioText" class="note"></p>
       <fieldset id="levelsRow" class="levels"><legend>Playing level: the same for both sides</legend>
@@ -104,6 +116,11 @@
       </details>
       <button id="create" class="primary big">Start</button>
     </section>
+    <section id="playersBox">
+      <h2>Players</h2>
+      <p class="note">Profiles, results, head to head and the trainer live in this browser. Export them to keep a copy or move them to another device.</p>
+      <button type="button" id="playersBtn2">Open players and records</button>
+    </section>
     <section id="joinBox">
       <h2>Join a remote game</h2>
       <label>Code <input id="joinCode" maxlength="6" placeholder="ABC123"></label>
@@ -123,6 +140,7 @@
     <div class="clock"><span class="lbl">Phase</span><span id="phase" class="big"></span></div>
     <div class="clock"><span class="lbl">Possession</span><span id="poss" class="big"></span></div>
     <div class="clock"><span class="lbl">Score</span><span id="score" class="big"></span></div>
+    <div id="strip" class="strip" role="group" aria-label="Each possession's result"></div>
     <div class="meta" id="meta"></div>
   </header>
   <div id="summary" class="summary" role="status" aria-live="polite"></div>
@@ -168,6 +186,8 @@
 <script src="pyodide-adapter.js"></script>
 <script src="notation.js"></script>
 <script src="coach.js"></script>
+<script src="records.js"></script>
+<script src="trainer.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

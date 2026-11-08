@@ -53,16 +53,7 @@ def test_the_matchup_search_covers_all_120_assignments():
     assert max(cost[perm[j]][j] for j in range(5)) == worst
 
 
-def test_the_defence_setup_starts_the_matchup_record():
-    from playmaker_web.game import Game
-    g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], ai={'X': 'allstar'}, place=True, seed=3, level='pro')
-    g._place_side('O', TABLE, 0, None, actor='human')
-    g._auto_place()
-    rec = [r for r in _log(g) if r.get('type') == 'computer' and r.get('event') == 'setup' and r.get('side') == 'X']
-    assert rec and rec[-1]['matchup'] and g.placing is None
-    comp = g.policies['X']
-    comp._track_matchups(g.state)
-    assert list(comp.matchups) == [int(m.split('O')[1]) - 1 for m in rec[-1]['matchup']]
+# Retired in step 3m (the decision engine replaces the step 3e to 3k computer inside games): test_the_defence_setup_starts_the_matchup_record
 
 
 def _log(g):
@@ -194,45 +185,5 @@ def test_the_review_explains_the_setup():
     assert any("Put X1 on O2: X2 couldn't close out on him" in l and 'X5 sagged off O5' in l for l in lines)
 
 
-def test_setup_through_the_web_is_quick_and_places_only_the_humans_side_for_them():
-    """A quick game against the computer: the computer places its own side within 5 seconds (the request the browser
-    makes), and the standard-setup shortcut places only the human's side."""
-    import json
-    import urllib.request
-    from playmaker_web.server import start_background
-    srv, base = start_background()
-
-    def post(path, body):
-        req = urllib.request.Request(base + path, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
-        t = time.time()
-        with urllib.request.urlopen(req, timeout=60) as r:
-            return json.loads(r.read()), time.time() - t
-    try:
-        # the computer attacks first: it places the offence while the game is created
-        g, t_new = post('/api/new', dict(mode='hotseat', teams=['Twin Towers', 'Pace and Space'], ai=dict(A='allstar'), place=True, seed=5, level='pro'))
-        assert t_new < 5.0
-        s = json.loads(urllib.request.urlopen(f"{base}/api/state?code={g['code']}&token={g['token']}").read())
-        assert s['placing'] and s['placing']['side'] == 'X' and s['placing']['mine']
-        r, t = post('/api/place', dict(code=g['code'], token=g['token'], preview=True))     # my side only
-        assert r['state']['placing'] is None and t < 5.0
-        # the human attacks first: the computer places the defence after the human's offence
-        g, _ = post('/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], ai=dict(B='allstar'), place=True, seed=6, level='pro'))
-        r, t = post('/api/place', dict(code=g['code'], token=g['token'], preview=True))
-        assert r['state']['placing'] is None and t < 5.0
-        xs = [p['sq'] for p in r['state']['x']]
-        assert xs != ['I10', 'D8', 'N8', 'G4', 'N4']                                    # the computer's own placement
-        for level in ('rookie', 'starter', 'allstar'):                                  # every level places, quickly
-            for seat in ('A', 'B'):
-                g, _ = post('/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], ai={seat: level}, place=True, seed=7, level='pro'))
-                r, _ = post('/api/place', dict(code=g['code'], token=g['token'], preview=True))
-                assert r['state']['placing'] is None, (level, seat)
-                # the setup decision itself (the request also carries the computer's first turn of play)
-                from playmaker_web.game import LOG_DIR
-                import glob, os
-                path = sorted(glob.glob(os.path.join(LOG_DIR, f"*_{g['code']}.jsonl")))[-1]
-                with open(path) as f:
-                    recs = [json.loads(l) for l in f]
-                setups = [x for x in recs if x.get('type') == 'computer' and x.get('event') == 'setup']
-                assert setups and all(x['seconds'] < 5.0 for x in setups), (level, seat, [x.get('seconds') for x in setups])
-    finally:
-        srv.shutdown()
+# Step 3m Part 0: the step 3k setup timing test is replaced by the B8 time budgets (tests/test_step3m.py:
+# test_the_agent_only_plays_legal_actions_within_its_budget); setup itself now comes from the decision engine.
