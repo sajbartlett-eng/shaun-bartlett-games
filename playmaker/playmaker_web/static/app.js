@@ -1446,6 +1446,7 @@ function renderCoachLine() {
   const box = $('coachLine'); if (!box) return;
   box.innerHTML = '';
   const s = st; if (!s || !s.can_act || s.stage === 'over' || replay || s.placing || !s.matchups) return;
+  if (s.level !== 'learn') return;             // arrange, never judge: the coach reads the board at Learn level only
   const side = s.side_to_act, mine = s.scout && s.scout.mine;
   const edges = boardEdges(s), best = edges.find(e => e.mismatch) || edges[0];
   const show = e => `O${e.o + 1}'s ${e.shot.toLowerCase()} ${e.sh.value}${e.sh.mark} against X${e.x + 1}'s contest ${e.con.value}${e.con.mark}: a clean look ${SHOT_WHERE[e.shot]} is worth ${SHOT_PTS[e.shot]} × ${e.sh.value - e.con.value} = ${e.edge}`;
@@ -1468,14 +1469,14 @@ function renderCoachLine() {
       }
     }
   }
-  if (text) { /* the selection read stands */ } else if (side === 'O' && best && best.edge > 0) {
-    text = `The mismatch on the board: ${show(best)}. ` + (best.o === (s.o.find(p => p.ball) || {}).i ? `O${best.o + 1} has the ball: get to that spot with no arrow on O${best.o + 1}.` : `Get O${best.o + 1} the ball where no arrow can reach the lane, and keep X${best.x + 1} as the matchup.`);
-    if (mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
-  } else if (side === 'X' && best && best.edge > 0) {
-    text = `Their edge on the board: ${show(best)}. Keep X${best.x + 1}'s arrow on O${best.o + 1}, or switch a better contester onto O${best.o + 1} before the catch.`;
-    if (mine && mine.protect) text += ` Your call was to protect X${mine.protect.x}: don't leave X${mine.protect.x} with two jobs.`;
-  } else if (side === 'O') text = 'No mismatch on the board right now. Move the defence first: a screen or a cut that makes a defender choose.';
-  else if (side === 'X') text = 'No edge for them on the board. Keep your shape: every lane answered, every arrow on a man.';
+  if (text) { /* the selection read stands */ } else if (best && best.edge > 0) {
+    const carrier = (s.o.find(p => p.ball) || {}).i === best.o;
+    text = `The mismatch on the board: ${show(best)}. `
+      + `Offence read: O${best.o + 1} is the threat; ${carrier ? 'the spot with no arrow on O' + (best.o + 1) + ' is the look' : 'the catch where no arrow reaches the lane is the look'}. `
+      + `Defence read: O${best.o + 1}'s catch is the problem; a body on the lane to O${best.o + 1}, or an arrow on O${best.o + 1} before the ball arrives.`;
+    if (side === 'O' && mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
+    if (side === 'X' && mine && mine.protect) text += ` (Your call was to protect X${mine.protect.x}.)`;
+  } else text = 'No mismatch on the board right now. Offence read: move the defence first, a screen or a cut that makes a defender choose. Defence read: keep the shape, every lane answered, every arrow on a man.';
   if (!text) return;
   const key = `${s.possession}:${s.phase}:${side}:${s.turn}`;
   box.append(PMCoach.line('coach', text, { compact: true, live: coachSaid !== key }));

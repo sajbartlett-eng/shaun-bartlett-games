@@ -1146,11 +1146,51 @@ _COUNTER = {'post_entry': 'DO-front', 'high_low': 'DO-front', 'screen_switch': '
             'drive_kick': 'DO-rotate', 'handoff': 'DO-contain', 'speed': 'DO-contain', 'overload': 'DO-rotate'}
 
 
+def elite_threats(s):
+    """The catches to deny, best first: every off-ball attacker whose best look after the reaction is one his own
+    defender can't contest well (that defender's contest for the shot is a ▼, or the look is worth a Great result
+    even with him there), and that is at least the carrier's own best look. Denying only the top one hands the
+    offence the next; the defence takes them in order while it has bodies. [{att, value, shot, guard}]"""
+    from .advantage import reach_maps, looks
+    if s.stage != 'play' or not B.on_board(s.o[s.ball]):
+        return []
+    maps = reach_maps(s)
+    carrier = looks(s, s.ball, maps)
+    floor = carrier[0][0] if carrier else 0.0
+    out = []
+    for i in range(5):
+        if i == s.ball or not B.on_board(s.o[i]):
+            continue
+        L = looks(s, i, maps)
+        if not L:
+            continue
+        v, t, _ = L[0]
+        d = _guard(s, i)
+        poor = s.ctx.dfn[d].bands.get('con_' + t) == 'L' or v >= RC.BANDS[1][1]       # a ▼ contest, or a Great look
+        if poor and v >= floor:
+            out.append(dict(att=i, value=float(v), shot=t, guard=d))
+    return sorted(out, key=lambda e: (-e['value'], e['att']))
+
+
+def elite_threat(s):
+    """The first catch to deny (see elite_threats), or None."""
+    ts = elite_threats(s)
+    return ts[0] if ts else None
+
+
 def defence_objectives(s, level, k=4, matchups=None):
     """What the offence could be building toward, read from the board and the cards only (the defence
     doesn't know the plan), as the defence's ranked objectives: value to the offence x closeness."""
     allowed = set(level_objectives(level))
     seen = {}
+    if 'DO-denycatch' in allowed:
+        from .capacity import lane_reach
+        for et in _with_matchups(matchups, lambda: elite_threats(s)):
+            if s.side == 'X' and any(lane_reach(s.with_(side='O', turn_n=0, stage='play', pending=None), j, s.ball, et['att']) for j in range(5)):
+                continue                                  # the lane to him is already answered: nothing to add
+            words = _ws(OBJECTIVES['DO-denycatch']['words'], r=et['att'])
+            seen[('DO-denycatch', words)] = dict(id='DO-denycatch', words=words, weight=round(et['value'] + 1.0, 2),
+                                                 att=et['att'], goal=None, bind={}, shot=et['shot'], guard=et['guard'])
     for g in goals(s, 'allstar', matchups=matchups):
         oid = _COUNTER.get(g['entry']['pattern'])
         if oid not in allowed:
@@ -1207,6 +1247,41 @@ def _objective_plays(s, obj, acts):
                 if lane_reach(t, d, s.ball, att):
                     out.append(Play('deny the lane', (a,)))
                     break
+    elif obj['id'] == 'DO-denycatch':
+        # deny the catch, ahead of contesting after it: a body on the lane from the ball (through you first, then a
+        # straight movement along the arrow onto it), the guard face-guarding or top-locking him (next to him, arrow
+        # on him, nearer the ball), and a helper shading toward him; the valuation decides which
+        from .capacity import lane_reach
+        carrier_guard = _guard(s, s.ball)
+        lane_direct, lane_jump, guard_plays, shade = [], [], [], []
+        for a in mv:
+            j = a.piece
+            if j == carrier_guard and j != d:
+                continue                                   # the ball stays guarded
+            if B.adjacent(a.dest, ball):
+                continue                                   # no Intercept next to the passer: not a lane body
+            t = s.with_(x=s.x[:j] + (a.dest,) + s.x[j + 1:], arrows=s.arrows[:j] + (a.arrow,) + s.arrows[j + 1:],
+                        moved_x=s.moved_x | 1 << j, side='O', turn_n=0, stage='play', pending=None)
+            lr = lane_reach(t, j, s.ball, att)
+            if lr == 'direct':
+                lane_direct.append(a)
+            elif lr == 'approach':
+                lane_jump.append(a)
+            if j == d and B.adjacent(a.dest, me) and a.arrow == B.dir_between(a.dest, me):
+                guard_plays.append(a)                      # face-guard; top-lock when nearer the ball than he is
+            elif j != d and B.cheb(a.dest, me) <= 2 and a.arrow == B.nearest_dir(a.dest, me) and B.cheb(a.dest, me) < B.cheb(s.x[j], me):
+                shade.append(a)
+        lane_direct.sort(key=lambda a: (B.cheb(a.dest, me), a.dest, a.arrow))
+        lane_jump.sort(key=lambda a: (B.cheb(a.dest, me), a.dest, a.arrow))
+        guard_plays.sort(key=lambda a: (B.cheb(a.dest, ball), a.dest))
+        shade.sort(key=lambda a: (B.cheb(a.dest, me), a.dest))
+        for a in lane_direct[:3] + lane_jump[:2] + guard_plays[:2] + shade[:1]:
+            out.append(Play('deny the catch', (a,)))
+        # the lane and the face-guard together, when two Moves are there (the second action is a second defender's)
+        for a in lane_direct[:1] + lane_jump[:1]:
+            for g in guard_plays[:1]:
+                if g.piece != a.piece:
+                    out.append(Play('deny the catch', (a, g)))
     elif obj['id'] == 'DO-rim':
         rim = RC.RIM
         cand = [a for a in mv if B.cheb(a.dest, rim) <= 1 and a.arrow == face(a.dest, ball)]

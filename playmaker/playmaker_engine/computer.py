@@ -578,7 +578,7 @@ class Computer(Policy):
             return self._threat
         return lambda s: (self.ev._reply(s)[0].ev if s.stage == 'play' and s.side == 'X' else self.ev(s)[0].ev)
 
-    def _threat(self, s):
+    def _threat(self, s, exclude=None):
         """The defence's view of the offence's next turn, with the offence to act: the ball carrier's best
         look (a shot from where he stands, or after one Move, Quick Step or Sprint, after the reaction);
         a dribble at the dice, with the defence's reply after it (a won dribble can open a step-out shot a
@@ -594,14 +594,14 @@ class Computer(Policy):
             if a.kind == 'dribble':
                 v = max(v, expected(apply(s, a), self.ev._reply)[0].ev)
         if self.cfg.get('offball_threat'):
-            v = max(v, self._pass_threat(s, v))
+            v = max(v, self._pass_threat(s, v, exclude))
         return v
 
-    def _pass_threat(self, s, best):
+    def _pass_threat(self, s, best, exclude=None):
         """The offence's best pass and catch from s (offence to act): (1 - risk) x the catch, valued after
         the defence's reply and the reaction, + risk x the pick-off (banked points - 5)."""
         memo = self.__dict__.setdefault('_threat_memo', {})
-        hit = memo.get(s)
+        hit = memo.get((s, exclude))
         if hit is not None and hit[0] is s.ctx:
             return hit[1]
         budget_x = reaction_budget(s)
@@ -611,7 +611,8 @@ class Computer(Policy):
         out = best
         stop = self._stop()
         for r in range(5):
-            if r == s.ball or not B.on_board(s.o[r]):
+            if r == s.ball or (exclude is not None and (r == exclude or (isinstance(exclude, (set, frozenset, tuple)) and r in exclude))) \
+                    or not B.on_board(s.o[r]):
                 continue
             if stop is not None and time.time() > stop:
                 break
@@ -629,7 +630,7 @@ class Computer(Policy):
             out = max(out, cv)
         if len(memo) > 20000:
             memo.clear()
-        memo[s] = (s.ctx, out)
+        memo[(s, exclude)] = (s.ctx, out)
         return out
 
     def _rank(self, view, plays, fn, maximise, stop):
@@ -696,6 +697,7 @@ class Computer(Policy):
             if p is not None:
                 return self._habit_rewrite(view, p)
         plays = self._with_end(view, acts, self.gen.plays(view, shallow=False))
+        self._deny_att = []
         if self.cfg.get('objectives') and view.stage == 'play' and not view.pending:
             plays = plays + self._objective_plays(view, acts)
         if view.stage in ('reaction', 'contest') or view.pending:
@@ -705,7 +707,21 @@ class Computer(Policy):
         fn = self._value_fn()
         if self._late():
             fn = self._immediate
-        scored = self._rank(view, plays, fn, False, self._stop())
+        deny = [p for p in plays if p.concept == 'deny the catch']
+        rest = [p for p in plays if p.concept != 'deny the catch']
+        scored = self._rank(view, rest, fn, False, self._stop())
+        if deny and self._deny_att and fn is not self._immediate:
+            # denial is valued by what the offence is left with: the next-best option after the reaction, with every
+            # elite catch whose lane is covered after the play (a defender through him, or one straight movement
+            # along an arrow onto it) taken out of the offence's options
+            atts = tuple(self._deny_att)
+            from .capacity import lane_reach
+            def covered(t):
+                if t.stage != 'play' or t.side != 'O':
+                    return ()
+                return frozenset(a for a in atts if t.ball != a and B.on_board(t.o[a]) and any(lane_reach(t, j, t.ball, a) for j in range(5)))
+            fn_deny = lambda t: (lambda c: self._threat(t, exclude=c) if c else fn(t))(covered(t))
+            scored += self._rank(view, deny, fn_deny, False, self._stop())
         if not scored:
             return None
         comfort = self._comfort_key(view)
@@ -1770,6 +1786,7 @@ class Computer(Policy):
                 self.notes.append(dict(event='objectives', items=words,
                                        text='Defence objectives: ' + '; '.join(words)))
         out = []
+        self._deny_att = [o['att'] for o in objs if o['id'] == 'DO-denycatch']
         for o in objs[:3]:
             out += objective_plays(view, o, acts, matchups=self.matchups)
         return out
@@ -1916,7 +1933,99 @@ def place_defence(comp, o_squares, ball, build, budget_s=None):
                     continue
                 if v < best_v - 1e-9:
                     best_v, xs, arrows = v, xs2, a2
+    # deny the elite catch at setup (Starter and All-Star): when an off-ball attacker's best look is the offence's
+    # top threat and his guard can't contest it well, a body on the lane from the ball to him (through him, or a
+    # straight movement along an arrow onto it) or the guard top-locking him, valued by what the offence is left
+    # with: the next-best option once the lane is covered
+    from .planner import elite_threat, level_objectives
+    if 'DO-denycatch' in level_objectives(comp.level):
+        xs, arrows, best_v = _deny_at_setup(comp, build, o_squares, ball, best_perm, xs, arrows, stop)
     return xs, arrows, best_perm
+
+
+def _deny_at_setup(comp, build, o_squares, ball, perm, xs, arrows, stop):
+    """Setup step 5, the catches to deny in order: for each elite threat (best first) whose lane from the ball is
+    still open, the body that answers it (the top-lock by his guard, or a lane body) that leaves the offence the
+    least, with every covered catch taken out of the offence's options."""
+    from .capacity import lane_reach
+    from .planner import elite_threats
+    s0 = build(xs, arrows)
+    comp._context(s0)
+    threats = [e['att'] for e in elite_threats(s0)]
+    if not threats:
+        return xs, arrows, None
+    best_v = None
+    for att in threats:
+        if time.time() > stop:
+            break
+        t0 = build(xs, arrows)
+        if any(lane_reach(t0, j, ball, att) for j in range(5)):
+            continue                                     # already answered by the bodies placed so far
+        xs, arrows, best_v = _deny_one(comp, build, o_squares, ball, perm, xs, arrows, stop, att, threats)
+    return xs, arrows, best_v
+
+
+def _deny_one(comp, build, o_squares, ball, perm, xs, arrows, stop, att, threats):
+    from .capacity import lane_reach
+    me = o_squares[att]
+    cp = o_squares[ball]
+    jb = perm.index(ball)
+    guard = perm.index(att)
+
+    def dv(xq, ar):
+        s = build(xq, ar)
+        comp._context(s)
+        t = s.with_(ctx=comp.seen)
+        covered = frozenset(a for a in threats if any(lane_reach(t, j, t.ball, a) for j in range(5)))
+        v = comp._threat(t, exclude=covered) if covered else comp._threat(t)
+        return (max(v, comp.comfort) + 1e-3 * v) if comp.comfort is not None else v
+
+    best_v = dv(xs, arrows)
+    taken = set(o_squares)
+    cands = []
+    for j in range(5):
+        if j == jb:
+            continue                                   # the ball stays guarded
+        if j == guard:
+            # the top-lock: next to him, nearer the ball than he is, arrow on him
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    q = (me[0] + dx, me[1] + dy)
+                    if (dx or dy) and B.on_board(q) and q not in taken and B.cheb(q, cp) <= B.cheb(me, cp):
+                        cands.append((j, q, B.dir_between(q, me)))
+        # a body on the lane: through him (the line through the square's centre) or an arrow line onto it
+        mx, my = (cp[0] + me[0]) / 2, (cp[1] + me[1]) / 2
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                q = (int(round(mx)) + dx, int(round(my)) + dy)
+                if not B.on_board(q) or q in taken or B.adjacent(q, cp) or q == me:
+                    continue
+                for d in range(8):
+                    cands.append((j, q, d))
+    seen = set()
+    for j, q, d in cands:
+        if time.time() > stop:
+            break
+        if any(k != j and xs[k] == q for k in range(5)):
+            continue
+        xq = xs[:j] + [q] + xs[j + 1:]
+        ar = arrows[:j] + [d] + arrows[j + 1:]
+        key = (tuple(xq), tuple(ar))
+        if key in seen:
+            continue
+        seen.add(key)
+        t = build(xq, ar)
+        if not lane_reach(t, j, ball, att):
+            continue                                   # this body does not answer the lane
+        if any(a != att and any(lane_reach(build(xs, arrows), k, ball, a) for k in range(5)) and not any(lane_reach(t, k, ball, a) for k in range(5)) for a in threats):
+            continue                                   # it would uncover a catch already denied
+        try:
+            v = dv(xq, ar)
+        except Exception:
+            continue
+        if v < best_v - 1e-9:
+            best_v, xs, arrows = v, xq, ar
+    return xs, arrows, best_v
 
 
 def _assign(o_squares, perm):

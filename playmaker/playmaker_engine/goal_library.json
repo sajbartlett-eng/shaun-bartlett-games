@@ -41,7 +41,8 @@
     "DO-deny",
     "DO-rim",
     "DO-noswitch",
-    "DO-rotate"
+    "DO-rotate",
+    "DO-denycatch"
    ]
   },
   "allstar": {
@@ -1190,6 +1191,20 @@
    ],
    "level": "allstar",
    "gives_up": "a step of help now"
+  },
+  {
+   "id": "DO-denycatch",
+   "words": "deny O{r} the catch: the lane, the face-guard, the help",
+   "group": "off the ball",
+   "counters": [
+    "B1",
+    "B2",
+    "C1",
+    "C4",
+    "A4"
+   ],
+   "level": "starter",
+   "gives_up": "the next-best option: the ball goes elsewhere"
   }
  ],
  "_roles": "role: 'finish' goals are valued by their own finish (the shot after the defence's reaction, from the expected board once their steps are played); 'setup' goals have no value of their own: P(their rolls) x what the offence keeps on the board they leave, after the defence denies the most dangerous finish they unlock, less the steps' cost."

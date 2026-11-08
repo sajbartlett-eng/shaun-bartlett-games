@@ -91,7 +91,7 @@ the **Referee** makes every call (rolls, fouls, turnovers, the clock). They writ
 - **The coach on the sideline:** on your turn a line from Coach Vision reads the board from the cards both
   players see: the biggest edge between an attacker and the defender on that attacker (points × (shot − contest)),
   the spot it is worth taking from, and how it compares with your scouting call (`docs/clipboard_coach.png`).
-  Select a piece and the line becomes that matchup's read, cue then rule: the edge, then what the defender's
+  The line shows at Learn level only and names both sides' reads. Select a piece and the line becomes that matchup's read, cue then rule: the edge, then what the defender's
   arrow allows (on the attacker: a steal and a clean contest; next to but facing away: a clean catch and a
   foul risk on the contest; off: a clean catch, shoot before the arrow comes). Once a possession is over, its
   story carries the feedback under each phase: the best ▲ look the board offered in that phase and whether it was
@@ -614,6 +614,18 @@ These are the defaults now (`rules_config.py`; the old behaviour of each stays a
   clock loses one phase; the phase goes on with the same tokens and actions; on the last phase the
   possession scores 0. The ball stays with the passer or the carrier; a stolen shot is cancelled and doesn't
   use the phase's shot. `'minus5'`, `'minus10'`, `'lose_phase'` and `'end_possession'` are available.
+- **Denying the elite catch** (the designer's Five Out v High-Low report): the computer defence at Starter and
+  All-Star reads the catch to deny, the off-ball attacker whose best look after the reaction is the offence's top
+  threat while his own defender can't contest it well (`planner.elite_threat`), and prefers to take the catch away
+  ahead of contesting after it: a body on the lane from the ball to him (through him, or one straight movement
+  along an arrow onto it), the face-guard or top-lock, help shaded toward him (`DO-denycatch`, `deny the catch`
+  plays). Denial is valued by what the offence is left with: the next-best option after the reaction once the lane
+  is covered (`Computer._threat(exclude=...)`). The offence acts first, so the strongest lever is setup step 5: the
+  computer's placement answers that lane before the first pass (`_deny_at_setup`). Rookie does not use it. No rule
+  changed. `tests/test_deny_catch.py`; `playmaker_engine/deny_report.py` measures a pairing before and after.
+- **Coach Vision during play** shows at Learn level only, and there it reads neutrally for both sides in the same
+  form (the threat, the offence's read, the defence's read); at Scout and Pro the page shows no coach line during
+  play (`tests/test_coach_gate.py`).
 - **The rulebook revision** (`reference/Playmaker_Rulebook.pdf`, Nov 2026; the previous text is `Playmaker_Rulebook_v0.pdf`) was checked clause by clause against the engine, the computer and the course. It codifies the rulings above (the adjacent contester of the defence's choice, screens that hold until the screener moves, zones and drives, move-then-intercept with the passer's ring, −5 and two seconds on a turnover, the and-one). Two things changed to match it: a lane jump keeps the defender's facing, a Move included (OQ-76), and *through you* means the pass line passes through the square's centre (OQ-13, `on_line_tolerance=0`). `tests/test_rulebook_nov.py` pins both. The centre reading is narrower than the engine's earlier middle-half reading: four of the 16 cards (1, 6, 7, 15) lose their opening standing threat, which OPEN_QUESTIONS 13 records; the earlier reading is one setting away. Tests built on the earlier reading run pinned to it (`RC.PRE_RULEBOOK`), and a log from before the revision replays under it.
 
 **On the board, always, for both players, at every detail level** (`docs/zones_mid_phase.png`): each
