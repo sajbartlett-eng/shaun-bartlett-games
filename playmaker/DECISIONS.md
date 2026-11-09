@@ -355,34 +355,72 @@ players and written to the log. Each player may have their own setting only when
 Reason: the table slows decisions far below basketball pace; the timer brings back some pressure. · step 3d · Source:
 step 3d prompt; Shaun, step 4 prompt · **Built.**
 
-## 2. Engine defaults awaiting sign-off
+### Shaun, 9 Nov 2026 (step 8 prompt): the engine's settings, and the open questions settled
 
 **D-62.** Responses read per defender: 3. Shapes how well the computer and the trainer read the defence, and the
 search's speed. (setting: eval.responses_per_defender)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-63.** Looks per attacker: 6. Shapes how many shots the engine sees for each attacker, and the search's speed.
 (setting: eval.looks_per_attacker)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-64.** A look that needs another offence turn counts at 70%, and the leaf credits 85% of the best uncovered look.
 Shapes how much the computer values setting up against shooting now. (settings: eval.later_p, eval.continuation)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-65.** The foul price assumes 0.25 defensive fouls a possession and a play-on value of 20 points. The phase table
 says an average possession is worth about 28, so the price is low. Shapes when the computer reaches.
 (settings: eval.fouls_per_possession, eval.play_on_value)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-66.** The phase table (the value of an average possession at each phase) is solved from app self-play and used as
 the leaf's floor. Shapes every evaluation and the trainer's grades; it flattens marginal positions.
 (data: vcoarse.json)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-67.** The computer levels: search depth, beam, opponent model, noise, attention, reaction delay, time budget, goal
 and variety margins, and All-Star scouting. Shapes how each level plays. (ai_profiles.json, profiles)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-68.** The trainer: bands for a slip (1), a mistake (3) and a big mistake (6 points); accuracy constant 2.0; summary
 of 3 points; fading by rating; flags need agreement at two search depths. Shapes every grade and summary.
 (ai_profiles.json, trainer)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
 
 **D-69.** The rating anchors: Rookie 1525, Starter 1600, All-Star 1625 (Senior), Youth 20 lower, Junior 50 lower,
 fitted from self-play in step 3n. Shapes every rating. (ai_profiles.json, trainer.anchors)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
+
+**D-80.** The browser search runs at the full time budgets (scale 1.0); the computer's search is cut at the budget.
+Shapes how deep the computer looks on a phone. (setting: eval.browser_budget_scale)
+· 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, provisional (phase 4).** Phase 4 tunes it against the exam; any change needs evidence and Shaun's approval.
+
+**D-81** (OQ-54). The cost of an Intercept stands as built. The paired read (step 7): an Intercept costs the offence 6.4
+points on average, about 3.8 before the last phase and the whole possession in it; 1 of 18 pairs helped the offence, by
+0.9. D-13 (the interceptor returns to his start square) resolved the original problem.
+Reason: the measurement shows an Intercept always costs the offence. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 ·
+**Closed.**
+
+**D-91.** The All-Star searches a median of 3 turns deep on a phone, against a target of 4 to 6: accepted for now.
+Reason: revisit with the levels. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, for now;** revisit in step 14.
+
+**D-94** (OQ-57). An open shot is not an advantage. Shaun's principle: "An advantage is what creates a better shot, not
+the shot itself. A shot is an option, held against a standard that can differ for each team: the offence is satisfied
+when the look beats what its possession is worth now; the defence may deliberately offer looks below what it can live
+with. A wide-open shot is not the advantage; the advantages created that opportunity." The six advantage states stay.
+Note for the trainer: never call a shot an advantage in player-facing text.
+Reason: the principle above. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled.**
+
+**D-95** (OQ-55). Responsibility comes from coverage, not fixed matchups. Each defender holds shares across the offensive
+threats, from the engine's own coverage. 100% on one player is guarding him (always the case for the ball). Splits
+across two or three are help or zone. Man-to-man is the case where every share is near 100% on one player. "His man" in
+reads and the trainer means the threat he holds the largest share of, and the trainer says splits plainly ("X3 is
+splitting O2 and O4"). No new rules.
+Reason: the defence's responsibilities come from what it covers. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, not
+built:** phase 4, with the trainer's flags (step 16).
+
+## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
 reply, without seeing the real defence; the defence takes the placement and matchups that cover best. Shapes every game
@@ -409,21 +447,9 @@ games; every court choice repeated as a full-size button on phones. Shapes the i
 
 **D-77** (C6). Scenario 10 is played with the card's numbers (4 tokens left a side, both Screens spent). Shapes one card.
 
-**D-80.** The browser search runs at the full time budgets (scale 1.0); the computer's search is cut at the budget.
-Shapes how deep the computer looks on a phone. (setting: eval.browser_budget_scale)
-
 ## 3. Open
 
 ### Step 9: the tabletop rules
-
-**D-81** (OQ-54). Check before ruling: is the offence better off after a successful Intercept than if the pass had been
-caught? Measure only. Step 6 found 2 successful intercepts in the 60 tabletop possessions on record (the seed runs are
-all app format): final results 19 and 23, against 28 and 27 by the engine's read of the same positions with the pass
-caught (30 and 8 by the solver). Too few to say. Step 7, the paired read (every pass a defender could intercept in
-those 60 possessions, current rules, no rolls): 18 pairs; after a successful Intercept the offence is 6.4 points worse
-off on average than if the pass is caught (spread 8.3; −3.8 before the last phase, −19.7 in it); 1 of 18 leaves it
-better off (+0.9: a pass from the rim zone to a long two).
-Options: rule once the measurement says. Effect: the cost of a turnover. · Source: Shaun, 9 Nov 2026 · **Open.**
 
 **D-86** (OQ-37, OQ-48). Wait: Contest as an action may bring back Challenge and the Sprint closeout. Measure in a later
 step. · Source: Shaun, 9 Nov 2026 · **Open, after step 6.**
@@ -434,29 +460,10 @@ None open: D-89 and D-90 were ruled on 9 Nov 2026 (see Ruled).
 
 ### Step 11: engine choices
 
-**D-91.** The All-Star searches a median of 3 turns deep on a phone, against a target of 4 to 6.
-Options: read fewer responses per defender (D-62) or fewer looks per attacker (D-63); accept the depth. Effect: how
-deep the computer looks against what it sees at each step.
-
-**D-92.** The phase table rises from about 25 in phase 1 to about 29 in phase 6 at Senior Pro, and as the leaf's floor it
-flattens marginal positions.
-Options: use the table only where the board read has no look; blend it with the read; keep it. Effect: the computer's
-sense of the clock and the trainer's flags (D-100).
-
 **D-93** (OQ-36, OQ-47). Pause was the defence's most-used action in the solver's lines; it looks like a search artefact.
 Options: widen the defence's candidate moves below the root; or read it as a rule problem. Effect: whether Pause is too
 cheap.
-
-**D-94** (OQ-57). The step 3m engine has no advantage states: it values every look by its points × (rating − contest)
-against the best contest that arrives in time, so an open shot by a shooter without a ▲ mark counts at its value like
-any other. (Restated for the step 3m engine, Shaun, step 6 prompt; `decide`)
-Options: keep valuing every look the same way; or credit an open look by an unmarked shooter separately. Effect: which
-plays the computer credits as creating an advantage.
-
-**D-95** (OQ-55). Matchups aren't on the board. Should they be a board fact (named at setup, changed only by a switch),
-or is "the nearest defender" the intended reading?
-Options: a board fact; keep the computer's record (D-72). Effect: what "his man" means in the advantage reads and the
-trainer.
+Shaun, 9 Nov 2026: re-measure in phase 4 under the 9 November rules.
 
 ### Step 12: the exam
 
@@ -482,6 +489,14 @@ reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **
 
 **D-113.** The trainer test "the credit names the helper who answered the decoy" is marked as an expected failure for the
 same reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+
+### Step 13: the phase table
+
+**D-92.** The phase table rises from about 25 in phase 1 to about 29 in phase 6 at Senior Pro, and as the leaf's floor it
+flattens marginal positions.
+Options: use the table only where the board read has no look; blend it with the read; keep it. Effect: the computer's
+sense of the clock and the trainer's flags (D-100).
+Shaun, 9 Nov 2026: settled in step 13, with exam evidence.
 
 ### Step 14: the levels
 
