@@ -1,0 +1,72 @@
+{
+ "rows": {
+  "rookie": {
+   "decisions": 2,
+   "median_s": 0.345,
+   "max_s": 0.345,
+   "depth": 2,
+   "leaves_per_s": 277.0
+  },
+  "starter": {
+   "decisions": 2,
+   "median_s": 1.012,
+   "max_s": 1.012,
+   "depth": 2,
+   "leaves_per_s": 991.1
+  },
+  "allstar": {
+   "decisions": 1,
+   "median_s": 2.51,
+   "max_s": 2.51,
+   "depth": 2,
+   "leaves_per_s": 561.8
+  }
+ },
+ "raw": {
+  "rookie": {
+   "wall": 0.6768000000002794,
+   "decisions": [
+    {
+     "seconds": 0.345,
+     "depth": 1,
+     "partial": 7,
+     "leaves": 70
+    },
+    {
+     "seconds": 0.229,
+     "depth": 2,
+     "partial": 0,
+     "leaves": 89
+    }
+   ]
+  },
+  "starter": {
+   "wall": 2.039399999999907,
+   "decisions": [
+    {
+     "seconds": 1.012,
+     "depth": 2,
+     "partial": 2,
+     "leaves": 783
+    },
+    {
+     "seconds": 1.01,
+     "depth": 2,
+     "partial": 3,
+     "leaves": 1221
+    }
+   ]
+  },
+  "allstar": {
+   "wall": 2.5245,
+   "decisions": [
+    {
+     "seconds": 2.51,
+     "depth": 2,
+     "partial": 11,
+     "leaves": 1410
+    }
+   ]
+  }
+ }
+}

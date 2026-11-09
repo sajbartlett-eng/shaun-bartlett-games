@@ -94,6 +94,8 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3, digital=True, le
     if keep:
         return dict(triples=triples, score=sc, seed=seed)
     return dict(off=off, dfn=dfn, seed=seed, keys=keys, score=sc, result=s.result.kind if s.result else None,
+                fouls=s.fouls, tos=s.tos, end_phase=s.phase, team_fouls=team_fouls, quarter_left=quarter_left,
+                locks_max=max((e.get('locks', 0) for e in events), default=0),
                 snapshots=snaps, events=events, geometry=geo, labels=[l['label'] for l in labs], unnamed=un,
                 decisions=[n for ag in agents.values() for n in ag.notes if n.get('event') == 'decision'])
 

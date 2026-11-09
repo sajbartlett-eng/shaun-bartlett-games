@@ -213,6 +213,28 @@ and `docs/playtest_scout_reveal.png` (read the cards first), `docs/playtest_lear
 `docs/playtest_team_builder.png`, `docs/playtest_report_in_play.png`, `docs/playtest_card_compare_phone.png`,
 `docs/playtest_pass_chips.png`, `docs/playtest_post_game_review.png`.
 
+## Step 3n: engine speed, a fair exam, and the step 3m fixes
+
+- **The search runs in JavaScript.** `playmaker_web/static/engine.js` is a line-for-line port of the search core (move
+  generation, reach maps, THREAT, COVERAGE, the leaf, expectimax with Star2, the transposition table, killers and
+  history, the goal reading). It runs in the same Web Worker as Pyodide; the Python agent hands it each decision
+  (`agent.JS`). The Python rules stay the reference: `python3 tools/js_equivalence.py --n 2000` proves the two agree
+  exactly on legal actions, reach maps, every threat value and square, the best cover and its value, and the leaf value
+  (`docs/3n_equivalence.json`). Outside the browser `jsbridge.NodeEngine().install()` runs the same core in Node (the
+  tools use it for self-play, 15 to 30 times faster than the Python search).
+- **The exam in two columns.** `python3 tools/exam_3n.py fixed 4 out.json` (every level at a fixed depth, no time limit,
+  with the principal line) and `python3 tools/exam_3n.py timed 0.25 out.json` (the time budgets).
+- **The phase table** (`decide.solve_phase_table`) is the expected final value of every possession alive at the start of
+  each phase, by backward induction, per age and standard (`tools/seed_3n.py`).
+- **Designer rulings (both formats unless marked):** a failed Steal locks the defender; a reach or contest from level or
+  behind makes two foul rolls; digital team fouls run across a quarter of 18 possessions a side, carried with the pairing,
+  the bonus from the 5th; the engine prices a foul by the quarter.
+- **Plain language** (`playmaker_engine/plain.py`): every line a player reads is whole game points and sentences about the
+  play; a test greps every interface string for engine terms.
+- **The rules register** (`docs/rules_register.md`, `python3 -m playmaker_engine.register`): every rule marked Shared,
+  Digital only, Tabletop only or Split by format; a test checks every Shared entry is identical in both formats. The
+  trainer grades each game under its own format, and "Practise for the tabletop game" starts a tabletop match.
+
 ## Step 3m: the decision engine, digital matches, player records and the trainer
 
 **The digital match** (`match_format='digital'`, the app's default): N possessions per side (4, 8 or 12; 8 by

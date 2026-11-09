@@ -1,0 +1,154 @@
+{
+ "rows": [
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 0,
+   "totals": {
+    "A": 39,
+    "B": 40
+   },
+   "score_a": 0.47502081252106
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 0,
+   "totals": {
+    "A": 33,
+    "B": 51
+   },
+   "score_a": 0.14185106490048777
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 0,
+   "totals": {
+    "A": 9,
+    "B": 60
+   },
+   "score_a": 0.0060598014915841155
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 1,
+   "totals": {
+    "A": 48,
+    "B": 59
+   },
+   "score_a": 0.24973989440488234
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 1,
+   "totals": {
+    "A": 57,
+    "B": 37
+   },
+   "score_a": 0.8807970779778823
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 1,
+   "totals": {
+    "A": 57,
+    "B": 54
+   },
+   "score_a": 0.574442516811659
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 2,
+   "totals": {
+    "A": 60,
+    "B": 43
+   },
+   "score_a": 0.8455347349164652
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 2,
+   "totals": {
+    "A": 60,
+    "B": 43
+   },
+   "score_a": 0.8455347349164652
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 2,
+   "totals": {
+    "A": 45,
+    "B": 56
+   },
+   "score_a": 0.24973989440488234
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 3,
+   "totals": {
+    "A": 35,
+    "B": 53
+   },
+   "score_a": 0.14185106490048777
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 3,
+   "totals": {
+    "A": 35,
+    "B": 62
+   },
+   "score_a": 0.06297335605699649
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 3,
+   "totals": {
+    "A": 43,
+    "B": 44
+   },
+   "score_a": 0.47502081252106
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 4,
+   "totals": {
+    "A": 24,
+    "B": 63
+   },
+   "score_a": 0.01984030573407751
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 4,
+   "totals": {
+    "A": 50,
+    "B": 68
+   },
+   "score_a": 0.14185106490048777
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 4,
+   "totals": {
+    "A": 9,
+    "B": 36
+   },
+   "score_a": 0.06297335605699649
+  }
+ ]
+}

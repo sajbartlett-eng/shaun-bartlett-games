@@ -1,0 +1,870 @@
+{
+ "mode": "timed",
+ "arg": 0.25,
+ "rows": [
+  {
+   "n": 1,
+   "desc": "Straight lane: the on-ball defender is off the ball-rim line; the defence closes the straight lane",
+   "allstar": {
+    "ok": true,
+    "what": "X1 Move to I7 facing SW (on the ball-rim line: X1)",
+    "seconds": 0.7,
+    "depth": 1,
+    "pv": [
+     [
+      "X Pause"
+     ]
+    ],
+    "value": -21.75,
+    "depths": [
+     1
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "X5 Move to N3 facing N (on the ball-rim line: nobody)",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "X Pause"
+     ]
+    ],
+    "value": -16.17,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "X2 Move to D5 facing NW (on the ball-rim line: nobody)",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "X Pause"
+     ]
+    ],
+    "value": -11.61,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "desc": "Sag by shooting: the same board with O2's three rated 4, then 12",
+   "allstar": {
+    "ok": false,
+    "what": "three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest)",
+    "seconds": 1.3,
+    "depth": 1,
+    "pv": [
+     [
+      "X5 Move to N3 facing N"
+     ]
+    ],
+    "value": -15.79,
+    "depths": [
+     1
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest)",
+    "seconds": 0.6,
+    "depth": 1,
+    "pv": [
+     [
+      "X1 Steal"
+     ]
+    ],
+    "value": -14.33,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": true,
+    "what": "three 4: X2 to D5 (rim distance 5); three 12: X2 to B8 (rim distance 7, can contest)",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "X1 Steal"
+     ]
+    ],
+    "value": -8.56,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "desc": "Help the helper: O1 has beaten X1 on the drive; the low man helps and another covers",
+   "allstar": {
+    "ok": false,
+    "what": "X2 Move to B8 facing N (help: none; rotation: X2)",
+    "seconds": 0.6,
+    "depth": 2,
+    "pv": [
+     [
+      "X5 Move to M3 facing N"
+     ],
+     [
+      "X3 Sprint to L4"
+     ]
+    ],
+    "value": -21.99,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "X5 Move to M3 facing N; X3 Sprint to L4 (help: none; rotation: X3, X5)",
+    "seconds": 0.3,
+    "depth": 2,
+    "pv": [
+     [
+      "X3 Sprint to L4"
+     ],
+     [
+      "X5 Move to N3 facing N"
+     ]
+    ],
+    "value": -17.38,
+    "depths": [
+     2
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "X5 Move to M3 facing N; X3 Sprint to L4 (help: none; rotation: X3, X5)",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "X5 Move to M3 facing N"
+     ]
+    ],
+    "value": -11.61,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "desc": "Two threats, one answer: X5 is the only answer to O1's pull-up and O5 at the rim",
+   "allstar": {
+    "ok": false,
+    "what": "O2 Sprint to D9; O5 Move to I2 (X5 overloaded on O1 and O5: no)",
+    "seconds": 0.9,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Move to D9",
+      "O1 Pass to O2"
+     ]
+    ],
+    "value": 25.85,
+    "depths": [
+     1
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "O2 Move to D9; O1 Pass to O2 (X5 overloaded on O1 and O5: no)",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Move to D9",
+      "O1 Pass to O2"
+     ]
+    ],
+    "value": 27.32,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "O2 Move to D9; O1 Shot (floater) (X5 overloaded on O1 and O5: no)",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Move to D9",
+      "O1 Shot (floater)"
+     ]
+    ],
+    "value": 27.73,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "desc": "Closeout: X2 closed from 3 squares with his Move; drive when he arrives, shoot when he stops 2 short",
+   "allstar": {
+    "ok": false,
+    "what": "closed to C7: O2 Sprint to B8; stopped 2 short at D7: O2 Sprint to B8",
+    "seconds": 1.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Sprint to B8"
+     ]
+    ],
+    "value": 33.5,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "closed to C7: O2 Sprint to B8; stopped 2 short at D7: O2 Sprint to B8",
+    "seconds": 0.5,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Sprint to B8"
+     ]
+    ],
+    "value": 34.92,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "closed to C7: O2 Move to B8; stopped 2 short at D7: O2 Move to C8; O2 Dribble vs X2",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Move to B8"
+     ]
+    ],
+    "value": 42.55,
+    "depths": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "desc": "Catch window: O4 caught in the corner with every cover far; he acts on his next action",
+   "allstar": {
+    "ok": false,
+    "what": "O1 Quick Step to H10",
+    "seconds": 0.6,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to J10"
+     ],
+     [
+      "O2 Quick Step to A6"
+     ]
+    ],
+    "value": 28.9,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "O1 Quick Step to H10",
+    "seconds": 0.3,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to J10"
+     ],
+     [
+      "O2 Quick Step to A6"
+     ]
+    ],
+    "value": 30.46,
+    "depths": [
+     2
+    ]
+   },
+   "rookie": {
+    "ok": true,
+    "what": "O4 Move to A2",
+    "seconds": 0.1,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to J10"
+     ],
+     [
+      "O4 Pass to O2"
+     ]
+    ],
+    "value": 30.32,
+    "depths": [
+     2
+    ]
+   }
+  },
+  {
+   "n": 7,
+   "desc": "Clock: the same contested mid-range by O3; pass in phase 2, shoot in phase 6",
+   "allstar": {
+    "ok": false,
+    "what": "phase 2: O3 Sprint to E6; phase 6: O3 Move to E6",
+    "seconds": 1.3,
+    "depth": 2,
+    "pv": [
+     [
+      "O3 Move to F6"
+     ],
+     [
+      "O3 Shot (mid)"
+     ]
+    ],
+    "value": 25.97,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "phase 2: O3 Move to E6; O2 Move to A5; phase 6: O3 Move to E6; O2 Move to A5",
+    "seconds": 0.5,
+    "depth": 1,
+    "pv": [
+     [
+      "O3 Move to F6",
+      "O3 Shot (mid)"
+     ]
+    ],
+    "value": 29.86,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "phase 2: O3 Move to F6; O3 Shot (floater); phase 6: O3 Move to F6; O5 Move to Q1",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "O3 Move to F6",
+      "O3 Shot (floater)"
+     ]
+    ],
+    "value": 29.17,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 8,
+   "desc": "Backdoor: X2 denies O2 on the wing; the lane to the rim is open",
+   "allstar": {
+    "ok": false,
+    "what": "O1 Quick Step to I10",
+    "seconds": 0.6,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to I10"
+     ]
+    ],
+    "value": 26.0,
+    "depths": [
+     1
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "O1 Move to I10",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to I10"
+     ]
+    ],
+    "value": 27.29,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "O1 Shot (three)",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Shot (three)"
+     ]
+    ],
+    "value": 26.63,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 9,
+   "desc": "Corner: O1's wing drive pulled X5 off the corner; O5 relocates or gets the kick",
+   "allstar": {
+    "ok": false,
+    "what": "O4 Move to A3",
+    "seconds": 0.6,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to K4"
+     ],
+     [
+      "O1 Shot (layup)"
+     ]
+    ],
+    "value": 23.53,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "O3 Move to I10",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to K4"
+     ]
+    ],
+    "value": 25.11,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "O1 Shot (floater)",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Dribble vs X1"
+     ]
+    ],
+    "value": 27.17,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 10,
+   "desc": "Steal: tried with good odds (a weak dribbler, a teammate near); declined early on a strong dribbler",
+   "allstar": {
+    "ok": false,
+    "what": "good odds: X1 Move to J10 facing N; bad odds, early: X1 Steal",
+    "seconds": 1.3,
+    "depth": 2,
+    "pv": [
+     [
+      "X4 Steal"
+     ]
+    ],
+    "value": -12.97,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "good odds: X5 Move to P2 facing N; bad odds, early: X4 Move to A2 facing N",
+    "seconds": 0.6,
+    "depth": 2,
+    "pv": [
+     [
+      "X4 Steal"
+     ]
+    ],
+    "value": -8.41,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "good odds: X4 Move to J10 facing N; bad odds, early: X5 Move to P2 facing N",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "X4 Steal"
+     ]
+    ],
+    "value": -11.61,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 11,
+   "desc": "Contested pass: the pass to O2 crosses X5's lane; declined early, accepted in the final phase (O1 has no forced shot from plain wood)",
+   "allstar": {
+    "ok": false,
+    "what": "early: O3 Move to N5; final phase: O1 Move to G10",
+    "seconds": 1.3,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to G10"
+     ],
+     [
+      "O1 Quick Step to H10"
+     ]
+    ],
+    "value": 25.87,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "early: O1 Move to J10; O Hesitate; final phase: O1 Move to J10",
+    "seconds": 0.5,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to J10",
+      "O3 Move to Q5"
+     ]
+    ],
+    "value": 26.61,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "early: O1 Move to J10; O1 Shot (three); final phase: O1 Move to J10",
+    "seconds": 0.2,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to J10",
+      "O Hesitate"
+     ]
+    ],
+    "value": 27.19,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 12,
+   "desc": "Strong-side corner: X2 on the elite shooter O2 in the corner; O1's drive is contained by X1",
+   "allstar": {
+    "ok": true,
+    "what": "X3 Sprint to K7 (X2 ends 1 square(s) from O2)",
+    "seconds": 0.6,
+    "depth": 2,
+    "pv": [
+     [
+      "X1 Steal"
+     ],
+     [
+      "O1 Sprint to G2"
+     ]
+    ],
+    "value": -21.16,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": true,
+    "what": "X4 Move to J10 facing N (X2 ends 1 square(s) from O2)",
+    "seconds": 0.3,
+    "depth": 2,
+    "pv": [
+     [
+      "X2 Sprint to F3"
+     ],
+     [
+      "X1 Steal"
+     ]
+    ],
+    "value": -15.39,
+    "depths": [
+     2
+    ]
+   },
+   "rookie": {
+    "ok": true,
+    "what": "X1 Move to C4 facing N (X2 ends 1 square(s) from O2)",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "X1 Steal"
+     ]
+    ],
+    "value": -11.61,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 13,
+   "desc": "Spacing: O5 stands in O1's driving lane",
+   "allstar": {
+    "ok": false,
+    "what": "O4 Quick Step to A4",
+    "seconds": 0.7,
+    "depth": 1,
+    "pv": [
+     [
+      "O2 Move to A7"
+     ]
+    ],
+    "value": 24.89,
+    "depths": [
+     1
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "O1 Move to I10",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Shot (long)"
+     ]
+    ],
+    "value": 26.84,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "O1 Sprint to H10",
+    "seconds": 0.1,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Shot (long)"
+     ]
+    ],
+    "value": 27.38,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 14,
+   "desc": "Variety: a mirror-image board; over 20 seeds no option above 70%",
+   "allstar": {
+    "ok": true,
+    "what": "6 different first actions over 20 seeds; the most common 20%",
+    "seconds": 13.0,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 24.68,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "starter": {
+    "ok": true,
+    "what": "5 different first actions over 20 seeds; the most common 60%",
+    "seconds": 5.4,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 23.99,
+    "depths": [
+     1
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "5 different first actions over 20 seeds; the most common 75%",
+    "seconds": 1.9,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 22.78,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 15,
+   "desc": "Goal consistency: six turn groups on a fixed board; one goal unless a logged reason",
+   "allstar": {
+    "ok": true,
+    "what": "goals over the line: move X1 out of the lane to O2 > O1 shoots from the 3 zone > make X3 the only answer to O1 and O3; flip-flops 0",
+    "seconds": 3.8,
+    "depth": 2,
+    "pv": [
+     [
+      "O1 Move to G10"
+     ],
+     [
+      "O1 Quick Step to H10"
+     ]
+    ],
+    "value": 25.62,
+    "depths": [
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "goals over the line: move X1 out of the lane to O2 > make X3 the only answer to O1 and O3 > get O1 the ball with every cover at least a step away; flip-flops 1 (switches: make X3 the only answer to O1 and O3: no turn reaches it now; get O1 the ball with every cover at least a step away: no turn reaches it now)",
+    "seconds": 1.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to J10",
+      "O3 Move to Q5"
+     ]
+    ],
+    "value": 24.54,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "rookie": {
+    "ok": true,
+    "what": "goals over the line: O1 shoots from the . zone > O1 shoots from the 3 zone; flip-flops 0 (switches: left O1 shoots from the . zone for one turn: a turn worth +13.8 more; O1 shoots from the . zone: no turn reaches it now; left O1 shoots from the 3 zone for one turn: a turn worth +10.9 more)",
+    "seconds": 0.3,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Move to J10",
+      "O2 Move to B8"
+     ]
+    ],
+    "value": 31.23,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 16,
+   "desc": "Capacity drain: off-ball moves over the phase drain X2 and open O2",
+   "allstar": {
+    "ok": false,
+    "what": "line: O1 Move to K10; O3 Move to J10 / O4 Sprint to A6 / O3 Quick Step to K9; X2 capacity spent: no; value +22.0 to +23.3; first off-ball move credit none: no off-ball move in its first turn",
+    "seconds": 3.7,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 24.31,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "starter": {
+    "ok": false,
+    "what": "line: O1 Move to K10; O3 Move to E9 / O Hesitate; X2 capacity spent: no; value +22.0 to +22.0; first off-ball move credit +0.0 over one reply, +2.1 over the phase (drain +0.0)",
+    "seconds": 2.8,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 25.03,
+    "depths": [
+     1,
+     2
+    ]
+   },
+   "rookie": {
+    "ok": false,
+    "what": "line: O1 Move to K10; O1 Shot (three); X2 capacity spent: no; value +22.0 to +22.6; first off-ball move credit none: no off-ball move in its first turn",
+    "seconds": 0.8,
+    "depth": 1,
+    "pv": [
+     [
+      "O1 Quick Step to J10"
+     ]
+    ],
+    "value": 27.44,
+    "depths": [
+     1
+    ]
+   }
+  },
+  {
+   "n": 17,
+   "desc": "Turn economy: at most 2 defensive actions a turn; no threat realised with more actions than the turn allows",
+   "allstar": {
+    "ok": true,
+    "what": "20 boards; no breach",
+    "seconds": 1.5,
+    "depth": null,
+    "pv": null,
+    "value": null,
+    "depths": []
+   },
+   "starter": {
+    "ok": true,
+    "what": "20 boards; no breach",
+    "seconds": 0.6,
+    "depth": null,
+    "pv": null,
+    "value": null,
+    "depths": []
+   },
+   "rookie": {
+    "ok": true,
+    "what": "20 boards; no breach",
+    "seconds": 0.5,
+    "depth": null,
+    "pv": null,
+    "value": null,
+    "depths": []
+   }
+  }
+ ]
+}

@@ -69,15 +69,38 @@ def words(t):
 WINGS = dict(o=['I9', 'B7', 'P7', 'A3', 'Q3'], x=['K9', 'C6', 'O6', 'B3', 'P3'], arrows=['W', 'NW', 'NE', 'W', 'E'])
 
 
+def straight_drive(n):
+    """Step 3n B4: after the defence's answer, the ball handler's straight drive: his legal movements onto the ball-rim
+    line, closer to the rim, and the best look one gives him, against his team's best other look. Returns (available,
+    drive value, best alternative)."""
+    from .actions import movement_dests, can_move_kind
+    o = n.with_(side='O', stage='play', turn_n=0) if n.stage == 'play' else n
+    c = o.ball
+    lane = lane_squares(o.o[c], RC.RIM, 0.5)
+    dests = set()
+    for kind in ('move', 'qs', 'sprint'):
+        if can_move_kind(o, 'O', c, kind):
+            dests |= {q for q in movement_dests(o, 'O', c, kind, o.ctx.rules) if q in lane and B.dist_rim(q) < B.dist_rim(o.o[c])}
+    r = Read(o)
+    drive = max((lk.base for lk in r.looks.get(c, []) if lk.c in dests), default=0.0)
+    alt = max((lk.base for i, lks in r.looks.items() for lk in lks if not (i == c and lk.c in dests)), default=0.0)
+    return bool(dests), drive, alt
+
+
 def p1():
     s = board(WINGS['o'], WINGS['x'], WINGS['arrows'], side='X')
     lane = lane_squares(s.o[0], RC.RIM, 0.5)
 
     def check(t, s=s):
         n = after(s, t)
+        avail, drive, alt = straight_drive(n)
         on = [j for j, q in enumerate(n.x) if q in lane and B.cheb(q, n.o[0]) <= 3]
-        return bool(on), f"{words(t)} (on the ball-rim line: {', '.join(f'X{j + 1}' for j in on) or 'nobody'})"
-    return 'Straight lane: the on-ball defender is off the ball-rim line; the defence closes the straight lane', s, check
+        ok = (not avail) or drive < alt
+        return ok, (f"{words(t)} (straight drive {'available' if avail else 'walled or contained'}"
+                    + (f", worth {drive:.1f} against the best other look {alt:.1f}" if avail else '')
+                    + f"; on the ball-rim line, reported only: {', '.join(f'X{j + 1}' for j in on) or 'nobody'})")
+    return ('Straight lane: after the defence\'s answer the straight drive is walled, contained or worth less than the '
+            'best alternative'), s, check
 
 
 def p2():
