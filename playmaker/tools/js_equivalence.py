@@ -150,7 +150,11 @@ def main():
     ap.add_argument('--out', default=None)
     ap.add_argument('--show', type=int, default=5)
     ap.add_argument('--reaction', action='store_true', help='shot reactions only, with their outcomes compared')
+    ap.add_argument('--leaf-mode', default='floor', choices=('floor', 'relative'),
+                    help="step 10: the leaf's mode, in both engines (eval.leaf_mode)")
     args = ap.parse_args()
+    from playmaker_engine.decide import CONFIG as _CFG
+    _CFG['eval']['leaf_mode'] = args.leaf_mode
     rng = random.Random(args.seed)
     states, meta, lines = [], [], []
     t0 = time.time()
@@ -158,7 +162,8 @@ def main():
         s, m = reaction_state(rng) if args.reaction else random_state(rng)
         states.append(s)
         meta.append(m)
-        lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction)))
+        lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
+                                     leaf_mode=args.leaf_mode)))
     py = [py_probe(s) for s in states]
     if args.reaction:
         for s, a in zip(states, py):
@@ -186,7 +191,7 @@ def main():
                 tally[f][1] += 1
             else:
                 bad.append(dict(n=k, field=f, state=s.encode(), py=a[f], js=b.get(f)))
-    rep = dict(states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
+    rep = dict(leaf_mode=args.leaf_mode, states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,
                by_age={a: sum(1 for m in meta if m['age'] == a) for a in AGES},
                by_standard={a: sum(1 for m in meta if m['standard'] == a) for a in STANDARDS},

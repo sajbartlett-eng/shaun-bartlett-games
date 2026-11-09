@@ -1,0 +1,74 @@
+{
+ "mode": "relative",
+ "look": 3,
+ "boards": {
+  "2": {
+   "4": {
+    "label": "4",
+    "n_accepted": 55638,
+    "computer_choice": "X3 Sprint to N7",
+    "computer_choice_value": 18.99,
+    "search_top": "qs X 1 D7 -1 -1 ",
+    "search_top_value": 16.65,
+    "expected": "X2 Move to E5 facing S",
+    "expected_value": 21.55,
+    "gap": 2.56
+   },
+   "12": {
+    "label": "12",
+    "n_accepted": 71176,
+    "computer_choice": "X3 Sprint to N7",
+    "computer_choice_value": 19.39,
+    "search_top": "qs X 1 D7 -1 -1 ",
+    "search_top_value": 16.65,
+    "expected": "X2 Move to B6 facing N",
+    "expected_value": 21.8,
+    "gap": 2.42
+   }
+  },
+  "3": {
+   "label": "",
+   "n_accepted": 15336,
+   "computer_choice": "X5 Move to N3 facing N",
+   "computer_choice_value": 28.01,
+   "search_top": "pause X -1 None -1 -1 ",
+   "search_top_value": 28.01,
+   "expected": "X4 Move to I4 facing N; X2 Quick Step to D6",
+   "expected_value": 39.91,
+   "gap": 11.9
+  },
+  "6": {
+   "label": "",
+   "n_accepted": 6028,
+   "computer_choice": "O2 Move to A5; O4 Pass to O2",
+   "computer_choice_value": 42.46,
+   "search_top": "move O 1 A5 -1 -1  ; pass O 3 None -1 1 ",
+   "search_top_value": 42.46,
+   "expected": "O4 Move to A1; O2 Move to A5",
+   "expected_value": 37.36,
+   "gap": 5.1
+  },
+  "13": {
+   "label": "",
+   "n_accepted": 3693,
+   "computer_choice": "O2 Move to A7",
+   "computer_choice_value": 22.06,
+   "search_top": "move O 1 A5 -1 -1 ",
+   "search_top_value": 22.06,
+   "expected": "O5 Move to J6; O2 Move to A6",
+   "expected_value": 19.51,
+   "gap": 2.55
+  },
+  "16": {
+   "label": "",
+   "n_accepted": 9,
+   "computer_choice": "O2 Move to A5; O1 Sprint to J10",
+   "computer_choice_value": 19.51,
+   "search_top": "move O 1 A5 -1 -1  ; move O 0 J10 -1 -1 ",
+   "search_top_value": 19.51,
+   "expected": "O3 Sprint to L9",
+   "expected_value": 29.71,
+   "gap": -10.2
+  }
+ }
+}

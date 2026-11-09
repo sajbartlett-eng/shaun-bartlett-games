@@ -1,0 +1,74 @@
+{
+ "mode": "floor",
+ "look": 3,
+ "boards": {
+  "2": {
+   "4": {
+    "label": "4",
+    "n_accepted": 55638,
+    "computer_choice": "X2 Quick Step to D7",
+    "computer_choice_value": 18.8,
+    "search_top": "steal X 0 None -1 -1 ",
+    "search_top_value": 18.67,
+    "expected": "X2 Move to F7 facing SW; X1 Steal",
+    "expected_value": 18.67,
+    "gap": -0.13
+   },
+   "12": {
+    "label": "12",
+    "n_accepted": 108600,
+    "computer_choice": "X4 Move to I3 facing S; X1 Steal",
+    "computer_choice_value": 18.67,
+    "search_top": "steal X 0 None -1 -1 ",
+    "search_top_value": 18.67,
+    "expected": "X2 Move to C7 facing N; X1 Steal",
+    "expected_value": 18.67,
+    "gap": -0.0
+   }
+  },
+  "3": {
+   "label": "",
+   "n_accepted": 15336,
+   "computer_choice": "X3 Move to N6 facing SW; X Pause",
+   "computer_choice_value": 24.89,
+   "search_top": "pause X -1 None -1 -1 ",
+   "search_top_value": 24.89,
+   "expected": "X4 Move to I4 facing N; X2 Quick Step to D6",
+   "expected_value": 30.6,
+   "gap": 5.71
+  },
+  "6": {
+   "label": "",
+   "n_accepted": 6028,
+   "computer_choice": "O2 Move to A5; O4 Pass to O2",
+   "computer_choice_value": 39,
+   "search_top": "move O 1 A5 -1 -1  ; pass O 3 None -1 1 ",
+   "search_top_value": 39,
+   "expected": "O4 Move to A4",
+   "expected_value": 33,
+   "gap": 6
+  },
+  "13": {
+   "label": "",
+   "n_accepted": 3693,
+   "computer_choice": "O3 Move to N5",
+   "computer_choice_value": 24.89,
+   "search_top": "hesitate O -1 None -1 -1 ",
+   "search_top_value": 24.89,
+   "expected": "O5 Move to J6",
+   "expected_value": 24.89,
+   "gap": 0.0
+  },
+  "16": {
+   "label": "",
+   "n_accepted": 9,
+   "computer_choice": "O1 Move to J10; O1 Dribble vs X1",
+   "computer_choice_value": 24.89,
+   "search_top": "move O 0 J10 -1 -1 ",
+   "search_top_value": 24.89,
+   "expected": "O2 Move to C9",
+   "expected_value": 24.89,
+   "gap": 0.0
+  }
+ }
+}

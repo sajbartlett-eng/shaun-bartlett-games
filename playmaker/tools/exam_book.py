@@ -66,15 +66,11 @@ def boards():
     t = apply(t, next(x for x in legal_actions(t) if x.kind == 'end_turn'))
     out['d108'] = dict(boards=[_data(t)], marks=[dict(kind='move', side='O', frm='I11', to='I12', turn=1)])
 
-    # D-109: archive/tests/test_passing.py, the position 'prefer_clean' (tests/data/pass_positions.json)
-    d = json.load(open(os.path.join(ROOT, 'tests', 'data', 'pass_positions.json')))['prefer_clean']
-    fl = dict(d['fields'])
-    fl.update(o=tuple(map(tuple, fl['o'])), x=tuple(map(tuple, fl['x'])), arrows=tuple(fl['arrows']),
-              cnt=tuple(fl['cnt']), screens=tuple(fl['screens']), beaten=tuple(fl['beaten']))
-    s = scenario_state(d['spec'][1]).with_(**fl)
+    # D-109: rebuilt in step 10 (exam.c2): the clean pass to O2 and the contested pass to O3
+    _, s, _ = E.c2()
     out['d109'] = dict(boards=[_data(s)], marks=[
-        dict(kind='pass', side='O', frm=B.sq(s.o[0]), target=B.sq(s.o[d['clean']]), turn='a'),
-        dict(kind='pass', side='O', frm=B.sq(s.o[0]), target=B.sq(s.o[d['contested']]), turn='b')])
+        dict(kind='pass', side='O', frm=B.sq(s.o[0]), target=B.sq(s.o[1]), turn='a'),
+        dict(kind='pass', side='O', frm=B.sq(s.o[0]), target=B.sq(s.o[2]), turn='b')])
 
     # D-112: tests/test_step3m.py, the early cut: O5 cuts a turn before O1's drive
     s = E.board(['H9', 'C8', 'O8', 'B3', 'P3'], ['H8', 'D8', 'N8', 'C3', 'O3'], ['N', 'W', 'E', 'W', 'E'])
@@ -370,6 +366,128 @@ PAGES = [
          today='fail', step7=True),
 ]
 
+# ---- step 10: the rebuilt boards (Shaun's marks, 9 Nov 2026) ----------------------------------------------------------
+REBUILT = {
+    'b1': dict(
+        situation='Five-out. O1 has the ball at the top of the key, just inside the arc. X1 trails behind him, two '
+                  'squares to his right and three back, so the straight line to the rim is open: before the defence '
+                  'acts, the drive is worth 32 against 22 for the offence\'s best other option. The defence is about '
+                  'to act.',
+        note='Rebuilt in step 10: the drive now starts strong, as Shaun asked.'),
+    'b3': dict(
+        situation='O1 has driven past X1 and has the ball in the lane, 3 squares from the rim. X1 is behind him and has '
+                  'used both his Move and his Quick Step, so he can\'t get back. O4 waits on the left baseline, guarded '
+                  'by X4 under the basket. The defence is about to act.',
+        note='Rebuilt in step 10: X1 has no movement left, so help must come. Only X4 can get next to O1 in one move '
+             '(to H4, H5 or I4).'),
+    'b4': dict(
+        situation='O1 has the ball at the top of the key, inside the arc, with X1 behind him. O5 stands on the right '
+                  'block. X5 sits between them, off the passing line, so the pass to O5 can be thrown: it arrives half '
+                  'the time (X5 can step into it). The offence is about to act.',
+        judged='The offence\'s turn attacks X5: a shot, a pass to O5, or O1 moving or dribbling. It is also met if the '
+               'computer picks a turn its own search rates above every attacking turn it weighs.',
+        note='Rebuilt in step 10: the pass to O5 is legal, and the judge reads only what the offence does.'),
+    'b5': dict(
+        expect='Board A: O2 drives at the closeout, ending closer to the rim. Board B: O2 shoots now, or steps to a '
+               'spot where no defender can reach him to Contest.',
+        why='Drive past a defender who arrives on a closeout; against one who stops short, take the open look, here or '
+            'one step away.',
+        judged='Board A: O2 moves or dribbles, ends closer to the rim, and his first action is not a shot. Board B: his '
+               'first action is a shot, or he moves to a square where no defender can Contest him.',
+        note='Judge restated in step 10: stepping up for an open three is right.'),
+    'b6': dict(
+        judged='Judged by D-94: O4\'s open look (33) beats what the possession is worth now (24.9), so his first action '
+               'must be his own: a shot, a movement or a dribble.',
+        note='Kept in step 10, judged by D-94.'),
+    'b7': dict(
+        labels={'phase 2': 'Board A: clock 10, phase 2', 'phase 6': 'Board B: the offence\'s final turn'},
+        situation='O3 has the ball in the middle of the lane, 4 squares from the rim, with X3 right in front of him and '
+                  'two more defenders close. Board A is early in the possession (phase 2). Board B is the offence\'s '
+                  'final turn: the last phase, with 2 tokens left.',
+        note='Board B rebuilt in step 10: it is now the offence\'s final turn of the possession.'),
+    'b8': dict(
+        situation='O1 has the ball at the top of the arc. O2 is on the left wing, high, and X2 is between him and the '
+                  'ball, denying the pass. X1 and X2 have both used their Move and Quick Step, so neither can step into '
+                  'a pass behind X2: a backdoor pass arrives for sure. The offence is about to act.',
+        note='Rebuilt in step 10: the backdoor lane is clear. After a cut to F7, O2\'s look is worth 32.'),
+    'b11': dict(
+        labels={'early': 'Board A: clock 12, early', 'final phase': 'Board B: the offence\'s final turn'},
+        situation='O1 has the ball at the top, too deep to shoot. X2 has dropped below O2, off the passing line, so the '
+                  'pass to O2 can be thrown; X5 has left the right corner and sits in its path. The pass arrives half '
+                  'the time (X1, X2 or X5 can step into it). Board A is early; board B is the offence\'s final turn.',
+        note='Rebuilt in step 10: the pass to O2 is legal, X5 is in the lane, and board B is the final turn.'),
+    'b14': dict(
+        judged='Met if the computer\'s own search rates its top first move more than 2 points (its variety margin) '
+               'above the next. Otherwise, over 20 games, no first move may be chosen more than 70% of the time.',
+        note='Judge restated in step 10 (D-97): being predictable is fine when one move is clearly best.'),
+    'd109': dict(
+        teams={'': 'Two mirror-image teams'},
+        situation='Two mirror-image teams. O1 has the ball at the top; O2 and O3 are equal shooters on the wings (each '
+                  'catch is worth 39). X1 has used his Move and Quick Step. X2 has sagged low, three squares below O2: he '
+                  'can\'t reach the pass to O2 (a), but can still close out on him. X3 stays up the line, where he can '
+                  'step into the pass to O3 (b): it arrives 55% of the time. The offence is about to act.',
+        expect='O1 passes to O2, the clean pass, never to O3.',
+        judged='The computer doesn\'t throw the pass to O3, and its own search rates the pass to O2 above it.',
+        note='Rebuilt in step 10: the clean pass is clean (no defender can step into it) and the other is contested.'),
+}
+for _p in PAGES:
+    _p.update(REBUILT.get(_p['key'], {}))
+    _p['rebuilt'] = _p['key'] in REBUILT
+
+STEP10 = os.path.join(RUNS, 'step10')
+EXAM_KEY = {f'b{n}': str(n) for n in range(1, 18)}
+EXAM_KEY.update(d108='C1', d109='C2')
+
+
+def step10_results():
+    out = {}
+    for mode in ('floor', 'relative'):
+        for cond in ('clock', 'fixed3'):
+            p = os.path.join(STEP10, f'exam_{mode}_{cond}.json')
+            if os.path.exists(p):
+                for r in json.load(open(p))['rows']:
+                    out.setdefault(r['board'], {})[(mode, cond)] = r
+    gaps = {}
+    for mode in ('floor', 'relative'):
+        p = os.path.join(STEP10, f'gaps_{mode}.json')
+        if os.path.exists(p):
+            for b, v in json.load(open(p))['boards'].items():
+                gaps.setdefault(b, {})[mode] = v
+    return out, gaps
+
+
+def step10_html(p, res, gaps):
+    k = EXAM_KEY.get(p['key'])
+    if not k or k not in res:
+        return ''
+    r = res[k]
+    cell = lambda x: '' if x is None else (('<b>Pass.</b> ' if x['ok'] else '<b>Fail.</b> ') + esc(say('; '.join(x['choice'] or [])) or '(no single choice: a check over boards)'))
+    rows = ['<div class="evidence"><div class="kicker">Step 10: the exam both ways</div>',
+            '<table class="ev"><tr><th></th><th>Today\'s reading (floor)</th><th>Against the average (relative)</th></tr>']
+    for cond, lab in (('clock', 'On the clock (the All-Star\'s time)'), ('fixed3', '3 moves ahead, no time limit')):
+        rows.append(f"<tr><td>{lab}</td><td>{cell(r.get(('floor', cond)))}</td><td>{cell(r.get(('relative', cond)))}</td></tr>")
+    rows.append('</table>')
+    g = gaps.get(k)
+    if g:
+        rows.append('<table class="ev"><tr><th>3 moves ahead</th><th>The computer\'s choice</th><th>The move the board '
+                    'expects</th><th>Gap</th></tr>')
+        for mode, lab in (('floor', 'Floor'), ('relative', 'Relative')):
+            v = g.get(mode)
+            if not v:
+                continue
+            for sub in (v.values() if k == '2' else [v]):
+                if not sub.get('computer_choice'):
+                    continue
+                name = f" ({p.get('labels', {}).get(sub['label'], 'board ' + sub['label'])})" if sub.get('label') else ''
+                gap = sub.get('gap')
+                gt = '' if gap is None else ('level' if abs(gap) < 0.05 else (f'choice ahead by {gap:.1f}' if gap > 0 else f'expected move ahead by {-gap:.1f}'))
+                rows.append(f"<tr><td>{lab}{esc(name)}</td><td>{esc(say(sub['computer_choice']))}: <b>{pts(sub['computer_choice_value'])}</b></td>"
+                            f"<td>{esc(say(sub['expected']))}: <b>{pts(sub['expected_value'])}</b></td><td>{esc(gt)}</td></tr>")
+        rows.append('</table>')
+    rows.append('</div>')
+    return '\n'.join(rows)
+
+
 SIDE = {'O': 'Offence to act', 'X': 'Defence to act'}
 VERDICT = {True: 'Pass', False: 'Fail'}
 
@@ -608,10 +726,15 @@ def evidence_html(p, ev, words):
     return '\n'.join(out)
 
 
-def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None):
+def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None, s10=None):
     v, verdict_note = today_cell(p, today)
-    cls = {'Pass': 'pass', 'Fail': 'fail'}.get(v, 'na')
-    short = 'Not measured' if v.startswith('Not measured') else v
+    res10, gaps10 = s10 or ({}, {})
+    k10 = EXAM_KEY.get(p['key'])
+    badge = v
+    if k10 in res10 and ('floor', 'clock') in res10[k10]:
+        badge = 'Pass' if res10[k10][('floor', 'clock')]['ok'] else 'Fail'
+    cls = {'Pass': 'pass', 'Fail': 'fail'}.get(badge, 'na')
+    short = 'Not measured' if badge.startswith('Not measured') else badge
     kind = ('Candidate board' if p.get('candidate') else 'Trainer test' if p.get('trainer') else 'Exam board')
     head = f"{kind} {p['n']}" if not p.get('candidate') and not p.get('trainer') else kind
     also = f" · {p['also']}" if p.get('also') else ''
@@ -637,7 +760,10 @@ def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None):
     out.append(f'<dt>What the computer should do</dt><dd>{esc(p["expect"])}</dd>')
     out.append(f'<dt>The basketball reason</dt><dd>{esc(p["why"])}</dd>')
     out.append(f'<dt>How it is judged</dt><dd>{esc(p["judged"])}</dd>')
-    out.append('<dt>Today\'s result</dt><dd><table>')
+    if s10:
+        out.append('</dl>' + step10_html(p, res10, gaps10) + '<dl>')
+    out.append('<dt>' + ('Earlier results (the board before step 10 rebuilt it)' if p.get('rebuilt') else
+                         'Earlier results') + '</dt><dd><table>')
     first = 'Today\'s rules' if p.get('trainer') else 'On the clock, today\'s rules (All-Star)'
     out.append(f'<tr><th>{first}</th><td><b>{esc(v)}.</b> {esc(verdict_note)}</td></tr>')
     for label, val, txt in earlier(p, fixed, timed, board1):
@@ -650,12 +776,15 @@ def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None):
         out.append(f'<dt>Worth knowing</dt><dd class="note">{esc(p["note"])}</dd>')
     out.append('</dl>')
     if ev:
-        out.append(evidence_html(p, ev, ewords or {}))
+        ev_html = evidence_html(p, ev, ewords or {})
+        if ev_html and p.get('rebuilt'):
+            ev_html = ev_html.replace('Evidence (step 9)', 'Evidence (step 9, the board before step 10 rebuilt it)')
+        out.append(ev_html)
     out.append('<div class="mark"><b>Shaun\'s mark:</b> <span class="boxes"><span>&#9744; Keep</span>'
                '<span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div>'
                '<div class="line"></div></div>')
     out.append('</section>')
-    return '\n'.join(out), v
+    return '\n'.join(out), badge
 
 
 def main():
@@ -666,7 +795,7 @@ def main():
     from exam_book_words import EVIDENCE_WORDS
     body, index = [], []
     for p in PAGES:
-        h, v = page_html(p, svgs, data, fixed, timed, board1, today, ev, EVIDENCE_WORDS)
+        h, v = page_html(p, svgs, data, fixed, timed, board1, today, ev, EVIDENCE_WORDS, step10_results())
         body.append(h)
         index.append((p, 'not measured under the current rules' if v.startswith('Not measured') else v))
     toc = '<ol class="toc" style="list-style:none">' + ''.join(
@@ -697,16 +826,24 @@ def main():
     open(OUT_HTML, 'w').write(doc)
 
     lines = ['# Exam book: the boards', '',
-             'Tick each board first; the pages are in `EXAM_BOOK.html`. "Today" is the All-Star on the clock under the 9 '
-             'November rules (the step 6 run; step 7 for board 6 and the two trainer tests).', '']
+             'Tick each board first; the pages are in `EXAM_BOOK.html`. Step 10 ran the exam on the app\'s search with '
+             'the position reading as it is (floor) and against the average (relative). The trainer tests T1 and T2 '
+             'are from step 7.', '']
     for p, v in index:
         tag = f" ({p['also']})" if p.get('also') else ''
         status = v if v.startswith('not measured') else f'{v.lower()} today'
         if v.startswith('not measured') and ev and EV_KEY.get(p['key']) in ev:
             status = 'first measured in step 9'
+        r10 = step10_results()[0].get(EXAM_KEY.get(p['key']), {})
+        if r10:
+            pf = lambda key: ('pass' if r10[key]['ok'] else 'fail') if key in r10 else '-'
+            status = (f"step 10, on the clock: floor {pf(('floor', 'clock'))}, relative {pf(('relative', 'clock'))}; "
+                      f"3 moves ahead: floor {pf(('floor', 'fixed3'))}, relative {pf(('relative', 'fixed3'))}"
+                      + ('; rebuilt in step 10' if p.get('rebuilt') else ''))
         k = EV_KEY.get(p['key'])
         if ev and k in (ev or {}):
-            status += f"; evidence: {EVIDENCE_WORDS.get(k, {}).get('index', '')}"
+            status += (f"; step 9 evidence{' (before the rebuild)' if p.get('rebuilt') else ''}: "
+                       f"{EVIDENCE_WORDS.get(k, {}).get('index', '')}")
         lines.append(f"- [ ] {p['n']}. {p['title']}{tag}: {status}. Keep / fix / drop:")
     open(OUT_MD, 'w').write('\n'.join(lines) + '\n')
     print(f'wrote {OUT_HTML} ({len(doc) // 1024} KB) and {OUT_MD}')

@@ -1,0 +1,112 @@
+{
+ "1": {
+  "drive": 32.0,
+  "best_other": 22.0
+ },
+ "3": {
+  "x1_actions": [],
+  "helpers": [
+   "X4 Move to H4",
+   "X4 Move to H5",
+   "X4 Move to I4"
+  ]
+ },
+ "4": {
+  "pass_to_O5_legal": true,
+  "arrives": 0.5,
+  "can_step_in": [
+   "X5"
+  ]
+ },
+ "6": {
+  "open_look": 33.0,
+  "possession": 24.89
+ },
+ "7": {
+  "phase 2": {
+   "clock": 10,
+   "tok_o": 6,
+   "tok_x": 6
+  },
+  "phase 6": {
+   "clock": 2,
+   "tok_o": 2,
+   "tok_x": 6
+  }
+ },
+ "8": {
+  "pass_to_O2_now_denied_by": 1,
+  "cuts": {
+   "O2 Move to D7": {
+    "arrives": 1.0,
+    "o2_look": 21.0
+   },
+   "O2 Move to D6": {
+    "arrives": 1.0,
+    "o2_look": 21.0
+   },
+   "O2 Move to F7": {
+    "arrives": 1.0,
+    "o2_look": 32.0
+   },
+   "O2 Move to E7": {
+    "arrives": 1.0,
+    "o2_look": 22.4
+   },
+   "O2 Sprint to D7": {
+    "arrives": 1.0,
+    "o2_look": 20.0
+   },
+   "O2 Sprint to D6": {
+    "arrives": 1.0,
+    "o2_look": 20.0
+   },
+   "O2 Sprint to D5": {
+    "arrives": 1.0,
+    "o2_look": 24.0
+   },
+   "O2 Sprint to F7": {
+    "arrives": 1.0,
+    "o2_look": 32.0
+   },
+   "O2 Sprint to G6": {
+    "arrives": 0.5,
+    "o2_look": 32.0
+   }
+  }
+ },
+ "11": {
+  "early": {
+   "pass_to_O2_legal": true,
+   "arrives": 0.5,
+   "can_step_in": [
+    "X1",
+    "X2",
+    "X5"
+   ],
+   "tok_o": 6,
+   "clock": 12
+  },
+  "final phase": {
+   "pass_to_O2_legal": true,
+   "arrives": 0.5,
+   "can_step_in": [
+    "X1",
+    "X2",
+    "X5"
+   ],
+   "tok_o": 2,
+   "clock": 2
+  }
+ },
+ "C2": {
+  "clean_arrives": 1.0,
+  "clean_step_in": [],
+  "contested_arrives": 0.55,
+  "contested_step_in": [
+   "X3"
+  ],
+  "o2_look": 39.0,
+  "o3_look": 39.0
+ }
+}

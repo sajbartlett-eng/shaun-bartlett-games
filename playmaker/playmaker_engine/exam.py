@@ -44,12 +44,43 @@ def board(o, x, arrows, ball=0, off=OFF, dfn=DFN, side='O', clock=12, rules=DIGI
     return s
 
 
+LAST = {'agent': None}          # step 10: the agent of the last turn_of (judges that weigh the evidence read its look)
+
+
 def turn_of(level, s, seed=1):
     """The level's whole turn from s: its first action and the planned rest."""
     ag = Agent(actor(s), level, seed=seed)
     a = ag.choose(s)
     t = [a] + list(ag.plan)
+    LAST['agent'] = ag
     return t, ag
+
+
+def search_values(s, depth):
+    """Step 10: the All-Star's own search values of its candidate turns at a fixed look (no time limit, no noise):
+    [(value from the side to act's view, turn)], best first. The JavaScript search when it is installed (proved equal),
+    else the Python one. The evidence for judges that accept 'something the evidence shows is worth more'."""
+    import json as _json
+    from . import agent as _AG, jsbridge as _J
+    from .agent import profile as _profile
+    from .search import Searcher
+    side = actor(s)
+    sign = 1 if side == 'O' else -1
+    p = _profile('allstar')
+    if _AG.JS['search'] is not None and _J.ported(s.ctx.rules):
+        req = dict(state=_J.state_json(s), ctx=_J.ctx_json(s.ctx), profile=p, budget=None, max_depth=depth, stale=None)
+        out = _json.loads(_AG.JS['search'](_json.dumps(req)))
+        res = [(v, tuple(_J.action_from(a) for a in t)) for v, t in out['results']]
+    else:
+        ag = Agent(side, 'allstar', seed=1)
+        res, _ = Searcher(side, p, ag._evaluate(s), float('inf')).root(s, depth, depth)
+    return sorted(((sign * v, tuple(t)) for v, t in res), key=lambda r: -r[0])
+
+
+def look_depth(default=3):
+    """How far the last agent looked (its fixed depth, or the depth it reached on the clock)."""
+    ag = LAST['agent']
+    return (ag.last or {}).get('depth') or default if ag is not None else default
 
 
 def after(s, t):
@@ -87,8 +118,13 @@ def straight_drive(n):
     return bool(dests), drive, alt
 
 
+STRONG_LANE = dict(o=['I8', 'B7', 'P7', 'A3', 'Q3'], x=['K11', 'C6', 'O6', 'B3', 'P3'], arrows=['SW', 'NW', 'NE', 'W', 'E'])
+
+
 def p1():
-    s = board(WINGS['o'], WINGS['x'], WINGS['arrows'], side='X')
+    # step 10 (Shaun, 9 Nov 2026): the drive starts strong, worth more than the offence's best other option, before the
+    # defence acts: X1 trails behind O1 at the top of the key
+    s = board(STRONG_LANE['o'], STRONG_LANE['x'], STRONG_LANE['arrows'], side='X')
     lane = lane_squares(s.o[0], RC.RIM, 0.5)
 
     def check(t, s=s):
@@ -124,8 +160,9 @@ def p2():
 
 
 def p3():
+    # step 10: X1 has used his Move and his Quick Step, so he can't get back beside O1: help must come
     s = board(['I5', 'B7', 'P7', 'D3', 'Q3'], ['I7', 'C7', 'O7', 'G3', 'P3'], ['S', 'W', 'E', 'W', 'E'], side='X',
-              beaten=((0, 0),), moved_x=1)
+              beaten=((0, 0),), moved_x=1, qs_x=1)
 
     def check(t, s=s):
         n = after(s, t)
@@ -135,19 +172,29 @@ def p3():
         ok = bool(helper) and bool(rot)
         return ok, f"{words(t)} (help: {', '.join(f'X{j + 1}' for j in helper) or 'none'}; " \
                    f"rotation: {', '.join(f'X{j + 1}' for j in rot) or 'none'})"
-    return 'Help the helper: O1 has beaten X1 on the drive; the low man helps and another covers', s, check
+    return 'Help the helper: O1 has beaten X1, who has no movement left; the low man helps and another covers', s, check
 
 
 def p4():
-    s = board(['I7', 'B7', 'P7', 'A3', 'K3'], ['I9', 'C6', 'O6', 'B3', 'J4'], ['S', 'NW', 'NE', 'W', 'NE'],
+    # step 10: X5 sits between O1 and O5 off the passing line, so the pass to O5 is legal. The judge reads only what the
+    # offence does: it attacks X5 (O1 shoots or drives, or the pass to O5), or picks a turn the All-Star's own search
+    # rates above every attacking turn it weighs (the evidence, at the look the computer used)
+    s = board(['I7', 'B7', 'P7', 'A3', 'K3'], ['I9', 'C6', 'O6', 'B3', 'J5'], ['S', 'NW', 'NE', 'W', 'NE'],
               moved_x=1)
 
+    def attack(t):
+        return any((a.kind == 'shot') or (a.kind == 'pass' and a.target == 4) or
+                   (a.kind in ('move', 'qs', 'sprint', 'dribble') and a.piece == 0) for a in t)
+
     def check(t, s=s):
-        r = Read(s)
-        ov = [o for o in r.overloads() if o['defender'] == 4]
-        attack = any((a.kind == 'shot') or (a.kind == 'pass' and a.target == 4) or
-                     (a.kind in ('move', 'qs', 'sprint', 'dribble') and a.piece == 0) for a in t)
-        return bool(ov) and attack, f"{words(t)} (X5 overloaded on O1 and O5: {'yes' if ov else 'no'})"
+        if attack(t):
+            return True, f"{words(t)} (attacks X5)"
+        vals = search_values(s, look_depth())
+        best_attack = max((v for v, tt in vals if attack(tt)), default=None)
+        mine = next((v for v, tt in vals if list(tt) == list(t)), None)
+        ok = best_attack is not None and mine is not None and mine > best_attack
+        return ok, (f"{words(t)} (doesn't attack X5; its value {mine if mine is None else round(mine, 1)} against the best "
+                    f"attack {best_attack if best_attack is None else round(best_attack, 1)})")
     return 'Two threats, one answer: X5 is the only answer to O1\'s pull-up and O5 at the rim', s, check
 
 
@@ -158,27 +205,47 @@ def p5():
               ball=1, moved_x=2, qs_x=2, cnt=(0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0))
 
     def check(lt):
+        # step 10 (Shaun, 9 Nov 2026): A, the drive must end closer to the rim; B, a shot now, or a move to a spot where
+        # no defender can Contest him (stepping up for an open three is right)
         ta, tb = lt['close'], lt['short']
-        drive = any(x.piece == 1 and x.kind in ('move', 'qs', 'sprint', 'dribble') for x in ta) and ta[0].kind != 'shot'
-        shoot = tb[0].kind == 'shot'
+        na = after(a, ta)
+        drive = ta[0].kind != 'shot' and any(x.piece == 1 and x.kind in ('move', 'qs', 'sprint', 'dribble') for x in ta) \
+            and B.dist_rim(na.o[1]) < B.dist_rim(a.o[1])
+        shoot = tb[0].kind == 'shot' or open_spot(b, tb)
         return drive and shoot, f'closed to C7: {words(ta)}; stopped 2 short at D7: {words(tb)}'
     return 'Closeout: X2 closed from 3 squares with his Move; drive when he arrives, shoot when he stops 2 short', \
         dict(close=a, short=b), check
+
+
+def open_spot(s, t):
+    """Board 5 B: O2 moves (no shot) to a square where no defender can Contest him after the turn."""
+    if any(x.kind == 'shot' for x in t) or not any(x.piece == 1 and x.kind in ('move', 'qs', 'sprint', 'dribble') for x in t):
+        return False
+    n = after(s, t)
+    if n.stage == 'over' or n.o[1] == s.o[1]:
+        return False
+    r = Read(n.with_(ball=1, side='O', stage='play'))
+    return all((r._cm[d].get(n.o[1]) is None) or min(r._cm[d].get(n.o[1])) > r.react_moves for d in range(5))
 
 
 def p6():
     s = board(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'D9', 'O7', 'H6', 'P3'], ['N', 'W', 'E', 'N', 'E'], ball=3)
 
     def check(t, s=s):
+        # step 10 (D-94): O4 must act at once when his open look beats what the possession is worth now (the phase table)
+        from .decide import vcoarse
+        look = Read(s, exact=True).shot_now() or 0.0
+        if look <= vcoarse(s):
+            return True, f'{words(t)} (the open look {look:.1f} does not beat the possession, {vcoarse(s):.1f})'
         ok = t[0].piece == 3 and t[0].kind in ('shot', 'move', 'qs', 'sprint', 'dribble')
-        return ok, words(t)
+        return ok, words(t) + f' (open look {look:.1f} against the possession {vcoarse(s):.1f})'
     return 'Catch window: O4 caught in the corner with every cover far; he acts on his next action', s, check
 
 
 def p7():
     o, x, ar = ['I11', 'B7', 'H6', 'A3', 'Q3'], ['I10', 'C7', 'H5', 'G4', 'J4'], ['N', 'W', 'N', 'NW', 'NE']
     early = board(o, x, ar, ball=2, clock=10)
-    late = board(o, x, ar, ball=2, clock=2)
+    late = board(o, x, ar, ball=2, clock=2, tok_o=2)        # step 10: the offence's final turn of the possession
 
     def check(lt):
         te, tl = lt['phase 2'], lt['phase 6']
@@ -189,7 +256,8 @@ def p7():
 
 
 def p8():
-    s = board(['H10', 'D9', 'P7', 'A3', 'Q3'], ['H9', 'E9', 'O7', 'B4', 'P3'], ['N', 'W', 'E', 'W', 'E'])
+    # step 10: X1 and X2 have used their Move and Quick Step, so no defender can step into the backdoor pass
+    s = board(['H10', 'D9', 'P7', 'A3', 'Q3'], ['H9', 'E9', 'O7', 'B4', 'P3'], ['N', 'W', 'E', 'W', 'E'], moved_x=3, qs_x=3)
 
     def check(t, s=s):
         cut = any(a.piece == 1 and a.kind in ('move', 'qs', 'sprint') and B.dist_rim(a.dest) <= B.dist_rim(s.o[1]) - 2
@@ -226,9 +294,9 @@ def p10():
 
 def p11():
     o = ['I11', 'B7', 'P7', 'A3', 'Q3']
-    x = ['I10', 'C7', 'O7', 'B3', 'E9']
+    x = ['I10', 'C6', 'O7', 'B3', 'E9']          # step 10: X2 off the passing line, so the pass to O2 is legal
     early = board(o, x, ['N', 'W', 'E', 'W', 'SW'], clock=12)
-    late = board(o, x, ['N', 'W', 'E', 'W', 'SW'], clock=2)
+    late = board(o, x, ['N', 'W', 'E', 'W', 'SW'], clock=2, tok_o=2)      # the offence's final turn
 
     def check(lt):
         te, tl = lt['early'], lt['final phase']
@@ -266,12 +334,21 @@ def p14():
     s = board(['I11', 'B7', 'P7', 'D3', 'N3'], ['I10', 'C7', 'O7', 'E3', 'M3'], ['N', 'W', 'E', 'W', 'E'],
               off=off, dfn=dfn)
 
-    def check(firsts):
+    def check(firsts, lead=None):
+        # step 10 (D-97, Shaun, 9 Nov 2026): predictable is fine when one move is clearly best. Met when the top first
+        # move leads the next by more than the variety margin (the All-Star's own search, at the look it used);
+        # otherwise no first move above 70% over the 20 seeds
         from collections import Counter
+        from .agent import profile as _profile
+        margin = _profile('allstar')['variety_margin']
         c = Counter(firsts)
         top = c.most_common(1)[0][1] / len(firsts)
-        return top <= 0.7, f'{len(c)} different first actions over {len(firsts)} seeds; the most common {round(100 * top)}%'
-    return 'Variety: a mirror-image board; over 20 seeds no option above 70%', s, check
+        if lead is not None and lead > margin:
+            return True, (f'the top first move leads by {lead:.1f}, more than the variety margin {margin} '
+                          f'({len(c)} different first actions over {len(firsts)} seeds; the most common {round(100 * top)}%)')
+        return top <= 0.7, (f'{len(c)} different first actions over {len(firsts)} seeds; the most common {round(100 * top)}%'
+                            + (f' (the top first move leads by {lead:.1f})' if lead is not None else ''))
+    return 'Variety: a mirror-image board; clearly best, or no option above 70% over 20 seeds', s, check
 
 
 def p15():
@@ -340,6 +417,34 @@ def p17():
 POSITIONS = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17]
 
 
+def c2():
+    """Step 10 (D-109, rebuilt): the clean pass against the contested one. Two equal shooters on the wings (the mirror
+    teams). X1 has used his Move and Quick Step; X2 sags low below O2, out of reach of the pass to O2 but in reach of
+    a closeout; X3 stays up the line, where he can step into the pass to O3. Met when the All-Star doesn't throw the
+    contested pass and its own search rates the clean pass above it."""
+    off = team('Exam mirror O', [CARDS['ppgC'], CARDS['shsA'], CARDS['shsA'], CARDS['stpfA'], CARDS['stpfA']])
+    dfn = team('Exam mirror X', [CARDS['dpgB'], CARDS['bgsB'], CARDS['bgsB'], CARDS['rpcB'], CARDS['rpcB']])
+    s = board(['I11', 'B7', 'P7', 'D3', 'N3'], ['I10', 'B4', 'O6', 'E3', 'M3'], ['N', 'N', 'N', 'W', 'E'],
+              off=off, dfn=dfn, moved_x=1, qs_x=1)
+    CLEAN, CONTESTED = 1, 2
+
+    def check(t, s=s):
+        if any(a.kind == 'pass' and a.target == CONTESTED for a in t):
+            return False, f'{words(t)} (the contested pass)'
+        vals = {}
+        for v, tt in search_values(s, look_depth()):
+            if len(tt) == 1 and tt[0].kind == 'pass':
+                vals[tt[0].target] = v
+        vc, vx = vals.get(CLEAN), vals.get(CONTESTED)
+        ok = vc is not None and (vx is None or vc > vx)
+        return ok, (f"{words(t)} (the clean pass {'not weighed' if vc is None else round(vc, 1)}, the contested pass "
+                    f"{'not weighed' if vx is None else round(vx, 1)})")
+    return 'Clean pass: two equal shooters; the pass to O2 is clean, the pass to O3 contested', s, check
+
+
+CANDIDATES = {'C2': c2}
+
+
 def drain_line(level, s, turns_=3):
     """Play the offence (the level) and the defence's best cover for up to `turns_` offence turns within the phase.
     Returns (offence moves played, whether X2 spent capacity, start value, end value)."""
@@ -377,7 +482,12 @@ def run_position(n, level):
         for seed in range(20):
             t, _ = turn_of(level, boards, seed=seed)
             firsts.append(str(t[0]))
-        ok, what = check(firsts)
+        best = {}
+        for v, tt in search_values(boards, look_depth()):
+            best.setdefault(str(tt[0]), v)
+        top2 = sorted(best.values(), reverse=True)[:2]
+        lead = top2[0] - top2[1] if len(top2) == 2 else None
+        ok, what = check(firsts, lead)
         return desc, ok, what
     if n == 16:
         t, _ = turn_of(level, boards)
