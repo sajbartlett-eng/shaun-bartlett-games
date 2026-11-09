@@ -310,6 +310,14 @@ def test_flags_need_agreement_at_two_depths_and_minimal_value_names_the_alternat
 
 
 @pytest.fixture
+def floor_leaf(monkeypatch):
+    """Step 11: relative is the default reading (D-92); tests whose values were set under the floor reading state it."""
+    from playmaker_engine import decide as DC
+    monkeypatch.setitem(DC.CONFIG['eval'], 'leaf_mode', 'floor')
+    yield
+
+
+@pytest.fixture
 def table_3m(monkeypatch):
     """Step 3n: the trainer-mechanism boards were built on the step 3m phase table; the step 3n table sits about 3
     points higher and, as the leaf's floor, flattens them (reported in docs/reports/STEP3N_REPORT.md). Pin the old table."""
@@ -342,7 +350,7 @@ def test_an_early_cut_is_flagged_with_a_legal_reorder(table_3m):
             n = TR._reply(n, 0, 0.4)[2]                                       # the defence's reply between
 
 
-def test_horizon_credit_on_the_capacity_drain_board(table_3m):
+def test_horizon_credit_on_the_capacity_drain_board(table_3m, floor_leaf):
     from playmaker_engine import trainer as TR
     from playmaker_engine.exam import p16
     _, s, _ = p16()

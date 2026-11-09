@@ -454,6 +454,26 @@ their exam-book pages. · Source: Shaun, 9 Nov 2026 · **Ruled.**
 This settles D-96 (boards 1, 7 and 11 fixed; 10 kept), D-97 (accepted, the judge restated), D-108 (kept), D-109
 (rebuilt) and D-111 (board 6 kept, judged by D-94). D-112 and D-113 stay open until the goals step.
 
+### Shaun, 10 Nov 2026 (step 11 prompt): the position value against the average
+
+**D-92, ruled.** `leaf_mode` is `relative` by default (`eval.leaf_mode`, both engines). A position is worth the phase
+table's average plus how much better or worse its continuation reads than an average position at that phase. A shot now
+and a look released this turn stay at their own value; only the continuation is read against the average. `floor`
+(the phase table as the reading's floor) stays as the switch's other setting. · Source: Shaun, 10 Nov 2026 ·
+**Ruled, built** (step 11).
+
+**D-114. The averages.** Senior Pro's averages are the base for every level. For any other age and standard, Senior
+Pro's average at each phase is scaled by that level's phase table value over Senior Pro's at the same phase. A level
+uses its own averages only once it has at least 100 positions at that phase (the 100 is provisional).
+`tools/relative_average.py` builds them and records, for each level and phase, which it used. · Source: Shaun,
+10 Nov 2026 · **Ruled, built** (step 11); the 100 is **provisional**.
+
+**D-115. The driving-lane term** (a crowded or clear driving lane, exam board 13): moved to the goals design (plan step
+12). · Source: Shaun, 10 Nov 2026 · **Open:** plan step 12.
+
+**D-116. The rebuilt boards that still fail** (1, 3, 5 A, 6, 8 and 11) and boards 9 and 10: kept as they are, as honest
+targets for the goals step and the "don't stop mid-action" step. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
@@ -536,6 +556,7 @@ flattens marginal positions.
 Options: use the table only where the board read has no look; blend it with the read; keep it. Effect: the computer's
 sense of the clock and the trainer's flags (D-100).
 Shaun, 9 Nov 2026: settled in step 13, with exam evidence.
+Shaun, 10 Nov 2026: ruled: `relative` by default (see "the position value against the average", step 11).
 
 ### Step 14: the levels
 

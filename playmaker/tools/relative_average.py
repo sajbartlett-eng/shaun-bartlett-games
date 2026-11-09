@@ -21,7 +21,7 @@ from playmaker_engine.decide import Read, coarse_key                            
 from playmaker_engine.scenarios import game_state                               # noqa: E402
 
 PROFILES = os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')
-OUT = os.path.join(ROOT, 'docs', 'runs', 'step10', 'relative_average.json')
+OUT = os.path.join(ROOT, 'docs', 'runs', 'step11', 'relative_average.json')
 
 
 def decode(enc, off, dfn, rules):
@@ -102,7 +102,6 @@ def rows():
     out = []
     for p in sorted(glob.glob(os.path.join(ROOT, 'docs', 'runs', '3n', '3n_seed', '*.json'))):
         age, std = os.path.basename(p)[:-5].split('_', 1)
-        std = std.replace('_', '-')
         for r in json.load(open(p)):
             if r.get('snapshots'):
                 out.append((age, std, r))
@@ -134,21 +133,56 @@ def main():
                 continue
             seen.add(ph)
             by.setdefault(f'{age}/{std}', {}).setdefault(ph, []).append(Read(s).continuation())
-    avg = {k: {ph: round(sum(v) / len(v), 2) for ph, v in sorted(rows_.items())} for k, rows_ in sorted(by.items())}
+    own = {k: {ph: round(sum(v) / len(v), 2) for ph, v in sorted(rows_.items())} for k, rows_ in sorted(by.items())}
     count = {k: {ph: len(v) for ph, v in sorted(rows_.items())} for k, rows_ in sorted(by.items())}
-    rep = dict(average=avg, positions=count, skipped_rows=skipped,
-               how='the leaf\'s continuation read (today\'s rules) at the first offence turn of each phase, per possession')
+    avg, source = scaled(own, count)
+    rep = dict(average=avg, source=source, own_average=own, positions=count, skipped_rows=skipped, min_positions=MIN_OWN,
+               how='the leaf\'s continuation read (today\'s rules) at the first offence turn of each phase, per '
+                   'possession; D-114: Senior Pro is the base, scaled by the phase table for the other levels, a '
+                   'level\'s own average once it has MIN_OWN positions at that phase')
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(rep, open(OUT, 'w'), indent=1)
-    print(json.dumps(rep, indent=1))
+    print(json.dumps(dict(average=avg, source=source, positions=count), indent=1))
     if '--write' in sys.argv:
         prof = json.load(open(PROFILES))
-        prof['eval']['leaf_mode'] = 'floor'
+        prof['eval']['leaf_mode'] = 'relative'
         prof['eval']['relative_average'] = avg
-        prof['eval']['_relative'] = ('Step 10: leaf_mode floor (today) or relative (the phase table plus how much this '
-                                     'position\'s continuation read beats the average at its phase); relative_average '
-                                     'from tools/relative_average.py')
+        prof['eval']['relative_average_source'] = source
+        prof['eval']['_relative'] = ('D-92 (Shaun, 10 Nov 2026): leaf_mode relative (the default: the phase table plus '
+                                     'how much this position\'s continuation read beats the average at its phase) or '
+                                     'floor. relative_average per age/standard and phase from tools/relative_average.py '
+                                     '(D-114): Senior Pro is the base; other levels scale it by their phase table over '
+                                     'Senior Pro\'s, and use their own average once they have 100 positions at the phase '
+                                     '(provisional); relative_average_source says which')
         open(PROFILES, 'w').write(json.dumps(prof, indent=2))
+
+
+MIN_OWN = 100          # D-114 (provisional): a level's own average once it has this many positions at the phase
+BASE = 'senior/pro'
+
+
+def scaled(own, count):
+    """D-114: Senior Pro's averages are the base. Any other level: its own average at a phase once it has MIN_OWN
+    positions there; otherwise Senior Pro's average scaled by that level's phase table value over Senior Pro's at the
+    same phase (vcoarse.json, _phaseK). Returns (averages, source per level and phase: base / own / scaled)."""
+    tables = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'vcoarse.json')))
+    levels = sorted({k for k in tables if '/' in k and not k.startswith('_')} | set(own))
+    avg, source = {}, {}
+    for lv in levels:
+        avg[lv], source[lv] = {}, {}
+        for ph in map(str, range(1, 7)):
+            base = own.get(BASE, {}).get(ph)
+            if base is None:
+                continue
+            if lv == BASE:
+                avg[lv][ph], source[lv][ph] = base, 'base'
+            elif count.get(lv, {}).get(ph, 0) >= MIN_OWN:
+                avg[lv][ph], source[lv][ph] = own[lv][ph], 'own'
+            else:
+                vb = tables[BASE].get(f'_phase{ph}')
+                vl = tables.get(lv, {}).get(f'_phase{ph}', vb)
+                avg[lv][ph], source[lv][ph] = round(base * vl / vb, 2), 'scaled'
+    return avg, source
 
 
 if __name__ == '__main__':
