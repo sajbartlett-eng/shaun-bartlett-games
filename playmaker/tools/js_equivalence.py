@@ -6,6 +6,8 @@ the rules' exact reach), each attacker's threat (value, square, route), the best
 the residual threats) and the leaf value, with the geometric and the exact read, and the ordering read.
 
   python3 tools/js_equivalence.py --n 2000 [--seed 1] [--out docs/runs/3n/3n_equivalence.json]
+  python3 tools/js_equivalence.py --n 300 --reaction     # step 7: shot reactions only, with what each Contest, Steal and
+                                                          # ending the reaction resolves to (the roll tree, scored)
 """
 import argparse
 import json
@@ -61,6 +63,47 @@ def random_state(rng):
     return s, dict(age=age, standard=std, digital=digital, steps=steps)
 
 
+def reaction_state(rng):
+    """A random state inside a shot reaction: a random position played on, then a declared shot, then 0 or 1 reaction
+    actions at random."""
+    while True:
+        s, m = random_state(rng)
+        if s.stage != 'play' or s.side != 'O':
+            continue
+        shots = [a for a in legal_actions(s) if a.kind == 'shot']
+        if not shots:
+            continue
+        r = apply(s, rng.choice(shots))
+        if isinstance(r, ChanceNode) or r.stage != 'reaction':
+            continue
+        if rng.random() < 0.35:
+            mv = [a for a in legal_actions(r) if a.kind in ('move', 'qs', 'sprint')]
+            if mv:
+                r2 = apply(r, rng.choice(mv))
+                if not isinstance(r2, ChanceNode) and r2.stage == 'reaction':
+                    r = r2
+        return r, m
+
+
+def py_outcomes(s):
+    """In a shot reaction: every leaf of the roll tree for each Contest, Steal and ending the reaction (see js_probe.js)."""
+    from playmaker_engine.scoring import score
+    out = {}
+
+    def leaves(n, p, acc):
+        if isinstance(n, ChanceNode):
+            for q, _, sub in n.outcomes:
+                leaves(sub, p * float(q), acc)
+            return acc
+        acc.append([round(p * 1e12) / 1e12, 'over', score(n).total] if n.stage == 'over' else
+                   [round(p * 1e12) / 1e12, n.stage, n.clock, n.tos])
+        return acc
+    for a in legal_actions(s):
+        if a.kind in ('contest', 'steal', 'end_turn'):
+            out[str(a)] = sorted(leaves(apply(s, a), 1.0, []), key=lambda x: json.dumps(x))
+    return out
+
+
 def py_probe(s):
     mp = lambda m: {B.sq(q): n for q, n in m.items()}
     fx = lambda m: {B.sq(q): {str(a): n for a, n in arrs.items()} for q, arrs in m.items()}
@@ -106,22 +149,26 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--out', default=None)
     ap.add_argument('--show', type=int, default=5)
+    ap.add_argument('--reaction', action='store_true', help='shot reactions only, with their outcomes compared')
     args = ap.parse_args()
     rng = random.Random(args.seed)
     states, meta, lines = [], [], []
     t0 = time.time()
     while len(states) < args.n:
-        s, m = random_state(rng)
+        s, m = reaction_state(rng) if args.reaction else random_state(rng)
         states.append(s)
         meta.append(m)
-        lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx))))
+        lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction)))
     py = [py_probe(s) for s in states]
+    if args.reaction:
+        for s, a in zip(states, py):
+            a['react_outcomes'] = py_outcomes(s)
     t_py = time.time() - t0
     t1 = time.time()
     js = run_js(lines)
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
-              'threat_exact', 'cover_exact', 'leaf_exact', 'quick')
+              'threat_exact', 'cover_exact', 'leaf_exact', 'quick') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -144,6 +191,10 @@ def main():
                by_age={a: sum(1 for m in meta if m['age'] == a) for a in AGES},
                by_standard={a: sum(1 for m in meta if m['standard'] == a) for a in STANDARDS},
                digital=sum(1 for m in meta if m['digital']),
+               reaction_kinds={k: sum(1 for s in states if any(a.kind == k for a in legal_actions(s)))
+                               for k in ('contest', 'steal', 'end_turn')} if args.reaction else None,
+               reaction_after_one_action=sum(1 for s in states if s.stage == 'reaction' and s.turn_n == 1)
+               if args.reaction else None,
                checks={f: dict(compared=t[0], equal=t[1]) for f, t in tally.items()},
                mismatches=len(bad))
     print(json.dumps(rep, indent=1))

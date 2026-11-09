@@ -1,0 +1,84 @@
+{
+ "states": 1500,
+ "seconds_python": 132.6,
+ "seconds_js": 12.4,
+ "by_stage": {
+  "reaction": 1500
+ },
+ "by_phase": {
+  "2": 326,
+  "1": 958,
+  "4": 14,
+  "3": 119,
+  "5": 83
+ },
+ "by_age": {
+  "senior": 517,
+  "youth": 463,
+  "junior": 520
+ },
+ "by_standard": {
+  "pro": 504,
+  "semi_pro": 496,
+  "amateur": 500
+ },
+ "digital": 750,
+ "reaction_kinds": {
+  "contest": 234,
+  "steal": 23,
+  "end_turn": 1500
+ },
+ "reaction_after_one_action": 537,
+ "checks": {
+  "legal": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "attacker_reach": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "defender_reach": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "defender_exact": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "threat_geo": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "cover_geo": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "leaf_geo": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "threat_exact": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "cover_exact": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "leaf_exact": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "quick": {
+   "compared": 1500,
+   "equal": 1500
+  },
+  "react_outcomes": {
+   "compared": 1500,
+   "equal": 1500
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

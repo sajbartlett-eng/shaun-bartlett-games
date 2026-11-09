@@ -718,7 +718,8 @@ const PMEngine = (() => {
     }
     if (k === 'steal') {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = O[carrier].r.dribble - X[a.piece].r.steal;
-      const fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + 1 });   // D-89: every steal foul is +5
+      // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
+      const fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (s.stage === 'reaction' ? 0 : 1) });
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];

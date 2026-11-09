@@ -515,10 +515,10 @@ def apply(state, action, check=False):
         carrier = s.ball
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
         pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
-        fs = s.with_(fouls=s.fouls + 1)
-        if rules.steal_foul_always_plus5:
-            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too
-        legacy = rules.turnover_cost == 'legacy'
+        fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
+        if rules.steal_foul_always_plus5 and s.stage != 'reaction':
+            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
+        legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
         if s.stage == 'reaction':
             pts = shot_points(s.o[carrier])
             card = O[carrier]

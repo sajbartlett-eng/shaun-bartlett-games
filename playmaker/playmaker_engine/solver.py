@@ -265,10 +265,11 @@ class Evaluator:
         steal_ok = s.count('X', 'steal') < RC.LIMITS['X']['steal']
         tok = s.tok_x
         # D-18: on a declared shot the Contest is one of the reaction's actions, so the closeout before it has one
-        # fewer; a Steal ends the reaction, so a kept ball is shot open. D-89: a steal foul is +5 as well.
+        # fewer; a Steal ends the reaction, so a kept ball is shot open. A steal foul on a shooter is a shooting foul:
+        # free throws only (D-89, step 7).
         action = rules.contest_action and not forced
         cb = budget - 1 if action else budget
-        fps = fp + (RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0)
+        fps = fp
         far_pen = RC.FAR_CONTEST_PENALTY
         floor_c = rules.floor_contest_zero
         ds = _DR[spos]
@@ -348,7 +349,7 @@ class Evaluator:
         tok = s.tok_x
         action = rules.contest_action and not forced              # D-18, as in defended()
         cb = budget - 1 if action else budget
-        fps = fp + (RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0)
+        fps = fp                                                  # a steal foul on a shooter: free throws only
         idx = maps.index
         occ_o = s.o
         sx, sy = spos

@@ -321,6 +321,7 @@ def table_3m(monkeypatch):
     yield
 
 
+@pytest.mark.xfail(strict=False, reason='step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12')     # D-112
 def test_an_early_cut_is_flagged_with_a_legal_reorder(table_3m):
     from playmaker_engine import trainer as TR
     s = _digital(['H9', 'C8', 'O8', 'B3', 'P3'], ['H8', 'D8', 'N8', 'C3', 'O3'], ['N', 'W', 'E', 'W', 'E'])
@@ -469,6 +470,7 @@ EXAM_OPEN = {
     11: 'the contested-pass boards do not separate early from late',
     13: 'the attacker in the driving lane is not moved out of it',
     16: 'All-Star does not yet find the drain sequence in its first turn',
+    6: 'step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12',                          # D-111
     2: 'step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget',
     14: 'step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the '
         'variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B)',

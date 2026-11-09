@@ -134,7 +134,8 @@ Source: Shaun, 9 Nov 2026 · **Built** (step 6).
 
 **D-89** (with D-90). Every steal foul is +5 to the offence, in both formats, and the +5 adds to the score over the
 match. In the bonus, the offence also gets free throws, and the possession ends. At the table the bonus is the second
-steal foul of the possession; in the app, the 5th team foul of the quarter.
+steal foul of the possession; in the app, the 5th team foul of the quarter. A steal foul on a shooter is a shooting
+foul: free throws only (no +5); in the app it still counts as a team foul (Shaun, step 7 prompt; built in step 7).
 Reason: a foul should always cost the defence. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6).
 (setting: steal_foul_always_plus5)
 
@@ -145,9 +146,14 @@ Reason: players should know. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Bui
 **D-104** (OQ-44). When a screen blocks a step, the app shows that step greyed, with "Blocked by the screen".
 Reason: legibility. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6).
 
+**D-110.** A forced shot at clock 0 keeps the free contest choice: one defender next to the shooter contests, the
+defence picks who, or no one. It is not a declared shot, so Contest as an action (D-18) doesn't apply.
+Reason: the defence is out of tokens, and an adjacent defender always gets a hand up on a buzzer shot. · 9 Nov 2026 ·
+Source: Shaun, step 7 prompt · **Built** (step 6).
+
 **D-107.** Words: "match" is a whole game; "matchup" is one player against another. Used that way in everything players
 read.
-Reason: plain words. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled.**
+Reason: plain words. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 7 checked every string; none misused).
 
 **D-103** (OQ-49) and **D-105** (OQ-45). Superseded by the coach's goals design (D-106). No change now.
 Reason: the coach's goals replace the Coach's Call questions in the app. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 ·
@@ -413,7 +419,10 @@ Shapes how deep the computer looks on a phone. (setting: eval.browser_budget_sca
 **D-81** (OQ-54). Check before ruling: is the offence better off after a successful Intercept than if the pass had been
 caught? Measure only. Step 6 found 2 successful intercepts in the 60 tabletop possessions on record (the seed runs are
 all app format): final results 19 and 23, against 28 and 27 by the engine's read of the same positions with the pass
-caught (30 and 8 by the solver). Too few to say; the step 6 report names the smallest run that would settle it.
+caught (30 and 8 by the solver). Too few to say. Step 7, the paired read (every pass a defender could intercept in
+those 60 possessions, current rules, no rolls): 18 pairs; after a successful Intercept the offence is 6.4 points worse
+off on average than if the pass is caught (spread 8.3; −3.8 before the last phase, −19.7 in it); 1 of 18 leaves it
+better off (+0.9: a pass from the rim zone to a long two).
 Options: rule once the measurement says. Effect: the cost of a turnover. · Source: Shaun, 9 Nov 2026 · **Open.**
 
 **D-86** (OQ-37, OQ-48). Wait: Contest as an action may bring back Challenge and the Sprint closeout. Measure in a later
@@ -464,6 +473,15 @@ Options: widen the variety margin; restate the board; accept it. Effect: how pre
 
 **D-109.** Exam candidate (from Shaun's playtest reports): the offence prefers a clean pass to a contested one (the old
 `test_passing`). · Source: Shaun, step 6 prompt · **Open:** to be added as an exam board in step 12.
+
+**D-111.** Exam board 6 (catch window) is marked as an expected failure: Contest as an action (D-18) changed the
+reading; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+
+**D-112.** The trainer test "an early cut is flagged with a legal reorder" is marked as an expected failure for the same
+reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+
+**D-113.** The trainer test "the credit names the helper who answered the decoy" is marked as an expected failure for the
+same reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
 
 ### Step 14: the levels
 
