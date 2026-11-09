@@ -10,6 +10,7 @@ from dataclasses import fields
 from . import rules_config as RC
 
 SHARED, DIGITAL, TABLETOP, SPLIT = 'Shared', 'Digital only', 'Tabletop only', 'Split by format'
+SPLIT_OVERTIME = 'Split by format, approved; overtime not yet built'
 
 # (name, status, source, what it is, reason for a split / note)
 ENTRIES = [
@@ -22,8 +23,9 @@ ENTRIES = [
      'Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball).'),
     ('Match length', SPLIT, dict(how='match'), 'Possessions a side.',
      'Tabletop: one possession each. Digital: 4, 8 or 12 a side (per_side), sides alternating.'),
-    ('Tied match', SPLIT, dict(how='tie'), 'What settles a tied match.',
-     'Tabletop: each player rolls for their final shot. Digital: the match stays a tie. Found in the code, not approved.'),
+    ('Tied match', SPLIT_OVERTIME, dict(how='tie'), 'What settles a tied match.',
+     'Tabletop: each player rolls for their final shot. Digital: overtime, one more possession a side until a side '
+     'leads (DECISIONS.md D-19, built in step 9); until then the match stays a tie.'),
     ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul gives free throws.',
      'Tabletop: the first steal foul of the possession is +5 and play on, the second gives free throws (one '
      'possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; from the 5th a steal foul '
@@ -94,7 +96,8 @@ TOKENS = [
 # text: the rule in the rulebook's voice. tab / dig: the value in each format, in words (the register's columns).
 # src: where it is printed ('rulebook', 'trackers', 'court', 'token sheet', 'scenario sheet', 'levels sheet'),
 #   'scenario' for scenario-card rules printed only there, or None when no printed page states it.
-# oq: the OPEN_QUESTIONS.md row; q: for a rule no page states, the question it answers.
+# oq: the old OPEN_QUESTIONS.md row (now archive/OPEN_QUESTIONS.md); q: for a rule no page states, the question it
+#   answers. The ruling on each such rule is in DECISIONS.md (DECISION below).
 SECTIONS = ['Aim of the game', 'In the box', 'Setup', 'The shot', 'Reading the court', 'Rolling', 'Playing a possession',
             'Screens', 'Defender arrows', 'Passes and intercepts', 'Shooting', 'Scoring', 'Winning']
 NOT_IN_PLAY = 'not in play (kept so old logs replay)'
@@ -399,7 +402,7 @@ WORDS = {
         text='On Late Clock cards, compare results first (win, then tie, then loss); the shot value breaks ties.',
         tab='result first, then shot value', dig='result first, then shot value'),
     'Tied match': dict(
-        sec=None, src='rulebook', tab='roll for the final shot', dig='stays a tie'),
+        sec=None, src='rulebook', tab='roll for the final shot', dig='overtime (ruled, not yet built: a tie for now)'),
     # ---- the format, digital only
     'digital': dict(sec=None, src=None, tab='tabletop', dig='digital'),
     'quarter_possessions': dict(sec=None, src=None, tab='not used', dig='18 possessions a side'),
@@ -420,8 +423,8 @@ DIGITAL_ONLY = [
      'quarter of 18 possessions a side. The count carries across matches between the same two players, or a player and '
      'a computer level, and resets when both sides have had 18. The screen shows the count, the bonus line and the '
      'possessions left. (settings: quarter_possessions, bonus_from)'),
-    ('Match length', 'A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie stays '
-     'a tie.'),
+    ('Match length', 'A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie goes '
+     'to overtime (see Split by format).'),
     ('The decision timer', 'Each player may set an optional thinking clock.'),
     ('Computer levels', 'The computer plays at three levels: Rookie, Starter and All-Star. The levels differ in how '
      'deep and how long they look ahead, not in the rules.'),
@@ -438,8 +441,30 @@ SPLITS = [
      '+5 and play on until the 5th team foul of the quarter; from the 5th, free throws and the possession ends.',
      'One possession is the whole tabletop game; the app keeps fouls across a quarter.'),
     ('Match length', '2 possessions, 1 each.', '4, 8 or 12 possessions a side.', 'An app match can be longer.'),
-    ('Tied match', 'Each player rolls for their final shot.', 'The match stays a tie.',
-     'Found in the code, not yet approved: no reason recorded.'),
+    ('Tied match', 'Each player rolls for their final shot.', 'Overtime: one more possession a side, repeated until a '
+     'side leads. Ruled, not yet built: until step 9 the app leaves a tie.', 'Basketball has no ties. Approved (D-19).'),
+]
+
+# The ruling on each rule the engine plays that no printed page states (DECISIONS.md). All approved as played except
+# the reaction, which Contest as an action replaces (D-18).
+DECISION = {
+    'floor_declared_shot': 'D-1', 'natural_rolls': 'D-2', 'move_either_order': 'D-3', 'diag_move_straight': 'D-4',
+    'qs_up_to': 'D-5', 'qs_once_per_player': 'D-6', 'sprint_needs_qs': 'D-7', 'forfeit_when_stuck': 'D-8',
+    'inbounder_pass_only': 'D-9', 'forced_shot_choice': 'D-10', 'arrow_line_adjacent_at': 'D-11',
+    'dribble_win_lasts': 'D-12', 'intercept_return': 'D-13', 'inbound_resolves': 'D-14', 'floor_contest_zero': 'D-15',
+    'three_only_ft_on_twos': 'D-16', 'coach_bonus_on_forced': 'D-17', 'reaction_may_decline': 'D-18',
+}
+CHANGED = {'reaction_may_decline'}          # ruled to change: the rule as played until the change is built
+
+# Ruled, not yet built: (title, the rule as ruled, what the game does until it is built, D number, step that builds it)
+RULED_NOT_BUILT = [
+    ('Contest as an action', 'After a shot is declared, the defence reacts with up to 2 actions from its remaining '
+     'tokens: Move, Quick Step, Sprint, Steal or Contest. Contest is the last action, one a phase, made by a defender '
+     'next to the shooter at that moment. No Contest means a contest of 0. The foul roll and the −3 work as now. The '
+     'defence tracker gains a Contest slot and the rulebook\'s Shooting section changes.',
+     'the reaction takes 0, 1 or 2 actions and the contest is free', 'D-18', 9),
+    ('Overtime in the app', 'A tied app match plays one more possession a side, repeated until a side leads. The table '
+     'keeps its final-shot roll.', 'a tied app match stays a tie', 'D-19', 9),
 ]
 
 
@@ -482,7 +507,8 @@ def markdown():
             'from the bonus behaves differently in each.',
             '- The coarse phase table (engine data, not a rule) is solved from digital self-play; tabletop possessions '
             'play on after a turnover, so their late-phase values differ.',
-            '- A tied match: the table rolls for the final shots, the app leaves a tie. Found in the code, not approved.', '',
+            '- A tied match: the table rolls for the final shots, the app plays overtime. Approved (DECISIONS.md D-19); '
+            'overtime not yet built, so the app leaves a tie until step 9.', '',
             '## Tokens and markers', '', '| Mechanism | Token | Printed | Check |', '|---|---|---|---|']
     for m, t, p, c in TOKENS:
         out.append(f'| {m} | {t} | {p} | {c} |')
@@ -508,11 +534,12 @@ def rules_markdown():
     out = ['# Playmaker: the rules as played', '',
            'Every rule the game plays by, at the table and in the app, in the rulebook\'s order. Generated from the rules '
            'register (`python3 -m playmaker_engine.register --rules`). † marks a rule the rulebook and trackers don\'t '
-           'state; the last section lists them.', '']
+           'state: ruled and not yet printed, or printed only on the scenario rules sheet; ‡ marks a rule ruled to change, played as written until the change is built. '
+           'The last sections list them; each ruled one points to its entry in `DECISIONS.md`.', '']
     for sec in SECTIONS:
         out += [f'## {sec}', '']
         for name, src, w in by[sec]:
-            mark = ' †' if w.get('src') in (None, 'scenario') else ''
+            mark = ' ‡' if name in CHANGED else ' †' if w.get('src') in (None, 'scenario') else ''
             out.append(f'- {w["text"]}{mark}{_setting_note(name, src)}')
         out.append('')
     out += ['## Digital only', '']
@@ -522,25 +549,31 @@ def rules_markdown():
     for title, tab, dig, why in SPLITS:
         low = lambda t: t[:1].lower() + t[1:] if t[:1].isalpha() else t
         out += [f'**{title}.** At the table: {low(tab)}  ', f'In the app: {low(dig)}  ', f'Why: {low(why)}', '']
-    out += ['## Rules the engine plays that the rulebook doesn\'t state', '',
-            'Each is something the engine does that no line of the rulebook or the trackers states. Listed, not judged.', '']
+    out += ['## Ruled, not yet printed', '',
+            'Rules the engine plays that no line of the rulebook or the trackers states. Shaun approved each as the engine '
+            'plays it (9 Nov 2026); the printed pages don\'t say them yet.', '']
     unstated, scenario = [], []
     for name, src in sorted(srcs.items(), key=lambda r: order.index(r[0])):
         w = words_for(name)
-        if w.get('sec') and w.get('src') is None:
-            unstated.append((w['text'], w.get('q', ''), w.get('oq'), _setting_note(name, src)))
+        if w.get('sec') and w.get('src') is None and name not in CHANGED:
+            unstated.append((w['text'], DECISION[name], _setting_note(name, src)))
         elif w.get('sec') and w.get('src') == 'scenario':
             scenario.append((w['text'], _setting_note(name, src)))
-    for n, (text, q, oq, note) in enumerate(unstated, 1):
-        out.append(f'{n}. {text} Question: {q} {"OPEN_QUESTIONS.md row " + str(oq) + "." if oq else "No row."}{note}')
-    out += ['', 'Printed on the scenario rules sheet, not in the rulebook or the trackers:', '']
+    for n, (text, d, note) in enumerate(unstated, 1):
+        out.append(f'{n}. {text} See {d}.{note}')
+    out += ['', '## Ruled, not yet built', '',
+            'Rulings that change the game. Until they are built the game plays as the rest of this page says.', '']
+    for n, (title, text, now, d, step) in enumerate(RULED_NOT_BUILT, 1):
+        out.append(f'{n}. **{title}.** {text} Until step {step}: {now}. See {d}.')
+    out += ['', '## On the scenario rules sheet only', '',
+            'Printed on the scenario rules sheet, not in the rulebook or the trackers:', '']
     for n, (text, note) in enumerate(scenario, 1):
         out.append(f'{n}. {text}{note}')
     return '\n'.join(out) + '\n'
 
 
 def unstated_count():
-    """(rules no printed page states, scenario-sheet-only rules): the size of the last section."""
+    """(rules no printed page states, scenario-sheet-only rules), as played today."""
     u = sum(1 for e in ENTRIES if words_for(e[0]).get('sec') and words_for(e[0]).get('src') is None)
     sc = sum(1 for e in ENTRIES if words_for(e[0]).get('sec') and words_for(e[0]).get('src') == 'scenario')
     return u, sc

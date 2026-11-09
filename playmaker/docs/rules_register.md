@@ -8,7 +8,7 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | Turnover cost | Split by format | −5, the shot clock loses a phase, play on | the possession ends and scores 0 | A successful Intercept or Steal (and a steal of a declared shot). Tabletop: -5 and the shot clock loses a phase, play on (the setting). Digital, whatever the setting: the possession ends and scores 0, because a digital match is several possessions a side and the next possession is the cost. |
 | Shot-clock expiry | Split by format | turnover, −5, then a forced shot | turnover, the possession scores 0 | The clock reaches 0. Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball). |
 | Match length | Split by format | 2 possessions, 1 each | 4, 8 or 12 possessions a side, alternating | Possessions a side. Tabletop: one possession each. Digital: 4, 8 or 12 a side (per_side), sides alternating. |
-| Tied match | Split by format | roll for the final shot | stays a tie | What settles a tied match. Tabletop: each player rolls for their final shot. Digital: the match stays a tie. Found in the code, not approved. |
+| Tied match | Split by format, approved; overtime not yet built | roll for the final shot | overtime (ruled, not yet built: a tie for now) | What settles a tied match. Tabletop: each player rolls for their final shot. Digital: overtime, one more possession a side until a side leads (DECISIONS.md D-19, built in step 9); until then the match stays a tie. |
 | Steal-foul bonus | Split by format | 1st +5 and play on; 2nd free throws, over | +5 and play on until the 5th team foul; then free throws, over | When a steal foul gives free throws. Tabletop: the first steal foul of the possession is +5 and play on, the second gives free throws (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; from the 5th a steal foul gives free throws and ends the possession. |
 | quarter_possessions | Digital only | not used | 18 possessions a side | Possessions a side in a quarter (18). Team fouls across matches need a running quarter; the table plays one possession. |
 | bonus_from | Digital only | not used | the 5th team foul | The team foul that starts the bonus (5th). As above. |
@@ -92,7 +92,7 @@ Where the best value differs between formats (a designer decision, not a bug):
 - Turnover cost and shot-clock expiry: the engine values a risky pass or a reach differently by format, so a digital-tuned habit (gambling for a steal late in a possession) is wrong at the table, where play goes on at -5. The trainer grades each game under its own format.
 - The steal-foul bonus: within the possession at the table, across a quarter in digital. A defence two fouls from the bonus behaves differently in each.
 - The coarse phase table (engine data, not a rule) is solved from digital self-play; tabletop possessions play on after a turnover, so their late-phase values differ.
-- A tied match: the table rolls for the final shots, the app leaves a tie. Found in the code, not approved.
+- A tied match: the table rolls for the final shots, the app plays overtime. Approved (DECISIONS.md D-19); overtime not yet built, so the app leaves a tie until step 9.
 
 ## Tokens and markers
 

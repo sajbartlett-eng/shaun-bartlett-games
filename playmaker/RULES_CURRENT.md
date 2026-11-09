@@ -1,6 +1,6 @@
 # Playmaker: the rules as played
 
-Every rule the game plays by, at the table and in the app, in the rulebook's order. Generated from the rules register (`python3 -m playmaker_engine.register --rules`). † marks a rule the rulebook and trackers don't state; the last section lists them.
+Every rule the game plays by, at the table and in the app, in the rulebook's order. Generated from the rules register (`python3 -m playmaker_engine.register --rules`). † marks a rule the rulebook and trackers don't state: ruled and not yet printed, or printed only on the scenario rules sheet; ‡ marks a rule ruled to change, played as written until the change is built. The last sections list them; each ruled one points to its entry in `DECISIONS.md`.
 
 ## Aim of the game
 
@@ -86,7 +86,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 ## Shooting
 
 - Declare a Shot (the ball carrier, never from plain wood). The defence takes one last turn to react, with a Move or a Steal. (setting: reaction_kinds)
-- The reaction may be 0, 1 or 2 actions, and may also use a Quick Step or a Sprint. † (setting: reaction_may_decline)
+- The reaction may be 0, 1 or 2 actions, and may also use a Quick Step or a Sprint. ‡ (setting: reaction_may_decline)
 - Then one adjacent defender contests, diagonals included: the defence picks who, or no one. None adjacent: the contest is 0. (setting: contest_choice)
 - Arrow off the shooter: a foul roll first, Foul (Contest) or under. (setting: contest_geometry)
 - Further from the rim than the shooter: contest at −3.
@@ -110,7 +110,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 ## Digital only
 
 - **Quarters and team fouls.** Each side's defensive fouls (steal fouls and shooting fouls) count across a running quarter of 18 possessions a side. The count carries across matches between the same two players, or a player and a computer level, and resets when both sides have had 18. The screen shows the count, the bonus line and the possessions left. (settings: quarter_possessions, bonus_from)
-- **Match length.** A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie stays a tie.
+- **Match length.** A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie goes to overtime (see Split by format).
 - **The decision timer.** Each player may set an optional thinking clock.
 - **Computer levels.** The computer plays at three levels: Rookie, Starter and All-Star. The levels differ in how deep and how long they look ahead, not in the rules.
 - **The trainer.** After a possession the trainer grades a player's decisions against the best options it found, and keeps a rating for each player.
@@ -134,31 +134,39 @@ In the app: 4, 8 or 12 possessions a side.
 Why: an app match can be longer.
 
 **Tied match.** At the table: each player rolls for their final shot.  
-In the app: the match stays a tie.  
-Why: found in the code, not yet approved: no reason recorded.
+In the app: overtime: one more possession a side, repeated until a side leads. Ruled, not yet built: until step 9 the app leaves a tie.  
+Why: basketball has no ties. Approved (D-19).
 
-## Rules the engine plays that the rulebook doesn't state
+## Ruled, not yet printed
 
-Each is something the engine does that no line of the rulebook or the trackers states. Listed, not judged.
+Rules the engine plays that no line of the rulebook or the trackers states. Shaun approved each as the engine plays it (9 Nov 2026); the printed pages don't say them yet.
 
-1. A declared shot worth less than 0 scores 0, as a forced shot does. Question: What does a declared shot worth less than 0 score? OPEN_QUESTIONS.md row 5. (setting: floor_declared_shot)
-2. A target of 20 or more always succeeds. A target of 0 or less always fails. A 1 or a 20 has no special meaning. Question: What do a natural 1 and a natural 20 do, and a target of 20 or more? OPEN_QUESTIONS.md row 4. (setting: natural_rolls)
-3. The straight step and the diagonal step may come in either order. Question: Which comes first in a 1 straight + 1 diagonal Move? OPEN_QUESTIONS.md row 11. (setting: move_either_order)
-4. Two diagonal steps go the same way, in a straight line. Question: Do the 2 diagonal steps of a Move go the same way? OPEN_QUESTIONS.md row 25. (setting: diag_move_straight)
-5. Quick Step: straight, up to the card's number of squares (2, 1 or 0). Question: Is a Quick Step exactly the card's number, or up to it? OPEN_QUESTIONS.md row 14. (setting: qs_up_to)
-6. Each player has one Quick Step a phase. A Sprint uses it. Question: How many Quick Steps may one player take in a phase? OPEN_QUESTIONS.md row 52. (setting: qs_once_per_player)
-7. A player with Quick Step 0 can't Sprint. Question: Can a player with Quick Step 0 Sprint? OPEN_QUESTIONS.md row 15. (setting: sprint_needs_qs)
-8. A side with tokens left but no legal action gives up its remaining tokens. Question: What happens to a side with tokens but no legal action? OPEN_QUESTIONS.md row 21. (setting: forfeit_when_stuck)
-9. Before the ball is in, the inbounder may only pass. Question: What may the inbounder do before the ball is in? OPEN_QUESTIONS.md row 19. (setting: inbounder_pass_only)
-10. On a forced shot the offence picks the shot type its tile allows. Question: On a forced shot from a tile with two shot types, who picks? OPEN_QUESTIONS.md row 30. (setting: forced_shot_choice)
-11. "Next to him" means next to him when the movement starts. Question: Is "next to him" judged before or after the movement? OPEN_QUESTIONS.md row 24. (setting: arrow_line_adjacent_at)
-12. A Dribble win lets you through his zone for the rest of the phase. Question: How long does a Dribble win free the carrier from that defender? OPEN_QUESTIONS.md row 18. (setting: dribble_win_lasts)
-13. A successful Intercept puts the interceptor back on the square and arrow he had at the start of the defence's turn; his Move stays used. Question: Where does a successful interceptor end up? OPEN_QUESTIONS.md row 71. (setting: intercept_return)
-14. An inbound pass works like any other pass, and lands after the defence's whole turn. Question: When does an inbound pass land? OPEN_QUESTIONS.md row 35. (setting: inbound_resolves)
-15. The reaction may be 0, 1 or 2 actions, and may also use a Quick Step or a Sprint. Question: How many actions may the reaction take, and which? OPEN_QUESTIONS.md row 6. (setting: reaction_may_decline)
-16. The −3 never takes a contest below 0. Question: Can the −3 take a contest below 0? OPEN_QUESTIONS.md row 20. (setting: floor_contest_zero)
-17. Need a Three: only a three scores; a fouled two's free throws score 0 too. Question: On Need a Three, do free throws from a fouled two score? OPEN_QUESTIONS.md row 22. (setting: three_only_ft_on_twos)
-18. The Coach's Call bonus uses the look's band (the shot value, or the free throws if fouled), and counts on a forced shot by the target too. Question: Does the Coach's Call bonus count on a forced shot, and on which look? OPEN_QUESTIONS.md row 23. (setting: coach_bonus_on_forced)
+1. A declared shot worth less than 0 scores 0, as a forced shot does. See D-1. (setting: floor_declared_shot)
+2. A target of 20 or more always succeeds. A target of 0 or less always fails. A 1 or a 20 has no special meaning. See D-2. (setting: natural_rolls)
+3. The straight step and the diagonal step may come in either order. See D-3. (setting: move_either_order)
+4. Two diagonal steps go the same way, in a straight line. See D-4. (setting: diag_move_straight)
+5. Quick Step: straight, up to the card's number of squares (2, 1 or 0). See D-5. (setting: qs_up_to)
+6. Each player has one Quick Step a phase. A Sprint uses it. See D-6. (setting: qs_once_per_player)
+7. A player with Quick Step 0 can't Sprint. See D-7. (setting: sprint_needs_qs)
+8. A side with tokens left but no legal action gives up its remaining tokens. See D-8. (setting: forfeit_when_stuck)
+9. Before the ball is in, the inbounder may only pass. See D-9. (setting: inbounder_pass_only)
+10. On a forced shot the offence picks the shot type its tile allows. See D-10. (setting: forced_shot_choice)
+11. "Next to him" means next to him when the movement starts. See D-11. (setting: arrow_line_adjacent_at)
+12. A Dribble win lets you through his zone for the rest of the phase. See D-12. (setting: dribble_win_lasts)
+13. A successful Intercept puts the interceptor back on the square and arrow he had at the start of the defence's turn; his Move stays used. See D-13. (setting: intercept_return)
+14. An inbound pass works like any other pass, and lands after the defence's whole turn. See D-14. (setting: inbound_resolves)
+15. The −3 never takes a contest below 0. See D-15. (setting: floor_contest_zero)
+16. Need a Three: only a three scores; a fouled two's free throws score 0 too. See D-16. (setting: three_only_ft_on_twos)
+17. The Coach's Call bonus uses the look's band (the shot value, or the free throws if fouled), and counts on a forced shot by the target too. See D-17. (setting: coach_bonus_on_forced)
+
+## Ruled, not yet built
+
+Rulings that change the game. Until they are built the game plays as the rest of this page says.
+
+1. **Contest as an action.** After a shot is declared, the defence reacts with up to 2 actions from its remaining tokens: Move, Quick Step, Sprint, Steal or Contest. Contest is the last action, one a phase, made by a defender next to the shooter at that moment. No Contest means a contest of 0. The foul roll and the −3 work as now. The defence tracker gains a Contest slot and the rulebook's Shooting section changes. Until step 9: the reaction takes 0, 1 or 2 actions and the contest is free. See D-18.
+2. **Overtime in the app.** A tied app match plays one more possession a side, repeated until a side leads. The table keeps its final-shot roll. Until step 9: a tied app match stays a tie. See D-19.
+
+## On the scenario rules sheet only
 
 Printed on the scenario rules sheet, not in the rulebook or the trackers:
 
