@@ -231,6 +231,19 @@ class Rules:
     #   a declared shot, and shot-clock expiry) ends the possession and it scores 0. Steal fouls are unchanged.
     #   False = the printed (tabletop) rules.
     digital: bool = False
+    # Step 3n designer rulings (shared by both formats unless marked):
+    # F1: a failed Steal (no foul, the ball kept) locks the defender for the rest of the phase, as a failed Challenge
+    #   locks the challenger (no Move or Sprint; his Quick Step is left).
+    steal_lock: bool = True
+    # F2: the angle of a reach decides the foul risk. A Steal, or a contest that needs a foul roll, makes one foul roll
+    #   if the defender is closer to the rim than the ball carrier (or shooter), two if level or further (either fouls).
+    #   The contest -3 for further from the rim is unchanged.
+    reach_angle_fouls: bool = True
+    # F3 (digital only): team fouls run across a quarter of this many possessions per side; from the bonus_from-th
+    #   team foul a steal foul gives free throws and ends the possession. Tabletop keeps its within-possession rule
+    #   (first steal foul +5, second free throws).
+    quarter_possessions: int = 18
+    bonus_from: int = 5
 
     @property
     def intercept_cost(self):
@@ -240,7 +253,10 @@ class Rules:
 # The step 3i follow-up rulings (screens, the wedge, drives through a zone, the interceptor's return): a log
 # records these settings in its setup line; a log from before them replays with the old values.
 RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule',
-            'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing', 'receiver_denial', 'receiver_denial_tol')
+            'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing', 'receiver_denial', 'receiver_denial_tol',
+            'steal_lock', 'reach_angle_fouls', 'quarter_possessions', 'bonus_from')
+# A log from before the step 3n rulings replays without them.
+PRE_3N = dict(steal_lock=False, reach_angle_fouls=False)
 LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
                  intercept_rule='approach', turnover_cost='legacy', on_line_tolerance=0.5, lane_jump_keeps_facing=False,
                  receiver_denial=False)

@@ -378,6 +378,9 @@ async function create() {
     }
   }
   const humans = matchPlayers(body);
+  if (body.match_format === 'digital') {          // step 3n F3: the pairing's running quarter carries into this match
+    try { const pr = await PMRecords.pairing(PMRecords.pairingId(humans.players)); if (pr && pr.quarter) body.quarter = pr.quarter; } catch (e) { /* no records */ }
+  }
   if (path === 'computer' && $('aiLevel').value === 'allstar' && humans.mine && humans.mine.profile) {
     try {                                          // the All-Star scouts the human's completed stored games (B8)
       const done = (await PMRecords.matches()).filter(m => m.done && PMRecords.sideOf(m, humans.mine.profile));
@@ -449,6 +452,7 @@ function render() {
     ...(ai ? [el('div', { text: `Computer ${ai}` })] : []),
     ...(s.timer ? [el('div', { text: s.timer.handicap ? `Timer (handicap): player A ${s.timer.setting.A || 'off'}${s.timer.setting.A ? ' s' : ''}, player B ${s.timer.setting.B || 'off'}${s.timer.setting.B ? ' s' : ''}` : `Timer: ${s.timer.setting.A} s per decision` })] : []),
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
+    ...(s.quarter ? [el('div', { class: 'quarter', text: s.quarter.text })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []),
     el('button', { class: 'small', text: 'Play story', onclick: showStory }));
   renderCoachLine();
@@ -1866,6 +1870,9 @@ async function onPossessionOver(s) {
     try { trainerReads[poss] = await api('/api/trainer', { code: G.code, token: G.token, possession: poss }); }
     catch (e) { trainerReads[poss] = { possession: poss, players: {}, error: e.message }; }
     const box = $('trainerBox'); if (box && st.possession === poss) { box.innerHTML = ''; box.append(...trainerBoxKids(poss)); }
+  }
+  if (rec && s.quarter_state) {
+    try { await PMRecords.savePairing(PMRecords.pairingId(rec.players), s.quarter_state, rec.players); } catch (e) { /* ignore */ }
   }
   if (rec) {
     rec.scores = s.scores.map(x => ({ possession: x.possession, attacker: x.attacker, total: x.total, ended: x.ended }));

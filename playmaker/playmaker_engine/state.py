@@ -22,7 +22,7 @@ class Context:
 
     def __init__(self, off_cards, def_cards, rules=None, title='Game', kind='GAME', scenario=None,
                  card_clock=RC.START_CLOCK, inbounder=-1, coach_call=False, three_only=False,
-                 two_or_three=False, hold_for_one=False, off_team='', def_team=''):
+                 two_or_three=False, hold_for_one=False, off_team='', def_team='', team_fouls=0, quarter_left=0):
         self.off = tuple(off_cards)
         self.dfn = tuple(def_cards)
         self.rules = rules or RC.DEFAULT_RULES
@@ -32,6 +32,9 @@ class Context:
         self.coach_call = coach_call
         self.three_only, self.two_or_three, self.hold_for_one = three_only, two_or_three, hold_for_one
         self.off_team, self.def_team = off_team, def_team
+        # step 3n F3 (digital): the defence's team fouls before this possession, and the defence's possessions left in
+        # the quarter including this one
+        self.team_fouls, self.quarter_left = team_fouls, quarter_left
 
 
 @dataclass(frozen=True)

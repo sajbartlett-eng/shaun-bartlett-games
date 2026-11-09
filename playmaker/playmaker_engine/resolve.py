@@ -207,11 +207,19 @@ def contest_outcome(s, opt, forced):
     if opt.clean or opt.p_foul == 0:
         return made
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules)
-    fouled = _terminal(s, Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
+    fouled = _terminal(s.with_(fouls=s.fouls + 1),
+                       Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
+    one = p_foul(fr, s.ctx.rules)
+    if getattr(opt, 'rolls', 1) == 2:
+        # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
+        second = chance(f'Contest foul {fr}, second roll (X{opt.defender + 1}, reaching from the side or behind)',
+                        [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
+        return chance(f'Contest foul {fr} (X{opt.defender + 1}, {why}; reaching from the side or behind: two foul rolls)',
+                      [(one, 'foul', fouled), (1 - one, 'no foul', second)], 'X')
     return chance(f'Contest foul {fr} (X{opt.defender + 1}, {why})',
-                  [(opt.p_foul, 'foul', fouled), (1 - opt.p_foul, 'no foul', made)], 'X')
+                  [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
 
 
 def settle(node):
@@ -513,16 +521,27 @@ def apply(state, action, check=False):
                 st = pickoff(s.with_(stage='play', shot=None, cnt=tuple(cnt)))
                 stolen_node = st if st.stage == 'over' else _after(state.with_(stage='play'), st, side, k)
         else:
-            if fs.fouls >= 2:
+            # the bonus: tabletop, the second steal foul of the possession; digital (step 3n F3), the bonus_from-th
+            # team foul of the quarter (the defence's fouls before this possession travel in the context)
+            in_bonus = (s.ctx.team_fouls + fs.fouls >= rules.bonus_from) if rules.digital else fs.fouls >= 2
+            if in_bonus:
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))
             else:
                 foul_node = _after(state, fs.with_(bonus5=fs.bonus5 + 1), side, k)
             st = _turnover(s) if legacy else pickoff(s)
             stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
-        kept_node = _after(state, s, side, k)
+        # step 3n F1: a failed Steal (no foul, the ball kept) locks the defender, as a failed Challenge does
+        kept_node = _after(state, _lock(s, 'X', a.piece) if rules.steal_lock else s, side, k)
         inner = chance(f'Dribble {O[carrier].r["dribble"]} v Steal {X[a.piece].r["steal"]} (O{carrier + 1} v X{a.piece + 1})',
                        [(pk, 'kept', kept_node), (1 - pk, 'stolen', stolen_node)], 'O')
+        from .scoring import foul_rolls
+        if foul_rolls(rules, s.x[a.piece], s.o[carrier]) == 2:
+            # step 3n F2: reaching level with the ball carrier or from behind: two foul rolls, either fouls
+            second = chance(f'Steal foul {X[a.piece].r["foul_steal"]}, second roll (X{a.piece + 1}, reaching from the side or behind)',
+                            [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)], 'X')
+            return chance(f'Steal foul {X[a.piece].r["foul_steal"]} (X{a.piece + 1}; reaching from the side or behind: two foul rolls)',
+                          [(pf, 'foul', foul_node), (1 - pf, 'no foul', second)], 'X')
         return chance(f'Steal foul {X[a.piece].r["foul_steal"]} (X{a.piece + 1})',
                       [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)], 'X')
 

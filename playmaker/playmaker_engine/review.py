@@ -38,15 +38,23 @@ def log_rules(setup):
     if 'on_line_tolerance' in rec and 'receiver_denial' not in rec:
         rec = {**RC.PRE_DENIAL, **rec}             # recorded the rulebook readings, from before the denial ruling
     extra = {'digital': True} if setup.get('match_format') == 'digital' else {}   # step 3m: the digital format
+    if 'steal_lock' not in rec:
+        rec = {**RC.PRE_3N, **rec}                  # a log from before the step 3n rulings
     return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec, **extra})
 
 
-def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0):
+def _start(setup, possession, o_sq=TABLE_O, x_sq=TABLE_X, arrows=TABLE_ARROWS, ball=0, quarter=None):
     rules = log_rules(setup)
     if setup.get('scenario'):
         return scenario_state(setup['scenario'], rules=rules)
     off, dfn = setup['teams'] if possession % 2 == 1 else setup['teams'][::-1]     # sides swap every possession
-    return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=rules)
+    tf = left = 0
+    if setup.get('match_format') == 'digital' and quarter:                         # step 3n F3: the quarter state
+        att = 'A' if possession % 2 == 1 else 'B'
+        d = 'B' if att == 'A' else 'A'
+        tf, left = quarter['fouls'][d], max(1, rules.quarter_possessions - quarter['poss'][att])
+    return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=rules, team_fouls=tf,
+                      quarter_left=left)
 
 
 def _same(state, logged):
@@ -82,7 +90,8 @@ def replay(records, on_decision=None):
     setup = next(r for r in records if r['type'] == 'setup')
     register_custom(setup)
     possession = 1
-    state = _start(setup, 1)
+    quarter = setup.get('quarter')
+    state = _start(setup, 1, quarter=quarter)
     finals = []
     undo = []                         # states before each action since the last roll (as the server keeps)
     placed_o = None
@@ -93,13 +102,15 @@ def replay(records, on_decision=None):
             if r['side'] == 'O':
                 placed_o = (r['squares'], r['ball'])
             else:
-                state = _start(setup, possession, placed_o[0], r['squares'], r['arrows'], placed_o[1])
+                state = _start(setup, possession, placed_o[0], r['squares'], r['arrows'], placed_o[1], quarter=quarter)
                 if r.get('start') and not _same(state, r['start']):
                     raise ValueError('placement replay diverged')
+        elif r['type'] == 'quarter':
+            quarter = dict(fouls=r['fouls'], poss=r['poss'], number=r.get('number', 1))
         elif r['type'] == 'possession':
             finals.append((possession, state))
             possession = r['possession']
-            state = _start(setup, possession)
+            state = _start(setup, possession, quarter=quarter)
             undo = []
         elif r['type'] == 'undo':
             state = undo.pop()

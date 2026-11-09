@@ -107,10 +107,12 @@ def scenario_state(n, rules=None, target=None):
 
 
 def game_state(off_team=FIRST_GAME[0], def_team=FIRST_GAME[1], o_squares=None, x_squares=None, arrows=None,
-               ball=0, rules=None, clock=RC.START_CLOCK, check=True):
-    """A normal-game start. Squares are names ('I11'); arrows are compass names or indices."""
+               ball=0, rules=None, clock=RC.START_CLOCK, check=True, team_fouls=0, quarter_left=0):
+    """A normal-game start. Squares are names ('I11'); arrows are compass names or indices. team_fouls /
+    quarter_left (digital, step 3n F3): the defence's team fouls before this possession and its possessions left in
+    the quarter."""
     ctx = Context(TEAMS[off_team], TEAMS[def_team], rules, title=f'{off_team} v {def_team}', kind='GAME',
-                  off_team=off_team, def_team=def_team)
+                  off_team=off_team, def_team=def_team, team_fouls=team_fouls, quarter_left=quarter_left)
     o = tuple(B.parse_sq(s) for s in o_squares)
     x = tuple(B.parse_sq(s) for s in x_squares)
     arr = tuple(B.DIR_NAMES.index(a) if isinstance(a, str) else a for a in arrows)

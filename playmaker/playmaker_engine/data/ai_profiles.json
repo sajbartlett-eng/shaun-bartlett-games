@@ -61,7 +61,10 @@
       -10,
       60
     ],
-    "browser_budget_scale": 1.0
+    "browser_budget_scale": 1.0,
+    "fouls_per_possession": 0.25,
+    "play_on_value": 20.0,
+    "_fouls": "Step 3n F4: the engine's estimate of the defence's fouls per possession and the value of playing on after a +5 steal foul, used to price a foul over the rest of the quarter. Tune from the F5 run, never the rules."
   },
   "trainer": {
     "_about": "Step 3m Part D. Bands in game units of value lost; calibrate from stored games.",

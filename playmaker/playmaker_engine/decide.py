@@ -28,7 +28,7 @@ from functools import lru_cache
 from . import board as B
 from . import geometry as G
 from . import rules_config as RC
-from .scoring import p_success, p_foul, foul_on_shot_points
+from .scoring import p_success, p_foul, p_fouls, foul_on_shot_points
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INF = 99
@@ -148,7 +148,18 @@ def attacker_reach(s, i, exact=False):
 
 
 # Contest kinds, best first for the defence: (penalty, foul roll). Each map: square c -> [actions for each kind].
-KINDS = ((False, False), (False, True), (True, False), (True, True))
+# Contest kinds (penalty, foul roll, two foul rolls): the -3 for standing further from the rim than the shooter; a
+# foul roll when the arrow is off him; two foul rolls (step 3n F2) when level with him or further from the rim.
+KINDS = ((False, False, False), (False, True, False), (False, True, True), (True, False, False), (True, True, True),
+         (True, True, False))
+NK = len(KINDS)
+
+
+def _kind(rules, q, c, pen, foul):
+    two = foul and rules.reach_angle_fouls and B.dist_rim(q) >= B.dist_rim(c)
+    if pen and foul:
+        two = rules.reach_angle_fouls
+    return KINDS.index((pen, foul, bool(two)))
 
 
 @lru_cache(maxsize=400000)
@@ -168,10 +179,10 @@ def contest_map(rules, free, fixed):
             e, foul, pen = _terms(rules, q, B.dir_between(q, c), c)
             if not e:
                 continue
-            k = KINDS.index((pen, foul))
+            k = _kind(rules, q, c, pen, foul)
             row = out.get(c)
             if row is None:
-                row = out[c] = [INF] * 4
+                row = out[c] = [INF] * NK
             if row[k] > n:
                 row[k] = n
     for q, arrs in fixed.items():
@@ -183,10 +194,10 @@ def contest_map(rules, free, fixed):
                 e, foul, pen = _terms(rules, q, a, c)
                 if not e:
                     continue
-                k = KINDS.index((pen, foul))
+                k = _kind(rules, q, c, pen, foul)
                 row = out.get(c)
                 if row is None:
-                    row = out[c] = [INF] * 4
+                    row = out[c] = [INF] * NK
                 if row[k] > n:
                     row[k] = n
     return out
@@ -213,7 +224,7 @@ def shot_value(card, dcards, t, c, contests, window, rules):
         for k, n in enumerate(row):
             if n > window:
                 continue
-            pen, foul = KINDS[k]
+            pen, foul, two = KINDS[k]
             con = dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
             if rules.floor_contest_zero:
                 con = max(0, con)
@@ -223,7 +234,7 @@ def shot_value(card, dcards, t, c, contests, window, rules):
             if foul:
                 if ft is None:
                     ft = foul_on_shot_points(card, t, pts, rules)[0]
-                pf = float(p_foul(dcards[d].r['foul_contest'], rules))
+                pf = float(p_fouls(p_foul(dcards[d].r['foul_contest'], rules), 2 if two else 1))
                 v = pf * ft + (1 - pf) * v
             if v < best:
                 best, who = v, d
@@ -351,7 +362,7 @@ class Read:
             for k, n in enumerate(row):
                 if n > self.react:
                     continue
-                pen, foul = KINDS[k]
+                pen, foul, two = KINDS[k]
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
                 if rules.floor_contest_zero:
                     con = max(0, con)
@@ -360,7 +371,7 @@ class Read:
                     v = max(0, v)
                 if foul:
                     ft = foul_on_shot_points(card, t, pts, rules)[0]
-                    pf = float(p_foul(self.dcards[d].r['foul_contest'], rules))
+                    pf = float(p_fouls(p_foul(self.dcards[d].r['foul_contest'], rules), 2 if two else 1))
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:
                     best = v
@@ -678,6 +689,7 @@ class Read:
         coarse table."""
         s = self.s
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
         if s.pending:
             # a pass in the air: the catch (the receiver with the ball, the defence still to answer) weighted by the
             # chance it arrives, and the turnover
@@ -810,6 +822,52 @@ def _pass_prob(s, i):
 
 
 _PP = {}
+
+
+# ---- team fouls across the quarter (step 3n F4) ----------------------------------------------------------------------
+
+_FOUL = {}
+
+
+def foul_table(ctx):
+    """The future cost of the defence's team fouls over the rest of the quarter, by backward induction over (team
+    fouls, possessions left). C(f, n): the offence's expected extra points in the defence's n remaining possessions with
+    f team fouls. In a possession the defence fouls with the engine's estimated rate; from the bonus (the bonus_from-th
+    team foul on) a steal foul is two free throws for the pairing's cards instead of +5 and play on."""
+    rules = ctx.rules
+    key = (id(ctx.off), id(ctx.dfn), rules.bonus_from, rules.quarter_possessions)
+    if key in _FOUL:
+        return _FOUL[key]
+    q = CONFIG['eval'].get('fouls_per_possession', 0.25)
+    ft2 = sum(RC.FT_MULT_TWO * c.r['free_throw'] for c in ctx.off) / len(ctx.off)
+    cont = CONFIG['eval'].get('play_on_value', 20.0)
+    extra = ft2 - (RC.STEAL_FOUL_BONUS + cont)          # a bonus foul against +5 and play on
+    N, F = rules.quarter_possessions + 1, rules.bonus_from + 12
+    C = [[0.0] * (N + 1) for _ in range(F + 2)]
+    for n in range(1, N + 1):
+        for f in range(F, -1, -1):
+            x = extra if f + 1 >= rules.bonus_from else 0.0
+            C[f][n] = (1 - q) * C[f][n - 1] + q * (x + C[min(F, f + 1)][n - 1])
+    _FOUL[key] = (C, F)
+    return C, F
+
+
+def foul_marginal(ctx, f, n):
+    """What one more defensive foul now (team fouls f, n possessions left including this one) costs the defence over
+    the rest of the quarter, in the offence's points: C(f + 1, n - 1) - C(f, n - 1)."""
+    if not ctx.rules.digital or n <= 0:
+        return 0.0
+    C, F = foul_table(ctx)
+    n1 = max(0, n - 1)
+    return C[min(F, f + 1)][n1] - C[min(F, f)][n1]
+
+
+def foul_externality(s):
+    """The quarter's price of the fouls the defence has committed this possession (added to the offence's value)."""
+    ctx = s.ctx
+    if not ctx.rules.digital or not s.fouls or not ctx.quarter_left:
+        return 0.0
+    return sum(foul_marginal(ctx, ctx.team_fouls + i, ctx.quarter_left) for i in range(s.fouls))
 
 
 # ---- the coarse value table (B4) -------------------------------------------------------------------------------------

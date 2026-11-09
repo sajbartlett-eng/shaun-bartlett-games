@@ -58,7 +58,8 @@ def actor(s):
 
 
 def terminal_value(s):
-    return float(score(s).total)
+    from .decide import foul_externality
+    return float(score(s).total) + foul_externality(s)      # step 3n F4: the quarter's price of the fouls
 
 
 # ---- turn generation (B6) --------------------------------------------------------------------------------------------

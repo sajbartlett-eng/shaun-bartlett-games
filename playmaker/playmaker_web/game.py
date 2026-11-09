@@ -213,7 +213,7 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None, match_format='tabletop', per_side=8, scouting=None):
+                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -236,6 +236,12 @@ class Game:
         self.full = full and scenario is None
         self.n_poss = 2 * self.per_side if self.full else 1
         self.last_setup = {}             # (player, side) -> the human's last setup, for "repeat my last setup"
+        # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
+        # between the same pairing (the client stores it with the pairing and passes it in)
+        q = quarter if isinstance(quarter, dict) else {}
+        self.quarter = dict(fouls=dict(A=int((q.get('fouls') or {}).get('A', 0)), B=int((q.get('fouls') or {}).get('B', 0))),
+                            poss=dict(A=int((q.get('poss') or {}).get('A', 0)), B=int((q.get('poss') or {}).get('B', 0))),
+                            number=int(q.get('number', 1)))
         self.teams = list(teams or FIRST_GAME)
         self.custom, self.experimental = {}, []
         self.hidden_teams = {}
@@ -283,7 +289,7 @@ class Game:
         self.reflection = None
         self.review_cache = None
         self._log('setup', mode=mode, scenario=scenario, teams=self.teams, seed=self.seed, full=self.full,
-                  match_format=self.match_format, per_side=self.per_side,
+                  match_format=self.match_format, per_side=self.per_side, quarter=self.quarter if self.match_format == 'digital' else None,
                   ai=self.ai, ai_players=self.ai_players or None, possession=self.possession, place=self.place_on, level=self.level,
                   custom=self.custom or None, experimental=self.experimental or None, levels=self.levels,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
@@ -503,7 +509,31 @@ class Game:
         if self.scenario:
             return scenario_state(self.scenario, rules=self.rules)
         off, dfn = (self.teams if self.possession % 2 == 1 else self.teams[::-1])
-        return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules)
+        tf, left = self.quarter_context()
+        return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules,
+                          team_fouls=tf, quarter_left=left)
+
+    def quarter_context(self):
+        """(the defence's team fouls before this possession, the defence's possessions left in the quarter including
+        this one) in the digital format; (0, 0) otherwise."""
+        if getattr(self, 'match_format', 'tabletop') != 'digital':
+            return 0, 0
+        att = 'A' if self.possession % 2 == 1 else 'B'
+        dfn = 'B' if att == 'A' else 'A'
+        n = (self.rules or RC.DEFAULT_RULES).quarter_possessions
+        return self.quarter['fouls'][dfn], max(1, n - self.quarter['poss'][att])
+
+    def quarter_words(self):
+        if self.match_format != 'digital':
+            return None
+        r = self.state.ctx.rules
+        att = self.offence_player()
+        dfn = 'B' if att == 'A' else 'A'
+        left = max(0, r.quarter_possessions - min(self.quarter['poss'].values()))
+        return dict(A=self.quarter['fouls']['A'], B=self.quarter['fouls']['B'], bonus_from=r.bonus_from, left=left,
+                    number=self.quarter['number'], defending=dfn,
+                    text=f"Team fouls {self.quarter['fouls'][dfn]} · bonus from the {r.bonus_from}th · {left} "
+                         f"possession{'s' if left != 1 else ''} left this quarter")
 
     # ---- the pre-game scouting call (hunt one matchup, protect one weakness) ----
     def picks_needed(self, side):
@@ -1203,6 +1233,16 @@ class Game:
                                 band=sc.band, detail=sc.detail, breakdown=_score_json(sc),
                                 target=self.state.target, final_shot=final, ended=r.kind if r else None))
         self._log('end', possession=self.possession, score=_score_json(sc), target=self.state.target)
+        if self.match_format == 'digital':
+            # step 3n F3: the defence's fouls this possession (steal fouls and the shooting foul) join its team total
+            att = self.offence_player()
+            dfn = 'B' if att == 'A' else 'A'
+            self.quarter['fouls'][dfn] += self.state.fouls
+            self.quarter['poss'][att] += 1
+            n = self.state.ctx.rules.quarter_possessions
+            if self.quarter['poss']['A'] >= n and self.quarter['poss']['B'] >= n:
+                self.quarter = dict(fouls=dict(A=0, B=0), poss=dict(A=0, B=0), number=self.quarter['number'] + 1)
+            self._log('quarter', **self.quarter)
         if self.full and self.possession == self.n_poss:
             self._finish_match()
 

@@ -18,6 +18,19 @@ def p_success(target, rules=RC.DEFAULT_RULES):
     return Fraction(t, RC.DIE)
 
 
+def foul_rolls(rules, dpos, target):
+    """Step 3n F2: one foul roll if the defender is closer to the rim than the ball carrier or shooter, two if
+    level or further (either one fouls)."""
+    if not rules.reach_angle_fouls:
+        return 1
+    return 1 if B.dist_rim(dpos) < B.dist_rim(target) else 2
+
+
+def p_fouls(pf, rolls):
+    """P(at least one of `rolls` foul rolls fouls)."""
+    return 1 - (1 - pf) ** rolls
+
+
 def p_foul(foul_rating, rules=RC.DEFAULT_RULES):
     """Straight foul roll: d20 <= foul rating."""
     return p_success(foul_rating, rules)
@@ -72,6 +85,7 @@ class ContestOption:
     ft: int                # free throws if fouled
     ev: Fraction
     category: str = ''     # step 3h: front / side / behind (descriptive under the current geometry)
+    rolls: int = 1         # step 3n F2: foul rolls (two when the contester is level with or further from the rim)
 
 
 def contest_options(state, shooter, shot_type, forced=False):
@@ -107,10 +121,11 @@ def contest_options(state, shooter, shot_type, forced=False):
             if rules.floor_contest_zero:
                 c = max(0, c)
         clean = not foul_roll
-        pf = Fraction(0) if clean else p_foul(ctx.dfn[j].r['foul_contest'], rules)
+        rolls = foul_rolls(rules, xp, spos)
+        pf = Fraction(0) if clean else p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
         v = val(c)
         ev = pf * ft + (1 - pf) * v
-        opts.append(ContestOption(j, c, clean, pf, v, ft, ev, cat))
+        opts.append(ContestOption(j, c, clean, pf, v, ft, ev, cat, rolls if not clean else 0))
     return opts
 
 

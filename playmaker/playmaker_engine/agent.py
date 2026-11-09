@@ -153,6 +153,9 @@ class Agent:
                     alternatives=[dict(turn=[str(a) for a in t], value=round(v, 2)) for v, t, _ in with_goals[:3]])
         for g in self.commit.log[n_log:]:
             self.notes.append(dict(event='goal', **g))
+        why = steal_reason(s, turn)
+        if why:
+            note['reason'] = why
         self.notes.append(note)
         self.last = note
         self.stale = (s.x, s.arrows) if self.side == 'O' else (s.o,)
@@ -174,6 +177,23 @@ class Agent:
             return ev(n)
         best = max(acts, key=val) if side == 'O' else min(acts, key=val)
         return best
+
+
+def steal_reason(s, turn):
+    """Step 3n F4: why the defence reached for a steal or didn't, in plain words, when the bonus line matters."""
+    if actor(s) != 'X' or not s.ctx.rules.digital or s.stage != 'play':
+        return None
+    if not any(a.kind == 'steal' for a in legal_actions(s)):
+        return None
+    f, b = s.ctx.team_fouls + s.fouls, s.ctx.rules.bonus_from
+    reached = any(a.kind == 'steal' for a in turn)
+    if reached:
+        return (f'Reached for the steal: {f} team foul{"s" if f != 1 else ""}, so a foul costs 5 points and play goes on.'
+                if f + 1 < b else f'Reached for the steal even though a foul now gives free throws.')
+    if f + 1 >= b:
+        return (f'Didn\'t reach for the steal: a foul now would be their {f + 1}th team foul, and from the {b}th a steal '
+                f'foul gives free throws.')
+    return None
 
 
 def _with_stale(s, side, stale):

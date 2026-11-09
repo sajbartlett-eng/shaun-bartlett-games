@@ -2,7 +2,7 @@
 // Schema version 1: stores 'profiles' (id) and 'matches' (id). Export and import go through one JSON file.
 'use strict';
 const PMRecords = (() => {
-  const DB = 'playmaker', VERSION = 1, SCHEMA = 'playmaker-records';
+  const DB = 'playmaker', VERSION = 2, SCHEMA = 'playmaker-records';
   let dbp = null;
   function open() {
     if (dbp) return dbp;
@@ -13,6 +13,8 @@ const PMRecords = (() => {
         const db = req.result;
         if (!db.objectStoreNames.contains('profiles')) db.createObjectStore('profiles', { keyPath: 'id' });
         if (!db.objectStoreNames.contains('matches')) { const m = db.createObjectStore('matches', { keyPath: 'id' }); m.createIndex('date', 'date'); }
+        // version 2 (step 3n F3): a pairing (two profiles, or a profile and a computer level) keeps its running quarter
+        if (!db.objectStoreNames.contains('pairings')) db.createObjectStore('pairings', { keyPath: 'id' });
       };
       req.onsuccess = () => res(req.result);
       req.onerror = () => rej(req.error);
@@ -51,19 +53,34 @@ const PMRecords = (() => {
   async function saveMatch(m) { m.v = 1; await tx('matches', 'readwrite', s => req(s.put(m))); return m; }
   async function deleteMatch(id) { await tx('matches', 'readwrite', s => req(s.delete(id))); }
 
+  // ---- pairings: the running quarter (team fouls and possessions) carries across their matches
+  function pairingId(players) {
+    const who = p => (p && p.profile) ? 'p:' + p.profile : (p && p.computer) ? 'c:' + p.computer : null;
+    const a = who(players.A), b = who(players.B);
+    return a && b ? [a, b].sort().join('|') : null;
+  }
+  async function pairing(id) { return id ? tx('pairings', 'readonly', s => req(s.get(id))) : null; }
+  async function savePairing(id, quarter, players) {
+    if (!id) return null;
+    const p = { id, quarter, players: { A: players.A, B: players.B }, updated: new Date().toISOString() };
+    await tx('pairings', 'readwrite', s => req(s.put(p)));
+    return p;
+  }
+  async function pairings() { return (await tx('pairings', 'readonly', s => req(s.getAll()))) || []; }
   // ---- export / import (one JSON file; import reproduces the data exactly)
   async function exportAll() {
-    return { schema: SCHEMA, version: VERSION, profiles: await profiles(), matches: await matches() };
+    return { schema: SCHEMA, version: VERSION, profiles: await profiles(), matches: await matches(), pairings: await pairings() };
   }
   async function importAll(data, replace) {
     if (!data || data.schema !== SCHEMA) throw new Error('This is not a Playmaker records file.');
     if (data.version > VERSION) throw new Error(`This file is from a newer version (${data.version}).`);
-    if (replace) { await tx('profiles', 'readwrite', s => req(s.clear())); await tx('matches', 'readwrite', s => req(s.clear())); }
+    if (replace) await clearAll();
     await tx('profiles', 'readwrite', s => Promise.all((data.profiles || []).map(p => req(s.put(p)))));
     await tx('matches', 'readwrite', s => Promise.all((data.matches || []).map(m => req(s.put(m)))));
+    await tx('pairings', 'readwrite', s => Promise.all((data.pairings || []).map(p => req(s.put(p)))));
     return { profiles: (data.profiles || []).length, matches: (data.matches || []).length };
   }
-  async function clearAll() { await tx('profiles', 'readwrite', s => req(s.clear())); await tx('matches', 'readwrite', s => req(s.clear())); }
+  async function clearAll() { for (const st of ['profiles', 'matches', 'pairings']) await tx(st, 'readwrite', s => req(s.clear())); }
 
   // ---- head to head: totals are the sums of the stored matches
   function sideOf(m, pid) { return m.players && m.players.A && m.players.A.profile === pid ? 'A' : m.players && m.players.B && m.players.B.profile === pid ? 'B' : null; }
@@ -111,6 +128,6 @@ const PMRecords = (() => {
     return out;
   }
   return { open, profiles, profile, createProfile, saveProfile, renameProfile, deleteProfile, matches, match, saveMatch, deleteMatch,
-    exportAll, importAll, clearAll, headToHead, versusComputer, groupsOf, sideOf, SCHEMA, VERSION };
+    exportAll, importAll, clearAll, headToHead, versusComputer, groupsOf, sideOf, pairingId, pairing, savePairing, pairings, SCHEMA, VERSION };
 })();
 if (typeof window !== 'undefined') window.PMRecords = PMRecords;
