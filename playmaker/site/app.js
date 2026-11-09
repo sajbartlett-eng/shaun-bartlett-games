@@ -7,7 +7,7 @@ const DIRN = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 const ZCOL = { K: 'var(--rim)', '3': 'var(--three)', M: 'var(--mid)', L: 'var(--long)', '.': 'var(--wood)' };
 const ZLBL = { K: 'rim', '3': '3', M: 'mid', L: 'L2', '.': '' };
 const SIDE_KINDS = ['end_turn', 'forfeit', 'hesitate', 'pause', 'target', 'pick', 'contest', 'forced_shot'];
-const ENDERS = ['pass', 'screen', 'dribble', 'hesitate', 'shot', 'intercept', 'challenge', 'steal', 'pause'];
+const ENDERS = ['pass', 'screen', 'dribble', 'hesitate', 'shot', 'intercept', 'challenge', 'steal', 'pause', 'contest'];
 const SHORT = { 'Quick Step': 'QS', Dribble: 'Drb', Pass: 'Pass', Screen: 'Scr', Layup: 'Lay', Dunk: 'Dunk', Post: 'Post',
   Mid: 'Mid', Floater: 'Flt', 'Long 2': 'L2', Three: '3PT', FT: 'FT', Agility: 'Agi', Intercept: 'Int', Challenge: 'Chl',
   Steal: 'Stl', 'Foul (steal)': 'F·S', 'v Layup': 'Lay', 'v Dunk': 'Dunk', 'v Post': 'Post', 'v Mid': 'Mid',
@@ -202,8 +202,7 @@ function levelsPage() {
     el('p', { text: L.intro }),
     el('h3', { text: 'Age' }), ...L.ages.map(a => el('p', { text: a.words })),
     el('h3', { text: 'Standard' }), ...L.standards.map(x => el('p', { text: x.words })), el('p', { class: 'note', text: L.standard_note }),
-    el('h3', { text: 'Growth tags (junior)' }), el('div', { class: 'growbox' }, [el('p', { text: L.growth_box }), el('p', { text: L.growth.early }), el('p', { text: L.growth.late }),
-      el('p', { text: 'Each tag stays face down until setup begins, then all ten are turned up before the offence places. A tag changes the numbers, never the marks.' })]),
+    el('h3', { text: 'Growth (junior, in the app)' }), el('div', { class: 'growbox' }, [el('p', { text: L.growth_box })]),
     el('h3', { text: 'Picking the teams' }), ...Object.values(L.rosters).map(w => el('p', { text: w })),
     el('p', {}, [el('a', { href: L.sheet, target: '_blank', rel: 'noopener', text: 'The full playing levels sheet (PDF)' })]),
     el('button', { class: 'primary', text: 'Close', onclick: closeModal })], closeModal);
@@ -236,8 +235,7 @@ function builder(i) {
     el('label', {}, ['Load ', load]),
     ...[1, 2, 3, 4, 5].map(s => el('div', { class: 'slotrow' }, [
       el('label', {}, [`Slot ${s} (${POS[s - 1]}) `, el('select', { id: `b${i}s${s}`, onchange: builderStatus }, slotOptions(s, free))]),
-      free && junior ? el('label', { class: 'tagpick' }, ['Growth ', el('select', { id: `b${i}t${s}`, 'aria-label': `Slot ${s} growth tag` },
-        [['on_time', 'On time'], ['early', 'Early'], ['late', 'Late']].map(([v, t]) => el('option', { value: v, text: t })))]) : null])),
+      ])),
     el('p', { class: 'note', id: `bShape${i}`, role: 'status' }));
   const start = OPTS.teams.find(t => t.name === OPTS.first_game[i]);
   [1, 2, 3, 4, 5].forEach(s => { $(`b${i}s${s}`).value = keep ? keep[s - 1][0] : start.cards[s - 1]; if (!$(`b${i}s${s}`).value) $(`b${i}s${s}`).selectedIndex = 0; });
@@ -269,7 +267,7 @@ async function builderStatus() {
   }
 }
 
-// Random deal (B4): the code reproduces the rosters and the growth tags; the scout report opens before setup.
+// Random deal (B4): the code reproduces the rosters (and the app's junior growth); the scout report opens before setup.
 function rosterList(r) {
   return el('ol', { class: 'rosterlist' }, r.map(e => el('li', { text: `${e.role} (${e.tier})${e.flex ? ' · ' + e.flex : ''}` })));
 }
@@ -290,7 +288,7 @@ async function doDeal(code) {
 }
 function dealReport(d) {
   modal([el('h2', { text: `Scout report: deal ${d.code}` }),
-    el('p', { class: 'note', text: 'Both teams as dealt. Read them before setup.' + (d.tags_note ? ' Growth tags stay face down until setup begins.' : '') }),
+    el('p', { class: 'note', text: 'Both teams as dealt. Read them before setup.' }),
     ...reportEl(d.report),
     el('button', { class: 'primary', text: 'Start the game', onclick: () => { closeModal(); create(); } }),
     el('button', { text: 'Close', onclick: closeModal })], closeModal);
@@ -367,7 +365,7 @@ async function create() {
     body.age = $('age').value; body.roster = m;
     body.standard = m === 'build' && $('handicap').checked ? { A: $('standard').value, B: $('standardB').value } : $('standard').value;
     if (m === 'build' || m === 'free') body.lineups = [0, 1].map(i => ({ name: $(`bName${i}`).value || teamName(i), cards: builderCards(i),
-      tags: m === 'free' && body.age === 'junior' ? [1, 2, 3, 4, 5].map(s => $(`b${i}t${s}`).value) : null }));
+      tags: null }));
     if (m === 'random') {
       if (!lastDeal) { await doDeal(); return; }     // deal first: the scout report for both teams opens before setup
       body.deal = lastDeal.code; body.random = $('randomFor').value; body.coherent = lastDeal.coherent;
@@ -485,12 +483,11 @@ function render() {
   else if (s.stage === 'over') endModal();
 }
 
-// Step 3l: what the level changes on a card: 'U16 · TIER A' / 'U20 · TIER A', the growth tag (E or L) and a flex slot.
+// Step 3l: what the level changes on a card: 'U16 · TIER A' / 'U20 · TIER A' and a flex slot (D-88: growth shows only in the
+// ratings, and in Coach Vision's line under the card).
 function levelBits(c) {
   const out = [];
   if (c.label && c.label !== `TIER ${c.tier}`) out.push(el('span', { class: 'agelabel', text: c.label }));
-  if (c.growth) out.push(el('span', { class: 'growchip ' + c.growth, title: c.growth_words, text: c.growth === 'early' ? 'E' : 'L',
-    'aria-label': `growth tag ${c.growth}` }));
   if (c.flex) out.push(el('span', { class: 'flexchip', text: c.flex }));
   return out;
 }
@@ -501,7 +498,7 @@ function cardEl(c, side, label, extra) {
       ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
     el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
       'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
-  const grow = c.growth_words ? el('div', { class: 'grownote', text: c.growth_words }) : null;
+  const grow = c.coach_growth ? el('div', { class: 'grownote' }, [PMCoach.line('coach', c.coach_growth, { compact: true, speak: false, live: false })]) : null;
   return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [head, ...groups, grow, extra || null]);
 }
 
@@ -544,7 +541,7 @@ function renderCards(id, pieces, side) {
         'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
     const note = side === 'O' && st.inbound_note && p.i === st.inbounder ? el('div', { class: 'inbnote', text: st.inbound_note }) : null;
     const folded = pinnedCards.has('-' + key) || !isOpen;           // '-' + key: folded by hand although it matters now
-    const grow = c.growth_words && !folded ? el('div', { class: 'grownote', text: c.growth_words }) : null;
+    const grow = c.coach_growth && !folded ? el('div', { class: 'grownote' }, [PMCoach.line('coach', c.coach_growth, { compact: true, speak: false, live: false })]) : null;
     box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}${folded ? ' collapsed' : ''}` },
       [head, folded ? cardSummary(c) : null, ...groups, grow, note]));
   }
@@ -588,8 +585,8 @@ function renderTracker(id, side) {
       el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
       el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
       el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
-      el('div', { text: 'Picked off: −5 and lose 2 seconds. On the last phase, the possession scores 0.' })]),
-    el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0.' }),
+      el('div', { text: 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
+    el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
       ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
       : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }) : null]);
@@ -598,6 +595,7 @@ function renderTracker(id, side) {
 
 // The defender reach (zones of influence) can be hidden by a player who finds it busy; the rules don't change.
 function showReach() { try { return localStorage.getItem('pm_reach') !== '0'; } catch (e) { return true; } }
+function ringsShown() { try { return localStorage.getItem('pm_rings') !== '0'; } catch (e) { return true; } }   // D-84: on by default
 // the shot-zone labels: on when a shot is on offer, or when the player asks for them; the colours stay
 function zonesShown() {
   let pref = null; try { pref = localStorage.getItem('pm_zones'); } catch (e) { /* ignore */ }
@@ -609,7 +607,7 @@ function zonesShown() {
 function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
-  PM.court(c, s.zones, { axes: true, plain: !zonesShown() });
+  PM.court(c, s.zones, { axes: true, plain: !zonesShown(), rings: ringsShown() });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   drawInfluence(c);
@@ -653,7 +651,6 @@ function turnMarks() {
 function pieceLabel(side, p) {
   const z = st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';
   const bits = [`${side}${p.i + 1}, number ${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
-  if (p.card && p.card.growth) bits.push(`growth tag ${p.card.growth}`);
   if (p.card && p.card.flex) bits.push(p.card.flex);
   if (side === 'O' && p.ball) bits.push('has the ball');
   if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
@@ -686,7 +683,7 @@ function drawO(c, p, opts) {
   PM.pieceO(g, p.x, p.y, p.i + 1, { ball: p.ball, screen: p.screen ? p.screen.dir : null });
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.O[p.i];
-  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, p.card && p.card.growth); c.append(tg);
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, null); c.append(tg);
 }
 
 function drawX(c, p, opts) {
@@ -695,7 +692,7 @@ function drawX(c, p, opts) {
   PM.pieceX(g, p.x, p.y, p.i + 1, wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
-  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, p.card && p.card.growth); c.append(tg);
+  const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, null); c.append(tg);
 }
 
 // Zones of influence (every defender, along the arrow line, out to the current reach), active screens and the
@@ -761,7 +758,9 @@ function drawInfluence(c) {
 
 // ---------------------------------------------------------------- selection and actions
 function myActs() { return st.legal || []; }
-function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.piece === i && !SIDE_KINDS.includes(a.kind)); }
+// a Contest in the reaction to a declared shot is a defender's action (D-18); the forced-shot contest stays a side choice
+const reactionContest = a => a.kind === 'contest' && st.stage === 'reaction';
+function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.piece === i && (!SIDE_KINDS.includes(a.kind) || reactionContest(a))); }
 
 let compare = null;     // {side, i, k}: the card panel and which matchup is showing
 function selectPiece(side, i) {
@@ -791,6 +790,14 @@ function drawTargets(c) {
     for (const a of acts) {
       const k = a.dest.join(','); if (seen.has(k)) continue; seen.add(k);
       mark(a.dest[0], a.dest[1], `${KIND_NAME[a.kind]} to ${sqName(a.dest[0], a.dest[1])}`, () => chooseDest(a.dest));
+    }
+    // D-104: a step a screen blocks shows greyed, with the reason
+    const blocked = sel.side === 'X' && st.screen_blocked && st.screen_blocked[sel.i] ? (st.screen_blocked[sel.i][sel.kind] || []) : [];
+    for (const q of blocked) {
+      const g = svg('g', { class: 'blocked-step', role: 'img', 'aria-label': `${sqName(q.x, q.y)}: Blocked by the screen` });
+      g.append(svg('rect', { x: px(q.x) + 3, y: py(q.y) + 3, width: S - 6, height: S - 6, rx: 5, fill: '#9aa0a6', 'fill-opacity': 0.45, stroke: '#6b7075', 'stroke-dasharray': '3 3' }));
+      const t = svg('title', {}); t.textContent = 'Blocked by the screen'; g.append(t);
+      c.append(g);
     }
   } else if (sel.kind === 'pass') {
     for (const a of acts) { const r = st.o[a.target]; mark(r.x, r.y, `pass to O${a.target + 1}`, () => submit(a)); }
@@ -835,7 +842,11 @@ function renderActions() {
         if (sel.dest) {
           tb.append(el('span', { text: `Arrow at ${sqName(sel.dest[0], sel.dest[1])}: ` }));
           for (const a of ka.filter(a => a.dest[0] === sel.dest[0] && a.dest[1] === sel.dest[1])) tb.append(actionButton(a, `face ${DIRN[a.arrow]}`));
-        } else tb.append(el('span', { class: 'note', text: `Click a highlighted square (${new Set(ka.map(a => a.dest.join())).size} legal). Movement doesn't end the turn.` }));
+        } else {
+          const nb = sel.side === 'X' && st.screen_blocked && st.screen_blocked[sel.i] ? (st.screen_blocked[sel.i][sel.kind] || []).length : 0;
+          tb.append(el('span', { class: 'note', text: `Click a highlighted square (${new Set(ka.map(a => a.dest.join())).size} legal). Movement doesn't end the turn.`
+            + (nb ? ` Greyed: Blocked by the screen (${nb}).` : '') }));
+        }
       } else if (sel.kind === 'pass') {
         for (const a of ka) {
           const by = {};
@@ -864,6 +875,8 @@ function renderActions() {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Dribble v X${a.target + 1}`), chips(a)]));
       } else if (sel.kind === 'challenge') {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Challenge O${a.target + 1}'s screen`), chips(a)]));
+      } else if (sel.kind === 'contest') {
+        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, a.option || 'Contest'), chips(a)]));
       } else for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, KIND_NAME[a.kind]), chips(a)]));
     }
   } else $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
@@ -875,8 +888,8 @@ function renderActions() {
     }
     return;
   }
-  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target')) {
-    const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}` : KIND_NAME[a.kind] + (a.kind === 'end_turn' && s.stage === 'reaction' ? ' (go to the contest)' : '');
+  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a))) {
+    const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}` : KIND_NAME[a.kind] + (a.kind === 'end_turn' && s.stage === 'reaction' ? ' (no Contest: the shot goes up with a contest of 0)' : '');
     $('sideButtons').append(actionButton(a, label));
   }
   addUndo();
@@ -888,6 +901,9 @@ function addUndo() {
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
     onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
+  $('sideButtons').append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
+    text: ringsShown() ? 'Distance rings: shown' : 'Distance rings: hidden',
+    onclick: () => { try { localStorage.setItem('pm_rings', ringsShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   if (s.stage === 'over') return;
   if (s.mode === 'hotseat' && s.can_undo) $('sideButtons').append(el('button', { text: 'Undo (only before a roll)', onclick: undo }));
   if (s.mode === 'remote' && s.can_undo) $('sideButtons').append(el('button', { text: s.undo_votes.length ? `Undo requested by ${s.undo_votes.join(', ')}: agree` : 'Request undo (both must agree)', onclick: undo }));
