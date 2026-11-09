@@ -178,14 +178,16 @@ def test_terminal_values_agree_with_score():
     # floors: a declared shot worth less than 0
     s3 = mk(['I14', 'A14', 'C14', 'Q3', 'E14'], ['A13', 'P3', 'M14', 'K14', 'O14'], ['N', 'E', 'N', 'N', 'N'],
             ball=3, off='Twin Towers', dfn='Shoot and Protect')
-    end3 = settle(apply(apply(s3, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
+    end3 = settle(apply(apply(s3, Action('shot', 'O', 3, shot='three')), Action('contest', 'X', 1)))   # step 6 (D-18)
     assert terminal_vals(end3, (None,))[0].ev == score(end3).total == 0
 
 
 def test_evaluation_matches_two_action_ceiling():
-    # Late Clock Reset: the regression's two-action gift is 3; the evaluation of the start agrees.
+    # Late Clock Reset: the regression's two-action gift is 3; the evaluation of the start agrees. Step 6: the gift was
+    # recorded with the free contest after the reaction (test_golden_and_regression pins it so), and so is this
     from playmaker_engine.scenarios import scenario_state
-    st = scenario_state(10)
+    from playmaker_engine import rules_config as RC
+    st = scenario_state(10, rules=RC.with_rules(**RC.PRE_9NOV))
     v = Evaluator(with_config(eval_turns=1))(st)[0]
     assert v.ev == pytest.approx(3.0, abs=0.01)
     assert Evaluator()(st)[0].ev >= v.ev          # the two-turn evaluation is at least the one-turn look

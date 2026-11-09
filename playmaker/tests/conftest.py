@@ -35,11 +35,12 @@ import pytest as _pytest
 @_pytest.fixture
 def legacy_rules(monkeypatch):
     """The rules as they were before the step 3i follow-up rulings (single arrow, two-turn screens, arrow-line
-    drives, the interceptor left on the line), for tests that record that behaviour."""
+    drives, the interceptor left on the line), for tests that record that behaviour. Step 6: those records were made
+    with the free contest after the reaction, so the rulings of 9 Nov 2026 are pinned to their old values too."""
     import os
     from playmaker_engine import rules_config as RC
     if not os.environ.get('PM_LIVE_RULES'):          # PM_LIVE_RULES=1: re-validate under the live rules
-        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.LEGACY_3I))
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.LEGACY_3I, **RC.PRE_9NOV))
 
 
 @_pytest.fixture

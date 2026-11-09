@@ -107,7 +107,7 @@ const PMEngine = (() => {
     locked_can_dribble: false, inbounder_pass_only: true, floor_contest_zero: true, forfeit_when_stuck: true,
     three_only_ft_on_twos: false, coach_bonus_on_forced: true, diag_move_straight: true, inbound_tie: 'offence',
     forced_shot_choice: 'player', inbound_resolves: 'after_defence_turn', and_one: true, steal_lock: true,
-    reach_angle_fouls: true };
+    reach_angle_fouls: true, contest_action: true, turnover_floor: true, steal_foul_always_plus5: true };
   function checkRules(r) {
     for (const [k, v] of Object.entries(RULED)) {
       if (k in r && JSON.stringify(r[k]) !== JSON.stringify(v)) throw new Error(`rule ${k}=${JSON.stringify(r[k])} is not ported`);
@@ -134,8 +134,8 @@ const PMEngine = (() => {
   // cnt indices: o_qs pass screen dribble hesitate shot x_qs intercept challenge steal pause
   const CI = { o_qs: 0, pass: 1, screen: 2, dribble: 3, hesitate: 4, shot: 5, x_qs: 6, intercept: 7, challenge: 8, steal: 9, pause: 10 };
   const cidx = (side, kind) => (kind === 'qs' ? (side === 'O' ? 0 : 6) : CI[kind]);
-  const LIMITS = { O: { qs: 2, pass: 2, screen: 2, dribble: 2, hesitate: 1, shot: 1 }, X: { qs: 2, intercept: 2, challenge: 2, steal: 2, pause: 1 } };
-  const TURN_ENDERS = new Set(['pass', 'screen', 'dribble', 'hesitate', 'shot', 'intercept', 'challenge', 'steal', 'pause']);
+  const LIMITS = { O: { qs: 2, pass: 2, screen: 2, dribble: 2, hesitate: 1, shot: 1 }, X: { qs: 2, intercept: 2, challenge: 2, steal: 2, pause: 1, contest: 1 } };
+  const TURN_ENDERS = new Set(['pass', 'screen', 'dribble', 'hesitate', 'shot', 'intercept', 'challenge', 'steal', 'pause', 'contest']);
   const MOVEMENT = new Set(['move', 'qs', 'sprint']);
   const TOKEN_FREE = new Set(['target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot']);
   const count = (s, side, kind) => s.cnt[cidx(side, kind)];
@@ -439,6 +439,9 @@ const PMEngine = (() => {
     let acts = [];
     if (s.stage === 'reaction') {
       acts = defenceActions(s, REACTION);
+      if (s.tok_x > 0) {                                  // D-18: a Contest by a defender next to the shooter, the last action
+        for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender));
+      }
       acts.push(A('end_turn', 'X'));
     } else if (side === 'O') {
       acts = offenceActions(s);
@@ -512,10 +515,10 @@ const PMEngine = (() => {
     let coach = 0;
     if (ctx.coach_call && r && r.shooter >= 0 && r.shooter === s.target && (r.kind === 'shot' || r.kind === 'forced' || r.kind === 'free_throws')) coach = COACH_BONUS[band(look)];
     const total = sv + ft + 5 * s.bonus5 - 5 * s.tos + coach;
-    return s.zeroed ? 0 : total;
+    return s.zeroed ? (r ? r.floor : 0) : total;           // D-82: a zeroing turnover scores min(0, banked before it)
   }
-  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false) =>
-    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one });
+  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0) =>
+    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor });
 
   // ---- resolve ----------------------------------------------------------------------------------------------------
   const isChance = n => n.outcomes !== undefined;
@@ -527,7 +530,10 @@ const PMEngine = (() => {
   const inc = (s, side, kind) => { const c = s.cnt.slice(); c[cidx(side, kind)] += 1; return W_(s, { cnt: c }); };
   const spend = (s, side) => (side === 'O' ? W_(s, { tok_o: s.tok_o - 1 }) : W_(s, { tok_x: s.tok_x - 1 }));
   const lock = (s, side, i) => (side === 'O' ? W_(s, { lock_o: s.lock_o | (1 << i) }) : W_(s, { lock_x: s.lock_x | (1 << i) }));
-  const terminal = (s, result, zeroed = false) => W_(s, { stage: 'over', side: '-', result, zeroed: s.zeroed || zeroed, pending: null, shot: null });
+  const terminal = (s, result, zeroed = false) => {
+    if (zeroed && !s.zeroed) result = Object.assign({}, result, { floor: Math.min(0, 5 * s.bonus5 - 5 * (s.tos - 1)) });   // D-82
+    return W_(s, { stage: 'over', side: '-', result, zeroed: s.zeroed || zeroed, pending: null, shot: null });
+  };
   const ZERO = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   function pickoff(s) {
     s = W_(s, { tos: s.tos + 1 });
@@ -554,6 +560,7 @@ const PMEngine = (() => {
       if (types.length > 1) return W_(s, { stage: 'forced', side: 'O', shot: null, forced: true, turn_n: 0, pending: null });
       s = W_(s, { shot: types[0], forced: true });
     }
+    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18
     return W_(s, { stage: 'contest', side: 'X', turn_n: 0, forced, pending: null });
   }
   function contestOutcome(s, opt, forced) {
@@ -633,6 +640,7 @@ const PMEngine = (() => {
     if (k === 'contest') {
       const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece);
       if (!opt) throw new Error(`X${a.piece + 1} cannot contest this shot`);
+      if (s.stage === 'reaction') s = W_(spend(s, side), { turn_n: s.turn_n + 1 });   // D-18: the reaction's last action, a token
       return contestOutcome(s, opt, s.forced);
     }
     if (!TOKEN_FREE.has(k)) s = spend(s, side);
@@ -710,7 +718,7 @@ const PMEngine = (() => {
     }
     if (k === 'steal') {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = O[carrier].r.dribble - X[a.piece].r.steal;
-      const fs = W_(s, { fouls: s.fouls + 1 });
+      const fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + 1 });   // D-89: every steal foul is +5
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
@@ -726,7 +734,7 @@ const PMEngine = (() => {
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
         if (inBonus) foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
-        else foulNode = after(state, W_(fs, { bonus5: fs.bonus5 + 1 }), side, k);
+        else foulNode = after(state, fs, side, k);
         const st = pickoff(s);
         stolenNode = st.stage === 'over' ? st : after(state, st, side, k);
       }
@@ -995,7 +1003,7 @@ const PMEngine = (() => {
     const q = D.config.eval.fouls_per_possession ?? 0.25;
     let ft2 = 0; for (const c of ctx.off) ft2 += 2 * c.r.free_throw; ft2 /= ctx.off.length;
     const cont = D.config.eval.play_on_value ?? 20.0;
-    const extra = ft2 - (5 + cont);
+    const extra = ft2 + 5 - (5 + cont);                   // D-89: the bonus foul is +5 as well
     const N = ctx.quarter_possessions + 1, F = ctx.bonus_from + 12;
     const Cm = []; for (let f = 0; f < F + 2; f++) Cm.push(new Float64Array(N + 1));
     for (let n = 1; n <= N; n++) for (let f = F; f >= 0; f--) {
@@ -1048,7 +1056,7 @@ const PMEngine = (() => {
     return pk in tab ? tab[pk] : 0.0;
   }
   function turnoverValue(s) {
-    if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return 0.0;
+    if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return Math.min(0, 5 * s.bonus5 - 5 * s.tos);   // D-82
     return 5 * s.bonus5 - 5 * (s.tos + 1) + vcoarse(W_(s, { clock: s.clock - 2 }));
   }
 
@@ -1105,6 +1113,8 @@ const PMEngine = (() => {
       this.dcards = s.ctx.dfn;
       this.o_to_act = s.side === 'O' && s.stage === 'play';
       this.react = s.tok_x > 0 ? Math.min(2, s.tok_x) : 0;
+      if (s.stage === 'reaction') this.react = Math.max(0, Math.min(2 - s.turn_n, s.tok_x));   // the reaction's actions so far count
+      this.react_moves = this.react - 1;                  // D-18: the Contest is one of the reaction's actions
       this._cm = [0, 1, 2, 3, 4].map(d => this._contest(d));
       this.looks = new Array(5).fill(null);
       this.threat = new Array(5).fill(null);
@@ -1129,8 +1139,8 @@ const PMEngine = (() => {
       return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft);
     }
     _vals(lk, d, cm) {
-      if (!cm) return null;
-      const mask = cm.masks[this.react][BI[lk.c]];
+      if (!cm || this.react_moves < 0) return null;
+      const mask = cm.masks[this.react_moves][BI[lk.c]];
       if (!mask) return null;
       const ctx = this.s.ctx, vc = ctx._vc || (ctx._vc = new Array(5 * NB * 5 * 64));
       const key = ((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask;
@@ -1515,7 +1525,7 @@ const PMEngine = (() => {
     for (const k of ['hesitate', 'pause', 'end_turn', 'forfeit']) for (const a of acts) if (a.kind === k) return a;
     return null;
   }
-  const FIRSTS = new Set(['shot', 'pass', 'dribble', 'steal', 'intercept', 'challenge', 'forced_shot']);
+  const FIRSTS = new Set(['shot', 'pass', 'dribble', 'steal', 'intercept', 'challenge', 'forced_shot', 'contest']);
   function candidateActions(s, read, perPlayer = 3) {
     const acts = legalActions(s), side = actor(s);
     if (s.stage === 'contest' || s.stage === 'forced' || s.stage === 'target' || s.stage === 'pick' || acts.length <= 12) return acts;
@@ -1541,6 +1551,10 @@ const PMEngine = (() => {
       scr.sort((a, b) => sk(a) - sk(b));
       for (const a of scr.slice(0, 4)) add(a);
     } else {
+      if (s.stage === 'reaction') {                       // D-18: the closeouts (a Move facing the shooter), so a Contest can follow
+        const sp = s.o[s.ball];
+        for (const a of moves) if (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))) add(a);
+      }
       const cv = read.cover();
       const targets = new Array(5).fill(null).map(() => []);
       for (const [j, resp] of cv.choice) targets[j].push(resp);

@@ -100,7 +100,7 @@ AGES = {
  'youth':  {'name': 'Elite youth (U18-20)', 'cards': 'pro', 'modifier': 'YOUTH_MODIFIER', 'growth': False},
  'junior': {'name': 'Junior (U14-16)', 'cards': 'junior', 'modifier': None, 'growth': True},
 }
-GROWTH_DEAL = {'early': 1, 'on_time': 3, 'late': 1}
+GROWTH_DEAL = {'early': 1, 'typical': 3, 'late': 1}
 
 if __name__ == '__main__':
     res = {lv: build(lv) for lv in LEVELS}

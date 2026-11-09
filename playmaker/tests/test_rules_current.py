@@ -92,20 +92,22 @@ def _decisions():
 
 
 def test_the_two_ruled_lists_point_to_decisions():
+    # step 6: Contest as an action (D-18) and overtime (D-19) are built; the rulings of 9 Nov 2026 not yet printed join
+    # the first list
     doc = open(os.path.join(ROOT, 'RULES_CURRENT.md')).read()
     known = _decisions()
     printed = [l for l in _section(doc, 'Ruled, not yet printed').splitlines() if re.match(r'\d+\. ', l)]
     unbuilt = [l for l in _section(doc, 'Ruled, not yet built').splitlines() if re.match(r'\d+\. ', l)]
-    assert len(printed) == 17 and len(unbuilt) == 2
-    for line in printed + unbuilt:
+    assert printed and unbuilt == []
+    for line in printed:
         d = re.findall(r'See (D-\d+)\.', line)
         assert len(d) == 1 and d[0] in known, line
-    assert [re.search(r'See (D-\d+)', l).group(1) for l in printed] == [f'D-{n}' for n in range(1, 18)]
-    assert 'Contest as an action' in unbuilt[0] and 'D-18' in unbuilt[0]
-    assert 'Overtime' in unbuilt[1] and 'D-19' in unbuilt[1]
+    cited = {re.search(r'See (D-\d+)', l).group(1) for l in printed}
+    assert {f'D-{n}' for n in range(1, 18)} | {'D-18', 'D-30', 'D-36', 'D-82', 'D-88', 'D-89'} <= cited
     assert 'OPEN_QUESTIONS.md' not in doc
 
 
-def test_tied_match_is_an_approved_split_with_overtime_not_built():
+def test_tied_match_is_an_approved_split_with_overtime_built():
     status = {e[0]: e[1] for e in RG.ENTRIES}
-    assert status['Tied match'] == 'Split by format, approved; overtime not yet built'
+    assert status['Tied match'] == 'Split by format, approved'
+    assert status['Junior growth'] == 'Split by format, approved'

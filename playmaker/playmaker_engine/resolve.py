@@ -1,5 +1,5 @@
 """apply(): the rules in motion. Randomness is never hidden: rolls come back as ChanceNodes."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from . import board as B
@@ -94,7 +94,12 @@ def _lock(s, side, i):
     return s.with_(lock_o=s.lock_o | 1 << i) if side == 'O' else s.with_(lock_x=s.lock_x | 1 << i)
 
 
-def _terminal(s, result, zeroed=False):
+def _terminal(s, result, zeroed=False, units=1):
+    """The possession is over. zeroed: a turnover that scores it 0 (units: the -5s that turnover added to s.tos);
+    D-82 records what was banked before it, so it scores 0 or that, whichever is lower."""
+    if zeroed and not s.zeroed:
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * (s.tos - units)
+        result = replace(result, floor=min(0, banked))
     return s.with_(stage='over', side='-', result=result, zeroed=s.zeroed or zeroed, pending=None, shot=None)
 
 
@@ -125,13 +130,14 @@ def pickoff(s):
     if cost == 'legacy':
         return _turnover(s)
     s = s.with_(tos=s.tos + COST_UNITS[cost])
+    units = COST_UNITS[cost]
     if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital format: every turnover ends the possession at 0
-        return _terminal(s, Result('turnover_end'), zeroed=True)
+        return _terminal(s, Result('turnover_end'), zeroed=True, units=units)
     if cost == 'end_possession':
         return _terminal(s, Result('turnover_end'))
     if cost in LOSE_PHASE:
         if s.clock <= RC.PHASE_SECONDS:             # the final phase: the possession ends and scores 0
-            return _terminal(s, Result('turnover_end'), zeroed=True)
+            return _terminal(s, Result('turnover_end'), zeroed=True, units=units)
         s = s.with_(clock=s.clock - RC.PHASE_SECONDS)   # the phase goes on, tokens and actions as they were
     return s
 
@@ -145,12 +151,13 @@ def pickoff_value(pre, keep, tol=1.0, relative=False):
     banked = RC.STEAL_FOUL_BONUS * pre.bonus5 + RC.TURNOVER_POINTS * pre.tos
     rules = pre.ctx.rules
     cost = rules.turnover_cost
+    zero = float(min(0, banked)) if rules.turnover_floor else 0.0     # D-82: 0, or what is banked if that is lower
     if pre.ctx.hold_for_one:
-        v = 0.0
+        v = zero
     elif rules.intercept_rule == 'ring_jump' or cost in ('legacy', 'end_possession'):
         v = banked + RC.TURNOVER_POINTS * tol           # the possession ends (or, legacy, valued as if it did)
     elif cost in LOSE_PHASE and pre.clock <= RC.PHASE_SECONDS:
-        v = 0.0                                         # the final phase: the possession scores 0
+        v = zero                                        # the final phase: the possession scores 0 (D-82: or less)
     else:
         v = banked + RC.TURNOVER_POINTS * COST_UNITS[cost] * tol + keep
     return v - banked if relative else v
@@ -190,6 +197,9 @@ def resolve_shot(s, forced=False):
         else:
             t = max(types, key=lambda t: (choose_contest(s, shooter, t, True).ev, -types.index(t)))
         s = s.with_(shot=t, forced=True)
+    if rules.contest_action and not forced:
+        # D-18: the reaction ended without a Contest (a Contest resolves the shot itself): a contest of 0
+        return contest_outcome(s.with_(forced=False, pending=None), contest_options(s, shooter, s.shot, False)[0], False)
     if rules.contest_choice == 'player':
         return s.with_(stage='contest', side='X', turn_n=0, forced=forced, pending=None)
     return contest_outcome(s, choose_contest(s, shooter, s.shot, forced), forced)
@@ -350,6 +360,8 @@ def apply(state, action, check=False):
         opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
         if a.piece not in opts:
             raise ValueError(f'X{a.piece + 1} cannot contest this shot')
+        if s.stage == 'reaction':                 # D-18: a Contest is the reaction's last action and uses a token
+            s = _spend(s, side).with_(turn_n=s.turn_n + 1)
         return contest_outcome(s, opts[a.piece], s.forced)
 
     if k not in TOKEN_FREE:
@@ -504,6 +516,8 @@ def apply(state, action, check=False):
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
         pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
         fs = s.with_(fouls=s.fouls + 1)
+        if rules.steal_foul_always_plus5:
+            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too
         legacy = rules.turnover_cost == 'legacy'
         if s.stage == 'reaction':
             pts = shot_points(s.o[carrier])
@@ -528,7 +542,7 @@ def apply(state, action, check=False):
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))
             else:
-                foul_node = _after(state, fs.with_(bonus5=fs.bonus5 + 1), side, k)
+                foul_node = _after(state, fs if rules.steal_foul_always_plus5 else fs.with_(bonus5=fs.bonus5 + 1), side, k)
             st = _turnover(s) if legacy else pickoff(s)
             stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
         # step 3n F1: a failed Steal (no foul, the ball kept) locks the defender, as a failed Challenge does

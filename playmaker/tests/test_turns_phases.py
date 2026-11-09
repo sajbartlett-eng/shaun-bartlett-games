@@ -142,7 +142,7 @@ def test_shot_declaration_then_reaction_then_contest():
     r = apply(s, Action('shot', 'O', 0, shot='long'))
     assert r.stage == 'reaction' and r.side == 'X'
     kinds_r = kinds(r)
-    assert kinds_r <= {'move', 'qs', 'sprint', 'steal', 'end_turn'}
+    assert kinds_r <= {'move', 'qs', 'sprint', 'steal', 'contest', 'end_turn'}      # step 6 (D-18): Contest is an action
     end = settle(apply(r, Action('end_turn', 'X')))
     flat = end.flatten() if isinstance(end, ChanceNode) else [(1, '', end)]
     assert all(st.stage == 'over' for _, _, st in flat)

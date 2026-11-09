@@ -88,7 +88,7 @@ def candidate_actions(s, read=None, per_player=3):
             seen.add(a)
             keep.append(a)
     for a in acts:
-        if a.kind in ('shot', 'pass', 'dribble', 'steal', 'intercept', 'challenge', 'forced_shot'):
+        if a.kind in ('shot', 'pass', 'dribble', 'steal', 'intercept', 'challenge', 'forced_shot', 'contest'):
             add(a)
     w = _wait(acts)
     if w:
@@ -117,6 +117,12 @@ def candidate_actions(s, read=None, per_player=3):
         for a in scr[:4]:
             add(a)
     else:
+        if s.stage == 'reaction' and s.ctx.rules.contest_action:
+            # D-18: the closeouts: every movement that ends next to the shooter (a Move facing him), so a Contest can follow
+            sp = s.o[s.ball]
+            for a in moves:
+                if B.adjacent(a.dest, sp) and (a.kind != 'move' or a.arrow == B.dir_between(a.dest, sp)):
+                    add(a)
         cv = read.cover()
         targets = {}
         for j, resp in cv['choice'].items():

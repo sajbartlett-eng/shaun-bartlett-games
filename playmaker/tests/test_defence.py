@@ -26,15 +26,20 @@ def test_a_reaction_turns_to_face_the_shooter():
     s = apply(s, next(a for a in legal_actions(s) if a.kind == 'shot'))
     assert s.stage == 'reaction' and s.arrows[0] != 2          # X1 does not face E (J10) yet
     d = ReadingDefence()
-    for _ in range(4):
-        if s.stage != 'reaction':
-            break
-        s = apply(s, d.choose(s))
-    assert s.stage == 'contest'
+    from playmaker_engine.resolve import ChanceNode
     from playmaker_engine.scoring import contest_options
-    chosen = d.choose(s)
-    opt = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}[chosen.piece]
-    assert chosen.piece >= 0 and opt.clean, (chosen, opt)
+    acts = []
+    for _ in range(4):
+        if isinstance(s, ChanceNode) or s.stage != 'reaction':
+            break
+        a = d.choose(s)
+        if a.kind == 'contest':
+            # step 6 (D-18): the Contest is the reaction's last action, from where the defender stands then
+            opt = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}[a.piece]
+        acts.append(a)
+        s = apply(s, a)
+    chosen = acts[-1]
+    assert chosen.kind == 'contest' and chosen.piece >= 0 and opt.clean, (acts, opt)
 
 
 @pytest.mark.usefixtures('old_intercepts')   # defence_set.json was built (and solved) under the old intercept rule

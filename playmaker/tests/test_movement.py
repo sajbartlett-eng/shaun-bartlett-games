@@ -294,3 +294,30 @@ def test_the_ball_carrier_has_no_legal_screen():
                                       s.ctx.scenario, s.ctx.card_clock, s.ctx.inbounder, s.ctx.coach_call, s.ctx.three_only,
                                       s.ctx.two_or_three, s.ctx.hold_for_one, s.ctx.off_team, s.ctx.def_team))
     assert any(a.kind == 'screen' and a.piece == old.ball for a in legal_actions(old))
+
+
+@pytest.mark.parametrize('who', ['random', 'greedy', 'rookie', 'starter', 'allstar'])
+def test_every_player_type_follows_the_movement_rules(who):
+    """Restored in step 6 on the live computer (the step 3m engine at each level), from the test step 5 archived with the
+    old computer: in every phase each player Quick Steps or Sprints at most once, and at most 2 per side."""
+    from playmaker_engine.scenarios import scenario_state, SCENARIOS
+    from playmaker_engine.policies import play, RandomPolicy, GreedyPolicy
+    from playmaker_engine import agent as AG
+    cards = sorted(SCENARIOS) if who in ('random', 'greedy') else [1, 6, 7, 13]
+    scale = AG.SCALE['value']
+    AG.SCALE['value'] = 0.1                     # thinking time only; the levels and the rules are unchanged
+    try:
+        for n in cards:
+            for seed in (1, 2) if who in ('random', 'greedy') else (1,):
+                if who == 'random':
+                    o, x = RandomPolicy(seed), RandomPolicy(seed + 1)
+                elif who == 'greedy':
+                    o, x = GreedyPolicy(), GreedyPolicy()
+                else:
+                    o, x = AG.Agent('O', who, seed=seed), AG.Agent('X', who, seed=seed)
+                log = []
+                play(scenario_state(n), o, x, seed=seed, check=lambda b, a, s: log.append((b, a, s)))
+                ok, used = _phase_moves_ok(log)
+                assert ok, (who, n, used)
+    finally:
+        AG.SCALE['value'] = scale

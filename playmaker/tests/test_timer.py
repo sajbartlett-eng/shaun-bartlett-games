@@ -94,19 +94,28 @@ def _to_contest(g):
 
 
 def test_an_expired_contest_choice_means_no_contest_and_no_token_lost():
+    # step 6 (D-18): the Contest is a reaction action with a token, so an expired reaction decision costs a token like
+    # any other; ending the reaction then means no Contest (a contest of 0)
     c = Clock()
     g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], seed=2, level='pro', timer=30, clock=c)
     ready(g)
     _to_contest(g)
-    assert g.state.stage == 'contest'
-    tx = g.state.tok_x
-    c.tick(31)
-    state_json(g, tok(g))
-    f = forfeits(g)[-1]
-    assert f['effect'] == 'default' and f['stage'] == 'contest'
+    assert g.state.stage == 'over' and g.state.result.contester == -1
     from playmaker_engine.scoring import score
-    assert g.state.stage == 'over' and 'contested by nobody' in score(g.state).detail
-    assert g.state.tok_x == tx
+    assert 'contested by nobody' in score(g.state).detail
+    g2 = Game(mode='hotseat', teams=['Five Out', 'High-Low'], seed=2, level='pro', timer=30, clock=c)
+    ready(g2)
+    t = tok(g2)
+    for pred in (lambda a: a.kind == 'move' and a.piece == 0 and a.dest == (9, 10), lambda a: a.kind == 'shot'):
+        g2.act(t, action_to_json(next(a for a in g2.legal() if pred(a))))
+        if g2.timer and g2.tm['mode'] == 'ready':
+            ready(g2)
+    assert g2.state.stage == 'reaction'
+    tx = g2.state.tok_x
+    c.tick(31)
+    state_json(g2, t)
+    f = forfeits(g2)[-1]
+    assert f['effect'] == 'token' and g2.state.tok_x == tx - 1 and g2.state.stage == 'reaction'
 
 
 def test_an_expired_forced_shot_takes_the_first_legal_type():

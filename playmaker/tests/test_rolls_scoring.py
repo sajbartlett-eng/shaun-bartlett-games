@@ -158,7 +158,7 @@ def test_second_steal_foul_free_throws():
     s = steal_state(fouls=1, bonus5=1)
     end = force(apply(s, Action('steal', 'X', 0)), 'foul')
     sc = score(end)
-    assert end.stage == 'over' and sc.free_throws == 2 * s.ctx.off[0].r['free_throw'] and sc.bonus == 5
+    assert end.stage == 'over' and sc.free_throws == 2 * s.ctx.off[0].r['free_throw'] and sc.bonus == 10   # D-89: +5 again
 
 
 def _stolen_shot():
@@ -240,10 +240,11 @@ def test_declared_negative_shot_floors_at_zero():
     # nearer the rim: 3 x (6 - 7) = -3 scores 0. With the old setting it scores -3.
     sq = (['I14', 'A14', 'C14', 'Q3', 'E14'], ['A13', 'P3', 'M14', 'K14', 'O14'], ['N', 'E', 'N', 'N', 'N'])
     s = mk(*sq, ball=3, off='Twin Towers', dfn='Shoot and Protect')
-    end = settle(apply(apply(s, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
+    # step 6 (D-18): X2 contests as the reaction's action (it was the free contest after the reaction)
+    end = settle(apply(apply(s, Action('shot', 'O', 3, shot='three')), Action('contest', 'X', 1)))
     assert end.result.shot_value == 0 and score(end).total == 0
     s2 = mk(*sq, ball=3, off='Twin Towers', dfn='Shoot and Protect', rules=with_rules(floor_declared_shot=False))
-    end2 = settle(apply(apply(s2, Action('shot', 'O', 3, shot='three')), Action('end_turn', 'X')))
+    end2 = settle(apply(apply(s2, Action('shot', 'O', 3, shot='three')), Action('contest', 'X', 1)))
     assert end2.result.shot_value == -3 and score(end2).total == -3
 
 
@@ -367,10 +368,12 @@ def _declared(xsq, arrow, osq='I9', shot='long', extra_x=None):
 
 def test_contest_decision_offers_every_adjacent_defender_and_no_contest():
     # X1 on I8 (arrow N, on the shooter at I9: clean); X2 on H9 (arrow N, off the shooter: foul roll)
-    node = _declared('I8', 'N', extra_x=('H9', 'N'))
-    assert node.stage == 'contest' and node.side == 'X'
+    # step 6 (D-18): the Contest is a reaction action, by any defender next to the shooter; no Contest is ending the reaction
+    s = base(o=['I9', 'C9', 'O9', 'A3', 'Q3'], x=['I8', 'H9', 'N8', 'G4', 'N4'], arr=['N', 'N', 'NW', 'N', 'N'])
+    node = apply(s, Action('shot', 'O', 0, shot='long'))
+    assert node.stage == 'reaction' and node.side == 'X'
     acts = legal_actions(node)
-    assert sorted(a.piece for a in acts) == [-1, 0, 1]
+    assert sorted(a.piece for a in acts if a.kind == 'contest') == [0, 1] and any(a.kind == 'end_turn' for a in acts)
     opts = {o.defender: o for o in contest_options(node, 0, 'long')}
     assert opts[0].clean and not opts[1].clean and opts[1].p_foul == 1 - (1 - F(node.ctx.dfn[1].r['foul_contest'], 20)) ** opts[1].rolls   # step 3n F2: two rolls from level or behind
     # each choice reproduces the old outcome for that contester
@@ -378,7 +381,7 @@ def test_contest_decision_offers_every_adjacent_defender_and_no_contest():
     assert clean.stage == 'over' and clean.result.contester == 0 and clean.result.shot_value == opts[0].value
     side = apply(node, Action('contest', 'X', 1))
     assert isinstance(side, ChanceNode) and {l for _, l, _ in side.outcomes} == {'foul', 'no foul'}
-    none = apply(node, Action('contest', 'X', -1))
+    none = apply(node, Action('end_turn', 'X'))
     assert none.result.contester == -1 and none.result.shot_value == opts[-1].value
     # the old automatic minimum is one of the player's choices
     auto = choose_contest(node, 0, 'long')

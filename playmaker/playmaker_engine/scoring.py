@@ -220,7 +220,7 @@ def score(state):
             coach = RC.COACH_BONUS[band(look)]
     total = sv + ft + bonus + tpts + coach
     if state.zeroed:
-        total = 0
+        total = r.floor if (r is not None and rules.turnover_floor) else 0     # D-82: never better than banked
     late = ''
     if ctx.two_or_three:
         if r and look >= RC.SCENARIO_GOAL and pts == 3:

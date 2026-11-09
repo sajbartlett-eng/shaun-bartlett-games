@@ -40,6 +40,8 @@ def log_rules(setup):
     extra = {'digital': True} if setup.get('match_format') == 'digital' else {}   # step 3m: the digital format
     if 'steal_lock' not in rec:
         rec = {**RC.PRE_3N, **rec}                  # a log from before the step 3n rulings
+    if 'contest_action' not in rec:
+        rec = {**RC.PRE_9NOV, **rec}                # a log from before Shaun's rulings of 9 Nov 2026
     return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec, **extra})
 
 
@@ -75,13 +77,13 @@ def register_custom(setup):
             raise ValueError(f'custom team {name} clashes with another lineup of that name')
     lv = setup.get('levels') or {}
     if lv.get('lineups'):
-        from .levels import from_spec, on_time
+        from .levels import from_spec, as_printed
         for name, spec in lv['lineups'].items():
             cards = from_spec(spec, lv.get('age', 'senior'))
             if register_cards(name, cards) != name:
                 raise ValueError(f'team {name} clashes with another lineup of that name')
             if (lv.get('tags') or {}).get(name):
-                register_cards(name + ' (tags face down)', on_time(cards))
+                register_cards(name + ' (tags face down)', as_printed(cards))
 
 
 def replay(records, on_decision=None):
@@ -448,7 +450,7 @@ def _player_count(pid, side, n, evs):
             return len(ds), f'dribbled at {_plural(len(ds), "time")}, beaten {sum(e["beat"] for e in ds)}'
         if pid == 'intercept':
             it = [e for e in mine if e['kind'] == 'intercept']
-            return len(it), f'{_plural(len(it), "intercept try", "intercept tries")}, {sum(e["picked"] for e in it)} picked off'
+            return len(it), f'{_plural(len(it), "intercept try", "intercept tries")}, {sum(e["picked"] for e in it)} intercepted'
         if pid == 'challenge':
             c = sum(e['kind'] == 'challenge' for e in mine)
             return c, _plural(c, 'screen challenge')
@@ -504,7 +506,7 @@ def _team_count(lid, off_evs, def_evs):
         return c, f'{_plural(c, "three")} taken against them'
     if lid == 'lanes':
         it = [e for e in def_evs if e['kind'] == 'intercept']
-        return len(it), f'{_plural(len(it), "intercept try", "intercept tries")}, {sum(e["picked"] for e in it)} picked off'
+        return len(it), f'{_plural(len(it), "intercept try", "intercept tries")}, {sum(e["picked"] for e in it)} intercepted'
     if lid == 'fouls':
         fs = sum(e.get('foul', False) for e in def_evs)
         tries = sum(e['kind'] in ('shot', 'steal') and e['x'] is not None for e in def_evs)

@@ -100,7 +100,7 @@ def consequences(before, after, a):
         lost = before.clock - after.clock if after.stage != 'over' and after.clock < before.clock else 0
         tail = f' and {lost} seconds off the clock' if lost else ''
         if after.stage == 'over' and after.zeroed and a.kind in ('intercept', 'steal'):
-            tail = ' on the last phase: the possession scores 0'
+            tail = ' on the last phase: the possession scores 0, or the total banked so far if that is lower'
         if a.kind == 'intercept':
             out.append(('bad_O', f'Pass intercepted: turnover, −5{tail}. The ball goes back to the passer.'))
         elif a.kind == 'steal':
@@ -109,7 +109,10 @@ def consequences(before, after, a):
         else:
             out.append(('bad_O', 'Turnover, −5.'))
     if after.bonus5 > before.bonus5:
-        out.append(('good_O', 'Foul on the steal: +5 to the offence. Play on.'))
+        if after.stage == 'over':          # D-89: in the bonus (or on a shot) the +5 comes with the free throws
+            out.append(('good_O', 'Foul on the steal: +5 to the offence, and free throws. The possession ends.'))
+        else:
+            out.append(('good_O', 'Foul on the steal: +5 to the offence. Play on.'))
     if a.kind == 'intercept' and after.tos == before.tos and before.pending:
         out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
     if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.stage != 'over':
@@ -129,7 +132,8 @@ def consequences(before, after, a):
             if m != dict((x[0], x[3]) for x in before.screens).get(i, m):
                 out.append(('good_X', f'X{a.piece + 1} beats the screen: may cross the T square.'))
     if a.kind == 'shot':
-        out.append(('info', f'Shot declared ({a.shot}). The defence reacts, then chooses the contest.'))
+        out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions, a Contest last. No Contest: '
+                            'a contest of 0.'))
     if after.stage == 'over' and before.stage != 'over':
         sc = score(after)
         out.append(('end', f'Possession over: {sc.total} ({sc.band}). {sc.detail}'))
@@ -176,7 +180,7 @@ def notation(before, after, a, turn):
         passer, recv = before.pending
         m['target'] = B.sq(before.o[recv])
         m['pass_from'] = B.sq(before.o[passer])
-        m['result'] = 'picked off' if after.tos > before.tos else 'missed'
+        m['result'] = 'intercepted' if after.tos > before.tos else 'missed'
     elif k == 'steal':
         m['target'] = B.sq(before.o[carrier])
         m['result'] = 'stolen' if after.tos > before.tos else ('foul' if after.fouls > before.fouls or after.bonus5 > before.bonus5 else 'kept')
@@ -345,7 +349,7 @@ class Game:
         (effective cards registered in TEAMS) and returns what the log records. The rules of play never change.
           roster  prescribed  the prescribed teams (Age applies, Standard doesn't)
                   build       lineups, rules on: five different cards, a shape of the standard, at most one flex
-                  free        lineups, rules off ("Your team"): any five cards, duplicates, hand-set growth tags
+                  free        lineups, rules off ("Your team"): any five cards, duplicates
                   random      a deal (code or new), for both teams, yours or the opponent's (coherent or pure)
                   draft       a finished Draft (rosters.Draft), its picks and reasons logged"""
         from playmaker_engine import levels as LV, rosters as RO
@@ -391,12 +395,15 @@ class Game:
                     raise GameError(f"{lu.get('name') or names[i]}: " + ' '.join(bad))
                 entries[i] = ents
                 names[i] = ' '.join(str(lu.get('name') or names[i]).split())[:24] or names[i]
+                # D-88: players never set or see the tags (no page control sends them); a fixed set stays possible
+                # through the API for hand-worked test positions
                 if lu.get('tags') and roster == 'free' and age == 'junior':
                     tg = lu['tags']
                     tg = {int(k): v for k, v in tg.items()} if isinstance(tg, dict) else {n + 1: v for n, v in enumerate(tg)}
+                    tg = {k: ('typical' if v == 'on_time' else v) for k, v in tg.items()}
                     if any(v not in LV.TAGS for v in tg.values()):
-                        raise GameError('growth tags: early, on_time or late')
-                    given_tags[i] = [tg.get(s, 'on_time') for s in range(1, 6)]
+                        raise GameError('growth: early, typical or late')
+                    given_tags[i] = [tg.get(s, 'typical') for s in range(1, 6)]
         elif roster == 'random':
             if random_for not in ('both', 'yours', 'opponent'):
                 raise GameError('random: both, yours or opponent')
@@ -439,7 +446,8 @@ class Game:
             for i in range(2):
                 entries[i] = list(draft.roster(i + 1))
             out.update(draft=draft.log)
-        if age == 'junior':
+        if age == 'junior' and self.match_format == 'digital':
+            # D-88: the app applies growth (dealt at random); the tabletop format plays the junior cards as printed
             for i in range(2):
                 tags[i] = given_tags[i] or LV.deal_growth(tag_rng)
         out['age'] = age
@@ -457,11 +465,11 @@ class Game:
             teams_out.append(reg)
             lineups_out[reg] = LV.lineup_spec(cards)
             if tags[i]:
-                hidden[reg] = register_cards(reg + ' (tags face down)', LV.on_time(cards), tagline=TEAM_TAGLINES_OR(names[i]))
+                hidden[reg] = register_cards(reg + ' (tags face down)', LV.as_printed(cards), tagline=TEAM_TAGLINES_OR(names[i]))
         self.teams = teams_out
         self.hidden_teams = hidden
         out['lineups'] = lineups_out
-        out['tags'] = {t: tags[i] for i, t in enumerate(teams_out)} if age == 'junior' else None
+        out['tags'] = {t: tags[i] for i, t in enumerate(teams_out)} if (age == 'junior' and tags[0]) else None
         if roster in ('build', 'free', 'random', 'draft'):
             st = [RO.strength([k for k, _ in entries[i]]) for i in range(2)]
             out['strength'] = {teams_out[i]: st[i] for i in range(2)}
@@ -1243,7 +1251,21 @@ class Game:
                 self.quarter = dict(fouls=dict(A=0, B=0), poss=dict(A=0, B=0), number=self.quarter['number'] + 1)
             self._log('quarter', **self.quarter)
         if self.full and self.possession == self.n_poss:
+            if self.match_format == 'digital' and self._tied():
+                # D-19: a tied app match plays one more possession a side, until a side leads after equal possessions
+                self.n_poss += 2
+                self.overtime = getattr(self, 'overtime', 0) + 1
+                self._log('overtime', number=self.overtime, n_poss=self.n_poss)
+                self.feed.append(dict(n=len(self.feed) + 1, actor='system', side='-', kind='overtime',
+                                      text=f'Tied: overtime{"" if self.overtime == 1 else f" {self.overtime}"}, one more '
+                                           f'possession a side.', rolls=[], outcomes=[], possession=self.possession,
+                                      clock=self.state.clock, phase=self.state.phase, version=self.version + 1))
+                return
             self._finish_match()
+
+    def _tied(self):
+        tot = {p: sum(x['total'] for x in self.scores if x['attacker'] == p) for p in ('A', 'B')}
+        return tot['A'] == tot['B']
 
     def next_possession(self, token):
         with self.lock:

@@ -127,31 +127,36 @@ def test_growth_changes_are_exact_and_clamped_with_marks_unchanged():
 
 
 def test_growth_deal_is_one_early_three_on_time_one_late():
+    # step 6 (D-88): the internal names are early, typical and late; growth is applied in the app's format only
     rng = random.Random(7)
     for _ in range(200):
-        assert Counter(LV.deal_growth(rng)) == Counter({'on_time': 3, 'early': 1, 'late': 1})
-    g = Game(age='junior', level='learn', seed=11)
+        assert Counter(LV.deal_growth(rng)) == Counter({'typical': 3, 'early': 1, 'late': 1})
+    g = Game(age='junior', level='learn', seed=11, full=True, match_format='digital', per_side=4)
     for t in g.teams:
-        assert Counter(g.levels['tags'][t]) == Counter({'on_time': 3, 'early': 1, 'late': 1})
+        assert Counter(g.levels['tags'][t]) == Counter({'typical': 3, 'early': 1, 'late': 1})
 
 
 def test_growth_tags_hidden_before_setup_revealed_before_the_offence_places():
     from playmaker_web.view import state_json
-    g = Game(age='junior', level='scout', seed=12, place=True, ai={'B': 'rookie'})
+    # step 6 (D-88): no tag names reach the page; Coach Vision's line names the two players growth changes
+    from playmaker_engine.levels import growth_line
+    lines = {growth_line('early'), growth_line('late')}
+    g = Game(age='junior', level='scout', seed=12, place=True, ai={'B': 'rookie'}, full=True, match_format='digital',
+             per_side=4)
     assert not g.tags_revealed() and g.picks_pending() == ['O']
-    st = state_json(g, g.tokens['both'])                    # the human is O: sees its own tags, not the computer's
-    assert [p['card']['growth'] for p in st['x']] == [None] * 5
-    mine = [p['card']['growth'] for p in st['o']]
-    assert sorted(t for t in mine if t) == ['early', 'late']
+    st = state_json(g, g.tokens['both'])                    # the human is O: sees its own growth, not the computer's
+    assert [p['card']['coach_growth'] for p in st['x']] == [None] * 5
+    mine = [p['card']['coach_growth'] for p in st['o']]
+    assert {t for t in mine if t} == lines and sum(1 for t in mine if t) == 2
     assert set(st['levels']['tags']) == {g.teams[0]}
     assert g.seen_team('X', 'O').endswith('(tags face down)')
     away = TEAMS[g.seen_team('X', 'O')]                     # the computer's own picks read the human's tags face down
     assert all(c.growth is None for c in TEAMS[g.seen_team('O', 'X')])
     assert all(c.growth is None for c in away)
-    g.scout(g.tokens['both'], {'side': 'O', 'hunt': {'o': 1, 'x': 1}})
+    g.scout(g.tokens['both'], {'side': 'O', 'hunt': {'o': 1, 'x': 1}, 'protect': {'x': 1}})   # a full match: both calls
     assert g.tags_revealed() and g.placing == 'O'           # setup has begun: tags up before the offence places
     st = state_json(g, g.tokens['both'])
-    assert sorted(p['card']['growth'] for p in st['x'] if p['card']['growth']) == ['early', 'late']
+    assert {p['card']['coach_growth'] for p in st['x'] if p['card']['coach_growth']} == lines
     kinds = [r['type'] for r in g.read_log()]
     assert 'reveal' in kinds and not any(k == 'place' for k in kinds[:kinds.index('reveal')])
 
@@ -159,8 +164,8 @@ def test_growth_tags_hidden_before_setup_revealed_before_the_offence_places():
 # ---- effective ratings everywhere, on one hand-worked junior position ----------------------------------------------
 @pytest.fixture(scope='module')
 def junior_game():
-    on = ['on_time'] * 5
-    return Game(age='junior', roster='free', level='learn', seed=1,
+    on = ['on_time'] * 5         # step 6 (D-88): the old name still reads as typical; growth only in the app's format
+    return Game(age='junior', roster='free', level='learn', seed=1, full=True, match_format='digital', per_side=4,
                 lineups=[{'name': 'Hand', 'cards': [['apgA', 1], ['shsA', 2], ['twsfA', 3], ['pspfB', 4], ['rpcA', 5]],
                           'tags': ['early', 'on_time', 'on_time', 'on_time', 'on_time']},
                          {'name': 'Hand D', 'cards': [['apgA', 1], ['shsB', 2], ['twsfA', 3], ['pspfC', 4], ['rpcB', 5]],
@@ -371,8 +376,8 @@ def test_full_computer_draft_gives_two_legal_rosters_with_reasons(std):
         assert RO.legal(d.roster(side), std), d.roster(side)
     assert all(p['by'] == 'computer' and p['reason'].startswith('Took ') for p in d.log)
     assert not set(dict(d.roster(1))) & set(dict(d.roster(2)))  # one pool: no card twice
-    g = Game(roster='draft', draft=d, level='learn', seed=8)
-    assert g.levels['draft'] == d.log and g.levels['tags']      # junior: tags dealt after the draft
+    g = Game(roster='draft', draft=d, level='learn', seed=8, full=True, match_format='digital', per_side=4)
+    assert g.levels['draft'] == d.log and g.levels['tags']      # junior: tags dealt after the draft (step 6: in the app)
     rec = g.read_log()[0]
     assert rec['levels']['draft'][0]['reason'] == d.log[0]['reason']
 
@@ -405,7 +410,8 @@ def test_defaults_reproduce_the_game_before_step_3l():
 
 def test_logs_record_the_levels_and_the_review_rebuilds_the_teams():
     from playmaker_engine.review import register_custom, _start
-    g = Game(age='junior', roster='random', deal='JAP-000123', level='learn', seed=2)
+    g = Game(age='junior', roster='random', deal='JAP-000123', level='learn', seed=2, full=True, match_format='digital',
+             per_side=4)                                    # step 6 (D-88): growth only in the app's format
     setup = g.read_log()[0]
     lv = setup['levels']
     assert lv['age'] == 'junior' and lv['roster'] == 'random' and lv['deal'] == 'JAP-000123' and lv['standard'] == 'amateur'
@@ -427,7 +433,7 @@ def test_api_options_carry_the_levels_sheet_words():
     assert [a['id'] for a in L['ages']] == ['senior', 'youth', 'junior']
     assert L['ages'][1]['words'].startswith('Elite youth · U18 to U20')
     assert L['standards'][2]['words'].startswith('Amateur: BBCCC · ACCCC')
-    assert L['growth_box'].startswith('U16 cards show an on-time player')
+    assert L['growth_box'].startswith('In the app, growth changes two players')      # step 6 (D-88)
     assert os.path.exists(os.path.join(ROOT, 'playmaker_web', 'static', L['sheet']))
 
 
@@ -461,7 +467,7 @@ const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'Content-
   res.draftLog = await p.$$eval('.draftlog li', l => l.map(x => x.textContent));
   await (await p.$('#draftRow')).screenshot({ path: out + '/levels_draft_board.png' });
   // a junior card with an E badge, and a centre playing the 4
-  const g = await post('/api/new', { mode: 'hotseat', level: 'learn', age: 'junior', roster: 'free', seed: 5,
+  const g = await post('/api/new', { mode: 'hotseat', level: 'learn', age: 'junior', roster: 'free', seed: 5, full: true, match_format: 'digital', per_side: 4, place: false,
     lineups: [{ name: 'Lab', cards: [['apgA', 1], ['shsA', 2], ['twsfA', 3], ['rpcA', 4], ['rpcB', 5]], tags: ['on_time', 'on_time', 'late', 'early', 'on_time'] },
               { name: 'Club', cards: [['apgC', 1], ['shsB', 2], ['twsfB', 3], ['pspfB', 4], ['rpcC', 5]] }] });
   p = await page();
@@ -500,8 +506,9 @@ def test_browser_new_game_dials_junior_card_flex_and_draft_board(tmp_path):
     assert out['newWide'] == out['draftWide'] == out['gameWide'] == 412          # no horizontal scroll at 412 px
     assert out['draftTurn'].startswith('Pick 1 of 10') and out['draftAfter'].startswith('Pick 4 of 10')
     assert len(out['draftLog']) == 3 and all('Took ' in x for x in out['draftLog'][1:])
-    assert 'U16 · TIER A' in out['o4'] and 'playing the 4' in out['o4'] and 'Early:' in out['o4']
-    assert 'growth tag early' in out['o4label'] and 'playing the 4' in out['o4label']
-    assert sum('early' in c for c in out['badges']) == 2 and sum('late' in c for c in out['badges']) == 2
+    # step 6 (D-88): no tag names or badges; Coach Vision's line under the card
+    assert 'U16 · TIER A' in out['o4'] and 'playing the 4' in out['o4'] and 'Bigger and stronger than most players his age.' in out['o4']
+    assert 'growth' not in out['o4label'] and 'playing the 4' in out['o4label']
+    assert out['badges'] == []
     for f in ('levels_new_game.png', 'levels_draft_board.png', 'levels_junior_card.png', 'levels_junior_board.png'):
         assert os.path.getsize(os.path.join(docs, f)) > 5000

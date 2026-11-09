@@ -16,7 +16,8 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 - Each side puts its 6 action tokens in its tracker's pool. One token is one action.
 - Put the shot clock marker on 12. Each phase is 2 seconds. Scenario cards may start the clock lower.
 - The offence places its 5 O pieces anywhere. The ball goes on a player on plain wood beyond the three-point tiles. The defence places its 5 X pieces on empty squares, each arrow pointing any way.
-- Each player takes 5 cards, one per position: a prescribed team, or a team from the playing levels (Senior, Youth or Junior; Pro, Semi-pro or Amateur; growth tags at Junior).
+- Each player takes 5 cards, one per position: a prescribed team, or a team from the playing levels (Senior, Youth or Junior; Pro, Semi-pro or Amateur).
+- Junior growth (app only): when a junior roster is made, one player on each team is bigger and stronger than most his age and one is still growing; the cards show the ratings they play with. At the table the junior cards play as printed (see Split by format). †
 
 ## The shot
 
@@ -77,7 +78,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 - A pass fixes a line from passer to receiver. Passes cross players. The defence answers with its first action, or the pass lands. (setting: pass_resolution)
 - Through you: the line passes through your square's centre. Intercept, whatever your facing. (setting: on_line_tolerance)
 - Jump the lane: one straight Move, Quick Step or Sprint along your arrow whose path touches or crosses the line, ending where it meets it. Then Intercept. That is the defence's whole turn. No intercept on any square next to the passer: Steal instead. (setting: intercept_rule)
-- The offence rolls Pass − Intercept or under: the pass gets through. Otherwise it is picked off. A missed Intercept leaves him on the line, his Move used.
+- The offence rolls Pass − Intercept or under: the pass gets through. Otherwise it is intercepted. A missed Intercept leaves him on the line, his Move used.
 - The jump keeps your facing. (setting: lane_jump_keeps_facing)
 - Denied: no pass through the square of a defender next to the receiver. (setting: receiver_denial)
 - A successful Intercept puts the interceptor back on the square and arrow he had at the start of the defence's turn; his Move stays used. † (setting: intercept_return)
@@ -86,16 +87,20 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 ## Shooting
 
 - Declare a Shot (the ball carrier, never from plain wood). The defence takes one last turn to react, with a Move or a Steal. (setting: reaction_kinds)
-- The reaction may be 0, 1 or 2 actions, and may also use a Quick Step or a Sprint. ‡ (setting: reaction_may_decline)
-- Then one adjacent defender contests, diagonals included: the defence picks who, or no one. None adjacent: the contest is 0. (setting: contest_choice)
+- The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest. † (setting: reaction_may_decline)
+- Contest is an action: the reaction's last, one a phase, by one defender next to the shooter at that moment, using a token. A Steal ends the reaction, so it can't also Contest. No Contest: the contest is 0. † (setting: contest_action)
+- On a forced shot at clock 0, one adjacent defender contests, diagonals included: the defence picks who, or no one. None adjacent: the contest is 0. (setting: contest_choice)
 - Arrow off the shooter: a foul roll first, Foul (Contest) or under. (setting: contest_geometry)
 - Further from the rim than the shooter: contest at −3.
 - The −3 never takes a contest below 0. † (setting: floor_contest_zero)
 
 ## Scoring
 
-- A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot is cancelled. In the last phase the possession scores 0. The app differs (see Split by format). (setting: turnover_cost)
-- A foul on a Steal at the table: the first is +5 and play on; the second gives free throws and the possession ends. The app counts fouls across a quarter (see Split by format).
+- A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot is cancelled. In the last phase the possession scores 0 (or less: see the turnover floor). The app differs (see Split by format). (setting: turnover_cost)
+- Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession; the app counts team fouls across a quarter (see Split by format). †
+- Free throws from a steal foul score 2 × the ball carrier's free-throw rating. †
+- On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. †
+- A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. † (setting: turnover_floor)
 - A foul on a shot (once it is declared, or forced): free throws or the open shot, whichever is higher. The possession ends. (setting: and_one)
 - Free throws score 2 × the shooter's free-throw rating, or 3 × on a three.
 - Scenario cards: a look of 30 or more (Excellent) beats the card. Coach's Call: if the secret target takes the shot, add the bonus for the look: Poor +0, Okay +2, Good +5, Great +8, Excellent +10. †
@@ -125,46 +130,56 @@ Why: a digital match has several possessions a side, so the next possession is t
 In the app: a turnover: the possession scores 0.  
 Why: as in basketball: no shot before the clock runs out is a turnover.
 
-**Steal-foul bonus.** At the table: first steal foul +5 and play on; second, free throws and the possession ends.  
-In the app: +5 and play on until the 5th team foul of the quarter; from the 5th, free throws and the possession ends.  
+**Steal-foul bonus.** At the table: every steal foul +5; the second of the possession also gives free throws and ends it.  
+In the app: every steal foul +5; from the 5th team foul of the quarter it also gives free throws and ends the possession.  
 Why: one possession is the whole tabletop game; the app keeps fouls across a quarter.
+
+**Junior growth.** At the table: none: the junior cards play as printed.  
+In the app: dealt at random when a junior roster is made; the cards show the ratings, Coach Vision names the two players it changes.  
+Why: at the table it needed markers and a term players found unclear; the app can apply it unseen. Approved (D-88).
 
 **Match length.** At the table: 2 possessions, 1 each.  
 In the app: 4, 8 or 12 possessions a side.  
 Why: an app match can be longer.
 
 **Tied match.** At the table: each player rolls for their final shot.  
-In the app: overtime: one more possession a side, repeated until a side leads. Ruled, not yet built: until step 9 the app leaves a tie.  
+In the app: overtime: one more possession a side, repeated until a side leads after equal possessions.  
 Why: basketball has no ties. Approved (D-19).
 
 ## Ruled, not yet printed
 
 Rules the engine plays that no line of the rulebook or the trackers states. Shaun approved each as the engine plays it (9 Nov 2026); the printed pages don't say them yet.
 
-1. A declared shot worth less than 0 scores 0, as a forced shot does. See D-1. (setting: floor_declared_shot)
-2. A target of 20 or more always succeeds. A target of 0 or less always fails. A 1 or a 20 has no special meaning. See D-2. (setting: natural_rolls)
-3. The straight step and the diagonal step may come in either order. See D-3. (setting: move_either_order)
-4. Two diagonal steps go the same way, in a straight line. See D-4. (setting: diag_move_straight)
-5. Quick Step: straight, up to the card's number of squares (2, 1 or 0). See D-5. (setting: qs_up_to)
-6. Each player has one Quick Step a phase. A Sprint uses it. See D-6. (setting: qs_once_per_player)
-7. A player with Quick Step 0 can't Sprint. See D-7. (setting: sprint_needs_qs)
-8. A side with tokens left but no legal action gives up its remaining tokens. See D-8. (setting: forfeit_when_stuck)
-9. Before the ball is in, the inbounder may only pass. See D-9. (setting: inbounder_pass_only)
-10. On a forced shot the offence picks the shot type its tile allows. See D-10. (setting: forced_shot_choice)
-11. "Next to him" means next to him when the movement starts. See D-11. (setting: arrow_line_adjacent_at)
-12. A Dribble win lets you through his zone for the rest of the phase. See D-12. (setting: dribble_win_lasts)
-13. A successful Intercept puts the interceptor back on the square and arrow he had at the start of the defence's turn; his Move stays used. See D-13. (setting: intercept_return)
-14. An inbound pass works like any other pass, and lands after the defence's whole turn. See D-14. (setting: inbound_resolves)
-15. The −3 never takes a contest below 0. See D-15. (setting: floor_contest_zero)
-16. Need a Three: only a three scores; a fouled two's free throws score 0 too. See D-16. (setting: three_only_ft_on_twos)
-17. The Coach's Call bonus uses the look's band (the shot value, or the free throws if fouled), and counts on a forced shot by the target too. See D-17. (setting: coach_bonus_on_forced)
+1. Junior growth (app only): when a junior roster is made, one player on each team is bigger and stronger than most his age and one is still growing; the cards show the ratings they play with. At the table the junior cards play as printed (see Split by format). See D-88.
+2. A declared shot worth less than 0 scores 0, as a forced shot does. See D-1. (setting: floor_declared_shot)
+3. A target of 20 or more always succeeds. A target of 0 or less always fails. A 1 or a 20 has no special meaning. See D-2. (setting: natural_rolls)
+4. The straight step and the diagonal step may come in either order. See D-3. (setting: move_either_order)
+5. Two diagonal steps go the same way, in a straight line. See D-4. (setting: diag_move_straight)
+6. Quick Step: straight, up to the card's number of squares (2, 1 or 0). See D-5. (setting: qs_up_to)
+7. Each player has one Quick Step a phase. A Sprint uses it. See D-6. (setting: qs_once_per_player)
+8. A player with Quick Step 0 can't Sprint. See D-7. (setting: sprint_needs_qs)
+9. A side with tokens left but no legal action gives up its remaining tokens. See D-8. (setting: forfeit_when_stuck)
+10. Before the ball is in, the inbounder may only pass. See D-9. (setting: inbounder_pass_only)
+11. On a forced shot the offence picks the shot type its tile allows. See D-10. (setting: forced_shot_choice)
+12. "Next to him" means next to him when the movement starts. See D-11. (setting: arrow_line_adjacent_at)
+13. A Dribble win lets you through his zone for the rest of the phase. See D-12. (setting: dribble_win_lasts)
+14. A successful Intercept puts the interceptor back on the square and arrow he had at the start of the defence's turn; his Move stays used. See D-13. (setting: intercept_return)
+15. An inbound pass works like any other pass, and lands after the defence's whole turn. See D-14. (setting: inbound_resolves)
+16. The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest. See D-18. (setting: reaction_may_decline)
+17. Contest is an action: the reaction's last, one a phase, by one defender next to the shooter at that moment, using a token. A Steal ends the reaction, so it can't also Contest. No Contest: the contest is 0. See D-18. (setting: contest_action)
+18. The −3 never takes a contest below 0. See D-15. (setting: floor_contest_zero)
+19. Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession; the app counts team fouls across a quarter (see Split by format). See D-89.
+20. Free throws from a steal foul score 2 × the ball carrier's free-throw rating. See D-30.
+21. On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. See D-36.
+22. A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. See D-82. (setting: turnover_floor)
+23. Need a Three: only a three scores; a fouled two's free throws score 0 too. See D-16. (setting: three_only_ft_on_twos)
+24. The Coach's Call bonus uses the look's band (the shot value, or the free throws if fouled), and counts on a forced shot by the target too. See D-17. (setting: coach_bonus_on_forced)
 
 ## Ruled, not yet built
 
 Rulings that change the game. Until they are built the game plays as the rest of this page says.
 
-1. **Contest as an action.** After a shot is declared, the defence reacts with up to 2 actions from its remaining tokens: Move, Quick Step, Sprint, Steal or Contest. Contest is the last action, one a phase, made by a defender next to the shooter at that moment. No Contest means a contest of 0. The foul roll and the −3 work as now. The defence tracker gains a Contest slot and the rulebook's Shooting section changes. Until step 9: the reaction takes 0, 1 or 2 actions and the contest is free. See D-18.
-2. **Overtime in the app.** A tied app match plays one more possession a side, repeated until a side leads. The table keeps its final-shot roll. Until step 9: a tied app match stays a tie. See D-19.
+None. Step 6 built Contest as an action (D-18) and overtime in the app (D-19).
 
 ## On the scenario rules sheet only
 

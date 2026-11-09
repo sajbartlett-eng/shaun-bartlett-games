@@ -40,8 +40,7 @@ def card_json(card, side):
                 ratings=[r(n) for n in names], groups=groups,
                 label=LV.card_label(card), age=getattr(card, 'age', 'senior'), slot=getattr(card, 'slot', card.num),
                 printed=card.num, flex=LV.flex_words(card),
-                growth=grow if grow in ('early', 'late') else None,
-                growth_words=LV.growth_words(grow) if grow in ('early', 'late') else None)
+                coach_growth=LV.growth_line(grow))         # D-88: Coach Vision's line; no tag names on the card
 
 
 def zones():
@@ -214,6 +213,19 @@ def legal_json(s, acts):
     return out
 
 
+def screen_blocked_json(s):
+    """D-104: for the defence to act, each defender's steps blocked by a screen (shown greyed, with the reason)."""
+    from playmaker_engine.actions import screen_blocked
+    if s.stage not in ('play', 'reaction') or s.side != 'X' or not s.screens:
+        return {}
+    out = {}
+    for j in range(5):
+        b = screen_blocked(s, j)
+        if b:
+            out[str(j)] = {k: [dict(x=q[0], y=q[1], sq=B.sq(q)) for q in qs] for k, qs in b.items()}
+    return out
+
+
 def turn_summary(s):
     if s.stage == 'contest':
         return 'Contest: the defence chooses who contests the shot (or nobody)'
@@ -227,7 +239,8 @@ def turn_summary(s):
         return 'Failed inbound: the offence chooses who gets the ball'
     if s.stage == 'reaction':
         left = min(2 - s.turn_n, s.tok_x)
-        return f'Shot declared ({s.shot}). Defence reacts: {left} action{"s" if left != 1 else ""} left, then the contest'
+        return (f'Shot declared ({s.shot}). Defence reacts: {left} action{"s" if left != 1 else ""} left (Move, Quick Step, '
+                f'Sprint, Steal or Contest; a Contest is the last). No Contest: a contest of 0')
     who = 'Offence' if s.side == 'O' else 'Defence'
     left = min(2 - s.turn_n, s.tokens(s.side))
     extra = ' · final turn of the phase' if s.side == 'X' and s.final else ''
@@ -329,6 +342,7 @@ def state_json(game, token):
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
                 level=game.level, scout=scout_json(game, seat), matchups=matchups(s), denied=denied_json(s),
+                screen_blocked=screen_blocked_json(s),
                 custom=game.custom or None, experimental=game.experimental, levels=levels_json(game, seat),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS], screen_rule=ctx.rules.screen_rule,
                 influence=influence(s))
@@ -383,7 +397,7 @@ def _scenario_rules(c):
     if c['title'] == 'Hold for One':
         out.append('No shot before the final phase (clock on 2). A turnover ends the possession at 0.')
     if c['title'] == 'In the Bonus':
-        out.append('The offence starts on +5; the next steal foul gives free throws.')
+        out.append('The offence starts on +5; the next steal foul gives +5 and free throws, and ends the possession.')
     if c['title'] == 'Star Locked':
         out.append('O1 starts locked until the phase resets. He can still pass or shoot.')
     if c['title'] == 'Late Clock Reset':
