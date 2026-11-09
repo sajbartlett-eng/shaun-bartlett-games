@@ -1,80 +1,89 @@
 # Playmaker rules register
 
-Every rule value and mechanism, marked **Shared** (both formats), **Digital only**, **Tabletop only** or **Split by format** (deliberately different, with the reason). Written by `python3 -m playmaker_engine.register`; `tests/test_step3n.py` asserts every Shared entry has identical values in both formats, and any change to a shared value must be tested under both formats.
+Every rule value and mechanism, marked **Shared** (both formats), **Digital only**, **Tabletop only** or **Split by format** (deliberately different, with the reason). Written by `python3 -m playmaker_engine.register`; `tests/test_step3n.py` asserts every Shared entry has identical values in both formats, and any change to a shared value must be tested under both formats. The value columns give each rule's value in words; the plain rules are in `RULES_CURRENT.md` (`python3 -m playmaker_engine.register --rules`).
 
 | Rule | Status | Value (tabletop) | Value (digital) | Notes |
 |---|---|---|---|---|
-| digital | Split by format | False | True | The match format switch. The two formats themselves. |
-| Turnover cost | Split by format | minus5_lose_phase | minus5_lose_phase | A successful Intercept or Steal (and a steal of a declared shot). Tabletop: -5 and the shot clock loses a phase, play on (the setting). Digital, whatever the setting: the possession ends and scores 0, because a digital match is several possessions a side and the next possession is the cost. |
-| Shot-clock expiry | Split by format |  |  | The clock reaches 0. Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball). |
-| Match length | Split by format |  |  | Possessions a side. Tabletop: one possession each. Digital: 2 to 8 a side (per_side), sides alternating. |
-| Steal-foul bonus | Split by format |  |  | When a steal foul gives free throws. Tabletop: the first steal foul of the possession is +5 and play on, the second gives free throws (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; from the 5th a steal foul gives free throws and ends the possession. |
-| quarter_possessions | Digital only | 18 | 18 | Possessions a side in a quarter (18). Team fouls across matches need a running quarter; the table plays one possession. |
-| bonus_from | Digital only | 5 | 5 | The team foul that starts the bonus (5th). As above. |
-| Team fouls carried across matches | Digital only |  |  | Stored with the pairing record. The table has no record between games. |
-| Decision timer | Digital only |  |  | Optional per-player thinking clock (step 3c). An app feature; at the table players agree their own pace. |
-| Computer opponents and the trainer | Digital only |  |  | Levels, grading, ratings. App features. |
-| Board 17 x 14, rim I2 | Shared | (17, 14, (8, 2)) | (17, 14, (8, 2)) | The court. |
-| Tokens per phase (6 a side) | Shared | (6,) | (6,) |  |
-| Phase length (2 seconds), start clock 12 | Shared | (2, 12) | (2, 12) |  |
-| d20 rolls | Shared | (20,) | (20,) | Every roll: d20 at or under the target. |
-| Far-contest -3 | Shared | (3,) | (3,) | Contester further from the rim than the shooter. |
-| Turnover points (-5) | Shared | (-5,) | (-5,) | The value of a turnover where one is scored. The number is shared; when it applies is the turnover-cost split above. |
-| Steal foul +5 | Shared | (5,) | (5,) | A steal foul before the bonus. |
-| Free-throw multipliers (x2, x3) | Shared | (2, 3) | (2, 3) |  |
-| Two actions a turn | Shared | (2,) | (2,) |  |
-| Move shape (3 straight, 2 diagonal) | Shared | (3, 2) | (3, 2) |  |
-| Inbound phases (2) | Shared | (2,) | (2,) |  |
-| Per-phase limits | Shared | ({'O': {'qs': 2, 'pass': 2, 'screen': 2, 'dribble': 2, 'hesi | ({'O': {'qs': 2, 'pass': 2, 'screen': 2, 'dribble': 2, 'hesi | Quick Steps, passes, screens, dribbles, waits, shots; intercepts, challenges, steals. |
-| Turn-ending actions | Shared | (('challenge', 'dribble', 'hesitate', 'intercept', 'pass', ' | (('challenge', 'dribble', 'hesitate', 'intercept', 'pass', ' |  |
-| Zones and shot types | Shared | ({'K': ('layup', 'dunk', 'post'), 'M': ('mid', 'floater'), ' | ({'K': ('layup', 'dunk', 'post'), 'M': ('mid', 'floater'), ' |  |
-| Look bands and Coach's Call bonus | Shared | ([('Excellent', 30), ('Great', 25), ('Good', 20), ('Okay', 1 | ([('Excellent', 30), ('Great', 25), ('Good', 20), ('Okay', 1 |  |
-| Playing levels (ages, standards, growth tags) | Shared |  |  | Step 3l: the ratings by age and standard, junior growth tags. Ratings carry age; both formats use the same cards. |
-| turnover_play_on | Shared | play_on | play_on |  |
-| pass_resolution | Shared | defence_turn | defence_turn |  |
-| sprint_orth_base | Shared | 3 | 3 |  |
-| sprint_diag_base | Shared | 2 | 2 |  |
-| natural_rolls | Shared | False | False |  |
-| floor_declared_shot | Shared | True | True |  |
-| reaction_kinds | Shared | ('move', 'qs', 'sprint', 'steal') | ('move', 'qs', 'sprint', 'steal') |  |
-| reaction_may_decline | Shared | True | True |  |
-| defence_empty_ends_phase | Shared | True | True |  |
-| wait_chain_block | Shared | True | True |  |
-| screen_geometry | Shared | from_t_or_corner | from_t_or_corner |  |
-| screen_rule | Shared | hold_until_move | hold_until_move |  |
-| arrow_line_strict | Shared | True | True |  |
-| drive_rule | Shared | zone | zone |  |
-| intercept_return | Shared | True | True |  |
-| intercept_rule | Shared | move_then_intercept | move_then_intercept |  |
-| move_either_order | Shared | True | True |  |
-| contest_choice | Shared | player | player |  |
-| on_line_tolerance | Shared | 0 | 0 |  |
-| lane_jump_keeps_facing | Shared | True | True |  |
-| receiver_denial | Shared | True | True |  |
-| receiver_denial_tol | Shared | 0.5 | 0.5 |  |
-| qs_up_to | Shared | True | True |  |
-| sprint_needs_qs | Shared | True | True |  |
-| qs_once_per_player | Shared | True | True |  |
-| arrow_mode | Shared | single | single |  |
-| contest_geometry | Shared | current | current |  |
-| carrier_can_screen | Shared | False | False |  |
-| late_closeout | Shared | False | False |  |
-| challenge_who | Shared | on_t | on_t |  |
-| locked_can_dribble | Shared | False | False |  |
-| dribble_win_lasts | Shared | phase | phase |  |
-| inbounder_pass_only | Shared | True | True |  |
-| floor_contest_zero | Shared | True | True |  |
-| forfeit_when_stuck | Shared | True | True |  |
-| three_only_ft_on_twos | Shared | False | False |  |
-| coach_bonus_on_forced | Shared | True | True |  |
-| arrow_line_adjacent_at | Shared | start | start |  |
-| diag_move_straight | Shared | True | True |  |
-| inbound_tie | Shared | offence | offence |  |
-| forced_shot_choice | Shared | player | player |  |
-| inbound_resolves | Shared | after_defence_turn | after_defence_turn |  |
-| and_one | Shared | True | True |  |
-| steal_lock | Shared | True | True |  |
-| reach_angle_fouls | Shared | True | True |  |
+| digital | Split by format | tabletop | digital | The match format switch. The two formats themselves. |
+| Turnover cost | Split by format | −5, the shot clock loses a phase, play on | the possession ends and scores 0 | A successful Intercept or Steal (and a steal of a declared shot). Tabletop: -5 and the shot clock loses a phase, play on (the setting). Digital, whatever the setting: the possession ends and scores 0, because a digital match is several possessions a side and the next possession is the cost. |
+| Shot-clock expiry | Split by format | turnover, −5, then a forced shot | turnover, the possession scores 0 | The clock reaches 0. Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball). |
+| Match length | Split by format | 2 possessions, 1 each | 4, 8 or 12 possessions a side, alternating | Possessions a side. Tabletop: one possession each. Digital: 4, 8 or 12 a side (per_side), sides alternating. |
+| Tied match | Split by format | roll for the final shot | stays a tie | What settles a tied match. Tabletop: each player rolls for their final shot. Digital: the match stays a tie. Found in the code, not approved. |
+| Steal-foul bonus | Split by format | 1st +5 and play on; 2nd free throws, over | +5 and play on until the 5th team foul; then free throws, over | When a steal foul gives free throws. Tabletop: the first steal foul of the possession is +5 and play on, the second gives free throws (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; from the 5th a steal foul gives free throws and ends the possession. |
+| quarter_possessions | Digital only | not used | 18 possessions a side | Possessions a side in a quarter (18). Team fouls across matches need a running quarter; the table plays one possession. |
+| bonus_from | Digital only | not used | the 5th team foul | The team foul that starts the bonus (5th). As above. |
+| Team fouls carried across matches | Digital only | not used | kept for the same two players, or a player and a computer level | Stored with the pairing record. The table has no record between games. |
+| Decision timer | Digital only | none | optional thinking clock for each player | Optional per-player thinking clock (step 3c). An app feature; at the table players agree their own pace. |
+| Computer opponents and the trainer | Digital only | none | Rookie, Starter and All-Star; the trainer grades decisions | Levels, grading, ratings. App features. |
+| Board 17 x 14, rim I2 | Shared | 17 columns by 14 rows, rim on I2 | 17 columns by 14 rows, rim on I2 | The court. |
+| Tokens per phase (6 a side) | Shared | 6 action tokens a side | 6 action tokens a side |  |
+| Phase length (2 seconds), start clock 12 | Shared | shot clock 12, phases of 2 seconds | shot clock 12, phases of 2 seconds |  |
+| d20 rolls | Shared | d20, succeed at or under the target | d20, succeed at or under the target | Every roll: d20 at or under the target. |
+| Far-contest -3 | Shared | −3 | −3 | Contester further from the rim than the shooter. |
+| Turnover points (-5) | Shared | −5 | −5 (where a turnover is scored) | The value of a turnover where one is scored. The number is shared; when it applies is the turnover-cost split above. |
+| Steal foul +5 | Shared | +5 | +5 | A steal foul before the bonus. |
+| Free-throw multipliers (x2, x3) | Shared | 2 ×, or 3 × on a three | 2 ×, or 3 × on a three |  |
+| Two actions a turn | Shared | 1 or 2 actions a turn | 1 or 2 actions a turn |  |
+| Move shape (3 straight, 2 diagonal) | Shared | 3 straight, 2 diagonal, or 1 + 1 | 3 straight, 2 diagonal, or 1 + 1 |  |
+| Inbound phases (2) | Shared | 2 phases to inbound | 2 phases to inbound |  |
+| Per-phase limits | Shared | as printed on the trackers | as printed on the trackers | Quick Steps, passes, screens, dribbles, waits, shots; intercepts, challenges, steals. |
+| Turn-ending actions | Shared | Pass, Screen, Dribble, Hesitate, Shot; Intercept, Challenge, Steal, Pause | Pass, Screen, Dribble, Hesitate, Shot; Intercept, Challenge, Steal, Pause |  |
+| Zones and shot types | Shared | rim, mid-range and long two score 2, threes 3 | rim, mid-range and long two score 2, threes 3 |  |
+| Look bands and Coach's Call bonus | Shared | Excellent 30+ | Excellent 30+ |  |
+| Playing levels (ages, standards, growth tags) | Shared | same cards and levels | same cards and levels | Step 3l: the ratings by age and standard, junior growth tags. Ratings carry age; both formats use the same cards. |
+| Lock tokens (8) | Shared | 8 lock tokens | shown on screen | Grey tokens that mark a locked player. |
+| Setup placement | Shared | offence places first, then defence | offence places first, then defence | Where the pieces start. |
+| Phase reset | Shared | tokens back, locks off, clock down 2 | tokens back, locks off, clock down 2 | What the reset does between phases. |
+| Dribble | Shared | Dribble − Agility | Dribble − Agility | Taking on a defender. |
+| Intercept roll | Shared | Pass − Intercept | Pass − Intercept | The roll and a missed Intercept. |
+| Hold for One cards | Shared | no shot before the last phase | no shot before the last phase | Scenario cards that hold for the last shot. |
+| Late Clock results | Shared | result first, then shot value | result first, then shot value | How Late Clock cards are compared. |
+| Tie-break roll | Tabletop only | roll for the final shot | see Tied match | A tied two-possession game. The app has no tie-break: see Tied match. |
+| turnover_play_on | Shared | not in play (kept so old logs replay) | not in play (kept so old logs replay) |  |
+| pass_resolution | Shared | the defence answers first | the defence answers first |  |
+| sprint_orth_base | Shared | 3 + Quick Step straight | 3 + Quick Step straight |  |
+| sprint_diag_base | Shared | 2 + Quick Step diagonal | 2 + Quick Step diagonal |  |
+| natural_rolls | Shared | no special 1 or 20 | no special 1 or 20 |  |
+| floor_declared_shot | Shared | below 0 scores 0 | below 0 scores 0 |  |
+| reaction_kinds | Shared | Move, Quick Step, Sprint or Steal | Move, Quick Step, Sprint or Steal |  |
+| reaction_may_decline | Shared | 0, 1 or 2 actions | 0, 1 or 2 actions |  |
+| defence_empty_ends_phase | Shared | defence's last token ends the phase at once | defence's last token ends the phase at once |  |
+| wait_chain_block | Shared | no wait straight after the other side's | no wait straight after the other side's |  |
+| screen_geometry | Shared | no diagonal from or across the T | no diagonal from or across the T |  |
+| screen_rule | Shared | holds until the screener moves | holds until the screener moves |  |
+| arrow_line_strict | Shared | not in play (kept so old logs replay) | not in play (kept so old logs replay) |  |
+| drive_rule | Shared | into the zone, not through | into the zone, not through |  |
+| intercept_return | Shared | back where he started the turn | back where he started the turn |  |
+| intercept_rule | Shared | one straight movement, then Intercept | one straight movement, then Intercept |  |
+| move_either_order | Shared | either order | either order |  |
+| contest_choice | Shared | the defence picks | the defence picks |  |
+| on_line_tolerance | Shared | through the square's centre | through the square's centre |  |
+| lane_jump_keeps_facing | Shared | keeps the facing | keeps the facing |  |
+| receiver_denial | Shared | no pass through a defender next to the receiver | no pass through a defender next to the receiver |  |
+| receiver_denial_tol | Shared | through his square | through his square |  |
+| qs_up_to | Shared | up to the card value | up to the card value |  |
+| sprint_needs_qs | Shared | no Sprint at Quick Step 0 | no Sprint at Quick Step 0 |  |
+| qs_once_per_player | Shared | 1 per player a phase | 1 per player a phase |  |
+| arrow_mode | Shared | one arrow | one arrow |  |
+| contest_geometry | Shared | any adjacent defender; arrow off means a foul roll | any adjacent defender; arrow off means a foul roll |  |
+| carrier_can_screen | Shared | not the ball carrier | not the ball carrier |  |
+| late_closeout | Shared | off (a rule test, not adopted) | off (a rule test, not adopted) |  |
+| challenge_who | Shared | only from the T square | only from the T square |  |
+| locked_can_dribble | Shared | a locked carrier can't Dribble | a locked carrier can't Dribble |  |
+| dribble_win_lasts | Shared | rest of the phase | rest of the phase |  |
+| inbounder_pass_only | Shared | pass only | pass only |  |
+| floor_contest_zero | Shared | never below 0 | never below 0 |  |
+| forfeit_when_stuck | Shared | gives up its tokens | gives up its tokens |  |
+| three_only_ft_on_twos | Shared | score 0 | score 0 |  |
+| coach_bonus_on_forced | Shared | counts, forced shots too | counts, forced shots too |  |
+| arrow_line_adjacent_at | Shared | at the start of the movement | at the start of the movement |  |
+| diag_move_straight | Shared | same way | same way |  |
+| inbound_tie | Shared | offence picks | offence picks |  |
+| forced_shot_choice | Shared | offence picks the type | offence picks the type |  |
+| inbound_resolves | Shared | after the defence's turn | after the defence's turn |  |
+| and_one | Shared | free throws or the open shot if higher | free throws or the open shot if higher |  |
+| steal_lock | Shared | a clean miss locks the defender | a clean miss locks the defender |  |
+| reach_angle_fouls | Shared | 1 roll from closer, 2 from level or behind | 1 roll from closer, 2 from level or behind |  |
 
 ## Splits for the designer
 
@@ -83,15 +92,16 @@ Where the best value differs between formats (a designer decision, not a bug):
 - Turnover cost and shot-clock expiry: the engine values a risky pass or a reach differently by format, so a digital-tuned habit (gambling for a steal late in a possession) is wrong at the table, where play goes on at -5. The trainer grades each game under its own format.
 - The steal-foul bonus: within the possession at the table, across a quarter in digital. A defence two fouls from the bonus behaves differently in each.
 - The coarse phase table (engine data, not a rule) is solved from digital self-play; tabletop possessions play on after a turnover, so their late-phase values differ.
+- A tied match: the table rolls for the final shots, the app leaves a tie. Found in the code, not approved.
 
 ## Tokens and markers
 
 | Mechanism | Token | Printed | Check |
 |---|---|---|---|
-| Locks (failed Challenge, lost Dribble, beaten-by-Dribble defender, failed Steal: F1) | grey lock tokens | printed: 4 lock tokens (rulebook p1) | see the F5 worst case: up to 2 Dribbles, 2 Challenges and 2 Steals a phase can lock up to 6 pieces in one phase |
+| Locks (failed Challenge, lost Dribble, beaten-by-Dribble defender, failed Steal: F1) | grey lock tokens | printed: 8 lock tokens (rulebook page 1, token sheet) | covered: the worst case in one phase is 6 (2 Dribbles, 2 Challenges and 2 Steals) |
 | Screens (hold until the screener moves) | the O piece flipped to its T side | printed: the pieces have a T side | covered |
 | A player's Move used this phase | Move token | printed: the action token pool | covered |
-| A player's Quick Step used this phase (one each, OQ-52) | none printed | not on the component list | needs a marker or a note: flag for the designer |
+| A player's Quick Step used this phase (one each, OQ-52) | the action token in that player's Quick Step slot | printed: each player has a Quick Step slot on the tracker | covered |
 | Dribble wins this phase (the carrier is free of that defender's zone) | the beaten defender's lock token | printed | covered by the lock token on the beaten defender |
 | Growth tags at junior (Early, On time, Late) | one tag per card | the levels sheet lists them; no printed tag markers | needs 10 tag markers (5 a team) or written on the team sheet: flag for the designer |
 | Steal fouls this possession (tabletop bonus) | none needed | one possession: players count 0, 1, 2 | covered |
