@@ -5,7 +5,7 @@ quarter of the time budgets (this machine runs the engine about four times faste
 
 ## Tests
 
-TESTCOUNT
+573 tests: 561 pass, 12 are expected failures (10 open exam boards and step 3m findings carried over, plus 2 new step 3n findings below), 0 fail. Full run 42 minutes.
 
 Changed on purpose: `tests/test_static.py` (the browser timing test is back to the real budgets: at most 1.25 x the
 level's budget plus 0.05 s, the +2.5 s allowance gone). New: `tests/test_step3n.py` (25 tests). Two of them are marked as expected failures with the measured reason: "V by phase never rises at Senior Pro" (Part C) and "All-Star reaches with 0 team fouls and declines with 4" (Part F). Also changed on purpose: `tests/test_rolls_scoring.py` (a contest from level or behind now has two foul rolls, F2); `tests/test_wedge.py` (the golden scenario values are checked under the pre-3n settings, since F1 and F2 changed the defaults); `tests/test_step3m.py` (the early-cut and drain boards pin the step 3m phase table; exam boards 2 and 14 join the documented open boards: 2 is a speed problem that passes at fixed depth 4, 14 the variety finding). Fixed along
