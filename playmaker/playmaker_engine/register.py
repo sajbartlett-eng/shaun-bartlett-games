@@ -29,7 +29,8 @@ ENTRIES = [
     ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul also gives free throws.',
      'Every steal foul is +5 in both formats (D-89). Tabletop: the second steal foul of the possession also gives free '
      'throws and ends it (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; '
-     'from the 5th a steal foul also gives free throws and ends the possession.'),
+     'from the 5th a steal foul also gives free throws and ends the possession. A steal foul on a shooter is a '
+     'shooting foul in both formats: free throws only (a team foul in the app).'),
     ('Junior growth', SPLIT_APPROVED, dict(how='growth'), 'Growth at Junior (D-88).',
      'Tabletop: none, the junior cards play as printed. Digital: dealt at random when a junior roster is made, shown '
      'only in the ratings and in a Coach Vision line. At the table it needed markers and a term players found '
@@ -387,7 +388,8 @@ WORDS = {
         sec='Scoring', src=None, q='What does a steal foul give in the bonus?',
         text='Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free '
              'throws and the possession ends: at the table the bonus is the second steal foul of the possession; the '
-             'app counts team fouls across a quarter (see Split by format).',
+             'app counts team fouls across a quarter (see Split by format). A steal foul on a shooter is a shooting '
+             'foul: free throws only (it counts as a team foul in the app).',
         tab='+5 every time; the 2nd also free throws, over', dig='+5 every time; from the 5th team foul also free throws, over'),
     'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='+5'),
     'steal_foul_always_plus5': dict(sec=None, src=None, tab='every steal foul +5', dig='every steal foul +5'),

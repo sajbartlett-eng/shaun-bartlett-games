@@ -254,3 +254,14 @@ def test_the_distance_rings_show_by_default_and_toggle_off(tmp_path):
         srv.shutdown()
     assert out['before'] > 0 and out['label1'] == 'Distance rings: shown'
     assert out['after'] == 0 and out['label2'] == 'Distance rings: hidden'
+
+
+@pytest.mark.parametrize('fmt', ['tabletop', 'digital'])
+def test_a_steal_foul_on_a_shooter_is_free_throws_only(fmt):
+    """Step 7 (D-89): a Steal against a declared shot that fouls is a shooting foul: the free throws only, no +5; it still
+    counts as a foul (a team foul in the app)."""
+    r = _shot(rules=RC.with_rules(digital=fmt == 'digital'))
+    end = force(apply(r, Action('steal', 'X', 0)), 'foul')
+    sc = score(end)
+    assert end.stage == 'over' and end.result.kind == 'free_throws' and end.fouls == r.fouls + 1
+    assert end.bonus5 == r.bonus5 and sc.bonus == 0 and sc.total == sc.free_throws
