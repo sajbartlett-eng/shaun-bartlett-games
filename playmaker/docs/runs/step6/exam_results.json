@@ -1,0 +1,73 @@
+{
+ "source": "the step 6 full test run (pytest -q, 9 Nov 2026): tests/test_step3m.py::test_exam_position, All-Star at full Python budgets, the rules of 9 Nov 2026 before the step 7 change to a steal foul on a shooter",
+ "boards": {
+  "1": {
+   "result": "pass",
+   "message": ""
+  },
+  "2": {
+   "result": "xfail",
+   "message": "step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget (three 4: X2 to D6 (rim distance 5); three 12: X2 to D7 (rim distance 5, can contest))"
+  },
+  "3": {
+   "result": "xfail",
+   "message": "the low man does not yet step up to help on the beaten drive (X2 Move to C6 facing W; X5 Move to N3 facing N (help: none; rotation: X2, X5))"
+  },
+  "4": {
+   "result": "xfail",
+   "message": "the overload is not detected: X5 can still reach either threat in the reaction (O2 Move to D9; O1 Pass to O2 (X5 overloaded on O1 and O5: no))"
+  },
+  "5": {
+   "result": "xfail",
+   "message": "the receiver drives in both closeout boards (closed to C7: O2 Sprint to B8; stopped 2 short at D7: O2 Sprint to B8)"
+  },
+  "6": {
+   "result": "fail",
+   "message": "AssertionError: ('Catch window: O4 caught in the corner with every cover far; he acts on his next action', 'O2 Move to A5; O2 Screen, T SE')\nassert False"
+  },
+  "7": {
+   "result": "xfail",
+   "message": "the clock change does not change the choice (the coarse value at phase 6 is still high) (phase 2: O3 Sprint to E9; O4 Move to A1; phase 6: O1 Move to J10; O2 Sprint to B8)"
+  },
+  "8": {
+   "result": "xfail",
+   "message": "the denied receiver does not cut backdoor (O4 Quick Step to A4)"
+  },
+  "9": {
+   "result": "pass",
+   "message": ""
+  },
+  "10": {
+   "result": "pass",
+   "message": ""
+  },
+  "11": {
+   "result": "xfail",
+   "message": "the contested-pass boards do not separate early from late (early: O3 Sprint to N5; final phase: O1 Quick Step to H10)"
+  },
+  "12": {
+   "result": "pass",
+   "message": ""
+  },
+  "13": {
+   "result": "xfail",
+   "message": "the attacker in the driving lane is not moved out of it (O3 Move to N5)"
+  },
+  "14": {
+   "result": "xfail",
+   "message": "step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B) (4 different first actions over 20 seeds; the most common 80%)"
+  },
+  "15": {
+   "result": "pass",
+   "message": ""
+  },
+  "16": {
+   "result": "xfail",
+   "message": "All-Star does not yet find the drain sequence in its first turn (line: O1 Move to J10; O3 Sprint to I9 / O2 Sprint to A7 / O4 Move to A3; X2 capacity spent: yes; value +24.9 to +24.9; first off-ball move credit +0.0 over one reply, +0.0 over the phase (drain -0.3))"
+  },
+  "17": {
+   "result": "pass",
+   "message": ""
+  }
+ }
+}
