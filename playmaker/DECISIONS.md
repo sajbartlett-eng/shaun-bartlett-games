@@ -145,8 +145,9 @@ Reason: the trackers' reading; the rulebook's "can't move" was changed to match.
 **Built.** (setting: locked_can_dribble)
 
 **D-30** (OQ-26). Free throws from a steal foul score 2 × the ball carrier's free-throw rating.
-Reason: the rulebook names "the shooter", and on a steal foul the ball carrier is the one fouled. · confirmed
-3 Nov 2026 · Source: OQ-26 · **Built, not printed.**
+Reason: the rulebook names "the shooter", and on a steal foul the ball carrier is the one fouled. · confirmed 3 Nov 2026
+· Source: OQ-26 · **Built, not printed.** Register row to be added in step 9, when the print is updated (Shaun, step 4
+prompt).
 
 **D-31** (OQ-27). On a failed inbound, if players tie for furthest from the rim, the offence picks who gets the ball.
 Reason: the scenario rules say "offence picks if tied". · 3 Nov 2026 · Source: OQ-27 · **Built.**
@@ -171,7 +172,8 @@ Dribbles, 2 Challenges and 2 Steals, since a failed Steal locks too).
 Reason: 8 tokens cover the worst case. · 3 Nov 2026, reasoning updated 9 Nov 2026 · Source: OQ-32 · **Built.**
 
 **D-36** (OQ-33). On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three.
-Reason: it follows from the and-one (D-37). · 3 Nov 2026 · Source: OQ-33 · **Built, not printed.**
+Reason: it follows from the and-one (D-37). · 3 Nov 2026 · Source: OQ-33 · **Built, not printed.** Register row to be
+added in step 9, when the print is updated (Shaun, step 4 prompt).
 
 **D-37** (OQ-34). The and-one: once a shot is declared or forced, any foul scores the higher of the free throws and the
 shot's open value.
@@ -237,7 +239,7 @@ Reason: the rulebook says "keeping your facing". · Nov 2026 rulebook · Source:
 Reason: face-guards and fronting the post become real denials; the offence must move, cut, change the angle or screen.
 · Nov 2026 · Source: OQ-77 · **Built.** (settings: receiver_denial, receiver_denial_tol)
 
-### Rulings in the step prompts (steps 3d to 3n, and steps 1 and 2)
+### Rulings in the step prompts (solver steps 2b to 3n, and plan steps 1 and 2)
 
 **D-52.** The app's match: 4, 8 or 12 possessions a side, sides alternating. A successful Intercept or Steal, and
 shot-clock expiry, end the possession at 0. Steal fouls work as at the table until the quarter's bonus (D-55).
@@ -279,6 +281,22 @@ Reason: the rulebook's tie-break. · rulebook · Source: rulebook page 2 · **Bu
 
 **D-61.** `CLAUDE.md` governs the Playmaker folder only, not the website.
 Reason: its paths are Playmaker's. · step 2 · Source: step 2 prompt · **Built.**
+
+**D-76** (OQ-40, OQ-41, OQ-50). Solver findings are read as recorded: a verdict means "best over the next few turns";
+the evaluation looks over the offence's next two turns against the defence's best reply; the step 3d teams changed one
+card's verdict (Baseline Stack Wall, 18.0 to 16.6), so the old verdict isn't reused.
+Reason: the solver reaches only a few turns deep, and the one-turn evaluation was blind to defensive position. · solver
+steps 2b and 3d · Source: those step prompts (OQ-40, OQ-41, OQ-50); Shaun, step 4 prompt · **Built.**
+
+**D-78.** Coach Vision during play shows at the Learn level only, and there it reads the same way for both sides (the
+threat, the offence's read, the defence's read). At Scout and Pro no coach line shows during play.
+Reason: coaching in play is for learners, and it mustn't favour one side. · step 3i follow-up · Source: that step
+prompt; Shaun, step 4 prompt · **Built.**
+
+**D-79.** The decision timer: off by default; 60, 45 or 30 seconds a decision, chosen at the start, the same for both
+players and written to the log. Each player may have their own setting only when both tick "handicap" at setup.
+Reason: the table slows decisions far below basketball pace; the timer brings back some pressure. · step 3d · Source:
+step 3d prompt; Shaun, step 4 prompt · **Built.**
 
 ## 2. Engine defaults awaiting sign-off
 
@@ -327,15 +345,7 @@ the advantage reads.
 **D-75** (OQ-42, OQ-43, OQ-46). Playtest interface defaults: every roll says who rolls; opening placement for full
 games; every court choice repeated as a full-size button on phones. Shapes the interface only.
 
-**D-76** (OQ-40, OQ-41, OQ-50). Solver findings recorded with nothing to decide: verdicts read as "best over the next
-few turns"; the two-turn evaluation; one card verdict changed by the step 3d teams. Shapes how solver results are read.
-
 **D-77** (C6). Scenario 10 is played with the card's numbers (4 tokens left a side, both Screens spent). Shapes one card.
-
-**D-78.** Coach Vision during play shows at the Learn level only, the same for both sides. Shapes what players are told
-during play.
-
-**D-79.** The decision timer: off, 60, 45 or 30 seconds a decision, the same for both players. Shapes the app's pace.
 
 **D-80.** The browser search runs at the full time budgets (scale 1.0); the computer's search is cut at the budget.
 Shapes how deep the computer looks on a phone. (setting: eval.browser_budget_scale)
@@ -374,6 +384,11 @@ Options: change the tracker; or keep it. Effect: wording only.
 
 **D-88.** Growth tags at Junior need 10 markers (5 a team) at the table, or a note on the team sheet.
 Options: print tag markers; or write them on the team sheet. Effect: the printed components.
+
+**D-103** (OQ-49). A scenario-card rule: the Coach's Call secret is worth nothing against the best defence: the
+defence's best plan holds the offence to its known-target value.
+Options: raise the bonus; make the target change something the defence must commit to early; accept it. Effect: the
+Coach's Call cards.
 
 ### Step 10: the digital bonus
 
@@ -448,11 +463,6 @@ Options: say so on the level's description; say so when it happens; don't say. E
 **D-102.** The lock count measurement may read low: the runs count locked pieces before each action. Low priority: 8
 tokens cover the worst case of 6.
 Options: count after each action; leave it. Effect: one reported figure.
-
-**D-103** (OQ-49). The Coach's Call secret is worth nothing against the best defence: the defence's best plan holds the
-offence to its known-target value.
-Options: raise the bonus; make the target change something the defence must commit to early; accept it. Effect: the
-Coach's Call cards.
 
 **D-104** (OQ-44). Squares blocked by a screen just don't appear as options; the interface doesn't say why.
 Options: show the blocked steps with the reason; leave it. Effect: legibility.

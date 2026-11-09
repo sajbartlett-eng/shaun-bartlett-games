@@ -312,7 +312,7 @@ def test_flags_need_agreement_at_two_depths_and_minimal_value_names_the_alternat
 @pytest.fixture
 def table_3m(monkeypatch):
     """Step 3n: the trainer-mechanism boards were built on the step 3m phase table; the step 3n table sits about 3
-    points higher and, as the leaf's floor, flattens them (reported in docs/STEP3N_REPORT.md). Pin the old table."""
+    points higher and, as the leaf's floor, flattens them (reported in docs/reports/STEP3N_REPORT.md). Pin the old table."""
     import json as _j
     import os as _o
     from playmaker_engine import decide as DC
@@ -469,9 +469,9 @@ EXAM_OPEN = {
     11: 'the contested-pass boards do not separate early from late',
     13: 'the attacker in the driving lane is not moved out of it',
     16: 'All-Star does not yet find the drain sequence in its first turn',
-    2: 'step 3n: a speed problem: it passes at fixed depth 4 (docs/3n_exam_fixed4.json) and fails within the Python budget',
+    2: 'step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget',
     14: 'step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the '
-        'variety margin are smaller than the value gaps (docs/STEP3N_REPORT.md, exam B)',
+        'variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B)',
 }
 
 

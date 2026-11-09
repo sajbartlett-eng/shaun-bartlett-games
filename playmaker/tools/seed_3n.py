@@ -2,7 +2,7 @@
 standard and for the aggregate checks. Dealt rosters at the age and standard (Senior Pro uses the named teams).
 
   python3 tools/seed_3n.py --age senior --standard pro --n 60 --levels allstar allstar --scale 0.25 \
-      [--format digital|tabletop] --workers 2 --store docs/3n_seed_senior_pro.json [--cap 3600]
+      [--format digital|tabletop] --workers 2 --store docs/runs/3n/3n_seed_senior_pro.json [--cap 3600]
 """
 import argparse
 import json
