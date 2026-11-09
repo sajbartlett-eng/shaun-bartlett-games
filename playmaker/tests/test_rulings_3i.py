@@ -224,33 +224,3 @@ def test_the_old_engine_left_the_interceptor_on_the_line():
 
 # ---- the pick and roll, single-action turns -------------------------------------------------------
 
-def test_the_d1_chain_set_answer_use_and_end_answer_roll():
-    """Bucket Brigade's O1 (Dribble 19) with X1 on him; O4 (Layup ▲, Screen 18) two squares off. The plan:
-    O4 Moves next to X1 and Screens; the defence answers; O1 uses the screen with one movement and ends his
-    turn (the screen stays up); the defence answers; O4 is released to roll."""
-    from playmaker_engine import guarding
-    from playmaker_engine.planner import goals
-    from playmaker_engine.solver import apply_play
-    s = game_state('Bucket Brigade', 'Lockdown', ['I10', 'C9', 'P9', 'K11', 'Q3'], ['I9', 'D8', 'O8', 'L11', 'N4'],
-                   ['N', 'NE', 'NW', 'W', 'N'], check=False)
-    m = guarding.initial(s)
-    mem = {}
-    done = []
-    for _ in range(6):
-        g = next((x for x in goals(s, 'allstar', mem, matchups=m) if x['entry']['id'] == 'D1' and x['bind']['sc'] == 3), None)
-        assert g is not None, done
-        step = g['todo'][0]
-        plays = [p for p in step['plays']() if apply_play(s, p) is not None]
-        assert plays, (step['words'], done)
-        done.append(step['id'])
-        node = s
-        for a in plays[0].actions:
-            node = act(node, a)
-        if step['id'] == 'use':
-            assert node.side == 'X' and node.is_screening(3)        # one movement, the turn over, the screen up
-            mem = {'D1': {'used0': True}}
-        if step['finish']:
-            assert plays[0].actions[0].piece == 3 and not node.is_screening(3)   # released: the roll
-            break
-        s = pass_turn(node) if node.side == 'X' else node
-    assert done == ['screen', 'use', 'release'], done

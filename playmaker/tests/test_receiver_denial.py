@@ -5,7 +5,6 @@ normal). Pass I11 (8,11) -> O9 (14,9) in these positions."""
 import pytest
 
 from playmaker_engine import board as B
-from playmaker_engine import computer as C
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions, denier, denied_lanes, why_illegal, MOVEMENT
 from playmaker_engine.resolve import apply
@@ -53,11 +52,3 @@ def test_a_defender_not_next_to_the_receiver_is_still_a_through_you_intercept():
     assert t.pending == (0, 2) and Action('intercept', 'X', 2) in legal_actions(t)
 
 
-def test_all_star_offence_answers_a_face_guard_by_moving_the_receiver_or_cutting_backdoor():
-    # O2 (Three 13▲) face-guarded by X2 on D9, on the ball's line; the corners guarded with arrows on them
-    s = game_state('Five Out', 'High-Low', TABLE_O, ['I10', 'D9', 'N9', 'B3', 'P3'], ['N', 'W', 'E', 'W', 'E'], check=False)
-    assert denier(s, 0, 1) == 1
-    for seed in (1, 2, 3):
-        a = C.Computer('O', 'allstar', seed=seed, habits=[], budget_s=None).choose(s)
-        assert a.piece == 1 and a.kind in MOVEMENT, (seed, a)
-        assert denier(apply(s, a), 0, 1) is None or B.dist_rim(a.dest) < B.dist_rim(s.o[1]), (seed, a)

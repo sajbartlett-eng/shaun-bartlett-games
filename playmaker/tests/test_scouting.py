@@ -329,7 +329,7 @@ def test_board_advantages_on_the_golden_position():
     """At the golden position the ▲ shots on the board are O4's corner three (no contester) and O2's three
     against X2's contest; the list must say so."""
     from playmaker_engine.review import board_advantages
-    from playmaker_engine.soak import golden_setup
+    from helpers import golden_setup
     from playmaker_engine.actions import Action
     from playmaker_engine.resolve import apply, force
     s0 = golden_setup()

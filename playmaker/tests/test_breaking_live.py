@@ -12,13 +12,9 @@ import pytest
 from conftest import P
 
 from playmaker_engine import board as B
-from playmaker_engine import computer as C
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions
-from playmaker_engine.advantage import advantages, describe
-from playmaker_engine.capacity import capacity
 from playmaker_engine.cards import TEAMS
-from playmaker_engine.planner import goals
 from playmaker_engine.resolve import apply, ChanceNode, force
 from playmaker_engine.scenarios import game_state
 from playmaker_engine.state import Context, GameState
@@ -86,89 +82,8 @@ def post_position(**kw):
     return lineup(POST_OFF, POST_DFN, POST_O, POST_X, POST_ARROWS, **kw)
 
 
-def test_all_star_sets_the_post_goal_and_chains_it_backwards():
-    s = post_position()
-    assert not C.pass_risk(s, 0, 4)['clean'] and all(not C.pass_risk(s, 0, r)['clean'] for r in (1, 2))
-    g = next(g for g in goals(s, 'allstar') if g['entry']['id'] == 'A1')
-    assert g is goals(s, 'allstar')[0] and g['words'] == 'O5 in the post on X5'
-    assert [t['words'] for t in g['todo']] == CHAIN
-
-
-def test_rookie_tries_the_goal_directly_and_starter_one_condition_deep():
-    s = post_position()
-    rk = next(g for g in goals(s, 'rookie') if g['entry']['id'] == 'A1')
-    st = next(g for g in goals(s, 'starter') if g['entry']['id'] == 'A1')
-    al = next(g for g in goals(s, 'allstar') if g['entry']['id'] == 'A1')
-    assert [t['words'] for t in rk['todo']] == ['entry to O5']
-    assert [t['words'] for t in st['todo']] == ['O5 sealed X5', 'entry to O5']
-    assert [t['words'] for t in al['todo']] == CHAIN
-
-
 def _events(o):
     return [n for n in o.notes if n['event'] in ('goal', 'goal_step', 'goal_reassess', 'goal_finish')]
-
-
-def test_the_chain_runs_and_the_log_matches():
-    """The post goal is set and its first step played. Against a defence that stands still each move of the
-    offence's opens more (here O5's move to open his lane makes a cut cheaper), so goals change, each with
-    its reason; and every goal that finishes says exactly the steps the log shows for it."""
-    o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
-    passive_defence(o, post_position(), steps=40)
-    ev = _events(o)
-    assert ev[0]['text'] == 'Goal: O5 in the post on X5 (Post entry, 6 steps)'
-    assert ev[1]['event'] == 'goal_step' and ev[1]['text'] == CHAIN[0]
-    fins = 0
-    for k, e in enumerate(ev):
-        if e['event'] != 'goal_finish' or 'a shot went up first' in e['text']:
-            continue
-        start = max(i for i in range(k) if ev[i]['event'] == 'goal')
-        steps = [x['text'].lower() for x in ev[start:k] if x['event'] == 'goal_step']
-        said = e['text'].split('. ', 1)[1].rstrip('.').lower().split(', ')
-        assert said == steps, (said, steps)
-        fins += 1
-    assert fins >= 1
-
-
-def test_no_reassessment_on_noise_the_goal_persists():
-    """A goal only changes after the offence's own progress (a step played) or a broken condition, never twice
-    on the same board, and always with a logged reason."""
-    o = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
-    s = post_position()
-    n = 0
-    for _ in range(60):
-        if s.stage == 'over' or n >= 10:
-            break
-        if s.side == 'O' and s.stage == 'play':
-            a = o.choose(s)
-            n += 1
-        else:
-            acts = legal_actions(s)
-            a = next((x for x in acts if x.kind in ('pause', 'end_turn')), acts[0])
-        s = settle(apply(s, a), ('success', 'kept', 'no foul'))
-    ev = [x['event'] for x in _events(o)]
-    assert n >= 8 and ev[:2] == ['goal', 'goal_step'], ev
-    for k, e in enumerate(ev):
-        if e == 'goal' and k > 0:
-            assert ev[k - 1] in ('goal_reassess', 'goal_finish'), ev
-        if e == 'goal_reassess':
-            prev = max((i for i in range(k) if ev[i] == 'goal'), default=None)
-            assert prev is not None and 'goal_step' in ev[prev:k], ev        # progress before every change
-    assert all(x.get('why') for x in o.notes if x['event'] == 'goal_reassess')
-
-
-def test_no_goal_has_a_fixed_score():
-    """Every goal's score is P x ((1 - risk) x V + risk x the pick-off) + (1 - P) x the best look now - the
-    steps' cost; the pick-off is now -5 and two seconds with the ball kept (0 in the final phase)."""
-    from playmaker_engine.planner import TEMPO
-    for s in (post_position(), board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N'])):
-        for g in goals(s, 'allstar'):
-            want = g['P'] * ((1 - g['risk']) * g['V'] + g['risk'] * g['pick']) + (1 - g['P']) * g['base'] - TEMPO * len(g['todo'])
-            assert g['score'] == pytest.approx(want, abs=0.02), g['words']
-            assert g['V'] <= 3 * 20
-    from playmaker_engine.resolve import pickoff_value
-    s = board('Five Out', 'High-Low', TABLE_O, TABLE_X, ['N', 'NE', 'NW', 'N', 'N'])
-    assert pickoff_value(s, 12.0, relative=True) == 7.0                      # -5, the ball kept: his look
-    assert pickoff_value(s.with_(clock=2), 12.0, relative=True) == 0.0       # the final phase: 0
 
 
 # ---- rotations -------------------------------------------------------------------------------------------
@@ -182,15 +97,3 @@ def _rotation():
     return s.with_(tok_o=1, tok_x=2, moved_o=24, moved_x=25, cnt=(0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1), lock_o=1, phase=2, qs_x=1)
 
 
-def test_the_defence_hands_a_job_to_a_defender_with_capacity_left():
-    s = _rotation()
-    od = [a for a in advantages(s, dilemma=True) if a['kind'] == 'overloaded']
-    assert od and od[0]['defender'] == 2
-    assert describe(od[0]) == "X3 had two jobs (help on O1's drive and the lane to O3); O3 was left for a three"
-    x = s.with_(side='X')
-    for lv in ('starter', 'allstar'):
-        a = C.Computer('X', lv, seed=1, budget_s=None, habits=[]).choose(x)
-        assert a.piece not in (None, 2) and capacity(x, a.piece)['movements'], (lv, a)      # a fresh defender
-        n = apply(x, a)
-        assert not isinstance(n, ChanceNode)
-        assert not [b for b in advantages(n.with_(side='O'), dilemma=True) if b['kind'] == 'overloaded'], (lv, a)

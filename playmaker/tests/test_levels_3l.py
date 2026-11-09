@@ -211,21 +211,6 @@ def test_scout_report_and_team_sheet_read_junior_cards(junior_game):
     assert TEAMS[off][i].shot(t) == LV.JUNIOR[TEAMS[off][i].key].shot(t) + LV.GROWTH['early'].get('shot_' + t, 0) * (i == 0)
 
 
-def test_computer_reads_the_junior_cards_and_revealed_tags(junior_game):
-    from playmaker_engine.computer import SeenCard, _mids
-    off, _ = junior_game.teams
-    o1 = TEAMS[off][0]                                     # apgA, Early
-    mid, _, _ = _mids('junior')
-    seen = SeenCard(o1, 'marks')
-    assert seen.age == 'junior' and seen.growth == 'early'
-    assert seen.r['dribble'] == mid[('dribble', 'H')]      # the U16 band middle, not the pro one
-    assert seen.r['shot_dunk'] == LV.clamp('shot_dunk', mid[('shot_dunk', o1.bands['shot_dunk'])] + 2)
-    assert seen.qs == o1.qs == 2
-    deck = [LV.effective_card(k, 'junior') for k in CARDS]
-    hs = [c.r['dribble'] for c in deck if c.bands['dribble'] == 'H']
-    assert mid[('dribble', 'H')] == round(sum(hs) / len(hs))
-
-
 # ---- rules on: legality, slots and flex ------------------------------------------------------------------------------
 def _roster(shape, flex=None):
     """A roster of the given tier shape, one card per position (PG..C), each in its own slot."""

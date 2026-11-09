@@ -445,7 +445,7 @@ function render() {
   else $('score').textContent = String(s.bonus - 5 * s.turnovers);
   renderStrip(s);
   if (s.scores && s.scores.length > (trainerSeen || 0)) onPossessionOver(s);
-  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', baseline: 'baseline' };
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star' };
   const ai = Object.entries(s.ai || {}).map(([k, v]) => `${k === 'O' ? 'offence' : 'defence'}: ${LV[v] || v}`).join('; ');
   $('meta').innerHTML = '';
   $('meta').append(el('div', { text: `${s.mode === 'remote' ? 'Remote' : 'Hot-seat'} · code ${s.code}${s.seat && s.seat !== 'both' ? ' · you: ' + (s.seat === 'O' ? 'Offence' : 'Defence') : ''}` }),

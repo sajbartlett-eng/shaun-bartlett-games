@@ -73,15 +73,15 @@ Also: `soak`, `ceilings`, `matchups`, `solve-all` and `rule-health` (`python -m 
 | `playmaker_engine/data/` | Cards, teams, scenario cards, court zones, levels, computer profiles, the phase table |
 | `playmaker_web/` | The app: the server (`server.py`, `api.py`, `game.py`), the page (`static/`), the link build (`build_site.py`) |
 | `site/`, `dist/` | The built link version, written by the workflow. Don't edit by hand |
-| `tests/` | The test suite; `tests/data/` holds its fixed inputs |
+| `tests/` | The test suite; `tests/data/` holds its fixed inputs, `tests/helpers.py` the helpers moved from retired modules |
 | `tools/` | Measurement scripts: exam, timing, accuracy, anchors, self-play seeding, the phase table, JS equivalence |
 | `reference/` | The printed game: rulebook, trackers, court, token sheet, cards, scenarios, levels sheet, first game guides |
 | `docs/reports/` | One report per step |
 | `docs/runs/` | Measured run outputs: `3m/`, `3n/` (with `3n_seed/`) and `solver/` |
-| `docs/history/` | Superseded documents, word for word: the old README, the solver report, the regression notes |
+| `docs/history/` | Superseded documents, word for word: the old README, the solver report, the PDF step reports |
 | `docs/audit/` | The code-audit documents: game logic, computer offence, computer defence |
-| `docs/` | Screenshots, the generated `rules_register.md`, the PDF reports of steps 3h to 3n, the accessibility audit |
-| `archive/` | Retired material: old reference PDFs, the old questions list, unused engine modules and their tests |
+| `docs/` | Screenshots, the generated `rules_register.md`, the accessibility audit |
+| `archive/` | Retired material: old reference PDFs, the old questions list, the old computer and unused modules, their tests |
 | `playtest_logs/` | Logs from the server version |
 
 ### The engine in brief
@@ -93,8 +93,7 @@ Also: `soak`, `ceilings`, `matchups`, `solve-all` and `rule-health` (`python -m 
 | `state.py`, `actions.py`, `resolve.py` | The game state, the legal actions, and applying an action with its dice |
 | `scoring.py` | Rolls, contests, free throws, bands and the score |
 | `scenarios.py`, `cards.py`, `levels.py`, `rosters.py` | Scenario cards, card data, playing levels and roster modes |
-| `agent.py`, `search.py`, `decide.py`, `goals.py`, `planner.py` | The computer's search and its plans |
-| `computer.py`, `setup.py` | The older computer and the computer's setup (step 7 deals with them) |
+| `agent.py`, `search.py`, `decide.py`, `goals.py` | The computer: its search, its plans and its setup |
 | `review.py`, `trainer.py`, `glicko2.py`, `labels.py` | Reviewing a game, grading decisions, ratings |
 | `register.py` | The rules register, which writes `RULES_CURRENT.md` and `docs/rules_register.md` |
 | `exam.py`, `selfplay.py` | The exam and engine self-play, used by `tools/` |
