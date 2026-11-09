@@ -28,10 +28,10 @@ SCENARIO_GOAL = 30         # an Excellent look
 # Per-phase limits. 'move' is once per player; the rest are per side.
 LIMITS = {
     'O': {'qs': 2, 'pass': 2, 'screen': 2, 'dribble': 2, 'hesitate': 1, 'shot': 1},
-    'X': {'qs': 2, 'intercept': 2, 'challenge': 2, 'steal': 2, 'pause': 1},
+    'X': {'qs': 2, 'intercept': 2, 'challenge': 2, 'steal': 2, 'pause': 1, 'contest': 1},
 }
 TURN_ENDERS = {'pass', 'screen', 'dribble', 'hesitate', 'shot',
-               'intercept', 'challenge', 'steal', 'pause'}
+               'intercept', 'challenge', 'steal', 'pause', 'contest'}
 
 # Prestige bands, highest first: (name, lowest score in band)
 BANDS = [('Excellent', 30), ('Great', 25), ('Good', 20), ('Okay', 15), ('Poor', None)]
@@ -244,6 +244,18 @@ class Rules:
     #   (first steal foul +5, second free throws).
     quarter_possessions: int = 18
     bonus_from: int = 5
+    # Shaun's rulings of 9 Nov 2026 (DECISIONS.md), shared by both formats:
+    # D-18: Contest is an action. After a shot is declared the defence reacts with up to 2 actions from its remaining
+    #   tokens (Move, Quick Step, Sprint, Steal or Contest). A Contest is the last action, one a phase, by one defender
+    #   next to the shooter at that moment, and uses a token; no Contest means a contest of 0. A forced shot at clock 0
+    #   (not declared) keeps the contest choice. False: the free contest after the reaction (before the ruling).
+    contest_action: bool = True
+    # D-82: a turnover that scores the possession 0 scores 0 or the total banked before it, whichever is lower.
+    #   False: it scores 0.
+    turnover_floor: bool = True
+    # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
+    #   False: in the bonus the foul gives free throws only (no +5).
+    steal_foul_always_plus5: bool = True
 
     @property
     def intercept_cost(self):
@@ -254,9 +266,12 @@ class Rules:
 # records these settings in its setup line; a log from before them replays with the old values.
 RULED_3I = ('arrow_mode', 'screen_rule', 'drive_rule', 'intercept_return', 'late_closeout', 'intercept_rule',
             'turnover_cost', 'on_line_tolerance', 'lane_jump_keeps_facing', 'receiver_denial', 'receiver_denial_tol',
-            'steal_lock', 'reach_angle_fouls', 'quarter_possessions', 'bonus_from')
-# A log from before the step 3n rulings replays without them.
-PRE_3N = dict(steal_lock=False, reach_angle_fouls=False)
+            'steal_lock', 'reach_angle_fouls', 'quarter_possessions', 'bonus_from', 'contest_action', 'turnover_floor',
+            'steal_foul_always_plus5')
+# A log from before Shaun's rulings of 9 Nov 2026 (no contest_action in its setup line) replays without them.
+PRE_9NOV = dict(contest_action=False, turnover_floor=False, steal_foul_always_plus5=False)
+# A log from before the step 3n rulings replays without them (nor the later ones).
+PRE_3N = dict(steal_lock=False, reach_angle_fouls=False, **PRE_9NOV)
 LEGACY_3I = dict(arrow_mode='single', screen_rule='two_turns', drive_rule='arrow_line', intercept_return=False,
                  intercept_rule='approach', turnover_cost='legacy', on_line_tolerance=0.5, lane_jump_keeps_facing=False,
                  receiver_denial=False)

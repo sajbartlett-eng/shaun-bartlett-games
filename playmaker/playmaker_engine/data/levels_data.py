@@ -36,7 +36,7 @@ GROWTH = {
   "con_post": -2
  }
 }
-GROWTH_DEAL = {'early': 1, 'late': 1, 'on_time': 3}  # per team, dealt at random
+GROWTH_DEAL = {'early': 1, 'late': 1, 'typical': 3}  # per team, dealt at random
 TIER_VALUE = {'A': 1, 'B': 0, 'C': -1}
 STANDARDS = {'amateur': {'name': 'Amateur', 'shapes': ['BBCCC', 'ACCCC'], 'strength': -3},
  'pro': {'name': 'Pro', 'shapes': ['BBBBB', 'ABBBC', 'AABCC'], 'strength': 0},

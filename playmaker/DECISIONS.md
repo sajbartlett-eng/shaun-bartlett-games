@@ -86,21 +86,72 @@ on a forced shot by the target.
 Reason: the scenario rules say "add the bonus for how good the look was". · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 ·
 **Built, not printed.** (setting: coach_bonus_on_forced)
 
-### Shaun, 9 Nov 2026: two rule changes, built in step 9
+### Shaun, 9 Nov 2026: two rule changes, built in step 6 (plan step 9)
 
 **D-18** (replaces OQ-6). Contest becomes an action. After a shot is declared the defence reacts with up to 2 actions
 from its remaining tokens: Move, Quick Step, Sprint, Steal or Contest. Contest is the last action, one a phase, by a
 defender next to the shooter at that moment. No Contest means a contest of 0. The foul roll and the −3 work as now.
 Reason: the offence spends 2 actions on a Move and a Shot; the defence had 2 actions plus a free contest. A closeout is
 now a Sprint and a Contest, 2 actions, as in basketball, and a spent defence can't both get there and contest. ·
-9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, not built (step 9).** Printed game: the defence tracker gains a
-Contest slot; the rulebook's Shooting section changes. Today the engine plays the old rule: a free contest after a
-reaction of 0, 1 or 2 actions. (settings today: reaction_kinds, reaction_may_decline)
+9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6, plan step 9). Printed game: the defence tracker gains a
+Contest slot; the rulebook's Shooting section changes (by Shaun). A forced shot at clock 0 isn't declared, so it keeps
+the contest choice. (setting: contest_action)
 
 **D-19.** Overtime in the app. A tied app match plays one more possession a side, repeated until a side leads. The table
 keeps its final-shot roll (D-60). A Split by format, approved.
-Reason: basketball has no ties. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, not built (step 9).** Today a tied
-app match stays a tie.
+Reason: basketball has no ties. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6, plan step 9).
+
+### Shaun, 9 Nov 2026 (the open questions): rulings, built in step 6 (plan step 9)
+
+**D-82** (OQ-74). A turnover that scores the possession 0 scores 0 or the total banked before it, whichever is lower.
+Reason: a turnover never helps the offence. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6), both
+formats. (setting: turnover_floor)
+
+**D-83** (OQ-51). The lock stays as it is, for every player: no Move; a Quick Step still allowed if unused. No exceptions.
+Reason: the rule as played. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built.**
+
+**D-84.** Distance rings. "Closer, level or further from the rim" is the count of squares to the rim, diagonals
+included (the engine's own test). The court shows it as faint rings. One check decides the steal and contest foul rolls
+and the −3.
+Reason: one test players can see. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** in the app (step 6); the
+printed court by Shaun.
+
+**D-85.** Player-facing words: never "pick-off", "picked off" or "clean miss". Say "intercepted", "stolen" and "a
+Steal that misses without a foul".
+Reason: plain basketball words. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6); the print by Shaun.
+
+**D-87** (C5). "Plain wood", never "plain maple", everywhere players read.
+Reason: one name for one thing. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** in the app (step 6); the print by
+Shaun.
+
+**D-88.** Growth at Junior. In the app the growth effect is applied when a Junior roster is made (dealt at random, as
+before); only the resulting ratings show, no tag names anywhere a player reads, and Coach Vision gives one line on the
+two players it changes (Early: "Bigger and stronger than most players his age."; Late: "Still growing: smaller and
+slower than most players his age."). At the table there is no growth: the Junior cards play as printed. Split by
+format, approved. Internally the tags are early, typical and late.
+Reason: at the table it needed markers and a term players found unclear; the app can apply it unseen. · 9 Nov 2026 ·
+Source: Shaun, 9 Nov 2026 · **Built** (step 6).
+
+**D-89** (with D-90). Every steal foul is +5 to the offence, in both formats, and the +5 adds to the score over the
+match. In the bonus, the offence also gets free throws, and the possession ends. At the table the bonus is the second
+steal foul of the possession; in the app, the 5th team foul of the quarter.
+Reason: a foul should always cost the defence. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6).
+(setting: steal_foul_always_plus5)
+
+**D-101.** All-Star's level description says it studies your saved games: "Studies your saved games and plans against
+your habits."
+Reason: players should know. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6).
+
+**D-104** (OQ-44). When a screen blocks a step, the app shows that step greyed, with "Blocked by the screen".
+Reason: legibility. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Built** (step 6).
+
+**D-107.** Words: "match" is a whole game; "matchup" is one player against another. Used that way in everything players
+read.
+Reason: plain words. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled.**
+
+**D-103** (OQ-49) and **D-105** (OQ-45). Superseded by the coach's goals design (D-106). No change now.
+Reason: the coach's goals replace the Coach's Call questions in the app. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 ·
+**Superseded.**
 
 ### Rulings from 3 Nov 2026 to step 3i (the old questions list)
 
@@ -327,20 +378,25 @@ of 3 points; fading by rating; flags need agreement at two search depths. Shapes
 **D-69.** The rating anchors: Rookie 1525, Starter 1600, All-Star 1625 (Senior), Youth 20 lower, Junior 50 lower,
 fitted from self-play in step 3n. Shapes every rating. (ai_profiles.json, trainer.anchors)
 
-**D-70.** The computer's setup and placement: the offence builds a formation from its cards' goals; the defence picks
-the matchups that leave the offence the least, then a job for each defender. Shapes every game against the computer.
+**D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
+reply, without seeing the real defence; the defence takes the placement and matchups that cover best. Shapes every game
+against the computer. (Restated for the step 3m engine, Shaun, step 6 prompt; `agent.propose_offence`,
+`agent.propose_defence`)
 
 **D-71** (OQ-43). The human's setup: place by hand, accept the engine's proposed setup, or repeat the last one; a
 one-tap standard setup. Shapes how fast a game starts.
 
 **D-72** (OQ-67). The computer's record of who guards whom: set by distance when the possession starts, changed only by
 a switch or a replacement. Shapes the computer's defence and the advantage reads.
+**Retired:** the code it described is archived, step 5 (Shaun, step 6 prompt).
 
 **D-73** (OQ-56). "Help pulled" is read against the board the offence handed over at the end of its turn. Shapes the
 advantage reads.
+**Retired:** the code it described is archived, step 5 (Shaun, step 6 prompt).
 
 **D-74** (OQ-58). "The likely closeout defender" is the defender nearest the shooter (the lower number on a tie). Shapes
 the advantage reads.
+**Retired:** the code it described is archived, step 5 (Shaun, step 6 prompt).
 
 **D-75** (OQ-42, OQ-43, OQ-46). Playtest interface defaults: every roll says who rolls; opening placement for full
 games; every court choice repeated as a full-size button on phones. Shapes the interface only.
@@ -354,53 +410,18 @@ Shapes how deep the computer looks on a phone. (setting: eval.browser_budget_sca
 
 ### Step 9: the tabletop rules
 
-**D-81** (OQ-54). Is a pick-off meant to be this cheap? After a pick-off the offence is often better off than after the
-catch: the defender has left his man and the defence has spent tokens.
-Options: keep it; make it cost more (end the possession, or −5 and the ball to the defence's choice of spot); or change
-where the interceptor ends up (D-13). Effect: how freely the offence throws into contested lanes.
+**D-81** (OQ-54). Check before ruling: is the offence better off after a successful Intercept than if the pass had been
+caught? Measure only. Step 6 found 2 successful intercepts in the 60 tabletop possessions on record (the seed runs are
+all app format): final results 19 and 23, against 28 and 27 by the engine's read of the same positions with the pass
+caught (30 and 8 by the solver). Too few to say; the step 6 report names the smallest run that would settle it.
+Options: rule once the measurement says. Effect: the cost of a turnover. · Source: Shaun, 9 Nov 2026 · **Open.**
 
-**D-82** (OQ-74). A last-phase pick-off scores 0, which is better for the offence than a possession that has already
-banked −5s.
-Options: "scores 0, or what is banked if lower"; or keep it. Effect: one rare case where a pick-off helps the offence.
-
-**D-83** (OQ-51). Should a lock also stop a Quick Step?
-Options: yes (a locked star can't get free, so someone else must score); no (today). Effect: how much a lock costs,
-and the Star Locked card's lesson.
-
-**D-84.** The angle check at the table: how players agree a reach or a contest is from in front, beside or behind.
-Proposed: chevrons on the court. Options: chevrons; a printed rule of thumb; leave it to the players. Effect: the one
-or two foul rolls (D-54), and the −3.
-
-**D-85.** "Clean miss" needs defining in the printed rules: a failed Steal with no foul and the ball kept.
-Options: define it in the rulebook's Defender arrows section; or reword the line. Effect: the printed text only.
-
-**D-86** (OQ-37, OQ-48). Challenge and the defensive Sprint closeout almost never appear in best play: screens are
-rarely set, and a Move then Quick Step closes out with the arrow on and no foul roll.
-Options: make screens stronger, make Challenge cheaper, or accept it. Contest as an action (D-18) may change the
-closeout. Effect: whether two printed actions matter.
-
-**D-87** (C5). The offence tracker says "plain maple"; everywhere else says "plain wood".
-Options: change the tracker; or keep it. Effect: wording only.
-
-**D-88.** Growth tags at Junior need 10 markers (5 a team) at the table, or a note on the team sheet.
-Options: print tag markers; or write them on the team sheet. Effect: the printed components.
-
-**D-103** (OQ-49). A scenario-card rule: the Coach's Call secret is worth nothing against the best defence: the
-defence's best plan holds the offence to its known-target value.
-Options: raise the bonus; make the target change something the defence must commit to early; accept it. Effect: the
-Coach's Call cards.
+**D-86** (OQ-37, OQ-48). Wait: Contest as an action may bring back Challenge and the Sprint closeout. Measure in a later
+step. · Source: Shaun, 9 Nov 2026 · **Open, after step 6.**
 
 ### Step 10: the digital bonus
 
-**D-89.** In the app the bonus doesn't deter a reach. An average possession is worth about 28; a foul before the bonus
-costs +5 and play on (about 33), a bonus foul costs two free throws (29 to 31) and ends the possession, so a reach is no
-costlier with 4 team fouls than with 0.
-Options: a bigger bonus (three free throws, or free throws and the ball back); a smaller +5 before the bonus; change the
-engine's foul price (D-65). Effect: when defences reach, and the app's steal and foul rates.
-
-**D-90.** Steal and foul rates against basketball. In the app, steals ran 18 per 100 possessions in one 60-possession run
-and 10 in the 100-possession aggregate (target about 8). At the table, reach fouls (8 per 100) outnumber steals (3).
-Options: the bonus line; the steal foul ratings; the quarter's length. Effect: how often defences gamble, in each format.
+None open: D-89 and D-90 were ruled on 9 Nov 2026 (see Ruled).
 
 ### Step 11: engine choices
 
@@ -417,9 +438,11 @@ sense of the clock and the trainer's flags (D-100).
 Options: widen the defence's candidate moves below the root; or read it as a rule problem. Effect: whether Pause is too
 cheap.
 
-**D-94** (OQ-57). An open shot by a shooter without a ▲ mark isn't one of the six advantage states.
-Options: add "open look" as a seventh state; or keep six. Effect: which plays the computer credits as creating an
-advantage.
+**D-94** (OQ-57). The step 3m engine has no advantage states: it values every look by its points × (rating − contest)
+against the best contest that arrives in time, so an open shot by a shooter without a ▲ mark counts at its value like
+any other. (Restated for the step 3m engine, Shaun, step 6 prompt; `decide`)
+Options: keep valuing every look the same way; or credit an open look by an unmarked shooter separately. Effect: which
+plays the computer credits as creating an advantage.
 
 **D-95** (OQ-55). Matchups aren't on the board. Should they be a board fact (named at setup, changed only by a switch),
 or is "the nearest defender" the intended reading?
@@ -435,6 +458,12 @@ Options: restate each board against today's rules; retire it. Effect: what the e
 **D-97.** Board 14 (variety): at depth 4 one first action wins every time, because the noise and the variety margin are
 smaller than the value gaps a deeper search finds. The depth-6 run was not done.
 Options: widen the variety margin; restate the board; accept it. Effect: how predictable the All-Star is.
+
+**D-108.** Exam candidate (from Shaun's playtest reports): the defence denies an elite shooter's catch (the old
+`test_deny_catch`). · Source: Shaun, step 6 prompt · **Open:** to be added as an exam board in step 12.
+
+**D-109.** Exam candidate (from Shaun's playtest reports): the offence prefers a clean pass to a contested one (the old
+`test_passing`). · Source: Shaun, step 6 prompt · **Open:** to be added as an exam board in step 12.
 
 ### Step 14: the levels
 
@@ -455,20 +484,19 @@ possession ends without a real shot.
 depths, and the phase table's floor flattens the reads (D-92).
 Options: change what a flag needs; grade with a searched reply; accept it. Effect: what the trainer tells players.
 
-### Not yet placed in a step
+### The design step
 
-**D-101.** Telling players that All-Star scouts them: All-Star reads the human's habits from stored games.
-Options: say so on the level's description; say so when it happens; don't say. Effect: fairness and trust.
+**D-106.** Coach's goals (app only), to be designed. Before setup, the coach gives each side up to two secret goals.
+Goals can counter each other. If a goal looks to be failing, the coach offers a new one. In advanced play a player may
+set their own. Meeting a goal earns no match points: it counts only toward the coach's judgement and the player's
+rating. The tabletop keeps its scenario cards and Coach's Call as they are. · Source: Shaun, 9 Nov 2026 · **Open:**
+design step.
+
+### Not yet placed in a step
 
 **D-102.** The lock count measurement may read low: the runs count locked pieces before each action. Low priority: 8
 tokens cover the worst case of 6.
 Options: count after each action; leave it. Effect: one reported figure.
-
-**D-104** (OQ-44). Squares blocked by a screen just don't appear as options; the interface doesn't say why.
-Options: show the blocked steps with the reason; leave it. Effect: legibility.
-
-**D-105** (OQ-45). Coach's Call in hot-seat play relies on the defence looking away.
-Options: a hidden entry step; leave it (remote play hides it). Effect: the secret's fairness.
 
 ## Index: old question numbers
 

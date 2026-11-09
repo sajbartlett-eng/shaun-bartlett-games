@@ -144,7 +144,7 @@ def levels_info():
                 standards=[dict(id=s, words=LV.STANDARD_WORDS[s], shapes=list(LV.STANDARDS[s]['shapes']))
                            for s in LV.STANDARD_ORDER],
                 rosters={k: v for k, v in LV.ROSTER_WORDS.items()}, intro=LV.SHEET_INTRO, standard_note=LV.STANDARD_NOTE, growth_box=LV.GROWTH_BOX,
-                growth=dict(early=LV.growth_words('early'), late=LV.growth_words('late')),
+                growth=dict(early=LV.growth_line('early'), late=LV.growth_line('late')),
                 sheet='docs/Playmaker_Playing_Levels.pdf', snake=list(RO.SNAKE))
 
 

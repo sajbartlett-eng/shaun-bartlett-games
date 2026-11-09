@@ -320,6 +320,14 @@ class Read:
         self.dcards = s.ctx.dfn
         self.o_to_act = s.side == 'O' and s.stage == 'play'
         self.react = min(2, s.tok_x) if s.tok_x > 0 else 0
+        if self.rules.contest_action:
+            # D-18: the Contest is itself one of the reaction's actions (and a token), so the closeout before it has one
+            # fewer; inside the reaction, the actions already taken count
+            if s.stage == 'reaction':
+                self.react = max(0, min(RC.MAX_ACTIONS_PER_TURN - s.turn_n, s.tok_x))
+            self.react_moves = self.react - 1
+        else:
+            self.react_moves = self.react
         self._cm = {d: self._contest(d) for d in range(5)}
         self.looks = {i: self._looks(i) for i in self.att_o}
         self.threat = {i: self._best(self.looks[i]) for i in self.att_o}
@@ -360,7 +368,7 @@ class Read:
             r = card.shot(t)
             best = None
             for k, n in enumerate(row):
-                if n > self.react:
+                if n > self.react_moves:
                     continue
                 pen, foul, two = KINDS[k]
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
@@ -749,6 +757,8 @@ def turnover_value(s):
     """What a pick-off leaves the offence: 0 in the digital format or the final phase; else -5 and the clock cost,
     then the coarse value of playing on."""
     if s.ctx.rules.digital or s.ctx.hold_for_one or s.clock <= RC.PHASE_SECONDS:
+        if s.ctx.rules.turnover_floor:                  # D-82: 0, or what is banked if that is lower
+            return float(min(0, RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos))
         return 0.0
     banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * (s.tos + 1)
     return banked + vcoarse(s.with_(clock=s.clock - RC.PHASE_SECONDS))
@@ -833,15 +843,17 @@ def foul_table(ctx):
     """The future cost of the defence's team fouls over the rest of the quarter, by backward induction over (team
     fouls, possessions left). C(f, n): the offence's expected extra points in the defence's n remaining possessions with
     f team fouls. In a possession the defence fouls with the engine's estimated rate; from the bonus (the bonus_from-th
-    team foul on) a steal foul is two free throws for the pairing's cards instead of +5 and play on."""
+    team foul on) a steal foul is two free throws for the pairing's cards (and, D-89, the +5) and ends the possession,
+    instead of +5 and play on."""
     rules = ctx.rules
-    key = (id(ctx.off), id(ctx.dfn), rules.bonus_from, rules.quarter_possessions)
+    key = (id(ctx.off), id(ctx.dfn), rules.bonus_from, rules.quarter_possessions, rules.steal_foul_always_plus5)
     if key in _FOUL:
         return _FOUL[key]
     q = CONFIG['eval'].get('fouls_per_possession', 0.25)
     ft2 = sum(RC.FT_MULT_TWO * c.r['free_throw'] for c in ctx.off) / len(ctx.off)
     cont = CONFIG['eval'].get('play_on_value', 20.0)
-    extra = ft2 - (RC.STEAL_FOUL_BONUS + cont)          # a bonus foul against +5 and play on
+    plus5 = RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0     # D-89: the bonus foul is +5 as well
+    extra = ft2 + plus5 - (RC.STEAL_FOUL_BONUS + cont)  # a bonus foul against +5 and play on
     N, F = rules.quarter_possessions + 1, rules.bonus_from + 12
     C = [[0.0] * (N + 1) for _ in range(F + 2)]
     for n in range(1, N + 1):

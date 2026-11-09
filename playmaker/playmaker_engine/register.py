@@ -10,7 +10,7 @@ from dataclasses import fields
 from . import rules_config as RC
 
 SHARED, DIGITAL, TABLETOP, SPLIT = 'Shared', 'Digital only', 'Tabletop only', 'Split by format'
-SPLIT_OVERTIME = 'Split by format, approved; overtime not yet built'
+SPLIT_APPROVED = 'Split by format, approved'
 
 # (name, status, source, what it is, reason for a split / note)
 ENTRIES = [
@@ -23,13 +23,17 @@ ENTRIES = [
      'Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball).'),
     ('Match length', SPLIT, dict(how='match'), 'Possessions a side.',
      'Tabletop: one possession each. Digital: 4, 8 or 12 a side (per_side), sides alternating.'),
-    ('Tied match', SPLIT_OVERTIME, dict(how='tie'), 'What settles a tied match.',
+    ('Tied match', SPLIT_APPROVED, dict(how='tie'), 'What settles a tied match.',
      'Tabletop: each player rolls for their final shot. Digital: overtime, one more possession a side until a side '
-     'leads (DECISIONS.md D-19, built in step 9); until then the match stays a tie.'),
-    ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul gives free throws.',
-     'Tabletop: the first steal foul of the possession is +5 and play on, the second gives free throws (one '
-     'possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; from the 5th a steal foul '
-     'gives free throws and ends the possession.'),
+     'leads after equal possessions (DECISIONS.md D-19, built in step 6); team fouls carry on as in the quarter.'),
+    ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul also gives free throws.',
+     'Every steal foul is +5 in both formats (D-89). Tabletop: the second steal foul of the possession also gives free '
+     'throws and ends it (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; '
+     'from the 5th a steal foul also gives free throws and ends the possession.'),
+    ('Junior growth', SPLIT_APPROVED, dict(how='growth'), 'Growth at Junior (D-88).',
+     'Tabletop: none, the junior cards play as printed. Digital: dealt at random when a junior roster is made, shown '
+     'only in the ratings and in a Coach Vision line. At the table it needed markers and a term players found '
+     'unclear; the app can apply it unseen.'),
     ('quarter_possessions', DIGITAL, dict(rules='quarter_possessions'), 'Possessions a side in a quarter (18).',
      'Team fouls across matches need a running quarter; the table plays one possession.'),
     ('bonus_from', DIGITAL, dict(rules='bonus_from'), 'The team foul that starts the bonus (5th).', 'As above.'),
@@ -46,18 +50,21 @@ ENTRIES = [
     ('Far-contest -3', SHARED, dict(const=('FAR_CONTEST_PENALTY',)), 'Contester further from the rim than the shooter.', ''),
     ('Turnover points (-5)', SHARED, dict(const=('TURNOVER_POINTS',)), 'The value of a turnover where one is scored.',
      'The number is shared; when it applies is the turnover-cost split above.'),
-    ('Steal foul +5', SHARED, dict(const=('STEAL_FOUL_BONUS',)), 'A steal foul before the bonus.', ''),
+    ('Steal foul +5', SHARED, dict(const=('STEAL_FOUL_BONUS',)), 'Every steal foul (D-89).', ''),
+    ('Steal-foul free throws', SHARED, dict(how='steal_ft'), 'Whose rating a steal foul\'s free throws use (D-30).', ''),
+    ('Fouled three on Two or Three', SHARED, dict(how='fouled_three'), 'A fouled three on the Two or Three card (D-36).', ''),
     ('Free-throw multipliers (x2, x3)', SHARED, dict(const=('FT_MULT_TWO', 'FT_MULT_THREE')), '', ''),
     ('Two actions a turn', SHARED, dict(const=('MAX_ACTIONS_PER_TURN',)), '', ''),
     ('Move shape (3 straight, 2 diagonal)', SHARED, dict(const=('MOVE_STRAIGHT', 'MOVE_DIAGONAL')), '', ''),
     ('Inbound phases (2)', SHARED, dict(const=('INBOUND_PHASES',)), '', ''),
     ('Per-phase limits', SHARED, dict(const=('LIMITS',)), 'Quick Steps, passes, screens, dribbles, waits, shots; '
-     'intercepts, challenges, steals.', ''),
+     'intercepts, challenges, steals, the Contest (D-18).', ''),
     ('Turn-ending actions', SHARED, dict(const=('TURN_ENDERS',)), '', ''),
     ('Zones and shot types', SHARED, dict(const=('ZONE_SHOTS', 'ZONE_POINTS')), '', ''),
     ('Look bands and Coach\'s Call bonus', SHARED, dict(const=('BANDS', 'COACH_BONUS', 'SCENARIO_GOAL')), '', ''),
-    ('Playing levels (ages, standards, growth tags)', SHARED, dict(how='levels'),
-     'Step 3l: the ratings by age and standard, junior growth tags.', 'Ratings carry age; both formats use the same cards.'),
+    ('Playing levels (ages, standards)', SHARED, dict(how='levels'),
+     'Step 3l: the ratings by age and standard.', 'Ratings carry age; both formats use the same cards (junior growth: see '
+     'Junior growth).'),
     ('Lock tokens (8)', SHARED, dict(how='tokens'), 'Grey tokens that mark a locked player.', ''),
     ('Setup placement', SHARED, dict(how='setup'), 'Where the pieces start.', ''),
     ('Phase reset', SHARED, dict(how='reset'), 'What the reset does between phases.', ''),
@@ -85,8 +92,7 @@ TOKENS = [
      'printed: each player has a Quick Step slot on the tracker', 'covered'),
     ('Dribble wins this phase (the carrier is free of that defender\'s zone)', 'the beaten defender\'s lock token', 'printed',
      'covered by the lock token on the beaten defender'),
-    ('Growth tags at junior (Early, On time, Late)', 'one tag per card', 'the levels sheet lists them; no printed tag markers',
-     'needs 10 tag markers (5 a team) or written on the team sheet: flag for the designer'),
+    ('Growth at junior', 'none: no growth at the table (D-88)', 'the levels sheet changes (by Shaun)', 'covered'),
     ('Steal fouls this possession (tabletop bonus)', 'none needed', 'one possession: players count 0, 1, 2', 'covered'),
 ]
 
@@ -130,11 +136,17 @@ WORDS = {
         text='The offence places its 5 O pieces anywhere. The ball goes on a player on plain wood beyond the '
              'three-point tiles. The defence places its 5 X pieces on empty squares, each arrow pointing any way.',
         tab='offence places first, then defence', dig='offence places first, then defence'),
-    'Playing levels (ages, standards, growth tags)': dict(
+    'Playing levels (ages, standards)': dict(
         sec='Setup', src='levels sheet',
         text='Each player takes 5 cards, one per position: a prescribed team, or a team from the playing levels '
-             '(Senior, Youth or Junior; Pro, Semi-pro or Amateur; growth tags at Junior).',
+             '(Senior, Youth or Junior; Pro, Semi-pro or Amateur).',
         tab='same cards and levels', dig='same cards and levels'),
+    'Junior growth': dict(
+        sec='Setup', src=None,
+        text='Junior growth (app only): when a junior roster is made, one player on each team is bigger and stronger '
+             'than most his age and one is still growing; the cards show the ratings they play with. At the table the '
+             'junior cards play as printed (see Split by format).',
+        tab='none, the cards as printed', dig='dealt at random, shown in the ratings'),
     # ---- the shot, the court, rolling
     'Zones and shot types': dict(
         sec='Reading the court', src='rulebook',
@@ -294,7 +306,7 @@ WORDS = {
         sec='Defender arrows', src='rulebook',
         text='Steal: from 1 square away, arrow on the ball carrier. No foul, and the carrier keeps the ball on '
              'Dribble − Steal or under: the defender is locked. Otherwise the ball is stolen.',
-        tab='a clean miss locks the defender', dig='a clean miss locks the defender'),
+        tab='a Steal that misses without a foul locks the defender', dig='a Steal that misses without a foul locks the defender'),
     'reach_angle_fouls': dict(
         sec='Defender arrows', src='rulebook',
         text='The foul roll comes first, Foul (Steal) or under: once if the defender is closer to the rim than the '
@@ -317,7 +329,7 @@ WORDS = {
         dig='one straight movement, then Intercept'),
     'Intercept roll': dict(
         sec='Passes and intercepts', src='rulebook',
-        text='The offence rolls Pass − Intercept or under: the pass gets through. Otherwise it is picked off. A missed '
+        text='The offence rolls Pass − Intercept or under: the pass gets through. Otherwise it is intercepted. A missed '
              'Intercept leaves him on the line, his Move used.', tab='Pass − Intercept', dig='Pass − Intercept'),
     'lane_jump_keeps_facing': dict(
         sec='Passes and intercepts', src='rulebook', oq=76,
@@ -343,12 +355,17 @@ WORDS = {
              'with a Move or a Steal.', tab='Move, Quick Step, Sprint or Steal', dig='Move, Quick Step, Sprint or Steal'),
     'reaction_may_decline': dict(
         sec='Shooting', src=None, oq=6, q='How many actions may the reaction take, and which?',
-        text='The reaction may be 0, 1 or 2 actions, and may also use a Quick Step or a Sprint.',
+        text='The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest.',
         tab='0, 1 or 2 actions', dig='0, 1 or 2 actions'),
+    'contest_action': dict(
+        sec='Shooting', src=None, q='How does a defender contest a declared shot?',
+        text='Contest is an action: the reaction\'s last, one a phase, by one defender next to the shooter at that moment, '
+             'using a token. A Steal ends the reaction, so it can\'t also Contest. No Contest: the contest is 0.',
+        tab='an action, the last of the reaction', dig='an action, the last of the reaction'),
     'contest_choice': dict(
         sec='Shooting', src='rulebook', oq=12,
-        text='Then one adjacent defender contests, diagonals included: the defence picks who, or no one. None '
-             'adjacent: the contest is 0.', tab='the defence picks', dig='the defence picks'),
+        text='On a forced shot at clock 0, one adjacent defender contests, diagonals included: the defence picks who, or '
+             'no one. None adjacent: the contest is 0.', tab='the defence picks', dig='the defence picks'),
     'contest_geometry': dict(
         sec='Shooting', src='rulebook',
         text='Arrow off the shooter: a foul roll first, Foul (Contest) or under.',
@@ -363,14 +380,30 @@ WORDS = {
     'Turnover cost': dict(
         sec='Scoring', src='rulebook',
         text='A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot '
-             'is cancelled. In the last phase the possession scores 0. The app differs (see Split by format).', tab='−5, the shot clock loses a phase, play on', dig='the possession ends and scores 0'),
+             'is cancelled. In the last phase the possession scores 0 (or less: see the turnover floor). The app differs '
+             '(see Split by format).', tab='−5, the shot clock loses a phase, play on', dig='the possession ends and scores 0'),
     'Turnover points (-5)': dict(sec=None, src='rulebook', tab='−5', dig='−5 (where a turnover is scored)'),
     'Steal-foul bonus': dict(
-        sec='Scoring', src='rulebook',
-        text='A foul on a Steal at the table: the first is +5 and play on; the second gives free throws and the '
-             'possession ends. The app counts fouls across a quarter (see Split by format).',
-        tab='1st +5 and play on; 2nd free throws, over', dig='+5 and play on until the 5th team foul; then free throws, over'),
+        sec='Scoring', src=None, q='What does a steal foul give in the bonus?',
+        text='Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free '
+             'throws and the possession ends: at the table the bonus is the second steal foul of the possession; the '
+             'app counts team fouls across a quarter (see Split by format).',
+        tab='+5 every time; the 2nd also free throws, over', dig='+5 every time; from the 5th team foul also free throws, over'),
     'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='+5'),
+    'steal_foul_always_plus5': dict(sec=None, src=None, tab='every steal foul +5', dig='every steal foul +5'),
+    'Steal-foul free throws': dict(
+        sec='Scoring', src=None, q='Whose free-throw rating do a steal foul\'s free throws use?',
+        text='Free throws from a steal foul score 2 × the ball carrier\'s free-throw rating.', tab='the ball carrier\'s',
+        dig='the ball carrier\'s'),
+    'Fouled three on Two or Three': dict(
+        sec='Scoring', src=None, q='On Two or Three, does a fouled three count as an Excellent three?',
+        text='On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three.',
+        tab='counts as an Excellent three', dig='counts as an Excellent three'),
+    'turnover_floor': dict(
+        sec='Scoring', src=None, q='Can a turnover that ends the possession at 0 help the offence?',
+        text='A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the '
+             'app) scores 0 or the total banked before it, whichever is lower.', tab='0 or the banked total if lower',
+        dig='0 or the banked total if lower'),
     'and_one': dict(
         sec='Scoring', src='rulebook', oq=34,
         text='A foul on a shot (once it is declared, or forced): free throws or the open shot, whichever is higher. '
@@ -402,7 +435,7 @@ WORDS = {
         text='On Late Clock cards, compare results first (win, then tie, then loss); the shot value breaks ties.',
         tab='result first, then shot value', dig='result first, then shot value'),
     'Tied match': dict(
-        sec=None, src='rulebook', tab='roll for the final shot', dig='overtime (ruled, not yet built: a tie for now)'),
+        sec=None, src='rulebook', tab='roll for the final shot', dig='overtime, one more possession a side'),
     # ---- the format, digital only
     'digital': dict(sec=None, src=None, tab='tabletop', dig='digital'),
     'quarter_possessions': dict(sec=None, src=None, tab='not used', dig='18 possessions a side'),
@@ -437,35 +470,31 @@ SPLITS = [
      'A digital match has several possessions a side, so the next possession is the cost.'),
     ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover: the '
      'possession scores 0.', 'As in basketball: no shot before the clock runs out is a turnover.'),
-    ('Steal-foul bonus', 'First steal foul +5 and play on; second, free throws and the possession ends.',
-     '+5 and play on until the 5th team foul of the quarter; from the 5th, free throws and the possession ends.',
+    ('Steal-foul bonus', 'Every steal foul +5; the second of the possession also gives free throws and ends it.',
+     'Every steal foul +5; from the 5th team foul of the quarter it also gives free throws and ends the possession.',
      'One possession is the whole tabletop game; the app keeps fouls across a quarter.'),
+    ('Junior growth', 'None: the junior cards play as printed.', 'Dealt at random when a junior roster is made; the '
+     'cards show the ratings, Coach Vision names the two players it changes.', 'At the table it needed markers and a '
+     'term players found unclear; the app can apply it unseen. Approved (D-88).'),
     ('Match length', '2 possessions, 1 each.', '4, 8 or 12 possessions a side.', 'An app match can be longer.'),
     ('Tied match', 'Each player rolls for their final shot.', 'Overtime: one more possession a side, repeated until a '
-     'side leads. Ruled, not yet built: until step 9 the app leaves a tie.', 'Basketball has no ties. Approved (D-19).'),
+     'side leads after equal possessions.', 'Basketball has no ties. Approved (D-19).'),
 ]
 
-# The ruling on each rule the engine plays that no printed page states (DECISIONS.md). All approved as played except
-# the reaction, which Contest as an action replaces (D-18).
+# The ruling behind each rule the engine plays that no printed page states yet (DECISIONS.md).
 DECISION = {
     'floor_declared_shot': 'D-1', 'natural_rolls': 'D-2', 'move_either_order': 'D-3', 'diag_move_straight': 'D-4',
     'qs_up_to': 'D-5', 'qs_once_per_player': 'D-6', 'sprint_needs_qs': 'D-7', 'forfeit_when_stuck': 'D-8',
     'inbounder_pass_only': 'D-9', 'forced_shot_choice': 'D-10', 'arrow_line_adjacent_at': 'D-11',
     'dribble_win_lasts': 'D-12', 'intercept_return': 'D-13', 'inbound_resolves': 'D-14', 'floor_contest_zero': 'D-15',
     'three_only_ft_on_twos': 'D-16', 'coach_bonus_on_forced': 'D-17', 'reaction_may_decline': 'D-18',
+    'contest_action': 'D-18', 'Steal-foul bonus': 'D-89', 'Steal-foul free throws': 'D-30',
+    'Fouled three on Two or Three': 'D-36', 'turnover_floor': 'D-82', 'Junior growth': 'D-88',
 }
-CHANGED = {'reaction_may_decline'}          # ruled to change: the rule as played until the change is built
+CHANGED = set()          # ruled to change and not yet built: none since step 6 (D-18 and D-19 are built)
 
 # Ruled, not yet built: (title, the rule as ruled, what the game does until it is built, D number, step that builds it)
-RULED_NOT_BUILT = [
-    ('Contest as an action', 'After a shot is declared, the defence reacts with up to 2 actions from its remaining '
-     'tokens: Move, Quick Step, Sprint, Steal or Contest. Contest is the last action, one a phase, made by a defender '
-     'next to the shooter at that moment. No Contest means a contest of 0. The foul roll and the −3 work as now. The '
-     'defence tracker gains a Contest slot and the rulebook\'s Shooting section changes.',
-     'the reaction takes 0, 1 or 2 actions and the contest is free', 'D-18', 9),
-    ('Overtime in the app', 'A tied app match plays one more possession a side, repeated until a side leads. The table '
-     'keeps its final-shot roll.', 'a tied app match stays a tie', 'D-19', 9),
-]
+RULED_NOT_BUILT = []      # step 6 built Contest as an action (D-18) and overtime (D-19)
 
 
 ENTRIES_BY_NAME = {e[0]: e[2] for e in ENTRIES}
@@ -507,8 +536,8 @@ def markdown():
             'from the bonus behaves differently in each.',
             '- The coarse phase table (engine data, not a rule) is solved from digital self-play; tabletop possessions '
             'play on after a turnover, so their late-phase values differ.',
-            '- A tied match: the table rolls for the final shots, the app plays overtime. Approved (DECISIONS.md D-19); '
-            'overtime not yet built, so the app leaves a tie until step 9.', '',
+            '- A tied match: the table rolls for the final shots, the app plays overtime. Approved (DECISIONS.md D-19).',
+            '- Junior growth: none at the table, applied unseen in the app. Approved (DECISIONS.md D-88).', '',
             '## Tokens and markers', '', '| Mechanism | Token | Printed | Check |', '|---|---|---|---|']
     for m, t, p, c in TOKENS:
         out.append(f'| {m} | {t} | {p} | {c} |')
@@ -565,6 +594,8 @@ def rules_markdown():
             'Rulings that change the game. Until they are built the game plays as the rest of this page says.', '']
     for n, (title, text, now, d, step) in enumerate(RULED_NOT_BUILT, 1):
         out.append(f'{n}. **{title}.** {text} Until step {step}: {now}. See {d}.')
+    if not RULED_NOT_BUILT:
+        out.append('None. Step 6 built Contest as an action (D-18) and overtime in the app (D-19).')
     out += ['', '## On the scenario rules sheet only', '',
             'Printed on the scenario rules sheet, not in the rulebook or the trackers:', '']
     for n, (text, note) in enumerate(scenario, 1):

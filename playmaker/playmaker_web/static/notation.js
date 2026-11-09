@@ -68,6 +68,7 @@ window.PMNotation = (function () {
       }
     }
     root.append(g);
+    if (opts.rings) rings(root);
     if (opts.axes !== false) {
       const ax = svg('g', { class: 'axes', 'aria-hidden': 'true' });
       for (let y = 1; y <= 14; y++) ax.append(svg('text', { class: 'axis', x: 4, y: py(y) + S / 2 + 4 }, y));
@@ -77,6 +78,23 @@ window.PMNotation = (function () {
     courtLines(root);
     root.append(svg('circle', { class: 'rim', cx: cx(RIM[0]), cy: cy(RIM[1]), r: 9, fill: 'none', stroke: '#c0392b', 'stroke-width': 3, filter: 'url(#hand)' }));
     return root;
+  }
+
+  // D-84: the distance rings. "Closer, level or further from the rim" is the count of squares to the rim, diagonals
+  // included; each faint ring is the edge between one count and the next (one check for the foul rolls and the -3).
+  function rings(root) {
+    const g = svg('g', { class: 'rings', 'aria-hidden': 'true' });
+    const clip = svg('clipPath', { id: 'ringclip' });
+    clip.append(svg('rect', { x: px(0), y: py(14), width: 17 * S, height: 14 * S }));
+    g.append(clip);
+    const inner = svg('g', { 'clip-path': 'url(#ringclip)' });
+    for (let d = 0; d <= 15; d++) {
+      const x1 = px(RIM[0] - d), x2 = px(RIM[0] + d) + S, y1 = py(RIM[1] + d), y2 = py(RIM[1] - d) + S;
+      inner.append(svg('rect', { x: x1, y: y1, width: x2 - x1, height: y2 - y1, fill: 'none', stroke: 'rgba(60,55,45,0.28)',
+        'stroke-width': 1.1, 'stroke-dasharray': '2 4' }));
+    }
+    g.append(inner);
+    root.append(g);
   }
 
   // The printed board's lines, in marker: three-point line, the key, free-throw circle, backboard, half-court
@@ -255,7 +273,7 @@ window.PMNotation = (function () {
         chevron(strokes, x1, y1, x2, y2, ink, 9, 2.6);
         if (num != null) tagAlong(grp, x1, y1, x2, y2, num, ink);
         passLines[m.target] = [x1, y1, x2, y2];
-        if (m.result === 'intercepted' || m.result === 'picked off') {
+        if (m.result === 'intercepted') {
           const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
           strokes.append(svg('path', { d: `M${mx - 7} ${my + 9} L${mx + 7} ${my - 9}`, stroke: RED, 'stroke-width': 3, 'stroke-linecap': 'round' }));
         }
@@ -279,9 +297,9 @@ window.PMNotation = (function () {
         strokes.append(svg('circle', { cx: tx, cy: ty, r: 5, fill: '#fff', stroke: ink, 'stroke-width': 2 }));
         if (num != null) tagAlong(grp, x1, y1, x2, y2, num, ink, -1);
       } else if (m.kind === 'intercept') {
-        // the red X at the point of contact; a slash across the pass when it was picked off
+        // the red X at the point of contact; a slash across the pass when it was intercepted
         strokes.append(svg('path', { d: `M${ax - 9} ${ay - 9} L${ax + 9} ${ay + 9} M${ax - 9} ${ay + 9} L${ax + 9} ${ay - 9}`, stroke: RED, 'stroke-width': 3.4, 'stroke-linecap': 'round', fill: 'none' }));
-        if (m.result === 'picked off') strokes.append(svg('circle', { cx: ax, cy: ay, r: 14, fill: 'none', stroke: RED, 'stroke-width': 2.2 }));
+        if (m.result === 'intercepted') strokes.append(svg('circle', { cx: ax, cy: ay, r: 14, fill: 'none', stroke: RED, 'stroke-width': 2.2 }));
         if (num != null) numberTag(grp, ax + 15, ay - 15, num, RED);
       } else if (m.kind === 'steal' && tgXY) {
         const [bx, by] = [cx(tgXY[0]), cy(tgXY[1])];
@@ -323,12 +341,12 @@ window.PMNotation = (function () {
     const root = svg('svg', { class: 'diagram', role: 'img', xmlns: 'http://www.w3.org/2000/svg' });
     court(root, zones, { axes: opts.axes !== false, plain: true });
     const marksList = entries.map(e => e.mark).filter(Boolean);
-    // a pass that was picked off: the defence's intercept mark says so; mark the pass line too
+    // a pass that was intercepted: the defence's intercept mark says so; mark the pass line too
     for (let k = 0; k < entries.length; k++) {
       const m = entries[k].mark;
       if (m && m.kind === 'pass' && m.result === 'in the air') {
         const nxt = entries.slice(k + 1).find(e => e.mark && ['intercept', 'pass', 'shot'].includes(e.mark.kind) || e.side === 'O' && e.kind !== 'end_turn');
-        if (nxt && nxt.mark && nxt.mark.kind === 'intercept' && nxt.mark.result === 'picked off') m.result = 'picked off';
+        if (nxt && nxt.mark && nxt.mark.kind === 'intercept' && nxt.mark.result === 'intercepted') m.result = 'intercepted';
       }
     }
     const pg = svg('g', { class: 'pieces' });

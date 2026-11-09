@@ -50,6 +50,7 @@ class Result:
     shot_value: int = 0       # points x (rating - contest), as scored
     free_throws: int = 0
     and_one: bool = False     # the foul scored the uncontested shot value (higher than the free throws)
+    floor: int = 0            # D-82: a turnover that zeroes the possession scores min(0, what was banked before it)
 
 
 @dataclass(frozen=True)
@@ -95,6 +96,8 @@ class GameState:
 
     # ---- helpers ----
     def count(self, side, kind):
+        if kind == 'contest':
+            return 0        # D-18: a Contest (one a phase) resolves the shot and ends the possession, so no count is kept
         return self.cnt[CI[count_key(side, kind)]]
 
     def tokens(self, side):

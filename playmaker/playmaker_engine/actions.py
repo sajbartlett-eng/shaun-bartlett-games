@@ -172,6 +172,25 @@ def movement_dests(state, side, i, kind, rules):
     return out
 
 
+def screen_blocked(state, i):
+    """D-104: defender i's steps that only a screen blocks: {kind: [dest, ...]} for each movement kind he may make now,
+    the squares he could reach with no screen on the board but can't reach with the screens as they stand."""
+    if not state.screens or state.tokens('X') <= 0:
+        return {}
+    rules = state.ctx.rules
+    open_board = state.with_(screens=())
+    out = {}
+    for kind in ('move', 'qs', 'sprint'):
+        if not can_move_kind(state, 'X', i, kind):
+            continue
+        now = movement_dests(state, 'X', i, kind, rules)
+        free = movement_dests(open_board, 'X', i, kind, rules)
+        blocked = sorted(q for q in free if q not in now)
+        if blocked:
+            out[kind] = blocked
+    return out
+
+
 def can_move_kind(state, side, i, kind):
     """Limits and status for a movement kind (ignores geometry)."""
     rules = state.ctx.rules
@@ -676,6 +695,11 @@ def legal_actions(state):
     acts = []
     if s.stage == 'reaction':
         acts = _defence_actions(s, rules, kinds=set(rules.reaction_kinds))
+        if rules.contest_action and s.tok_x > 0:
+            # D-18: a Contest by a defender next to the shooter now, the reaction's last action (a token)
+            from .scoring import contest_options
+            acts = [Action('contest', 'X', o.defender) for o in contest_options(s, s.ball, s.shot, False)
+                    if o.defender >= 0] + acts
         if s.turn_n >= 1 or rules.reaction_may_decline or not acts:
             acts.append(Action('end_turn', 'X'))
     elif side == 'O':

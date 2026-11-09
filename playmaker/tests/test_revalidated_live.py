@@ -32,9 +32,12 @@ def test_these_tests_run_under_the_live_rules():
 
 # ---- ceilings (test_golden_and_regression) ----------------------------------------------------------------
 
-def test_engine_ceilings_under_the_live_rules():
+def test_engine_ceilings_under_the_live_rules(monkeypatch):
     """Recorded under the live rules (single arrow, move then intercept). Late Clock Reset's first-turn ceiling is
-    12.75, as under the step 3i rules (the wedge had it at 8: a second line covered the step)."""
+    12.75, as under the step 3i rules (the wedge had it at 8: a second line covered the step). Step 6: the ceilings
+    (analysis.py) count the free contest after the reaction, so the record runs with the rules before 9 Nov 2026."""
+    if not os.environ.get('PM_LIVE_RULES'):
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_RULEBOOK, **RC.PRE_9NOV))
     from fractions import Fraction as F
     from playmaker_engine.analysis import engine_ceilings
     eng = engine_ceilings([6, 10, 14])
@@ -43,9 +46,11 @@ def test_engine_ceilings_under_the_live_rules():
     assert eng[14] == (None, None)
 
 
-def test_the_reaction_closes_the_gap_under_the_live_rules():
+def test_the_reaction_closes_the_gap_under_the_live_rules(monkeypatch):
     """Late Clock Reset: with two reaction actions (a Move that sets the arrow, then a Quick Step in) O1's three
-    is contested clean: 3."""
+    is contested clean: 3. Step 6: recorded with the free contest after the reaction (the rules before 9 Nov 2026)."""
+    if not os.environ.get('PM_LIVE_RULES'):
+        monkeypatch.setattr(RC, 'DEFAULT_RULES', RC.with_rules(**RC.PRE_RULEBOOK, **RC.PRE_9NOV))
     from playmaker_engine.analysis import two_action_ceilings
     gift = two_action_ceilings([10], parts=('gift',))[10][0]
     assert gift[0] == 3

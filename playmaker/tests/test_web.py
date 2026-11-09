@@ -180,15 +180,15 @@ def test_contest_decision_through_the_api(web):
     s = state(web, g)
     shot = next(a for a in s['legal'] if a['kind'] == 'shot')
     post(web, '/api/act', dict(tok, action=shot))
-    post(web, '/api/act', dict(tok, action=next(a for a in state(web, g)['legal'] if a['kind'] == 'end_turn')))
+    # step 6 (D-18): the Contest is one of the reaction's actions; no Contest is ending the reaction
     s = state(web, g)
-    assert s['stage'] == 'contest' and s['side'] == 'X'
+    assert s['stage'] == 'reaction' and s['side'] == 'X'
     opts = s['legal']
-    assert {a['kind'] for a in opts} == {'contest'} and any(a['piece'] == -1 for a in opts)
-    adj = [a for a in opts if a['piece'] >= 0]
-    assert adj and all(('clean' in a['option']) == a['clean'] for a in adj)
+    adj = [a for a in opts if a['kind'] == 'contest']
+    assert adj and all(a['piece'] >= 0 for a in adj) and any(a['kind'] == 'end_turn' for a in opts)
+    assert all(('clean' in a['option']) == a['clean'] for a in adj)
     assert all('foul roll on Foul' in a['option'] for a in adj if not a['clean'])
-    r = post(web, '/api/act', dict(tok, action=next(a for a in opts if a['piece'] == -1)))
+    r = post(web, '/api/act', dict(tok, action=next(a for a in opts if a['kind'] == 'end_turn')))
     assert r['state']['stage'] == 'over' and r['state']['result']['detail'].endswith('contested by nobody')
 
 
@@ -284,3 +284,35 @@ def test_a_human_cannot_sprint_after_a_quick_step(web):
     sprint = dict(kind='sprint', side='O', piece=1, dest=[qs['dest'][0], qs['dest'][1] + 1], arrow=-1, target=-1, shot='')
     r = post(web, '/api/act', dict(tok, action=sprint), ok=False)
     assert r['status'] == 400 and 'illegal action' in r['error']
+
+
+def test_the_computer_places_and_the_setup_log_records_it(web):
+    """Restored in step 6 on a live level (the step 3m engine): the computer's setup is logged with its matchups, its value
+    and the reasons in words (step 5 archived the version that also checked the old baseline's man-to-man)."""
+    g = post(web, '/api/new', dict(mode='hotseat', teams=['Five Out', 'High-Low'], full=True, seed=8, ai=dict(X='starter')))
+    tok = dict(code=g['code'], token=g['token'])
+    post(web, '/api/place', dict(tok, squares=['I12', 'C9', 'O9', 'A3', 'Q3'], ball=0))
+    s = state(web, g)
+    assert s['placing'] is None
+    rec = [r for r in get(web, f'/api/log?code={g["code"]}') if r['type'] == 'computer' and r.get('event') == 'setup']
+    assert rec and len(rec[-1]['matchup']) == 5 and 'value' in rec[-1] and rec[-1]['text']
+
+
+def test_the_computers_turn_is_reported_with_rolls_and_results_on_a_live_level(web):
+    """Restored in step 6 on a live level: the computer's rolls and what happened come back to the page with the action,
+    not only in the log. The computer plays both sides of a scenario card; every rolled action it took is reported."""
+    seen = []
+    for level, card, seed in (('rookie', 3, 3), ('starter', 6, 3), ('rookie', 8, 5), ('allstar', 12, 4)):
+        g = post(web, '/api/new', dict(mode='hotseat', scenario=card, seed=seed, ai=dict(O=level, X=level)))
+        s = state(web, g)
+        feed = s['feed']
+        rolled = [e for e in feed if e['actor'] == 'ai' and e['rolls']]
+        for e in rolled:
+            assert e['rolls'][0]['roller'] in ('O', 'X')
+            assert e['rolls'][0]['picked'] in ('success', 'failure', 'foul', 'no foul', 'kept', 'stolen')
+            assert e['outcomes'] and all(o['text'] for o in e['outcomes'])
+        assert s['feed_n'] == feed[-1]['n']
+        seen += rolled
+        if seen:
+            break
+    assert seen, 'the computer made no rolled action in four computer-v-computer possessions'

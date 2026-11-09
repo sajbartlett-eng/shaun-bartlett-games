@@ -8,8 +8,10 @@ from . import board as B
 
 # Interface words the engine uses inside but a player never reads (tests/test_step3n.py greps every screen for these)
 BANNED = ('turn group', 'credit', 'residual', 'threat', 'coverage', 'hinge', 'dilemma', 'capacity', 'drain', 'value lost',
-          'leaf', 'depth', 'principal variation', 'glicko', 'volatility', '±')
-BANNED_RE = (r'\bRD\b', r'\b[OX]\d? (Move|Quick Step|Sprint|Pass|Hesitate|Pause|Steal|Dribble|Screen|Shot|Intercept|Challenge)\b',
+          'leaf', 'depth', 'principal variation', 'glicko', 'volatility', '±',
+          'pick-off', 'picked off', 'clean miss')          # D-85: say intercepted, stolen, a Steal that misses without a foul
+BANNED_RE = (r'(?i)\bon time\b',                         # D-88: no growth tag names
+             r'\bRD\b', r'\b[OX]\d? (Move|Quick Step|Sprint|Pass|Hesitate|Pause|Steal|Dribble|Screen|Shot|Intercept|Challenge)\b',
              r'\b[OX] (Hesitate|Pause|End turn)\b', r'[a-z]+:[OX]\|c\d+')
 
 DIRS = {'N': 'north', 'NE': 'north-east', 'E': 'east', 'SE': 'south-east', 'S': 'south', 'SW': 'south-west', 'W': 'west',

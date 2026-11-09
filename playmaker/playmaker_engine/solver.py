@@ -264,6 +264,11 @@ class Evaluator:
         best_ev = best[0]
         steal_ok = s.count('X', 'steal') < RC.LIMITS['X']['steal']
         tok = s.tok_x
+        # D-18: on a declared shot the Contest is one of the reaction's actions, so the closeout before it has one
+        # fewer; a Steal ends the reaction, so a kept ball is shot open. D-89: a steal foul is +5 as well.
+        action = rules.contest_action and not forced
+        cb = budget - 1 if action else budget
+        fps = fp + (RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0)
         far_pen = RC.FAR_CONTEST_PENALTY
         floor_c = rules.floor_contest_zero
         ds = _DR[spos]
@@ -294,13 +299,19 @@ class Evaluator:
                 for a, ln in fx:
                     if ln <= budget and a == on and (clean_len is None or ln < clean_len):
                         clean_len = ln
-                if clean_len is not None:
+                clean_c = None
+                if fl is not None and fl <= cb:
+                    clean_c = fl
+                for a, ln in fx:
+                    if ln <= cb and a == on and (clean_c is None or ln < clean_c):
+                        clean_c = ln
+                if clean_c is not None:
                     if v < best_ev:
                         best, best_ev = (v, v, 1.0 if v >= 30 else 0.0, 'clean'), v
                 else:
                     pf = dcard.r['foul_contest'] / 20.0
                     for a, ln in fx:
-                        if ln <= budget and a != on:
+                        if ln <= cb and a != on:
                             ev = pf * fp + (1 - pf) * v
                             if ev < best_ev:
                                 best, best_ev = (ev, ev, pf * fp30 + (1 - pf) * (v >= 30), 'side'), ev
@@ -310,9 +321,10 @@ class Evaluator:
                     pk = pk_cache.get(d)
                     if pk is None:
                         pk = pk_cache[d] = float(p_success(card.r['dribble'] - dcard.r['steal'], rules))
-                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * _stolen(s, v))   # a stolen shot: turnover_cost
+                    kv = float(v0) if action else v                 # D-18: no Contest after a Steal
+                    ev = pf * fps + (1 - pf) * (pk * kv + (1 - pk) * _stolen(s, kv))   # a stolen shot: turnover_cost
                     if ev < best_ev:
-                        best = (ev, pf * fp + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
+                        best = (ev, pf * fps + (1 - pf) * pk * kv, pf * fp30 + (1 - pf) * pk * (kv >= 30), 'steal')
                         best_ev = ev
         return best
 
@@ -334,6 +346,9 @@ class Evaluator:
         best_ev = best[0]
         steal_ok = s.count('X', 'steal') < RC.LIMITS['X']['steal']
         tok = s.tok_x
+        action = rules.contest_action and not forced              # D-18, as in defended()
+        cb = budget - 1 if action else budget
+        fps = fp + (RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0)
         idx = maps.index
         occ_o = s.o
         sx, sy = spos
@@ -358,6 +373,8 @@ class Evaluator:
                     _, foul_roll, penalty, _, _ = G.late(rules, q != s.x[d] or (s.stage == 'reaction' and s.react_moved >> d & 1),
                                                          t, bt[:4]) + (bt[4],)
                     facing_len = ln if facing_len is None else min(facing_len, ln)
+                    if ln > cb:
+                        continue                           # D-18: no action left for the Contest
                     c = dcard.r[con_key] - (RC.FAR_CONTEST_PENALTY if penalty else 0)
                     if rules.floor_contest_zero and c < 0:
                         c = 0
@@ -374,15 +391,15 @@ class Evaluator:
                     if cand[0] < best_ev:
                         best, best_ev = cand, cand[0]
                 if steal_ok and facing_len is not None and facing_len + 1 <= budget and tok >= facing_len + 1:
-                    c = dcard.r[con_key]
+                    c = 0 if action else dcard.r[con_key]          # D-18: no Contest after a Steal
                     v = float(max(0, pts * (rating - c)) if floor else pts * (rating - c))
                     pf = dcard.r['foul_steal'] / 20.0
                     pk = pk_cache.get(d)
                     if pk is None:
                         pk = pk_cache[d] = float(p_success(card.r['dribble'] - dcard.r['steal'], rules))
-                    ev = pf * fp + (1 - pf) * (pk * v + (1 - pk) * _stolen(s, v))   # a stolen shot: turnover_cost
+                    ev = pf * fps + (1 - pf) * (pk * v + (1 - pk) * _stolen(s, v))   # a stolen shot: turnover_cost
                     if ev < best_ev:
-                        best = (ev, pf * fp + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
+                        best = (ev, pf * fps + (1 - pf) * pk * v, pf * fp30 + (1 - pf) * pk * (v >= 30), 'steal')
                         best_ev = ev
         return best
 
@@ -967,9 +984,14 @@ class Generator:
         sp = s.o[s.ball]
         budget = min(2, s.tok_x)
         maps = self.ev.reach(s, budget)
+        action = s.ctx.rules.contest_action           # D-18: a closeout ends with the Contest, one of its two actions
+        mb = budget - 1 if action else budget
+        end = (lambda d: (Action('contest', 'X', d),)) if action else (lambda d: ())
         for a in legal_actions(s):
             if a.kind == 'steal':
                 out.append(Play('steal gamble', (a,)))
+            if a.kind == 'contest':
+                out.append(Play('contest', (a,)))
         for d in range(5):
             free, fixed = maps[d]
             for dr in B.DIRS:
@@ -980,15 +1002,17 @@ class Generator:
                 seq = free.get(q)
                 if seq is not None and len(seq) <= budget:
                     acts_seq = _seq_actions(d, seq, on)
-                    out.append(Play('closeout', tuple(acts_seq)))
+                    if len(seq) <= mb:
+                        out.append(Play('closeout', tuple(acts_seq) + end(d)))
                     if len(acts_seq) == 1 and budget >= 2:
                         out.append(Play('closeout+steal', (acts_seq[0], Action('steal', 'X', d))))
                 for arr, fseq in fixed.get(q, {}).items():
-                    if fseq and len(fseq) <= budget:
+                    if fseq and len(fseq) <= mb:
                         facing = G.faces(s.ctx.rules, arr, q, sp)
                         if not facing and s.ctx.rules.contest_geometry != 'current':
                             continue                       # step 3h: lines off the shooter can't contest
-                        out.append(Play('closeout (side-on)' if not facing else 'closeout', tuple(_seq_actions(d, fseq, None))))
+                        out.append(Play('closeout (side-on)' if not facing else 'closeout',
+                                        tuple(_seq_actions(d, fseq, None)) + end(d)))
         return out
 
 
@@ -1035,7 +1059,7 @@ def pruned_actions(s):
     sp = s.o[s.ball]
     keep, noop = [], None
     for a in acts:
-        if a.kind in ('steal', 'end_turn', 'forfeit'):
+        if a.kind in ('steal', 'end_turn', 'forfeit', 'contest'):     # D-18: a Contest is a reaction action
             keep.append(a)
         elif a.kind in MOVEMENT:
             start = s.x[a.piece]

@@ -162,7 +162,7 @@ def test_in_the_bonus():
     s = s.with_(side='X')
     end = force(apply(s, Action('steal', 'X', 0)), 'foul')
     sc = score(end)
-    assert end.stage == 'over' and sc.free_throws > 0 and sc.bonus == 5
+    assert end.stage == 'over' and sc.free_throws > 0 and sc.bonus == 10     # step 6 (D-89): the bonus foul is +5 too
 
 
 def test_hold_for_one():
