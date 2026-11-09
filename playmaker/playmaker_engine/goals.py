@@ -101,7 +101,7 @@ def goals_in(before, after, side, read_before=None, read_after=None, turn=()):
                 out[('Deny', i)] = f'deny the lane to O{i + 1}'
         ob, oa = rb.overloads(), ra.overloads()
         if ob and (not oa or oa[0]['value'] < ob[0]['value'] - 1e-9):
-            out[('Shrink', ob[0]['defender'])] = f"take X{ob[0]['defender'] + 1} out of the dilemma"
+            out[('Shrink', ob[0]['defender'])] = f"free X{ob[0]['defender'] + 1} from having to choose"
         if ra.cover()['value'] < rb.cover()['value'] - 1e-9 and after.clock <= RC.START_CLOCK // 2:
             out[('Pressure',)] = 'make the clock work: no open look as it runs down'
     return out

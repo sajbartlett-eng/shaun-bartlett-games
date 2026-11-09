@@ -209,3 +209,188 @@ def test_the_foul_price_rises_toward_the_bonus_and_vanishes_inside_it():
     assert m[0] < m[1] < m[2] < m[3] and m[4] == m[5] == 0.0
     assert foul_marginal(game_state('Five Out', 'Iron Wall', ['L8', 'H7', 'K4', 'D6', 'N7'], ['K8', 'B9', 'B11', 'O1', 'K5'],
                                     [2, 4, 6, 4, 6], check=False).ctx, 0, 10) == 0.0        # tabletop: no quarter
+
+
+# ---- C: the phase table ---------------------------------------------------------------------------------------------
+
+def test_the_phase_table_counts_every_possession_alive_at_the_start_of_the_phase():
+    """A possession that turns over late still counts in the early phases: V_k is the mean final score of the
+    possessions alive at the start of phase k, so a late selection of good possessions can't lift it."""
+    from playmaker_engine.decide import solve_phase_table
+    recs = [([(1, 'a|0|1|3|32'), (2, 'a|0|2|3|32')], 30), ([(1, 'a|0|1|3|32')], 0), ([(1, 'b|0|1|3|32')], 20)]
+    V = solve_phase_table(recs, prior=0)
+    assert V['_phase1'] == round((30 + 0 + 20) / 3, 2) and V['_phase2'] == 30.0
+    assert V['_alive1'] == 3 and V['_alive2'] == 1
+    assert V['a|0|1|3|32'] == 15.0                           # (V(phase-2 key) = 30, and 0) / 2
+
+
+def test_v_by_phase_never_rises_at_senior_pro():
+    """Step 3n C: the shipped table at Senior Pro, within sampling error (one standard error of the later phase)."""
+    import json as _j
+    import os
+    from playmaker_engine.decide import HERE
+    tab = _j.load(open(os.path.join(HERE, 'data', 'vcoarse.json')))['senior/pro']
+    se = tab.get('_se', {})
+    for k in range(1, 6):
+        a, b = tab[f'_phase{k}'], tab[f'_phase{k + 1}']
+        assert b <= a + se.get(str(k + 1), 0.0) + 1e-9, (k, a, b, se)
+
+
+# ---- D: the answering defender ---------------------------------------------------------------------------------------
+
+def test_credit_names_the_helper_who_answered_the_decoy():
+    from playmaker_engine import trainer as TR
+    from playmaker_engine.exam import board
+    s = board(['I11', 'C9', 'O9', 'A3', 'Q3'], ['I10', 'D8', 'N8', 'D4', 'N4'], ['N', 'W', 'E', 'E', 'W'])
+    a = Action('move', 'O', 1, dest=B.parse_sq('D9'))             # O2 lifts; X3 leaves the far side to answer
+    c = TR.credit(s, [a])[0]
+    assert c['indirect'] >= TR.TC['inaccuracy'] and c['moved'] == 2
+    _, with_ = TR._cf(s, [a], 0, 0.4, 'phase')
+    _, without = TR._cf(s, [], 0, 0.4, 'phase')
+    assert with_.x[2] != without.x[2]                             # his reply differs between the counterfactuals
+
+
+# ---- E: accuracy ----------------------------------------------------------------------------------------------------
+
+def test_accuracy_averages_the_harmonic_and_the_volatility_weighted_means():
+    from playmaker_engine import trainer as TR
+    k = TR.TC['accuracy_k']
+    accs = [100.0, 100 * __import__('math').exp(-8 / k)]
+    harmonic = 2 / sum(1 / a for a in accs)
+    weighted = (accs[0] * 1 + accs[1] * 3) / 4
+    assert TR.accuracy([0.0, 8.0], weights=[1, 3]) == round(0.5 * (harmonic + weighted), 1)
+    assert TR.accuracy([0.0, 0.0, 0.0, 20.0]) > 30            # one blunder shows without zeroing the rest
+
+
+# ---- G: the recogniser ------------------------------------------------------------------------------------------------
+
+def test_shots_never_appear_as_unnamed_actions_and_hesitates_are_flagged():
+    from playmaker_engine import labels as LB
+    s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], ['H9', 'D8', 'N8', 'F4', 'L4'], [0, 0, 0, 0, 0])
+    shot = Action('shot', 'O', 0, shot='mid')
+    after = apply(s, shot)
+    assert LB.unnamed([(s, shot, after)], []) == []
+    assert 'G4' in LB.EXTRA and all(v for v in LB.EXTRA.values())
+
+
+# ---- J: legibility ----------------------------------------------------------------------------------------------------
+
+def _literals():
+    import os
+    import re
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'playmaker_web', 'static')
+    lit = re.compile(r"'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"|`(?:[^`\\]|\\.)*`", re.S)
+    for f in ('app.js', 'trainer.js', 'coach.js', 'records.js', 'notation.js', 'index.html'):
+        src = open(os.path.join(root, f)).read()
+        if f.endswith('.html'):
+            items = re.findall(r'>([^<]+)<', src) + re.findall(r'(?:title|aria-label|placeholder)="([^"]+)"', src)
+        else:
+            items = [m.group(0)[1:-1] for m in lit.finditer(re.sub(r'^\s*//.*$', '', src, flags=re.M))]
+        for t in items:
+            if re.fullmatch(r'[a-z0-9_\-#.:/ ]*', t) and ' ' not in t.strip():
+                continue                                          # identifiers, classes, keys: not shown
+            yield f, t
+
+
+def test_no_banned_term_in_any_interface_string_or_template():
+    from playmaker_engine.plain import check
+    bad = [(f, t[:120], check(t)) for f, t in _literals() if check(t)]
+    assert not bad, bad
+
+
+@needs_node
+def test_trainer_summaries_and_why_read_in_plain_words():
+    """A real possession (computers on the JavaScript core), read by the trainer: every line a player sees passes the
+    banned-term check, numbers are whole, and a change is never '+0'."""
+    import re
+    from playmaker_engine import selfplay, trainer as TR, plain as PL
+    from playmaker_engine.jsbridge import NodeEngine
+    eng = NodeEngine().install()
+    try:
+        r = selfplay.possession('Five Out', 'Iron Wall', ('rookie', 'starter'), 11, 0.1, keep=True)
+    finally:
+        eng.close()
+    out = TR.read_possession(r['triples'], 'O', budget=0.1)
+    texts = [p['text'] for p in out['summary']]
+    for g in out['groups']:
+        texts += [g.get('actions_text') or '', g.get('better_text') or '']
+        texts += [f['text'] for f in g.get('flags', [])]
+        texts += [c.get('action_text', '') for c in g.get('credits', [])]
+        if g.get('goal'):
+            texts += [str(v) for v in g['goal'].values() if isinstance(v, str)]
+    assert texts and out['summary']
+    for t in texts:
+        assert not PL.check(t), t
+        assert not re.search(r'\d\.\d', t), t                    # whole numbers
+        assert '+0' not in t, t
+
+
+def test_rating_shows_a_confidence_word_never_plus_minus():
+    from playmaker_engine.plain import confidence
+    assert confidence(300) == 'still settling' and confidence(60) == 'settled'
+
+
+# ---- K: the rules register ---------------------------------------------------------------------------------------
+
+def test_every_shared_rule_has_identical_values_in_both_formats():
+    from playmaker_engine import register as RG
+    dig, tab = RC.with_rules(digital=True), RC.DEFAULT_RULES
+    shared = [e for e in RG.ENTRIES if e[1] == RG.SHARED]
+    assert len(shared) > 40
+    for name, _, src, _, _ in shared:
+        assert RG.value(dig, src) == RG.value(tab, src), name
+    named = {e[2].get('rules') for e in RG.ENTRIES}
+    from dataclasses import fields
+    assert all(f.name in named for f in fields(RC.Rules))          # every setting is in the register
+    import os
+    doc = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'docs', 'rules_register.md')).read()
+    assert doc == RG.markdown()                                     # the document is the register
+
+
+def test_shared_mechanisms_roll_the_same_dice_in_both_formats():
+    """The code never applies different numbers to a shared rule by format: the same position in each format offers the
+    same actions and every roll has the same odds (only the declared splits change what an outcome is worth)."""
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'tools'))
+    from js_equivalence import random_state
+    from playmaker_engine.state import Context
+    rng = random.Random(9)
+    n = 0
+    while n < 40:
+        s, _ = random_state(rng)
+        if s.stage != 'play':
+            continue
+        c = s.ctx
+        other = Context(c.off, c.dfn, RC.with_rules(digital=not c.rules.digital))
+        t = s.with_(ctx=other)
+        la, lb = legal_actions(s), legal_actions(t)
+        assert la == lb
+        for a in la:
+            if a.kind in ('move', 'qs', 'sprint'):
+                continue
+            x, y = apply(s, a), apply(t, a)
+            px = [p for p, _, _ in x.flatten()] if isinstance(x, ChanceNode) else [1]
+            py = [p for p, _, _ in y.flatten()] if isinstance(y, ChanceNode) else [1]
+            assert sorted(px) == sorted(py), (a, s.encode())
+        n += 1
+
+
+def test_a_tabletop_game_is_graded_with_tabletop_costs():
+    """The same risky pass graded in each format: the table plays on after an interception at -5, the digital game ends
+    the possession at 0, and the grade follows the format the game was played in."""
+    from playmaker_engine import trainer as TR
+    o, x = ['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'C7', 'O7', 'B3', 'M7']     # X5 stands on the lane to O5
+    ar = [0, 6, 2, 6, 7]
+    vals = {}
+    for name, rules in (('digital', DIGITAL), ('tabletop', TABLE)):
+        s = _state(o, x, ar, rules=rules)
+        p = Action('pass', 'O', 0, target=4)
+        assert p in legal_actions(s)
+        vals[name] = TR.group_value(s, [p])
+    assert vals['digital'] != vals['tabletop']
+    from playmaker_engine.decide import turnover_value, vcoarse
+    st = _state(o, x, ar, rules=TABLE)
+    # the table: -5, the clock loses a phase, play goes on; digital: the possession is over at 0
+    assert turnover_value(st) == -5 + vcoarse(st.with_(clock=st.clock - 2))
+    assert turnover_value(_state(o, x, ar, rules=DIGITAL)) == 0.0

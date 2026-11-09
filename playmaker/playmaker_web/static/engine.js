@@ -1828,8 +1828,21 @@ const PMEngine = (() => {
     if (req.habit) { srch.habit = req.habit; srch.habit_weight = req.habit_weight == null ? 0.3 : req.habit_weight; }
     const maxDepth = req.max_depth != null ? req.max_depth : prof.depth[1];
     const [results, reached] = srch.root(s, maxDepth);
+    // the principal line: the best turn, then each reply the transposition table holds for the likeliest outcome
+    const pv = [];
+    if (results.length) {
+      let t = results[0][1], node = s;
+      for (let d = reached; d >= 1 && t; d--) {
+        pv.push(t.map(actionStr));
+        node = playTurn(node, t);
+        while (isChance(node)) { let b = node.outcomes[0]; for (const o of node.outcomes) if (o[0] > b[0]) b = o; node = b[2]; }
+        if (node.stage === 'over' || d - 1 < 1) break;
+        const hit = srch.tt.get(ttKey(zobrist(node), d - 1));
+        t = hit ? hit[2] : null;
+      }
+    }
     return { results: results.map(([v, t]) => [v, t.map(actionJSON)]), reached, leaves: srch.leaves, nodes: srch.nodes,
-      partial: srch.partial, seconds: now() - t0 };
+      partial: srch.partial, seconds: now() - t0, pv };
   }
 
   // ---- goals (goals.goals_in) and overloads (decide.Read.overloads), for the agent's goal commitment ------------------
@@ -1920,7 +1933,7 @@ const PMEngine = (() => {
         if (pa <= 0.5 && 0.5 < pb) out.push([['Deny', i], `deny the lane to O${i + 1}`]);
       }
       const ob = overloads(rb), oa = overloads(ra);
-      if (ob.length && (!oa.length || oa[0].value < ob[0].value - 1e-9)) out.push([['Shrink', ob[0].defender], `take X${ob[0].defender + 1} out of the dilemma`]);
+      if (ob.length && (!oa.length || oa[0].value < ob[0].value - 1e-9)) out.push([['Shrink', ob[0].defender], `free X${ob[0].defender + 1} from having to choose`]);
       if (ra.cover().value < rb.cover().value - 1e-9 && after.clock <= 6) out.push([['Pressure'], 'make the clock work: no open look as it runs down']);
     }
     return out;

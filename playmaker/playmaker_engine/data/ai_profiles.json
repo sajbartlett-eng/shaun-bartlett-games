@@ -121,6 +121,8 @@
       "starter": 1.5,
       "allstar": 0.5
     },
-    "_level_median_loss": "The median value lost per decision by each computer level, graded by the All-Star search: a human moves up when theirs is at or below their current level's. Calibrate from stored games."
+    "_level_median_loss": "The median value lost per decision by each computer level, graded by the All-Star search: a human moves up when theirs is at or below their current level's. Calibrate from stored games.",
+    "accuracy_k": 4.0,
+    "_accuracy_k": "Step 3n E: per-decision accuracy 100 x exp(-loss / k); calibrated so All-Star's own decisions average about 90, Starter's 75, Rookie's 55 (tools/accuracy_3n.py)."
   }
 }

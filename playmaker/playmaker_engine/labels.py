@@ -15,8 +15,47 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LIB = {g['id']: g for g in json.load(open(os.path.join(HERE, 'goal_library.json')))['offence']}
 
 
+# step 3n G: descriptive labels for patterns the log kept calling unnamed (labels only: they never steer a decision)
+EXTRA = {'G1': 'Drive and relocate', 'G2': 'Lift', 'G3': 'Drift', 'G4': 'Empty-side drive'}
+
+
 def _name(gid):
-    return LIB[gid]['name'] if gid in LIB else gid
+    return LIB[gid]['name'] if gid in LIB else EXTRA.get(gid, gid)
+
+
+def _drive(s, b):
+    """Is action b (from state s) the ball handler driving: a Dribble, or a movement that gets him closer to the rim?"""
+    if b.side != 'O' or b.piece != s.ball:
+        return False
+    return b.kind == 'dribble' or (b.kind in ('move', 'qs', 'sprint') and B.dist_rim(b.dest) < B.dist_rim(s.o[s.ball]))
+
+
+def _spacing_labels(events, add):
+    """Step 3n G: drive and relocate, lift, drift, empty-side drive."""
+    from .decide import lane_squares
+    for k, (s, a, n) in enumerate(events):
+        if not _drive(s, a):
+            continue
+        c = s.ball
+        cp = a.dest if a.kind != 'dribble' else s.o[c]
+        side_of = lambda q: (q[0] > B.W // 2) - (q[0] < B.W // 2)
+        mates = [i for i in range(5) if i != c and B.on_board(s.o[i])]
+        if mates and all(side_of(s.o[i]) != side_of(cp) or abs(s.o[i][0] - cp[0]) >= 5 for i in mates) and side_of(cp) != 0:
+            add('G4', k, k, [c], f'O{c + 1} drives to the empty side')
+        # teammates' movement in the same turn group or the offence's next turn
+        for m in range(max(0, k - 1), min(len(events), k + 4)):
+            s2, b, _ = events[m]
+            if m == k or b.side != 'O' or b.piece == c or b.kind not in ('move', 'qs', 'sprint'):
+                continue
+            i, frm, to = b.piece, s2.o[b.piece], b.dest
+            lane = lane_squares(cp, to, 0.5)
+            open_line = not any(xp in lane for xp in s2.x)
+            if B.zone(to) in ('3', 'L') and open_line and B.cheb(frm, to) >= 1 and B.cheb(to, cp) >= 3:
+                add('G1', min(k, m), max(k, m), [c, i], f'O{c + 1} drives and O{i + 1} relocates into his kick-out line')
+            if frm[1] <= 3 and to[1] >= frm[1] + 2 and B.zone(to) in ('3', 'L'):
+                add('G2', min(k, m), max(k, m), [c, i], f'O{i + 1} lifts out of the corner as O{c + 1} drives')
+            if to[1] < frm[1] and to[1] <= 3 and B.zone(to) in ('3', '.') and side_of(to) == side_of(cp):
+                add('G3', min(k, m), max(k, m), [c, i], f'O{i + 1} drifts to the corner behind O{c + 1}\'s drive')
 
 
 def _guard(s, i):
@@ -122,6 +161,14 @@ def recognise(events):
             right = sum(1 for p_ in s.o if p_[0] > B.W // 2)
             if max(left, right) >= 4:
                 add('C5', k, k, list(range(5)), f"overload the {'left' if left >= 4 else 'right'} side")
+    _spacing_labels(events, add)
+    seen, uniq = set(), []
+    for d in out:
+        key = (d['id'], d['start'], d['end'], tuple(d['who']))
+        if key not in seen:
+            seen.add(key)
+            uniq.append(d)
+    out = uniq
     out.sort(key=lambda d: (d['start'], d['id']))
     return out
 
@@ -144,8 +191,8 @@ def unnamed(events, labels, reads=None):
         while m + 1 < len(events) and events[m + 1][1].side == 'O' and events[m + 1][0].turn_n > 0:
             m += 1
         after = events[m][2]
-        if after.stage == 'over':
-            k = m + 1
+        if after.stage == 'over' or any(e[1].kind == 'shot' for e in events[k:m + 1]):
+            k = m + 1                           # step 3n G: a shot is the end of a look, not a created threat
             continue
         try:
             rb, ra = Read(s), Read(after)
@@ -157,8 +204,9 @@ def unnamed(events, labels, reads=None):
         if (new_ov or up >= 3) and not covered & set(range(k, m + 1)):
             out.append(dict(label='unnamed action', start=k, end=m, actions=[str(e[1]) for e in events[k:m + 1]],
                             gain=round(up, 1), dilemma=bool(new_ov), before=s.encode(), after=after.encode(),
-                            text=('created a dilemma for X%d' % (ra.overloads()[0]['defender'] + 1)) if new_ov
-                            else f'opened an uncovered threat (+{up:.1f})'))
+                            hesitate=any(e[1].kind == 'hesitate' for e in events[k:m + 1]),
+                            text=('made X%d choose between two open looks' % (ra.overloads()[0]['defender'] + 1)) if new_ov
+                            else f'opened a look nobody covers ({up:+.0f})'))
         k = m + 1
     return out
 

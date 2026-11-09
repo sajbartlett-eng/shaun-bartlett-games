@@ -25,12 +25,21 @@ TEAMS6 = ['Five Out', 'High-Low', 'Twin Towers', 'Pace and Space', 'Iron Wall', 
           'Run and Gun', 'Shoot and Protect']
 
 
-def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
-    """One digital possession between two agents. Returns dict(keys, score, snapshots, events)."""
+def possession(off, dfn, levels, seed, scale, setup_budget=0.3, digital=True, levels_key=None, team_fouls=0,
+               quarter_left=0, keep=False):
+    """One possession between two agents (digital by default; step 3n: either format, the defence's team fouls and
+    possessions left in the quarter, the age and standard's phase table). Returns dict(keys, score, snapshots, events)."""
     from . import agent as AG
+    from .actions import legal_actions
     AG.SCALE['value'] = scale
-    rules = RC.with_rules(digital=True)
-    make = lambda o, x, a, b: game_state(off, dfn, o, x, a, ball=b, rules=rules, check=False)
+    rules = RC.with_rules(digital=digital)
+
+    def make(o, x, a, b):
+        st = game_state(off, dfn, o, x, a, ball=b, rules=rules, check=False, team_fouls=team_fouls,
+                        quarter_left=quarter_left)
+        if levels_key:
+            st.ctx.levels_key = tuple(levels_key)
+        return st
     rng = random.Random(seed)
     po = AG.propose_offence(make, seed, budget=setup_budget, level=levels[0])
     pd = AG.propose_defence(make, po['squares'], po['ball'], seed + 1, budget=setup_budget, level=levels[1])
@@ -52,7 +61,21 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
             nxt, label = sample(node, rng)
         else:
             nxt, label = node, None
-        events.append(dict(state=s.encode(), action=str(a), kind=a.kind, side=a.side, piece=a.piece,
+        extra = {}
+        if a.kind == 'steal':
+            # step 3n F5: where the reach came from, and the team fouls at the time
+            dp, cp = s.x[a.piece], s.o[s.ball]
+            front = B.dist_rim(dp) < B.dist_rim(cp)
+            moved = bool((s.moved_x | s.qs_x) >> a.piece & 1)
+            extra = dict(reach='front, after moving' if front and moved else 'front, from a standstill' if front
+                         else 'level or behind', team_fouls=s.ctx.team_fouls + s.fouls)
+        if side == 'X' and s.pending and s.turn_n == 0 and s.stage == 'play':
+            # a pass in the air: could the defence Intercept, and did it
+            acts = legal_actions(s)
+            extra = dict(pass_answer=True, intercepts=sum(1 for b in acts if b.kind == 'intercept'),
+                         jumps=sum(1 for b in acts if b.kind in ('move', 'qs', 'sprint') and
+                                   __import__('playmaker_engine.actions', fromlist=['is_approach']).is_approach(s, b)))
+        events.append(dict(extra, locks=bin(s.lock_o).count('1') + bin(s.lock_x).count('1'), fouls=s.fouls, state=s.encode(), action=str(a), kind=a.kind, side=a.side, piece=a.piece,
                            clock=s.clock, phase=s.phase, roll=label, o=[B.sq(q) for q in s.o],
                            x=[B.sq(q) for q in s.x], ball=s.ball,
                            shot=dict(contest=nxt.result.contest, points=nxt.result.points, kind=nxt.result.kind,
@@ -68,6 +91,8 @@ def possession(off, dfn, levels, seed, scale, setup_budget=0.3):
         un = unnamed(triples, labs)
     except Exception as e:                                  # reported, never hidden
         labs, un = [], [dict(label='recogniser error', text=repr(e))]
+    if keep:
+        return dict(triples=triples, score=sc, seed=seed)
     return dict(off=off, dfn=dfn, seed=seed, keys=keys, score=sc, result=s.result.kind if s.result else None,
                 snapshots=snaps, events=events, geometry=geo, labels=[l['label'] for l in labs], unnamed=un,
                 decisions=[n for ag in agents.values() for n in ag.notes if n.get('event') == 'decision'])

@@ -510,8 +510,10 @@ class Game:
             return scenario_state(self.scenario, rules=self.rules)
         off, dfn = (self.teams if self.possession % 2 == 1 else self.teams[::-1])
         tf, left = self.quarter_context()
-        return game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules,
-                          team_fouls=tf, quarter_left=left)
+        s = game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules,
+                       team_fouls=tf, quarter_left=left)
+        s.ctx.levels_key = self.levels_key()        # step 3n C: the phase table of this age and standard
+        return s
 
     def quarter_context(self):
         """(the defence's team fouls before this possession, the defence's possessions left in the quarter including
@@ -1311,7 +1313,7 @@ class Game:
         events = dict(possession_events(self.read_log())).get(possession, [])
         att = 'A' if possession % 2 == 1 else 'B'
         sides = {'O': att, 'X': 'B' if att == 'A' else 'A'}
-        out = dict(possession=possession, players={}, labels=recognise(events))
+        out = dict(possession=possession, players={}, labels=recognise(events), format=self.match_format)
         for side, player in sides.items():
             if side in self.ai:
                 continue
@@ -1352,6 +1354,9 @@ class Game:
         after = play_turn(s, acts)
         val, rep, _ = TR._reply(after if not hasattr(after, 'outcomes') else after.outcomes[0][2], 1, 0.4)
         why['reply'] = [str(a) for a in (rep or ())]
+        from playmaker_engine import plain as PL
+        why['reply_text'] = PL.turn(list(rep)) if rep else None
+        why['format'] = self.match_format
         return why
 
     def save_feedback(self, token, answers):

@@ -16,6 +16,8 @@ Learn mode's "Your goal this turn") and reports facts and replays, never verdict
 All numbers live in ai_profiles.json ('trainer').
 """
 import math
+
+from . import plain as PL
 import statistics as st
 import time
 
@@ -133,16 +135,38 @@ def grade_group(s, chosen, budget=1.0, depth=0, results=None):
     to_b = turnover_p(play_turn(s, best_t))
     return dict(side=side, value=round(v_chosen, 2), best=round(best_v, 2), loss=round(loss, 2),
                 band=band(loss, to_c - to_b), turnover=round(to_c, 3), best_turnover=round(to_b, 3),
+                accuracy=round(decision_accuracy(loss), 1), volatility=round(volatility(results), 2),
                 better=[str(a) for a in best_t] if loss > 1e-9 else None, depth=reached)
 
 
-def accuracy(losses, k=4.0):
-    """Possession accuracy: each turn group's accuracy 100 x exp(-loss / k), combined by a harmonic mean, so one
-    blunder shows."""
+def decision_accuracy(loss, k=None):
+    """Step 3n E: one decision's accuracy, 100 x exp(-loss / k) (k: trainer.accuracy_k in ai_profiles.json)."""
+    k = k if k is not None else TC.get('accuracy_k', 4.0)
+    return max(1.0, 100.0 * math.exp(-loss / k))
+
+
+def accuracy(losses, k=None, weights=None):
+    """Possession accuracy (step 3n E, as Lichess does): the average of the harmonic mean of the decisions' accuracies
+    (one blunder shows) and their volatility-weighted mean (decisions where more was at stake count more, so one blunder
+    doesn't zero the rest). weights: each decision's volatility (default equal)."""
     if not losses:
         return 100.0
-    accs = [max(1.0, 100.0 * math.exp(-l / k)) for l in losses]
-    return round(len(accs) / sum(1.0 / a for a in accs), 1)
+    accs = [decision_accuracy(l, k) for l in losses]
+    harmonic = len(accs) / sum(1.0 / a for a in accs)
+    w = list(weights) if weights else [1.0] * len(accs)
+    weighted = sum(a * x for a, x in zip(accs, w)) / max(1e-9, sum(w))
+    return round(0.5 * (harmonic + weighted), 1)
+
+
+def volatility(results):
+    """How much was at stake at a decision: the spread (standard deviation) of the values of the turns on offer,
+    clamped to [0.5, 12] game points."""
+    vals = [v for v, _ in (results or [])][:8]
+    if len(vals) < 2:
+        return 0.5
+    m = sum(vals) / len(vals)
+    sd = (sum((v - m) ** 2 for v in vals) / len(vals)) ** 0.5
+    return min(12.0, max(0.5, sd))
 
 
 # ---- D2: credit for each action ------------------------------------------------------------------------------------------
@@ -315,18 +339,52 @@ def credit(s, acts, depth=0, budget=0.4, horizon='phase'):
             others_b = max((res0[i] for i in res0 if i not in me), default=0.0)
             others_a = max((res1[i] for i in res1 if i not in me), default=0.0)
             indirect = others_a - others_b
-            shifts = [(B.cheb(s.x[j], after.x[j]), j) for j in range(5)]
-            d, j = max(shifts)
-            moved = j if d > 0 else None
+            moved = _answering_defender(s, grp if not together else acts, acts, after, me, r0, ra, depth, budget, horizon)
         before_reply = _apply_seq(s, grp if not together else acts)
         dv, dj, what = _drain(before_reply if before_reply is not None and not isinstance(before_reply, ChanceNode) else s,
                               after)
         to = turnover_p(play_turn(s, grp))
         risk = -to * max(0.0, V0)
-        rows.append(dict(action='; '.join(str(x) for x in grp), piece=a.piece, phi=round(phis[k], 2), direct=round(direct, 2),
+        rows.append(dict(action='; '.join(str(x) for x in grp), action_text=PL.cap(PL.turn(grp)), piece=a.piece,
+                         phi=round(phis[k], 2), direct=round(direct, 2),
                          indirect=round(indirect, 2), drain=round(dv, 2), drained=dj, drained_what=what,
                          risk=round(risk, 2), moved=moved, together=together))
     return rows
+
+
+def _answering_defender(s, grp, acts, after, me, r0, ra, depth, budget, horizon):
+    """Step 3n D: the defender the credit names. The defence's reply is re-solved with the action and without it; of
+    the defenders whose reply differs, the one whose change accounts for most of the credit (putting him back where the
+    without-action reply had him takes back the most of the teammates' gain). Ties go to the defender whose coverage of
+    the released attacker (the teammate whose open look grew most) was lost. None when no reply differs."""
+    rest = [a for a in acts if a not in grp]
+    _, without = _cf(s, rest, depth, budget, horizon)
+    if without is None or isinstance(without, ChanceNode) or without.stage == 'over':
+        return None
+    diff = [j for j in range(5) if (after.x[j], after.arrows[j]) != (without.x[j], without.arrows[j])]
+    if not diff:
+        return None
+    others = lambda res: max((res[i] for i in res if i not in me), default=0.0)
+    gain_with = others(ra.cover()['residual'])
+    contrib = {}
+    for j in diff:
+        q = without.x[j]
+        if q in set(after.o) | {p for k, p in enumerate(after.x) if k != j}:
+            contrib[j] = 0.0                     # his old square is taken now: he can't be put back
+            continue
+        back = after.with_(x=after.x[:j] + (q,) + after.x[j + 1:],
+                           arrows=after.arrows[:j] + (without.arrows[j],) + after.arrows[j + 1:])
+        contrib[j] = gain_with - others(Read(back).cover()['residual'])
+    top = max(contrib.values())
+    tied = [j for j in diff if contrib[j] >= top - 1e-6]
+    if len(tied) > 1:
+        from .goals import _matchups
+        res0, res1 = r0.cover()['residual'], ra.cover()['residual']
+        released = max((i for i in res1 if i not in me and i in res0), key=lambda i: (res1[i] - res0[i], -i), default=None)
+        lost = _matchups(r0).get(released) if released is not None else None
+        if lost in tied:
+            return lost
+    return tied[0]
 
 
 def flags(s, acts, credits_d, credits_d1):
@@ -338,20 +396,20 @@ def flags(s, acts, credits_d, credits_d1):
             continue                                  # the off-ball flags are for off-ball movement only
         if c.get('drain', 0) >= TC['inaccuracy'] and c1.get('drain', 0) >= TC['inaccuracy'] and c.get('drained') is not None:
             out.append(dict(kind='drain', action=c['action'], value=c['drain'],
-                            text=f"X{c['drained'] + 1} used his {c['drained_what']} answering {c['action']}, so he can't "
-                                 f"close out with it later this phase: {c['drain']:+.1f}."))
+                            text=f"X{c['drained'] + 1} used his {c['drained_what']} answering {PL.turn_str(c['action'].split('; '))}, "
+                                 f"so he can't close out with it later this phase: {PL.worth_more(c['drain'])}."))
         if c['indirect'] >= TC['inaccuracy'] and c1['indirect'] >= TC['inaccuracy'] and c['moved'] is not None:
             who = f"X{c['moved'] + 1}"
             out.append(dict(kind='off_ball', action=c['action'], value=c['indirect'],
-                            text=f"Your move ({c['action']}) pulled {who} out of position: {c['indirect']:+.1f} to "
-                                 f"your teammates' best look."))
+                            text=f"{PL.cap(PL.possessive(c['action'].split('; ')))} pulled {who} out of position, "
+                                 f"opening space for a teammate: {PL.worth_more(c['indirect'])}."))
         if abs(c['phi']) < TC['minimal_value'] and abs(c1['phi']) < TC['minimal_value'] and c['piece'] >= 0:
             alt = best_alternative(s, c['piece'], acts)
             if alt and alt['gain'] >= TC['minimal_alternative']:
                 out.append(dict(kind='minimal', action=c['action'], value=c['phi'], alternative=alt['action'],
                                 gain=alt['gain'],
-                                text=f"{c['action']} changed the position by {c['phi']:+.1f}. {alt['action']} was "
-                                     f"worth {alt['gain']:+.1f} more."))
+                                text=f"{PL.cap(PL.turn_str(c['action'].split('; ')))} changed little ({PL.change(c['phi'])}). "
+                                     f"{PL.cap(PL.turn_str(alt['action'].split('; ')))} instead: {PL.worth_more(alt['gain'])}."))
     return out
 
 
@@ -563,8 +621,9 @@ def suggestions(player, level, age, median_loss, recent_scores, weakest=None):
         if player['rating'] >= a - player['rd'] and player['rd'] < TC['advance_rd'] and \
                 (level_loss is None or median_loss <= level_loss):
             out.append(dict(kind='move_up', to=nxt,
-                            text=f"Your rating {player['rating']:.0f} is within {player['rd']:.0f} of {nxt.title() if nxt != 'allstar' else 'All-Star'}'s "
-                                 f"{a}, and you lose a median {median_loss:.1f} a decision. Try {nxt.title() if nxt != 'allstar' else 'All-Star'}."))
+                            text=f"Your rating {player['rating']:.0f} is close to {nxt.title() if nxt != 'allstar' else 'All-Star'}'s "
+                                 f"{a}, and your typical decision costs about {PL.whole(median_loss)} point"
+                                 f"{'s' if PL.whole(median_loss) != '1' else ''}. Try {nxt.title() if nxt != 'allstar' else 'All-Star'}."))
     n = TC['practice_matches']
     if len(recent_scores) >= n and sum(recent_scores[-n:]) / n < TC['practice_below']:
         out.append(dict(kind='practice', category=weakest, **practice(weakest)))
@@ -607,32 +666,51 @@ def fade_every(rating):
 # ---- D5: the possession summary -------------------------------------------------------------------------------------------
 
 def summary(graded):
-    """1 to 3 points for one possession: the best decision first, then at most two needs (each with the better
-    option, its value and a replay reference). graded: [dict(group index, actions, grade, credits, flags, goal,
-    reveal)]."""
+    """1 to 3 points for one possession, in plain words (step 3n J): the best decision first, then at most two needs,
+    each one idea: what happened, what the defence did, the better option and what it was worth (whole game points,
+    anchored once). Detail sits behind "Why?". graded: [dict(group index, actions, grade, credits, flags, goal, reveal)]."""
     if not graded:
         return []
     pts = []
+    anchored = [False]
+
+    def worth(v):
+        a = not anchored[0]
+        anchored[0] = True
+        return PL.worth_more(v, anchored=a)
     best = max(graded, key=lambda g: (sum(f['value'] for f in g.get('flags', []) if f['kind'] == 'off_ball'),
                                       -g['grade']['loss']))
     good = [f for f in best.get('flags', []) if f['kind'] == 'off_ball']
-    pts.append(dict(kind='best', group=best['group'], text=good[0]['text'] if good else
-                    f"Your best decision, turn group {best['group'] + 1}: {'; '.join(best['actions'])} (value {best['grade']['value']:+.1f}"
-                    + (', the best option there).' if best['grade']['loss'] <= 1e-9 else f", {best['grade']['loss']:.1f} from the best).")))
+    played = PL.cap(PL.turn_str(best['actions']))
+    if good:
+        anchored[0] = True
+        text = good[0]['text']
+    elif best['grade']['loss'] <= 1e-9:
+        text = f"Your best decision: {played}. That was the best option there."
+    else:
+        text = f"Your best decision: {played}, close to the best option there."
+    pts.append(dict(kind='best', group=best['group'], text=text))
     needs = sorted([g for g in graded if g is not best and g['grade']['band'] in ('mistake', 'blunder', 'inaccuracy')],
                    key=lambda g: -g['grade']['loss'])
     for g in needs[:2]:
         gr = g['grade']
+        played = PL.cap(PL.turn_str(g['actions']))
+        answered = [c.get('moved') for c in g.get('credits') or [] if c.get('moved') is not None]
         if gr['side'] == 'O':
-            bits = [f"Turn group {g['group'] + 1}, {'; '.join(g['actions'])}: after the defence's best answer, your best look was {gr['value']:+.1f}."]
+            what = (f"{played}, and X{answered[0] + 1} answered it." if answered else
+                    f"{played}, but the defence didn't have to react, so your best look stayed at {PL.whole(gr['value'])}.")
         else:
-            bits = [f"Turn group {g['group'] + 1}, {'; '.join(g['actions'])}: it left the offence a best look of {gr['value']:+.1f}."]
+            what = f"{played}, which left the offence a look worth {PL.whole(gr['value'])}."
+        bits = [what]
         if gr.get('better'):
-            bits.append(f"Better: {'; '.join(gr['better'])} ({gr['best']:+.1f}, {gr['loss']:.1f} "
-                        f"{'more' if gr['side'] == 'O' else 'less for the offence'}).")
+            better = PL.turn_str(gr['better'])
+            if gr['side'] == 'O':
+                bits.append(f"{PL.cap(better)} instead: {worth(gr['loss'])}.")
+            else:
+                bits.append(f"{PL.cap(better)} instead: {int(round(gr['loss']))} fewer points for the offence.")
         rv = g.get('reveal')
         if rv and rv['reveal'] >= TC['reveal']:
-            bits.append(f"Order it as {' / '.join('; '.join(x) for x in rv['order'])}: {rv['reveal']:+.1f}.")
+            bits.append(f"In the other order ({PL.turn_str(rv['order'][0])} first): {worth(rv['reveal'])}.")
         mins = [f for f in g.get('flags', []) if f['kind'] == 'minimal']
         if mins:
             bits.append(mins[0]['text'])
@@ -674,6 +752,8 @@ def read_possession(events, side, budget=0.6, deep=False):
         res = root_turns(s)
         g = grade_group(s, acts, results=res)
         entry = dict(group=n, index=k, before=s.encode(), actions=[str(a) for a in acts], grade=g,
+                     actions_text=PL.cap(PL.turn(acts)),
+                     better_text=PL.cap(PL.turn_str(g['better'])) if g.get('better') else None,
                      categories=categories(s, acts), phase=s.phase, clock=s.clock)
         if side == 'O' and s.stage == 'play':
             c0 = credit(s, acts, depth=0)
@@ -689,4 +769,5 @@ def read_possession(events, side, budget=0.6, deep=False):
                     entry['reveal'] = rv
         entry['goal'] = goal_read(s, acts, results=res)
         graded.append(entry)
-    return dict(groups=graded, summary=summary(graded), accuracy=accuracy([g['grade']['loss'] for g in graded]))
+    return dict(groups=graded, summary=summary(graded), accuracy=accuracy([g['grade']['loss'] for g in graded],
+                                                                           weights=[g['grade']['volatility'] for g in graded]))

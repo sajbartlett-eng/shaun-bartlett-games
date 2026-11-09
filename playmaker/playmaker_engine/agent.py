@@ -27,6 +27,8 @@ SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser bu
 # step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
 # PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
 JS = {'search': None, 'goals': None}
+# step 3n Part B: the exam's fixed-depth run (the design verdict): every level searches exactly this depth, no time limit
+FIXED = {'depth': None}
 
 
 def profile(level):
@@ -129,10 +131,13 @@ class Agent:
         t0 = time.time()
         budget = self.p['time_budget_s'] * SCALE['value']
         lo, hi = self.p['depth']
+        if FIXED['depth']:
+            lo = hi = FIXED['depth']
+            budget = None
         if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
             results, reached, srch = self._js_search(s, budget, hi)
         else:
-            srch = Searcher(side, self.p, self._evaluate(s), t0 + budget, self.rng)
+            srch = Searcher(side, self.p, self._evaluate(s), t0 + budget if budget is not None else float('inf'), self.rng)
             if self.scouting and self.scouting.get('habit'):
                 srch.habit = self.scouting['habit']
                 srch.habit_weight = self.scouting.get('weight', 0.3)
@@ -166,7 +171,7 @@ class Agent:
             turn = self.rng.choice(near)
         took = round(time.time() - t0, 3)
         note = dict(event='decision', level=self.level, depth=reached, partial=getattr(srch, 'partial', 0),
-                    engine=getattr(srch, 'engine', 'python'),
+                    engine=getattr(srch, 'engine', 'python'), pv=getattr(srch, 'pv', None),
                     leaves=srch.leaves, nodes=srch.nodes,
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
                     goal=self.commit.words or None,
@@ -204,7 +209,7 @@ class Agent:
         class _Stats:
             pass
         st = _Stats()
-        st.leaves, st.nodes, st.partial = out['leaves'], out['nodes'], out['partial']
+        st.leaves, st.nodes, st.partial, st.pv = out['leaves'], out['nodes'], out['partial'], out.get('pv')
         st.engine = 'js'
         return results, out['reached'], st
 

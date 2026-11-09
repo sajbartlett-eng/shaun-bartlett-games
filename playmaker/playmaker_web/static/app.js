@@ -1696,7 +1696,7 @@ function renderCoachLine() {
   if (text) { /* the selection read stands */ } else if (best && best.edge > 0) {
     const carrier = (s.o.find(p => p.ball) || {}).i === best.o;
     text = `The mismatch on the board: ${show(best)}. `
-      + `Offence read: O${best.o + 1} is the threat; ${carrier ? 'the spot with no arrow on O' + (best.o + 1) + ' is the look' : 'the catch where no arrow reaches the lane is the look'}. `
+      + `Offence read: O${best.o + 1} is the danger; ${carrier ? 'the spot with no arrow on O' + (best.o + 1) + ' is the look' : 'the catch where no arrow reaches the lane is the look'}. `
       + `Defence read: O${best.o + 1}'s catch is the problem; a body on the lane to O${best.o + 1}, or an arrow on O${best.o + 1} before the ball arrives.`;
     if (side === 'O' && mine && mine.hunt && mine.hunt.o - 1 !== best.o) text += ` (Your call was O${mine.hunt.o} v X${mine.hunt.x}; the board says this one is bigger right now.)`;
     if (side === 'X' && mine && mine.protect) text += ` (Your call was to protect X${mine.protect.x}.)`;
@@ -1900,7 +1900,7 @@ async function finishRecord(rec, s) {
       const r = await api('/api/rate', { player: { rating: pr.rating, rd: pr.rd, vol: pr.vol }, opponent, my_total: rec.totals[p], opp_total: rec.totals[p === 'A' ? 'B' : 'A'],
         possessions: rec.per_side, level: o && o.computer ? o.computer : null, age: rec.settings.age, median_loss: med,
         recent_scores: (pr.scores || []).slice(-4), weakest: PMTrainer.weakest(gs) });
-      ratingNotes.push(`${pr.name}: rating ${Math.round(pr.rating)} → ${Math.round(r.player.rating)} (± ${Math.round(r.player.rd)}); match score ${r.score.toFixed(2)}.`);
+      ratingNotes.push(`${pr.name}: rating ${Math.round(pr.rating)} → ${Math.round(r.player.rating)} (${r.player.rd > 110 ? 'still settling' : 'settled'}).`);
       for (const sgg of r.suggestions) ratingNotes.push(sgg.kind === 'practice' ? `Practice for ${pr.name}: ${sgg.how} ${sgg.why}` : sgg.text);
       Object.assign(pr, r.player); pr.scores = (pr.scores || []).concat([r.score]); pr.suggestions = r.suggestions;
       await PMRecords.saveProfile(pr);
@@ -1910,15 +1910,23 @@ async function finishRecord(rec, s) {
 }
 function ratingKids() { return ratingNotes.length ? [el('h3', { text: 'Ratings' }), ...ratingNotes.map(t => el('p', { text: t }))] : []; }
 async function openWhy(poss, group, player) {
-  modal([el('p', { class: 'note', role: 'status', text: 'Reading the turn group…' })], closeModal);
+  modal([el('p', { class: 'note', role: 'status', text: 'Reading that decision…' })], closeModal);
   try {
     const w = await api('/api/why', { code: G.code, token: G.token, possession: poss, group, player });
     modal([...PMTrainer.whyEl(w), el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); if (st.stage === 'over') endModal(); } })], closeModal);
   } catch (e) { modal([el('p', { text: e.message }), el('button', { text: 'Close', onclick: closeModal })], closeModal); }
 }
+// step 3n K3: a shortcut to a tabletop-format match (the printed rules), graded with the table's costs
+function practiseTabletop() {
+  closeModal();
+  $('kind').value = 'full'; $('kind').dispatchEvent(new Event('change'));
+  $('format').value = 'tabletop'; $('format').dispatchEvent(new Event('change'));
+  create();
+}
+window.PM_practiseTabletop = practiseTabletop;
 async function playersPage() {
   const ps = await PMRecords.profiles();
-  const list = el('ul', { class: 'profiles' }, ps.map(p => el('li', {}, [el('strong', { text: p.name }), ` rating ${Math.round(p.rating)} ± ${Math.round(p.rd)} `,
+  const list = el('ul', { class: 'profiles' }, ps.map(p => el('li', {}, [el('strong', { text: p.name }), ` rating ${Math.round(p.rating)} (${p.rd > 110 ? 'still settling' : 'settled'}) `,
     el('button', { class: 'small', text: 'Trainer', onclick: async () => modal([...(await PMTrainer.profileEl(p.id)), el('button', { class: 'primary', text: 'Back', onclick: playersPage })], closeModal) }),
     el('button', { class: 'small', text: 'Rename', onclick: async () => { const n = prompt('New name', p.name); if (n) { await PMRecords.renameProfile(p.id, n); await fillProfiles(); playersPage(); } } }),
     el('button', { class: 'small', text: 'Delete', onclick: async () => { if (confirm(`Delete ${p.name}? Their matches stay in the records.`)) { await PMRecords.deleteProfile(p.id); await fillProfiles(); playersPage(); } } })])));
@@ -1927,6 +1935,7 @@ async function playersPage() {
   const file = el('input', { type: 'file', accept: 'application/json,.json', id: 'importFile', 'aria-label': 'Records file to import' });
   modal([el('h2', { text: 'Players and records' }),
     ps.length ? list : el('p', { class: 'note', text: 'No players yet.' }),
+    el('button', { text: 'Practise for the tabletop game', onclick: practiseTabletop }),
     el('button', { text: 'New player', onclick: async () => { const n = prompt('Name for the new player'); if (n) { await PMRecords.createProfile(n); await fillProfiles(); playersPage(); } } }),
     el('h3', { text: 'Head to head' }),
     ps.length > 1 ? el('p', {}, [s1, ' v ', s2, ' ', el('button', { text: 'Show', onclick: async () => modal([...(await PMTrainer.headToHeadEl(s1.value, s2.value)), el('button', { class: 'primary', text: 'Back', onclick: playersPage })], closeModal) })])

@@ -994,6 +994,58 @@ def solve_coarse(records):
     return V
 
 
+def solve_phase_table(records, prior=8):
+    """Step 3n Part C: the coarse table as the expected final value of every possession alive at the start of phase k.
+    records: possessions as [(phase, coarse key) at each offence turn-group start, ...] and the final score (turnovers
+    and expiry included, at their 0). One key per possession per phase: the key at the phase's first turn group. Backward
+    induction from phase 6: a key's value is the mean, over the possessions that start the phase with it, of the next
+    phase's key value (if the possession lives to the next phase) or the final score, shrunk toward the phase value V_k
+    (the mean over every possession alive at the start of phase k) for rare keys. The table without the capacity summary
+    is solved the same way, as the fallback for capacity keys never seen. Returns the table; '_phase{k}' holds V_k."""
+    starts = []
+    for keys, final in records:
+        by = {}
+        for item in keys:
+            ph, k = item if isinstance(item, (tuple, list)) else (int(item.split('|')[2]), item)
+            by.setdefault(ph, k)
+        starts.append((by, final))
+
+    def solve(trim):
+        V = {}
+        for ph in range(6, 0, -1):
+            rows = {}
+            alive = []
+            for by, final in starts:
+                if ph not in by:
+                    continue
+                k = by[ph] if not trim else '|'.join(by[ph].split('|')[:4])
+                nxt = by.get(ph + 1)
+                if nxt is not None:
+                    nk = nxt if not trim else '|'.join(nxt.split('|')[:4])
+                    tgt = V.get(nk, final)
+                else:
+                    tgt = final
+                rows.setdefault(k, []).append(tgt)
+                alive.append(final)
+            vk = sum(alive) / len(alive) if alive else 0.0
+            V[f'_phase{ph}'] = round(vk, 2)
+            V[f'_alive{ph}'] = len(alive)
+            for k, vals in rows.items():
+                V[k] = round((sum(vals) + prior * vk) / (len(vals) + prior), 2)
+        return V
+    V = {k: v for k, v in solve(True).items() if not k.startswith('_')}
+    V.update(solve(False))
+    return V
+
+
+def points_by_end_phase(records_with_end):
+    """The selection effect, reported apart from the table: the mean final score by the phase a possession ended in."""
+    by = {}
+    for ph, final in records_with_end:
+        by.setdefault(ph, []).append(final)
+    return {ph: dict(possessions=len(v), points=round(sum(v) / len(v), 2)) for ph, v in sorted(by.items())}
+
+
 # ---- config ----------------------------------------------------------------------------------------------------------
 
 def load_config():

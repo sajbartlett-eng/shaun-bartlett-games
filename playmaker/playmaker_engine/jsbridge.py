@@ -23,13 +23,14 @@ def card_json(c):
     return dict(qs=c.qs, r=dict(c.r))
 
 
-def ctx_json(ctx, table='senior/pro'):
+def ctx_json(ctx, table=None):
     r = asdict(ctx.rules)
     r['reaction_kinds'] = list(r['reaction_kinds'])
     return dict(off=[card_json(c) for c in ctx.off], dfn=[card_json(c) for c in ctx.dfn], rules=r,
                 card_clock=ctx.card_clock, inbounder=ctx.inbounder, coach_call=ctx.coach_call, three_only=ctx.three_only,
                 two_or_three=ctx.two_or_three, hold_for_one=ctx.hold_for_one, team_fouls=ctx.team_fouls,
-                quarter_left=ctx.quarter_left, table=table)
+                quarter_left=ctx.quarter_left,
+                table=table or '/'.join(getattr(ctx, 'levels_key', None) or ('senior', 'pro')))
 
 
 def state_json(s):
