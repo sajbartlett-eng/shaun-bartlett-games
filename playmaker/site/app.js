@@ -889,7 +889,8 @@ function renderActions() {
     return;
   }
   for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a))) {
-    const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}` : KIND_NAME[a.kind] + (a.kind === 'end_turn' && s.stage === 'reaction' ? ' (no Contest: the shot goes up with a contest of 0)' : '');
+    const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}`
+      : a.kind === 'end_turn' && s.stage === 'reaction' ? 'End without a Contest: the shot goes up uncontested.' : KIND_NAME[a.kind];
     $('sideButtons').append(actionButton(a, label));
   }
   addUndo();
