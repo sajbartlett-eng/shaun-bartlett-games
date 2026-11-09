@@ -265,26 +265,6 @@ def _phase_moves_ok(log):
     return all(len(v) == len(set(v)) and len(v) <= 2 for v in used.values()), used
 
 
-@pytest.mark.parametrize('who', ['random', 'greedy', 'rookie', 'starter', 'allstar'])
-def test_every_player_type_follows_the_movement_rules(who):
-    from playmaker_engine.scenarios import scenario_state, SCENARIOS
-    from playmaker_engine.policies import play, RandomPolicy, GreedyPolicy
-    from playmaker_engine.computer import Computer
-    cards = sorted(SCENARIOS) if who in ('random', 'greedy') else [1, 6, 7, 13]
-    for n in cards:
-        for seed in (1, 2) if who in ('random', 'greedy') else (1,):
-            if who == 'random':
-                o, x = RandomPolicy(seed), RandomPolicy(seed + 1)
-            elif who == 'greedy':
-                o, x = GreedyPolicy(), GreedyPolicy()
-            else:
-                o, x = Computer('O', who, seed=seed, budget_s=0.3), Computer('X', who, seed=seed, budget_s=0.3)
-            log = []
-            play(scenario_state(n), o, x, seed=seed, check=lambda b, a, s: log.append((b, a, s)))
-            ok, used = _phase_moves_ok(log)
-            assert ok, (who, n, used)
-
-
 def test_the_solver_reach_never_uses_two_quick_steps_for_one_defender():
     from playmaker_engine.scenarios import scenario_state
     from playmaker_engine.solver import defender_reach
@@ -305,7 +285,7 @@ def test_the_ball_carrier_has_no_legal_screen():
     """Ruled in step 3i (OQ-63): the ball carrier can't Screen; teammates still can."""
     from playmaker_engine import rules_config as RC
     from playmaker_engine.actions import legal_actions
-    from playmaker_engine.soak import golden_setup
+    from helpers import golden_setup
     s = golden_setup()
     acts = legal_actions(s)
     assert not any(a.kind == 'screen' and a.piece == s.ball for a in acts)

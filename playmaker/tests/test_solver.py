@@ -136,7 +136,7 @@ def test_determinism():
 
 
 def golden_position():
-    from playmaker_engine.soak import golden_setup
+    from helpers import golden_setup
     s = golden_setup()
     s = apply(s, Action('pass', 'O', 0, target=2))
     s = apply(s, Action('move', 'X', 2, P('L10'), 7))
@@ -194,7 +194,7 @@ def test_evaluation_matches_two_action_ceiling():
 def test_evaluation_agreement_with_exact_solver():
     """The two-turn evaluation must agree with the exact endgame solver better than the one-turn one
     on the 50-position set (exact values precomputed in tests/data/agreement_set.json)."""
-    from playmaker_engine.agreement import agreement, load, state_of
+    from helpers import agreement, load_agreement as load, state_of
     rows = load()
     assert len(rows) == 50
     one = agreement(with_config(eval_turns=1), rows)

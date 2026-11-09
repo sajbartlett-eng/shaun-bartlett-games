@@ -637,7 +637,9 @@ def computer_facts(records):
 
 def _computer_facts_3e(records):
     """The step 3e to 3k wording, for logs from before step 3m."""
-    from .computer import LEVELS
+    import os                                    # step 5: the old computer's words, read from its data file
+    with open(os.path.join(os.path.dirname(__file__), 'computer_levels.json')) as _f:
+        LEVELS = json.load(_f)
     setup = next((r for r in records if r['type'] == 'setup'), {})
     comp = setup.get('computer') or {}
     out = []

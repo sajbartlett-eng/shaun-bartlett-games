@@ -160,38 +160,3 @@ def test_wedge_mirror_needs_the_wedge():
 
 # ---- the computer and the solver read the same helper -------------------------------------------------
 
-def test_reachable_contest_and_the_advantage_states_read_the_category():
-    from playmaker_engine.computer import reachable_contest
-    from playmaker_engine.advantage import advantages
-    o, x = ['I8', 'C9', 'O9', 'A3', 'Q3'], ['I9', 'D8', 'N8', 'G4', 'N4']
-    for rules in (MIRROR, RIMD):
-        s = board(o, x, ['S', 'NE', 'NW', 'N', 'N'], rules, tok_x=0)      # no reaction: X1 behind, facing him
-        rc = [e for e in reachable_contest(s, 0, 'mid') if e['defender'] == 0]
-        assert rc and rc[0]['category'] == G.BEHIND and not rc[0]['clean']
-        assert any(a['kind'] == 'bad_closeout' and a['attacker'] == 0 for a in advantages(s))
-
-
-@pytest.mark.usefixtures('legacy_rules')   # the record of the step 3h defaults (the wedge is the default since 3i)
-def test_defaults_are_unchanged_the_golden_solver_search_is_identical():
-    from playmaker_engine.soak import golden_setup
-    from playmaker_engine.solver import Searcher, Evaluator
-    from playmaker_engine.solver_config import with_config
-    from playmaker_engine.computer import reachable_contest
-    from playmaker_engine.scenarios import scenario_state
-    ref = json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'golden_defaults.json')))
-    s = golden_setup()
-    assert s.ctx.rules.arrow_mode == 'single' and s.ctx.rules.contest_geometry == 'current'
-    se = Searcher(with_config(eval_turns=1, top_k_raw=8, endgame_tokens=-1))
-    se.root_depth = 2
-    se.value(s, 2)
-    kids = sorted([[str(p), round(v[0].ev, 9), round(v[0].look, 9), round(v[0].p30, 9)] for p, v in se.tt[(s, 2)].children])
-    assert kids == ref['children']
-    ev = Evaluator(with_config(eval_turns=2))
-    for n in range(1, 17):
-        # step 3n: the golden values predate the F1/F2 rulings (steal lock, reach-angle foul rolls); they hold
-        # under the earlier settings, so nothing else in the defaults moved
-        from playmaker_engine import rules_config as RC
-        assert [round(v.ev, 9) for v in ev(scenario_state(n, rules=RC.with_rules(**RC.PRE_3N)))] == ref['evals'][str(n)], n
-    for n in (5, 6, 12):
-        got = [[d['defender'], d['clean'], d['contest'], round(d['value'], 9)] for d in reachable_contest(scenario_state(n))]
-        assert got == ref['reach'][str(n)], n

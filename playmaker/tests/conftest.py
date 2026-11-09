@@ -25,7 +25,7 @@ def dests(acts, kind, piece, side=None):
 
 @pytest.fixture
 def golden():
-    from playmaker_engine.soak import golden_setup
+    from helpers import golden_setup
     return golden_setup()
 
 

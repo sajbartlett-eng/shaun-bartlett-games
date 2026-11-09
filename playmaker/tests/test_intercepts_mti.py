@@ -11,7 +11,6 @@ import pytest
 from conftest import P
 
 from playmaker_engine import board as B
-from playmaker_engine import computer as C
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions, lane_marks, approach_moves, mti_approach, MOVEMENT
 from playmaker_engine.resolve import apply, ChanceNode, force
@@ -255,23 +254,6 @@ def test_the_shot_clock_expiry_is_unchanged():
 
 
 # ---- the catch spot ---------------------------------------------------------------------------------------
-
-def test_all_star_v_cut_chooses_the_catch_spot_with_no_reachable_crossing():
-    """O2 cut in to E7 on the left wing; X2 above him on E8. Stepping out to the arc (B7, C8, C9) is the
-    bigger look but X2's line reaches the pass; D5 is a smaller look nobody can reach. All-Star's V-cut out
-    catches on D5."""
-    from playmaker_engine.planner import catch_spots
-    s = board(o=['I11', 'E7', 'O9', 'A3', 'Q3'], x=['I10', 'E8', 'N8', 'G4', 'N4'], arrows=['N', 'N', 'NW', 'N', 'N'])
-    spots = catch_spots(s, 1, 1)
-    assert spots[0][0] == 0 and spots[0][2].dest == P('D5')
-    assert any(r > 0 and v > spots[0][1] for r, v, _ in spots)          # a bigger look, exposed
-    c = C.Computer('O', 'allstar', seed=1, budget_s=None, habits=[])
-    c._context(s)
-    view = C.seen_state(s, 'O', c.seen)
-    plays = c._movement_plays(view, legal_actions(view), set(c.cfg['plays']), [])['vcut']
-    out = next(p for p in plays if p.concept == 'V-cut out')
-    assert out.actions[0].dest == P('D5') and C.pass_risk(apply(view, out.actions[0]), 0, 1)['clean']
-
 
 # ---- the marks the interface shows -------------------------------------------------------------------
 

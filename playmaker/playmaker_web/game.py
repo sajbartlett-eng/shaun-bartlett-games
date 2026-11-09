@@ -17,7 +17,6 @@ from playmaker_engine.cards import TEAMS, FIRST_GAME, TEAM_TAGLINES, CARDS as CA
 
 def TEAM_TAGLINES_OR(name):
     return TEAM_TAGLINES.get(name, 'Custom team')
-from playmaker_engine.policies import GreedyPolicy
 from playmaker_engine.resolve import apply, ChanceNode
 from playmaker_engine.scenarios import SCENARIOS, scenario_state, game_state, setup_errors
 from playmaker_engine.scoring import score, band, choose_contest, shot_points, match_result
@@ -311,10 +310,8 @@ class Game:
 
     def _policy(self, side, kind):
         """The computer for a side: 'rookie', 'starter' or 'allstar' (step 3e; 'greedy' means starter, from
-        older pages). 'baseline': the old greedy baseline (the solver report compares against it)."""
+        older pages)."""
         kind = {'greedy': 'starter', 'reader': 'starter'}.get(kind, kind)
-        if kind == 'baseline':
-            return GreedyPolicy()
         from playmaker_engine.agent import Agent, LEVELS
         if kind not in LEVELS:
             raise GameError('computer level: rookie, starter or allstar')
