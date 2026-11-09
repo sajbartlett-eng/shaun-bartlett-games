@@ -1,0 +1,3446 @@
+{
+ "14": {
+  "clock": {
+   "depth": 1,
+   "choice": "O1 Move to J10; O1 Quick Step to K10"
+  },
+  "rows": [
+   {
+    "depth": 1,
+    "seconds": 0.4,
+    "top": [
+     {
+      "turn": "O1 Move to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to K10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O1 Shot (three)",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O1 Dribble vs X1",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O Hesitate",
+      "value": 24.89
+     }
+    ],
+    "first_moves": [
+     [
+      "O1 Move to J10",
+      24.89
+     ],
+     [
+      "O1 Move to H10",
+      24.89
+     ],
+     [
+      "O1 Move to K10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to J10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to H10",
+      24.89
+     ],
+     [
+      "O1 Sprint to J10",
+      24.89
+     ],
+     [
+      "O1 Sprint to H10",
+      24.89
+     ]
+    ],
+    "gap": 0.0
+   },
+   {
+    "depth": 4,
+    "seconds": 37.5,
+    "top": [
+     {
+      "turn": "O1 Move to K10",
+      "value": 29.69
+     },
+     {
+      "turn": "O1 Move to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O Hesitate",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O2 Move to B8",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O2 Move to C9",
+      "value": 24.89
+     }
+    ],
+    "first_moves": [
+     [
+      "O1 Move to K10",
+      29.69
+     ],
+     [
+      "O1 Move to J10",
+      24.89
+     ],
+     [
+      "O1 Move to H10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to J10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to H10",
+      24.89
+     ],
+     [
+      "O1 Sprint to J10",
+      24.89
+     ],
+     [
+      "O1 Sprint to H10",
+      24.89
+     ]
+    ],
+    "gap": 4.8
+   },
+   {
+    "depth": 5,
+    "seconds": 143.6,
+    "top": [
+     {
+      "turn": "O1 Move to K10",
+      "value": 27.13
+     },
+     {
+      "turn": "O1 Move to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Quick Step to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to J10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Sprint to H10",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O Hesitate",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O2 Move to B8",
+      "value": 24.89
+     },
+     {
+      "turn": "O1 Move to J10; O2 Move to C9",
+      "value": 24.89
+     }
+    ],
+    "first_moves": [
+     [
+      "O1 Move to K10",
+      27.13
+     ],
+     [
+      "O1 Move to J10",
+      24.89
+     ],
+     [
+      "O1 Move to H10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to J10",
+      24.89
+     ],
+     [
+      "O1 Quick Step to H10",
+      24.89
+     ],
+     [
+      "O1 Sprint to J10",
+      24.89
+     ],
+     [
+      "O1 Sprint to H10",
+      24.89
+     ]
+    ],
+    "gap": 2.24
+   }
+  ],
+  "capped": 6,
+  "reached_in_cap": 5,
+  "variety_margin": 2,
+  "noise": 0.5,
+  "seconds": 602.8
+ },
+ "16": {
+  "line": [
+   {
+    "turn": null,
+    "value": 24.89,
+    "x2_move_left": true,
+    "x2_qs_left": true
+   },
+   {
+    "turn": "O1 Move to J10; O3 Sprint to I9",
+    "value": 24.89,
+    "x2_move_left": true,
+    "x2_qs_left": true,
+    "o2_threat": 30.0
+   },
+   {
+    "turn": "O2 Sprint to A7",
+    "value": 24.89,
+    "x2_move_left": false,
+    "x2_qs_left": false,
+    "o2_threat": 0.0
+   },
+   {
+    "turn": "O4 Move to A3",
+    "value": 24.89,
+    "x2_move_left": false,
+    "x2_qs_left": false,
+    "o2_threat": 0.0
+   }
+  ],
+  "o2": {
+   "o2_threat_x2_spent": 39.0,
+   "o2_threat_start": 30.0,
+   "o2_looks_spent": [
+    [
+     "catch",
+     "B7",
+     1.0,
+     39.0
+    ],
+    [
+     "cut",
+     "B8",
+     0.5,
+     19.5
+    ],
+    [
+     "cut",
+     "A7",
+     0.5,
+     19.5
+    ]
+   ]
+  },
+  "offball_first_moves": [
+   {
+    "move": "O2 Move to A5",
+    "phase": 0.0,
+    "drain": 0.77,
+    "drained": 2
+   },
+   {
+    "move": "O2 Sprint to B4",
+    "phase": 0.0,
+    "drain": 0.77,
+    "drained": 2
+   },
+   {
+    "move": "O4 Move to E1",
+    "phase": 0.0,
+    "drain": 0.45,
+    "drained": 2
+   },
+   {
+    "move": "O2 Move to C9",
+    "phase": 0.0,
+    "drain": 0.43,
+    "drained": 0
+   },
+   {
+    "move": "O3 Sprint to L9",
+    "phase": 8.26,
+    "drain": 0.43,
+    "drained": 2
+   },
+   {
+    "move": "O3 Sprint to F9",
+    "phase": 0.0,
+    "drain": 0.43,
+    "drained": 2
+   },
+   {
+    "move": "O3 Sprint to E9",
+    "phase": 8.26,
+    "drain": 0.43,
+    "drained": 2
+   },
+   {
+    "move": "O3 Sprint to I8",
+    "phase": 8.26,
+    "drain": 0.43,
+    "drained": 2
+   },
+   {
+    "move": "O3 Sprint to J7",
+    "phase": 8.26,
+    "drain": 0.43,
+    "drained": 2
+   },
+   {
+    "move": "O2 Move to B8",
+    "phase": 0.0,
+    "drain": 0.0,
+    "drained": 2
+   },
+   {
+    "move": "O2 Move to B9",
+    "phase": 0.0,
+    "drain": 0.0,
+    "drained": null
+   },
+   {
+    "move": "O2 Move to B10",
+    "phase": 0.0,
+    "drain": 0.0,
+    "drained": 1
+   }
+  ],
+  "n_offball": 141,
+  "n_offball_drain": 9,
+  "evidence": {
+   "label": "first turn",
+   "side": "O",
+   "n_turns": 38231,
+   "n_accepted": 1586,
+   "n_valued_first": 1586,
+   "accepted_examples": [
+    "O2 Move to C9",
+    "O2 Move to C9; O1 Pass to O2",
+    "O2 Move to C9; O1 Pass to O4",
+    "O2 Move to C9; O1 Pass to O5",
+    "O2 Move to C9; O1 Dribble vs X1"
+   ],
+   "clock": {
+    "depth": 1,
+    "partial": 1,
+    "seconds": 2.826,
+    "choice": "O1 Move to J10; O3 Sprint to I9",
+    "accepted": false
+   },
+   "rows": [
+    {
+     "depth": 1,
+     "seconds": 0.2,
+     "choice": "O1 Move to J10",
+     "choice_value": 24.89,
+     "choice_accepted": false,
+     "best_accepted": "O2 Move to C9; O1 Sprint to E11",
+     "best_accepted_value": 24.89,
+     "gap": 0.0,
+     "top": [
+      {
+       "turn": "O1 Move to J10",
+       "value": 24.89,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Move to H10",
+       "value": 24.89,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Move to K10",
+       "value": 24.89,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Quick Step to J10",
+       "value": 24.89,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Quick Step to H10",
+       "value": 24.89,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Sprint to J10",
+       "value": 24.89,
+       "accepted": false
+      }
+     ],
+     "extra": {
+      "O1 Move to J10; O3 Sprint to I9": 24.89
+     }
+    },
+    {
+     "depth": 4,
+     "seconds": 67.7,
+     "choice": "O1 Move to J10",
+     "choice_value": 30,
+     "choice_accepted": false,
+     "best_accepted": "O2 Move to C9; O1 Sprint to E11",
+     "best_accepted_value": 24.89,
+     "gap": 5.11,
+     "top": [
+      {
+       "turn": "O1 Move to J10",
+       "value": 30,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Move to H10",
+       "value": 30,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Move to K10",
+       "value": 30,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Quick Step to J10",
+       "value": 30,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Quick Step to H10",
+       "value": 30,
+       "accepted": false
+      },
+      {
+       "turn": "O1 Sprint to J10",
+       "value": 30,
+       "accepted": false
+      }
+     ],
+     "extra": {
+      "O1 Move to J10; O3 Sprint to I9": 24.89
+     }
+    }
+   ],
+   "capped": 5,
+   "reached_in_cap": 5,
+   "seconds": 298.5,
+   "enum_seconds": 3.5,
+   "result": "valuation or board"
+  },
+  "seconds": 600.1
+ },
+ "C1": {
+  "evidence": {
+   "label": "",
+   "side": "X",
+   "n_turns": 1201980,
+   "n_accepted": 796931,
+   "n_valued_first": 3406,
+   "accepted_examples": [
+    "X Pause",
+    "X1 Move to I10 facing NE",
+    "X1 Move to I10 facing NE; X Pause",
+    "X1 Move to I10 facing NE; X2 Move to D9 facing N",
+    "X1 Move to I10 facing NE; X2 Move to D9 facing NE"
+   ],
+   "clock": {
+    "depth": 1,
+    "partial": 5,
+    "seconds": 2.572,
+    "choice": "X1 Sprint to H11; X3 Move to N8 facing N",
+    "accepted": true
+   },
+   "rows": [
+    {
+     "depth": 1,
+     "seconds": 0.1,
+     "choice": "X1 Sprint to H11; X2 Sprint to B6",
+     "choice_value": 23.34,
+     "choice_accepted": false,
+     "best_accepted": "X1 Move to I10 facing NE; X1 Quick Step to I11",
+     "best_accepted_value": 23.96,
+     "gap": 0.62,
+     "top": [
+      {
+       "turn": "X1 Sprint to H11; X2 Sprint to B6",
+       "value": 23.34,
+       "accepted": false
+      },
+      {
+       "turn": "X1 Sprint to H11; X2 Sprint to A5",
+       "value": 23.34,
+       "accepted": false
+      },
+      {
+       "turn": "X1 Sprint to H11",
+       "value": 23.96,
+       "accepted": true
+      },
+      {
+       "turn": "X1 Sprint to H11; X Pause",
+       "value": 23.96,
+       "accepted": true
+      },
+      {
+       "turn": "X1 Sprint to H11; X2 Move to B6 facing SW",
+       "value": 23.96,
+       "accepted": false
+      },
+      {
+       "turn": "X1 Sprint to H11; X3 Move to N8 facing N",
+       "value": 23.96,
+       "accepted": true
+      }
+     ],
+     "extra": {
+      "X1 Sprint to H11; X3 Move to N8 facing N": 23.96
+     }
+    }
+   ],
+   "capped": 4,
+   "reached_in_cap": 3,
+   "seconds": 748.6,
+   "enum_seconds": 709.4,
+   "result": "met"
+  },
+  "o2_three": 13,
+  "x2_contest_three": 3,
+  "o2_looks": [
+   [
+    "catch",
+    "C9",
+    1.0,
+    30.0
+   ],
+   [
+    "cut",
+    "D9",
+    0.35,
+    10.5
+   ],
+   [
+    "cut",
+    "E9",
+    0.35,
+    10.5
+   ]
+  ],
+  "position_now": 26.63,
+  "chosen": "X1 Sprint to H11; X3 Move to N8 facing N",
+  "seconds": 749.6
+ },
+ "C2": {
+  "evidence": {
+   "label": "",
+   "side": "O",
+   "n_turns": 35546,
+   "n_accepted": 35545,
+   "n_valued_first": 35545,
+   "accepted_examples": [
+    "O1 Shot (three)",
+    "O1 Pass to O2",
+    "O1 Pass to O3",
+    "O1 Pass to O5",
+    "O2 Screen, T N"
+   ],
+   "clock": {
+    "depth": 1,
+    "partial": 0,
+    "seconds": 2.769,
+    "choice": "O1 Move to C9",
+    "accepted": true
+   },
+   "rows": [
+    {
+     "depth": 1,
+     "seconds": 0.1,
+     "choice": "O1 Move to C9",
+     "choice_value": 36,
+     "choice_accepted": true,
+     "best_accepted": "O1 Move to C9",
+     "best_accepted_value": 36,
+     "gap": 0,
+     "top": [
+      {
+       "turn": "O1 Move to C9",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to C8",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to C8",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to C9",
+       "value": 36,
+       "accepted": true
+      }
+     ],
+     "extra": {
+      "O1 Move to C9": 36,
+      "O1 Pass to O2": 26.24,
+      "O1 Pass to O4": 26.6
+     }
+    },
+    {
+     "depth": 4,
+     "seconds": 67.7,
+     "choice": "O1 Move to E10",
+     "choice_value": 36,
+     "choice_accepted": true,
+     "best_accepted": "O1 Move to C9",
+     "best_accepted_value": 36,
+     "gap": 0,
+     "top": [
+      {
+       "turn": "O1 Move to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O2 Sprint to K10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to C9",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to C8",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to C8",
+       "value": 36,
+       "accepted": true
+      }
+     ],
+     "extra": {
+      "O1 Move to C9": 36,
+      "O1 Pass to O2": 27.96,
+      "O1 Pass to O4": 27.96
+     }
+    },
+    {
+     "depth": 5,
+     "seconds": 286.4,
+     "choice": "O1 Move to E10",
+     "choice_value": 36,
+     "choice_accepted": true,
+     "best_accepted": "O1 Move to C9",
+     "best_accepted_value": 36,
+     "gap": 0,
+     "top": [
+      {
+       "turn": "O1 Move to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to E10",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to C9",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Move to C8",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to C8",
+       "value": 36,
+       "accepted": true
+      },
+      {
+       "turn": "O1 Quick Step to C9",
+       "value": 36,
+       "accepted": true
+      }
+     ],
+     "extra": {
+      "O1 Move to C9": 36,
+      "O1 Pass to O2": 27.96,
+      "O1 Pass to O4": 27.96
+     }
+    }
+   ],
+   "capped": 6,
+   "reached_in_cap": 5,
+   "seconds": 600.2,
+   "enum_seconds": 2.7,
+   "result": "met"
+  },
+  "arrives_clean": 0.4,
+  "arrives_contested": 0.4,
+  "o2_looks": [
+   [
+    "drive",
+    "K10",
+    1.0,
+    30.0
+   ],
+   [
+    "drive",
+    "N9",
+    1.0,
+    30.0
+   ],
+   [
+    "drive",
+    "M8",
+    1.0,
+    22.0
+   ]
+  ],
+  "o4_looks": [
+   [
+    "drive",
+    "I2",
+    1.0,
+    26.0
+   ],
+   [
+    "drive",
+    "K4",
+    1.0,
+    22.0
+   ],
+   [
+    "shoot",
+    "K3",
+    1.0,
+    20.0
+   ]
+  ],
+  "seconds": 600.2
+ },
+ "T1": {
+  "tables": {
+   "today": {
+    "reveal": {
+     "reveal": 0.0,
+     "actual": 24.89,
+     "covered_first": true,
+     "order": [
+      [
+       "O5 Move to N5"
+      ],
+      [
+       "O1 Move to J7"
+      ]
+     ]
+    },
+    "orders": {
+     "cut, then drive (as played)": 24.89,
+     "drive, then cut": 24.89,
+     "cut and drive together": 24.89,
+     "drive and cut together": 24.89
+    }
+   },
+   "step 3m table (as the test runs)": {
+    "reveal": {
+     "reveal": 0.75,
+     "actual": 24.18,
+     "covered_first": true,
+     "order": [
+      [
+       "O1 Move to J7"
+      ],
+      [
+       "O5 Move to N5"
+      ]
+     ]
+    },
+    "orders": {
+     "cut, then drive (as played)": 24.18,
+     "drive, then cut": 24.93,
+     "cut and drive together": 23.14,
+     "drive and cut together": 23.14
+    }
+   }
+  },
+  "bar": 3.0,
+  "seconds": 4.1
+ },
+ "T2": {
+  "named": "X1",
+  "indirect": 15.0,
+  "bar": 1.0,
+  "phi": 8.26,
+  "v_with": 33.15,
+  "v_without": 24.89,
+  "changes": {
+   "X1": {
+    "with_lift": "F10",
+    "without_lift": "I10",
+    "facing_with": "W",
+    "facing_without": "N",
+    "differs": true,
+    "takes_back": 6.0
+   },
+   "X2": {
+    "with_lift": "D8",
+    "without_lift": "D8",
+    "facing_with": "W",
+    "facing_without": "W",
+    "differs": false
+   },
+   "X3": {
+    "with_lift": "J8",
+    "without_lift": "N8",
+    "facing_with": "W",
+    "facing_without": "E",
+    "differs": true,
+    "takes_back": 0.0
+   },
+   "X4": {
+    "with_lift": "D4",
+    "without_lift": "D4",
+    "facing_with": "E",
+    "facing_without": "E",
+    "differs": false
+   },
+   "X5": {
+    "with_lift": "N4",
+    "without_lift": "N4",
+    "facing_with": "W",
+    "facing_without": "W",
+    "differs": false
+   },
+   "_tie": null,
+   "_gain_with": 27.0
+  },
+  "seconds": 2.5
+ },
+ "2": {
+  "subs": {
+   "4": {
+    "label": "4",
+    "side": "X",
+    "n_turns": 932802,
+    "n_accepted": 30582,
+    "n_valued_first": 30582,
+    "accepted_examples": [
+     "X1 Move to I10 facing NE; X2 Move to E5 facing N",
+     "X1 Move to I10 facing NE; X2 Move to E5 facing NE",
+     "X1 Move to I10 facing NE; X2 Move to E5 facing E",
+     "X1 Move to I10 facing NE; X2 Move to E5 facing SE",
+     "X1 Move to I10 facing NE; X2 Move to E5 facing S"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 1,
+     "seconds": 2.622,
+     "choice": "X2 Move to D6 facing W; X1 Steal",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "X1 Steal",
+      "choice_value": 18.8,
+      "choice_accepted": false,
+      "best_accepted": "X2 Move to E5 facing N; X1 Steal",
+      "best_accepted_value": 18.26,
+      "gap": -0.54,
+      "top": [
+       {
+        "turn": "X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D7 facing E; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D7 facing W; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D6 facing W; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Move to N7 facing W; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X4 Move to I3 facing S; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X2 Move to D6 facing W; X1 Steal": 18.8
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 121.9,
+      "choice": "X1 Steal",
+      "choice_value": 18.67,
+      "choice_accepted": false,
+      "best_accepted": "X2 Move to E5 facing N; X1 Steal",
+      "best_accepted_value": 18.67,
+      "gap": -0.0,
+      "top": [
+       {
+        "turn": "X1 Steal",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Move to N7 facing W; X1 Steal",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D7 facing E",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D7 facing W",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D6 facing W",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Move to N7 facing W",
+        "value": 18.67,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X2 Move to D6 facing W; X1 Steal": 19.71
+      }
+     }
+    ],
+    "capped": 5,
+    "reached_in_cap": 4,
+    "seconds": 300.2,
+    "enum_seconds": 74.2,
+    "result": "speed"
+   },
+   "12": {
+    "label": "12",
+    "side": "X",
+    "n_turns": 932802,
+    "n_accepted": 748890,
+    "n_valued_first": 40332,
+    "accepted_examples": [
+     "X1 Steal",
+     "X Pause",
+     "X1 Move to I10 facing NE",
+     "X1 Move to I10 facing NE; X Pause",
+     "X1 Move to I10 facing NE; X2 Move to C7 facing N"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 1,
+     "seconds": 2.62,
+     "choice": "X3 Move to N7 facing W; X1 Steal",
+     "accepted": true
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "X2 Move to E5 facing SW; X1 Steal",
+      "choice_value": 18.26,
+      "choice_accepted": false,
+      "best_accepted": "X1 Steal",
+      "best_accepted_value": 18.8,
+      "gap": 0.54,
+      "top": [
+       {
+        "turn": "X2 Move to E5 facing SW; X1 Steal",
+        "value": 18.26,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to D5 facing S; X1 Steal",
+        "value": 18.26,
+        "accepted": false
+       },
+       {
+        "turn": "X1 Steal",
+        "value": 18.8,
+        "accepted": true
+       },
+       {
+        "turn": "X2 Move to D7 facing W; X1 Steal",
+        "value": 18.8,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Move to N7 facing W; X1 Steal",
+        "value": 18.8,
+        "accepted": true
+       },
+       {
+        "turn": "X4 Move to I3 facing S; X1 Steal",
+        "value": 18.8,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "X3 Move to N7 facing W; X1 Steal": 18.8
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 118.2,
+      "choice": "X1 Steal",
+      "choice_value": 18.67,
+      "choice_accepted": true,
+      "best_accepted": "X1 Steal",
+      "best_accepted_value": 18.67,
+      "gap": -0.0,
+      "top": [
+       {
+        "turn": "X1 Steal",
+        "value": 18.67,
+        "accepted": true
+       },
+       {
+        "turn": "X3 Move to N7 facing W; X1 Steal",
+        "value": 18.67,
+        "accepted": true
+       },
+       {
+        "turn": "X2 Move to D7 facing W",
+        "value": 18.67,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Move to N7 facing W",
+        "value": 18.67,
+        "accepted": true
+       },
+       {
+        "turn": "X4 Move to I3 facing S",
+        "value": 18.67,
+        "accepted": true
+       },
+       {
+        "turn": "X2 Move to E5 facing SW",
+        "value": 21.81,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X3 Move to N7 facing W; X1 Steal": 18.67
+      }
+     }
+    ],
+    "capped": 5,
+    "reached_in_cap": 4,
+    "seconds": 306.4,
+    "enum_seconds": 80.1,
+    "result": "met"
+   }
+  },
+  "facts": {
+   "three_4": 4,
+   "clock_end_4": "X2 Move to D6 facing W; X1 Steal",
+   "deepest_contest_4": {
+    "rim_distance": 3,
+    "square": "F3",
+    "squares_from_O2": 4,
+    "actions": 1
+   },
+   "x2_contest_three": 3,
+   "start_4": {
+    "square": "C7",
+    "rim_distance": 6
+   },
+   "three_12": 12,
+   "clock_end_12": "X3 Move to N7 facing W; X1 Steal",
+   "deepest_contest_12": {
+    "rim_distance": 3,
+    "square": "F3",
+    "squares_from_O2": 4,
+    "actions": 1
+   },
+   "start_12": {
+    "square": "C7",
+    "rim_distance": 6
+   }
+  },
+  "seconds": 620.6
+ },
+ "3": {
+  "subs": {
+   "": {
+    "label": "",
+    "side": "X",
+    "n_turns": 553183,
+    "n_accepted": 35844,
+    "n_valued_first": 35844,
+    "accepted_examples": [
+     "X2 Move to C7 facing N; X4 Move to H4 facing N",
+     "X2 Move to C7 facing N; X4 Move to H4 facing NE",
+     "X2 Move to C7 facing N; X4 Move to H4 facing E",
+     "X2 Move to C7 facing N; X4 Move to H4 facing SE",
+     "X2 Move to C7 facing N; X4 Move to H4 facing S"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 0,
+     "seconds": 2.643,
+     "choice": "X2 Move to C6 facing W; X5 Move to N3 facing N",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "X1 Quick Step to I6; X1 Steal",
+      "choice_value": 21.48,
+      "choice_accepted": false,
+      "best_accepted": "X2 Move to C7 facing N; X1 Quick Step to H6",
+      "best_accepted_value": 24.89,
+      "gap": 3.41,
+      "top": [
+       {
+        "turn": "X1 Quick Step to I6; X1 Steal",
+        "value": 21.48,
+        "accepted": false
+       },
+       {
+        "turn": "X Pause",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to C6 facing S",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to C6 facing W",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to B6 facing W",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X1 Quick Step to I6",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X2 Move to C6 facing W; X5 Move to N3 facing N": 24.89
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 106.0,
+      "choice": "X1 Quick Step to I6",
+      "choice_value": 21.48,
+      "choice_accepted": false,
+      "best_accepted": "X2 Move to C7 facing N; X1 Quick Step to H6",
+      "best_accepted_value": 33.15,
+      "gap": 11.67,
+      "top": [
+       {
+        "turn": "X1 Quick Step to I6",
+        "value": 21.48,
+        "accepted": false
+       },
+       {
+        "turn": "X1 Quick Step to I6; X1 Steal",
+        "value": 21.95,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to C6 facing S",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to C6 facing W",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to B6 facing W",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Quick Step to C6",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X2 Move to C6 facing W; X5 Move to N3 facing N": 33.15
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 187.7,
+      "choice": "X1 Quick Step to I6",
+      "choice_value": 21.95,
+      "choice_accepted": false,
+      "best_accepted": "X2 Move to C7 facing N; X1 Quick Step to H6",
+      "best_accepted_value": 39,
+      "gap": 17.05,
+      "top": [
+       {
+        "turn": "X1 Quick Step to I6",
+        "value": 21.95,
+        "accepted": false
+       },
+       {
+        "turn": "X1 Quick Step to I6; X1 Steal",
+        "value": 25.44,
+        "accepted": false
+       },
+       {
+        "turn": "X5 Move to N3 facing N",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "X3 Sprint to L4",
+        "value": 27,
+        "accepted": false
+       },
+       {
+        "turn": "X Pause",
+        "value": 30,
+        "accepted": false
+       },
+       {
+        "turn": "X2 Move to C6 facing S",
+        "value": 33.15,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "X2 Move to C6 facing W; X5 Move to N3 facing N": 39
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 600.2,
+    "enum_seconds": 46.3,
+    "result": "valuation or board"
+   }
+  },
+  "facts": {
+   "o1_threat_now": 22.0,
+   "position_now": 24.89,
+   "o1_looks": [
+    [
+     "drive",
+     "I2",
+     1.0,
+     22.0
+    ],
+    [
+     "drive",
+     "K5",
+     1.0,
+     18.39
+    ],
+    [
+     "drive",
+     "L5",
+     1.0,
+     16.0
+    ],
+    [
+     "drive",
+     "I4",
+     1.0,
+     16.0
+    ]
+   ],
+   "step_up": {
+    "X1": {
+     "o1_after": 22.0,
+     "step": "X1 Quick Step to J6"
+    },
+    "X2": null,
+    "X3": null,
+    "X4": {
+     "o1_after": 31.04,
+     "step": "X4 Move to I4 facing N"
+    },
+    "X5": null
+   }
+  },
+  "seconds": 600.9
+ },
+ "4": {
+  "subs": {
+   "": {
+    "label": "",
+    "side": "O",
+    "n_turns": 34407,
+    "n_accepted": 17825,
+    "n_valued_first": 17825,
+    "accepted_examples": [
+     "O1 Shot (mid)",
+     "O1 Shot (floater)",
+     "O1 Move to I8",
+     "O1 Move to I8; O1 Shot (long)",
+     "O1 Move to I8; O1 Pass to O2"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 1,
+     "seconds": 2.789,
+     "choice": "O2 Move to D9; O1 Pass to O2",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O2 Move to D9; O1 Pass to O2",
+      "choice_value": 25.5,
+      "choice_accepted": false,
+      "best_accepted": "O1 Sprint to F10; O2 Sprint to E10",
+      "best_accepted_value": 25.5,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O2 Move to D9; O1 Pass to O2",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Sprint to F10",
+        "value": 25.5,
+        "accepted": true
+       },
+       {
+        "turn": "O1 Move to F7; O2 Sprint to E10",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Sprint to D9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Shot (mid)",
+        "value": 24.89,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O2 Move to D9; O1 Pass to O2": 25.5,
+       "O1 Shot (mid)": 24.89,
+       "O1 Shot (floater)": 24.89
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 42.3,
+      "choice": "O2 Move to D9",
+      "choice_value": 30,
+      "choice_accepted": false,
+      "best_accepted": "O1 Sprint to F10; O2 Sprint to E10",
+      "best_accepted_value": 25.5,
+      "gap": 4.5,
+      "top": [
+       {
+        "turn": "O2 Move to D9",
+        "value": 30,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Sprint to D9",
+        "value": 30,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Pass to O2",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Sprint to F10",
+        "value": 25.5,
+        "accepted": true
+       },
+       {
+        "turn": "O1 Move to F7; O2 Sprint to E10",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9; O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Move to D9; O1 Pass to O2": 25.5,
+       "O1 Shot (mid)": 8,
+       "O1 Shot (floater)": 6
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 63.7,
+      "choice": "O2 Move to D9",
+      "choice_value": 25.5,
+      "choice_accepted": false,
+      "best_accepted": "O1 Sprint to F10; O2 Sprint to E10",
+      "best_accepted_value": 25.5,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O2 Move to D9",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Sprint to D9",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Pass to O2",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9; O1 Sprint to F10",
+        "value": 25.5,
+        "accepted": true
+       },
+       {
+        "turn": "O1 Move to F7; O2 Sprint to E10",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9; O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Move to D9; O1 Pass to O2": 25.5,
+       "O1 Shot (mid)": 8,
+       "O1 Shot (floater)": 6
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 600.1,
+    "enum_seconds": 2.6,
+    "result": "speed"
+   }
+  },
+  "facts": {
+   "pull_up_now": 0.0,
+   "o1_looks": [
+    [
+     "drive",
+     "F10",
+     1.0,
+     24.0
+    ],
+    [
+     "drive",
+     "L10",
+     1.0,
+     17.55
+    ],
+    [
+     "drive",
+     "F7",
+     1.0,
+     16.0
+    ],
+    [
+     "drive",
+     "G8",
+     1.0,
+     16.0
+    ]
+   ],
+   "o5_looks": [
+    [
+     "cut",
+     "I2",
+     0.5,
+     9.0
+    ],
+    [
+     "cut",
+     "K4",
+     0.5,
+     6.0
+    ],
+    [
+     "cut",
+     "K5",
+     0.5,
+     6.0
+    ],
+    [
+     "cut",
+     "K6",
+     0.5,
+     6.0
+    ]
+   ],
+   "overloads": [],
+   "hinges": [],
+   "position_now": 24.89
+  },
+  "seconds": 600.4
+ },
+ "5": {
+  "subs": {
+   "close": {
+    "label": "close",
+    "side": "O",
+    "n_turns": 28172,
+    "n_accepted": 12363,
+    "n_valued_first": 12363,
+    "accepted_examples": [
+     "O2 Dribble vs X2",
+     "O1 Move to I12; O2 Dribble vs X2",
+     "O1 Move to I12; O2 Move to B8",
+     "O1 Move to I12; O2 Move to B9",
+     "O1 Move to I12; O2 Move to B10"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 4,
+     "seconds": 2.605,
+     "choice": "O2 Sprint to B8",
+     "accepted": true
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O2 Move to B8",
+      "choice_value": 39,
+      "choice_accepted": true,
+      "best_accepted": "O2 Move to B8",
+      "best_accepted_value": 39,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 59.0,
+      "choice": "O2 Sprint to B8",
+      "choice_value": 39,
+      "choice_accepted": true,
+      "best_accepted": "O2 Move to B8",
+      "best_accepted_value": 39,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 155.7,
+      "choice": "O2 Sprint to B8",
+      "choice_value": 39,
+      "choice_accepted": true,
+      "best_accepted": "O2 Move to B8",
+      "best_accepted_value": 39,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 300.1,
+    "enum_seconds": 2.6,
+    "result": "met"
+   },
+   "short": {
+    "label": "short",
+    "side": "O",
+    "n_turns": 28927,
+    "n_accepted": 1,
+    "n_valued_first": 1,
+    "accepted_examples": [
+     "O2 Shot (three)"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 5,
+     "seconds": 2.614,
+     "choice": "O2 Sprint to B8",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O2 Move to B8",
+      "choice_value": 39,
+      "choice_accepted": false,
+      "best_accepted": "O2 Shot (three)",
+      "best_accepted_value": 24.89,
+      "gap": 14.11,
+      "top": [
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 38.8,
+      "choice": "O2 Sprint to B8",
+      "choice_value": 39,
+      "choice_accepted": false,
+      "best_accepted": "O2 Shot (three)",
+      "best_accepted_value": 30,
+      "gap": 9,
+      "top": [
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 89.1,
+      "choice": "O2 Sprint to B8",
+      "choice_value": 39,
+      "choice_accepted": false,
+      "best_accepted": "O2 Shot (three)",
+      "best_accepted_value": 30,
+      "gap": 9,
+      "top": [
+       {
+        "turn": "O2 Sprint to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to B8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to D9",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Quick Step to C8",
+        "value": 39,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Sprint to B8": 39
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 300.0,
+    "enum_seconds": 2.1,
+    "result": "valuation or board"
+   }
+  },
+  "facts": {
+   "three": 13,
+   "x2_contest_three": 3,
+   "x2_contest_actions_A": 0,
+   "x2_contest_actions_B": null,
+   "shot_now_A": 30.0,
+   "shot_now_B": 30.0,
+   "o2_looks_A": [
+    [
+     "drive",
+     "B8",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "C8",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "D9",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "C9",
+     1.0,
+     39.0
+    ]
+   ],
+   "o2_looks_B": [
+    [
+     "drive",
+     "B8",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "C8",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "D9",
+     1.0,
+     39.0
+    ],
+    [
+     "drive",
+     "C9",
+     1.0,
+     39.0
+    ]
+   ]
+  },
+  "seconds": 605.4,
+  "supplement": {
+   "close": {
+    "shot_here": {
+     "value": 30.0,
+     "open": {
+      "three": 39
+     },
+     "contested_by": {
+      "X2": {
+       "three": 30
+      },
+      "X4": {
+       "three": 30
+      }
+     }
+    },
+    "step_up_B8": {
+     "value": 39.0,
+     "open": {
+      "three": 39
+     },
+     "contested_by": {
+      "X2": {
+       "three": 44.4
+      }
+     }
+    }
+   },
+   "short": {
+    "shot_here": {
+     "value": 30.0,
+     "open": {
+      "three": 39
+     },
+     "contested_by": {
+      "X4": {
+       "three": 30
+      }
+     }
+    },
+    "step_up_B8": {
+     "value": 39.0,
+     "open": {
+      "three": 39
+     },
+     "contested_by": {}
+    }
+   }
+  }
+ },
+ "6": {
+  "subs": {
+   "": {
+    "label": "",
+    "side": "O",
+    "n_turns": 31744,
+    "n_accepted": 6028,
+    "n_valued_first": 6028,
+    "accepted_examples": [
+     "O4 Shot (three)",
+     "O4 Move to A4",
+     "O4 Move to A4; O4 Shot (three)",
+     "O4 Move to A4; O4 Pass to O1",
+     "O4 Move to A4; O4 Pass to O2"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 1,
+     "seconds": 2.63,
+     "choice": "O2 Move to A5; O2 Screen, T SE",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O2 Move to A5",
+      "choice_value": 33,
+      "choice_accepted": false,
+      "best_accepted": "O4 Move to A4",
+      "best_accepted_value": 33,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Move to A5",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O4 Pass to O2",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O4 Shot (three)",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O4 Pass to O2",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O Hesitate",
+        "value": 25.5,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O1 Move to K10",
+        "value": 25.5,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Move to A5; O2 Screen, T SE": 25.5
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 37.0,
+      "choice": "O2 Move to A5",
+      "choice_value": 39,
+      "choice_accepted": false,
+      "best_accepted": "O4 Move to A2",
+      "best_accepted_value": 39,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Move to A5",
+        "value": 39,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O4 Shot (three)",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O Hesitate",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O1 Move to K10",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O1 Move to G10",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O3 Move to N5",
+        "value": 33,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Move to A5; O2 Screen, T SE": 33
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 59.9,
+      "choice": "O2 Move to A5",
+      "choice_value": 33,
+      "choice_accepted": false,
+      "best_accepted": "O4 Quick Step to A2",
+      "best_accepted_value": 33.15,
+      "gap": -0.15,
+      "top": [
+       {
+        "turn": "O2 Move to A5",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O4 Shot (three)",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O Hesitate",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O1 Move to K10",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O1 Move to G10",
+        "value": 33,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A5; O3 Move to N5",
+        "value": 33,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O2 Move to A5; O2 Screen, T SE": 33
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 6,
+    "seconds": 600.1,
+    "enum_seconds": 2.3,
+    "result": "speed"
+   }
+  },
+  "facts": {
+   "corner_three": 11,
+   "shot_now": 33.0,
+   "phase_table": 24.89,
+   "position_now": 33.0,
+   "o4_looks": [
+    [
+     "shoot",
+     "A3",
+     1.0,
+     33.0
+    ],
+    [
+     "drive",
+     "A4",
+     1.0,
+     33.0
+    ],
+    [
+     "drive",
+     "A5",
+     1.0,
+     33.0
+    ],
+    [
+     "drive",
+     "A6",
+     1.0,
+     33.0
+    ]
+   ],
+   "contest_actions": {
+    "X1": null,
+    "X2": null,
+    "X3": null,
+    "X4": null,
+    "X5": null
+   }
+  },
+  "seconds": 600.2,
+  "supplement": {
+   "shot_here": {
+    "value": 33.0,
+    "open": {
+     "three": 33
+    },
+    "contested_by": {}
+   }
+  }
+ },
+ "7": {
+  "subs": {
+   "phase 2": {
+    "label": "phase 2",
+    "side": "O",
+    "n_turns": 34790,
+    "n_accepted": 34788,
+    "n_valued_first": 34788,
+    "accepted_examples": [
+     "O3 Pass to O4",
+     "O3 Pass to O5",
+     "O3 Dribble vs X3",
+     "O1 Screen, T N",
+     "O1 Screen, T NE"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 3,
+     "seconds": 2.73,
+     "choice": "O3 Move to I4; O3 Dribble vs X5",
+     "accepted": true
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O3 Sprint to E9",
+      "choice_value": 27.96,
+      "choice_accepted": true,
+      "best_accepted": "O3 Sprint to E9",
+      "best_accepted_value": 27.96,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O3 Sprint to E9",
+        "value": 27.96,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Move to I4",
+        "value": 27.37,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O3 Shot (three)",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O Hesitate",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to K10",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to G10",
+        "value": 27.04,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O3 Move to I4; O3 Dribble vs X5": 27.04
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 47.9,
+      "choice": "O3 Sprint to E9",
+      "choice_value": 29.69,
+      "choice_accepted": true,
+      "best_accepted": "O3 Sprint to E9",
+      "best_accepted_value": 29.69,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O3 Sprint to E9",
+        "value": 29.69,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Move to I4",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O Hesitate",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to K10",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to G10",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O2 Move to D8",
+        "value": 27.04,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O3 Move to I4; O3 Dribble vs X5": 27.04
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 86.6,
+      "choice": "O3 Sprint to E9",
+      "choice_value": 27.04,
+      "choice_accepted": true,
+      "best_accepted": "O3 Sprint to E9",
+      "best_accepted_value": 27.04,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O3 Sprint to E9",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Move to I4",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O Hesitate",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to K10",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O1 Move to G10",
+        "value": 27.04,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Sprint to E9; O2 Move to D8",
+        "value": 27.04,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O3 Move to I4; O3 Dribble vs X5": 27.04
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 300.2,
+    "enum_seconds": 2.8,
+    "result": "met"
+   },
+   "phase 6": {
+    "label": "phase 6",
+    "side": "O",
+    "n_turns": 34790,
+    "n_accepted": 2,
+    "n_valued_first": 2,
+    "accepted_examples": [
+     "O3 Shot (mid)",
+     "O3 Shot (floater)"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 0,
+     "seconds": 3.24,
+     "choice": "O1 Move to J10; O2 Sprint to B8",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O1 Move to J10; O3 Dribble vs X3",
+      "choice_value": 29.48,
+      "choice_accepted": false,
+      "best_accepted": "O3 Shot (mid)",
+      "best_accepted_value": 29.32,
+      "gap": 0.16,
+      "top": [
+       {
+        "turn": "O1 Move to J10; O3 Dribble vs X3",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K10; O3 Dribble vs X3",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8; O3 Dribble vs X3",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8; O3 Dribble vs X3",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to J10; O3 Shot (mid)",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to J10; O3 Shot (floater)",
+        "value": 29.48,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O1 Move to J10; O2 Sprint to B8": 29.48
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 147.0,
+      "choice": "O1 Move to J10; O3 Sprint to E9",
+      "choice_value": 29.48,
+      "choice_accepted": false,
+      "best_accepted": "O3 Shot (mid)",
+      "best_accepted_value": 10,
+      "gap": 19.48,
+      "top": [
+       {
+        "turn": "O1 Move to J10; O3 Sprint to E9",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to J10; O3 Dribble vs X3",
+        "value": 21.69,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K10; O3 Dribble vs X3",
+        "value": 21.69,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8; O3 Dribble vs X3",
+        "value": 21.69,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8; O3 Dribble vs X3",
+        "value": 21.69,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to J10; O Hesitate",
+        "value": 21.69,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O1 Move to J10; O2 Sprint to B8": 21.69
+      }
+     }
+    ],
+    "capped": 5,
+    "reached_in_cap": 4,
+    "seconds": 300.1,
+    "enum_seconds": 2.9,
+    "result": "valuation or board"
+   }
+  },
+  "facts": {
+   "B": {
+    "clock": 2,
+    "phase": 6,
+    "tokens_o": 6,
+    "tokens_x": 6,
+    "offence_turns_left": "up to 3 turns of two actions (6 actions)",
+    "shot_now": 0.0,
+    "phase_table": 29.32,
+    "position_now": 29.32
+   },
+   "A": {
+    "clock": 10,
+    "phase": 2,
+    "tokens_o": 6,
+    "tokens_x": 6,
+    "offence_turns_left": "up to 3 turns of two actions (6 actions)",
+    "shot_now": 0.0,
+    "phase_table": 26.92,
+    "position_now": 26.92
+   }
+  },
+  "seconds": 606.3,
+  "supplement": {
+   "phase 2": {
+    "shot_here": null,
+    "phase_table": 26.92
+   },
+   "phase 6": {
+    "shot_here": null,
+    "phase_table": 29.32
+   }
+  }
+ },
+ "8": {
+  "subs": {
+   "": {
+    "label": "",
+    "side": "O",
+    "n_turns": 32067,
+    "n_accepted": 2688,
+    "n_valued_first": 2688,
+    "accepted_examples": [
+     "O1 Move to H11; O2 Move to D7",
+     "O1 Move to H11; O2 Move to D6",
+     "O1 Move to H11; O2 Move to F7",
+     "O1 Move to H11; O2 Move to E7",
+     "O1 Move to H11; O2 Sprint to D7"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 0,
+     "seconds": 2.999,
+     "choice": "O4 Quick Step to A4",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.2,
+      "choice": "O1 Shot (three)",
+      "choice_value": 24.89,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to H11; O2 Move to D7",
+      "best_accepted_value": 24.89,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O1 Shot (three)",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Dribble vs X1",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O4 Quick Step to A4": 24.89
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 66.4,
+      "choice": "O2 Sprint to C8",
+      "choice_value": 30,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to H11; O2 Move to D7",
+      "best_accepted_value": 24.89,
+      "gap": 5.11,
+      "top": [
+       {
+        "turn": "O2 Sprint to C8",
+        "value": 30,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O3 Move to N5",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O4 Move to A4",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O4 Quick Step to A4": 24.89
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 351.4,
+      "choice": "O1 Sprint to K7",
+      "choice_value": 25.16,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to H11; O2 Move to D7",
+      "best_accepted_value": 24.89,
+      "gap": 0.27,
+      "top": [
+       {
+        "turn": "O1 Sprint to K7",
+        "value": 25.16,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Sprint to C8",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to C8",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O3 Move to N5",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O4 Quick Step to A4": 24.89
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 600.0,
+    "enum_seconds": 3.2,
+    "result": "valuation or board"
+   }
+  },
+  "facts": {
+   "o2_looks": [
+    [
+     "cut",
+     "G9",
+     1.0,
+     18.0
+    ],
+    [
+     "cut",
+     "C9",
+     0.5,
+     15.0
+    ],
+    [
+     "cut",
+     "C8",
+     0.5,
+     15.0
+    ],
+    [
+     "cut",
+     "B8",
+     0.5,
+     15.0
+    ]
+   ],
+   "position_now": 24.89,
+   "cuts": {
+    "O2 Move to D7": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "D7"
+    },
+    "O2 Move to D6": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "D6"
+    },
+    "O2 Move to F7": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "F7"
+    },
+    "O2 Move to E7": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "E7"
+    },
+    "O2 Sprint to D7": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "D7"
+    },
+    "O2 Sprint to D6": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "D6"
+    },
+    "O2 Sprint to D5": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "D5"
+    },
+    "O2 Sprint to F7": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "F7"
+    },
+    "O2 Sprint to G6": {
+     "arrives": 0.5,
+     "can_step_in": [
+      "X1",
+      "X2"
+     ],
+     "square": "G6"
+    }
+   }
+  },
+  "seconds": 600.1,
+  "supplement": {
+   "cut_alone": 24.89,
+   "cut_and_pass": 12.45,
+   "position_now": 24.89
+  }
+ },
+ "11": {
+  "subs": {
+   "early": {
+    "label": "early",
+    "side": "O",
+    "n_turns": 28619,
+    "n_accepted": 28552,
+    "n_valued_first": 28552,
+    "accepted_examples": [
+     "O1 Pass to O4",
+     "O1 Pass to O5",
+     "O1 Dribble vs X1",
+     "O2 Screen, T N",
+     "O2 Screen, T NE"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 2,
+     "seconds": 2.816,
+     "choice": "O3 Sprint to N5",
+     "accepted": true
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.0,
+      "choice": "O1 Dribble vs X1",
+      "choice_value": 25.44,
+      "choice_accepted": true,
+      "best_accepted": "O1 Move to I12",
+      "best_accepted_value": 27.43,
+      "gap": -1.99,
+      "top": [
+       {
+        "turn": "O1 Dribble vs X1",
+        "value": 25.44,
+        "accepted": true
+       },
+       {
+        "turn": "O Hesitate",
+        "value": 25.44,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A7",
+        "value": 25.44,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A6",
+        "value": 25.44,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A5",
+        "value": 25.44,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Move to N5",
+        "value": 25.44,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O3 Sprint to N5": 25.44
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 72.2,
+      "choice": "O2 Quick Step to A6",
+      "choice_value": 30,
+      "choice_accepted": true,
+      "best_accepted": "O2 Quick Step to A6",
+      "best_accepted_value": 30,
+      "gap": 0,
+      "top": [
+       {
+        "turn": "O2 Quick Step to A6",
+        "value": 30,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Sprint to A6",
+        "value": 26.48,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A7",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A6",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O2 Move to A5",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O3 Move to N5",
+        "value": 24.89,
+        "accepted": true
+       }
+      ],
+      "extra": {
+       "O3 Sprint to N5": 24.89
+      }
+     }
+    ],
+    "capped": 5,
+    "reached_in_cap": 4,
+    "seconds": 300.4,
+    "enum_seconds": 2.0,
+    "result": "met"
+   },
+   "final phase": {
+    "label": "final phase",
+    "side": "O",
+    "n_turns": 28619,
+    "n_accepted": 504,
+    "n_valued_first": 504,
+    "accepted_examples": [
+     "O1 Pass to O4",
+     "O1 Pass to O5",
+     "O1 Move to I12; O1 Pass to O2",
+     "O1 Move to I12; O1 Pass to O3",
+     "O1 Move to I12; O1 Pass to O4"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 2,
+     "seconds": 2.68,
+     "choice": "O1 Quick Step to H10",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O1 Move to J10",
+      "choice_value": 30.98,
+      "choice_accepted": false,
+      "best_accepted": "O1 Pass to O4",
+      "best_accepted_value": 15.49,
+      "gap": 15.49,
+      "top": [
+       {
+        "turn": "O1 Move to J10",
+        "value": 30.98,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to H10",
+        "value": 30.98,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Quick Step to J10",
+        "value": 30.98,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Quick Step to H10",
+        "value": 30.98,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Sprint to J10",
+        "value": 30.98,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Sprint to H10",
+        "value": 30.98,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O1 Quick Step to H10": 30.98
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 68.2,
+      "choice": "O2 Quick Step to A6",
+      "choice_value": 30,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to I12; O1 Pass to O5",
+      "best_accepted_value": 29.48,
+      "gap": 0.52,
+      "top": [
+       {
+        "turn": "O2 Quick Step to A6",
+        "value": 30,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to J10",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to H10",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Quick Step to J10",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Quick Step to H10",
+        "value": 29.48,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Sprint to J10",
+        "value": 29.48,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O1 Quick Step to H10": 29.48
+      }
+     }
+    ],
+    "capped": 5,
+    "reached_in_cap": 4,
+    "seconds": 300.0,
+    "enum_seconds": 2.2,
+    "result": "valuation or board"
+   }
+  },
+  "facts": {
+   "B": {
+    "clock": 2,
+    "phase": 6,
+    "tokens_o": 6,
+    "tokens_x": 6,
+    "offence_turns_left": "up to 3 turns of two actions (6 actions)",
+    "shot_now": 0.0,
+    "phase_table": 29.48,
+    "position_now": 29.48
+   },
+   "A": {
+    "clock": 12,
+    "phase": 1,
+    "tokens_o": 6,
+    "tokens_x": 6,
+    "offence_turns_left": "up to 3 turns of two actions (6 actions)",
+    "shot_now": 0.0,
+    "phase_table": 25.44,
+    "position_now": 25.44
+   }
+  },
+  "seconds": 605.9,
+  "supplement": {
+   "early": {
+    "pass_to_O2_legal": false,
+    "denied_by": {
+     "O2": "X2",
+     "O3": "X3",
+     "O4": null,
+     "O5": null
+    },
+    "pass_to_O2_lane_arrives": 0.0,
+    "pass_to_O2_one_ahead": null,
+    "phase_table": 25.44,
+    "other_passes": {
+     "O1 Pass to O4": {
+      "arrives": 0.5,
+      "one_ahead": 12.45
+     },
+     "O1 Pass to O5": {
+      "arrives": 0.5,
+      "one_ahead": 12.45
+     }
+    }
+   },
+   "final phase": {
+    "pass_to_O2_legal": false,
+    "denied_by": {
+     "O2": "X2",
+     "O3": "X3",
+     "O4": null,
+     "O5": null
+    },
+    "pass_to_O2_lane_arrives": 0.0,
+    "pass_to_O2_one_ahead": null,
+    "phase_table": 29.48,
+    "other_passes": {
+     "O1 Pass to O4": {
+      "arrives": 0.5,
+      "one_ahead": 15.49
+     },
+     "O1 Pass to O5": {
+      "arrives": 0.5,
+      "one_ahead": 14.45
+     }
+    }
+   }
+  }
+ },
+ "13": {
+  "subs": {
+   "": {
+    "label": "",
+    "side": "O",
+    "n_turns": 32181,
+    "n_accepted": 7695,
+    "n_valued_first": 7695,
+    "accepted_examples": [
+     "O1 Shot (long)",
+     "O1 Pass to O4",
+     "O1 Pass to O5",
+     "O1 Move to I10; O1 Shot (three)",
+     "O1 Move to I10; O1 Pass to O4"
+    ],
+    "clock": {
+     "depth": 1,
+     "partial": 1,
+     "seconds": 2.821,
+     "choice": "O3 Move to N5",
+     "accepted": false
+    },
+    "rows": [
+     {
+      "depth": 1,
+      "seconds": 0.1,
+      "choice": "O1 Shot (long)",
+      "choice_value": 24.89,
+      "choice_accepted": true,
+      "best_accepted": "O1 Shot (long)",
+      "best_accepted_value": 24.89,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O1 Shot (long)",
+        "value": 24.89,
+        "accepted": true
+       },
+       {
+        "turn": "O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O3 Move to N5": 24.89
+      }
+     },
+     {
+      "depth": 4,
+      "seconds": 36.4,
+      "choice": "O Hesitate",
+      "choice_value": 24.89,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to I10; O5 Move to I9",
+      "best_accepted_value": 24.89,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A7",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O3 Move to N5": 24.89
+      }
+     },
+     {
+      "depth": 5,
+      "seconds": 168.5,
+      "choice": "O Hesitate",
+      "choice_value": 24.89,
+      "choice_accepted": false,
+      "best_accepted": "O1 Move to I10; O5 Move to I9",
+      "best_accepted_value": 24.89,
+      "gap": 0.0,
+      "top": [
+       {
+        "turn": "O Hesitate",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to I10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K9",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O1 Move to K10",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to B8",
+        "value": 24.89,
+        "accepted": false
+       },
+       {
+        "turn": "O2 Move to A7",
+        "value": 24.89,
+        "accepted": false
+       }
+      ],
+      "extra": {
+       "O3 Move to N5": 24.89
+      }
+     }
+    ],
+    "capped": 6,
+    "reached_in_cap": 5,
+    "seconds": 600.1,
+    "enum_seconds": 2.6,
+    "result": "speed"
+   }
+  },
+  "facts": {
+   "o1_looks_with_o5": [
+    [
+     "drive",
+     "K10",
+     1.0,
+     24.0
+    ],
+    [
+     "drive",
+     "K9",
+     1.0,
+     16.0
+    ],
+    [
+     "drive",
+     "I10",
+     1.0,
+     9.0
+    ],
+    [
+     "drive",
+     "J10",
+     1.0,
+     9.0
+    ]
+   ],
+   "o1_threat_with_o5": 24.0,
+   "o1_threat_o5_cleared": {
+    "value": 16.8,
+    "by": "O5 Move to J6",
+    "looks": [
+     [
+      "later",
+      "K10",
+      0.7,
+      16.8
+     ],
+     [
+      "later",
+      "K9",
+      0.7,
+      11.2
+     ],
+     [
+      "later",
+      "I10",
+      0.7,
+      6.3
+     ]
+    ]
+   }
+  },
+  "seconds": 600.3,
+  "supplement": {
+   "straight_drive_with_o5": {
+    "available": true,
+    "drive": 8.0,
+    "best_other": 15.0
+   },
+   "straight_drive_o5_cleared": [
+    {
+     "move": "O5 Move to J6",
+     "available": true,
+     "drive": 8.0,
+     "best_other": 15.0
+    },
+    {
+     "move": "O5 Move to K6",
+     "available": true,
+     "drive": 8.0,
+     "best_other": 15.0
+    },
+    {
+     "move": "O5 Move to L6",
+     "available": true,
+     "drive": 8.0,
+     "best_other": 15.0
+    }
+   ],
+   "n_clearing_moves": 20,
+   "o3_move_effect": {
+    "one_ahead": 24.89,
+    "before": 24.89
+   }
+  }
+ },
+ "_meta": {
+  "seconds": {
+   "14": 602.8,
+   "16": 600.1,
+   "C1": 749.6,
+   "C2": 600.2,
+   "T1": 4.1,
+   "T2": 2.5,
+   "2": 620.6,
+   "3": 600.9,
+   "4": 600.4,
+   "5": 605.4,
+   "6": 600.2,
+   "7": 606.3,
+   "8": 600.1,
+   "11": 605.9,
+   "13": 600.3
+  },
+  "total_minutes": 133.3,
+  "engine": "engine.js (tools/exam_evidence.js), All-Star settings, rules through step 7",
+  "cap_seconds": 600.0
+ }
+}

@@ -1,0 +1,153 @@
+{
+ "5": {
+  "close": {
+   "shot_here": {
+    "value": 30.0,
+    "open": {
+     "three": 39
+    },
+    "contested_by": {
+     "X2": {
+      "three": 30
+     },
+     "X4": {
+      "three": 30
+     }
+    }
+   },
+   "step_up_B8": {
+    "value": 39.0,
+    "open": {
+     "three": 39
+    },
+    "contested_by": {
+     "X2": {
+      "three": 44.4
+     }
+    }
+   }
+  },
+  "short": {
+   "shot_here": {
+    "value": 30.0,
+    "open": {
+     "three": 39
+    },
+    "contested_by": {
+     "X4": {
+      "three": 30
+     }
+    }
+   },
+   "step_up_B8": {
+    "value": 39.0,
+    "open": {
+     "three": 39
+    },
+    "contested_by": {}
+   }
+  }
+ },
+ "6": {
+  "shot_here": {
+   "value": 33.0,
+   "open": {
+    "three": 33
+   },
+   "contested_by": {}
+  }
+ },
+ "7": {
+  "phase 2": {
+   "shot_here": null,
+   "phase_table": 26.92
+  },
+  "phase 6": {
+   "shot_here": null,
+   "phase_table": 29.32
+  }
+ },
+ "11": {
+  "early": {
+   "pass_to_O2_legal": false,
+   "denied_by": {
+    "O2": "X2",
+    "O3": "X3",
+    "O4": null,
+    "O5": null
+   },
+   "pass_to_O2_lane_arrives": 0.0,
+   "pass_to_O2_one_ahead": null,
+   "phase_table": 25.44,
+   "other_passes": {
+    "O1 Pass to O4": {
+     "arrives": 0.5,
+     "one_ahead": 12.45
+    },
+    "O1 Pass to O5": {
+     "arrives": 0.5,
+     "one_ahead": 12.45
+    }
+   }
+  },
+  "final phase": {
+   "pass_to_O2_legal": false,
+   "denied_by": {
+    "O2": "X2",
+    "O3": "X3",
+    "O4": null,
+    "O5": null
+   },
+   "pass_to_O2_lane_arrives": 0.0,
+   "pass_to_O2_one_ahead": null,
+   "phase_table": 29.48,
+   "other_passes": {
+    "O1 Pass to O4": {
+     "arrives": 0.5,
+     "one_ahead": 15.49
+    },
+    "O1 Pass to O5": {
+     "arrives": 0.5,
+     "one_ahead": 14.45
+    }
+   }
+  }
+ },
+ "13": {
+  "straight_drive_with_o5": {
+   "available": true,
+   "drive": 8.0,
+   "best_other": 15.0
+  },
+  "straight_drive_o5_cleared": [
+   {
+    "move": "O5 Move to J6",
+    "available": true,
+    "drive": 8.0,
+    "best_other": 15.0
+   },
+   {
+    "move": "O5 Move to K6",
+    "available": true,
+    "drive": 8.0,
+    "best_other": 15.0
+   },
+   {
+    "move": "O5 Move to L6",
+    "available": true,
+    "drive": 8.0,
+    "best_other": 15.0
+   }
+  ],
+  "n_clearing_moves": 20,
+  "o3_move_effect": {
+   "one_ahead": 24.89,
+   "before": 24.89
+  }
+ },
+ "8": {
+  "cut_alone": 24.89,
+  "cut_and_pass": 12.45,
+  "position_now": 24.89
+ }
+}

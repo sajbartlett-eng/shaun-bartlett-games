@@ -16,6 +16,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from playmaker_engine import board as B                                   # noqa: E402
 from playmaker_engine import exam as E                                    # noqa: E402
@@ -475,6 +476,9 @@ text { font-family: 'Kalam', 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cur
 .courtlines path, .courtlines line { fill: none; stroke: #1f2a44; stroke-width: 2.6; stroke-linecap: round; }
 .num { font-size: 16px; font-weight: 700; fill: #1d1b18; } .xnum { font-size: 11px; fill: #c0392b; }
 .halo { fill: none; stroke: none; }
+.evidence { margin-top: 18px; border-top: 2px solid var(--line); padding-top: 12px; }
+.evres { font-size: 16px; } table.ev th { width: auto; } table.ev td { font-size: 13.5px; }
+.facts { font: 14.5px/1.5 system-ui, sans-serif; padding-left: 20px; } .facts li { margin: 5px 0; }
 @media print { body { background: #fff; } .card { page-break-before: always; border: none; margin: 0; }
   .card.first { page-break-before: auto; } }
 """
@@ -505,7 +509,106 @@ before 9 November, so today it is "not measured under the current rules". Its re
 """
 
 
-def page_html(p, svgs, data, fixed, timed, board1, today):
+EVIDENCE_PATH = os.path.join(RUNS, 'step9', 'exam_evidence.json')
+EV_KEY = {'b2': '2', 'b3': '3', 'b4': '4', 'b5': '5', 'b6': '6', 'b7': '7', 'b8': '8', 'b11': '11', 'b13': '13',
+          'b14': '14', 'b16': '16', 'd112': 'T1', 'd113': 'T2', 'd108': 'C1', 'd109': 'C2'}
+RESULT_WORDS = {'met': 'Met', 'speed': 'Speed', 'valuation or board': 'Valuation or board',
+                'no accepted move': 'No move can meet the judge', 'not measured': 'Not measured'}
+
+
+def pts(v):
+    return '' if v is None else f'{v:.1f}'
+
+
+def say(turn):
+    """A turn stored as action strings, in plain words."""
+    if not turn:
+        return ''
+    return plain.cap(plain.turn_str(turn.split('; ')))
+
+
+def look_label(r, clock_depth):
+    d = r['depth']
+    lab = f'{d} move{"s" if d > 1 else ""} ahead'
+    return lab + (' (as on the clock)' if d == clock_depth else '')
+
+
+def values_table(sub, side):
+    """The values table for one copy of a board: the computer's choice against the best accepted move, per look."""
+    cd = sub['clock']['depth']
+    rows = ['<table class="ev"><tr><th>Looking</th><th>The computer\'s choice</th><th>Best move the board accepts</th>'
+            '<th>Gap</th></tr>']
+    for r in sub['rows']:
+        gap = r['gap']
+        gtxt = '' if gap is None else ('level' if abs(gap) < 0.05 else
+                                       (f'choice ahead by {gap:.1f}' if gap > 0 else f'accepted move ahead by {-gap:.1f}'))
+        ch = say(r['choice']) + (' (the board accepts it)' if r['choice_accepted'] else '')
+        rows.append(f"<tr><td>{esc(look_label(r, cd))}</td><td>{esc(ch)}: <b>{pts(r['choice_value'])}</b></td>"
+                    f"<td>{esc(say(r['best_accepted']))}: <b>{pts(r['best_accepted_value'])}</b></td><td>{esc(gtxt)}</td></tr>")
+    if sub.get('capped'):
+        rows.append(f"<tr><td>{sub['capped']} moves ahead</td><td colspan=\"3\">Not finished within the board\'s 10 minutes "
+                    f"(the deepest complete look: {max([r['depth'] for r in sub['rows']] or [sub.get('reached_in_cap') or 1])} "
+                    f"moves ahead).</td></tr>")
+    rows.append('</table>')
+    who = 'the offence' if side == 'O' else 'the defence'
+    ck = sub['clock']
+    played = (f"On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked {ck['depth']} move ahead"
+              + (' and part of the next' if ck.get('partial') else '') + f" and played: {say(ck['choice'])}"
+              + (' (the board accepts it). ' if ck['accepted'] else ' (the board doesn\'t accept it). '))
+    note = (played + f"Values are the game's own points for the possession, from the offence's side (higher is better "
+            f"for the offence; {who} is choosing). {sub['n_accepted']:,} of the {sub['n_turns']:,} legal turns meet the "
+            f"judge.")
+    return '\n'.join(rows) + f'<p class="note">{esc(note)}</p>'
+
+
+def evidence_html(p, ev, words):
+    k = EV_KEY.get(p['key'])
+    if not k or k not in ev:
+        return ''
+    e, w = ev[k], words.get(k, {})
+    out = ['<div class="evidence"><div class="kicker">Evidence (step 9)</div>']
+    res = w.get('result') or ''
+    out.append(f'<p class="evres"><b>{esc(w.get("verdict", ""))}</b> {esc(res)}</p>')
+    subs = e.get('subs') or ({'': e['evidence']} if 'evidence' in e else {})
+    labels = p.get('labels') or {}
+    for name, sub in subs.items():
+        if not sub.get('rows'):
+            continue
+        if len(subs) > 1:
+            out.append(f'<div class="lbl">{esc(labels.get(name, name))}</div>')
+        out.append(values_table(sub, sub['side']))
+    for extra in w.get('tables', []):
+        out.append(extra)
+    if k == '14':
+        rows = ['<table class="ev"><tr><th>Looking</th><th>First moves, best first</th><th>Gap, first to second</th></tr>']
+        for r in e['rows']:
+            fm = '; '.join(f'{say(t)}: {v:.1f}' for t, v in r['first_moves'][:4])
+            rows.append(f"<tr><td>{r['depth']} move{'s' if r['depth'] > 1 else ''} ahead</td><td>{esc(fm)}</td>"
+                        f"<td>{r['gap']:.1f}</td></tr>")
+        if e.get('capped'):
+            rows.append(f"<tr><td>{e['capped']} moves ahead</td><td colspan=\"2\">Not finished within the 10 minutes.</td></tr>")
+        out.append('\n'.join(rows) + '</table>')
+    if k == '16':
+        rows = ['<table class="ev"><tr><th>Along the computer\'s line</th><th>Possession</th><th>X2 has his Move</th>'
+                '<th>X2 has his Quick Step</th></tr>']
+        for r in e['line']:
+            yes = lambda b: '' if b is None else ('yes' if b else 'no')
+            rows.append(f"<tr><td>{esc(say(r['turn']) if r['turn'] else 'At the start')}</td><td>{pts(r['value'])}</td>"
+                        f"<td>{yes(r['x2_move_left'])}</td><td>{yes(r['x2_qs_left'])}</td></tr>")
+        out.append('\n'.join(rows) + '</table>')
+    if k == 'T1':
+        rows = ['<table class="ev"><tr><th>Order</th><th>With the test\'s table (step 3m)</th><th>With today\'s table</th></tr>']
+        t3, td = e['tables']['step 3m table (as the test runs)']['orders'], e['tables']['today']['orders']
+        for name in t3:
+            rows.append(f'<tr><td>{esc(name)}</td><td>{pts(t3[name])}</td><td>{pts(td[name])}</td></tr>')
+        out.append('\n'.join(rows) + '</table>')
+    if w.get('facts'):
+        out.append('<ul class="facts">' + ''.join(f'<li>{esc(f)}</li>' for f in w['facts']) + '</ul>')
+    out.append('</div>')
+    return '\n'.join(out)
+
+
+def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None):
     v, verdict_note = today_cell(p, today)
     cls = {'Pass': 'pass', 'Fail': 'fail'}.get(v, 'na')
     short = 'Not measured' if v.startswith('Not measured') else v
@@ -546,6 +649,8 @@ def page_html(p, svgs, data, fixed, timed, board1, today):
     if p.get('note'):
         out.append(f'<dt>Worth knowing</dt><dd class="note">{esc(p["note"])}</dd>')
     out.append('</dl>')
+    if ev:
+        out.append(evidence_html(p, ev, ewords or {}))
     out.append('<div class="mark"><b>Shaun\'s mark:</b> <span class="boxes"><span>&#9744; Keep</span>'
                '<span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div>'
                '<div class="line"></div></div>')
@@ -557,9 +662,11 @@ def main():
     data = boards()
     svgs = draw(data)
     fixed, timed, board1, today = results()
+    ev = json.load(open(EVIDENCE_PATH)) if os.path.exists(EVIDENCE_PATH) else None
+    from exam_book_words import EVIDENCE_WORDS
     body, index = [], []
     for p in PAGES:
-        h, v = page_html(p, svgs, data, fixed, timed, board1, today)
+        h, v = page_html(p, svgs, data, fixed, timed, board1, today, ev, EVIDENCE_WORDS)
         body.append(h)
         index.append((p, 'not measured under the current rules' if v.startswith('Not measured') else v))
     toc = '<ol class="toc" style="list-style:none">' + ''.join(
@@ -574,7 +681,14 @@ def main():
     # the banned-terms check, on the words only (the pictures carry square and zone labels)
     words = '\n'.join([INTRO] + [' '.join(str(p.get(k, '')) for k in
                                           ('title', 'situation', 'expect', 'why', 'judged', 'instead', 'rulings',
-                                           'note', 'today_note')) for p in PAGES])
+                                           'note', 'today_note')) for p in PAGES]
+                      + [' '.join([w.get('verdict', ''), w.get('result', ''), w.get('index', '')] + list(w.get('facts', [])))
+                         for w in EVIDENCE_WORDS.values()])
+    # and the plain words the values tables print
+    if ev:
+        words += '\n' + '\n'.join(say(r[k]) for e in ev.values() for sub in (e.get('subs') or
+                                    ({'': e['evidence']} if 'evidence' in e else {})).values()
+                                    for r in sub.get('rows', []) for k in ('choice', 'best_accepted') if r.get(k))
     hits = plain.check(words)
     if hits:
         raise SystemExit(f'banned terms in the exam book: {hits}')
@@ -588,6 +702,11 @@ def main():
     for p, v in index:
         tag = f" ({p['also']})" if p.get('also') else ''
         status = v if v.startswith('not measured') else f'{v.lower()} today'
+        if v.startswith('not measured') and ev and EV_KEY.get(p['key']) in ev:
+            status = 'first measured in step 9'
+        k = EV_KEY.get(p['key'])
+        if ev and k in (ev or {}):
+            status += f"; evidence: {EVIDENCE_WORDS.get(k, {}).get('index', '')}"
         lines.append(f"- [ ] {p['n']}. {p['title']}{tag}: {status}. Keep / fix / drop:")
     open(OUT_MD, 'w').write('\n'.join(lines) + '\n')
     print(f'wrote {OUT_HTML} ({len(doc) // 1024} KB) and {OUT_MD}')

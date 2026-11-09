@@ -410,6 +410,8 @@ the shot itself. A shot is an option, held against a standard that can differ fo
 when the look beats what its possession is worth now; the defence may deliberately offer looks below what it can live
 with. A wide-open shot is not the advantage; the advantages created that opportunity." The six advantage states stay.
 Note for the trainer: never call a shot an advantage in player-facing text.
+The six states (from step 3g, now in `archive/engine/advantage.py`; the live computer doesn't use them) are kept as the
+trainer's vocabulary for step 16, alongside the coverage shares (D-95). (Shaun, step 9 prompt)
 Reason: the principle above. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled.**
 
 **D-95** (OQ-55). Responsibility comes from coverage, not fixed matchups. Each defender holds shares across the offensive
@@ -419,6 +421,11 @@ reads and the trainer means the threat he holds the largest share of, and the tr
 splitting O2 and O4"). No new rules.
 Reason: the defence's responsibilities come from what it covers. · 9 Nov 2026 · Source: Shaun, 9 Nov 2026 · **Ruled, not
 built:** phase 4, with the trainer's flags (step 16).
+
+### Shaun, step 9 prompt: the answers to step 8
+
+**D-77** (C6). Scenario 10 is played with the card's numbers (4 tokens left a side, both Screens spent). Shapes one card.
+· Source: Shaun, step 9 prompt · **Ruled.**
 
 ## 2. Engine defaults awaiting sign-off
 
@@ -444,8 +451,6 @@ the advantage reads.
 
 **D-75** (OQ-42, OQ-43, OQ-46). Playtest interface defaults: every roll says who rolls; opening placement for full
 games; every court choice repeated as a full-size button on phones. Shapes the interface only.
-
-**D-77** (C6). Scenario 10 is played with the card's numbers (4 tokens left a side, both Screens spent). Shapes one card.
 
 ## 3. Open
 

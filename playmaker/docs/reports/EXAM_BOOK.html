@@ -38,6 +38,9 @@ text { font-family: 'Kalam', 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cur
 .courtlines path, .courtlines line { fill: none; stroke: #1f2a44; stroke-width: 2.6; stroke-linecap: round; }
 .num { font-size: 16px; font-weight: 700; fill: #1d1b18; } .xnum { font-size: 11px; fill: #c0392b; }
 .halo { fill: none; stroke: none; }
+.evidence { margin-top: 18px; border-top: 2px solid var(--line); padding-top: 12px; }
+.evres { font-size: 16px; } table.ev th { width: auto; } table.ev td { font-size: 13.5px; }
+.facts { font: 14.5px/1.5 system-ui, sans-serif; padding-left: 20px; } .facts li { margin: 5px 0; }
 @media print { body { background: #fff; } .card { page-break-before: always; border: none; margin: 0; }
   .card.first { page-break-before: auto; } }
 </style></head><body><main><h1>Playmaker exam book</h1>
@@ -81,6 +84,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 </table></dd>
 <dt>Worth knowing</dt><dd class="note">On this board the drive is weak before the defence does anything (worth 10 against 26 for the best other option), so the board passes easily and tests little. A board where the drive starts strong would test the rule better.</dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b2">
@@ -104,6 +108,22 @@ before 9 November, so today it is "not measured under the current rules". Its re
 </table></dd>
 <dt>Worth knowing</dt><dd class="note">Searching four moves ahead it passed before the 9 November rules; under time it failed. The step 3n report put this down to speed: the right answer appears once the computer looks far enough ahead.</dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Level, and on the clock it now depends on timing.</b> Looking 4 moves ahead, the computer's choice and the best move the board accepts are level on both copies (18.7). In this run's clock decisions the pair met the board; in the step 6 run it didn't.</p>
+<div class="lbl">Board A: O2's three rated 4</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>X1 reaches for the steal: <b>18.8</b></td><td>X2 moves to E5, facing north, then X1 reaches for the steal: <b>18.3</b></td><td>accepted move ahead by 0.5</td></tr>
+<tr><td>4 moves ahead</td><td>X1 reaches for the steal: <b>18.7</b></td><td>X2 moves to E5, facing north, then X1 reaches for the steal: <b>18.7</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: X2 moves to D6, facing west, then X1 reaches for the steal (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the defence is choosing). 30,582 of the 932,802 legal turns meet the judge.</p>
+<div class="lbl">Board B: O2's three rated 12</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>X2 moves to E5, facing south-west, then X1 reaches for the steal: <b>18.3</b></td><td>X1 reaches for the steal: <b>18.8</b></td><td>choice ahead by 0.5</td></tr>
+<tr><td>4 moves ahead</td><td>X1 reaches for the steal (the board accepts it): <b>18.7</b></td><td>X1 reaches for the steal: <b>18.7</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: X3 moves to N7, facing west, then X1 reaches for the steal (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the defence is choosing). 748,890 of the 932,802 legal turns meet the judge.</p>
+<ul class="facts"><li>O2's three is rated 4 on board A (a poor shooter) and 12 on board B (a good one). X2's contest on a three is 3.</li><li>On the clock in this run: against the poor shooter X2 went to D6, 5 squares from the rim; against the good shooter he stayed at C7, 6 from the rim, next to O2. That pair meets the board (closer to the rim against the poor shooter, and still able to Contest the good one). In the step 6 run he went to D6 and D7, both 5 from the rim, which fails. The choice on the clock moves with timing.</li><li>Under Contest as an action, X2 can sag as far as F3, 3 squares from the rim and 4 from O2, and still close out with one movement and a Contest. So sagging costs him almost nothing on either board.</li><li>On both boards the computer's first concern is X1's Steal on O1 at the top, not X2.</li><li>The two copies are judged against each other. Each copy's accepted moves were judged against the computer's own clock choice on the other copy at the start of the run: on board A, X2 had to end closer than 5 squares from the rim.</li><li>5 moves ahead did not finish within each copy's half of the 10 minutes.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b3">
@@ -123,6 +143,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board (see the top of the book).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Valuation or board.</b> The search's best answer is X1 recovering in front of O1 with his Quick Step (and a Steal). It holds the possession to 21.5, against 24.9 for the best answer the board accepts one move ahead, 33.2 at 4 and 39 at 5. The gap grows the further it looks.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>X1 takes a quick step to I6, then X1 reaches for the steal: <b>21.5</b></td><td>X2 moves to C7, facing north, then X1 takes a quick step to H6: <b>24.9</b></td><td>choice ahead by 3.4</td></tr>
+<tr><td>4 moves ahead</td><td>X1 takes a quick step to I6: <b>21.5</b></td><td>X2 moves to C7, facing north, then X1 takes a quick step to H6: <b>33.1</b></td><td>choice ahead by 11.7</td></tr>
+<tr><td>5 moves ahead</td><td>X1 takes a quick step to I6: <b>21.9</b></td><td>X2 moves to C7, facing north, then X1 takes a quick step to H6: <b>39.0</b></td><td>choice ahead by 17.1</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and played: X2 moves to C6, facing west, then X5 moves to N3, facing north (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the defence is choosing). 35,844 of the 553,183 legal turns meet the judge.</p>
+<ul class="facts"><li>Where he stands, O1's best look is a drive to the rim, worth 22.</li><li>X1, though beaten, can still quick-step back beside O1 (to J6): O1's best look stays at 22.</li><li>X4, the low man, is the only other defender who can get next to O1 in one move (to I4). If he does, O1's best look rises to 31: leaving the basket area opens more than it stops.</li><li>X2, X3 and X5 can't reach O1 in one move.</li><li>On the clock the computer played X2 to C6 and X5 to N3. Its plan-keeping chose that over the search's best; it reads the same as the best accepted answer at every look (24.9, 33.2, 39).</li><li>35,844 of 553,183 legal turns meet the judge (a helper ends next to O1 and another defender moves).</li><li>6 moves ahead did not finish within the 10 minutes (5 did).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b4">
@@ -142,6 +172,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>No move can meet the judge.</b> Half of the judge is the computer's own reading of the board: it must see X5 as the only answer to both O1 and O5. It doesn't, on any move, because X5 isn't stretched under today's rules. The table below measures the other half (the offence attacks): the swing to O2 is level with the best attack at 1 and 5 moves ahead, and 4.5 ahead at 4.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O2 moves to D9, then O1 passes to O2: <b>25.5</b></td><td>O1 sprints to F10, then O2 sprints to E10: <b>25.5</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O2 moves to D9: <b>30.0</b></td><td>O1 sprints to F10, then O2 sprints to E10: <b>25.5</b></td><td>choice ahead by 4.5</td></tr>
+<tr><td>5 moves ahead</td><td>O2 moves to D9: <b>25.5</b></td><td>O1 sprints to F10, then O2 sprints to E10: <b>25.5</b></td><td>level</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O2 moves to D9, then O1 passes to O2 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 17,825 of the 34,407 legal turns meet the judge.</p>
+<ul class="facts"><li>The pass to O5 is not legal: X5 stands next to O5 on the passing line and denies it. The pass to O4 is denied by X4 the same way.</li><li>O5's best look is a cut to the rim, but the pass arrives only half the time: worth 9.</li><li>O1's pull-up from where he stands (a mid-range or a floater) reads 24.9 one move ahead, then 8 and 6 at 4 and 5 moves ahead, once the defence's Contest is played out.</li><li>O1's best look is stepping out to F10 for a three, worth 24.</li><li>The swing the computer chose (O2 lifts to D9, O1 passes to him) is worth 25.5 at 1, 4 and 5 moves ahead.</li><li>So X5 can deny O5 and still help on O1: the computer finds no overloaded defender anywhere on this board.</li><li>17,825 of 34,407 legal turns meet the attacking half (a shot, a pass to O5, or O1 moving or dribbling).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b5">
@@ -165,6 +205,24 @@ before 9 November, so today it is "not measured under the current rules". Its re
 </table></dd>
 <dt>Worth knowing</dt><dd class="note">Board A counts any movement by O2 as the drive, including the sprint up the wing away from the rim. So today board A is met and the board fails on board B alone.</dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Board A met; board B: valuation or board.</b> Board A passes as judged (the sprint up the wing counts as a drive). On board B the computer still rates the sprint to B8 at 39 against 30 for the three where he stands, 9 points ahead at 4 and 5 moves ahead.</p>
+<div class="lbl">Board A: X2 arrives (C7)</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O2 moves to B8 (the board accepts it): <b>39.0</b></td><td>O2 moves to B8: <b>39.0</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O2 sprints to B8 (the board accepts it): <b>39.0</b></td><td>O2 moves to B8: <b>39.0</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td>O2 sprints to B8 (the board accepts it): <b>39.0</b></td><td>O2 moves to B8: <b>39.0</b></td><td>level</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O2 sprints to B8 (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 12,363 of the 28,172 legal turns meet the judge.</p>
+<div class="lbl">Board B: X2 stops 2 short (D7)</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O2 moves to B8: <b>39.0</b></td><td>O2 shoots a three: <b>24.9</b></td><td>choice ahead by 14.1</td></tr>
+<tr><td>4 moves ahead</td><td>O2 sprints to B8: <b>39.0</b></td><td>O2 shoots a three: <b>30.0</b></td><td>choice ahead by 9.0</td></tr>
+<tr><td>5 moves ahead</td><td>O2 sprints to B8: <b>39.0</b></td><td>O2 shoots a three: <b>30.0</b></td><td>choice ahead by 9.0</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O2 sprints to B8 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 1 of the 28,927 legal turns meet the judge.</p>
+<ul class="facts"><li>O2 is a sharpshooter: his three is rated 13. X2's contest on a three is 3.</li><li>Board B: X2 has used his Move and his Quick Step and cannot Contest O2 where he stands. But X4 can close out from the corner in the reaction and Contest the three where O2 stands, so it is worth 30, not the 39 of an open look.</li><li>One square up the wing, at B8, nobody can reach O2 in time: that three is fully open, worth 39. That is the sprint the computer chose on both boards.</li><li>Board A: X2 is next to O2 and can Contest him (30 where he stands). The best move toward the rim, one square in to C8, is worth 39 one move ahead, level with the sprint; a dribble past X2 is worth 25.5. The judge counts any movement by O2 as the drive, so board A is met.</li><li>On board B the only move the judge accepts is the shot itself (1 of 28,927 legal turns).</li><li>6 moves ahead did not finish within the board's 10 minutes (5 did).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b6">
@@ -184,6 +242,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Contest is now an action (D-18). Marked as an expected failure in step 7 for that reason, to be re-based here (D-111).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Speed, narrowly.</b> The computer's choice and O4's own moves are level at 1 and 4 moves ahead (33 and 39). At 5 moves ahead O4's quick step into the corner edges ahead by 0.2.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O2 moves to A5: <b>33.0</b></td><td>O4 moves to A4: <b>33.0</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O2 moves to A5: <b>39.0</b></td><td>O4 moves to A2: <b>39.0</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td>O2 moves to A5: <b>33.0</b></td><td>O4 takes a quick step to A2: <b>33.1</b></td><td>accepted move ahead by 0.1</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O2 moves to A5, then O2 sets a screen (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 6,028 of the 31,744 legal turns meet the judge.</p>
+<ul class="facts"><li>O4's corner three is rated 11. Nobody can Contest it where he stands: the open three is worth 33.</li><li>The phase table (what a possession still alive in phase 1 is worth on average) says 24.9. The open three beats it by 8.</li><li>The screen the computer chose (O2 to A5, then the screen) is worth 33 at 4 and 5 moves ahead: it adds nothing over the open three. One move ahead it reads only 25.5; the computer took it from part of a deeper look on the clock.</li><li>On the clock the choice and the board's moves are level, so the board fails on how the computer breaks a tie, not on a clear preference.</li><li>An earlier run of this board, which by mistake ran past the cap, reached 6 moves ahead: there the computer's choice was 5.9 ahead of the best accepted move it searched. So the "speed" reading is fragile.</li><li>6,028 of 31,744 legal turns meet the judge (any first move by O4).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b7">
@@ -206,6 +274,23 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Written before the phase rules settled (D-96): the last phase still holds several offence turns, so the computer sees time to set up a better shot. The computer's sense of the clock is settled in step 13 (D-92).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Board A met; board B: valuation or board.</b> Early (board A) the computer doesn't shoot, as asked. In the last phase (board B) it rates keeping the ball at 29.5 and the contested mid-range at 10, 19.5 points apart at 4 moves ahead.</p>
+<div class="lbl">Board A: clock 10, phase 2</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O3 sprints to E9 (the board accepts it): <b>28.0</b></td><td>O3 sprints to E9: <b>28.0</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O3 sprints to E9 (the board accepts it): <b>29.7</b></td><td>O3 sprints to E9: <b>29.7</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td>O3 sprints to E9 (the board accepts it): <b>27.0</b></td><td>O3 sprints to E9: <b>27.0</b></td><td>level</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O3 moves to I4, then O3 drives at X5 (Dribble) (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 34,788 of the 34,790 legal turns meet the judge.</p>
+<div class="lbl">Board B: clock 2, phase 6 (the last)</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 moves to J10, then O3 drives at X3 (Dribble): <b>29.5</b></td><td>O3 shoots a mid-range two: <b>29.3</b></td><td>choice ahead by 0.2</td></tr>
+<tr><td>4 moves ahead</td><td>O1 moves to J10, then O3 sprints to E9: <b>29.5</b></td><td>O3 shoots a mid-range two: <b>10.0</b></td><td>choice ahead by 19.5</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and played: O1 moves to J10, then O2 sprints to B8 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 2 of the 34,790 legal turns meet the judge.</p>
+<ul class="facts"><li>Board B: the clock shows 2, the last phase, but each side still has 6 tokens: up to three offence turns of two actions before time runs out.</li><li>The phase table says a possession still alive at the start of the last phase is worth 29.3 on average. The computer sees that much still to play for.</li><li>One move ahead, the mid-range shot and keeping the ball are almost level (29.3 against 29.5). At 4 moves ahead, with the defence's Contest played out, the shot is worth 10.</li><li>Only 2 of 34,790 legal turns meet the judge on board B: the mid-range and the floater, first.</li><li>5 moves ahead did not finish on board B within its half of the 10 minutes.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b8">
@@ -226,6 +311,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 </table></dd>
 <dt>Worth knowing</dt><dd class="note">The step 3n report found the reason: the pass to the cutter has a low chance of arriving, since X1 can step into its path, so the computer waits.</dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Valuation or board.</b> The computer's choice stays ahead: by 5.1 at 4 moves ahead and by 0.3 at 5. One move ahead everything is level at 24.9.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 shoots a three: <b>24.9</b></td><td>O1 moves to H11, then O2 moves to D7: <b>24.9</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O2 sprints to C8: <b>30.0</b></td><td>O1 moves to H11, then O2 moves to D7: <b>24.9</b></td><td>choice ahead by 5.1</td></tr>
+<tr><td>5 moves ahead</td><td>O1 sprints to K7: <b>25.2</b></td><td>O1 moves to H11, then O2 moves to D7: <b>24.9</b></td><td>choice ahead by 0.3</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and played: O4 takes a quick step to A4 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 2,688 of the 32,067 legal turns meet the judge.</p>
+<ul class="facts"><li>The backdoor pass arrives half the time: X1 and X2 can each step into its path. In the app a stolen pass ends the possession at 0.</li><li>O2's cut alone is worth 24.9 (the same as standing still). The cut with the pass in the same turn is worth 12.5: half the time the pass is lost.</li><li>2,688 of 32,067 legal turns meet the judge (O2 ends at least 2 squares closer to the rim).</li><li>Many moves read exactly 24.9 one move ahead: that is the phase table, which sets the floor of the computer's reading (D-92).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b9">
@@ -245,6 +340,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b10">
@@ -267,6 +363,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Written before the steal lock and the two foul rolls (D-96). Every steal foul now gives the offence +5 (D-89), which raises the price of a reach.</td></tr>
 </table></dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b11">
@@ -289,6 +386,22 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Written before the app's rule that an interception ends the possession (D-96). A turnover now never scores more than the total banked before it (D-82).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Board A met; board B: valuation or board.</b> The pass to O2 the board is about is not legal: X2 stands next to O2 on the passing line and denies it. In the last phase the computer keeps the ball (30) over either corner pass (29.5 at 4 moves ahead).</p>
+<div class="lbl">Board A: clock 12, early</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 drives at X1 (Dribble) (the board accepts it): <b>25.4</b></td><td>O1 moves to I12: <b>27.4</b></td><td>accepted move ahead by 2.0</td></tr>
+<tr><td>4 moves ahead</td><td>O2 takes a quick step to A6 (the board accepts it): <b>30.0</b></td><td>O2 takes a quick step to A6: <b>30.0</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O3 sprints to N5 (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 28,552 of the 28,619 legal turns meet the judge.</p>
+<div class="lbl">Board B: clock 2, the last phase</div>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 moves to J10: <b>31.0</b></td><td>O1 passes to O4: <b>15.5</b></td><td>choice ahead by 15.5</td></tr>
+<tr><td>4 moves ahead</td><td>O2 takes a quick step to A6: <b>30.0</b></td><td>O1 moves to I12, then O1 passes to O5: <b>29.5</b></td><td>choice ahead by 0.5</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O1 takes a quick step to H10 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 504 of the 28,619 legal turns meet the judge.</p>
+<ul class="facts"><li>X2 is next to O2 on the line from O1, so the rules deny that pass outright. X3 denies the pass to O3 the same way. Only the corner passes, to O4 and O5, are legal.</li><li>Each corner pass arrives half the time. One move ahead each is worth about 15 against 31 for keeping the ball; at 4 moves ahead the gap is 0.5.</li><li>Board B: the clock shows 2, the last phase, but the offence still has 6 tokens: up to three turns. The phase table says that is worth 29.5 on average.</li><li>Board A is met because no pass to O2 is possible at all.</li><li>5 moves ahead did not finish within each board's half of the 10 minutes.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b12">
@@ -308,6 +421,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b13">
@@ -327,6 +441,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Level.</b> Every move the computer weighs, and every move the board accepts, reads 24.9 at 1, 4 and 5 moves ahead. Neither side of the board is preferred; the choice falls to how the computer breaks a tie.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 shoots a long two (the board accepts it): <b>24.9</b></td><td>O1 shoots a long two: <b>24.9</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>The ball handler holds the ball (Hesitate): <b>24.9</b></td><td>O1 moves to I10, then O5 moves to I9: <b>24.9</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td>The ball handler holds the ball (Hesitate): <b>24.9</b></td><td>O1 moves to I10, then O5 moves to I9: <b>24.9</b></td><td>level</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O3 moves to N5 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 7,695 of the 32,181 legal turns meet the judge.</p>
+<ul class="facts"><li>O1's straight drive is worth 8 with O5 in the lane, and still 8 with O5 cleared to any of 20 squares. His best other option is worth 15.</li><li>The move the computer chose (O3 to N5) changes nothing: 24.9 before and after.</li><li>24.9 is the phase table for phase 1, the floor of the computer's reading (D-92). Nothing on this board lifts the reading above it.</li><li>7,695 of 32,181 legal turns meet the judge.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b14">
@@ -346,6 +470,15 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board. Open question D-97 (widen the variety, restate the board, or accept it) belongs to this board.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Valuation or board.</b> On the clock every first move is level (24.9). Looking further, one move, O1 to K10, is clearly best: by 4.8 at 4 moves ahead and 2.2 at 5, more than the 2-point margin inside which the All-Star varies.</p>
+<table class="ev"><tr><th>Looking</th><th>First moves, best first</th><th>Gap, first to second</th></tr>
+<tr><td>1 move ahead</td><td>O1 moves to J10: 24.9; O1 moves to H10: 24.9; O1 moves to K10: 24.9; O1 takes a quick step to J10: 24.9</td><td>0.0</td></tr>
+<tr><td>4 moves ahead</td><td>O1 moves to K10: 29.7; O1 moves to J10: 24.9; O1 moves to H10: 24.9; O1 takes a quick step to J10: 24.9</td><td>4.8</td></tr>
+<tr><td>5 moves ahead</td><td>O1 moves to K10: 27.1; O1 moves to J10: 24.9; O1 moves to H10: 24.9; O1 takes a quick step to J10: 24.9</td><td>2.2</td></tr>
+<tr><td>6 moves ahead</td><td colspan="2">Not finished within the 10 minutes.</td></tr></table>
+<ul class="facts"><li>The All-Star chooses at random among turns within 2 points of its best, after a small random spread (0.5). So a gap above 2 means the same first move nearly every time.</li><li>At 4 and 5 moves ahead, O1 to K10 leads; every other first move reads 24.9.</li><li>On the clock (one move ahead) all first moves are level, which is where the variety in the step 6 run came from (4 different first moves, the most common 80%).</li><li>6 moves ahead did not finish within the 10 minutes (5 did).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b15">
@@ -365,6 +498,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b16">
@@ -384,6 +518,20 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Valuation or board.</b> The computer's first turn stays ahead of every first turn the board accepts: level one move ahead, then by 5.1 at 4 moves ahead.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 moves to J10: <b>24.9</b></td><td>O2 moves to C9, then O1 sprints to E11: <b>24.9</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O1 moves to J10: <b>30.0</b></td><td>O2 moves to C9, then O1 sprints to E11: <b>24.9</b></td><td>choice ahead by 5.1</td></tr>
+<tr><td>5 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 4 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: O1 moves to J10, then O3 sprints to I9 (the board doesn't accept it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 1,586 of the 38,231 legal turns meet the judge.</p>
+<table class="ev"><tr><th>Along the computer's line</th><th>Possession</th><th>X2 has his Move</th><th>X2 has his Quick Step</th></tr>
+<tr><td>At the start</td><td>24.9</td><td>yes</td><td>yes</td></tr>
+<tr><td>O1 moves to J10, then O3 sprints to I9</td><td>24.9</td><td>yes</td><td>yes</td></tr>
+<tr><td>O2 sprints to A7</td><td>24.9</td><td>no</td><td>no</td></tr>
+<tr><td>O4 moves to A3</td><td>24.9</td><td>no</td><td>no</td></tr></table>
+<ul class="facts"><li>Along the computer's own line the possession reads 24.9 after every turn: it never rises.</li><li>Turn 1 (O1 to J10, O3 sprints to I9): X2 still has his Move and Quick Step; O2's best look is 30.</li><li>Turn 2 (O2 sprints to A7): X2 has now used both, but O2 has moved to where he has no look (0).</li><li>Turn 3 (O4 moves to A3): still 24.9.</li><li>With X2's Move and Quick Step spent and O2 back on the wing, O2's catch is worth 39 (30 while X2 can still answer). The line wears X2 out but never gets O2 that shot.</li><li>Only 9 of 141 single moves away from the ball show the trainer's wearing-out effect over the phase, all small (under 0.8). The judge's first-turn part accepts turns that start with one of them: 1,586 turns.</li><li>5 moves ahead did not finish within the 10 minutes (the trainer's readings took half of it).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="b17">
@@ -403,6 +551,7 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None beyond the three that apply to every board.</td></tr>
 </table></dd>
 </dl>
+
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="d108">
@@ -420,6 +569,14 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Contest is now an action (D-18), which changes how well X2 can contest O2's three.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Met.</b> On the clock the All-Star defence sprints X1 to H11 and moves X3 to N8 facing north: the pass from the ball to O2 is covered, and so is a second pass to him.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>X1 sprints to H11, then X2 sprints to B6: <b>23.3</b></td><td>X1 moves to I10, facing north-east, then X1 takes a quick step to I11: <b>24.0</b></td><td>choice ahead by 0.6</td></tr>
+<tr><td>4 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 1 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and part of the next and played: X1 sprints to H11, then X3 moves to N8, facing north (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the defence is choosing). 796,931 of the 1,201,980 legal turns meet the judge.</p>
+<ul class="facts"><li>O2's three is rated 13; X2's contest on a three is 3. Where O2 stands, his catch is worth 30.</li><li>Most defensive turns meet this judge: 796,931 of 1,201,980 legal turns (every move comes with a choice of 8 facings).</li><li>Judging all 1.2 million turns took 11.8 minutes, because this judge reads every passing lane, so the board ran to 12.5 minutes, over its 10-minute cap. The deeper looks had the last 30 seconds: 4 moves ahead did not finish, and 3,406 of the accepted turns were valued one move ahead.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="d109">
@@ -437,6 +594,16 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>None directly. The computer the old test checked was retired in step 5.</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Met, but the board doesn't test what it was built for.</b> The All-Star moves O1 to C9 and throws neither pass. But today the "clean" pass to O2 is no cleaner than the pass to O4: each arrives 40% of the time.</p>
+<table class="ev"><tr><th>Looking</th><th>The computer's choice</th><th>Best move the board accepts</th><th>Gap</th></tr>
+<tr><td>1 move ahead (as on the clock)</td><td>O1 moves to C9 (the board accepts it): <b>36.0</b></td><td>O1 moves to C9: <b>36.0</b></td><td>level</td></tr>
+<tr><td>4 moves ahead</td><td>O1 moves to E10 (the board accepts it): <b>36.0</b></td><td>O1 moves to C9: <b>36.0</b></td><td>level</td></tr>
+<tr><td>5 moves ahead</td><td>O1 moves to E10 (the board accepts it): <b>36.0</b></td><td>O1 moves to C9: <b>36.0</b></td><td>level</td></tr>
+<tr><td>6 moves ahead</td><td colspan="3">Not finished within the board's 10 minutes (the deepest complete look: 5 moves ahead).</td></tr>
+</table><p class="note">On the clock (the All-Star's 2.5 seconds, as in the step 6 run) it looked 1 move ahead and played: O1 moves to C9 (the board accepts it). Values are the game's own points for the possession, from the offence's side (higher is better for the offence; the offence is choosing). 35,545 of the 35,546 legal turns meet the judge.</p>
+<ul class="facts"><li>Both passes read the same at 4 and 5 moves ahead (28.0 each). One move ahead the pass to O4 is slightly ahead (26.6 against 26.2).</li><li>The board's second test (the clean pass rated above the contested one) does not hold under today's rules.</li><li>O1's move to C9 is worth 36 at 1, 4 and 5 moves ahead: more than either pass.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="d112">
@@ -455,6 +622,15 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Contest is now an action (D-18). Marked as an expected failure in step 7 for that reason, to be re-based here (D-112). The test keeps the computer's older sense of the clock on purpose (D-92).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Fails: the order makes almost no difference.</b> With the phase table the test uses (step 3m), playing the drive first is worth 0.75 more than the cut first, against the bar of 3. With today's table every order reads 24.9: no difference at all.</p>
+<table class="ev"><tr><th>Order</th><th>With the test's table (step 3m)</th><th>With today's table</th></tr>
+<tr><td>cut, then drive (as played)</td><td>24.2</td><td>24.9</td></tr>
+<tr><td>drive, then cut</td><td>24.9</td><td>24.9</td></tr>
+<tr><td>cut and drive together</td><td>23.1</td><td>24.9</td></tr>
+<tr><td>drive and cut together</td><td>23.1</td><td>24.9</td></tr></table>
+<ul class="facts"><li>Cut first, then the drive (as played): 24.2 with the test's table; 24.9 today.</li><li>Drive first, then the cut: 24.9 with the test's table; 24.9 today.</li><li>Both in one turn, either order: 23.1 with the test's table; 24.9 today.</li><li>The trainer does find that the defence covered the cut before the drive came, as the board intends.</li><li>The test keeps the step 3m table on purpose, because today's higher table flattens the reading (D-92).</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section>
 <section class="card" id="d113">
@@ -473,5 +649,9 @@ before 9 November, so today it is "not measured under the current rules". Its re
 <tr><th>Rulings that changed the board</th><td>Contest is now an action (D-18). Marked as an expected failure in step 7 for that reason, to be re-based here (D-113).</td></tr>
 </table></dd>
 </dl>
+<div class="evidence"><div class="kicker">Evidence (step 9)</div>
+<p class="evres"><b>Fails: the review names X1, and today X1 is the one who answers.</b> With the lift, the defence's best reply moves X1 off the ball toward O2 (F10) and slides X3 into the middle (J8). Putting X1 back takes back 6 of the teammates' 27-point gain; putting X3 back takes back none. So the review names X1.</p>
+<ul class="facts"><li>Without the lift, the defence stays home: X1 at I10, X3 at N8.</li><li>With the lift: X1 goes to F10 facing west (toward O2); X3 comes from N8 to J8 facing west.</li><li>X2, X4 and X5 do the same with or without the lift.</li><li>The lift is worth 8.3 over the phase (33.2 with it, 24.9 without), well above the bar for a review note.</li><li>The test expected X3 because, before the 9 November rules, X3 was the one who left the far side.</li></ul>
+</div>
 <div class="mark"><b>Shaun's mark:</b> <span class="boxes"><span>&#9744; Keep</span><span>&#9744; Fix</span><span>&#9744; Drop</span></span><div>Note:</div><div class="line"></div><div class="line"></div></div>
 </section></main></body></html>
