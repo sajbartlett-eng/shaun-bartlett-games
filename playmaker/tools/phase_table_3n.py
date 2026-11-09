@@ -1,8 +1,8 @@
-"""Step 3n Part C: rebuild the coarse phase table from the self-play possessions (docs/3n_seed/*.json and, for Senior
+"""Step 3n Part C: rebuild the coarse phase table from the self-play possessions (docs/runs/3n/3n_seed/*.json and, for Senior
 Pro, the F5 and aggregate runs) and write playmaker_engine/data/vcoarse.json. Reports V by phase per age and standard,
 and, apart from it, the points by the phase a possession ended (a selection effect).
 
-  python3 tools/phase_table_3n.py [extra senior/pro row files...] > docs/3n_phase_table.json
+  python3 tools/phase_table_3n.py [extra senior/pro row files...] > docs/runs/3n/3n_phase_table.json
 """
 import glob
 import json
@@ -22,7 +22,7 @@ def rows_of(path):
 
 def main():
     by = {}
-    for p in sorted(glob.glob(os.path.join(ROOT, 'docs', '3n_seed', '*.json'))):
+    for p in sorted(glob.glob(os.path.join(ROOT, 'docs', 'runs', '3n', '3n_seed', '*.json'))):
         age, std = os.path.basename(p)[:-5].split('_', 1)
         by.setdefault(f'{age}/{std}', []).extend(r for r in rows_of(p) if 'keys' in r and r['keys'])
     for p in sys.argv[1:]:

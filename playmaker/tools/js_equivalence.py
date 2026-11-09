@@ -5,7 +5,7 @@ play with the rolls sampled), and for each: the legal actions, every attacker's 
 the rules' exact reach), each attacker's threat (value, square, route), the best cover (value, the responses chosen and
 the residual threats) and the leaf value, with the geometric and the exact read, and the ordering read.
 
-  python3 tools/js_equivalence.py --n 2000 [--seed 1] [--out docs/3n_equivalence.json]
+  python3 tools/js_equivalence.py --n 2000 [--seed 1] [--out docs/runs/3n/3n_equivalence.json]
 """
 import argparse
 import json

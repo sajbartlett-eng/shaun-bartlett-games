@@ -15,7 +15,7 @@ import random
 import time
 from concurrent.futures import ProcessPoolExecutor
 
-RESULTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'solver_results')
+RESULTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'docs', 'runs', 'solver')
 TABLE_O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 TABLE_X = ['I10', 'D8', 'N8', 'G4', 'N4']
 TABLE_ARROWS = ['N', 'NE', 'NW', 'N', 'N']

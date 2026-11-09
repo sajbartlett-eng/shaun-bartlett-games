@@ -13,7 +13,7 @@ from .solver import Searcher, apply_play, expected, Val
 from .solver_config import DEFAULT, with_config
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RESULTS = os.path.join(ROOT, 'solver_results')
+RESULTS = os.path.join(ROOT, 'docs', 'runs', 'solver')
 SOLVE_ORDER = [13, 7, 10, 6, 5, 3, 4, 1, 2, 8, 9, 11, 12, 14, 15, 16]
 
 

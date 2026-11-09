@@ -36,7 +36,7 @@ def _steal_board(rules=DIGITAL, x1='I8', **kw):
 
 @needs_node
 def test_javascript_and_python_agree_on_random_legal_states():
-    """A3 (the full 2,000-state run is tools/js_equivalence.py, docs/3n_equivalence.json): legal actions, reach maps,
+    """A3 (the full 2,000-state run is tools/js_equivalence.py, docs/runs/3n/3n_equivalence.json): legal actions, reach maps,
     every threat value and square, the best cover and its value, and the leaf value agree exactly."""
     import sys
     import os
@@ -181,7 +181,7 @@ def test_the_possession_sees_the_defences_team_fouls_before_it():
 @pytest.mark.xfail(strict=False, reason='Step 3n F4 finding: on the rebuilt phase table an average possession is '
                    'worth about 28, so a foul before the bonus costs +5 and play on (about 33) while a bonus foul costs two '
                    'free throws (2 x the rating, 29 to 31) and ends the possession: the bonus no longer deters a reach. The '
-                   'board was found on the step 3m table. A designer decision (docs/STEP3N_REPORT.md, F).')
+                   'board was found on the step 3m table. A designer decision (docs/reports/STEP3N_REPORT.md, F).')
 def test_all_star_reaches_with_no_team_fouls_and_declines_with_four():
     """A marginal steal board (found by search over random boards, docs/3n report): the same position with 0 and with 4
     team fouls (10 possessions left). The reason is in plain words."""
