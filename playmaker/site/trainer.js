@@ -59,15 +59,24 @@ const PMTrainer = (() => {
     const p = read && read.players && read.players[player];
     if (!p) return null;
     const pts = p.summary || [];
+    // step 3n J: accuracy in words, the bands as words, the format named (K3)
+    const BAND = { best: 'best', good: 'slip', inaccuracy: 'slip', mistake: 'mistake', blunder: 'big mistake' };
+    const tally = {};
+    for (const g of p.groups || []) { const w = BAND[g.grade.band] || 'slip'; tally[w] = (tally[w] || 0) + 1; }
+    const order = ['best', 'slip', 'mistake', 'big mistake'];
+    const bands = order.filter(w => tally[w]).map(w => `${tally[w]} ${w}${tally[w] > 1 && w !== 'best' ? 's' : ''}`).join(', ');
+    const fmt = read.format === 'digital' ? 'Digital game' : 'Tabletop game';
     return h('section', { class: 'trainersum', 'aria-label': `Trainer: possession ${read.possession}` }, [
-      h('h3', { text: `Trainer · possession ${read.possession} · accuracy ${Math.round(p.accuracy)}%` }),
+      h('h3', { text: `Trainer · possession ${read.possession} · ${fmt}` }),
+      h('p', { class: 'acc', text: `Decisions: ${Math.round(p.accuracy)}% as good as the best available.` }),
+      bands ? h('p', { class: 'note', text: `Your decisions: ${bands}.` }) : null,
       h('ol', {}, pts.map(x => h('li', { class: x.kind }, [h('span', { text: x.text }), ' ',
         h('button', { class: 'small', type: 'button', text: x.kind === 'need' ? 'Replay the better option' : 'Why?', onclick: () => onWhy(read.possession, x.group, player) })]))),
       (read.labels || []).length ? h('p', { class: 'note', text: 'Recognised: ' + [...new Set(read.labels.map(l => l.label))].join(', ') + '.' }) : null]);
   }
 
   // ---- "Why?" (D5): goals, credits, the defence's reply and the better option, with the board
-  function boardEl(enc, better) {
+  function boardEl(enc, better, betterText) {
     const m = /\|O([^|]+)\|X([^|]+)\|b(\d)/.exec(enc || '');
     if (!m) return null;
     const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
@@ -88,38 +97,45 @@ const PMTrainer = (() => {
       const ps = /^O(\d) Pass to O(\d)/.exec(a);
       if (ps) { const from = at(os[Number(ps[1]) - 1]), to = at(os[Number(ps[2]) - 1]); add('line', { x1: from[0], y1: from[1], x2: to[0], y2: to[1], stroke: '#1d6b2a', 'stroke-width': 2 }); }
     }
-    svg.setAttribute('aria-label', `The board before the turn: ${labels.join(', ')}. ${better && better.length ? 'Dashed: the better option, ' + better.join('; ') : ''}`);
+    svg.setAttribute('aria-label', `The board before your decision: ${labels.join(', ')}. ${betterText ? 'Dashed: the better option. ' + betterText + '.' : ''}`);
     return svg;
   }
   function whyEl(w) {
+    // step 3n J: the play in sentences, whole game points, a change signed, never a code string
     const g = w.group, gr = g.grade;
-    const credits = (w.credits || g.credits || []);
-    return [h('h2', { text: `Why? Turn group ${g.group + 1}` }),
-      boardEl(g.before, gr.better),
-      h('p', {}, [h('strong', { text: 'You played: ' }), g.actions.join('; '), ` (value ${gr.value >= 0 ? '+' : ''}${gr.value}).`]),
-      gr.better ? h('p', {}, [h('strong', { text: 'Better: ' }), gr.better.join('; '), ` (${gr.best >= 0 ? '+' : ''}${gr.best}, ${gr.loss} ${gr.side === 'O' ? 'more' : 'less for the offence'}).`])
-        : h('p', { text: 'That was the best option the search found.' }),
-      w.goal && w.goal.yours ? h('p', { text: `You were going for: ${w.goal.yours}.` + (w.goal.same ? ' That was the best goal.' : (w.goal.best ? ` The best goal was: ${w.goal.best} (${w.goal.q_best >= 0 ? '+' : ''}${w.goal.q_best}).` : '')) })
-        : (w.goal && w.goal.best ? h('p', { text: `The best goal here: ${w.goal.best}.` }) : null),
-      w.reply && w.reply.length ? h('p', { text: `The defence's best reply: ${w.reply.join('; ')}.` }) : null,
-      credits.length ? h('table', { class: 'credits' }, [h('tr', {}, ['Action', 'Credit', 'Own threat', 'Teammates', 'Risk', 'Defender who moved'].map(t => h('th', { text: t }))),
-        ...credits.map(c => h('tr', {}, [c.action, c.phi, c.direct, c.indirect, c.risk, c.moved === null || c.moved === undefined ? '' : `X${c.moved + 1}`].map(t => h('td', { text: String(t) }))))]) : null,
+    const pts = v => String(Math.round(v)), more = v => (Math.round(Math.abs(v)) === 0 ? 'about the same' : `worth ${Math.round(Math.abs(v))} more`);
+    const signed = v => { const n = Math.round(v); return n === 0 ? 'no change' : (n > 0 ? '+' : '') + n; };
+    const effects = (w.credits || g.credits || []);
+    return [h('h2', { text: `Why? Your decision ${g.group + 1}` }),
+      boardEl(g.before, gr.better, g.better_text),
+      h('p', {}, [h('strong', { text: 'You played: ' }), `${g.actions_text || ''}. After the defence answered, the best look was worth ${pts(gr.value)}.`]),
+      gr.better ? h('p', {}, [h('strong', { text: 'Better: ' }), `${g.better_text || ''}: ${gr.side === 'O' ? more(gr.loss) : Math.round(gr.loss) + ' fewer points for the offence'}.`])
+        : h('p', { text: 'That was the best option available.' }),
+      w.goal && w.goal.yours ? h('p', { text: `You were going for: ${w.goal.yours}.` + (w.goal.same ? ' That was the best aim.' : (w.goal.best ? ` The best aim was: ${w.goal.best}.` : '')) })
+        : (w.goal && w.goal.best ? h('p', { text: `The best aim here: ${w.goal.best}.` }) : null),
+      w.reply_text ? h('p', { text: `The defence's best answer: ${w.reply_text}.` }) : null,
+      effects.length ? h('table', { class: 'credits' }, [h('caption', { text: 'What each action did' }),
+        h('tr', {}, ['Action', 'Effect', 'Your own look', 'Space for teammates', 'Risk', 'Defender who answered'].map(t => h('th', { text: t }))),
+        ...effects.map(c => h('tr', {}, [c.action_text || c.action, signed(c.phi), signed(c.direct), signed(c.indirect), signed(c.risk),
+          c.moved === null || c.moved === undefined ? '' : `X${c.moved + 1}`].map(t => h('td', { text: String(t) }))))]) : null,
       ...((w.flags || g.flags || []).map(f => h('p', { class: 'flag ' + f.kind, text: f.text }))),
-      g.reveal ? h('p', { class: 'flag timing', text: `Timing: ordered as ${g.reveal.order.map(x => x.join('; ')).join(' / ')}, worth ${g.reveal.reveal >= 0 ? '+' : ''}${g.reveal.reveal}.` }) : null];
+      g.reveal ? h('p', { class: 'flag timing', text: `In the other order: ${more(g.reveal.reveal)}.` }) : null];
   }
 
   // ---- the trainer profile (D6) and head to head (C3)
   function catTable(title, cats, t) {
-    return h('table', { class: 'skills' }, [h('caption', { text: title }), h('tr', {}, ['Category', 'Decisions', 'Median lost', 'Best option', 'Off-ball value', 'Trend'].map(x => h('th', { text: x }))),
-      ...cats.map(c => { const r = t[c]; return h('tr', {}, [c, r ? r.n : 0, r ? r.median.toFixed(1) : '–', r ? `${Math.round(100 * r.best)}%` : '–', r ? r.indirect.toFixed(1) : '–',
-        r ? (r.trend < -0.1 ? `fewer lost (${r.trend.toFixed(1)})` : r.trend > 0.1 ? `more lost (+${r.trend.toFixed(1)})` : 'steady') : '–'].map(x => h('td', { text: String(x) }))); })]);
+    // step 3n J: player language: how often, what it typically cost, how often the best choice, the space made
+    return h('table', { class: 'skills' }, [h('caption', { text: title }), h('tr', {}, ['Situation', 'Times', 'Typical cost', 'Best choice', 'Space created for teammates', 'Trend (better, steady, worse)'].map(x => h('th', { text: x }))),
+      ...cats.map(c => { const r = t[c]; return h('tr', {}, [c, r ? r.n : 0, r ? `${Math.round(r.median)} point${Math.round(r.median) === 1 ? '' : 's'}` : '–', r ? `${Math.round(100 * r.best)}%` : '–', r ? String(Math.round(r.indirect)) : '–',
+        r ? (r.trend < -0.1 ? 'better' : r.trend > 0.1 ? 'worse' : 'steady') : '–'].map(x => h('td', { text: String(x) }))); })]);
   }
   async function profileEl(pid) {
     const R = window.PMRecords, p = await R.profile(pid), gs = await R.groupsOf(pid), vc = await R.versusComputer(pid);
     const last = skills(gs, 10), all = skills(gs);
     const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star' };
     return [h('h2', { text: `${p.name}: trainer` }),
-      h('p', { text: `Rating ${Math.round(p.rating)} ± ${Math.round(p.rd)} · ${(p.scores || []).length} rated matches · ${gs.length} turn groups read.` }),
+      h('p', { text: `Rating ${Math.round(p.rating)} (${p.rd > 110 ? 'still settling' : 'settled'}) · ${(p.scores || []).length} rated matches · ${gs.length} decisions read.` }),
+      window.PM_practiseTabletop ? h('button', { class: 'small', type: 'button', text: 'Practise for the tabletop game', onclick: () => window.PM_practiseTabletop() }) : null,
       ...(p.suggestions || []).map(s => h('p', { class: 'flag ' + s.kind, text: s.kind === 'practice' ? `Practice: ${s.how} Why: ${s.why}` : s.text })),
       h('div', { class: 'tablewrap' }, [catTable('Offence, last 10 matches', OFF, last), catTable('Defence, last 10 matches', DEF, last), catTable('Setup, last 10 matches', SETUP, last)]),
       h('details', {}, [h('summary', { text: 'All time' }), h('div', { class: 'tablewrap' }, [catTable('Offence, all time', OFF, all), catTable('Defence, all time', DEF, all), catTable('Setup, all time', SETUP, all)])]),
