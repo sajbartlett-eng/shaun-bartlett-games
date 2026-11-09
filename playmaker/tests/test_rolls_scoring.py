@@ -372,7 +372,7 @@ def test_contest_decision_offers_every_adjacent_defender_and_no_contest():
     acts = legal_actions(node)
     assert sorted(a.piece for a in acts) == [-1, 0, 1]
     opts = {o.defender: o for o in contest_options(node, 0, 'long')}
-    assert opts[0].clean and not opts[1].clean and opts[1].p_foul == F(node.ctx.dfn[1].r['foul_contest'], 20)
+    assert opts[0].clean and not opts[1].clean and opts[1].p_foul == 1 - (1 - F(node.ctx.dfn[1].r['foul_contest'], 20)) ** opts[1].rolls   # step 3n F2: two rolls from level or behind
     # each choice reproduces the old outcome for that contester
     clean = apply(node, Action('contest', 'X', 0))
     assert clean.stage == 'over' and clean.result.contester == 0 and clean.result.shot_value == opts[0].value

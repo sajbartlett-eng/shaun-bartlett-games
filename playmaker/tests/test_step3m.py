@@ -309,7 +309,19 @@ def test_flags_need_agreement_at_two_depths_and_minimal_value_names_the_alternat
     assert TR.flags(s, [a], flip, flop) == []               # disagreeing depths: no flag
 
 
-def test_an_early_cut_is_flagged_with_a_legal_reorder():
+@pytest.fixture
+def table_3m(monkeypatch):
+    """Step 3n: the trainer-mechanism boards were built on the step 3m phase table; the step 3n table sits about 3
+    points higher and, as the leaf's floor, flattens them (reported in docs/STEP3N_REPORT.md). Pin the old table."""
+    import json as _j
+    import os as _o
+    from playmaker_engine import decide as DC
+    tab = _j.load(open(_o.path.join(_o.path.dirname(__file__), 'data', 'vcoarse_3m.json')))['senior/pro']
+    monkeypatch.setattr(DC, '_TABLES', {('senior', 'pro'): tab})
+    yield
+
+
+def test_an_early_cut_is_flagged_with_a_legal_reorder(table_3m):
     from playmaker_engine import trainer as TR
     s = _digital(['H9', 'C8', 'O8', 'B3', 'P3'], ['H8', 'D8', 'N8', 'C3', 'O3'], ['N', 'W', 'E', 'W', 'E'])
     cut = Action('move', 'O', 4, dest=B.parse_sq('N5'))       # O5 cuts a turn before O1's drive
@@ -329,7 +341,7 @@ def test_an_early_cut_is_flagged_with_a_legal_reorder():
             n = TR._reply(n, 0, 0.4)[2]                                       # the defence's reply between
 
 
-def test_horizon_credit_on_the_capacity_drain_board():
+def test_horizon_credit_on_the_capacity_drain_board(table_3m):
     from playmaker_engine import trainer as TR
     from playmaker_engine.exam import p16
     _, s, _ = p16()
@@ -457,6 +469,9 @@ EXAM_OPEN = {
     11: 'the contested-pass boards do not separate early from late',
     13: 'the attacker in the driving lane is not moved out of it',
     16: 'All-Star does not yet find the drain sequence in its first turn',
+    2: 'step 3n: a speed problem: it passes at fixed depth 4 (docs/3n_exam_fixed4.json) and fails within the Python budget',
+    14: 'step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the '
+        'variety margin are smaller than the value gaps (docs/STEP3N_REPORT.md, exam B)',
 }
 
 

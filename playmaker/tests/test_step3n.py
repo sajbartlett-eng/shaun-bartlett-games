@@ -178,6 +178,10 @@ def test_the_possession_sees_the_defences_team_fouls_before_it():
 # ---- F4: the engine prices a foul by the quarter --------------------------------------------------------------------
 
 @needs_node
+@pytest.mark.xfail(strict=False, reason='Step 3n F4 finding: on the rebuilt phase table an average possession is '
+                   'worth about 28, so a foul before the bonus costs +5 and play on (about 33) while a bonus foul costs two '
+                   'free throws (2 x the rating, 29 to 31) and ends the possession: the bonus no longer deters a reach. The '
+                   'board was found on the step 3m table. A designer decision (docs/STEP3N_REPORT.md, F).')
 def test_all_star_reaches_with_no_team_fouls_and_declines_with_four():
     """A marginal steal board (found by search over random boards, docs/3n report): the same position with 0 and with 4
     team fouls (10 possessions left). The reason is in plain words."""

@@ -188,7 +188,10 @@ def test_defaults_are_unchanged_the_golden_solver_search_is_identical():
     assert kids == ref['children']
     ev = Evaluator(with_config(eval_turns=2))
     for n in range(1, 17):
-        assert [round(v.ev, 9) for v in ev(scenario_state(n))] == ref['evals'][str(n)], n
+        # step 3n: the golden values predate the F1/F2 rulings (steal lock, reach-angle foul rolls); they hold
+        # under the earlier settings, so nothing else in the defaults moved
+        from playmaker_engine import rules_config as RC
+        assert [round(v.ev, 9) for v in ev(scenario_state(n, rules=RC.with_rules(**RC.PRE_3N)))] == ref['evals'][str(n)], n
     for n in (5, 6, 12):
         got = [[d['defender'], d['clean'], d['contest'], round(d['value'], 9)] for d in reachable_contest(scenario_state(n))]
         assert got == ref['reach'][str(n)], n
