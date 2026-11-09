@@ -1,5 +1,6 @@
 """Step 2: the numbers the rules register marks Shared match the printed rulebook and trackers, and RULES_CURRENT.md is
-what the register's generator writes now (python3 -m playmaker_engine.register --rules)."""
+what the register's generator writes now (python3 -m playmaker_engine.register --rules).
+Step 3: RULES_CURRENT.md lists the ruled-but-unprinted and ruled-but-unbuilt rules, each pointing to a DECISIONS.md entry."""
 import os
 import re
 import shutil
@@ -77,3 +78,34 @@ def test_every_register_row_has_its_value_in_words():
             raw = RG.value(rules, RG.ENTRIES_BY_NAME[name])
             assert '_' not in w[fmt], (name, w[fmt])                      # no setting or code name
             assert w[fmt] != str(raw), (name, w[fmt])                     # the value in words, not the raw value
+
+
+def _section(doc, title):
+    part = doc.split(f'## {title}\n', 1)
+    assert len(part) == 2, f'RULES_CURRENT.md has no section {title!r}'
+    return part[1].split('\n## ', 1)[0]
+
+
+def _decisions():
+    text = open(os.path.join(ROOT, 'DECISIONS.md')).read()
+    return set(re.findall(r'^\*\*(D-\d+)\b', text, re.M))                # each entry starts **D-n
+
+
+def test_the_two_ruled_lists_point_to_decisions():
+    doc = open(os.path.join(ROOT, 'RULES_CURRENT.md')).read()
+    known = _decisions()
+    printed = [l for l in _section(doc, 'Ruled, not yet printed').splitlines() if re.match(r'\d+\. ', l)]
+    unbuilt = [l for l in _section(doc, 'Ruled, not yet built').splitlines() if re.match(r'\d+\. ', l)]
+    assert len(printed) == 17 and len(unbuilt) == 2
+    for line in printed + unbuilt:
+        d = re.findall(r'See (D-\d+)\.', line)
+        assert len(d) == 1 and d[0] in known, line
+    assert [re.search(r'See (D-\d+)', l).group(1) for l in printed] == [f'D-{n}' for n in range(1, 18)]
+    assert 'Contest as an action' in unbuilt[0] and 'D-18' in unbuilt[0]
+    assert 'Overtime' in unbuilt[1] and 'D-19' in unbuilt[1]
+    assert 'OPEN_QUESTIONS.md' not in doc
+
+
+def test_tied_match_is_an_approved_split_with_overtime_not_built():
+    status = {e[0]: e[1] for e in RG.ENTRIES}
+    assert status['Tied match'] == 'Split by format, approved; overtime not yet built'

@@ -33,7 +33,7 @@ The tabletop game and the app share the rules, the dice and the penalties. Any c
 ## Sources of truth
 
 - The rules: the rulebook and trackers in `reference/`, and the rules register (`docs/rules_register.md`).
-- Decisions: what Shaun has ruled, recorded in the repo. Until a decisions log exists, `OPEN_QUESTIONS.md`.
+- Decisions: `DECISIONS.md`. If it doesn't record a decision, there isn't one.
 - Engine behaviour that no ruling covers is not a ruling. Flag it; don't build on it.
 
 ## Plain language
