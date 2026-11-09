@@ -26,6 +26,13 @@
           }
           py.runPython("import sys, os\\nsys.path.insert(0, '/pm')\\nos.chdir('/pm')\\nfrom playmaker_web.api import dispatch as pm_dispatch");
           dispatch = py.globals.get('pm_dispatch');
+          if (m.bundle.engine_js) {
+            // step 3n: the search core in JavaScript; the Python agent calls it for each decision
+            importScripts(URL.createObjectURL(new Blob([m.bundle.engine_js], { type: 'text/javascript' })));
+            const f = m.bundle.files, dataf = n => JSON.parse(f['playmaker_engine/data/' + n]);
+            self.PMEngine.init({ zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json') });
+            py.runPython("import js\\nfrom playmaker_engine import agent as _AG\\n_AG.JS['search'] = js.PMEngine.searchJSON\\n_AG.JS['goals'] = js.PMEngine.goalsJSON");
+          }
           self.postMessage({ type: 'ready' });
         } catch (e) { self.postMessage({ type: 'failed', error: String(e && e.message || e) }); }
         return;

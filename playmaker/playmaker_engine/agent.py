@@ -9,10 +9,12 @@ Each turn: an anytime search (search.Searcher) scores whole turns; noise is adde
 read from the scored turns and held with hysteresis; a turn toward the held goal is chosen, then one at random among
 the turns within the variety margin. The turn's actions are played one at a time (a roll ends the plan).
 """
+import json
 import random
 import time
 
 from . import board as B
+from . import jsbridge
 from . import rules_config as RC
 from .actions import Action, legal_actions
 from .decide import Read, CONFIG
@@ -22,6 +24,9 @@ from .search import Searcher, play_turn, actor, zobrist, terminal_value
 
 LEVELS = ('rookie', 'starter', 'allstar')
 SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
+# step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
+# PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
+JS = {'search': None, 'goals': None}
 
 
 def profile(level):
@@ -124,21 +129,35 @@ class Agent:
         t0 = time.time()
         budget = self.p['time_budget_s'] * SCALE['value']
         lo, hi = self.p['depth']
-        srch = Searcher(side, self.p, self._evaluate(s), t0 + budget, self.rng)
-        if self.scouting and self.scouting.get('habit'):
-            srch.habit = self.scouting['habit']
-            srch.habit_weight = self.scouting.get('weight', 0.3)
-        results, reached = srch.root(s, hi, lo)
+        if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
+            results, reached, srch = self._js_search(s, budget, hi)
+        else:
+            srch = Searcher(side, self.p, self._evaluate(s), t0 + budget, self.rng)
+            if self.scouting and self.scouting.get('habit'):
+                srch.habit = self.scouting['habit']
+                srch.habit_weight = self.scouting.get('weight', 0.3)
+            results, reached = srch.root(s, hi, lo)
         sign = 1 if side == 'O' else -1
         scored = [(sign * v + self.rng.gauss(0, self.p['noise']), t, sign * v) for v, t in results]
-        base_read = Read(s)
-        base = sign * base_read.leaf()
+        top8 = sorted(scored, key=lambda r: -r[0])[:8]
         with_goals = []
-        for v, t, raw in sorted(scored, key=lambda r: -r[0])[:8]:
-            after = _likeliest(play_turn(s, t))
-            gs = goals_in(s, after, side, base_read, None if after.stage == 'over' else Read(after), t) \
-                if after.stage != 'over' else {}
-            with_goals.append((v, t, gs))
+        if getattr(srch, 'engine', None) == 'js' and JS.get('goals') is not None:
+            # the goals of the turns weighed, read by the JavaScript core (the same predicates, goals.goals_in)
+            req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), side=side,
+                       turns=[[[a.kind, a.side, a.piece, B.sq(a.dest) if a.dest else None, a.arrow, a.target, a.shot]
+                               for a in t] for _, t, _ in top8])
+            g = json.loads(JS['goals'](json.dumps(req)))
+            base = sign * g['base']
+            for (v, t, raw), gl in zip(top8, g['goals']):
+                with_goals.append((v, t, {tuple(k): w for k, w in gl}))
+        else:
+            base_read = Read(s)
+            base = sign * base_read.leaf()
+            for v, t, raw in top8:
+                after = _likeliest(play_turn(s, t))
+                gs = goals_in(s, after, side, base_read, None if after.stage == 'over' else Read(after), t) \
+                    if after.stage != 'over' else {}
+                with_goals.append((v, t, gs))
         n_log = len(self.commit.log)
         turn, val = self.commit.choose(s, side, with_goals, base, None)
         # variety: one at random among the turns within the variety margin of the chosen one
@@ -147,6 +166,7 @@ class Agent:
             turn = self.rng.choice(near)
         took = round(time.time() - t0, 3)
         note = dict(event='decision', level=self.level, depth=reached, partial=getattr(srch, 'partial', 0),
+                    engine=getattr(srch, 'engine', 'python'),
                     leaves=srch.leaves, nodes=srch.nodes,
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
                     goal=self.commit.words or None,
@@ -166,6 +186,27 @@ class Agent:
                 self.plan = list(turn[1:])
                 self.expect = zobrist(nxt)
         return a
+
+    def _js_search(self, s, budget, max_depth):
+        """The same search in JavaScript (engine.js, proved equal to search.Searcher by tools/js_equivalence.py)."""
+        sq = B.sq
+        stale = None
+        if self.stale is not None and self.p['reaction_delay'] == 'previous_board':
+            stale = [[sq(q) for q in self.stale[0]], list(self.stale[1])] if self.side == 'O' else [[sq(q) for q in self.stale[0]]]
+        req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=self.p, budget=budget,
+                   max_depth=max_depth, stale=stale)
+        if self.scouting and self.scouting.get('habit'):
+            req['habit'] = self.scouting['habit']
+            req['habit_weight'] = self.scouting.get('weight', 0.3)
+        out = json.loads(JS['search'](json.dumps(req)))
+        results = [(v, tuple(jsbridge.action_from(a) for a in t)) for v, t in out['results']]
+
+        class _Stats:
+            pass
+        st = _Stats()
+        st.leaves, st.nodes, st.partial = out['leaves'], out['nodes'], out['partial']
+        st.engine = 'js'
+        return results, out['reached'], st
 
     def _small(self, s, acts):
         """Contest choice, forced shot type, Coach's Call target, failed-inbound pick: one step, valued exactly."""

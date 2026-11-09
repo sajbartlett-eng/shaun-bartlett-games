@@ -13,7 +13,7 @@ ENGINE_FILES = ['__init__.py', 'rules_config.py', 'board.py', 'cards.py', 'state
                 'defence.py', 'solver.py', 'solver_config.py',
                 'computer.py', 'computer_levels.json', 'advantage.py', 'geometry.py', 'capacity.py', 'guarding.py', 'planner.py', 'goal_library.json',
                 'setup.py', 'levels.py', 'rosters.py',
-                'decide.py', 'search.py', 'goals.py', 'agent.py', 'labels.py', 'trainer.py', 'glicko2.py']
+                'decide.py', 'search.py', 'goals.py', 'agent.py', 'labels.py', 'trainer.py', 'glicko2.py', 'jsbridge.py']
 DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json', 'levels_data.py', 'teamtools.py',
               'ai_profiles.json', 'vcoarse.json']
 WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py']
@@ -28,7 +28,9 @@ def bundle():
     for f in WEB_FILES:
         files[f'playmaker_web/{f}'] = open(os.path.join(ROOT, 'playmaker_web', f)).read()
     files['playtest_logs/README.txt'] = 'Logs of games played in this browser tab.\n'
-    return dict(version=1, files=files)
+    # step 3n: the search core in JavaScript, run in the same worker (agent.JS['search'])
+    engine_js = open(os.path.join(STATIC, 'engine.js')).read()
+    return dict(version=1, files=files, engine_js=engine_js)
 
 
 JS_FILES = ['notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js']       # in load order; index.html names them in this order
