@@ -427,6 +427,33 @@ built:** phase 4, with the trainer's flags (step 16).
 **D-77** (C6). Scenario 10 is played with the card's numbers (4 tokens left a side, both Screens spent). Shapes one card.
 · Source: Shaun, step 9 prompt · **Ruled.**
 
+### Shaun, 9 Nov 2026 (step 10 prompt): the marks on the exam boards
+
+From the step 9 evidence. Built in step 10: the boards marked "fix" are rebuilt to the stated intent, with the facts on
+their exam-book pages. · Source: Shaun, 9 Nov 2026 · **Ruled.**
+
+| Board | Ruling |
+|---|---|
+| 1 Straight lane | Fix: the drive must start strong (worth more than the offence's best other option) before the defence acts. |
+| 2 Sag by shooting | Keep. A real gap (the moves read level). |
+| 3 Help the helper | Fix: the computer was right that X1 could recover. Rebuild so X1 can't get back beside O1, so help must come. |
+| 4 Two jobs, one defender | Fix: rebuild so the pass to O5 is legal. Judge only what the offence does (attack X5: O1 shoots or drives, or passes to O5) or that it picks something the evidence shows is worth more. Drop the part that judges the computer's own reading. |
+| 5 Closeout | Fix B: stepping up for an open three is right. B is met by a shot now or a move to a spot where no defender can Contest. A: the drive must end closer to the rim. |
+| 6 Catch window | Keep, judged by D-94: O4 acts at once when the open look beats what the possession is worth (33 against 24.9). A real gap (the screen reads level with the shot). |
+| 7 Clock | Fix B: make it the offence's final turn of the possession. |
+| 8 Backdoor | Fix: clear the passing lane, so no defender can step into the backdoor pass. The board then tests the cut, not a risky pass. |
+| 11 Contested pass | Fix B: make the pass to O2 legal (X2 off the line, X5 in the lane), on the offence's final turn. |
+| 13 Spacing | Keep. A real gap (everything reads 24.9). |
+| 14 Variety | Accept (D-97): being predictable is fine when one move is clearly best. The judge is met when the top first move leads by more than the variety margin; otherwise, no first move above 70%. |
+| 16 Wearing out one defender | Keep. A real gap: the computer spends X2, then doesn't use it. |
+| C1 (D-108) | Keep (met). |
+| C2 (D-109) | Fix: rebuild so the clean pass really is clean (no defender can step into it) and the other pass is contested. |
+| T1, T2 (D-112, D-113) | Keep; re-base after the goals step. They stay marked as expected failures. |
+| 9, 10, 12, 15, 17 | Keep. |
+
+This settles D-96 (boards 1, 7 and 11 fixed; 10 kept), D-97 (accepted, the judge restated), D-108 (kept), D-109
+(rebuilt) and D-111 (board 6 kept, judged by D-94). D-112 and D-113 stay open until the goals step.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
@@ -475,25 +502,32 @@ Shaun, 9 Nov 2026: re-measure in phase 4 under the 9 November rules.
 **D-96.** Exam boards that predate rulings: board 1 (the straight lane, now judged by outcome), 7 (the clock), 10 (steal
 odds, before the steal lock and two foul rolls) and 11 (contested passes, before the app's turnover rule).
 Options: restate each board against today's rules; retire it. Effect: what the exam can tell a design fault from.
+Shaun, 9 Nov 2026: settled by the step 10 marks (1, 7 and 11 fixed; 10 kept).
 
 **D-97.** Board 14 (variety): at depth 4 one first action wins every time, because the noise and the variety margin are
 smaller than the value gaps a deeper search finds. The depth-6 run was not done.
 Options: widen the variety margin; restate the board; accept it. Effect: how predictable the All-Star is.
+Shaun, 9 Nov 2026: accepted; the judge is restated (see the step 10 marks).
 
 **D-108.** Exam candidate (from Shaun's playtest reports): the defence denies an elite shooter's catch (the old
 `test_deny_catch`). · Source: Shaun, step 6 prompt · **Open:** to be added as an exam board in step 12.
+Shaun, 9 Nov 2026: keep (met in step 9).
 
 **D-109.** Exam candidate (from Shaun's playtest reports): the offence prefers a clean pass to a contested one (the old
 `test_passing`). · Source: Shaun, step 6 prompt · **Open:** to be added as an exam board in step 12.
+Shaun, 9 Nov 2026: fix: rebuild so the clean pass is clean and the other contested (step 10).
 
 **D-111.** Exam board 6 (catch window) is marked as an expected failure: Contest as an action (D-18) changed the
 reading; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+Shaun, 9 Nov 2026: keep, judged by D-94 (step 10).
 
 **D-112.** The trainer test "an early cut is flagged with a legal reorder" is marked as an expected failure for the same
 reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+Shaun, 9 Nov 2026: keep; re-base after the goals step (still an expected failure).
 
 **D-113.** The trainer test "the credit names the helper who answered the decoy" is marked as an expected failure for the
 same reason; re-based with the exam in step 12. · Source: Shaun, step 7 prompt · **Open:** step 12.
+Shaun, 9 Nov 2026: keep; re-base after the goals step (still an expected failure).
 
 ### Step 13: the phase table
 

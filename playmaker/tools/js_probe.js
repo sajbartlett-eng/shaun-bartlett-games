@@ -26,6 +26,7 @@ const lines = fs.readFileSync(0, 'utf8').split('\n').filter(Boolean);
 const out = [];
 for (const ln of lines) {
   const q = JSON.parse(ln);
+  if (q.leaf_mode) E.setLeafMode(q.leaf_mode);       // step 10: the leaf's mode for this line
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {

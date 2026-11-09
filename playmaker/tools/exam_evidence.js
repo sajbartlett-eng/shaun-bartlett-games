@@ -47,6 +47,7 @@ function turnFrom(s, tj) {
 }
 
 function evidence(req) {
+  E.setLeafMode(req.leaf_mode || 'floor');           // step 10: the leaf's mode
   const ctx = E.makeCtx(req.ctx);
   const s = E.stateFrom(req.state, ctx);
   const me = E.actor(s), sign = me === 'O' ? 1 : -1;

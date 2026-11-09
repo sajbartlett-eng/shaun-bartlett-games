@@ -121,8 +121,9 @@ class Node:
         self.p.wait(10)
 
 
-def search(node, s, accepted, extra, depths, cap_s):
+def search(node, s, accepted, extra, depths, cap_s, mode='floor'):
     req = dict(state=J.state_json(s), ctx=J.ctx_json(s.ctx), profile=profile('allstar'), depths=depths, cap_s=cap_s,
+               leaf_mode=mode,
                first_cap_s=cap_s / 3, accepted=[[aj(a) for a in t] for t in accepted],
                keep=KEEP, extra=[[aj(a) for a in t] for t in extra])
     return node.call(req)

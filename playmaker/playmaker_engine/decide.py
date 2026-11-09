@@ -708,15 +708,23 @@ class Read:
             return p * caught + (1 - p) * turnover_value(s)
         sn = self.shot_now()
         now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
-        cv = self.cover()
-        res = cv['residual']
-        top = max(res.values(), default=0.0)
-        ties = [i for i in res if res[i] >= top - 1e-9]
-        cont = (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
+        cont = self.continuation()
         coarse = vcoarse(s)
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
-            cont = coarse = 0.0         # no offence turn is left before the clock runs out: only a shot now counts
+            return banked + max(sn or 0.0, now)     # no offence turn is left before the clock runs out: only a shot now counts
+        if self.cfg.get('leaf_mode', 'floor') == 'relative':
+            # step 10 (behind the switch): the phase table's average plus how much better or worse this position reads
+            # than an average position at that phase, read the same way (eval.relative_average, from the step 3n seeds)
+            return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg))
         return banked + max(sn or 0.0, now, cont, coarse)
+
+    def continuation(self):
+        """The best look the defence's best cover leaves (the mean of the tied top residuals) times the continuation:
+        what the board read says the position is worth beyond a shot now."""
+        res = self.cover()['residual']
+        top = max(res.values(), default=0.0)
+        ties = [i for i in res if res[i] >= top - 1e-9]
+        return (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
 
 
 @lru_cache(maxsize=100000)
@@ -948,6 +956,17 @@ def key_from_encode(enc):
 
 
 _TABLES = {}
+
+
+def relative_average(s, cfg=None):
+    """Step 10: the average continuation read of the positions the phase table was built from, at this position's
+    phase (eval.relative_average[age/standard][phase]); 0 if there is none."""
+    cfg = cfg or CONFIG['eval']
+    lv = getattr(s.ctx, 'levels_key', None) or ('senior', 'pro')
+    tab = cfg.get('relative_average', {})
+    row = tab.get(f'{lv[0]}/{lv[1]}') or tab.get('senior/pro') or {}
+    phase = coarse_key(s).split('|')[2]
+    return float(row.get(phase, 0.0))
 
 
 def vcoarse(s, age='senior', standard='pro'):

@@ -1056,6 +1056,19 @@ const PMEngine = (() => {
     const pk = '_phase' + phase;
     return pk in tab ? tab[pk] : 0.0;
   }
+  // step 10: the average continuation read of the phase table's own positions at this position's phase
+  // (decide.relative_average); leaf_mode 'relative' reads a position against it
+  function relativeAverage(s) {
+    const tab = D.config.eval.relative_average || {};
+    const row = tab[s.ctx.table] || tab['senior/pro'] || {};
+    const v = row[String(coarseKey(s)[2])];
+    return v === undefined ? 0.0 : v;
+  }
+  function leafOf(s, banked, sn, now, cont, coarse) {
+    if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(sn || 0.0, now, coarse + cont - relativeAverage(s));
+    return banked + Math.max(sn || 0.0, now, cont, coarse);
+  }
+  function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
   function turnoverValue(s) {
     if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return Math.min(0, 5 * s.bonus5 - 5 * s.tos);   // D-82
     return 5 * s.bonus5 - 5 * (s.tos + 1) + vcoarse(W_(s, { clock: s.clock - 2 }));
@@ -1429,10 +1442,9 @@ const PMEngine = (() => {
         for (const i of this.att_o) { const t = this.threat[i].value; if (first || t > top) top = t; first = false; }
         let sum = 0.0, nt = 0;
         for (const i of this.att_o) { const t = this.threat[i].value; if (t >= top - 1e-9) { sum += t; nt++; } }
-        let cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
-        let coarse = vcoarse(s);
-        if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) { cont = 0.0; coarse = 0.0; }
-        v = banked + Math.max(sn || 0.0, now, cont, coarse);
+        const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
+        if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) v = banked + Math.max(sn || 0.0, now);
+        else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
       }
       this._quick = v;
       return v;
@@ -1462,10 +1474,9 @@ const PMEngine = (() => {
       if (!this.att_o.length) top = 0.0;
       let sum = 0.0, nt = 0;
       for (const i of this.att_o) if (res[i] >= top - 1e-9) { sum += res[i]; nt++; }
-      let cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
-      let coarse = vcoarse(s);
-      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) { cont = 0.0; coarse = 0.0; }
-      return banked + Math.max(sn || 0.0, now, cont, coarse);
+      const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + Math.max(sn || 0.0, now);
+      return leafOf(s, banked, sn, now, cont, vcoarse(s));
     }
   }
 
@@ -2011,7 +2022,7 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
