@@ -32,7 +32,7 @@ const [base] = process.argv.slice(2);
   for (const level of ['rookie', 'starter', 'allstar']) {
     out[level] = await p.evaluate(async (level) => {
       const t0 = performance.now();
-      const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', ai: { A: level }, level: 'learn', seed: 3, teams: ['Five Out', 'High-Low'] });
+      const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', ai: { A: level, B: level }, level: 'learn', seed: 3, teams: ['Five Out', 'High-Low'] });
       const wall = (performance.now() - t0) / 1000;
       const log = await window.PM_BACKEND(`/api/log?code=${g.code}`);
       const decs = log.filter(r => r.type === 'computer' && r.event === 'decision');
@@ -66,8 +66,9 @@ def main(out_path=None):
     for lv, d in data.items():
         ds = d['decisions']
         secs = sorted(x['seconds'] for x in ds)
+        deps = sorted(x['depth'] for x in ds)
         rows[lv] = dict(decisions=len(ds), median_s=secs[len(secs) // 2] if secs else None, max_s=max(secs) if secs else None,
-                        depth=max((x['depth'] for x in ds), default=0),
+                        depth=max((x['depth'] for x in ds), default=0), median_depth=deps[len(deps) // 2] if deps else 0,
                         leaves_per_s=round(sum(x['leaves'] for x in ds) / max(1e-9, sum(x['seconds'] for x in ds)), 1))
     print(json.dumps(rows, indent=1))
     if out_path:

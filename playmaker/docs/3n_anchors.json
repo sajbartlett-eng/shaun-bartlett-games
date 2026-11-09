@@ -149,6 +149,240 @@
     "B": 36
    },
    "score_a": 0.06297335605699649
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 5,
+   "totals": {
+    "A": 72,
+    "B": 48
+   },
+   "score_a": 0.9168273035060777
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 5,
+   "totals": {
+    "A": 44,
+    "B": 39
+   },
+   "score_a": 0.6224593312018546
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 5,
+   "totals": {
+    "A": 57,
+    "B": 72
+   },
+   "score_a": 0.18242552380635635
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 6,
+   "totals": {
+    "A": 50,
+    "B": 33
+   },
+   "score_a": 0.8455347349164652
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 6,
+   "totals": {
+    "A": 30,
+    "B": 64
+   },
+   "score_a": 0.032295464698450516
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 6,
+   "totals": {
+    "A": 60,
+    "B": 66
+   },
+   "score_a": 0.35434369377420455
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 7,
+   "totals": {
+    "A": 39,
+    "B": 55
+   },
+   "score_a": 0.16798161486607552
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 7,
+   "totals": {
+    "A": 44,
+    "B": 76
+   },
+   "score_a": 0.039165722796764356
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 7,
+   "totals": {
+    "A": 34,
+    "B": 18
+   },
+   "score_a": 0.8320183851339245
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 8,
+   "totals": {
+    "A": 21,
+    "B": 63
+   },
+   "score_a": 0.014774031693273055
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 8,
+   "totals": {
+    "A": 42,
+    "B": 56
+   },
+   "score_a": 0.19781611144141825
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 8,
+   "totals": {
+    "A": 45,
+    "B": 66
+   },
+   "score_a": 0.10909682119561293
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 9,
+   "totals": {
+    "A": 33,
+    "B": 56
+   },
+   "score_a": 0.09112296101485616
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 9,
+   "totals": {
+    "A": 77,
+    "B": 41
+   },
+   "score_a": 0.973403006423134
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 9,
+   "totals": {
+    "A": 60,
+    "B": 0
+   },
+   "score_a": 0.9975273768433653
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 10,
+   "totals": {
+    "A": 47,
+    "B": 32
+   },
+   "score_a": 0.8175744761936437
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 10,
+   "totals": {
+    "A": 46,
+    "B": 36
+   },
+   "score_a": 0.7310585786300049
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 10,
+   "totals": {
+    "A": 36,
+    "B": 56
+   },
+   "score_a": 0.11920292202211755
+  },
+  {
+   "a": "rookie",
+   "b": "starter",
+   "match": 11,
+   "totals": {
+    "A": 51,
+    "B": 62
+   },
+   "score_a": 0.24973989440488234
+  },
+  {
+   "a": "starter",
+   "b": "allstar",
+   "match": 11,
+   "totals": {
+    "A": 74,
+    "B": 27
+   },
+   "score_a": 0.990986701347152
+  },
+  {
+   "a": "rookie",
+   "b": "allstar",
+   "match": 11,
+   "totals": {
+    "A": 47,
+    "B": 57
+   },
+   "score_a": 0.2689414213699951
   }
- ]
+ ],
+ "report": {
+  "pairings": {
+   "rookie v starter": {
+    "matches": 12,
+    "score": 0.403,
+    "gap": -68.3
+   },
+   "starter v allstar": {
+    "matches": 12,
+    "score": 0.472,
+    "gap": -19.7
+   },
+   "rookie v allstar": {
+    "matches": 12,
+    "score": 0.353,
+    "gap": -105.5
+   }
+  },
+  "senior_anchors": {
+   "rookie": 1525,
+   "starter": 1600,
+   "allstar": 1625
+  }
+ }
 }

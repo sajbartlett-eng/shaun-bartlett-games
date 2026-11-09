@@ -105,15 +105,15 @@
     "practice_matches": 5,
     "practice_clear_accuracy": 80,
     "anchors": {
-      "rookie/senior": 1350,
+      "rookie/senior": 1525,
       "starter/senior": 1600,
-      "allstar/senior": 1850,
-      "rookie/youth": 1330,
+      "allstar/senior": 1625,
+      "rookie/youth": 1505,
       "starter/youth": 1580,
-      "allstar/youth": 1830,
-      "rookie/junior": 1300,
+      "allstar/youth": 1605,
+      "rookie/junior": 1475,
       "starter/junior": 1550,
-      "allstar/junior": 1800
+      "allstar/junior": 1575
     },
     "budget_s": 0.15,
     "level_median_loss": {
@@ -123,6 +123,7 @@
     },
     "_level_median_loss": "The median value lost per decision by each computer level, graded by the All-Star search: a human moves up when theirs is at or below their current level's. Calibrate from stored games.",
     "accuracy_k": 2.0,
-    "_accuracy_k": "Step 3n E: per-decision accuracy 100 x exp(-loss / k); calibrated so All-Star's own decisions average about 90, Starter's 75, Rookie's 55 (tools/accuracy_3n.py)."
+    "_accuracy_k": "Step 3n E: per-decision accuracy 100 x exp(-loss / k); calibrated so All-Star's own decisions average about 90, Starter's 75, Rookie's 55 (tools/accuracy_3n.py).",
+    "_anchors": "Step 3n H: from self-play (Rookie v Starter, Starter v All-Star, Rookie v All-Star; 12 matches of 4 possessions each, Senior Pro digital, tools/anchors_3n.py): gaps fitted to the match scores. Youth and junior keep the senior gaps, 20 and 50 lower as before."
   }
 }

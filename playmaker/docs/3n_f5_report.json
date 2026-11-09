@@ -1,0 +1,80 @@
+{
+ "digital": {
+  "possessions": 60,
+  "points_per_possession": 23.83,
+  "steals_per_100": 18.3,
+  "steal_attempts_per_100": 46.7,
+  "turnovers_per_100": 18.3,
+  "reach_fouls_per_100": 16.7,
+  "team_fouls_per_quarter": {
+   "full_quarters": [
+    3.5
+   ],
+   "partial": {
+    "possessions_each": 12.0,
+    "fouls_each": 4.0
+   },
+   "per_quarter_rate": 4.5
+  },
+  "steal_attempts_by_position": {
+   "front, after moving": 13,
+   "level or behind": 8,
+   "front, from a standstill": 7
+  },
+  "steal_attempts_by_team_fouls": {
+   "0": 9,
+   "1": 3,
+   "2": 5,
+   "3": 6,
+   "4": 2,
+   "5": 1,
+   "6": 1,
+   "7": 1
+  },
+  "contested_passes_per_possession": 0.27,
+  "passes_per_possession": 1.92,
+  "why_no_intercept": {
+   "could intercept, chose not to": 16,
+   "no legal Intercept (nobody on or able to reach the line, or next to the passer)": 99
+  },
+  "worst_locks_in_a_phase": 1,
+  "results": {
+   "shot": 41,
+   "turnover_end": 11,
+   "free_throws": 8
+  }
+ },
+ "tabletop": {
+  "possessions": 60,
+  "points_per_possession": 25.68,
+  "steals_per_100": 3.3,
+  "steal_attempts_per_100": 18.3,
+  "turnovers_per_100": 18.3,
+  "reach_fouls_per_100": 8.3,
+  "team_fouls_per_quarter": null,
+  "steal_attempts_by_position": {
+   "front, from a standstill": 4,
+   "level or behind": 1,
+   "front, after moving": 5,
+   "?": 1
+  },
+  "steal_attempts_by_team_fouls": {
+   "0": 10,
+   "1": 1
+  },
+  "contested_passes_per_possession": 0.3,
+  "passes_per_possession": 2.23,
+  "why_no_intercept": {
+   "no legal Intercept (nobody on or able to reach the line, or next to the passer)": 116,
+   "could intercept, chose not to": 16,
+   "intercepted (attempted)": 2
+  },
+  "worst_locks_in_a_phase": 2,
+  "results": {
+   "shot": 43,
+   "free_throws": 10,
+   "forced": 6,
+   "turnover_end": 1
+  }
+ }
+}

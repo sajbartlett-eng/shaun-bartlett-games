@@ -1,0 +1,34 @@
+{
+ "mode": "fixed",
+ "arg": 4.0,
+ "rows": [
+  {
+   "n": 7,
+   "desc": "Clock: the same contested mid-range by O3; pass in phase 2, shoot in phase 6",
+   "allstar": {
+    "ok": false,
+    "what": "phase 2: O2 Sprint to C8; phase 6: O2 Move to C9",
+    "seconds": 139.4,
+    "depth": 4,
+    "pv": [
+     [
+      "O2 Sprint to C8"
+     ],
+     [
+      "O3 Pass to O2"
+     ],
+     [
+      "X Pause"
+     ],
+     [
+      "O3 Move to F6"
+     ]
+    ],
+    "value": 30.35,
+    "depths": [
+     4
+    ]
+   }
+  }
+ ]
+}

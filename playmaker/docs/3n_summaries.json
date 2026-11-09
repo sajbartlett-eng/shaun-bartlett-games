@@ -1,0 +1,241 @@
+{
+ "rows": [
+  {
+   "match": 0,
+   "k": 0,
+   "score": 23,
+   "summary": [
+    "Your best decision: O3 takes a quick step to M10, then O5 moves to N3. That was the best option there.",
+    "O3 moves to M9, then O4 moves to B2, and X3 answered it. O1 drives at X1 (Dribble) instead: worth 2 more (a small edge)."
+   ],
+   "accuracy": 83.9,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 0,
+   "k": 1,
+   "score": 32,
+   "summary": [
+    "Your best decision: O1 moves to I10, then O3 moves to M10. That was the best option there.",
+    "O4 moves to B2, then O5 moves to Q2, and X5 answered it. O1 drives at X1 (Dribble) instead: worth 2 more (a small edge).",
+    "O2 sprints to G4, then O2 shoots a dunk, and X2 answered it. O2 moves to G4 instead: worth 2 more."
+   ],
+   "accuracy": 77.7,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 0,
+   "k": 2,
+   "score": 0,
+   "summary": [
+    "Your best decision: O1 drives at X1 (Dribble). That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 0,
+   "k": 3,
+   "score": 33,
+   "summary": [
+    "Your best decision: O1 sprints to I7, then O1 passes to O2. That was the best option there.",
+    "O2 takes a quick step to F10, then O2 passes to O4, and X1 answered it. O4 sprints to A5 instead: worth 15 more (about an open two)."
+   ],
+   "accuracy": 50.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 1,
+   "k": 0,
+   "score": 33,
+   "summary": [
+    "Your best decision: O1 moves to K10, then O1 drives at X1 (Dribble). That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 1,
+   "k": 1,
+   "score": 33,
+   "summary": [
+    "Your best decision: O1 moves to K10, then O1 shoots a three. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 1,
+   "k": 2,
+   "score": 33,
+   "summary": [
+    "Your best decision: O2 moves to G5, then O1 takes a quick step to M9. That was the best option there."
+   ],
+   "accuracy": 85.3,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 1,
+   "k": 3,
+   "score": 30,
+   "summary": [
+    "Your best decision: O4 moves to A2. That was the best option there.",
+    "O1 sprints to L8, then O1 passes to O3, and X1 answered it. O1 moves to K9, then O1 takes a quick step to M9 instead: worth 3 more (a small edge).",
+    "O3 moves to N9, then the ball handler holds the ball (Hesitate), and X3 answered it. O1 drives at X1 (Dribble) instead: worth 2 more."
+   ],
+   "accuracy": 63.4,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 2,
+   "k": 0,
+   "score": 15,
+   "summary": [
+    "Your best decision: O1 moves to H10, then O2 moves to D9. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 2,
+   "k": 1,
+   "score": 30,
+   "summary": [
+    "Your best decision: O3 moves to P8, then O1 shoots a three. That was the best option there.",
+    "O4 moves to A4, then O1 moves to H10, and X4 answered it. O1 drives at X1 (Dribble) instead: worth 2 more (a small edge)."
+   ],
+   "accuracy": 63.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 2,
+   "k": 2,
+   "score": 24,
+   "summary": [
+    "Your best decision: O1 takes a quick step to H10, then O3 moves to P8. That was the best option there.",
+    "O2 moves to E8, then O4 moves to A5, and X1 answered it. O1 moves to I10, then O1 drives at X1 (Dribble) instead: worth 1 more (a small edge)."
+   ],
+   "accuracy": 81.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 2,
+   "k": 3,
+   "score": 15,
+   "summary": [
+    "Your best decision: O1 sprints to H10, then O5 moves to Q2. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 3,
+   "k": 0,
+   "score": 30,
+   "summary": [
+    "Your best decision: O1 takes a quick step to I10, then O1 shoots a three. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 3,
+   "k": 1,
+   "score": 30,
+   "summary": [
+    "Your best decision: O1 moves to I10, then O1 shoots a three, close to the best option there."
+   ],
+   "accuracy": 83.5,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 3,
+   "k": 2,
+   "score": 26,
+   "summary": [
+    "Your best decision: O1 sprints to H10, then O2 moves to E8. That was the best option there.",
+    "O2 takes a quick step to E9, then O3 moves to M10, and X2 answered it. O2 takes a quick step to E9, then O1 passes to O2 instead: worth 3 more (about a foul bonus).",
+    "O1 shoots a three, and X1 answered it. O1 passes to O2 instead: worth 3 more."
+   ],
+   "accuracy": 28.5,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 3,
+   "k": 3,
+   "score": 21,
+   "summary": [
+    "Your best decision: O1 sprints to I10, then O1 shoots a three. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 4,
+   "k": 0,
+   "score": 24,
+   "summary": [
+    "Your best decision: O1 moves to K10, then O3 moves to L9. That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 4,
+   "k": 1,
+   "score": 33,
+   "summary": [
+    "Your best decision: O3 moves to N9, then O2 moves to E8. That was the best option there.",
+    "O4 moves to A5, then O1 moves to H10, and X2 answered it. O1 drives at X1 (Dribble) instead: worth 2 more (a small edge)."
+   ],
+   "accuracy": 85.6,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 4,
+   "k": 2,
+   "score": 24,
+   "summary": [
+    "Your best decision: O5 moves to N3, then O1 moves to G10. That was the best option there.",
+    "O4 moves to D3, then O2 moves to E9, and X4 answered it. O1 drives at X1 (Dribble) instead: worth 2 more (a small edge)."
+   ],
+   "accuracy": 72.9,
+   "flags": [],
+   "reveal": 0
+  },
+  {
+   "match": 4,
+   "k": 3,
+   "score": 24,
+   "summary": [
+    "Your best decision: O1 sprints to H10, then the ball handler holds the ball (Hesitate). That was the best option there."
+   ],
+   "accuracy": 100.0,
+   "flags": [],
+   "reveal": 0
+  }
+ ],
+ "report": {
+  "possessions": 20,
+  "flags": {},
+  "timing": 0
+ }
+}

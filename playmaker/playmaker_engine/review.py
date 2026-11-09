@@ -32,7 +32,7 @@ def log_rules(setup):
     from . import rules_config as RC
     rec = setup.get('rules')
     if not rec:
-        return RC.with_rules(**RC.LEGACY_3I)
+        return RC.with_rules(**RC.LEGACY_3I, **RC.PRE_3N)
     # logs from before the OQ-72 ruling (no intercept_rule), before the turnover-cost ruling, or before the
     # rulebook revision (no on_line_tolerance / lane_jump_keeps_facing)
     if 'on_line_tolerance' in rec and 'receiver_denial' not in rec:

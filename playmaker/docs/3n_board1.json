@@ -1,0 +1,87 @@
+{
+ "passes": 10,
+ "seeds": 10,
+ "drive_available": 10,
+ "rows": [
+  {
+   "seed": 1,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X3 Move to O7 facing E (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 2,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X3 Move to M4 facing SE (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 3,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X5 Move to P5 facing SE (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 4,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X5 Move to P4 facing SE (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 5,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X4 Move to B6 facing N (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 6,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X4 Move to B4 facing SW (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 7,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X4 Move to B4 facing SW (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 8,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X3 Sprint to M4 (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 9,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X4 Move to B5 facing SW (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  },
+  {
+   "seed": 10,
+   "ok": true,
+   "available": true,
+   "drive": 10.0,
+   "alt": 26.0,
+   "what": "X3 Sprint to O7 (straight drive available, worth 10.0 against the best other look 26.0; on the ball-rim line, reported only: nobody)"
+  }
+ ]
+}
