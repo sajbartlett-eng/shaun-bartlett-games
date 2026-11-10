@@ -1359,6 +1359,20 @@ const PMEngine = (() => {
   // file (learned_weights.json): per phase, intercept + sum of weight x (reading - mean) / sd, in the file's order
   function setLearned(on) { D.config.eval.learned = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.learned; }
   const learnedOn = () => D.config.eval.learned === true && D.learned !== null;
+  // step 17D: the calibrated reading (eval.calibrated, off): today's reading of what is left to earn, passed through a
+  // map fitted to what positions went on to earn, per phase and side to act (the weights file's calibration block:
+  // knots x -> y, straight lines between and beyond them)
+  function setCalibrated(on) { D.config.eval.calibrated = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.calibrated; }
+  const calibratedOn = () => D.config.eval.calibrated === true && D.learned !== null && !!D.learned.calibration && !learnedOn();
+  function calibrate(s, oToAct, r) {
+    const m = D.learned.calibration.maps[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1))) + (oToAct ? 'O' : 'X')];
+    if (!m) return r;
+    const x = m.x, y = m.y, n = x.length;
+    if (n === 1) return y[0];
+    let k = 0;
+    while (k < n - 2 && r > x[k + 1]) k++;
+    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k]);
+  }
   function learnedValue(s, f) {
     const m = D.learned.phases[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)))];
     if (!m) return null;
@@ -2090,6 +2104,13 @@ const PMEngine = (() => {
       return (this._leaf = this._leafCalc());
     }
     _leafCalc() {
+      const v = this._handLeaf(), s = this.s;
+      if (!calibratedOn() || this.k <= 0 || s.stage !== 'play' || s.pending || (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) return v;
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      return banked + calibrate(s, this.o_to_act, v - banked);       // step 17D: the same reading, calibrated
+    }
+    _handLeaf() {                                 // today's hand-combined reading
       const s = this.s;
       let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
       banked += foulExternality(s);
@@ -2820,8 +2841,8 @@ const PMEngine = (() => {
 
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
-  const handLeaf = s => readOf(s).leaf();                                                       // today's hand-combined reading
-  return { setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
+  return { setCalibrated, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

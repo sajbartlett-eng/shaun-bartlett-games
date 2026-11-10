@@ -70,3 +70,16 @@ be trusted; the batch was stopped and restarted with the self-check (60 pairs) f
 - Predict: honestly unknown. The question is yes or no: on held-out possessions, do the readings predict a strong
   player's results better than the phase average? If no, the readings are missing information and the learned route
   stops. If yes, 5,000 possessions (28 core-hours) and a head-to-head of 320 pairs.
+
+# Step 17D (cap: 16 core-hours, the second round included)
+
+## Run 4: the strong-play pilot. Written before it started.
+
+- 640 possessions by today's computer (All-Star settings, pick noise 0.5), both sides, every position kept with its
+  readings; one defence-to-act position kept from each for the exam; how each possession ended.
+- Cost: predicted 3.6 core-hours, about 55 minutes wall.
+- Predict:
+  - points a possession near 22, from the self-check;
+  - the clock runs out with no shot on more than 1 possession in 100 (the fault D-137 names): I expect 5 to 15;
+  - today's reading over by 6 points or more in every phase;
+  - the learned weights against the phase average: honestly unknown. Yes or no.

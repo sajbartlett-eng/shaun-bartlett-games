@@ -29,6 +29,7 @@ function apply(set) {                                  // an engine's switches, 
   E.setAdvantages(!!set.advantages || !!set.goals);
   E.setGoals(!!set.goals);
   if (E.setLearned) E.setLearned(!!set.learned);
+  if (E.setCalibrated) E.setCalibrated(!!set.calibrated);
   if (E.setPrior) E.setPrior(!!set.prior);
 }
 const key = a => JSON.stringify(E.actionJSON(a));
@@ -64,7 +65,9 @@ function playout(node, ctx, pols, r, visit) {
     node = E.apply(node, decide(node, ctx, pols[E.actor(node)], r));
     n++;
   }
-  return { points: node.stage === 'over' ? E.scoreTotal(node) : 0, value: node.stage === 'over' ? E.terminalValue(node) : 0, decisions: n, over: node.stage === 'over' };
+  // how it ended (a shot, free throws, or the clock or a turnover with no shot) and the clock when it did
+  return { points: node.stage === 'over' ? E.scoreTotal(node) : 0, value: node.stage === 'over' ? E.terminalValue(node) : 0, decisions: n, over: node.stage === 'over',
+    kind: node.stage === 'over' && node.result ? node.result.kind : 'unfinished', clock: node.clock, tokens: node.tok_o };
 }
 function playTurn(s, turn, r) {                        // a candidate team turn (a list of action JSON), then the dice
   let node = s;
@@ -113,7 +116,8 @@ if (job.kind === 'rollout') {
       const A = () => Object.assign({}, job.a, { rn: rng(seed * 31 + 1) }), B = () => Object.assign({}, job.b, { rn: rng(seed * 31 + 2) });
       const a = playout(s, ctx, { O: A(), X: B() }, rng(seed));
       const b = playout(s, ctx, { O: B(), X: A() }, rng(seed));
-      out.rows.push({ id: p.id, k, a_offence: a.points, b_offence: b.points, a_value: a.value, b_value: b.value, decisions: a.decisions + b.decisions });
+      out.rows.push({ id: p.id, k, a_offence: a.points, b_offence: b.points, a_value: a.value, b_value: b.value, decisions: a.decisions + b.decisions,
+        a_end: [a.kind, a.clock, a.tokens, a.decisions], b_end: [b.kind, b.clock, b.tokens, b.decisions] });
     }
   }
 } else if (job.kind === 'selfplay') {
@@ -121,15 +125,17 @@ if (job.kind === 'rollout') {
   for (const p of job.positions) {
     const ctx = ctxs[p.ctx];
     for (let k = 0; k < job.n; k++) {
-      const seen = [];
+      const seen = [], defence = [];
       // job.features: keep each position as [clock, what is already earned, today's reading, the named readings]
       // (training rows) instead of the whole state
       const g = playout(state(p), ctx, job.policies, rng((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)), s => {
         if (s.stage !== 'play' || s.pending) return;
+        if (job.keepDefence && s.side === 'X' && s.turn_n === 0) defence.push(E.stateJSON(s));   // the defence to act, its turn's start
         if (job.features) seen.push([s.clock, E.bankedOf(s), E.handLeaf(s)].concat(Array.from(E.featuresOf(s))));
         else seen.push(E.stateJSON(s));
       });
-      out.rows.push({ id: p.id, k, ctx: p.ctx, points: g.points, value: g.value, decisions: g.decisions, states: seen });
+      out.rows.push({ id: p.id, k, ctx: p.ctx, points: g.points, value: g.value, decisions: g.decisions, states: seen, end: [g.kind, g.clock, g.tokens],
+        defence: defence.length ? defence[Math.floor(defence.length * ((k * 7 + 3 + out.rows.length) % 10) / 10)] : null });
     }
   }
 } else if (job.kind === 'search') {

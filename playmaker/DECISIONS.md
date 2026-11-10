@@ -556,6 +556,24 @@ rules. · Source: Shaun, 10 Nov 2026 · **Ruled;** the disagreements are **open*
 
 **D-134. Board 13 is flawed:** by the cards, the lane isn't worth clearing. · Source: Shaun, 10 Nov 2026 · **Ruled.**
 
+### Shaun, 10 Nov 2026 (step 17D prompt): the rulings on step 17's checkpoints 0 and 1
+
+**D-135. The outcome exam** is accepted as the bigger exam for now. Defence-to-act positions are added until the
+defence has at least 60 (from self-play, spread over the phases). No overnight measured-answer runs for now. · Source:
+Shaun, 10 Nov 2026 · **Ruled, built** (step 17D).
+
+**D-136. The strong-play pilot** is approved: 640 possessions by today's computer (All-Star settings, light pick
+noise). The 5,000-possession run is approved only if the pilot's held-out fit clearly beats the phase average alone
+(the interval apart). If the pilot says no, it is recorded as "no signal at this size", and the question is asked
+again on the calibrated computer's play. Step 17D's cap is 16 core-hours, a second calibration round included; the
+head-to-head may run to 1,000 pairs within it. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
+**D-137. The over-hopeful reading is a fault to fix.** Today's reading values positions 6 to 20 points above what
+they go on to earn, and the computer holds the ball and shoots late. It plays unlike basketball (System Fidelity). It
+is fixed by calibrating to played-out results (`eval.calibrated`, off), not by hand. The shot-clock expiry rate in
+self-play is reported beside basketball's (about 1 in 100 possessions). · Source: Shaun, 10 Nov 2026 · **Ruled;**
+step 17D builds and measures it.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

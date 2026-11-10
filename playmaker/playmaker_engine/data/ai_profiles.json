@@ -68,6 +68,8 @@
     "leaf_mode": "relative",
     "reach": true,
     "coverage_budget": false,
+    "calibrated": false,
+    "_calibrated": "Step 17D (off): the calibrated reading. Today's reading of what a position has left to earn is passed through a map fitted to what positions went on to earn, per phase and side to act (data/learned_weights.json, calibration; one file for both engines). Fitted, not hand-set (D-137).",
     "learned": false,
     "_learned": "Step 17 (off): the learned judgement. What a position has left to earn is read from the named readings (decide.FEATURES) with per-phase weights fitted to how possessions went on (data/learned_weights.json, one file for both engines), in place of the hand-combined reading.",
     "advantages": false,
