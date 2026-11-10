@@ -20,7 +20,7 @@ def ported(rules):
 
 
 def card_json(c):
-    return dict(qs=c.qs, r=dict(c.r))
+    return dict(qs=c.qs, r=dict(c.r), bands=dict(c.bands))      # bands (step 16): the card's H, A, L per rating
 
 
 def ctx_json(ctx, table=None):

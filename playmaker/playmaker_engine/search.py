@@ -280,6 +280,11 @@ class Searcher:
         self.cap_hits = 0
         self.trace = []                  # the root choice at each completed depth: [(depth, turn, value)]
         self.kept = 0                    # times 'change only for a clear reason' kept the earlier choice
+        # step 16, stage 4 (search.goals, off; needs eval.advantages): goals order the search, and a position gains its
+        # goal potential (decide.Read.phi; 0 when the possession ends)
+        self.goals = cfg.get('goals') is True and CONFIG['eval'].get('advantages') is True
+        self.phis = {}
+        self.touches = {}
         self.depth_seconds = []          # step 13: the time each completed depth was reached at: [(depth, seconds)]
         self.t0 = time.time()
 
@@ -295,7 +300,40 @@ class Searcher:
             # mean of the two (the gap measured on the step 3n positions, ai_profiles.json search.tempo_gap)
             t = float(self.tempo.get(phase_of(s), 0.0))
             v += -t / 2 if actor(s) == 'O' else t / 2
+        if self.goals:
+            v += self.phi(s)                 # progress: the potential here (the root's is taken off at the end)
         return v
+
+    def phi(self, s):
+        """The goal potential of a position (the offence's view): 0 unless play goes on; a pass in the air carries the
+        catch's potential by its chance."""
+        if isinstance(s, ChanceNode) or s.stage != 'play':
+            return 0.0
+        z = zobrist(s)
+        v = self.phis.get(z)
+        if v is None:
+            if s.pending:
+                from .decide import _lane_p
+                passer, recv = s.pending
+                v = _lane_p(s.with_(ball=passer), recv, s.o[recv]) * self.phi(s.with_(ball=recv, pending=None))
+            else:
+                v = Read(s).phi()
+            self.phis[z] = v
+        return v
+
+    def touch(self, s, z):
+        """The top goals at a position, as (attacker, square): for the ordering only."""
+        g = self.touches.get(z)
+        if g is None:
+            g = []
+            if s.stage == 'play' and not s.pending:
+                top = {}
+                for a in Read(s).advantages():
+                    if a['sq'] is not None and a['worth'] > 1e-9 and a['worth'] > top.get(a['i'], (0.0,))[0]:
+                        top[a['i']] = (a['worth'], a['sq'])
+                g = [(i, top[i][1]) for i in sorted(top)]
+            self.touches[z] = g
+        return g
 
     def unsettled(self, s):
         """Why this position isn't a quiet point (None if it is). 'mid' belongs to quiet_points; the rest to play_on."""
@@ -365,7 +403,7 @@ class Searcher:
         ts = self.turns_of(s)
         if not ts:
             return self.leaf(s)
-        ts = self.order(ts, depth, key[0])
+        ts = self.order(ts, depth, key[0], s)
         self.nodes += 1
         a0, b0 = alpha, beta
         best = None
@@ -437,7 +475,7 @@ class Searcher:
             ts = self.turns_of(sub)
             if not ts:
                 continue
-            first = self.order(ts, depth, z)[0][1]
+            first = self.order(ts, depth, z, sub)[0][1]
             v = self.value(play_turn(sub, first), depth - 1, VMIN, VMAX)
             if actor(sub) == 'O':
                 lo_b[k] = max(lo_b[k], v)
@@ -494,11 +532,20 @@ class Searcher:
             ks.insert(0, t)
             del ks[2:]
 
-    def order(self, ts, depth, z=None):
+    def order(self, ts, depth, z=None, s=None):
         ks = self.killers.get(depth, [])
         prev = self.tt.get((z, depth - 1)) if z is not None and SPEED['tt_order'] else None
         first = prev[2] if prev is not None else None      # this position's best turn, one shorter: tried first
-        return sorted(ts, key=lambda r: (-1 if r[1] == first else 0 if r[1] in ks else 1,
+        goals = self.touch(s, z) if self.goals and s is not None and depth >= 2 else []
+
+        def off_goal(t):                 # step 16: a turn that works on a top goal is searched first (ordering only)
+            for a in t:
+                for i, sq in goals:
+                    if (a.side == 'O' and a.piece == i) or a.dest == sq or \
+                            (a.side == 'X' and a.dest is not None and B.adjacent(a.dest, sq)):
+                        return 0
+            return 1
+        return sorted(ts, key=lambda r: (-1 if r[1] == first else 0 if r[1] in ks else 1, off_goal(r[1]) if goals else 0,
                                          -(r[0] + 0.01 * self.history.get(r[1][0], 0))))
 
     def root(self, s, max_depth, min_depth=1):
@@ -553,6 +600,10 @@ class Searcher:
                 break
         if self.like or self.clear:
             results, reached = self._settle(s, by_depth, side)
+        if self.goals:                       # the root's own potential comes off: a turn earns potential after less before
+            p0 = self.phi(s)
+            results = [(v - p0, t) for v, t in results]
+            self.trace = [(d, t, v - p0) for d, t, v in self.trace]
         results.sort(key=lambda r: -r[0] if side == 'O' else r[0])
         return results, reached
 

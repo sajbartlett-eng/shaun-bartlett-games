@@ -31,7 +31,9 @@ for (const ln of lines) {
   if (q.speed) E.setSpeed(q.speed);                   // step 13: a speed-up turned off, to prove it changes nothing
   if (q.switches) E.setSearch(q.switches);             // step 13: the stable search's five switches
   if (q.reach !== undefined) E.setReach(q.reach);
-  if (q.coverage_budget !== undefined) E.setBudget(q.coverage_budget);   // step 13 B
+  if (q.coverage_budget !== undefined) E.setBudget(q.coverage_budget);
+  if (q.advantages !== undefined) E.setAdvantages(q.advantages);         // step 16
+  if (q.goals !== undefined) E.setGoals(q.goals);   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {
