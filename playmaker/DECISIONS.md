@@ -513,6 +513,21 @@ decisions in 10, in 0.3, 1.0 and 2.5 s on a desktop (Rookie, Starter, All-Star) 
 **D-124. The two speed-ups that change results** (a window at the root; narrow quiet points) are not built now. ·
 Source: Shaun, 10 Nov 2026 · **Ruled.**
 
+### Shaun, 10 Nov 2026 (step 13C prompt): the answers to step 13, part B
+
+**D-125. The Contest under the budget** (`eval.coverage_budget`). A Contest from where a defender stands is free
+across every attacker he is next to: only one shot happens, so a defender between two shooters really covers both.
+Only answers that need a movement (a Move, a Quick Step or a Sprint to reach a shooter or a lane) share the defender's
+budget. · Source: Shaun, 10 Nov 2026 · **Ruled, built** (step 13C).
+
+**D-126. The phone budget.** A real phone is measured (the app's speed test, `?speedtest=1`) before any phone target
+changes. Until then the All-Star's phone target stays at 3.0 s, and the overrun is noted, not fixed. · Source: Shaun,
+10 Nov 2026 · **Ruled;** the measurement is **open**.
+
+**D-127. Board 13.** The crowded lane needs a look beyond one team turn. That is goal progress, so it moves to stage 3
+(advantages: create, keep and convert). No discount for later looks is added now. · Source: Shaun, 10 Nov 2026 ·
+**Open:** stage 3.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
