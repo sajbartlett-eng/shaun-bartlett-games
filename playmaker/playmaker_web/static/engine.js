@@ -249,7 +249,7 @@ const PMEngine = (() => {
     }
     return true;
   }
-  function zoneOf(s, j) {
+  function zoneOf(s, j, vacated, taken) {            // vacated, taken (step 13C): one attacker's square moved
     // actions.zone: the squares along his arrow he reaches with one movement left to him (only membership is used).
     // Only the straight path reaches a square on the arrow ray, so the walk checks that path directly.
     const start = s.x[j], card = s.ctx.dfn[j], d = s.arrows[j], diag = d & 1, step = DSTEP[d];
@@ -260,7 +260,7 @@ const PMEngine = (() => {
     let q = start;
     for (let n = 1; n <= maxR; n++) {
       const prev = q; q += step;
-      if (!ONB[q] || occAt(s, q)) break;
+      if (!ONB[q] || q === taken || (q !== vacated && occAt(s, q))) break;
       let ok = true;
       for (const scr of s.screens) {
         const tsq = tSquare(s, scr);
@@ -868,7 +868,7 @@ const PMEngine = (() => {
   const REACH_STATS = { calls: 0, same_state: 0, kept: 0, built: 0 };
   // Step 13: the speed-ups that change no result. Each can be turned off by a tool (setSpeed), to time it and to prove
   // the search gives the same choices and values with and without it. All are on in play.
-  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true };
+  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true };
   function setSpeed(json) {
     const q = typeof json === 'string' ? JSON.parse(json) : json;
     for (const k in SPEED) if (q[k] !== undefined) SPEED[k] = q[k] === true || q[k] === 'true';
@@ -1015,15 +1015,42 @@ const PMEngine = (() => {
   }
   // Step 13 B2 (decide.two_actions): the squares attacker i reaches with exactly two movement actions (a Move then a
   // Quick Step, or a Quick Step then a Move), each by the rules' own movement from where the first leaves him. Sorted.
-  function twoActions(s, i, one) {
+  function twoActions(s, i, one, keep) {               // keep(square): only these are wanted
     if (s.tok_o < 2 || !ONB[s.o[i]]) return [];
-    const bit = 1 << i, out = new Set();
+    const bit = 1 << i, out = new Set(), old = s.o[i], card = s.ctx.off[i], carrier = i === s.ball;
+    // step 13C (a speed-up that changes no result): the second action is read straight from the paths and the pieces,
+    // with his own square moved, instead of building a new position for every first square. The plain way is kept
+    // for the tools (SPEED.two_direct off) and for an attacker holding a screen.
+    const plain = !SPEED.two_direct || s.screens.some(sc => sc[0] === i);
     for (const [first, second] of [['move', 'qs'], ['qs', 'move']]) {
       if (!canMoveKind(s, 'O', i, first)) continue;
+      let can2 = null;
       for (const q1 of movementDests(s, 'O', i, first).keys()) {
-        const s2 = W_(s, first === 'move' ? { o: setAt(s.o, i, q1), moved_o: s.moved_o | bit } : { o: setAt(s.o, i, q1), qs_o: s.qs_o | bit });
-        if (!canMoveKind(s2, 'O', i, second)) continue;
-        for (const q2 of movementDests(s2, 'O', i, second).keys()) if (!one.has(q2)) out.add(q2);
+        if (plain || can2 === null) {
+          const s2 = W_(s, first === 'move' ? { o: setAt(s.o, i, q1), moved_o: s.moved_o | bit } : { o: setAt(s.o, i, q1), qs_o: s.qs_o | bit });
+          can2 = canMoveKind(s2, 'O', i, second);         // the same for every first square: it reads no position
+          if (plain) {
+            if (can2) for (const q2 of movementDests(s2, 'O', i, second).keys()) if (!one.has(q2) && (!keep || keep(q2))) out.add(q2);
+            continue;
+          }
+        }
+        if (!can2) break;
+        let zones = null;                                  // the zones of the defenders next to his new square
+        if (carrier) {
+          for (let j = 0; j < 5; j++) {
+            if (!adjacent(s.x[j], q1) || s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+            const z = zoneOf(s, j, old, q1);
+            if (z.length) zones = zones ? zones.concat(z) : z;
+          }
+        }
+        for (const path of (second === 'qs' ? qsPaths(q1, card.qs) : movePaths(q1))) {
+          const dest = path[path.length - 1];
+          if (one.has(dest) || out.has(dest) || (keep && !keep(dest))) continue;
+          let ok = true;
+          for (const q of path) if (!ONB[q] || q === q1 || (q !== old && occAt(s, q))) { ok = false; break; }
+          if (ok && zones) for (let n = 0; n < path.length - 1; n++) if (zones.includes(path[n])) { ok = false; break; }
+          if (ok) out.add(dest);
+        }
       }
     }
     return [...out].sort((a, b) => (SX[a] - SX[b]) || (SY[a] - SY[b]));
@@ -1092,7 +1119,15 @@ const PMEngine = (() => {
   function blocksPath(q, start, c, qs) {
     if (q === c) return true;
     const ps = pathsTo(start, c, qs);
-    return ps.length > 0 && ps.every(p => p.slice(0, -1).includes(q));
+    if (!SPEED.path_block) return ps.length > 0 && ps.every(p => p.slice(0, -1).includes(q));
+    // step 13C (a speed-up that changes no result): the squares every path crosses, worked out once per pair of squares
+    let blk = ps.block;
+    if (blk === undefined) {
+      blk = new Set();
+      if (ps.length) for (const x of ps[0].slice(0, -1)) if (ps.every(p => p.slice(0, -1).includes(x))) blk.add(x);
+      ps.block = blk;
+    }
+    return blk.has(q);
   }
   const PATH_ROUTES = new Set(['drive', 'later', 'cut']);
   function exactOne(s, d) {                            // decide._exact_one, as the bitset oneAction returns
@@ -1521,7 +1556,6 @@ const PMEngine = (() => {
         for (const kind of ['move', 'qs', 'sprint']) {
           if (canMoveKind(s, 'O', i, kind)) for (const q of movementDests(s, 'O', i, kind).keys()) if (!reach.has(q)) reach.set(q, 1);
         }
-        if (budgetCfg()) for (const q of twoActions(s, i, reach)) reach.set(q, 2);   // step 13 B2 (D-115)
       } else {
         reach = new Map();
         if (ONB[s.o[i]] && s.tok_o > 0) {
@@ -1530,9 +1564,9 @@ const PMEngine = (() => {
           for (let n = 0; n < lst.length; n += 2) { const q = lst[n]; if (lst[n + 1] === 0 || !occAt(s, q)) reach.set(q, lst[n + 1]); }
         } else reach.set(s.o[i], 0);
       }
-      for (const [c, n] of reach) {
+      const add = (c, n) => {
         const z = ZN[c];
-        if (!SHOOT(z)) continue;
+        if (!SHOOT(z)) return;
         let lk;
         if (i === s.ball) {
           if (n === 0 && shotOk && leftNow >= 1) lk = makeLook(i, c, 'shoot', 1.0, this.o_to_act);
@@ -1540,7 +1574,7 @@ const PMEngine = (() => {
           else lk = makeLook(i, c, 'later', this.cfg.later_p, false, this.o_to_act ? 1 : 2);
         } else {
           const p = this.passP(i, c);
-          if (p <= 0) continue;
+          if (p <= 0) return;
           if (n === 0) lk = makeLook(i, c, 'catch', p, false, 1);
           else if (leftNow >= 2 && s.tok_o >= 2 && this.o_to_act) lk = makeLook(i, c, 'cut', p, false, 1);
           else lk = makeLook(i, c, 'cut', p * this.cfg.later_p, false, 2);
@@ -1552,6 +1586,23 @@ const PMEngine = (() => {
         for (const d of this.att_x) { const v = this._vals(lk, d, cm[d]); if (v) lk.vals[d] = v; }
         finishLook(lk);
         out.push(lk);
+      };
+      for (const [c, n] of reach) add(c, n);
+      if (i === s.ball && budgetCfg()) {
+        // step 13 B2 (D-115): the squares two actions away. Step 13C (a speed-up that changes no result): such a look is
+        // worth at most later_p times his best shot from its zone, and the list keeps the best L looks, earlier ones
+        // first when level. So a square whose most can't beat the L-th look already found is never built or searched.
+        let floor = -Infinity;
+        if (SPEED.two_bound && out.length >= this.L) { const bs = out.map(l => l.base).sort((a, b) => b - a); floor = bs[this.L - 1]; }
+        const most = new Map();
+        const keep = c => {
+          const z = ZN[c];
+          if (!SHOOT(z)) return false;
+          let m = most.get(z);
+          if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
+          return m > floor;
+        };
+        for (const q of twoActions(s, i, reach, keep)) add(q, 2);
       }
       out.sort((a, b) => b.base - a.base);
       return out.slice(0, this.L);
