@@ -1,0 +1,120 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": true,
+ "goals": true,
+ "searches": {
+  "compared": 5,
+  "equal": 5
+ },
+ "states": 100,
+ "seconds_python": 8.3,
+ "seconds_js": 1.2,
+ "by_stage": {
+  "play": 95,
+  "over": 4,
+  "reaction": 1
+ },
+ "by_phase": {
+  "2": 27,
+  "1": 57,
+  "5": 7,
+  "4": 2,
+  "3": 7
+ },
+ "by_age": {
+  "senior": 33,
+  "youth": 34,
+  "junior": 33
+ },
+ "by_standard": {
+  "pro": 40,
+  "semi_pro": 33,
+  "amateur": 27
+ },
+ "digital": 50,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 100,
+   "equal": 100
+  },
+  "attacker_reach": {
+   "compared": 96,
+   "equal": 96
+  },
+  "defender_reach": {
+   "compared": 96,
+   "equal": 96
+  },
+  "defender_exact": {
+   "compared": 96,
+   "equal": 96
+  },
+  "threat_geo": {
+   "compared": 96,
+   "equal": 96
+  },
+  "cover_geo": {
+   "compared": 96,
+   "equal": 96
+  },
+  "leaf_geo": {
+   "compared": 96,
+   "equal": 96
+  },
+  "threat_exact": {
+   "compared": 96,
+   "equal": 96
+  },
+  "cover_exact": {
+   "compared": 96,
+   "equal": 96
+  },
+  "leaf_exact": {
+   "compared": 96,
+   "equal": 96
+  },
+  "quick": {
+   "compared": 96,
+   "equal": 96
+  },
+  "reach_map": {
+   "compared": 96,
+   "equal": 96
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 96,
+   "equal": 96
+  },
+  "adv_exact": {
+   "compared": 96,
+   "equal": 96
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

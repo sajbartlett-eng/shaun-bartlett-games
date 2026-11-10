@@ -237,6 +237,7 @@ class Agent:
                 if abs(d) > 0.05:
                     changed[f'O{i + 1}'] = round(d, 1)
         return dict(goals=goals, current=f'{cur[0]} O{cur[1] + 1}' if cur else None, event=event, potential=round(r0.phi(), 2),
+                    target=B.sq(keys[cur]['sq']) if cur and keys[cur]['sq'] else None,
                     looks_changed=changed)
 
     def _js_search(self, s, budget, max_depth):

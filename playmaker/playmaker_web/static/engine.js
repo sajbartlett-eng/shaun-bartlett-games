@@ -1761,6 +1761,7 @@ const PMEngine = (() => {
       const s = this.s, out = [];
       this._adv = out;
       if (s.stage !== 'play' || s.pending) return out;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return out;   // no offence turn is left: nothing can be built
       let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
       banked += foulExternality(s);
       const nowWorth = this.leaf() - banked;

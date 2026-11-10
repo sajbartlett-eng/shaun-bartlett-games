@@ -1,0 +1,1291 @@
+{
+ "shot_now": [],
+ "dropped": [
+  {
+   "board": "6",
+   "potential_before": 1.76,
+   "potential_last_phase": 0.49,
+   "off": [
+    "O2 Move to A5",
+    "O2 Quick Step to A4"
+   ],
+   "on": [
+    "O2 Move to A5",
+    "O4 Pass to O2"
+   ],
+   "same": false
+  },
+  {
+   "board": "11 early",
+   "potential_before": 13.87,
+   "potential_last_phase": 0,
+   "off": [
+    "O2 Move to A7",
+    "O1 Sprint to J10"
+   ],
+   "on": [
+    "O2 Move to A7",
+    "O1 Sprint to J10"
+   ],
+   "same": true
+  },
+  {
+   "board": "14",
+   "potential_before": 1.51,
+   "potential_last_phase": 0,
+   "off": [
+    "O1 Move to K10",
+    "O3 Quick Step to P8"
+   ],
+   "on": [
+    "O1 Move to K10",
+    "O3 Quick Step to P8"
+   ],
+   "same": true
+  },
+  {
+   "board": "15",
+   "potential_before": 13.87,
+   "potential_last_phase": 0,
+   "off": [
+    "O2 Move to C8",
+    "O1 Move to H10"
+   ],
+   "on": [
+    "O2 Move to C8",
+    "O1 Move to H10"
+   ],
+   "same": true
+  },
+  {
+   "board": "16",
+   "potential_before": 3.83,
+   "potential_last_phase": 0,
+   "off": [
+    "O2 Move to A5"
+   ],
+   "on": [
+    "O2 Move to A5"
+   ],
+   "same": true
+  },
+  {
+   "board": "C2",
+   "potential_before": 10.48,
+   "potential_last_phase": 6.04,
+   "off": [
+    "O2 Move to C9"
+   ],
+   "on": [
+    "O3 Sprint to M10"
+   ],
+   "same": false
+  }
+ ],
+ "broken": [
+  {
+   "board": "6",
+   "goal_before": "separation O2 to A5",
+   "defender": "X2",
+   "to": "A5",
+   "event": "lost",
+   "goal_after": "penetration O4",
+   "turn": [
+    "O1 Move to J10",
+    "O2 Sprint to B3"
+   ],
+   "target_after": "H3",
+   "moved_on": true
+  },
+  {
+   "board": "11 early",
+   "goal_before": "penetration O1 to H3",
+   "defender": "X2",
+   "to": "H3",
+   "event": null,
+   "goal_after": "penetration O1",
+   "turn": [
+    "O2 Quick Step to A7"
+   ],
+   "target_after": "G4",
+   "moved_on": true
+  },
+  {
+   "board": "14",
+   "goal_before": "penetration O1 to H3",
+   "defender": "X4",
+   "to": "H3",
+   "event": "lost",
+   "goal_after": null,
+   "turn": [
+    "O1 Move to K10",
+    "O2 Sprint to B8"
+   ],
+   "target_after": null,
+   "moved_on": true
+  },
+  {
+   "board": "15",
+   "goal_before": "penetration O1 to H3",
+   "defender": "X2",
+   "to": "H3",
+   "event": null,
+   "goal_after": "penetration O1",
+   "turn": [
+    "O1 Quick Step to H10"
+   ],
+   "target_after": "G4",
+   "moved_on": true
+  },
+  {
+   "board": "16",
+   "goal_before": "penetration O1 to J3",
+   "defender": "X2",
+   "to": "J3",
+   "event": null,
+   "goal_after": "penetration O1",
+   "turn": [
+    "O1 Sprint to H10"
+   ],
+   "target_after": "K4",
+   "moved_on": true
+  },
+  {
+   "board": "C2",
+   "goal_before": "separation O2 to B8",
+   "defender": "X2",
+   "to": "B8",
+   "event": "lost",
+   "goal_after": "separation O3",
+   "turn": [
+    "O3 Sprint to M10"
+   ],
+   "target_after": "M10",
+   "moved_on": true
+  }
+ ],
+ "any_chance": [
+  {
+   "board": "1",
+   "same": false,
+   "off": [
+    "X1 Sprint to H8"
+   ],
+   "on": [
+    "X1 Sprint to G11"
+   ],
+   "loss": 0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "H2",
+     "stage": "create",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 9.9,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "I4",
+     "stage": "keep",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 5.8,
+     "gap": 0,
+     "defence": "break"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "E10",
+     "stage": "keep",
+     "value": 39,
+     "chance": 0.35,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "2 4",
+   "same": false,
+   "off": [
+    "X2 Sprint to D6"
+   ],
+   "on": [
+    "X2 Move to D7 facing E"
+   ],
+   "loss": 2.47,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "G4",
+     "stage": "create",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 5.3,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X1",
+     "square": "F7",
+     "stage": "keep",
+     "value": 26,
+     "chance": 0.35,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O4",
+     "defender": null,
+     "square": "D3",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.35,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "2 12",
+   "same": false,
+   "off": [
+    "X3 Sprint to O3",
+    "X1 Steal"
+   ],
+   "on": [
+    "X3 Sprint to O3"
+   ],
+   "loss": 1.19,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "G4",
+     "stage": "create",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 5.3,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 27,
+     "chance": 0.35,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O4",
+     "defender": null,
+     "square": "D3",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.35,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "3",
+   "same": false,
+   "off": [
+    "X3 Move to N7 facing W"
+   ],
+   "on": [
+    "X3 Move to M7 facing W"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": "X4",
+     "square": "I2",
+     "stage": "keep",
+     "value": 22,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.39,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O4",
+     "defender": null,
+     "square": "A3",
+     "stage": "keep",
+     "value": 33,
+     "chance": 0.39,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "4",
+   "same": false,
+   "off": [
+    "O1 Sprint to F10",
+    "O2 Sprint to E10"
+   ],
+   "on": [
+    "O1 Sprint to F7"
+   ],
+   "loss": 6.8,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "F10",
+     "stage": "convert",
+     "value": 24,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O1",
+     "defender": "X2",
+     "square": "F7",
+     "stage": "convert",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "I2",
+     "stage": "create",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "5 close",
+   "same": true,
+   "off": [
+    "O2 Sprint to B8"
+   ],
+   "on": [
+    "O2 Sprint to B8"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "B8",
+     "stage": "convert",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B7",
+     "stage": "convert",
+     "value": 30,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O2",
+     "defender": null,
+     "square": "G2",
+     "stage": "create",
+     "value": 36,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "5 short",
+   "same": true,
+   "off": [
+    "O2 Sprint to B8"
+   ],
+   "on": [
+    "O2 Sprint to B8"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "B8",
+     "stage": "convert",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X4",
+     "square": "B7",
+     "stage": "convert",
+     "value": 30,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O2",
+     "defender": null,
+     "square": "G2",
+     "stage": "create",
+     "value": 36,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "6",
+   "same": false,
+   "off": [
+    "O2 Move to A5"
+   ],
+   "on": [
+    "O1 Move to J10",
+    "O4 Pass to O2"
+   ],
+   "loss": 2.55,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "A5",
+     "stage": "keep",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 1.8,
+     "gap": 0,
+     "defence": "break"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B7",
+     "stage": "keep",
+     "value": 30,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O4",
+     "defender": null,
+     "square": "A3",
+     "stage": "convert",
+     "value": 33,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "7 phase 2",
+   "same": false,
+   "off": [
+    "O3 Sprint to E9",
+    "O2 Sprint to E10"
+   ],
+   "on": [
+    "O3 Move to I4"
+   ],
+   "loss": 4.42,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.3,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O3",
+     "defender": "X2",
+     "square": "E9",
+     "stage": "convert",
+     "value": 18,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O3",
+     "defender": "X5",
+     "square": "I4",
+     "stage": "convert",
+     "value": 14,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "7 phase 6",
+   "same": true,
+   "off": [
+    "O5 Move to Q4"
+   ],
+   "on": [
+    "O5 Move to Q4"
+   ],
+   "loss": 0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.21,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "run down"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O3",
+     "defender": "X2",
+     "square": "E9",
+     "stage": "keep",
+     "value": 18,
+     "chance": 0.7,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "run down"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O3",
+     "defender": "X5",
+     "square": "I4",
+     "stage": "keep",
+     "value": 14,
+     "chance": 0.7,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "run down"
+    }
+   ]
+  },
+  {
+   "board": "8",
+   "same": true,
+   "off": [
+    "O2 Move to E10"
+   ],
+   "on": [
+    "O2 Move to E10"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "J10",
+     "stage": "convert",
+     "value": 24,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "G2",
+     "stage": "create",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "E10",
+     "stage": "keep",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "9",
+   "same": false,
+   "off": [
+    "O1 Quick Step to K4",
+    "O Hesitate"
+   ],
+   "on": [
+    "O1 Move to J3",
+    "O4 Move to G3"
+   ],
+   "loss": 0.42,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": "X1",
+     "square": "J3",
+     "stage": "convert",
+     "value": 22,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O4",
+     "defender": "X4",
+     "square": "A3",
+     "stage": "keep",
+     "value": 24,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "10 good odds",
+   "same": true,
+   "off": [
+    "X3 Sprint to O9"
+   ],
+   "on": [
+    "X3 Sprint to O9"
+   ],
+   "loss": 0.42,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O4",
+     "defender": null,
+     "square": "G4",
+     "stage": "create",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 8.6,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 18,
+     "chance": 0.14,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O3",
+     "defender": "X3",
+     "square": "P8",
+     "stage": "keep",
+     "value": 24,
+     "chance": 0.14,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "10 bad odds",
+   "same": true,
+   "off": [
+    "X2 Quick Step to C6"
+   ],
+   "on": [
+    "X2 Quick Step to C6"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "G2",
+     "stage": "create",
+     "value": 36,
+     "chance": 1.0,
+     "worth": 13.1,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O1",
+     "defender": "X1",
+     "square": "I10",
+     "stage": "keep",
+     "value": 21,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O4",
+     "defender": "X4",
+     "square": "A3",
+     "stage": "keep",
+     "value": 18,
+     "chance": 0.55,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "11 early",
+   "same": false,
+   "off": [
+    "O2 Move to A7",
+    "O1 Sprint to J10"
+   ],
+   "on": [
+    "O2 Sprint to A7"
+   ],
+   "loss": 2.55,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "H3",
+     "stage": "create",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 13.9,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "A7",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O4",
+     "defender": "X2",
+     "square": "A3",
+     "stage": "keep",
+     "value": 24,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "11 final phase",
+   "same": true,
+   "off": [
+    "O1 Dribble vs X1"
+   ],
+   "on": [
+    "O1 Dribble vs X1"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "A7",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "run down"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O4",
+     "defender": "X2",
+     "square": "A3",
+     "stage": "keep",
+     "value": 24,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "run down"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O5",
+     "defender": null,
+     "square": "Q3",
+     "stage": "keep",
+     "value": 24,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "run down"
+    }
+   ]
+  },
+  {
+   "board": "12",
+   "same": false,
+   "off": [
+    "X4 Move to L8 facing NW"
+   ],
+   "on": [
+    "X5 Move to N3 facing NW",
+    "X1 Steal"
+   ],
+   "loss": 3.02,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "J2",
+     "stage": "create",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 13.8,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "D9",
+     "stage": "keep",
+     "value": 24,
+     "chance": 1.0,
+     "worth": 1.2,
+     "gap": 0,
+     "defence": "break"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X1",
+     "square": "C4",
+     "stage": "keep",
+     "value": 18,
+     "chance": 0.7,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "13",
+   "same": false,
+   "off": [
+    "O2 Move to B8",
+    "O3 Sprint to N5"
+   ],
+   "on": [
+    "O5 Screen, T SW"
+   ],
+   "loss": 2.8,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "K10",
+     "stage": "convert",
+     "value": 24,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "G2",
+     "stage": "create",
+     "value": 10,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "14",
+   "same": true,
+   "off": [
+    "O1 Move to K10",
+    "O3 Quick Step to P8"
+   ],
+   "on": [
+    "O1 Move to K10",
+    "O3 Quick Step to P8"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "H3",
+     "stage": "create",
+     "value": 16,
+     "chance": 1.0,
+     "worth": 1.5,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O3",
+     "defender": "X3",
+     "square": "P8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "15",
+   "same": false,
+   "off": [
+    "O2 Move to C8",
+    "O1 Move to H10"
+   ],
+   "on": [
+    "O2 Quick Step to B8",
+    "O1 Quick Step to H10"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "H3",
+     "stage": "create",
+     "value": 32,
+     "chance": 1.0,
+     "worth": 13.9,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B8",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O4",
+     "defender": "X4",
+     "square": "E3",
+     "stage": "keep",
+     "value": 28,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 1,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "16",
+   "same": false,
+   "off": [
+    "O2 Move to A5",
+    "O1 Move to H10"
+   ],
+   "on": [
+    "O1 Quick Step to J10",
+    "O4 Move to A3"
+   ],
+   "loss": 1.47,
+   "beyond_margin": true,
+   "goals": [
+    {
+     "kind": "penetration",
+     "attacker": "O1",
+     "defender": null,
+     "square": "J3",
+     "stage": "create",
+     "value": 20,
+     "chance": 1.0,
+     "worth": 3.8,
+     "gap": 0,
+     "defence": "prevent"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "A7",
+     "stage": "keep",
+     "value": 39,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    },
+    {
+     "kind": "mismatch",
+     "attacker": "O2",
+     "defender": "X2",
+     "square": "B7",
+     "stage": "keep",
+     "value": 30,
+     "chance": 0.5,
+     "worth": 0.0,
+     "gap": 2,
+     "defence": "concede"
+    }
+   ]
+  },
+  {
+   "board": "C2",
+   "same": false,
+   "off": [
+    "O2 Move to C9",
+    "O1 Pass to O2"
+   ],
+   "on": [
+    "O1 Pass to O2"
+   ],
+   "loss": 0.0,
+   "beyond_margin": false,
+   "goals": [
+    {
+     "kind": "separation",
+     "attacker": "O2",
+     "defender": null,
+     "square": "B8",
+     "stage": "keep",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 5.2,
+     "gap": 0,
+     "defence": "break"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O3",
+     "defender": null,
+     "square": "M10",
+     "stage": "keep",
+     "value": 39,
+     "chance": 1.0,
+     "worth": 5.2,
+     "gap": 0,
+     "defence": "break"
+    },
+    {
+     "kind": "separation",
+     "attacker": "O1",
+     "defender": null,
+     "square": "J10",
+     "stage": "convert",
+     "value": 24,
+     "chance": 1.0,
+     "worth": 0.0,
+     "gap": 0,
+     "defence": "concede"
+    }
+   ]
+  }
+ ],
+ "summary": {
+  "shot_now": "0 of 0 still shoot",
+  "dropped": "4 of 6 dropped, same choice as without goals",
+  "broken": "6 of 6 moved on",
+  "any_chance": "8 of 22 choices the same; 9 cost more than the margin; largest cost 6.8"
+ }
+}

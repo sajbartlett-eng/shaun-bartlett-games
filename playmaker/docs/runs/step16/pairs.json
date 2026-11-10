@@ -1,0 +1,704 @@
+{
+ "13: O5 in the lane, and cleared to J6": {
+  "adv": {
+   "first": {
+    "reading": 24.0,
+    "potential": 0,
+    "paint_next": {
+     "square": "G2",
+     "value": 10,
+     "worth": 0.0
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "G2",
+      "stage": "create",
+      "value": 10,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B8",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     }
+    ]
+   },
+   "second": {
+    "reading": 24.0,
+    "potential": 0,
+    "paint_next": {
+     "square": "I2",
+     "value": 16,
+     "worth": 0.0
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "I2",
+      "stage": "create",
+      "value": 16,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B8",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     }
+    ]
+   },
+   "reading_difference": 0.0,
+   "with_potential_difference": 0.0
+  },
+  "budget_adv": {
+   "first": {
+    "reading": 28.19,
+    "potential": 0,
+    "paint_next": {
+     "square": "G2",
+     "value": 10,
+     "worth": 0.0
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "numbers",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "G2",
+      "stage": "create",
+      "value": 10,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B8",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "numbers",
+      "attacker": 3,
+      "square": "L7",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "numbers",
+      "attacker": 5,
+      "square": "K6",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     }
+    ]
+   },
+   "second": {
+    "reading": 28.19,
+    "potential": 0,
+    "paint_next": {
+     "square": "I2",
+     "value": 16,
+     "worth": 0.0
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "numbers",
+      "attacker": 1,
+      "square": "K10",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "I2",
+      "stage": "create",
+      "value": 16,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B8",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "numbers",
+      "attacker": 5,
+      "square": "K7",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     }
+    ]
+   },
+   "reading_difference": 0.0,
+   "with_potential_difference": 0.0
+  }
+ },
+ "16: X2 fresh, and spent (Move and Quick Step used)": {
+  "adv": {
+   "first": {
+    "reading": 22.43,
+    "potential": 3.83,
+    "paint_next": {
+     "square": "J3",
+     "value": 20,
+     "worth": 3.83
+    },
+    "advantages": [
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J3",
+      "stage": "create",
+      "value": 20,
+      "worth": 3.83,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "A7",
+      "stage": "keep",
+      "value": 39,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B7",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "separation",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 33,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "D3",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "second": {
+    "reading": 23.39,
+    "potential": 3.65,
+    "paint_next": {
+     "square": "J3",
+     "value": 20,
+     "worth": 3.65
+    },
+    "advantages": [
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J3",
+      "stage": "create",
+      "value": 20,
+      "worth": 3.65,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "B7",
+      "stage": "keep",
+      "value": 39,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 33,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "D3",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "reading_difference": 0.96,
+   "with_potential_difference": 0.78
+  },
+  "budget_adv": {
+   "first": {
+    "reading": 20.59,
+    "potential": 2.61,
+    "paint_next": {
+     "square": "J3",
+     "value": 20,
+     "worth": 2.61
+    },
+    "advantages": [
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J3",
+      "stage": "create",
+      "value": 20,
+      "worth": 2.61,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "A7",
+      "stage": "keep",
+      "value": 39,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "B7",
+      "stage": "keep",
+      "value": 30,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "separation",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 33,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "D3",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "second": {
+    "reading": 21.99,
+    "potential": 1.99,
+    "paint_next": {
+     "square": "J3",
+     "value": 20,
+     "worth": 1.99
+    },
+    "advantages": [
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J3",
+      "stage": "create",
+      "value": 20,
+      "worth": 1.99,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "B7",
+      "stage": "keep",
+      "value": 39,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 4,
+      "square": "A3",
+      "stage": "keep",
+      "value": 33,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "D3",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "reading_difference": 1.4,
+   "with_potential_difference": 0.78
+  }
+ },
+ "12: help (X1) near the mismatch at D4, and drawn away to I8": {
+  "adv": {
+   "first": {
+    "reading": 24.49,
+    "potential": 12.11,
+    "paint_next": {
+     "square": "J2",
+     "value": 32,
+     "worth": 12.11
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "D9",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J2",
+      "stage": "create",
+      "value": 32,
+      "worth": 12.11,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "C4",
+      "stage": "keep",
+      "value": 18,
+      "worth": 0.0,
+      "gap": 1
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "K10",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     }
+    ]
+   },
+   "second": {
+    "reading": 31.04,
+    "potential": 5.3,
+    "paint_next": {
+     "square": "H2",
+     "value": 32,
+     "worth": 5.3
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "F3",
+      "stage": "convert",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "H2",
+      "stage": "create",
+      "value": 32,
+      "worth": 5.3,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "D6",
+      "stage": "keep",
+      "value": 28,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "C4",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "K5",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "reading_difference": 6.55,
+   "with_potential_difference": -0.26
+  },
+  "budget_adv": {
+   "first": {
+    "reading": 28.19,
+    "potential": 5.35,
+    "paint_next": {
+     "square": "J2",
+     "value": 32,
+     "worth": 5.35
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "D9",
+      "stage": "convert",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "numbers",
+      "attacker": 1,
+      "square": "D9",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "J2",
+      "stage": "create",
+      "value": 32,
+      "worth": 5.35,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "C4",
+      "stage": "keep",
+      "value": 18,
+      "worth": 0.0,
+      "gap": 1
+     },
+     {
+      "kind": "numbers",
+      "attacker": 2,
+      "square": "C4",
+      "stage": "keep",
+      "value": 24.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "K10",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 2
+     }
+    ]
+   },
+   "second": {
+    "reading": 34.17,
+    "potential": 0,
+    "paint_next": {
+     "square": "H2",
+     "value": 32,
+     "worth": 0.0
+    },
+    "advantages": [
+     {
+      "kind": "separation",
+      "attacker": 1,
+      "square": "F3",
+      "stage": "convert",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "numbers",
+      "attacker": 1,
+      "square": "G2",
+      "stage": "keep",
+      "value": 31.0,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "penetration",
+      "attacker": 1,
+      "square": "H2",
+      "stage": "create",
+      "value": 32,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "separation",
+      "attacker": 2,
+      "square": "D6",
+      "stage": "keep",
+      "value": 28,
+      "worth": 0.0,
+      "gap": 0
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 2,
+      "square": "C4",
+      "stage": "keep",
+      "value": 22,
+      "worth": 0.0,
+      "gap": 2
+     },
+     {
+      "kind": "mismatch",
+      "attacker": 4,
+      "square": "K5",
+      "stage": "keep",
+      "value": 24,
+      "worth": 0.0,
+      "gap": 1
+     }
+    ]
+   },
+   "reading_difference": 5.98,
+   "with_potential_difference": 0.63
+  }
+ }
+}

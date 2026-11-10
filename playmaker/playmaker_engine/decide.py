@@ -826,6 +826,8 @@ class Read:
         self._adv = out
         if s.stage != 'play' or s.pending:
             return out
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            return out                   # no offence turn is left before the clock runs out: nothing can be built
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
         now_worth = self.leaf() - banked                      # what the possession is worth now

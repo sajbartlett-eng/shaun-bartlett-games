@@ -239,7 +239,7 @@ if __name__ == '__main__':
     elif what == 'record':
         run_record(sys.argv[2], int(sys.argv[3]), sys.argv[4])
     elif what == 'sensitivity':                  # the three pairs: the default game, and with coverage as a budget
-        X12.run_sensitivity(sys.argv[2], ['base', 'budget'])
+        X12.run_sensitivity(sys.argv[2], sys.argv[3].split(',') if len(sys.argv) > 3 else ['base', 'budget'])
     elif what == 'dump':
         run_dump(int(sys.argv[2]), sys.argv[3])
     elif what == 'same':
