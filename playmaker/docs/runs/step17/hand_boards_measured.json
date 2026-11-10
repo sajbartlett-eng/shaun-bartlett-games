@@ -1,0 +1,1715 @@
+{
+ "rollouts_per_turn": 16,
+ "policy": "data",
+ "core_hours": 1.49,
+ "wall_minutes": 24.0,
+ "pick_is_measured_best": 9,
+ "pick_clearly_worse": 3,
+ "boards": 22,
+ "median_se": 3.87,
+ "rows": [
+  {
+   "board": "board 1",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "qs",
+       "X",
+       1,
+       "D6",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 32,
+     "measured": 20.06,
+     "se": 4.33,
+     "behind_best": 5.38,
+     "behind_interval": 12.32,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       2,
+       "L6",
+       6,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 32,
+     "measured": 14.69,
+     "se": 4.25,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       3,
+       "B4",
+       5,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 32,
+     "measured": 24.81,
+     "se": 2.94,
+     "behind_best": 10.12,
+     "behind_interval": 11.45,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 2 4",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "qs",
+       "X",
+       1,
+       "D7",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "steal",
+       "X",
+       0,
+       null,
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 16.56,
+     "measured": 15.94,
+     "se": 4.73,
+     "behind_best": 6.94,
+     "behind_interval": 11.62,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "qs",
+       "X",
+       1,
+       "D6",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 18.6,
+     "measured": 9,
+     "se": 4.21,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "sprint",
+       "X",
+       2,
+       "O3",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 18.6,
+     "measured": 10.94,
+     "se": 3.73,
+     "behind_best": 1.94,
+     "behind_interval": 7.26,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 2 12",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "qs",
+       "X",
+       1,
+       "D7",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "steal",
+       "X",
+       0,
+       null,
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 17.52,
+     "measured": 7.31,
+     "se": 2.94,
+     "behind_best": 0.5,
+     "behind_interval": 9.1,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "sprint",
+       "X",
+       2,
+       "O3",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 18.71,
+     "measured": 14.81,
+     "se": 5.02,
+     "behind_best": 8.0,
+     "behind_interval": 10.63,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "sprint",
+       "X",
+       2,
+       "K7",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 18.71,
+     "measured": 6.81,
+     "se": 2.98,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 3",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "pause",
+       "X",
+       -1,
+       null,
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.89,
+     "measured": 18.62,
+     "se": 3.82,
+     "behind_best": 0.25,
+     "behind_interval": 11.66,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       2,
+       "N7",
+       2,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.89,
+     "measured": 18.38,
+     "se": 4.25,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       2,
+       "N7",
+       6,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.89,
+     "measured": 19.44,
+     "se": 4.21,
+     "behind_best": 1.06,
+     "behind_interval": 2.08,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 4",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       0,
+       "F10",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "sprint",
+       "O",
+       1,
+       "E10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 11.12,
+     "se": 3.44,
+     "behind_best": 2.38,
+     "behind_interval": 10.81,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       0,
+       "F10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 12.81,
+     "se": 4.97,
+     "behind_best": 0.69,
+     "behind_interval": 11.21,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "F7",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 32.39,
+     "measured": 13.5,
+     "se": 3.9,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 5 close",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 42.34,
+     "measured": 19.5,
+     "se": 4.76,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 17.88,
+     "se": 4.92,
+     "behind_best": 1.62,
+     "behind_interval": 13.58,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "qs",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 14,
+     "se": 4.41,
+     "behind_best": 5.5,
+     "behind_interval": 13.83,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 5 short",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 42.34,
+     "measured": 25.31,
+     "se": 4.64,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 12.25,
+     "se": 3.88,
+     "behind_best": 13.06,
+     "behind_interval": 9.23,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "qs",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 17.38,
+     "se": 4.63,
+     "behind_best": 7.94,
+     "behind_interval": 13.15,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 6",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 37.24,
+     "measured": 15.75,
+     "se": 4.41,
+     "behind_best": 5.38,
+     "behind_interval": 11.44,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "pass",
+       "O",
+       3,
+       null,
+       -1,
+       1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 21.12,
+     "se": 4.43,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "pass",
+       "O",
+       3,
+       null,
+       -1,
+       1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 20.56,
+     "se": 4.76,
+     "behind_best": 0.56,
+     "behind_interval": 13.43,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 7 phase 2",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       2,
+       "E9",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "sprint",
+       "O",
+       1,
+       "E10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 26.9,
+     "measured": 11.88,
+     "se": 3.51,
+     "behind_best": 1.62,
+     "behind_interval": 10.57,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "sprint",
+       "O",
+       2,
+       "E9",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 26.9,
+     "measured": 10.62,
+     "se": 4.21,
+     "behind_best": 2.88,
+     "behind_interval": 12.45,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       2,
+       "I4",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "dribble",
+       "O",
+       2,
+       null,
+       -1,
+       4,
+       ""
+      ]
+     ],
+     "search_value": 22.48,
+     "measured": 13.5,
+     "se": 3.87,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 7 phase 6",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "shot",
+       "O",
+       2,
+       null,
+       -1,
+       -1,
+       "mid"
+      ]
+     ],
+     "search_value": 0,
+     "measured": 10,
+     "se": 0,
+     "behind_best": 2.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "shot",
+       "O",
+       2,
+       null,
+       -1,
+       -1,
+       "floater"
+      ]
+     ],
+     "search_value": 0,
+     "measured": 12,
+     "se": 0,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "pass",
+       "O",
+       2,
+       null,
+       -1,
+       3,
+       ""
+      ]
+     ],
+     "search_value": 0,
+     "measured": 0,
+     "se": 0,
+     "behind_best": 12.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": true
+  },
+  {
+   "board": "board 8",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "E10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 42.34,
+     "measured": 20,
+     "se": 4.68,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "F10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 42.34,
+     "measured": 7.44,
+     "se": 3.08,
+     "behind_best": 12.56,
+     "behind_interval": 11.05,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "qs",
+       "O",
+       1,
+       "E10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 42.34,
+     "measured": 14.06,
+     "se": 3.93,
+     "behind_best": 5.94,
+     "behind_interval": 9.82,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 9",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "J3",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       1,
+       "A7",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.21,
+     "measured": 19.5,
+     "se": 3.15,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "J3",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.21,
+     "measured": 18.75,
+     "se": 4.46,
+     "behind_best": 0.75,
+     "behind_interval": 10.18,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "J3",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "qs",
+       "O",
+       1,
+       "A7",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.21,
+     "measured": 16.81,
+     "se": 3.82,
+     "behind_best": 2.69,
+     "behind_interval": 8.34,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 10 good odds",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       4,
+       "O3",
+       2,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 11.3,
+     "measured": 5.81,
+     "se": 2.06,
+     "behind_best": 1.62,
+     "behind_interval": 2.24,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       4,
+       "O3",
+       6,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 11.3,
+     "measured": 5.94,
+     "se": 2.43,
+     "behind_best": 1.75,
+     "behind_interval": 3.43,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       4,
+       "N3",
+       6,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 11.3,
+     "measured": 4.19,
+     "se": 1.96,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 10 bad odds",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       3,
+       "B4",
+       5,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.04,
+     "measured": 14.81,
+     "se": 3.71,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       3,
+       "B2",
+       7,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.04,
+     "measured": 14.81,
+     "se": 3.71,
+     "behind_best": 0.0,
+     "behind_interval": 8.88,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       3,
+       "A2",
+       0,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 27.04,
+     "measured": 20.56,
+     "se": 3.46,
+     "behind_best": 5.75,
+     "behind_interval": 8.25,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 11 early",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 16.19,
+     "se": 2.9,
+     "behind_best": 0.94,
+     "behind_interval": 10.28,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "qs",
+       "O",
+       1,
+       "A7",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 17.12,
+     "se": 3.94,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A7",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       0,
+       "J10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 10.88,
+     "se": 1.28,
+     "behind_best": 6.25,
+     "behind_interval": 7.97,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 11 final phase",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "dribble",
+       "O",
+       0,
+       null,
+       -1,
+       0,
+       ""
+      ]
+     ],
+     "search_value": 15.73,
+     "measured": 0,
+     "se": 0,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "hesitate",
+       "O",
+       -1,
+       null,
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 15.73,
+     "measured": 0,
+     "se": 0,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 0,
+     "measured": 0,
+     "se": 0,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 12",
+   "side": "X",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       2,
+       "L7",
+       5,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.38,
+     "measured": 13.56,
+     "se": 4.7,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       2,
+       "L7",
+       6,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.38,
+     "measured": 19.88,
+     "se": 4.79,
+     "behind_best": 6.31,
+     "behind_interval": 6.87,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "X",
+       3,
+       "L8",
+       7,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 23.38,
+     "measured": 16.38,
+     "se": 4.53,
+     "behind_best": 2.81,
+     "behind_interval": 12.39,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 13",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       2,
+       "N5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 20.91,
+     "measured": 17.62,
+     "se": 3.72,
+     "behind_best": 3.94,
+     "behind_interval": 9.01,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "sprint",
+       "O",
+       2,
+       "N5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 20.91,
+     "measured": 21.56,
+     "se": 3.51,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       2,
+       "Q5",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 20.91,
+     "measured": 15.25,
+     "se": 3.37,
+     "behind_best": 6.31,
+     "behind_interval": 8.21,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 14",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "K10",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "qs",
+       "O",
+       0,
+       "L10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 9.81,
+     "se": 3.92,
+     "behind_best": 9.31,
+     "behind_interval": 8.72,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "K10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 5.88,
+     "se": 2.67,
+     "behind_best": 13.25,
+     "behind_interval": 10.14,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       0,
+       "K10",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "hesitate",
+       "O",
+       -1,
+       null,
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 21.94,
+     "measured": 19.12,
+     "se": 4.15,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": true
+  },
+  {
+   "board": "board 15",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "qs",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "qs",
+       "O",
+       0,
+       "H10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 20.05,
+     "measured": 13.56,
+     "se": 3.99,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       0,
+       "H10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 19.39,
+     "measured": 13.31,
+     "se": 2.95,
+     "behind_best": 0.25,
+     "behind_interval": 10.99,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "B8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "qs",
+       "O",
+       0,
+       "H10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 19.39,
+     "measured": 9.44,
+     "se": 3.52,
+     "behind_best": 4.12,
+     "behind_interval": 10.68,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  },
+  {
+   "board": "board 16",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       0,
+       "J10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 19.01,
+     "measured": 8.81,
+     "se": 0.19,
+     "behind_best": 3.75,
+     "behind_interval": 2.92,
+     "computer_pick": true,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "move",
+       "O",
+       0,
+       "H10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 19.01,
+     "measured": 12.56,
+     "se": 1.51,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": false,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "A5",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "qs",
+       "O",
+       0,
+       "H10",
+       -1,
+       -1,
+       ""
+      ]
+     ],
+     "search_value": 19.01,
+     "measured": 11.62,
+     "se": 1.69,
+     "behind_best": 0.94,
+     "behind_interval": 1.84,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": false,
+   "pick_clearly_worse": true
+  },
+  {
+   "board": "board C2",
+   "side": "O",
+   "turns": [
+    {
+     "turn": [
+      [
+       "pass",
+       "O",
+       0,
+       null,
+       -1,
+       1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 20.56,
+     "se": 3.92,
+     "behind_best": 0.0,
+     "behind_interval": 0.0,
+     "computer_pick": true,
+     "measured_best": true
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "C8",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "pass",
+       "O",
+       0,
+       null,
+       -1,
+       1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 20.44,
+     "se": 4.74,
+     "behind_best": 0.12,
+     "behind_interval": 12.34,
+     "computer_pick": false,
+     "measured_best": false
+    },
+    {
+     "turn": [
+      [
+       "move",
+       "O",
+       1,
+       "C9",
+       -1,
+       -1,
+       ""
+      ],
+      [
+       "pass",
+       "O",
+       0,
+       null,
+       -1,
+       1,
+       ""
+      ]
+     ],
+     "search_value": 34.69,
+     "measured": 16.31,
+     "se": 5.08,
+     "behind_best": 4.25,
+     "behind_interval": 8.95,
+     "computer_pick": false,
+     "measured_best": false
+    }
+   ],
+   "pick_is_measured_best": true,
+   "pick_clearly_worse": false
+  }
+ ]
+}

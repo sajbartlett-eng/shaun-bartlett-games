@@ -182,6 +182,8 @@ class Agent:
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
                     goal=self.commit.words or None,
                     alternatives=[dict(turn=[str(a) for a in t], value=round(v, 2)) for v, t, _ in with_goals[:3]])
+        if CONFIG['eval'].get('learned') is True:
+            note['why'] = self._why(s, turn, with_goals, val)   # step 17: the reasons, in the readings' own words
         if CONFIG['eval'].get('advantages') is True and side in ('O', 'X'):
             note['goals'] = self._goal_note(s, turn)          # step 16: reading and recording only
         for g in self.commit.log[n_log:]:
@@ -199,6 +201,44 @@ class Agent:
                 self.plan = list(turn[1:])
                 self.expect = zobrist(nxt)
         return a
+
+    def _why(self, s, turn, weighed, val):
+        """Step 17 (reporting only): why this turn and not the runner-up. The three readings whose weighted parts
+        differ most between the positions the two turns lead to (the likeliest outcome of each), in points, in the
+        readings' own words. close_call: the gap between the two turns is inside what the weights' spread allows.
+        unsure: a reading whose weight changes sign across the 20 resampled fits."""
+        from .decide import FEATURES, learned_weights
+        from .search import phase_of
+        w = learned_weights()
+        others = [(v, t) for v, t, _ in weighed if t != turn]
+        if w is None or not others:
+            return None
+        v2, runner = max(others, key=lambda r: r[0])
+
+        def parts(t):
+            after = _likeliest(play_turn(s, t))
+            if after.stage != 'play' or after.pending:
+                return None
+            m = w['phases'].get(phase_of(after))
+            if m is None:
+                return None
+            f = Read(after).features()
+            z = [(f[i] - m['mean'][i]) / m['sd'][i] for i in range(len(f))]
+            return [m['weights'][i] * z[i] for i in range(len(f))], z, m
+        a, b = parts(turn), parts(runner)
+        out = dict(chosen=[str(x) for x in turn], runner_up=[str(x) for x in runner], gap=round(val - v2, 2))
+        if a is None or b is None:
+            out['reasons'] = ['one of the two turns ends the possession or leaves a pass in the air: its value is the dice\'s']
+            return out
+        diff = [a[0][i] - b[0][i] for i in range(len(FEATURES))]
+        spread = sum((a[2]['weights_spread'][i] * (a[1][i] - b[1][i])) ** 2 for i in range(len(FEATURES))) ** 0.5
+        top = sorted(range(len(FEATURES)), key=lambda i: -abs(diff[i]))[:3]
+        sign = 1 if self.side == 'O' else -1
+        out['reasons'] = [f"{FEATURES[i][1]}: {'+' if sign * diff[i] >= 0 else '-'}{abs(diff[i]):.1f} for this turn"
+                          for i in top if abs(diff[i]) > 0.05]
+        out['close_call'] = abs(val - v2) < 1.96 * spread
+        out['unsure'] = [FEATURES[i][0] for i in top if abs(a[2]['weights'][i]) < 1.96 * a[2]['weights_spread'][i]]
+        return out
 
     def _goal_note(self, s, turn):
         """Step 16 (for the trainer later): the top goals on the board, their stages, the goal the computer is on (it

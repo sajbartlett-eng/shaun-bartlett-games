@@ -31,7 +31,8 @@
             // step 3n: the search core in JavaScript; the Python agent calls it for each decision
             importScripts(URL.createObjectURL(new Blob([m.bundle.engine_js], { type: 'text/javascript' })));
             const f = m.bundle.files, dataf = n => JSON.parse(f['playmaker_engine/data/' + n]);
-            self.PMEngine.init({ zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json') });
+            self.PMEngine.init({ zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json'),
+              learned: (() => { try { return dataf('learned_weights.json'); } catch (e) { return null; } })() });   // step 17
             py.runPython("import js\\nfrom playmaker_engine import agent as _AG\\n_AG.JS['search'] = js.PMEngine.searchJSON\\n_AG.JS['goals'] = js.PMEngine.goalsJSON");
           }
           self.postMessage({ type: 'ready' });

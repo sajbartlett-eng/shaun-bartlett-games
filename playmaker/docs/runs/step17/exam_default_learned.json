@@ -1,0 +1,1203 @@
+{
+ "positions": 152,
+ "seeds": 4,
+ "opponent": "default",
+ "core_hours": 2.46,
+ "wall_minutes": 40.5,
+ "engines": {
+  "default": {
+   "mark": [
+    23.66,
+    21.66,
+    25.81
+   ]
+  },
+  "learned": {
+   "mark": [
+    24.8,
+    22.59,
+    26.88
+   ]
+  }
+ },
+ "against_default": {
+  "learned": {
+   "all": {
+    "positions": 152,
+    "gain": [
+     1.14,
+     -0.27,
+     2.54
+    ],
+    "better": 71,
+    "worse": 63
+   },
+   "hand_boards": {
+    "positions": 22,
+    "gain": [
+     -1.3,
+     -5.27,
+     3.07
+    ],
+    "better": 9,
+    "worse": 11
+   },
+   "self_play": {
+    "positions": 130,
+    "gain": [
+     1.55,
+     0.11,
+     2.95
+    ],
+    "better": 62,
+    "worse": 52
+   },
+   "offence_to_act": {
+    "positions": 145,
+    "gain": [
+     1.16,
+     -0.22,
+     2.7
+    ],
+    "better": 67,
+    "worse": 60
+   },
+   "defence_to_act": {
+    "positions": 7,
+    "gain": [
+     0.79,
+     -5.29,
+     7.29
+    ],
+    "better": 4,
+    "worse": 3
+   },
+   "phase_1": {
+    "positions": 41,
+    "gain": [
+     -1.28,
+     -4.19,
+     1.59
+    ],
+    "better": 16,
+    "worse": 22
+   },
+   "phase_2": {
+    "positions": 23,
+    "gain": [
+     -2.11,
+     -4.67,
+     0.59
+    ],
+    "better": 7,
+    "worse": 12
+   },
+   "phase_3": {
+    "positions": 22,
+    "gain": [
+     1.6,
+     -1.97,
+     5.47
+    ],
+    "better": 12,
+    "worse": 8
+   },
+   "phase_4": {
+    "positions": 22,
+    "gain": [
+     4.55,
+     1.7,
+     7.66
+    ],
+    "better": 13,
+    "worse": 8
+   },
+   "phase_5": {
+    "positions": 22,
+    "gain": [
+     3.62,
+     -0.23,
+     7.14
+    ],
+    "better": 15,
+    "worse": 6
+   },
+   "phase_6": {
+    "positions": 22,
+    "gain": [
+     2.68,
+     -0.86,
+     6.31
+    ],
+    "better": 8,
+    "worse": 7
+   }
+  }
+ },
+ "rows": {
+  "board 1": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -32.75,
+   "learned": -31.5
+  },
+  "board 2 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -6.5,
+   "learned": -16.25
+  },
+  "board 2 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -17.5,
+   "learned": -25.75
+  },
+  "board 3": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -26.25,
+   "learned": -21.25
+  },
+  "board 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 19.5,
+   "learned": 17.75
+  },
+  "board 5 close": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 27.0,
+   "learned": 39.0
+  },
+  "board 5 short": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 35.75,
+   "learned": 39.0
+  },
+  "board 6": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 38.0,
+   "learned": 33.0
+  },
+  "board 7 phase 2": {
+   "source": "hand board",
+   "phase": 2,
+   "side": "O",
+   "default": 25.0,
+   "learned": 18.0
+  },
+  "board 7 phase 6": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "learned": 0.0
+  },
+  "board 8": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 36.75,
+   "learned": 27.75
+  },
+  "board 9": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 7.5,
+   "learned": 22.0
+  },
+  "board 10 good odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -24.25,
+   "learned": -8.25
+  },
+  "board 10 bad odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -27.25,
+   "learned": -32.25
+  },
+  "board 11 early": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 24.0,
+   "learned": 20.25
+  },
+  "board 11 final phase": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "learned": 0.0
+  },
+  "board 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -24.25,
+   "learned": -18.0
+  },
+  "board 13": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 12.75,
+   "learned": 23.0
+  },
+  "board 14": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 24.5,
+   "learned": 8.25
+  },
+  "board 15": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 37.0,
+   "learned": 14.0
+  },
+  "board 16": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 32.25,
+   "learned": 23.0
+  },
+  "board C2": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 30.5,
+   "learned": 31.5
+  },
+  "seed1310": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 27.75,
+   "learned": 27.0
+  },
+  "seed290": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.0,
+   "learned": 16.5
+  },
+  "seed412": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.25,
+   "learned": 23.5
+  },
+  "seed374": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 16.0,
+   "learned": 17.75
+  },
+  "seed203": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 26.75,
+   "learned": 24.25
+  },
+  "seed88": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 34.5,
+   "learned": 22.5
+  },
+  "seed875": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "learned": 30.75
+  },
+  "seed393": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 27.5,
+   "learned": 24.0
+  },
+  "seed970": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 30.5,
+   "learned": 24.0
+  },
+  "seed229": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 38.75,
+   "learned": 21.0
+  },
+  "seed860": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 26.5,
+   "learned": 28.0
+  },
+  "seed457": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 14.5,
+   "learned": 20.25
+  },
+  "seed881": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "learned": 33.0
+  },
+  "seed709": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 29.5,
+   "learned": 18.0
+  },
+  "seed704": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 12.5,
+   "learned": 27.0
+  },
+  "seed1450": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "learned": 32.0
+  },
+  "seed1080": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 21.25,
+   "learned": 23.0
+  },
+  "seed578": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "learned": 33.0
+  },
+  "seed315": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 0.0,
+   "learned": 18.0
+  },
+  "seed1485": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 21.75,
+   "learned": 20.0
+  },
+  "seed574": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.5,
+   "learned": 33.0
+  },
+  "seed764": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 37.0,
+   "learned": 36.0
+  },
+  "seed968": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.5,
+   "learned": 18.0
+  },
+  "seed74": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 28.25,
+   "learned": 33.5
+  },
+  "seed1105": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 29.75,
+   "learned": 31.0
+  },
+  "seed1039": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 24.75,
+   "learned": 18.0
+  },
+  "seed3": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.5,
+   "learned": 22.25
+  },
+  "seed4": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.75,
+   "learned": 18.75
+  },
+  "seed378": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 32.0,
+   "learned": 30.0
+  },
+  "seed1208": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.25,
+   "learned": 16.0
+  },
+  "seed213": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "learned": 33.0
+  },
+  "seed1215": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.75,
+   "learned": 27.75
+  },
+  "seed557": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.25,
+   "learned": 33.0
+  },
+  "seed1469": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 37.0,
+   "learned": 44.0
+  },
+  "seed1190": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.5,
+   "learned": 24.0
+  },
+  "seed449": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 18.5,
+   "learned": 17.25
+  },
+  "seed844": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 20.25,
+   "learned": 30.0
+  },
+  "seed166": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 32.25,
+   "learned": 30.0
+  },
+  "seed514": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 21.75,
+   "learned": 24.0
+  },
+  "seed460": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 23.0,
+   "learned": 18.75
+  },
+  "seed962": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.0,
+   "learned": 36.0
+  },
+  "seed904": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.75,
+   "learned": 36.0
+  },
+  "seed1101": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 38.0,
+   "learned": 38.0
+  },
+  "seed1149": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 27.0,
+   "learned": 27.0
+  },
+  "seed1383": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 29.75,
+   "learned": 18.0
+  },
+  "seed1162": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 17.75,
+   "learned": 29.0
+  },
+  "seed622": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 22.75,
+   "learned": 30.0
+  },
+  "seed237": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.0,
+   "learned": 26.0
+  },
+  "seed1119": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 14.5,
+   "learned": 27.0
+  },
+  "seed79": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 39.0,
+   "learned": 43.0
+  },
+  "seed559": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 24.75,
+   "learned": 33.0
+  },
+  "seed1178": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 34.25,
+   "learned": 25.5
+  },
+  "seed769": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "learned": 27.0
+  },
+  "seed1343": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 16.5,
+   "learned": 21.0
+  },
+  "seed1410": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 11.5,
+   "learned": 29.0
+  },
+  "seed735": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 35.5,
+   "learned": 18.75
+  },
+  "seed1132": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "learned": 30.0
+  },
+  "seed29": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 35.75,
+   "learned": 25.5
+  },
+  "seed303": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 28.0,
+   "learned": 28.0
+  },
+  "seed169": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 29.75,
+   "learned": 26.0
+  },
+  "seed245": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "learned": 36.0
+  },
+  "seed426": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 33.0,
+   "learned": 31.0
+  },
+  "seed168": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 15.75,
+   "learned": 26.0
+  },
+  "seed30": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 38.0,
+   "learned": 29.75
+  },
+  "seed60": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 23.75,
+   "learned": 30.0
+  },
+  "seed756": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 23.0,
+   "learned": 30.0
+  },
+  "seed62": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.5,
+   "learned": 30.0
+  },
+  "seed157": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 29.25,
+   "learned": 27.0
+  },
+  "seed1499": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 22.5,
+   "learned": 38.0
+  },
+  "seed404": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 25.75,
+   "learned": 33.5
+  },
+  "seed1436": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.5,
+   "learned": 26.0
+  },
+  "seed1027": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 41.0,
+   "learned": 41.0
+  },
+  "seed1135": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 26.0,
+   "learned": 21.0
+  },
+  "seed502": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.25,
+   "learned": 36.0
+  },
+  "seed306": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 12.5,
+   "learned": 25.0
+  },
+  "seed43": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.25,
+   "learned": 24.0
+  },
+  "seed353": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "learned": 42.0
+  },
+  "seed1386": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.75,
+   "learned": 35.25
+  },
+  "seed1366": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.75,
+   "learned": 36.0
+  },
+  "seed981": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 37.75,
+   "learned": 30.0
+  },
+  "seed63": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 21.75,
+   "learned": 30.0
+  },
+  "seed1071": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 14.0,
+   "learned": 35.0
+  },
+  "seed249": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.75,
+   "learned": 36.0
+  },
+  "seed1026": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.25,
+   "learned": 32.0
+  },
+  "seed1025": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 35.0,
+   "learned": 32.0
+  },
+  "seed1166": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "learned": 26.75
+  },
+  "seed429": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 19.0,
+   "learned": 17.5
+  },
+  "seed467": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 25.5,
+   "learned": 36.0
+  },
+  "seed1439": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.75,
+   "learned": 26.0
+  },
+  "seed854": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 21.75,
+   "learned": 36.0
+  },
+  "seed912": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 14.75,
+   "learned": 27.0
+  },
+  "seed1388": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 26.0,
+   "learned": 35.0
+  },
+  "seed742": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 27.0,
+   "learned": 36.0
+  },
+  "seed740": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.5,
+   "learned": 36.0
+  },
+  "seed84": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 32.25,
+   "learned": 43.0
+  },
+  "seed656": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "learned": 35.0
+  },
+  "seed389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.5,
+   "learned": 32.0
+  },
+  "seed1276": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 24.5,
+   "learned": 30.0
+  },
+  "seed1368": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 31.5,
+   "learned": 36.0
+  },
+  "seed1184": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 12.25,
+   "learned": 25.5
+  },
+  "seed791": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.25,
+   "learned": 23.25
+  },
+  "seed373": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "learned": 15.0
+  },
+  "seed1225": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 20.0,
+   "learned": 30.0
+  },
+  "seed941": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 19.75,
+   "learned": 21.75
+  },
+  "seed174": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.5,
+   "learned": 21.0
+  },
+  "seed1461": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "learned": 23.0
+  },
+  "seed1389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 13.75,
+   "learned": 35.0
+  },
+  "seed1438": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "learned": 23.0
+  },
+  "seed311": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "learned": 36.0
+  },
+  "seed775": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 22.75,
+   "learned": 26.0
+  },
+  "seed17": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.0,
+   "learned": 22.0
+  },
+  "seed509": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.75,
+   "learned": 24.0
+  },
+  "seed1371": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 18.0,
+   "learned": 21.0
+  },
+  "seed945": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.5,
+   "learned": 19.0
+  },
+  "seed914": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 26.25,
+   "learned": 16.0
+  },
+  "seed568": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 8.25,
+   "learned": 8.0
+  },
+  "seed658": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 19.5,
+   "learned": 35.0
+  },
+  "seed1031": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 34.25,
+   "learned": 20.0
+  },
+  "seed390": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.0,
+   "learned": 31.0
+  },
+  "seed68": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 22.5,
+   "learned": 30.0
+  },
+  "seed1417": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 33.0,
+   "learned": 42.5
+  },
+  "seed1202": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "learned": 24.0
+  },
+  "seed392": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "learned": 27.0
+  },
+  "seed745": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "learned": 27.0
+  },
+  "seed1228": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 12.0,
+   "learned": 12.0
+  },
+  "seed178": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.0,
+   "learned": 20.0
+  },
+  "seed858": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 36.0,
+   "learned": 36.0
+  },
+  "seed724": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.75,
+   "learned": 24.0
+  },
+  "seed471": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.75,
+   "learned": 21.0
+  },
+  "seed266": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 9.0,
+   "learned": 27.0
+  }
+ }
+}

@@ -1,0 +1,66 @@
+{
+ "default": {
+  "rookie": {
+   "median": 0.148,
+   "nine_in_ten": 0.217,
+   "slowest": 0.228,
+   "desktop_target": 0.3,
+   "fits_desktop": true,
+   "phone": 0.87,
+   "phone_target": 1.0,
+   "fits_phone": true
+  },
+  "starter": {
+   "median": 0.489,
+   "nine_in_ten": 0.564,
+   "slowest": 0.662,
+   "desktop_target": 1.0,
+   "fits_desktop": true,
+   "phone": 2.26,
+   "phone_target": 2.0,
+   "fits_phone": false
+  },
+  "allstar": {
+   "median": 0.752,
+   "nine_in_ten": 1.126,
+   "slowest": 1.153,
+   "desktop_target": 2.5,
+   "fits_desktop": true,
+   "phone": 4.5,
+   "phone_target": 3.0,
+   "fits_phone": false
+  }
+ },
+ "learned": {
+  "rookie": {
+   "median": 0.148,
+   "nine_in_ten": 0.257,
+   "slowest": 0.296,
+   "desktop_target": 0.3,
+   "fits_desktop": true,
+   "phone": 1.03,
+   "phone_target": 1.0,
+   "fits_phone": false
+  },
+  "starter": {
+   "median": 0.55,
+   "nine_in_ten": 0.682,
+   "slowest": 0.742,
+   "desktop_target": 1.0,
+   "fits_desktop": true,
+   "phone": 2.73,
+   "phone_target": 2.0,
+   "fits_phone": false
+  },
+  "allstar": {
+   "median": 1.038,
+   "nine_in_ten": 1.418,
+   "slowest": 1.555,
+   "desktop_target": 2.5,
+   "fits_desktop": true,
+   "phone": 5.67,
+   "phone_target": 3.0,
+   "fits_phone": false
+  }
+ }
+}

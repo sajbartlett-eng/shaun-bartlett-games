@@ -1,0 +1,359 @@
+{
+ "possessions": 640,
+ "positions": 11420,
+ "by_phase": {
+  "1": 6191,
+  "2": 3176,
+  "3": 1485,
+  "4": 484,
+  "5": 80,
+  "6": 4
+ },
+ "ridge_by_strength": {
+  "0.001": 8.829,
+  "0.01": 8.817,
+  "0.1": 8.781,
+  "1.0": 8.751
+ },
+ "strength": 1.0,
+ "held_out_error": {
+  "learned": 8.751,
+  "todays_reading": 9.473,
+  "todays_reading_straightened": 8.765,
+  "phase_average_only": 8.822
+ },
+ "learned_gain_over_straightened_reading": [
+  -0.21,
+  0.74
+ ],
+ "learned_gain_over_phase_average": [
+  -0.04,
+  2.44
+ ],
+ "learning_curve": {
+  "64": 9.206,
+  "160": 9.102,
+  "320": 9.073,
+  "640": 8.751
+ },
+ "weights": {
+  "1": {
+   "shot_now": [
+    0.089,
+    0.033
+   ],
+   "look_now": [
+    0.079,
+    0.038
+   ],
+   "best_look_after_cover": [
+    0.407,
+    0.08
+   ],
+   "second_look_after_cover": [
+    0.192,
+    0.095
+   ],
+   "best_look_before_cover": [
+    0.393,
+    0.095
+   ],
+   "best_look_after_shares": [
+    0.306,
+    0.07
+   ],
+   "paint_next_phase": [
+    0.109,
+    0.156
+   ],
+   "free_looks": [
+    0.068,
+    0.102
+   ],
+   "mismatches_two_bands": [
+    0.281,
+    0.171
+   ],
+   "mismatches_one_band": [
+    -0.063,
+    0.108
+   ],
+   "offence_tokens": [
+    0.053,
+    0.038
+   ],
+   "defence_tokens": [
+    0.044,
+    0.046
+   ],
+   "offence_to_act": [
+    -0.016,
+    0.043
+   ],
+   "defenders_moved": [
+    0.015,
+    0.086
+   ],
+   "attackers_moved": [
+    -0.035,
+    0.107
+   ]
+  },
+  "2": {
+   "shot_now": [
+    0.072,
+    0.054
+   ],
+   "look_now": [
+    0.068,
+    0.028
+   ],
+   "best_look_after_cover": [
+    0.336,
+    0.098
+   ],
+   "second_look_after_cover": [
+    0.264,
+    0.174
+   ],
+   "best_look_before_cover": [
+    0.399,
+    0.119
+   ],
+   "best_look_after_shares": [
+    0.338,
+    0.088
+   ],
+   "paint_next_phase": [
+    0.047,
+    0.207
+   ],
+   "free_looks": [
+    -0.023,
+    0.147
+   ],
+   "mismatches_two_bands": [
+    0.175,
+    0.13
+   ],
+   "mismatches_one_band": [
+    0.189,
+    0.172
+   ],
+   "offence_tokens": [
+    0.084,
+    0.058
+   ],
+   "defence_tokens": [
+    0.024,
+    0.054
+   ],
+   "offence_to_act": [
+    -0.113,
+    0.031
+   ],
+   "defenders_moved": [
+    -0.007,
+    0.093
+   ],
+   "attackers_moved": [
+    -0.326,
+    0.194
+   ]
+  },
+  "3": {
+   "shot_now": [
+    0.172,
+    0.095
+   ],
+   "look_now": [
+    0.18,
+    0.054
+   ],
+   "best_look_after_cover": [
+    0.381,
+    0.141
+   ],
+   "second_look_after_cover": [
+    -0.281,
+    0.248
+   ],
+   "best_look_before_cover": [
+    0.542,
+    0.245
+   ],
+   "best_look_after_shares": [
+    0.383,
+    0.176
+   ],
+   "paint_next_phase": [
+    -0.328,
+    0.228
+   ],
+   "free_looks": [
+    0.225,
+    0.158
+   ],
+   "mismatches_two_bands": [
+    0.567,
+    0.168
+   ],
+   "mismatches_one_band": [
+    -0.02,
+    0.284
+   ],
+   "offence_tokens": [
+    0.087,
+    0.101
+   ],
+   "defence_tokens": [
+    0.201,
+    0.158
+   ],
+   "offence_to_act": [
+    -0.023,
+    0.051
+   ],
+   "defenders_moved": [
+    0.174,
+    0.132
+   ],
+   "attackers_moved": [
+    0.104,
+    0.264
+   ]
+  },
+  "4": {
+   "shot_now": [
+    0.257,
+    0.154
+   ],
+   "look_now": [
+    0.211,
+    0.118
+   ],
+   "best_look_after_cover": [
+    -0.177,
+    0.355
+   ],
+   "second_look_after_cover": [
+    -0.199,
+    0.49
+   ],
+   "best_look_before_cover": [
+    0.263,
+    0.266
+   ],
+   "best_look_after_shares": [
+    0.271,
+    0.215
+   ],
+   "paint_next_phase": [
+    0.173,
+    0.353
+   ],
+   "free_looks": [
+    0.395,
+    0.292
+   ],
+   "mismatches_two_bands": [
+    1.203,
+    0.393
+   ],
+   "mismatches_one_band": [
+    -0.517,
+    0.392
+   ],
+   "offence_tokens": [
+    0.042,
+    0.184
+   ],
+   "defence_tokens": [
+    0.145,
+    0.187
+   ],
+   "offence_to_act": [
+    0.036,
+    0.102
+   ],
+   "defenders_moved": [
+    0.139,
+    0.25
+   ],
+   "attackers_moved": [
+    -0.007,
+    0.377
+   ]
+  },
+  "5": {
+   "shot_now": [
+    0.3,
+    0.256
+   ],
+   "look_now": [
+    0.416,
+    0.262
+   ],
+   "best_look_after_cover": [
+    0.547,
+    0.237
+   ],
+   "second_look_after_cover": [
+    -0.033,
+    0.387
+   ],
+   "best_look_before_cover": [
+    0.505,
+    0.347
+   ],
+   "best_look_after_shares": [
+    0.718,
+    0.253
+   ],
+   "paint_next_phase": [
+    0.881,
+    0.4
+   ],
+   "free_looks": [
+    -0.1,
+    0.355
+   ],
+   "mismatches_two_bands": [
+    0.329,
+    0.67
+   ],
+   "mismatches_one_band": [
+    1.113,
+    0.679
+   ],
+   "offence_tokens": [
+    0.062,
+    0.189
+   ],
+   "defence_tokens": [
+    0.164,
+    0.229
+   ],
+   "offence_to_act": [
+    -0.302,
+    0.115
+   ],
+   "defenders_moved": [
+    0.241,
+    0.27
+   ],
+   "attackers_moved": [
+    0.24,
+    0.218
+   ]
+  }
+ },
+ "near_zero": [
+  "attackers_moved",
+  "defence_tokens",
+  "defenders_moved",
+  "free_looks",
+  "mismatches_one_band",
+  "offence_tokens"
+ ]
+}

@@ -7,7 +7,7 @@ const readline = require('readline');
 const E = require(path.join(__dirname, '..', 'playmaker_web', 'static', 'engine.js'));
 const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
-E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json') });
+E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const rl = readline.createInterface({ input: process.stdin });
 rl.on('line', ln => {
   let out;

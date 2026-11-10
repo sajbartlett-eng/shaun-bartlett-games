@@ -1,0 +1,16 @@
+{
+ "engine": "data",
+ "possessions": 640,
+ "positions": 27447,
+ "mean_points": 15.5,
+ "interval": [
+  14.29,
+  16.7
+ ],
+ "sd": 15.51,
+ "no_score": 288,
+ "decisions_per_possession": 45.5,
+ "core_hours": 1.41,
+ "wall_minutes": 22.2,
+ "per_core_hour": 452
+}

@@ -32,7 +32,7 @@
         self.onmessage = e => {
           const m = e.data;
           try {
-            if (m.type === 'init') { self.PMEngine.init({ zones: m.zones, config: m.config, vcoarse: m.vcoarse }); postMessage({ type: 'ready' }); return; }
+            if (m.type === 'init') { self.PMEngine.init({ zones: m.zones, config: m.config, vcoarse: m.vcoarse, learned: m.learned }); postMessage({ type: 'ready' }); return; }
             self.PMEngine.setBudget(m.newReading);
             const o = self.PMEngine.search(m.req);
             postMessage({ type: 'done', reached: o.reached, seconds: o.seconds, at: o.depth_seconds });
@@ -40,7 +40,8 @@
         };`;
       worker = new Worker(URL.createObjectURL(new Blob([bundle.engine_js + '\n' + driver], { type: 'text/javascript' })));
       const ask = msg => new Promise((res, rej) => { worker.onmessage = e => (e.data.type === 'error' ? rej(new Error(e.data.error)) : res(e.data)); worker.postMessage(msg); });
-      await ask({ type: 'init', zones: file('court_zones.json'), config: file('ai_profiles.json'), vcoarse: file('vcoarse.json') });
+      const learned = bundle.files['playmaker_engine/data/learned_weights.json'] ? file('learned_weights.json') : null;
+      await ask({ type: 'init', zones: file('court_zones.json'), config: file('ai_profiles.json'), vcoarse: file('vcoarse.json'), learned });
       const search = (pos, level, newReading, onClock) => {
         const prof = data.profiles[level];
         return ask({ type: 'run', newReading, req: { state: pos.state, ctx: data.contexts[pos.ctx], profile: prof, stale: null,

@@ -338,6 +338,23 @@ class Look:
 
 
 PATH_ROUTES = ('drive', 'later', 'cut')
+FEATURES = (            # step 17: name, and meaning in words (the order is the weights file's order)
+    ('shot_now', "the ball handler's shot from where he stands, against the reaction"),
+    ('look_now', 'the best look the offence can release this turn'),
+    ('best_look_after_cover', "the best look left after the defence's best cover"),
+    ('second_look_after_cover', "the second attacker's best look after that cover"),
+    ('best_look_before_cover', 'the best look before the defence replies'),
+    ('best_look_after_shares', 'the best look when each defender can attend only one attacker'),
+    ('paint_next_phase', "the ball handler's best paint look next phase"),
+    ('free_looks', 'attackers whose best look no defender can Contest in time'),
+    ('mismatches_two_bands', 'attackers whose best look is contested by a defender two bands below'),
+    ('mismatches_one_band', 'attackers whose best look is contested by a defender one band below'),
+    ('offence_tokens', "the offence's tokens left this phase"),
+    ('defence_tokens', "the defence's tokens left this phase"),
+    ('offence_to_act', 'the offence is to act'),
+    ('defenders_moved', 'defenders who have used their Move this phase'),
+    ('attackers_moved', 'attackers who have used their Move this phase'),
+)
 BAND = {'L': 0, 'A': 1, 'H': 2}                       # step 16: the cards' bands as tiers
 PAINT = next(z for z, shots in RC.ZONE_SHOTS.items() if 'layup' in shots)      # the zone of layups, dunks and post shots
 PAINT_SQUARES = sorted((x, y) for x in range(B.W) for y in range(1, B.H + 1) if B.on_board((x, y)) and B.zone((x, y)) == PAINT)
@@ -766,6 +783,18 @@ class Read:
         return None
 
     def leaf(self):
+        """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
+        eval.calibrated on (step 17D), that reading passed through the map fitted to what positions went on to earn."""
+        v, s = self._hand_leaf(), self.s
+        w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
+        if w is None or not w.get('calibration') or self.k <= 0 or s.stage != 'play' or s.pending or \
+                (not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS):
+            return v
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        return banked + calibrate(w['calibration'], s, self.o_to_act, v - banked)
+
+    def _hand_leaf(self):
         """V_leaf from the offence's point of view (expected possession value, game units): the best of the shot
         now, the best look the defence can't cover in its next turn (released this turn: uncoverable), and the
         coarse table."""
@@ -780,6 +809,11 @@ class Read:
             caught = Read(s.with_(ball=recv, pending=None), attention=None if len(self.att_o) == 5 else
                           (self.att_o, self.att_x), k=self.k, cfg=self.cfg, looks_per=self.L).leaf()
             return p * caught + (1 - p) * turnover_value(s)
+        if self.cfg.get('learned') is True and self.k > 0 and s.stage == 'play' and learned_weights() is not None and \
+                not (not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS):
+            lv = learned_value(s, self.features())       # step 17: the learned judgement in place of the hand-combined one
+            if lv is not None:
+                return banked + lv
         sn = self.shot_now()
         now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
         cont = self.continuation()
@@ -806,6 +840,39 @@ class Read:
         if self.cfg.get('leaf_mode', 'floor') == 'relative':
             return banked + max(now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
         return banked + max(now, cont, coarse)
+
+    # -- step 17: the named readings a learned judgement is built from (FEATURES gives each one's meaning)
+    def features(self):
+        """The position's readings, in FEATURES' order, as plain numbers (game points, counts, or 0 and 1). None is
+        new: each is a reading the engine already makes. No hand weight combines them."""
+        s = self.s
+        sn = self.shot_now() or 0.0
+        now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
+        res = sorted((self.cover()['residual'][i] for i in self.att_o), reverse=True)
+        opened = max((self.threat[i]['value'] for i in self.att_o), default=0.0)
+        tgt = self._paint_next()
+        free = two = one = 0
+        for i in self.att_o:
+            if not self.looks[i]:
+                continue
+            lk = self.looks[i][0]
+            top, shot, who = -1.0, None, -1
+            for t in lk.types:
+                v, d0 = lk.open[t], -1
+                for d in sorted(lk.vals):
+                    if t in lk.vals[d] and lk.vals[d][t] < v:
+                        v, d0 = lk.vals[d][t], d
+                if v > top:
+                    top, shot, who = v, t, d0
+            if who < 0:
+                free += 1
+            else:
+                gap = BAND[s.ctx.off[i].bands['shot_' + shot]] - BAND[s.ctx.dfn[who].bands['con_' + shot]]
+                two += gap >= 2
+                one += gap == 1
+        return [sn, now, res[0] if res else 0.0, res[1] if len(res) > 1 else 0.0, opened, self.budget()['value'],
+                tgt[1] if tgt else 0.0, float(free), float(two), float(one), float(s.tok_o), float(s.tok_x),
+                1.0 if self.o_to_act else 0.0, float(bin(s.moved_x).count('1')), float(bin(s.moved_o).count('1'))]
 
     # -- step 16, stage 3: advantages (eval.advantages). Reading and recording only.
     def advantages(self):
@@ -1073,6 +1140,47 @@ class Read:
         top = max(res.values(), default=0.0)
         ties = [i for i in res if res[i] >= top - 1e-9]
         return (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
+
+
+_LEARNED = {}
+
+
+def learned_weights():
+    """Step 17: the shared weights file (data/learned_weights.json), or None if there is none. A file that names
+    other readings than FEATURES is refused."""
+    if 'w' not in _LEARNED:
+        p = os.path.join(HERE, 'data', 'learned_weights.json')
+        _LEARNED['w'] = json.load(open(p)) if os.path.exists(p) else None
+        if _LEARNED['w'] is not None and _LEARNED['w']['features'] != [f[0] for f in FEATURES]:
+            raise ValueError('learned_weights.json names other readings than this engine makes')
+    return _LEARNED['w']
+
+
+def learned_value(s, f):
+    """What is left to earn, by the learned weights: per phase, intercept + sum of weight x (reading - mean) / sd, in
+    the file's order (float64, the same order as the JavaScript)."""
+    m = learned_weights()['phases'].get(str(min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))))
+    if m is None:
+        return None
+    v = m['intercept']
+    for i in range(len(f)):
+        v += m['weights'][i] * (f[i] - m['mean'][i]) / m['sd'][i]
+    return v
+
+
+def calibrate(cal, s, o_to_act, r):
+    """Step 17D: the map for this phase and side to act (knots x -> y, straight lines between and beyond them)."""
+    m = cal['maps'].get(str(min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))) + ('O' if o_to_act else 'X'))
+    if m is None:
+        return r
+    x, y = m['x'], m['y']
+    n = len(x)
+    if n == 1:
+        return y[0]
+    k = 0
+    while k < n - 2 and r > x[k + 1]:
+        k += 1
+    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k])
 
 
 def lp_max(c, A, b):
