@@ -41,13 +41,19 @@ SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP
             'quiet_points': (('quiet_points',), False), 'light_play_on': (('like_with_like', 'tempo', 'play_on'), False),
             'light_reach': (('like_with_like', 'tempo'), True), 'play_on_reach': (('play_on',), True),
             # part B: the default game (like_with_like and the reach map, D-121), and with coverage as a budget
-            'base': (('like_with_like',), True), 'budget': (('like_with_like',), True, True)}
+            'base': (('like_with_like',), True), 'budget': (('like_with_like',), True, True),
+            # step 16: advantages only (must equal base), and with goals steering the search; the same with the budget
+            'adv': (('like_with_like',), True, False, 'adv'), 'goals': (('like_with_like',), True, False, 'goals'),
+            'budget_adv': (('like_with_like',), True, True, 'adv'), 'budget_goals': (('like_with_like',), True, True, 'goals')}
 
 
 def set_switches(eng, setting):
     on, reach = SETTINGS[setting][:2]
-    budget = len(SETTINGS[setting]) > 2
+    budget = len(SETTINGS[setting]) > 2 and SETTINGS[setting][2] is True
     CONFIG['eval']['coverage_budget'] = budget
+    g = SETTINGS[setting][3] if len(SETTINGS[setting]) > 3 else None
+    CONFIG['eval']['advantages'] = g is not None
+    CONFIG['search']['goals'] = g == 'goals'
     srch = CONFIG.setdefault('search', {})
     srch['stable'] = False
     for k in PARTS:
@@ -59,6 +65,8 @@ def set_switches(eng, setting):
         eng.call('setSearch', json.dumps(dict(stable=False, **{k: k in on for k in PARTS})))
         eng.call('setReach', 'true' if reach else 'false')
         eng.call('setBudget', 'true' if budget else 'false')
+        eng.call('setAdvantages', 'true' if g is not None else 'false')
+        eng.call('setGoals', 'true' if g == 'goals' else 'false')
 
 
 X12.SETTINGS = SETTINGS
@@ -231,7 +239,7 @@ if __name__ == '__main__':
     elif what == 'record':
         run_record(sys.argv[2], int(sys.argv[3]), sys.argv[4])
     elif what == 'sensitivity':                  # the three pairs: the default game, and with coverage as a budget
-        X12.run_sensitivity(sys.argv[2], ['base', 'budget'])
+        X12.run_sensitivity(sys.argv[2], sys.argv[3].split(',') if len(sys.argv) > 3 else ['base', 'budget'])
     elif what == 'dump':
         run_dump(int(sys.argv[2]), sys.argv[3])
     elif what == 'same':

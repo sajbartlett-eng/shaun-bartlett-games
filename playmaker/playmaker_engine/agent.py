@@ -182,6 +182,8 @@ class Agent:
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
                     goal=self.commit.words or None,
                     alternatives=[dict(turn=[str(a) for a in t], value=round(v, 2)) for v, t, _ in with_goals[:3]])
+        if CONFIG['eval'].get('advantages') is True and side in ('O', 'X'):
+            note['goals'] = self._goal_note(s, turn)          # step 16: reading and recording only
         for g in self.commit.log[n_log:]:
             self.notes.append(dict(event='goal', **g))
         why = steal_reason(s, turn)
@@ -197,6 +199,46 @@ class Agent:
                 self.plan = list(turn[1:])
                 self.expect = zobrist(nxt)
         return a
+
+    def _goal_note(self, s, turn):
+        """Step 16 (for the trainer later): the top goals on the board, their stages, the goal the computer is on (it
+        changes only when another beats it by more than the reading's margin of error), the event (ready, lost,
+        switched, clock), the defence's mirror answer to each, and which looks the chosen turn raised or lowered."""
+        from .search import phase_of
+        r0 = Read(s)
+        adv = sorted(r0.advantages(), key=lambda a: (-a['worth'], a['i']))
+        keys = {(a['kind'], a['i']): a for a in adv}
+        margin = float(CONFIG.get('search', {}).get('stable_margin', {}).get(phase_of(s), 0.0))
+        best = adv[0] if adv and adv[0]['worth'] > 1e-9 else None
+        cur, event = getattr(self, 'goal', None), None
+        if cur is not None and (cur not in keys or keys[cur]['worth'] <= 1e-9):
+            cur, event = None, 'lost'
+        if cur is None:
+            cur = (best['kind'], best['i']) if best else None
+        elif best and (best['kind'], best['i']) != cur and best['worth'] > keys[cur]['worth'] + margin:
+            cur, event = (best['kind'], best['i']), 'switched'
+        if cur is not None and keys[cur]['stage'] == 'convert':
+            event = event or 'ready'
+        if s.clock <= RC.PHASE_SECONDS:
+            event = 'clock'
+        self.goal = cur
+        answer = {'create': 'prevent', 'keep': 'break', 'convert': 'deny'}
+        goals = [dict(kind=a['kind'], attacker=f"O{a['i'] + 1}", defender=f"X{a['j'] + 1}" if a['j'] >= 0 else None,
+                      square=B.sq(a['sq']) if a['sq'] else None, stage=a['stage'], value=round(a['value'], 1),
+                      chance=round(a['chance'], 2), worth=round(a['worth'], 1), gap=a['gap'],
+                      defence='run down' if s.clock <= RC.PHASE_SECONDS else answer[a['stage']] if a['worth'] > 1e-9
+                      else 'concede') for a in adv[:6]]
+        changed = {}
+        after = _likeliest(play_turn(s, turn))
+        if after.stage == 'play' and not after.pending:
+            r1 = Read(after)
+            for i in range(5):
+                d = r1.threat[i]['value'] - r0.threat[i]['value']
+                if abs(d) > 0.05:
+                    changed[f'O{i + 1}'] = round(d, 1)
+        return dict(goals=goals, current=f'{cur[0]} O{cur[1] + 1}' if cur else None, event=event, potential=round(r0.phi(), 2),
+                    target=B.sq(keys[cur]['sq']) if cur and keys[cur]['sq'] else None,
+                    looks_changed=changed)
 
     def _js_search(self, s, budget, max_depth):
         """The same search in JavaScript (engine.js, proved equal to search.Searcher by tools/js_equivalence.py)."""

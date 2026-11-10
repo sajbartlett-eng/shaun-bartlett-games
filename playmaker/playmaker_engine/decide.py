@@ -338,6 +338,9 @@ class Look:
 
 
 PATH_ROUTES = ('drive', 'later', 'cut')
+BAND = {'L': 0, 'A': 1, 'H': 2}                       # step 16: the cards' bands as tiers
+PAINT = next(z for z, shots in RC.ZONE_SHOTS.items() if 'layup' in shots)      # the zone of layups, dunks and post shots
+PAINT_SQUARES = sorted((x, y) for x in range(B.W) for y in range(1, B.H + 1) if B.on_board((x, y)) and B.zone((x, y)) == PAINT)
 
 
 def _blocks(q, start, c, qs, rules):
@@ -375,6 +378,7 @@ class Read:
         self.threat = {i: self._best(self.looks[i]) for i in self.att_o}
         self._cover = None
         self._budget = None
+        self._adv = None
 
     # -- contest maps
     def _contest(self, d, at=None, arrow=None, used=None):
@@ -399,6 +403,14 @@ class Read:
         elif s.tok_x <= 0:
             return contest_map(self.rules, {}, {frm: {a: 0}})
         return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left)
+
+    def _vals2(self, look, d, row):
+        """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions."""
+        keep, self.react_moves = self.react_moves, 2
+        try:
+            return self._vals(look, d, row)
+        finally:
+            self.react_moves = keep
 
     def _vals(self, look, d, row, moves=None):
         """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
@@ -794,6 +806,124 @@ class Read:
         if self.cfg.get('leaf_mode', 'floor') == 'relative':
             return banked + max(now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
         return banked + max(now, cont, coarse)
+
+    # -- step 16, stage 3: advantages (eval.advantages). Reading and recording only.
+    def advantages(self):
+        """The offence's advantages on this board, each computed from the readings (no fixed zones or distances):
+          separation: a look no defender can Contest in time;
+          mismatch: a contested look where the attacker's band for the shot is above the best contester's band for the
+            Contest (the cards' H, A, L: two bands apart is strong, one an advantage);
+          numbers (with coverage_budget on): an attacker the defence's best shares leave above its full cover;
+          penetration: the ball handler's way into the paint (the zone of layups, dunks and post shots), this phase by
+            his looks there, or next phase by the movement rules with the pieces as they stand (two phases ahead).
+        Each: dict(kind, i attacker, j defender or -1, sq, stage create | keep | convert, value: the target look after
+        the defence's best answer, chance: of it arriving, gap: the band gap (mismatch), worth: what it adds to what
+        the possession is worth now, never below 0). One per attacker and kind, his best. A look that only matches
+        what the position is already worth has worth 0: it is counted once, in the position's value."""
+        if self._adv is not None:
+            return self._adv
+        s, out = self.s, []
+        self._adv = out
+        if s.stage != 'play' or s.pending:
+            return out
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            return out                   # no offence turn is left before the clock runs out: nothing can be built
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        now_worth = self.leaf() - banked                      # what the possession is worth now
+        best = {}
+
+        def put(kind, i, j, sq, stage, value, chance, worth, gap=0):
+            cur = best.get((i, kind))
+            if cur is None or worth > cur['worth'] + 1e-9 or \
+                    (abs(worth - cur['worth']) <= 1e-9 and value * chance > cur['value'] * cur['chance'] + 1e-9):
+                best[i, kind] = dict(kind=kind, i=i, j=j, sq=sq, stage=stage, value=value, chance=chance, worth=worth, gap=gap)
+        for i in self.att_o:
+            for lk in self.looks[i]:
+                top, shot, who = -1.0, None, -1
+                for t in lk.types:
+                    v, d0 = lk.open[t], -1
+                    for d in sorted(lk.vals):
+                        if t in lk.vals[d] and lk.vals[d][t] < v:
+                            v, d0 = lk.vals[d][t], d
+                    if v > top:
+                        top, shot, who = v, t, d0
+                if shot is None or lk.p <= 0:
+                    continue
+                stage = 'convert' if lk.now else 'keep'
+                worth = max(0.0, lk.base - now_worth)
+                if who < 0:
+                    put('separation', i, -1, lk.c, stage, top, lk.p, worth)
+                else:
+                    gap = BAND[s.ctx.off[i].bands['shot_' + shot]] - BAND[s.ctx.dfn[who].bands['con_' + shot]]
+                    if gap >= 1:
+                        put('mismatch', i, who, lk.c, stage, top, lk.p, worth, gap)
+                if i == s.ball and B.zone(lk.c) == PAINT:
+                    put('penetration', i, who, lk.c, stage, top, lk.p, worth)
+        if self._budget_on():
+            bd, full = self.budget(), max(self.cover()['residual'].values(), default=0.0)
+            if bd['value'] > full + 1e-9:
+                for i in self.att_o:
+                    if bd['left'].get(i, 0.0) >= bd['value'] - 1e-9:
+                        put('numbers', i, -1, self.threat[i]['sq'], 'keep', bd['left'][i], 1.0, max(0.0, bd['left'][i] - now_worth))
+        tgt = self._paint_next()
+        if tgt is not None:
+            c, v = tgt
+            nxt = s.with_(clock=s.clock - RC.PHASE_SECONDS)
+            ahead = vcoarse(nxt) + self.cfg['continuation'] * v - relative_average(nxt, self.cfg, self._budget_on())
+            put('penetration', s.ball, -1, c, 'create', v, 1.0, max(0.0, ahead - now_worth))
+        order = ('separation', 'mismatch', 'numbers', 'penetration')
+        out.extend(best[k] for k in sorted(best, key=lambda k: (k[0], order.index(k[1]))))
+        return out
+
+    def _paint_next(self):
+        """Two phases ahead: the best paint square the ball handler can't reach this phase but can next phase: from any
+        square he reaches this phase (one or two actions, by the movement rules) with one more movement, the pieces as
+        they stand (a teammate in the way blocks it). (square, the look's value there against every defender who can
+        get to a Contest with two movement actions), or None. Needs a phase after this one."""
+        s, i = self.s, self.s.ball
+        if s.clock <= RC.PHASE_SECONDS or i not in self.att_o or not B.on_board(s.o[i]) or s.tok_o <= 0:
+            return None
+        from .actions import movement_dests, can_move_kind
+        from .reach import paths_to
+        one = {s.o[i]: 0}
+        for kind in ('move', 'qs', 'sprint'):
+            if can_move_kind(s, 'O', i, kind):
+                for q in movement_dests(s, 'O', i, kind, self.rules):
+                    one.setdefault(q, 1)
+        stops = list(one) + two_actions(s, i, one)
+        here = set(stops)
+        occ = (set(s.o) | set(s.x)) - {s.o[i]}
+        card, qs = s.ctx.off[i], s.ctx.off[i].qs
+        best = None
+        for c in PAINT_SQUARES:
+            if c in here or c in occ:
+                continue
+            if not any(all(q not in occ for q in p) for q0 in stops for p in paths_to(q0, c, qs, self.rules)):
+                continue
+            lk = Look(i, c, 'later', 1.0, False)
+            lk.types = RC.ZONE_SHOTS[PAINT]
+            pts = RC.ZONE_POINTS[PAINT]
+            top = 0.0
+            for t in lk.types:
+                v = pts * card.shot(t)
+                for d in self.att_x:
+                    vals = self._vals2(lk, d, self._cm[d].get(c))
+                    if vals and t in vals and vals[t] < v:
+                        v = vals[t]
+                if v > top:
+                    top = v
+            if best is None or top > best[1] + 1e-9:
+                best = (c, top)
+        return best
+
+    def phi(self):
+        """Step 16, stage 4: the goal potential: each attacker's best advantage, summed (0 when the possession ends)."""
+        top = {}
+        for a in self.advantages():
+            if a['worth'] > top.get(a['i'], 0.0):
+                top[a['i']] = a['worth']
+        return sum(top[i] for i in sorted(top))
 
     # -- step 13 B3: the look-value split (reporting only; no value changes)
     @staticmethod

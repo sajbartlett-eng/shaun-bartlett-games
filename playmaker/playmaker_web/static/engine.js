@@ -118,7 +118,7 @@ const PMEngine = (() => {
   function makeCard(c) {
     const r = c.r, sh = {}, cn = {};
     for (const t of SHOT_TYPES.slice(1)) { sh[t] = r['shot_' + t]; cn[t] = r['con_' + t]; }
-    return { qs: c.qs, r, sh, cn };
+    return { qs: c.qs, r, sh, cn, b: c.bands || {} };     // b (step 16): the card's bands (H, A, L) per rating
   }
   let _CTXN = 0;
   function makeCtx(c) {
@@ -1130,6 +1130,11 @@ const PMEngine = (() => {
     return blk.has(q);
   }
   const PATH_ROUTES = new Set(['drive', 'later', 'cut']);
+  // step 16: the cards' bands as tiers; the paint (the zone of layups, dunks and post shots) and its squares
+  const BAND = { L: 0, A: 1, H: 2 }, ADV_KINDS = ['separation', 'mismatch', 'numbers', 'penetration'];
+  const PAINT = ZONE_SHOTS.findIndex(z => z.includes('layup'));
+  let _PSQ = null;
+  const paintSquares = () => { if (!_PSQ) { _PSQ = []; for (let c = 0; c < ONB.length; c++) if (ONB[c] && ZN[c] === PAINT) _PSQ.push(c); _PSQ.sort((a, b) => (SX[a] - SX[b]) || (SY[a] - SY[b])); } return _PSQ; };
   function exactOne(s, d) {                            // decide._exact_one, as the bitset oneAction returns
     const r = defenderReachExact(s, d);
     if (r.one) return r.one;
@@ -1334,6 +1339,9 @@ const PMEngine = (() => {
   }
   function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
   // step 13 B: coverage as a budget (eval.coverage_budget, off by default)
+  // step 16: the goals switches (eval.advantages, search.goals; both off by default)
+  function setAdvantages(on) { D.config.eval.advantages = on === true || on === 'true'; return D.config.eval.advantages; }
+  function setGoals(on) { D.config.search = D.config.search || {}; D.config.search.goals = on === true || on === 'true'; return D.config.search.goals; }
   function setBudget(on) { D.config.eval.coverage_budget = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.coverage_budget; }
   const budgetCfg = () => !!D.config.eval.coverage_budget;
   // step 12: the switches, for the tools (text 'true' / 'false')
@@ -1428,6 +1436,7 @@ const PMEngine = (() => {
       for (const i of this.att_o) this.threat[i] = this._best(this.looks[i]);
       this._cover = null;
       this._budget = null;
+      this._adv = null;
     }
     _contest(d, at = -1, arrow = -1, used = null) {
       const s = this.s;
@@ -1745,6 +1754,100 @@ const PMEngine = (() => {
       const choice = new Map(); for (const [j, idx] of best[1]) choice.set(j, R[j][idx][0]);
       this._cover = { value: best[0][0], choice, residual: best[2], R };
       return this._cover;
+    }
+    // ---- step 16, stage 3: advantages (decide.Read.advantages, _paint_next, phi). Reading and recording only. --------
+    advantages() {
+      if (this._adv) return this._adv;
+      const s = this.s, out = [];
+      this._adv = out;
+      if (s.stage !== 'play' || s.pending) return out;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return out;   // no offence turn is left: nothing can be built
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      const nowWorth = this.leaf() - banked;
+      const best = new Map();
+      const put = (kind, i, j, sq, stage, value, chance, worth, gap) => {
+        const key = i * 8 + ADV_KINDS.indexOf(kind), cur = best.get(key);
+        if (!cur || worth > cur.worth + 1e-9 || (Math.abs(worth - cur.worth) <= 1e-9 && value * chance > cur.value * cur.chance + 1e-9)) {
+          best.set(key, { kind, i, j, sq, stage, value, chance, worth, gap: gap || 0 });
+        }
+      };
+      for (const i of this.att_o) {
+        for (const lk of this.looks[i]) {
+          let top = -1.0, shot = null, who = -1;
+          for (let t = 0; t < lk.types.length; t++) {
+            let v = lk.open[t], d0 = -1;
+            for (let d = 0; d < 5; d++) { const vals = lk.vals[d]; if (vals && vals[t] < v) { v = vals[t]; d0 = d; } }
+            if (v > top) { top = v; shot = lk.types[t]; who = d0; }
+          }
+          if (shot === null || lk.p <= 0) continue;
+          const stage = lk.now ? 'convert' : 'keep', worth = Math.max(0.0, lk.base - nowWorth);
+          if (who < 0) put('separation', i, -1, lk.c, stage, top, lk.p, worth);
+          else {
+            const gap = BAND[s.ctx.off[i].b['shot_' + shot]] - BAND[s.ctx.dfn[who].b['con_' + shot]];
+            if (gap >= 1) put('mismatch', i, who, lk.c, stage, top, lk.p, worth, gap);
+          }
+          if (i === s.ball && ZN[lk.c] === PAINT) put('penetration', i, who, lk.c, stage, top, lk.p, worth);
+        }
+      }
+      if (this.budgetOn()) {
+        const bd = this.budget(), res = this.cover().residual;
+        let full = 0.0, first = true;
+        for (const i of this.att_o) { if (first || res[i] > full) full = res[i]; first = false; }
+        if (bd.value > full + 1e-9) {
+          for (const i of this.att_o) {
+            const left = bd.left[i] === undefined ? 0.0 : bd.left[i];
+            if (left >= bd.value - 1e-9) put('numbers', i, -1, this.threat[i].sq, 'keep', bd.left[i], 1.0, Math.max(0.0, bd.left[i] - nowWorth));
+          }
+        }
+      }
+      const tgt = this._paintNext();
+      if (tgt) {
+        const nxt = W_(s, { clock: s.clock - 2 });
+        const ahead = vcoarse(nxt) + this.cfg.continuation * tgt[1] - relativeAverage(nxt, this.budgetOn());
+        put('penetration', s.ball, -1, tgt[0], 'create', tgt[1], 1.0, Math.max(0.0, ahead - nowWorth));
+      }
+      for (const key of [...best.keys()].sort((a, b) => a - b)) out.push(best.get(key));
+      return out;
+    }
+    _paintNext() {
+      const s = this.s, i = s.ball;
+      if (s.clock <= 2 || !this.att_o.includes(i) || !ONB[s.o[i]] || s.tok_o <= 0) return null;
+      const one = new Map([[s.o[i], 0]]);
+      for (const kind of ['move', 'qs', 'sprint']) {
+        if (canMoveKind(s, 'O', i, kind)) for (const q of movementDests(s, 'O', i, kind).keys()) if (!one.has(q)) one.set(q, 1);
+      }
+      const stops = [...one.keys()].concat(twoActions(s, i, one));
+      const here = new Set(stops), old = s.o[i], card = s.ctx.off[i], qs = card.qs;
+      const blocked = q => q !== old && occAt(s, q);
+      let best = null;
+      for (const c of paintSquares()) {
+        if (here.has(c) || blocked(c)) continue;
+        let ok = false;
+        for (const q0 of stops) {
+          for (const p of pathsTo(q0, c, qs)) { let free = true; for (const q of p) if (blocked(q)) { free = false; break; } if (free) { ok = true; break; } }
+          if (ok) break;
+        }
+        if (!ok) continue;
+        const lk = makeLook(i, c, 'later', 1.0, false);
+        lk.types = ZONE_SHOTS[PAINT];
+        const vals = [null, null, null, null, null];
+        for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask); } }
+        let top = 0.0;
+        for (let t = 0; t < lk.types.length; t++) {
+          let v = ZONE_POINTS[PAINT] * card.sh[lk.types[t]];
+          for (const d of this.att_x) if (vals[d] && vals[d][t] < v) v = vals[d][t];
+          if (v > top) top = v;
+        }
+        if (best === null || top > best[1] + 1e-9) best = [c, top];
+      }
+      return best;
+    }
+    phi() {
+      const top = [0, 0, 0, 0, 0];
+      for (const a of this.advantages()) if (a.worth > top[a.i]) top[a.i] = a.worth;
+      let sum = 0.0; for (let i = 0; i < 5; i++) sum += top[i];
+      return sum;
     }
     // ---- step 13 B1: coverage as a budget (decide.Read.budget_tables, budget) ----------------------------------------
     budgetOn() { return budgetCfg() && this.k > 0; }
@@ -2120,6 +2223,8 @@ const PMEngine = (() => {
       this.extCap = sc.extension_cap == null ? 2 : sc.extension_cap;
       this.margin = sc.stable_margin || {}; this.tempo = sc.tempo_gap || {};
       this.extensions = 0; this.capHits = 0; this.trace = []; this.kept = 0;
+      this.goals = sc.goals === true && D.config.eval.advantages === true;   // step 16, stage 4 (search.Searcher)
+      this.phis = new Map(); this.touches = new Map();
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
@@ -2132,7 +2237,32 @@ const PMEngine = (() => {
         const t = this.tempo[phaseOf(s)] || 0.0;
         v += actor(s) === 'O' ? -t / 2 : t / 2;
       }
+      if (this.goals) v += this.phi(s, key);
       return v;
+    }
+    phi(s, z) {
+      if (isChance(s) || s.stage !== 'play') return 0.0;
+      const key = z === undefined ? zobrist(s) : z;
+      let v = this.phis.get(key);
+      if (v === undefined) {
+        if (s.pending) v = laneP(W_(s, { ball: s.pending[0] }), s.pending[1], s.o[s.pending[1]]) * this.phi(W_(s, { ball: s.pending[1], pending: null }));
+        else v = readOf(s, key).phi();
+        this.phis.set(key, v);
+      }
+      return v;
+    }
+    touch(s, z) {
+      let g = this.touches.get(z);
+      if (g === undefined) {
+        g = [];
+        if (s.stage === 'play' && !s.pending) {
+          const top = [null, null, null, null, null];
+          for (const a of readOf(s, z).advantages()) if (a.sq >= 0 && a.worth > 1e-9 && a.worth > (top[a.i] ? top[a.i][0] : 0.0)) top[a.i] = [a.worth, a.sq];
+          for (let i = 0; i < 5; i++) if (top[i]) g.push([i, top[i][1]]);
+        }
+        this.touches.set(z, g);
+      }
+      return g;
     }
     unsettled(s) {
       if (s.stage !== 'play') return this.playOn ? 'stage' : null;
@@ -2190,7 +2320,7 @@ const PMEngine = (() => {
       const side = actor(s);
       let ts = this.turnsOf(s, z);
       if (!ts.length) return this.leaf(s);
-      ts = this.order(ts, depth, z);
+      ts = this.order(ts, depth, z, s);
       this.nodes++;
       const a0 = alpha, b0 = beta;
       let best = null;
@@ -2240,7 +2370,7 @@ const PMEngine = (() => {
         if (depth <= 0) continue;
         const ts = this.turnsOf(sub, z);
         if (!ts.length) continue;
-        const first = this.order(ts, depth, z)[0][1];
+        const first = this.order(ts, depth, z, sub)[0][1];
         const v = this.value(playTurn(sub, first), depth - 1, VMIN, VMAX);
         if (actor(sub) === 'O') lo[k] = Math.max(lo[k], v); else hi[k] = Math.min(hi[k], v);
       }
@@ -2291,13 +2421,21 @@ const PMEngine = (() => {
       const k = turnKey(t);
       if (!ks.some(x => turnKey(x) === k)) { ks.unshift(t); ks.length = Math.min(ks.length, 2); }
     }
-    order(ts, depth, z) {
+    order(ts, depth, z, s) {
       const ks = (this.killers.get(depth) || []).map(turnKey);
       // step 13: this position's best turn from the look-ahead one shorter is tried first (ordering only)
       const prev = z !== undefined && SPEED.tt_order ? this.tt.get(ttKey(z, depth - 1)) : undefined;
       const first = prev !== undefined && prev[2] ? turnKey(prev[2]) : null;
-      const keyed = ts.map(r => { const k = turnKey(r[1]); return [k === first ? -1 : ks.includes(k) ? 0 : 1, -(r[0] + 0.01 * (this.history.get(r[1][0].id) || 0)), r]; });
-      keyed.sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
+      // step 16: a turn that works on a top goal is searched first (ordering only)
+      const goals = this.goals && s !== undefined && depth >= 2 ? this.touch(s, z) : [];
+      const offGoal = t => {
+        for (const a of t) for (const [i, sq] of goals) {
+          if ((a.side === 'O' && a.piece === i) || a.dest === sq || (a.side === 'X' && a.dest >= 0 && adjacent(a.dest, sq))) return 0;
+        }
+        return 1;
+      };
+      const keyed = ts.map(r => { const k = turnKey(r[1]); return [k === first ? -1 : ks.includes(k) ? 0 : 1, -(r[0] + 0.01 * (this.history.get(r[1][0].id) || 0)), r, goals.length ? offGoal(r[1]) : 0]; });
+      keyed.sort((a, b) => (a[0] - b[0]) || (a[3] - b[3]) || (a[1] - b[1]));
       return keyed.map(k => k[2]);
     }
     root(s, maxDepth) {
@@ -2347,6 +2485,11 @@ const PMEngine = (() => {
         }
       }
       if (this.like || this.clear) [results, reached] = this.settle(s, byDepth, side);
+      if (this.goals) {                                  // the root's own potential comes off
+        const p0 = this.phi(s);
+        results = results.map(r => [r[0] - p0, r[1]]);
+        this.trace = this.trace.map(r => [r[0], r[1], r[2] - p0]);
+      }
       results.sort(byBest);
       return [results, reached];
     }
@@ -2599,6 +2742,9 @@ const PMEngine = (() => {
         out['cover_' + tag] = [cv.value, [...cv.choice].map(([j, resp]) => [j, sqName(resp[0]), resp[1], resp[2]]).sort((a, b) => a[0] - b[0]),
           [0, 1, 2, 3, 4].map(i => cv.residual[i])];
         out['leaf_' + tag] = r.leaf();
+        if (D.config.eval.advantages === true) {         // step 16: the advantage list, each worth, and the potential
+          out['adv_' + tag] = [r.advantages().map(a => [a.kind, a.i, a.j, a.sq >= 0 ? sqName(a.sq) : null, a.stage, a.value, a.chance, a.worth, a.gap]), r.phi()];
+        }
         if (r.budgetOn() && !s.pending) {                // step 13 B: the allocation itself, and every look's two parts
           const bd = r.budget();
           out['budget_' + tag] = [bd.value, [0, 1, 2, 3, 4].map(i => (bd.left[i] === undefined ? null : bd.left[i])), bd.shares];
@@ -2610,7 +2756,7 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
