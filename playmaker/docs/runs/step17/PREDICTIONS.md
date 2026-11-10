@@ -53,3 +53,20 @@ interval -0.9 to +8.6, standard deviation 15.4. Its possessions are half as long
 (interval 2.5 to 12.9). Every start had been given the same dice and the same pick noise, so the 40 pairs were one
 experiment 40 times. Each position now has its own. The 40-pair pilot above had the same fault, so its interval can't
 be trusted; the batch was stopped and restarted with the self-check (60 pairs) first.
+
+## Run 3: what happened (14:55)
+
+- **Head to head, 320 pairs:** predicted a gain of 2 to 5 points. **Measured a loss of 4.1** (interval -5.6 to
+  -2.5). The prediction rested on a pilot with the seeding fault. Cost 2.53 core-hours against 2.3 predicted.
+- **The outcome exam:** predicted gains with the offence to act, most in the late phases. Measured +1.1 overall
+  (interval -0.3 to +2.5), +4.6 in phase 4, losses in phases 1 and 2. Cost 2.46 core-hours against 2.5.
+- **Speed:** as predicted: 20% to 25% slower, inside the desktop budget.
+- **Checkpoint 1 fails.** Run 2 (6,400 possessions by the cheap policy) is cancelled: more labels from a weak player
+  would not help.
+
+## Run 4 (not started; needs Shaun's go-ahead): labels from strong play
+
+- A pilot of 640 possessions by today's computer, every position kept: about 3.6 core-hours, an hour wall.
+- Predict: honestly unknown. The question is yes or no: on held-out possessions, do the readings predict a strong
+  player's results better than the phase average? If no, the readings are missing information and the learned route
+  stops. If yes, 5,000 possessions (28 core-hours) and a head-to-head of 320 pairs.
