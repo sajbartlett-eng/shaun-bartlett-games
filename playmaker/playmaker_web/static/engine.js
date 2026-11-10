@@ -1140,6 +1140,21 @@ const PMEngine = (() => {
   function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
   // step 12: the switches, for the tools (text 'true' / 'false')
   function setStable(on) { D.config.search = D.config.search || {}; D.config.search.stable = on === true || on === 'true'; return D.config.search.stable; }
+  // Step 13: the stable search's five parts, each its own switch (off by default); search.stable is the shorthand
+  // that turns on all five.
+  const STABLE_PARTS = ['quiet_points', 'like_with_like', 'tempo', 'play_on', 'clear_reason'];
+  function stableParts() {
+    const sc = D.config.search || {}, every = sc.stable === true, out = {};
+    for (const k of STABLE_PARTS) out[k] = every || sc[k] === true;
+    return out;
+  }
+  // setSearch('{"quiet_points": true, ...}'): sets the named search switches (stable and the five parts)
+  function setSearch(json) {
+    const q = typeof json === 'string' ? JSON.parse(json) : json;
+    D.config.search = D.config.search || {};
+    for (const k of ['stable'].concat(STABLE_PARTS)) if (q[k] !== undefined) D.config.search[k] = q[k] === true || q[k] === 'true';
+    return stableParts();
+  }
   function setReach(on) { D.config.eval.reach = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.reach; }
   function turnoverValue(s) {
     if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return Math.min(0, 5 * s.bonus5 - 5 * s.tos);   // D-82
@@ -1740,10 +1755,14 @@ const PMEngine = (() => {
       this.me = me; this.p = profile; this.evaluate = evaluate; this.deadline = deadline;
       this.tt = new Map(); this.tcache = new Map(); this.lcache = new Map(); this.qcache = new Map(); this.killers = new Map(); this.history = new Map();
       this.nodes = 0; this.leaves = 0; this.lam = profile.opponent_model; this.habit = null; this.habit_weight = 0.0; this.partial = 0;
-      const sc = D.config.search || {};               // step 12: the stable-search rule (search.stable, off by default)
-      this.stable = !!sc.stable; this.extCap = sc.extension_cap == null ? 2 : sc.extension_cap;
-      this.margin = sc.stable_margin || {}; this.tempo = sc.tempo || {};
+      const sc = D.config.search || {}, on = stableParts();   // step 13: the stable search's five switches (all off)
+      this.quiet = on.quiet_points; this.like = on.like_with_like; this.tempoOn = on.tempo; this.playOn = on.play_on;
+      this.clear = on.clear_reason;
+      this.stable = this.quiet || this.like || this.tempoOn || this.playOn || this.clear;
+      this.extCap = sc.extension_cap == null ? 2 : sc.extension_cap;
+      this.margin = sc.stable_margin || {}; this.tempo = sc.tempo_gap || {};
       this.extensions = 0; this.capHits = 0; this.trace = []; this.kept = 0;
+      this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
@@ -1751,17 +1770,17 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
-      if (this.stable && !isChance(s) && s.stage === 'play') {
+      if (this.tempoOn && !isChance(s) && s.stage === 'play') {
         const t = this.tempo[phaseOf(s)] || 0.0;
         v += actor(s) === 'O' ? -t / 2 : t / 2;
       }
       return v;
     }
     unsettled(s) {
-      if (s.stage !== 'play') return 'stage';
-      if (s.pending) return 'pass';
-      if (midTurn(s)) return 'mid';
-      if (actor(s) === 'O') {
+      if (s.stage !== 'play') return this.playOn ? 'stage' : null;
+      if (s.pending) return this.playOn ? 'pass' : null;
+      if (midTurn(s) && this.quiet) return 'mid';
+      if (this.playOn && actor(s) === 'O') {
         const r = new Read(s, { k: 0, looks_per: 3 });
         const sn = r.shotNow();
         if (sn !== null && sn > r.possession() + 1e-9) return 'shot';
@@ -1781,7 +1800,7 @@ const PMEngine = (() => {
       let best = why === 'shot' ? readOf(s).possession() : null;
       for (const t of list) {
         const child = playTurn(s, t, false);
-        const d = (why === 'mid' || (!isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child))) ? depth : depth - 1;
+        const d = (why === 'mid' || (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child))) ? depth : depth - 1;
         const v = this.value(child, d, VMIN, VMAX);
         if (best === null || (side === 'O' ? v > best : v < best)) best = v;
       }
@@ -1793,7 +1812,7 @@ const PMEngine = (() => {
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
       if (depth <= 0) {
-        if (this.stable) {
+        if (this.quiet || this.playOn) {
           const why = this.unsettled(s);
           if (why !== null) {
             if (depth <= -this.extCap && why !== 'mid') { this.capHits++; return this.leaf(s); }
@@ -1824,7 +1843,7 @@ const PMEngine = (() => {
       }
       for (const [, t] of ts) {
         const child = playTurn(s, t);
-        const d = (this.stable && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child)) ? depth : depth - 1;
+        const d = (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child)) ? depth : depth - 1;
         const v = this.value(child, d, mix ? VMIN : alpha, mix ? VMAX : beta);
         if (side === 'O') { if (best === null || v > best[0]) best = [v, t]; if (!mix) alpha = Math.max(alpha, v); }
         else { if (best === null || v < best[0]) best = [v, t]; if (!mix) beta = Math.min(beta, v); }
@@ -1929,7 +1948,7 @@ const PMEngine = (() => {
       ts.forEach(([q, t], k) => {
         if (k >= 3 && now() > deadline) { results.push([sign * q, t]); return; }
         const n = playTurn(s, t);
-        if (this.stable) results.push([this.value(n, this.childDepth(s, n, 1), VMIN, VMAX), t]);
+        if (this.quiet || this.playOn) results.push([this.value(n, this.childDepth(s, n, 1), VMIN, VMAX), t]);
         else results.push([!isChance(n) ? this.leaf(n) : this.value(n, 0, VMIN, VMAX), t]);
       });
       this.deadline = deadline;
@@ -1943,14 +1962,14 @@ const PMEngine = (() => {
         try {
           for (const [, t] of results.slice().sort(byBest)) {
             const n = playTurn(s, t);
-            out.push([this.value(n, this.stable ? this.childDepth(s, n, depth) : depth - 1, VMIN, VMAX), t]);
+            out.push([this.value(n, this.childDepth(s, n, depth), VMIN, VMAX), t]);
           }
           results = out; reached = depth;
           byDepth.set(depth, out.slice());
           this.note(depth, out, side);
         } catch (e) {
           if (e !== TIMEOUT) throw e;
-          if (this.stable) break;
+          if (this.like || this.clear) break;
           this.partial = out.length;
           if (out.length) {
             const pv = out[0][0];
@@ -1964,28 +1983,29 @@ const PMEngine = (() => {
           break;
         }
       }
-      if (this.stable) [results, reached] = this.settle(s, byDepth, side);
+      if (this.like || this.clear) [results, reached] = this.settle(s, byDepth, side);
       results.sort(byBest);
       return [results, reached];
     }
     childDepth(s, child, depth) {
-      if (!isChance(child) && child.stage !== 'over' && actor(child) === actor(s) && midTurn(child)) return depth;
+      if (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === actor(s) && midTurn(child)) return depth;
       return depth - 1;
     }
     note(depth, res, side) {
       let best = res[0];
       for (const r of res) if (side === 'O' ? r[0] > best[0] : r[0] < best[0]) best = r;
       this.trace.push([depth, best[1], best[0]]);
+      this.depthSeconds.push([depth, now() - this.t0]);
     }
     settle(s, byDepth, side) {
       const done = [...byDepth.keys()].sort((a, b) => a - b);
-      const even = done.filter(d => d % 2 === 0);
+      const even = this.like ? done.filter(d => d % 2 === 0) : [];
       const d = even.length ? even[even.length - 1] : done[done.length - 1];
       let res = byDepth.get(d).slice();
       const sign = side === 'O' ? 1 : -1;
       const pick = rs => { let b = rs[0]; for (const r of rs) if (sign * r[0] > sign * b[0]) b = r; return b; };
       const best = pick(res);
-      const prev = byDepth.get(d - 2);
+      const prev = this.clear ? byDepth.get(d - 2) : undefined;
       if (prev) {
         const pTurn = pick(prev)[1], pk = turnKey(pTurn);
         const pNow = res.find(r => turnKey(r[1]) === pk);
@@ -2067,7 +2087,7 @@ const PMEngine = (() => {
     }
     return { results: results.map(([v, t]) => [v, t.map(actionJSON)]), reached, leaves: srch.leaves, nodes: srch.nodes,
       partial: srch.partial, seconds: now() - t0, pv,
-      stable: srch.stable, extensions: srch.extensions, cap_hits: srch.capHits, kept: srch.kept,
+      stable: srch.stable, extensions: srch.extensions, cap_hits: srch.capHits, kept: srch.kept, depth_seconds: srch.depthSeconds,
       trace: srch.trace.map(([d, t, v]) => [d, t.map(actionJSON), v]) };
   }
 
@@ -2222,7 +2242,7 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, setLeafMode, setStable, setReach, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

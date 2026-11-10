@@ -147,16 +147,17 @@ def run_js(lines):
 
 
 def compare_searches(args, rng):
-    """Step 12: whole searches (the All-Star, 2 moves ahead, no time limit) in both engines: every root value, the
-    depth used, the extensions, cap hits and kept choices."""
+    """Steps 12 and 13: whole searches (the All-Star, 2 moves ahead, no time limit) in both engines: every root value
+    and its turn (the choices), the choice at each depth, the depth used, the extensions, cap hits and kept choices."""
     from playmaker_engine.agent import Agent, profile
     from playmaker_engine.search import Searcher, actor
+    from playmaker_engine import jsbridge
     sts = []
     while len(sts) < args.search:
         s, _ = random_state(rng)
         if s.stage == 'play':
             sts.append(s)
-    lines = [json.dumps(dict(stable=args.stable, reach=args.reach, leaf_mode=args.leaf_mode,
+    lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, reach=args.reach, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -166,13 +167,20 @@ def compare_searches(args, rng):
         sr = Searcher(actor(s), ag.p, ag._evaluate(s), float('inf'))
         res, reached = sr.root(s, 2, 2)
         py = dict(values=[v for v, _ in res], turns=[[str(a) for a in t] for _, t in res], reached=reached,
-                  extensions=getattr(sr, 'extensions', 0), cap_hits=getattr(sr, 'cap_hits', 0), kept=getattr(sr, 'kept', 0))
+                  extensions=getattr(sr, 'extensions', 0), cap_hits=getattr(sr, 'cap_hits', 0), kept=getattr(sr, 'kept', 0),
+                  choices=[[d, [str(a) for a in t]] for d, t, _ in sr.trace], choice_values=[v for _, _, v in sr.trace])
         if 'error' in j:
             bad.append(dict(n=k, field='search', js=j['error'][:400]))
             continue
         jj = dict(values=[v for v, _ in j['results']], reached=j['reached'], extensions=j.get('extensions', 0),
-                  cap_hits=j.get('cap_hits', 0), kept=j.get('kept', 0))
-        ok = close(py['values'], jj['values']) and all(py[f] == jj[f] for f in ('reached', 'extensions', 'cap_hits', 'kept'))
+                  cap_hits=j.get('cap_hits', 0), kept=j.get('kept', 0),
+                  choices=[[d, [str(jsbridge.action_from(a)) for a in t]] for d, t, _ in j.get('trace', [])],
+                  choice_values=[v for _, _, v in j.get('trace', [])])
+        # the choices: the turn chosen at each depth; and the same turns, each with the same value
+        jt = {' ; '.join(str(jsbridge.action_from(a)) for a in t): v for v, t in j['results']}
+        pt = {' ; '.join(t): v for v, t in zip(py['values'], py['turns'])}
+        ok = close(py['values'], jj['values']) and close(py['choice_values'], jj['choice_values']) \
+            and all(py[f] == jj[f] for f in ('reached', 'extensions', 'cap_hits', 'kept', 'choices')) and close(pt, jt)
         same += ok
         if not ok:
             bad.append(dict(n=k, field='search', state=s.encode(), py={f: py[f] for f in jj}, js=jj))
@@ -187,6 +195,8 @@ def main():
     ap.add_argument('--show', type=int, default=5)
     ap.add_argument('--reaction', action='store_true', help='shot reactions only, with their outcomes compared')
     ap.add_argument('--stable', action='store_true', help='step 12: search.stable on, in both engines')
+    ap.add_argument('--switches', default='', help='step 13: the stable search\'s switches to turn on, comma-separated '
+                    '(quiet_points, like_with_like, tempo, play_on, clear_reason; "cheap" = the first three)')
     ap.add_argument('--reach', action='store_true', help='step 12: eval.reach on, in both engines')
     ap.add_argument('--search', type=int, default=0, help='step 12: also compare this many searches (2 moves ahead)')
     ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative'),
@@ -196,6 +206,11 @@ def main():
     args.leaf_mode = args.leaf_mode or _CFG['eval'].get('leaf_mode', 'floor')
     _CFG['eval']['leaf_mode'] = args.leaf_mode
     _CFG.setdefault('search', {})['stable'] = args.stable
+    from playmaker_engine.search import PARTS
+    names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]
+    assert all(x in PARTS for x in names), names
+    args.switch_map = {k: k in names for k in PARTS}
+    _CFG['search'].update(args.switch_map)
     _CFG['eval']['reach'] = args.reach
     rng = random.Random(args.seed)
     states, meta, lines = [], [], []
@@ -205,7 +220,8 @@ def main():
         states.append(s)
         meta.append(m)
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
-                                     leaf_mode=args.leaf_mode, stable=args.stable, reach=args.reach, reach_map=True)))
+                                     leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, reach=args.reach,
+                                     reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):
@@ -236,7 +252,8 @@ def main():
     srch = compare_searches(args, rng) if args.search else None
     if srch:
         bad += srch['bad']
-    rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, reach=args.reach, searches=srch and srch['summary'],
+    rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach,
+               searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,
                by_age={a: sum(1 for m in meta if m['age'] == a) for a in AGES},

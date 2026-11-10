@@ -1,0 +1,89 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "play_on"
+ ],
+ "reach": false,
+ "searches": {
+  "compared": 10,
+  "equal": 10
+ },
+ "states": 10,
+ "seconds_python": 0.9,
+ "seconds_js": 0.3,
+ "by_stage": {
+  "over": 2,
+  "play": 8
+ },
+ "by_phase": {
+  "1": 6,
+  "2": 3,
+  "4": 1
+ },
+ "by_age": {
+  "senior": 2,
+  "youth": 3,
+  "junior": 5
+ },
+ "by_standard": {
+  "pro": 1,
+  "semi_pro": 3,
+  "amateur": 6
+ },
+ "digital": 4,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 10,
+   "equal": 10
+  },
+  "attacker_reach": {
+   "compared": 8,
+   "equal": 8
+  },
+  "defender_reach": {
+   "compared": 8,
+   "equal": 8
+  },
+  "defender_exact": {
+   "compared": 8,
+   "equal": 8
+  },
+  "threat_geo": {
+   "compared": 8,
+   "equal": 8
+  },
+  "cover_geo": {
+   "compared": 8,
+   "equal": 8
+  },
+  "leaf_geo": {
+   "compared": 8,
+   "equal": 8
+  },
+  "threat_exact": {
+   "compared": 8,
+   "equal": 8
+  },
+  "cover_exact": {
+   "compared": 8,
+   "equal": 8
+  },
+  "leaf_exact": {
+   "compared": 8,
+   "equal": 8
+  },
+  "quick": {
+   "compared": 8,
+   "equal": 8
+  },
+  "reach_map": {
+   "compared": 8,
+   "equal": 8
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

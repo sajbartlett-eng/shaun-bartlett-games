@@ -65,7 +65,13 @@ def run_exam(setting, cond, out):
     only = os.environ.get('EXAM12_ONLY')
     if only:
         jobs = [j for j in jobs if j[0] in only.split(',')]
+    total = float(os.environ.get('EXAM12_TOTAL', 0)) or None      # step 13: a total time cap for the whole run
+    start = time.time()
     for name, n in jobs:
+        if total and time.time() - start > total:
+            rows.append(dict(board=name, not_run='the total time cap was reached'))
+            json.dump(dict(setting=setting, condition=cond, pairs=PAIRS, rows=rows), open(out, 'w'), indent=1)
+            continue
         # a fresh engine per board: the search's caches stay within one board's memory
         if eng is not None:
             eng.close()
@@ -74,7 +80,8 @@ def run_exam(setting, cond, out):
         memo_search()
         del notes[:]
         t0 = time.time()
-        AG.FIXED['deadline'] = t0 + BOARD_CAP_S if cond == 'fixed' else None
+        cap = min(BOARD_CAP_S, start + total - t0) if total else BOARD_CAP_S
+        AG.FIXED['deadline'] = t0 + cap if cond == 'fixed' else None
         if n is not None:
             desc, ok, what = EX.run_position(n, 'allstar')
         elif name == 'C1':
@@ -87,7 +94,8 @@ def run_exam(setting, cond, out):
             t, _ = EX.turn_of('allstar', s)
             ok, what = check(t)
         decisions = [dict(depth=x.get('depth'), turn=x.get('turn'), value=x.get('value'), trace=x.get('trace'),
-                          stable=x.get('stable'), seconds=x.get('seconds')) for x in notes]
+                          stable=x.get('stable'), seconds=x.get('seconds'), depth_seconds=x.get('depth_seconds'))
+                     for x in notes]
         row = dict(board=name, desc=desc, ok=ok, what=what, seconds=round(time.time() - t0, 1),
                    choice=decisions[0]['turn'] if decisions else None,
                    depth_min=min((d['depth'] for d in decisions if d['depth']), default=None),
