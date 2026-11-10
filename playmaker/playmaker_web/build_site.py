@@ -23,8 +23,9 @@ def bundle():
     files = {}
     for f in ENGINE_FILES:
         files[f'playmaker_engine/{f}'] = open(os.path.join(ROOT, 'playmaker_engine', f)).read()
-    for f in DATA_FILES:
-        files[f'playmaker_engine/data/{f}'] = open(os.path.join(ROOT, 'playmaker_engine', 'data', f)).read()
+    for f in DATA_FILES + ['learned_weights.json']:        # step 17: the learned weights, when the file exists
+        if os.path.exists(os.path.join(ROOT, 'playmaker_engine', 'data', f)):
+            files[f'playmaker_engine/data/{f}'] = open(os.path.join(ROOT, 'playmaker_engine', 'data', f)).read()
     for f in WEB_FILES:
         files[f'playmaker_web/{f}'] = open(os.path.join(ROOT, 'playmaker_web', f)).read()
     files['playtest_logs/README.txt'] = 'Logs of games played in this browser tab.\n'

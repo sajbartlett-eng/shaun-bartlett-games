@@ -68,6 +68,8 @@
     "leaf_mode": "relative",
     "reach": true,
     "coverage_budget": false,
+    "learned": false,
+    "_learned": "Step 17 (off): the learned judgement. What a position has left to earn is read from the named readings (decide.FEATURES) with per-phase weights fitted to how possessions went on (data/learned_weights.json, one file for both engines), in place of the hand-combined reading.",
     "advantages": false,
     "_advantages": "Step 16, goals stage 3 (off): each team turn the offence's advantages are read from the board (separation, mismatch, numbers, penetration: decide.Read.advantages) and recorded with their stage, target look, chance and worth. Reading and recording only: no choice changes.",
     "_coverage_budget": "Step 13 B (off): coverage as a budget. In one team turn a defender attends one attacker; the defence splits each defender across the attackers he can answer, and the offence's value is its best look after the defence's best shares (an exact small linear program, decide.Read.budget). With it, the ball handler's looks also count the squares he reaches in two actions by the movement rules (D-115), and the position value is read against relative_average_budget.",

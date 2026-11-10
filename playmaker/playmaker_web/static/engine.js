@@ -86,10 +86,16 @@ const PMEngine = (() => {
   }
 
   // ---- data: zones, cards, rules, tables -----------------------------------------------------------------------------
-  const D = { config: null, vcoarse: {}, ready: false };
+  const D = { config: null, vcoarse: {}, ready: false, learned: null };
+  // step 17: the named readings, in the weights file's order (decide.FEATURES); a file with other names is refused
+  const FEATURE_NAMES = ['shot_now', 'look_now', 'best_look_after_cover', 'second_look_after_cover', 'best_look_before_cover',
+    'best_look_after_shares', 'paint_next_phase', 'free_looks', 'mismatches_two_bands', 'mismatches_one_band', 'offence_tokens',
+    'defence_tokens', 'offence_to_act', 'defenders_moved', 'attackers_moved'];
   function init(data) {
     for (const [k, v] of Object.entries(data.zones)) ZN[parseSq(k)] = ZCH.indexOf(v);
     D.config = data.config; D.vcoarse = data.vcoarse || {}; D.ready = true;
+    D.learned = data.learned || null;
+    if (D.learned && JSON.stringify(D.learned.features) !== JSON.stringify(FEATURE_NAMES)) throw new Error('learned_weights.json names other readings than this engine makes');
     VMIN = D.config.eval.value_bounds[0]; VMAX = D.config.eval.value_bounds[1];
   }
   let VMIN = -10, VMAX = 60;
@@ -205,6 +211,17 @@ const PMEngine = (() => {
       react_moved: js.react_moved, turn_lead: js.turn_lead,
       turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null };
     return new St(s);
+  }
+  // Step 17: a state back to the form stateFrom reads (for the tools that play positions out and store them)
+  function stateJSON(s) {
+    const sq = v => (v < 0 || !ONB[v] ? null : sqName(v));
+    return { o: s.o.map(sq), x: s.x.map(sq), arrows: s.arrows.slice(), ball: s.ball, stage: s.stage, side: s.side, clock: s.clock,
+      tok_o: s.tok_o, tok_x: s.tok_x, moved_o: s.moved_o, moved_x: s.moved_x, cnt: Array.from(s.cnt), turn_n: s.turn_n, final: s.final,
+      lock_o: s.lock_o, lock_x: s.lock_x, screens: s.screens.map(t => t.slice()), pending: s.pending ? s.pending.slice() : null,
+      approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
+      bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
+      turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
+      turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
@@ -1338,6 +1355,17 @@ const PMEngine = (() => {
     return banked + Math.max(sn || 0.0, now, cont, coarse);
   }
   function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
+  // step 17: the learned judgement (eval.learned, off): what is left to earn, from the named readings and the weights
+  // file (learned_weights.json): per phase, intercept + sum of weight x (reading - mean) / sd, in the file's order
+  function setLearned(on) { D.config.eval.learned = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.learned; }
+  const learnedOn = () => D.config.eval.learned === true && D.learned !== null;
+  function learnedValue(s, f) {
+    const m = D.learned.phases[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)))];
+    if (!m) return null;
+    let v = m.intercept;
+    for (let i = 0; i < f.length; i++) v += m.weights[i] * (f[i] - m.mean[i]) / m.sd[i];
+    return v;
+  }
   // step 13 B: coverage as a budget (eval.coverage_budget, off by default)
   // step 16: the goals switches (eval.advantages, search.goals; both off by default)
   function setAdvantages(on) { D.config.eval.advantages = on === true || on === 'true'; return D.config.eval.advantages; }
@@ -1755,6 +1783,35 @@ const PMEngine = (() => {
       this._cover = { value: best[0][0], choice, residual: best[2], R };
       return this._cover;
     }
+    // ---- step 17: the named readings a learned judgement is built from (decide.Read.features, FEATURES' order) ------
+    features() {
+      const s = this.s;
+      const sn = this.shotNow() || 0.0;
+      let now = 0.0;
+      for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && lk.base > now) now = lk.base;
+      const cv = this.cover().residual, res = [];
+      for (const i of this.att_o) res.push(cv[i]);
+      res.sort((a, b) => b - a);
+      let opened = 0.0;
+      for (const i of this.att_o) if (this.threat[i].value > opened) opened = this.threat[i].value;
+      const tgt = this._paintNext();
+      let free = 0, two = 0, one = 0;
+      for (const i of this.att_o) {
+        if (!this.looks[i].length) continue;
+        const lk = this.looks[i][0];
+        let top = -1.0, shot = null, who = -1;
+        for (let t = 0; t < lk.types.length; t++) {
+          let v = lk.open[t], d0 = -1;
+          for (let d = 0; d < 5; d++) { const vals = lk.vals[d]; if (vals && vals[t] < v) { v = vals[t]; d0 = d; } }
+          if (v > top) { top = v; shot = lk.types[t]; who = d0; }
+        }
+        if (who < 0) free++;
+        else { const gap = BAND[s.ctx.off[i].b['shot_' + shot]] - BAND[s.ctx.dfn[who].b['con_' + shot]]; if (gap >= 2) two++; else if (gap === 1) one++; }
+      }
+      const pop = m => { let n = 0; for (let k = 0; k < 5; k++) n += (m >> k) & 1; return n; };
+      return [sn, now, res.length ? res[0] : 0.0, res.length > 1 ? res[1] : 0.0, opened, this.budget().value, tgt ? tgt[1] : 0.0, free, two, one,
+        s.tok_o, s.tok_x, this.o_to_act ? 1.0 : 0.0, pop(s.moved_x), pop(s.moved_o)];
+    }
     // ---- step 16, stage 3: advantages (decide.Read.advantages, _paint_next, phi). Reading and recording only. --------
     advantages() {
       if (this._adv) return this._adv;
@@ -2043,6 +2100,10 @@ const PMEngine = (() => {
         const ns = W_(s, { ball: recv, pending: null });
         const caught = (this.pooled ? readOf(ns) : new Read(ns, { attention: att, k: this.k, looks_per: this.L })).leaf();
         return p * caught + (1 - p) * turnoverValue(s);
+      }
+      if (learnedOn() && this.k > 0 && s.stage === 'play' && !(!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) {
+        const lv = learnedValue(s, this.features());       // step 17: the learned judgement in place of the hand-combined one
+        if (lv !== null) return banked + lv;
       }
       const sn = this.shotNow();
       let now = 0.0;
@@ -2567,7 +2628,7 @@ const PMEngine = (() => {
   // budget (seconds; null = no limit), depth [lo, hi], stale, habit, habit_weight}.
   function search(req) {
     const ctx = req.ctxObj || makeCtx(req.ctx);
-    const s = stateFrom(req.state, ctx);
+    const s = req.stateObj || stateFrom(req.state, ctx);      // stateObj (step 17): a state already built
     const prof = req.profile, me = actor(s);
     let stale = null;
     if (req.stale) stale = me === 'O' ? [req.stale[0].map(parseSq), req.stale[1].slice()] : [req.stale[0].map(parseSq)];
@@ -2742,6 +2803,7 @@ const PMEngine = (() => {
         out['cover_' + tag] = [cv.value, [...cv.choice].map(([j, resp]) => [j, sqName(resp[0]), resp[1], resp[2]]).sort((a, b) => a[0] - b[0]),
           [0, 1, 2, 3, 4].map(i => cv.residual[i])];
         out['leaf_' + tag] = r.leaf();
+        if (!s.pending && s.stage === 'play') out['features_' + tag] = r.features();     // step 17: the named readings
         if (D.config.eval.advantages === true) {         // step 16: the advantage list, each worth, and the potential
           out['adv_' + tag] = [r.advantages().map(a => [a.kind, a.i, a.j, a.sq >= 0 ? sqName(a.sq) : null, a.stage, a.value, a.chance, a.worth, a.gap]), r.phi()];
         }
@@ -2756,7 +2818,10 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
+  const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
+  const handLeaf = s => readOf(s).leaf();                                                       // today's hand-combined reading
+  return { setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

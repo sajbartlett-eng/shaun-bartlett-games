@@ -1,0 +1,40 @@
+{
+ "rookie settings, 1 team turn ahead": {
+  "core_seconds_per_possession": 0.86,
+  "per_core_hour": 4211,
+  "mean_points": 6.98,
+  "note": "never shoots: the clock runs out"
+ },
+ "starter settings, 1 team turn ahead": {
+  "core_seconds_per_possession": 1.34,
+  "per_core_hour": 2688,
+  "mean_points": 6.81
+ },
+ "all-star settings, 1 team turn ahead": {
+  "core_seconds_per_possession": 1.78,
+  "per_core_hour": 2028,
+  "mean_points": 5.54
+ },
+ "rookie settings, 1 pair ahead, pick noise 1.0": {
+  "core_seconds_per_possession": 8.9,
+  "per_core_hour": 405,
+  "mean_points": 16.2,
+  "possessions": 16
+ },
+ "starter settings, 1 pair ahead, pick noise 1.0": {
+  "core_seconds_per_possession": 15.9,
+  "per_core_hour": 226,
+  "mean_points": 21.6,
+  "possessions": 16
+ },
+ "all-star settings, 1 pair ahead, pick noise 0.5": {
+  "core_seconds_per_possession": 20.3,
+  "per_core_hour": 178,
+  "mean_points": 26.2,
+  "possessions": 80
+ },
+ "all-star settings, 1 pair ahead, no noise": {
+  "core_seconds_per_possession": 35,
+  "note": "one traced possession: 92 decisions, the shot taken with the last token"
+ }
+}

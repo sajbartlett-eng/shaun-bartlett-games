@@ -1,0 +1,10 @@
+{
+ "rollouts_per_turn": 16,
+ "policy": "data",
+ "core_hours": 1.49,
+ "wall_minutes": 24.0,
+ "pick_is_measured_best": 9,
+ "pick_clearly_worse": 3,
+ "boards": 22,
+ "median_se": 3.87
+}

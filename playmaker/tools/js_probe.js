@@ -6,7 +6,7 @@ const path = require('path');
 const E = require(path.join(__dirname, '..', 'playmaker_web', 'static', 'engine.js'));
 const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const vc = JSON.parse(fs.readFileSync(path.join(root, 'vcoarse.json')));
-E.init({ zones: JSON.parse(fs.readFileSync(path.join(root, 'court_zones.json'))), config: JSON.parse(fs.readFileSync(path.join(root, 'ai_profiles.json'))), vcoarse: vc });
+E.init({ zones: JSON.parse(fs.readFileSync(path.join(root, 'court_zones.json'))), config: JSON.parse(fs.readFileSync(path.join(root, 'ai_profiles.json'))), vcoarse: vc, learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? JSON.parse(fs.readFileSync(path.join(root, 'learned_weights.json'))) : null });
 // step 7: in a shot reaction, what each Contest, Steal and ending the reaction resolves to: every leaf of the roll tree
 // with its probability, its stage, and the score (a finished possession) or the clock and turnovers (play goes on)
 function outcomes(js, ctxJs) {
@@ -33,7 +33,8 @@ for (const ln of lines) {
   if (q.reach !== undefined) E.setReach(q.reach);
   if (q.coverage_budget !== undefined) E.setBudget(q.coverage_budget);
   if (q.advantages !== undefined) E.setAdvantages(q.advantages);         // step 16
-  if (q.goals !== undefined) E.setGoals(q.goals);   // step 13 B
+  if (q.goals !== undefined) E.setGoals(q.goals);
+  if (q.learned !== undefined) E.setLearned(q.learned);                  // step 17   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {

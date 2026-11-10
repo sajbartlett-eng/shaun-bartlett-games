@@ -126,6 +126,8 @@ def py_probe(s, reach_map=False):
             out['cover_' + tag] = [cv['value'], sorted([[j, B.sq(resp[0]), resp[1], resp[2]] for j, resp in cv['choice'].items()]),
                                    [cv['residual'][i] for i in range(5)]]
             out['leaf_' + tag] = r.leaf()
+            if not s.pending and s.stage == 'play':
+                out['features_' + tag] = r.features()          # step 17: the named readings
             if _ADV['on']:                          # step 16: the advantage list, each worth, and the potential
                 out['adv_' + tag] = [[[a['kind'], a['i'], a['j'], B.sq(a['sq']) if a['sq'] else None, a['stage'], a['value'],
                                        a['chance'], a['worth'], a['gap']] for a in r.advantages()], r.phi()]
@@ -170,7 +172,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             leaf_mode=args.leaf_mode,
+                             learned=args.learned, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -214,6 +216,7 @@ def main():
                     '(reach_cache, forcing, quiet_read, tt_order; "all"), to prove each changes nothing')
     ap.add_argument('--reach', action='store_true', help='eval.reach on, in both engines (the default since D-121)')
     ap.add_argument('--no-reach', action='store_true', help='eval.reach off, in both engines')
+    ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -231,6 +234,7 @@ def main():
     _CFG['eval']['advantages'] = args.advantages
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
+    _CFG['eval']['learned'] = args.learned
     from playmaker_engine.search import PARTS
     names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]
     if not args.switches:                          # none named: the config's own (like_with_like, D-121)
@@ -256,7 +260,7 @@ def main():
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
-                                     goals=args.goals,
+                                     goals=args.goals, learned=args.learned,
                                      reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
@@ -268,7 +272,7 @@ def main():
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
               'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map', 'budget_geo', 'budget_exact', 'split_geo',
-              'split_exact', 'adv_geo', 'adv_exact') + (('react_outcomes',) if args.reaction else ())
+              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -290,7 +294,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
-               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
+               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,

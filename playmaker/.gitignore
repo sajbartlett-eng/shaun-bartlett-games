@@ -5,3 +5,5 @@ docs/runs/solver/*.tmp
 playtest_logs/*.jsonl
 tests/.pyodide/
 tests/.a11y/
+docs/runs/step17/work/
+docs/runs/step17/pool.json
