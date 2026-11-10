@@ -148,6 +148,7 @@ ENGINES = {         # the engines the harness knows, by name
     'default': lambda: policy('allstar', 2, 0.5),
     'default_b': lambda: policy('allstar', 2, 0.5),
     'learned': lambda: policy('allstar', 2, 0.5, learned=True),
+    'calibrated': lambda: policy('allstar', 2, 0.5, calibrated=True),     # step 17D
     'learned_prior': lambda: policy('allstar', 2, 0.5, learned=True, prior=True),
     'goals': lambda: policy('allstar', 2, 0.5, goals=True),
     'data': lambda: policy('rookie', 2, 1.0),            # the cheap policy that plays the labelling possessions
@@ -164,12 +165,162 @@ def cmd_h2h(a, b, starts='40', n='1', seed='1', out=None):
     print(json.dumps({k: v for k, v in rep.items() if k != 'rows'}, indent=1))
 
 
+def endings(ends):
+    """How possessions ended, from [kind, clock, offence tokens, decisions]: the share that ended with a shot (free
+    throws included), with no shot, and with no shot when the clock had run out (the last phase, no token left);
+    the phase of the shot; the decisions a possession took."""
+    n = len(ends)
+    shot = [e for e in ends if e[0] in ('shot', 'free_throws')]
+    none = [e for e in ends if e[0] not in ('shot', 'free_throws')]
+    clock = [e for e in none if e[1] <= 2 and e[2] <= 0]
+    phase = lambda e: min(6, max(1, (12 - e[1]) // 2 + 1))
+    return dict(possessions=n, shot=round(len(shot) / n, 3), no_shot=round(len(none) / n, 3),
+                clock_ran_out=round(len(clock) / n, 3), clock_ran_out_in_100=round(100 * len(clock) / n, 1),
+                shot_by_phase={str(k): round(sum(phase(e) == k for e in shot) / max(1, len(shot)), 3) for k in range(1, 7)},
+                mean_shot_phase=round(sum(phase(e) for e in shot) / max(1, len(shot)), 2),
+                decisions=round(sum(e[3] for e in ends) / n, 1), kinds={k: sum(e[0] == k for e in ends) for k in sorted({e[0] for e in ends})})
+
+
+def cmd_h2h_seq(a, b, max_pairs='1000', batch='80'):
+    """Head to head in batches (new dice each batch), stopping when the sequential test decides (no difference against
+    a gain of 2 points, 5% each way) or at max_pairs."""
+    pool = load_pool()
+    rows, secs, t0, k = [], 0.0, time.time(), 0
+    starts = pool['starts']
+    while len(rows) < int(max_pairs):
+        k += 1
+        part = [starts[(i + 37 * k) % len(starts)] for i in range(int(batch))]
+        part = [dict(p, seed=104729 * (i + 1) + 15485863 * k) for i, p in enumerate(part)]
+        r, s = run_jobs('h2h', part, pool['contexts'], n=1, seed=100 + k, a=ENGINES[a](), b=ENGINES[b]())
+        rows += r
+        secs += s
+        st = h2h_stats(rows, delta=2.0)
+        print(len(rows), st['mean_difference'], st['interval'], st['sequential_stop'], flush=True)
+        if st['sequential_stop'] is not None and len(rows) >= 160:
+            break
+    rep = dict(a=a, b=b, stats=h2h_stats(rows, delta=2.0), core_hours=round(secs / 3600, 2), wall_minutes=round((time.time() - t0) / 60, 1),
+               a_on_offence=endings([r['a_end'] for r in rows]), b_on_offence=endings([r['b_end'] for r in rows]), rows=rows)
+    json.dump(rep, open(os.path.join(RUN, f'h2h_{a}_vs_{b}.json'), 'w'))
+    print(json.dumps({k_: v for k_, v in rep.items() if k_ != 'rows'}, indent=1))
+
+
+def pav(x, y):
+    """Isotonic (never falling) fit of y on x: pooled adjacent violators. Returns the block means at the block mean x."""
+    import numpy as np
+    o = np.argsort(x)
+    bx, by, bn = [], [], []
+    for xi, yi in zip(x[o], y[o]):
+        bx.append(xi); by.append(yi); bn.append(1)
+        while len(by) > 1 and by[-2] > by[-1]:
+            n = bn[-2] + bn[-1]
+            by[-2] = (by[-2] * bn[-2] + by[-1] * bn[-1]) / n
+            bx[-2] = (bx[-2] * bn[-2] + bx[-1] * bn[-1]) / n
+            bn[-2] = n
+            bx.pop(); by.pop(); bn.pop()
+    return bx, by
+
+
+def knot_map(r, x, y):
+    import numpy as np
+    x, y = np.array(x, float), np.array(y, float)
+    if len(x) == 1:
+        return np.full(len(r), y[0])
+    k = np.clip(np.searchsorted(x, r, side='left') - 1, 0, len(x) - 2)
+    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k])
+
+
+def fit_maps(form, ph, side, r, y, keep):
+    """The calibration maps (knots) per phase and side to act, from the kept rows. linear: earned = a + b x reading;
+    pooled: its own level per phase and side, one slope for all; isotonic: a never-falling map; flat: the level only."""
+    import numpy as np
+    maps = {}
+    slope = None
+    if form == 'pooled':
+        num = den = 0.0
+        for p in range(1, 7):
+            for sd in (0, 1):
+                m = keep & (ph == p) & (side == sd)
+                if m.sum() > 20:
+                    num += ((r[m] - r[m].mean()) * (y[m] - y[m].mean())).sum()
+                    den += ((r[m] - r[m].mean()) ** 2).sum()
+        slope = num / den if den else 0.0
+    for p in range(1, 7):
+        for sd in (0, 1):
+            m = keep & (ph == p) & (side == sd)
+            if m.sum() <= 20:
+                continue
+            lo, hi = np.percentile(r[m], [5, 95])
+            if hi - lo < 1e-6:
+                hi = lo + 1.0
+            if form == 'flat':
+                x, yy = [float(r[m].mean())], [float(y[m].mean())]
+            elif form == 'isotonic':
+                bx, by = pav(r[m], y[m])
+                if len(bx) > 12:                     # at most 12 knots: the map at 12 evenly spread readings
+                    g = np.linspace(lo, hi, 12)
+                    by = list(np.interp(g, bx, by)); bx = list(g)
+                x, yy = ([float(v) for v in bx], [float(v) for v in by]) if len(bx) > 1 else ([float(bx[0])], [float(by[0])])
+                keepk = [0] + [k for k in range(1, len(x)) if x[k] - x[k - 1] > 1e-6]
+                x, yy = [x[k] for k in keepk], [yy[k] for k in keepk]
+            else:
+                b = slope if form == 'pooled' else float(np.polyfit(r[m], y[m], 1)[0])
+                a = y[m].mean() - b * r[m].mean()
+                x, yy = [float(lo), float(hi)], [float(a + b * lo), float(a + b * hi)]
+            maps[f"{p}{'O' if sd else 'X'}"] = dict(x=x, y=yy, positions=int(m.sum()))
+    return maps, slope
+
+
+def cmd_calibrate(names='strong', form='pooled', write='no'):
+    """Step 17D: how today's reading at the horizon relates to what positions went on to earn, per phase and side to
+    act; the candidate maps' held-out error (5 folds, by possession); and, with write=yes, the chosen map into the
+    shared weights file."""
+    import numpy as np
+    g, ph, y, hand, X, n_poss = training_rows(names.split(','))
+    side = X[:, 12].astype(int)                         # 1: the offence to act
+    fold = np.random.default_rng(17).permutation(n_poss) % 5
+    rmse = lambda a: float(np.sqrt(np.mean((a - y) ** 2)))
+    held = {}
+    for f in ('flat', 'linear', 'pooled', 'isotonic'):
+        pred = np.array(hand, float)
+        for k in range(5):
+            tr, te = fold[g] != k, fold[g] == k
+            maps, _ = fit_maps(f, ph, side, hand, y, tr)
+            for key, m in maps.items():
+                sel = te & (ph == int(key[0])) & (side == (1 if key[1] == 'O' else 0))
+                pred[sel] = knot_map(hand[sel], m['x'], m['y'])
+        held[f] = round(rmse(pred), 3)
+    maps, slope = fit_maps(form, ph, side, hand, y, np.ones(len(y), bool))
+    table = {}
+    for p in range(1, 7):
+        for sd in (1, 0):
+            m = (ph == p) & (side == sd)
+            if m.sum() > 20:
+                b = float(np.polyfit(hand[m], y[m], 1)[0])
+                table[f"{p}{'O' if sd else 'X'}"] = dict(positions=int(m.sum()), reading=round(float(hand[m].mean()), 1),
+                                                         earned=round(float(y[m].mean()), 1), over_by=round(float((hand[m] - y[m]).mean()), 1),
+                                                         own_slope=round(b, 3))
+    rep = dict(runs=names.split(','), possessions=n_poss, positions=len(y), held_out_error=dict(todays_reading=round(rmse(hand), 3), **held),
+               pooled_slope=None if slope is None else round(float(slope), 4), form=form, by_phase_and_side=table)
+    json.dump(rep, open(os.path.join(RUN, f'calibration_{names.replace(",", "_")}_{form}.json'), 'w'), indent=1)
+    print(json.dumps(rep, indent=1))
+    if write == 'yes':
+        import hashlib
+        body = json.load(open(WEIGHTS))
+        body.pop('hash', None)
+        body['calibration'] = dict(version=1, form=form, fitted_on=dict(runs=names.split(','), possessions=n_poss, positions=len(y)),
+                                   meaning='what is left to earn, from today\'s reading of it: per phase and side to act (O: the offence '
+                                           'to act), knots x -> y, straight lines between and beyond them', maps=maps)
+        body['hash'] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:16]
+        json.dump(body, open(WEIGHTS, 'w'), indent=1)
+        print('wrote calibration', form, body['hash'])
+
+
 def cmd_selfplay(name, engine='data', starts='160', n='4', seed='1'):
     """Possessions played by one engine against itself, every play position kept as a training row."""
     pool = load_pool()
     t0 = time.time()
     pol = ENGINES[engine]()
-    rows, secs = run_jobs('selfplay', pool['starts'][:int(starts)], pool['contexts'], n=int(n), seed=int(seed), features=True,
+    rows, secs = run_jobs('selfplay', pool['starts'][:int(starts)], pool['contexts'], n=int(n), seed=int(seed), features=True, keepDefence=True,
                           policies=dict(O=pol, X=pol))
     pts = [r['points'] for r in rows]
     m, sd, ci = mean_ci(pts)
@@ -179,7 +330,7 @@ def cmd_selfplay(name, engine='data', starts='160', n='4', seed='1'):
                interval=[round(m - ci, 2), round(m + ci, 2)], sd=round(sd, 2), no_score=sum(p == 0 for p in pts),
                decisions_per_possession=round(sum(r['decisions'] for r in rows) / len(rows), 1),
                core_hours=round(secs / 3600, 2), wall_minutes=round((time.time() - t0) / 60, 1),
-               per_core_hour=round(3600 * len(rows) / secs))
+               per_core_hour=round(3600 * len(rows) / secs), endings=endings([r['end'] + [r['decisions']] for r in rows]))
     json.dump(rep, open(os.path.join(RUN, f'selfplay_{name}.json'), 'w'), indent=1)
     print(json.dumps(rep, indent=1))
 
@@ -377,6 +528,15 @@ def exam_positions(extra=130):
         picked += rnd.sample(by_phase[ph], min(len(by_phase[ph]), extra // 6 + 1))
     contexts = hctx + pool['contexts']
     out = [dict(p, source='hand board') for p in hb] + [dict(p, ctx=p['ctx'] + len(hctx), source='self-play') for p in picked[:extra]]
+    strong = os.path.join(WORK, 'selfplay_strong.json')
+    if os.path.exists(strong):                      # D-135: at least 60 with the defence to act, spread over the phases
+        dfn = {}
+        for k, r in enumerate(json.load(open(strong))['rows']):
+            if r.get('defence'):
+                dfn.setdefault(min(6, (12 - r['defence']['clock']) // 2 + 1), []).append(
+                    dict(id=f'defence{k}', state=r['defence'], ctx=r['ctx'] + len(hctx), source='defence, self-play'))
+        for ph in sorted(dfn):
+            out += rnd.sample(dfn[ph], min(len(dfn[ph]), 11))
     for p in out:
         s = p['state']
         p['side'] = 'X' if s['stage'] in ('reaction', 'contest') else 'O' if s['stage'] in ('target', 'pick', 'forced') else s['side']
@@ -418,6 +578,7 @@ def cmd_exam(engines='default,learned', n='4', extra='130'):
             d = {i: mean(e, i) - mean('default', i) for i in ids}
             groups = dict(all=ids, hand_boards=[i for i in ids if tag[i]['source'] == 'hand board'],
                           self_play=[i for i in ids if tag[i]['source'] == 'self-play'],
+                          defence_added=[i for i in ids if tag[i]['source'] == 'defence, self-play'],
                           offence_to_act=[i for i in ids if tag[i]['side'] == 'O'], defence_to_act=[i for i in ids if tag[i]['side'] == 'X'],
                           **{f'phase_{k}': [i for i in ids if tag[i]['phase'] == k] for k in range(1, 7)})
             rep['against_default'][e] = {g: dict(positions=len(v), gain=boot([d[i] for i in v]),

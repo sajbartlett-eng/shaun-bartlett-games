@@ -70,3 +70,65 @@ be trusted; the batch was stopped and restarted with the self-check (60 pairs) f
 - Predict: honestly unknown. The question is yes or no: on held-out possessions, do the readings predict a strong
   player's results better than the phase average? If no, the readings are missing information and the learned route
   stops. If yes, 5,000 possessions (28 core-hours) and a head-to-head of 320 pairs.
+
+# Step 17D (cap: 16 core-hours, the second round included)
+
+## Run 4: the strong-play pilot. Written before it started.
+
+- 640 possessions by today's computer (All-Star settings, pick noise 0.5), both sides, every position kept with its
+  readings; one defence-to-act position kept from each for the exam; how each possession ended.
+- Cost: predicted 3.6 core-hours, about 55 minutes wall.
+- Predict:
+  - points a possession near 22, from the self-check;
+  - the clock runs out with no shot on more than 1 possession in 100 (the fault D-137 names): I expect 5 to 15;
+  - today's reading over by 6 points or more in every phase;
+  - the learned weights against the phase average: honestly unknown. Yes or no.
+
+**Run 4, what happened:** 3.73 core-hours (3.6 predicted). 26.5 points a possession (22 predicted: too low). The
+clock ran out on 3 in 100 (5 to 15 predicted: too high). The reading is over by 2 points in phase 1 rising to 10 in
+phase 6 (6 or more everywhere predicted: wrong early, right late). The learned weights: **no** (13.68 against the
+phase average's 13.65).
+
+## Run 5: the calibrated reading against today's computer, head to head. Written before it started.
+
+- The map: per phase and side to act, earned = a + b x reading (the best of four forms on held-out error: 13.64,
+  against 13.67 pooled, 13.73 never-falling, 13.79 level only, 14.99 today's reading).
+- Sequential, in batches of 80 pairs, up to 480 pairs: at most 3.8 core-hours.
+- Predict: a gain of 1 to 3 points a pair. The reading still ranks positions (slopes 0.2 early to 0.8 late), so the
+  defence keeps its sense of better and worse, and shots are no longer held against a hope of 6 to 10 points too
+  many late in the clock. Fewer possessions should run the clock out; the shot should come earlier.
+
+**Run 5, what happened:** the sequential test stopped at 160 pairs with "a gain": +3.2 points a pair, interval +0.9
+to +5.5 (1 to 3 predicted). 1.46 core-hours (at most 3.8 predicted). The calibrated computer shot on 96% of its
+possessions against 83%, never ran the clock out in 160 against 5 in 100, and took its shot in phase 2.3 on average
+against 3.7.
+
+## Run 6: the second round. Written before it started.
+
+- 640 possessions by the calibrated computer against itself, every position kept. Its possessions are shorter (23
+  decisions against 38), so predicted 2.3 core-hours, about 35 minutes.
+- Then the map is fitted again on its own play, and tested head to head against today's computer (sequential, up to
+  320 pairs, at most 2.5 core-hours).
+- Predict: the second map is close to the first in the early phases and less harsh late, because a computer that
+  shoots earlier leaves fewer late positions to waste. The head-to-head gain stays within the first round's interval
+  (0.9 to 5.5); I don't expect a clear further gain.
+- The learned weights are fitted again on this play (the question asked again, as D-136 says). Predict: unknown.
+
+**Run 6, what happened:** self-play 1.96 core-hours (2.3 predicted); head to head 3.25 (at most 2.5 predicted: over,
+because the second-round computer's possessions were longer than I expected). The second map: +2.1 points a pair,
+interval +0.2 to +4.0, over 320 pairs. Not better than the first (+3.2, +0.9 to +5.5), as predicted. It also has a
+hole: the calibrated computer so rarely reaches the last phase that there were too few positions to fit one, so in
+phase 6 it fell back on today's reading. **The first round's map is kept, and the rounds stop here.**
+The learned weights on calibrated play: 8.75 against the phase average's 8.82, the interval -0.04 to +2.44: not
+clear of zero, but closer than before, and the learning curve is still falling.
+
+## Run 7: the outcome exam with the defence positions. Written before it started.
+
+- The 152 positions of checkpoint 1 and about 66 with the defence to act (from the strong-play run, spread over the
+  phases), 4 seeds, today's computer and the calibrated one (the first round's map).
+- Cost: predicted 3.5 core-hours, about 55 minutes. That takes the step to about 14 of its 16.
+- Predict: a gain where the offence is to act, about 2 to 3 points; about level where the defence is to act.
+
+**Run 7, what happened:** 4.42 core-hours (3.5 predicted: over). +3.0 points a position overall (interval +1.9 to
++4.0); +4.0 with the offence to act (2 to 3 predicted: higher); +0.9 with the defence to act, zero inside the interval
+(level predicted). Step 17D used about 14.9 of its 16 core-hours.

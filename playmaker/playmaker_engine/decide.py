@@ -783,6 +783,18 @@ class Read:
         return None
 
     def leaf(self):
+        """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
+        eval.calibrated on (step 17D), that reading passed through the map fitted to what positions went on to earn."""
+        v, s = self._hand_leaf(), self.s
+        w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
+        if w is None or not w.get('calibration') or self.k <= 0 or s.stage != 'play' or s.pending or \
+                (not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS):
+            return v
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        return banked + calibrate(w['calibration'], s, self.o_to_act, v - banked)
+
+    def _hand_leaf(self):
         """V_leaf from the offence's point of view (expected possession value, game units): the best of the shot
         now, the best look the defence can't cover in its next turn (released this turn: uncoverable), and the
         coarse table."""
@@ -1154,6 +1166,21 @@ def learned_value(s, f):
     for i in range(len(f)):
         v += m['weights'][i] * (f[i] - m['mean'][i]) / m['sd'][i]
     return v
+
+
+def calibrate(cal, s, o_to_act, r):
+    """Step 17D: the map for this phase and side to act (knots x -> y, straight lines between and beyond them)."""
+    m = cal['maps'].get(str(min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))) + ('O' if o_to_act else 'X'))
+    if m is None:
+        return r
+    x, y = m['x'], m['y']
+    n = len(x)
+    if n == 1:
+        return y[0]
+    k = 0
+    while k < n - 2 and r > x[k + 1]:
+        k += 1
+    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k])
 
 
 def lp_max(c, A, b):

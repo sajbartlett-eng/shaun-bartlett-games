@@ -1,0 +1,39 @@
+{
+ "engine": "default",
+ "possessions": 640,
+ "positions": 21829,
+ "mean_points": 26.5,
+ "interval": [
+  25.42,
+  27.58
+ ],
+ "sd": 14.0,
+ "no_score": 115,
+ "decisions_per_possession": 37.6,
+ "core_hours": 3.73,
+ "wall_minutes": 59.3,
+ "per_core_hour": 172,
+ "endings": {
+  "possessions": 640,
+  "shot": 0.82,
+  "no_shot": 0.18,
+  "clock_ran_out": 0.03,
+  "clock_ran_out_in_100": 3.0,
+  "shot_by_phase": {
+   "1": 0.198,
+   "2": 0.225,
+   "3": 0.131,
+   "4": 0.091,
+   "5": 0.065,
+   "6": 0.29
+  },
+  "mean_shot_phase": 3.47,
+  "decisions": 37.6,
+  "kinds": {
+   "free_throws": 22,
+   "shot": 503,
+   "steal": 3,
+   "turnover_end": 112
+  }
+ }
+}

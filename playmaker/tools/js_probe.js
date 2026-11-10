@@ -34,7 +34,8 @@ for (const ln of lines) {
   if (q.coverage_budget !== undefined) E.setBudget(q.coverage_budget);
   if (q.advantages !== undefined) E.setAdvantages(q.advantages);         // step 16
   if (q.goals !== undefined) E.setGoals(q.goals);
-  if (q.learned !== undefined) E.setLearned(q.learned);                  // step 17   // step 13 B
+  if (q.learned !== undefined) E.setLearned(q.learned);
+  if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {

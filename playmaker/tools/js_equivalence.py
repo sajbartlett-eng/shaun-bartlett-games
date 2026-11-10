@@ -172,7 +172,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -216,6 +216,7 @@ def main():
                     '(reach_cache, forcing, quiet_read, tt_order; "all"), to prove each changes nothing')
     ap.add_argument('--reach', action='store_true', help='eval.reach on, in both engines (the default since D-121)')
     ap.add_argument('--no-reach', action='store_true', help='eval.reach off, in both engines')
+    ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
@@ -235,6 +236,7 @@ def main():
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
+    _CFG['eval']['calibrated'] = args.calibrated
     from playmaker_engine.search import PARTS
     names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]
     if not args.switches:                          # none named: the config's own (like_with_like, D-121)
@@ -260,7 +262,7 @@ def main():
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
-                                     goals=args.goals, learned=args.learned,
+                                     goals=args.goals, learned=args.learned, calibrated=args.calibrated,
                                      reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
@@ -294,7 +296,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
-               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned,
+               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,
