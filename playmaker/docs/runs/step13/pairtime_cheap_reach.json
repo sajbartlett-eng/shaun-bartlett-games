@@ -1,0 +1,443 @@
+{
+ "setting": "cheap_reach",
+ "results": {
+  "rookie": {
+   "one_turn": {
+    "median": 0.037,
+    "p90": 0.07,
+    "worst": 0.099
+   },
+   "one_pair": {
+    "median": 0.427,
+    "p90": 1.556,
+    "worst": 1.783
+   },
+   "rows": [
+    {
+     "board": "1",
+     "one_turn": 0.055,
+     "one_pair": 1.065,
+     "leaves": 1115
+    },
+    {
+     "board": "2 4",
+     "one_turn": 0.056,
+     "one_pair": 1.783,
+     "leaves": 1254
+    },
+    {
+     "board": "2 12",
+     "one_turn": 0.033,
+     "one_pair": 1.302,
+     "leaves": 857
+    },
+    {
+     "board": "3",
+     "one_turn": 0.037,
+     "one_pair": 1.556,
+     "leaves": 1264
+    },
+    {
+     "board": "4",
+     "one_turn": 0.037,
+     "one_pair": 0.456,
+     "leaves": 612
+    },
+    {
+     "board": "5 close",
+     "one_turn": 0.034,
+     "one_pair": 1.487,
+     "leaves": 2798
+    },
+    {
+     "board": "5 short",
+     "one_turn": 0.044,
+     "one_pair": 1.219,
+     "leaves": 2849
+    },
+    {
+     "board": "6",
+     "one_turn": 0.027,
+     "one_pair": 0.276,
+     "leaves": 479
+    },
+    {
+     "board": "7 phase 2",
+     "one_turn": 0.024,
+     "one_pair": 0.392,
+     "leaves": 673
+    },
+    {
+     "board": "7 phase 6",
+     "one_turn": 0.003,
+     "one_pair": 0.056,
+     "leaves": 25
+    },
+    {
+     "board": "8",
+     "one_turn": 0.037,
+     "one_pair": 0.389,
+     "leaves": 1098
+    },
+    {
+     "board": "9",
+     "one_turn": 0.028,
+     "one_pair": 0.145,
+     "leaves": 265
+    },
+    {
+     "board": "10 good odds",
+     "one_turn": 0.082,
+     "one_pair": 1.047,
+     "leaves": 895
+    },
+    {
+     "board": "10 bad odds",
+     "one_turn": 0.07,
+     "one_pair": 1.774,
+     "leaves": 1792
+    },
+    {
+     "board": "11 early",
+     "one_turn": 0.05,
+     "one_pair": 0.806,
+     "leaves": 1683
+    },
+    {
+     "board": "11 final phase",
+     "one_turn": 0.021,
+     "one_pair": 0.399,
+     "leaves": 202
+    },
+    {
+     "board": "12",
+     "one_turn": 0.03,
+     "one_pair": 0.257,
+     "leaves": 253
+    },
+    {
+     "board": "13",
+     "one_turn": 0.041,
+     "one_pair": 0.564,
+     "leaves": 595
+    },
+    {
+     "board": "14",
+     "one_turn": 0.099,
+     "one_pair": 0.374,
+     "leaves": 395
+    },
+    {
+     "board": "15",
+     "one_turn": 0.023,
+     "one_pair": 0.223,
+     "leaves": 471
+    },
+    {
+     "board": "16",
+     "one_turn": 0.043,
+     "one_pair": 0.215,
+     "leaves": 217
+    },
+    {
+     "board": "C2",
+     "one_turn": 0.034,
+     "one_pair": 0.289,
+     "leaves": 520
+    }
+   ]
+  },
+  "starter": {
+   "one_turn": {
+    "median": 0.096,
+    "p90": 0.182,
+    "worst": 0.246
+   },
+   "one_pair": {
+    "median": 3.401,
+    "p90": 8.027,
+    "worst": 9.982
+   },
+   "rows": [
+    {
+     "board": "1",
+     "one_turn": 0.176,
+     "one_pair": 9.982,
+     "leaves": 12675
+    },
+    {
+     "board": "2 4",
+     "one_turn": 0.182,
+     "one_pair": 8.767,
+     "leaves": 7474
+    },
+    {
+     "board": "2 12",
+     "one_turn": 0.097,
+     "one_pair": 8.027,
+     "leaves": 6092
+    },
+    {
+     "board": "3",
+     "one_turn": 0.061,
+     "one_pair": 4.188,
+     "leaves": 3682
+    },
+    {
+     "board": "4",
+     "one_turn": 0.08,
+     "one_pair": 2.663,
+     "leaves": 4146
+    },
+    {
+     "board": "5 close",
+     "one_turn": 0.134,
+     "one_pair": 6.994,
+     "leaves": 12148
+    },
+    {
+     "board": "5 short",
+     "one_turn": 0.121,
+     "one_pair": 6.312,
+     "leaves": 11424
+    },
+    {
+     "board": "6",
+     "one_turn": 0.056,
+     "one_pair": 1.591,
+     "leaves": 2216
+    },
+    {
+     "board": "7 phase 2",
+     "one_turn": 0.03,
+     "one_pair": 2.766,
+     "leaves": 3855
+    },
+    {
+     "board": "7 phase 6",
+     "one_turn": 0.006,
+     "one_pair": 0.172,
+     "leaves": 49
+    },
+    {
+     "board": "8",
+     "one_turn": 0.062,
+     "one_pair": 1.396,
+     "leaves": 3463
+    },
+    {
+     "board": "9",
+     "one_turn": 0.037,
+     "one_pair": 0.774,
+     "leaves": 1573
+    },
+    {
+     "board": "10 good odds",
+     "one_turn": 0.149,
+     "one_pair": 5.079,
+     "leaves": 5501
+    },
+    {
+     "board": "10 bad odds",
+     "one_turn": 0.192,
+     "one_pair": 7.752,
+     "leaves": 6359
+    },
+    {
+     "board": "11 early",
+     "one_turn": 0.111,
+     "one_pair": 4.035,
+     "leaves": 6406
+    },
+    {
+     "board": "11 final phase",
+     "one_turn": 0.061,
+     "one_pair": 1.771,
+     "leaves": 591
+    },
+    {
+     "board": "12",
+     "one_turn": 0.105,
+     "one_pair": 7.757,
+     "leaves": 7324
+    },
+    {
+     "board": "13",
+     "one_turn": 0.246,
+     "one_pair": 7.059,
+     "leaves": 7676
+    },
+    {
+     "board": "14",
+     "one_turn": 0.1,
+     "one_pair": 1.123,
+     "leaves": 1441
+    },
+    {
+     "board": "15",
+     "one_turn": 0.051,
+     "one_pair": 1.324,
+     "leaves": 2098
+    },
+    {
+     "board": "16",
+     "one_turn": 0.095,
+     "one_pair": 1.288,
+     "leaves": 1078
+    },
+    {
+     "board": "C2",
+     "one_turn": 0.071,
+     "one_pair": 2.035,
+     "leaves": 2577
+    }
+   ]
+  },
+  "allstar": {
+   "one_turn": {
+    "median": 0.125,
+    "p90": 0.197,
+    "worst": 0.229
+   },
+   "one_pair": {
+    "median": 2.832,
+    "p90": 7.956,
+    "worst": 9.754
+   },
+   "rows": [
+    {
+     "board": "1",
+     "one_turn": 0.225,
+     "one_pair": 9.754,
+     "leaves": 7009
+    },
+    {
+     "board": "2 4",
+     "one_turn": 0.132,
+     "one_pair": 7.049,
+     "leaves": 7027
+    },
+    {
+     "board": "2 12",
+     "one_turn": 0.094,
+     "one_pair": 7.065,
+     "leaves": 5847
+    },
+    {
+     "board": "3",
+     "one_turn": 0.057,
+     "one_pair": 3.261,
+     "leaves": 2688
+    },
+    {
+     "board": "4",
+     "one_turn": 0.126,
+     "one_pair": 3.024,
+     "leaves": 3294
+    },
+    {
+     "board": "5 close",
+     "one_turn": 0.176,
+     "one_pair": 2.886,
+     "leaves": 3023
+    },
+    {
+     "board": "5 short",
+     "one_turn": 0.146,
+     "one_pair": 2.833,
+     "leaves": 2852
+    },
+    {
+     "board": "6",
+     "one_turn": 0.092,
+     "one_pair": 1.881,
+     "leaves": 2743
+    },
+    {
+     "board": "7 phase 2",
+     "one_turn": 0.076,
+     "one_pair": 3.607,
+     "leaves": 4488
+    },
+    {
+     "board": "7 phase 6",
+     "one_turn": 0.009,
+     "one_pair": 0.197,
+     "leaves": 73
+    },
+    {
+     "board": "8",
+     "one_turn": 0.154,
+     "one_pair": 0.982,
+     "leaves": 1462
+    },
+    {
+     "board": "9",
+     "one_turn": 0.051,
+     "one_pair": 1.365,
+     "leaves": 2248
+    },
+    {
+     "board": "10 good odds",
+     "one_turn": 0.197,
+     "one_pair": 4.663,
+     "leaves": 3201
+    },
+    {
+     "board": "10 bad odds",
+     "one_turn": 0.139,
+     "one_pair": 7.956,
+     "leaves": 7020
+    },
+    {
+     "board": "11 early",
+     "one_turn": 0.126,
+     "one_pair": 2.831,
+     "leaves": 4740
+    },
+    {
+     "board": "11 final phase",
+     "one_turn": 0.102,
+     "one_pair": 1.079,
+     "leaves": 844
+    },
+    {
+     "board": "12",
+     "one_turn": 0.163,
+     "one_pair": 9.28,
+     "leaves": 8003
+    },
+    {
+     "board": "13",
+     "one_turn": 0.229,
+     "one_pair": 2.74,
+     "leaves": 2707
+    },
+    {
+     "board": "14",
+     "one_turn": 0.124,
+     "one_pair": 1.38,
+     "leaves": 1853
+    },
+    {
+     "board": "15",
+     "one_turn": 0.061,
+     "one_pair": 2.248,
+     "leaves": 3769
+    },
+    {
+     "board": "16",
+     "one_turn": 0.11,
+     "one_pair": 2.443,
+     "leaves": 2888
+    },
+    {
+     "board": "C2",
+     "one_turn": 0.081,
+     "one_pair": 2.31,
+     "leaves": 4264
+    }
+   ]
+  }
+ }
+}

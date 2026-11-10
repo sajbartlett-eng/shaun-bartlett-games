@@ -60,10 +60,10 @@ def mark(r, full=None):
 
 
 def exam():
-    cols = [('Off: 1 pair [step 12]', exam_rows('cut_exam_off_1pair.json', RUN12), 2),
-            ('Off: clock [step 12]', exam_rows('cut_exam_off_clock.json', RUN12), None),
-            ('Cheap: 1 pair', exam_rows('exam_cheap_1pair.json'), 2),
-            ('Cheap: clock', exam_rows('exam_cheap_clock.json'), None)]
+    cols = [('Off: 1 pair', exam_rows('exam_off_1pair.json'), 2), ('Off: clock', exam_rows('exam_off_clock.json'), None),
+            ('Cheap: 1 pair', exam_rows('exam_cheap_1pair.json'), 2), ('Cheap: clock', exam_rows('exam_cheap_clock.json'), None),
+            ('Light: 1 pair', exam_rows('exam_light_1pair.json'), 2), ('Light: clock', exam_rows('exam_light_clock.json'), None),
+            ('Rest: 1 pair', exam_rows('exam_rest_1pair.json'), 2), ('Rest: clock', exam_rows('exam_rest_clock.json'), None)]
     lines = ['| Board | ' + ' | '.join(c[0] for c in cols) + ' |', '|---|' + '---|' * len(cols)]
     tot = [[0, 0] for _ in cols]
     for b in BOARDS:
@@ -87,9 +87,33 @@ def levels():
     return out
 
 
+def parts():
+    """The 1-pair exam with each switch alone and in pairs: passes and the boards that differ from off."""
+    off = exam_rows('exam_off_1pair.json')
+    out = {}
+    for f in sorted(os.listdir(RUN)):
+        if f.startswith('parts_') and f.endswith('_1pair.json'):
+            rows = exam_rows(f)
+            out[f[len('parts_'):-len('_1pair.json')]] = dict(
+                passes=sum(r['ok'] for r in rows.values()), seconds=round(sum(r['seconds'] for r in rows.values())),
+                gained=[b for b in BOARDS if rows[b]['ok'] and not off[b]['ok']],
+                lost=[b for b in BOARDS if off[b]['ok'] and not rows[b]['ok']])
+    return out
+
+
+def pair_time():
+    out = {}
+    for st in ('off', 'light', 'rest', 'cheap', 'cheap_play_on', 'cheap_reach'):
+        d = load(f'pairtime_{st}.json')
+        if d:
+            out[st] = {lv: v['one_pair'] for lv, v in d['results'].items()}
+    return out
+
+
 def main():
     table, secs = exam()
-    summary = dict(stability=stability(), exam_table=table, exam_seconds=secs, levels=levels(),
+    summary = dict(stability=stability(), exam_table=table, exam_seconds=secs, levels=levels(), parts=parts(),
+                   pair_time=pair_time(),
                    speedups={k: load(f'speed_{k}.json') for k in ('reach_cache', 'forcing', 'quiet_read', 'tt_order', 'all')},
                    equivalence={f[len('js_equivalence_'):-5]: (lambda e: dict(mismatches=e['mismatches'], states=e['states'],
                                                                                 searches=e.get('searches')))(load(f))
@@ -104,6 +128,8 @@ def main():
     for st, v in summary['levels'].items():
         for k, r in v.items():
             print(st, k, r)
+    print(json.dumps(summary['parts']))
+    print(json.dumps(summary['pair_time']))
     print(json.dumps(summary['equivalence']))
 
 

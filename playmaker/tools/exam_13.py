@@ -8,6 +8,7 @@ reach map). On the JavaScript search (the app's own, proved equal). Every run ha
                                                             EXAM12_CAP per board; EXAM12_TOTAL for the run)
   python3 tools/exam_13.py levels <setting> out.json        each level's time and look-ahead on the clock, here and at
                                                             phone speed
+  python3 tools/exam_13.py pairtime <setting> out.json      the time each level needs to finish 1 team-turn pair
   python3 tools/exam_13.py record <setting> <depth> out.json    whole searches, no time limit, on the step 12 boards:
                                                             every root value and turn, the choice at each depth, counts
   python3 tools/exam_13.py dump <depth> requests.json       the boards' search requests, for tools/profile_13.js
@@ -32,7 +33,13 @@ CHEAP = ('quiet_points', 'like_with_like', 'tempo')
 SPEEDUPS = ('reach_cache', 'forcing', 'quiet_read', 'tt_order')
 SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP + ('play_on',), False),
             'cheap_reach': (CHEAP, True), 'stable': (PARTS, False), 'both': (PARTS, True),
-            'play_on': (('play_on',), False), 'reach': ((), True)}
+            'play_on': (('play_on',), False), 'reach': ((), True),
+            # without quiet_points: 'light' (like_with_like and tempo), and 'rest' (light, play_on and the reach map)
+            'light': (('like_with_like', 'tempo'), False), 'rest': (('like_with_like', 'tempo', 'play_on'), True),
+            # each part alone, and pairs, to see which part moves a board
+            'tempo': (('tempo',), False), 'like_with_like': (('like_with_like',), False),
+            'quiet_points': (('quiet_points',), False), 'light_play_on': (('like_with_like', 'tempo', 'play_on'), False),
+            'light_reach': (('like_with_like', 'tempo'), True), 'play_on_reach': (('play_on',), True)}
 
 
 def set_switches(eng, setting):
@@ -119,6 +126,35 @@ def run_levels(setting, out):
     eng.close()
 
 
+def run_pair_time(setting, out):
+    """The time each level needs to finish 1 team-turn pair (and its first team turn), with no time limit, on the exam's
+    boards and C2, one warm engine (as in a game): what a setting needs to fit a budget."""
+    eng = jsbridge.NodeEngine().install()
+    set_switches(eng, setting)
+    positions = boards(range(1, 17)) + [('C2', EX.c2()[1])]
+
+    def one(s, level):
+        ag = AG.Agent(actor(s), level, seed=1)
+        req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=ag.p, budget=None, max_depth=2,
+                   stale=None)
+        o = json.loads(AG.JS['search'](json.dumps(req)))
+        ds = dict((d, x) for d, x in o.get('depth_seconds', []))
+        return dict(one_turn=round(ds.get(1, 0), 3), one_pair=round(ds.get(2, o['seconds']), 3), leaves=o['leaves'])
+    for _, s in positions[:6]:
+        one(s, 'allstar')                                   # warm the engine
+    res = {}
+    for level in ('rookie', 'starter', 'allstar'):
+        rows = [dict(board=name, **one(s, level)) for name, s in positions]
+        for f in ('one_turn', 'one_pair'):
+            v = sorted(r[f] for r in rows)
+            res.setdefault(level, {})[f] = dict(median=round(statistics.median(v), 3), p90=v[int(0.9 * (len(v) - 1) + 0.5)],
+                                                worst=v[-1])
+        res[level]['rows'] = rows
+        print(setting, level, {f: res[level][f] for f in ('one_turn', 'one_pair')}, flush=True)
+    json.dump(dict(setting=setting, results=res), open(out, 'w'), indent=1)
+    eng.close()
+
+
 def run_record(setting, depth, out):
     """Whole searches with no time limit on the step 12 boards (EXAM13_BOARDS to choose): what a speed-up must not
     change (every root value and its turn, the choice and value at each depth, the extensions, cap hits and kept
@@ -185,6 +221,8 @@ if __name__ == '__main__':
         X12.run_exam(sys.argv[2], sys.argv[3], sys.argv[4])
     elif what == 'levels':
         run_levels(sys.argv[2], sys.argv[3])
+    elif what == 'pairtime':
+        run_pair_time(sys.argv[2], sys.argv[3])
     elif what == 'record':
         run_record(sys.argv[2], int(sys.argv[3]), sys.argv[4])
     elif what == 'dump':

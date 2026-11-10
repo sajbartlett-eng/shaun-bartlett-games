@@ -1,0 +1,265 @@
+{
+ "seconds": 6.073,
+ "boards": {
+  "9": {
+   "seconds": 0.755,
+   "leaves": 622,
+   "nodes": 26,
+   "extensions": 0,
+   "reached": 2
+  },
+  "16": {
+   "seconds": 0.677,
+   "leaves": 575,
+   "nodes": 26,
+   "extensions": 0,
+   "reached": 2
+  },
+  "2 4": {
+   "seconds": 0.863,
+   "leaves": 673,
+   "nodes": 33,
+   "extensions": 0,
+   "reached": 2
+  },
+  "2 12": {
+   "seconds": 0.928,
+   "leaves": 707,
+   "nodes": 31,
+   "extensions": 0,
+   "reached": 2
+  },
+  "7 phase 2": {
+   "seconds": 0.798,
+   "leaves": 614,
+   "nodes": 25,
+   "extensions": 0,
+   "reached": 2
+  },
+  "7 phase 6": {
+   "seconds": 0.183,
+   "leaves": 308,
+   "nodes": 25,
+   "extensions": 0,
+   "reached": 2
+  },
+  "10 good odds": {
+   "seconds": 0.927,
+   "leaves": 618,
+   "nodes": 32,
+   "extensions": 0,
+   "reached": 2
+  },
+  "10 bad odds": {
+   "seconds": 0.942,
+   "leaves": 570,
+   "nodes": 24,
+   "extensions": 0,
+   "reached": 2
+  }
+ },
+ "own_time": [
+  [
+   "(garbage collector)",
+   23.5
+  ],
+  [
+   "responses",
+   17.1
+  ],
+  [
+   "_looks",
+   12.6
+  ],
+  [
+   "_lane",
+   9.2
+  ],
+  [
+   "movementDests",
+   4.8
+  ],
+  [
+   "finishLook",
+   3.9
+  ],
+  [
+   "(anonymous)",
+   3.2
+  ],
+  [
+   "oneAction",
+   2.4
+  ],
+  [
+   "cover",
+   1.9
+  ],
+  [
+   "_contest",
+   1.8
+  ],
+  [
+   "nearOf",
+   1.5
+  ],
+  [
+   "_laneMoved",
+   1.4
+  ],
+  [
+   "passP",
+   1
+  ],
+  [
+   "pathOk",
+   1
+  ],
+  [
+   "candidateActions",
+   1
+  ],
+  [
+   "Read",
+   1
+  ],
+  [
+   "(program)",
+   0.9
+  ],
+  [
+   "laneSquares",
+   0.9
+  ],
+  [
+   "_vals",
+   0.8
+  ],
+  [
+   "contestMap",
+   0.7
+  ],
+  [
+   "nearestDir",
+   0.5
+  ],
+  [
+   "W_",
+   0.5
+  ],
+  [
+   "_leafCalc",
+   0.5
+  ],
+  [
+   "turns",
+   0.5
+  ],
+  [
+   "legalActions",
+   0.4
+  ],
+  [
+   "cheb",
+   0.3
+  ],
+  [
+   "readOf",
+   0.3
+  ],
+  [
+   "leaf",
+   0.3
+  ],
+  [
+   "carrierZones",
+   0.3
+  ],
+  [
+   "vcoarse",
+   0.3
+  ]
+ ],
+ "time_under": [
+  [
+   "cover",
+   44.7
+  ],
+  [
+   "leaf",
+   43.3
+  ],
+  [
+   "responses",
+   41.6
+  ],
+  [
+   "_looks",
+   35.4
+  ],
+  [
+   "turns",
+   30
+  ],
+  [
+   "chance",
+   26.1
+  ],
+  [
+   "turnsOf",
+   24.8
+  ],
+  [
+   "quick",
+   22.6
+  ],
+  [
+   "Read",
+   22.6
+  ],
+  [
+   "candidateActions",
+   6.4
+  ],
+  [
+   "movementDests",
+   6.2
+  ],
+  [
+   "_contest",
+   3
+  ],
+  [
+   "legalActions",
+   1.4
+  ],
+  [
+   "contestMap",
+   0.8
+  ],
+  [
+   "apply",
+   0.7
+  ],
+  [
+   "playTurn",
+   0.6
+  ],
+  [
+   "defenderReachExact",
+   0.2
+  ],
+  [
+   "zobrist",
+   0.2
+  ],
+  [
+   "isLegal",
+   0
+  ],
+  [
+   "laneP",
+   0
+  ]
+ ]
+}

@@ -1,8 +1,0 @@
-cheap 2 4 2 [[1, 0.399], [2, 7.437], [3, 88.979]] [(1, 'X2 Quick Step to D6'), (2, 'X2 Quick Step to D7'), (3, 'X2 Quick Step to D6')]
-cheap 2 12 2 [[1, 0.297], [2, 10.838], [3, 97.9]] [(1, 'X3 Move to N7 facing W'), (2, 'X2 Quick Step to D7'), (3, 'X5 Move to P2 facing N')]
-cheap 7 phase 2 2 [[1, 0.174], [2, 2.751], [3, 47.117]] [(1, 'O3 Sprint to E9 ; O2 Sprint to E10'), (2, 'O3 Sprint to E9'), (3, 'O3 Sprint to E9')]
-cheap 7 phase 6 4 [[1, 0.056], [2, 0.331], [3, 0.37], [4, 0.378]] [(1, 'O3 Pass to O4'), (2, 'O3 Pass to O4'), (3, 'O3 Shot (mid)'), (4, 'O3 Shot (mid)')]
-cheap 9 2 [[1, 0.189], [2, 1.499], [3, 35.772]] [(1, 'O1 Move to J3'), (2, 'O1 Move to J3'), (3, 'O1 Move to J3')]
-cheap 10 good odds 2 [[1, 0.345], [2, 3.778], [3, 36.765]] [(1, 'X1 Move to J10 facing N'), (2, 'X1 Move to J10 facing N'), (3, 'X1 Move to J10 facing N')]
-cheap 10 bad odds 2 [[1, 0.254], [2, 5.918], [3, 59.662]] [(1, 'X Pause'), (2, 'X4 Move to B4 facing SW'), (3, 'X3 Quick Step to P6')]
-cheap 16 2 [[1, 0.206], [2, 1.782], [3, 46.576]] [(1, 'O2 Move to A5 ; O4 Sprint to A6'), (2, 'O2 Move to A5'), (3, 'O2 Move to A5')]
