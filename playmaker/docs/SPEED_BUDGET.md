@@ -15,6 +15,11 @@ Each level must finish **1 team-turn pair** (its own turn and the reply) on at l
 - **Desktop** is the machine the measurements run on, with a warm engine, as in a game.
 - The All-Star uses what is left of its time on a second pair.
 
+## Measuring a real phone (D-126)
+
+Open the play link with `?speedtest=1` on the end, wait for the bar to fill (under 5 minutes), and tap **Copy
+results**. No phone target changes until that result is in.
+
 ## How a change reports against it
 
 Every change gives, for each level, on a desktop and at phone speed (CLAUDE.md, "Tests"):

@@ -55,6 +55,7 @@ async function api(path, body) {
 
 // ---------------------------------------------------------------- start screen
 async function initStart() {
+  if (window.PM_SPEEDTEST) return;                        // step 13C: ?speedtest=1 runs the speed test instead (speedtest.js)
   const o = await api('/api/options');
   if (o.static) {
     $('mode').querySelector('option[value=remote]').disabled = true;
