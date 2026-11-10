@@ -1,0 +1,88 @@
+{
+ "runs": [
+  "strong2"
+ ],
+ "possessions": 640,
+ "positions": 11420,
+ "held_out_error": {
+  "todays_reading": 9.473,
+  "flat": 8.845,
+  "linear": 8.746,
+  "pooled": 8.738,
+  "isotonic": 8.837
+ },
+ "pooled_slope": null,
+ "form": "linear",
+ "by_phase_and_side": {
+  "1O": {
+   "positions": 3488,
+   "reading": 27.7,
+   "earned": 29.3,
+   "over_by": -1.6,
+   "own_slope": 0.289
+  },
+  "1X": {
+   "positions": 2703,
+   "reading": 28.2,
+   "earned": 29.1,
+   "over_by": -0.9,
+   "own_slope": 0.273
+  },
+  "2O": {
+   "positions": 1843,
+   "reading": 30.3,
+   "earned": 29.0,
+   "over_by": 1.2,
+   "own_slope": 0.363
+  },
+  "2X": {
+   "positions": 1333,
+   "reading": 29.3,
+   "earned": 28.7,
+   "over_by": 0.6,
+   "own_slope": 0.196
+  },
+  "3O": {
+   "positions": 844,
+   "reading": 29.3,
+   "earned": 27.8,
+   "over_by": 1.5,
+   "own_slope": 0.442
+  },
+  "3X": {
+   "positions": 641,
+   "reading": 28.3,
+   "earned": 27.2,
+   "over_by": 1.1,
+   "own_slope": 0.255
+  },
+  "4O": {
+   "positions": 299,
+   "reading": 30.3,
+   "earned": 26.5,
+   "over_by": 3.8,
+   "own_slope": 0.192
+  },
+  "4X": {
+   "positions": 185,
+   "reading": 29.2,
+   "earned": 25.3,
+   "over_by": 3.9,
+   "own_slope": -0.102
+  },
+  "5O": {
+   "positions": 56,
+   "reading": 32.6,
+   "earned": 28.2,
+   "over_by": 4.5,
+   "own_slope": 0.484
+  },
+  "5X": {
+   "positions": 24,
+   "reading": 33.4,
+   "earned": 28.2,
+   "over_by": 5.1,
+   "own_slope": 0.389
+  }
+ }
+}

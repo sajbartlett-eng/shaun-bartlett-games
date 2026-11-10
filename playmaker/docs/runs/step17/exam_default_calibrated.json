@@ -1,0 +1,1675 @@
+{
+ "positions": 218,
+ "seeds": 4,
+ "opponent": "default",
+ "core_hours": 4.42,
+ "wall_minutes": 73.6,
+ "engines": {
+  "default": {
+   "mark": [
+    8.38,
+    4.88,
+    11.95
+   ]
+  },
+  "calibrated": {
+   "mark": [
+    11.34,
+    7.72,
+    15.14
+   ]
+  }
+ },
+ "against_default": {
+  "calibrated": {
+   "all": {
+    "positions": 218,
+    "gain": [
+     2.96,
+     1.92,
+     4.0
+    ],
+    "better": 125,
+    "worse": 64
+   },
+   "hand_boards": {
+    "positions": 22,
+    "gain": [
+     3.33,
+     -0.3,
+     6.86
+    ],
+    "better": 13,
+    "worse": 7
+   },
+   "self_play": {
+    "positions": 130,
+    "gain": [
+     3.95,
+     2.59,
+     5.26
+    ],
+    "better": 83,
+    "worse": 30
+   },
+   "defence_added": {
+    "positions": 66,
+    "gain": [
+     0.89,
+     -1.2,
+     3.23
+    ],
+    "better": 29,
+    "worse": 27
+   },
+   "offence_to_act": {
+    "positions": 145,
+    "gain": [
+     3.97,
+     2.68,
+     5.3
+    ],
+    "better": 92,
+    "worse": 34
+   },
+   "defence_to_act": {
+    "positions": 73,
+    "gain": [
+     0.95,
+     -1.17,
+     2.89
+    ],
+    "better": 33,
+    "worse": 30
+   },
+   "phase_1": {
+    "positions": 52,
+    "gain": [
+     4.09,
+     1.88,
+     6.27
+    ],
+    "better": 35,
+    "worse": 13
+   },
+   "phase_2": {
+    "positions": 34,
+    "gain": [
+     1.18,
+     -1.61,
+     3.88
+    ],
+    "better": 18,
+    "worse": 13
+   },
+   "phase_3": {
+    "positions": 33,
+    "gain": [
+     2.11,
+     -0.25,
+     4.61
+    ],
+    "better": 18,
+    "worse": 13
+   },
+   "phase_4": {
+    "positions": 33,
+    "gain": [
+     2.92,
+     0.36,
+     5.8
+    ],
+    "better": 20,
+    "worse": 11
+   },
+   "phase_5": {
+    "positions": 33,
+    "gain": [
+     4.42,
+     1.42,
+     7.59
+    ],
+    "better": 21,
+    "worse": 9
+   },
+   "phase_6": {
+    "positions": 33,
+    "gain": [
+     2.42,
+     -0.64,
+     5.52
+    ],
+    "better": 13,
+    "worse": 5
+   }
+  }
+ },
+ "rows": {
+  "board 1": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -32.75,
+   "calibrated": -35.0
+  },
+  "board 2 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -6.5,
+   "calibrated": -16.25
+  },
+  "board 2 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -17.5,
+   "calibrated": -8.0
+  },
+  "board 3": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -26.25,
+   "calibrated": -16.5
+  },
+  "board 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 19.5,
+   "calibrated": 31.5
+  },
+  "board 5 close": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 39.0
+  },
+  "board 5 short": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 35.75,
+   "calibrated": 39.0
+  },
+  "board 6": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 38.0,
+   "calibrated": 33.0
+  },
+  "board 7 phase 2": {
+   "source": "hand board",
+   "phase": 2,
+   "side": "O",
+   "default": 25.0,
+   "calibrated": 14.0
+  },
+  "board 7 phase 6": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "calibrated": 0.0
+  },
+  "board 8": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 36.75,
+   "calibrated": 30.5
+  },
+  "board 9": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 7.5,
+   "calibrated": 20.25
+  },
+  "board 10 good odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -24.25,
+   "calibrated": -19.0
+  },
+  "board 10 bad odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -27.25,
+   "calibrated": -16.0
+  },
+  "board 11 early": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 24.0,
+   "calibrated": 33.75
+  },
+  "board 11 final phase": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "calibrated": 0.0
+  },
+  "board 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -24.25,
+   "calibrated": -37.5
+  },
+  "board 13": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 12.75,
+   "calibrated": 30.0
+  },
+  "board 14": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 24.5,
+   "calibrated": 36.5
+  },
+  "board 15": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 37.0,
+   "calibrated": 33.75
+  },
+  "board 16": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 32.25,
+   "calibrated": 33.0
+  },
+  "board C2": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 30.5,
+   "calibrated": 39.0
+  },
+  "seed1310": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 27.75,
+   "calibrated": 31.75
+  },
+  "seed290": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.0,
+   "calibrated": 29.75
+  },
+  "seed412": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.25,
+   "calibrated": 32.0
+  },
+  "seed374": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 16.0,
+   "calibrated": 25.25
+  },
+  "seed203": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 26.75,
+   "calibrated": 33.0
+  },
+  "seed88": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 34.5,
+   "calibrated": 33.0
+  },
+  "seed875": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "calibrated": 36.75
+  },
+  "seed393": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 27.5,
+   "calibrated": 33.75
+  },
+  "seed970": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 30.5,
+   "calibrated": 30.75
+  },
+  "seed229": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 38.75,
+   "calibrated": 15.75
+  },
+  "seed860": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 26.5,
+   "calibrated": 32.0
+  },
+  "seed457": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 14.5,
+   "calibrated": 33.0
+  },
+  "seed881": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "calibrated": 33.0
+  },
+  "seed709": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 29.5,
+   "calibrated": 33.5
+  },
+  "seed704": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 12.5,
+   "calibrated": 28.75
+  },
+  "seed1450": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "calibrated": 33.5
+  },
+  "seed1080": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 21.25,
+   "calibrated": 36.0
+  },
+  "seed578": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "calibrated": 33.0
+  },
+  "seed315": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 0.0,
+   "calibrated": 25.0
+  },
+  "seed1485": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 21.75,
+   "calibrated": 26.5
+  },
+  "seed574": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.5,
+   "calibrated": 33.0
+  },
+  "seed764": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 37.0,
+   "calibrated": 36.0
+  },
+  "seed968": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.5,
+   "calibrated": 19.5
+  },
+  "seed74": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 28.25,
+   "calibrated": 34.25
+  },
+  "seed1105": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 29.75,
+   "calibrated": 31.0
+  },
+  "seed1039": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 33.0
+  },
+  "seed3": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.5,
+   "calibrated": 30.25
+  },
+  "seed4": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.75,
+   "calibrated": 26.5
+  },
+  "seed378": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 32.0,
+   "calibrated": 30.0
+  },
+  "seed1208": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.25,
+   "calibrated": 32.75
+  },
+  "seed213": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "calibrated": 24.25
+  },
+  "seed1215": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.75,
+   "calibrated": 33.0
+  },
+  "seed557": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.25,
+   "calibrated": 33.0
+  },
+  "seed1469": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 37.0,
+   "calibrated": 44.0
+  },
+  "seed1190": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 25.5,
+   "calibrated": 30.75
+  },
+  "seed449": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 18.5,
+   "calibrated": 33.75
+  },
+  "seed844": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 20.25,
+   "calibrated": 30.0
+  },
+  "seed166": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 32.25,
+   "calibrated": 30.75
+  },
+  "seed514": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 21.75,
+   "calibrated": 21.0
+  },
+  "seed460": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 23.0,
+   "calibrated": 24.0
+  },
+  "seed962": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.0,
+   "calibrated": 36.0
+  },
+  "seed904": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.75,
+   "calibrated": 36.0
+  },
+  "seed1101": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 38.0,
+   "calibrated": 38.0
+  },
+  "seed1149": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 27.0
+  },
+  "seed1383": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 29.75,
+   "calibrated": 26.0
+  },
+  "seed1162": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 17.75,
+   "calibrated": 25.5
+  },
+  "seed622": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 22.75,
+   "calibrated": 29.5
+  },
+  "seed237": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.0,
+   "calibrated": 29.75
+  },
+  "seed1119": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 14.5,
+   "calibrated": 27.0
+  },
+  "seed79": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 39.0,
+   "calibrated": 41.0
+  },
+  "seed559": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 33.0
+  },
+  "seed1178": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 34.25,
+   "calibrated": 27.0
+  },
+  "seed769": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 27.0
+  },
+  "seed1343": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 16.5,
+   "calibrated": 26.0
+  },
+  "seed1410": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 11.5,
+   "calibrated": 18.5
+  },
+  "seed735": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 35.5,
+   "calibrated": 32.0
+  },
+  "seed1132": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 28.5
+  },
+  "seed29": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 35.75,
+   "calibrated": 38.0
+  },
+  "seed303": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 28.0,
+   "calibrated": 30.75
+  },
+  "seed169": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 29.75,
+   "calibrated": 25.0
+  },
+  "seed245": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 36.0
+  },
+  "seed426": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 33.0,
+   "calibrated": 30.5
+  },
+  "seed168": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 15.75,
+   "calibrated": 32.5
+  },
+  "seed30": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 38.0,
+   "calibrated": 38.0
+  },
+  "seed60": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 23.75,
+   "calibrated": 30.0
+  },
+  "seed756": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 23.0,
+   "calibrated": 30.0
+  },
+  "seed62": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.5,
+   "calibrated": 30.0
+  },
+  "seed157": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 29.25,
+   "calibrated": 27.0
+  },
+  "seed1499": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 22.5,
+   "calibrated": 38.0
+  },
+  "seed404": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 25.75,
+   "calibrated": 30.0
+  },
+  "seed1436": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.5,
+   "calibrated": 27.5
+  },
+  "seed1027": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 41.0,
+   "calibrated": 41.0
+  },
+  "seed1135": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 26.0,
+   "calibrated": 27.75
+  },
+  "seed502": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.25,
+   "calibrated": 29.25
+  },
+  "seed306": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 12.5,
+   "calibrated": 33.0
+  },
+  "seed43": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.25,
+   "calibrated": 33.0
+  },
+  "seed353": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "calibrated": 42.0
+  },
+  "seed1386": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 24.25
+  },
+  "seed1366": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 36.0
+  },
+  "seed981": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 37.75,
+   "calibrated": 30.0
+  },
+  "seed63": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 21.75,
+   "calibrated": 30.0
+  },
+  "seed1071": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 14.0,
+   "calibrated": 35.0
+  },
+  "seed249": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.75,
+   "calibrated": 36.0
+  },
+  "seed1026": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.25,
+   "calibrated": 36.5
+  },
+  "seed1025": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 35.0,
+   "calibrated": 36.5
+  },
+  "seed1166": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "calibrated": 28.75
+  },
+  "seed429": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 19.0,
+   "calibrated": 22.5
+  },
+  "seed467": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 25.5,
+   "calibrated": 36.0
+  },
+  "seed1439": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.75,
+   "calibrated": 25.0
+  },
+  "seed854": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 21.75,
+   "calibrated": 36.0
+  },
+  "seed912": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 14.75,
+   "calibrated": 27.0
+  },
+  "seed1388": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 26.0,
+   "calibrated": 38.0
+  },
+  "seed742": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 36.0
+  },
+  "seed740": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.5,
+   "calibrated": 36.0
+  },
+  "seed84": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 32.25,
+   "calibrated": 43.0
+  },
+  "seed656": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "calibrated": 35.0
+  },
+  "seed389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.5,
+   "calibrated": 32.0
+  },
+  "seed1276": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 24.5,
+   "calibrated": 30.0
+  },
+  "seed1368": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 31.5,
+   "calibrated": 36.0
+  },
+  "seed1184": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 12.25,
+   "calibrated": 20.0
+  },
+  "seed791": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.25,
+   "calibrated": 24.0
+  },
+  "seed373": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "calibrated": 27.0
+  },
+  "seed1225": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 20.0,
+   "calibrated": 30.0
+  },
+  "seed941": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 19.75,
+   "calibrated": 27.0
+  },
+  "seed174": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.5,
+   "calibrated": 23.25
+  },
+  "seed1461": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "calibrated": 32.75
+  },
+  "seed1389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 13.75,
+   "calibrated": 35.75
+  },
+  "seed1438": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "calibrated": 26.75
+  },
+  "seed311": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "calibrated": 36.0
+  },
+  "seed775": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 22.75,
+   "calibrated": 25.5
+  },
+  "seed17": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.0,
+   "calibrated": 24.0
+  },
+  "seed509": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 24.0
+  },
+  "seed1371": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 18.0,
+   "calibrated": 18.0
+  },
+  "seed945": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.5,
+   "calibrated": 20.5
+  },
+  "seed914": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 26.25,
+   "calibrated": 17.5
+  },
+  "seed568": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 8.25,
+   "calibrated": 24.75
+  },
+  "seed658": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 19.5,
+   "calibrated": 35.0
+  },
+  "seed1031": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 34.25,
+   "calibrated": 14.0
+  },
+  "seed390": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.0,
+   "calibrated": 28.0
+  },
+  "seed68": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 22.5,
+   "calibrated": 35.0
+  },
+  "seed1417": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 33.0,
+   "calibrated": 42.5
+  },
+  "seed1202": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "calibrated": 24.0
+  },
+  "seed392": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 27.0
+  },
+  "seed745": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "calibrated": 27.0
+  },
+  "seed1228": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 12.0,
+   "calibrated": 12.0
+  },
+  "seed178": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.0,
+   "calibrated": 20.0
+  },
+  "seed858": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 36.0,
+   "calibrated": 36.0
+  },
+  "seed724": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.75,
+   "calibrated": 30.0
+  },
+  "seed471": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.75,
+   "calibrated": 21.0
+  },
+  "seed266": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 9.0,
+   "calibrated": 20.25
+  },
+  "defence68": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -30.75,
+   "calibrated": -20.25
+  },
+  "defence183": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -33.0,
+   "calibrated": -33.0
+  },
+  "defence71": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -14.25,
+   "calibrated": -18.0
+  },
+  "defence480": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -36.0,
+   "calibrated": -28.5
+  },
+  "defence181": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -29.75,
+   "calibrated": -24.75
+  },
+  "defence361": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -32.25,
+   "calibrated": -28.5
+  },
+  "defence1": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -35.75,
+   "calibrated": -37.25
+  },
+  "defence554": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -33.5,
+   "calibrated": -37.75
+  },
+  "defence342": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -25.5,
+   "calibrated": -25.5
+  },
+  "defence201": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -31.5,
+   "calibrated": -27.25
+  },
+  "defence239": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -31.5,
+   "calibrated": -26.25
+  },
+  "defence377": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -27.5,
+   "calibrated": -29.75
+  },
+  "defence99": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -30.75,
+   "calibrated": -25.25
+  },
+  "defence329": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -23.75,
+   "calibrated": -15.0
+  },
+  "defence272": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -15.75,
+   "calibrated": -15.25
+  },
+  "defence240": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -36.75,
+   "calibrated": -19.5
+  },
+  "defence31": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -20.5,
+   "calibrated": -42.25
+  },
+  "defence373": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -30.25,
+   "calibrated": -18.0
+  },
+  "defence632": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -22.5,
+   "calibrated": -26.5
+  },
+  "defence279": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -40.5,
+   "calibrated": -26.0
+  },
+  "defence102": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -30.75,
+   "calibrated": -34.75
+  },
+  "defence495": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -25.5,
+   "calibrated": -32.25
+  },
+  "defence555": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -30.0,
+   "calibrated": -33.0
+  },
+  "defence170": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -23.5,
+   "calibrated": -30.75
+  },
+  "defence338": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -36.0,
+   "calibrated": -18.0
+  },
+  "defence277": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -32.25,
+   "calibrated": -27.0
+  },
+  "defence111": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -26.5,
+   "calibrated": -27.0
+  },
+  "defence106": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -29.5,
+   "calibrated": -34.5
+  },
+  "defence146": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -31.5,
+   "calibrated": -22.75
+  },
+  "defence32": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -24.75,
+   "calibrated": -23.5
+  },
+  "defence531": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -25.5,
+   "calibrated": -30.5
+  },
+  "defence51": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -16.75,
+   "calibrated": -27.75
+  },
+  "defence462": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -26.5,
+   "calibrated": -35.5
+  },
+  "defence130": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -48.5,
+   "calibrated": -48.5
+  },
+  "defence135": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -34.0,
+   "calibrated": -39.0
+  },
+  "defence551": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -42.5,
+   "calibrated": -42.0
+  },
+  "defence532": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -32.0,
+   "calibrated": -36.5
+  },
+  "defence631": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -33.75,
+   "calibrated": -30.0
+  },
+  "defence325": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -20.25,
+   "calibrated": -15.0
+  },
+  "defence84": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -24.75,
+   "calibrated": -34.5
+  },
+  "defence451": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -24.5,
+   "calibrated": -28.25
+  },
+  "defence318": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -13.5,
+   "calibrated": -32.0
+  },
+  "defence577": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -34.25,
+   "calibrated": -22.25
+  },
+  "defence471": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -33.75,
+   "calibrated": -37.25
+  },
+  "defence57": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -23.25,
+   "calibrated": -8.75
+  },
+  "defence195": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -34.0,
+   "calibrated": -34.25
+  },
+  "defence443": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -5.25,
+   "calibrated": -14.25
+  },
+  "defence142": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -33.0,
+   "calibrated": -33.0
+  },
+  "defence157": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -15.75,
+   "calibrated": -23.25
+  },
+  "defence217": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -32.25,
+   "calibrated": -43.0
+  },
+  "defence397": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -30.0,
+   "calibrated": 0.0
+  },
+  "defence562": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -26.5,
+   "calibrated": -26.5
+  },
+  "defence62": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -38.75,
+   "calibrated": -38.0
+  },
+  "defence484": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -17.75,
+   "calibrated": -6.75
+  },
+  "defence444": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -29.25,
+   "calibrated": -22.25
+  },
+  "defence89": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -33.0,
+   "calibrated": -33.0
+  },
+  "defence242": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -13.5,
+   "calibrated": -13.5
+  },
+  "defence369": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": 0.0,
+   "calibrated": 0.0
+  },
+  "defence362": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -42.0,
+   "calibrated": -40.0
+  },
+  "defence355": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -18.0,
+   "calibrated": -27.0
+  },
+  "defence162": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -24.75,
+   "calibrated": -16.5
+  },
+  "defence122": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": 0.0,
+   "calibrated": 0.0
+  },
+  "defence529": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -9.75,
+   "calibrated": -25.25
+  },
+  "defence229": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -18.25,
+   "calibrated": -4.5
+  },
+  "defence169": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -7.5,
+   "calibrated": 0.0
+  },
+  "defence36": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -33.5,
+   "calibrated": -33.5
+  }
+ }
+}

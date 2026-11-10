@@ -1,0 +1,130 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "searches": {
+  "compared": 4,
+  "equal": 4
+ },
+ "states": 400,
+ "seconds_python": 38.2,
+ "seconds_js": 4.1,
+ "by_stage": {
+  "play": 379,
+  "over": 17,
+  "reaction": 4
+ },
+ "by_phase": {
+  "1": 241,
+  "2": 75,
+  "3": 41,
+  "4": 24,
+  "5": 19
+ },
+ "by_age": {
+  "senior": 142,
+  "youth": 139,
+  "junior": 119
+ },
+ "by_standard": {
+  "pro": 141,
+  "semi_pro": 124,
+  "amateur": 135
+ },
+ "digital": 201,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 400,
+   "equal": 400
+  },
+  "attacker_reach": {
+   "compared": 383,
+   "equal": 383
+  },
+  "defender_reach": {
+   "compared": 383,
+   "equal": 383
+  },
+  "defender_exact": {
+   "compared": 383,
+   "equal": 383
+  },
+  "threat_geo": {
+   "compared": 383,
+   "equal": 383
+  },
+  "cover_geo": {
+   "compared": 383,
+   "equal": 383
+  },
+  "leaf_geo": {
+   "compared": 383,
+   "equal": 383
+  },
+  "threat_exact": {
+   "compared": 383,
+   "equal": 383
+  },
+  "cover_exact": {
+   "compared": 383,
+   "equal": 383
+  },
+  "leaf_exact": {
+   "compared": 383,
+   "equal": 383
+  },
+  "quick": {
+   "compared": 383,
+   "equal": 383
+  },
+  "reach_map": {
+   "compared": 383,
+   "equal": 383
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 377,
+   "equal": 377
+  },
+  "features_exact": {
+   "compared": 377,
+   "equal": 377
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}
