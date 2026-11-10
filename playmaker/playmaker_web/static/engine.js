@@ -185,6 +185,7 @@ const PMEngine = (() => {
       this.turn_lead = s.turn_lead;
       this.turn_x = s.turn_x;
       this._occ = s._occ || null;
+      this._dre = null;                                  // step 13: this state's exact reach, per defender
     }
   }
   const W_ = (s, ch) => { const n = new St(s); for (const k in ch) n[k] = ch[k]; if (ch.o !== undefined || ch.x !== undefined) n._occ = null; return n; };
@@ -377,11 +378,18 @@ const PMEngine = (() => {
   const isInboundPass = s => !!s.pending && !!s.inbound && s.pending[0] === s.ctx.inbounder;
   const completedView = s => W_(s, { ball: s.pending[1], pending: null, approach: -1 });
 
-  function offenceActions(s) {
+  function offenceActions(s, shotsOnly) {               // shotsOnly (step 13): the shots alone, nothing else generated
     const acts = [], ctx = s.ctx;
     if (s.tok_o <= 0) return acts;
     const carrier = s.ball, cpos = s.o[carrier];
     const inbounderHasIt = s.inbound && carrier === ctx.inbounder;
+    if (shotsOnly) {
+      const z0 = ZN[cpos];
+      if (!inbounderHasIt && ONB[cpos] && z0 !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2)) {
+        for (const t of ZONE_SHOTS[z0]) acts.push(A('shot', 'O', carrier, -1, -1, -1, t));
+      }
+      return acts;
+    }
     if (count(s, 'O', 'pass') < LIMITS.O.pass) {
       for (let r = 0; r < 5; r++) if (r !== carrier && denier(s, carrier, r) < 0) acts.push(A('pass', 'O', carrier, -1, -1, r));
     }
@@ -423,6 +431,7 @@ const PMEngine = (() => {
       }
     }
     if (ok('pause') && count(s, 'X', 'pause') < LIMITS.X.pause && s.prev_wait !== 'H') acts.push(A('pause', 'X'));
+    if (kinds && !(kinds.has('move') || kinds.has('qs') || kinds.has('sprint'))) return acts;   // no movement asked for
     let mv = movementActions(s, 'X');
     if (kinds) mv = mv.filter(a => kinds.has(a.kind));
     for (const a of mv) acts.push(a);
@@ -473,6 +482,33 @@ const PMEngine = (() => {
     return cands.filter(i => DR[s.o[i]] === far);
   }
   const isLegal = (s, a) => legalActions(s).some(b => b.id === a.id);
+  // Step 13 (a speed-up that changes no result): the forcing replies the stable search plays on with, generated
+  // without the movement: exactly legalActions(s) filtered to those kinds, in the same order.
+  const FORCE_DEF = new Set(['steal', 'pause']);
+  function forcingActions(s, why) {
+    if (s.stage !== 'play' && s.stage !== 'reaction') return legalActions(s);      // a contest choice, a forced shot: all
+    let acts;
+    if (why === 'shot') acts = s.side === 'O' ? offenceActions(s, true) : null;
+    else if (s.stage === 'reaction') {
+      acts = defenceActions(s, FORCE_DEF).filter(a => a.kind === 'steal');           // the reaction's kinds: movement and Steal
+      if (s.tok_x > 0) for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender));
+      acts.push(A('end_turn', 'X'));
+    } else if (s.side === 'X' && s.pending) {
+      acts = [];
+      const canIcpt = count(s, 'X', 'intercept') < LIMITS.X.intercept && s.tok_x > 0;
+      if (s.turn_n === 0 && canIcpt) for (let j = 0; j < 5; j++) if (throughYou(s, j)) acts.push(A('intercept', 'X', j));
+      if (s.turn_n === 1 && s.approach >= 0 && canIcpt) acts.push(A('intercept', 'X', s.approach));
+      if (isInboundPass(s)) { for (const a of defenceActions(s, FORCE_DEF)) if (a.kind !== 'steal') acts.push(a); }
+      else for (const a of defenceActions(completedView(s), FORCE_DEF)) acts.push(a);
+      if (s.turn_n >= 1) acts.push(A('end_turn', 'X'));
+    } else acts = null;
+    if (acts === null) {                                   // any other case: the full list, filtered
+      const kinds = why === 'shot' ? SHOT_ONLY : FORCING;
+      return legalActions(s).filter(a => kinds.has(a.kind));
+    }
+    acts.sort((a, b) => OIDX[a.kind] - OIDX[b.kind]);
+    return acts;
+  }
 
   // ---- scoring ----------------------------------------------------------------------------------------------------
   const clampT = t => Math.max(0, Math.min(20, t));
@@ -797,7 +833,81 @@ const PMEngine = (() => {
     qsLeft = quickStepped(s, side, i) ? 0 : Math.min(qsLeft, 1);
     return [canMove, qsLeft];
   }
-  function defenderReachExact(s, d) {                   // solver.defender_reach(s, d, 2), as action counts
+  // Step 13 (a speed-up that changes no result): a defender's exact reach depends only on his own square, arrow and
+  // what he has left, on the pieces standing on the squares his paths can cross (his envelope) and on the screens. It
+  // is kept under exactly that key, so it is computed once for a position (every lane and contest of every reading
+  // of it shares the answer) and it survives any move that doesn't touch his envelope: the reach map, updated only
+  // where a move changes it. The answer also carries its one-action squares (.one) and its contest map (.cm).
+  const _ENV = new Map();
+  function reachEnvelope(start, qs, canMove, qsLeft, two) {      // every square a path of his may cross (Uint8Array by cell)
+    const key = (((start * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3 + qsLeft) * 2 + (two ? 1 : 0);
+    let env = _ENV.get(key); if (env) return env;
+    env = new Uint8Array(ONB.length);
+    const hop = (frm, kind) => {
+      const out = [];
+      const raw = kind === 'move' ? movePaths(frm) : kind === 'qs' ? qsPaths(frm, qs) : sprintPaths(frm, qs).map(r => r[1]);
+      for (const p of raw) {
+        let on = true; for (const q of p) if (!ONB[q]) { on = false; break; }
+        if (!on) continue;
+        for (const q of p) env[q] = 1;
+        out.push(p[p.length - 1]);
+      }
+      return out;
+    };
+    // the same hops as defenderReachBuild, with nothing in the way
+    const moves = canMove ? hop(start, 'move') : [];
+    const qss = qsLeft >= 1 && qs > 0 ? hop(start, 'qs') : [];
+    if (canMove && qsLeft >= 1) hop(start, 'sprint');
+    if (two) {
+      if (qsLeft >= 1 && qs > 0) { for (const m of moves) hop(m, 'qs'); }
+      if (canMove) for (const q1 of qss) hop(q1, 'move');
+    }
+    _ENV.set(key, env); return env;
+  }
+  let REACH = new Map(), REACH_OLD = new Map();
+  const REACH_STATS = { calls: 0, same_state: 0, kept: 0, built: 0 };
+  // Step 13: the speed-ups that change no result. Each can be turned off by a tool (setSpeed), to time it and to prove
+  // the search gives the same choices and values with and without it. All are on in play.
+  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true };
+  function setSpeed(json) {
+    const q = typeof json === 'string' ? JSON.parse(json) : json;
+    for (const k in SPEED) if (q[k] !== undefined) SPEED[k] = q[k] === true || q[k] === 'true';
+    REACH = new Map(); REACH_OLD = new Map();
+    return Object.assign({}, SPEED);
+  }
+  function defenderReachExact(s, d) {
+    if (!SPEED.reach_cache) return defenderReachBuild(s, d);
+    REACH_STATS.calls++;
+    const memo = s._dre || (s._dre = [null, null, null, null, null]);
+    if (memo[d]) { REACH_STATS.same_state++; return memo[d]; }
+    const start = s.x[d], qs = s.ctx.dfn[d].qs;
+    let key;
+    if (s.tok_x <= 0) key = 'n' + start + ',' + s.arrows[d];
+    else {
+      let qsLeft = 2 - count(s, 'X', 'qs');
+      if (quickStepped(s, 'X', d)) qsLeft = 0;
+      qsLeft = Math.min(qsLeft, 1);
+      const canMove = !hasMoved(s, 'X', d) && !isLocked(s, 'X', d), two = s.tok_x >= 2;
+      const env = reachEnvelope(start, qs, canMove, qsLeft, two);
+      const occ = [];
+      for (let i = 0; i < 5; i++) { const q = s.o[i]; if (env[q]) occ.push(q); }
+      for (let j = 0; j < 5; j++) { const q = s.x[j]; if (j !== d && env[q]) occ.push(q); }
+      occ.sort((a, b) => a - b);
+      // the true Quick Steps left decide the second action (qsLeft >= 2 in the build is never true: it is capped at 1)
+      key = start + ',' + s.arrows[d] + ',' + qs + ',' + (canMove ? 1 : 0) + qsLeft + (two ? 1 : 0) + '|' + occ.join(',');
+      if (s.screens.length) key += '|' + s.screens.map(sc => tSquare(s, sc) + ':' + ((sc[3] >> d) & 1)).join(',');
+    }
+    let hit = REACH.get(key);
+    if (hit === undefined) {
+      hit = REACH_OLD.get(key);
+      if (hit === undefined) { hit = defenderReachBuild(s, d); REACH_STATS.built++; } else REACH_STATS.kept++;
+      if (REACH.size >= 4000) { REACH_OLD = REACH; REACH = new Map(); }
+      REACH.set(key, hit);
+    } else REACH_STATS.kept++;
+    memo[d] = hit;
+    return hit;
+  }
+  function defenderReachBuild(s, d) {                   // solver.defender_reach(s, d, 2), as action counts
     const start = s.x[d], arrow = s.arrows[d];
     const free = new Map(), fixed = new Map([[start, new Map([[arrow, 0]])]]);
     if (s.tok_x <= 0) return [free, fixed];
@@ -939,11 +1049,14 @@ const PMEngine = (() => {
   }
   const PATH_ROUTES = new Set(['drive', 'later', 'cut']);
   function exactOne(s, d) {                            // decide._exact_one, as the bitset oneAction returns
-    const [free, fixed] = defenderReachExact(s, d), hit = new Uint32Array(8);
+    const r = defenderReachExact(s, d);
+    if (r.one) return r.one;
+    const [free, fixed] = r, hit = new Uint32Array(8);
     const put = q => { const b = BI[q]; if (b >= 0) hit[b >> 5] |= 1 << (b & 31); };
     put(s.x[d]);
     for (const [q, n] of free) if (n <= 1) put(q);
     for (const [q, arr] of fixed) { let m = INF; for (const v of arr.values()) if (v < m) m = v; if (m <= 1) put(q); }
+    if (SPEED.reach_cache) r.one = hit;
     return hit;
   }
   // attackerReach's squares within one action, in its order, from geometry alone (the occupancy filter is per state)
@@ -1226,7 +1339,13 @@ const PMEngine = (() => {
     _contest(d, at = -1, arrow = -1, used = null) {
       const s = this.s;
       if (!ONB[s.x[d]]) return null;
-      if (at < 0 && (this.exact || reachOn())) { const [free, fixed] = defenderMap(s, d, true); return contestMap(free, fixed); }
+      if (at < 0 && (this.exact || reachOn())) {
+        const r = defenderMap(s, d, true);
+        if (r.cm) return r.cm;
+        const cm = contestMap(r[0], r[1]);
+        if (SPEED.reach_cache) r.cm = cm;
+        return cm;
+      }
       let [canMove, qsLeft] = caps(s, 'X', d);
       let frm = s.x[d], a = s.arrows[d];
       if (at >= 0) {
@@ -1568,6 +1687,34 @@ const PMEngine = (() => {
       this._quick = v;
       return v;
     }
+    // Step 13 (a speed-up that changes no result): Read(s, k=0, looks_per=3): is the ball handler's shot now worth more
+    // than the possession without it? From this read, as quickLeaf is (the offence to act, no pass in the air).
+    quickShotFirst() {
+      if (this._qshot !== undefined) return this._qshot;
+      const s = this.s;
+      let sn = null;
+      if (this.o_to_act) { const ls = this.looks[s.ball] || []; for (let n = 0; n < Math.min(3, ls.length); n++) if (ls[n].route === 'shoot') { sn = ls[n].base; break; } }
+      if (sn === null) return (this._qshot = false);
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      let now = 0.0;
+      for (const i of this.att_o) {
+        const ls = this.looks[i];
+        for (let n = 0; n < Math.min(3, ls.length); n++) if (ls[n].now && !(i === s.ball && ls[n].route === 'shoot') && ls[n].base > now) now = ls[n].base;
+      }
+      let poss;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) poss = banked + now;
+      else {
+        let top = 0.0, first = true;
+        for (const i of this.att_o) { const t = this.threat[i].value; if (first || t > top) top = t; first = false; }
+        let sum = 0.0, nt = 0;
+        for (const i of this.att_o) { const t = this.threat[i].value; if (t >= top - 1e-9) { sum += t; nt++; } }
+        const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation, coarse = vcoarse(s);
+        if ((D.config.eval.leaf_mode || 'floor') === 'relative') poss = banked + Math.max(now, coarse + cont - relativeAverage(s));
+        else poss = banked + Math.max(now, cont, coarse);
+      }
+      return (this._qshot = sn > poss + 1e-9);
+    }
     leaf() {
       if (this._leaf !== undefined) return this._leaf;
       return (this._leaf = this._leafCalc());
@@ -1781,6 +1928,7 @@ const PMEngine = (() => {
       if (s.pending) return this.playOn ? 'pass' : null;
       if (midTurn(s) && this.quiet) return 'mid';
       if (this.playOn && actor(s) === 'O') {
+        if (SPEED.quiet_read) return readOf(s).quickShotFirst() ? 'shot' : null;   // the same reading, from the shared read
         const r = new Read(s, { k: 0, looks_per: 3 });
         const sn = r.shotNow();
         if (sn !== null && sn > r.possession() + 1e-9) return 'shot';
@@ -1793,7 +1941,8 @@ const PMEngine = (() => {
       if (why === 'mid') list = this.turnsOf(s).map(r => r[1]);
       else {
         const kinds = why === 'shot' ? SHOT_ONLY : FORCING;
-        list = legalActions(s).filter(a => kinds.has(a.kind) || (why === 'stage' && s.stage !== 'reaction')).map(a => [a]);
+        if (SPEED.forcing) list = forcingActions(s, why).map(a => [a]);
+        else list = legalActions(s).filter(a => kinds.has(a.kind) || (why === 'stage' && s.stage !== 'reaction')).map(a => [a]);
       }
       if (!list.length) return this.leaf(s);
       this.extensions++;
@@ -1830,7 +1979,7 @@ const PMEngine = (() => {
       const side = actor(s);
       let ts = this.turnsOf(s, z);
       if (!ts.length) return this.leaf(s);
-      ts = this.order(ts, depth);
+      ts = this.order(ts, depth, z);
       this.nodes++;
       const a0 = alpha, b0 = beta;
       let best = null;
@@ -1880,7 +2029,7 @@ const PMEngine = (() => {
         if (depth <= 0) continue;
         const ts = this.turnsOf(sub, z);
         if (!ts.length) continue;
-        const first = this.order(ts, depth)[0][1];
+        const first = this.order(ts, depth, z)[0][1];
         const v = this.value(playTurn(sub, first), depth - 1, VMIN, VMAX);
         if (actor(sub) === 'O') lo[k] = Math.max(lo[k], v); else hi[k] = Math.min(hi[k], v);
       }
@@ -1931,9 +2080,12 @@ const PMEngine = (() => {
       const k = turnKey(t);
       if (!ks.some(x => turnKey(x) === k)) { ks.unshift(t); ks.length = Math.min(ks.length, 2); }
     }
-    order(ts, depth) {
+    order(ts, depth, z) {
       const ks = (this.killers.get(depth) || []).map(turnKey);
-      const keyed = ts.map(r => [ks.includes(turnKey(r[1])) ? 0 : 1, -(r[0] + 0.01 * (this.history.get(r[1][0].id) || 0)), r]);
+      // step 13: this position's best turn from the look-ahead one shorter is tried first (ordering only)
+      const prev = z !== undefined && SPEED.tt_order ? this.tt.get(ttKey(z, depth - 1)) : undefined;
+      const first = prev !== undefined && prev[2] ? turnKey(prev[2]) : null;
+      const keyed = ts.map(r => { const k = turnKey(r[1]); return [k === first ? -1 : ks.includes(k) ? 0 : 1, -(r[0] + 0.01 * (this.history.get(r[1][0].id) || 0)), r]; });
       keyed.sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
       return keyed.map(k => k[2]);
     }
@@ -2242,7 +2394,7 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

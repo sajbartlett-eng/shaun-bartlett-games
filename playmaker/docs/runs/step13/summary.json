@@ -1,0 +1,513 @@
+{
+ "stability": {
+  "off": {
+   "decisions": {
+    "2 4": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X2 Move to D6 facing W",
+      "2": "X2 Quick Step to D7 ; X1 Steal",
+      "3": "X2 Quick Step to D7",
+      "4": "X2 Quick Step to D7"
+     },
+     "seconds": {
+      "1": 0.286,
+      "2": 1.143,
+      "3": 8.796,
+      "4": 72.267
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "2 12": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X3 Move to N7 facing W",
+      "2": "X3 Quick Step to N7 ; X1 Steal",
+      "3": "X2 Quick Step to D7",
+      "4": "X2 Quick Step to D7"
+     },
+     "seconds": {
+      "1": 0.257,
+      "2": 1.506,
+      "3": 12.934,
+      "4": 96.223
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3",
+      "2 to 4"
+     ]
+    },
+    "7 phase 2": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "2": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "3": "O3 Sprint to E9",
+      "4": "O3 Sprint to E9"
+     },
+     "seconds": {
+      "1": 0.265,
+      "2": 1.079,
+      "3": 8.245,
+      "4": 56.153
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "7 phase 6": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Shot (mid)",
+      "2": "O3 Shot (mid)",
+      "3": "O3 Shot (mid)",
+      "4": "O3 Shot (mid)"
+     },
+     "seconds": {
+      "1": 0.074,
+      "2": 0.325,
+      "3": 0.477,
+      "4": 0.485
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "9": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O1 Move to J3 ; O1 Quick Step to I2",
+      "2": "O1 Move to J3 ; O1 Quick Step to I2",
+      "3": "O1 Move to J3 ; O1 Quick Step to I2",
+      "4": "O1 Move to J3 ; O1 Quick Step to I2"
+     },
+     "seconds": {
+      "1": 0.185,
+      "2": 0.815,
+      "3": 7.281,
+      "4": 35.487
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "10 good odds": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X4 Steal",
+      "2": "X1 Move to J10 facing N",
+      "3": "X1 Move to J10 facing N",
+      "4": "X1 Move to J10 facing N"
+     },
+     "seconds": {
+      "1": 0.224,
+      "2": 1.063,
+      "3": 8.082,
+      "4": 29.436
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "10 bad odds": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X Pause",
+      "2": "X4 Move to B4 facing SW",
+      "3": "X4 Move to B4 facing SW ; X3 Quick Step to P6",
+      "4": "X4 Move to B4 facing SW"
+     },
+     "seconds": {
+      "1": 0.201,
+      "2": 0.938,
+      "3": 8.122,
+      "4": 58.306
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "16": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O2 Move to A5 ; O4 Sprint to A6",
+      "2": "O2 Move to A5",
+      "3": "O2 Move to A5 ; O1 Move to J10",
+      "4": "O2 Move to A5 ; O1 Move to J10"
+     },
+     "seconds": {
+      "1": 0.313,
+      "2": 1.054,
+      "3": 8.755,
+      "4": 37.517
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    }
+   },
+   "compared": 8,
+   "changed": 4,
+   "one_to_three": [
+    4,
+    8
+   ],
+   "two_to_four": [
+    1,
+    8
+   ]
+  },
+  "cheap": {
+   "decisions": {
+    "2 4": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X2 Quick Step to D6",
+      "2": "X2 Quick Step to D7",
+      "3": "X2 Quick Step to D6"
+     },
+     "seconds": {
+      "1": 0.399,
+      "2": 7.437,
+      "3": 88.979
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "2 12": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X3 Move to N7 facing W",
+      "2": "X2 Quick Step to D7",
+      "3": "X5 Move to P2 facing N"
+     },
+     "seconds": {
+      "1": 0.297,
+      "2": 10.838,
+      "3": 97.9
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "7 phase 2": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "2": "O3 Sprint to E9",
+      "3": "O3 Sprint to E9"
+     },
+     "seconds": {
+      "1": 0.174,
+      "2": 2.751,
+      "3": 47.117
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "7 phase 6": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Pass to O4",
+      "2": "O3 Pass to O4",
+      "3": "O3 Shot (mid)",
+      "4": "O3 Shot (mid)"
+     },
+     "seconds": {
+      "1": 0.056,
+      "2": 0.331,
+      "3": 0.37,
+      "4": 0.378
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3",
+      "2 to 4"
+     ]
+    },
+    "9": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O1 Move to J3",
+      "2": "O1 Move to J3",
+      "3": "O1 Move to J3"
+     },
+     "seconds": {
+      "1": 0.189,
+      "2": 1.499,
+      "3": 35.772
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "10 good odds": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X1 Move to J10 facing N",
+      "2": "X1 Move to J10 facing N",
+      "3": "X1 Move to J10 facing N"
+     },
+     "seconds": {
+      "1": 0.345,
+      "2": 3.778,
+      "3": 36.765
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "10 bad odds": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X Pause",
+      "2": "X4 Move to B4 facing SW",
+      "3": "X3 Quick Step to P6"
+     },
+     "seconds": {
+      "1": 0.254,
+      "2": 5.918,
+      "3": 59.662
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "16": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O2 Move to A5 ; O4 Sprint to A6",
+      "2": "O2 Move to A5",
+      "3": "O2 Move to A5"
+     },
+     "seconds": {
+      "1": 0.206,
+      "2": 1.782,
+      "3": 46.576
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    }
+   },
+   "compared": 8,
+   "changed": 3,
+   "one_to_three": [
+    3,
+    8
+   ],
+   "two_to_four": [
+    1,
+    1
+   ]
+  }
+ },
+ "exam_table": "| Board | Off: 1 pair [step 12] | Off: clock [step 12] | Cheap: 1 pair | Cheap: clock |\n|---|---|---|---|---|\n| 1 | F | F | not run | not run |\n| 2 | P | P | not run | not run |\n| 3 | F | F | not run | not run |\n| 4 | P | P | not run | not run |\n| 5 | F | F | not run | not run |\n| 6 | F | F | not run | not run |\n| 7 | F | P | not run | not run |\n| 8 | F | F | not run | not run |\n| 9 | F | F | not run | not run |\n| 10 | F | F | not run | not run |\n| 11 | F | F | not run | not run |\n| 12 | P | P | not run | not run |\n| 13 | F | F | not run | not run |\n| 14 | P | P | not run | not run |\n| 15 | P | P | not run | not run |\n| 16 | P | F | not run | not run |\n| 17 | P | P | not run | not run |\n| C1 | P | P | not run | not run |\n| C2 | P | P | not run | not run |\n| **Passes** | **9 of 19** | **9 of 19** | - | - |",
+ "exam_seconds": {
+  "Off: 1 pair [step 12]": 28,
+  "Off: clock [step 12]": 129,
+  "Cheap: 1 pair": 0,
+  "Cheap: clock": 0
+ },
+ "levels": {},
+ "speedups": {
+  "reach_cache": {
+   "different": [],
+   "seconds_before": 102.99,
+   "seconds_after": 10.38
+  },
+  "forcing": null,
+  "quiet_read": null,
+  "tt_order": null,
+  "all": null
+ },
+ "equivalence": {
+  "cheap": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "cheap_play_on": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "clear_reason": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "like_with_like": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "play_on": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "quiet_points": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "reach_cache_on": {
+   "mismatches": 0,
+   "states": 60,
+   "searches": {
+    "compared": 8,
+    "equal": 8
+   }
+  },
+  "stable": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "tempo": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  }
+ }
+}

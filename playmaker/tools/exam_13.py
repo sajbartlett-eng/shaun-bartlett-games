@@ -10,6 +10,7 @@ reach map). On the JavaScript search (the app's own, proved equal). Every run ha
                                                             phone speed
   python3 tools/exam_13.py record <setting> <depth> out.json    whole searches, no time limit, on the step 12 boards:
                                                             every root value and turn, the choice at each depth, counts
+  python3 tools/exam_13.py dump <depth> requests.json       the boards' search requests, for tools/profile_13.js
   python3 tools/exam_13.py same a.json b.json               two records give the same choices and values; the times
 """
 import json
@@ -28,6 +29,7 @@ from playmaker_engine.search import actor, PARTS                         # noqa:
 import exam_12 as X12                                                    # noqa: E402
 
 CHEAP = ('quiet_points', 'like_with_like', 'tempo')
+SPEEDUPS = ('reach_cache', 'forcing', 'quiet_read', 'tt_order')
 SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP + ('play_on',), False),
             'cheap_reach': (CHEAP, True), 'stable': (PARTS, False), 'both': (PARTS, True),
             'play_on': (('play_on',), False), 'reach': ((), True)}
@@ -41,6 +43,8 @@ def set_switches(eng, setting):
         srch[k] = k in on
     CONFIG['eval']['reach'] = reach
     if eng is not None:
+        off = [x for x in os.environ.get('EXAM13_WITHOUT', '').split(',') if x]      # speed-ups turned off, to time them
+        eng.call('setSpeed', json.dumps({k: k not in off and 'all' not in off for k in SPEEDUPS}))
         eng.call('setSearch', json.dumps(dict(stable=False, **{k: k in on for k in PARTS})))
         eng.call('setReach', 'true' if reach else 'false')
 
@@ -132,10 +136,20 @@ def run_record(setting, depth, out):
         o = json.loads(AG.JS['search'](json.dumps(req)))
         res[name] = dict(results=o['results'], trace=o['trace'], reached=o['reached'], extensions=o.get('extensions'),
                          cap_hits=o.get('cap_hits'), kept=o.get('kept'), leaves=o['leaves'], nodes=o['nodes'],
-                         seconds=round(time.time() - t0, 2), depth_seconds=o.get('depth_seconds'))
+                         seconds=round(o['seconds'], 3), depth_seconds=o.get('depth_seconds'))
         print(setting, name, res[name]['seconds'], o['leaves'], o['nodes'], flush=True)
         json.dump(dict(setting=setting, depth=depth, boards=res), open(out, 'w'), indent=1)
         eng.close()
+
+
+def run_dump(depth, out):
+    """The search requests for the step 12 boards (for tools/profile_13.js)."""
+    reqs = {}
+    for name, s in boards():
+        ag = AG.Agent(actor(s), 'allstar', seed=1)
+        reqs[name] = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=ag.p, budget=None,
+                          max_depth=depth, stale=None)
+    json.dump(reqs, open(out, 'w'))
 
 
 def run_same(a, b):
@@ -152,7 +166,7 @@ def run_same(a, b):
                 and len(x['trace']) == len(y['trace'])
                 and all(p[0] == q[0] and p[1] == q[1] and abs(p[2] - q[2]) <= 1e-9 * max(1.0, abs(p[2]))
                         for p, q in zip(x['trace'], y['trace']))
-                and all(x[f] == y[f] for f in ('reached', 'extensions', 'cap_hits', 'kept')))
+                and all(x[f] == y[f] for f in ('reached', 'kept')))
         if not same:
             bad.append(name)
         ta += x['seconds']
@@ -173,6 +187,8 @@ if __name__ == '__main__':
         run_levels(sys.argv[2], sys.argv[3])
     elif what == 'record':
         run_record(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+    elif what == 'dump':
+        run_dump(int(sys.argv[2]), sys.argv[3])
     elif what == 'same':
         r = run_same(sys.argv[2], sys.argv[3])
         if len(sys.argv) > 4:

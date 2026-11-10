@@ -50,6 +50,11 @@ class Timeout(Exception):
     pass
 
 
+# Step 13: the speed-ups that change no result (a tool may turn one off, to time it and to prove the same choices and
+# values with and without it). tt_order: a position's best turn from the look-ahead one shorter is tried first.
+SPEED = {'tt_order': True}
+
+
 # ---- Zobrist keys -----------------------------------------------------------------------------------------------------
 _ZR = random.Random(20261108)
 _ZPIECE = {(side, i, x, y): _ZR.getrandbits(64) for side in 'OX' for i in range(5)
@@ -360,7 +365,7 @@ class Searcher:
         ts = self.turns_of(s)
         if not ts:
             return self.leaf(s)
-        ts = self.order(ts, depth)
+        ts = self.order(ts, depth, key[0])
         self.nodes += 1
         a0, b0 = alpha, beta
         best = None
@@ -422,7 +427,8 @@ class Searcher:
             if sub.stage == 'over':
                 lo_b[k] = hi_b[k] = terminal_value(sub)
                 continue
-            hit = self.tt.get((zobrist(sub), depth))
+            z = zobrist(sub)
+            hit = self.tt.get((z, depth))
             if hit is not None and hit[1] == 0:
                 lo_b[k] = hi_b[k] = hit[0]
                 continue
@@ -431,7 +437,7 @@ class Searcher:
             ts = self.turns_of(sub)
             if not ts:
                 continue
-            first = self.order(ts, depth)[0][1]
+            first = self.order(ts, depth, z)[0][1]
             v = self.value(play_turn(sub, first), depth - 1, VMIN, VMAX)
             if actor(sub) == 'O':
                 lo_b[k] = max(lo_b[k], v)
@@ -488,9 +494,12 @@ class Searcher:
             ks.insert(0, t)
             del ks[2:]
 
-    def order(self, ts, depth):
+    def order(self, ts, depth, z=None):
         ks = self.killers.get(depth, [])
-        return sorted(ts, key=lambda r: (0 if r[1] in ks else 1, -(r[0] + 0.01 * self.history.get(r[1][0], 0))))
+        prev = self.tt.get((z, depth - 1)) if z is not None and SPEED['tt_order'] else None
+        first = prev[2] if prev is not None else None      # this position's best turn, one shorter: tried first
+        return sorted(ts, key=lambda r: (-1 if r[1] == first else 0 if r[1] in ks else 1,
+                                         -(r[0] + 0.01 * self.history.get(r[1][0], 0))))
 
     def root(self, s, max_depth, min_depth=1):
         """Iterative deepening. Returns (scored turns [(value, turn)], depth reached, the principal turn)."""

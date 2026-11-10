@@ -1,0 +1,8 @@
+off 2 4 4 [[1, 0.286], [2, 1.143], [3, 8.796], [4, 72.267]] [(1, 'X2 Move to D6 facing W'), (2, 'X2 Quick Step to D7 ; X1 Steal'), (3, 'X2 Quick Step to D7'), (4, 'X2 Quick Step to D7')]
+off 2 12 4 [[1, 0.257], [2, 1.506], [3, 12.934], [4, 96.223]] [(1, 'X3 Move to N7 facing W'), (2, 'X3 Quick Step to N7 ; X1 Steal'), (3, 'X2 Quick Step to D7'), (4, 'X2 Quick Step to D7')]
+off 7 phase 2 4 [[1, 0.265], [2, 1.079], [3, 8.245], [4, 56.153]] [(1, 'O3 Sprint to E9 ; O2 Sprint to E10'), (2, 'O3 Sprint to E9 ; O2 Sprint to E10'), (3, 'O3 Sprint to E9'), (4, 'O3 Sprint to E9')]
+off 7 phase 6 4 [[1, 0.074], [2, 0.325], [3, 0.477], [4, 0.485]] [(1, 'O3 Shot (mid)'), (2, 'O3 Shot (mid)'), (3, 'O3 Shot (mid)'), (4, 'O3 Shot (mid)')]
+off 9 4 [[1, 0.185], [2, 0.815], [3, 7.281], [4, 35.487]] [(1, 'O1 Move to J3 ; O1 Quick Step to I2'), (2, 'O1 Move to J3 ; O1 Quick Step to I2'), (3, 'O1 Move to J3 ; O1 Quick Step to I2'), (4, 'O1 Move to J3 ; O1 Quick Step to I2')]
+off 10 good odds 4 [[1, 0.224], [2, 1.063], [3, 8.082], [4, 29.436]] [(1, 'X4 Steal'), (2, 'X1 Move to J10 facing N'), (3, 'X1 Move to J10 facing N'), (4, 'X1 Move to J10 facing N')]
+off 10 bad odds 4 [[1, 0.201], [2, 0.938], [3, 8.122], [4, 58.306]] [(1, 'X Pause'), (2, 'X4 Move to B4 facing SW'), (3, 'X4 Move to B4 facing SW ; X3 Quick Step to P6'), (4, 'X4 Move to B4 facing SW')]
+off 16 4 [[1, 0.313], [2, 1.054], [3, 8.755], [4, 37.517]] [(1, 'O2 Move to A5 ; O4 Sprint to A6'), (2, 'O2 Move to A5'), (3, 'O2 Move to A5 ; O1 Move to J10'), (4, 'O2 Move to A5 ; O1 Move to J10')]
