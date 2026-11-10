@@ -400,11 +400,13 @@ class Read:
             return contest_map(self.rules, {}, {frm: {a: 0}})
         return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left)
 
-    def _vals(self, look, d, row):
-        """Expected value per shot type if defender d (contest row `row`) contests look within the reaction."""
+    def _vals(self, look, d, row, moves=None):
+        """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
+        at most that many of the reaction's movements; 0 = from where he stands)."""
         out = {}
         if row is None:
             return None
+        limit = self.react_moves if moves is None else min(moves, self.react_moves)
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
@@ -412,7 +414,7 @@ class Read:
             r = card.shot(t)
             best = None
             for k, n in enumerate(row):
-                if n > self.react_moves:
+                if n > limit:
                     continue
                 pen, foul, two = KINDS[k]
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
@@ -808,65 +810,85 @@ class Read:
         return bool(self.cfg.get('coverage_budget')) and self.k > 0
 
     def budget_tables(self):
-        """What the allocation is solved from, every number an existing one. looks: every look of every attacker, in
-        order, as (attacker, look, its value if no defender answers it); a look released this turn keeps its value.
-        cols: the answers, as (defender, attacker, 'stand' or 'move', {look index: how far that look falls}). A
-        defender who attends an attacker answers every look of his that he can contest: from where he stands, or from
-        the square of one of his movement replies (the replies the reading already finds, responses_per_defender),
-        where he may also change the pass's chance or reach the attacker's way first."""
+        """What the allocation is solved from, every number an existing one. D-125: a Contest from where a defender
+        stands is free, in full, on every look he is next to; only an answer that needs a movement shares his budget.
+        looks: every look of every attacker, in order, as (attacker, look, its value after the free Contests); a look
+        released this turn keeps its value. cols: the answers that need a movement, as (defender, attacker or -1,
+        'react' or 'move', {look index: how far that look falls}):
+          'react': he reaches attacker i's shot with a movement in the reaction;
+          'move': one of his movement replies in the defence's turn (the replies the reading already finds). From his
+          new square his Contest is free on every look next to it, the pass's chance and the attacker's way change for
+          everyone, and his free Contests from the old square are lost (a look can rise: a negative fall). With an
+          attacker named, he also reaches that attacker's shot with a movement in the reaction."""
         s = self.s
         reach = bool(self.cfg.get('reach'))
 
-        def solo(lk, vals, p):
-            best = 0.0
+        def best(lk, p, rows):
+            top = 0.0
             for t in lk.types:
                 v = lk.open[t]
-                if vals and t in vals and vals[t] < v:
-                    v = vals[t]
-                if v > best:
-                    best = v
-            return p * best
-        looks, first = [], {}
+                for vals in rows:
+                    if vals and t in vals and vals[t] < v:
+                        v = vals[t]
+                if v > top:
+                    top = v
+            return p * top
+        looks, first, free = [], {}, []
         for i in self.att_o:
             first[i] = len(looks)
             for lk in self.looks[i]:
-                looks.append((i, lk, lk.base if lk.now else solo(lk, None, lk.p)))
+                f0 = {}
+                if not lk.now:
+                    for j in self.att_x:
+                        v0 = self._vals(lk, j, self._cm[j].get(lk.c), 0)
+                        if v0:
+                            f0[j] = v0
+                free.append(f0)
+                looks.append((i, lk, lk.base if lk.now else best(lk, lk.p, list(f0.values()))))
         R = self.cover()['R']
         cols = []
         for j in self.att_x:
             for i in self.att_o:
                 falls = {}
                 for n, lk in enumerate(self.looks[i]):
+                    l = first[i] + n
                     if not lk.now and j in lk.vals:
-                        f = looks[first[i] + n][2] - solo(lk, lk.vals[j], lk.p)
+                        f = looks[l][2] - best(lk, lk.p, list(free[l].values()) + [lk.vals[j]])
                         if f > 1e-9:
-                            falls[first[i] + n] = f
+                            falls[l] = f
                 if falls:
-                    cols.append((j, i, 'stand', falls))
+                    cols.append((j, i, 'react', falls))
             for (q, a, used), _ in R[j][1:]:
                 cm = self._contest(j, q, a, used)
                 moved = None
+                stand, extra = {}, {}                  # from his new square: for everyone; and more for one attacker
+                for l, (i, lk, o) in enumerate(looks):
+                    if lk.now:
+                        continue
+                    if reach and q != s.x[j] and lk.route in PATH_ROUTES and _blocks(q, s.o[i], lk.c, s.ctx.off[i].qs,
+                                                                                     self.rules):
+                        w0 = w1 = 0.0
+                    else:
+                        p = lk.p
+                        if lk.route in ('catch', 'cut') and q != s.x[j]:
+                            if moved is None:
+                                moved = s.with_(x=s.x[:j] + (q,) + s.x[j + 1:], arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
+                                                moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
+                            p = _lane_p(moved, i, lk.c, reach=False)
+                        row = cm.get(lk.c)
+                        others = [v for d, v in free[l].items() if d != j]
+                        w0 = best(lk, p, others + [self._vals(lk, j, row, 0) if row is not None else None])
+                        w1 = best(lk, p, others + [self._vals(lk, j, row) if row is not None else None])
+                    if abs(o - w0) > 1e-9:
+                        stand[l] = o - w0
+                    if w1 < w0 - 1e-9:
+                        extra.setdefault(i, {})[l] = o - w1
+                if any(f > 1e-9 for f in stand.values()):
+                    cols.append((j, -1, 'move', stand))
                 for i in self.att_o:
-                    falls = {}
-                    for n, lk in enumerate(self.looks[i]):
-                        if lk.now:
-                            continue
-                        if reach and q != s.x[j] and lk.route in PATH_ROUTES and _blocks(q, s.o[i], lk.c, s.ctx.off[i].qs,
-                                                                                         self.rules):
-                            w = 0.0
-                        else:
-                            p = lk.p
-                            if lk.route in ('catch', 'cut') and q != s.x[j]:
-                                if moved is None:
-                                    moved = s.with_(x=s.x[:j] + (q,) + s.x[j + 1:], arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
-                                                    moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
-                                p = _lane_p(moved, i, lk.c, reach=False)
-                            row = cm.get(lk.c)
-                            w = solo(lk, self._vals(lk, j, row) if row is not None else None, p)
-                        f = looks[first[i] + n][2] - w
-                        if f > 1e-9:
-                            falls[first[i] + n] = f
-                    if falls:
+                    if i in extra:
+                        falls = dict(stand)
+                        falls.update(extra[i])
                         cols.append((j, i, 'move', falls))
         return looks, cols
 
@@ -883,6 +905,7 @@ class Read:
         top = max((o for _, _, o in looks), default=0.0)
         n = len(cols)
         covered = sorted({l for c in cols for l in c[3]})
+        up = lambda c, l: c[3].get(l, 0.0) > 0.0       # an answer that lowers look l
         A, b = [], []
         free = max((o for l, (_, _, o) in enumerate(looks) if l not in set(covered)), default=0.0)
         A.append([0.0] * n + [1.0])                 # the looks no answer reaches stay as they are
@@ -891,8 +914,8 @@ class Read:
             A.append([-c[3].get(l, 0.0) for c in cols] + [1.0])
             b.append(top - looks[l][2])
         for l in covered:                           # on one look, one answer counts
-            if sum(1 for c in cols if l in c[3]) > 1:
-                A.append([1.0 if l in c[3] else 0.0 for c in cols] + [0.0])
+            if sum(1 for c in cols if up(c, l)) > 1:
+                A.append([1.0 if up(c, l) else 0.0 for c in cols] + [0.0])
                 b.append(1.0)
         for j in self.att_x:                        # one defender, one attacker
             if any(c[0] == j for c in cols):

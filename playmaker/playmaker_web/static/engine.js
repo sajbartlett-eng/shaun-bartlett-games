@@ -1451,9 +1451,9 @@ const PMEngine = (() => {
       }
       return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft);
     }
-    _vals(lk, d, cm) {
+    _vals(lk, d, cm, moves) {                   // moves (step 13C): at most that many reaction movements; 0 = where he stands
       if (!cm || this.react_moves < 0) return null;
-      const mask = cm.masks[this.react_moves][BI[lk.c]];
+      const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
       const ctx = this.s.ctx, vc = ctx._vc || (ctx._vc = new Array(5 * NB * 5 * 64));
       const key = ((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask;
@@ -1748,49 +1748,67 @@ const PMEngine = (() => {
     }
     // ---- step 13 B1: coverage as a budget (decide.Read.budget_tables, budget) ----------------------------------------
     budgetOn() { return budgetCfg() && this.k > 0; }
-    budgetTables() {
+    budgetTables() {                            // decide.Read.budget_tables (D-125: the Contest from where he stands is free)
       const s = this.s, reach = reachOn();
-      const solo = (lk, vals, p) => {
-        let best = 0.0;
-        for (let t = 0; t < lk.types.length; t++) { let v = lk.open[t]; if (vals && vals[t] < v) v = vals[t]; if (v > best) best = v; }
-        return p * best;
+      const best = (lk, p, rows) => {
+        let top = 0.0;
+        for (let t = 0; t < lk.types.length; t++) {
+          let v = lk.open[t];
+          for (const vals of rows) if (vals && vals[t] < v) v = vals[t];
+          if (v > top) top = v;
+        }
+        return p * top;
       };
-      const looks = [], first = [0, 0, 0, 0, 0];
-      for (const i of this.att_o) { first[i] = looks.length; for (const lk of this.looks[i]) looks.push([i, lk, lk.now ? lk.base : solo(lk, null, lk.p)]); }
+      const looks = [], first = [0, 0, 0, 0, 0], free = [];
+      for (const i of this.att_o) {
+        first[i] = looks.length;
+        for (const lk of this.looks[i]) {
+          const f0 = [null, null, null, null, null];
+          if (!lk.now) for (const j of this.att_x) f0[j] = this._vals(lk, j, this._cm[j], 0);
+          free.push(f0);
+          looks.push([i, lk, lk.now ? lk.base : best(lk, lk.p, f0)]);
+        }
+      }
       const R = this.cover().R, cols = [];
       for (const j of this.att_x) {
         for (const i of this.att_o) {
           const falls = new Map(), ls = this.looks[i];
           for (let n = 0; n < ls.length; n++) {
-            const lk = ls[n];
-            if (!lk.now && lk.vals[j]) { const f = looks[first[i] + n][2] - solo(lk, lk.vals[j], lk.p); if (f > 1e-9) falls.set(first[i] + n, f); }
+            const lk = ls[n], l = first[i] + n;
+            if (!lk.now && lk.vals[j]) { const f = looks[l][2] - best(lk, lk.p, free[l].concat([lk.vals[j]])); if (f > 1e-9) falls.set(l, f); }
           }
-          if (falls.size) cols.push([j, i, 'stand', falls]);
+          if (falls.size) cols.push([j, i, 'react', falls]);
         }
         const capsJ = caps(s, 'X', j), Rj = R[j];
         for (let r = 1; r < Rj.length; r++) {
           const q = Rj[r][0][0], a = Rj[r][0][1], used = Rj[r][0][2];
           const cm = this._contest(j, q, a, used);
-          let oneJ = null;
-          for (const i of this.att_o) {
-            const falls = new Map(), ls = this.looks[i];
-            for (let n = 0; n < ls.length; n++) {
-              const lk = ls[n];
-              if (lk.now) continue;
-              let w;
-              if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) w = 0.0;
-              else {
-                let p = lk.p;
-                if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
-                  if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
-                  p = this._laneMoved(lk.c, j, q, oneJ);
-                }
-                w = solo(lk, this._vals(lk, j, cm), p);
+          let oneJ = null, any = false;
+          const stand = new Map(), extra = [null, null, null, null, null];
+          for (let l = 0; l < looks.length; l++) {
+            const i = looks[l][0], lk = looks[l][1], o = looks[l][2];
+            if (lk.now) continue;
+            let w0, w1;
+            if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) w0 = w1 = 0.0;
+            else {
+              let p = lk.p;
+              if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
+                if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
+                p = this._laneMoved(lk.c, j, q, oneJ);
               }
-              const f = looks[first[i] + n][2] - w;
-              if (f > 1e-9) falls.set(first[i] + n, f);
+              const others = free[l].slice(); others[j] = null;
+              w0 = best(lk, p, others.concat([this._vals(lk, j, cm, 0)]));
+              w1 = best(lk, p, others.concat([this._vals(lk, j, cm)]));
             }
-            if (falls.size) cols.push([j, i, 'move', falls]);
+            if (Math.abs(o - w0) > 1e-9) { stand.set(l, o - w0); if (o - w0 > 1e-9) any = true; }
+            if (w1 < w0 - 1e-9) { if (!extra[i]) extra[i] = new Map(); extra[i].set(l, o - w1); }
+          }
+          if (any) cols.push([j, -1, 'move', stand]);
+          for (const i of this.att_o) {
+            if (!extra[i]) continue;
+            const falls = new Map(stand);
+            for (const [l, f] of extra[i]) falls.set(l, f);
+            cols.push([j, i, 'move', falls]);
           }
         }
       }
@@ -1808,7 +1826,8 @@ const PMEngine = (() => {
       let free = 0.0; looks.forEach((l, k) => { if (!cov.has(k) && l[2] > free) free = l[2]; });
       { const r = rowOf(() => 0.0); r[n] = 1.0; A.push(r); b.push(top - free); }
       for (const l of covered) { const r = rowOf(c => -(c[3].get(l) || 0.0)); r[n] = 1.0; A.push(r); b.push(top - looks[l][2]); }
-      for (const l of covered) { let m = 0; for (const c of cols) if (c[3].has(l)) m++; if (m > 1) { A.push(rowOf(c => (c[3].has(l) ? 1.0 : 0.0))); b.push(1.0); } }
+      const up = (c, l) => (c[3].get(l) || 0.0) > 0.0;     // an answer that lowers look l
+      for (const l of covered) { let m = 0; for (const c of cols) if (up(c, l)) m++; if (m > 1) { A.push(rowOf(c => (up(c, l) ? 1.0 : 0.0))); b.push(1.0); } }
       for (const j of this.att_x) if (cols.some(c => c[0] === j)) { A.push(rowOf(c => (c[0] === j ? 1.0 : 0.0))); b.push(1.0); }
       if (cols.some(c => c[2] === 'move')) { A.push(rowOf(c => (c[2] === 'move' ? 1.0 : 0.0))); b.push(Math.min(2, this.s.tok_x)); }
       const cvec = new Float64Array(n + 1); cvec[n] = 1.0;
