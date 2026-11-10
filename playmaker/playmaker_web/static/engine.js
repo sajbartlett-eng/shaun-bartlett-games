@@ -878,6 +878,74 @@ const PMEngine = (() => {
     for (const [q, n] of out) if (n === 0 || !occAt(s, q)) res.set(q, n);
     return res;
   }
+  // ---- step 12: the reach map (reach.py) --------------------------------------------------------------------------
+  const reachOn = () => !!D.config.eval.reach;
+  function geoDests(kind, frm, qs) {                   // decide._geo_paths: destinations ignoring other pieces
+    const raw = kind === 'move' ? movePaths(frm) : qsPaths(frm, qs);
+    const out = new Set();
+    for (const p of raw) if (p.every(q => ONB[q])) out.add(p[p.length - 1]);
+    return out;
+  }
+  function attackerReachExact(s, i) {                  // decide.attacker_reach(exact=True)
+    const out = new Map([[s.o[i], 0]]);
+    const [canMove] = caps(s, 'O', i);
+    if (!ONB[s.o[i]] || s.tok_o <= 0) return out;
+    const card = s.ctx.off[i];
+    for (const kind of ['move', 'qs', 'sprint']) {
+      if (!canMoveKind(s, 'O', i, kind)) continue;
+      for (const q of movementDests(s, 'O', i, kind).keys()) if (!out.has(q)) out.set(q, 1);
+    }
+    if (s.tok_o >= 2) {
+      const ones = [...out].filter(([, n]) => n === 1).map(([q]) => q);
+      for (const q of ones) for (const q2 of geoDests(canMove ? 'qs' : 'move', q, card.qs)) {
+        if (!out.has(q2) && !s.x.includes(q2) && !s.o.includes(q2)) out.set(q2, 2);
+      }
+    }
+    return out;
+  }
+  function minCounts(free, fixed) {
+    const out = new Map(free);
+    for (const [q, arrs] of fixed) { let n = INF; for (const v of arrs.values()) if (v < n) n = v; const c = out.get(q); if (c === undefined || c > n) out.set(q, n); }
+    return out;
+  }
+  function playerReach(s, side, i) { return side === 'X' ? minCounts(...defenderReachExact(s, i)) : attackerReachExact(s, i); }
+  function reachMap(s) {                               // {side+i: Map(square -> [this phase, next phase, earliest turn])}
+    const fresh = newPhase(s, s.clock), out = {};
+    for (const side of ['O', 'X']) for (let i = 0; i < 5; i++) {
+      const start = (side === 'O' ? s.o : s.x)[i];
+      const cur = playerReach(s, side, i), nxt = playerReach(fresh, side, i), row = new Map();
+      for (const q of new Set([...cur.keys(), ...nxt.keys()])) {
+        const a = cur.has(q) ? cur.get(q) : null, b = nxt.has(q) ? nxt.get(q) : null;
+        row.set(q, [a, b, q === start ? 0 : a !== null ? 1 : b !== null ? 2 : null]);
+      }
+      out[side + i] = row;
+    }
+    return out;
+  }
+  const _PT = new Map();
+  function pathsTo(start, c, qs) {                     // reach.paths_to: movement geometry from start ending on c
+    const key = (start * 4096 + c) * 8 + qs; let hit = _PT.get(key); if (hit) return hit;
+    hit = [];
+    const ok = p => p[p.length - 1] === c && p.every(q => ONB[q]);
+    for (const p of movePaths(start)) if (ok(p)) hit.push(p);
+    for (const p of qsPaths(start, qs)) if (ok(p)) hit.push(p);
+    for (const [, p] of sprintPaths(start, qs)) if (ok(p)) hit.push(p);
+    _PT.set(key, hit); return hit;
+  }
+  function blocksPath(q, start, c, qs) {
+    if (q === c) return true;
+    const ps = pathsTo(start, c, qs);
+    return ps.length > 0 && ps.every(p => p.slice(0, -1).includes(q));
+  }
+  const PATH_ROUTES = new Set(['drive', 'later', 'cut']);
+  function exactOne(s, d) {                            // decide._exact_one, as the bitset oneAction returns
+    const [free, fixed] = defenderReachExact(s, d), hit = new Uint32Array(8);
+    const put = q => { const b = BI[q]; if (b >= 0) hit[b >> 5] |= 1 << (b & 31); };
+    put(s.x[d]);
+    for (const [q, n] of free) if (n <= 1) put(q);
+    for (const [q, arr] of fixed) { let m = INF; for (const v of arr.values()) if (v < m) m = v; if (m <= 1) put(q); }
+    return hit;
+  }
   // attackerReach's squares within one action, in its order, from geometry alone (the occupancy filter is per state)
   const _RL = new Map();
   function reachList(frm, qs, canMove, qsLeft) {
@@ -962,7 +1030,7 @@ const PMEngine = (() => {
     for (const [q, arr] of fixed) { let m = INF; for (const v of arr.values()) if (v < m) m = v; if (m <= 1) put(q); }
     _OA.set(key, hit); return hit;
   }
-  function laneP(s, i, c) {
+  function laneP(s, i, c, reach) {
     const a = s.o[s.ball];
     if (!(ONB[a] && ONB[c])) return 0;
     const den = laneSquares(a, c);
@@ -971,9 +1039,10 @@ const PMEngine = (() => {
     if (!lane.size) return 1;
     const passer = s.ctx.off[s.ball].r.pass;
     let worst = 0;
+    const exact = reach === undefined ? reachOn() : reach;
     for (let d = 0; d < 5; d++) {
       const [canMove, qsLeft] = caps(s, 'X', d);
-      const one = oneAction(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, canMove, qsLeft);
+      const one = exact ? exactOne(s, d) : oneAction(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, canMove, qsLeft);
       let hit = false; for (const b of lane.bi) if ((one[b >> 5] >>> (b & 31)) & 1) { hit = true; break; }
       if (!hit) continue;
       const pi = 1 - pS(passer - s.ctx.dfn[d].r.intercept);
@@ -1069,6 +1138,9 @@ const PMEngine = (() => {
     return banked + Math.max(sn || 0.0, now, cont, coarse);
   }
   function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
+  // step 12: the switches, for the tools (text 'true' / 'false')
+  function setStable(on) { D.config.search = D.config.search || {}; D.config.search.stable = on === true || on === 'true'; return D.config.search.stable; }
+  function setReach(on) { D.config.eval.reach = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.reach; }
   function turnoverValue(s) {
     if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return Math.min(0, 5 * s.bonus5 - 5 * s.tos);   // D-82
     return 5 * s.bonus5 - 5 * (s.tos + 1) + vcoarse(W_(s, { clock: s.clock - 2 }));
@@ -1139,7 +1211,7 @@ const PMEngine = (() => {
     _contest(d, at = -1, arrow = -1, used = null) {
       const s = this.s;
       if (!ONB[s.x[d]]) return null;
-      if (at < 0 && this.exact) { const [free, fixed] = defenderMap(s, d, true); return contestMap(free, fixed); }
+      if (at < 0 && (this.exact || reachOn())) { const [free, fixed] = defenderMap(s, d, true); return contestMap(free, fixed); }
       let [canMove, qsLeft] = caps(s, 'X', d);
       let frm = s.x[d], a = s.arrows[d];
       if (at >= 0) {
@@ -1212,9 +1284,16 @@ const PMEngine = (() => {
             r.pi[d] = 1 - pS(passer - s.ctx.dfn[d].r.intercept);
           }
         }
+        // step 12 (eval.reach): who can step into the pass, by the reach map's exact movement (the moved re-reads keep
+        // the geometry, as decide.responses does)
+        const hitP = r.hit.slice();
+        if (reachOn() && den.size) for (let d = 0; d < 5; d++) {
+          const one = exactOne(s, d); let h = false; for (const b of den.bi) if ((one[b >> 5] >>> (b & 31)) & 1) { h = true; break; }
+          hitP[d] = h;
+        }
         if (r.denies.some(x => x)) r.p = 0;
         else if (!den.size) r.p = 1;
-        else { let worst = 0; for (let d = 0; d < 5; d++) if (r.hit[d] && r.pi[d] > worst) worst = r.pi[d]; r.p = 1 - worst; }
+        else { let worst = 0; for (let d = 0; d < 5; d++) if (hitP[d] && r.pi[d] > worst) worst = r.pi[d]; r.p = 1 - worst; }
         // the parts without each defender j: the others' denial and their worst intercept chance
         r.dx = [false, false, false, false, false]; r.wx = new Float64Array(5);
         for (let j = 0; j < 5; j++) {
@@ -1314,6 +1393,12 @@ const PMEngine = (() => {
         }
       }
       if (ONB[bp]) for (const q of laneSquares(bp, RIM)) lanes.add(q);
+      const reach = reachOn(), paths = new Map();
+      if (reach) for (const i of this.att_o) for (const lk of this.looks[i]) {
+        if (lk.now || !PATH_ROUTES.has(lk.route)) continue;
+        let set = paths.get(i); if (!set) { set = new Set(); paths.set(i, set); }
+        for (const p of pathsTo(s.o[i], lk.c, s.ctx.off[i].qs)) for (const q of p) { set.add(q); lanes.add(q); }
+      }
       const cands = [];
       for (const [q, n] of free) {
         if (n > 1 || (occ.has(q) && q !== s.x[j])) continue;
@@ -1328,7 +1413,7 @@ const PMEngine = (() => {
         if (occ.has(q) && q !== s.x[j]) continue;
         for (const [a, n] of arrs) if (n === 1 && spots.some(c => cheb(q, c) <= 2)) cands.push([q, a, 'qs']);
       }
-      const nearOf = (i, q) => { for (const lk of this.looks[i]) if (!lk.now && cheb(q, lk.c) <= 3) return true; return false; };
+      const nearOf = (i, q) => { for (const lk of this.looks[i]) if (!lk.now && cheb(q, lk.c) <= 3) return true; return reach && paths.has(i) && paths.get(i).has(q); };
       const carrier = s.ball;
       const carrierIn = this.att_o.includes(carrier);
       const front = p => carrierIn && cheb(p, s.o[carrier]) <= 2 && DR[p] < DR[s.o[carrier]];
@@ -1360,6 +1445,7 @@ const PMEngine = (() => {
           for (const lk of this.looks[i]) {
             let v;
             if (lk.now) v = lk.base;
+            else if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) v = 0.0;
             else {
               let pNew = null;
               if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
@@ -1420,6 +1506,24 @@ const PMEngine = (() => {
       if (!this.o_to_act) return null;
       for (const lk of this.looks[this.s.ball] || []) if (lk.route === 'shoot') return lk.base;
       return null;
+    }
+    // step 12 (decide.Read.possession): the leaf without the ball handler's shot now
+    possession() {
+      const s = this.s;
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      let now = 0.0;
+      for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && !(i === s.ball && lk.route === 'shoot') && lk.base > now) now = lk.base;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + now;
+      const cv = this.cover(), res = cv.residual;
+      let top = 0.0, first = true;
+      for (const i of this.att_o) { if (first || res[i] > top) top = res[i]; first = false; }
+      if (!this.att_o.length) top = 0.0;
+      let sum = 0.0, nt = 0;
+      for (const i of this.att_o) if (res[i] >= top - 1e-9) { sum += res[i]; nt++; }
+      const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation, coarse = vcoarse(s);
+      if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(now, coarse + cont - relativeAverage(s));
+      return banked + Math.max(now, cont, coarse);
     }
     quickLeaf() {
       // Read(s, k=0, looks_per=3).leaf() from this read (attention all, looks_per 6): the first three looks of each
@@ -1636,6 +1740,10 @@ const PMEngine = (() => {
       this.me = me; this.p = profile; this.evaluate = evaluate; this.deadline = deadline;
       this.tt = new Map(); this.tcache = new Map(); this.lcache = new Map(); this.qcache = new Map(); this.killers = new Map(); this.history = new Map();
       this.nodes = 0; this.leaves = 0; this.lam = profile.opponent_model; this.habit = null; this.habit_weight = 0.0; this.partial = 0;
+      const sc = D.config.search || {};               // step 12: the stable-search rule (search.stable, off by default)
+      this.stable = !!sc.stable; this.extCap = sc.extension_cap == null ? 2 : sc.extension_cap;
+      this.margin = sc.stable_margin || {}; this.tempo = sc.tempo || {};
+      this.extensions = 0; this.capHits = 0; this.trace = []; this.kept = 0;
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
@@ -1643,14 +1751,57 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
+      if (this.stable && !isChance(s) && s.stage === 'play') {
+        const t = this.tempo[phaseOf(s)] || 0.0;
+        v += actor(s) === 'O' ? -t / 2 : t / 2;
+      }
       return v;
+    }
+    unsettled(s) {
+      if (s.stage !== 'play') return 'stage';
+      if (s.pending) return 'pass';
+      if (midTurn(s)) return 'mid';
+      if (actor(s) === 'O') {
+        const r = new Read(s, { k: 0, looks_per: 3 });
+        const sn = r.shotNow();
+        if (sn !== null && sn > r.possession() + 1e-9) return 'shot';
+      }
+      return null;
+    }
+    extend(s, why, depth) {
+      const side = actor(s);
+      let list;
+      if (why === 'mid') list = this.turnsOf(s).map(r => r[1]);
+      else {
+        const kinds = why === 'shot' ? SHOT_ONLY : FORCING;
+        list = legalActions(s).filter(a => kinds.has(a.kind) || (why === 'stage' && s.stage !== 'reaction')).map(a => [a]);
+      }
+      if (!list.length) return this.leaf(s);
+      this.extensions++;
+      let best = why === 'shot' ? readOf(s).possession() : null;
+      for (const t of list) {
+        const child = playTurn(s, t, false);
+        const d = (why === 'mid' || (!isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child))) ? depth : depth - 1;
+        const v = this.value(child, d, VMIN, VMAX);
+        if (best === null || (side === 'O' ? v > best : v < best)) best = v;
+      }
+      return best;
     }
     value(node, depth, alpha, beta) {
       this.check();
       if (isChance(node)) return this.chance(node, depth, alpha, beta);
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
-      if (depth <= 0) return this.leaf(s);
+      if (depth <= 0) {
+        if (this.stable) {
+          const why = this.unsettled(s);
+          if (why !== null) {
+            if (depth <= -this.extCap && why !== 'mid') { this.capHits++; return this.leaf(s); }
+            return this.extend(s, why, depth);
+          }
+        }
+        return this.leaf(s);
+      }
       const z = zobrist(s), key = ttKey(z, depth);
       const hit = this.tt.get(key);
       if (hit !== undefined) {
@@ -1672,7 +1823,9 @@ const PMEngine = (() => {
         passive = w.length ? this.value(playTurn(s, w[0]), depth - 1, VMIN, VMAX) : null;
       }
       for (const [, t] of ts) {
-        const v = this.value(playTurn(s, t), depth - 1, mix ? VMIN : alpha, mix ? VMAX : beta);
+        const child = playTurn(s, t);
+        const d = (this.stable && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child)) ? depth : depth - 1;
+        const v = this.value(child, d, mix ? VMIN : alpha, mix ? VMAX : beta);
         if (side === 'O') { if (best === null || v > best[0]) best = [v, t]; if (!mix) alpha = Math.max(alpha, v); }
         else { if (best === null || v < best[0]) best = [v, t]; if (!mix) beta = Math.min(beta, v); }
         if (!mix && alpha >= beta) {
@@ -1776,19 +1929,28 @@ const PMEngine = (() => {
       ts.forEach(([q, t], k) => {
         if (k >= 3 && now() > deadline) { results.push([sign * q, t]); return; }
         const n = playTurn(s, t);
-        results.push([!isChance(n) ? this.leaf(n) : this.value(n, 0, VMIN, VMAX), t]);
+        if (this.stable) results.push([this.value(n, this.childDepth(s, n, 1), VMIN, VMAX), t]);
+        else results.push([!isChance(n) ? this.leaf(n) : this.value(n, 0, VMIN, VMAX), t]);
       });
       this.deadline = deadline;
       let reached = 1;
       this.partial = 0;
       const byBest = (x, y) => (side === 'O' ? y[0] - x[0] : x[0] - y[0]);
+      const byDepth = new Map([[1, results.slice()]]);
+      this.note(1, results, side);                       // the root choice at each completed depth (a record only)
       for (let depth = 2; depth <= maxDepth; depth++) {
         const out = [];
         try {
-          for (const [, t] of results.slice().sort(byBest)) out.push([this.value(playTurn(s, t), depth - 1, VMIN, VMAX), t]);
+          for (const [, t] of results.slice().sort(byBest)) {
+            const n = playTurn(s, t);
+            out.push([this.value(n, this.stable ? this.childDepth(s, n, depth) : depth - 1, VMIN, VMAX), t]);
+          }
           results = out; reached = depth;
+          byDepth.set(depth, out.slice());
+          this.note(depth, out, side);
         } catch (e) {
           if (e !== TIMEOUT) throw e;
+          if (this.stable) break;
           this.partial = out.length;
           if (out.length) {
             const pv = out[0][0];
@@ -1802,10 +1964,46 @@ const PMEngine = (() => {
           break;
         }
       }
+      if (this.stable) [results, reached] = this.settle(s, byDepth, side);
       results.sort(byBest);
       return [results, reached];
     }
+    childDepth(s, child, depth) {
+      if (!isChance(child) && child.stage !== 'over' && actor(child) === actor(s) && midTurn(child)) return depth;
+      return depth - 1;
+    }
+    note(depth, res, side) {
+      let best = res[0];
+      for (const r of res) if (side === 'O' ? r[0] > best[0] : r[0] < best[0]) best = r;
+      this.trace.push([depth, best[1], best[0]]);
+    }
+    settle(s, byDepth, side) {
+      const done = [...byDepth.keys()].sort((a, b) => a - b);
+      const even = done.filter(d => d % 2 === 0);
+      const d = even.length ? even[even.length - 1] : done[done.length - 1];
+      let res = byDepth.get(d).slice();
+      const sign = side === 'O' ? 1 : -1;
+      const pick = rs => { let b = rs[0]; for (const r of rs) if (sign * r[0] > sign * b[0]) b = r; return b; };
+      const best = pick(res);
+      const prev = byDepth.get(d - 2);
+      if (prev) {
+        const pTurn = pick(prev)[1], pk = turnKey(pTurn);
+        const pNow = res.find(r => turnKey(r[1]) === pk);
+        const margin = this.margin[phaseOf(s)] || 0.0;
+        if (pNow && turnKey(best[1]) !== pk && sign * (best[0] - pNow[0]) <= margin) {
+          this.kept++;
+          res = res.map(r => (turnKey(r[1]) === pk ? [best[0], r[1]] : r));
+          res.sort((x, y) => (sign * (y[0] - x[0])) || ((turnKey(x[1]) === pk ? 0 : 1) - (turnKey(y[1]) === pk ? 0 : 1)));
+          return [res, d];
+        }
+      }
+      return [res, d];
+    }
   }
+  const FORCING = new Set(['shot', 'contest', 'steal', 'end_turn', 'intercept', 'pause', 'hesitate']);
+  const SHOT_ONLY = new Set(['shot']);
+  const phaseOf = s => String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)));
+  const midTurn = s => s.stage === 'play' && s.turn_n > 0 && !s.pending;
 
   // ---- the agent's evaluation (agent.Agent._evaluate) --------------------------------------------------------------
   function attentionSets(s, n) {
@@ -1868,7 +2066,9 @@ const PMEngine = (() => {
       }
     }
     return { results: results.map(([v, t]) => [v, t.map(actionJSON)]), reached, leaves: srch.leaves, nodes: srch.nodes,
-      partial: srch.partial, seconds: now() - t0, pv };
+      partial: srch.partial, seconds: now() - t0, pv,
+      stable: srch.stable, extensions: srch.extensions, cap_hits: srch.capHits, kept: srch.kept,
+      trace: srch.trace.map(([d, t, v]) => [d, t.map(actionJSON), v]) };
   }
 
   // ---- goals (goals.goals_in) and overloads (decide.Read.overloads), for the agent's goal commitment ------------------
@@ -2022,7 +2222,7 @@ const PMEngine = (() => {
     return out;
   }
 
-  return { init, setLeafMode, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, setStable, setReach, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

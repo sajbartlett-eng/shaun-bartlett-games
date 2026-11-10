@@ -403,8 +403,9 @@ REBUILT = {
         labels={'phase 2': 'Board A: clock 10, phase 2', 'phase 6': 'Board B: the offence\'s final turn'},
         situation='O3 has the ball in the middle of the lane, 4 squares from the rim, with X3 right in front of him and '
                   'two more defenders close. Board A is early in the possession (phase 2). Board B is the offence\'s '
-                  'final turn: the last phase, with 2 tokens left.',
-        note='Board B rebuilt in step 10: it is now the offence\'s final turn of the possession.'),
+                  'final turn: the last phase, with 1 token left.',
+        note='Board B rebuilt in step 10, and again in step 12 (D-117): 1 token, so it is the offence\'s final turn '
+             'whatever it does.'),
     'b8': dict(
         situation='O1 has the ball at the top of the arc. O2 is on the left wing, high, and X2 is between him and the '
                   'ball, denying the pass. X1 and X2 have both used their Move and Quick Step, so neither can step into '
@@ -454,6 +455,51 @@ def step10_results():
             for b, v in json.load(open(p))['boards'].items():
                 gaps.setdefault(b, {})[mode] = v
     return out, gaps
+
+
+SETTINGS12 = (('off', 'Both off (today)'), ('both', 'Stable search and reach both on'))
+LONG12 = (('off', 'Both off'), ('stable', 'Stable search on'), ('reach', 'Reach on'))
+
+
+def step12_results():
+    """The step 12 cut-down run (off and both on: 1 team-turn pair ahead and the clock) and the 2-pair runs completed
+    before the stop (off in full; stable and reach part-way)."""
+    out = {}
+    files = {('off', 'pair'): 'cut_exam_off_1pair', ('off', 'clock'): 'cut_exam_off_clock',
+             ('both', 'pair'): 'cut_exam_both_1pair', ('both', 'clock'): 'cut_exam_both_clock',
+             ('off', 'long'): 'long_exam_off_2pairs', ('stable', 'long'): 'long_exam_stable_2pairs',
+             ('reach', 'long'): 'long_exam_reach_2pairs'}
+    for key, name in files.items():
+        p = os.path.join(RUNS, 'step12', name + '.json')
+        if os.path.exists(p):
+            for r in json.load(open(p))['rows']:
+                out.setdefault(r['board'], {})[key] = r
+    return out
+
+
+def step12_html(p, res):
+    k = EXAM_KEY.get(p['key'])
+    if not k or k not in res:
+        return ''
+    r = res[k]
+
+    def cell(x, full=None):
+        if x is None:
+            return 'not run'
+        short = f" (looked {x['depth_min']} ahead)" if full and x.get('depth_min') and x['depth_min'] < full else ''
+        return ('<b>Pass.</b> ' if x['ok'] else '<b>Fail.</b> ') + esc(say('; '.join(x['choice'] or [])) or
+                                                                       '(a check over boards)') + esc(short)
+    rows = ['<div class="evidence"><div class="kicker">Step 12: the stable search and the reach map</div>',
+            '<table class="ev"><tr><th>Setting</th><th>1 team-turn pair ahead (the main measure)</th>'
+            '<th>On the clock (a second check)</th></tr>']
+    for st, lab in SETTINGS12:
+        rows.append(f"<tr><td>{lab}</td><td>{cell(r.get((st, 'pair')), 2)}</td><td>{cell(r.get((st, 'clock')))}</td></tr>")
+    rows.append('</table>')
+    rows.append('<table class="ev"><tr><th>Before the stop: 2 pairs ahead</th><th>Result</th></tr>')
+    for st, lab in LONG12:
+        rows.append(f"<tr><td>{lab}</td><td>{cell(r.get((st, 'long')), 4)}</td></tr>")
+    rows.append('</table></div>')
+    return '\n'.join(rows)
 
 
 def step10_html(p, res, gaps):
@@ -733,6 +779,9 @@ def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None, 
     badge = v
     if k10 in res10 and ('floor', 'clock') in res10[k10]:
         badge = 'Pass' if res10[k10][('floor', 'clock')]['ok'] else 'Fail'
+    r12 = step12_results().get(k10, {})
+    if ('off', 'pair') in r12:                       # D-118: the fixed look-ahead leads, today's setting
+        badge = 'Pass' if r12[('off', 'pair')]['ok'] else 'Fail'
     cls = {'Pass': 'pass', 'Fail': 'fail'}.get(badge, 'na')
     short = 'Not measured' if badge.startswith('Not measured') else badge
     kind = ('Candidate board' if p.get('candidate') else 'Trainer test' if p.get('trainer') else 'Exam board')
@@ -761,7 +810,7 @@ def page_html(p, svgs, data, fixed, timed, board1, today, ev=None, ewords=None, 
     out.append(f'<dt>The basketball reason</dt><dd>{esc(p["why"])}</dd>')
     out.append(f'<dt>How it is judged</dt><dd>{esc(p["judged"])}</dd>')
     if s10:
-        out.append('</dl>' + step10_html(p, res10, gaps10) + '<dl>')
+        out.append('</dl>' + step12_html(p, step12_results()) + step10_html(p, res10, gaps10) + '<dl>')
     out.append('<dt>' + ('Earlier results (the board before step 10 rebuilt it)' if p.get('rebuilt') else
                          'Earlier results') + '</dt><dd><table>')
     first = 'Today\'s rules' if p.get('trainer') else 'On the clock, today\'s rules (All-Star)'
@@ -826,16 +875,24 @@ def main():
     open(OUT_HTML, 'w').write(doc)
 
     lines = ['# Exam book: the boards', '',
-             'Tick each board first; the pages are in `EXAM_BOOK.html`. Step 10 ran the exam on the app\'s search with '
-             'the position reading as it is (floor) and against the average (relative). The trainer tests T1 and T2 '
-             'are from step 7.', '']
+             'Tick each board first; the pages are in `EXAM_BOOK.html`. Step 12 (cut down, as Shaun asked) ran the exam '
+             'on the app\'s search with both switches off (today) and both on: 1 team-turn pair ahead (the main measure) '
+             'and on the clock. The 2-pair runs completed before the stop are given beside them ("-": not run). The '
+             'trainer tests T1 and T2 are from step 7.', '']
     for p, v in index:
         tag = f" ({p['also']})" if p.get('also') else ''
         status = v if v.startswith('not measured') else f'{v.lower()} today'
         if v.startswith('not measured') and ev and EV_KEY.get(p['key']) in ev:
             status = 'first measured in step 9'
         r10 = step10_results()[0].get(EXAM_KEY.get(p['key']), {})
-        if r10:
+        r12 = step12_results().get(EXAM_KEY.get(p['key']), {})
+        if r12:
+            pf12 = lambda key: ('pass' if r12[key]['ok'] else 'fail') if key in r12 else '-'
+            status = ('step 12, 1 pair ahead: off ' + pf12(('off', 'pair')) + ', both on ' + pf12(('both', 'pair'))
+                      + '; on the clock: off ' + pf12(('off', 'clock')) + ', both on ' + pf12(('both', 'clock'))
+                      + '; before the stop, 2 pairs ahead: ' + ', '.join(f"{st} {pf12((st, 'long'))}" for st, _ in LONG12)
+                      + ('; rebuilt in step 10' if p.get('rebuilt') else ''))
+        elif r10:
             pf = lambda key: ('pass' if r10[key]['ok'] else 'fail') if key in r10 else '-'
             status = (f"step 10, on the clock: floor {pf(('floor', 'clock'))}, relative {pf(('relative', 'clock'))}; "
                       f"3 moves ahead: floor {pf(('floor', 'fixed3'))}, relative {pf(('relative', 'fixed3'))}"

@@ -1,0 +1,833 @@
+{
+ "setting": "stable",
+ "condition": "fixed",
+ "pairs": 4,
+ "rows": [
+  {
+   "board": "1",
+   "desc": "Straight lane: after the defence's answer the straight drive is walled, contained or worth less than the best alternative",
+   "ok": false,
+   "what": "X2 Move to D6 facing E (straight drive available, worth 32.0 against the best other look 28.0; on the ball-rim line, reported only: nobody)",
+   "seconds": 600.1,
+   "choice": [
+    "X2 Move to D6 facing E"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X2 Move to D6 facing E"
+     ],
+     "value": -31.11,
+     "trace": [
+      [
+       1,
+       [
+        "X Pause"
+       ],
+       31.16
+      ],
+      [
+       2,
+       [
+        "X4 Move to B5 facing SW"
+       ],
+       32
+      ],
+      [
+       3,
+       [
+        "X4 Move to B5 facing SW"
+       ],
+       35.68
+      ]
+     ],
+     "stable": {
+      "extensions": 131231,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 600.045
+    }
+   ]
+  },
+  {
+   "board": "2",
+   "desc": "Sag by shooting: the same board with O2's three rated 4, then 12",
+   "ok": false,
+   "what": "three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest)",
+   "seconds": 605.1,
+   "choice": [
+    "X3 Quick Step to N7"
+   ],
+   "depth_min": 1,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Quick Step to N7"
+     ],
+     "value": -21.23,
+     "trace": [
+      [
+       1,
+       [
+        "X2 Quick Step to D6"
+       ],
+       17.89
+      ],
+      [
+       2,
+       [
+        "X2 Quick Step to D6"
+       ],
+       22.39
+      ],
+      [
+       3,
+       [
+        "X2 Quick Step to D6"
+       ],
+       19.52
+      ]
+     ],
+     "stable": {
+      "extensions": 87784,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 600.068
+    },
+    {
+     "depth": 1,
+     "turn": [
+      "X3 Quick Step to N7",
+      "X1 Steal"
+     ],
+     "value": -16.92,
+     "trace": [
+      [
+       1,
+       [
+        "X3 Move to N7 facing W"
+       ],
+       18.21
+      ]
+     ],
+     "stable": {
+      "extensions": 252,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 5.016
+    }
+   ]
+  },
+  {
+   "board": "3",
+   "desc": "Help the helper: O1 has beaten X1, who has no movement left; the low man helps and another covers",
+   "ok": false,
+   "what": "X3 Move to N6 facing SW; X Pause (help: none; rotation: X3)",
+   "seconds": 295.4,
+   "choice": [
+    "X3 Move to N6 facing SW",
+    "X Pause"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "X3 Move to N6 facing SW",
+      "X Pause"
+     ],
+     "value": -31.94,
+     "trace": [
+      [
+       1,
+       [
+        "X Pause"
+       ],
+       27.18
+      ],
+      [
+       2,
+       [
+        "X3 Move to N6 facing E"
+       ],
+       31.43
+      ],
+      [
+       3,
+       [
+        "X3 Move to N6 facing E"
+       ],
+       31.43
+      ],
+      [
+       4,
+       [
+        "X3 Move to N6 facing E"
+       ],
+       33.1
+      ]
+     ],
+     "stable": {
+      "extensions": 72513,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 295.431
+    }
+   ]
+  },
+  {
+   "board": "4",
+   "desc": "Two threats, one answer: X5 is the only answer to O1's pull-up and O5 at the rim",
+   "ok": true,
+   "what": "O1 Sprint to F7; O5 Move to I2 (attacks X5)",
+   "seconds": 207.8,
+   "choice": [
+    "O1 Sprint to F7",
+    "O5 Move to I2"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O1 Sprint to F7",
+      "O5 Move to I2"
+     ],
+     "value": 34.82,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Sprint to F10",
+        "O2 Sprint to E10"
+       ],
+       35.65
+      ],
+      [
+       2,
+       [
+        "O1 Sprint to F10",
+        "O2 Sprint to E10"
+       ],
+       33.98
+      ],
+      [
+       3,
+       [
+        "O1 Sprint to F10",
+        "O2 Sprint to E10"
+       ],
+       35.65
+      ],
+      [
+       4,
+       [
+        "O1 Sprint to F10",
+        "O2 Sprint to E10"
+       ],
+       33.98
+      ]
+     ],
+     "stable": {
+      "extensions": 7755,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 207.84
+    }
+   ]
+  },
+  {
+   "board": "5",
+   "desc": "Closeout: X2 closed from 3 squares with his Move; drive when he arrives, shoot when he stops 2 short",
+   "ok": false,
+   "what": "closed to C7: O2 Move to B8; O2 Dribble vs X2; stopped 2 short at D7: O5 Screen, T W",
+   "seconds": 478.5,
+   "choice": [
+    "O2 Move to B8",
+    "O2 Dribble vs X2"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O2 Move to B8",
+      "O2 Dribble vs X2"
+     ],
+     "value": 42.47,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Sprint to B8"
+       ],
+       43.3
+      ],
+      [
+       2,
+       [
+        "O2 Sprint to B8"
+       ],
+       41.62
+      ],
+      [
+       3,
+       [
+        "O2 Sprint to B8"
+       ],
+       43.3
+      ],
+      [
+       4,
+       [
+        "O2 Sprint to B8"
+       ],
+       41.62
+      ]
+     ],
+     "stable": {
+      "extensions": 15666,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 314.991
+    },
+    {
+     "depth": 4,
+     "turn": [
+      "O5 Screen, T W"
+     ],
+     "value": 42.6,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Sprint to B8"
+       ],
+       43.3
+      ],
+      [
+       2,
+       [
+        "O2 Sprint to B8"
+       ],
+       41.62
+      ],
+      [
+       3,
+       [
+        "O2 Sprint to B8"
+       ],
+       43.3
+      ],
+      [
+       4,
+       [
+        "O2 Sprint to B8"
+       ],
+       41.62
+      ]
+     ],
+     "stable": {
+      "extensions": 9723,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 163.503
+    }
+   ]
+  },
+  {
+   "board": "6",
+   "desc": "Catch window: O4 caught in the corner with every cover far; he acts on his next action",
+   "ok": false,
+   "what": "O2 Move to A5; O1 Move to G10 (open look 33.0 against the possession 24.9)",
+   "seconds": 127.9,
+   "choice": [
+    "O2 Move to A5",
+    "O1 Move to G10"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O2 Move to A5",
+      "O1 Move to G10"
+     ],
+     "value": 42.6,
+     "trace": [
+      [
+       1,
+       [
+        "O4 Pass to O2"
+       ],
+       41.62
+      ],
+      [
+       2,
+       [
+        "O2 Move to A5"
+       ],
+       41.62
+      ],
+      [
+       3,
+       [
+        "O2 Move to A5"
+       ],
+       41.62
+      ],
+      [
+       4,
+       [
+        "O2 Move to A5"
+       ],
+       41.62
+      ]
+     ],
+     "stable": {
+      "extensions": 1450,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 127.877
+    }
+   ]
+  },
+  {
+   "board": "7",
+   "desc": "Clock: the same contested mid-range by O3; pass in phase 2, shoot in phase 6",
+   "ok": true,
+   "what": "phase 2: O3 Sprint to E9; phase 6: O3 Shot (mid)",
+   "seconds": 569.0,
+   "choice": [
+    "O3 Sprint to E9"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O3 Sprint to E9"
+     ],
+     "value": 36.1,
+     "trace": [
+      [
+       1,
+       [
+        "O3 Sprint to E9"
+       ],
+       31.79
+      ],
+      [
+       2,
+       [
+        "O3 Sprint to E9"
+       ],
+       31.79
+      ],
+      [
+       3,
+       [
+        "O3 Sprint to E9"
+       ],
+       35.72
+      ],
+      [
+       4,
+       [
+        "O3 Sprint to E9"
+       ],
+       35.75
+      ]
+     ],
+     "stable": {
+      "extensions": 7762,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 568.582
+    },
+    {
+     "depth": 4,
+     "turn": [
+      "O3 Shot (mid)"
+     ],
+     "value": 10.35,
+     "trace": [
+      [
+       1,
+       [
+        "O3 Shot (floater)"
+       ],
+       12
+      ],
+      [
+       2,
+       [
+        "O3 Shot (mid)"
+       ],
+       10
+      ],
+      [
+       3,
+       [
+        "O3 Shot (mid)"
+       ],
+       10
+      ],
+      [
+       4,
+       [
+        "O3 Shot (mid)"
+       ],
+       10
+      ]
+     ],
+     "stable": {
+      "extensions": 52,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.403
+    }
+   ]
+  },
+  {
+   "board": "8",
+   "desc": "Backdoor: X2 denies O2 on the wing; the lane to the rim is open",
+   "ok": false,
+   "what": "O2 Move to E10",
+   "seconds": 271.4,
+   "choice": [
+    "O2 Move to E10"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O2 Move to E10"
+     ],
+     "value": 42.11,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to E10"
+       ],
+       43.3
+      ],
+      [
+       2,
+       [
+        "O2 Move to E10"
+       ],
+       41.62
+      ],
+      [
+       3,
+       [
+        "O2 Move to E10"
+       ],
+       43.3
+      ],
+      [
+       4,
+       [
+        "O2 Move to E10"
+       ],
+       41.62
+      ]
+     ],
+     "stable": {
+      "extensions": 16919,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 271.411
+    }
+   ]
+  },
+  {
+   "board": "9",
+   "desc": "Corner: O1's wing drive pulled X5 off the corner; O5 relocates or gets the kick",
+   "ok": false,
+   "what": "O1 Move to J3; O1 Quick Step to I2",
+   "seconds": 300.2,
+   "choice": [
+    "O1 Move to J3",
+    "O1 Quick Step to I2"
+   ],
+   "depth_min": 4,
+   "decisions": [
+    {
+     "depth": 4,
+     "turn": [
+      "O1 Move to J3",
+      "O1 Quick Step to I2"
+     ],
+     "value": 34.33,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to J3"
+       ],
+       28.85
+      ],
+      [
+       2,
+       [
+        "O1 Move to J3"
+       ],
+       27.18
+      ],
+      [
+       3,
+       [
+        "O1 Move to J3"
+       ],
+       32.24
+      ],
+      [
+       4,
+       [
+        "O1 Move to J3"
+       ],
+       33.98
+      ]
+     ],
+     "stable": {
+      "extensions": 9162,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 300.177
+    }
+   ]
+  },
+  {
+   "board": "10",
+   "desc": "Steal: tried with good odds (a weak dribbler, a teammate near); declined early on a strong dribbler",
+   "ok": false,
+   "what": "good odds: X1 Move to J10 facing N; bad odds, early: X4 Move to B4 facing SW; X3 Quick Step to P6",
+   "seconds": 605.5,
+   "choice": [
+    "X1 Move to J10 facing N"
+   ],
+   "depth_min": 1,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X1 Move to J10 facing N"
+     ],
+     "value": -13.51,
+     "trace": [
+      [
+       1,
+       [
+        "X1 Move to J10 facing N"
+       ],
+       10.29
+      ],
+      [
+       2,
+       [
+        "X1 Move to J10 facing N"
+       ],
+       13.57
+      ],
+      [
+       3,
+       [
+        "X1 Move to J10 facing N"
+       ],
+       13.95
+      ]
+     ],
+     "stable": {
+      "extensions": 89274,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 600.374
+    },
+    {
+     "depth": 1,
+     "turn": [
+      "X4 Move to B4 facing SW",
+      "X3 Quick Step to P6"
+     ],
+     "value": -24.93,
+     "trace": [
+      [
+       1,
+       [
+        "X Pause"
+       ],
+       26.32
+      ]
+     ],
+     "stable": {
+      "extensions": 423,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 5.128
+    }
+   ]
+  },
+  {
+   "board": "11",
+   "desc": "Contested pass: the pass to O2 crosses X5's lane; declined early, accepted in the final phase (O1 has no forced shot from plain wood)",
+   "ok": false,
+   "what": "early: O2 Sprint to A7; final phase: O1 Move to K10",
+   "seconds": 604.7,
+   "choice": [
+    "O2 Sprint to A7"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Sprint to A7"
+     ],
+     "value": 26.21,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Sprint to A7"
+       ],
+       25.86
+      ],
+      [
+       2,
+       [
+        "O2 Sprint to A7"
+       ],
+       25.86
+      ],
+      [
+       3,
+       [
+        "O2 Sprint to A7"
+       ],
+       29.5
+      ]
+     ],
+     "stable": {
+      "extensions": 29989,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 600.101
+    },
+    {
+     "depth": 4,
+     "turn": [
+      "O1 Move to K10"
+     ],
+     "value": 9.35,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to J10"
+       ],
+       24
+      ],
+      [
+       2,
+       [
+        "O1 Dribble vs X1"
+       ],
+       14.38
+      ],
+      [
+       3,
+       [
+        "O1 Move to J10"
+       ],
+       9
+      ],
+      [
+       4,
+       [
+        "O1 Move to J10"
+       ],
+       9
+      ]
+     ],
+     "stable": {
+      "extensions": 305,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 4.622
+    }
+   ]
+  },
+  {
+   "board": "12",
+   "desc": "Strong-side corner: X2 on the elite shooter O2 in the corner; O1's drive is contained by X1",
+   "ok": true,
+   "what": "X3 Move to L7 facing SW (X2 ends 1 square(s) from O2)",
+   "seconds": 600.1,
+   "choice": [
+    "X3 Move to L7 facing SW"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Move to L7 facing SW"
+     ],
+     "value": -27.87,
+     "trace": [
+      [
+       1,
+       [
+        "X1 Steal"
+       ],
+       22.78
+      ],
+      [
+       2,
+       [
+        "X3 Move to L7 facing SW"
+       ],
+       27.48
+      ],
+      [
+       3,
+       [
+        "X Pause"
+       ],
+       23.77
+      ]
+     ],
+     "stable": {
+      "extensions": 122179,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 600.078
+    }
+   ]
+  }
+ ]
+}

@@ -27,11 +27,18 @@ const out = [];
 for (const ln of lines) {
   const q = JSON.parse(ln);
   if (q.leaf_mode) E.setLeafMode(q.leaf_mode);       // step 10: the leaf's mode for this line
+  if (q.stable !== undefined) E.setStable(q.stable);   // step 12: the switches
+  if (q.reach !== undefined) E.setReach(q.reach);
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {
       const p = E.probe(q.state, q.ctx);
       if (q.outcomes) p.react_outcomes = outcomes(q.state, q.ctx);
+      if (q.reach_map && q.state.stage !== 'over') {      // step 12: the reach map, square by square
+        const m = E.reachMap(E.stateFrom(q.state, E.makeCtx(q.ctx))), rm = {};
+        for (const [k, row] of Object.entries(m)) { const o = {}; for (const [sq, v] of row) o[E.sqName(sq)] = v; rm[k] = o; }
+        p.reach_map = rm;
+      }
       out.push(JSON.stringify(p));
     }
   } catch (e) { out.push(JSON.stringify({ error: String(e && e.stack || e) })); }

@@ -134,6 +134,8 @@ class Agent:
         if FIXED['depth']:
             lo = hi = FIXED['depth']
             budget = None
+            if FIXED.get('deadline') is not None:      # step 12: a tool's cap on a fixed look-ahead (the deepest that finishes)
+                budget = max(5.0, FIXED['deadline'] - time.time())
         if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
             results, reached, srch = self._js_search(s, budget, hi)
         else:
@@ -170,7 +172,11 @@ class Agent:
         if self.p['variety_margin'] > 0 and len(near) > 1:
             turn = self.rng.choice(near)
         took = round(time.time() - t0, 3)
-        note = dict(event='decision', level=self.level, depth=reached, partial=getattr(srch, 'partial', 0),
+        stable = dict(extensions=getattr(srch, 'extensions', 0), cap_hits=getattr(srch, 'cap_hits', 0),
+                      kept=getattr(srch, 'kept', 0)) if getattr(srch, 'stable', False) else None
+        trace = [[d, [str(a) for a in t], round(v, 2)] for d, t, v in getattr(srch, 'trace', [])]
+        note = dict(event='decision', level=self.level, depth=reached, partial=getattr(srch, 'partial', 0), stable=stable,
+                    trace=trace,
                     engine=getattr(srch, 'engine', 'python'), pv=getattr(srch, 'pv', None),
                     leaves=srch.leaves, nodes=srch.nodes,
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
@@ -211,6 +217,9 @@ class Agent:
         st = _Stats()
         st.leaves, st.nodes, st.partial, st.pv = out['leaves'], out['nodes'], out['partial'], out.get('pv')
         st.engine = 'js'
+        st.stable = out.get('stable', False)
+        st.extensions, st.cap_hits, st.kept = out.get('extensions', 0), out.get('cap_hits', 0), out.get('kept', 0)
+        st.trace = [(d, tuple(jsbridge.action_from(a) for a in t), v) for d, t, v in out.get('trace', [])]
         return results, out['reached'], st
 
     def _small(self, s, acts):

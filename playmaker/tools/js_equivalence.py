@@ -104,7 +104,7 @@ def py_outcomes(s):
     return out
 
 
-def py_probe(s):
+def py_probe(s, reach_map=False):
     mp = lambda m: {B.sq(q): n for q, n in m.items()}
     fx = lambda m: {B.sq(q): {str(a): n for a, n in arrs.items()} for q, arrs in m.items()}
     out = dict(legal=[str(a) for a in legal_actions(s)])
@@ -124,6 +124,9 @@ def py_probe(s):
                                    [cv['residual'][i] for i in range(5)]]
             out['leaf_' + tag] = r.leaf()
         out['quick'] = Read(s, k=0, looks_per=3).leaf()
+    if reach_map:                                  # step 12: the reach map, square by square (the tool asks for it)
+        from playmaker_engine.reach import reach_map as _rm
+        out['reach_map'] = {f'{side}{i}': {B.sq(q): list(v) for q, v in row.items()} for (side, i), row in _rm(s).items()}
     return out
 
 
@@ -143,6 +146,39 @@ def run_js(lines):
     return [json.loads(ln) for ln in p.stdout.splitlines() if ln.strip()]
 
 
+def compare_searches(args, rng):
+    """Step 12: whole searches (the All-Star, 2 moves ahead, no time limit) in both engines: every root value, the
+    depth used, the extensions, cap hits and kept choices."""
+    from playmaker_engine.agent import Agent, profile
+    from playmaker_engine.search import Searcher, actor
+    sts = []
+    while len(sts) < args.search:
+        s, _ = random_state(rng)
+        if s.stage == 'play':
+            sts.append(s)
+    lines = [json.dumps(dict(stable=args.stable, reach=args.reach, leaf_mode=args.leaf_mode,
+                             search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
+                                         budget=None, max_depth=2, stale=None))) for s in sts]
+    js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
+    bad, same = [], 0
+    for k, (s, j) in enumerate(zip(sts, js)):
+        ag = Agent(actor(s), 'allstar', seed=1)
+        sr = Searcher(actor(s), ag.p, ag._evaluate(s), float('inf'))
+        res, reached = sr.root(s, 2, 2)
+        py = dict(values=[v for v, _ in res], turns=[[str(a) for a in t] for _, t in res], reached=reached,
+                  extensions=getattr(sr, 'extensions', 0), cap_hits=getattr(sr, 'cap_hits', 0), kept=getattr(sr, 'kept', 0))
+        if 'error' in j:
+            bad.append(dict(n=k, field='search', js=j['error'][:400]))
+            continue
+        jj = dict(values=[v for v, _ in j['results']], reached=j['reached'], extensions=j.get('extensions', 0),
+                  cap_hits=j.get('cap_hits', 0), kept=j.get('kept', 0))
+        ok = close(py['values'], jj['values']) and all(py[f] == jj[f] for f in ('reached', 'extensions', 'cap_hits', 'kept'))
+        same += ok
+        if not ok:
+            bad.append(dict(n=k, field='search', state=s.encode(), py={f: py[f] for f in jj}, js=jj))
+    return dict(bad=bad, summary=dict(compared=len(sts), equal=same))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--n', type=int, default=2000)
@@ -150,12 +186,17 @@ def main():
     ap.add_argument('--out', default=None)
     ap.add_argument('--show', type=int, default=5)
     ap.add_argument('--reaction', action='store_true', help='shot reactions only, with their outcomes compared')
+    ap.add_argument('--stable', action='store_true', help='step 12: search.stable on, in both engines')
+    ap.add_argument('--reach', action='store_true', help='step 12: eval.reach on, in both engines')
+    ap.add_argument('--search', type=int, default=0, help='step 12: also compare this many searches (2 moves ahead)')
     ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative'),
                     help="the leaf's mode, in both engines (default: eval.leaf_mode in ai_profiles.json)")
     args = ap.parse_args()
     from playmaker_engine.decide import CONFIG as _CFG
     args.leaf_mode = args.leaf_mode or _CFG['eval'].get('leaf_mode', 'floor')
     _CFG['eval']['leaf_mode'] = args.leaf_mode
+    _CFG.setdefault('search', {})['stable'] = args.stable
+    _CFG['eval']['reach'] = args.reach
     rng = random.Random(args.seed)
     states, meta, lines = [], [], []
     t0 = time.time()
@@ -164,8 +205,8 @@ def main():
         states.append(s)
         meta.append(m)
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
-                                     leaf_mode=args.leaf_mode)))
-    py = [py_probe(s) for s in states]
+                                     leaf_mode=args.leaf_mode, stable=args.stable, reach=args.reach, reach_map=True)))
+    py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):
             a['react_outcomes'] = py_outcomes(s)
@@ -174,7 +215,7 @@ def main():
     js = run_js(lines)
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
-              'threat_exact', 'cover_exact', 'leaf_exact', 'quick') + (('react_outcomes',) if args.reaction else ())
+              'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -192,7 +233,11 @@ def main():
                 tally[f][1] += 1
             else:
                 bad.append(dict(n=k, field=f, state=s.encode(), py=a[f], js=b.get(f)))
-    rep = dict(leaf_mode=args.leaf_mode, states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
+    srch = compare_searches(args, rng) if args.search else None
+    if srch:
+        bad += srch['bad']
+    rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, reach=args.reach, searches=srch and srch['summary'],
+               states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,
                by_age={a: sum(1 for m in meta if m['age'] == a) for a in AGES},
                by_standard={a: sum(1 for m in meta if m['standard'] == a) for a in STANDARDS},

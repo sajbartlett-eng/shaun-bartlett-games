@@ -474,6 +474,15 @@ uses its own averages only once it has at least 100 positions at that phase (the
 **D-116. The rebuilt boards that still fail** (1, 3, 5 A, 6, 8 and 11) and boards 9 and 10: kept as they are, as honest
 targets for the goals step and the "don't stop mid-action" step. · Source: Shaun, 10 Nov 2026 · **Ruled.**
 
+### Shaun, 10 Nov 2026 (step 12 prompt): the answers to step 11
+
+**D-117. Exam board 7 B: 1 token,** so the offence's turn is final whatever it does. Rebuilt in step 12. · Source:
+Shaun, 10 Nov 2026 · **Ruled, built.**
+
+**D-118. The exam's main measure is a fixed look-ahead.** The clock run moves with machine load and is a second check
+only. From step 12 on, every exam table leads with the fixed look-ahead (2 team-turn pairs: an offence turn and the
+defence's reply, twice) and gives the clock result beside it. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

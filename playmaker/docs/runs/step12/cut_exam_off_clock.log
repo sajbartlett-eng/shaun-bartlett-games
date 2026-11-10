@@ -1,0 +1,19 @@
+{"board": "1", "ok": false, "choice": ["X1 Sprint to H8"], "depth_min": 2, "seconds": 2.5}
+{"board": "2", "ok": true, "choice": ["X2 Sprint to D7"], "depth_min": 2, "seconds": 5.1}
+{"board": "3", "ok": false, "choice": ["X3 Move to N6 facing E"], "depth_min": 2, "seconds": 2.5}
+{"board": "4", "ok": true, "choice": ["O1 Sprint to F10", "O2 Sprint to E10"], "depth_min": 2, "seconds": 2.6}
+{"board": "5", "ok": false, "choice": ["O2 Sprint to B8"], "depth_min": 2, "seconds": 5.1}
+{"board": "6", "ok": false, "choice": ["O2 Move to A5", "O4 Pass to O2"], "depth_min": 2, "seconds": 2.5}
+{"board": "7", "ok": true, "choice": ["O3 Sprint to E9"], "depth_min": 2, "seconds": 3.0}
+{"board": "8", "ok": false, "choice": ["O2 Move to E10"], "depth_min": 2, "seconds": 2.5}
+{"board": "9", "ok": false, "choice": ["O1 Move to J3", "O1 Quick Step to I2"], "depth_min": 2, "seconds": 2.5}
+{"board": "10", "ok": false, "choice": ["X3 Move to P9 facing SW"], "depth_min": 2, "seconds": 5.1}
+{"board": "11", "ok": false, "choice": ["O2 Sprint to A7"], "depth_min": 2, "seconds": 5.0}
+{"board": "12", "ok": true, "choice": ["X1 Steal"], "depth_min": 2, "seconds": 2.5}
+{"board": "13", "ok": false, "choice": ["O2 Sprint to B8"], "depth_min": 2, "seconds": 2.6}
+{"board": "14", "ok": true, "choice": ["O1 Move to K10"], "depth_min": 2, "seconds": 51.0}
+{"board": "15", "ok": true, "choice": ["O2 Quick Step to B8"], "depth_min": 2, "seconds": 15.1}
+{"board": "16", "ok": false, "choice": ["O1 Move to K10", "O2 Move to A5"], "depth_min": 2, "seconds": 12.4}
+{"board": "17", "ok": true, "choice": null, "depth_min": null, "seconds": 1.2}
+{"board": "C1", "ok": true, "choice": ["X1 Sprint to H11"], "depth_min": 2, "seconds": 2.5}
+{"board": "C2", "ok": true, "choice": ["O2 Move to C9", "O1 Pass to O2"], "depth_min": 2, "seconds": 3.1}

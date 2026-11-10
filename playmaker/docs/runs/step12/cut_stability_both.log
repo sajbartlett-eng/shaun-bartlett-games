@@ -1,0 +1,8 @@
+both 2 4 1 [(1, 'X2 Quick Step to D6')]
+both 2 12 1 [(1, 'X3 Sprint to O3')]
+both 7 phase 2 1 [(1, 'O3 Sprint to E9')]
+both 7 phase 6 4 [(1, 'O3 Shot (floater)'), (2, 'O3 Shot (mid)'), (3, 'O3 Shot (mid)'), (4, 'O3 Shot (mid)')]
+both 9 2 [(1, 'O1 Move to J3 ; O2 Move to A7'), (2, 'O1 Move to J3 ; O4 Move to G3')]
+both 10 good odds 1 [(1, 'X4 Steal')]
+both 10 bad odds 1 [(1, 'X Pause')]
+both 16 2 [(1, 'O2 Move to A5 ; O1 Quick Step to J10'), (2, 'O2 Move to A5 ; O1 Move to H10')]

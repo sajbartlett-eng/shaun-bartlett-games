@@ -303,6 +303,14 @@ class Look:
         self.replies = (0 if now else 1) if replies is None else replies
 
 
+PATH_ROUTES = ('drive', 'later', 'cut')
+
+
+def _blocks(q, start, c, qs, rules):
+    from .reach import blocks_path
+    return blocks_path(q, start, c, qs, rules)
+
+
 class Read:
     """One position's THREAT, COVERAGE, overloads and the leaf value, from the offence's point of view.
     exact: the rules' own reach and pass outcomes (the root, the trainer); else cached geometry (the leaves).
@@ -338,7 +346,8 @@ class Read:
         s = self.s
         if not B.on_board(s.x[d]):
             return {}
-        if at is None and self.exact:
+        if at is None and (self.exact or self.cfg.get('reach')):
+            # step 12 (eval.reach): the reach map's exact movement (blocking, screens, locks) for every reading
             free, fixed = defender_map(s, d, exact=True)
             return contest_map(self.rules, free, fixed)
         can_move, qs_left = _caps(s, 'X', d)
@@ -503,6 +512,16 @@ class Read:
                     lanes |= lane_squares(bp, lk.c, 0.5)
         if B.on_board(bp):                             # and the ball handler's way to the rim
             lanes |= lane_squares(bp, RC.RIM, 0.5)
+        reach = bool(self.cfg.get('reach'))
+        paths = {}
+        if reach:                                      # step 12: every attacker's way to his later looks
+            from .reach import path_squares
+            for i in self.att_o:
+                for lk in self.looks[i]:
+                    if not lk.now and lk.route in PATH_ROUTES:
+                        sq = path_squares(s.o[i], lk.c, s.ctx.off[i].qs, self.rules)
+                        paths.setdefault(i, set()).update(sq)
+                        lanes |= sq
         cands = []
         for q, n in free.items():
             if n > 1 or (q in occ and q != s.x[j]):
@@ -528,7 +547,7 @@ class Read:
                 if not lk.now:
                     cx, cy = lk.c
                     sq.update((x, y) for x in range(cx - 3, cx + 4) for y in range(cy - 3, cy + 4))
-            near[i] = sq
+            near[i] = sq | paths.get(i, set())
         carrier = s.ball
         leave_cache = {}
         front = lambda p_: (carrier in self.att_o and B.cheb(p_, s.o[carrier]) <= 2 and
@@ -566,6 +585,9 @@ class Read:
                 for lk in self.looks[i]:
                     if lk.now:
                         v = lk.base
+                    elif reach and q != s.x[j] and lk.route in PATH_ROUTES and _blocks(q, s.o[i], lk.c, s.ctx.off[i].qs,
+                                                                                        self.rules):
+                        v = 0.0                  # step 12: he reaches the attacker's way first: the look is gone
                     else:
                         row = cm.get(lk.c)
                         p_new = None
@@ -574,7 +596,7 @@ class Read:
                                 moved_state = s.with_(x=s.x[:j] + (q,) + s.x[j + 1:],
                                                       arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
                                                       moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
-                            p_new = _lane_p(moved_state, i, lk.c)       # his response changes the lane
+                            p_new = _lane_p(moved_state, i, lk.c, reach=False)   # his response changes the lane
                         v = lk.swapped(j, self._vals(lk, j, row) if row is not None else None, p_new)
                     if v > best:
                         best = v
@@ -718,6 +740,21 @@ class Read:
             return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg))
         return banked + max(sn or 0.0, now, cont, coarse)
 
+    def possession(self):
+        """Step 12 (stable search, 'play on while pending'): what the position is worth without the ball handler's shot
+        now: the leaf with the carrier's shot left out (a look another attacker releases this turn still counts)."""
+        s = self.s
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        now = max((lk.base for i in self.att_o for lk in self.looks[i]
+                   if lk.now and not (i == s.ball and lk.route == 'shoot')), default=0.0)
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            return banked + now
+        cont, coarse = self.continuation(), vcoarse(s)
+        if self.cfg.get('leaf_mode', 'floor') == 'relative':
+            return banked + max(now, coarse + cont - relative_average(s, self.cfg))
+        return banked + max(now, cont, coarse)
+
     def continuation(self):
         """The best look the defence's best cover leaves (the mean of the tied top residuals) times the continuation:
         what the board read says the position is worth beyond a shot now."""
@@ -772,20 +809,30 @@ def turnover_value(s):
     return banked + vcoarse(s.with_(clock=s.clock - RC.PHASE_SECONDS))
 
 
-def _lane_p(s, i, c):
+def _lane_p(s, i, c, reach=None):
     """P(a pass to attacker i at c arrives), from geometry: 0 if a defender next to c stands on the lane (receiver
     denial); else 1 - the best Intercept chance of a defender who stands on the lane or can step onto it with a
-    Move or Quick Step."""
-    key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6])
+    Move or Quick Step. reach (step 12, eval.reach): who can step onto it from the reach map's exact movement."""
+    if reach is None:
+        reach = bool(CONFIG['eval'].get('reach'))
+    key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
+           s.o if reach else None, s.screens if reach else None)
     hit = _LP.get(key)
     if hit is None:
         if len(_LP) > 300000:
             _LP.clear()
-        hit = _LP[key] = _lane_p_calc(s, i, c)
+        hit = _LP[key] = _lane_p_calc(s, i, c, reach)
     return hit
 
 
-def _lane_p_calc(s, i, c):
+def _exact_one(s, d):
+    """The squares defender d stands on now or after one of his movement actions, by the rules' exact movement."""
+    free, fixed = defender_map(s, d, exact=True)
+    return frozenset([s.x[d]] + [q for q, n in free.items() if n <= 1] +
+                     [q for q, arr in fixed.items() if min(arr.values()) <= 1])
+
+
+def _lane_p_calc(s, i, c, reach=False):
     rules = s.ctx.rules
     a = s.o[s.ball]
     if not (B.on_board(a) and B.on_board(c)):
@@ -801,7 +848,8 @@ def _lane_p_calc(s, i, c):
     worst = 0.0
     for d, xp in enumerate(s.x):
         can_move, qs_left = _caps(s, 'X', d)
-        if lane.isdisjoint(_one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)):
+        one = _exact_one(s, d) if reach else _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)
+        if lane.isdisjoint(one):
             continue
         pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
         if pi > worst:
