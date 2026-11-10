@@ -541,6 +541,21 @@ unplayable. · Source: Shaun, 10 Nov 2026 · **Ruled.**
 `search.goals`), stop and rethink before stages 5 to 8 (the defence's answers, the coach's goals, the trainer,
 scouting) are built on top. · Source: Shaun, 10 Nov 2026 · **Ruled;** step 16 reports it, Shaun decides.
 
+### Shaun, 10 Nov 2026 (step 17 prompt): the checkpoint, and learned judgement
+
+**D-131. The checkpoint result (D-130).** Goals as built didn't clearly improve the exam: 0 boards alone, 1 with the
+budget, within noise. Stages 5 to 8 (the defence's answers, the coach's goals, the trainer, scouting) are held.
+`eval.advantages` and `search.goals` stay off. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
+**D-132. The engine's judgement moves to learned weights** over the existing readings (step 17). No hand-set weights:
+every number comes from the rules, the cards or data. · Source: Shaun, 10 Nov 2026 · **Ruled;** step 17 builds it.
+
+**D-133. The exam is rebuilt larger,** with answers measured by playing positions out (step 17, stage 0). The 19 hand
+boards stay as a teaching set and are measured too. Where Shaun's label and the measured answer disagree, Shaun
+rules. · Source: Shaun, 10 Nov 2026 · **Ruled;** the disagreements are **open** until listed and ruled.
+
+**D-134. Board 13 is flawed:** by the cards, the lane isn't worth clearing. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
