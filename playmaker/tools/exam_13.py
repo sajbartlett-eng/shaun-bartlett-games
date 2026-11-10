@@ -30,7 +30,7 @@ from playmaker_engine.search import actor, PARTS                         # noqa:
 import exam_12 as X12                                                    # noqa: E402
 
 CHEAP = ('quiet_points', 'like_with_like', 'tempo')
-SPEEDUPS = ('reach_cache', 'forcing', 'quiet_read', 'tt_order')
+SPEEDUPS = ('reach_cache', 'forcing', 'quiet_read', 'tt_order', 'two_direct', 'two_bound', 'path_block')
 SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP + ('play_on',), False),
             'cheap_reach': (CHEAP, True), 'stable': (PARTS, False), 'both': (PARTS, True),
             'play_on': (('play_on',), False), 'reach': ((), True),

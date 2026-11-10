@@ -226,7 +226,7 @@ def main():
     assert all(x in PARTS for x in names), names
     args.switch_map = {k: k in names for k in PARTS}
     _CFG['search'].update(args.switch_map)
-    speedups = ('reach_cache', 'forcing', 'quiet_read', 'tt_order')
+    speedups = ('reach_cache', 'forcing', 'quiet_read', 'tt_order', 'two_direct', 'two_bound', 'path_block')
     off = speedups if args.without == 'all' else [x for x in args.without.split(',') if x]
     assert all(x in speedups for x in off), off
     args.speed = {k: k not in off for k in speedups}

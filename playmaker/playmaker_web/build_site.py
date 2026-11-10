@@ -33,7 +33,39 @@ def bundle():
     return dict(version=1, files=files, engine_js=engine_js)
 
 
-JS_FILES = ['notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js']       # in load order; index.html names them in this order
+JS_FILES = ['speedtest.js', 'notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js']       # in load order; index.html names them in this order
+
+
+def speedtest_positions():
+    """Step 13C: what the hidden speed test (?speedtest=1, speedtest.js) runs: the exam's 22 decisions (boards 1 to 16,
+    every copy, and C2) as the search reads them, and each level's profile, taken from the engine at build time. short:
+    the 8 decisions of boards 2, 7, 9, 10 and 16, used when a device is too slow for all 22. Made in a process of its
+    own, so the build loads no engine module the game itself doesn't."""
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, '-c', _SPEEDTEST], cwd=ROOT, capture_output=True, text=True, check=True)
+    return json.loads(out.stdout)
+
+
+_SPEEDTEST = '''
+import json
+from playmaker_engine import agent as AG, exam as EX, jsbridge
+from playmaker_engine.search import actor
+contexts, seen, positions = [], {}, []
+jobs = [(n, EX.POSITIONS[n - 1]()[1]) for n in range(1, 17)] + [('C2', EX.c2()[1])]
+for n, b in jobs:
+    for k, s in (b.items() if isinstance(b, dict) else [('', b)]):
+        ctx = json.dumps(jsbridge.ctx_json(s.ctx), sort_keys=True)
+        if ctx not in seen:
+            seen[ctx] = len(contexts)
+            contexts.append(json.loads(ctx))
+        positions.append(dict(name=str(n) + ((' ' + str(k)) if k else ''), short=n in (2, 7, 9, 10, 16),
+                              state=jsbridge.state_json(s), ctx=seen[ctx]))
+first = jobs[0][1]
+first = list(first.values())[0] if isinstance(first, dict) else first
+profiles = {lv: AG.Agent(actor(first), lv, seed=1).p for lv in ('rookie', 'starter', 'allstar')}
+print(json.dumps(dict(profiles=profiles, contexts=contexts, positions=positions)))
+'''
 
 
 def page(inline=False):
@@ -43,7 +75,7 @@ def page(inline=False):
     tags = ''.join(f'<script src="{f}"></script>\n' for f in JS_FILES)
     if not inline:
         return html.replace(tags, '<script src="pyodide-adapter.js"></script>\n' + tags)
-    data = json.dumps(bundle()).replace('</', '<\\/')
+    data = json.dumps(dict(bundle(), speedtest=speedtest_positions())).replace('</', '<\\/')
     html = html.replace('<link rel="stylesheet" href="style.css">', f'<style>\n{css}\n</style>')
     scripts = ''.join(f'<script>\n{open(os.path.join(STATIC, f)).read()}\n</script>\n' for f in JS_FILES)
     return html.replace(tags, f'<script>window.PM_BUNDLE = {data};</script>\n<script>\n{adapter}\n</script>\n{scripts}')
@@ -65,6 +97,8 @@ def build(out_site=None, out_dist=None):
             dst.write(src.read())
     with open(os.path.join(out_site, 'engine_bundle.json'), 'w') as f:
         json.dump(bundle(), f)
+    with open(os.path.join(out_site, 'speedtest_positions.json'), 'w') as f:      # step 13C: the speed test's decisions
+        json.dump(speedtest_positions(), f)
     with open(os.path.join(out_dist, 'playmaker.html'), 'w') as f:
         f.write(page(inline=True))
     return out_site, out_dist

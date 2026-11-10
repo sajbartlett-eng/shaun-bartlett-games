@@ -249,7 +249,7 @@ const PMEngine = (() => {
     }
     return true;
   }
-  function zoneOf(s, j) {
+  function zoneOf(s, j, vacated, taken) {            // vacated, taken (step 13C): one attacker's square moved
     // actions.zone: the squares along his arrow he reaches with one movement left to him (only membership is used).
     // Only the straight path reaches a square on the arrow ray, so the walk checks that path directly.
     const start = s.x[j], card = s.ctx.dfn[j], d = s.arrows[j], diag = d & 1, step = DSTEP[d];
@@ -260,7 +260,7 @@ const PMEngine = (() => {
     let q = start;
     for (let n = 1; n <= maxR; n++) {
       const prev = q; q += step;
-      if (!ONB[q] || occAt(s, q)) break;
+      if (!ONB[q] || q === taken || (q !== vacated && occAt(s, q))) break;
       let ok = true;
       for (const scr of s.screens) {
         const tsq = tSquare(s, scr);
@@ -868,7 +868,7 @@ const PMEngine = (() => {
   const REACH_STATS = { calls: 0, same_state: 0, kept: 0, built: 0 };
   // Step 13: the speed-ups that change no result. Each can be turned off by a tool (setSpeed), to time it and to prove
   // the search gives the same choices and values with and without it. All are on in play.
-  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true };
+  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true };
   function setSpeed(json) {
     const q = typeof json === 'string' ? JSON.parse(json) : json;
     for (const k in SPEED) if (q[k] !== undefined) SPEED[k] = q[k] === true || q[k] === 'true';
@@ -1015,15 +1015,42 @@ const PMEngine = (() => {
   }
   // Step 13 B2 (decide.two_actions): the squares attacker i reaches with exactly two movement actions (a Move then a
   // Quick Step, or a Quick Step then a Move), each by the rules' own movement from where the first leaves him. Sorted.
-  function twoActions(s, i, one) {
+  function twoActions(s, i, one, keep) {               // keep(square): only these are wanted
     if (s.tok_o < 2 || !ONB[s.o[i]]) return [];
-    const bit = 1 << i, out = new Set();
+    const bit = 1 << i, out = new Set(), old = s.o[i], card = s.ctx.off[i], carrier = i === s.ball;
+    // step 13C (a speed-up that changes no result): the second action is read straight from the paths and the pieces,
+    // with his own square moved, instead of building a new position for every first square. The plain way is kept
+    // for the tools (SPEED.two_direct off) and for an attacker holding a screen.
+    const plain = !SPEED.two_direct || s.screens.some(sc => sc[0] === i);
     for (const [first, second] of [['move', 'qs'], ['qs', 'move']]) {
       if (!canMoveKind(s, 'O', i, first)) continue;
+      let can2 = null;
       for (const q1 of movementDests(s, 'O', i, first).keys()) {
-        const s2 = W_(s, first === 'move' ? { o: setAt(s.o, i, q1), moved_o: s.moved_o | bit } : { o: setAt(s.o, i, q1), qs_o: s.qs_o | bit });
-        if (!canMoveKind(s2, 'O', i, second)) continue;
-        for (const q2 of movementDests(s2, 'O', i, second).keys()) if (!one.has(q2)) out.add(q2);
+        if (plain || can2 === null) {
+          const s2 = W_(s, first === 'move' ? { o: setAt(s.o, i, q1), moved_o: s.moved_o | bit } : { o: setAt(s.o, i, q1), qs_o: s.qs_o | bit });
+          can2 = canMoveKind(s2, 'O', i, second);         // the same for every first square: it reads no position
+          if (plain) {
+            if (can2) for (const q2 of movementDests(s2, 'O', i, second).keys()) if (!one.has(q2) && (!keep || keep(q2))) out.add(q2);
+            continue;
+          }
+        }
+        if (!can2) break;
+        let zones = null;                                  // the zones of the defenders next to his new square
+        if (carrier) {
+          for (let j = 0; j < 5; j++) {
+            if (!adjacent(s.x[j], q1) || s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+            const z = zoneOf(s, j, old, q1);
+            if (z.length) zones = zones ? zones.concat(z) : z;
+          }
+        }
+        for (const path of (second === 'qs' ? qsPaths(q1, card.qs) : movePaths(q1))) {
+          const dest = path[path.length - 1];
+          if (one.has(dest) || out.has(dest) || (keep && !keep(dest))) continue;
+          let ok = true;
+          for (const q of path) if (!ONB[q] || q === q1 || (q !== old && occAt(s, q))) { ok = false; break; }
+          if (ok && zones) for (let n = 0; n < path.length - 1; n++) if (zones.includes(path[n])) { ok = false; break; }
+          if (ok) out.add(dest);
+        }
       }
     }
     return [...out].sort((a, b) => (SX[a] - SX[b]) || (SY[a] - SY[b]));
@@ -1092,7 +1119,15 @@ const PMEngine = (() => {
   function blocksPath(q, start, c, qs) {
     if (q === c) return true;
     const ps = pathsTo(start, c, qs);
-    return ps.length > 0 && ps.every(p => p.slice(0, -1).includes(q));
+    if (!SPEED.path_block) return ps.length > 0 && ps.every(p => p.slice(0, -1).includes(q));
+    // step 13C (a speed-up that changes no result): the squares every path crosses, worked out once per pair of squares
+    let blk = ps.block;
+    if (blk === undefined) {
+      blk = new Set();
+      if (ps.length) for (const x of ps[0].slice(0, -1)) if (ps.every(p => p.slice(0, -1).includes(x))) blk.add(x);
+      ps.block = blk;
+    }
+    return blk.has(q);
   }
   const PATH_ROUTES = new Set(['drive', 'later', 'cut']);
   function exactOne(s, d) {                            // decide._exact_one, as the bitset oneAction returns
@@ -1416,9 +1451,9 @@ const PMEngine = (() => {
       }
       return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft);
     }
-    _vals(lk, d, cm) {
+    _vals(lk, d, cm, moves) {                   // moves (step 13C): at most that many reaction movements; 0 = where he stands
       if (!cm || this.react_moves < 0) return null;
-      const mask = cm.masks[this.react_moves][BI[lk.c]];
+      const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
       const ctx = this.s.ctx, vc = ctx._vc || (ctx._vc = new Array(5 * NB * 5 * 64));
       const key = ((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask;
@@ -1521,7 +1556,6 @@ const PMEngine = (() => {
         for (const kind of ['move', 'qs', 'sprint']) {
           if (canMoveKind(s, 'O', i, kind)) for (const q of movementDests(s, 'O', i, kind).keys()) if (!reach.has(q)) reach.set(q, 1);
         }
-        if (budgetCfg()) for (const q of twoActions(s, i, reach)) reach.set(q, 2);   // step 13 B2 (D-115)
       } else {
         reach = new Map();
         if (ONB[s.o[i]] && s.tok_o > 0) {
@@ -1530,9 +1564,9 @@ const PMEngine = (() => {
           for (let n = 0; n < lst.length; n += 2) { const q = lst[n]; if (lst[n + 1] === 0 || !occAt(s, q)) reach.set(q, lst[n + 1]); }
         } else reach.set(s.o[i], 0);
       }
-      for (const [c, n] of reach) {
+      const add = (c, n) => {
         const z = ZN[c];
-        if (!SHOOT(z)) continue;
+        if (!SHOOT(z)) return;
         let lk;
         if (i === s.ball) {
           if (n === 0 && shotOk && leftNow >= 1) lk = makeLook(i, c, 'shoot', 1.0, this.o_to_act);
@@ -1540,7 +1574,7 @@ const PMEngine = (() => {
           else lk = makeLook(i, c, 'later', this.cfg.later_p, false, this.o_to_act ? 1 : 2);
         } else {
           const p = this.passP(i, c);
-          if (p <= 0) continue;
+          if (p <= 0) return;
           if (n === 0) lk = makeLook(i, c, 'catch', p, false, 1);
           else if (leftNow >= 2 && s.tok_o >= 2 && this.o_to_act) lk = makeLook(i, c, 'cut', p, false, 1);
           else lk = makeLook(i, c, 'cut', p * this.cfg.later_p, false, 2);
@@ -1552,6 +1586,23 @@ const PMEngine = (() => {
         for (const d of this.att_x) { const v = this._vals(lk, d, cm[d]); if (v) lk.vals[d] = v; }
         finishLook(lk);
         out.push(lk);
+      };
+      for (const [c, n] of reach) add(c, n);
+      if (i === s.ball && budgetCfg()) {
+        // step 13 B2 (D-115): the squares two actions away. Step 13C (a speed-up that changes no result): such a look is
+        // worth at most later_p times his best shot from its zone, and the list keeps the best L looks, earlier ones
+        // first when level. So a square whose most can't beat the L-th look already found is never built or searched.
+        let floor = -Infinity;
+        if (SPEED.two_bound && out.length >= this.L) { const bs = out.map(l => l.base).sort((a, b) => b - a); floor = bs[this.L - 1]; }
+        const most = new Map();
+        const keep = c => {
+          const z = ZN[c];
+          if (!SHOOT(z)) return false;
+          let m = most.get(z);
+          if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
+          return m > floor;
+        };
+        for (const q of twoActions(s, i, reach, keep)) add(q, 2);
       }
       out.sort((a, b) => b.base - a.base);
       return out.slice(0, this.L);
@@ -1697,49 +1748,67 @@ const PMEngine = (() => {
     }
     // ---- step 13 B1: coverage as a budget (decide.Read.budget_tables, budget) ----------------------------------------
     budgetOn() { return budgetCfg() && this.k > 0; }
-    budgetTables() {
+    budgetTables() {                            // decide.Read.budget_tables (D-125: the Contest from where he stands is free)
       const s = this.s, reach = reachOn();
-      const solo = (lk, vals, p) => {
-        let best = 0.0;
-        for (let t = 0; t < lk.types.length; t++) { let v = lk.open[t]; if (vals && vals[t] < v) v = vals[t]; if (v > best) best = v; }
-        return p * best;
+      const best = (lk, p, rows) => {
+        let top = 0.0;
+        for (let t = 0; t < lk.types.length; t++) {
+          let v = lk.open[t];
+          for (const vals of rows) if (vals && vals[t] < v) v = vals[t];
+          if (v > top) top = v;
+        }
+        return p * top;
       };
-      const looks = [], first = [0, 0, 0, 0, 0];
-      for (const i of this.att_o) { first[i] = looks.length; for (const lk of this.looks[i]) looks.push([i, lk, lk.now ? lk.base : solo(lk, null, lk.p)]); }
+      const looks = [], first = [0, 0, 0, 0, 0], free = [];
+      for (const i of this.att_o) {
+        first[i] = looks.length;
+        for (const lk of this.looks[i]) {
+          const f0 = [null, null, null, null, null];
+          if (!lk.now) for (const j of this.att_x) f0[j] = this._vals(lk, j, this._cm[j], 0);
+          free.push(f0);
+          looks.push([i, lk, lk.now ? lk.base : best(lk, lk.p, f0)]);
+        }
+      }
       const R = this.cover().R, cols = [];
       for (const j of this.att_x) {
         for (const i of this.att_o) {
           const falls = new Map(), ls = this.looks[i];
           for (let n = 0; n < ls.length; n++) {
-            const lk = ls[n];
-            if (!lk.now && lk.vals[j]) { const f = looks[first[i] + n][2] - solo(lk, lk.vals[j], lk.p); if (f > 1e-9) falls.set(first[i] + n, f); }
+            const lk = ls[n], l = first[i] + n;
+            if (!lk.now && lk.vals[j]) { const f = looks[l][2] - best(lk, lk.p, free[l].concat([lk.vals[j]])); if (f > 1e-9) falls.set(l, f); }
           }
-          if (falls.size) cols.push([j, i, 'stand', falls]);
+          if (falls.size) cols.push([j, i, 'react', falls]);
         }
         const capsJ = caps(s, 'X', j), Rj = R[j];
         for (let r = 1; r < Rj.length; r++) {
           const q = Rj[r][0][0], a = Rj[r][0][1], used = Rj[r][0][2];
           const cm = this._contest(j, q, a, used);
-          let oneJ = null;
-          for (const i of this.att_o) {
-            const falls = new Map(), ls = this.looks[i];
-            for (let n = 0; n < ls.length; n++) {
-              const lk = ls[n];
-              if (lk.now) continue;
-              let w;
-              if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) w = 0.0;
-              else {
-                let p = lk.p;
-                if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
-                  if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
-                  p = this._laneMoved(lk.c, j, q, oneJ);
-                }
-                w = solo(lk, this._vals(lk, j, cm), p);
+          let oneJ = null, any = false;
+          const stand = new Map(), extra = [null, null, null, null, null];
+          for (let l = 0; l < looks.length; l++) {
+            const i = looks[l][0], lk = looks[l][1], o = looks[l][2];
+            if (lk.now) continue;
+            let w0, w1;
+            if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) w0 = w1 = 0.0;
+            else {
+              let p = lk.p;
+              if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
+                if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
+                p = this._laneMoved(lk.c, j, q, oneJ);
               }
-              const f = looks[first[i] + n][2] - w;
-              if (f > 1e-9) falls.set(first[i] + n, f);
+              const others = free[l].slice(); others[j] = null;
+              w0 = best(lk, p, others.concat([this._vals(lk, j, cm, 0)]));
+              w1 = best(lk, p, others.concat([this._vals(lk, j, cm)]));
             }
-            if (falls.size) cols.push([j, i, 'move', falls]);
+            if (Math.abs(o - w0) > 1e-9) { stand.set(l, o - w0); if (o - w0 > 1e-9) any = true; }
+            if (w1 < w0 - 1e-9) { if (!extra[i]) extra[i] = new Map(); extra[i].set(l, o - w1); }
+          }
+          if (any) cols.push([j, -1, 'move', stand]);
+          for (const i of this.att_o) {
+            if (!extra[i]) continue;
+            const falls = new Map(stand);
+            for (const [l, f] of extra[i]) falls.set(l, f);
+            cols.push([j, i, 'move', falls]);
           }
         }
       }
@@ -1757,7 +1826,8 @@ const PMEngine = (() => {
       let free = 0.0; looks.forEach((l, k) => { if (!cov.has(k) && l[2] > free) free = l[2]; });
       { const r = rowOf(() => 0.0); r[n] = 1.0; A.push(r); b.push(top - free); }
       for (const l of covered) { const r = rowOf(c => -(c[3].get(l) || 0.0)); r[n] = 1.0; A.push(r); b.push(top - looks[l][2]); }
-      for (const l of covered) { let m = 0; for (const c of cols) if (c[3].has(l)) m++; if (m > 1) { A.push(rowOf(c => (c[3].has(l) ? 1.0 : 0.0))); b.push(1.0); } }
+      const up = (c, l) => (c[3].get(l) || 0.0) > 0.0;     // an answer that lowers look l
+      for (const l of covered) { let m = 0; for (const c of cols) if (up(c, l)) m++; if (m > 1) { A.push(rowOf(c => (up(c, l) ? 1.0 : 0.0))); b.push(1.0); } }
       for (const j of this.att_x) if (cols.some(c => c[0] === j)) { A.push(rowOf(c => (c[0] === j ? 1.0 : 0.0))); b.push(1.0); }
       if (cols.some(c => c[2] === 'move')) { A.push(rowOf(c => (c[2] === 'move' ? 1.0 : 0.0))); b.push(Math.min(2, this.s.tok_x)); }
       const cvec = new Float64Array(n + 1); cvec[n] = 1.0;

@@ -5,6 +5,7 @@
 (function () {
   const PYODIDE_VERSION = '0.26.4';
   const params = new URLSearchParams(location.search);
+  if (params.get('speedtest')) return;                    // step 13C: the speed test runs instead of the game (speedtest.js)
   const base = new URL(params.get('pyodide') || `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`, location.href).href;
   const overlay = document.createElement('div');
   overlay.id = 'loading';

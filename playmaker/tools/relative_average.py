@@ -145,6 +145,8 @@ def main():
                    'possession; D-114: Senior Pro is the base, scaled by the phase table for the other levels, a '
                    'level\'s own average once it has MIN_OWN positions at that phase')
     out = os.path.join(ROOT, 'docs', 'runs', 'step13', 'relative_average_budget.json') if budget else OUT
+    if '--out' in sys.argv:                  # step 13C: a run file of its own
+        out = sys.argv[sys.argv.index('--out') + 1]
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(rep, open(out, 'w'), indent=1)
     print(json.dumps(dict(average=avg, source=source, positions=count), indent=1))
