@@ -528,6 +528,19 @@ changes. Until then the All-Star's phone target stays at 3.0 s, and the overrun 
 (advantages: create, keep and convert). No discount for later looks is added now. · Source: Shaun, 10 Nov 2026 ·
 **Open:** stage 3.
 
+### Shaun, 10 Nov 2026 (step 16 prompt): the answers to step 13C
+
+**D-128. The re-measured averages are stored** in step 16, since that step changes the reading anyway:
+`eval.relative_average` under the default game (the reach map on), and `eval.relative_average_budget` under
+`eval.coverage_budget`. · Source: Shaun, 10 Nov 2026 · **Ruled, built** (step 16).
+
+**D-129. Foundation work stops here.** No more speed-only steps unless Shaun's phone test shows the game is
+unplayable. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
+**D-130. The checkpoint.** If the exam doesn't clearly improve with step 16's switches on (`eval.advantages`,
+`search.goals`), stop and rethink before stages 5 to 8 (the defence's answers, the coach's goals, the trainer,
+scouting) are built on top. · Source: Shaun, 10 Nov 2026 · **Ruled;** step 16 reports it, Shaun decides.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
