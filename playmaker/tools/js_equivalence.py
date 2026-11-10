@@ -150,10 +150,11 @@ def main():
     ap.add_argument('--out', default=None)
     ap.add_argument('--show', type=int, default=5)
     ap.add_argument('--reaction', action='store_true', help='shot reactions only, with their outcomes compared')
-    ap.add_argument('--leaf-mode', default='floor', choices=('floor', 'relative'),
-                    help="step 10: the leaf's mode, in both engines (eval.leaf_mode)")
+    ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative'),
+                    help="the leaf's mode, in both engines (default: eval.leaf_mode in ai_profiles.json)")
     args = ap.parse_args()
     from playmaker_engine.decide import CONFIG as _CFG
+    args.leaf_mode = args.leaf_mode or _CFG['eval'].get('leaf_mode', 'floor')
     _CFG['eval']['leaf_mode'] = args.leaf_mode
     rng = random.Random(args.seed)
     states, meta, lines = [], [], []
