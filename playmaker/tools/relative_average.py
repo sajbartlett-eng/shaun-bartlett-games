@@ -113,6 +113,10 @@ def rows():
 
 
 def main():
+    budget = '--budget' in sys.argv          # step 13 B: the same averages, read with coverage as a budget
+    if budget:
+        from playmaker_engine.decide import CONFIG
+        CONFIG['eval']['coverage_budget'] = True
     by = {}
     skipped = 0
     for age, std, r in rows():
@@ -140,10 +144,18 @@ def main():
                how='the leaf\'s continuation read (today\'s rules) at the first offence turn of each phase, per '
                    'possession; D-114: Senior Pro is the base, scaled by the phase table for the other levels, a '
                    'level\'s own average once it has MIN_OWN positions at that phase')
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump(rep, open(OUT, 'w'), indent=1)
+    out = os.path.join(ROOT, 'docs', 'runs', 'step13', 'relative_average_budget.json') if budget else OUT
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    json.dump(rep, open(out, 'w'), indent=1)
     print(json.dumps(dict(average=avg, source=source, positions=count), indent=1))
-    if '--write' in sys.argv:
+    if '--write' in sys.argv and budget:
+        prof = json.load(open(PROFILES))
+        prof['eval']['relative_average_budget'] = avg
+        prof['eval']['_relative_budget'] = ('Step 13 B: the averages the position value is read against when '
+                                            'coverage_budget is on: the same positions and rule as relative_average '
+                                            '(D-114), read with coverage as a budget (tools/relative_average.py --budget)')
+        open(PROFILES, 'w').write(json.dumps(prof, indent=2))
+    elif '--write' in sys.argv:
         prof = json.load(open(PROFILES))
         prof['eval']['leaf_mode'] = 'relative'
         prof['eval']['relative_average'] = avg

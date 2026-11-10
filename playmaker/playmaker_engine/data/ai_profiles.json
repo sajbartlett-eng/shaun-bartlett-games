@@ -66,6 +66,10 @@
     "play_on_value": 20.0,
     "_fouls": "Step 3n F4: the engine's estimate of the defence's fouls per possession and the value of playing on after a +5 steal foul, used to price a foul over the rest of the quarter. Tune from the F5 run, never the rules.",
     "leaf_mode": "relative",
+    "reach": true,
+    "coverage_budget": false,
+    "_coverage_budget": "Step 13 B (off): coverage as a budget. In one team turn a defender attends one attacker; the defence splits each defender across the attackers he can answer, and the offence's value is its best look after the defence's best shares (an exact small linear program, decide.Read.budget). With it, the ball handler's looks also count the squares he reaches in two actions by the movement rules (D-115), and the position value is read against relative_average_budget.",
+    "_reach": "Steps 12 and 13 (D-121): the reach map, on by default. Who can Contest in time, who can step into a pass and who reaches an attacker's path are read by the exact movement rules.",
     "relative_average": {
       "junior/amateur": {
         "1": 9.31,
@@ -214,7 +218,82 @@
         "5": "scaled",
         "6": "scaled"
       }
-    }
+    },
+    "relative_average_budget": {
+      "junior/amateur": {
+        "1": 10.18,
+        "2": 14.25,
+        "3": 15.95,
+        "4": 16.6,
+        "5": 19.16,
+        "6": 18.79
+      },
+      "junior/pro": {
+        "1": 14.33,
+        "2": 18.08,
+        "3": 16.27,
+        "4": 17.74,
+        "5": 12.1,
+        "6": 15.58
+      },
+      "junior/semi_pro": {
+        "1": 9.2,
+        "2": 11.06,
+        "3": 10.22,
+        "4": 9.43,
+        "5": 13.16,
+        "6": 12.91
+      },
+      "senior/amateur": {
+        "1": 16.98,
+        "2": 20.77,
+        "3": 23.56,
+        "4": 23.7,
+        "5": 23.45,
+        "6": 24.93
+      },
+      "senior/pro": {
+        "1": 17.03,
+        "2": 21.04,
+        "3": 22.87,
+        "4": 21.79,
+        "5": 22.12,
+        "6": 21.87
+      },
+      "senior/semi_pro": {
+        "1": 18.56,
+        "2": 22.28,
+        "3": 24.18,
+        "4": 22.51,
+        "5": 22.19,
+        "6": 24.48
+      },
+      "youth/amateur": {
+        "1": 13.08,
+        "2": 16.43,
+        "3": 21.15,
+        "4": 22.39,
+        "5": 24.96,
+        "6": 25.22
+      },
+      "youth/pro": {
+        "1": 14.41,
+        "2": 18.74,
+        "3": 19.93,
+        "4": 19.04,
+        "5": 18.07,
+        "6": 20.62
+      },
+      "youth/semi_pro": {
+        "1": 11.08,
+        "2": 11.73,
+        "3": 14.81,
+        "4": 15.86,
+        "5": 14.37,
+        "6": 14.84
+      }
+    },
+    "_relative_budget": "Step 13 B: the averages the position value is read against when coverage_budget is on: the same positions and rule as relative_average (D-114), read with coverage as a budget (tools/relative_average.py --budget)"
   },
   "trainer": {
     "_about": "Step 3m Part D. Bands in game units of value lost; calibrate from stored games.",
@@ -277,8 +356,13 @@
     "_anchors": "Step 3n H: from self-play (Rookie v Starter, Starter v All-Star, Rookie v All-Star; 12 matches of 4 possessions each, Senior Pro digital, tools/anchors_3n.py): gaps fitted to the match scores. Youth and junior keep the senior gaps, 20 and 50 lower as before."
   },
   "search": {
-    "_about": "Step 12: the stable-search rule (off by default): quiet points (look-ahead in completed team turns), play on while pending (forcing replies, at most extension_cap extra team turns, provisional), like with like (the answer from even depths: an offence turn and the reply), change only for a clear reason (the earlier choice is kept unless the new best beats it by more than stable_margin, one standard error of the reading at the phase, provisional). tempo: the measured gap between the same position with the offence and with the defence to act (tools/stable_measures.py).",
+    "_about": "Steps 12 and 13: the stable search, in five switches (stable is the shorthand that turns on all five). On by default: like_with_like (D-121). Off: quiet_points, clear_reason, tempo and play_on (D-122). quiet_points: look-ahead counts completed team turns, a side is never judged between its two actions. like_with_like: the answer comes from the deepest even depth (an offence turn and the reply). tempo: each reading is shifted by half of tempo_gap toward the side not to act (tempo_gap: the measured gap between the same position with the offence and with the defence to act, tools/stable_measures.py; D-119). play_on: at the horizon, a declared shot, a pass in the air, a contest choice or a shot worth more than the possession is played on with the forcing replies only, at most extension_cap extra team turns (provisional). clear_reason: the choice from two depths earlier is kept unless the new best beats it by more than stable_margin, one standard error of the reading at the phase (provisional, D-120).",
     "stable": false,
+    "quiet_points": false,
+    "like_with_like": true,
+    "tempo": false,
+    "play_on": false,
+    "clear_reason": false,
     "extension_cap": 2,
     "stable_margin": {
       "1": 0.92,
@@ -288,7 +372,7 @@
       "5": 1.42,
       "6": 1.52
     },
-    "tempo": {
+    "tempo_gap": {
       "1": 1.67,
       "2": 2.52,
       "3": 2.63,

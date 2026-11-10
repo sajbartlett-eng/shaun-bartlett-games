@@ -1,0 +1,1073 @@
+{
+ "stability": {
+  "off": {
+   "decisions": {
+    "2 4": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X2 Move to D6 facing W",
+      "2": "X2 Quick Step to D7 ; X1 Steal",
+      "3": "X2 Quick Step to D7",
+      "4": "X2 Quick Step to D7"
+     },
+     "seconds": {
+      "1": 0.286,
+      "2": 1.143,
+      "3": 8.796,
+      "4": 72.267
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "2 12": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X3 Move to N7 facing W",
+      "2": "X3 Quick Step to N7 ; X1 Steal",
+      "3": "X2 Quick Step to D7",
+      "4": "X2 Quick Step to D7"
+     },
+     "seconds": {
+      "1": 0.257,
+      "2": 1.506,
+      "3": 12.934,
+      "4": 96.223
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3",
+      "2 to 4"
+     ]
+    },
+    "7 phase 2": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "2": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "3": "O3 Sprint to E9",
+      "4": "O3 Sprint to E9"
+     },
+     "seconds": {
+      "1": 0.265,
+      "2": 1.079,
+      "3": 8.245,
+      "4": 56.153
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "7 phase 6": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Shot (mid)",
+      "2": "O3 Shot (mid)",
+      "3": "O3 Shot (mid)",
+      "4": "O3 Shot (mid)"
+     },
+     "seconds": {
+      "1": 0.074,
+      "2": 0.325,
+      "3": 0.477,
+      "4": 0.485
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "9": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O1 Move to J3 ; O1 Quick Step to I2",
+      "2": "O1 Move to J3 ; O1 Quick Step to I2",
+      "3": "O1 Move to J3 ; O1 Quick Step to I2",
+      "4": "O1 Move to J3 ; O1 Quick Step to I2"
+     },
+     "seconds": {
+      "1": 0.185,
+      "2": 0.815,
+      "3": 7.281,
+      "4": 35.487
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    },
+    "10 good odds": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X4 Steal",
+      "2": "X1 Move to J10 facing N",
+      "3": "X1 Move to J10 facing N",
+      "4": "X1 Move to J10 facing N"
+     },
+     "seconds": {
+      "1": 0.224,
+      "2": 1.063,
+      "3": 8.082,
+      "4": 29.436
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "10 bad odds": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "X Pause",
+      "2": "X4 Move to B4 facing SW",
+      "3": "X4 Move to B4 facing SW ; X3 Quick Step to P6",
+      "4": "X4 Move to B4 facing SW"
+     },
+     "seconds": {
+      "1": 0.201,
+      "2": 0.938,
+      "3": 8.122,
+      "4": 58.306
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "16": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O2 Move to A5 ; O4 Sprint to A6",
+      "2": "O2 Move to A5",
+      "3": "O2 Move to A5 ; O1 Move to J10",
+      "4": "O2 Move to A5 ; O1 Move to J10"
+     },
+     "seconds": {
+      "1": 0.313,
+      "2": 1.054,
+      "3": 8.755,
+      "4": 37.517
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": []
+    }
+   },
+   "compared": 8,
+   "changed": 4,
+   "one_to_three": [
+    4,
+    8
+   ],
+   "two_to_four": [
+    1,
+    8
+   ]
+  },
+  "cheap": {
+   "decisions": {
+    "2 4": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X2 Quick Step to D6",
+      "2": "X2 Quick Step to D7",
+      "3": "X2 Quick Step to D6"
+     },
+     "seconds": {
+      "1": 0.399,
+      "2": 7.437,
+      "3": 88.979
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "2 12": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X3 Move to N7 facing W",
+      "2": "X2 Quick Step to D7",
+      "3": "X5 Move to P2 facing N"
+     },
+     "seconds": {
+      "1": 0.297,
+      "2": 10.838,
+      "3": 97.9
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "7 phase 2": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O3 Sprint to E9 ; O2 Sprint to E10",
+      "2": "O3 Sprint to E9",
+      "3": "O3 Sprint to E9"
+     },
+     "seconds": {
+      "1": 0.174,
+      "2": 2.751,
+      "3": 47.117
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "7 phase 6": {
+     "depths": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "choices": {
+      "1": "O3 Pass to O4",
+      "2": "O3 Pass to O4",
+      "3": "O3 Shot (mid)",
+      "4": "O3 Shot (mid)"
+     },
+     "seconds": {
+      "1": 0.056,
+      "2": 0.331,
+      "3": 0.37,
+      "4": 0.378
+     },
+     "compared": [
+      "1 to 3",
+      "2 to 4"
+     ],
+     "changed": [
+      "1 to 3",
+      "2 to 4"
+     ]
+    },
+    "9": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O1 Move to J3",
+      "2": "O1 Move to J3",
+      "3": "O1 Move to J3"
+     },
+     "seconds": {
+      "1": 0.189,
+      "2": 1.499,
+      "3": 35.772
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "10 good odds": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X1 Move to J10 facing N",
+      "2": "X1 Move to J10 facing N",
+      "3": "X1 Move to J10 facing N"
+     },
+     "seconds": {
+      "1": 0.345,
+      "2": 3.778,
+      "3": 36.765
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    },
+    "10 bad odds": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "X Pause",
+      "2": "X4 Move to B4 facing SW",
+      "3": "X3 Quick Step to P6"
+     },
+     "seconds": {
+      "1": 0.254,
+      "2": 5.918,
+      "3": 59.662
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": [
+      "1 to 3"
+     ]
+    },
+    "16": {
+     "depths": [
+      1,
+      2,
+      3
+     ],
+     "choices": {
+      "1": "O2 Move to A5 ; O4 Sprint to A6",
+      "2": "O2 Move to A5",
+      "3": "O2 Move to A5"
+     },
+     "seconds": {
+      "1": 0.206,
+      "2": 1.782,
+      "3": 46.576
+     },
+     "compared": [
+      "1 to 3"
+     ],
+     "changed": []
+    }
+   },
+   "compared": 8,
+   "changed": 3,
+   "one_to_three": [
+    3,
+    8
+   ],
+   "two_to_four": [
+    1,
+    1
+   ]
+  }
+ },
+ "exam_table": "| Board | Off: 1 pair | Off: clock | Cheap: 1 pair | Cheap: clock | Light: 1 pair | Light: clock | Rest: 1 pair | Rest: clock |\n|---|---|---|---|---|---|---|---|---|\n| 1 | F | F | F | F | F | F | F | F |\n| 2 | P | P | F | F | F | F | P | P |\n| 3 | F | F | F | F | F | F | F | F |\n| 4 | P | P | P | P | P | P | P | P |\n| 5 | F | F | F | F | F | F | F | F |\n| 6 | F | F | F | F | F | F | F | F |\n| 7 | F | P | F | P | F | P | P | P |\n| 8 | F | F | F | F | F | F | F | F |\n| 9 | F | F | F | F | F | F | F | F |\n| 10 | F | F | F | F | F | F | F | F |\n| 11 | F | F | F | F | F | F | F | F |\n| 12 | P | P | F | F | F | F | P | P |\n| 13 | F | F | F | F | F | F | F | F |\n| 14 | P | P | P | P | P | P | P | P |\n| 15 | P | P | P | P | P | P | P | P |\n| 16 | P | F | P | P | P | P | P | P |\n| 17 | P | P | P | P | P | P | P | P |\n| C1 | P | P | P | P | P | P | P | P |\n| C2 | P | P | P | P | P | P | P | P |\n| **Passes** | **9 of 19** | **9 of 19** | **7 of 19** | **8 of 19** | **7 of 19** | **8 of 19** | **10 of 19** | **10 of 19** |",
+ "exam_seconds": {
+  "Off: 1 pair": 24,
+  "Off: clock": 128,
+  "Cheap: 1 pair": 93,
+  "Cheap: clock": 127,
+  "Light: 1 pair": 22,
+  "Light: clock": 125,
+  "Rest: 1 pair": 35,
+  "Rest: clock": 132
+ },
+ "levels": {
+  "off": {
+   "here/rookie": {
+    "depth_median": 2.0,
+    "depth_min": 2,
+    "depth_max": 2,
+    "depth_counts": {
+     "2": 22
+    },
+    "seconds_median": 0.094,
+    "seconds_max": 0.23,
+    "first_depth_median": 0.014,
+    "first_depth_max": 0.058
+   },
+   "here/starter": {
+    "depth_median": 2.0,
+    "depth_min": 2,
+    "depth_max": 3,
+    "depth_counts": {
+     "2": 20,
+     "3": 2
+    },
+    "seconds_median": 1.011,
+    "seconds_max": 1.027,
+    "first_depth_median": 0.033,
+    "first_depth_max": 0.057
+   },
+   "here/allstar": {
+    "depth_median": 2.0,
+    "depth_min": 2,
+    "depth_max": 6,
+    "depth_counts": {
+     "2": 19,
+     "3": 1,
+     "4": 1,
+     "6": 1
+    },
+    "seconds_median": 2.513,
+    "seconds_max": 2.579,
+    "first_depth_median": 0.051,
+    "first_depth_max": 0.167
+   },
+   "phone speed/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 14,
+     "2": 8
+    },
+    "seconds_median": 0.086,
+    "seconds_max": 0.094,
+    "first_depth_median": 0.012,
+    "first_depth_max": 0.022
+   },
+   "phone speed/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 3,
+    "depth_counts": {
+     "1": 12,
+     "2": 9,
+     "3": 1
+    },
+    "seconds_median": 0.262,
+    "seconds_max": 0.272,
+    "first_depth_median": 0.023,
+    "first_depth_max": 0.05
+   },
+   "phone speed/allstar": {
+    "depth_median": 2.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 3,
+     "2": 18,
+     "6": 1
+    },
+    "seconds_median": 0.637,
+    "seconds_max": 0.652,
+    "first_depth_median": 0.026,
+    "first_depth_max": 0.076
+   }
+  },
+  "cheap": {
+   "here/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 15,
+     "2": 7
+    },
+    "seconds_median": 0.312,
+    "seconds_max": 0.329,
+    "first_depth_median": 0.028,
+    "first_depth_max": 0.124
+   },
+   "here/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 16,
+     "2": 6
+    },
+    "seconds_median": 1.011,
+    "seconds_max": 1.023,
+    "first_depth_median": 0.054,
+    "first_depth_max": 0.231
+   },
+   "here/allstar": {
+    "depth_median": 2.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 8,
+     "2": 13,
+     "6": 1
+    },
+    "seconds_median": 2.514,
+    "seconds_max": 2.533,
+    "first_depth_median": 0.092,
+    "first_depth_max": 0.296
+   },
+   "phone speed/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.089,
+    "seconds_max": 0.112,
+    "first_depth_median": 0.023,
+    "first_depth_max": 0.091
+   },
+   "phone speed/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.262,
+    "seconds_max": 0.278,
+    "first_depth_median": 0.053,
+    "first_depth_max": 0.238
+   },
+   "phone speed/allstar": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 21,
+     "6": 1
+    },
+    "seconds_median": 0.639,
+    "seconds_max": 0.664,
+    "first_depth_median": 0.11,
+    "first_depth_max": 0.375
+   }
+  },
+  "cheap_play_on": {
+   "here/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 16,
+     "2": 6
+    },
+    "seconds_median": 0.31,
+    "seconds_max": 0.326,
+    "first_depth_median": 0.031,
+    "first_depth_max": 0.151
+   },
+   "here/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 17,
+     "2": 5
+    },
+    "seconds_median": 1.011,
+    "seconds_max": 1.024,
+    "first_depth_median": 0.06,
+    "first_depth_max": 0.251
+   },
+   "here/allstar": {
+    "depth_median": 2.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 9,
+     "2": 12,
+     "6": 1
+    },
+    "seconds_median": 2.513,
+    "seconds_max": 2.525,
+    "first_depth_median": 0.093,
+    "first_depth_max": 0.239
+   },
+   "phone speed/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.087,
+    "seconds_max": 0.122,
+    "first_depth_median": 0.025,
+    "first_depth_max": 0.104
+   },
+   "phone speed/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.263,
+    "seconds_max": 0.278,
+    "first_depth_median": 0.055,
+    "first_depth_max": 0.185
+   },
+   "phone speed/allstar": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 21,
+     "6": 1
+    },
+    "seconds_median": 0.637,
+    "seconds_max": 0.649,
+    "first_depth_median": 0.123,
+    "first_depth_max": 0.308
+   }
+  },
+  "cheap_reach": {
+   "here/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 16,
+     "2": 6
+    },
+    "seconds_median": 0.313,
+    "seconds_max": 0.324,
+    "first_depth_median": 0.034,
+    "first_depth_max": 0.13
+   },
+   "here/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 19,
+     "2": 3
+    },
+    "seconds_median": 1.013,
+    "seconds_max": 1.039,
+    "first_depth_median": 0.076,
+    "first_depth_max": 0.248
+   },
+   "here/allstar": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 13,
+     "2": 8,
+     "6": 1
+    },
+    "seconds_median": 2.515,
+    "seconds_max": 2.525,
+    "first_depth_median": 0.107,
+    "first_depth_max": 0.252
+   },
+   "phone speed/rookie": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.089,
+    "seconds_max": 0.095,
+    "first_depth_median": 0.031,
+    "first_depth_max": 0.077
+   },
+   "phone speed/starter": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 2,
+    "depth_counts": {
+     "1": 21,
+     "2": 1
+    },
+    "seconds_median": 0.264,
+    "seconds_max": 0.304,
+    "first_depth_median": 0.072,
+    "first_depth_max": 0.276
+   },
+   "phone speed/allstar": {
+    "depth_median": 1.0,
+    "depth_min": 1,
+    "depth_max": 6,
+    "depth_counts": {
+     "1": 21,
+     "6": 1
+    },
+    "seconds_median": 0.639,
+    "seconds_max": 0.66,
+    "first_depth_median": 0.149,
+    "first_depth_max": 0.581
+   }
+  }
+ },
+ "parts": {
+  "light_play_on": {
+   "passes": 7,
+   "seconds": 20,
+   "gained": [
+    "7"
+   ],
+   "lost": [
+    "2",
+    "12",
+    "16"
+   ]
+  },
+  "light_reach": {
+   "passes": 8,
+   "seconds": 29,
+   "gained": [],
+   "lost": [
+    "16"
+   ]
+  },
+  "like_with_like": {
+   "passes": 9,
+   "seconds": 20,
+   "gained": [],
+   "lost": []
+  },
+  "play_on": {
+   "passes": 9,
+   "seconds": 21,
+   "gained": [
+    "7"
+   ],
+   "lost": [
+    "16"
+   ]
+  },
+  "play_on_reach": {
+   "passes": 10,
+   "seconds": 31,
+   "gained": [
+    "7"
+   ],
+   "lost": []
+  },
+  "quiet_points": {
+   "passes": 8,
+   "seconds": 77,
+   "gained": [],
+   "lost": [
+    "2"
+   ]
+  },
+  "reach": {
+   "passes": 9,
+   "seconds": 31,
+   "gained": [],
+   "lost": []
+  },
+  "tempo": {
+   "passes": 7,
+   "seconds": 19,
+   "gained": [],
+   "lost": [
+    "2",
+    "12"
+   ]
+  }
+ },
+ "pair_time": {
+  "off": {
+   "rookie": {
+    "median": 0.105,
+    "p90": 0.158,
+    "worst": 0.276
+   },
+   "starter": {
+    "median": 0.285,
+    "p90": 0.407,
+    "worst": 0.534
+   },
+   "allstar": {
+    "median": 0.476,
+    "p90": 0.669,
+    "worst": 0.925
+   }
+  },
+  "light": {
+   "rookie": {
+    "median": 0.084,
+    "p90": 0.129,
+    "worst": 0.191
+   },
+   "starter": {
+    "median": 0.286,
+    "p90": 0.386,
+    "worst": 0.426
+   },
+   "allstar": {
+    "median": 0.445,
+    "p90": 0.653,
+    "worst": 0.738
+   }
+  },
+  "rest": {
+   "rookie": {
+    "median": 0.106,
+    "p90": 0.162,
+    "worst": 0.237
+   },
+   "starter": {
+    "median": 0.378,
+    "p90": 0.541,
+    "worst": 0.567
+   },
+   "allstar": {
+    "median": 0.641,
+    "p90": 0.899,
+    "worst": 0.991
+   }
+  },
+  "cheap": {
+   "rookie": {
+    "median": 0.628,
+    "p90": 1.93,
+    "worst": 2.056
+   },
+   "starter": {
+    "median": 2.878,
+    "p90": 8.032,
+    "worst": 9.663
+   },
+   "allstar": {
+    "median": 2.392,
+    "p90": 6.256,
+    "worst": 7.477
+   }
+  },
+  "cheap_play_on": {
+   "rookie": {
+    "median": 0.515,
+    "p90": 1.577,
+    "worst": 2.044
+   },
+   "starter": {
+    "median": 2.419,
+    "p90": 6.932,
+    "worst": 9.247
+   },
+   "allstar": {
+    "median": 1.918,
+    "p90": 6.129,
+    "worst": 6.537
+   }
+  },
+  "cheap_reach": {
+   "rookie": {
+    "median": 0.427,
+    "p90": 1.556,
+    "worst": 1.783
+   },
+   "starter": {
+    "median": 3.401,
+    "p90": 8.027,
+    "worst": 9.982
+   },
+   "allstar": {
+    "median": 2.832,
+    "p90": 7.956,
+    "worst": 9.754
+   }
+  }
+ },
+ "speedups": {
+  "reach_cache": {
+   "different": [],
+   "seconds_before": 102.99,
+   "seconds_after": 10.38
+  },
+  "forcing": {
+   "different": [],
+   "seconds_before": 32.08,
+   "seconds_after": 32.68
+  },
+  "quiet_read": {
+   "different": [],
+   "seconds_before": 33.95,
+   "seconds_after": 32.68
+  },
+  "tt_order": {
+   "different": [],
+   "seconds_before": 56.7,
+   "seconds_after": 55.7
+  },
+  "all": {
+   "different": [],
+   "seconds_before": 33.4,
+   "seconds_after": 32.68
+  }
+ },
+ "equivalence": {
+  "cheap": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "cheap_play_on": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "clear_reason": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "like_with_like": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "play_on": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "quiet_points": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "speedups_off_off": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 12,
+    "equal": 12
+   }
+  },
+  "speedups_off_reach": {
+   "mismatches": 0,
+   "states": 60,
+   "searches": {
+    "compared": 8,
+    "equal": 8
+   }
+  },
+  "speedups_off_stable": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "speedups_on_off": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 12,
+    "equal": 12
+   }
+  },
+  "speedups_on_reach": {
+   "mismatches": 0,
+   "states": 60,
+   "searches": {
+    "compared": 8,
+    "equal": 8
+   }
+  },
+  "speedups_on_stable": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "stable": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  },
+  "tempo": {
+   "mismatches": 0,
+   "states": 10,
+   "searches": {
+    "compared": 10,
+    "equal": 10
+   }
+  }
+ }
+}

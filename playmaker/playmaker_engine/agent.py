@@ -176,7 +176,7 @@ class Agent:
                       kept=getattr(srch, 'kept', 0)) if getattr(srch, 'stable', False) else None
         trace = [[d, [str(a) for a in t], round(v, 2)] for d, t, v in getattr(srch, 'trace', [])]
         note = dict(event='decision', level=self.level, depth=reached, partial=getattr(srch, 'partial', 0), stable=stable,
-                    trace=trace,
+                    trace=trace, depth_seconds=[list(x) for x in getattr(srch, 'depth_seconds', [])],
                     engine=getattr(srch, 'engine', 'python'), pv=getattr(srch, 'pv', None),
                     leaves=srch.leaves, nodes=srch.nodes,
                     seconds=took, value=round(val, 2), turn=[str(a) for a in turn],
@@ -220,6 +220,7 @@ class Agent:
         st.stable = out.get('stable', False)
         st.extensions, st.cap_hits, st.kept = out.get('extensions', 0), out.get('cap_hits', 0), out.get('kept', 0)
         st.trace = [(d, tuple(jsbridge.action_from(a) for a in t), v) for d, t, v in out.get('trace', [])]
+        st.depth_seconds = [(d, round(x, 3)) for d, x in out.get('depth_seconds', [])]
         return results, out['reached'], st
 
     def _small(self, s, acts):

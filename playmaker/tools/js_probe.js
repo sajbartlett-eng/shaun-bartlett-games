@@ -28,7 +28,10 @@ for (const ln of lines) {
   const q = JSON.parse(ln);
   if (q.leaf_mode) E.setLeafMode(q.leaf_mode);       // step 10: the leaf's mode for this line
   if (q.stable !== undefined) E.setStable(q.stable);   // step 12: the switches
+  if (q.speed) E.setSpeed(q.speed);                   // step 13: a speed-up turned off, to prove it changes nothing
+  if (q.switches) E.setSearch(q.switches);             // step 13: the stable search's five switches
   if (q.reach !== undefined) E.setReach(q.reach);
+  if (q.coverage_budget !== undefined) E.setBudget(q.coverage_budget);   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {

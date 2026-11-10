@@ -1,0 +1,1700 @@
+{
+ "setting": "cheap_play_on",
+ "results": {
+  "here/rookie": {
+   "depth_median": 1.0,
+   "depth_min": 1,
+   "depth_max": 2,
+   "depth_counts": {
+    "1": 16,
+    "2": 6
+   },
+   "seconds_median": 0.31,
+   "seconds_max": 0.326,
+   "first_depth_median": 0.031,
+   "first_depth_max": 0.151,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 0.32,
+     "depth_seconds": [
+      [
+       1,
+       0.151
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 0.321,
+     "depth_seconds": [
+      [
+       1,
+       0.079
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 0.321,
+     "depth_seconds": [
+      [
+       1,
+       0.02
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 0.317,
+     "depth_seconds": [
+      [
+       1,
+       0.039
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 1,
+     "seconds": 0.311,
+     "depth_seconds": [
+      [
+       1,
+       0.031
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 1,
+     "seconds": 0.316,
+     "depth_seconds": [
+      [
+       1,
+       0.031
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 1,
+     "seconds": 0.309,
+     "depth_seconds": [
+      [
+       1,
+       0.031
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 2,
+     "seconds": 0.242,
+     "depth_seconds": [
+      [
+       1,
+       0.012
+      ],
+      [
+       2,
+       0.233
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 0.309,
+     "depth_seconds": [
+      [
+       1,
+       0.016
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 2,
+     "seconds": 0.091,
+     "depth_seconds": [
+      [
+       1,
+       0.004
+      ],
+      [
+       2,
+       0.081
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 1,
+     "seconds": 0.31,
+     "depth_seconds": [
+      [
+       1,
+       0.036
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 2,
+     "seconds": 0.301,
+     "depth_seconds": [
+      [
+       1,
+       0.027
+      ],
+      [
+       2,
+       0.279
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 0.312,
+     "depth_seconds": [
+      [
+       1,
+       0.077
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 0.317,
+     "depth_seconds": [
+      [
+       1,
+       0.047
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 1,
+     "seconds": 0.31,
+     "depth_seconds": [
+      [
+       1,
+       0.053
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 1,
+     "seconds": 0.31,
+     "depth_seconds": [
+      [
+       1,
+       0.017
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 0.326,
+     "depth_seconds": [
+      [
+       1,
+       0.022
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 0.32,
+     "depth_seconds": [
+      [
+       1,
+       0.119
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 2,
+     "seconds": 0.234,
+     "depth_seconds": [
+      [
+       1,
+       0.023
+      ],
+      [
+       2,
+       0.222
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 1,
+     "seconds": 0.311,
+     "depth_seconds": [
+      [
+       1,
+       0.055
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 2,
+     "seconds": 0.193,
+     "depth_seconds": [
+      [
+       1,
+       0.019
+      ],
+      [
+       2,
+       0.182
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 2,
+     "seconds": 0.196,
+     "depth_seconds": [
+      [
+       1,
+       0.015
+      ],
+      [
+       2,
+       0.187
+      ]
+     ]
+    }
+   ]
+  },
+  "here/starter": {
+   "depth_median": 1.0,
+   "depth_min": 1,
+   "depth_max": 2,
+   "depth_counts": {
+    "1": 17,
+    "2": 5
+   },
+   "seconds_median": 1.011,
+   "seconds_max": 1.024,
+   "first_depth_median": 0.06,
+   "first_depth_max": 0.251,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 1.01,
+     "depth_seconds": [
+      [
+       1,
+       0.133
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 1.014,
+     "depth_seconds": [
+      [
+       1,
+       0.094
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 1.019,
+     "depth_seconds": [
+      [
+       1,
+       0.066
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 1.009,
+     "depth_seconds": [
+      [
+       1,
+       0.044
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 1,
+     "seconds": 1.01,
+     "depth_seconds": [
+      [
+       1,
+       0.041
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 1,
+     "seconds": 1.008,
+     "depth_seconds": [
+      [
+       1,
+       0.061
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 1,
+     "seconds": 1.013,
+     "depth_seconds": [
+      [
+       1,
+       0.059
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 1,
+     "seconds": 1.011,
+     "depth_seconds": [
+      [
+       1,
+       0.049
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 1.012,
+     "depth_seconds": [
+      [
+       1,
+       0.025
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 2,
+     "seconds": 0.158,
+     "depth_seconds": [
+      [
+       1,
+       0.004
+      ],
+      [
+       2,
+       0.135
+      ],
+      [
+       3,
+       0.153
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 1,
+     "seconds": 1.007,
+     "depth_seconds": [
+      [
+       1,
+       0.042
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 2,
+     "seconds": 1.01,
+     "depth_seconds": [
+      [
+       1,
+       0.025
+      ],
+      [
+       2,
+       0.691
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 1.01,
+     "depth_seconds": [
+      [
+       1,
+       0.106
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 1.022,
+     "depth_seconds": [
+      [
+       1,
+       0.139
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 1,
+     "seconds": 1.011,
+     "depth_seconds": [
+      [
+       1,
+       0.089
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 1,
+     "seconds": 1.013,
+     "depth_seconds": [
+      [
+       1,
+       0.045
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 1.021,
+     "depth_seconds": [
+      [
+       1,
+       0.073
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 1.024,
+     "depth_seconds": [
+      [
+       1,
+       0.251
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 2,
+     "seconds": 1.012,
+     "depth_seconds": [
+      [
+       1,
+       0.103
+      ],
+      [
+       2,
+       0.743
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 1,
+     "seconds": 1.009,
+     "depth_seconds": [
+      [
+       1,
+       0.116
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 2,
+     "seconds": 1.013,
+     "depth_seconds": [
+      [
+       1,
+       0.04
+      ],
+      [
+       2,
+       0.965
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 2,
+     "seconds": 1.009,
+     "depth_seconds": [
+      [
+       1,
+       0.035
+      ],
+      [
+       2,
+       0.898
+      ]
+     ]
+    }
+   ]
+  },
+  "here/allstar": {
+   "depth_median": 2.0,
+   "depth_min": 1,
+   "depth_max": 6,
+   "depth_counts": {
+    "1": 9,
+    "2": 12,
+    "6": 1
+   },
+   "seconds_median": 2.513,
+   "seconds_max": 2.525,
+   "first_depth_median": 0.093,
+   "first_depth_max": 0.239,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 2.516,
+     "depth_seconds": [
+      [
+       1,
+       0.175
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 2.517,
+     "depth_seconds": [
+      [
+       1,
+       0.138
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 2.514,
+     "depth_seconds": [
+      [
+       1,
+       0.071
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 2.513,
+     "depth_seconds": [
+      [
+       1,
+       0.05
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 2,
+     "seconds": 2.515,
+     "depth_seconds": [
+      [
+       1,
+       0.092
+      ],
+      [
+       2,
+       1.794
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 2,
+     "seconds": 2.511,
+     "depth_seconds": [
+      [
+       1,
+       0.13
+      ],
+      [
+       2,
+       2.076
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 2,
+     "seconds": 2.51,
+     "depth_seconds": [
+      [
+       1,
+       0.101
+      ],
+      [
+       2,
+       1.54
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 2,
+     "seconds": 2.515,
+     "depth_seconds": [
+      [
+       1,
+       0.047
+      ],
+      [
+       2,
+       1.499
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 2.513,
+     "depth_seconds": [
+      [
+       1,
+       0.069
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 6,
+     "seconds": 0.247,
+     "depth_seconds": [
+      [
+       1,
+       0.007
+      ],
+      [
+       2,
+       0.195
+      ],
+      [
+       3,
+       0.22
+      ],
+      [
+       4,
+       0.227
+      ],
+      [
+       5,
+       0.233
+      ],
+      [
+       6,
+       0.24
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 2,
+     "seconds": 2.508,
+     "depth_seconds": [
+      [
+       1,
+       0.073
+      ],
+      [
+       2,
+       0.91
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 2,
+     "seconds": 2.508,
+     "depth_seconds": [
+      [
+       1,
+       0.049
+      ],
+      [
+       2,
+       1.297
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 2.525,
+     "depth_seconds": [
+      [
+       1,
+       0.153
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 2.517,
+     "depth_seconds": [
+      [
+       1,
+       0.15
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 2,
+     "seconds": 2.513,
+     "depth_seconds": [
+      [
+       1,
+       0.103
+      ],
+      [
+       2,
+       2.496
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 2,
+     "seconds": 2.511,
+     "depth_seconds": [
+      [
+       1,
+       0.074
+      ],
+      [
+       2,
+       1.414
+      ],
+      [
+       3,
+       1.993
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 2.513,
+     "depth_seconds": [
+      [
+       1,
+       0.108
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 2.517,
+     "depth_seconds": [
+      [
+       1,
+       0.239
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 2,
+     "seconds": 2.51,
+     "depth_seconds": [
+      [
+       1,
+       0.095
+      ],
+      [
+       2,
+       1.056
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 2,
+     "seconds": 2.513,
+     "depth_seconds": [
+      [
+       1,
+       0.188
+      ],
+      [
+       2,
+       2.431
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 2,
+     "seconds": 2.512,
+     "depth_seconds": [
+      [
+       1,
+       0.065
+      ],
+      [
+       2,
+       1.613
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 2,
+     "seconds": 2.51,
+     "depth_seconds": [
+      [
+       1,
+       0.054
+      ],
+      [
+       2,
+       1.663
+      ]
+     ]
+    }
+   ]
+  },
+  "phone speed/rookie": {
+   "depth_median": 1.0,
+   "depth_min": 1,
+   "depth_max": 2,
+   "depth_counts": {
+    "1": 21,
+    "2": 1
+   },
+   "seconds_median": 0.087,
+   "seconds_max": 0.122,
+   "first_depth_median": 0.025,
+   "first_depth_max": 0.104,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 0.089,
+     "depth_seconds": [
+      [
+       1,
+       0.038
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 0.087,
+     "depth_seconds": [
+      [
+       1,
+       0.029
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 0.085,
+     "depth_seconds": [
+      [
+       1,
+       0.016
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 0.087,
+     "depth_seconds": [
+      [
+       1,
+       0.029
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 1,
+     "seconds": 0.084,
+     "depth_seconds": [
+      [
+       1,
+       0.024
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 1,
+     "seconds": 0.085,
+     "depth_seconds": [
+      [
+       1,
+       0.021
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 1,
+     "seconds": 0.085,
+     "depth_seconds": [
+      [
+       1,
+       0.026
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 1,
+     "seconds": 0.085,
+     "depth_seconds": [
+      [
+       1,
+       0.01
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 0.083,
+     "depth_seconds": [
+      [
+       1,
+       0.011
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 2,
+     "seconds": 0.051,
+     "depth_seconds": [
+      [
+       1,
+       0.004
+      ],
+      [
+       2,
+       0.045
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 1,
+     "seconds": 0.08,
+     "depth_seconds": [
+      [
+       1,
+       0.026
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 1,
+     "seconds": 0.093,
+     "depth_seconds": [
+      [
+       1,
+       0.014
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 0.099,
+     "depth_seconds": [
+      [
+       1,
+       0.032
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 0.122,
+     "depth_seconds": [
+      [
+       1,
+       0.104
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 1,
+     "seconds": 0.092,
+     "depth_seconds": [
+      [
+       1,
+       0.059
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 1,
+     "seconds": 0.088,
+     "depth_seconds": [
+      [
+       1,
+       0.021
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 0.093,
+     "depth_seconds": [
+      [
+       1,
+       0.026
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 0.095,
+     "depth_seconds": [
+      [
+       1,
+       0.079
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 1,
+     "seconds": 0.086,
+     "depth_seconds": [
+      [
+       1,
+       0.024
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 1,
+     "seconds": 0.087,
+     "depth_seconds": [
+      [
+       1,
+       0.049
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 1,
+     "seconds": 0.087,
+     "depth_seconds": [
+      [
+       1,
+       0.019
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 1,
+     "seconds": 0.084,
+     "depth_seconds": [
+      [
+       1,
+       0.013
+      ]
+     ]
+    }
+   ]
+  },
+  "phone speed/starter": {
+   "depth_median": 1.0,
+   "depth_min": 1,
+   "depth_max": 2,
+   "depth_counts": {
+    "1": 21,
+    "2": 1
+   },
+   "seconds_median": 0.263,
+   "seconds_max": 0.278,
+   "first_depth_median": 0.055,
+   "first_depth_max": 0.185,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.059
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 0.278,
+     "depth_seconds": [
+      [
+       1,
+       0.043
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 0.265,
+     "depth_seconds": [
+      [
+       1,
+       0.065
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.06
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 1,
+     "seconds": 0.263,
+     "depth_seconds": [
+      [
+       1,
+       0.041
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.091
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 1,
+     "seconds": 0.259,
+     "depth_seconds": [
+      [
+       1,
+       0.078
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.051
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.065
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 2,
+     "seconds": 0.166,
+     "depth_seconds": [
+      [
+       1,
+       0.003
+      ],
+      [
+       2,
+       0.138
+      ],
+      [
+       3,
+       0.157
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 1,
+     "seconds": 0.274,
+     "depth_seconds": [
+      [
+       1,
+       0.047
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 1,
+     "seconds": 0.272,
+     "depth_seconds": [
+      [
+       1,
+       0.049
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 0.264,
+     "depth_seconds": [
+      [
+       1,
+       0.08
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 0.265,
+     "depth_seconds": [
+      [
+       1,
+       0.144
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.113
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 1,
+     "seconds": 0.26,
+     "depth_seconds": [
+      [
+       1,
+       0.04
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 0.263,
+     "depth_seconds": [
+      [
+       1,
+       0.043
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 0.264,
+     "depth_seconds": [
+      [
+       1,
+       0.185
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 1,
+     "seconds": 0.268,
+     "depth_seconds": [
+      [
+       1,
+       0.036
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 1,
+     "seconds": 0.262,
+     "depth_seconds": [
+      [
+       1,
+       0.16
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 1,
+     "seconds": 0.269,
+     "depth_seconds": [
+      [
+       1,
+       0.034
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 1,
+     "seconds": 0.26,
+     "depth_seconds": [
+      [
+       1,
+       0.051
+      ]
+     ]
+    }
+   ]
+  },
+  "phone speed/allstar": {
+   "depth_median": 1.0,
+   "depth_min": 1,
+   "depth_max": 6,
+   "depth_counts": {
+    "1": 21,
+    "6": 1
+   },
+   "seconds_median": 0.637,
+   "seconds_max": 0.649,
+   "first_depth_median": 0.123,
+   "first_depth_max": 0.308,
+   "rows": [
+    {
+     "board": "1",
+     "depth": 1,
+     "seconds": 0.637,
+     "depth_seconds": [
+      [
+       1,
+       0.056
+      ]
+     ]
+    },
+    {
+     "board": "2 4",
+     "depth": 1,
+     "seconds": 0.636,
+     "depth_seconds": [
+      [
+       1,
+       0.04
+      ]
+     ]
+    },
+    {
+     "board": "2 12",
+     "depth": 1,
+     "seconds": 0.636,
+     "depth_seconds": [
+      [
+       1,
+       0.041
+      ]
+     ]
+    },
+    {
+     "board": "3",
+     "depth": 1,
+     "seconds": 0.638,
+     "depth_seconds": [
+      [
+       1,
+       0.043
+      ]
+     ]
+    },
+    {
+     "board": "4",
+     "depth": 1,
+     "seconds": 0.64,
+     "depth_seconds": [
+      [
+       1,
+       0.122
+      ]
+     ]
+    },
+    {
+     "board": "5 close",
+     "depth": 1,
+     "seconds": 0.633,
+     "depth_seconds": [
+      [
+       1,
+       0.223
+      ]
+     ]
+    },
+    {
+     "board": "5 short",
+     "depth": 1,
+     "seconds": 0.649,
+     "depth_seconds": [
+      [
+       1,
+       0.156
+      ]
+     ]
+    },
+    {
+     "board": "6",
+     "depth": 1,
+     "seconds": 0.636,
+     "depth_seconds": [
+      [
+       1,
+       0.3
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 2",
+     "depth": 1,
+     "seconds": 0.643,
+     "depth_seconds": [
+      [
+       1,
+       0.308
+      ]
+     ]
+    },
+    {
+     "board": "7 phase 6",
+     "depth": 6,
+     "seconds": 0.279,
+     "depth_seconds": [
+      [
+       1,
+       0.008
+      ],
+      [
+       2,
+       0.23
+      ],
+      [
+       3,
+       0.255
+      ],
+      [
+       4,
+       0.262
+      ],
+      [
+       5,
+       0.268
+      ],
+      [
+       6,
+       0.274
+      ]
+     ]
+    },
+    {
+     "board": "8",
+     "depth": 1,
+     "seconds": 0.63,
+     "depth_seconds": [
+      [
+       1,
+       0.046
+      ]
+     ]
+    },
+    {
+     "board": "9",
+     "depth": 1,
+     "seconds": 0.635,
+     "depth_seconds": [
+      [
+       1,
+       0.075
+      ]
+     ]
+    },
+    {
+     "board": "10 good odds",
+     "depth": 1,
+     "seconds": 0.643,
+     "depth_seconds": [
+      [
+       1,
+       0.057
+      ]
+     ]
+    },
+    {
+     "board": "10 bad odds",
+     "depth": 1,
+     "seconds": 0.642,
+     "depth_seconds": [
+      [
+       1,
+       0.209
+      ]
+     ]
+    },
+    {
+     "board": "11 early",
+     "depth": 1,
+     "seconds": 0.647,
+     "depth_seconds": [
+      [
+       1,
+       0.202
+      ]
+     ]
+    },
+    {
+     "board": "11 final phase",
+     "depth": 1,
+     "seconds": 0.633,
+     "depth_seconds": [
+      [
+       1,
+       0.125
+      ]
+     ]
+    },
+    {
+     "board": "12",
+     "depth": 1,
+     "seconds": 0.64,
+     "depth_seconds": [
+      [
+       1,
+       0.15
+      ]
+     ]
+    },
+    {
+     "board": "13",
+     "depth": 1,
+     "seconds": 0.642,
+     "depth_seconds": [
+      [
+       1,
+       0.272
+      ]
+     ]
+    },
+    {
+     "board": "14",
+     "depth": 1,
+     "seconds": 0.637,
+     "depth_seconds": [
+      [
+       1,
+       0.063
+      ]
+     ]
+    },
+    {
+     "board": "15",
+     "depth": 1,
+     "seconds": 0.641,
+     "depth_seconds": [
+      [
+       1,
+       0.247
+      ]
+     ]
+    },
+    {
+     "board": "16",
+     "depth": 1,
+     "seconds": 0.644,
+     "depth_seconds": [
+      [
+       1,
+       0.042
+      ]
+     ]
+    },
+    {
+     "board": "C2",
+     "depth": 1,
+     "seconds": 0.634,
+     "depth_seconds": [
+      [
+       1,
+       0.275
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

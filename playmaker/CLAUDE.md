@@ -46,6 +46,10 @@ Don't run the test suite, self-play, the exam or any long job unless the step te
 
 If a step changes behaviour, you may run the few tests that cover exactly the code you changed, as long as they finish in a few minutes. Report what you ran and the result. If a change would need a long run to check, say so in the report instead of running it.
 
+**Time caps.** Every measurement in a step has a total time cap as well as any per-board cap. Run the smallest measurement that answers the step's question. If the cap is reached, stop and report what was measured and what wasn't.
+
+**The speed budget.** Once Shaun sets it (`docs/SPEED_BUDGET.md`), every change reports its effect on decision time and depth for each level, on a desktop and at phone speed. A change that breaks the budget is reported first.
+
 ## The report
 
 Every step ends with `docs/reports/STEPn_REPORT.md`, one page, in this order:
@@ -55,3 +59,4 @@ Every step ends with `docs/reports/STEPn_REPORT.md`, one page, in this order:
 3. **What it proves:** tests and numbers, each with the file it comes from.
 4. **For Shaun to decide:** each open choice, with its options and effects. "None" if there are none.
 5. **Noticed, not touched:** anything else you saw.
+6. **Model for the next step:** the Claude model and effort you'd use for the next step, with a one-line reason.

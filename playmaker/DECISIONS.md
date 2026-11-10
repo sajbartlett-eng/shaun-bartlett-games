@@ -483,6 +483,36 @@ Shaun, 10 Nov 2026 · **Ruled, built.**
 only. From step 12 on, every exam table leads with the fixed look-ahead (2 team-turn pairs: an offence turn and the
 defence's reply, twice) and gives the clock result beside it. · Source: Shaun, 10 Nov 2026 · **Ruled.**
 
+### Shaun, 10 Nov 2026 (step 13 prompt): the answers to step 12
+
+**D-119. The tempo term is a measured term.** The same position reads 2.3 points better with the offence to act than
+with the defence (1.7 in phase 1 to 2.9 in phase 5; `search.tempo`, from `tools/stable_measures.py`). It is accepted as
+measured, not chosen. Its switch stays off. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
+**D-120. The reading's margin of error** (one standard error by phase: 0.92, 1.05, 1.22, 1.34, 1.42, 1.52;
+`search.stable_margin`) is accepted as **provisional**. · Source: Shaun, 10 Nov 2026 · **Ruled, provisional.**
+
+**D-115, extended.** Teammates in an attacker's path are part of the reading: a look at the rim or the post counts only
+from the squares the attacker can reach in time, by the movement rules, teammates included. ·
+Source: Shaun, 10 Nov 2026 · **Ruled, built** behind `eval.coverage_budget` (off) in step 13, part B, for the ball
+handler's squares two actions away. Board 13 itself doesn't move: its rim is three actions away (STEP13B_REPORT).
+
+### Shaun, 10 Nov 2026 (after step 13, part A): the stable search's switches and the speed budget
+
+**D-121. On by default, in both engines:** `like_with_like` (the answer comes from the deepest even look-ahead: an
+offence turn and the reply) and the reach map (`eval.reach`). · Source: Shaun, 10 Nov 2026 · **Ruled, built** (step 13).
+
+**D-122. Off:** `quiet_points`, `clear_reason`, `tempo` and `play_on`. `tempo` and `play_on` are measured again after
+step 13, part B, on the bigger exam. · Source: Shaun, 10 Nov 2026 · **Ruled;** the second measure is **open**.
+
+**D-123. The speed budget** is accepted as **provisional**, as proposed: each level finishes 1 team-turn pair on 9
+decisions in 10, in 0.3, 1.0 and 2.5 s on a desktop (Rookie, Starter, All-Star) and 1.0, 2.0 and 3.0 s on a phone.
+"Phone" is an assumed quarter of desktop speed until a real phone is measured. `docs/SPEED_BUDGET.md`. · Source: Shaun,
+10 Nov 2026 · **Ruled, provisional.**
+
+**D-124. The two speed-ups that change results** (a window at the root; narrow quiet points) are not built now. ·
+Source: Shaun, 10 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

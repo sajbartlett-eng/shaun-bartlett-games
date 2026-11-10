@@ -102,17 +102,51 @@ def _caps(s, side, i):
     return can_move, qs_left
 
 
+_EXACT = {}
+
+
 def defender_map(s, d, exact=False):
     """(free, fixed) reach for defender d with action counts (0 = where he stands, with his arrow)."""
     if exact:
-        from .solver import defender_reach
-        free, fixed = defender_reach(s, d, 2)
-        return ({q: len(seq) for q, seq in free.items()},
-                {q: {a: len(seq) for a, seq in arrs.items()} for q, arrs in fixed.items()})
+        # step 13 (a speed-up that changes no result): kept for the position; the answer depends only on the pieces'
+        # squares, his arrow and what he has left, the screens and the rules. Callers only read it.
+        key = (s.o, s.x, d, s.arrows[d], min(s.tok_x, 2), s.moved('X', d), s.locked('X', d), s.quick_stepped('X', d),
+               s.count('X', 'qs'), s.screens, s.ctx.dfn[d].qs, s.ctx.rules)
+        hit = _EXACT.get(key)
+        if hit is None:
+            from .solver import defender_reach
+            free, fixed = defender_reach(s, d, 2)
+            hit = ({q: len(seq) for q, seq in free.items()},
+                   {q: {a: len(seq) for a, seq in arrs.items()} for q, arrs in fixed.items()})
+            if len(_EXACT) >= 20000:
+                _EXACT.clear()
+            _EXACT[key] = hit
+        return hit
     can_move, qs_left = _caps(s, 'X', d)
     if s.tok_x <= 0:
         return {}, {s.x[d]: {s.arrows[d]: 0}}
     return geo_reach(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, s.ctx.rules)
+
+
+def two_actions(s, i, one):
+    """Step 13 B2 (D-115): the squares attacker i reaches with exactly two movement actions (a Move then a Quick Step,
+    or a Quick Step then a Move), each by the rules' own movement from where the first leaves him: blocking pieces,
+    teammates included, screens and the ball handler's zones all apply. `one`: his squares within one action. Sorted."""
+    from .actions import movement_dests, can_move_kind
+    if s.tok_o < 2 or not B.on_board(s.o[i]):
+        return []
+    rules, bit, out = s.ctx.rules, 1 << i, set()
+    for first, second in (('move', 'qs'), ('qs', 'move')):
+        if not can_move_kind(s, 'O', i, first):
+            continue
+        for q1 in movement_dests(s, 'O', i, first, rules):
+            s2 = s.with_(o=s.o[:i] + (q1,) + s.o[i + 1:], **({'moved_o': s.moved_o | bit} if first == 'move' else
+                                                             {'qs_o': s.qs_o | bit}))
+            if can_move_kind(s2, 'O', i, second):
+                for q2 in movement_dests(s2, 'O', i, second, rules):
+                    if q2 not in one:
+                        out.add(q2)
+    return sorted(out)
 
 
 def attacker_reach(s, i, exact=False):
@@ -340,6 +374,7 @@ class Read:
         self.looks = {i: self._looks(i) for i in self.att_o}
         self.threat = {i: self._best(self.looks[i]) for i in self.att_o}
         self._cover = None
+        self._budget = None
 
     # -- contest maps
     def _contest(self, d, at=None, arrow=None, used=None):
@@ -440,6 +475,9 @@ class Read:
                 if can_move_kind(s, 'O', i, kind):
                     for q in movement_dests(s, 'O', i, kind, rules):
                         reach.setdefault(q, 1)
+            if self.cfg.get('coverage_budget'):
+                for q in two_actions(s, i, reach):        # step 13 B2 (D-115): where he can get to in two actions
+                    reach[q] = 2
         else:
             reach = {q: n for q, n in attacker_reach(s, i).items() if n <= 1}
         for c, n in reach.items():
@@ -737,7 +775,7 @@ class Read:
         if self.cfg.get('leaf_mode', 'floor') == 'relative':
             # step 10 (behind the switch): the phase table's average plus how much better or worse this position reads
             # than an average position at that phase, read the same way (eval.relative_average, from the step 3n seeds)
-            return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg))
+            return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
         return banked + max(sn or 0.0, now, cont, coarse)
 
     def possession(self):
@@ -752,16 +790,176 @@ class Read:
             return banked + now
         cont, coarse = self.continuation(), vcoarse(s)
         if self.cfg.get('leaf_mode', 'floor') == 'relative':
-            return banked + max(now, coarse + cont - relative_average(s, self.cfg))
+            return banked + max(now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
         return banked + max(now, cont, coarse)
+
+    # -- step 13 B3: the look-value split (reporting only; no value changes)
+    @staticmethod
+    def look_split(lk):
+        """A look's value in two parts: the finisher (the card: the value of his best shot type there with nobody near)
+        and the quality (the position: the chance it arrives and what the best Contest leaves of it), between 0 and 1.
+        finisher x quality is the look's value, so the trainer can say 'good look, poor shooter'."""
+        fin = max(lk.open.values(), default=0.0)
+        return fin, (lk.base / fin if fin > 0 else 0.0)
+
+    # -- step 13 B1: coverage as a budget (eval.coverage_budget)
+    def _budget_on(self):
+        """The switch; the ordering's quick reading (k = 0: no cover is searched) stays as it was."""
+        return bool(self.cfg.get('coverage_budget')) and self.k > 0
+
+    def budget_tables(self):
+        """What the allocation is solved from, every number an existing one. looks: every look of every attacker, in
+        order, as (attacker, look, its value if no defender answers it); a look released this turn keeps its value.
+        cols: the answers, as (defender, attacker, 'stand' or 'move', {look index: how far that look falls}). A
+        defender who attends an attacker answers every look of his that he can contest: from where he stands, or from
+        the square of one of his movement replies (the replies the reading already finds, responses_per_defender),
+        where he may also change the pass's chance or reach the attacker's way first."""
+        s = self.s
+        reach = bool(self.cfg.get('reach'))
+
+        def solo(lk, vals, p):
+            best = 0.0
+            for t in lk.types:
+                v = lk.open[t]
+                if vals and t in vals and vals[t] < v:
+                    v = vals[t]
+                if v > best:
+                    best = v
+            return p * best
+        looks, first = [], {}
+        for i in self.att_o:
+            first[i] = len(looks)
+            for lk in self.looks[i]:
+                looks.append((i, lk, lk.base if lk.now else solo(lk, None, lk.p)))
+        R = self.cover()['R']
+        cols = []
+        for j in self.att_x:
+            for i in self.att_o:
+                falls = {}
+                for n, lk in enumerate(self.looks[i]):
+                    if not lk.now and j in lk.vals:
+                        f = looks[first[i] + n][2] - solo(lk, lk.vals[j], lk.p)
+                        if f > 1e-9:
+                            falls[first[i] + n] = f
+                if falls:
+                    cols.append((j, i, 'stand', falls))
+            for (q, a, used), _ in R[j][1:]:
+                cm = self._contest(j, q, a, used)
+                moved = None
+                for i in self.att_o:
+                    falls = {}
+                    for n, lk in enumerate(self.looks[i]):
+                        if lk.now:
+                            continue
+                        if reach and q != s.x[j] and lk.route in PATH_ROUTES and _blocks(q, s.o[i], lk.c, s.ctx.off[i].qs,
+                                                                                         self.rules):
+                            w = 0.0
+                        else:
+                            p = lk.p
+                            if lk.route in ('catch', 'cut') and q != s.x[j]:
+                                if moved is None:
+                                    moved = s.with_(x=s.x[:j] + (q,) + s.x[j + 1:], arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
+                                                    moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
+                                p = _lane_p(moved, i, lk.c, reach=False)
+                            row = cm.get(lk.c)
+                            w = solo(lk, self._vals(lk, j, row) if row is not None else None, p)
+                        f = looks[first[i] + n][2] - w
+                        if f > 1e-9:
+                            falls[first[i] + n] = f
+                    if falls:
+                        cols.append((j, i, 'move', falls))
+        return looks, cols
+
+    def budget(self):
+        """Step 13 B1: coverage as a budget. In one team turn a defender attends one attacker: he ends on one square
+        and makes one Contest. The defence splits each defender across the attackers he can answer (shares adding to
+        at most 1); a share is the chance he is the one there. On any one look at most one answer counts, and the
+        answers that need a movement share the defence's movement actions next turn. The defence chooses the shares
+        that hold the offence's best look lowest: an exact small linear program (lp_max). Returns dict(value, left
+        {attacker: his best look after it}, open {attacker: with no answer}, shares [(defender, attacker, kind, share)])."""
+        if self._budget is not None:
+            return self._budget
+        looks, cols = self.budget_tables()
+        top = max((o for _, _, o in looks), default=0.0)
+        n = len(cols)
+        covered = sorted({l for c in cols for l in c[3]})
+        A, b = [], []
+        free = max((o for l, (_, _, o) in enumerate(looks) if l not in set(covered)), default=0.0)
+        A.append([0.0] * n + [1.0])                 # the looks no answer reaches stay as they are
+        b.append(top - free)
+        for l in covered:                           # look l is held to top - z
+            A.append([-c[3].get(l, 0.0) for c in cols] + [1.0])
+            b.append(top - looks[l][2])
+        for l in covered:                           # on one look, one answer counts
+            if sum(1 for c in cols if l in c[3]) > 1:
+                A.append([1.0 if l in c[3] else 0.0 for c in cols] + [0.0])
+                b.append(1.0)
+        for j in self.att_x:                        # one defender, one attacker
+            if any(c[0] == j for c in cols):
+                A.append([1.0 if c[0] == j else 0.0 for c in cols] + [0.0])
+                b.append(1.0)
+        if any(c[2] == 'move' for c in cols):       # the defence's movement actions next turn
+            A.append([1.0 if c[2] == 'move' else 0.0 for c in cols] + [0.0])
+            b.append(float(min(2, self.s.tok_x)))
+        z, x = lp_max([0.0] * n + [1.0], A, b)
+        left, opened = {}, {}
+        for l, (i, _, o) in enumerate(looks):
+            v = o - sum(x[k] * c[3].get(l, 0.0) for k, c in enumerate(cols))
+            left[i] = max(left.get(i, 0.0), v)
+            opened[i] = max(opened.get(i, 0.0), o)
+        self._budget = dict(value=top - z, left=left, open=opened,
+                            shares=[(c[0], c[1], c[2], x[k]) for k, c in enumerate(cols) if x[k] > 1e-9])
+        return self._budget
 
     def continuation(self):
         """The best look the defence's best cover leaves (the mean of the tied top residuals) times the continuation:
         what the board read says the position is worth beyond a shot now."""
+        if self._budget_on():
+            return self.budget()['value'] * self.cfg['continuation']       # step 13 B1: after the defence's best shares
         res = self.cover()['residual']
         top = max(res.values(), default=0.0)
         ties = [i for i in res if res[i] >= top - 1e-9]
         return (sum(res[i] for i in ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
+
+
+def lp_max(c, A, b):
+    """Maximise c.x subject to A.x <= b, x >= 0, with every b >= 0 (so the slack start is feasible): the simplex
+    method on a dense table, Bland's rule (the lowest index enters, ties leave by the lowest basis index), so it ends
+    and both engines take the same steps. Returns (the maximum, x)."""
+    m, n = len(A), len(c)
+    T = [list(A[r]) + [1.0 if k == r else 0.0 for k in range(m)] + [b[r]] for r in range(m)]
+    obj = [-v for v in c] + [0.0] * (m + 1)
+    basis = [n + r for r in range(m)]
+    for _ in range(500):
+        col = -1
+        for k in range(n + m):
+            if obj[k] < -1e-12:
+                col = k
+                break
+        if col < 0:
+            break
+        row, best = -1, 0.0
+        for r in range(m):
+            if T[r][col] > 1e-12:
+                ratio = T[r][-1] / T[r][col]
+                if row < 0 or ratio < best - 1e-12 or (ratio <= best + 1e-12 and basis[r] < basis[row]):
+                    row, best = r, ratio
+        if row < 0:
+            break
+        pv = T[row][col]
+        T[row] = [v / pv for v in T[row]]
+        for r in range(m):
+            if r != row and T[r][col] != 0.0:
+                f = T[r][col]
+                T[r] = [v - f * w for v, w in zip(T[r], T[row])]
+        f = obj[col]
+        obj = [v - f * w for v, w in zip(obj, T[row])]
+        basis[row] = col
+    x = [0.0] * n
+    for r in range(m):
+        if basis[r] < n:
+            x[basis[r]] = T[r][-1]
+    return obj[-1], x
 
 
 @lru_cache(maxsize=100000)
@@ -1006,12 +1204,12 @@ def key_from_encode(enc):
 _TABLES = {}
 
 
-def relative_average(s, cfg=None):
+def relative_average(s, cfg=None, budget=False):
     """Step 10: the average continuation read of the positions the phase table was built from, at this position's
     phase (eval.relative_average[age/standard][phase]); 0 if there is none."""
     cfg = cfg or CONFIG['eval']
     lv = getattr(s.ctx, 'levels_key', None) or ('senior', 'pro')
-    tab = cfg.get('relative_average', {})
+    tab = cfg.get('relative_average_budget' if budget else 'relative_average') or cfg.get('relative_average', {})
     row = tab.get(f'{lv[0]}/{lv[1]}') or tab.get('senior/pro') or {}
     phase = coarse_key(s).split('|')[2]
     return float(row.get(phase, 0.0))
