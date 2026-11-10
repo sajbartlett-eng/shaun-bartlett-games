@@ -123,6 +123,11 @@ def py_probe(s, reach_map=False):
             out['cover_' + tag] = [cv['value'], sorted([[j, B.sq(resp[0]), resp[1], resp[2]] for j, resp in cv['choice'].items()]),
                                    [cv['residual'][i] for i in range(5)]]
             out['leaf_' + tag] = r.leaf()
+            if r._budget_on() and not s.pending:    # step 13 B: the allocation itself, and every look's two parts
+                bd = r.budget()
+                out['budget_' + tag] = [bd['value'], [bd['left'].get(i) for i in range(5)],
+                                        [[j, i, k, x] for j, i, k, x in bd['shares']]]
+                out['split_' + tag] = [[list(r.look_split(lk)) for lk in r.looks[i]] for i in range(5)]
         out['quick'] = Read(s, k=0, looks_per=3).leaf()
     if reach_map:                                  # step 12: the reach map, square by square (the tool asks for it)
         from playmaker_engine.reach import reach_map as _rm
@@ -157,7 +162,8 @@ def compare_searches(args, rng):
         s, _ = random_state(rng)
         if s.stage == 'play':
             sts.append(s)
-    lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach, leaf_mode=args.leaf_mode,
+    lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
+                             coverage_budget=args.coverage_budget, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -199,7 +205,9 @@ def main():
                     '(quiet_points, like_with_like, tempo, play_on, clear_reason; "cheap" = the first three)')
     ap.add_argument('--without', default='', help='step 13: the JavaScript speed-ups to turn off, comma-separated '
                     '(reach_cache, forcing, quiet_read, tt_order; "all"), to prove each changes nothing')
-    ap.add_argument('--reach', action='store_true', help='step 12: eval.reach on, in both engines')
+    ap.add_argument('--reach', action='store_true', help='eval.reach on, in both engines (the default since D-121)')
+    ap.add_argument('--no-reach', action='store_true', help='eval.reach off, in both engines')
+    ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
     ap.add_argument('--search', type=int, default=0, help='step 12: also compare this many searches (2 moves ahead)')
     ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative'),
                     help="the leaf's mode, in both engines (default: eval.leaf_mode in ai_profiles.json)")
@@ -208,8 +216,13 @@ def main():
     args.leaf_mode = args.leaf_mode or _CFG['eval'].get('leaf_mode', 'floor')
     _CFG['eval']['leaf_mode'] = args.leaf_mode
     _CFG.setdefault('search', {})['stable'] = args.stable
+    args.reach = not args.no_reach and (args.reach or bool(_CFG['eval'].get('reach')))
+    _CFG['eval']['coverage_budget'] = args.coverage_budget
     from playmaker_engine.search import PARTS
     names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]
+    if not args.switches:                          # none named: the config's own (like_with_like, D-121)
+        names = [k for k in PARTS if _CFG['search'].get(k) is True]
+    names = [x for x in names if x != 'none']
     assert all(x in PARTS for x in names), names
     args.switch_map = {k: k in names for k in PARTS}
     _CFG['search'].update(args.switch_map)
@@ -229,7 +242,7 @@ def main():
         meta.append(m)
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
-                                     reach=args.reach,
+                                     reach=args.reach, coverage_budget=args.coverage_budget,
                                      reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
@@ -240,7 +253,8 @@ def main():
     js = run_js(lines)
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
-              'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map') + (('react_outcomes',) if args.reaction else ())
+              'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map', 'budget_geo', 'budget_exact', 'split_geo',
+              'split_exact') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -262,6 +276,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
+               coverage_budget=args.coverage_budget,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,

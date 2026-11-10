@@ -126,17 +126,17 @@ def pairs():
     return out
 
 
-def run_sensitivity(out):
+def run_sensitivity(out, settings=None):
     margin = CONFIG['search']['stable_margin']
     res = {}
-    for setting in SETTINGS:
+    for setting in (settings or SETTINGS):
         set_switches(None, setting)
         for name, (a, b) in pairs().items():
             va, vb = Read(a).leaf(), Read(b).leaf()
             ph = str(a.phase)
             res.setdefault(name, {})[setting] = dict(first=round(va, 2), second=round(vb, 2), difference=round(vb - va, 2),
                                                      margin=margin.get(ph), beyond_margin=abs(vb - va) > margin.get(ph, 0))
-    set_switches(None, 'off')
+    set_switches(None, (settings or ['off'])[0])
     json.dump(res, open(out, 'w'), indent=1)
     print(json.dumps(res, indent=1))
 

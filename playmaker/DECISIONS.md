@@ -496,6 +496,22 @@ measured, not chosen. Its switch stays off. · Source: Shaun, 10 Nov 2026 · **R
 from the squares the attacker can reach in time, by the movement rules, teammates included. Built in step 13, part B. ·
 Source: Shaun, 10 Nov 2026 · **Ruled;** to build in step 13, part B.
 
+### Shaun, 10 Nov 2026 (after step 13, part A): the stable search's switches and the speed budget
+
+**D-121. On by default, in both engines:** `like_with_like` (the answer comes from the deepest even look-ahead: an
+offence turn and the reply) and the reach map (`eval.reach`). · Source: Shaun, 10 Nov 2026 · **Ruled, built** (step 13).
+
+**D-122. Off:** `quiet_points`, `clear_reason`, `tempo` and `play_on`. `tempo` and `play_on` are measured again after
+step 13, part B, on the bigger exam. · Source: Shaun, 10 Nov 2026 · **Ruled;** the second measure is **open**.
+
+**D-123. The speed budget** is accepted as **provisional**, as proposed: each level finishes 1 team-turn pair on 9
+decisions in 10, in 0.3, 1.0 and 2.5 s on a desktop (Rookie, Starter, All-Star) and 1.0, 2.0 and 3.0 s on a phone.
+"Phone" is an assumed quarter of desktop speed until a real phone is measured. `docs/SPEED_BUDGET.md`. · Source: Shaun,
+10 Nov 2026 · **Ruled, provisional.**
+
+**D-124. The two speed-ups that change results** (a window at the root; narrow quiet points) are not built now. ·
+Source: Shaun, 10 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

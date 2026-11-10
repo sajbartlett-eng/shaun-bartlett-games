@@ -1013,6 +1013,53 @@ const PMEngine = (() => {
     }
     return out;
   }
+  // Step 13 B2 (decide.two_actions): the squares attacker i reaches with exactly two movement actions (a Move then a
+  // Quick Step, or a Quick Step then a Move), each by the rules' own movement from where the first leaves him. Sorted.
+  function twoActions(s, i, one) {
+    if (s.tok_o < 2 || !ONB[s.o[i]]) return [];
+    const bit = 1 << i, out = new Set();
+    for (const [first, second] of [['move', 'qs'], ['qs', 'move']]) {
+      if (!canMoveKind(s, 'O', i, first)) continue;
+      for (const q1 of movementDests(s, 'O', i, first).keys()) {
+        const s2 = W_(s, first === 'move' ? { o: setAt(s.o, i, q1), moved_o: s.moved_o | bit } : { o: setAt(s.o, i, q1), qs_o: s.qs_o | bit });
+        if (!canMoveKind(s2, 'O', i, second)) continue;
+        for (const q2 of movementDests(s2, 'O', i, second).keys()) if (!one.has(q2)) out.add(q2);
+      }
+    }
+    return [...out].sort((a, b) => (SX[a] - SX[b]) || (SY[a] - SY[b]));
+  }
+  // decide.lp_max: maximise c.x subject to A.x <= b, x >= 0, every b >= 0; the simplex method, Bland's rule, the same
+  // steps as the Python
+  function lpMax(c, A, b) {
+    const m = A.length, n = c.length, W = n + m + 1;
+    const T = A.map((row, r) => { const t = new Float64Array(W); for (let k = 0; k < n; k++) t[k] = row[k]; t[n + r] = 1.0; t[W - 1] = b[r]; return t; });
+    const obj = new Float64Array(W); for (let k = 0; k < n; k++) obj[k] = -c[k];
+    const basis = []; for (let r = 0; r < m; r++) basis.push(n + r);
+    for (let it = 0; it < 500; it++) {
+      let col = -1;
+      for (let k = 0; k < n + m; k++) if (obj[k] < -1e-12) { col = k; break; }
+      if (col < 0) break;
+      let row = -1, best = 0.0;
+      for (let r = 0; r < m; r++) {
+        if (T[r][col] > 1e-12) {
+          const ratio = T[r][W - 1] / T[r][col];
+          if (row < 0 || ratio < best - 1e-12 || (ratio <= best + 1e-12 && basis[r] < basis[row])) { row = r; best = ratio; }
+        }
+      }
+      if (row < 0) break;
+      const pr = T[row], pv = pr[col];
+      for (let k = 0; k < W; k++) pr[k] = pr[k] / pv;
+      for (let r = 0; r < m; r++) {
+        if (r !== row && T[r][col] !== 0.0) { const tr = T[r], f = tr[col]; for (let k = 0; k < W; k++) tr[k] = tr[k] - f * pr[k]; }
+      }
+      const f = obj[col];
+      for (let k = 0; k < W; k++) obj[k] = obj[k] - f * pr[k];
+      basis[row] = col;
+    }
+    const x = new Float64Array(n);
+    for (let r = 0; r < m; r++) if (basis[r] < n) x[basis[r]] = T[r][W - 1];
+    return [obj[W - 1], x];
+  }
   function minCounts(free, fixed) {
     const out = new Map(free);
     for (const [q, arrs] of fixed) { let n = INF; for (const v of arrs.values()) if (v < n) n = v; const c = out.get(q); if (c === undefined || c > n) out.set(q, n); }
@@ -1240,17 +1287,20 @@ const PMEngine = (() => {
   }
   // step 10: the average continuation read of the phase table's own positions at this position's phase
   // (decide.relative_average); leaf_mode 'relative' reads a position against it
-  function relativeAverage(s) {
-    const tab = D.config.eval.relative_average || {};
+  function relativeAverage(s, budget) {
+    const tab = (budget && D.config.eval.relative_average_budget) || D.config.eval.relative_average || {};
     const row = tab[s.ctx.table] || tab['senior/pro'] || {};
     const v = row[String(coarseKey(s)[2])];
     return v === undefined ? 0.0 : v;
   }
-  function leafOf(s, banked, sn, now, cont, coarse) {
-    if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(sn || 0.0, now, coarse + cont - relativeAverage(s));
+  function leafOf(s, banked, sn, now, cont, coarse, budget) {
+    if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(sn || 0.0, now, coarse + cont - relativeAverage(s, budget));
     return banked + Math.max(sn || 0.0, now, cont, coarse);
   }
   function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
+  // step 13 B: coverage as a budget (eval.coverage_budget, off by default)
+  function setBudget(on) { D.config.eval.coverage_budget = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.coverage_budget; }
+  const budgetCfg = () => !!D.config.eval.coverage_budget;
   // step 12: the switches, for the tools (text 'true' / 'false')
   function setStable(on) { D.config.search = D.config.search || {}; D.config.search.stable = on === true || on === 'true'; return D.config.search.stable; }
   // Step 13: the stable search's five parts, each its own switch (off by default); search.stable is the shorthand
@@ -1297,6 +1347,13 @@ const PMEngine = (() => {
     }
     lk.base = lk.p * best;
   }
+  // Step 13 B3 (decide.Read.look_split), reporting only: a look's value as its finisher (the card: the value of his best
+  // shot type there with nobody near) times its quality (the position: the chance it arrives and what the best Contest
+  // leaves of it). [finisher, quality]; finisher x quality is the look's value.
+  function lookSplit(lk) {
+    let fin = 0.0; for (let t = 0; t < lk.open.length; t++) if (lk.open[t] > fin) fin = lk.open[t];
+    return [fin, fin > 0 ? lk.base / fin : 0.0];
+  }
   function swapped(lk, j, vals, p) {
     const mx = lk.minex, nt = lk.types.length, o = j * nt;
     let best = 0.0;
@@ -1335,6 +1392,7 @@ const PMEngine = (() => {
       for (const i of this.att_o) this.looks[i] = this._looks(i);
       for (const i of this.att_o) this.threat[i] = this._best(this.looks[i]);
       this._cover = null;
+      this._budget = null;
     }
     _contest(d, at = -1, arrow = -1, used = null) {
       const s = this.s;
@@ -1463,6 +1521,7 @@ const PMEngine = (() => {
         for (const kind of ['move', 'qs', 'sprint']) {
           if (canMoveKind(s, 'O', i, kind)) for (const q of movementDests(s, 'O', i, kind).keys()) if (!reach.has(q)) reach.set(q, 1);
         }
+        if (budgetCfg()) for (const q of twoActions(s, i, reach)) reach.set(q, 2);   // step 13 B2 (D-115)
       } else {
         reach = new Map();
         if (ONB[s.o[i]] && s.tok_o > 0) {
@@ -1636,6 +1695,86 @@ const PMEngine = (() => {
       this._cover = { value: best[0][0], choice, residual: best[2], R };
       return this._cover;
     }
+    // ---- step 13 B1: coverage as a budget (decide.Read.budget_tables, budget) ----------------------------------------
+    budgetOn() { return budgetCfg() && this.k > 0; }
+    budgetTables() {
+      const s = this.s, reach = reachOn();
+      const solo = (lk, vals, p) => {
+        let best = 0.0;
+        for (let t = 0; t < lk.types.length; t++) { let v = lk.open[t]; if (vals && vals[t] < v) v = vals[t]; if (v > best) best = v; }
+        return p * best;
+      };
+      const looks = [], first = [0, 0, 0, 0, 0];
+      for (const i of this.att_o) { first[i] = looks.length; for (const lk of this.looks[i]) looks.push([i, lk, lk.now ? lk.base : solo(lk, null, lk.p)]); }
+      const R = this.cover().R, cols = [];
+      for (const j of this.att_x) {
+        for (const i of this.att_o) {
+          const falls = new Map(), ls = this.looks[i];
+          for (let n = 0; n < ls.length; n++) {
+            const lk = ls[n];
+            if (!lk.now && lk.vals[j]) { const f = looks[first[i] + n][2] - solo(lk, lk.vals[j], lk.p); if (f > 1e-9) falls.set(first[i] + n, f); }
+          }
+          if (falls.size) cols.push([j, i, 'stand', falls]);
+        }
+        const capsJ = caps(s, 'X', j), Rj = R[j];
+        for (let r = 1; r < Rj.length; r++) {
+          const q = Rj[r][0][0], a = Rj[r][0][1], used = Rj[r][0][2];
+          const cm = this._contest(j, q, a, used);
+          let oneJ = null;
+          for (const i of this.att_o) {
+            const falls = new Map(), ls = this.looks[i];
+            for (let n = 0; n < ls.length; n++) {
+              const lk = ls[n];
+              if (lk.now) continue;
+              let w;
+              if (reach && q !== s.x[j] && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) w = 0.0;
+              else {
+                let p = lk.p;
+                if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
+                  if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
+                  p = this._laneMoved(lk.c, j, q, oneJ);
+                }
+                w = solo(lk, this._vals(lk, j, cm), p);
+              }
+              const f = looks[first[i] + n][2] - w;
+              if (f > 1e-9) falls.set(first[i] + n, f);
+            }
+            if (falls.size) cols.push([j, i, 'move', falls]);
+          }
+        }
+      }
+      return [looks, cols];
+    }
+    budget() {
+      if (this._budget) return this._budget;
+      const [looks, cols] = this.budgetTables();
+      let top = 0.0; for (const l of looks) if (l[2] > top) top = l[2];
+      const n = cols.length;
+      const cov = new Set(); for (const c of cols) for (const l of c[3].keys()) cov.add(l);
+      const covered = [...cov].sort((a, b) => a - b);
+      const A = [], b = [];
+      const rowOf = f => { const r = new Float64Array(n + 1); for (let k = 0; k < n; k++) r[k] = f(cols[k]); return r; };
+      let free = 0.0; looks.forEach((l, k) => { if (!cov.has(k) && l[2] > free) free = l[2]; });
+      { const r = rowOf(() => 0.0); r[n] = 1.0; A.push(r); b.push(top - free); }
+      for (const l of covered) { const r = rowOf(c => -(c[3].get(l) || 0.0)); r[n] = 1.0; A.push(r); b.push(top - looks[l][2]); }
+      for (const l of covered) { let m = 0; for (const c of cols) if (c[3].has(l)) m++; if (m > 1) { A.push(rowOf(c => (c[3].has(l) ? 1.0 : 0.0))); b.push(1.0); } }
+      for (const j of this.att_x) if (cols.some(c => c[0] === j)) { A.push(rowOf(c => (c[0] === j ? 1.0 : 0.0))); b.push(1.0); }
+      if (cols.some(c => c[2] === 'move')) { A.push(rowOf(c => (c[2] === 'move' ? 1.0 : 0.0))); b.push(Math.min(2, this.s.tok_x)); }
+      const cvec = new Float64Array(n + 1); cvec[n] = 1.0;
+      const [z, x] = lpMax(cvec, A, b);
+      const left = {}, opened = {};
+      looks.forEach((lk, l) => {
+        let sum = 0.0;
+        for (let k = 0; k < n; k++) sum += x[k] * (cols[k][3].get(l) || 0.0);
+        const v = lk[2] - sum;
+        const i = lk[0];
+        if (left[i] === undefined || v > left[i]) left[i] = v;
+        if (opened[i] === undefined || lk[2] > opened[i]) opened[i] = lk[2];
+      });
+      const shares = []; cols.forEach((c, k) => { if (x[k] > 1e-9) shares.push([c[0], c[1], c[2], x[k]]); });
+      this._budget = { value: top - z, left, open: opened, shares };
+      return this._budget;
+    }
     shotNow() {
       if (!this.o_to_act) return null;
       for (const lk of this.looks[this.s.ball] || []) if (lk.route === 'shoot') return lk.base;
@@ -1655,8 +1794,9 @@ const PMEngine = (() => {
       if (!this.att_o.length) top = 0.0;
       let sum = 0.0, nt = 0;
       for (const i of this.att_o) if (res[i] >= top - 1e-9) { sum += res[i]; nt++; }
-      const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation, coarse = vcoarse(s);
-      if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(now, coarse + cont - relativeAverage(s));
+      const bud = this.budgetOn();                       // step 13 B1: after the defence's best shares
+      const cont = (bud ? this.budget().value : (nt ? sum / nt : 0.0)) * this.cfg.continuation, coarse = vcoarse(s);
+      if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(now, coarse + cont - relativeAverage(s, bud));
       return banked + Math.max(now, cont, coarse);
     }
     quickLeaf() {
@@ -1740,9 +1880,10 @@ const PMEngine = (() => {
       if (!this.att_o.length) top = 0.0;
       let sum = 0.0, nt = 0;
       for (const i of this.att_o) if (res[i] >= top - 1e-9) { sum += res[i]; nt++; }
-      const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
+      const bud = this.budgetOn();                       // step 13 B1: after the defence's best shares
+      const cont = (bud ? this.budget().value : (nt ? sum / nt : 0.0)) * this.cfg.continuation;
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + Math.max(sn || 0.0, now);
-      return leafOf(s, banked, sn, now, cont, vcoarse(s));
+      return leafOf(s, banked, sn, now, cont, vcoarse(s), bud);
     }
   }
 
@@ -2388,13 +2529,18 @@ const PMEngine = (() => {
         out['cover_' + tag] = [cv.value, [...cv.choice].map(([j, resp]) => [j, sqName(resp[0]), resp[1], resp[2]]).sort((a, b) => a[0] - b[0]),
           [0, 1, 2, 3, 4].map(i => cv.residual[i])];
         out['leaf_' + tag] = r.leaf();
+        if (r.budgetOn() && !s.pending) {                // step 13 B: the allocation itself, and every look's two parts
+          const bd = r.budget();
+          out['budget_' + tag] = [bd.value, [0, 1, 2, 3, 4].map(i => (bd.left[i] === undefined ? null : bd.left[i])), bd.shares];
+          out['split_' + tag] = [0, 1, 2, 3, 4].map(i => (r.looks[i] || []).map(lk => lookSplit(lk)));
+        }
       }
       out.quick = new Read(s, { k: 0, looks_per: 3 }).leaf();
     }
     return out;
   }
 
-  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

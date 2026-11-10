@@ -39,11 +39,15 @@ SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP
             # each part alone, and pairs, to see which part moves a board
             'tempo': (('tempo',), False), 'like_with_like': (('like_with_like',), False),
             'quiet_points': (('quiet_points',), False), 'light_play_on': (('like_with_like', 'tempo', 'play_on'), False),
-            'light_reach': (('like_with_like', 'tempo'), True), 'play_on_reach': (('play_on',), True)}
+            'light_reach': (('like_with_like', 'tempo'), True), 'play_on_reach': (('play_on',), True),
+            # part B: the default game (like_with_like and the reach map, D-121), and with coverage as a budget
+            'base': (('like_with_like',), True), 'budget': (('like_with_like',), True, True)}
 
 
 def set_switches(eng, setting):
-    on, reach = SETTINGS[setting]
+    on, reach = SETTINGS[setting][:2]
+    budget = len(SETTINGS[setting]) > 2
+    CONFIG['eval']['coverage_budget'] = budget
     srch = CONFIG.setdefault('search', {})
     srch['stable'] = False
     for k in PARTS:
@@ -54,6 +58,7 @@ def set_switches(eng, setting):
         eng.call('setSpeed', json.dumps({k: k not in off and 'all' not in off for k in SPEEDUPS}))
         eng.call('setSearch', json.dumps(dict(stable=False, **{k: k in on for k in PARTS})))
         eng.call('setReach', 'true' if reach else 'false')
+        eng.call('setBudget', 'true' if budget else 'false')
 
 
 X12.SETTINGS = SETTINGS
@@ -225,6 +230,8 @@ if __name__ == '__main__':
         run_pair_time(sys.argv[2], sys.argv[3])
     elif what == 'record':
         run_record(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+    elif what == 'sensitivity':                  # the three pairs: the default game, and with coverage as a budget
+        X12.run_sensitivity(sys.argv[2], ['base', 'budget'])
     elif what == 'dump':
         run_dump(int(sys.argv[2]), sys.argv[3])
     elif what == 'same':
