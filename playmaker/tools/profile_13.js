@@ -1,6 +1,6 @@
 // Step 13 A3: where a search's time goes. Runs the requests (tools/exam_13.py dump) with the given switches, with
 // V8's sampling profiler, and prints each part's share: its own time by function, and the time under chosen functions.
-//   node tools/profile_13.js requests.json '{"play_on":true}' <reach true|false> [out.json]
+//   node tools/profile_13.js requests.json '{"play_on":true}' <reach true|false> [out.json] [budget]
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -12,9 +12,10 @@ E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoa
 const reqs = JSON.parse(fs.readFileSync(process.argv[2]));
 E.setSearch(process.argv[3] || '{}');
 E.setReach(process.argv[4] === 'true');
+if (process.argv[6]) E.setBudget(process.argv[6] === 'budget');   // step 13 B: coverage as a budget
 const UNDER = ['extend', 'unsettled', 'turnsOf', 'turns', 'quick', 'leaf', 'evaluate', 'Read', 'cover', 'responses', '_looks', '_contest',
   'defenderReachExact', 'exactOne', 'laneP', 'legalActions', 'apply', 'movementDests', 'candidateActions', 'chance', 'zobrist',
-  'attackerReachExact', 'contestMap', 'possession', 'shotNow', 'continuation', 'isLegal', 'playTurn', 'pathsTo', 'blocksPath'];
+  'attackerReachExact', 'contestMap', 'twoActions', 'budget', 'budgetTables', 'lpMax', 'possession', 'shotNow', 'continuation', 'isLegal', 'playTurn', 'pathsTo', 'blocksPath'];
 const session = new inspector.Session();
 session.connect();
 session.post('Profiler.enable', () => session.post('Profiler.start', () => {

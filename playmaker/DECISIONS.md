@@ -493,8 +493,9 @@ measured, not chosen. Its switch stays off. · Source: Shaun, 10 Nov 2026 · **R
 `search.stable_margin`) is accepted as **provisional**. · Source: Shaun, 10 Nov 2026 · **Ruled, provisional.**
 
 **D-115, extended.** Teammates in an attacker's path are part of the reading: a look at the rim or the post counts only
-from the squares the attacker can reach in time, by the movement rules, teammates included. Built in step 13, part B. ·
-Source: Shaun, 10 Nov 2026 · **Ruled;** to build in step 13, part B.
+from the squares the attacker can reach in time, by the movement rules, teammates included. ·
+Source: Shaun, 10 Nov 2026 · **Ruled, built** behind `eval.coverage_budget` (off) in step 13, part B, for the ball
+handler's squares two actions away. Board 13 itself doesn't move: its rim is three actions away (STEP13B_REPORT).
 
 ### Shaun, 10 Nov 2026 (after step 13, part A): the stable search's switches and the speed budget
 

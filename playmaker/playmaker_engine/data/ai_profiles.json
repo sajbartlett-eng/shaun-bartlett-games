@@ -359,7 +359,7 @@
     "_about": "Steps 12 and 13: the stable search, in five switches (stable is the shorthand that turns on all five). On by default: like_with_like (D-121). Off: quiet_points, clear_reason, tempo and play_on (D-122). quiet_points: look-ahead counts completed team turns, a side is never judged between its two actions. like_with_like: the answer comes from the deepest even depth (an offence turn and the reply). tempo: each reading is shifted by half of tempo_gap toward the side not to act (tempo_gap: the measured gap between the same position with the offence and with the defence to act, tools/stable_measures.py; D-119). play_on: at the horizon, a declared shot, a pass in the air, a contest choice or a shot worth more than the possession is played on with the forcing replies only, at most extension_cap extra team turns (provisional). clear_reason: the choice from two depths earlier is kept unless the new best beats it by more than stable_margin, one standard error of the reading at the phase (provisional, D-120).",
     "stable": false,
     "quiet_points": false,
-    "like_with_like": false,
+    "like_with_like": true,
     "tempo": false,
     "play_on": false,
     "clear_reason": false,
