@@ -14,8 +14,8 @@
   "equal": 4
  },
  "states": 100,
- "seconds_python": 8.3,
- "seconds_js": 1.2,
+ "seconds_python": 8.0,
+ "seconds_js": 1.3,
  "by_stage": {
   "play": 91,
   "over": 9

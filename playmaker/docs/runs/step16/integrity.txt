@@ -1,0 +1,15 @@
+{
+ "shot_now": "2 of 2 still shoot",
+ "dropped": "6 of 6 have no set-up goal left; 4 of 4 with nothing left choose as without goals",
+ "broken": "6 of 6 moved on",
+ "any_chance": "13 of 22 choices the same; 2 cost more than the margin; largest cost 2.8"
+}
+1 ['X2 Quick Step to D6'] -> ['X2 Move to E4 facing SE'] cost 0
+2 12 ['X2 Quick Step to D7', 'X1 Steal'] -> ['X1 Steal'] cost 1.79
+4 ['O1 Sprint to F10', 'O2 Sprint to E10'] -> ['O1 Sprint to F10'] cost 0.0
+9 ['O1 Move to J3', 'O2 Move to A7'] -> ['O1 Move to J3', 'O4 Move to G3'] cost 0.42
+10 good odds ['X5 Move to O3 facing E'] -> ['X5 Move to N3 facing W'] cost 0.0
+11 early ['O2 Move to A5'] -> ['O2 Move to A7'] cost 0.0
+13 ['O2 Move to B8', 'O3 Move to N5'] -> ['O5 Screen, T SW'] cost 2.8
+15 ['O2 Quick Step to B8', 'O1 Quick Step to H10'] -> ['O2 Quick Step to C8', 'O1 Quick Step to H10'] cost 0.66
+16 ['O2 Move to A5', 'O1 Move to J10'] -> ['O2 Move to A5', 'O1 Quick Step to H10'] cost 0.0

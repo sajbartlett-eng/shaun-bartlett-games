@@ -1,31 +1,54 @@
 {
- "shot_now": [],
+ "shot_now": [
+  {
+   "board": "7 phase 6",
+   "off": [
+    "O3 Shot (mid)"
+   ],
+   "on": [
+    "O3 Shot (mid)"
+   ],
+   "still_shoots": true,
+   "potential": 0
+  },
+  {
+   "board": "7 phase 6 (built: the ball handler free in the paint)",
+   "off": [
+    "O3 Shot (layup)"
+   ],
+   "on": [
+    "O3 Shot (layup)"
+   ],
+   "still_shoots": true,
+   "potential": 0
+  }
+ ],
  "dropped": [
   {
    "board": "6",
    "potential_before": 1.76,
    "potential_last_phase": 0.49,
+   "set_up_goals_left": 0,
    "off": [
     "O2 Move to A5",
-    "O2 Quick Step to A4"
+    "O4 Pass to O2"
    ],
    "on": [
     "O2 Move to A5",
     "O4 Pass to O2"
    ],
-   "same": false
+   "same": true
   },
   {
    "board": "11 early",
    "potential_before": 13.87,
    "potential_last_phase": 0,
+   "set_up_goals_left": 0,
    "off": [
-    "O2 Move to A7",
-    "O1 Sprint to J10"
+    "O2 Move to A5"
    ],
    "on": [
-    "O2 Move to A7",
-    "O1 Sprint to J10"
+    "O2 Move to A5"
    ],
    "same": true
   },
@@ -33,13 +56,12 @@
    "board": "14",
    "potential_before": 1.51,
    "potential_last_phase": 0,
+   "set_up_goals_left": 0,
    "off": [
-    "O1 Move to K10",
-    "O3 Quick Step to P8"
+    "O1 Move to K10"
    ],
    "on": [
-    "O1 Move to K10",
-    "O3 Quick Step to P8"
+    "O1 Move to K10"
    ],
    "same": true
   },
@@ -47,13 +69,14 @@
    "board": "15",
    "potential_before": 13.87,
    "potential_last_phase": 0,
+   "set_up_goals_left": 0,
    "off": [
-    "O2 Move to C8",
-    "O1 Move to H10"
+    "O2 Quick Step to B8",
+    "O1 Quick Step to H10"
    ],
    "on": [
-    "O2 Move to C8",
-    "O1 Move to H10"
+    "O2 Quick Step to B8",
+    "O1 Quick Step to H10"
    ],
    "same": true
   },
@@ -61,6 +84,7 @@
    "board": "16",
    "potential_before": 3.83,
    "potential_last_phase": 0,
+   "set_up_goals_left": 0,
    "off": [
     "O2 Move to A5"
    ],
@@ -73,11 +97,12 @@
    "board": "C2",
    "potential_before": 10.48,
    "potential_last_phase": 6.04,
+   "set_up_goals_left": 0,
    "off": [
-    "O2 Move to C9"
+    "O2 Quick Step to C8"
    ],
    "on": [
-    "O3 Sprint to M10"
+    "O2 Move to C8"
    ],
    "same": false
   }
@@ -90,11 +115,11 @@
    "to": "A5",
    "event": "lost",
    "goal_after": "penetration O4",
+   "target_after": "H3",
    "turn": [
     "O1 Move to J10",
     "O2 Sprint to B3"
    ],
-   "target_after": "H3",
    "moved_on": true
   },
   {
@@ -104,10 +129,10 @@
    "to": "H3",
    "event": null,
    "goal_after": "penetration O1",
-   "turn": [
-    "O2 Quick Step to A7"
-   ],
    "target_after": "G4",
+   "turn": [
+    "O2 Move to A7"
+   ],
    "moved_on": true
   },
   {
@@ -117,11 +142,11 @@
    "to": "H3",
    "event": "lost",
    "goal_after": null,
+   "target_after": null,
    "turn": [
     "O1 Move to K10",
-    "O2 Sprint to B8"
+    "O1 Quick Step to L10"
    ],
-   "target_after": null,
    "moved_on": true
   },
   {
@@ -131,10 +156,10 @@
    "to": "H3",
    "event": null,
    "goal_after": "penetration O1",
+   "target_after": "G4",
    "turn": [
     "O1 Quick Step to H10"
    ],
-   "target_after": "G4",
    "moved_on": true
   },
   {
@@ -144,10 +169,10 @@
    "to": "J3",
    "event": null,
    "goal_after": "penetration O1",
-   "turn": [
-    "O1 Sprint to H10"
-   ],
    "target_after": "K4",
+   "turn": [
+    "O1 Move to H10"
+   ],
    "moved_on": true
   },
   {
@@ -157,10 +182,10 @@
    "to": "B8",
    "event": "lost",
    "goal_after": "separation O3",
+   "target_after": "M10",
    "turn": [
     "O3 Sprint to M10"
    ],
-   "target_after": "M10",
    "moved_on": true
   }
  ],
@@ -169,10 +194,10 @@
    "board": "1",
    "same": false,
    "off": [
-    "X1 Sprint to H8"
+    "X2 Quick Step to D6"
    ],
    "on": [
-    "X1 Sprint to G11"
+    "X2 Move to E4 facing SE"
    ],
    "loss": 0,
    "beyond_margin": false,
@@ -213,19 +238,24 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O2": 1.8
+   }
   },
   {
    "board": "2 4",
-   "same": false,
+   "same": true,
    "off": [
-    "X2 Sprint to D6"
+    "X2 Quick Step to D7",
+    "X1 Steal"
    ],
    "on": [
-    "X2 Move to D7 facing E"
+    "X2 Quick Step to D7",
+    "X1 Steal"
    ],
-   "loss": 2.47,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "penetration",
@@ -263,19 +293,26 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": 12.0,
+    "O2": 4.9,
+    "O3": 1.8,
+    "O4": 2.5,
+    "O5": 1.5
+   }
   },
   {
    "board": "2 12",
    "same": false,
    "off": [
-    "X3 Sprint to O3",
+    "X2 Quick Step to D7",
     "X1 Steal"
    ],
    "on": [
-    "X3 Sprint to O3"
+    "X1 Steal"
    ],
-   "loss": 1.19,
+   "loss": 1.79,
    "beyond_margin": true,
    "goals": [
     {
@@ -314,16 +351,23 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": 12.0,
+    "O2": 4.1,
+    "O3": 1.8,
+    "O4": 4.5,
+    "O5": 1.5
+   }
   },
   {
    "board": "3",
-   "same": false,
+   "same": true,
    "off": [
-    "X3 Move to N7 facing W"
+    "X Pause"
    ],
    "on": [
-    "X3 Move to M7 facing W"
+    "X Pause"
    ],
    "loss": 0.0,
    "beyond_margin": false,
@@ -364,7 +408,13 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O2": 4.9,
+    "O3": 3.6,
+    "O4": 5.4,
+    "O5": 1.8
+   }
   },
   {
    "board": "4",
@@ -374,10 +424,10 @@
     "O2 Sprint to E10"
    ],
    "on": [
-    "O1 Sprint to F7"
+    "O1 Sprint to F10"
    ],
-   "loss": 6.8,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "separation",
@@ -415,7 +465,13 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O2": 7.8,
+    "O3": -3.2,
+    "O4": 1.2,
+    "O5": -2.7
+   }
   },
   {
    "board": "5 close",
@@ -465,7 +521,13 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -4.8,
+    "O3": -0.9,
+    "O4": -7.2,
+    "O5": -1.1
+   }
   },
   {
    "board": "5 short",
@@ -515,20 +577,25 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -4.8,
+    "O3": -7.3,
+    "O4": -7.2,
+    "O5": -1.1
+   }
   },
   {
    "board": "6",
-   "same": false,
+   "same": true,
    "off": [
     "O2 Move to A5"
    ],
    "on": [
-    "O1 Move to J10",
-    "O4 Pass to O2"
+    "O2 Move to A5"
    ],
-   "loss": 2.55,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "separation",
@@ -566,20 +633,26 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -0.9,
+    "O3": -1.1,
+    "O5": -1.1
+   }
   },
   {
    "board": "7 phase 2",
-   "same": false,
+   "same": true,
    "off": [
     "O3 Sprint to E9",
     "O2 Sprint to E10"
    ],
    "on": [
-    "O3 Move to I4"
+    "O3 Sprint to E9",
+    "O2 Sprint to E10"
    ],
-   "loss": 4.42,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "mismatch",
@@ -617,16 +690,21 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -6.1,
+    "O2": 15.0,
+    "O4": 1.6
+   }
   },
   {
    "board": "7 phase 6",
    "same": true,
    "off": [
-    "O5 Move to Q4"
+    "O3 Shot (mid)"
    ],
    "on": [
-    "O5 Move to Q4"
+    "O3 Shot (mid)"
    ],
    "loss": 0,
    "beyond_margin": false,
@@ -667,7 +745,8 @@
      "gap": 0,
      "defence": "run down"
     }
-   ]
+   ],
+   "looks_changed": {}
   },
   {
    "board": "8",
@@ -717,14 +796,20 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -7.2,
+    "O3": -3.6,
+    "O4": -5.4,
+    "O5": -1.5
+   }
   },
   {
    "board": "9",
    "same": false,
    "off": [
-    "O1 Quick Step to K4",
-    "O Hesitate"
+    "O1 Move to J3",
+    "O2 Move to A7"
    ],
    "on": [
     "O1 Move to J3",
@@ -769,18 +854,24 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": 10.0,
+    "O2": -3.4,
+    "O3": -2.4,
+    "O4": 7.0
+   }
   },
   {
    "board": "10 good odds",
-   "same": true,
+   "same": false,
    "off": [
-    "X3 Sprint to O9"
+    "X5 Move to O3 facing E"
    ],
    "on": [
-    "X3 Sprint to O9"
+    "X5 Move to N3 facing W"
    ],
-   "loss": 0.42,
+   "loss": 0.0,
    "beyond_margin": false,
    "goals": [
     {
@@ -819,16 +910,19 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O5": 1.8
+   }
   },
   {
    "board": "10 bad odds",
    "same": true,
    "off": [
-    "X2 Quick Step to C6"
+    "X4 Move to B4 facing SW"
    ],
    "on": [
-    "X2 Quick Step to C6"
+    "X4 Move to B4 facing SW"
    ],
    "loss": 0.0,
    "beyond_margin": false,
@@ -869,20 +963,22 @@
      "gap": 1,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O4": 0.5
+   }
   },
   {
    "board": "11 early",
    "same": false,
    "off": [
-    "O2 Move to A7",
-    "O1 Sprint to J10"
+    "O2 Move to A5"
    ],
    "on": [
-    "O2 Sprint to A7"
+    "O2 Move to A7"
    ],
-   "loss": 2.55,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "penetration",
@@ -920,7 +1016,11 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -2.7,
+    "O3": -1.8
+   }
   },
   {
    "board": "11 final phase",
@@ -970,20 +1070,24 @@
      "gap": 0,
      "defence": "run down"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": -2.7,
+    "O2": -3.0,
+    "O3": -1.8
+   }
   },
   {
    "board": "12",
-   "same": false,
+   "same": true,
    "off": [
-    "X4 Move to L8 facing NW"
+    "X3 Move to L7 facing SW"
    ],
    "on": [
-    "X5 Move to N3 facing NW",
-    "X1 Steal"
+    "X3 Move to L7 facing SW"
    ],
-   "loss": 3.02,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "penetration",
@@ -1021,14 +1125,18 @@
      "gap": 1,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O3": 5.2,
+    "O4": -0.6
+   }
   },
   {
    "board": "13",
    "same": false,
    "off": [
     "O2 Move to B8",
-    "O3 Sprint to N5"
+    "O3 Move to N5"
    ],
    "on": [
     "O5 Screen, T SW"
@@ -1072,18 +1180,23 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O2": -4.5,
+    "O3": -3.6,
+    "O5": -3.6
+   }
   },
   {
    "board": "14",
    "same": true,
    "off": [
     "O1 Move to K10",
-    "O3 Quick Step to P8"
+    "O1 Quick Step to L10"
    ],
    "on": [
     "O1 Move to K10",
-    "O3 Quick Step to P8"
+    "O1 Quick Step to L10"
    ],
    "loss": 0.0,
    "beyond_margin": false,
@@ -1124,20 +1237,26 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O2": -4.5,
+    "O3": 6.0,
+    "O4": -5.0,
+    "O5": -5.0
+   }
   },
   {
    "board": "15",
    "same": false,
    "off": [
-    "O2 Move to C8",
-    "O1 Move to H10"
-   ],
-   "on": [
     "O2 Quick Step to B8",
     "O1 Quick Step to H10"
    ],
-   "loss": 0.0,
+   "on": [
+    "O2 Quick Step to C8",
+    "O1 Quick Step to H10"
+   ],
+   "loss": 0.66,
    "beyond_margin": false,
    "goals": [
     {
@@ -1176,21 +1295,28 @@
      "gap": 1,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O1": 6.0,
+    "O2": 6.0,
+    "O3": -2.5,
+    "O4": -2.0,
+    "O5": -1.5
+   }
   },
   {
    "board": "16",
    "same": false,
    "off": [
     "O2 Move to A5",
-    "O1 Move to H10"
+    "O1 Move to J10"
    ],
    "on": [
-    "O1 Quick Step to J10",
-    "O4 Move to A3"
+    "O2 Move to A5",
+    "O1 Quick Step to H10"
    ],
-   "loss": 1.47,
-   "beyond_margin": true,
+   "loss": 0.0,
+   "beyond_margin": false,
    "goals": [
     {
      "kind": "penetration",
@@ -1228,13 +1354,17 @@
      "gap": 2,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {
+    "O3": -2.7,
+    "O4": -5.0,
+    "O5": -1.5
+   }
   },
   {
    "board": "C2",
-   "same": false,
+   "same": true,
    "off": [
-    "O2 Move to C9",
     "O1 Pass to O2"
    ],
    "on": [
@@ -1279,13 +1409,14 @@
      "gap": 0,
      "defence": "concede"
     }
-   ]
+   ],
+   "looks_changed": {}
   }
  ],
  "summary": {
-  "shot_now": "0 of 0 still shoot",
-  "dropped": "4 of 6 dropped, same choice as without goals",
+  "shot_now": "2 of 2 still shoot",
+  "dropped": "6 of 6 have no set-up goal left; 4 of 4 with nothing left choose as without goals",
   "broken": "6 of 6 moved on",
-  "any_chance": "8 of 22 choices the same; 9 cost more than the margin; largest cost 6.8"
+  "any_chance": "13 of 22 choices the same; 2 cost more than the margin; largest cost 2.8"
  }
 }

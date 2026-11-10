@@ -957,6 +957,14 @@
   }
  },
  "equivalence": {
+  "budget_on_200": {
+   "mismatches": 0,
+   "states": 200,
+   "searches": {
+    "compared": 6,
+    "equal": 6
+   }
+  },
   "cheap": {
    "mismatches": 0,
    "states": 10,
@@ -979,6 +987,14 @@
    "searches": {
     "compared": 10,
     "equal": 10
+   }
+  },
+  "default_200": {
+   "mismatches": 0,
+   "states": 200,
+   "searches": {
+    "compared": 6,
+    "equal": 6
    }
   },
   "like_with_like": {

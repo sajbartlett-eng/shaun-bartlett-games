@@ -1,0 +1,484 @@
+{
+ "setting": "base",
+ "depth": 4,
+ "cap_per_decision": 90.0,
+ "boards": {
+  "2 4": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "X2 Quick Step to D7"
+     ],
+     17.87
+    ],
+    [
+     2,
+     [
+      "X2 Quick Step to D7",
+      "X1 Steal"
+     ],
+     16.56
+    ],
+    [
+     3,
+     [
+      "X2 Quick Step to D7"
+     ],
+     16.56
+    ],
+    [
+     4,
+     [
+      "X2 Quick Step to D7"
+     ],
+     16.71
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.359
+    ],
+    [
+     2,
+     1.544
+    ],
+    [
+     3,
+     12.075
+    ],
+    [
+     4,
+     69.951
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 27575,
+   "seconds": 70.0
+  },
+  "2 12": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "X3 Sprint to O3"
+     ],
+     18.29
+    ],
+    [
+     2,
+     [
+      "X2 Quick Step to D7",
+      "X1 Steal"
+     ],
+     17.52
+    ],
+    [
+     3,
+     [
+      "X2 Quick Step to D7"
+     ],
+     17.52
+    ],
+    [
+     4,
+     [
+      "X2 Quick Step to D7"
+     ],
+     18.13
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.195
+    ],
+    [
+     2,
+     1.184
+    ],
+    [
+     3,
+     11.4
+    ],
+    [
+     4,
+     60.339
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 22210,
+   "seconds": 60.4
+  },
+  "7 phase 2": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "O3 Sprint to E9",
+      "O2 Sprint to E10"
+     ],
+     26.9
+    ],
+    [
+     2,
+     [
+      "O3 Sprint to E9",
+      "O2 Sprint to E10"
+     ],
+     26.9
+    ],
+    [
+     3,
+     [
+      "O3 Sprint to E9"
+     ],
+     29.45
+    ],
+    [
+     4,
+     [
+      "O3 Sprint to E9"
+     ],
+     32.88
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.221
+    ],
+    [
+     2,
+     0.955
+    ],
+    [
+     3,
+     9.322
+    ],
+    [
+     4,
+     64.265
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 20046,
+   "seconds": 64.3
+  },
+  "7 phase 6": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "O3 Shot (mid)"
+     ],
+     0
+    ],
+    [
+     2,
+     [
+      "O3 Shot (mid)"
+     ],
+     0
+    ],
+    [
+     3,
+     [
+      "O3 Shot (mid)"
+     ],
+     10
+    ],
+    [
+     4,
+     [
+      "O3 Shot (mid)"
+     ],
+     10
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.071
+    ],
+    [
+     2,
+     0.246
+    ],
+    [
+     3,
+     0.374
+    ],
+    [
+     4,
+     0.383
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 308,
+   "seconds": 0.4
+  },
+  "9": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "O1 Move to J3",
+      "O2 Move to A7"
+     ],
+     23.21
+    ],
+    [
+     2,
+     [
+      "O1 Move to J3",
+      "O2 Move to A7"
+     ],
+     23.21
+    ],
+    [
+     3,
+     [
+      "O1 Quick Step to K4",
+      "O2 Sprint to B8"
+     ],
+     28.23
+    ],
+    [
+     4,
+     [
+      "O1 Quick Step to K4",
+      "O2 Sprint to B8"
+     ],
+     28.23
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.231
+    ],
+    [
+     2,
+     0.763
+    ],
+    [
+     3,
+     6.009
+    ],
+    [
+     4,
+     29.91
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 16797,
+   "seconds": 29.9
+  },
+  "10 good odds": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "X4 Steal"
+     ],
+     11.3
+    ],
+    [
+     2,
+     [
+      "X5 Move to O3 facing E"
+     ],
+     11.3
+    ],
+    [
+     3,
+     [
+      "X5 Quick Step to O3"
+     ],
+     12.38
+    ],
+    [
+     4,
+     [
+      "X4 Steal"
+     ],
+     12.25
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.25
+    ],
+    [
+     2,
+     1.202
+    ],
+    [
+     3,
+     9.907
+    ],
+    [
+     4,
+     35.886
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 16751,
+   "seconds": 35.9
+  },
+  "10 bad odds": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "X Pause"
+     ],
+     27.04
+    ],
+    [
+     2,
+     [
+      "X4 Move to B4 facing SW"
+     ],
+     27.04
+    ],
+    [
+     3,
+     [
+      "X4 Move to B4 facing SW",
+      "X Pause"
+     ],
+     30.18
+    ],
+    [
+     4,
+     [
+      "X4 Move to B4 facing SW"
+     ],
+     30.18
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.202
+    ],
+    [
+     2,
+     1.015
+    ],
+    [
+     3,
+     9.888
+    ],
+    [
+     4,
+     70.748
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 21610,
+   "seconds": 70.8
+  },
+  "16": {
+   "depth_used": 4,
+   "trace": [
+    [
+     1,
+     [
+      "O2 Move to A5",
+      "O1 Quick Step to J10"
+     ],
+     21.94
+    ],
+    [
+     2,
+     [
+      "O2 Move to A5",
+      "O1 Move to J10"
+     ],
+     19.01
+    ],
+    [
+     3,
+     [
+      "O2 Move to A5",
+      "O1 Move to H10"
+     ],
+     21.26
+    ],
+    [
+     4,
+     [
+      "O2 Move to A5",
+      "O1 Move to H10"
+     ],
+     21.94
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     0.26
+    ],
+    [
+     2,
+     1.03
+    ],
+    [
+     3,
+     9.335
+    ],
+    [
+     4,
+     52.388
+    ]
+   ],
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "leaves": 27998,
+   "seconds": 52.4
+  }
+ }
+}
