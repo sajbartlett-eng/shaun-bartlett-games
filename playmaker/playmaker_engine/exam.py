@@ -245,7 +245,7 @@ def p6():
 def p7():
     o, x, ar = ['I11', 'B7', 'H6', 'A3', 'Q3'], ['I10', 'C7', 'H5', 'G4', 'J4'], ['N', 'W', 'N', 'NW', 'NE']
     early = board(o, x, ar, ball=2, clock=10)
-    late = board(o, x, ar, ball=2, clock=2, tok_o=2)        # step 10: the offence's final turn of the possession
+    late = board(o, x, ar, ball=2, clock=2, tok_o=1)        # D-117: the offence's final turn, whatever it does (1 token)
 
     def check(lt):
         te, tl = lt['phase 2'], lt['phase 6']

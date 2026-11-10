@@ -1,0 +1,92 @@
+{
+ "13: O5 in the lane, and cleared to J6": {
+  "off": {
+   "first": 22.06,
+   "second": 22.06,
+   "difference": 0.0,
+   "margin": 0.92,
+   "beyond_margin": false
+  },
+  "stable": {
+   "first": 22.06,
+   "second": 22.06,
+   "difference": 0.0,
+   "margin": 0.92,
+   "beyond_margin": false
+  },
+  "reach": {
+   "first": 24.0,
+   "second": 24.0,
+   "difference": 0.0,
+   "margin": 0.92,
+   "beyond_margin": false
+  },
+  "both": {
+   "first": 24.0,
+   "second": 24.0,
+   "difference": 0.0,
+   "margin": 0.92,
+   "beyond_margin": false
+  }
+ },
+ "16: X2 fresh, and spent (Move and Quick Step used)": {
+  "off": {
+   "first": 18.92,
+   "second": 20.54,
+   "difference": 1.62,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "stable": {
+   "first": 18.92,
+   "second": 20.54,
+   "difference": 1.62,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "reach": {
+   "first": 22.55,
+   "second": 23.52,
+   "difference": 0.96,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "both": {
+   "first": 22.55,
+   "second": 23.52,
+   "difference": 0.96,
+   "margin": 0.92,
+   "beyond_margin": true
+  }
+ },
+ "12: help (X1) near the mismatch at D4, and drawn away to I8": {
+  "off": {
+   "first": 24.61,
+   "second": 31.04,
+   "difference": 6.43,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "stable": {
+   "first": 24.61,
+   "second": 31.04,
+   "difference": 6.43,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "reach": {
+   "first": 24.61,
+   "second": 31.04,
+   "difference": 6.43,
+   "margin": 0.92,
+   "beyond_margin": true
+  },
+  "both": {
+   "first": 24.61,
+   "second": 31.04,
+   "difference": 6.43,
+   "margin": 0.92,
+   "beyond_margin": true
+  }
+ }
+}

@@ -18,6 +18,21 @@ from .scoring import score
 from .decide import Read, CONFIG
 
 VMIN, VMAX = CONFIG['eval']['value_bounds']
+FORCING = ('shot', 'contest', 'steal', 'end_turn', 'intercept', 'pause', 'hesitate')
+
+
+def stable_cfg():
+    """Step 12: the stable-search switch and its measured numbers (ai_profiles.json 'search')."""
+    return CONFIG.get('search', {})
+
+
+def phase_of(s):
+    return str(min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1)))
+
+
+def mid_turn(s):
+    """A side between its two actions: not a completed team turn."""
+    return s.stage == 'play' and s.turn_n > 0 and not s.pending
 
 
 class Timeout(Exception):
@@ -234,6 +249,15 @@ class Searcher:
         self.lam = profile['opponent_model']
         self.habit = None                # All-Star scouting: the human's most frequent first action by stage
         self.habit_weight = 0.0
+        cfg = stable_cfg()
+        self.stable = bool(cfg.get('stable', False))         # step 12: the stable-search rule (off by default)
+        self.ext_cap = int(cfg.get('extension_cap', 2))
+        self.margin = cfg.get('stable_margin', {})
+        self.tempo = cfg.get('tempo', {})
+        self.extensions = 0
+        self.cap_hits = 0
+        self.trace = []                  # the root choice at each completed depth: [(depth, turn, value)]
+        self.kept = 0                    # times 'change only for a clear reason' kept the earlier choice
 
     def check(self):
         if time.time() > self.deadline:
@@ -241,7 +265,53 @@ class Searcher:
 
     def leaf(self, s):
         self.leaves += 1
-        return self.evaluate(s)
+        v = self.evaluate(s)
+        if self.stable and self.tempo and not isinstance(s, ChanceNode) and s.stage == 'play':
+            # the measured tempo term: the same position reads higher with the offence to act; a leaf is read as the
+            # mean of the two (the gap measured on the step 3n positions, ai_profiles.json search.tempo)
+            t = float(self.tempo.get(phase_of(s), 0.0))
+            v += -t / 2 if actor(s) == 'O' else t / 2
+        return v
+
+    def unsettled(self, s):
+        """Step 12, 'play on while pending': why this position isn't a quiet point (None if it is)."""
+        if s.stage != 'play':
+            return 'stage'                            # a declared shot's reaction, a contest choice, a forced shot
+        if s.pending:
+            return 'pass'                             # a pass's dice still to come
+        if mid_turn(s):
+            return 'mid'                              # between a side's two actions
+        if actor(s) == 'O':
+            r = Read(s, k=0, looks_per=3)
+            sn = r.shot_now()
+            if sn is not None and sn > r.possession() + 1e-9:
+                return 'shot'                         # a shot now worth more than the possession
+        return None
+
+    def extend(self, s, why, depth, alpha, beta):
+        """Play on with only the forcing replies until quiet (at most ext_cap extra team turns)."""
+        side = actor(s)
+        acts = legal_actions(s)
+        if why == 'mid':
+            ts = self.turns_of(s)                     # the side completes its turn
+            turns_ = [t for _, t in ts]
+        else:
+            kinds = ('shot',) if why == 'shot' else FORCING
+            turns_ = [(a,) for a in acts if a.kind in kinds or why == 'stage' and s.stage != 'reaction']
+        if not turns_:
+            return self.leaf(s)
+        self.extensions += 1
+        best = None
+        if why == 'shot':
+            best = Read(s).possession()             # the offence may also not shoot: what the possession is worth
+        for t in turns_:
+            child = play_turn(s, t)
+            d = depth if why == 'mid' or (not isinstance(child, ChanceNode) and child.stage != 'over'
+                                          and actor(child) == side and mid_turn(child)) else depth - 1
+            v = self.value(child, d, VMIN, VMAX)
+            if best is None or (v > best if side == 'O' else v < best):
+                best = v
+        return best
 
     def value(self, node, depth, alpha, beta):
         """The value of a state or ChanceNode with `depth` turn plies to go (offence's view)."""
@@ -252,6 +322,13 @@ class Searcher:
         if s.stage == 'over':
             return terminal_value(s)
         if depth <= 0:
+            if self.stable:
+                why = self.unsettled(s)
+                if why is not None:
+                    if depth <= -self.ext_cap and why != 'mid':
+                        self.cap_hits += 1
+                        return self.leaf(s)
+                    return self.extend(s, why, depth, alpha, beta)
             return self.leaf(s)
         key = (zobrist(s), depth)
         hit = self.tt.get(key)
@@ -274,7 +351,12 @@ class Searcher:
             w = [t for _, t in ts if t[0].kind in ('end_turn', 'pause', 'hesitate', 'forfeit')]
             passive = self.value(play_turn(s, w[0]), depth - 1, VMIN, VMAX) if w else None
         for _, t in ts:
-            v = self.value(play_turn(s, t), depth - 1, VMIN if mix else alpha, VMAX if mix else beta)
+            child = play_turn(s, t)
+            d = depth - 1
+            if self.stable and not isinstance(child, ChanceNode) and child.stage != 'over' and actor(child) == side \
+                    and mid_turn(child):
+                d = depth                    # 'quiet points': look-ahead counts completed team turns only
+            v = self.value(child, d, VMIN if mix else alpha, VMAX if mix else beta)
             if side == 'O':
                 if best is None or v > best[0]:
                     best = (v, t)
@@ -407,19 +489,29 @@ class Searcher:
                 results.append((sign * q, t))
                 continue
             n = play_turn(s, t)
-            results.append((self.leaf(n) if not isinstance(n, ChanceNode) else self.value(n, 0, VMIN, VMAX), t))
+            if self.stable:
+                results.append((self.value(n, self._child_depth(s, n, 1), VMIN, VMAX), t))
+            else:
+                results.append((self.leaf(n) if not isinstance(n, ChanceNode) else self.value(n, 0, VMIN, VMAX), t))
         self.deadline = deadline
         reached = 1
         self.partial = 0
+        by_depth = {1: list(results)}
+        self._note(1, results, side)                    # the root choice at each completed depth (a record only)
         for depth in range(2, max_depth + 1):
             out = []
             try:
                 for _, t in sorted(results, key=lambda r: -r[0] if side == 'O' else r[0]):
-                    v = self.value(play_turn(s, t), depth - 1, VMIN, VMAX)
+                    n = play_turn(s, t)
+                    v = self.value(n, self._child_depth(s, n, depth) if self.stable else depth - 1, VMIN, VMAX)
                     out.append((v, t))
                 results = out
                 reached = depth
+                by_depth[depth] = list(out)
+                self._note(depth, out, side)
             except Timeout:
+                if self.stable:
+                    break                    # 'like with like': only completed depths count
                 # a partial iteration: the principal turn was re-searched first; a turn searched deeper replaces it
                 # only if it is better at that depth
                 self.partial = len(out)
@@ -430,5 +522,40 @@ class Searcher:
                         done = {r[1] for r in out}
                         results = out + [r for r in results if r[1] not in done]
                 break
+        if self.stable:
+            results, reached = self._settle(s, by_depth, side)
         results.sort(key=lambda r: -r[0] if side == 'O' else r[0])
         return results, reached
+
+    def _child_depth(self, s, child, depth):
+        """The depth left after a root turn: a turn that leaves the same side mid-turn isn't a completed team turn."""
+        if not isinstance(child, ChanceNode) and child.stage != 'over' and actor(child) == actor(s) and mid_turn(child):
+            return depth
+        return depth - 1
+
+    def _note(self, depth, res, side):
+        best = max(res, key=lambda r: r[0]) if side == 'O' else min(res, key=lambda r: r[0])
+        self.trace.append((depth, best[1], best[0]))
+
+    def _settle(self, s, by_depth, side):
+        """Step 12, 'like with like' and 'change only for a clear reason': the answer comes from the deepest completed
+        depth that ends on the same side's completed turn as the look-ahead's pairs (even depths: an offence turn and
+        the reply), else depth 1; its best turn replaces the best of two depths before only if it beats it by more
+        than the reading's margin of error at this phase."""
+        done = sorted(by_depth)
+        even = [d for d in done if d % 2 == 0]
+        d = even[-1] if even else done[-1]
+        res = list(by_depth[d])
+        sign = 1 if side == 'O' else -1
+        best = max(res, key=lambda r: sign * r[0])
+        prev = by_depth.get(d - 2)
+        if prev:
+            p_turn = max(prev, key=lambda r: sign * r[0])[1]
+            p_now = next((r for r in res if r[1] == p_turn), None)
+            margin = float(self.margin.get(phase_of(s), 0.0)) if isinstance(self.margin, dict) else float(self.margin)
+            if p_now is not None and p_turn != best[1] and sign * (best[0] - p_now[0]) <= margin:
+                self.kept += 1
+                res = [(best[0], p_turn) if r[1] == p_turn else r for r in res]
+                res.sort(key=lambda r: (-sign * r[0], 0 if r[1] == p_turn else 1))
+                return res, d
+        return res, d
