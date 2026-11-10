@@ -483,6 +483,19 @@ Shaun, 10 Nov 2026 · **Ruled, built.**
 only. From step 12 on, every exam table leads with the fixed look-ahead (2 team-turn pairs: an offence turn and the
 defence's reply, twice) and gives the clock result beside it. · Source: Shaun, 10 Nov 2026 · **Ruled.**
 
+### Shaun, 10 Nov 2026 (step 13 prompt): the answers to step 12
+
+**D-119. The tempo term is a measured term.** The same position reads 2.3 points better with the offence to act than
+with the defence (1.7 in phase 1 to 2.9 in phase 5; `search.tempo`, from `tools/stable_measures.py`). It is accepted as
+measured, not chosen. Its switch stays off. · Source: Shaun, 10 Nov 2026 · **Ruled.**
+
+**D-120. The reading's margin of error** (one standard error by phase: 0.92, 1.05, 1.22, 1.34, 1.42, 1.52;
+`search.stable_margin`) is accepted as **provisional**. · Source: Shaun, 10 Nov 2026 · **Ruled, provisional.**
+
+**D-115, extended.** Teammates in an attacker's path are part of the reading: a look at the rim or the post counts only
+from the squares the attacker can reach in time, by the movement rules, teammates included. Built in step 13, part B. ·
+Source: Shaun, 10 Nov 2026 · **Ruled;** to build in step 13, part B.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
