@@ -1363,7 +1363,7 @@ const PMEngine = (() => {
   // map fitted to what positions went on to earn, per phase and side to act (the weights file's calibration block:
   // knots x -> y, straight lines between and beyond them)
   function setCalibrated(on) { D.config.eval.calibrated = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.calibrated; }
-  // step 18b: eval.settle_shots (off). (1) A declared shot at the search's horizon is valued by playing the reaction out
+  // step 18b: eval.settle_shots (on by default since D-148). (1) A declared shot at the search's horizon is valued by playing the reaction out
   // (Searcher.settled); (2) D-145: no reading is above the ceiling, before or after the calibrated map.
   function setSettle(on) { D.config.eval.settle_shots = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.settle_shots; }
   const settleOn = () => D.config.eval.settle_shots === true;
@@ -1389,6 +1389,10 @@ const PMEngine = (() => {
     ctx._ceil.set(tg, best);
     return best;
   }
+  // step 18c: eval.help_readings (off). The floor: with the offence to act, a position is worth at least the best
+  // shot the ball handler can release this turn, settled by the rules (Searcher.floor)
+  function setHelp(on) { D.config.eval.help_readings = on === true || on === 'true'; return D.config.eval.help_readings; }
+  const helpOn = () => D.config.eval.help_readings === true;
   let TABLETOP_MAP = true;                               // a measuring hook: false reads the table with the app's map
   function setTabletopMap(on) { TABLETOP_MAP = !(on === false || on === 'false'); READS = new Map(); READS_OLD = new Map(); return TABLETOP_MAP; }
   const calibratedOn = () => D.config.eval.calibrated === true && D.learned !== null && !!D.learned.calibration && !learnedOn();
@@ -2375,7 +2379,8 @@ const PMEngine = (() => {
       this.goals = sc.goals === true && D.config.eval.advantages === true;   // step 16, stage 4 (search.Searcher)
       this.phis = new Map(); this.touches = new Map();
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
-      this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots, off)
+      this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
+      this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
@@ -2384,6 +2389,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
+      if (this.help && !isChance(s) && s.stage === 'play' && !s.pending && actor(s) === 'O') v = this.floor(s, v, key);   // step 18c
       if (this.tempoOn && !isChance(s) && s.stage === 'play') {
         const t = this.tempo[phaseOf(s)] || 0.0;
         v += actor(s) === 'O' ? -t / 2 : t / 2;
@@ -2396,6 +2402,38 @@ const PMEngine = (() => {
     // the reaction's first action only movements ending next to the shooter are played, and after a movement only a
     // Contest, a Steal or ending it (no other movement can change the Contest or a Steal: the reaction is at most two
     // actions and those are its last).
+    // step 18c (search.Searcher.floor), the first help reading: the drive priced by the rules. With the offence to act
+    // in open play the possession is worth at least the best shot the ball handler can release this turn: his shot
+    // from where he stands, or after one movement, each settled by the rules. The reading names the candidates (its
+    // looks released now, best first); a candidate whose reading is no better than the value so far can't raise it.
+    floor(s, v, z) {
+      const key = z === undefined ? zobrist(s) : z;
+      const hit = this.fcache.get(key);
+      if (hit !== undefined) return hit[0];
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      let best = [v, -1, ''], acts = null;
+      const looks = readOf(s).looks[s.ball] || [];
+      for (const lk of looks) {
+        if (!lk.now) continue;
+        if (banked + lk.base <= best[0]) break;
+        let n = s;
+        if (lk.route !== 'shoot') {
+          if (acts === null) acts = legalActions(s);
+          const a = acts.find(x => MOVEMENT.has(x.kind) && x.piece === s.ball && x.dest === lk.c);
+          if (!a) continue;
+          n = apply(s, a);
+          if (isChance(n) || n.stage !== 'play' || actor(n) !== 'O') continue;
+        }
+        for (const b of legalActions(n)) {
+          if (b.kind !== 'shot') continue;
+          const w = this.settleNode(apply(n, b));
+          if (w > best[0]) best = [w, lk.c, b.shot];
+        }
+      }
+      this.fcache.set(key, best);
+      return best[0];
+    }
     settled(s, z) {
       const key = z === undefined ? zobrist(s) : z;
       let v = this.scache.get(key);
@@ -2944,7 +2982,7 @@ const PMEngine = (() => {
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
-  return { setCalibrated, setTabletopMap, setSettle, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

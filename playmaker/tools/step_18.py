@@ -309,8 +309,9 @@ def cmd_diagnose(names='1,3,6,8,9,10,11', keep='300', cap='1500', switches=''):
         tag = name.replace(' ', '_') + ('_' + switches.replace(',', '_') if switches else '')
         jf, of = os.path.join(WORK, f'diag_{tag}.job.json'), os.path.join(WORK, f'diag_{tag}.out.json')
         json.dump(dict(state=J.state_json(s), ctx=J.ctx_json(s.ctx), profile=prof, judge=form, keep=int(keep), keep_accepted=50,
-                       cap_s=float(cap), switches={k: True for k in switches.split(',') if k and k != 'settle'} or None,
-                           settle_shots='settle' in switches.split(',')), open(jf, 'w'))
+                       cap_s=float(cap), switches={k: True for k in switches.split(',') if k and k not in ('settle', 'nosettle', 'help')} or None,
+                           settle_shots=True if 'settle' in switches.split(',') else False if 'nosettle' in switches.split(',') else None,
+                           help_readings=True if 'help' in switches.split(',') else None), open(jf, 'w'))
         return subprocess.Popen(['node', '--max-old-space-size=3072', os.path.join(HERE, 'diagnose_18.js'), jf, of]), d, of
     queue = list(todo)
     while queue or running:
@@ -397,8 +398,9 @@ def cmd_regret(n_off='48', n_def='12', keep='200', cap='900', switches=''):
             p = queue.pop(0)
             jf, of = os.path.join(WORK, f'{tag}_{p["id"]}.job.json'), os.path.join(WORK, f'{tag}_{p["id"]}.out.json')
             json.dump(dict(state=p['state'], ctx=contexts[p['ctx']], profile=prof, judge={}, keep=int(keep), cap_s=float(cap),
-                           switches={k: True for k in switches.split(',') if k and k != 'settle'} or None,
-                           settle_shots='settle' in switches.split(',')), open(jf, 'w'))
+                           switches={k: True for k in switches.split(',') if k and k not in ('settle', 'nosettle', 'help')} or None,
+                           settle_shots=True if 'settle' in switches.split(',') else False if 'nosettle' in switches.split(',') else None,
+                           help_readings=True if 'help' in switches.split(',') else None), open(jf, 'w'))
             running.append((subprocess.Popen(['node', '--max-old-space-size=3072', os.path.join(HERE, 'diagnose_18.js'), jf, of]), p, of))
         for r in list(running):
             if r[0].poll() is not None:
