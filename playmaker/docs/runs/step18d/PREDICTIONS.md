@@ -37,3 +37,6 @@
 - Cost: 0.9.
 - About the same as under today's rules (1.2 points a decision, the choice best on 4 of 11): the rule changes which
   closeout is right, not how many of the defence's actions are generated.
+- **Result:** 0.9 core-hours. **Right.** 1.35 points a decision (interval 0.46 to 2.25) against 1.24 under today's
+  rules; the choice best on 4 of 11 both times; all 7 losses a first action never generated. Three of the four
+  largest are "Move next to the ball handler, then Steal".

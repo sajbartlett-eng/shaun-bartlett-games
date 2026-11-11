@@ -1,0 +1,121 @@
+{
+ "note": "two runs; seconds to finish 1 pair on the hand boards' 22 decisions; median and 9 decisions in 10",
+ "runs": [
+  {
+   "off": {
+    "rookie": {
+     "median": 0.198,
+     "nine_in_ten": 0.295
+    },
+    "starter": {
+     "median": 0.685,
+     "nine_in_ten": 0.838
+    },
+    "allstar": {
+     "median": 0.961,
+     "nine_in_ten": 1.515
+    }
+   },
+   "1": {
+    "rookie": {
+     "median": 0.202,
+     "nine_in_ten": 0.276
+    },
+    "starter": {
+     "median": 0.592,
+     "nine_in_ten": 0.817
+    },
+    "allstar": {
+     "median": 1.092,
+     "nine_in_ten": 1.551
+    }
+   },
+   "2": {
+    "rookie": {
+     "median": 0.171,
+     "nine_in_ten": 0.286
+    },
+    "starter": {
+     "median": 0.607,
+     "nine_in_ten": 0.877
+    },
+    "allstar": {
+     "median": 1.025,
+     "nine_in_ten": 1.411
+    }
+   },
+   "3": {
+    "rookie": {
+     "median": 0.179,
+     "nine_in_ten": 0.297
+    },
+    "starter": {
+     "median": 0.692,
+     "nine_in_ten": 0.903
+    },
+    "allstar": {
+     "median": 1.052,
+     "nine_in_ten": 1.441
+    }
+   }
+  },
+  {
+   "off": {
+    "rookie": {
+     "median": 0.17,
+     "nine_in_ten": 0.304
+    },
+    "starter": {
+     "median": 0.582,
+     "nine_in_ten": 0.795
+    },
+    "allstar": {
+     "median": 1.074,
+     "nine_in_ten": 1.371
+    }
+   },
+   "1": {
+    "rookie": {
+     "median": 0.193,
+     "nine_in_ten": 0.296
+    },
+    "starter": {
+     "median": 0.631,
+     "nine_in_ten": 0.922
+    },
+    "allstar": {
+     "median": 1.109,
+     "nine_in_ten": 1.538
+    }
+   },
+   "2": {
+    "rookie": {
+     "median": 0.2,
+     "nine_in_ten": 0.279
+    },
+    "starter": {
+     "median": 0.625,
+     "nine_in_ten": 0.855
+    },
+    "allstar": {
+     "median": 1.057,
+     "nine_in_ten": 1.623
+    }
+   },
+   "3": {
+    "rookie": {
+     "median": 0.191,
+     "nine_in_ten": 0.325
+    },
+    "starter": {
+     "median": 0.714,
+     "nine_in_ten": 0.972
+    },
+    "allstar": {
+     "median": 1.067,
+     "nine_in_ten": 1.421
+    }
+   }
+  }
+ ]
+}

@@ -13,6 +13,7 @@
   your closeout board a rushed Contest is worse than no Contest at size 3, and close to it at size 1.
 - **Your closeout line is right under the rule, and the computer only half finds it.** It Moves in and Contests in
   the reaction every time. It never Quick Steps closer first: that move isn't on its list.
+- **Speed: the rule costs nothing that shows.** The Rookie stays at its desktop target (0.30 s), as it was.
 - **Game EB3F5B isn't replayed.** A game code is random, so the game can't be rebuilt from it. I need the log file.
 
 ## The cases the ruling on "following" doesn't settle
@@ -127,16 +128,27 @@ log I can replay it to O4's shot from A3 under today's rules and each size in a 
 
 ## Speed
 
-SPEED_PLACEHOLDER
+1 pair on 9 decisions in 10, in seconds, two runs each on an idle machine (`speed_two_runs.json`).
+
+| Level | Target: desktop, phone | Today's rules | Size 1 | Size 2 | Size 3 |
+|---|---|---|---|---|---|
+| **Rookie** | 0.3, 1.0 | **0.30, 0.30** | 0.28, 0.30 | 0.29, 0.28 | 0.30, 0.33 |
+| Starter | 1.0, 2.0 | 0.84, 0.80 | 0.82, 0.92 | 0.88, 0.86 | 0.90, 0.97 |
+| All-Star | 2.5, 3.0 | 1.52, 1.37 | 1.55, 1.54 | 1.41, 1.62 | 1.44, 1.42 |
+
+- **The Rookie sits at its desktop target with the rule and without it.** One run at size 3 read 0.33 and one
+  under today's rules read 0.304. The rule adds nothing clear: runs on this machine differ by more than the sizes do.
+- Starter and All-Star fit the desktop target at every size.
+- At the assumed phone speed (4 times slower) every level is over, as at step 18c.
 
 ## Compute against the estimate
 
-Estimate: about 8 core-hours. Used: about COMPUTE_TOTAL. Predictions: `docs/runs/step18d/PREDICTIONS.md`.
+Estimate: about 8 core-hours. Used: about 5. Predictions: `docs/runs/step18d/PREDICTIONS.md`.
 
 | Run | Predicted | Used | Against the prediction |
 |---|---|---|---|
 | Self-play, today's rules and three sizes | 3.0; a fifth to a third of shots rushed today | 3.22 | **wrong** on today's share (54%); right on the fall, the Contests, the points and the map |
-| The defence's list cost at size 2 | 0.9; about the same as today's | REGRET_USED | REGRET_VERDICT |
+| The defence's list cost at size 2 | 0.9; about the same as today's | 0.9 | right: 1.35 against 1.24, the choice best on 4 of 11 both times |
 | The boards, the closeout line, the agreement checks, speed | 2.3 | about 0.8 | the two defence boards were read from named turns, not a full pass |
 | A refit of the map | 2.5, only if its error rose | 0 | not needed |
 
@@ -162,8 +174,19 @@ None. `rules.control` is off. `RULES_CURRENT.md` is unchanged, and nothing is ch
 
 - **The two engines agree, switch off and at each size:** 600 positions and 4 whole searches each, and 300 shot
   reactions at each size: 0 mismatches (`js_equivalence_control_*.json`).
-- **`RULES_CURRENT.md` is unchanged:** RULES_CHECK_PLACEHOLDER
-- **Tests:** TESTS_PLACEHOLDER
+- **`RULES_CURRENT.md` is unchanged,** and `tests/test_rules_current.py` passes (18 tests). The rule has one line in
+  the register document (`docs/rules_register.md`), marked off and under test.
+- **With the rule off the computer plays as it did on `main`:** the same choice and value on all 22 hand-board
+  decisions at each of the three levels.
+- **Tests with the rule off** (`test_rules_current`, `test_static`, `test_step3n`, `test_step3m`): 78 pass, 13
+  expected failures, 1 fail.
+  - The fail is the timing test that sits at its limit: 2.49 s against 1.70 s, as at steps 18b and 18c. Not loosened.
+  - Exam board 2, which depends on the machine's speed, passed this time. It was an expected failure at 18c.
+  - The first run also failed the check that the register document is current. I regenerated it; it passes.
+- **The golden tests** (`test_golden_and_regression.py`): 8 of 8 pass with the rule off. With it on, at each size,
+  the golden game and 6 others pass and 1 recorded figure moves, as the rule intends: scenario 10's best first three
+  reads 15 where it read 12.75. The best Contest there was a Sprint closeout; under the rule the defence Contests
+  with a Move from a worse spot instead.
 
 **Three worked examples a coach could say:**
 
@@ -192,7 +215,10 @@ None. `rules.control` is off. `RULES_CURRENT.md` is unchanged, and nothing is ch
 - **What the defence's list misses, and what widening is worth.**
   - Under today's rules: 1.2 points a decision (step 18c), every loss an action never generated, "step in, then
     Steal" among them.
-  - Under the rule: REGRET_PLACEHOLDER
+  - Under size 2, the same 11 positions (`regret_control_2.json`): 1.35 points a decision (interval 0.46 to
+    2.25), the choice best on 4 of 11, all 7 losses an action never generated. No change.
+  - Three of the four largest losses are the same move: Move next to the ball handler, then Steal (4.1, 2.9 and
+    1.4 points).
   - On the closeout board the list misses the Quick Step closer and, worth 7.4 points, the Move next to the shooter.
   - I'd widen it by rule next: for each defender, a Move or Quick Step toward the ball handler and toward his own
     man, and a step in followed by a Steal.
@@ -210,4 +236,6 @@ None. `rules.control` is off. `RULES_CURRENT.md` is unchanged, and nothing is ch
 
 ## 6. Model for the next step
 
-MODEL_PLACEHOLDER
+Claude Fable 5.2, effort high: the next step either sets the chosen size as the app's rule and refits the reading
+to it, or widens the defence's list in both engines. Both change what every search does, where a wrong rule costs
+speed at once.
