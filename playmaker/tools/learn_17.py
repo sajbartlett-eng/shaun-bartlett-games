@@ -145,8 +145,8 @@ def h2h_stats(rows, delta=1.0):
 
 
 ENGINES = {         # the engines the harness knows, by name
-    'default': lambda: policy('allstar', 2, 0.5),
-    'default_b': lambda: policy('allstar', 2, 0.5),
+    'default': lambda: policy('allstar', 2, 0.5, calibrated=False),      # step 17's computer (before D-138)
+    'default_b': lambda: policy('allstar', 2, 0.5, calibrated=False),
     'learned': lambda: policy('allstar', 2, 0.5, learned=True),
     'calibrated': lambda: policy('allstar', 2, 0.5, calibrated=True),     # step 17D
     'learned_prior': lambda: policy('allstar', 2, 0.5, learned=True, prior=True),

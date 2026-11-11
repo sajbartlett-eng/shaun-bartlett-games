@@ -574,6 +574,42 @@ is fixed by calibrating to played-out results (`eval.calibrated`, off), not by h
 self-play is reported beside basketball's (about 1 in 100 possessions). · Source: Shaun, 10 Nov 2026 · **Ruled;**
 step 17D builds and measures it.
 
+### Shaun, 11 Nov 2026 (step 18 prompt and go): the rulings on step 17D
+
+**D-138. The calibrated reading is the default.** `eval.calibrated` is on by default, for every level, in both
+engines. Steps 17 and 17D are merged into `main` with that default. `eval.learned` stays off; its weights stay only
+for the golden tests. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18a).
+
+**D-139. Shot timing is a fidelity measure.** The calibrated computer takes 72% of its shots in phases 1 and 2. NBA
+teams shoot less early than the optimum: players hold the ball for a better shot and force late ones (Skinner, "The
+problem of shot selection in basketball", arXiv 1107.5793: four NBA seasons; the optimal strategy would add about
+0.05 points a possession). So earlier is the right direction. Shot timing is reported with every change from now on:
+shots by phase, the clock-out rate, decisions a possession. Shaun's playtests judge whether it needs tempering. It
+isn't tempered by hand. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-140. Stage 2 is built on the calibrated reading.** The learned weights are held. Ask again after step 18, on the
+better computer's play. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-141. The tabletop format.** Check calibration under the table's rules (a turnover costs −5 and play continues;
+the steal-foul and bonus differences in the register). Fit a separate tabletop map from tabletop-rules play if it
+differs materially. Then re-measure the table's shot-clock expiry rate (10 in 100 at step 3n, D-99). If it falls to
+about basketball's 1 in 100, record plan step 24 as closed. · Source: Shaun, 11 Nov 2026 · **Ruled;** step 18a
+measures it.
+
+**D-142. Other ages and standards.** The Senior Pro map is scaled by each level's own phase table, as D-114 did for
+the averages: at each phase, the scale is that level's phase table value over Senior Pro's, and what a position has
+left to earn = scale × map(reading ÷ scale). Senior Pro's scale is exactly 1. Junior Amateur is checked head to head
+(160 pairs against its uncalibrated self). Each level gets its own map later, once there is enough of its play.
+· Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18a).
+
+**D-143. Step 18 in two parts.** 18a: the merge, the level checks (Rookie and Starter, 160 pairs each against their
+uncalibrated selves; the levels still in order), the tabletop check (today's computer first, then the calibrated one,
+under the table's rules), the 19 boards on the calibrated computer (board 13 off the persistent list, D-134), and the
+candidate diagnosis. Cap about 9 core-hours. Stop and report. Then the fork: if the diagnosis says the computer isn't
+considering the right moves, 18b is the move prior, trained on a full-width search at 1 pair, cap 16 core-hours. If
+it says judgement, 18b is the third try at the learned weights, on calibrated play (2,500 possessions, about 8
+core-hours). Either way 18b waits for Shaun's go. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

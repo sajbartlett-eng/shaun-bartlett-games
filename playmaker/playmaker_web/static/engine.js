@@ -1359,19 +1359,39 @@ const PMEngine = (() => {
   // file (learned_weights.json): per phase, intercept + sum of weight x (reading - mean) / sd, in the file's order
   function setLearned(on) { D.config.eval.learned = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.learned; }
   const learnedOn = () => D.config.eval.learned === true && D.learned !== null;
-  // step 17D: the calibrated reading (eval.calibrated, off): today's reading of what is left to earn, passed through a
+  // step 17D: the calibrated reading (eval.calibrated; on by default since D-138): today's reading of what is left to earn, passed through a
   // map fitted to what positions went on to earn, per phase and side to act (the weights file's calibration block:
   // knots x -> y, straight lines between and beyond them)
   function setCalibrated(on) { D.config.eval.calibrated = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.calibrated; }
+  let TABLETOP_MAP = true;                               // a measuring hook: false reads the table with the app's map
+  function setTabletopMap(on) { TABLETOP_MAP = !(on === false || on === 'false'); READS = new Map(); READS_OLD = new Map(); return TABLETOP_MAP; }
   const calibratedOn = () => D.config.eval.calibrated === true && D.learned !== null && !!D.learned.calibration && !learnedOn();
+  // step 18a: the map was fitted on Senior Pro play; another age and standard scales it by its own phase table value
+  // over Senior Pro's at the same phase, as D-114 does for the averages (decide.calibration_scale). Senior Pro is 1.
+  function calibrationScale(s, phase) {
+    if (s.ctx.table === 'senior/pro') return 1.0;
+    const own = D.vcoarse[s.ctx.table] || D.vcoarse['senior/pro'] || {}, base = D.vcoarse['senior/pro'] || {};
+    const a = own['_phase' + phase], b = base['_phase' + phase];
+    if (!a || !b || a <= 0 || b <= 0) return 1.0;
+    return a / b;
+  }
   function calibrate(s, oToAct, r) {
-    const m = D.learned.calibration.maps[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1))) + (oToAct ? 'O' : 'X')];
+    const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
+    // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
+    const cal = (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) || D.learned.calibration;
+    const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
+    const q = calibrationScale(s, phase);
+    if (q !== 1.0) r = r / q;
     const x = m.x, y = m.y, n = x.length;
-    if (n === 1) return y[0];
-    let k = 0;
-    while (k < n - 2 && r > x[k + 1]) k++;
-    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k]);
+    let v;
+    if (n === 1) v = y[0];
+    else {
+      let k = 0;
+      while (k < n - 2 && r > x[k + 1]) k++;
+      v = y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k]);
+    }
+    return q === 1.0 ? v : q * v;
   }
   function learnedValue(s, f) {
     const m = D.learned.phases[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)))];
@@ -2842,7 +2862,7 @@ const PMEngine = (() => {
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
-  return { setCalibrated, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { setCalibrated, setTabletopMap, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

@@ -1,0 +1,130 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "searches": {
+  "compared": 4,
+  "equal": 4
+ },
+ "states": 1000,
+ "seconds_python": 113.1,
+ "seconds_js": 12.0,
+ "by_stage": {
+  "play": 963,
+  "over": 33,
+  "reaction": 4
+ },
+ "by_phase": {
+  "1": 632,
+  "2": 172,
+  "3": 104,
+  "5": 45,
+  "4": 47
+ },
+ "by_age": {
+  "senior": 317,
+  "youth": 347,
+  "junior": 336
+ },
+ "by_standard": {
+  "pro": 346,
+  "semi_pro": 316,
+  "amateur": 338
+ },
+ "digital": 499,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 1000,
+   "equal": 1000
+  },
+  "attacker_reach": {
+   "compared": 967,
+   "equal": 967
+  },
+  "defender_reach": {
+   "compared": 967,
+   "equal": 967
+  },
+  "defender_exact": {
+   "compared": 967,
+   "equal": 967
+  },
+  "threat_geo": {
+   "compared": 967,
+   "equal": 967
+  },
+  "cover_geo": {
+   "compared": 967,
+   "equal": 967
+  },
+  "leaf_geo": {
+   "compared": 967,
+   "equal": 967
+  },
+  "threat_exact": {
+   "compared": 967,
+   "equal": 967
+  },
+  "cover_exact": {
+   "compared": 967,
+   "equal": 967
+  },
+  "leaf_exact": {
+   "compared": 967,
+   "equal": 967
+  },
+  "quick": {
+   "compared": 967,
+   "equal": 967
+  },
+  "reach_map": {
+   "compared": 967,
+   "equal": 967
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 950,
+   "equal": 950
+  },
+  "features_exact": {
+   "compared": 950,
+   "equal": 950
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

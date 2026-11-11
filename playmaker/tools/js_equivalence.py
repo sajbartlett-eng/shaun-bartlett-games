@@ -42,6 +42,7 @@ def random_state(rng):
     rules = RC.with_rules(digital=digital)
     ctx = Context(off, dfn, rules, team_fouls=rng.randrange(0, 7) if digital else 0,
                   quarter_left=rng.randrange(0, 19) if digital else 0)
+    ctx.levels_key = (age, std)                    # step 18a: each age and standard reads its own phase table and scale
     squares = [(x, y) for x in range(B.W) for y in range(1, B.H + 1)]
     # the offence beyond the arc mostly, the defence between them and the rim mostly: positions a game can reach
     pick = rng.sample(squares, 10)
@@ -216,7 +217,8 @@ def main():
                     '(reach_cache, forcing, quiet_read, tt_order; "all"), to prove each changes nothing')
     ap.add_argument('--reach', action='store_true', help='eval.reach on, in both engines (the default since D-121)')
     ap.add_argument('--no-reach', action='store_true', help='eval.reach off, in both engines')
-    ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines')
+    ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines (the default since D-138)')
+    ap.add_argument('--no-calibrated', action='store_true', help='eval.calibrated off, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
@@ -236,6 +238,7 @@ def main():
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
+    args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
     _CFG['eval']['calibrated'] = args.calibrated
     from playmaker_engine.search import PARTS
     names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]

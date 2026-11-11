@@ -792,7 +792,10 @@ class Read:
             return v
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
-        return banked + calibrate(w['calibration'], s, self.o_to_act, v - banked)
+        cal = w['calibration']
+        if not s.ctx.rules.digital and self.cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
+            cal = w['calibration_tabletop']             # D-141: the table's own map
+        return banked + calibrate(cal, s, self.o_to_act, v - banked)
 
     def _hand_leaf(self):
         """V_leaf from the offence's point of view (expected possession value, game units): the best of the shot
@@ -1168,19 +1171,46 @@ def learned_value(s, f):
     return v
 
 
+def calibration_scale(s, phase):
+    """Step 18a (Shaun, 11 Nov 2026): the map was fitted on Senior Pro play. For any other age and standard it is
+    scaled by that level's phase table value over Senior Pro's at the same phase, as D-114 does for the averages.
+    Senior Pro is exactly 1."""
+    lv = tuple(getattr(s.ctx, 'levels_key', None) or ('senior', 'pro'))
+    if lv == ('senior', 'pro'):
+        return 1.0
+    own = _TABLES.get(lv)
+    if own is None:
+        own = _load_table(lv)
+    base = _TABLES.get(('senior', 'pro'))
+    if base is None:
+        base = _load_table(('senior', 'pro'))
+    a, b = own.get('_phase' + str(phase)), base.get('_phase' + str(phase))
+    if not a or not b or a <= 0 or b <= 0:
+        return 1.0
+    return a / b
+
+
 def calibrate(cal, s, o_to_act, r):
-    """Step 17D: the map for this phase and side to act (knots x -> y, straight lines between and beyond them)."""
-    m = cal['maps'].get(str(min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))) + ('O' if o_to_act else 'X'))
+    """Step 17D: the map for this phase and side to act (knots x -> y, straight lines between and beyond them).
+    Step 18a: for another age and standard, the reading and the result are both in that level's own scale
+    (calibration_scale): earned = scale x map(reading / scale)."""
+    phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
+    m = cal['maps'].get(str(phase) + ('O' if o_to_act else 'X'))
     if m is None:
         return r
+    q = calibration_scale(s, phase)
+    if q != 1.0:
+        r = r / q
     x, y = m['x'], m['y']
     n = len(x)
     if n == 1:
-        return y[0]
-    k = 0
-    while k < n - 2 and r > x[k + 1]:
-        k += 1
-    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k])
+        v = y[0]
+    else:
+        k = 0
+        while k < n - 2 and r > x[k + 1]:
+            k += 1
+        v = y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k])
+    return v if q == 1.0 else q * v
 
 
 def lp_max(c, A, b):

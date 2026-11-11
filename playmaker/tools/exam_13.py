@@ -67,6 +67,11 @@ def set_switches(eng, setting):
         eng.call('setBudget', 'true' if budget else 'false')
         eng.call('setAdvantages', 'true' if g is not None else 'false')
         eng.call('setGoals', 'true' if g == 'goals' else 'false')
+    cal = os.environ.get('EXAM13_CALIBRATED')          # step 18a: 0 measures the computer before D-138 (the default is on)
+    if cal is not None:
+        CONFIG['eval']['calibrated'] = cal != '0'
+        if eng is not None:
+            eng.call('setCalibrated', 'true' if cal != '0' else 'false')
 
 
 X12.SETTINGS = SETTINGS

@@ -1,0 +1,47 @@
+{
+ "engine": "cal",
+ "format": "tabletop",
+ "possessions": 200,
+ "positions": 3408,
+ "mean_points": 30.52,
+ "interval": [
+  29.85,
+  31.19
+ ],
+ "sd": 4.83,
+ "decisions_per_possession": 20.2,
+ "core_hours": 0.51,
+ "wall_minutes": 8.9,
+ "per_core_hour": 388,
+ "endings": {
+  "possessions": 200,
+  "shot": 1.0,
+  "no_shot": 0.0,
+  "clock_ran_out": 0.0,
+  "clock_ran_out_in_100": 0.0,
+  "shot_by_phase": {
+   "1": 0.39,
+   "2": 0.335,
+   "3": 0.185,
+   "4": 0.07,
+   "5": 0.02,
+   "6": 0.0
+  },
+  "mean_shot_phase": 2.0,
+  "decisions": 20.2,
+  "kinds": {
+   "free_throws": 7,
+   "shot": 193
+  },
+  "forced_shot": 0,
+  "forced_in_100": 0.0,
+  "forced_interval_in_100": [
+   0.0,
+   1.9
+  ],
+  "clock_ran_out_interval_in_100": [
+   0.0,
+   1.9
+  ]
+ }
+}

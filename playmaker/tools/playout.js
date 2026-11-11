@@ -29,7 +29,8 @@ function apply(set) {                                  // an engine's switches, 
   E.setAdvantages(!!set.advantages || !!set.goals);
   E.setGoals(!!set.goals);
   if (E.setLearned) E.setLearned(!!set.learned);
-  if (E.setCalibrated) E.setCalibrated(!!set.calibrated);
+  if (E.setTabletopMap) E.setTabletopMap(set.tabletop_map !== false);
+  if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }
 const key = a => JSON.stringify(E.actionJSON(a));
