@@ -221,6 +221,160 @@ def cmd_fidelity(*sizes):
     print(json.dumps(rep, indent=1))
 
 
+# ---- Shaun's closeout, as a must-find line ---------------------------------------------------------------------------
+
+def closeout_board():
+    """The corner shooter (O4, three 11) has the ball. He Moved to the corner earlier this phase and has used his
+    Quick Step, so he is set and can only shoot from where he stands, or pass. His defender (X3, Quick Step 1) is at
+    F4, one square too far to step next to him with a Move. Only a Quick Step now and a Move into the Contest later
+    keeps the Contest set."""
+    from playmaker_engine import exam as EX
+    return EX.board(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'C8', 'F4', 'O7', 'P3'], ['N', 'W', 'W', 'E', 'E'], ball=3, side='X',
+                    moved_o=1 << 3, qs_o=1 << 3, cnt=(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+
+def run_line(state_json, ctx_json, size, turns, top=5):
+    import subprocess
+    jf, of = os.path.join(WORK, f'line_{os.getpid()}.job.json'), os.path.join(WORK, f'line_{os.getpid()}.out.json')
+    json.dump(dict(state=state_json, ctx=ctx_json, profile=L.profiles()['allstar'], control=size, turns=turns, top=top), open(jf, 'w'))
+    subprocess.run(['node', os.path.join(HERE, 'line_18d.js'), jf, of], check=True)
+    return json.load(open(of))
+
+
+def cmd_closeout():
+    """Shaun's closeout line, step by step, under today's rules and each size: what the computer chooses as the
+    defence, what the line's move reads, and what the alternatives read."""
+    from playmaker_engine import jsbridge as J
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    from playmaker_engine.state import GameState
+    import exam_evidence as EV
+    s0 = closeout_board()
+
+    def named(s, *names):
+        """A turn from the actions' own words, played in order."""
+        out, n = [], s
+        for nm in names:
+            a = next(x for x in legal_actions(n) if str(x) == nm)
+            out.append(EV.aj(a))
+            n = apply(n, a)
+        return out
+    rep = {}
+    for size in ('off', '1', '2', '3'):
+        ctxj = J.ctx_json(s0.ctx)
+        steps = []
+        # step 1: the defence, the ball in the corner
+        r1 = run_line(J.state_json(s0), ctxj, size, [
+            dict(name='the line: X3 Quick Steps closer, not next to him', turn=named(s0, 'X3 Quick Step to E4', 'X End turn')),
+            dict(name='X3 Sprints next to him now', turn=named(s0, 'X3 Sprint to B4', 'X End turn')),
+            dict(name='X3 Moves closer now', turn=named(s0, 'X3 Move to C4 facing W', 'X End turn')),
+            dict(name='does nothing', turn=named(s0, 'X Pause'))])
+        steps.append(dict(step='1. The ball is in the corner; the defence acts', **{k: r1[k] for k in ('side', 'rows', 'named')}))
+        # step 2: the offence has moved an off-ball player; the defence acts again
+        s1 = r1['named'][0]['after']
+        r2a = run_line(s1, ctxj, size, [dict(name='the offence moves an off-ball player', turn=[['move', 'O', 1, 'B8', -1, -1, '']]),
+                                        dict(name='the offence shoots at once', turn=[['shot', 'O', 3, None, -1, -1, 'three']])])
+        steps.append(dict(step='1b. The offence to act, X3 a Quick Step closer', **{k: r2a[k] for k in ('side', 'rows', 'named')}))
+        mv = next((x for x in r2a['named'] if x['legal'] and x['name'].startswith('the offence moves')), None)
+        if mv is None:
+            rep[size] = steps
+            continue
+        s2 = mv['after']
+        # the offence's turn isn't over after one movement: it ends it, and the defence acts
+        r2b = run_line(s2, ctxj, size, [dict(name='ends its turn', turn=[['end_turn', 'O', -1, None, -1, -1, '']])])
+        s3 = r2b['named'][0]['after'] if r2b['named'] and r2b['named'][0]['legal'] else s2
+        r3 = run_line(s3, ctxj, size, [dict(name='the line: the defence Pauses', turn=[['pause', 'X', -1, None, -1, -1, '']]),
+                                       dict(name='X3 Moves next to him now', turn=[['move', 'X', 2, 'B4', 5, -1, '']])])
+        steps.append(dict(step='2. The offence has moved an off-ball player; the defence acts', **{k: r3[k] for k in ('side', 'rows', 'named')}))
+        p = next((x for x in r3['named'] if x['legal'] and x['name'].startswith('the line')), None)
+        if p is None:
+            rep[size] = steps
+            continue
+        s4 = p['after']
+        r4 = run_line(s4, ctxj, size, [dict(name='the offence shoots the three', turn=[['shot', 'O', 3, None, -1, -1, 'three']])])
+        steps.append(dict(step='3. The offence to act after the Pause', **{k: r4[k] for k in ('side', 'rows', 'named')}))
+        sh = r4['named'][0]
+        if sh['legal'] and sh['after']:
+            r5 = run_line(sh['after'], ctxj, size, [
+                dict(name='the line: X3 Moves next to him and Contests', turn=[['move', 'X', 2, 'B4', 5, -1, ''], ['contest', 'X', 2, None, -1, -1, '']]),
+                dict(name='X3 Sprints next to him and Contests', turn=[['sprint', 'X', 2, 'B4', -1, -1, ''], ['contest', 'X', 2, None, -1, -1, '']]),
+                dict(name='no Contest', turn=[['end_turn', 'X', -1, None, -1, -1, '']])])
+            steps.append(dict(step='4. The three is declared; the defence reacts', **{k: r5[k] for k in ('side', 'rows', 'named')}))
+        rep[size] = steps
+    for size, steps in rep.items():
+        for st in steps:
+            for x in st['named']:
+                x.pop('after', None)
+            for x in st['rows']:
+                x.pop('turn', None)
+    json.dump(rep, open(os.path.join(RUN, 'closeout_line.json'), 'w'), indent=1)
+    for size, steps in rep.items():
+        print('== size', size)
+        for st in steps:
+            print('  ', st['step'], '|', st['side'], 'to act | the choice:', st['rows'][0]['words'] if st['rows'] else None, round(st['rows'][0]['value'], 2) if st['rows'] else None)
+            for x in st['named']:
+                print('       ', x['name'], '|', (x.get('words'), round(x['value'], 2), 'behind', round(x['behind_the_choice'], 2), 'list', x['list_rank']) if x['legal'] else 'not legal')
+
+
+# ---- the boards under each size --------------------------------------------------------------------------------------
+
+BOARD_TURNS = {
+    # board: [(name, the turn in the actions' own words)]
+    '1': [('does nothing', ['X Pause']), ("step 18a's choice", ['X2 Move to D6 facing E', 'X End turn'])],
+    '3': [('does nothing', ['X Pause']),
+          ("the board's help: the low man steps up, another covers", ['X4 Move to I4 facing N', 'X2 Quick Step to D6']),
+          ("the board's help, both with a Move", ['X2 Move to E5 facing SE', 'X4 Move to I4 facing N'])],
+    '6': [("the board's move: O4 shoots the open three", ['O4 Shot (three)'])],
+    '8': [("the board's move: the backdoor cut and the pass", ['O2 Move to D7', 'O1 Pass to O2']),
+          ('the cut alone', ['O2 Move to F7'])],
+    '9': [("the board's move: the kick-out to the corner", ['O1 Pass to O5']),
+          ('the corner man relocates', ['O5 Move to Q4'])],
+}
+
+
+def cmd_boards(names='1,3,6,8,9'):
+    """Boards 1, 3, 6, 8 and 9 under today's rules and each size: what the search chooses 1 pair ahead (no pick
+    noise), and what each board move reads when it is searched."""
+    from playmaker_engine import exam as EX, jsbridge as J
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    import exam_evidence as EV
+    rep = {}
+    for n in names.split(','):
+        _, s, _ = EX.POSITIONS[int(n) - 1]()
+        turns = []
+        for name, acts in BOARD_TURNS[n]:
+            out, st, ok = [], s, True
+            for nm in acts:
+                a = next((x for x in legal_actions(st) if str(x) == nm), None)
+                if a is None:
+                    ok = False
+                    break
+                out.append(EV.aj(a))
+                st = apply(st, a)
+                if not hasattr(st, 'stage'):
+                    break
+            if ok:
+                turns.append(dict(name=name, turn=out))
+            else:
+                print('board', n, 'not legal:', name, acts)
+        rep[n] = {}
+        for size in ('off', '1', '2', '3'):
+            r = run_line(J.state_json(s), J.ctx_json(s.ctx), size, turns, top=4)
+            for x in r['named']:
+                x.pop('after', None)
+            for x in r['rows']:
+                x.pop('turn', None)
+            rep[n][size] = dict(side=r['side'], choice=r['rows'][0], top=r['rows'], named=r['named'])
+            print('board', n, 'size', size, '| choice:', r['rows'][0]['words'], round(r['rows'][0]['value'], 2))
+            for x in r['named']:
+                if x['legal']:
+                    sn = x.get('shot_now')
+                    print('      ', x['name'], '|', round(x['value'], 2), 'behind the choice', round(x['behind_the_choice'], 2), 'list', x['list_rank'],
+                          '| the shot the offence can take at once:', (round(sn['value'], 1), sn['square'], sn['shot']) if sn else None)
+    json.dump(rep, open(os.path.join(RUN, 'boards.json'), 'w'), indent=1)
+
+
 def cmd_speed():
     """The time to finish 1 pair at each level on the hand boards' 22 decisions, under today's rules and each size
     (one warm engine each), against docs/SPEED_BUDGET.md."""
