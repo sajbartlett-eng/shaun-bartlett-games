@@ -86,7 +86,9 @@ function playTurn(s, turn, r) {                        // a candidate team turn 
 const meanSe = v => { const n = v.length; if (!n) return [0, 0]; const m = v.reduce((a, b) => a + b, 0) / n; let q = 0; for (const x of v) q += (x - m) * (x - m); return [m, n > 1 ? Math.sqrt(q / (n - 1) / n) : 0]; };
 
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
-const ctxs = (job.contexts || []).map(c => E.makeCtx(c));
+// job.control (step 18d, D-151): play every position under rules.control at that size ('1', '2', '3'; unset: today's rules)
+const withControl = c => (job.control && job.control !== 'off' ? Object.assign({}, c, { rules: Object.assign({}, c.rules, { control: String(job.control) }) }) : c);
+const ctxs = (job.contexts || []).map(c => E.makeCtx(withControl(c)));
 const state = p => E.stateFrom(p.state, ctxs[p.ctx]);
 const out = { kind: job.kind, rows: [] };
 const t0 = Date.now();
@@ -139,6 +141,38 @@ if (job.kind === 'rollout') {
       });
       out.rows.push({ id: p.id, k, ctx: p.ctx, points: g.points, value: g.value, decisions: g.decisions, states: seen, end: [g.kind, g.clock, g.tokens],
         defence: defence.length ? defence[Math.floor(defence.length * ((k * 7 + 3 + out.rows.length) % 10) / 10)] : null });
+    }
+  }
+} else if (job.kind === 'trace') {
+  // step 18d: self-play with every action kept, for the fidelity measures (who helped and when, what each Contest and
+  // shot followed, the extra pass). Per possession: events [phase, stage, side, kind, piece, from, to, target, ball,
+  // the ball handler's square]; the board when each shot was declared; how it ended; and each open-play position as
+  // [clock, what is earned, today's reading] for the calibrated map's error under the variant.
+  for (const p of job.positions) {
+    const ctx = ctxs[p.ctx];
+    for (let k = 0; k < job.n; k++) {
+      const r = rng((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0));
+      const pols = { O: Object.assign({}, job.policies.O, { rn: rng(((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)) * 31 + 1) }),
+        X: Object.assign({}, job.policies.X, { rn: rng(((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)) * 31 + 2) }) };
+      let node = state(p), n = 0;
+      const events = [], shots = [], reads = [];
+      const sqs = a => a.map(q => E.sqName(q));
+      while (true) {
+        if (E.isChance(node)) { node = sample(node, r); continue; }
+        if (node.stage === 'over' || n > 300) break;
+        const side = E.actor(node);
+        if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0]);
+        const a = decide(node, ctx, pols[side], r);
+        const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;
+        events.push([node.phase, node.stage, a.side, a.kind, a.piece, from, a.dest >= 0 ? E.sqName(a.dest) : null, a.target, node.ball, E.sqName(node.o[node.ball]), a.shot || '']);
+        if (a.kind === 'shot' || a.kind === 'forced_shot') shots.push({ at: events.length - 1, o: sqs(node.o), x: sqs(node.x), ball: node.ball, phase: node.phase, type: a.shot, forced: a.kind === 'forced_shot' });
+        node = E.apply(node, a);
+        n++;
+      }
+      const over = node.stage === 'over';
+      out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
+        decisions: n, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
+        endX: over ? sqs(node.x) : null, events, shots, reads });
     }
   }
 } else if (job.kind === 'search') {

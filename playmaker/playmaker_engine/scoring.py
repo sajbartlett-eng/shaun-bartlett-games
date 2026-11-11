@@ -224,6 +224,13 @@ def score(state):
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
                 detail = (detail + '. ' if detail else '') + f'{who} {r.points} x ({r.rating} - {r.contest}) contested by {cby}'
+            if rules.control != 'off':
+                # D-151: name a rushed shot and a late closeout in plain words
+                last = lambda side, i: 'Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step'
+                if state.rushed('O', r.shooter):
+                    detail += f'. A rushed {r.shot_type} off his {last("O", r.shooter)}'
+                if r.contester >= 0 and state.rushed('X', r.contester):
+                    detail += f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}"
         elif r.kind == 'steal':
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':

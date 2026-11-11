@@ -295,7 +295,7 @@ class Look:
     released before the defence has a turn (shoot or drive this turn), so no response can cover it. vals[t][d]:
     the expected shot value of type t if defender d contests (the best contest he reaches in time), open[t] if
     nobody does."""
-    __slots__ = ('i', 'c', 'route', 'p', 'now', 'open', 'vals', 'types', 'minex', 'base', 'replies')
+    __slots__ = ('i', 'c', 'route', 'p', 'now', 'open', 'vals', 'types', 'minex', 'base', 'replies', 'rushed')
 
     def finish(self):
         """Precompute, per shot type, the best contest without each defender (minex[j][t]) and the look's value."""
@@ -333,6 +333,7 @@ class Look:
 
     def __init__(self, i, c, route, p, now, replies=None):
         self.i, self.c, self.route, self.p, self.now = i, c, route, p, now
+        self.rushed = False          # D-151 (rules.control): the shooter would be rushed for this look
         # B0/B2: the defence replies (turns of at most 2 actions) before this look can be released
         self.replies = (0 if now else 1) if replies is None else replies
 
@@ -424,10 +425,12 @@ class Read:
     def _vals2(self, look, d, row):
         """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions."""
         keep, self.react_moves = self.react_moves, 2
+        self._phase_away = True                    # D-151: the rushed state doesn't carry over the phase's end
         try:
             return self._vals(look, d, row)
         finally:
             self.react_moves = keep
+            self._phase_away = False
 
     def _vals(self, look, d, row, moves=None):
         """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
@@ -439,8 +442,18 @@ class Read:
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
+        control = rules.control != 'off' and not getattr(self, '_phase_away', False)
+        # D-151 (rules.control), as the reading takes it: a defender contesting from where he stands is rushed if his
+        # last movement was a Quick Step or Sprint; one who must move to contest is rushed if his Move is already used
+        # (only a Quick Step or Sprint is left), and is taken to Move there otherwise. The rules themselves are exact
+        # (scoring.contest_options); the search settles every declared shot by them.
+        d_stand = control and self.s.rushed('X', d)
+        d_moved = control and self.s.moved('X', d)
         for t in look.types:
             r = card.shot(t)
+            cut = RC.control_cut(rules, t) if control else 0
+            if cut and look.rushed:
+                r -= cut
             best = None
             for k, n in enumerate(row):
                 if n > limit:
@@ -449,11 +462,15 @@ class Read:
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
                 if rules.floor_contest_zero:
                     con = max(0, con)
+                if cut and (d_stand if n == 0 else d_moved):
+                    con = max(0, con - cut)              # a rushed Contest: reduced, with the wrong-angle foul roll
+                    if not foul:
+                        foul, two = True, pen
                 v = pts * (r - con)
                 if rules.floor_declared_shot:
                     v = max(0, v)
                 if foul:
-                    ft = foul_on_shot_points(card, t, pts, rules)[0]
+                    ft = foul_on_shot_points(card, t, pts, rules, r if (cut and look.rushed) else None)[0]
                     pf = float(p_fouls(p_foul(self.dcards[d].r['foul_contest'], rules), 2 if two else 1))
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:
@@ -537,7 +554,14 @@ class Read:
                     lk = Look(i, c, 'cut', p * self.cfg['later_p'], False, replies=2)
             lk.types = RC.ZONE_SHOTS[z]
             pts = RC.ZONE_POINTS[z]
-            lk.open = {t: pts * card.shot(t) for t in lk.types}
+            if rules.control != 'off':
+                # D-151, as the reading takes it: shooting from where he stands he is rushed if his last movement was
+                # a Quick Step or Sprint; if he must move first he is rushed when his Move is already used
+                lk.rushed = s.rushed('O', i) if n == 0 else s.moved('O', i)
+            if lk.rushed:
+                lk.open = {t: pts * (card.shot(t) - RC.control_cut(rules, t)) for t in lk.types}
+            else:
+                lk.open = {t: pts * card.shot(t) for t in lk.types}
             lk.vals = {}
             for d in self.att_x:
                 v = self._vals(lk, d, self._cm[d].get(c))

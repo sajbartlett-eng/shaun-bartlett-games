@@ -224,7 +224,7 @@ def contest_outcome(s, opt, forced):
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
     if s.ctx.rules.control != 'off' and s.rushed('X', opt.defender):
-        why = 'a late closeout after his Quick Step or Sprint'
+        why = 'a late closeout after his ' + ('Sprint' if s.rush('X', opt.defender) == RC.RUSH_SPRINT else 'Quick Step')
     one = p_foul(fr, s.ctx.rules)
     if getattr(opt, 'rolls', 1) == 2:
         # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
@@ -422,11 +422,12 @@ def apply(state, action, check=False):
             s = s.with_(qs_o=s.qs_o | 1 << a.piece) if side == 'O' else s.with_(qs_x=s.qs_x | 1 << a.piece)
         if s.ctx.rules.control != 'off':
             # D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
-            bit = 1 << a.piece
+            sh = 2 * a.piece
+            code = 0 if k == 'move' else (RC.RUSH_SPRINT if k == 'sprint' else RC.RUSH_QS)
             if side == 'O':
-                s = s.with_(rush_o=(s.rush_o & ~bit) if k == 'move' else (s.rush_o | bit))
+                s = s.with_(rush_o=(s.rush_o & ~(3 << sh)) | (code << sh))
             else:
-                s = s.with_(rush_x=(s.rush_x & ~bit) if k == 'move' else (s.rush_x | bit))
+                s = s.with_(rush_x=(s.rush_x & ~(3 << sh)) | (code << sh))
         return _after(state, s, side, k)
 
     s = _inc(s, side, k)
@@ -480,7 +481,7 @@ def apply(state, action, check=False):
                 cnt[CI['x_qs']] += 1
                 s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
             if rules.control != 'off':                       # D-151: the jump into the lane counts as his movement
-                s = s.with_(rush_x=(s.rush_x & ~(1 << j)) if a.target == 0 else (s.rush_x | 1 << j))
+                s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * j)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * j))
         p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
         ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)

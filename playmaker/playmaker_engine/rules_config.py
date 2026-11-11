@@ -258,8 +258,8 @@ class Rules:
     #   Move after a Quick Step or Sprint restores control). A rushed shot has a reduced rating. A rushed Contest has a
     #   reduced rating and takes the foul roll of a Contest with the arrow off the shooter. No exceptions: the forced
     #   shot and its free Contest follow the same test.
-    #   'off' (today's rules) | '1' | '2' | '3': the reduction in rating steps, every shot type.
-    #   'jump2_rim1': 2 on a mid-range, long two or three; 1 on a layup, dunk, post shot or floater.
+    #   'off' (today's rules) | '1' | '2' | '3': the reduction in rating steps, the same for every shot type and for
+    #   the Contest (Shaun: one size for every shot).
     control: str = 'off'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
     #   False: in the bonus the foul gives free throws only (no +5).
@@ -291,15 +291,14 @@ PRE_DENIAL = dict(receiver_denial=False)
 TURNOVER_COSTS = ('minus5_lose_phase', 'minus5', 'minus10', 'lose_phase', 'end_possession', 'legacy')
 INTERCEPT_RULES = ('move_then_intercept', 'ring_jump', 'approach')
 
-# D-151: the control rule's sizes: (on a jump shot, at the rim), in rating steps, for the shot and for the Contest alike
-CONTROL = {'off': (0, 0), '1': (1, 1), '2': (2, 2), '3': (3, 3), 'jump2_rim1': (2, 1)}
-RIM_SHOTS = ('layup', 'dunk', 'post', 'floater')
+# D-151: the control rule's sizes, in rating steps: one size, for every shot type and for the Contest alike
+CONTROL = {'off': 0, '1': 1, '2': 2, '3': 3}
+RUSH_QS, RUSH_SPRINT = 1, 2          # what left a player rushed (two bits a player in GameState.rush_o / rush_x)
 
 
-def control_cut(rules, shot_type):
+def control_cut(rules, shot_type=None):
     """The reduction a rushed shot, or a rushed Contest of it, takes under rules.control (0 when the rule is off)."""
-    jump, rim = CONTROL[rules.control]
-    return rim if shot_type in RIM_SHOTS else jump
+    return CONTROL[rules.control]
 
 
 DEFAULT_RULES = Rules()

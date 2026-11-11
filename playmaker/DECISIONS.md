@@ -659,6 +659,39 @@ is written in its `PREDICTIONS.md` before any run. Predict before every run over
 stop early when a sequential test decides, and say why in the report if the estimate is well exceeded.
 · Source: Shaun, 11 Nov 2026 · **Ruled.**
 
+### Shaun, 11 Nov 2026 (step 18d prompt): the rulings on step 18c, and the control rule
+
+**D-151. A rule candidate under test, the app only: control against reaction.** Shaun: "A contest depends on control
+against reaction. A Move is a controlled action. A shot following no movement or a Move is worth full rating. A shot
+following a Quick Step or a Sprint has a reduced rating. Similarly, a contest following a Quick Step or a Sprint has
+a reduced rating and a higher foul risk. Then a late closeout becomes worse."
+
+- **Rushed:** the player's last movement action this phase was a Quick Step or a Sprint, whatever came between
+  (Sprint, receive the ball, shoot: still rushed). Quick Step counts as rushed, like Sprint.
+- **Set:** his last movement this phase was a Move, or he hasn't moved this phase. A Move after a Quick Step or
+  Sprint restores control.
+- **The same test for both sides,** the shooter for the shot and the contesting defender for the Contest. Phase
+  boundaries reset it. Only Move, Quick Step and Sprint count as movement; a Dribble or a Screen doesn't.
+- **The forced shot and its free Contest follow the same test,** with no exceptions ("it needs to be consistent").
+- **The foul risk** is the existing wrong-angle foul roll: a rushed Contest takes the same roll as a Contest with
+  the arrow off the shooter. No new mechanic.
+- **No drive rule.** A defender who closed out hard is not made easier to beat off the dribble.
+- **One size for every shot.** Shaun: "A layup at full sprint is uncommon in basketball. What would be most common
+  is to use a sprint to get into an advantage position and then a move to take the layup, or a quick step and a
+  move. They teach basketball youth to drive hard and then control the finish." Sizes tested: 1, 2 and 3 rating
+  steps, the same for the shot and the Contest. Shaun picks.
+- **Why (from 18c):** under today's rules a defender one Move away steps in during the reaction and Contests fully,
+  so late help works as well as early help.
+- **The app only.** Today's rules stay the default. `RULES_CURRENT.md` and the printed game are unchanged until
+  Shaun rules. Nothing is changed, measured or printed for the table.
+
+· Source: Shaun, 11 Nov 2026 · **Under test; built** behind `rules.control` (off) in both engines (step 18d).
+
+**D-152. Step 18c is accepted.** `eval.settle_shots` stays on by default. `eval.help_readings` stays off. Step 18c is
+merged into `main`. Boards 1 and 3 are held, not retired: they are re-read under the control rule (D-151). The closer
+Rookie and Starter are accepted for now, and revisited once the control rule is decided, because it reshapes both
+levels. · Source: Shaun, 11 Nov 2026 · **Ruled, done.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

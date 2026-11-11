@@ -114,8 +114,7 @@ const PMEngine = (() => {
     three_only_ft_on_twos: false, coach_bonus_on_forced: true, diag_move_straight: true, inbound_tie: 'offence',
     forced_shot_choice: 'player', inbound_resolves: 'after_defence_turn', and_one: true, steal_lock: true,
     reach_angle_fouls: true, contest_action: true, turnover_floor: true, steal_foul_always_plus5: true };
-  const CONTROL = { off: [0, 0], 1: [1, 1], 2: [2, 2], 3: [3, 3], jump2_rim1: [2, 1] };
-  const RIM_SHOTS = new Set(['layup', 'dunk', 'post', 'floater']);
+  const CONTROL = { off: 0, 1: 1, 2: 2, 3: 3 };
   function checkRules(r) {
     if (r.control !== undefined && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
     for (const [k, v] of Object.entries(RULED)) {
@@ -137,13 +136,14 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
-      control: CONTROL[(c.rules && c.rules.control) || 'off'] };          // D-151: [on a jump shot, at the rim], in rating steps
+      control: CONTROL[(c.rules && c.rules.control) || 'off'] };          // D-151: the size, in rating steps (0: the rule is off)
   }
   // D-151 (rules.control, a rule candidate under test): the reduction a rushed shot, or a rushed Contest of it, takes
-  const controlOn = ctx => ctx.control[0] > 0 || ctx.control[1] > 0;
-  const controlCut = (ctx, t) => (RIM_SHOTS.has(t) ? ctx.control[1] : ctx.control[0]);
-  const rushedO = (s, i) => ((s.rush_o >> i) & 1) === 1;
-  const rushedX = (s, j) => ((s.rush_x >> j) & 1) === 1;
+  const controlOn = ctx => ctx.control > 0;
+  const controlCut = (ctx, t) => ctx.control;            // one size, for every shot type and for the Contest alike
+  // two bits a player in rush_o / rush_x: 1 his last movement this phase was a Quick Step, 2 a Sprint, 0 set
+  const rushedO = (s, i) => ((s.rush_o >> (2 * i)) & 3) !== 0;
+  const rushedX = (s, j) => ((s.rush_x >> (2 * j)) & 3) !== 0;
   const shotRating = (s, shooter, t) => s.ctx.off[shooter].sh[t] - (controlOn(s.ctx) && rushedO(s, shooter) ? controlCut(s.ctx, t) : 0);
 
   // ---- state --------------------------------------------------------------------------------------------------------
@@ -741,9 +741,9 @@ const PMEngine = (() => {
         s = side === 'O' ? W_(s, { qs_o: s.qs_o | (1 << a.piece) }) : W_(s, { qs_x: s.qs_x | (1 << a.piece) });
       }
       if (controlOn(s.ctx)) {                            // D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
-        const bit = 1 << a.piece;
-        if (side === 'O') s = W_(s, { rush_o: k === 'move' ? (s.rush_o & ~bit) : (s.rush_o | bit) });
-        else s = W_(s, { rush_x: k === 'move' ? (s.rush_x & ~bit) : (s.rush_x | bit) });
+        const sh = 2 * a.piece, code = k === 'move' ? 0 : (k === 'sprint' ? 2 : 1);
+        if (side === 'O') s = W_(s, { rush_o: (s.rush_o & ~(3 << sh)) | (code << sh) });
+        else s = W_(s, { rush_x: (s.rush_x & ~(3 << sh)) | (code << sh) });
       }
       return after(state, s, side, k);
     }
@@ -1483,7 +1483,7 @@ const PMEngine = (() => {
   // ---- decide: THREAT and COVERAGE (B2, B3) and the leaf (B4) -------------------------------------------------------
   const SHOOT = z => z !== 0;
   function makeLook(i, c, route, p, now, replies) {
-    return { i, c, route, p, now, replies: replies == null ? (now ? 0 : 1) : replies, types: null, open: null, vals: null, minex: null, base: 0 };
+    return { i, c, route, p, now, replies: replies == null ? (now ? 0 : 1) : replies, types: null, open: null, vals: null, minex: null, base: 0, rushed: false };
   }
   function finishLook(lk) {
     const nt = lk.types.length;
@@ -1577,27 +1577,48 @@ const PMEngine = (() => {
       if (!cm || this.react_moves < 0) return null;
       const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
-      const ctx = this.s.ctx, vc = ctx._vc || (ctx._vc = new Array(5 * NB * 5 * 64));
+      const ctx = this.s.ctx;
+      if (controlOn(ctx)) {
+        // D-151 (rules.control), as the reading takes it (decide.Read._vals): the kinds he reaches standing are rushed
+        // if his last movement was a Quick Step or Sprint; the kinds he must move for are rushed if his Move is used
+        const s = this.s, m0 = cm.masks[0][BI[lk.c]] & mask;
+        const flags = (lk.rushed ? 1 : 0) | (rushedX(s, d) ? 2 : 0) | (hasMoved(s, 'X', d) ? 4 : 0);
+        const vc2 = ctx._vc2 || (ctx._vc2 = new Map());
+        const key2 = (((((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask) * 64 + m0) * 8) + flags;
+        let hit2 = vc2.get(key2);
+        if (hit2 === undefined) { hit2 = this._valsCalc(lk, d, mask, m0, flags); vc2.set(key2, hit2); }
+        return hit2;
+      }
+      const vc = ctx._vc || (ctx._vc = new Array(5 * NB * 5 * 64));
       const key = ((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask;
       let hit = vc[key];
       if (hit === undefined) { hit = this._valsCalc(lk, d, mask); vc[key] = hit; }
       return hit;
     }
-    _valsCalc(lk, d, mask) {
-      const card = this.s.ctx.off[lk.i], pts = ZONE_POINTS[ZN[lk.c]], dc = this.dcards[d];
+    _valsCalc(lk, d, mask, m0, flags) {         // m0, flags: only under rules.control (D-151)
+      const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[ZN[lk.c]], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
+      const control = flags !== undefined;
       let any = false;
       for (let t = 0; t < lk.types.length; t++) {
-        const ty = lk.types[t], r = card.sh[ty];
+        const ty = lk.types[t];
+        let r = card.sh[ty];
+        const cut = control ? controlCut(ctx, ty) : 0, shooterCut = cut > 0 && (flags & 1) === 1;
+        if (shooterCut) r -= cut;
         let best = null;
         for (let k = 0; k < 6; k++) {
           if (!((mask >> k) & 1)) continue;
           let con = dc.cn[ty] - (KPEN[k] ? 3 : 0);
           con = Math.max(0, con);
+          let foul = KFOUL[k], two = KTWO[k];
+          if (cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4))) {       // a rushed Contest
+            con = Math.max(0, con - cut);
+            if (!foul) { foul = true; two = KPEN[k]; }
+          }
           let v = Math.max(0, pts * (r - con));
-          if (KFOUL[k]) {
-            const ft = footPoints(card, ty, pts)[0];
-            const pf = pFouls(dc.r.foul_contest, KTWO[k] ? 2 : 1);
+          if (foul) {
+            const ft = footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
+            const pf = pFouls(dc.r.foul_contest, two ? 2 : 1);
             v = pf * ft + (1 - pf) * v;
           }
           if (best === null || v < best) best = v;
@@ -1703,7 +1724,8 @@ const PMEngine = (() => {
         }
         lk.types = ZONE_SHOTS[z];
         const pts = ZONE_POINTS[z];
-        lk.open = lk.types.map(t => pts * card.sh[t]);
+        if (controlOn(s.ctx)) lk.rushed = n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i);      // D-151 (decide.Read._looks)
+        lk.open = lk.rushed ? lk.types.map(t => pts * (card.sh[t] - controlCut(s.ctx, t))) : lk.types.map(t => pts * card.sh[t]);
         lk.vals = [null, null, null, null, null];
         for (const d of this.att_x) { const v = this._vals(lk, d, cm[d]); if (v) lk.vals[d] = v; }
         finishLook(lk);

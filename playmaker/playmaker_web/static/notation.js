@@ -176,6 +176,10 @@ window.PMNotation = (function () {
       g.append(svg('text', { x: tx + 5.5, y: ty + 8.8, 'text-anchor': 'middle', 'font-size': 8.5, 'font-weight': 'bold', fill: INK, 'aria-hidden': 'true' }, m));
       g.append(svg('line', { x1: tx + 1, y1: ty + 10, x2: tx + 10, y2: ty + 1, stroke: INK, 'stroke-width': 1.1 }));
     });
+    if (b && b.rushed) {        // D-151 (rules.control): his last movement this phase was a Quick Step or Sprint
+      g.append(svg('rect', { class: 'rushtag', x: X - 17, y: Y - 22, width: 34, height: 12, rx: 3, fill: '#fff', stroke: '#8a2f00', 'stroke-width': 1.4 }));
+      g.append(svg('text', { x: X, y: Y - 12.5, 'text-anchor': 'middle', 'font-size': 8.5, 'font-weight': 'bold', fill: '#8a2f00', 'aria-hidden': 'true' }, 'RUSHED'));
+    }
     if (locked) {
       g.append(svg('rect', { x: X - 22, y: Y + 7, width: 26, height: 12, rx: 3, fill: '#4a4a4a', stroke: INK, 'stroke-width': 1.2 }));
       g.append(svg('text', { x: X - 9, y: Y + 16.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }, 'LOCK'));
