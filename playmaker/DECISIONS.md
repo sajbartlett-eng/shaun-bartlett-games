@@ -613,6 +613,27 @@ considering the right moves, 18b is the move prior, trained on a full-width sear
 it says judgement, 18b is the third try at the learned weights, on calibrated play (2,500 possessions, about 8
 core-hours). Either way 18b waits for Shaun's go. · Source: Shaun, 11 Nov 2026 · **Ruled.**
 
+### Shaun, 11 Nov 2026 (step 18b prompt): the order of the fixes, and the value ceiling
+
+**D-144. The order: judgement before candidates.** 18b (settle the shot at the horizon, the ceiling, the shot-timing
+test), then 18c (the defence's missing readings), 18d (widen the list by rule first, a learned prior only if a clear
+loss remains), 18e (refit calibration, then ask the learned weights a third time). Reason: any learned move list
+takes its labels from the search, so the search's faults are fixed first. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-145. The value ceiling.** Shaun: "The value system is very clear. (Shot rating minus contest rating) × points
+value. There aren't any shots that exceed 39 value that I know of, and that is an uncontested three pointer by the
+best shooter." Step 18a reported a position reading 42.3 on board 8. A possession ends in one shot, so no position
+may read above the most the possession can still earn under the rules. This is a fault, and the ceiling is a fixed
+rule from now on. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18b, behind `eval.settle_shots`, off).
+Derived (step 18b): the ceiling of a position is what the possession has already earned plus the best open shot any
+attacker's card can score (points × rating; 39 on the best card, the 13 three). The rules can pay more than one
+shot's value (a fouled three pays 3 × the free-throw rating, up to 54; each steal foul pays +5), but only through a
+Contest or a Steal the defence chooses to make, so against the defence's best reply the ceiling stands. With Coach's
+Call in play the target's shot also earns the bonus for its look.
+
+**Still open, not ruled** (step 18b prompt): the table's own map (18a), the cost of a turnover at the table, and
+plan step 24. Step 18b changes none of them.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

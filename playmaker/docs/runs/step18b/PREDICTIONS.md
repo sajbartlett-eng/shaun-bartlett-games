@@ -31,3 +31,14 @@ Costs are core-hours on this machine (4 cores). A prediction isn't edited after 
 - Cost: 2.2 an engine, 6.6 in all. If the head-to-heads run long, `play_on`'s exam is dropped first, then the whole
   exam.
 - `eval.settle_shots`: a gain with the defence to act (+1 to +3 a position), level or a small gain on offence.
+
+## Results
+
+- **1.** 0.83 core-hours. +2.4 a pair (interval +0.8 to +4.0), stopped at 160 pairs with "a gain": as predicted.
+  Shot timing: 77% of its shots in phases 1 and 2, a little above the predicted 60% to 75%.
+- **2.** 0.78 core-hours. -0.4 a pair (interval -2.1 to +1.3), stopped at 160 pairs with "no gain": as predicted.
+  So "both on" isn't run (the prompt: only if each alone gains), and `play_on`'s outcome exam is dropped.
+- **3.** 0.53 and 1.16 core-hours. The chance of losing the ball in a phase kept: 6.3 in 100 under the app's rules
+  (7.4 with the switch off) and 0.5 in 100 at the table (1.1 off): about the same, as predicted; the intervals
+  overlap. The clock ran out on 0 in 200 under the app's rules and 1.5 in 100 at the table: the table's is just
+  below the predicted 2 to 6.

@@ -44,7 +44,9 @@ SETTINGS = {'off': ((), False), 'cheap': (CHEAP, False), 'cheap_play_on': (CHEAP
             'base': (('like_with_like',), True), 'budget': (('like_with_like',), True, True),
             # step 16: advantages only (must equal base), and with goals steering the search; the same with the budget
             'adv': (('like_with_like',), True, False, 'adv'), 'goals': (('like_with_like',), True, False, 'goals'),
-            'budget_adv': (('like_with_like',), True, True, 'adv'), 'budget_goals': (('like_with_like',), True, True, 'goals')}
+            'budget_adv': (('like_with_like',), True, True, 'adv'), 'budget_goals': (('like_with_like',), True, True, 'goals'),
+            # step 18b: the default game with play_on (the rival to eval.settle_shots, which EXAM13_SETTLE=1 turns on)
+            'base_play_on': (('like_with_like', 'play_on'), True)}
 
 
 def set_switches(eng, setting):
@@ -67,6 +69,10 @@ def set_switches(eng, setting):
         eng.call('setBudget', 'true' if budget else 'false')
         eng.call('setAdvantages', 'true' if g is not None else 'false')
         eng.call('setGoals', 'true' if g == 'goals' else 'false')
+    settle = os.environ.get('EXAM13_SETTLE') == '1'    # step 18b: eval.settle_shots
+    CONFIG['eval']['settle_shots'] = settle
+    if eng is not None:
+        eng.call('setSettle', 'true' if settle else 'false')
     cal = os.environ.get('EXAM13_CALIBRATED')          # step 18a: 0 measures the computer before D-138 (the default is on)
     if cal is not None:
         CONFIG['eval']['calibrated'] = cal != '0'

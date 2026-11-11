@@ -3551,5 +3551,1564 @@
     "accepted": false
    }
   ]
+ },
+ "3": {
+  "side": "X",
+  "judge": "help_and_rotate",
+  "judge_differences": 0,
+  "rebuilt_equal": true,
+  "capped": false,
+  "legal_first_actions": 847,
+  "generated_first_actions": 14,
+  "followed_first_actions": 7,
+  "all_turns": 272947,
+  "generated_turns": 49,
+  "list_length": 24,
+  "turns_by_stage": {
+   "first action not generated": 264474,
+   "first action not followed by a second": 3875,
+   "second action not generated": 4549,
+   "generated, cut by the list's length": 25,
+   "on the list": 24
+  },
+  "accepted_turns": 15336,
+  "accepted_by_stage": {
+   "first action not generated": 15048,
+   "first action not followed by a second": 120,
+   "second action not generated": 168,
+   "generated, cut by the list's length": 0,
+   "on the list": 0
+  },
+  "accepted_among_read": 50,
+  "read_at_1_pair": 371,
+  "choice": {
+   "words": "X3 Move to N7 facing E",
+   "one_turn": 26.36,
+   "one_turn_rank": 235,
+   "pair": 26.73,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 1,
+   "accepted": false
+  },
+  "best_board_move": {
+   "words": "X4 Move to I4 facing N, then X2 Quick Step to D6",
+   "one_turn": 28.17,
+   "one_turn_rank": 91386,
+   "pair": 28.86,
+   "stage": 0,
+   "where": "first action not generated",
+   "list_rank": null,
+   "accepted": true
+  },
+  "board_move_gap": -2.13,
+  "best_turn_found": {
+   "words": "X3 Move to N7 facing E",
+   "one_turn": 26.36,
+   "one_turn_rank": 235,
+   "pair": 26.73,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 1,
+   "accepted": false
+  },
+  "regret": -0.0,
+  "better_than_choice": 0,
+  "better_by_stage": {
+   "first action not generated": 0,
+   "on the list": 0
+  },
+  "verdict": "judgement: the best board move is worth 2.1 less when searched; a board move is off the list (first action not generated)",
+  "seconds": 306.2,
+  "top": [
+   {
+    "words": "X3 Move to N7 facing E",
+    "one_turn": 26.36,
+    "one_turn_rank": 235,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing W",
+    "one_turn": 26.36,
+    "one_turn_rank": 239,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to M7 facing W",
+    "one_turn": 26.36,
+    "one_turn_rank": 247,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to N7",
+    "one_turn": 26.36,
+    "one_turn_rank": 562,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing N",
+    "one_turn": 26.36,
+    "one_turn_rank": 440,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 7,
+    "accepted": false
+   },
+   {
+    "words": "X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 674,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 8,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to M7 facing W, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 2620,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 9,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to N7, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 5118,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 10,
+    "accepted": false
+   }
+  ],
+  "the_list": [
+   {
+    "words": "X3 Move to N7 facing E",
+    "one_turn": 26.36,
+    "one_turn_rank": 235,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing W",
+    "one_turn": 26.36,
+    "one_turn_rank": 239,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to M7 facing W",
+    "one_turn": 26.36,
+    "one_turn_rank": 247,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to N7",
+    "one_turn": 26.36,
+    "one_turn_rank": 562,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to N7",
+    "one_turn": 26.36,
+    "one_turn_rank": 572,
+    "pair": 27.63,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to M7",
+    "one_turn": 26.36,
+    "one_turn_rank": 573,
+    "pair": 27.63,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing N",
+    "one_turn": 26.36,
+    "one_turn_rank": 440,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 7,
+    "accepted": false
+   },
+   {
+    "words": "X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 674,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 8,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to M7 facing W, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 2620,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 9,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to N7, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 5118,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 10,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing N, then X3 Quick Step to N7",
+    "one_turn": 26.73,
+    "one_turn_rank": 4400,
+    "pair": 27.09,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 11,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing N, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 4394,
+    "pair": 26.73,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 12,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to C6 facing S",
+    "one_turn": 27.37,
+    "one_turn_rank": 39962,
+    "pair": 29.09,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 13,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to C6 facing W",
+    "one_turn": 27.37,
+    "one_turn_rank": 39964,
+    "pair": 29.09,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 14,
+    "accepted": false
+   },
+   {
+    "words": "X2 Quick Step to C6",
+    "one_turn": 26.63,
+    "one_turn_rank": 670,
+    "pair": 26.98,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 15,
+    "accepted": false
+   },
+   {
+    "words": "X2 Sprint to C6",
+    "one_turn": 27.37,
+    "one_turn_rank": 40061,
+    "pair": 29.09,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 16,
+    "accepted": false
+   },
+   {
+    "words": "X2 Sprint to C3",
+    "one_turn": 27.37,
+    "one_turn_rank": 40064,
+    "pair": 29.09,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 17,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing E, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 2554,
+    "pair": 27.32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 18,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing E, then X3 Quick Step to M7",
+    "one_turn": 27.63,
+    "one_turn_rank": 67363,
+    "pair": 27.63,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 19,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing E, then X5 Move to N3 facing N",
+    "one_turn": 27.63,
+    "one_turn_rank": 67277,
+    "pair": 27.32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 20,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing W, then X Pause",
+    "one_turn": 26.73,
+    "one_turn_rank": 2574,
+    "pair": 27.32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 21,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing W, then X3 Quick Step to M7",
+    "one_turn": 27.63,
+    "one_turn_rank": 67863,
+    "pair": 27.63,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 22,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to N7 facing W, then X5 Move to N3 facing N",
+    "one_turn": 27.63,
+    "one_turn_rank": 67761,
+    "pair": 27.32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 23,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to M7 facing W, then X3 Quick Step to N6",
+    "one_turn": 27.63,
+    "one_turn_rank": 68051,
+    "pair": 27.63,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 24,
+    "accepted": false
+   }
+  ]
+ },
+ "1": {
+  "side": "X",
+  "judge": "on_lane",
+  "judge_differences": 0,
+  "rebuilt_equal": true,
+  "capped": false,
+  "legal_first_actions": 1073,
+  "generated_first_actions": 20,
+  "followed_first_actions": 8,
+  "all_turns": 464170,
+  "generated_turns": 107,
+  "list_length": 24,
+  "turns_by_stage": {
+   "first action not generated": 447846,
+   "first action not followed by a second": 9348,
+   "second action not generated": 6869,
+   "generated, cut by the list's length": 83,
+   "on the list": 24
+  },
+  "accepted_turns": null,
+  "accepted_by_stage": null,
+  "accepted_among_read": 0,
+  "read_at_1_pair": 318,
+  "choice": {
+   "words": "X2 Move to D6 facing E",
+   "one_turn": 26.36,
+   "one_turn_rank": 551,
+   "pair": 27.6,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 1,
+   "accepted": false
+  },
+  "best_board_move": null,
+  "board_move_gap": null,
+  "best_turn_found": {
+   "words": "X1 Move to I9 facing S, then X1 Steal",
+   "one_turn": 23.58,
+   "one_turn_rank": 1,
+   "pair": 26.99,
+   "stage": 0,
+   "where": "first action not generated",
+   "list_rank": null,
+   "accepted": false
+  },
+  "regret": 0.61,
+  "better_than_choice": 2,
+  "better_by_stage": {
+   "first action not generated": 2,
+   "on the list": 0
+  },
+  "verdict": "no board move among the turns read",
+  "seconds": 515.5,
+  "top": [
+   {
+    "words": "X1 Move to I9 facing S, then X1 Steal",
+    "one_turn": 23.58,
+    "one_turn_rank": 1,
+    "pair": 26.99,
+    "stage": 0,
+    "where": "first action not generated",
+    "list_rank": null,
+    "accepted": false
+   },
+   {
+    "words": "X1 Move to J9 facing SW, then X1 Steal",
+    "one_turn": 23.58,
+    "one_turn_rank": 2,
+    "pair": 26.99,
+    "stage": 0,
+    "where": "first action not generated",
+    "list_rank": null,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing E",
+    "one_turn": 26.36,
+    "one_turn_rank": 551,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing NW",
+    "one_turn": 26.36,
+    "one_turn_rank": 556,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to E4 facing SE",
+    "one_turn": 26.36,
+    "one_turn_rank": 634,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to L6 facing W",
+    "one_turn": 25.98,
+    "one_turn_rank": 75,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": false
+   },
+   {
+    "words": "X4 Move to B4 facing SW",
+    "one_turn": 25.98,
+    "one_turn_rank": 113,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": false
+   },
+   {
+    "words": "X4 Move to B5 facing SW",
+    "one_turn": 25.98,
+    "one_turn_rank": 121,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": false
+   }
+  ],
+  "the_list": [
+   {
+    "words": "X2 Move to D6 facing E",
+    "one_turn": 26.36,
+    "one_turn_rank": 551,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing NW",
+    "one_turn": 26.36,
+    "one_turn_rank": 556,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to E4 facing SE",
+    "one_turn": 26.36,
+    "one_turn_rank": 634,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to L6 facing W",
+    "one_turn": 25.98,
+    "one_turn_rank": 75,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": false
+   },
+   {
+    "words": "X4 Move to B4 facing SW",
+    "one_turn": 25.98,
+    "one_turn_rank": 113,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": false
+   },
+   {
+    "words": "X4 Move to B5 facing SW",
+    "one_turn": 25.98,
+    "one_turn_rank": 121,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": false
+   },
+   {
+    "words": "X4 Move to B6 facing N",
+    "one_turn": 25.98,
+    "one_turn_rank": 124,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 7,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to P4 facing SE",
+    "one_turn": 25.98,
+    "one_turn_rank": 278,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 8,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to O3 facing W",
+    "one_turn": 25.98,
+    "one_turn_rank": 321,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 9,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing NW",
+    "one_turn": 25.98,
+    "one_turn_rank": 330,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 10,
+    "accepted": false
+   },
+   {
+    "words": "X2 Quick Step to D6",
+    "one_turn": 25.6,
+    "one_turn_rank": 14,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 11,
+    "accepted": false
+   },
+   {
+    "words": "X1 Sprint to K7",
+    "one_turn": 26.74,
+    "one_turn_rank": 1059,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 12,
+    "accepted": false
+   },
+   {
+    "words": "X1 Sprint to G11",
+    "one_turn": 26.74,
+    "one_turn_rank": 1063,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 13,
+    "accepted": false
+   },
+   {
+    "words": "X1 Sprint to H8",
+    "one_turn": 26.74,
+    "one_turn_rank": 1071,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 14,
+    "accepted": false
+   },
+   {
+    "words": "X2 Sprint to D6",
+    "one_turn": 26.36,
+    "one_turn_rank": 858,
+    "pair": 27.81,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 15,
+    "accepted": false
+   },
+   {
+    "words": "X2 Sprint to E4",
+    "one_turn": 26.36,
+    "one_turn_rank": 870,
+    "pair": 27.81,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 16,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to L6",
+    "one_turn": 26.16,
+    "one_turn_rank": 488,
+    "pair": 28.53,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 17,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to K6",
+    "one_turn": 25.98,
+    "one_turn_rank": 451,
+    "pair": 27.6,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 18,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to L3",
+    "one_turn": 26.36,
+    "one_turn_rank": 888,
+    "pair": 28.53,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 19,
+    "accepted": false
+   },
+   {
+    "words": "X Pause",
+    "one_turn": 27.6,
+    "one_turn_rank": 1075,
+    "pair": 32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 20,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing E, then X Pause",
+    "one_turn": 27.6,
+    "one_turn_rank": 111402,
+    "pair": 32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 21,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing E, then X3 Move to L6 facing W",
+    "one_turn": 28.53,
+    "one_turn_rank": 288304,
+    "pair": 32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 22,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing E, then X4 Move to C3 facing E",
+    "one_turn": 27.6,
+    "one_turn_rank": 111466,
+    "pair": 32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 23,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to D6 facing E, then X4 Move to D3 facing E",
+    "one_turn": 27.6,
+    "one_turn_rank": 111474,
+    "pair": 32,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 24,
+    "accepted": false
+   }
+  ]
+ },
+ "10 bad odds": {
+  "side": "X",
+  "judge": "no_steal",
+  "judge_differences": 0,
+  "rebuilt_equal": true,
+  "capped": false,
+  "legal_first_actions": 1046,
+  "generated_first_actions": 20,
+  "followed_first_actions": 6,
+  "all_turns": 442758,
+  "generated_turns": 86,
+  "list_length": 24,
+  "turns_by_stage": {
+   "first action not generated": 427652,
+   "first action not followed by a second": 9612,
+   "second action not generated": 5408,
+   "generated, cut by the list's length": 62,
+   "on the list": 24
+  },
+  "accepted_turns": 441945,
+  "accepted_by_stage": {
+   "first action not generated": 426854,
+   "first action not followed by a second": 9604,
+   "second action not generated": 5408,
+   "generated, cut by the list's length": 55,
+   "on the list": 24
+  },
+  "accepted_among_read": 324,
+  "read_at_1_pair": 324,
+  "choice": {
+   "words": "X4 Move to B4 facing SW",
+   "one_turn": 26.17,
+   "one_turn_rank": 377,
+   "pair": 26.54,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 1,
+   "accepted": true
+  },
+  "best_board_move": {
+   "words": "X2 Quick Step to D8",
+   "one_turn": 25.6,
+   "one_turn_rank": 1,
+   "pair": 26.0,
+   "stage": 0,
+   "where": "first action not generated",
+   "list_rank": null,
+   "accepted": true
+  },
+  "board_move_gap": 0.54,
+  "best_turn_found": {
+   "words": "X2 Quick Step to D8",
+   "one_turn": 25.6,
+   "one_turn_rank": 1,
+   "pair": 26.0,
+   "stage": 0,
+   "where": "first action not generated",
+   "list_rank": null,
+   "accepted": true
+  },
+  "regret": 0.54,
+  "better_than_choice": 2,
+  "better_by_stage": {
+   "first action not generated": 2,
+   "on the list": 0,
+   "second action not generated": 0
+  },
+  "verdict": "met: the search's choice at 1 pair is a board move",
+  "seconds": 755.9,
+  "top": [
+   {
+    "words": "X2 Quick Step to D8",
+    "one_turn": 25.6,
+    "one_turn_rank": 1,
+    "pair": 26.0,
+    "stage": 0,
+    "where": "first action not generated",
+    "list_rank": null,
+    "accepted": true
+   },
+   {
+    "words": "X2 Quick Step to D7",
+    "one_turn": 25.6,
+    "one_turn_rank": 2,
+    "pair": 26.0,
+    "stage": 0,
+    "where": "first action not generated",
+    "list_rank": null,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B4 facing SW",
+    "one_turn": 26.17,
+    "one_turn_rank": 377,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B2 facing NW",
+    "one_turn": 26.17,
+    "one_turn_rank": 427,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N",
+    "one_turn": 26.17,
+    "one_turn_rank": 468,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": true
+   },
+   {
+    "words": "X2 Quick Step to C6",
+    "one_turn": 26.17,
+    "one_turn_rank": 708,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": true
+   },
+   {
+    "words": "X3 Quick Step to P6",
+    "one_turn": 26.17,
+    "one_turn_rank": 712,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to P2 facing N",
+    "one_turn": 26.17,
+    "one_turn_rank": 563,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": true
+   }
+  ],
+  "the_list": [
+   {
+    "words": "X4 Move to B4 facing SW",
+    "one_turn": 26.17,
+    "one_turn_rank": 377,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B2 facing NW",
+    "one_turn": 26.17,
+    "one_turn_rank": 427,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N",
+    "one_turn": 26.17,
+    "one_turn_rank": 468,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": true
+   },
+   {
+    "words": "X2 Quick Step to C6",
+    "one_turn": 26.17,
+    "one_turn_rank": 708,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": true
+   },
+   {
+    "words": "X3 Quick Step to P6",
+    "one_turn": 26.17,
+    "one_turn_rank": 712,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to P2 facing N",
+    "one_turn": 26.17,
+    "one_turn_rank": 563,
+    "pair": 26.54,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": true
+   },
+   {
+    "words": "X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 787,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 7,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B4 facing SW, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 2948,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 8,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B4 facing SW, then X3 Quick Step to P6",
+    "one_turn": 26.54,
+    "one_turn_rank": 3123,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 9,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B4 facing SW, then X5 Move to P2 facing N",
+    "one_turn": 26.54,
+    "one_turn_rank": 2980,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 10,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B2 facing NW, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 11924,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 11,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B2 facing NW, then X3 Quick Step to P6",
+    "one_turn": 26.54,
+    "one_turn_rank": 12099,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 12,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to B2 facing NW, then X5 Move to P2 facing N",
+    "one_turn": 26.54,
+    "one_turn_rank": 11956,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 13,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 19302,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 14,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N, then X3 Quick Step to P6",
+    "one_turn": 26.54,
+    "one_turn_rank": 19477,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 15,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N, then X5 Move to P2 facing N",
+    "one_turn": 26.54,
+    "one_turn_rank": 19334,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 16,
+    "accepted": true
+   },
+   {
+    "words": "X3 Quick Step to P6, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 33381,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 17,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to N3 facing N, then X3 Quick Step to P6",
+    "one_turn": 26.54,
+    "one_turn_rank": 31649,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 18,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to P2 facing N, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 31279,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 19,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to P2 facing N, then X3 Quick Step to P6",
+    "one_turn": 26.54,
+    "one_turn_rank": 31289,
+    "pair": 26.97,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 20,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to A2 facing N, then X2 Quick Step to C6",
+    "one_turn": 26.54,
+    "one_turn_rank": 19473,
+    "pair": 27.2,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 21,
+    "accepted": true
+   },
+   {
+    "words": "X2 Quick Step to C6, then X Pause",
+    "one_turn": 26.54,
+    "one_turn_rank": 33359,
+    "pair": 27.2,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 22,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to C3 facing E, then X2 Quick Step to C6",
+    "one_turn": 26.54,
+    "one_turn_rank": 6887,
+    "pair": 27.2,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 23,
+    "accepted": true
+   },
+   {
+    "words": "X4 Move to D3 facing E, then X2 Quick Step to C6",
+    "one_turn": 26.54,
+    "one_turn_rank": 8315,
+    "pair": 27.2,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 24,
+    "accepted": true
+   }
+  ]
+ },
+ "10 good odds": {
+  "side": "X",
+  "judge": "steal",
+  "judge_differences": 0,
+  "rebuilt_equal": true,
+  "capped": false,
+  "legal_first_actions": 1139,
+  "generated_first_actions": 20,
+  "followed_first_actions": 7,
+  "all_turns": 532281,
+  "generated_turns": 80,
+  "list_length": 24,
+  "turns_by_stage": {
+   "first action not generated": 515369,
+   "first action not followed by a second": 9940,
+   "second action not generated": 6892,
+   "generated, cut by the list's length": 56,
+   "on the list": 24
+  },
+  "accepted_turns": 908,
+  "accepted_by_stage": {
+   "first action not generated": 893,
+   "first action not followed by a second": 7,
+   "second action not generated": 0,
+   "generated, cut by the list's length": 0,
+   "on the list": 8
+  },
+  "accepted_among_read": 303,
+  "read_at_1_pair": 319,
+  "choice": {
+   "words": "X5 Move to O3 facing E",
+   "one_turn": 23.36,
+   "one_turn_rank": 1504,
+   "pair": 14.92,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 11,
+   "accepted": false
+  },
+  "best_board_move": {
+   "words": "X1 Move to J10 facing S, then X4 Steal",
+   "one_turn": 14.79,
+   "one_turn_rank": 1,
+   "pair": 15.05,
+   "stage": 0,
+   "where": "first action not generated",
+   "list_rank": null,
+   "accepted": true
+  },
+  "board_move_gap": -0.13,
+  "best_turn_found": {
+   "words": "X5 Move to O3 facing E",
+   "one_turn": 23.36,
+   "one_turn_rank": 1504,
+   "pair": 14.92,
+   "stage": 4,
+   "where": "on the list",
+   "list_rank": 11,
+   "accepted": false
+  },
+  "regret": -0.0,
+  "better_than_choice": 0,
+  "better_by_stage": {
+   "first action not followed by a second": 0,
+   "first action not generated": 0,
+   "on the list": 0
+  },
+  "verdict": "judgement: the best board move is worth 0.1 less when searched; a board move is on the list",
+  "seconds": 818.9,
+  "top": [
+   {
+    "words": "X5 Move to O3 facing E",
+    "one_turn": 23.36,
+    "one_turn_rank": 1504,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 11,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to O3 facing W",
+    "one_turn": 23.36,
+    "one_turn_rank": 1508,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 12,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing W",
+    "one_turn": 23.36,
+    "one_turn_rank": 1516,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 13,
+    "accepted": false
+   },
+   {
+    "words": "X5 Quick Step to O3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1660,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 15,
+    "accepted": false
+   },
+   {
+    "words": "X5 Sprint to O3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1716,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 19,
+    "accepted": false
+   },
+   {
+    "words": "X5 Sprint to N3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1717,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 20,
+    "accepted": false
+   },
+   {
+    "words": "X1 Move to J10 facing N",
+    "one_turn": 23.36,
+    "one_turn_rank": 1076,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 21,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to O8",
+    "one_turn": 23.36,
+    "one_turn_rank": 1643,
+    "pair": 15.0,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 14,
+    "accepted": false
+   }
+  ],
+  "the_list": [
+   {
+    "words": "X4 Steal",
+    "one_turn": 14.92,
+    "one_turn_rank": 3,
+    "pair": 15.22,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 1,
+    "accepted": true
+   },
+   {
+    "words": "X3 Move to O8 facing E, then X4 Steal",
+    "one_turn": 15.01,
+    "one_turn_rank": 520,
+    "pair": 15.27,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 2,
+    "accepted": true
+   },
+   {
+    "words": "X3 Move to O9 facing S, then X4 Steal",
+    "one_turn": 15.01,
+    "one_turn_rank": 530,
+    "pair": 16.08,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 3,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to O3 facing E, then X4 Steal",
+    "one_turn": 14.92,
+    "one_turn_rank": 126,
+    "pair": 15.34,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 4,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to O3 facing W, then X4 Steal",
+    "one_turn": 14.92,
+    "one_turn_rank": 130,
+    "pair": 15.34,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 5,
+    "accepted": true
+   },
+   {
+    "words": "X5 Move to N3 facing W, then X4 Steal",
+    "one_turn": 14.92,
+    "one_turn_rank": 138,
+    "pair": 15.34,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 6,
+    "accepted": true
+   },
+   {
+    "words": "X3 Quick Step to O8, then X4 Steal",
+    "one_turn": 15.0,
+    "one_turn_rank": 356,
+    "pair": 15.35,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 7,
+    "accepted": true
+   },
+   {
+    "words": "X5 Quick Step to O3, then X4 Steal",
+    "one_turn": 14.92,
+    "one_turn_rank": 262,
+    "pair": 15.22,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 8,
+    "accepted": true
+   },
+   {
+    "words": "X3 Move to O8 facing E",
+    "one_turn": 23.36,
+    "one_turn_rank": 1257,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 9,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to O9 facing S",
+    "one_turn": 23.36,
+    "one_turn_rank": 1267,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 10,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to O3 facing E",
+    "one_turn": 23.36,
+    "one_turn_rank": 1504,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 11,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to O3 facing W",
+    "one_turn": 23.36,
+    "one_turn_rank": 1508,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 12,
+    "accepted": false
+   },
+   {
+    "words": "X5 Move to N3 facing W",
+    "one_turn": 23.36,
+    "one_turn_rank": 1516,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 13,
+    "accepted": false
+   },
+   {
+    "words": "X3 Quick Step to O8",
+    "one_turn": 23.36,
+    "one_turn_rank": 1643,
+    "pair": 15.0,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 14,
+    "accepted": false
+   },
+   {
+    "words": "X5 Quick Step to O3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1660,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 15,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to O8",
+    "one_turn": 23.36,
+    "one_turn_rank": 1689,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 16,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to O9",
+    "one_turn": 23.36,
+    "one_turn_rank": 1690,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 17,
+    "accepted": false
+   },
+   {
+    "words": "X3 Sprint to O3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1696,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 18,
+    "accepted": false
+   },
+   {
+    "words": "X5 Sprint to O3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1716,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 19,
+    "accepted": false
+   },
+   {
+    "words": "X5 Sprint to N3",
+    "one_turn": 23.36,
+    "one_turn_rank": 1717,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 20,
+    "accepted": false
+   },
+   {
+    "words": "X1 Move to J10 facing N",
+    "one_turn": 23.36,
+    "one_turn_rank": 1076,
+    "pair": 14.92,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 21,
+    "accepted": false
+   },
+   {
+    "words": "X2 Move to B8 facing N",
+    "one_turn": 23.36,
+    "one_turn_rank": 1195,
+    "pair": 15.01,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 22,
+    "accepted": false
+   },
+   {
+    "words": "X Pause",
+    "one_turn": 24.38,
+    "one_turn_rank": 1817,
+    "pair": 24.38,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 23,
+    "accepted": false
+   },
+   {
+    "words": "X3 Move to O8 facing E, then X Pause",
+    "one_turn": 24.38,
+    "one_turn_rank": 239287,
+    "pair": 24.38,
+    "stage": 4,
+    "where": "on the list",
+    "list_rank": 24,
+    "accepted": false
+   }
+  ]
  }
 }
