@@ -786,8 +786,18 @@ class Read:
         """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
         eval.calibrated on (step 17D), that reading passed through the map fitted to what positions went on to earn."""
         v, s = self._hand_leaf(), self.s
+        top = None
+        if self.cfg.get('settle_shots') is True:
+            # step 18b (D-145): no reading is above the most the possession can still earn, before or after the map
+            banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+            banked += foul_externality(s)
+            top = ceiling(s)
+            if v - banked > top:
+                v = banked + top
         w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
-        if w is None or not w.get('calibration') or self.k <= 0 or s.stage != 'play' or s.pending or \
+        # the quicker reading that orders the list (k = 0) is mapped too when shots are settled, so that a settled shot
+        # and a position that plays on are ranked on one scale (step 18b)
+        if w is None or not w.get('calibration') or (self.k <= 0 and top is None) or s.stage != 'play' or s.pending or \
                 (not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS):
             return v
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
@@ -795,7 +805,10 @@ class Read:
         cal = w['calibration']
         if not s.ctx.rules.digital and self.cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
             cal = w['calibration_tabletop']             # D-141: the table's own map
-        return banked + calibrate(cal, s, self.o_to_act, v - banked)
+        r = calibrate(cal, s, self.o_to_act, v - banked)
+        if top is not None and r > top:
+            r = top
+        return banked + r
 
     def _hand_leaf(self):
         """V_leaf from the offence's point of view (expected possession value, game units): the best of the shot
@@ -1169,6 +1182,40 @@ def learned_value(s, f):
     for i in range(len(f)):
         v += m['weights'][i] * (f[i] - m['mean'][i]) / m['sd'][i]
     return v
+
+
+_CEILING = {}
+
+
+def ceiling(s):
+    """Step 18b (D-145): the most the possession can still earn beyond what it has already earned, against the
+    defence's best reply. A possession ends in one shot, and the defence can always decline to Contest or to Steal (so
+    it never has to give free throws or the +5): no position is worth more than the best open shot any attacker's
+    card can score: points x rating, 3 x the three or 2 x any other shot. With Coach's Call in play the target's shot
+    also earns the bonus for its look. From the rules and the cards; no number is set by hand."""
+    ctx = s.ctx
+    key = (id(ctx), s.target if ctx.coach_call else -1)
+    hit = _CEILING.get(key)
+    if hit is not None and hit[0] is ctx:
+        return hit[1]
+    from .scoring import band
+    best = 0.0
+    for i, card in enumerate(ctx.off):
+        m = 0.0
+        for z, types in RC.ZONE_SHOTS.items():
+            pts = RC.ZONE_POINTS.get(z, 0)
+            for ty in types:
+                v = pts * card.shot(ty)
+                if v > m:
+                    m = v
+        if ctx.coach_call and i == s.target:
+            m = m + RC.COACH_BONUS[band(m)]
+        if m > best:
+            best = m
+    if len(_CEILING) > 4096:
+        _CEILING.clear()
+    _CEILING[key] = (ctx, best)
+    return best
 
 
 def calibration_scale(s, phase):

@@ -1,0 +1,139 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "settle": true,
+ "searches": {
+  "compared": 4,
+  "equal": 4
+ },
+ "states": 1000,
+ "seconds_python": 94.5,
+ "seconds_js": 9.3,
+ "by_stage": {
+  "play": 943,
+  "reaction": 10,
+  "over": 47
+ },
+ "by_phase": {
+  "1": 635,
+  "2": 193,
+  "3": 95,
+  "4": 39,
+  "5": 38
+ },
+ "by_age": {
+  "senior": 311,
+  "youth": 324,
+  "junior": 365
+ },
+ "by_standard": {
+  "pro": 309,
+  "semi_pro": 355,
+  "amateur": 336
+ },
+ "digital": 497,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 1000,
+   "equal": 1000
+  },
+  "attacker_reach": {
+   "compared": 953,
+   "equal": 953
+  },
+  "defender_reach": {
+   "compared": 953,
+   "equal": 953
+  },
+  "defender_exact": {
+   "compared": 953,
+   "equal": 953
+  },
+  "threat_geo": {
+   "compared": 953,
+   "equal": 953
+  },
+  "cover_geo": {
+   "compared": 953,
+   "equal": 953
+  },
+  "leaf_geo": {
+   "compared": 953,
+   "equal": 953
+  },
+  "threat_exact": {
+   "compared": 953,
+   "equal": 953
+  },
+  "cover_exact": {
+   "compared": 953,
+   "equal": 953
+  },
+  "leaf_exact": {
+   "compared": 953,
+   "equal": 953
+  },
+  "quick": {
+   "compared": 953,
+   "equal": 953
+  },
+  "reach_map": {
+   "compared": 953,
+   "equal": 953
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 931,
+   "equal": 931
+  },
+  "features_exact": {
+   "compared": 931,
+   "equal": 931
+  },
+  "ceiling": {
+   "compared": 953,
+   "equal": 953
+  },
+  "settled": {
+   "compared": 10,
+   "equal": 10
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

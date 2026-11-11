@@ -12,7 +12,7 @@ import time
 
 from . import board as B
 from . import rules_config as RC
-from .actions import Action, legal_actions
+from .actions import Action, legal_actions, MOVEMENT
 from .resolve import apply, ChanceNode
 from .scoring import score
 from .decide import Read, CONFIG
@@ -286,6 +286,9 @@ class Searcher:
         self.phis = {}
         self.touches = {}
         self.depth_seconds = []          # step 13: the time each completed depth was reached at: [(depth, seconds)]
+        # step 18b (eval.settle_shots, off): a declared shot at the horizon is valued by playing the reaction out
+        self.settle_shots = CONFIG['eval'].get('settle_shots') is True
+        self.scache = {}
         self.t0 = time.time()
 
     def check(self):
@@ -294,6 +297,8 @@ class Searcher:
 
     def leaf(self, s):
         self.leaves += 1
+        if self.settle_shots and not isinstance(s, ChanceNode) and s.stage != 'play' and s.stage != 'over':
+            return self.settled(s)
         v = self.evaluate(s)
         if self.tempo_on and self.tempo and not isinstance(s, ChanceNode) and s.stage == 'play':
             # the measured tempo term: the same position reads higher with the offence to act; a leaf is read as the
@@ -303,6 +308,43 @@ class Searcher:
         if self.goals:
             v += self.phi(s)                 # progress: the potential here (the root's is taken off at the end)
         return v
+
+    def settled(self, s):
+        """Step 18b: a position with a shot declared (the reaction, the Contest choice, a forced shot's choice), valued
+        by the rules themselves: the side to act takes its best legal action, and so on until the possession ends or
+        open play resumes (after a steal at the table), with the dice at their chances. In the reaction a movement
+        that doesn't end next to the shooter can't change the Contest or a Steal (the reaction is at most two actions
+        and those are its last), so only movements ending next to him are played, and after a movement only a
+        Contest, a Steal or ending the reaction. No number is set by hand."""
+        key = zobrist(s)
+        v = self.scache.get(key)
+        if v is not None:
+            return v
+        side = actor(s)
+        acts = legal_actions(s)
+        if s.stage == 'reaction':
+            if s.turn_n >= 1:        # after a movement: only a Contest, a Steal or ending the reaction counts
+                acts = [a for a in acts if a.kind not in MOVEMENT]
+            else:
+                sp = s.o[s.ball]
+                acts = [a for a in acts if a.kind not in MOVEMENT or B.adjacent(a.dest, sp)]
+        best = None
+        for a in acts:
+            w = self.settle_node(apply(s, a))
+            if best is None or (w > best if side == 'O' else w < best):
+                best = w
+        v = self.evaluate(s) if best is None else best
+        self.scache[key] = v
+        return v
+
+    def settle_node(self, n):
+        if isinstance(n, ChanceNode):
+            return sum(float(p) * self.settle_node(sub) for p, _, sub in n.outcomes)
+        if n.stage == 'over':
+            return terminal_value(n)
+        if n.stage == 'play':
+            return self.leaf(n)
+        return self.settled(n)
 
     def phi(self, s):
         """The goal potential of a position (the offence's view): 0 unless play goes on; a pass in the air carries the
@@ -385,6 +427,8 @@ class Searcher:
         if s.stage == 'over':
             return terminal_value(s)
         if depth <= 0:
+            if self.settle_shots and s.stage != 'play':
+                return self.leaf(s)                      # step 18b: the declared shot is settled by the rules
             if self.quiet or self.play_on:
                 why = self.unsettled(s)
                 if why is not None:
@@ -516,6 +560,8 @@ class Searcher:
             return sum(float(p) * self.quick(sub) for p, _, sub in node.outcomes)
         if node.stage == 'over':
             return terminal_value(node)
+        if self.settle_shots and node.stage != 'play':
+            return self.settled(node)                    # step 18b: a declared shot is ordered by its settled value
         return Read(node, k=0, looks_per=3).leaf()
 
     def turns_of(self, s):

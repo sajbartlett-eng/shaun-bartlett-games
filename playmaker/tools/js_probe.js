@@ -22,6 +22,7 @@ function outcomes(js, ctxJs) {
   }
   return res;
 }
+const PROFILES = JSON.parse(fs.readFileSync(path.join(root, 'ai_profiles.json'))).profiles;
 const lines = fs.readFileSync(0, 'utf8').split('\n').filter(Boolean);
 const out = [];
 for (const ln of lines) {
@@ -35,11 +36,20 @@ for (const ln of lines) {
   if (q.advantages !== undefined) E.setAdvantages(q.advantages);         // step 16
   if (q.goals !== undefined) E.setGoals(q.goals);
   if (q.learned !== undefined) E.setLearned(q.learned);
+  if (q.settle !== undefined) E.setSettle(q.settle);                    // step 18b
   if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
     else {
       const p = E.probe(q.state, q.ctx);
+      if (q.state.stage !== 'over') {                     // step 18b: the ceiling (D-145), and a declared shot settled by the rules
+        const ctx18 = E.makeCtx(q.ctx), s18 = E.stateFrom(q.state, ctx18);
+        p.ceiling = E.ceilingOf(s18);
+        if (q.settle && s18.stage !== 'play') {
+          const prof = PROFILES.allstar, me = E.actor(s18);
+          p.settled = new E.Searcher(me, prof, n => new E.Read(n).leaf(), Infinity).settled(s18);
+        }
+      }
       if (q.outcomes) p.react_outcomes = outcomes(q.state, q.ctx);
       if (q.reach_map && q.state.stage !== 'over') {      // step 12: the reach map, square by square
         const m = E.reachMap(E.stateFrom(q.state, E.makeCtx(q.ctx))), rm = {};
