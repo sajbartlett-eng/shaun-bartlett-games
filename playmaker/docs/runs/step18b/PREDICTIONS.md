@@ -42,3 +42,6 @@ Costs are core-hours on this machine (4 cores). A prediction isn't edited after 
   (7.4 with the switch off) and 0.5 in 100 at the table (1.1 off): about the same, as predicted; the intervals
   overlap. The clock ran out on 0 in 200 under the app's rules and 1.5 in 100 at the table: the table's is just
   below the predicted 2 to 6.
+- **4.** 1.85 core-hours for the default and `eval.settle_shots` (`play_on`'s was dropped). +0.7 a position overall
+  (interval +0.1 to +1.3). **Wrong way round:** the gain is with the offence to act (+0.9, interval +0.1 to +1.6);
+  with the defence to act it is level (+0.3, interval -0.8 to +1.4).

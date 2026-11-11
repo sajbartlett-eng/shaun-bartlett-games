@@ -70,7 +70,11 @@ Every horizon reading of a 1-pair search from the exam's 218 positions (`ceiling
   On 185 declared shots from the exam positions, the defence's best reply was to step in and then Contest on 119.
   `play_on` reads those shots 9.8 points too high on average.
 - "Both on" wasn't run: the prompt asks for it only if each alone gains.
-- **The outcome exam:** EXAM_PLACEHOLDER
+- **The outcome exam:** +0.7 points a position (interval +0.1 to +1.3) over 218 positions; better on 77, worse
+  on 56 (`exam_default_settle.json`).
+  - The offence to act (145): +0.9 (interval +0.1 to +1.6).
+  - The defence to act (73): +0.3 (interval -0.8 to +1.4): level.
+  - Largest in the last two phases: +1.2 and +2.1, both clear of zero.
 
 ## Boards 6 and 8, move by move
 
@@ -114,7 +118,18 @@ phase the offence didn't shoot in. Intervals in brackets.
 
 ## Compute against the predictions
 
-COMPUTE_PLACEHOLDER
+The prompt's cap was 4 core-hours, with the cap left to my judgement; I planned about 10. Used: about 6.3.
+Predictions: `docs/runs/step18b/PREDICTIONS.md`.
+
+| Run | Predicted | Used | Against the prediction |
+|---|---|---|---|
+| Head to head, `eval.settle_shots` | 1.5 to 2.5; +1 to +4 | 0.83 | as predicted; decided at 160 pairs |
+| Head to head, `play_on` | 1.5 to 2.5; 0 to +2, perhaps no gain | 0.78 | as predicted: no gain |
+| Self-play with the switch on, both formats | 1.6; the same risk of losing the ball | 1.69 | as predicted |
+| The outcome exam | 2.2; a gain with the defence to act, level on offence | 1.85 | **wrong way round:** the gain is on offence; the defence is level |
+| The fault measured, the boards, the diagnosis, speed, the agreement checks | none: each under 30 minutes | about 1.2 | |
+
+`play_on`'s outcome exam and the "both on" head-to-head were dropped once `play_on` showed no gain.
 
 ## 1. Changes to the printed game
 
@@ -148,7 +163,13 @@ None. `eval.settle_shots` is off.
 
   9% to 27% slower; inside the desktop budget at every level. At the assumed phone speed the Starter and the
   All-Star are over, as they already were. The look-ahead reached is unchanged.
-- **Tests:** TESTS_PLACEHOLDER
+- **Tests, switch off** (`test_rules_current`, `test_static`, `test_step3n`, `test_step3m`): 77 pass, 13 expected
+  failures, 1 unexpected pass, 1 fail: the same counts as 18a. The fail is the same timing test (a decision took
+  1.89 s against a 1.70 s limit).
+  - It isn't from this step. At a fixed look-ahead the test's game is the same on 18a's code and this step's, move
+    for move, in the same processor time (20 s each).
+  - On the clock the test sits at its limit on this machine: 18a's code went over it in 2 of 7 runs alone, this
+    step's in 7 of 7, with the machine's speed moving by a third between runs.
 
 **Two worked examples a trainer could say:**
 
@@ -159,7 +180,27 @@ None. `eval.settle_shots` is off.
 
 ## 4. For Shaun to decide
 
-DECIDE_PLACEHOLDER
+- **Switch `eval.settle_shots` on?** I'd switch it on.
+  - For: +2.4 a pair head to head and +0.7 a position on the exam, both clear of zero; no reading above the
+    ceiling; board 7 gained and board 6's shot is now taken; the engines agree.
+  - Against: 9% to 27% slower, though inside the desktop budget. Shots on the app come a touch earlier still (73%
+    to 77% in phases 1 and 2).
+  - It was measured at All-Star only, as asked. Checking Rookie and Starter the way 18a did is about 2.5
+    core-hours; I'd do that before it becomes every level's default.
+- **Keep or retire `play_on`?** Retire it. No gain head to head (-0.4, interval -2.1 to +1.3), it loses boards 2
+  and 10, and it settles a shot without the defender who steps in. Its one other useful part, playing on while a
+  pass is in the air, is worth rebuilding on its own: that is board 11's fault.
+- **Early shooting.** On the app the ball is lost in about 7 of 100 phases kept, and a turnover ends the
+  possession. By the research's test that makes early shooting mostly rational, so I wouldn't temper it. What the
+  test can't say is whether waiting should buy a better shot than it does. Ask again after 18c and 18d, when the
+  computer can find more.
+- **The cost of a turnover at the table.** There the ball is lost about 1 in 100 phases, against 7 on the app:
+  turnovers in 1 to 3 of 100 possessions. A Steal that works costs the offence 5 and a phase at the table, and the
+  whole possession on the app, so the table's defence has little reason to hunt the ball. If the table should play
+  like the app, the turnover's price is the lever. That is yours to rule.
+- **Plan step 24.** With the switch on and the table's own map, the clock runs out on 1.5 in 100 at the table
+  (interval 0.5 to 4.3). That is about basketball's 1. It depends on two things still open: this switch, and the
+  table's map.
 
 ## 5. Noticed, not touched
 
@@ -172,9 +213,11 @@ DECIDE_PLACEHOLDER
   declared shots.
 - **The lower levels model their opponent as part passive.** Inside the settled reaction the reply is always the
   defence's best.
+- **Measured at All-Star only.** The lower levels' checks aren't run.
 - **The exam book** is untouched. The table's own map, the cost of a turnover at the table and plan step 24 are
   untouched.
 
 ## 6. Model for the next step
 
-MODEL_PLACEHOLDER
+Claude Fable 5.2, effort high: 18c adds readings for the defence in both engines (help on a beaten drive,
+the drive itself), which is design work, and its results need the same care in reading.
