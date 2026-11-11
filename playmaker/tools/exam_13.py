@@ -76,6 +76,11 @@ def set_switches(eng, setting):
     if eng is not None:
         eng.call('setSettle', 'true' if settle else 'false')
         eng.call('setHelp', 'true' if helpr else 'false')
+    openv = os.environ.get('EXAM13_OPEN')               # step 18e: search.open_list ('defence', 'both'; unset: the config's)
+    if openv is not None:
+        CONFIG.setdefault('search', {})['open_list'] = False if openv in ('', '0', 'false') else openv
+        if eng is not None:
+            eng.call('setOpenList', 'false' if openv in ('', '0', 'false') else openv)
     cal = os.environ.get('EXAM13_CALIBRATED')          # step 18a: 0 measures the computer before D-138 (the default is on)
     if cal is not None:
         CONFIG['eval']['calibrated'] = cal != '0'

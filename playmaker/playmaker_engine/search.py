@@ -203,8 +203,15 @@ def _step(s, a):
 #      the best `beam` of those are the list.
 # Elsewhere (a declared shot's reaction, and the offence under 'both'): every legal action is read in full.
 
-def open_on(side):
-    v = CONFIG.get('search', {}).get('open_list')
+def open_mode(profile=None):
+    """The switch: search.open_list (False, 'defence' or 'both') when it is set; when it is None, the level's own
+    setting (profiles.<level>.open_list). The All-Star plays 'defence' by default (step 18e)."""
+    g = CONFIG.get('search', {}).get('open_list')
+    return ((profile or {}).get('open_list') or False) if g is None else g
+
+
+def open_on(side, mode=None):
+    v = open_mode() if mode is None else mode
     return v is True or v == 'both' or (v == 'defence' and side == 'X')
 
 
@@ -387,13 +394,13 @@ def open_turns_x(s, beam, evaluate, deadline, expand):
     return final
 
 
-def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=2):
+def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=2, mode=None):
     """The candidate whole turns from s (lists of 1 or 2 actions), ordered by the value after the turn's
     deterministic part (the side's own point of view), at most `beam`. A turn ends at a turn-ender, a roll, the
     side's second action or a change of side."""
     side = actor(s)
     sign = 1 if side == 'O' else -1
-    open_ = open_on(side) and evaluate is not None
+    open_ = open_on(side, mode) and evaluate is not None        # mode: the level's open list (open_mode)
     if open_ and side == 'X' and s.stage == 'play':
         r = open_turns_x(s, beam, evaluate, deadline, expand)
         if r is not None:
@@ -502,6 +509,7 @@ class Searcher:
         # step 18c (eval.help_readings, off): with the offence to act, a position is worth at least the best shot it
         # can release this turn, settled by the rules (the floor)
         self.help = CONFIG['eval'].get('help_readings') is True
+        self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
         self.fcache = {}
         self.t0 = time.time()
 
@@ -822,7 +830,7 @@ class Searcher:
         key = zobrist(s)
         hit = self.tcache.get(key)
         if hit is None:
-            hit = turns(s, self.p['beam'], evaluate=self.quick, deadline=self.deadline, expand=3, second=1)
+            hit = turns(s, self.p['beam'], evaluate=self.quick, deadline=self.deadline, expand=3, second=1, mode=self.open)
             self.tcache[key] = hit
         return hit
 
@@ -854,7 +862,7 @@ class Searcher:
         budget = self.deadline - time.time()
         root_read = Read(s, exact=budget >= 0.8)            # the rules' exact reach when the budget allows
         ts = turns(s, self.p['beam'], read=root_read, evaluate=self.quick, deadline=None,
-                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1)
+                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1, mode=self.open)
         deadline, self.deadline = self.deadline, float('inf')
         results = []
         sign = 1 if side == 'O' else -1

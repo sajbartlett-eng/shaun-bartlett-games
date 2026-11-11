@@ -25,7 +25,7 @@ if (s.stage !== 'over') {
   const srch = new E.Searcher(me, job.profile, E.makeEvaluate(job.profile, me, null), Infinity);
   const value = n => (E.isChance(n) ? srch.value(n, 1, VMIN, VMAX) : n.stage === 'over' ? E.terminalValue(n) : srch.value(n, srch.childDepth(s, n, 2), VMIN, VMAX));
   const read = new E.Read(s, { exact: true });
-  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2) : srch.turnsOf(s);
+  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2, srch.open) : srch.turnsOf(s);
   const rows = ts.map(([, t]) => [value(E.playTurn(s, t)), t]);
   rows.sort((x, y) => sign * (y[0] - x[0]));
   out.listed = rows.length;

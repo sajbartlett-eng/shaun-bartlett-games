@@ -93,11 +93,11 @@ scored.slice(0, nexp).forEach(([, t]) => {
 pool.sort((x, y) => y[0] - x[0]);
 let rank = new Map(), list = [];
 for (const [v, t] of pool) { const k = turnKey(t); if (!rank.has(k)) { rank.set(k, rank.size); if (list.length < beam) list.push([v, t]); } }
-const own = E.turns(s, beam, rootRead, n => srch.quick(n), null, null, 2);
+const own = E.turns(s, beam, rootRead, n => srch.quick(n), null, null, 2, srch.open);
 let rebuilt_equal = own.length === list.length && own.every((r, k) => turnKey(r[1]) === turnKey(list[k][1]));
 // step 18e: under search.open_list the list isn't built in those stages (every legal action is read): the engine's own
 // list is taken as it is, and a turn is on it or not
-const OPEN = !!(E.openOn && E.openOn(me));
+const OPEN = !!(E.openOn && E.openOn(me, srch.open));
 if (OPEN) { list = own; rank = new Map(own.map((r, k) => [turnKey(r[1]), k])); rebuilt_equal = true; }
 
 // where a turn stands: 4 on the list; 3 generated but ranked below the list's length; 2 its second action wasn't

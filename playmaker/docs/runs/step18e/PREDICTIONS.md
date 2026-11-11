@@ -33,3 +33,25 @@ re-read of one moved defender, then the full read of the best.
   only by the foul roll.
 - **The open list:** the choice best on 7 or more of 11, and under 0.6 points left. The first build already puts
   "step in, then Steal" on the list on three of the positions without being told.
+- **Result:** 1.76 core-hours for the two passes, on 12 positions (the twelfth no longer fails). **Right.**
+  - Today's list under the new rules: the choice best on 5 of 12, 1.11 points left (interval 0.28 to 1.95); all 7
+    losses a first action never generated.
+  - The open list: best on 9 of 12, 0.29 left (interval -0.07 to 0.65); none over 2 points.
+  - An earlier pass of the open list was stopped and thrown away (about 0.7 core-hours): the replay of Shaun's game
+    showed a fault in the cheap read (it denied a defender his Move in the reaction when the defence had two tokens
+    left). Fixed before these passes.
+
+## 2. Head to head: the All-Star with the open list against the new default, up to 400 pairs
+
+- Cost: about 5 (the open list makes a decision on offence slower: about 25 defence lists a search, each about 11 ms
+  dearer).
+- **A gain of 0 to +2.5 points a pair, most likely about +1.** The pilot's gain is by the computer's own reading 1
+  pair ahead; a head to head is play to the end. The reading still can't tell many defence turns apart (they read the
+  same at the phase table's floor), so a longer list of them buys less than the pilot suggests. I expect the
+  sequential test to need most of the 400 pairs, and a fair chance (about 2 in 5) that it ends "no gain".
+- Shot timing on offence unchanged. On defence, more Steals tried, so more possessions ended by a Steal or a steal
+  foul.
+- **Result:** 1.95 core-hours; the sequential test said "a gain" at 186 pairs and the run stopped at 240. **Wrong on
+  the size:** +4.7 points a pair (interval 2.7 to 6.8), 98 wins, 81 losses, 61 ties. Right on where it comes from:
+  the open list's defence ends 75 of 240 possessions with the ball lost (a Steal), against 30 of 240 the other way.
+  Shot timing on offence unchanged (70% and 72% of shots in phases 1 and 2).

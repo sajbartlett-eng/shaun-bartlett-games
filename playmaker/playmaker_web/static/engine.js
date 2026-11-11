@@ -2477,8 +2477,11 @@ const PMEngine = (() => {
   //   5. the best `full` candidates by the cheap read are read in full (the ordering reading every turn gets today),
   //      and the best `beam` of those are the list.
   // Elsewhere (a declared shot's reaction, and the offence under 'both'): every legal action is read in full.
-  function openOn(side) { const v = (D.config.search || {}).open_list; return v === true || v === 'both' || (v === 'defence' && side === 'X'); }
-  function setOpenList(v) { D.config.search = D.config.search || {}; D.config.search.open_list = v === 'true' ? true : v === 'false' ? false : v; return D.config.search.open_list; }
+  // The switch: search.open_list (false, 'defence' or 'both') when it is set; when it is null, the level's own setting
+  // (profiles.<level>.open_list). The All-Star plays 'defence' by default (step 18e); the Rookie and Starter don't.
+  function openMode(profile) { const g = (D.config.search || {}).open_list; return g === null || g === undefined ? ((profile && profile.open_list) || false) : g; }
+  function openOn(side, mode) { const v = mode === undefined ? openMode(null) : mode; return v === true || v === 'both' || (v === 'defence' && side === 'X'); }
+  function setOpenList(v) { D.config.search = D.config.search || {}; D.config.search.open_list = v === 'true' ? true : v === 'false' ? false : (v === 'null' || v === undefined) ? null : v; return D.config.search.open_list; }
   const OPEN_STATS = { calls: 0, legal: 0, unique: 0, pairs: 0, followed: 0, full: 0 };
   // The turn as one action of the defence leaves it (the token spent, a pass in the air landed, whose action it is,
   // the phase), with every piece where it stands: the position the cheap re-reads are made from (apply's own steps
@@ -2621,9 +2624,9 @@ const PMEngine = (() => {
     }
     return fin;
   }
-  function turns(s, beam, read, evaluate, deadline, expand, second) {
+  function turns(s, beam, read, evaluate, deadline, expand, second, mode) {      // mode: the level's open list (openMode)
     const side = actor(s), sign = side === 'O' ? 1 : -1;
-    const open = openOn(side) && !!evaluate;
+    const open = openOn(side, mode) && !!evaluate;
     if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [];
@@ -2682,6 +2685,7 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
+      this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
@@ -2934,7 +2938,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
       if (hit === undefined) {
-        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1);
+        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open);
         this.tcache.set(key, hit);
       }
       return hit;
@@ -2965,7 +2969,7 @@ const PMEngine = (() => {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
-      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1);
+      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open);
       const deadline = this.deadline; this.deadline = Infinity;
       let results = [];
       const sign = side === 'O' ? 1 : -1;
@@ -3284,7 +3288,7 @@ const PMEngine = (() => {
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, OPEN_STATS,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

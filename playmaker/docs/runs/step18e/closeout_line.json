@@ -1,0 +1,208 @@
+{
+ "old default": {
+  "1. the ball is in the corner; the defence acts": {
+   "chose": "X3 Move to C4 facing W",
+   "reads": 25.46,
+   "listed": 24,
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 0,
+     "on_the_list": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "reads": 27.09,
+     "behind_the_choice": 1.63,
+     "on_the_list": 7
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 0,
+     "on_the_list": 1
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "reads": 28.65,
+     "behind_the_choice": 3.19,
+     "on_the_list": 16
+    }
+   ]
+  },
+  "2. X3 a Quick Step closer, the offence has moved an off-ball player; the defence acts": {
+   "chose": "X1 Move to I9 facing N",
+   "reads": 25.46,
+   "listed": 24,
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 0,
+     "on_the_list": 13
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "reads": 18.05,
+     "behind_the_choice": -7.41,
+     "on_the_list": null
+    }
+   ]
+  },
+  "3. the three goes up after the Pause; the reaction": {
+   "played": [
+    "X3 Move to B4 facing SW",
+    "X3 contests"
+   ],
+   "worth": 15.0,
+   "chose": "X3 Move to B4 facing SW",
+   "reads": 15,
+   "listed": 23,
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "reads": 15,
+     "behind_the_choice": 0,
+     "on_the_list": 2
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "reads": 33,
+     "behind_the_choice": 18,
+     "on_the_list": 4
+    }
+   ]
+  },
+  "its own way, against the same offence": [
+   {
+    "defence": [
+     "X3 Move to C4 facing W",
+     "X Pause"
+    ]
+   },
+   {
+    "defence": [
+     "X1 Move to I9 facing N",
+     "X End turn"
+    ]
+   },
+   {
+    "reaction": [
+     "X3 Quick Step to B3",
+     "X3 contests"
+    ],
+    "the_three_is_worth": 15.0
+   }
+  ]
+ },
+ "new default": {
+  "1. the ball is in the corner; the defence acts": {
+   "chose": "X3 Move to C4 facing SW",
+   "reads": 25.46,
+   "listed": 24,
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 0,
+     "on_the_list": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "reads": 27.72,
+     "behind_the_choice": 2.25,
+     "on_the_list": null
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 0,
+     "on_the_list": null
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "reads": 32.55,
+     "behind_the_choice": 7.09,
+     "on_the_list": 16
+    }
+   ]
+  },
+  "2. X3 a Quick Step closer, the offence has moved an off-ball player; the defence acts": {
+   "chose": "X3 Move to B4 facing SW, then X3 Steal",
+   "reads": 18.05,
+   "listed": 24,
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "reads": 25.46,
+     "behind_the_choice": 7.41,
+     "on_the_list": 12
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "reads": 18.05,
+     "behind_the_choice": 0,
+     "on_the_list": 2
+    }
+   ]
+  },
+  "3. the three goes up after the Pause; the reaction": {
+   "played": [
+    "X3 Move to B4 facing SW",
+    "X3 contests"
+   ],
+   "worth": 15.0,
+   "chose": "X3 Move to B4 facing SW",
+   "reads": 15,
+   "listed": 24,
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "reads": 15,
+     "behind_the_choice": 0,
+     "on_the_list": 2
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "reads": 33,
+     "behind_the_choice": 18,
+     "on_the_list": 13
+    }
+   ]
+  },
+  "its own way, against the same offence": [
+   {
+    "defence": [
+     "X3 Move to C4 facing SW",
+     "X End turn"
+    ]
+   },
+   {
+    "defence": [
+     "X3 Quick Step to B4",
+     "X3 Steal"
+    ]
+   },
+   {
+    "note": "its action went to the dice (a Steal or an Intercept); the line stops here"
+   }
+  ]
+ }
+}

@@ -222,5 +222,325 @@ def _after(s, turn_json):
     return n if not isinstance(n, ChanceNode) else None
 
 
+# ---- part 2: the head to head ----------------------------------------------------------------------------------------
+
+def pool():
+    return json.load(open(os.path.join(ROOT, 'docs', 'runs', 'step18', 'pools.json')))['senior/pro/digital']
+
+
+def cmd_h2h(pairs='400', which='defence', tag=None):
+    """The All-Star with the open list (a) against the All-Star on the new default (b): paired possessions (the same
+    start and dice, sides swapped), in batches of 80, each with its own pick noise, 1 pair ahead. Sequential: it stops
+    when the test for a gain of 1 point a pair against none gives its verdict, or at `pairs`."""
+    import time
+    a = L.policy('allstar', 2, 0.5, open_list=which)
+    b = L.policy('allstar', 2, 0.5, open_list=False)
+    pl, rows, secs, k, t0 = pool(), [], 0.0, 0, time.time()
+    starts = pl['starts']
+    tag = tag or f'open_{which}'
+    while len(rows) < int(pairs):
+        k += 1
+        n = min(80, int(pairs) - len(rows))
+        part = [starts[(i + 37 * k) % len(starts)] for i in range(n)]
+        part = [dict(p, seed=104729 * (i + 1) + 15485863 * k) for i, p in enumerate(part)]
+        r, s = L.run_jobs('h2h', part, pl['contexts'], n=1, seed=300 + k, a=a, b=b)
+        rows += r
+        secs += s
+        st = L.h2h_stats(rows, delta=1.0)
+        print(tag, len(rows), st['mean_difference'], st['interval'], st['wins'], st['losses'], st['ties'], st['sequential_stop'], round(secs / 3600, 2), flush=True)
+        json.dump(dict(tag=tag, stats=st, core_hours=round(secs / 3600, 2), rows=rows), open(os.path.join(WORK, f'h2h_{tag}_partial.json'), 'w'))
+        if st['sequential_stop'] and len(rows) >= 160:
+            break
+    st = L.h2h_stats(rows, delta=1.0)
+    rep = dict(tag=tag, a=f'All-Star, search.open_list {which}', b='All-Star, the new default', stats=st, core_hours=round(secs / 3600, 2),
+               wall_minutes=round((time.time() - t0) / 60, 1), a_on_offence=L.endings([r['a_end'] for r in rows]),
+               b_on_offence=L.endings([r['b_end'] for r in rows]),
+               a_shots=shot_timing([r['a_end'] for r in rows]), b_shots=shot_timing([r['b_end'] for r in rows]), rows=rows)
+    json.dump(rep, open(os.path.join(RUN, f'h2h_{tag}.json'), 'w'))
+    print(json.dumps({k_: v for k_, v in rep.items() if k_ != 'rows'}, indent=1), flush=True)
+
+
+def shot_timing(e):
+    """Shots by phase, the clock-out rate and the ball lost per 100 phases kept, from possession endings
+    [kind, clock, offence tokens, decisions] (step 18c's measure). Under the app's rules a possession passes through
+    the phases in order, so its ending says which phases it entered."""
+    ph = lambda x: min(6, max(1, (12 - x[1]) // 2 + 1))
+    shot = lambda x: x[0] in ('shot', 'free_throws', 'forced')
+    ran = lambda x: x[0] == 'turnover_end' and x[1] <= 2 and x[2] <= 0
+    kept = sum(sum(1 for x in e if ph(x) >= k) - sum(1 for x in e if ph(x) == k and shot(x)) for k in range(1, 7))
+    lost = sum(1 for x in e if not shot(x) and not ran(x))
+    p, lo, hi = L.wilson(lost, kept)
+    shots = [ph(x) for x in e if shot(x)]
+    out_ = sum(1 for x in e if ran(x))
+    cp, clo, chi = L.wilson(out_, len(e))
+    return dict(possessions=len(e),
+                shots_by_phase_pct=[round(100 * sum(1 for x in shots if x == k) / max(1, len(shots))) for k in range(1, 7)],
+                shots_in_phases_1_and_2_pct=round(100 * sum(1 for x in shots if x <= 2) / max(1, len(shots))),
+                decisions=round(sum(x[3] for x in e) / len(e), 1),
+                clock_ran_out=out_, clock_interval_in_100=[round(100 * max(0.0, clo), 1), round(100 * chi, 1)],
+                lost_in_100_phases_kept=round(100 * p, 1), lost_interval=[round(100 * max(0.0, lo), 1), round(100 * hi, 1)])
+
+
+# ---- part 2: do the answers fall out? -----------------------------------------------------------------------------
+
+def closeout_board():
+    """Step 18d's board: the corner shooter (O4, three 11) has the ball and has used his Move and Quick Step, so he can
+    only shoot from where he stands, or pass. His defender (X3, Quick Step 1) is at F4, one square too far to step
+    next to him with a Move."""
+    from playmaker_engine import exam as EX
+    return EX.board(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'C8', 'F4', 'O7', 'P3'], ['N', 'W', 'W', 'E', 'E'], ball=3, side='X',
+                    moved_o=1 << 3, qs_o=1 << 3, cnt=(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+
+def _apply_names(s, names):
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    for nm in names:
+        s = apply(s, next(a for a in legal_actions(s) if str(a) == nm))
+    return s
+
+
+def _brief(r):
+    return dict(chose=r['rows'][0]['words'], reads=round(r['rows'][0]['value'], 2), listed=r.get('listed'),
+                named=[dict(name=x['name'], legal=x['legal'], reads=round(x['value'], 2) if x['legal'] else None,
+                            behind_the_choice=round(x['behind_the_choice'], 2) if x['legal'] else None,
+                            on_the_list=x.get('list_rank')) for x in r['named']])
+
+
+def cmd_closeout():
+    """Shaun's closeout line (Quick Step closer, Pause, Move into the Contest) on step 18d's board, under the old and
+    the new default: at each step what the computer chooses, whether the line's move is on its list and what it
+    reads; and what happens when the computer plays the whole thing its own way against the same offence."""
+    from playmaker_engine import jsbridge as J
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply, ChanceNode
+    rep = {}
+    for name, setting in (('old default', OLD), ('new default', NEW)):
+        s0 = closeout_board()
+        if setting['control'] == '0':
+            from dataclasses import replace
+            s0 = s0.with_(ctx=_ctx_with(s0.ctx, control='0'))
+        ctxj = J.ctx_json(s0.ctx)
+        out = {}
+        # the line, step by step
+        r1 = run_line(J.state_json(s0), ctxj, setting, [
+            dict(name='the line: X3 Quick Steps closer, not next to him', turn=_named(s0, ('X3 Quick Step to E4',))),
+            dict(name='X3 Sprints next to him now', turn=_named(s0, ('X3 Sprint to B4',))),
+            dict(name='X3 Moves closer now', turn=_named(s0, ('X3 Move to C4 facing W',))),
+            dict(name='does nothing', turn=_named(s0, ('X Pause',)))], top=6)
+        out['1. the ball is in the corner; the defence acts'] = _brief(r1)
+        s1 = _apply_names(s0, ('X3 Quick Step to E4', 'X End turn', 'O2 Move to B8', 'O End turn'))
+        r2 = run_line(J.state_json(s1), ctxj, setting, [
+            dict(name='the line: the defence Pauses', turn=_named(s1, ('X Pause',))),
+            dict(name='X3 Moves next to him now', turn=_named(s1, ('X3 Move to B4 facing SW',)))], top=6)
+        out['2. X3 a Quick Step closer, the offence has moved an off-ball player; the defence acts'] = _brief(r2)
+        s2 = _apply_names(s1, ('X Pause', 'O4 Shot (three)'))
+        turns = []
+        for nm, acts in (('the line: X3 Moves next to him and Contests', ('X3 Move to B4 facing SW', 'X3 contests')),
+                         ('no Contest', ('X End turn',))):
+            tj = _named(s2, acts, soft=True)
+            if tj is not None:
+                turns.append(dict(name=nm, turn=tj))
+        rsteps, rn, rfirst = defend(s2, ctxj, setting, turns)
+        out['3. the three goes up after the Pause; the reaction'] = dict(played=[x['action'] for x in rsteps], worth=_expected(rn), **_brief(rfirst))
+        # its own way, against the same offence (an off-ball Move, then the three)
+        own = []
+        st, n, _ = defend(s0, ctxj, setting)
+        own.append(dict(defence=[x['action'] for x in st]))
+        for step in (1, 2):
+            if isinstance(n, ChanceNode):
+                own.append(dict(note='its action went to the dice (a Steal or an Intercept); the line stops here'))
+                break
+            n = _own_end(n)
+            if step == 1:
+                mv = next((a for a in legal_actions(n) if str(a) == 'O2 Move to B8'), None)
+                if mv is None:
+                    own.append(dict(note='the offence cannot make the same off-ball Move here'))
+                    break
+                n = _apply_names(n, ('O2 Move to B8', 'O End turn'))
+                st, n, _ = defend(n, ctxj, setting)
+                own.append(dict(defence=[x['action'] for x in st]))
+            else:
+                sh = next((a for a in legal_actions(n) if str(a) == 'O4 Shot (three)'), None)
+                if sh is not None:
+                    st, n, _ = defend(apply(n, sh), ctxj, setting)
+                    own.append(dict(reaction=[x['action'] for x in st], the_three_is_worth=_expected(n)))
+        out['its own way, against the same offence'] = own
+        rep[name] = out
+    json.dump(rep, open(os.path.join(RUN, 'closeout_line.json'), 'w'), indent=1)
+    print(json.dumps(rep, indent=1))
+
+
+def _own_end(n):
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply, ChanceNode
+    from playmaker_engine.search import actor
+    if not isinstance(n, ChanceNode) and n.stage == 'play' and actor(n) == 'X':
+        end = [a for a in legal_actions(n) if a.kind == 'end_turn']
+        if end:
+            n = apply(n, end[0])
+    return n
+
+
+def _ctx_with(ctx, **rule_changes):
+    """A copy of a context with some rule settings changed."""
+    import copy
+    from dataclasses import replace
+    c = copy.copy(ctx)
+    c.rules = replace(ctx.rules, **rule_changes)
+    return c
+
+
+# ---- the sense check: two moves played out by the rules ----------------------------------------------------------
+
+def sense(tag, state_json, ctx_json, turns, n=160, setting=NEW):
+    """From a position, each named turn played out n times by the rules with common dice (both sides the All-Star on
+    the setting, each with its pick noise): what the offence went on to score after each, with a 95% interval, and
+    each turn against the first, paired. Evidence from play, separate from the reading that made the choice."""
+    pol = L.policy('allstar', 2, 0.5, open_list=setting['open_list'])
+    per = max(1, int(n) // L.CORES)
+    pos = [dict(id=f'{tag}/{k}', state=state_json, ctx=0, seed=7919 * (k + 1), turns=[t for _, t in turns]) for k in range(L.CORES)]
+    job = dict(n=per, seed=7, keep=True, policies=dict(O=pol, X=pol))
+    if setting['control'] is not None:
+        job['control'] = setting['control']
+    rows, secs = L.run_jobs('rollout', pos, [ctx_json], **job)
+    out, base = [], None
+    for m, (name, _) in enumerate(turns):
+        v = [x for r in rows for x in r['turns'][m]['values']]
+        if base is None:
+            base = v
+        mean, sd, ci = L.mean_ci(v)
+        d = [a - b for a, b in zip(v, base)]
+        dm, dsd, dci = L.mean_ci(d) if m else (0.0, 0.0, 0.0)
+        out.append(dict(move=name, playouts=len(v), offence_scores=round(mean, 2), interval=[round(mean - ci, 2), round(mean + ci, 2)],
+                        against_the_first=round(dm, 2), difference_interval=[round(dm - dci, 2), round(dm + dci, 2)]))
+    return dict(moves=out, core_hours=round(secs / 3600, 3))
+
+
+def cmd_sense(which='closeout1,closeout2,replay,defence242,defence377', n='160'):
+    """The sense checks: where the computer on the new default prefers something other than the expected move, both
+    played out by the rules from the position, with common dice."""
+    from playmaker_engine import jsbridge as J
+    from playmaker_engine import rules_config as RC
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    path = os.path.join(RUN, 'sense_checks.json')
+    rep = json.load(open(path)) if os.path.exists(path) else {}
+    for name in which.split(','):
+        if name == 'closeout1':
+            s = closeout_board()
+            turns = [("the computer's: X3 Moves closer (C4), facing the shooter", _named(s, ('X3 Move to C4 facing SW',))),
+                     ("Shaun's line: X3 Quick Steps closer (E4)", _named(s, ('X3 Quick Step to E4',))),
+                     ('X3 Sprints next to him at once', _named(s, ('X3 Sprint to B4',))),
+                     ('the defence does nothing', _named(s, ('X Pause',)))]
+            sj, cj, enc = J.state_json(s), J.ctx_json(s.ctx), s.encode()
+        elif name == 'closeout2':
+            s = _apply_names(closeout_board(), ('X3 Quick Step to E4', 'X End turn', 'O2 Move to B8', 'O End turn'))
+            turns = [("the computer's: X3 Moves next to him, then Steals", _named(s, ('X3 Move to B4 facing SW', 'X3 Steal'))),
+                     ('X3 Moves next to him and stops', _named(s, ('X3 Move to B4 facing SW', 'X End turn'))),
+                     ("Shaun's line: the defence Pauses", _named(s, ('X Pause',)))]
+            sj, cj, enc = J.state_json(s), J.ctx_json(s.ctx), s.encode()
+        elif name == 'replay':
+            before, _ = _replay(RC.with_rules(digital=True), ['N'] * 5)
+            lines = [ln.split('] ', 1)[1] for ln in LOG.splitlines()]
+            sb = before[lines.index('O1 Pass to O4')]
+            s = apply(sb, next(a for a in legal_actions(sb) if str(a) == 'O1 Pass to O4'))
+            own = json.load(open(os.path.join(RUN, 'replay.json')))['settings']['new default']['defence_after_the_pass']['played'][0]['action']
+            turns = [(f"the computer's: {own}", _named(s, (own,))),
+                     ('X4 Quick Steps closer to the corner (E4)', _named(s, ('X4 Quick Step to E4',))),
+                     ('the log: the defence Pauses', _named(s, ('X Pause',)))]
+            sj, cj, enc = J.state_json(s), J.ctx_json(s.ctx), s.encode()
+        else:
+            job = json.load(open(os.path.join(WORK, f'regret_open_defence_{name}.job.json')))
+            o = json.load(open(os.path.join(WORK, f'regret_open_defence_{name}.out.json')))
+            on = [r for r in o['rows'] if r['stage'] == 4]
+            choice = min(on, key=lambda r: r['pair'])
+            steals = [r for r in o['rows'] if 'Steal' in r['words']]
+            best_steal = min(steals, key=lambda r: r['pair'])
+            pause = next((r for r in o['rows'] if r['words'] == 'X Pause'), None)
+            turns = [(f"the computer's: {choice['words']}", choice['turn']), (f"the expected: {best_steal['words']}", best_steal['turn'])]
+            if pause and pause['words'] != choice['words']:
+                turns.append(('the defence Pauses', pause['turn']))
+            sj, cj, enc = job['state'], job['ctx'], None
+        r = sense(name, sj, cj, turns, n=int(n))
+        r['position'] = enc or dict(o=sj['o'], x=sj['x'], arrows=sj.get('arrows'), ball=sj['ball'], clock=sj['clock'])
+        rep[name] = r
+        print(name, json.dumps(r, indent=1), flush=True)
+        json.dump(rep, open(path, 'w'), indent=1)
+
+
+# ---- speed, and part 5 ------------------------------------------------------------------------------------------------
+
+def _p90(v):
+    v = sorted(v)
+    return round(v[int(0.9 * (len(v) - 1) + 0.5)], 3) if v else None
+
+
+def cmd_speed(which='defence', runs='2'):
+    """The time to finish 1 pair at each level on the hand boards' 22 decisions (one warm engine each), the new default
+    beside the open list, against docs/SPEED_BUDGET.md. The two are timed in the same run, in turn."""
+    positions, contexts = L.hand_boards()
+    target = dict(rookie=(0.3, 1.0), starter=(1.0, 2.0), allstar=(2.5, 3.0))
+    rep = []
+    for run in range(int(runs)):
+        one = {}
+        for name, ol in (('new default', False), ('open list', which)):
+            pols = {lv: L.policy(lv, 2, 0.0, open_list=ol) for lv in target}
+            L.run_jobs('search', positions[:6], contexts, chunks=1, policies=pols)
+            rows, _ = L.run_jobs('search', positions + positions, contexts, chunks=1, policies=pols)
+            rows = rows[len(positions):]
+            one[name] = {}
+            for lv in target:
+                v = sorted(r['by'][lv]['seconds'] for r in rows)
+                p90 = v[int(0.9 * (len(v) - 1) + 0.5)]
+                one[name][lv] = dict(median=round(v[len(v) // 2], 3), nine_in_ten=round(p90, 3), slowest=round(v[-1], 3),
+                                     desktop_target=target[lv][0], fits_desktop=p90 <= target[lv][0],
+                                     phone=round(4 * p90, 2), phone_target=target[lv][1],
+                                     nine_in_ten_by_side={side: _p90([r['by'][lv]['seconds'] for r in rows if r.get('side') == side]) for side in ('O', 'X')})
+            print(run + 1, name, {lv: (x['median'], x['nine_in_ten']) for lv, x in one[name].items()}, flush=True)
+        rep.append(one)
+    json.dump(dict(note="seconds to finish 1 pair on the hand boards' 22 decisions; median and 9 decisions in 10", runs=rep),
+              open(os.path.join(RUN, f'speed_{which}.json'), 'w'), indent=1)
+
+
+BOARD_TURNS = {
+    # board: [(name, the turn in the actions' own words)] (step 18d's)
+    '1': [('does nothing', ['X Pause']), ("step 18a's choice", ['X2 Move to D6 facing E'])],
+    '3': [('does nothing', ['X Pause']),
+          ("the board's help: the low man steps up, another covers", ['X4 Move to I4 facing N', 'X2 Quick Step to D6']),
+          ("the board's help, both with a Move", ['X2 Move to E5 facing SE', 'X4 Move to I4 facing N'])],
+    '6': [("the board's move: O4 shoots the open three", ['O4 Shot (three)'])],
+    '8': [("the board's move: the backdoor cut and the pass", ['O2 Move to D7', 'O1 Pass to O2']),
+          ('the cut alone', ['O2 Move to F7'])],
+    '9': [("the board's move: the kick-out to the corner", ['O1 Pass to O5']),
+          ('the corner man relocates', ['O5 Move to Q4'])],
+}
+
+
+def cmd_boards(names='1,3,6,8,9'):
+    """Boards 1, 3, 6, 8 and 9 move by move, under the old and the new default: what the search chooses 1 pair ahead
+    (no pick noise), and what each board move reads when it is searched."""
+    from playmaker_engine import exam as EX, jsbridge as J
+    rep = {}
+    for n in names.split(','):
+        rep[n] = {}
+        for name, setting in (('old default', OLD), ('new default', NEW)):
+            _, s, _ = EX.POSITIONS[int(n) - 1]()
+            if setting['control'] == '0':
+                s = s.with_(ctx=_ctx_with(s.ctx, control='0'))
+            turns = [dict(name=nm, turn=tj) for nm, tj in ((nm, _named(s, acts, soft=True)) for nm, acts in BOARD_TURNS[n]) if tj is not None]
+            r = run_line(J.state_json(s), J.ctx_json(s.ctx), setting, turns, top=4)
+            for x in r['named']:
+                x.pop('after', None)
+            for x in r['rows']:
+                x.pop('turn', None)
+            rep[n][name] = dict(side=r['side'], choice=r['rows'][0], top=r['rows'], named=r['named'], listed=r.get('listed'))
+            print('board', n, name, '| choice:', r['rows'][0]['words'], round(r['rows'][0]['value'], 2))
+            for x in r['named']:
+                if x['legal']:
+                    print('      ', x['name'], '|', round(x['value'], 2), 'behind the choice', round(x['behind_the_choice'], 2), 'list', x['list_rank'])
+    json.dump(rep, open(os.path.join(RUN, 'boards.json'), 'w'), indent=1)
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])

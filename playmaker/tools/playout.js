@@ -10,6 +10,7 @@ const path = require('path');
 const E = require(path.join(__dirname, '..', 'playmaker_web', 'static', 'engine.js'));
 const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
+const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
 E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 
 function rng(seed) {                                   // mulberry32: the same dice for the same seed
@@ -32,6 +33,7 @@ function apply(set) {                                  // an engine's switches, 
   if (E.setTabletopMap) E.setTabletopMap(set.tabletop_map !== false);
   if (E.setSettle) E.setSettle(set.settle_shots !== false);            // on by default (D-148)
   if (E.setHelp) E.setHelp(!!set.help_readings);                       // step 18c
+  if (E.setOpenList) E.setOpenList(set.open_list === undefined ? OPEN_DEFAULT : set.open_list);   // step 18e (unset: the config's)
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }
