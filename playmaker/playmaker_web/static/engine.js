@@ -114,9 +114,11 @@ const PMEngine = (() => {
     three_only_ft_on_twos: false, coach_bonus_on_forced: true, diag_move_straight: true, inbound_tie: 'offence',
     forced_shot_choice: 'player', inbound_resolves: 'after_defence_turn', and_one: true, steal_lock: true,
     reach_angle_fouls: true, contest_action: true, turnover_floor: true, steal_foul_always_plus5: true };
-  const CONTROL = { off: 0, 1: 1, 2: 2, 3: 3 };
+  const CONTROL = { off: 0, 0: 0, 1: 1, 2: 2, 3: 3 }, CONTROL_APP = 2;   // D-153: the app's size
+  // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
+  const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   function checkRules(r) {
-    if (r.control !== undefined && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
+    if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
     for (const [k, v] of Object.entries(RULED)) {
       if (k in r && JSON.stringify(r[k]) !== JSON.stringify(v)) throw new Error(`rule ${k}=${JSON.stringify(r[k])} is not ported`);
     }
@@ -136,9 +138,9 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
-      control: CONTROL[(c.rules && c.rules.control) || 'off'] };          // D-151: the size, in rating steps (0: the rule is off)
+      control: controlSize(c.rules) };                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
-  // D-151 (rules.control, a rule candidate under test): the reduction a rushed shot, or a rushed Contest of it, takes
+  // D-151, D-153 (rules.control): the reduction a rushed shot, or a rushed Contest of it, takes
   const controlOn = ctx => ctx.control > 0;
   const controlCut = (ctx, t) => ctx.control;            // one size, for every shot type and for the Contest alike
   // two bits a player in rush_o / rush_x: 1 his last movement this phase was a Quick Step, 2 a Sprint, 0 set
@@ -565,7 +567,7 @@ const PMEngine = (() => {
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
       let clean = dirBetween(xp, spos) === s.arrows[j];
-      if (cut && rushedX(s, j)) { c = Math.max(0, c - cut); clean = false; }     // D-151: a rushed Contest
+      if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c), ft });
     }
@@ -1610,10 +1612,9 @@ const PMEngine = (() => {
           if (!((mask >> k) & 1)) continue;
           let con = dc.cn[ty] - (KPEN[k] ? 3 : 0);
           con = Math.max(0, con);
-          let foul = KFOUL[k], two = KTWO[k];
+          const foul = KFOUL[k], two = KTWO[k];
           if (cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4))) {       // a rushed Contest
-            con = Math.max(0, con - cut);
-            if (!foul) { foul = true; two = KPEN[k]; }
+            con = Math.max(0, con - cut);                                        // no extra foul roll (D-154)
           }
           let v = Math.max(0, pts * (r - con));
           if (foul) {

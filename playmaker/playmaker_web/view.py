@@ -97,7 +97,7 @@ def influence(s):
                   X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=s.rush('X', j))
                      for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
-                drive_rule=rules.drive_rule)
+                drive_rule=rules.drive_rule, control=RC.control_size(rules))
 
 
 def rv(card, name):

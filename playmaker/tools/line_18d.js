@@ -13,7 +13,7 @@ const CONFIG = load('ai_profiles.json');
 E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
-const cj = job.control && job.control !== 'off' ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
+const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
 const key = a => JSON.stringify(E.actionJSON(a));
 const words = t => t.map(a => E.actionStr(a)).join(', then ');

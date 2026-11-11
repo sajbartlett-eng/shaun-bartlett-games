@@ -442,7 +442,7 @@ class Read:
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
-        control = rules.control != 'off' and not getattr(self, '_phase_away', False)
+        control = RC.control_size(rules) > 0 and not getattr(self, '_phase_away', False)
         # D-151 (rules.control), as the reading takes it: a defender contesting from where he stands is rushed if his
         # last movement was a Quick Step or Sprint; one who must move to contest is rushed if his Move is already used
         # (only a Quick Step or Sprint is left), and is taken to Move there otherwise. The rules themselves are exact
@@ -463,9 +463,7 @@ class Read:
                 if rules.floor_contest_zero:
                     con = max(0, con)
                 if cut and (d_stand if n == 0 else d_moved):
-                    con = max(0, con - cut)              # a rushed Contest: reduced, with the wrong-angle foul roll
-                    if not foul:
-                        foul, two = True, pen
+                    con = max(0, con - cut)              # a rushed Contest: reduced; no extra foul roll (D-154)
                 v = pts * (r - con)
                 if rules.floor_declared_shot:
                     v = max(0, v)
@@ -554,7 +552,7 @@ class Read:
                     lk = Look(i, c, 'cut', p * self.cfg['later_p'], False, replies=2)
             lk.types = RC.ZONE_SHOTS[z]
             pts = RC.ZONE_POINTS[z]
-            if rules.control != 'off':
+            if RC.control_size(rules):
                 # D-151, as the reading takes it: shooting from where he stands he is rushed if his last movement was
                 # a Quick Step or Sprint; if he must move first he is rushed when his Move is already used
                 lk.rushed = s.rushed('O', i) if n == 0 else s.moved('O', i)

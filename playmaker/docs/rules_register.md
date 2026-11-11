@@ -42,6 +42,7 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | Hold for One cards | Shared | no shot before the last phase | no shot before the last phase | Scenario cards that hold for the last shot. |
 | Late Clock results | Shared | result first, then shot value | result first, then shot value | How Late Clock cards are compared. |
 | Tie-break roll | Tabletop only | roll for the final shot | see Tied match | A tied two-possession game. The app has no tie-break: see Tied match. |
+| control | Split by format | none (the table's rules are on hold, D-146) | a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154) | A shot or a Contest after a Quick Step or a Sprint. The app plays the control rule at size 2 (D-153, D-154). The table's rules are on hold (D-146). |
 | turnover_play_on | Shared | not in play (kept so old logs replay) | not in play (kept so old logs replay) |  |
 | pass_resolution | Shared | the defence answers first | the defence answers first |  |
 | sprint_orth_base | Shared | 3 + Quick Step straight | 3 + Quick Step straight |  |
@@ -89,7 +90,6 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | reach_angle_fouls | Shared | 1 roll from closer, 2 from level or behind | 1 roll from closer, 2 from level or behind |  |
 | contest_action | Shared | an action, the last of the reaction | an action, the last of the reaction |  |
 | turnover_floor | Shared | 0 or the banked total if lower | 0 or the banked total if lower |  |
-| control | Shared | off (a rule candidate under test, D-151) | off (a rule candidate under test, D-151) |  |
 | steal_foul_always_plus5 | Shared | every steal foul +5 | every steal foul +5 |  |
 
 ## Splits for the designer

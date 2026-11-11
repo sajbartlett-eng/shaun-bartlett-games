@@ -75,6 +75,8 @@ ENTRIES = [
     ('Late Clock results', SHARED, dict(how='scenario'), 'How Late Clock cards are compared.', ''),
     ('Tie-break roll', TABLETOP, dict(how='tiebreak'), 'A tied two-possession game.',
      'The app has no tie-break: see Tied match.'),
+    ('control', SPLIT, dict(rules='control'), 'A shot or a Contest after a Quick Step or a Sprint.',
+     'The app plays the control rule at size 2 (D-153, D-154). The table\'s rules are on hold (D-146).'),
 ]
 # every Rules setting not named above is shared: the same ruling in both formats
 _NAMED = {e[2].get('rules') for e in ENTRIES if e[2].get('rules')}
@@ -451,8 +453,8 @@ WORDS = {
     'turnover_play_on': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'arrow_line_strict': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
-    'control': dict(sec=None, src=None, tab='off (a rule candidate under test, D-151)',
-                    dig='off (a rule candidate under test, D-151)'),
+    'control': dict(sec=None, src=None, tab='none (the table\'s rules are on hold, D-146)',
+                    dig='a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154)'),
 }
 
 DIGITAL_ONLY = [
@@ -469,7 +471,12 @@ DIGITAL_ONLY = [
      'and keeps a rating for each player.'),
 ]
 
+CONTROL_WORDS = ("Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: "
+                 'your shot or Contest is 2 lower. A Move puts you back in control.')
+
 SPLITS = [
+    ('Control', 'No control rule: a shot or a Contest is worth the same after any movement.', CONTROL_WORDS,
+     'Ruled for the app (D-153). The table\'s rules are on hold while the app\'s game settles (D-146).'),
     ('Turnover cost', '−5 and the shot clock loses a phase; play on.', 'The possession ends and scores 0.',
      'A digital match has several possessions a side, so the next possession is the cost.'),
     ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover: the '

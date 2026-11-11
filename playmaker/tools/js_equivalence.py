@@ -233,7 +233,7 @@ def main():
     ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines (the default since D-138)')
     ap.add_argument('--no-calibrated', action='store_true', help='eval.calibrated off, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
-    ap.add_argument('--control', default='off', help="step 18d (D-151): rules.control in every position: off, 1, 2 or 3")
+    ap.add_argument('--control', default='app', help="rules.control in every position: app (the default: size 2 in the app's format), 0, 1, 2 or 3")
     ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines (the default since D-148)')
     ap.add_argument('--no-settle', action='store_true', help='eval.settle_shots off, in both engines')
     ap.add_argument('--help-readings', action='store_true', help='step 18c: eval.help_readings on, in both engines')

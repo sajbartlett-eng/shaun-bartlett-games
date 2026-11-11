@@ -59,7 +59,7 @@ if (job.settle_shots != null && E.setSettle) E.setSettle(job.settle_shots);     
 if (job.help_readings != null && E.setHelp) E.setHelp(job.help_readings);         // step 18c
 if (job.switches) E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, job.switches));
 // job.control (step 18d, D-151): the position under rules.control at that size
-const cj = job.control && job.control !== 'off' ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
+const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
 const me = E.actor(s), sign = me === 'O' ? 1 : -1;
 const t0 = now(), cap = t0 + (job.cap_s || 1200);

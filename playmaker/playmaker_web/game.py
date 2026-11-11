@@ -235,8 +235,8 @@ class Game:
                 raise GameError('a digital match is 4, 8 or 12 possessions per side')
             full = True
             rules = replace(rules or RC.DEFAULT_RULES, digital=True)
-            if control is not None and str(control) in RC.CONTROL and str(control) != 'off':
-                # D-151: the control rule, a candidate under test in the app only (off unless asked for)
+            if control is not None and str(control) in RC.CONTROL:
+                # D-153: the app plays the control rule at size 2; another size, or '0' for none, may be asked for
                 rules = replace(rules, control=str(control))
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
         self.full = full and scenario is None
@@ -301,7 +301,7 @@ class Game:
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
                   rules=dict({k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
-                             **({'control': self.state.ctx.rules.control} if self.state.ctx.rules.control != 'off' else {})),
+                             control=str(RC.control_size(self.state.ctx.rules))),
                   start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):

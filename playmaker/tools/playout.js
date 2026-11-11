@@ -87,7 +87,7 @@ const meanSe = v => { const n = v.length; if (!n) return [0, 0]; const m = v.red
 
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 // job.control (step 18d, D-151): play every position under rules.control at that size ('1', '2', '3'; unset: today's rules)
-const withControl = c => (job.control && job.control !== 'off' ? Object.assign({}, c, { rules: Object.assign({}, c.rules, { control: String(job.control) }) }) : c);
+const withControl = c => (job.control != null ? Object.assign({}, c, { rules: Object.assign({}, c.rules, { control: String(job.control) }) }) : c);
 const ctxs = (job.contexts || []).map(c => E.makeCtx(withControl(c)));
 const state = p => E.stateFrom(p.state, ctxs[p.ctx]);
 const out = { kind: job.kind, rows: [] };

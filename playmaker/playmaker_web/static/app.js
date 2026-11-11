@@ -15,6 +15,8 @@ const SHORT = { 'Quick Step': 'QS', Dribble: 'Drb', Pass: 'Pass', Screen: 'Scr',
 const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
 const ZONE_WORD = { K: 'rim zone', '3': 'three-point zone', M: 'mid-range zone', L: 'long-two zone', '.': 'plain wood' };
 const isPhone = () => window.matchMedia('(max-width: 820px)').matches;
+// D-153: the app's control rule, in the words of the rules text (register.CONTROL_WORDS)
+const CONTROL_RULE = n => `Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is ${n} lower. A Move puts you back in control.`;
 const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
   shot: 'Shot', intercept: 'Intercept', challenge: 'Challenge Screen', steal: 'Steal', hesitate: 'Hesitate', pause: 'Pause',
   end_turn: 'End turn', forfeit: 'Forfeit tokens', target: 'Target', pick: 'Give the ball' };
@@ -361,8 +363,8 @@ async function create() {
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
     if (k === 'full') { body.match_format = $('format').value; body.per_side = Number($('perSide').value); }
-    // D-151 (a rule candidate under test, the app's format only): ?control=1, 2 or 3 in the address plays the control rule
-    { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
+    // D-153: the app plays the control rule at size 2. ?control=0 in the address turns it off; 1 or 3 plays another size
+    { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
     body.age = $('age').value; body.roster = m;
@@ -591,6 +593,7 @@ function renderTracker(id, side) {
       el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
       el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
       el('div', { text: 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
+    s.influence && s.influence.control ? el('div', { class: 'waits controlrule', text: CONTROL_RULE(s.influence.control) }) : null,
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
       ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."

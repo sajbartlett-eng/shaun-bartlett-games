@@ -685,12 +685,40 @@ a reduced rating and a higher foul risk. Then a late closeout becomes worse."
 - **The app only.** Today's rules stay the default. `RULES_CURRENT.md` and the printed game are unchanged until
   Shaun rules. Nothing is changed, measured or printed for the table.
 
-· Source: Shaun, 11 Nov 2026 · **Under test; built** behind `rules.control` (off) in both engines (step 18d).
+· Source: Shaun, 11 Nov 2026 · **Ruled at size 2 for the app (D-153), without the extra foul roll (D-154).** Built behind
+`rules.control` in both engines (step 18d).
 
 **D-152. Step 18c is accepted.** `eval.settle_shots` stays on by default. `eval.help_readings` stays off. Step 18c is
 merged into `main`. Boards 1 and 3 are held, not retired: they are re-read under the control rule (D-151). The closer
 Rookie and Starter are accepted for now, and revisited once the control rule is decided, because it reshapes both
 levels. · Source: Shaun, 11 Nov 2026 · **Ruled, done.**
+
+### Shaun, 11 Nov 2026 (step 18e prompt)
+
+**D-153. The control rule is the app's rule at size 2.** `rules.control` plays size 2 by default in the app's format,
+in both engines (D-151's rule: a shot or Contest whose last movement this phase was a Quick Step or a Sprint is 2
+lower; a Move restores control). The table's rules stay as they are (on hold, D-146). Step 18d is accepted and merged.
+The cases 18d listed stand as 18d read them, except the foul roll (D-154). · Source: Shaun, 11 Nov 2026 · **Ruled;
+built in step 18e** (`rules.control`: `'app'` by default, `'0'` turns it off).
+
+**D-154. No extra foul roll on a rushed Contest.** A rushed Contest takes the reduction and today's foul rolls for its
+position (closer to the rim than the shooter, or level or further), with no extra roll for being rushed. Why
+(fidelity): as built in 18d, a rushed Contest on a good shooter's three fouled 7 times in 20, which made contesting
+worse than letting him shoot. In basketball fouls on threes are rare and hard closeouts still happen. The reduction
+alone carries the loss of control. · Source: Shaun, 11 Nov 2026 · **Ruled; built in step 18e.**
+
+**D-155. Late help from one step stays as it is.** A defender who steps in with a Move during the reaction contests
+at full rating. A defender one step away is in time in real basketball too. The rule already punishes help from across
+the floor (a Quick Step or Sprint). Board 3 is held: its "help early" answer may be the board's mistake, not the
+rules'. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-156. The computer is given no moves.** Shaun: "Giving it moves is me telling it an answer. The idea was to tune it
+so that the answers fall out naturally. That's the difference between a generative tool and a simulation." No move
+kind is named, guaranteed or favoured. The hand-written generators that choose which kinds of action the search
+considers are the scripted part, and are removed: every legal action reaches the computer's own reading, and only that
+reading decides what goes forward. The moves steps 18a to 18d found missing are tests of whether the answers fall
+out, never instructions. Where the computer prefers something else, neither side is assumed wrong: Shaun rules on a
+sense check of each. · Source: Shaun, 11 Nov 2026 · **Ruled; built behind `search.open_list` in step 18e.**
 
 ## 2. Engine defaults awaiting sign-off
 

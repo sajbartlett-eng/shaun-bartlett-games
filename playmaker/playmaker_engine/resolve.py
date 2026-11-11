@@ -223,8 +223,6 @@ def contest_outcome(s, opt, forced):
                        Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
-    if s.ctx.rules.control != 'off' and s.rushed('X', opt.defender):
-        why = 'a late closeout after his ' + ('Sprint' if s.rush('X', opt.defender) == RC.RUSH_SPRINT else 'Quick Step')
     one = p_foul(fr, s.ctx.rules)
     if getattr(opt, 'rolls', 1) == 2:
         # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
@@ -420,7 +418,7 @@ def apply(state, action, check=False):
         if k in ('qs', 'sprint'):
             s = _inc(s, side, 'qs')
             s = s.with_(qs_o=s.qs_o | 1 << a.piece) if side == 'O' else s.with_(qs_x=s.qs_x | 1 << a.piece)
-        if s.ctx.rules.control != 'off':
+        if RC.control_size(s.ctx.rules):
             # D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
             sh = 2 * a.piece
             code = 0 if k == 'move' else (RC.RUSH_SPRINT if k == 'sprint' else RC.RUSH_QS)
@@ -480,7 +478,7 @@ def apply(state, action, check=False):
                 cnt = list(s.cnt)
                 cnt[CI['x_qs']] += 1
                 s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
-            if rules.control != 'off':                       # D-151: the jump into the lane counts as his movement
+            if RC.control_size(rules):                       # D-151: the jump into the lane counts as his movement
                 s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * j)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * j))
         p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
