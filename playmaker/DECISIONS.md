@@ -593,8 +593,11 @@ better computer's play. · Source: Shaun, 11 Nov 2026 · **Ruled.**
 **D-141. The tabletop format.** Check calibration under the table's rules (a turnover costs −5 and play continues;
 the steal-foul and bonus differences in the register). Fit a separate tabletop map from tabletop-rules play if it
 differs materially. Then re-measure the table's shot-clock expiry rate (10 in 100 at step 3n, D-99). If it falls to
-about basketball's 1 in 100, record plan step 24 as closed. · Source: Shaun, 11 Nov 2026 · **Ruled;** step 18a
-measures it.
+about basketball's 1 in 100, record plan step 24 as closed. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step
+18a). Measured: the table's positions go on to earn 3 to 4 points more than the app's map says, so the table has its
+own map (`calibration_tabletop` in the weights file), fitted the same way on tabletop-rules play. With it the expiry
+rate is 3.5 in 100 (interval 1.7 to 7.0), down from 9; with the app's map it is 0 in 200, but that map loses to the
+table's own by 1.7 points a pair. **Plan step 24 is not closed** (D-99).
 
 **D-142. Other ages and standards.** The Senior Pro map is scaled by each level's own phase table, as D-114 did for
 the averages: at each phase, the scale is that level's phase table value over Senior Pro's, and what a position has
@@ -704,6 +707,8 @@ All-Star mean to a player.
 ### Step 15: the shot clock
 
 **D-99.** Shot-clock expiries at the table: 10 per 100 possessions (`BASELINE.md`), against about 1 in basketball.
+Step 18a (D-141): 9 in 100 before calibration; 3.5 in 100 (interval 1.7 to 7.0) with the calibrated reading and
+the table's own map. Still open.
 Options: an engine choice (the computer holds too long); a rule (the forced shot, the −5). Effect: how often a
 possession ends without a real shot.
 

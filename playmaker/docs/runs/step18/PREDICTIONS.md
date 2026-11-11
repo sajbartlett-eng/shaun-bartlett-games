@@ -102,3 +102,6 @@ offence. The boards are 10 hand-made decisions; this asks the same question of p
   **wrong**, above the predicted 0 to 2. Shots are spread evenly over the six phases (34% in phases 1 and 2):
   **wrong**, much later than predicted. Head to head: the table's own map ahead by 1.7 a pair (interval +0.6 to
   +2.8): inside the range, and clear of zero, which I said it probably wouldn't be.
+- **Result:** 0.4 core-hours for both passes, 48 offence positions. **Wrong, in the good direction.** The search's
+  choice is the best turn found on 32 of 48 positions (67%), not 30% to 50%. Mean regret 0.75 points (interval 0.3
+  to 1.2), not 1.5 to 3. The defence wasn't measured.
