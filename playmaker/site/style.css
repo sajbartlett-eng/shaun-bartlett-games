@@ -79,6 +79,7 @@ textarea { width: 100%; min-height: 48px; font: inherit; border: 1.5px solid #8b
 .slots td { padding: 2px 5px; border-bottom: 1px dotted var(--line); vertical-align: top; }
 .chip { display: inline-block; padding: 0 6px; margin: 1px; border-radius: 9px; background: #f1ede3; border: 1px solid #8b7f6b; font-size: 12px; }
 .chip.lock { background: #4a4a4a; color: #fff; border-color: var(--ink); }
+.chip.rushed { background: #fff; color: #8a2f00; border-color: #8a2f00; font-weight: 600; }
 .limits span { display: inline-block; margin-right: 8px; } .limits .full { color: var(--warn); font-weight: bold; }
 .waits { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); color: #3b3a36; }
 #tableMain { display: flex; flex-direction: column; align-items: center; }
