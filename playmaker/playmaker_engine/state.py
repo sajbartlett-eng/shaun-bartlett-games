@@ -93,6 +93,8 @@ class GameState:
     react_moved: int = 0      # step 3i (late_closeout test): defenders who moved square in the reaction to a shot
     turn_lead: int = -1       # OQ-29 ruling: the offence player whose Move opened this turn (he may Screen next)
     turn_x: tuple = ()        # intercept ruling: the defence's squares and arrows at the start of its turn
+    rush_o: int = 0           # D-151 (rules.control): two bits a player, his last movement this phase: 1 a Quick Step,
+    rush_x: int = 0           # 2 a Sprint (0 after a Move, and at the phase's end); always 0 when the rule is off
 
     # ---- helpers ----
     def count(self, side, kind):
@@ -123,6 +125,14 @@ class GameState:
 
     def quick_stepped(self, side, i):
         return bool((self.qs_o if side == 'O' else self.qs_x) >> i & 1)
+
+    def rush(self, side, i):
+        """D-151: 0 set; 1 his last movement this phase was a Quick Step; 2 a Sprint."""
+        return (self.rush_o if side == 'O' else self.rush_x) >> (2 * i) & 3
+
+    def rushed(self, side, i):
+        """D-151: his last movement this phase was a Quick Step or a Sprint."""
+        return self.rush(side, i) != 0
 
     @property
     def carrier_pos(self):
@@ -165,6 +175,8 @@ class GameState:
             parts.append(f'q{self.qs_o:02x}{self.qs_x:02x}')
         if self.react_moved:
             parts.append(f'v{self.react_moved:02x}')
+        if self.rush_o or self.rush_x:
+            parts.append(f'j{self.rush_o:03x}{self.rush_x:03x}')
         if self.turn_lead >= 0:
             parts.append(f'g{self.turn_lead + 1}')
         return '|'.join(parts)

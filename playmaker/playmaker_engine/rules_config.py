@@ -253,6 +253,14 @@ class Rules:
     # D-82: a turnover that scores the possession 0 scores 0 or the total banked before it, whichever is lower.
     #   False: it scores 0.
     turnover_floor: bool = True
+    # D-151 (Shaun, 11 Nov 2026): a rule candidate under test, the app only. Control against reaction. A player whose
+    #   last movement this phase was a Quick Step or a Sprint is rushed; a Move, or no movement this phase, is set (a
+    #   Move after a Quick Step or Sprint restores control). A rushed shot has a reduced rating. A rushed Contest has a
+    #   reduced rating and takes the foul roll of a Contest with the arrow off the shooter. No exceptions: the forced
+    #   shot and its free Contest follow the same test.
+    #   'off' (today's rules) | '1' | '2' | '3': the reduction in rating steps, the same for every shot type and for
+    #   the Contest (Shaun: one size for every shot).
+    control: str = 'off'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
     #   False: in the bonus the foul gives free throws only (no +5).
     steal_foul_always_plus5: bool = True
@@ -282,6 +290,16 @@ PRE_RULEBOOK = dict(on_line_tolerance=0.5, lane_jump_keeps_facing=False, receive
 PRE_DENIAL = dict(receiver_denial=False)
 TURNOVER_COSTS = ('minus5_lose_phase', 'minus5', 'minus10', 'lose_phase', 'end_possession', 'legacy')
 INTERCEPT_RULES = ('move_then_intercept', 'ring_jump', 'approach')
+
+# D-151: the control rule's sizes, in rating steps: one size, for every shot type and for the Contest alike
+CONTROL = {'off': 0, '1': 1, '2': 2, '3': 3}
+RUSH_QS, RUSH_SPRINT = 1, 2          # what left a player rushed (two bits a player in GameState.rush_o / rush_x)
+
+
+def control_cut(rules, shot_type=None):
+    """The reduction a rushed shot, or a rushed Contest of it, takes under rules.control (0 when the rule is off)."""
+    return CONTROL[rules.control]
+
 
 DEFAULT_RULES = Rules()
 

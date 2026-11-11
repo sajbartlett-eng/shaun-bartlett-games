@@ -54,13 +54,23 @@ def free_throws(card, points):
     return mult * card.r['free_throw']
 
 
-def foul_on_shot_points(card, shot_type, pts, rules):
+def shot_rating(state, shooter, shot_type):
+    """The shooter's rating for this shot: the card's, less the control rule's reduction when he is rushed (D-151)."""
+    r = state.ctx.off[shooter].shot(shot_type)
+    rules = state.ctx.rules
+    if rules.control != 'off' and state.rushed('O', shooter):
+        r -= RC.control_cut(rules, shot_type)
+    return r
+
+
+def foul_on_shot_points(card, shot_type, pts, rules, rating=None):
     """Points for a foul on a declared or forced shot: free throws, or under the and-one
-    rule the higher of the free throws and the shot's uncontested value.
+    rule the higher of the free throws and the shot's uncontested value (rating: the shooter's rating for it when
+    the control rule has reduced it, D-151).
     Returns (points, and_one_applied)."""
     ft = free_throws(card, pts)
     if rules.and_one and shot_type:
-        open_value = pts * card.shot(shot_type)
+        open_value = pts * (card.shot(shot_type) if rating is None else rating)
         if open_value > ft:
             return open_value, True
     return ft, False
@@ -94,9 +104,10 @@ def contest_options(state, shooter, shot_type, forced=False):
     spos = state.o[shooter]
     card = ctx.off[shooter]
     pts = shot_points(spos)
-    rating = card.shot(shot_type)
-    ft, _ = foul_on_shot_points(card, shot_type, pts, rules)
+    rating = shot_rating(state, shooter, shot_type)
+    ft, _ = foul_on_shot_points(card, shot_type, pts, rules, rating)
     floor = forced or rules.floor_declared_shot
+    cut = RC.control_cut(rules, shot_type) if rules.control != 'off' else 0
 
     def val(c):
         v = pts * (rating - c)
@@ -120,6 +131,12 @@ def contest_options(state, shooter, shot_type, forced=False):
             c = ctx.dfn[j].con(shot_type) - (RC.FAR_CONTEST_PENALTY if penalty else 0)
             if rules.floor_contest_zero:
                 c = max(0, c)
+        if cut and state.rushed('X', j):
+            # D-151: a rushed Contest: the rating reduced, and the foul roll of a Contest with the arrow off the shooter
+            c -= cut
+            if rules.floor_contest_zero:
+                c = max(0, c)
+            foul_roll = True
         clean = not foul_roll
         rolls = foul_rolls(rules, xp, spos)
         pf = Fraction(0) if clean else p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
@@ -207,6 +224,13 @@ def score(state):
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
                 detail = (detail + '. ' if detail else '') + f'{who} {r.points} x ({r.rating} - {r.contest}) contested by {cby}'
+            if rules.control != 'off':
+                # D-151: name a rushed shot and a late closeout in plain words
+                last = lambda side, i: 'Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step'
+                if state.rushed('O', r.shooter):
+                    detail += f'. A rushed {r.shot_type} off his {last("O", r.shooter)}'
+                if r.contester >= 0 and state.rushed('X', r.contester):
+                    detail += f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}"
         elif r.kind == 'steal':
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':

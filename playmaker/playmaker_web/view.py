@@ -91,8 +91,11 @@ def influence(s):
             if can_move_kind(st, 'O', i, kind):
                 sq |= set(movement_dests(st, 'O', i, kind, rules))
         reach.append([dict(sq=B.sq(q), x=q[0], y=q[1]) for q in sorted(sq)])
-    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i)) for i in range(5)],
-                  X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j)) for j in range(5)])
+    # rushed (D-151, rules.control): 0 set, 1 his last movement this phase was a Quick Step, 2 a Sprint
+    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i), rushed=s.rush('O', i))
+                     for i in range(5)],
+                  X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=s.rush('X', j))
+                     for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
                 drive_rule=rules.drive_rule)
 

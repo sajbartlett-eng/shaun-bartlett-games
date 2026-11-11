@@ -1,0 +1,992 @@
+{
+ "1": {
+  "off": {
+   "side": "X",
+   "choice": {
+    "words": "X2 Move to D6 facing E",
+    "value": 27.598327868771825
+   },
+   "top": [
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to D6 facing NW",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to E4 facing SE",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X3 Move to L6 facing W",
+     "value": 27.598327868771825
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 32,
+     "behind_the_choice": 4.401672131228175,
+     "list_rank": 20,
+     "shot_now": {
+      "value": 32,
+      "square": "I4",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "step 18a's choice",
+     "legal": true,
+     "words": "X2 Move to D6 facing E, then X End turn",
+     "value": 32,
+     "behind_the_choice": 4.401672131228175,
+     "list_rank": null,
+     "shot_now": {
+      "value": 32,
+      "square": "I4",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "1": {
+   "side": "X",
+   "choice": {
+    "words": "X2 Move to D6 facing E",
+    "value": 27.598327868771825
+   },
+   "top": [
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to D6 facing NW",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to E4 facing SE",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X3 Move to L6 facing W",
+     "value": 27.598327868771825
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 28.1697849931154,
+     "behind_the_choice": 0.5714571243435742,
+     "list_rank": 18,
+     "shot_now": {
+      "value": 30,
+      "square": "I4",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "step 18a's choice",
+     "legal": true,
+     "words": "X2 Move to D6 facing E, then X End turn",
+     "value": 28.1697849931154,
+     "behind_the_choice": 0.5714571243435742,
+     "list_rank": null,
+     "shot_now": {
+      "value": 30,
+      "square": "I4",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "2": {
+   "side": "X",
+   "choice": {
+    "words": "X2 Move to D6 facing E",
+    "value": 27.598327868771825
+   },
+   "top": [
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to D6 facing NW",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X2 Move to E4 facing SE",
+     "value": 27.598327868771825
+    },
+    {
+     "words": "X3 Move to L6 facing W",
+     "value": 27.598327868771825
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 27.808641085537676,
+     "behind_the_choice": 0.2103132167658508,
+     "list_rank": 18,
+     "shot_now": {
+      "value": 28,
+      "square": "I4",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "step 18a's choice",
+     "legal": true,
+     "words": "X2 Move to D6 facing E, then X End turn",
+     "value": 27.808641085537676,
+     "behind_the_choice": 0.2103132167658508,
+     "list_rank": null,
+     "shot_now": {
+      "value": 28,
+      "square": "I4",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "3": {
+   "side": "X",
+   "choice": {
+    "words": "X Pause",
+    "value": 27.447497177959953
+   },
+   "top": [
+    {
+     "words": "X Pause",
+     "value": 27.447497177959953
+    },
+    {
+     "words": "X2 Move to D6 facing E, then X Pause",
+     "value": 27.447497177959953
+    },
+    {
+     "words": "X2 Move to D6 facing E, then X3 Move to L6 facing W",
+     "value": 27.447497177959953
+    },
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 27.598327868771825
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 27.447497177959953,
+     "behind_the_choice": 0,
+     "list_rank": 1,
+     "shot_now": {
+      "value": 26,
+      "square": "I4",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "step 18a's choice",
+     "legal": true,
+     "words": "X2 Move to D6 facing E, then X End turn",
+     "value": 27.447497177959953,
+     "behind_the_choice": 0,
+     "list_rank": null,
+     "shot_now": {
+      "value": 26,
+      "square": "I4",
+      "shot": "layup"
+     }
+    }
+   ]
+  }
+ },
+ "3": {
+  "off": {
+   "side": "X",
+   "choice": {
+    "words": "X3 Move to N7 facing E",
+    "value": 26.725209362804502
+   },
+   "top": [
+    {
+     "words": "X3 Move to N7 facing E",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to N7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to M7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Quick Step to N7",
+     "value": 26.725209362804502
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "behind_the_choice": 0,
+     "list_rank": 6,
+     "shot_now": {
+      "value": 22,
+      "square": "I2",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help: the low man steps up, another covers",
+     "legal": true,
+     "words": "X4 Move to I4 facing N, then X2 Quick Step to D6",
+     "value": 28.85835216449525,
+     "behind_the_choice": 2.1331428016907488,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.5,
+      "square": "J3",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help, both with a Move",
+     "legal": true,
+     "words": "X2 Move to E5 facing SE, then X4 Move to I4 facing N",
+     "value": 29.08539101762128,
+     "behind_the_choice": 2.3601816548167776,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.5,
+      "square": "J3",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "1": {
+   "side": "X",
+   "choice": {
+    "words": "X3 Move to N7 facing E",
+    "value": 26.725209362804502
+   },
+   "top": [
+    {
+     "words": "X3 Move to N7 facing E",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to N7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to M7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Quick Step to N7",
+     "value": 26.725209362804502
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "behind_the_choice": 0,
+     "list_rank": 6,
+     "shot_now": {
+      "value": 22,
+      "square": "I2",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help: the low man steps up, another covers",
+     "legal": true,
+     "words": "X4 Move to I4 facing N, then X2 Quick Step to D6",
+     "value": 28.65389172161267,
+     "behind_the_choice": 1.9286823588081674,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.5,
+      "square": "J3",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help, both with a Move",
+     "legal": true,
+     "words": "X2 Move to E5 facing SE, then X4 Move to I4 facing N",
+     "value": 29.08539101762128,
+     "behind_the_choice": 2.3601816548167776,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.580000000000002,
+      "square": "G3",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "2": {
+   "side": "X",
+   "choice": {
+    "words": "X3 Move to N7 facing E",
+    "value": 26.725209362804502
+   },
+   "top": [
+    {
+     "words": "X3 Move to N7 facing E",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to N7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to M7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Quick Step to N7",
+     "value": 26.725209362804502
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "behind_the_choice": 0,
+     "list_rank": 6,
+     "shot_now": {
+      "value": 22,
+      "square": "I2",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help: the low man steps up, another covers",
+     "legal": true,
+     "words": "X4 Move to I4 facing N, then X2 Quick Step to D6",
+     "value": 28.27193265249136,
+     "behind_the_choice": 1.546723289686856,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.5,
+      "square": "J3",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help, both with a Move",
+     "legal": true,
+     "words": "X2 Move to E5 facing SE, then X4 Move to I4 facing N",
+     "value": 28.85835216449525,
+     "behind_the_choice": 2.1331428016907488,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.580000000000002,
+      "square": "G3",
+      "shot": "layup"
+     }
+    }
+   ]
+  },
+  "3": {
+   "side": "X",
+   "choice": {
+    "words": "X3 Move to N7 facing E",
+    "value": 26.725209362804502
+   },
+   "top": [
+    {
+     "words": "X3 Move to N7 facing E",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to N7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Move to M7 facing W",
+     "value": 26.725209362804502
+    },
+    {
+     "words": "X3 Quick Step to N7",
+     "value": 26.725209362804502
+    }
+   ],
+   "named": [
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "behind_the_choice": 0,
+     "list_rank": 6,
+     "shot_now": {
+      "value": 22,
+      "square": "I2",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help: the low man steps up, another covers",
+     "legal": true,
+     "words": "X4 Move to I4 facing N, then X2 Quick Step to D6",
+     "value": 28.1697849931154,
+     "behind_the_choice": 1.4445756303108972,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.5,
+      "square": "J3",
+      "shot": "layup"
+     }
+    },
+    {
+     "name": "the board's help, both with a Move",
+     "legal": true,
+     "words": "X2 Move to E5 facing SE, then X4 Move to I4 facing N",
+     "value": 28.85835216449525,
+     "behind_the_choice": 2.1331428016907488,
+     "list_rank": null,
+     "shot_now": {
+      "value": 29.580000000000002,
+      "square": "G3",
+      "shot": "layup"
+     }
+    }
+   ]
+  }
+ },
+ "6": {
+  "off": {
+   "side": "O",
+   "choice": {
+    "words": "O4 Shot (three)",
+    "value": 33
+   },
+   "top": [
+    {
+     "words": "O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O2 Move to A5, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to J10, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to K10, then O4 Shot (three)",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: O4 shoots the open three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 33,
+     "behind_the_choice": 0,
+     "list_rank": 1,
+     "shot_now": null
+    }
+   ]
+  },
+  "1": {
+   "side": "O",
+   "choice": {
+    "words": "O4 Shot (three)",
+    "value": 33
+   },
+   "top": [
+    {
+     "words": "O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O2 Move to A5, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to J10, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to K10, then O4 Shot (three)",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: O4 shoots the open three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 33,
+     "behind_the_choice": 0,
+     "list_rank": 1,
+     "shot_now": null
+    }
+   ]
+  },
+  "2": {
+   "side": "O",
+   "choice": {
+    "words": "O4 Shot (three)",
+    "value": 33
+   },
+   "top": [
+    {
+     "words": "O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O2 Move to A5, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to J10, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to K10, then O4 Shot (three)",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: O4 shoots the open three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 33,
+     "behind_the_choice": 0,
+     "list_rank": 1,
+     "shot_now": null
+    }
+   ]
+  },
+  "3": {
+   "side": "O",
+   "choice": {
+    "words": "O4 Shot (three)",
+    "value": 33
+   },
+   "top": [
+    {
+     "words": "O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O2 Move to A5, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to J10, then O4 Shot (three)",
+     "value": 33
+    },
+    {
+     "words": "O1 Move to K10, then O4 Shot (three)",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: O4 shoots the open three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 33,
+     "behind_the_choice": 0,
+     "list_rank": 1,
+     "shot_now": null
+    }
+   ]
+  }
+ },
+ "8": {
+  "off": {
+   "side": "O",
+   "choice": {
+    "words": "O2 Move to E10",
+    "value": 28.85835216449525
+   },
+   "top": [
+    {
+     "words": "O2 Move to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to F10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Quick Step to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Sprint to E10",
+     "value": 28.85835216449525
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the backdoor cut and the pass",
+     "legal": true,
+     "words": "O2 Move to D7, then O1 Pass to O2",
+     "value": 28.85835216449525,
+     "behind_the_choice": 0,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the cut alone",
+     "legal": true,
+     "words": "O2 Move to F7",
+     "value": 28.27193265249136,
+     "behind_the_choice": 0.5864195120038929,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "1": {
+   "side": "O",
+   "choice": {
+    "words": "O2 Move to E10",
+    "value": 28.85835216449525
+   },
+   "top": [
+    {
+     "words": "O2 Move to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to F10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Quick Step to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Sprint to E10",
+     "value": 28.85835216449525
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the backdoor cut and the pass",
+     "legal": true,
+     "words": "O2 Move to D7, then O1 Pass to O2",
+     "value": 28.85835216449525,
+     "behind_the_choice": 0,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the cut alone",
+     "legal": true,
+     "words": "O2 Move to F7",
+     "value": 28.27193265249136,
+     "behind_the_choice": 0.5864195120038929,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "2": {
+   "side": "O",
+   "choice": {
+    "words": "O2 Move to E10",
+    "value": 28.85835216449525
+   },
+   "top": [
+    {
+     "words": "O2 Move to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to F10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to E10, then O1 Pass to O2",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to E10, then O1 Move to J10",
+     "value": 28.85835216449525
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the backdoor cut and the pass",
+     "legal": true,
+     "words": "O2 Move to D7, then O1 Pass to O2",
+     "value": 28.462912187052012,
+     "behind_the_choice": 0.3954399774432389,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the cut alone",
+     "legal": true,
+     "words": "O2 Move to F7",
+     "value": 28.27193265249136,
+     "behind_the_choice": 0.5864195120038929,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "3": {
+   "side": "O",
+   "choice": {
+    "words": "O2 Move to E10",
+    "value": 28.85835216449525
+   },
+   "top": [
+    {
+     "words": "O2 Move to E10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to F10",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to E10, then O1 Pass to O2",
+     "value": 28.85835216449525
+    },
+    {
+     "words": "O2 Move to E10, then O1 Move to J10",
+     "value": 28.85835216449525
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the backdoor cut and the pass",
+     "legal": true,
+     "words": "O2 Move to D7, then O1 Pass to O2",
+     "value": 27.889973583370047,
+     "behind_the_choice": 0.9683785811252044,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the cut alone",
+     "legal": true,
+     "words": "O2 Move to F7",
+     "value": 28.27193265249136,
+     "behind_the_choice": 0.5864195120038929,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  }
+ },
+ "9": {
+  "off": {
+   "side": "O",
+   "choice": {
+    "words": "O1 Move to J3, then O4 Move to G3",
+    "value": 25.216260099520873
+   },
+   "top": [
+    {
+     "words": "O1 Move to J3, then O4 Move to G3",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O Hesitate",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to B8",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to C9",
+     "value": 25.216260099520873
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the kick-out to the corner",
+     "legal": true,
+     "words": "O1 Pass to O5",
+     "value": 24.070382892156942,
+     "behind_the_choice": 1.145877207363931,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the corner man relocates",
+     "legal": true,
+     "words": "O5 Move to Q4",
+     "value": 26.362137306884808,
+     "behind_the_choice": -1.1458772073639345,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "1": {
+   "side": "O",
+   "choice": {
+    "words": "O1 Quick Step to K4, then O Hesitate",
+    "value": 25.216260099520873
+   },
+   "top": [
+    {
+     "words": "O1 Quick Step to K4, then O Hesitate",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to B8",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to C9",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O3 Move to J10",
+     "value": 25.216260099520873
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the kick-out to the corner",
+     "legal": true,
+     "words": "O1 Pass to O5",
+     "value": 24.070382892156942,
+     "behind_the_choice": 1.145877207363931,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the corner man relocates",
+     "legal": true,
+     "words": "O5 Move to Q4",
+     "value": 26.362137306884808,
+     "behind_the_choice": -1.1458772073639345,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "2": {
+   "side": "O",
+   "choice": {
+    "words": "O1 Quick Step to K4, then O Hesitate",
+    "value": 25.216260099520873
+   },
+   "top": [
+    {
+     "words": "O1 Quick Step to K4, then O Hesitate",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to B8",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to C9",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O3 Move to J10",
+     "value": 25.216260099520873
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the kick-out to the corner",
+     "legal": true,
+     "words": "O1 Pass to O5",
+     "value": 24.070382892156942,
+     "behind_the_choice": 1.145877207363931,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the corner man relocates",
+     "legal": true,
+     "words": "O5 Move to Q4",
+     "value": 26.362137306884808,
+     "behind_the_choice": -1.1458772073639345,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  },
+  "3": {
+   "side": "O",
+   "choice": {
+    "words": "O1 Quick Step to K4, then O Hesitate",
+    "value": 25.216260099520873
+   },
+   "top": [
+    {
+     "words": "O1 Quick Step to K4, then O Hesitate",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to B8",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O2 Move to C9",
+     "value": 25.216260099520873
+    },
+    {
+     "words": "O1 Quick Step to K4, then O3 Move to J10",
+     "value": 25.216260099520873
+    }
+   ],
+   "named": [
+    {
+     "name": "the board's move: the kick-out to the corner",
+     "legal": true,
+     "words": "O1 Pass to O5",
+     "value": 24.070382892156942,
+     "behind_the_choice": 1.145877207363931,
+     "list_rank": null,
+     "shot_now": null
+    },
+    {
+     "name": "the corner man relocates",
+     "legal": true,
+     "words": "O5 Move to Q4",
+     "value": 26.362137306884808,
+     "behind_the_choice": -1.1458772073639345,
+     "list_rank": null,
+     "shot_now": null
+    }
+   ]
+  }
+ }
+}

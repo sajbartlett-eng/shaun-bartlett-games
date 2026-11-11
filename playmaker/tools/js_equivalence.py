@@ -39,7 +39,7 @@ def random_state(rng):
     d = R.deal(age, std, seed=rng.randrange(36 ** 6))
     tags = d['tags'] or [None, None]
     off, dfn = L.team(d['rosters'][0], age, tags[0]), L.team(d['rosters'][1], age, tags[1])
-    rules = RC.with_rules(digital=digital)
+    rules = RC.with_rules(digital=digital, control=_CONTROL['size'])     # D-151: the control rule's size ('off' by default)
     ctx = Context(off, dfn, rules, team_fouls=rng.randrange(0, 7) if digital else 0,
                   quarter_left=rng.randrange(0, 19) if digital else 0)
     ctx.levels_key = (age, std)                    # step 18a: each age and standard reads its own phase table and scale
@@ -107,6 +107,7 @@ def py_outcomes(s):
 
 _ADV = {'on': False}
 _SETTLE = {'on': False}
+_CONTROL = {'size': 'off'}
 _HELP = {'on': False}
 
 
@@ -232,6 +233,7 @@ def main():
     ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines (the default since D-138)')
     ap.add_argument('--no-calibrated', action='store_true', help='eval.calibrated off, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
+    ap.add_argument('--control', default='off', help="step 18d (D-151): rules.control in every position: off, 1, 2 or 3")
     ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines (the default since D-148)')
     ap.add_argument('--no-settle', action='store_true', help='eval.settle_shots off, in both engines')
     ap.add_argument('--help-readings', action='store_true', help='step 18c: eval.help_readings on, in both engines')
@@ -253,6 +255,7 @@ def main():
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
+    _CONTROL['size'] = args.control
     args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle
@@ -319,7 +322,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
-               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
+               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated, control=args.control, settle=args.settle, help=args.help_readings,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,

@@ -361,6 +361,8 @@ async function create() {
   else {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
     if (k === 'full') { body.match_format = $('format').value; body.per_side = Number($('perSide').value); }
+    // D-151 (a rule candidate under test, the app's format only): ?control=1, 2 or 3 in the address plays the control rule
+    { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
     body.age = $('age').value; body.roster = m;
@@ -569,6 +571,8 @@ function renderTracker(id, side) {
   for (const p of (side === 'O' ? s.o : s.x)) {
     const chips = p.slots.map(k => el('span', { class: 'chip', text: KIND_NAME[k] || k }));
     if (p.locked) chips.push(el('span', { class: 'chip lock', text: 'LOCK' }));
+    { const rb = s.influence && s.influence.badges && s.influence.badges[side] && s.influence.badges[side][p.i];
+      if (rb && rb.rushed) chips.push(el('span', { class: 'chip rushed', text: 'RUSHED', title: `His last movement this phase was a ${rb.rushed === 2 ? 'Sprint' : 'Quick Step'}: a shot or Contest from him is rushed until he Moves or the phase ends` })); }
     if (p.screen) chips.push(el('span', { class: 'chip', text: `T ${DIRN[p.screen.dir]}` }));
     tb.append(el('tr', {}, [el('td', { text: `${side}${p.i + 1}` }), el('td', {}, chips.length ? chips : ['–'])]));
   }
@@ -660,6 +664,7 @@ function pieceLabel(side, p) {
   const b = st.influence && st.influence.badges && st.influence.badges[side] && st.influence.badges[side][p.i];
   if (b && b.move) bits.push('Move used');
   if (b && b.qs) bits.push('Quick Step used');
+  if (b && b.rushed) bits.push(`rushed after a ${b.rushed === 2 ? 'Sprint' : 'Quick Step'}`);
   if (sel.side === side && sel.i === p.i) bits.push('selected');
   const n = pieceActs(side, p.i).length;
   if (st.can_act && n) bits.push(`${n} legal action${n === 1 ? '' : 's'}`);

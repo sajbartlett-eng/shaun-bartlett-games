@@ -1,0 +1,938 @@
+{
+ "off": [
+  {
+   "step": "1. The ball is in the corner; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X3 Move to C4 facing W",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to C6 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to C5 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Sprint to M10",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X4 Move to P8 facing N",
+     "value": 25.46120568628247
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "words": "X3 Quick Step to E4, then X End turn",
+     "value": 27.889973583370047,
+     "behind_the_choice": 2.428767897087578,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "words": "X3 Sprint to B4, then X End turn",
+     "value": 28.65,
+     "behind_the_choice": 3.18879431371753,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "words": "X3 Move to C4 facing W, then X End turn",
+     "value": 27.889973583370047,
+     "behind_the_choice": 2.428767897087578,
+     "list_rank": null
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 28.65,
+     "behind_the_choice": 3.18879431371753,
+     "list_rank": 16
+    }
+   ]
+  },
+  {
+   "step": "1b. The offence to act, X3 a Quick Step closer",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Move to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Sprint to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Move to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence moves an off-ball player",
+     "legal": true,
+     "words": "O2 Move to B8",
+     "value": 25.02528056496022,
+     "behind_the_choice": 2.8646930184098274,
+     "list_rank": null
+    },
+    {
+     "name": "the offence shoots at once",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 12.889973583370047,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "2. The offence has moved an off-ball player; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I9 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I8 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing W",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to A6 facing N",
+     "value": 25.46120568628247
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 25.46120568628247,
+     "behind_the_choice": 0,
+     "list_rank": 13
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW",
+     "value": 18.049783696083605,
+     "behind_the_choice": -7.411421990198864,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "3. The offence to act after the Pause",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Screen, T E",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to J10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to K10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to P8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O8",
+     "value": 25.02528056496022
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence shoots the three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 10.02528056496022,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "4. The three is declared; the defence reacts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X3 Move to B4 facing SW",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 Steal",
+     "value": 27.75
+    },
+    {
+     "words": "X End turn",
+     "value": 33
+    },
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15,
+     "behind_the_choice": 0,
+     "list_rank": 2
+    },
+    {
+     "name": "X3 Sprints next to him and Contests",
+     "legal": false
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "words": "X End turn",
+     "value": 33,
+     "behind_the_choice": 18,
+     "list_rank": 4
+    }
+   ]
+  }
+ ],
+ "1": [
+  {
+   "step": "1. The ball is in the corner; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X2 Move to C6 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X2 Move to C5 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X1 Sprint to M10",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X4 Move to P8 facing N",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X5 Move to N3 facing N",
+     "value": 26.886661933251016
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "words": "X3 Quick Step to E4, then X End turn",
+     "value": 27.889973583370047,
+     "behind_the_choice": 1.0033116501190307,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "words": "X3 Sprint to B4, then X End turn",
+     "value": 30.6,
+     "behind_the_choice": 3.7133380667489853,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "words": "X3 Move to C4 facing W, then X End turn",
+     "value": 27.300915239001935,
+     "behind_the_choice": 0.41425330575091834,
+     "list_rank": null
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 30.6,
+     "behind_the_choice": 3.7133380667489853,
+     "list_rank": 12
+    }
+   ]
+  },
+  {
+   "step": "1b. The offence to act, X3 a Quick Step closer",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Move to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Move to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Sprint to A6",
+     "value": 27.31703497968808
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence moves an off-ball player",
+     "legal": true,
+     "words": "O2 Move to B8",
+     "value": 25.02528056496022,
+     "behind_the_choice": 2.8646930184098274,
+     "list_rank": null
+    },
+    {
+     "name": "the offence shoots at once",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 12.889973583370047,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "2. The offence has moved an off-ball player; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I9 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I8 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing SW",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing W",
+     "value": 25.46120568628247
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 25.46120568628247,
+     "behind_the_choice": 0,
+     "list_rank": 12
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW",
+     "value": 18.049783696083605,
+     "behind_the_choice": -7.411421990198864,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "3. The offence to act after the Pause",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Screen, T E",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to J10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to K10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to P8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O8",
+     "value": 25.02528056496022
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence shoots the three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 10.02528056496022,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "4. The three is declared; the defence reacts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X3 Move to B4 facing SW",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 Steal",
+     "value": 27.75
+    },
+    {
+     "words": "X End turn",
+     "value": 33
+    },
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15,
+     "behind_the_choice": 0,
+     "list_rank": 2
+    },
+    {
+     "name": "X3 Sprints next to him and Contests",
+     "legal": false
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "words": "X End turn",
+     "value": 33,
+     "behind_the_choice": 18,
+     "list_rank": 4
+    }
+   ]
+  }
+ ],
+ "2": [
+  {
+   "step": "1. The ball is in the corner; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X2 Move to C6 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X2 Move to C5 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X1 Sprint to M10",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X4 Move to P8 facing N",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X5 Move to N3 facing N",
+     "value": 26.886661933251016
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "words": "X3 Quick Step to E4, then X End turn",
+     "value": 27.889973583370047,
+     "behind_the_choice": 1.0033116501190307,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "words": "X3 Sprint to B4, then X End turn",
+     "value": 32.55,
+     "behind_the_choice": 5.663338066748981,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "words": "X3 Move to C4 facing W, then X End turn",
+     "value": 27.715168544752853,
+     "behind_the_choice": 0.8285066115018367,
+     "list_rank": null
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 32.55,
+     "behind_the_choice": 5.663338066748981,
+     "list_rank": 14
+    }
+   ]
+  },
+  {
+   "step": "1b. The offence to act, X3 a Quick Step closer",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Move to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Move to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Quick Step to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Sprint to A6",
+     "value": 26.744096376006116
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence moves an off-ball player",
+     "legal": true,
+     "words": "O2 Move to B8",
+     "value": 25.02528056496022,
+     "behind_the_choice": 2.8646930184098274,
+     "list_rank": null
+    },
+    {
+     "name": "the offence shoots at once",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 12.889973583370047,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "2. The offence has moved an off-ball player; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I9 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I8 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing SW",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing W",
+     "value": 25.46120568628247
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 25.46120568628247,
+     "behind_the_choice": 0,
+     "list_rank": 12
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW",
+     "value": 18.049783696083605,
+     "behind_the_choice": -7.411421990198864,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "3. The offence to act after the Pause",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O1 Move to J10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to K10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to P8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O9",
+     "value": 25.02528056496022
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence shoots the three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 10.02528056496022,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "4. The three is declared; the defence reacts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X3 Move to B4 facing SW",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 Steal",
+     "value": 27.75
+    },
+    {
+     "words": "X End turn",
+     "value": 33
+    },
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15,
+     "behind_the_choice": 0,
+     "list_rank": 2
+    },
+    {
+     "name": "X3 Sprints next to him and Contests",
+     "legal": false
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "words": "X End turn",
+     "value": 33,
+     "behind_the_choice": 18,
+     "list_rank": 4
+    }
+   ]
+  }
+ ],
+ "3": [
+  {
+   "step": "1. The ball is in the corner; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X2 Move to C6 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X2 Move to C5 facing S",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X1 Sprint to M10",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X4 Move to P8 facing N",
+     "value": 26.886661933251016
+    },
+    {
+     "words": "X5 Move to N3 facing N",
+     "value": 26.886661933251016
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Quick Steps closer, not next to him",
+     "legal": true,
+     "words": "X3 Quick Step to E4, then X End turn",
+     "value": 27.889973583370047,
+     "behind_the_choice": 1.0033116501190307,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Sprints next to him now",
+     "legal": true,
+     "words": "X3 Sprint to B4, then X End turn",
+     "value": 33,
+     "behind_the_choice": 6.113338066748984,
+     "list_rank": null
+    },
+    {
+     "name": "X3 Moves closer now",
+     "legal": true,
+     "words": "X3 Move to C4 facing W, then X End turn",
+     "value": 27.810765461464605,
+     "behind_the_choice": 0.924103528213589,
+     "list_rank": null
+    },
+    {
+     "name": "does nothing",
+     "legal": true,
+     "words": "X Pause",
+     "value": 33,
+     "behind_the_choice": 6.113338066748984,
+     "list_rank": 14
+    }
+   ]
+  },
+  {
+   "step": "1b. The offence to act, X3 a Quick Step closer",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O2 Move to A6",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O2 Move to A6, then O4 Pass to O2",
+     "value": 27.889973583370047
+    },
+    {
+     "words": "O1 Move to J10",
+     "value": 26.17115777232415
+    },
+    {
+     "words": "O1 Move to K10",
+     "value": 26.17115777232415
+    },
+    {
+     "words": "O3 Move to P8",
+     "value": 26.17115777232415
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence moves an off-ball player",
+     "legal": true,
+     "words": "O2 Move to B8",
+     "value": 25.02528056496022,
+     "behind_the_choice": 2.8646930184098274,
+     "list_rank": null
+    },
+    {
+     "name": "the offence shoots at once",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 12.889973583370047,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "2. The offence has moved an off-ball player; the defence acts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I9 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X1 Move to I8 facing S",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing SW",
+     "value": 25.46120568628247
+    },
+    {
+     "words": "X2 Move to B7 facing W",
+     "value": 25.46120568628247
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 25.46120568628247,
+     "behind_the_choice": 0,
+     "list_rank": 12
+    },
+    {
+     "name": "X3 Moves next to him now",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW",
+     "value": 18.049783696083605,
+     "behind_the_choice": -7.411421990198864,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "3. The offence to act after the Pause",
+   "side": "O",
+   "rows": [
+    {
+     "words": "O1 Move to J10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O1 Move to K10",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to P8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O8",
+     "value": 25.02528056496022
+    },
+    {
+     "words": "O3 Move to O9",
+     "value": 25.02528056496022
+    }
+   ],
+   "named": [
+    {
+     "name": "the offence shoots the three",
+     "legal": true,
+     "words": "O4 Shot (three)",
+     "value": 15,
+     "behind_the_choice": 10.02528056496022,
+     "list_rank": null
+    }
+   ]
+  },
+  {
+   "step": "4. The three is declared; the defence reacts",
+   "side": "X",
+   "rows": [
+    {
+     "words": "X3 Move to B4 facing SW",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15
+    },
+    {
+     "words": "X3 Move to B4 facing SW, then X3 Steal",
+     "value": 27.75
+    },
+    {
+     "words": "X End turn",
+     "value": 33
+    },
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 33
+    }
+   ],
+   "named": [
+    {
+     "name": "the line: X3 Moves next to him and Contests",
+     "legal": true,
+     "words": "X3 Move to B4 facing SW, then X3 contests",
+     "value": 15,
+     "behind_the_choice": 0,
+     "list_rank": 2
+    },
+    {
+     "name": "X3 Sprints next to him and Contests",
+     "legal": false
+    },
+    {
+     "name": "no Contest",
+     "legal": true,
+     "words": "X End turn",
+     "value": 33,
+     "behind_the_choice": 18,
+     "list_rank": 4
+    }
+   ]
+  }
+ ]
+}

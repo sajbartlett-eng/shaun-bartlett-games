@@ -89,6 +89,7 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | reach_angle_fouls | Shared | 1 roll from closer, 2 from level or behind | 1 roll from closer, 2 from level or behind |  |
 | contest_action | Shared | an action, the last of the reaction | an action, the last of the reaction |  |
 | turnover_floor | Shared | 0 or the banked total if lower | 0 or the banked total if lower |  |
+| control | Shared | off (a rule candidate under test, D-151) | off (a rule candidate under test, D-151) |  |
 | steal_foul_always_plus5 | Shared | every steal foul +5 | every steal foul +5 |  |
 
 ## Splits for the designer

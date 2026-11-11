@@ -391,13 +391,14 @@ def cmd_regret(n_off='48', n_def='12', keep='200', cap='900', switches=''):
                      and not p['state'].get('pending')][:per]
     pick.sort(key=lambda p: 0 if p['side'] == 'X' else 1)
     prof = L.profiles()['allstar']
-    tag = 'regret' + ('_' + switches.replace(',', '_') if switches else '')
+    tag = 'regret' + ('_' + switches.replace(',', '_') if switches else '') + ('_control_' + os.environ['STEP18_CONTROL'] if os.environ.get('STEP18_CONTROL') else '')
     queue, running, rows = list(pick), [], []
     while queue or running:
         while queue and len(running) < L.CORES:
             p = queue.pop(0)
             jf, of = os.path.join(WORK, f'{tag}_{p["id"]}.job.json'), os.path.join(WORK, f'{tag}_{p["id"]}.out.json')
             json.dump(dict(state=p['state'], ctx=contexts[p['ctx']], profile=prof, judge={}, keep=int(keep), cap_s=float(cap),
+                           control=os.environ.get('STEP18_CONTROL') or None,
                            switches={k: True for k in switches.split(',') if k and k not in ('settle', 'nosettle', 'help')} or None,
                            settle_shots=True if 'settle' in switches.split(',') else False if 'nosettle' in switches.split(',') else None,
                            help_readings=True if 'help' in switches.split(',') else None), open(jf, 'w'))

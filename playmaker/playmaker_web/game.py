@@ -216,7 +216,7 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None):
+                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -235,6 +235,9 @@ class Game:
                 raise GameError('a digital match is 4, 8 or 12 possessions per side')
             full = True
             rules = replace(rules or RC.DEFAULT_RULES, digital=True)
+            if control is not None and str(control) in RC.CONTROL and str(control) != 'off':
+                # D-151: the control rule, a candidate under test in the app only (off unless asked for)
+                rules = replace(rules, control=str(control))
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
         self.full = full and scenario is None
         self.n_poss = 2 * self.per_side if self.full else 1
@@ -297,7 +300,8 @@ class Game:
                   custom=self.custom or None, experimental=self.experimental or None, levels=self.levels,
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
-                  rules={k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
+                  rules=dict({k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
+                             **({'control': self.state.ctx.rules.control} if self.state.ctx.rules.control != 'off' else {})),
                   start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):
