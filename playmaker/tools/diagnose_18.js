@@ -57,6 +57,7 @@ function judgeOf(j, s) {
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 if (job.settle_shots != null && E.setSettle) E.setSettle(job.settle_shots);      // step 18b
 if (job.help_readings != null && E.setHelp) E.setHelp(job.help_readings);         // step 18c
+if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);         // step 18e (search.open_list)
 if (job.switches) E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, job.switches));
 // job.control (step 18d, D-151): the position under rules.control at that size
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
@@ -90,15 +91,20 @@ scored.slice(0, nexp).forEach(([, t]) => {
   followed.set(a.id, seconds);
 });
 pool.sort((x, y) => y[0] - x[0]);
-const rank = new Map(), list = [];
+let rank = new Map(), list = [];
 for (const [v, t] of pool) { const k = turnKey(t); if (!rank.has(k)) { rank.set(k, rank.size); if (list.length < beam) list.push([v, t]); } }
 const own = E.turns(s, beam, rootRead, n => srch.quick(n), null, null, 2);
-const rebuilt_equal = own.length === list.length && own.every((r, k) => turnKey(r[1]) === turnKey(list[k][1]));
+let rebuilt_equal = own.length === list.length && own.every((r, k) => turnKey(r[1]) === turnKey(list[k][1]));
+// step 18e: under search.open_list the list isn't built in those stages (every legal action is read): the engine's own
+// list is taken as it is, and a turn is on it or not
+const OPEN = !!(E.openOn && E.openOn(me));
+if (OPEN) { list = own; rank = new Map(own.map((r, k) => [turnKey(r[1]), k])); rebuilt_equal = true; }
 
 // where a turn stands: 4 on the list; 3 generated but ranked below the list's length; 2 its second action wasn't
 // generated; 1 its first action was generated but not followed by a second; 0 its first action wasn't generated
 function stage(t) {
   const k = turnKey(t);
+  if (OPEN) return rank.has(k) ? [4, rank.get(k) + 1] : [0, null];
   if (rank.has(k)) return rank.get(k) < list.length ? [4, rank.get(k) + 1] : [3, rank.get(k) + 1];
   if (t.length === 1) return candIds.has(t[0].id) ? [3, scored.findIndex(r => r[1][0].id === t[0].id) + 1] : [0, null];   // a single action below the list's length among the single actions
   let best = 0;
@@ -108,7 +114,7 @@ function stage(t) {
   }
   return [best, null];
 }
-const STAGES = ['first action not generated', 'first action not followed by a second', 'second action not generated', 'generated, cut by the list\'s length', 'on the list'];
+const STAGES = [OPEN ? 'not on the list' : 'first action not generated', 'first action not followed by a second', 'second action not generated', 'generated, cut by the list\'s length', 'on the list'];
 
 // one team turn ahead, as the search's own root reads it (Searcher.root)
 const v1 = n => (srch.quiet || srch.playOn) ? srch.value(n, srch.childDepth(s, n, 1), VMIN, VMAX) : E.isChance(n) ? srch.value(n, 0, VMIN, VMAX) : (n.stage === 'over' ? E.terminalValue(n) : srch.leaf(n));
@@ -148,7 +154,7 @@ all.forEach((r, k) => r.push(k + 1));                    // the rank by the one-
 const pick = new Map();
 const take = r => { const k = turnKey(r[1]); if (!pick.has(k)) pick.set(k, r); };
 const byKey = new Map(all.map(r => [turnKey(r[1]), r]));
-for (const [, t] of list) take(byKey.get(turnKey(t)));
+for (const [, t] of list) { const r = byKey.get(turnKey(t)); if (r) take(r); }   // (a list turn the capped pass didn't reach is left out)
 all.slice(0, job.keep || 300).forEach(take);
 let ka = 0;
 for (const r of all) { if (r[2]) { take(r); if (++ka >= (job.keep_accepted || 50)) break; } }
@@ -163,6 +169,6 @@ const out = {
   generated_turns: rank.size, list_length: list.length, rebuilt_equal, all_turns: all.length, capped,
   turns_by_stage: Object.fromEntries(STAGES.map((n, k) => [n, tally[k]])),
   accepted_turns: judge ? nAcc : null, accepted_by_stage: judge ? Object.fromEntries(STAGES.map((n, k) => [n, tallyAcc[k]])) : null,
-  judge: (job.judge || {}).name || null, rows, seconds: now() - t0, seconds_enumerating: tEnum,
+  judge: (job.judge || {}).name || null, open_list: OPEN, rows, seconds: now() - t0, seconds_enumerating: tEnum,
 };
 fs.writeFileSync(process.argv[3], JSON.stringify(out));

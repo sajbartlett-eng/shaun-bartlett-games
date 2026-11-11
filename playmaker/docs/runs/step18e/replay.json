@@ -1,0 +1,1468 @@
+{
+ "log": [
+  "[human] O3 Move to M10",
+  "[human] O1 Pass to O3",
+  "[ai] X2 Move to D9 facing W",
+  "[ai] X1 Move to L8 facing NE",
+  "[human] O1 Sprint to I7",
+  "[human] O3 Pass to O1",
+  "[ai] X1 Quick Step to L9",
+  "[ai] X4 Sprint to F4",
+  "[human] O Hesitate",
+  "[ai] X3 Move to J6 facing N",
+  "[ai] X5 Move to M2 facing N",
+  "[human] O1 Move to G5",
+  "[human] O Hesitate",
+  "[ai] X1 Sprint to G9",
+  "[ai] X3 Move to I7 facing SW",
+  "[human] O1 Pass to O4",
+  "[ai] X Pause",
+  "[human] O4 Shot (three)",
+  "[ai] X2 Move to D8 facing S",
+  "[ai] X4 Sprint to B4"
+ ],
+ "placed": {
+  "offence": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "defence": [
+   "J10",
+   "D8",
+   "L7",
+   "B4",
+   "P2"
+  ]
+ },
+ "facing_at_placement": "the log does not give it; every facing leaves every logged line legal (each defender moves, and so sets his facing, before it matters); N is used",
+ "settings": {
+  "old default": {
+   "replayed_to_the_end": true,
+   "failed": null,
+   "logged_result": 33.0,
+   "position_before_the_pass": "play:O|c10|t4/4|OG5,C9,M10,A3,Q3|XG9W,D9W,I7SW,F4E,M2N|b1|m0105|n00001010000|u0|L0000|f0+0-0|q0001",
+   "defence_after_the_pass": {
+    "played": [
+     {
+      "action": "X2 Move to D8 facing W",
+      "turn_it_chose": "X2 Move to D8 facing W",
+      "read": 28.65,
+      "listed": 24
+     },
+     {
+      "action": "X4 Quick Step to E4",
+      "turn_it_chose": "X4 Quick Step to E4",
+      "read": 29.26,
+      "listed": 13
+     }
+    ],
+    "its_list_top": [
+     {
+      "words": "X2 Move to D8 facing W",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D8",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to E4 facing NE",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "E4",
+        1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to D4 facing W",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "D4",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to C4 facing W",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "C4",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X5 Move to M4 facing W",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        4,
+        "M4",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X5 Move to K4 facing W",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        4,
+        "K4",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "logged_pause": {
+     "name": "the log: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 33,
+     "behind_the_choice": 4.34687170515592,
+     "list_rank": 16,
+     "shot_now": {
+      "value": 33,
+      "square": "A3",
+      "shot": "three"
+     },
+     "after": {
+      "o": [
+       "G5",
+       "C9",
+       "M10",
+       "A3",
+       "Q3"
+      ],
+      "x": [
+       "G9",
+       "D9",
+       "I7",
+       "F4",
+       "M2"
+      ],
+      "arrows": [
+       6,
+       6,
+       5,
+       2,
+       0
+      ],
+      "ball": 3,
+      "stage": "play",
+      "side": "O",
+      "clock": 10,
+      "tok_o": 3,
+      "tok_x": 3,
+      "moved_o": 1,
+      "moved_x": 5,
+      "cnt": [
+       0,
+       1,
+       0,
+       0,
+       1,
+       0,
+       1,
+       0,
+       0,
+       0,
+       1
+      ],
+      "turn_n": 0,
+      "final": false,
+      "lock_o": 0,
+      "lock_x": 0,
+      "screens": [],
+      "pending": null,
+      "approach": -1,
+      "shot": null,
+      "prev_wait": "P",
+      "beaten": [],
+      "fouls": 0,
+      "bonus5": 0,
+      "tos": 0,
+      "inbound": 0,
+      "target": -1,
+      "result": null,
+      "zeroed": false,
+      "phase": 2,
+      "turn_moved": 0,
+      "qs_o": 0,
+      "qs_x": 1,
+      "forced": false,
+      "react_moved": 0,
+      "turn_lead": -1,
+      "rush_o": 0,
+      "rush_x": 0,
+      "turn_x": null
+     }
+    }
+   },
+   "three_after_its_own_turn": {
+    "position": "play:O|c10|t3/2|OG5,C9,M10,A3,Q3|XG9W,D8W,I7SW,E4E,M2N|b4|m0107|n01001020000|u0|L0000|f0+0-0|q0009",
+    "reaction_played": [
+     {
+      "action": "X4 Move to B4 facing SW",
+      "turn_it_chose": "X4 Move to B4 facing SW",
+      "read": 21,
+      "listed": 7
+     },
+     {
+      "action": "X4 contests",
+      "turn_it_chose": "X4 contests",
+      "read": 21,
+      "listed": 4
+     }
+    ],
+    "worth": 21.0,
+    "its_list_top": [
+     {
+      "words": "X4 Move to B4 facing SW",
+      "value": 21,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "B4",
+        5,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to B4 facing SW, then X4 contests",
+      "value": 21,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "B4",
+        5,
+        -1,
+        ""
+       ],
+       [
+        "contest",
+        "X",
+        3,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X End turn",
+      "value": 33,
+      "turn": [
+       [
+        "end_turn",
+        "X",
+        -1,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X5 Move to O2 facing N",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        4,
+        "O2",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to B4 facing SW, then X5 Move to P2 facing N",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "B4",
+        5,
+        -1,
+        ""
+       ],
+       [
+        "move",
+        "X",
+        4,
+        "P2",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X5 Move to O2 facing N, then X4 Move to B4 facing SW",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        4,
+        "O2",
+        0,
+        -1,
+        ""
+       ],
+       [
+        "move",
+        "X",
+        3,
+        "B4",
+        5,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "named": [
+     {
+      "name": "no Contest",
+      "legal": true,
+      "words": "X End turn",
+      "value": 33,
+      "behind_the_choice": 12,
+      "list_rank": 3,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "D8",
+        "I7",
+        "E4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        6,
+        5,
+        2,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 2,
+       "moved_o": 1,
+       "moved_x": 7,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0
+       ],
+       "turn_n": 0,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 2,
+       "qs_o": 0,
+       "qs_x": 9,
+       "forced": false,
+       "react_moved": 0,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 0,
+       "turn_x": null
+      }
+     }
+    ]
+   },
+   "three_after_the_logged_pause": {
+    "position": "play:O|c10|t3/3|OG5,C9,M10,A3,Q3|XG9W,D9W,I7SW,F4E,M2N|b4|m0105|n01001010001|u0|L0000|WP|f0+0-0|q0001",
+    "reaction_played": [
+     {
+      "action": "X End turn",
+      "turn_it_chose": "X End turn",
+      "read": 33,
+      "listed": 21
+     }
+    ],
+    "worth": 33.0,
+    "its_list_top": [
+     {
+      "words": "X End turn",
+      "value": 33,
+      "turn": [
+       [
+        "end_turn",
+        "X",
+        -1,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Sprint to B4",
+      "value": 33,
+      "turn": [
+       [
+        "sprint",
+        "X",
+        3,
+        "B4",
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D8 facing W",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D8",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to C4 facing W",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "C4",
+        6,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to D6 facing NW",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "D6",
+        7,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Quick Step to D8",
+      "value": 33,
+      "turn": [
+       [
+        "qs",
+        "X",
+        1,
+        "D8",
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "named": [
+     {
+      "name": "the log: X2 Move to D8 facing S, X4 Sprint to B4",
+      "legal": true,
+      "words": "X2 Move to D8 facing S, then X4 Sprint to B4",
+      "value": 33,
+      "behind_the_choice": 0,
+      "list_rank": null,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "D8",
+        "I7",
+        "B4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        4,
+        5,
+        6,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 1,
+       "moved_o": 1,
+       "moved_x": 15,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        1
+       ],
+       "turn_n": 2,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "P",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 0,
+       "qs_o": 0,
+       "qs_x": 9,
+       "forced": false,
+       "react_moved": 10,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 0,
+       "turn_x": null
+      }
+     },
+     {
+      "name": "X4 Sprints next to him and Contests",
+      "legal": true,
+      "words": "X4 Sprint to B4, then X4 contests",
+      "value": 37.09847893431783,
+      "behind_the_choice": 4.098478934317832,
+      "list_rank": 21,
+      "shot_now": null,
+      "after": null
+     },
+     {
+      "name": "no Contest",
+      "legal": true,
+      "words": "X End turn",
+      "value": 33,
+      "behind_the_choice": 0,
+      "list_rank": 1,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "D9",
+        "I7",
+        "F4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        6,
+        5,
+        2,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 3,
+       "moved_o": 1,
+       "moved_x": 5,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+       ],
+       "turn_n": 0,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "P",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 0,
+       "qs_o": 0,
+       "qs_x": 1,
+       "forced": false,
+       "react_moved": 0,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 0,
+       "turn_x": null
+      }
+     }
+    ]
+   }
+  },
+  "new default": {
+   "replayed_to_the_end": true,
+   "failed": null,
+   "logged_result": 33.0,
+   "position_before_the_pass": "play:O|c10|t4/4|OG5,C9,M10,A3,Q3|XG9W,D9W,I7SW,F4E,M2N|b1|m0105|n00001010000|u0|L0000|f0+0-0|q0001|j000002",
+   "defence_after_the_pass": {
+    "played": [
+     {
+      "action": "X2 Quick Step to C8",
+      "turn_it_chose": "X2 Quick Step to C8",
+      "read": 28.65,
+      "listed": 24
+     },
+     {
+      "action": "X End turn",
+      "turn_it_chose": "X End turn",
+      "read": 33,
+      "listed": 13
+     }
+    ],
+    "its_list_top": [
+     {
+      "words": "X2 Quick Step to C8",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "qs",
+        "X",
+        1,
+        "C8",
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Quick Step to E5",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "qs",
+        "X",
+        3,
+        "E5",
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to B7 facing N",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "B7",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to B7 facing NE",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "B7",
+        1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to F4 facing NE",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "F4",
+        1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Move to C4 facing N",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "C4",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "logged_pause": {
+     "name": "the log: the defence Pauses",
+     "legal": true,
+     "words": "X Pause",
+     "value": 33,
+     "behind_the_choice": 4.34687170515592,
+     "list_rank": null,
+     "shot_now": {
+      "value": 33,
+      "square": "A3",
+      "shot": "three"
+     },
+     "after": {
+      "o": [
+       "G5",
+       "C9",
+       "M10",
+       "A3",
+       "Q3"
+      ],
+      "x": [
+       "G9",
+       "D9",
+       "I7",
+       "F4",
+       "M2"
+      ],
+      "arrows": [
+       6,
+       6,
+       5,
+       2,
+       0
+      ],
+      "ball": 3,
+      "stage": "play",
+      "side": "O",
+      "clock": 10,
+      "tok_o": 3,
+      "tok_x": 3,
+      "moved_o": 1,
+      "moved_x": 5,
+      "cnt": [
+       0,
+       1,
+       0,
+       0,
+       1,
+       0,
+       1,
+       0,
+       0,
+       0,
+       1
+      ],
+      "turn_n": 0,
+      "final": false,
+      "lock_o": 0,
+      "lock_x": 0,
+      "screens": [],
+      "pending": null,
+      "approach": -1,
+      "shot": null,
+      "prev_wait": "P",
+      "beaten": [],
+      "fouls": 0,
+      "bonus5": 0,
+      "tos": 0,
+      "inbound": 0,
+      "target": -1,
+      "result": null,
+      "zeroed": false,
+      "phase": 2,
+      "turn_moved": 0,
+      "qs_o": 0,
+      "qs_x": 1,
+      "forced": false,
+      "react_moved": 0,
+      "turn_lead": -1,
+      "rush_o": 0,
+      "rush_x": 2,
+      "turn_x": null
+     }
+    }
+   },
+   "three_after_its_own_turn": {
+    "position": "play:O|c10|t3/3|OG5,C9,M10,A3,Q3|XG9W,C8W,I7SW,F4E,M2N|b4|m0105|n01001020000|u0|L0000|f0+0-0|q0003|j000006",
+    "reaction_played": [
+     {
+      "action": "X End turn",
+      "turn_it_chose": "X End turn",
+      "read": 33,
+      "listed": 24
+     }
+    ],
+    "worth": 33.0,
+    "its_list_top": [
+     {
+      "words": "X End turn",
+      "value": 33,
+      "turn": [
+       [
+        "end_turn",
+        "X",
+        -1,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to C8 facing N",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "C8",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to C8 facing NE",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "C8",
+        1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to C8 facing E",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "C8",
+        2,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to C8 facing SE",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "C8",
+        3,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to C8 facing S",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "C8",
+        4,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "named": [
+     {
+      "name": "no Contest",
+      "legal": true,
+      "words": "X End turn",
+      "value": 33,
+      "behind_the_choice": 0,
+      "list_rank": 1,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "C8",
+        "I7",
+        "F4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        6,
+        5,
+        2,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 3,
+       "moved_o": 1,
+       "moved_x": 5,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0
+       ],
+       "turn_n": 0,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 2,
+       "qs_o": 0,
+       "qs_x": 3,
+       "forced": false,
+       "react_moved": 0,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 6,
+       "turn_x": null
+      }
+     }
+    ]
+   },
+   "three_after_the_logged_pause": {
+    "position": "play:O|c10|t3/3|OG5,C9,M10,A3,Q3|XG9W,D9W,I7SW,F4E,M2N|b4|m0105|n01001010001|u0|L0000|WP|f0+0-0|q0001|j000002",
+    "reaction_played": [
+     {
+      "action": "X End turn",
+      "turn_it_chose": "X End turn",
+      "read": 33,
+      "listed": 24
+     }
+    ],
+    "worth": 33.0,
+    "its_list_top": [
+     {
+      "words": "X End turn",
+      "value": 33,
+      "turn": [
+       [
+        "end_turn",
+        "X",
+        -1,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D9 facing N",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D9",
+        0,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D9 facing NE",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D9",
+        1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D9 facing E",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D9",
+        2,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D9 facing SE",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D9",
+        3,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X2 Move to D9 facing S",
+      "value": 33,
+      "turn": [
+       [
+        "move",
+        "X",
+        1,
+        "D9",
+        4,
+        -1,
+        ""
+       ]
+      ]
+     }
+    ],
+    "named": [
+     {
+      "name": "the log: X2 Move to D8 facing S, X4 Sprint to B4",
+      "legal": true,
+      "words": "X2 Move to D8 facing S, then X4 Sprint to B4",
+      "value": 33,
+      "behind_the_choice": 0,
+      "list_rank": null,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "D8",
+        "I7",
+        "B4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        4,
+        5,
+        6,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 1,
+       "moved_o": 1,
+       "moved_x": 15,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        1
+       ],
+       "turn_n": 2,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "P",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 0,
+       "qs_o": 0,
+       "qs_x": 9,
+       "forced": false,
+       "react_moved": 10,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 130,
+       "turn_x": null
+      }
+     },
+     {
+      "name": "X4 Sprints next to him and Contests",
+      "legal": true,
+      "words": "X4 Sprint to B4, then X4 contests",
+      "value": 40.69847893431783,
+      "behind_the_choice": 7.6984789343178335,
+      "list_rank": null,
+      "shot_now": null,
+      "after": null
+     },
+     {
+      "name": "no Contest",
+      "legal": true,
+      "words": "X End turn",
+      "value": 33,
+      "behind_the_choice": 0,
+      "list_rank": 1,
+      "shot_now": null,
+      "after": {
+       "o": [
+        "G5",
+        "C9",
+        "M10",
+        "A3",
+        "Q3"
+       ],
+       "x": [
+        "G9",
+        "D9",
+        "I7",
+        "F4",
+        "M2"
+       ],
+       "arrows": [
+        6,
+        6,
+        5,
+        2,
+        0
+       ],
+       "ball": 3,
+       "stage": "over",
+       "side": "-",
+       "clock": 10,
+       "tok_o": 2,
+       "tok_x": 3,
+       "moved_o": 1,
+       "moved_x": 5,
+       "cnt": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+       ],
+       "turn_n": 0,
+       "final": false,
+       "lock_o": 0,
+       "lock_x": 0,
+       "screens": [],
+       "pending": null,
+       "approach": -1,
+       "shot": null,
+       "prev_wait": "P",
+       "beaten": [],
+       "fouls": 0,
+       "bonus5": 0,
+       "tos": 0,
+       "inbound": 0,
+       "target": -1,
+       "result": {
+        "kind": "shot",
+        "shooter": 3,
+        "shot_type": "three",
+        "points": 3,
+        "rating": 11,
+        "contest": 0,
+        "contester": -1,
+        "shot_value": 33,
+        "free_throws": 0,
+        "and_one": false,
+        "floor": 0
+       },
+       "zeroed": false,
+       "phase": 2,
+       "turn_moved": 0,
+       "qs_o": 0,
+       "qs_x": 1,
+       "forced": false,
+       "react_moved": 0,
+       "turn_lead": -1,
+       "rush_o": 0,
+       "rush_x": 2,
+       "turn_x": null
+      }
+     }
+    ]
+   }
+  }
+ }
+}

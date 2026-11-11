@@ -109,6 +109,7 @@ _ADV = {'on': False}
 _SETTLE = {'on': False}
 _CONTROL = {'size': 'off'}
 _HELP = {'on': False}
+_OPEN = {'v': None}            # step 18e: search.open_list ('defence', 'both')
 
 
 def py_probe(s, reach_map=False):
@@ -128,6 +129,11 @@ def py_probe(s, reach_map=False):
         from playmaker_engine.search import Searcher, actor as _actor
         from playmaker_engine.agent import profile as _profile
         out['settled'] = Searcher(_actor(s), _profile('allstar'), lambda n: Read(n).leaf(), float('inf')).settled(s)
+    if _OPEN['v'] and s.stage == 'play' and s.side == 'X':      # step 18e: the open list itself, turn by turn
+        from playmaker_engine.search import Searcher as _S2, turns as _turns
+        from playmaker_engine.agent import profile as _p2
+        _sr = _S2('X', _p2('allstar'), lambda n: Read(n).leaf(), float('inf'))
+        out['open_list'] = [[v, ' ; '.join(str(a) for a in t)] for v, t in _turns(s, 24, None, _sr.quick, None, None, 2)]
     out['defender_reach'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d) for d in range(5))]
     out['defender_exact'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d, exact=True) for d in range(5))]
     if s.stage in ('play', 'reaction'):
@@ -186,7 +192,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list or False, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -237,6 +243,7 @@ def main():
     ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines (the default since D-148)')
     ap.add_argument('--no-settle', action='store_true', help='eval.settle_shots off, in both engines')
     ap.add_argument('--help-readings', action='store_true', help='step 18c: eval.help_readings on, in both engines')
+    ap.add_argument('--open-list', default=None, choices=('defence', 'both'), help='step 18e: search.open_list, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -260,6 +267,8 @@ def main():
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle
     _CFG['eval']['help_readings'] = args.help_readings
+    _OPEN['v'] = args.open_list
+    _CFG.setdefault('search', {})['open_list'] = args.open_list or False
     _HELP['on'] = args.help_readings
     args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
     _CFG['eval']['calibrated'] = args.calibrated
@@ -289,7 +298,7 @@ def main():
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
                                      goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
-                                     reach_map=True)))
+                                     open=args.open_list or False, reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):
@@ -298,9 +307,14 @@ def main():
     t1 = time.time()
     js = run_js(lines)
     t_js = time.time() - t1
+    if args.open_list:                              # the JS list's actions in the Python engine's words
+        from playmaker_engine import jsbridge as _jb
+        for b in js:
+            if 'open_list' in b:
+                b['open_list'] = [[v, ' ; '.join(str(_jb.action_from(a)) for a in t)] for v, t in b['open_list']]
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
               'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map', 'budget_geo', 'budget_exact', 'split_geo',
-              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact', 'ceiling', 'settled', 'floored') + (('react_outcomes',) if args.reaction else ())
+              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact', 'ceiling', 'settled', 'floored', 'open_list') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}

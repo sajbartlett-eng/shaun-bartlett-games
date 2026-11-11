@@ -13,6 +13,7 @@ const CONFIG = load('ai_profiles.json');
 E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
+if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);        // step 18e (search.open_list)
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
 const key = a => JSON.stringify(E.actionJSON(a));
@@ -49,7 +50,7 @@ if (s.stage !== 'over') {
       if (fv > -1e8) shotNow = { value: fv, square: hit && hit[1] >= 0 ? E.sqName(hit[1]) : null, shot: hit ? hit[2] : null };
     }
     out.named.push({ name: item.name, legal: true, words: words(acts), value: v, behind_the_choice: sign * (rows[0][0] - v),
-      list_rank: onList.get(acts.map(key).join('|')) || null, shot_now: shotNow, after: E.isChance(n) ? null : E.stateJSON(n) });
+      list_rank: onList.get(acts.map(key).join('|')) || onList.get(acts.slice().reverse().map(key).join('|')) || null, shot_now: shotNow, after: E.isChance(n) ? null : E.stateJSON(n) });
   }
 }
 fs.writeFileSync(process.argv[3], JSON.stringify(out, null, 1));

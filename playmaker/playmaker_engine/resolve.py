@@ -334,6 +334,20 @@ def _after(prev, s, side, kind):
     return s
 
 
+def null_step(state):
+    """Step 18e (search.open_list): the turn as one action of the defence leaves it (the token spent, a pass in the
+    air landed, whose action it is, the phase), with every piece where it stands: apply's own steps for a movement,
+    without the movement. The position the open list's cheap re-reads are made from."""
+    from .actions import inbound_held
+    s = _spend(state, 'X')
+    if s.pending and not inbound_held(state):
+        phase = s.phase
+        s = complete_pass(s)
+        if s.phase != phase:
+            return s
+    return _after(state, s, 'X', 'move')
+
+
 # ---- the main entry point --------------------------------------------------------
 
 def apply(state, action, check=False):

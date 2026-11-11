@@ -183,13 +183,222 @@ def _step(s, a):
     return apply(s, a)
 
 
+# ---- step 18e (search.open_list, D-156) --------------------------------------------------------------------------------
+# The list of turns without the hand-written choice of which actions to consider (candidate_actions): every legal
+# action is read, and only the reading decides what goes forward. No kind of action is named, kept or preferred.
+# The defence in open play: reading every legal action in full costs too much (about 1,000 actions a position), so
+#   1. every legal first action gets a cheap read: the looks of the position the turn leaves when it ends, with every
+#      piece where it stands (resolve.null_step, twice when the turn has two actions), re-read with that one defender
+#      where the action leaves him (Read.reread), and the quick reading taken from them. An action that leaves every
+#      piece where it stands, goes to the dice or keeps a pass in the air has no such re-read and is read in full at
+#      once;
+#   2. every pair of those actions by two defenders is read the same way, each attacker's best look being the lower of
+#      the two re-reads (the rule the reading's own cover uses). A second action is only read as part of a turn if the
+#      reading says it changes something;
+#   3. after each of the best `follow` first actions, every other legal second action is read: the same defender
+#      moving again by a re-read where it leaves him; anything that goes to the dice by its chances, a possession that
+#      ends at its own value and one that plays on at the first action's reading;
+#   4. actions the cheap read can't tell apart are one candidate (the first in the rules' order);
+#   5. the best `full` candidates by the cheap read are read in full (the ordering reading every turn gets today), and
+#      the best `beam` of those are the list.
+# Elsewhere (a declared shot's reaction, and the offence under 'both'): every legal action is read in full.
+
+def open_on(side):
+    v = CONFIG.get('search', {}).get('open_list')
+    return v is True or v == 'both' or (v == 'defence' and side == 'X')
+
+
+def _r6(x):
+    return round(x, 6)
+
+
+def _banked(s):
+    return (RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+            + foul_externality(s))
+
+
+def _ends_turn(s, nxt, side):
+    return isinstance(nxt, ChanceNode) or nxt.stage == 'over' or actor(nxt) != side or nxt.stage != s.stage
+
+
+def open_turns_x(s, beam, evaluate, deadline, expand):
+    from .resolve import null_step
+    from .decide import _caps
+    acts = legal_actions(s)
+    if len(acts) <= 12:
+        return None
+    ref1 = null_step(s)
+    if isinstance(ref1, ChanceNode) or ref1.stage != 'play':
+        return None
+    two = not _ends_turn(s, ref1, 'X')
+    ref2 = null_step(ref1) if two else None
+    if two and (isinstance(ref2, ChanceNode) or ref2.stage != 'play'):
+        return None
+    cfg = CONFIG.get('search', {})
+    nexp = expand if expand is not None else max(3, beam // 3)
+    full_n = cfg.get('open_full')
+    follow_n = cfg.get('open_follow')
+    K = beam + nexp * (8 if full_n is None else full_n)
+    F = nexp * (4 if follow_n is None else follow_n)
+    # one read to re-read from: the position the turn leaves when it ends (two actions on, or one if that ends it)
+    ref = ref2 if two else ref1
+    R = Read(ref)
+    att = R.att_o
+    b2 = _banked(ref)
+
+    def q_of(vec):
+        return R._quick_cont(R._cont_of(vec), vec[5], vec[6])
+
+    def facts(n, j, left):
+        cm, ql = _caps(left, 'X', j)
+        return R.reread(j, n.x[j], n.arrows[j], cm, ql, (left.rushed('X', j), left.moved('X', j)))
+
+    def raw_of(vec):
+        # what the quick reading is taken from, before the phase table's floor and the map flatten it
+        return _r6(max(vec[5], vec[6], R._cont_of(vec)))
+
+    def tie_of(vec):
+        return _r6(sum(vec[i] for i in att))
+
+    def key_of(c, vec):
+        return (c, _r6(vec[5]), _r6(vec[6])) + tuple(_r6(vec[i]) for i in att)
+
+    def check():
+        if deadline and time.time() > deadline:
+            raise Timeout
+
+    fresh = ref.phase != s.phase
+    full, U, seen = [], [], set()
+    # 1. every legal first action
+    for a in acts:
+        check()
+        nxt = apply(s, a)
+        if isinstance(nxt, ChanceNode) or nxt.stage != 'play' or nxt.pending or a.dest is None:
+            full.append((-evaluate(nxt), (a,)))
+            continue
+        v2 = facts(nxt, a.piece, ref if fresh else nxt)
+        q2 = q_of(v2)
+        c = _r6(q2)
+        u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key_of(c, v2), v2=v2, q2=q2)
+        if u['key'] in seen:
+            continue
+        seen.add(u['key'])
+        U.append(u)
+    by_cheap = lambda u: (u['c'], u['raw'], u['tie'], len(u['turn']), u['n'])
+    for n, u in enumerate(U):
+        u['n'] = n
+    U.sort(key=by_cheap)
+    C = list(U)
+    n = len(U)
+    if two:
+        # 2. every pair of them by two defenders
+        idx = list(att) + [5, 6]
+        for x, ua in enumerate(U):
+            check()
+            for ub in U[x + 1:]:
+                if ub['j'] == ua['j']:
+                    continue
+                lt = gt = False
+                m = [0.0] * 7
+                va_, vb_ = ua['v2'], ub['v2']
+                for i in idx:
+                    va, vb = va_[i], vb_[i]
+                    if vb < va:
+                        lt = True
+                        m[i] = vb
+                    else:
+                        if va < vb:
+                            gt = True
+                        m[i] = va
+                if not (lt and gt):
+                    continue
+                c = _r6(q_of(m))
+                C.append(dict(turn=(ua['turn'][0], ub['turn'][0]), j=-1, c=c, raw=raw_of(m), tie=tie_of(m), key=key_of(c, m) + ('p',),
+                              pair=True, n=n))
+                n += 1
+
+        # 3. after the best first actions: the same defender again, and whatever goes to the dice
+        def cheap_node(nd, u):
+            if isinstance(nd, ChanceNode):
+                return sum(float(p) * cheap_node(sub, u) for p, _, sub in nd.outcomes)
+            if nd.stage == 'over':
+                return terminal_value(nd)
+            return u['q2'] + _banked(nd) - b2
+
+        followed = 0
+        for ua in U:
+            if followed >= F:
+                break
+            check()
+            followed += 1
+            a = ua['turn'][0]
+            nxt = apply(s, a)
+            for b in legal_actions(nxt):
+                if b.kind in ('end_turn', 'forfeit'):
+                    continue
+                if b.dest is not None and b.piece != ua['j']:
+                    continue                             # two defenders moving: read with the pairs above
+                n2 = apply(nxt, b)
+                if not isinstance(n2, ChanceNode) and n2.stage == 'play' and not n2.pending and b.dest is not None:
+                    v = facts(n2, ua['j'], n2)
+                    c = _r6(q_of(v))
+                    C.append(dict(turn=(a, b), j=ua['j'], c=c, raw=raw_of(v), tie=tie_of(v), key=key_of(c, v) + ('s', ua['j']), n=n))
+                else:
+                    c = _r6(cheap_node(n2, ua))
+                    C.append(dict(turn=(a, b), j=ua['j'], c=c, raw=raw_of(ua['v2']), tie=tie_of(ua['v2']), key=key_of(c, ua['v2']) + ('d', b), n=n))
+                n += 1
+    # 4, 5. one candidate for each distinct read; the best by the cheap read are read in full
+    C.sort(key=by_cheap)
+    legal_after, seen_c = {}, set()
+
+    def ids_after(a):
+        r = legal_after.get(a)
+        if r is None:
+            nx = apply(s, a)
+            r = legal_after[a] = set() if isinstance(nx, ChanceNode) else set(legal_actions(nx))
+        return r
+
+    done = 0
+    for u in C:
+        if done >= K:
+            break
+        check()
+        turn = u['turn']
+        if len(turn) == 2:
+            if u['key'] in seen_c:
+                continue
+            if u.get('pair') and turn[1] not in ids_after(turn[0]):
+                if turn[0] not in ids_after(turn[1]):
+                    continue
+                turn = (turn[1], turn[0])
+            seen_c.add(u['key'])
+        full.append((-evaluate(play_turn(s, turn)), turn))
+        done += 1
+    full.sort(key=lambda r: -r[0])
+    seen_t, final = set(), []
+    for v, t in full:
+        key = frozenset(t) if len(t) == 2 and all(x.kind in ('move', 'qs', 'sprint') for x in t) else t
+        if key in seen_t:
+            continue
+        seen_t.add(key)
+        final.append((v, t))
+        if len(final) >= beam:
+            break
+    return final
+
+
 def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=2):
     """The candidate whole turns from s (lists of 1 or 2 actions), ordered by the value after the turn's
     deterministic part (the side's own point of view), at most `beam`. A turn ends at a turn-ender, a roll, the
     side's second action or a change of side."""
     side = actor(s)
     sign = 1 if side == 'O' else -1
-    first = candidate_actions(s, read)
+    open_ = open_on(side) and evaluate is not None
+    if open_ and side == 'X' and s.stage == 'play':
+        r = open_turns_x(s, beam, evaluate, deadline, expand)
+        if r is not None:
+            return r
+    first = legal_actions(s) if open_ else candidate_actions(s, read)
     scored = []
     for a in first:
         if deadline and time.time() > deadline:
@@ -211,7 +420,7 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
         nxt = _step(s, a)
         if isinstance(nxt, ChanceNode) or nxt.stage == 'over' or actor(nxt) != side or nxt.stage != s.stage:
             continue
-        for b in candidate_actions(nxt, None, per_player=second):
+        for b in (legal_actions(nxt) if open_ else candidate_actions(nxt, None, per_player=second)):
             if deadline and time.time() > deadline:
                 raise Timeout
             if b.kind in ('end_turn', 'forfeit'):

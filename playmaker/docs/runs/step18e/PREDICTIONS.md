@@ -25,3 +25,11 @@ defence position has 500 to 1,200 legal first actions (a Move to each square wit
 A search asks for a list at about 25 positions, each with first and second actions. That is tens of seconds a
 decision. So the build uses the form the prompt allows: a cheap first read of every legal action, by the reading's own
 re-read of one moved defender, then the full read of the best.
+
+## 1. The pilot: 18d's 11 defence positions under the new default rules, today's list and the open list
+
+- Cost: 0.9 a pass, two passes.
+- **Today's list:** about as before (the choice best on 4 of 11, 1.2 to 1.35 points left), since the rule changed
+  only by the foul roll.
+- **The open list:** the choice best on 7 or more of 11, and under 0.6 points left. The first build already puts
+  "step in, then Steal" on the list on three of the positions without being told.
