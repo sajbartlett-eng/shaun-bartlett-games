@@ -5,7 +5,7 @@ from fractions import Fraction
 from . import board as B
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, inbound_held, MOVEMENT, TOKEN_FREE
-from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points
+from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points, shot_rating
 from .state import CI, ZERO_COUNTS, Result, count_key
 
 
@@ -168,7 +168,8 @@ def new_phase(s, clock):
         s = s.with_(screens=())                  # OQ-29: a screen ends with the phase
     return s.with_(clock=clock, turn_lead=-1, turn_x=(), tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
-                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0)
+                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0,
+                   rush_o=0, rush_x=0)
 
 
 def complete_pass(s):
@@ -213,14 +214,17 @@ def contest_outcome(s, opt, forced):
     t = s.shot
     pts = shot_points(spos)
     kind = 'forced' if forced else 'shot'
-    made = _terminal(s, Result(kind, shooter, t, pts, card.shot(t), opt.contest, opt.defender, opt.value, 0))
+    rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
+    made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0))
     if opt.clean or opt.p_foul == 0:
         return made
-    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules)
+    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating)
     fouled = _terminal(s.with_(fouls=s.fouls + 1),
-                       Result('free_throws', shooter, t, pts, card.shot(t), opt.contest, opt.defender, 0, opt.ft, and1))
+                       Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
+    if s.ctx.rules.control != 'off' and s.rushed('X', opt.defender):
+        why = 'a late closeout after his Quick Step or Sprint'
     one = p_foul(fr, s.ctx.rules)
     if getattr(opt, 'rolls', 1) == 2:
         # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
@@ -416,6 +420,13 @@ def apply(state, action, check=False):
         if k in ('qs', 'sprint'):
             s = _inc(s, side, 'qs')
             s = s.with_(qs_o=s.qs_o | 1 << a.piece) if side == 'O' else s.with_(qs_x=s.qs_x | 1 << a.piece)
+        if s.ctx.rules.control != 'off':
+            # D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
+            bit = 1 << a.piece
+            if side == 'O':
+                s = s.with_(rush_o=(s.rush_o & ~bit) if k == 'move' else (s.rush_o | bit))
+            else:
+                s = s.with_(rush_x=(s.rush_x & ~bit) if k == 'move' else (s.rush_x | bit))
         return _after(state, s, side, k)
 
     s = _inc(s, side, k)
@@ -468,6 +479,8 @@ def apply(state, action, check=False):
                 cnt = list(s.cnt)
                 cnt[CI['x_qs']] += 1
                 s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
+            if rules.control != 'off':                       # D-151: the jump into the lane counts as his movement
+                s = s.with_(rush_x=(s.rush_x & ~(1 << j)) if a.target == 0 else (s.rush_x | 1 << j))
         p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
         ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)
@@ -522,8 +535,9 @@ def apply(state, action, check=False):
         if s.stage == 'reaction':
             pts = shot_points(s.o[carrier])
             card = O[carrier]
-            fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules)
-            foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, card.shot(s.shot), 0, a.piece, 0,
+            rating = shot_rating(s, carrier, s.shot)     # D-151
+            fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules, rating)
+            foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0,
                                               fpts, and1))
             if legacy or rules.digital:
                 stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),

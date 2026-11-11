@@ -451,6 +451,8 @@ WORDS = {
     'turnover_play_on': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'arrow_line_strict': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
+    'control': dict(sec=None, src=None, tab='off (a rule candidate under test, D-151)',
+                    dig='off (a rule candidate under test, D-151)'),
 }
 
 DIGITAL_ONLY = [

@@ -114,7 +114,10 @@ const PMEngine = (() => {
     three_only_ft_on_twos: false, coach_bonus_on_forced: true, diag_move_straight: true, inbound_tie: 'offence',
     forced_shot_choice: 'player', inbound_resolves: 'after_defence_turn', and_one: true, steal_lock: true,
     reach_angle_fouls: true, contest_action: true, turnover_floor: true, steal_foul_always_plus5: true };
+  const CONTROL = { off: [0, 0], 1: [1, 1], 2: [2, 2], 3: [3, 3], jump2_rim1: [2, 1] };
+  const RIM_SHOTS = new Set(['layup', 'dunk', 'post', 'floater']);
   function checkRules(r) {
+    if (r.control !== undefined && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
     for (const [k, v] of Object.entries(RULED)) {
       if (k in r && JSON.stringify(r[k]) !== JSON.stringify(v)) throw new Error(`rule ${k}=${JSON.stringify(r[k])} is not ported`);
     }
@@ -133,8 +136,15 @@ const PMEngine = (() => {
       bonus_from: (c.rules && c.rules.bonus_from) || 5, quarter_possessions: (c.rules && c.rules.quarter_possessions) || 18,
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
-      quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro' };
+      quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
+      control: CONTROL[(c.rules && c.rules.control) || 'off'] };          // D-151: [on a jump shot, at the rim], in rating steps
   }
+  // D-151 (rules.control, a rule candidate under test): the reduction a rushed shot, or a rushed Contest of it, takes
+  const controlOn = ctx => ctx.control[0] > 0 || ctx.control[1] > 0;
+  const controlCut = (ctx, t) => (RIM_SHOTS.has(t) ? ctx.control[1] : ctx.control[0]);
+  const rushedO = (s, i) => ((s.rush_o >> i) & 1) === 1;
+  const rushedX = (s, j) => ((s.rush_x >> j) & 1) === 1;
+  const shotRating = (s, shooter, t) => s.ctx.off[shooter].sh[t] - (controlOn(s.ctx) && rushedO(s, shooter) ? controlCut(s.ctx, t) : 0);
 
   // ---- state --------------------------------------------------------------------------------------------------------
   // cnt indices: o_qs pass screen dribble hesitate shot x_qs intercept challenge steal pause
@@ -190,6 +200,8 @@ const PMEngine = (() => {
       this.react_moved = s.react_moved;
       this.turn_lead = s.turn_lead;
       this.turn_x = s.turn_x;
+      this.rush_o = s.rush_o || 0;                       // D-151: last movement this phase was a Quick Step or Sprint
+      this.rush_x = s.rush_x || 0;
       this._occ = s._occ || null;
       this._dre = null;                                  // step 13: this state's exact reach, per defender
     }
@@ -208,7 +220,7 @@ const PMEngine = (() => {
       approach: js.approach, shot: js.shot || null, prev_wait: js.prev_wait || '', beaten: js.beaten.map(t => t.slice()),
       fouls: js.fouls, bonus5: js.bonus5, tos: js.tos, inbound: js.inbound, target: js.target, result: js.result || null,
       zeroed: js.zeroed, phase: js.phase, turn_moved: js.turn_moved, qs_o: js.qs_o, qs_x: js.qs_x, forced: js.forced,
-      react_moved: js.react_moved, turn_lead: js.turn_lead,
+      react_moved: js.react_moved, turn_lead: js.turn_lead, rush_o: js.rush_o || 0, rush_x: js.rush_x || 0,
       turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null };
     return new St(s);
   }
@@ -221,7 +233,7 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
+      rush_o: s.rush_o, rush_x: s.rush_x, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
@@ -535,14 +547,15 @@ const PMEngine = (() => {
   const pFouls = (k, rolls) => { k = clampT(k); return rolls === 1 ? k / 20 : (400 - (20 - k) * (20 - k)) / 400; };
   const shotPoints = pos => ZONE_POINTS[ZN[pos]];
   const freeThrows = (card, points) => (points === 3 ? 3 : 2) * card.r.free_throw;
-  function footPoints(card, t, pts) {                     // scoring.foul_on_shot_points: [points, and_one]
+  function footPoints(card, t, pts, rating) {             // scoring.foul_on_shot_points: [points, and_one]; rating: reduced (D-151)
     const ft = freeThrows(card, pts);
-    if (t) { const open = pts * card.sh[t]; if (open > ft) return [open, true]; }
+    if (t) { const open = pts * (rating === undefined ? card.sh[t] : rating); if (open > ft) return [open, true]; }
     return [ft, false];
   }
   function contestOptions(s, shooter, t, forced) {
-    const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = card.sh[t];
-    const ft = footPoints(card, t, pts)[0];
+    const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
+    const ft = footPoints(card, t, pts, rating)[0];
+    const cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
     const val = c => Math.max(0, pts * (rating - c));
     const opts = [{ defender: -1, contest: 0, clean: true, k: 0, rolls: 0, value: val(0), ft }];
     for (let j = 0; j < 5; j++) {
@@ -551,7 +564,8 @@ const PMEngine = (() => {
       let c = ctx.dfn[j].cn[t];
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
-      const clean = dirBetween(xp, spos) === s.arrows[j];
+      let clean = dirBetween(xp, spos) === s.arrows[j];
+      if (cut && rushedX(s, j)) { c = Math.max(0, c - cut); clean = false; }     // D-151: a rushed Contest
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c), ft });
     }
@@ -597,7 +611,7 @@ const PMEngine = (() => {
   function newPhase(s, clock) {
     return W_(s, { screens: [], clock, turn_lead: -1, turn_x: null, tok_o: 6, tok_x: 6, moved_o: 0, moved_x: 0, cnt: ZERO, turn_n: 0,
       final: false, lock_o: 0, lock_x: 0, approach: -1, prev_wait: '', beaten: [], side: 'O', phase: s.phase + 1, pending: null,
-      turn_moved: 0, qs_o: 0, qs_x: 0, react_moved: 0 });
+      turn_moved: 0, qs_o: 0, qs_x: 0, react_moved: 0, rush_o: 0, rush_x: 0 });
   }
   function completePass(s) {
     const passer = s.pending[0], recv = s.pending[1];
@@ -618,11 +632,12 @@ const PMEngine = (() => {
   }
   function contestOutcome(s, opt, forced) {
     const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos);
-    const made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, card.sh[t], opt.contest, opt.defender, opt.value, 0));
+    const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
+    const made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0));
     if (opt.clean || opt.k === 0) return made;
-    const and1 = footPoints(card, t, pts)[1];
+    const and1 = footPoints(card, t, pts, rating)[1];
     const fouled = terminal(W_(s, { fouls: s.fouls + 1 }),
-      Result('free_throws', shooter, t, pts, card.sh[t], opt.contest, opt.defender, 0, opt.ft, and1));
+      Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1));
     const one = opt.k / 20, no = (20 - opt.k) / 20;
     if (opt.rolls === 2) {
       const second = chance([[one, 'foul', fouled], [no, 'no foul', made]]);
@@ -725,6 +740,11 @@ const PMEngine = (() => {
         s = inc(s, side, 'qs');
         s = side === 'O' ? W_(s, { qs_o: s.qs_o | (1 << a.piece) }) : W_(s, { qs_x: s.qs_x | (1 << a.piece) });
       }
+      if (controlOn(s.ctx)) {                            // D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
+        const bit = 1 << a.piece;
+        if (side === 'O') s = W_(s, { rush_o: k === 'move' ? (s.rush_o & ~bit) : (s.rush_o | bit) });
+        else s = W_(s, { rush_x: k === 'move' ? (s.rush_x & ~bit) : (s.rush_x | bit) });
+      }
       return after(state, s, side, k);
     }
     s = inc(s, side, k);
@@ -776,8 +796,9 @@ const PMEngine = (() => {
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
-        const [fpts, and1] = footPoints(card, s.shot, pts);
-        foulNode = terminal(fs, Result('free_throws', carrier, s.shot, pts, card.sh[s.shot], 0, a.piece, 0, fpts, and1));
+        const rating = shotRating(s, carrier, s.shot);   // D-151
+        const [fpts, and1] = footPoints(card, s.shot, pts, rating);
+        foulNode = terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0, fpts, and1));
         if (s.ctx.digital) {
           stolenNode = terminal(W_(s, { tos: s.tos + 1 }), Result('steal', carrier, s.shot, pts), true);
         } else {
@@ -2254,7 +2275,7 @@ const PMEngine = (() => {
     mix(s.fouls); mix(s.bonus5); mix(s.tos); mix(s.qs_o); mix(s.qs_x); mix(s.phase); mix(s.inbound); mix(s.target); mix(s.approach);
     mix(s.turn_lead);
     if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
-    mix(s.react_moved); mix(s.forced ? 1 : 0);
+    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x);
     if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
     h1 ^= a; h2 ^= b;
     return (h1 >>> 0) * 65536 + ((h2 >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
