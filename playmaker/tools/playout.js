@@ -30,6 +30,7 @@ function apply(set) {                                  // an engine's switches, 
   E.setGoals(!!set.goals);
   if (E.setLearned) E.setLearned(!!set.learned);
   if (E.setTabletopMap) E.setTabletopMap(set.tabletop_map !== false);
+  if (E.setSettle) E.setSettle(!!set.settle_shots);
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }

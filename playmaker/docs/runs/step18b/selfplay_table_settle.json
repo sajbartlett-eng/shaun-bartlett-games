@@ -1,0 +1,45 @@
+{
+ "engine": "settle",
+ "format": "tabletop",
+ "possessions": 200,
+ "mean_points": 32.23,
+ "interval": [
+  31.51,
+  32.94
+ ],
+ "decisions_per_possession": 30.8,
+ "core_hours": 1.16,
+ "wall_minutes": 19.6,
+ "endings": {
+  "possessions": 200,
+  "shot": 0.98,
+  "no_shot": 0.02,
+  "clock_ran_out": 0.005,
+  "clock_ran_out_in_100": 0.5,
+  "shot_by_phase": {
+   "1": 0.276,
+   "2": 0.199,
+   "3": 0.204,
+   "4": 0.107,
+   "5": 0.112,
+   "6": 0.102
+  },
+  "mean_shot_phase": 2.89,
+  "decisions": 30.8,
+  "kinds": {
+   "forced": 3,
+   "free_throws": 12,
+   "shot": 184,
+   "turnover_end": 1
+  },
+  "forced_in_100": 1.5,
+  "forced_interval_in_100": [
+   0.5,
+   4.3
+  ],
+  "clock_ran_out_interval_in_100": [
+   0.1,
+   2.8
+  ]
+ }
+}

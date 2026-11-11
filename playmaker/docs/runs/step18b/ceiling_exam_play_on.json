@@ -1,0 +1,122 @@
+{
+ "name": "play_on",
+ "settle_shots": false,
+ "switches": "play_on",
+ "positions": 218,
+ "core_hours": 0.04,
+ "root_values_above_ceiling": 0,
+ "all": {
+  "readings": 88447,
+  "above_before": 13227,
+  "share_before": 0.1495,
+  "mean_excess_before": 2.54,
+  "max_excess_before": 7.13,
+  "above_after": 0,
+  "share_after": 0.0,
+  "mean_excess_after": 0,
+  "max_excess_after": 0
+ },
+ "by_kind": {
+  "open play, no map": {
+   "readings": 1215,
+   "above_before": 0,
+   "share_before": 0.0,
+   "mean_excess_before": 0,
+   "max_excess_before": 0,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "open play, the map applied": {
+   "readings": 86274,
+   "above_before": 13227,
+   "share_before": 0.1533,
+   "mean_excess_before": 2.54,
+   "max_excess_before": 7.13,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "pass in the air, no map": {
+   "readings": 958,
+   "above_before": 0,
+   "share_before": 0.0,
+   "mean_excess_before": 0,
+   "max_excess_before": 0,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  }
+ },
+ "by_phase": {
+  "1": {
+   "readings": 24306,
+   "above_before": 2801,
+   "share_before": 0.1152,
+   "mean_excess_before": 2.96,
+   "max_excess_before": 4.33,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "2": {
+   "readings": 12495,
+   "above_before": 1121,
+   "share_before": 0.0897,
+   "mean_excess_before": 2.51,
+   "max_excess_before": 3.65,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "3": {
+   "readings": 13420,
+   "above_before": 809,
+   "share_before": 0.0603,
+   "mean_excess_before": 1.76,
+   "max_excess_before": 2.87,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "4": {
+   "readings": 12476,
+   "above_before": 2553,
+   "share_before": 0.2046,
+   "mean_excess_before": 2.03,
+   "max_excess_before": 4.64,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "5": {
+   "readings": 12824,
+   "above_before": 3592,
+   "share_before": 0.2801,
+   "mean_excess_before": 2.4,
+   "max_excess_before": 4.86,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "6": {
+   "readings": 12926,
+   "above_before": 2351,
+   "share_before": 0.1819,
+   "mean_excess_before": 3.11,
+   "max_excess_before": 7.13,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  }
+ }
+}

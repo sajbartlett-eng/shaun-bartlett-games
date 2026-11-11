@@ -1,0 +1,203 @@
+{
+ "strong": {
+  "possessions": 640,
+  "all": {
+   "readings": 21829,
+   "above_before": 2414,
+   "share_before": 0.1106,
+   "mean_excess_before": 2.35,
+   "max_excess_before": 7.22,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "by_kind": {
+   "open play, no map": {
+    "readings": 30,
+    "above_before": 0,
+    "share_before": 0.0,
+    "mean_excess_before": 0,
+    "max_excess_before": 0,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "open play, the map applied": {
+    "readings": 21799,
+    "above_before": 2414,
+    "share_before": 0.1107,
+    "mean_excess_before": 2.35,
+    "max_excess_before": 7.22,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   }
+  },
+  "by_phase": {
+   "1": {
+    "readings": 6481,
+    "above_before": 388,
+    "share_before": 0.0599,
+    "mean_excess_before": 2.74,
+    "max_excess_before": 3.79,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "2": {
+    "readings": 5004,
+    "above_before": 537,
+    "share_before": 0.1073,
+    "mean_excess_before": 2.43,
+    "max_excess_before": 4.57,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "3": {
+    "readings": 3569,
+    "above_before": 291,
+    "share_before": 0.0815,
+    "mean_excess_before": 1.58,
+    "max_excess_before": 5.14,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "4": {
+    "readings": 2809,
+    "above_before": 327,
+    "share_before": 0.1164,
+    "mean_excess_before": 2.04,
+    "max_excess_before": 4.08,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "5": {
+    "readings": 2301,
+    "above_before": 528,
+    "share_before": 0.2295,
+    "mean_excess_before": 2.47,
+    "max_excess_before": 7.22,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "6": {
+    "readings": 1665,
+    "above_before": 343,
+    "share_before": 0.206,
+    "mean_excess_before": 2.55,
+    "max_excess_before": 7.09,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   }
+  }
+ },
+ "strong2": {
+  "possessions": 640,
+  "all": {
+   "readings": 11420,
+   "above_before": 410,
+   "share_before": 0.0359,
+   "mean_excess_before": 2.36,
+   "max_excess_before": 3.79,
+   "above_after": 0,
+   "share_after": 0.0,
+   "mean_excess_after": 0,
+   "max_excess_after": 0
+  },
+  "by_kind": {
+   "open play, the map applied": {
+    "readings": 11420,
+    "above_before": 410,
+    "share_before": 0.0359,
+    "mean_excess_before": 2.36,
+    "max_excess_before": 3.79,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   }
+  },
+  "by_phase": {
+   "1": {
+    "readings": 6191,
+    "above_before": 210,
+    "share_before": 0.0339,
+    "mean_excess_before": 2.71,
+    "max_excess_before": 3.79,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "2": {
+    "readings": 3176,
+    "above_before": 130,
+    "share_before": 0.0409,
+    "mean_excess_before": 2.38,
+    "max_excess_before": 3.68,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "3": {
+    "readings": 1485,
+    "above_before": 35,
+    "share_before": 0.0236,
+    "mean_excess_before": 1.57,
+    "max_excess_before": 3.3,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "4": {
+    "readings": 484,
+    "above_before": 20,
+    "share_before": 0.0413,
+    "mean_excess_before": 1.21,
+    "max_excess_before": 2.56,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "5": {
+    "readings": 80,
+    "above_before": 15,
+    "share_before": 0.1875,
+    "mean_excess_before": 0.78,
+    "max_excess_before": 2.86,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   },
+   "6": {
+    "readings": 4,
+    "above_before": 0,
+    "share_before": 0.0,
+    "mean_excess_before": 0,
+    "max_excess_before": 0,
+    "above_after": 0,
+    "share_after": 0.0,
+    "mean_excess_after": 0,
+    "max_excess_after": 0
+   }
+  }
+ }
+}
