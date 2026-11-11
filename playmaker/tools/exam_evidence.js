@@ -16,7 +16,7 @@ const E = require(path.join(__dirname, '..', 'playmaker_web', 'static', 'engine.
 const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const CONFIG = load('ai_profiles.json');
-E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json') });
+E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;   // the engine's own clock
 

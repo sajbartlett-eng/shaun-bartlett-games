@@ -1,0 +1,1675 @@
+{
+ "positions": 218,
+ "seeds": 4,
+ "opponent": "default",
+ "core_hours": 1.85,
+ "wall_minutes": 31.8,
+ "engines": {
+  "default": {
+   "mark": [
+    9.21,
+    5.27,
+    13.28
+   ]
+  },
+  "settle": {
+   "mark": [
+    9.89,
+    5.83,
+    14.12
+   ]
+  }
+ },
+ "against_default": {
+  "settle": {
+   "all": {
+    "positions": 218,
+    "gain": [
+     0.68,
+     0.08,
+     1.34
+    ],
+    "better": 77,
+    "worse": 56
+   },
+   "hand_boards": {
+    "positions": 22,
+    "gain": [
+     -0.33,
+     -2.38,
+     2.07
+    ],
+    "better": 5,
+    "worse": 12
+   },
+   "self_play": {
+    "positions": 130,
+    "gain": [
+     0.86,
+     0.02,
+     1.69
+    ],
+    "better": 51,
+    "worse": 26
+   },
+   "defence_added": {
+    "positions": 66,
+    "gain": [
+     0.69,
+     -0.38,
+     1.81
+    ],
+    "better": 21,
+    "worse": 18
+   },
+   "offence_to_act": {
+    "positions": 145,
+    "gain": [
+     0.89,
+     0.08,
+     1.62
+    ],
+    "better": 55,
+    "worse": 32
+   },
+   "defence_to_act": {
+    "positions": 73,
+    "gain": [
+     0.28,
+     -0.75,
+     1.35
+    ],
+    "better": 22,
+    "worse": 24
+   },
+   "phase_1": {
+    "positions": 52,
+    "gain": [
+     0.52,
+     -0.84,
+     2.1
+    ],
+    "better": 18,
+    "worse": 21
+   },
+   "phase_2": {
+    "positions": 34,
+    "gain": [
+     -0.06,
+     -1.59,
+     1.93
+    ],
+    "better": 12,
+    "worse": 11
+   },
+   "phase_3": {
+    "positions": 33,
+    "gain": [
+     0.16,
+     -1.55,
+     1.73
+    ],
+    "better": 14,
+    "worse": 7
+   },
+   "phase_4": {
+    "positions": 33,
+    "gain": [
+     0.31,
+     -0.95,
+     1.77
+    ],
+    "better": 9,
+    "worse": 6
+   },
+   "phase_5": {
+    "positions": 33,
+    "gain": [
+     1.22,
+     0.15,
+     2.43
+    ],
+    "better": 10,
+    "worse": 7
+   },
+   "phase_6": {
+    "positions": 33,
+    "gain": [
+     2.08,
+     0.28,
+     3.75
+    ],
+    "better": 14,
+    "worse": 4
+   }
+  }
+ },
+ "rows": {
+  "board 1": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -32.0,
+   "settle": -35.5
+  },
+  "board 2 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -15.25,
+   "settle": -27.0
+  },
+  "board 2 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -23.5,
+   "settle": -23.75
+  },
+  "board 3": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -30.75,
+   "settle": -31.5
+  },
+  "board 4": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "settle": 30.25
+  },
+  "board 5 close": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 39.0,
+   "settle": 39.0
+  },
+  "board 5 short": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 39.0,
+   "settle": 39.0
+  },
+  "board 6": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "board 7 phase 2": {
+   "source": "hand board",
+   "phase": 2,
+   "side": "O",
+   "default": 15.75,
+   "settle": 16.25
+  },
+  "board 7 phase 6": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "settle": 10.0
+  },
+  "board 8": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 32.0,
+   "settle": 31.0
+  },
+  "board 9": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 21.25,
+   "settle": 34.25
+  },
+  "board 10 good odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -26.5,
+   "settle": -34.75
+  },
+  "board 10 bad odds": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -27.5,
+   "settle": -27.0
+  },
+  "board 11 early": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 23.25,
+   "settle": 32.75
+  },
+  "board 11 final phase": {
+   "source": "hand board",
+   "phase": 6,
+   "side": "O",
+   "default": 0.0,
+   "settle": 0.0
+  },
+  "board 12": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "X",
+   "default": -34.75,
+   "settle": -35.5
+  },
+  "board 13": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 25.75,
+   "settle": 24.5
+  },
+  "board 14": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 39.25,
+   "settle": 31.5
+  },
+  "board 15": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 31.5,
+   "settle": 30.0
+  },
+  "board 16": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 36.75,
+   "settle": 36.75
+  },
+  "board C2": {
+   "source": "hand board",
+   "phase": 1,
+   "side": "O",
+   "default": 39.0,
+   "settle": 36.75
+  },
+  "seed1310": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.25,
+   "settle": 27.75
+  },
+  "seed290": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.5,
+   "settle": 30.75
+  },
+  "seed412": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 31.5,
+   "settle": 23.75
+  },
+  "seed374": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 15.0,
+   "settle": 24.75
+  },
+  "seed203": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.75
+  },
+  "seed88": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 23.5,
+   "settle": 30.5
+  },
+  "seed875": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 36.75,
+   "settle": 34.5
+  },
+  "seed393": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 34.75,
+   "settle": 30.75
+  },
+  "seed970": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 31.25,
+   "settle": 33.5
+  },
+  "seed229": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 15.5,
+   "settle": 31.5
+  },
+  "seed860": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 29.5,
+   "settle": 30.5
+  },
+  "seed457": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 24.75,
+   "settle": 26.75
+  },
+  "seed881": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed709": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.75,
+   "settle": 31.25
+  },
+  "seed704": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 27.75,
+   "settle": 27.0
+  },
+  "seed1450": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 22.25,
+   "settle": 32.0
+  },
+  "seed1080": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 35.0,
+   "settle": 38.0
+  },
+  "seed578": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed315": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 23.25,
+   "settle": 30.0
+  },
+  "seed1485": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 28.5,
+   "settle": 28.5
+  },
+  "seed574": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed764": {
+   "source": "self-play",
+   "phase": 1,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed968": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "settle": 34.0
+  },
+  "seed74": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.75,
+   "settle": 33.25
+  },
+  "seed1105": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.0,
+   "settle": 32.0
+  },
+  "seed1039": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed3": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 29.5
+  },
+  "seed4": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.75
+  },
+  "seed378": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed1208": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 21.0,
+   "settle": 26.75
+  },
+  "seed213": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.5,
+   "settle": 33.0
+  },
+  "seed1215": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed557": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed1469": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 44.0,
+   "settle": 44.0
+  },
+  "seed1190": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 31.5,
+   "settle": 27.0
+  },
+  "seed449": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 32.0,
+   "settle": 20.25
+  },
+  "seed844": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed166": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 33.75,
+   "settle": 30.0
+  },
+  "seed514": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 32.25
+  },
+  "seed460": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 30.0,
+   "settle": 20.75
+  },
+  "seed962": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed904": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed1101": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 38.0,
+   "settle": 38.0
+  },
+  "seed1149": {
+   "source": "self-play",
+   "phase": 2,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.0
+  },
+  "seed1383": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 34.25,
+   "settle": 17.5
+  },
+  "seed1162": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 26.75,
+   "settle": 25.75
+  },
+  "seed622": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed237": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 26.25,
+   "settle": 26.25
+  },
+  "seed1119": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.75
+  },
+  "seed79": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 39.75,
+   "settle": 43.0
+  },
+  "seed559": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed1178": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "settle": 28.25
+  },
+  "seed769": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 27.0,
+   "settle": 31.25
+  },
+  "seed1343": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 28.0,
+   "settle": 24.75
+  },
+  "seed1410": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 21.25,
+   "settle": 18.75
+  },
+  "seed735": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.75,
+   "settle": 30.0
+  },
+  "seed1132": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 28.5,
+   "settle": 30.0
+  },
+  "seed29": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 37.75,
+   "settle": 38.0
+  },
+  "seed303": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 34.5,
+   "settle": 28.0
+  },
+  "seed169": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 25.0,
+   "settle": 38.0
+  },
+  "seed245": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed426": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.5,
+   "settle": 32.0
+  },
+  "seed168": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 31.5,
+   "settle": 35.0
+  },
+  "seed30": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 38.0,
+   "settle": 38.0
+  },
+  "seed60": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed756": {
+   "source": "self-play",
+   "phase": 3,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed62": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed157": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.0
+  },
+  "seed1499": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 38.0,
+   "settle": 38.0
+  },
+  "seed404": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 16.0,
+   "settle": 28.0
+  },
+  "seed1436": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 16.75,
+   "settle": 29.25
+  },
+  "seed1027": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 41.0,
+   "settle": 41.0
+  },
+  "seed1135": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 33.0,
+   "settle": 27.0
+  },
+  "seed502": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 29.25,
+   "settle": 36.0
+  },
+  "seed306": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 33.0,
+   "settle": 25.0
+  },
+  "seed43": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 33.0,
+   "settle": 33.0
+  },
+  "seed353": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 42.0,
+   "settle": 42.0
+  },
+  "seed1386": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 32.0,
+   "settle": 35.0
+  },
+  "seed1366": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed981": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed63": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed1071": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 35.0,
+   "settle": 36.0
+  },
+  "seed249": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed1026": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 32.0,
+   "settle": 32.0
+  },
+  "seed1025": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 37.75,
+   "settle": 32.0
+  },
+  "seed1166": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 28.0,
+   "settle": 29.5
+  },
+  "seed429": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 22.5,
+   "settle": 24.0
+  },
+  "seed467": {
+   "source": "self-play",
+   "phase": 4,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed1439": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 26.75,
+   "settle": 35.0
+  },
+  "seed854": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed912": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.0
+  },
+  "seed1388": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 31.5,
+   "settle": 39.5
+  },
+  "seed742": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed740": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed84": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 43.0,
+   "settle": 43.0
+  },
+  "seed656": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "settle": 35.0
+  },
+  "seed389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 32.0,
+   "settle": 32.0
+  },
+  "seed1276": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed1368": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed1184": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 22.5,
+   "settle": 25.5
+  },
+  "seed791": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "settle": 30.75
+  },
+  "seed373": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 27.0,
+   "settle": 26.5
+  },
+  "seed1225": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 30.0,
+   "settle": 30.0
+  },
+  "seed941": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 27.75,
+   "settle": 30.0
+  },
+  "seed174": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.25,
+   "settle": 25.5
+  },
+  "seed1461": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.0,
+   "settle": 38.0
+  },
+  "seed1389": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 35.75,
+   "settle": 35.75
+  },
+  "seed1438": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 29.0,
+   "settle": 28.25
+  },
+  "seed311": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed775": {
+   "source": "self-play",
+   "phase": 5,
+   "side": "O",
+   "default": 25.5,
+   "settle": 26.0
+  },
+  "seed17": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.0,
+   "settle": 24.0
+  },
+  "seed509": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.0,
+   "settle": 27.0
+  },
+  "seed1371": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 18.0,
+   "settle": 23.25
+  },
+  "seed945": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.5,
+   "settle": 25.0
+  },
+  "seed914": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 29.5,
+   "settle": 31.75
+  },
+  "seed568": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.75,
+   "settle": 33.0
+  },
+  "seed658": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 35.0,
+   "settle": 19.5
+  },
+  "seed1031": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 14.0,
+   "settle": 27.5
+  },
+  "seed390": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 28.0,
+   "settle": 34.0
+  },
+  "seed68": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 21.5,
+   "settle": 30.0
+  },
+  "seed1417": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 42.5,
+   "settle": 46.0
+  },
+  "seed1202": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 24.0,
+   "settle": 24.0
+  },
+  "seed392": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.0
+  },
+  "seed745": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 27.0,
+   "settle": 27.0
+  },
+  "seed1228": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 12.0,
+   "settle": 12.0
+  },
+  "seed178": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 20.0,
+   "settle": 26.0
+  },
+  "seed858": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 36.0,
+   "settle": 36.0
+  },
+  "seed724": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 30.0,
+   "settle": 27.0
+  },
+  "seed471": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 21.0,
+   "settle": 21.0
+  },
+  "seed266": {
+   "source": "self-play",
+   "phase": 6,
+   "side": "O",
+   "default": 18.0,
+   "settle": 27.0
+  },
+  "defence68": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -31.25,
+   "settle": -30.75
+  },
+  "defence183": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence71": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -15.0,
+   "settle": -23.5
+  },
+  "defence480": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence181": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence361": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -39.0,
+   "settle": -39.0
+  },
+  "defence1": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -38.0,
+   "settle": -38.5
+  },
+  "defence554": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -35.25,
+   "settle": -24.75
+  },
+  "defence342": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -25.5,
+   "settle": -33.5
+  },
+  "defence201": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -35.75,
+   "settle": -28.0
+  },
+  "defence239": {
+   "source": "defence, self-play",
+   "phase": 1,
+   "side": "X",
+   "default": -31.25,
+   "settle": -26.0
+  },
+  "defence377": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -37.5,
+   "settle": -32.0
+  },
+  "defence99": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -33.5,
+   "settle": -41.5
+  },
+  "defence329": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -24.75,
+   "settle": -21.25
+  },
+  "defence272": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -32.0,
+   "settle": -34.0
+  },
+  "defence240": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -32.75,
+   "settle": -32.0
+  },
+  "defence31": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -38.0,
+   "settle": -40.0
+  },
+  "defence373": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -33.0,
+   "settle": -34.25
+  },
+  "defence632": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -29.25,
+   "settle": -28.5
+  },
+  "defence279": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -28.0,
+   "settle": -28.5
+  },
+  "defence102": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -35.0,
+   "settle": -14.25
+  },
+  "defence495": {
+   "source": "defence, self-play",
+   "phase": 2,
+   "side": "X",
+   "default": -36.0,
+   "settle": -36.0
+  },
+  "defence555": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -30.0,
+   "settle": -30.0
+  },
+  "defence170": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -30.0,
+   "settle": -30.0
+  },
+  "defence338": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -39.0,
+   "settle": -39.0
+  },
+  "defence277": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -31.5,
+   "settle": -30.0
+  },
+  "defence111": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -36.0,
+   "settle": -36.0
+  },
+  "defence106": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -40.25,
+   "settle": -30.5
+  },
+  "defence146": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -30.0,
+   "settle": -39.0
+  },
+  "defence32": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -31.5,
+   "settle": -27.75
+  },
+  "defence531": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -25.5,
+   "settle": -25.25
+  },
+  "defence51": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -31.25,
+   "settle": -30.75
+  },
+  "defence462": {
+   "source": "defence, self-play",
+   "phase": 3,
+   "side": "X",
+   "default": -25.5,
+   "settle": -25.5
+  },
+  "defence130": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -47.0,
+   "settle": -51.5
+  },
+  "defence135": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -34.25,
+   "settle": -33.0
+  },
+  "defence551": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -43.0,
+   "settle": -43.0
+  },
+  "defence532": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -38.5,
+   "settle": -38.5
+  },
+  "defence631": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -27.0,
+   "settle": -27.0
+  },
+  "defence325": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -30.0,
+   "settle": -30.0
+  },
+  "defence84": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -29.5,
+   "settle": -28.5
+  },
+  "defence451": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -27.75,
+   "settle": -29.25
+  },
+  "defence318": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -24.5,
+   "settle": -29.0
+  },
+  "defence577": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -29.0,
+   "settle": -29.0
+  },
+  "defence471": {
+   "source": "defence, self-play",
+   "phase": 4,
+   "side": "X",
+   "default": -36.0,
+   "settle": -36.0
+  },
+  "defence57": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -30.0,
+   "settle": -32.25
+  },
+  "defence195": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -36.5,
+   "settle": -25.25
+  },
+  "defence443": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -29.0,
+   "settle": -24.5
+  },
+  "defence142": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence157": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -29.25,
+   "settle": -29.25
+  },
+  "defence217": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -43.0,
+   "settle": -43.0
+  },
+  "defence397": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -27.5,
+   "settle": -29.5
+  },
+  "defence562": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -35.0,
+   "settle": -37.0
+  },
+  "defence62": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -40.0,
+   "settle": -41.0
+  },
+  "defence484": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -27.0,
+   "settle": -27.0
+  },
+  "defence444": {
+   "source": "defence, self-play",
+   "phase": 5,
+   "side": "X",
+   "default": -25.5,
+   "settle": -19.0
+  },
+  "defence89": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence242": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -27.0,
+   "settle": -27.75
+  },
+  "defence369": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -24.0,
+   "settle": -24.0
+  },
+  "defence362": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -42.0,
+   "settle": -42.0
+  },
+  "defence355": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -36.0,
+   "settle": -36.0
+  },
+  "defence162": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -33.0,
+   "settle": -33.0
+  },
+  "defence122": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -27.0,
+   "settle": -27.0
+  },
+  "defence529": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -30.75,
+   "settle": -24.0
+  },
+  "defence229": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -24.75,
+   "settle": -22.5
+  },
+  "defence169": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -22.5,
+   "settle": -22.5
+  },
+  "defence36": {
+   "source": "defence, self-play",
+   "phase": 6,
+   "side": "X",
+   "default": -36.0,
+   "settle": -37.0
+  }
+ }
+}

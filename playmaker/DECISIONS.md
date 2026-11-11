@@ -574,6 +574,66 @@ is fixed by calibrating to played-out results (`eval.calibrated`, off), not by h
 self-play is reported beside basketball's (about 1 in 100 possessions). · Source: Shaun, 10 Nov 2026 · **Ruled;**
 step 17D builds and measures it.
 
+### Shaun, 11 Nov 2026 (step 18 prompt and go): the rulings on step 17D
+
+**D-138. The calibrated reading is the default.** `eval.calibrated` is on by default, for every level, in both
+engines. Steps 17 and 17D are merged into `main` with that default. `eval.learned` stays off; its weights stay only
+for the golden tests. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18a).
+
+**D-139. Shot timing is a fidelity measure.** The calibrated computer takes 72% of its shots in phases 1 and 2. NBA
+teams shoot less early than the optimum: players hold the ball for a better shot and force late ones (Skinner, "The
+problem of shot selection in basketball", arXiv 1107.5793: four NBA seasons; the optimal strategy would add about
+0.05 points a possession). So earlier is the right direction. Shot timing is reported with every change from now on:
+shots by phase, the clock-out rate, decisions a possession. Shaun's playtests judge whether it needs tempering. It
+isn't tempered by hand. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-140. Stage 2 is built on the calibrated reading.** The learned weights are held. Ask again after step 18, on the
+better computer's play. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-141. The tabletop format.** Check calibration under the table's rules (a turnover costs −5 and play continues;
+the steal-foul and bonus differences in the register). Fit a separate tabletop map from tabletop-rules play if it
+differs materially. Then re-measure the table's shot-clock expiry rate (10 in 100 at step 3n, D-99). If it falls to
+about basketball's 1 in 100, record plan step 24 as closed. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step
+18a). Measured: the table's positions go on to earn 3 to 4 points more than the app's map says, so the table has its
+own map (`calibration_tabletop` in the weights file), fitted the same way on tabletop-rules play. With it the expiry
+rate is 3.5 in 100 (interval 1.7 to 7.0), down from 9; with the app's map it is 0 in 200, but that map loses to the
+table's own by 1.7 points a pair. **Plan step 24 is not closed** (D-99).
+
+**D-142. Other ages and standards.** The Senior Pro map is scaled by each level's own phase table, as D-114 did for
+the averages: at each phase, the scale is that level's phase table value over Senior Pro's, and what a position has
+left to earn = scale × map(reading ÷ scale). Senior Pro's scale is exactly 1. Junior Amateur is checked head to head
+(160 pairs against its uncalibrated self). Each level gets its own map later, once there is enough of its play.
+· Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18a).
+
+**D-143. Step 18 in two parts.** 18a: the merge, the level checks (Rookie and Starter, 160 pairs each against their
+uncalibrated selves; the levels still in order), the tabletop check (today's computer first, then the calibrated one,
+under the table's rules), the 19 boards on the calibrated computer (board 13 off the persistent list, D-134), and the
+candidate diagnosis. Cap about 9 core-hours. Stop and report. Then the fork: if the diagnosis says the computer isn't
+considering the right moves, 18b is the move prior, trained on a full-width search at 1 pair, cap 16 core-hours. If
+it says judgement, 18b is the third try at the learned weights, on calibrated play (2,500 possessions, about 8
+core-hours). Either way 18b waits for Shaun's go. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+### Shaun, 11 Nov 2026 (step 18b prompt): the order of the fixes, and the value ceiling
+
+**D-144. The order: judgement before candidates.** 18b (settle the shot at the horizon, the ceiling, the shot-timing
+test), then 18c (the defence's missing readings), 18d (widen the list by rule first, a learned prior only if a clear
+loss remains), 18e (refit calibration, then ask the learned weights a third time). Reason: any learned move list
+takes its labels from the search, so the search's faults are fixed first. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-145. The value ceiling.** Shaun: "The value system is very clear. (Shot rating minus contest rating) × points
+value. There aren't any shots that exceed 39 value that I know of, and that is an uncontested three pointer by the
+best shooter." Step 18a reported a position reading 42.3 on board 8. A possession ends in one shot, so no position
+may read above the most the possession can still earn under the rules. This is a fault, and the ceiling is a fixed
+rule from now on. · Source: Shaun, 11 Nov 2026 · **Ruled, built** (step 18b, behind `eval.settle_shots`, off).
+Derived (step 18b): the ceiling of a position is what the possession has already earned plus the best open shot any
+attacker's card can score (points × rating; 39 on the best card, the 13 three). The rules can pay more than one
+shot's value (a fouled three pays 3 × the free-throw rating, up to 54; each steal foul pays +5), but only through a
+Contest or a Steal the defence chooses to make, so against the defence's best reply the ceiling stands. With Coach's
+Call in play the target's shot also earns the bonus for its look.
+
+**Still open, not ruled** (step 18b prompt): the table's own map (18a), the cost of a turnover at the table, and
+plan step 24. Step 18b changes none of them.
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
@@ -668,6 +728,8 @@ All-Star mean to a player.
 ### Step 15: the shot clock
 
 **D-99.** Shot-clock expiries at the table: 10 per 100 possessions (`BASELINE.md`), against about 1 in basketball.
+Step 18a (D-141): 9 in 100 before calibration; 3.5 in 100 (interval 1.7 to 7.0) with the calibrated reading and
+the table's own map. Still open.
 Options: an engine choice (the computer holds too long); a rule (the forced shot, the −5). Effect: how often a
 possession ends without a real shot.
 

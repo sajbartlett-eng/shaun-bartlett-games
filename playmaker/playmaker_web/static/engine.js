@@ -1359,19 +1359,65 @@ const PMEngine = (() => {
   // file (learned_weights.json): per phase, intercept + sum of weight x (reading - mean) / sd, in the file's order
   function setLearned(on) { D.config.eval.learned = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.learned; }
   const learnedOn = () => D.config.eval.learned === true && D.learned !== null;
-  // step 17D: the calibrated reading (eval.calibrated, off): today's reading of what is left to earn, passed through a
+  // step 17D: the calibrated reading (eval.calibrated; on by default since D-138): today's reading of what is left to earn, passed through a
   // map fitted to what positions went on to earn, per phase and side to act (the weights file's calibration block:
   // knots x -> y, straight lines between and beyond them)
   function setCalibrated(on) { D.config.eval.calibrated = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.calibrated; }
+  // step 18b: eval.settle_shots (off). (1) A declared shot at the search's horizon is valued by playing the reaction out
+  // (Searcher.settled); (2) D-145: no reading is above the ceiling, before or after the calibrated map.
+  function setSettle(on) { D.config.eval.settle_shots = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.settle_shots; }
+  const settleOn = () => D.config.eval.settle_shots === true;
+  // The ceiling (decide.ceiling): the most the possession can still earn beyond what it has already earned, against the
+  // defence's best reply: the best open shot any attacker's card can score (points x rating); with Coach's Call in
+  // play the target's shot also earns the bonus for its look.
+  function ceilingOf(s) {
+    const ctx = s.ctx, tg = ctx.coach_call ? s.target : -1;
+    if (ctx._ceil === undefined) ctx._ceil = new Map();
+    let best = ctx._ceil.get(tg);
+    if (best !== undefined) return best;
+    best = 0.0;
+    for (let i = 0; i < ctx.off.length; i++) {
+      const card = ctx.off[i];
+      let m = 0.0;
+      for (let z = 1; z < ZONE_POINTS.length; z++) {
+        const pts = ZONE_POINTS[z];
+        for (const ty of ZONE_SHOTS[z]) { const v = pts * card.sh[ty]; if (v > m) m = v; }
+      }
+      if (ctx.coach_call && i === s.target) m = m + COACH_BONUS[band(m)];
+      if (m > best) best = m;
+    }
+    ctx._ceil.set(tg, best);
+    return best;
+  }
+  let TABLETOP_MAP = true;                               // a measuring hook: false reads the table with the app's map
+  function setTabletopMap(on) { TABLETOP_MAP = !(on === false || on === 'false'); READS = new Map(); READS_OLD = new Map(); return TABLETOP_MAP; }
   const calibratedOn = () => D.config.eval.calibrated === true && D.learned !== null && !!D.learned.calibration && !learnedOn();
+  // step 18a: the map was fitted on Senior Pro play; another age and standard scales it by its own phase table value
+  // over Senior Pro's at the same phase, as D-114 does for the averages (decide.calibration_scale). Senior Pro is 1.
+  function calibrationScale(s, phase) {
+    if (s.ctx.table === 'senior/pro') return 1.0;
+    const own = D.vcoarse[s.ctx.table] || D.vcoarse['senior/pro'] || {}, base = D.vcoarse['senior/pro'] || {};
+    const a = own['_phase' + phase], b = base['_phase' + phase];
+    if (!a || !b || a <= 0 || b <= 0) return 1.0;
+    return a / b;
+  }
   function calibrate(s, oToAct, r) {
-    const m = D.learned.calibration.maps[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1))) + (oToAct ? 'O' : 'X')];
+    const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
+    // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
+    const cal = (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) || D.learned.calibration;
+    const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
+    const q = calibrationScale(s, phase);
+    if (q !== 1.0) r = r / q;
     const x = m.x, y = m.y, n = x.length;
-    if (n === 1) return y[0];
-    let k = 0;
-    while (k < n - 2 && r > x[k + 1]) k++;
-    return y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k]);
+    let v;
+    if (n === 1) v = y[0];
+    else {
+      let k = 0;
+      while (k < n - 2 && r > x[k + 1]) k++;
+      v = y[k] + (y[k + 1] - y[k]) * (r - x[k]) / (x[k + 1] - x[k]);
+    }
+    return q === 1.0 ? v : q * v;
   }
   function learnedValue(s, f) {
     const m = D.learned.phases[String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)))];
@@ -2068,6 +2114,17 @@ const PMEngine = (() => {
         if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) v = banked + Math.max(sn || 0.0, now);
         else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
       }
+      if (settleOn()) {
+        // step 18b: the ordering reading on the leaf's own scale (the ceiling, the calibrated map, the ceiling), so a
+        // settled shot and a position that plays on are ranked together (decide.Read.leaf with k = 0)
+        const top = ceilingOf(s);
+        if (v - banked > top) v = banked + top;
+        if (calibratedOn() && s.stage === 'play' && !s.pending && !(!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) {
+          let r = calibrate(s, this.o_to_act, v - banked);
+          if (r > top) r = top;
+          v = banked + r;
+        }
+      }
       this._quick = v;
       return v;
     }
@@ -2104,11 +2161,21 @@ const PMEngine = (() => {
       return (this._leaf = this._leafCalc());
     }
     _leafCalc() {
-      const v = this._handLeaf(), s = this.s;
-      if (!calibratedOn() || this.k <= 0 || s.stage !== 'play' || s.pending || (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) return v;
+      let v = this._handLeaf();
+      const s = this.s;
+      let top = null;
+      if (settleOn()) {                              // step 18b (D-145): the ceiling, before the map
+        let b0 = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+        b0 += foulExternality(s);
+        top = ceilingOf(s);
+        if (v - b0 > top) v = b0 + top;
+      }
+      if (!calibratedOn() || (this.k <= 0 && top === null) || s.stage !== 'play' || s.pending || (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) return v;
       let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
       banked += foulExternality(s);
-      return banked + calibrate(s, this.o_to_act, v - banked);       // step 17D: the same reading, calibrated
+      let r = calibrate(s, this.o_to_act, v - banked);                // step 17D: the same reading, calibrated
+      if (top !== null && r > top) r = top;                           // and after it
+      return banked + r;
     }
     _handLeaf() {                                 // today's hand-combined reading
       const s = this.s;
@@ -2308,10 +2375,12 @@ const PMEngine = (() => {
       this.goals = sc.goals === true && D.config.eval.advantages === true;   // step 16, stage 4 (search.Searcher)
       this.phis = new Map(); this.touches = new Map();
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
+      this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots, off)
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
       this.leaves++;
+      if (this.settleShots && !isChance(s) && s.stage !== 'play' && s.stage !== 'over') return this.settled(s, z);
       const key = z === undefined ? zobrist(s) : z;
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
@@ -2321,6 +2390,37 @@ const PMEngine = (() => {
       }
       if (this.goals) v += this.phi(s, key);
       return v;
+    }
+    // step 18b (search.Searcher.settled): a position with a shot declared, valued by the rules themselves: the side to
+    // act takes its best legal action until the possession ends or open play resumes, the dice at their chances. In
+    // the reaction's first action only movements ending next to the shooter are played, and after a movement only a
+    // Contest, a Steal or ending it (no other movement can change the Contest or a Steal: the reaction is at most two
+    // actions and those are its last).
+    settled(s, z) {
+      const key = z === undefined ? zobrist(s) : z;
+      let v = this.scache.get(key);
+      if (v !== undefined) return v;
+      const side = actor(s);
+      let acts;
+      if (s.stage === 'reaction') {
+        // a second movement can't be followed by a Contest or a Steal (two actions at most): only those and ending count
+        if (s.turn_n >= 1) acts = forcingActions(s, 'stage');
+        else { const sp = s.o[s.ball]; acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || adjacent(a.dest, sp)); }
+      } else acts = legalActions(s);
+      let best = null;
+      for (const a of acts) {
+        const w = this.settleNode(apply(s, a));
+        if (best === null || (side === 'O' ? w > best : w < best)) best = w;
+      }
+      v = best === null ? this.evaluate(s) : best;
+      this.scache.set(key, v);
+      return v;
+    }
+    settleNode(n) {
+      if (isChance(n)) { let t = 0; for (const o of n.outcomes) t += o[0] * this.settleNode(o[2]); return t; }
+      if (n.stage === 'over') return terminalValue(n);
+      if (n.stage === 'play') return this.leaf(n);
+      return this.settled(n);
     }
     phi(s, z) {
       if (isChance(s) || s.stage !== 'play') return 0.0;
@@ -2384,6 +2484,7 @@ const PMEngine = (() => {
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
       if (depth <= 0) {
+        if (this.settleShots && s.stage !== 'play') return this.leaf(s);      // step 18b: the declared shot is settled by the rules
         if (this.quiet || this.playOn) {
           const why = this.unsettled(s);
           if (why !== null) {
@@ -2487,6 +2588,7 @@ const PMEngine = (() => {
     quick(node) {
       if (isChance(node)) { let t = 0; for (const o of node.outcomes) t += o[0] * this.quick(o[2]); return t; }
       if (node.stage === 'over') return terminalValue(node);
+      if (this.settleShots && node.stage !== 'play') return this.settled(node);   // step 18b: ordered by its settled value
       return readOf(node).quickLeaf();
     }
     turnsOf(s, z) {
@@ -2842,7 +2944,7 @@ const PMEngine = (() => {
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
-  return { setCalibrated, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { setCalibrated, setTabletopMap, setSettle, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

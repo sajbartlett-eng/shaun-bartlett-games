@@ -1,0 +1,142 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "settle": true,
+ "searches": null,
+ "states": 400,
+ "seconds_python": 76.7,
+ "seconds_js": 4.8,
+ "by_stage": {
+  "reaction": 400
+ },
+ "by_phase": {
+  "1": 239,
+  "3": 34,
+  "2": 96,
+  "5": 28,
+  "4": 3
+ },
+ "by_age": {
+  "senior": 138,
+  "youth": 143,
+  "junior": 119
+ },
+ "by_standard": {
+  "pro": 149,
+  "semi_pro": 127,
+  "amateur": 124
+ },
+ "digital": 196,
+ "reaction_kinds": {
+  "contest": 65,
+  "steal": 6,
+  "end_turn": 400
+ },
+ "reaction_after_one_action": 137,
+ "checks": {
+  "legal": {
+   "compared": 400,
+   "equal": 400
+  },
+  "attacker_reach": {
+   "compared": 400,
+   "equal": 400
+  },
+  "defender_reach": {
+   "compared": 400,
+   "equal": 400
+  },
+  "defender_exact": {
+   "compared": 400,
+   "equal": 400
+  },
+  "threat_geo": {
+   "compared": 400,
+   "equal": 400
+  },
+  "cover_geo": {
+   "compared": 400,
+   "equal": 400
+  },
+  "leaf_geo": {
+   "compared": 400,
+   "equal": 400
+  },
+  "threat_exact": {
+   "compared": 400,
+   "equal": 400
+  },
+  "cover_exact": {
+   "compared": 400,
+   "equal": 400
+  },
+  "leaf_exact": {
+   "compared": 400,
+   "equal": 400
+  },
+  "quick": {
+   "compared": 400,
+   "equal": 400
+  },
+  "reach_map": {
+   "compared": 400,
+   "equal": 400
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "ceiling": {
+   "compared": 400,
+   "equal": 400
+  },
+  "settled": {
+   "compared": 400,
+   "equal": 400
+  },
+  "react_outcomes": {
+   "compared": 400,
+   "equal": 400
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

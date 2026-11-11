@@ -1,0 +1,130 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "searches": {
+  "compared": 4,
+  "equal": 4
+ },
+ "states": 1000,
+ "seconds_python": 84.0,
+ "seconds_js": 8.0,
+ "by_stage": {
+  "play": 953,
+  "over": 40,
+  "reaction": 7
+ },
+ "by_phase": {
+  "1": 643,
+  "3": 110,
+  "2": 177,
+  "5": 36,
+  "4": 34
+ },
+ "by_age": {
+  "senior": 340,
+  "youth": 338,
+  "junior": 322
+ },
+ "by_standard": {
+  "pro": 331,
+  "semi_pro": 316,
+  "amateur": 353
+ },
+ "digital": 517,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 1000,
+   "equal": 1000
+  },
+  "attacker_reach": {
+   "compared": 960,
+   "equal": 960
+  },
+  "defender_reach": {
+   "compared": 960,
+   "equal": 960
+  },
+  "defender_exact": {
+   "compared": 960,
+   "equal": 960
+  },
+  "threat_geo": {
+   "compared": 960,
+   "equal": 960
+  },
+  "cover_geo": {
+   "compared": 960,
+   "equal": 960
+  },
+  "leaf_geo": {
+   "compared": 960,
+   "equal": 960
+  },
+  "threat_exact": {
+   "compared": 960,
+   "equal": 960
+  },
+  "cover_exact": {
+   "compared": 960,
+   "equal": 960
+  },
+  "leaf_exact": {
+   "compared": 960,
+   "equal": 960
+  },
+  "quick": {
+   "compared": 960,
+   "equal": 960
+  },
+  "reach_map": {
+   "compared": 960,
+   "equal": 960
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 945,
+   "equal": 945
+  },
+  "features_exact": {
+   "compared": 945,
+   "equal": 945
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

@@ -42,6 +42,7 @@ def random_state(rng):
     rules = RC.with_rules(digital=digital)
     ctx = Context(off, dfn, rules, team_fouls=rng.randrange(0, 7) if digital else 0,
                   quarter_left=rng.randrange(0, 19) if digital else 0)
+    ctx.levels_key = (age, std)                    # step 18a: each age and standard reads its own phase table and scale
     squares = [(x, y) for x in range(B.W) for y in range(1, B.H + 1)]
     # the offence beyond the arc mostly, the defence between them and the rim mostly: positions a game can reach
     pick = rng.sample(squares, 10)
@@ -105,6 +106,7 @@ def py_outcomes(s):
 
 
 _ADV = {'on': False}
+_SETTLE = {'on': False}
 
 
 def py_probe(s, reach_map=False):
@@ -114,6 +116,12 @@ def py_probe(s, reach_map=False):
     if s.stage == 'over':
         return out
     out['attacker_reach'] = [mp(attacker_reach(s, i)) for i in range(5)]
+    from playmaker_engine.decide import ceiling as _ceiling
+    out['ceiling'] = _ceiling(s)                    # step 18b (D-145)
+    if _SETTLE['on'] and s.stage != 'play':         # step 18b: a declared shot settled by the rules
+        from playmaker_engine.search import Searcher, actor as _actor
+        from playmaker_engine.agent import profile as _profile
+        out['settled'] = Searcher(_actor(s), _profile('allstar'), lambda n: Read(n).leaf(), float('inf')).settled(s)
     out['defender_reach'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d) for d in range(5))]
     out['defender_exact'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d, exact=True) for d in range(5))]
     if s.stage in ('play', 'reaction'):
@@ -172,7 +180,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -216,8 +224,10 @@ def main():
                     '(reach_cache, forcing, quiet_read, tt_order; "all"), to prove each changes nothing')
     ap.add_argument('--reach', action='store_true', help='eval.reach on, in both engines (the default since D-121)')
     ap.add_argument('--no-reach', action='store_true', help='eval.reach off, in both engines')
-    ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines')
+    ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines (the default since D-138)')
+    ap.add_argument('--no-calibrated', action='store_true', help='eval.calibrated off, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
+    ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -236,6 +246,9 @@ def main():
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
+    _CFG['eval']['settle_shots'] = args.settle
+    _SETTLE['on'] = args.settle
+    args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
     _CFG['eval']['calibrated'] = args.calibrated
     from playmaker_engine.search import PARTS
     names = [x for x in args.switches.replace('cheap', 'quiet_points,like_with_like,tempo').split(',') if x]
@@ -262,7 +275,7 @@ def main():
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
-                                     goals=args.goals, learned=args.learned, calibrated=args.calibrated,
+                                     goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle,
                                      reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
@@ -274,7 +287,7 @@ def main():
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
               'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map', 'budget_geo', 'budget_exact', 'split_geo',
-              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact') + (('react_outcomes',) if args.reaction else ())
+              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact', 'ceiling', 'settled') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -296,7 +309,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
-               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated,
+               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,

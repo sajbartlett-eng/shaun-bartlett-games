@@ -1,0 +1,506 @@
+{
+ "strong2": {
+  "possessions": 640,
+  "format": null,
+  "engine": "calibrated",
+  "loss_chance_a_phase_in_100": 7.4,
+  "interval_in_100": [
+   5.7,
+   9.5
+  ],
+  "turnovers_per_100_possessions": 8.1,
+  "forced_shot_in_100": 0.0,
+  "mean_points": 28.76,
+  "shot_by_phase": {
+   "1": 0.369,
+   "2": 0.352,
+   "3": 0.158,
+   "4": 0.094,
+   "5": 0.024,
+   "6": 0.003
+  },
+  "decisions": 20.7,
+  "by_phase": {
+   "1": {
+    "entered": 640,
+    "shot": 217,
+    "kept_the_ball": 423,
+    "lost": 37,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 8.7,
+    "interval_in_100": [
+     6.4,
+     11.8
+    ],
+    "shots_mean_points": 31.5,
+    "shots_points_interval": [
+     30.7,
+     32.3
+    ]
+   },
+   "2": {
+    "entered": 386,
+    "shot": 207,
+    "kept_the_ball": 179,
+    "lost": 4,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 2.2,
+    "interval_in_100": [
+     0.9,
+     5.6
+    ],
+    "shots_mean_points": 31.6,
+    "shots_points_interval": [
+     30.9,
+     32.2
+    ]
+   },
+   "3": {
+    "entered": 175,
+    "shot": 93,
+    "kept_the_ball": 82,
+    "lost": 7,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 8.5,
+    "interval_in_100": [
+     4.2,
+     16.6
+    ],
+    "shots_mean_points": 31.0,
+    "shots_points_interval": [
+     29.8,
+     32.1
+    ]
+   },
+   "4": {
+    "entered": 75,
+    "shot": 55,
+    "kept_the_ball": 20,
+    "lost": 4,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 20.0,
+    "interval_in_100": [
+     8.1,
+     41.6
+    ],
+    "shots_mean_points": 30.4,
+    "shots_points_interval": [
+     28.6,
+     32.1
+    ]
+   },
+   "5": {
+    "entered": 16,
+    "shot": 14,
+    "kept_the_ball": 2,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     65.8
+    ],
+    "shots_mean_points": 30.6,
+    "shots_points_interval": [
+     28.0,
+     33.1
+    ]
+   },
+   "6": {
+    "entered": 2,
+    "shot": 2,
+    "kept_the_ball": 0,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0,
+    "interval_in_100": [
+     0.0,
+     0
+    ],
+    "shots_mean_points": 31.5,
+    "shots_points_interval": [
+     12.9,
+     50.1
+    ]
+   }
+  }
+ },
+ "app_settle": {
+  "possessions": 200,
+  "format": "digital",
+  "engine": "settle",
+  "loss_chance_a_phase_in_100": 6.3,
+  "interval_in_100": [
+   3.7,
+   10.5
+  ],
+  "turnovers_per_100_possessions": 6.5,
+  "forced_shot_in_100": 0.0,
+  "mean_points": 29.68,
+  "shot_by_phase": {
+   "1": 0.428,
+   "2": 0.305,
+   "3": 0.15,
+   "4": 0.086,
+   "5": 0.021,
+   "6": 0.011
+  },
+  "decisions": 19.1,
+  "by_phase": {
+   "1": {
+    "entered": 200,
+    "shot": 80,
+    "kept_the_ball": 120,
+    "lost": 9,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 7.5,
+    "interval_in_100": [
+     4.0,
+     13.6
+    ],
+    "shots_mean_points": 32.1,
+    "shots_points_interval": [
+     31.3,
+     32.9
+    ]
+   },
+   "2": {
+    "entered": 111,
+    "shot": 57,
+    "kept_the_ball": 54,
+    "lost": 2,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 3.7,
+    "interval_in_100": [
+     1.0,
+     12.5
+    ],
+    "shots_mean_points": 31.7,
+    "shots_points_interval": [
+     30.2,
+     33.3
+    ]
+   },
+   "3": {
+    "entered": 52,
+    "shot": 28,
+    "kept_the_ball": 24,
+    "lost": 2,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 8.3,
+    "interval_in_100": [
+     2.3,
+     25.8
+    ],
+    "shots_mean_points": 30.7,
+    "shots_points_interval": [
+     28.1,
+     33.3
+    ]
+   },
+   "4": {
+    "entered": 22,
+    "shot": 16,
+    "kept_the_ball": 6,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     39.0
+    ],
+    "shots_mean_points": 30.5,
+    "shots_points_interval": [
+     26.7,
+     34.3
+    ]
+   },
+   "5": {
+    "entered": 6,
+    "shot": 4,
+    "kept_the_ball": 2,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     65.8
+    ],
+    "shots_mean_points": 35.2,
+    "shots_points_interval": [
+     25.1,
+     45.4
+    ]
+   },
+   "6": {
+    "entered": 2,
+    "shot": 2,
+    "kept_the_ball": 0,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0,
+    "interval_in_100": [
+     0.0,
+     0
+    ],
+    "shots_mean_points": 35.5,
+    "shots_points_interval": [
+     34.5,
+     36.5
+    ]
+   }
+  }
+ },
+ "tabletop_own_map": {
+  "possessions": 200,
+  "format": null,
+  "engine": "cal",
+  "loss_chance_a_phase_in_100": 1.1,
+  "interval_in_100": [
+   0.5,
+   2.5
+  ],
+  "turnovers_per_100_possessions": 3.0,
+  "forced_shot_in_100": 3.5,
+  "mean_points": 32.14,
+  "shot_by_phase": {
+   "1": 0.156,
+   "2": 0.182,
+   "3": 0.156,
+   "4": 0.151,
+   "5": 0.193,
+   "6": 0.161
+  },
+  "decisions": 40.5,
+  "by_phase": {
+   "1": {
+    "entered": 200,
+    "shot": 30,
+    "kept_the_ball": 170,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.6,
+    "interval_in_100": [
+     0.1,
+     3.3
+    ],
+    "shots_mean_points": 34.4,
+    "shots_points_interval": [
+     33.0,
+     35.8
+    ]
+   },
+   "2": {
+    "entered": 169,
+    "shot": 35,
+    "kept_the_ball": 134,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.7,
+    "interval_in_100": [
+     0.1,
+     4.1
+    ],
+    "shots_mean_points": 33.8,
+    "shots_points_interval": [
+     32.6,
+     35.1
+    ]
+   },
+   "3": {
+    "entered": 134,
+    "shot": 30,
+    "kept_the_ball": 104,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     3.6
+    ],
+    "shots_mean_points": 34.1,
+    "shots_points_interval": [
+     32.7,
+     35.4
+    ]
+   },
+   "4": {
+    "entered": 105,
+    "shot": 29,
+    "kept_the_ball": 76,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 1.3,
+    "interval_in_100": [
+     0.2,
+     7.1
+    ],
+    "shots_mean_points": 32.8,
+    "shots_points_interval": [
+     31.2,
+     34.4
+    ]
+   },
+   "5": {
+    "entered": 76,
+    "shot": 37,
+    "kept_the_ball": 39,
+    "lost": 2,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 5.1,
+    "interval_in_100": [
+     1.4,
+     16.9
+    ],
+    "shots_mean_points": 30.2,
+    "shots_points_interval": [
+     28.3,
+     32.0
+    ]
+   },
+   "6": {
+    "entered": 39,
+    "shot": 38,
+    "kept_the_ball": 1,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 100.0,
+    "interval_in_100": [
+     20.7,
+     100.0
+    ],
+    "shots_mean_points": 29.6,
+    "shots_points_interval": [
+     27.3,
+     31.8
+    ]
+   }
+  }
+ },
+ "table_settle": {
+  "possessions": 200,
+  "format": "tabletop",
+  "engine": "settle",
+  "loss_chance_a_phase_in_100": 0.5,
+  "interval_in_100": [
+   0.1,
+   1.8
+  ],
+  "turnovers_per_100_possessions": 1.0,
+  "forced_shot_in_100": 1.5,
+  "mean_points": 32.23,
+  "shot_by_phase": {
+   "1": 0.276,
+   "2": 0.199,
+   "3": 0.204,
+   "4": 0.107,
+   "5": 0.112,
+   "6": 0.102
+  },
+  "decisions": 30.8,
+  "by_phase": {
+   "1": {
+    "entered": 200,
+    "shot": 54,
+    "kept_the_ball": 146,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.7,
+    "interval_in_100": [
+     0.1,
+     3.8
+    ],
+    "shots_mean_points": 33.8,
+    "shots_points_interval": [
+     33.1,
+     34.5
+    ]
+   },
+   "2": {
+    "entered": 146,
+    "shot": 39,
+    "kept_the_ball": 107,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     3.5
+    ],
+    "shots_mean_points": 33.3,
+    "shots_points_interval": [
+     31.8,
+     34.8
+    ]
+   },
+   "3": {
+    "entered": 107,
+    "shot": 40,
+    "kept_the_ball": 67,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     5.4
+    ],
+    "shots_mean_points": 33.3,
+    "shots_points_interval": [
+     31.8,
+     34.8
+    ]
+   },
+   "4": {
+    "entered": 67,
+    "shot": 21,
+    "kept_the_ball": 46,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     7.7
+    ],
+    "shots_mean_points": 32.4,
+    "shots_points_interval": [
+     31.2,
+     33.6
+    ]
+   },
+   "5": {
+    "entered": 46,
+    "shot": 22,
+    "kept_the_ball": 24,
+    "lost": 0,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 0.0,
+    "interval_in_100": [
+     0.0,
+     13.8
+    ],
+    "shots_mean_points": 30.6,
+    "shots_points_interval": [
+     28.6,
+     32.6
+    ]
+   },
+   "6": {
+    "entered": 24,
+    "shot": 23,
+    "kept_the_ball": 1,
+    "lost": 1,
+    "clock_ran_out": 0,
+    "loss_chance_in_100": 100.0,
+    "interval_in_100": [
+     20.7,
+     100.0
+    ],
+    "shots_mean_points": 27.7,
+    "shots_points_interval": [
+     25.3,
+     30.1
+    ]
+   }
+  }
+ }
+}
