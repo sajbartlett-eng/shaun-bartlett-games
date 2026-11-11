@@ -776,19 +776,34 @@
    "defence_after_the_pass": {
     "played": [
      {
-      "action": "X2 Quick Step to C8",
-      "turn_it_chose": "X2 Quick Step to C8",
-      "read": 28.65,
+      "action": "X4 Move to C4 facing SW",
+      "turn_it_chose": "X4 Move to C4 facing SW",
+      "read": 27.84,
       "listed": 24
      },
      {
-      "action": "X End turn",
-      "turn_it_chose": "X End turn",
-      "read": 33,
-      "listed": 13
+      "action": "X2 Move to B7 facing S",
+      "turn_it_chose": "X2 Move to B7 facing S",
+      "read": 30,
+      "listed": 16
      }
     ],
     "its_list_top": [
+     {
+      "words": "X4 Move to C4 facing SW",
+      "value": 27.84030547312205,
+      "turn": [
+       [
+        "move",
+        "X",
+        3,
+        "C4",
+        5,
+        -1,
+        ""
+       ]
+      ]
+     },
      {
       "words": "X2 Quick Step to C8",
       "value": 28.65312829484408,
@@ -798,21 +813,6 @@
         "X",
         1,
         "C8",
-        -1,
-        -1,
-        ""
-       ]
-      ]
-     },
-     {
-      "words": "X4 Quick Step to E5",
-      "value": 28.65312829484408,
-      "turn": [
-       [
-        "qs",
-        "X",
-        3,
-        "E5",
         -1,
         -1,
         ""
@@ -850,21 +850,6 @@
       ]
      },
      {
-      "words": "X4 Move to F4 facing NE",
-      "value": 28.65312829484408,
-      "turn": [
-       [
-        "move",
-        "X",
-        3,
-        "F4",
-        1,
-        -1,
-        ""
-       ]
-      ]
-     },
-     {
       "words": "X4 Move to C4 facing N",
       "value": 28.65312829484408,
       "turn": [
@@ -878,6 +863,21 @@
         ""
        ]
       ]
+     },
+     {
+      "words": "X4 Quick Step to E4",
+      "value": 28.65312829484408,
+      "turn": [
+       [
+        "qs",
+        "X",
+        3,
+        "E4",
+        -1,
+        -1,
+        ""
+       ]
+      ]
      }
     ],
     "logged_pause": {
@@ -885,7 +885,7 @@
      "legal": true,
      "words": "X Pause",
      "value": 33,
-     "behind_the_choice": 4.34687170515592,
+     "behind_the_choice": 5.159694526877949,
      "list_rank": null,
      "shot_now": {
       "value": 33,
@@ -966,17 +966,62 @@
     }
    },
    "three_after_its_own_turn": {
-    "position": "play:O|c10|t3/3|OG5,C9,M10,A3,Q3|XG9W,C8W,I7SW,F4E,M2N|b4|m0105|n01001020000|u0|L0000|f0+0-0|q0003|j000006",
+    "position": "play:O|c10|t3/2|OG5,C9,M10,A3,Q3|XG9W,B7S,I7SW,C4SW,M2N|b4|m010f|n01001010000|u0|L0000|f0+0-0|q0001|j000002",
     "reaction_played": [
      {
-      "action": "X End turn",
-      "turn_it_chose": "X End turn",
-      "read": 33,
+      "action": "X4 Quick Step to B4",
+      "turn_it_chose": "X4 Quick Step to B4",
+      "read": 27,
+      "listed": 24
+     },
+     {
+      "action": "X4 contests",
+      "turn_it_chose": "X4 contests",
+      "read": 27,
       "listed": 24
      }
     ],
-    "worth": 33.0,
+    "worth": 27.0,
     "its_list_top": [
+     {
+      "words": "X4 Quick Step to B4",
+      "value": 27,
+      "turn": [
+       [
+        "qs",
+        "X",
+        3,
+        "B4",
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
+     {
+      "words": "X4 Quick Step to B4, then X4 contests",
+      "value": 27,
+      "turn": [
+       [
+        "qs",
+        "X",
+        3,
+        "B4",
+        -1,
+        -1,
+        ""
+       ],
+       [
+        "contest",
+        "X",
+        3,
+        null,
+        -1,
+        -1,
+        ""
+       ]
+      ]
+     },
      {
       "words": "X End turn",
       "value": 33,
@@ -993,29 +1038,14 @@
       ]
      },
      {
-      "words": "X2 Move to C8 facing N",
+      "words": "X5 Move to M2 facing NE",
       "value": 33,
       "turn": [
        [
         "move",
         "X",
-        1,
-        "C8",
-        0,
-        -1,
-        ""
-       ]
-      ]
-     },
-     {
-      "words": "X2 Move to C8 facing NE",
-      "value": 33,
-      "turn": [
-       [
-        "move",
-        "X",
-        1,
-        "C8",
+        4,
+        "M2",
         1,
         -1,
         ""
@@ -1023,14 +1053,14 @@
       ]
      },
      {
-      "words": "X2 Move to C8 facing E",
+      "words": "X5 Move to M2 facing E",
       "value": 33,
       "turn": [
        [
         "move",
         "X",
-        1,
-        "C8",
+        4,
+        "M2",
         2,
         -1,
         ""
@@ -1038,30 +1068,15 @@
       ]
      },
      {
-      "words": "X2 Move to C8 facing SE",
+      "words": "X5 Move to M2 facing SE",
       "value": 33,
       "turn": [
        [
         "move",
         "X",
-        1,
-        "C8",
-        3,
-        -1,
-        ""
-       ]
-      ]
-     },
-     {
-      "words": "X2 Move to C8 facing S",
-      "value": 33,
-      "turn": [
-       [
-        "move",
-        "X",
-        1,
-        "C8",
         4,
+        "M2",
+        3,
         -1,
         ""
        ]
@@ -1074,8 +1089,8 @@
       "legal": true,
       "words": "X End turn",
       "value": 33,
-      "behind_the_choice": 0,
-      "list_rank": 1,
+      "behind_the_choice": 6,
+      "list_rank": 3,
       "shot_now": null,
       "after": {
        "o": [
@@ -1087,16 +1102,16 @@
        ],
        "x": [
         "G9",
-        "C8",
+        "B7",
         "I7",
-        "F4",
+        "C4",
         "M2"
        ],
        "arrows": [
         6,
-        6,
+        4,
         5,
-        2,
+        5,
         0
        ],
        "ball": 3,
@@ -1104,9 +1119,9 @@
        "side": "-",
        "clock": 10,
        "tok_o": 2,
-       "tok_x": 3,
+       "tok_x": 2,
        "moved_o": 1,
-       "moved_x": 5,
+       "moved_x": 15,
        "cnt": [
         0,
         1,
@@ -1114,7 +1129,7 @@
         0,
         1,
         1,
-        2,
+        1,
         0,
         0,
         0,
@@ -1150,14 +1165,14 @@
        },
        "zeroed": false,
        "phase": 2,
-       "turn_moved": 2,
+       "turn_moved": 8,
        "qs_o": 0,
-       "qs_x": 3,
+       "qs_x": 1,
        "forced": false,
        "react_moved": 0,
        "turn_lead": -1,
        "rush_o": 0,
-       "rush_x": 6,
+       "rush_x": 2,
        "turn_x": null
       }
      }

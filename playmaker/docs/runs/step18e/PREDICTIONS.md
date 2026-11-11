@@ -55,3 +55,35 @@ re-read of one moved defender, then the full read of the best.
   the size:** +4.7 points a pair (interval 2.7 to 6.8), 98 wins, 81 losses, 61 ties. Right on where it comes from:
   the open list's defence ends 75 of 240 possessions with the ball lost (a Steal), against 30 of 240 the other way.
   Shot timing on offence unchanged (70% and 72% of shots in phases 1 and 2).
+
+## 3. The sense checks: five positions, each move played out 160 times
+
+- Cost: about 1 (written as 1.0 in the estimate).
+- I expect the computer's move to look right on the Steal positions and too close to call on the closeout board.
+- **Result:** 2.26 core-hours for a first pass that was thrown away: its four parallel parts shared dice (the
+  play-outs were about 43 distinct ones repeated), so its intervals were far too narrow. Rerun with separate dice:
+  see the report.
+
+## 4. Self-play on the final default, 200 possessions (part 5)
+
+- Cost: 1.0.
+- Points about 29 (as 18d's size 2); the ball lost about twice as often as 18d's 4.7 in 100 phases kept; rushed
+  shots about 18%; the map's error about 8.
+- **Result:** 1.06 core-hours. **Wrong on points and the ball lost:** 26.8 points (interval 25.1 to 28.4); the ball
+  lost 14.2 times in 100 phases kept (10.1 to 19.7), three times 18d's. Rushed shots 13%. The map's error rose to
+  10.8 (9.2 to 12.4).
+
+## 5. The offence's list, a pilot (part 4): 24 of step 18a's offence positions
+
+- Two passes: today's offence list, and every legal offence action read in full (`search.open_list` 'both': too slow
+  to play, but it answers the pilot's question). Cost: about 1.5 a pass.
+- Today's list: the choice best on about half, about 0.75 points left (18a's figure).
+- Every action read: best on 3 in 4, under 0.3 left.
+
+Sense checks, the rerun with separate dice: 2.17 core-hours.
+- **Result (the offence's pilot):** 0.24 core-hours for both passes (offence positions have about 5,000 legal turns,
+  not 270,000). **Wrong:** today's offence list is best on 17 of 24 with 0.55 left (0.02 to 1.09); with every legal
+  offence action read it is best on 15 of 24 with 0.65 left (0.14 to 1.16). No gain, so part 4 stops at its pilot.
+  - Against the prediction: right on the two Steal positions (the computer's move scores 3.8 and 2.3 better) and on
+    the closeout board's second step (too close to call). **Wrong on its first step:** Shaun's Quick Step closer is
+    1.9 better (0.8 to 3.1). On Shaun's own game the computer's Move closer is 3.0 better.

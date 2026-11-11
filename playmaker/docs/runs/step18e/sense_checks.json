@@ -1,0 +1,290 @@
+{
+ "closeout1": {
+  "moves": [
+   {
+    "move": "the computer's: X3 Moves closer (C4), facing the shooter",
+    "playouts": 160,
+    "offence_scores": 31.27,
+    "interval": [
+     30.43,
+     32.12
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "Shaun's line: X3 Quick Steps closer (E4)",
+    "playouts": 160,
+    "offence_scores": 29.35,
+    "interval": [
+     28.49,
+     30.21
+    ],
+    "against_the_first": -1.93,
+    "difference_interval": [
+     -3.05,
+     -0.8
+    ]
+   },
+   {
+    "move": "X3 Sprints next to him at once",
+    "playouts": 160,
+    "offence_scores": 33.11,
+    "interval": [
+     31.92,
+     34.31
+    ],
+    "against_the_first": 1.84,
+    "difference_interval": [
+     0.34,
+     3.34
+    ]
+   },
+   {
+    "move": "the defence does nothing",
+    "playouts": 160,
+    "offence_scores": 32.83,
+    "interval": [
+     32.44,
+     33.22
+    ],
+    "against_the_first": 1.56,
+    "difference_interval": [
+     0.62,
+     2.49
+    ]
+   }
+  ],
+  "core_hours": 0.46,
+  "position": "play:X|c12|t6/6|OI11,B7,P7,A3,Q3|XI10N,C8W,F4W,O7E,P3E|b4|m0800|n10000000000|u0|L0000|f0+0-0|q0800"
+ },
+ "closeout2": {
+  "moves": [
+   {
+    "move": "the computer's: X3 Moves next to him, then Steals",
+    "playouts": 160,
+    "offence_scores": 19.46,
+    "interval": [
+     16.59,
+     22.33
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "X3 Moves next to him and stops",
+    "playouts": 160,
+    "offence_scores": 26.8,
+    "interval": [
+     24.79,
+     28.81
+    ],
+    "against_the_first": 7.34,
+    "difference_interval": [
+     3.58,
+     11.1
+    ]
+   },
+   {
+    "move": "Shaun's line: the defence Pauses",
+    "playouts": 160,
+    "offence_scores": 18.17,
+    "interval": [
+     15.55,
+     20.79
+    ],
+    "against_the_first": -1.29,
+    "difference_interval": [
+     -5.29,
+     2.71
+    ]
+   }
+  ],
+  "core_hours": 0.789,
+  "position": "play:X|c12|t5/5|OI11,B8,P7,A3,Q3|XI10N,C8W,E4W,O7E,P3E|b4|m0a00|n10000010000|u0|L0000|f0+0-0|q0804|j000010"
+ },
+ "replay": {
+  "moves": [
+   {
+    "move": "the computer's: X4 Move to C4 facing SW",
+    "playouts": 160,
+    "offence_scores": 30.0,
+    "interval": [
+     30.0,
+     30.0
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "X4 Quick Steps closer to the corner (E4)",
+    "playouts": 160,
+    "offence_scores": 33.0,
+    "interval": [
+     33.0,
+     33.0
+    ],
+    "against_the_first": 3.0,
+    "difference_interval": [
+     3.0,
+     3.0
+    ]
+   },
+   {
+    "move": "the log: the defence Pauses",
+    "playouts": 160,
+    "offence_scores": 33.0,
+    "interval": [
+     33.0,
+     33.0
+    ],
+    "against_the_first": 3.0,
+    "difference_interval": [
+     3.0,
+     3.0
+    ]
+   }
+  ],
+  "core_hours": 0.175,
+  "position": "play:X|c10|t3/4|OG5,C9,M10,A3,Q3|XG9W,D9W,I7SW,F4E,M2N|b1|m0105|n01001010000|u0|L0000|P1>4|f0+0-0|q0001|j000002"
+ },
+ "defence242": {
+  "moves": [
+   {
+    "move": "the computer's: X1 Quick Step to N7",
+    "playouts": 160,
+    "offence_scores": 27.17,
+    "interval": [
+     27.06,
+     27.28
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "the expected: X2 Move to G9 facing NW, then X2 Steal",
+    "playouts": 160,
+    "offence_scores": 30.98,
+    "interval": [
+     28.45,
+     33.5
+    ],
+    "against_the_first": 3.81,
+    "difference_interval": [
+     1.28,
+     6.34
+    ]
+   },
+   {
+    "move": "the defence Pauses",
+    "playouts": 160,
+    "offence_scores": 27.0,
+    "interval": [
+     27.0,
+     27.0
+    ],
+    "against_the_first": -0.17,
+    "difference_interval": [
+     -0.28,
+     -0.06
+    ]
+   }
+  ],
+  "core_hours": 0.197,
+  "position": {
+   "o": [
+    "G10",
+    "F10",
+    "N9",
+    "A2",
+    "Q7"
+   ],
+   "x": [
+    "M8",
+    "I9",
+    "I8",
+    "A5",
+    "M7"
+   ],
+   "arrows": [
+    0,
+    7,
+    7,
+    4,
+    0
+   ],
+   "ball": 1,
+   "clock": 2
+  }
+ },
+ "defence377": {
+  "moves": [
+   {
+    "move": "the computer's: X4 Quick Step to M9",
+    "playouts": 160,
+    "offence_scores": 30.72,
+    "interval": [
+     29.0,
+     32.44
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "the expected: X3 Move to P6 facing SE, then X3 Steal",
+    "playouts": 160,
+    "offence_scores": 33.04,
+    "interval": [
+     30.5,
+     35.58
+    ],
+    "against_the_first": 2.33,
+    "difference_interval": [
+     -0.35,
+     5.0
+    ]
+   }
+  ],
+  "core_hours": 0.553,
+  "position": {
+   "o": [
+    "L10",
+    "C2",
+    "Q5",
+    "K9",
+    "A2"
+   ],
+   "x": [
+    "G11",
+    "D2",
+    "P6",
+    "L8",
+    "D5"
+   ],
+   "arrows": [
+    7,
+    4,
+    1,
+    7,
+    4
+   ],
+   "ball": 2,
+   "clock": 10
+  }
+ }
+}

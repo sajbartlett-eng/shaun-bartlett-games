@@ -399,7 +399,9 @@ def sense(tag, state_json, ctx_json, turns, n=160, setting=NEW):
     each turn against the first, paired. Evidence from play, separate from the reading that made the choice."""
     pol = L.policy('allstar', 2, 0.5, open_list=setting['open_list'])
     per = max(1, int(n) // L.CORES)
-    pos = [dict(id=f'{tag}/{k}', state=state_json, ctx=0, seed=7919 * (k + 1), turns=[t for _, t in turns]) for k in range(L.CORES)]
+    # each part its own dice: the play-out tool adds 7919 x the play-out's number to the part's seed, so the parts'
+    # seeds are far apart and not multiples of 7919
+    pos = [dict(id=f'{tag}/{k}', state=state_json, ctx=0, seed=15485863 * (k + 1) + 1, turns=[t for _, t in turns]) for k in range(L.CORES)]
     job = dict(n=per, seed=7, keep=True, policies=dict(O=pol, X=pol))
     if setting['control'] is not None:
         job['control'] = setting['control']
@@ -540,6 +542,16 @@ def cmd_boards(names='1,3,6,8,9'):
                 if x['legal']:
                     print('      ', x['name'], '|', round(x['value'], 2), 'behind the choice', round(x['behind_the_choice'], 2), 'list', x['list_rank'])
     json.dump(rep, open(os.path.join(RUN, 'boards.json'), 'w'), indent=1)
+
+
+def cmd_selfplay(n='200'):
+    """Part 5: All-Star self-play on the final default (the control rule at size 2, the All-Star's open list), every
+    action kept; then step 18d's fidelity measures from it -> runs/step18e/fidelity.json."""
+    import step_18d as D
+    D.RUN, D.WORK = RUN, WORK
+    D.L.WORK = WORK
+    D.cmd_trace('app', n)
+    D.cmd_fidelity('app')
 
 
 if __name__ == '__main__':
