@@ -49,6 +49,39 @@ def cmd_level(lv, pairs='160'):
     B.cmd_h2h(f'{lv}_settle', f'{lv}_plain', pairs)
 
 
+def cmd_order(pairs='80'):
+    """Do the levels still stand in order on the new default (eval.settle_shots on)? Each stronger level (a) against
+    the next (b), each with its own settings and pick noise."""
+    L.ENGINES.update({lv: (lambda lv=lv: level(lv)) for lv in ('rookie', 'starter', 'allstar')})
+    for a, b in (('allstar', 'starter'), ('starter', 'rookie')):
+        B.cmd_h2h(a, b, pairs)
+
+
+def cmd_timing_h2h(*names):
+    """Shot timing from head-to-head files (D-139), for the engine on offence in each: shots by phase, decisions, the
+    clock-out rate, and the ball lost per 100 phases kept. Under the app's rules a possession passes through the
+    phases in order, so its ending says which phases it entered."""
+    rep = {}
+    for name in names:
+        d = json.load(open(os.path.join(RUN, f'h2h_{name}.json')))
+        for side, key in ((d['a'], 'a_end'), (d['b'], 'b_end')):
+            e = [r[key] for r in d['rows']]
+            ph = lambda x: min(6, max(1, (12 - x[1]) // 2 + 1))
+            shot = lambda x: x[0] in ('shot', 'free_throws', 'forced')
+            ran = lambda x: x[0] == 'turnover_end' and x[1] <= 2 and x[2] <= 0
+            kept = sum(sum(1 for x in e if ph(x) >= k) - sum(1 for x in e if ph(x) == k and shot(x)) for k in range(1, 7))
+            lost = sum(1 for x in e if not shot(x) and not ran(x))
+            p, lo, hi = L.wilson(lost, kept)
+            s = B.ends(e)
+            rep[f'{name}: {side} on offence'] = dict(
+                possessions=len(e), shots_in_phases_1_and_2=round(s['shot_by_phase']['1'] + s['shot_by_phase']['2'], 3),
+                shot_by_phase=s['shot_by_phase'], decisions=s['decisions'], clock_ran_out_in_100=s['clock_ran_out_in_100'],
+                clock_interval_in_100=s['clock_ran_out_interval_in_100'], lost_in_100_phases_kept=round(100 * p, 1),
+                lost_interval=[round(100 * max(0.0, lo), 1), round(100 * hi, 1)])
+    json.dump(rep, open(os.path.join(RUN, 'shot_timing.json'), 'w'), indent=1)
+    print(json.dumps(rep, indent=1))
+
+
 cmd_h2h, cmd_selfplay, cmd_timing, cmd_exam, cmd_speed = B.cmd_h2h, B.cmd_selfplay, B.cmd_timing, B.cmd_exam, B.cmd_speed
 
 

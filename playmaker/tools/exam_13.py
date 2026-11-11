@@ -69,10 +69,13 @@ def set_switches(eng, setting):
         eng.call('setBudget', 'true' if budget else 'false')
         eng.call('setAdvantages', 'true' if g is not None else 'false')
         eng.call('setGoals', 'true' if g == 'goals' else 'false')
-    settle = os.environ.get('EXAM13_SETTLE') == '1'    # step 18b: eval.settle_shots
+    settle = os.environ.get('EXAM13_SETTLE', '1') != '0'    # step 18b: eval.settle_shots (on by default since D-148; 0 turns it off)
     CONFIG['eval']['settle_shots'] = settle
+    helpr = os.environ.get('EXAM13_HELP') == '1'             # step 18c: eval.help_readings
+    CONFIG['eval']['help_readings'] = helpr
     if eng is not None:
         eng.call('setSettle', 'true' if settle else 'false')
+        eng.call('setHelp', 'true' if helpr else 'false')
     cal = os.environ.get('EXAM13_CALIBRATED')          # step 18a: 0 measures the computer before D-138 (the default is on)
     if cal is not None:
         CONFIG['eval']['calibrated'] = cal != '0'
