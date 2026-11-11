@@ -1,0 +1,205 @@
+{
+ "side": "X",
+ "rows": [
+  {
+   "name": "does nothing",
+   "after": "play, O to act",
+   "read_now": 26.725209362804502,
+   "searched_replies": 24,
+   "best_searched_reply": {
+    "words": "O1 Move to I2",
+    "value": 26.725209362804502
+   },
+   "legal_replies": 19528,
+   "best_legal_reply": {
+    "words": "O1 Move to F5, then O2 Sprint to E4",
+    "value": 26.744096376006116,
+    "searched": false
+   },
+   "hidden": 0.018887013201613456,
+   "better_than_searched": 5,
+   "top_legal": [
+    {
+     "words": "O1 Move to F5, then O2 Sprint to E4",
+     "value": 26.744096376006116,
+     "searched": false
+    },
+    {
+     "words": "O2 Move to D5, then O1 Sprint to E5",
+     "value": 26.744096376006116,
+     "searched": false
+    },
+    {
+     "words": "O1 Sprint to F5, then O2 Sprint to E4",
+     "value": 26.744096376006116,
+     "searched": false
+    },
+    {
+     "words": "O1 Sprint to E5, then O2 Sprint to D5",
+     "value": 26.744096376006116,
+     "searched": false
+    },
+    {
+     "words": "O1 Sprint to E5, then O2 Sprint to E4",
+     "value": 26.744096376006116,
+     "searched": false
+    },
+    {
+     "words": "O1 Move to I2",
+     "value": 26.725209362804502,
+     "searched": true
+    }
+   ]
+  },
+  {
+   "name": "the search's choice: X3 Move to N7 facing E",
+   "after": "play, X to act",
+   "read_now": 26.362137306884808,
+   "searched_replies": 5,
+   "best_searched_reply": {
+    "words": "X Pause",
+    "value": 26.725209362804502
+   },
+   "legal_replies": 620,
+   "best_legal_reply": {
+    "words": "X End turn",
+    "value": 26.725209362804502,
+    "searched": false
+   },
+   "hidden": 0,
+   "better_than_searched": 0,
+   "top_legal": [
+    {
+     "words": "X End turn",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "searched": true
+    },
+    {
+     "words": "X2 Move to D6 facing N",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing NE",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing SE",
+     "value": 26.725209362804502,
+     "searched": false
+    }
+   ]
+  },
+  {
+   "name": "a board move: X4 Move to I4 facing N, then X2 Quick Step to D6",
+   "after": "play, O to act",
+   "read_now": 28.1697849931154,
+   "searched_replies": 24,
+   "best_searched_reply": {
+    "words": "O4 Move to F2, then O1 Pass to O4",
+    "value": 28.85835216449525
+   },
+   "legal_replies": 20441,
+   "best_legal_reply": {
+    "words": "O1 Move to J3, then O1 Shot (layup)",
+    "value": 29.5,
+    "searched": false
+   },
+   "hidden": 0.6416478355047488,
+   "better_than_searched": 2,
+   "top_legal": [
+    {
+     "words": "O1 Move to J3, then O1 Shot (layup)",
+     "value": 29.5,
+     "searched": false
+    },
+    {
+     "words": "O1 Move to H3, then O1 Shot (layup)",
+     "value": 29.5,
+     "searched": false
+    },
+    {
+     "words": "O4 Move to F3, then O1 Pass to O4",
+     "value": 28.85835216449525,
+     "searched": false
+    },
+    {
+     "words": "O4 Move to F3, then O4 Quick Step to G2",
+     "value": 28.85835216449525,
+     "searched": false
+    },
+    {
+     "words": "O4 Move to G3, then O1 Pass to O4",
+     "value": 28.85835216449525,
+     "searched": false
+    },
+    {
+     "words": "O4 Move to G3, then O4 Quick Step to G2",
+     "value": 28.85835216449525,
+     "searched": false
+    }
+   ]
+  },
+  {
+   "name": "the best turn found: X3 Move to N7 facing E",
+   "after": "play, X to act",
+   "read_now": 26.362137306884808,
+   "searched_replies": 5,
+   "best_searched_reply": {
+    "words": "X Pause",
+    "value": 26.725209362804502
+   },
+   "legal_replies": 620,
+   "best_legal_reply": {
+    "words": "X End turn",
+    "value": 26.725209362804502,
+    "searched": false
+   },
+   "hidden": 0,
+   "better_than_searched": 0,
+   "top_legal": [
+    {
+     "words": "X End turn",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X Pause",
+     "value": 26.725209362804502,
+     "searched": true
+    },
+    {
+     "words": "X2 Move to D6 facing N",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing NE",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing E",
+     "value": 26.725209362804502,
+     "searched": false
+    },
+    {
+     "words": "X2 Move to D6 facing SE",
+     "value": 26.725209362804502,
+     "searched": false
+    }
+   ]
+  }
+ ]
+}

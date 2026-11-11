@@ -55,7 +55,8 @@ function judgeOf(j, s) {
 }
 
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
-if (job.settle_shots !== undefined && E.setSettle) E.setSettle(job.settle_shots);      // step 18b
+if (job.settle_shots != null && E.setSettle) E.setSettle(job.settle_shots);      // step 18b
+if (job.help_readings != null && E.setHelp) E.setHelp(job.help_readings);         // step 18c
 if (job.switches) E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, job.switches));
 const ctx = E.makeCtx(job.ctx), s = E.stateFrom(job.state, ctx);
 const me = E.actor(s), sign = me === 'O' ? 1 : -1;

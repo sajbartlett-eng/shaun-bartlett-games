@@ -634,6 +634,31 @@ Call in play the target's shot also earns the bonus for its look.
 **Still open, not ruled** (step 18b prompt): the table's own map (18a), the cost of a turnover at the table, and
 plan step 24. Step 18b changes none of them.
 
+### Shaun, 11 Nov 2026 (step 18c prompt): the app first, and the rulings on steps 18a and 18b
+
+**D-146. The app only.** The tabletop format is on hold until the app is right. Nothing is measured, fitted or tuned
+under the table's rules in step 18c or the steps after it until Shaun says so. The table's own map (18a) stays built
+and untouched. The turnover cost at the table and plan step 24 stay open. · Source: Shaun, 11 Nov 2026 · **Ruled.**
+
+**D-147. Steps 18a and 18b are merged into `main`.** Shaun approved both. · Source: Shaun, 11 Nov 2026 · **Done.**
+
+**D-148. `eval.settle_shots`.** Check it at Rookie and Starter first (each against its calibrated self without it,
+sequential, up to 160 pairs, its own pick noise). If neither level loses clearly, it is on by default for every
+level, in both engines. If one loses, it stays off and is reported. · Source: Shaun, 11 Nov 2026 · **Ruled;**
+**built** (step 18c). Rookie: +11.4 a pair (interval +8.8 to +13.9, 160 pairs). Starter: +2.4 (interval +0.3 to
++4.5, 160 pairs). Neither loses, so `eval.settle_shots` is on by default for every level.
+
+**D-149. `play_on` is retired.** It is removed from the defaults and the menus, and kept in the code only where the
+golden tests need it. Its one useful part, playing on while a pass is in the air, goes to 18d with board 11.
+· Source: Shaun, 11 Nov 2026 · **Ruled, done** (step 18c): it is off, marked retired in `ai_profiles.json`, and
+not offered by the step 18c tools. The code stays: the engines' agreement tests switch all five search parts on
+together.
+
+**D-150. Compute is estimated, not capped from outside.** From step 18c the step's own estimate, with its reasons,
+is written in its `PREDICTIONS.md` before any run. Predict before every run over 30 minutes, pilot before scaling,
+stop early when a sequential test decides, and say why in the report if the estimate is well exceeded.
+· Source: Shaun, 11 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

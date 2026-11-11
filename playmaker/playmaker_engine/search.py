@@ -15,7 +15,7 @@ from . import rules_config as RC
 from .actions import Action, legal_actions, MOVEMENT
 from .resolve import apply, ChanceNode
 from .scoring import score
-from .decide import Read, CONFIG
+from .decide import Read, CONFIG, foul_externality
 
 VMIN, VMAX = CONFIG['eval']['value_bounds']
 FORCING = ('shot', 'contest', 'steal', 'end_turn', 'intercept', 'pause', 'hesitate')
@@ -289,6 +289,10 @@ class Searcher:
         # step 18b (eval.settle_shots, off): a declared shot at the horizon is valued by playing the reaction out
         self.settle_shots = CONFIG['eval'].get('settle_shots') is True
         self.scache = {}
+        # step 18c (eval.help_readings, off): with the offence to act, a position is worth at least the best shot it
+        # can release this turn, settled by the rules (the floor)
+        self.help = CONFIG['eval'].get('help_readings') is True
+        self.fcache = {}
         self.t0 = time.time()
 
     def check(self):
@@ -300,6 +304,8 @@ class Searcher:
         if self.settle_shots and not isinstance(s, ChanceNode) and s.stage != 'play' and s.stage != 'over':
             return self.settled(s)
         v = self.evaluate(s)
+        if self.help and not isinstance(s, ChanceNode) and s.stage == 'play' and not s.pending and actor(s) == 'O':
+            v = self.floor(s, v)                         # step 18c: never below the shot the offence can take now
         if self.tempo_on and self.tempo and not isinstance(s, ChanceNode) and s.stage == 'play':
             # the measured tempo term: the same position reads higher with the offence to act; a leaf is read as the
             # mean of the two (the gap measured on the step 3n positions, ai_profiles.json search.tempo_gap)
@@ -308,6 +314,44 @@ class Searcher:
         if self.goals:
             v += self.phi(s)                 # progress: the potential here (the root's is taken off at the end)
         return v
+
+    def floor(self, s, v):
+        """Step 18c, the first help reading: the drive priced by the rules. With the offence to act in open play, the
+        possession is worth at least the best shot the ball handler can release this turn: his shot from where he
+        stands, or after one movement, each settled by the rules (the defence's best reaction, self.settled). The
+        reading names the candidates (its looks released now, best first) and the rules value them; a candidate whose
+        reading is no better than the value so far can't raise it. Returns the larger of v (the reading) and that
+        shot's value; self.fcache keeps (value, square, shot type) for the reasons record."""
+        key = zobrist(s)
+        hit = self.fcache.get(key)
+        if hit is not None:
+            return hit[0]
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        best = (v, None, None)
+        acts = None
+        for lk in Read(s).looks.get(s.ball, []):
+            if not lk.now:
+                continue
+            if banked + lk.base <= best[0]:
+                break
+            n = s
+            if lk.route != 'shoot':
+                if acts is None:
+                    acts = legal_actions(s)
+                a = next((x for x in acts if x.kind in MOVEMENT and x.piece == s.ball and x.dest == lk.c), None)
+                if a is None:
+                    continue
+                n = apply(s, a)
+                if isinstance(n, ChanceNode) or n.stage != 'play' or actor(n) != 'O':
+                    continue
+            for b in legal_actions(n):
+                if b.kind == 'shot':
+                    w = self.settle_node(apply(n, b))
+                    if w > best[0]:
+                        best = (w, lk.c, b.shot)
+        self.fcache[key] = best
+        return best[0]
 
     def settled(self, s):
         """Step 18b: a position with a shot declared (the reaction, the Contest choice, a forced shot's choice), valued

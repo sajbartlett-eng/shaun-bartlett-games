@@ -19,7 +19,8 @@ const job = JSON.parse(fs.readFileSync(process.argv[2]));
 const set = job.set || {};
 E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, set.switches || {}));
 E.setCalibrated(set.calibrated !== false);
-if (E.setSettle) E.setSettle(!!set.settle_shots);
+if (E.setSettle && set.settle_shots != null) E.setSettle(set.settle_shots);
+if (E.setHelp && set.help_readings != null) E.setHelp(set.help_readings);
 const COACH = { Poor: 0, Okay: 2, Good: 5, Great: 8, Excellent: 10 };
 const band = v => (v >= 30 ? 'Excellent' : v >= 25 ? 'Great' : v >= 20 ? 'Good' : v >= 15 ? 'Okay' : 'Poor');
 function ceilingOf(ctxj, target) {                     // from the cards alone: 3 x the three, 2 x any other shot

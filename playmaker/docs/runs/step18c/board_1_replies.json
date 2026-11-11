@@ -1,0 +1,110 @@
+{
+ "side": "X",
+ "rows": [
+  {
+   "name": "does nothing",
+   "after": "play, O to act",
+   "read_now": 27.598327868771825,
+   "searched_replies": 24,
+   "best_searched_reply": {
+    "words": "O1 Sprint to I4, then O1 Shot (layup)",
+    "value": 32
+   },
+   "legal_replies": 16690,
+   "best_legal_reply": {
+    "words": "O1 Sprint to I4, then O1 Shot (layup)",
+    "value": 32,
+    "searched": true
+   },
+   "hidden": 0,
+   "better_than_searched": 0,
+   "top_legal": [
+    {
+     "words": "O1 Sprint to I4, then O1 Shot (layup)",
+     "value": 32,
+     "searched": true
+    },
+    {
+     "words": "O1 Sprint to I4, then O1 Shot (dunk)",
+     "value": 30,
+     "searched": true
+    },
+    {
+     "words": "O1 Sprint to I4",
+     "value": 28.530928900693127,
+     "searched": true
+    },
+    {
+     "words": "O1 Sprint to E8, then O2 Sprint to D9",
+     "value": 27.889973583370047,
+     "searched": false
+    },
+    {
+     "words": "O1 Sprint to E8",
+     "value": 27.086353270382226,
+     "searched": false
+    },
+    {
+     "words": "O1 Move to F8, then O1 Quick Step to E8",
+     "value": 26.744096376006116,
+     "searched": false
+    }
+   ]
+  },
+  {
+   "name": "the search's choice: X2 Move to D6 facing E",
+   "after": "play, X to act",
+   "read_now": 26.362137306884808,
+   "searched_replies": 13,
+   "best_searched_reply": {
+    "words": "X Pause",
+    "value": 27.598327868771825
+   },
+   "legal_replies": 846,
+   "best_legal_reply": {
+    "words": "X End turn",
+    "value": 27.598327868771825,
+    "searched": false
+   },
+   "hidden": 0,
+   "better_than_searched": 0,
+   "top_legal": [
+    {
+     "words": "X End turn",
+     "value": 27.598327868771825,
+     "searched": false
+    },
+    {
+     "words": "X Pause",
+     "value": 27.598327868771825,
+     "searched": true
+    },
+    {
+     "words": "X1 Move to I9 facing N",
+     "value": 27.598327868771825,
+     "searched": false
+    },
+    {
+     "words": "X1 Move to I9 facing NE",
+     "value": 27.598327868771825,
+     "searched": false
+    },
+    {
+     "words": "X1 Move to I9 facing E",
+     "value": 27.598327868771825,
+     "searched": false
+    },
+    {
+     "words": "X1 Move to I9 facing SE",
+     "value": 27.598327868771825,
+     "searched": false
+    }
+   ]
+  },
+  {
+   "name": "the best turn found: X1 Move to I9 facing S, then X1 Steal",
+   "after": "a roll",
+   "read_now": null
+  }
+ ]
+}

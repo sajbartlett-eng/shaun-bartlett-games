@@ -1,0 +1,140 @@
+{
+ "help_vs_default: help on offence": {
+  "possessions": 240,
+  "shots_in_phases_1_and_2": 0.751,
+  "shot_by_phase": {
+   "1": 0.373,
+   "2": 0.378,
+   "3": 0.151,
+   "4": 0.076,
+   "5": 0.013,
+   "6": 0.009
+  },
+  "decisions": 18.9,
+  "clock_ran_out_in_100": 0.0,
+  "clock_interval_in_100": [
+   0.0,
+   1.6
+  ],
+  "lost_in_100_phases_kept": 6.1,
+  "lost_interval": [
+   3.7,
+   9.8
+  ]
+ },
+ "help_vs_default: default on offence": {
+  "possessions": 240,
+  "shots_in_phases_1_and_2": 0.69,
+  "shot_by_phase": {
+   "1": 0.363,
+   "2": 0.327,
+   "3": 0.23,
+   "4": 0.058,
+   "5": 0.018,
+   "6": 0.004
+  },
+  "decisions": 19.5,
+  "clock_ran_out_in_100": 0.0,
+  "clock_interval_in_100": [
+   0.0,
+   1.6
+  ],
+  "lost_in_100_phases_kept": 5.5,
+  "lost_interval": [
+   3.3,
+   9.0
+  ]
+ },
+ "rookie_settle_vs_rookie_plain: rookie_settle on offence": {
+  "possessions": 160,
+  "shots_in_phases_1_and_2": 0.486,
+  "shot_by_phase": {
+   "1": 0.116,
+   "2": 0.37,
+   "3": 0.199,
+   "4": 0.144,
+   "5": 0.068,
+   "6": 0.103
+  },
+  "decisions": 30.6,
+  "clock_ran_out_in_100": 0.0,
+  "clock_interval_in_100": [
+   0.0,
+   2.3
+  ],
+  "lost_in_100_phases_kept": 4.2,
+  "lost_interval": [
+   2.5,
+   6.9
+  ]
+ },
+ "rookie_settle_vs_rookie_plain: rookie_plain on offence": {
+  "possessions": 160,
+  "shots_in_phases_1_and_2": 0.245,
+  "shot_by_phase": {
+   "1": 0.042,
+   "2": 0.203,
+   "3": 0.195,
+   "4": 0.169,
+   "5": 0.178,
+   "6": 0.212
+  },
+  "decisions": 43.5,
+  "clock_ran_out_in_100": 2.5,
+  "clock_interval_in_100": [
+   1.0,
+   6.3
+  ],
+  "lost_in_100_phases_kept": 7.2,
+  "lost_interval": [
+   5.3,
+   9.7
+  ]
+ },
+ "starter_settle_vs_starter_plain: starter_settle on offence": {
+  "possessions": 160,
+  "shots_in_phases_1_and_2": 0.658,
+  "shot_by_phase": {
+   "1": 0.242,
+   "2": 0.416,
+   "3": 0.195,
+   "4": 0.094,
+   "5": 0.04,
+   "6": 0.013
+  },
+  "decisions": 23.0,
+  "clock_ran_out_in_100": 0.0,
+  "clock_interval_in_100": [
+   0.0,
+   2.3
+  ],
+  "lost_in_100_phases_kept": 4.9,
+  "lost_interval": [
+   2.8,
+   8.5
+  ]
+ },
+ "starter_settle_vs_starter_plain: starter_plain on offence": {
+  "possessions": 160,
+  "shots_in_phases_1_and_2": 0.456,
+  "shot_by_phase": {
+   "1": 0.181,
+   "2": 0.275,
+   "3": 0.282,
+   "4": 0.141,
+   "5": 0.087,
+   "6": 0.034
+  },
+  "decisions": 29.4,
+  "clock_ran_out_in_100": 1.2,
+  "clock_interval_in_100": [
+   0.3,
+   4.4
+  ],
+  "lost_in_100_phases_kept": 3.1,
+  "lost_interval": [
+   1.7,
+   5.9
+  ]
+ }
+}

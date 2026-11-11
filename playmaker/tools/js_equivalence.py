@@ -107,6 +107,7 @@ def py_outcomes(s):
 
 _ADV = {'on': False}
 _SETTLE = {'on': False}
+_HELP = {'on': False}
 
 
 def py_probe(s, reach_map=False):
@@ -118,6 +119,10 @@ def py_probe(s, reach_map=False):
     out['attacker_reach'] = [mp(attacker_reach(s, i)) for i in range(5)]
     from playmaker_engine.decide import ceiling as _ceiling
     out['ceiling'] = _ceiling(s)                    # step 18b (D-145)
+    if _HELP['on'] and s.stage == 'play' and not s.pending and s.side == 'O':      # step 18c: the reading with the floor
+        from playmaker_engine.search import Searcher as _S
+        from playmaker_engine.agent import profile as _p
+        out['floored'] = _S('O', _p('allstar'), lambda n: Read(n).leaf(), float('inf')).leaf(s)
     if _SETTLE['on'] and s.stage != 'play':         # step 18b: a declared shot settled by the rules
         from playmaker_engine.search import Searcher, actor as _actor
         from playmaker_engine.agent import profile as _profile
@@ -180,7 +185,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -227,7 +232,9 @@ def main():
     ap.add_argument('--calibrated', action='store_true', help='step 17D: eval.calibrated on, in both engines (the default since D-138)')
     ap.add_argument('--no-calibrated', action='store_true', help='eval.calibrated off, in both engines')
     ap.add_argument('--learned', action='store_true', help='step 17: eval.learned on, in both engines')
-    ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines')
+    ap.add_argument('--settle', action='store_true', help='step 18b: eval.settle_shots on, in both engines (the default since D-148)')
+    ap.add_argument('--no-settle', action='store_true', help='eval.settle_shots off, in both engines')
+    ap.add_argument('--help-readings', action='store_true', help='step 18c: eval.help_readings on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -246,8 +253,11 @@ def main():
     _CFG['search']['goals'] = args.goals
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
+    args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle
+    _CFG['eval']['help_readings'] = args.help_readings
+    _HELP['on'] = args.help_readings
     args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
     _CFG['eval']['calibrated'] = args.calibrated
     from playmaker_engine.search import PARTS
@@ -275,7 +285,7 @@ def main():
         lines.append(json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx), outcomes=args.reaction,
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
-                                     goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle,
+                                     goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
                                      reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
@@ -287,7 +297,7 @@ def main():
     t_js = time.time() - t1
     fields = ('legal', 'attacker_reach', 'defender_reach', 'defender_exact', 'threat_geo', 'cover_geo', 'leaf_geo',
               'threat_exact', 'cover_exact', 'leaf_exact', 'quick', 'reach_map', 'budget_geo', 'budget_exact', 'split_geo',
-              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact', 'ceiling', 'settled') + (('react_outcomes',) if args.reaction else ())
+              'split_exact', 'adv_geo', 'adv_exact', 'features_geo', 'features_exact', 'ceiling', 'settled', 'floored') + (('react_outcomes',) if args.reaction else ())
     tally = {f: [0, 0] for f in fields}
     bad = []
     stages, phases = {}, {}
@@ -309,7 +319,7 @@ def main():
     if srch:
         bad += srch['bad']
     rep = dict(leaf_mode=args.leaf_mode, stable=args.stable, switches=names, reach=args.reach, speedups_off=list(off),
-               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle,
+               coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
                searches=srch and srch['summary'],
                states=len(states), seconds_python=round(t_py, 1), seconds_js=round(t_js, 1),
                by_stage=stages, by_phase=phases,
