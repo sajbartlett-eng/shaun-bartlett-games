@@ -1,0 +1,12 @@
+{
+ "level": "rookie",
+ "possessions": 160,
+ "mean_points": 25.5,
+ "interval": [
+  23.49,
+  27.51
+ ],
+ "positions": 3674,
+ "core_hours": 0.19,
+ "wall_minutes": 2.9
+}

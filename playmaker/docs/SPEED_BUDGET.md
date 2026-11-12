@@ -15,6 +15,13 @@ Each level must finish **1 team-turn pair** (its own turn and the reply) on at l
 - **Desktop** is the machine the measurements run on, with a warm engine, as in a game.
 - The All-Star uses what is left of its time on a second pair.
 
+## How speed is judged (D-161, Shaun, 12 Nov 2026)
+
+This machine's speed varies by up to 30% in a day. So a step's speed is judged **against the previous step's code
+timed in the same hour, on the same machine,** in turn with the new code. A level fits if its time, scaled by how
+the previous step's code ran in that hour against how it ran when it was last reported, is inside the target. The raw
+times of the day are reported beside it.
+
 ## Measuring a real phone (D-126)
 
 Open the play link with `?speedtest=1` on the end, wait for the bar to fill (under 5 minutes), and tap **Copy

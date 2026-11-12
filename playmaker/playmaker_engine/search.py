@@ -288,7 +288,7 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
     b2 = _banked(ref)
 
     def q_of(vec):
-        return R._quick_cont(R._cont_of(vec), vec[5], vec[6])
+        return R._quick_cont(R._cont_of(vec), vec[5], vec[6], vec)
 
     def facts(n, j, left):
         cm, ql = _caps(left, 'X', j)
@@ -907,6 +907,17 @@ class Searcher:
                                          -(r[0] + 0.01 * self.history.get(r[1][0], 0))))
 
     def root(self, s, max_depth, min_depth=1):
+        # step 18h: the level's own map is in force for the length of its search and no longer (a reading made outside
+        # a search takes the shared map, in both engines)
+        from . import decide as _decide
+        prev = _decide.LEVEL[0]
+        _decide.LEVEL[0] = self.p.get('level')
+        try:
+            return self._root(s, max_depth, min_depth)
+        finally:
+            _decide.LEVEL[0] = prev
+
+    def _root(self, s, max_depth, min_depth=1):
         """Iterative deepening. Returns (scored turns [(value, turn)], depth reached, the principal turn)."""
         side = actor(s)
         budget = self.deadline - time.time()

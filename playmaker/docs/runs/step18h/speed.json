@@ -1,0 +1,89 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18f's code and then this step's",
+ "rounds": [
+  {
+   "18f": {
+    "rookie": {
+     "median": 0.213,
+     "nine_in_ten": 0.308,
+     "slowest": 0.346,
+     "defence_nine_in_ten": 0.307
+    },
+    "starter": {
+     "median": 0.675,
+     "nine_in_ten": 1.076,
+     "slowest": 1.098,
+     "defence_nine_in_ten": 0.932
+    },
+    "allstar": {
+     "median": 1.774,
+     "nine_in_ten": 2.243,
+     "slowest": 2.476,
+     "defence_nine_in_ten": 2.284
+    }
+   },
+   "18h": {
+    "rookie": {
+     "median": 0.205,
+     "nine_in_ten": 0.302,
+     "slowest": 0.342,
+     "defence_nine_in_ten": 0.302
+    },
+    "starter": {
+     "median": 0.836,
+     "nine_in_ten": 1.077,
+     "slowest": 1.433,
+     "defence_nine_in_ten": 1.077
+    },
+    "allstar": {
+     "median": 1.52,
+     "nine_in_ten": 2.157,
+     "slowest": 2.28,
+     "defence_nine_in_ten": 2.068
+    }
+   }
+  },
+  {
+   "18f": {
+    "rookie": {
+     "median": 0.21,
+     "nine_in_ten": 0.278,
+     "slowest": 0.32,
+     "defence_nine_in_ten": 0.278
+    },
+    "starter": {
+     "median": 0.753,
+     "nine_in_ten": 0.931,
+     "slowest": 1.062,
+     "defence_nine_in_ten": 0.996
+    },
+    "allstar": {
+     "median": 1.671,
+     "nine_in_ten": 2.118,
+     "slowest": 2.425,
+     "defence_nine_in_ten": 2.333
+    }
+   },
+   "18h": {
+    "rookie": {
+     "median": 0.217,
+     "nine_in_ten": 0.297,
+     "slowest": 0.353,
+     "defence_nine_in_ten": 0.297
+    },
+    "starter": {
+     "median": 0.758,
+     "nine_in_ten": 1.032,
+     "slowest": 1.208,
+     "defence_nine_in_ten": 1.073
+    },
+    "allstar": {
+     "median": 1.473,
+     "nine_in_ten": 2.273,
+     "slowest": 2.453,
+     "defence_nine_in_ten": 2.261
+    }
+   }
+  }
+ ]
+}

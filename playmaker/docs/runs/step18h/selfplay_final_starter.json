@@ -1,0 +1,12 @@
+{
+ "level": "starter",
+ "possessions": 120,
+ "mean_points": 25.48,
+ "interval": [
+  23.21,
+  27.74
+ ],
+ "positions": 2459,
+ "core_hours": 0.42,
+ "wall_minutes": 6.7
+}

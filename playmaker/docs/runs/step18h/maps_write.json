@@ -1,0 +1,106 @@
+{
+ "allstar": {
+  "possessions": 840,
+  "positions": 12782,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X",
+   "3O",
+   "3X",
+   "4O",
+   "4X"
+  ],
+  "lines_from_the_shared_map": [
+   "5X",
+   "5O",
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 4384,
+   "1X": 3070,
+   "2O": 2043,
+   "2X": 1538,
+   "3O": 777,
+   "3X": 538,
+   "4O": 231,
+   "4X": 154
+  },
+  "held_out_error": {
+   "its_own_map": 10.91,
+   "the_shared_map": 11.264
+  }
+ },
+ "starter": {
+  "possessions": 120,
+  "positions": 2459,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X",
+   "3O",
+   "3X",
+   "4O",
+   "4X",
+   "5O",
+   "5X"
+  ],
+  "lines_from_the_shared_map": [
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 617,
+   "1X": 495,
+   "2O": 356,
+   "2X": 283,
+   "3O": 176,
+   "3X": 136,
+   "4O": 126,
+   "4X": 102,
+   "5O": 82,
+   "5X": 68
+  },
+  "held_out_error": {
+   "its_own_map": 12.474,
+   "the_shared_map": 12.579
+  }
+ },
+ "rookie": {
+  "possessions": 160,
+  "positions": 3674,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X",
+   "3O",
+   "3X",
+   "4O",
+   "4X"
+  ],
+  "lines_from_the_shared_map": [
+   "5X",
+   "5O",
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 835,
+   "1X": 797,
+   "2O": 604,
+   "2X": 509,
+   "3O": 322,
+   "3X": 243,
+   "4O": 149,
+   "4X": 112
+  },
+  "held_out_error": {
+   "its_own_map": 11.087,
+   "the_shared_map": 10.956
+  }
+ }
+}

@@ -18,7 +18,7 @@ L = E18.L
 RUN = os.path.join(ROOT, 'docs', 'runs', 'step18f')
 WORK = os.environ.get('STEP18F_WORK', os.path.join(RUN, 'work'))
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
-SWITCHES = ('whole_turns', 'split_ties', 'kept_actions', 'rank_in_hand')   # this step's switches, as the tools name them
+SWITCHES = ('whole_turns', 'split_ties', 'kept_actions', 'rank_in_hand', 'no_floor', 'exact_shot')   # this step's switches, as the tools name them
 
 
 def setting(*on, open_list=None):
@@ -124,7 +124,7 @@ def _rows(names):
     for name in names:
         if name.startswith('trace_'):                # a run with every action kept (cmd_trace): [clock, earned, today's reading, offence to act, the looks reading]
             for r in json.load(open(os.path.join(WORK, f'{name}.json')))['rows']:
-                for clock, banked, hd, o_to_act, lk in r['reads']:
+                for clock, banked, hd, o_to_act, lk, *_ in r['reads']:
                     g.append(k); ph.append(min(6, max(1, (12 - clock) // 2 + 1))); y.append(r['value'] - banked)
                     hand.append(hd - banked); looks.append(lk - banked); side.append(int(o_to_act))
                 k += 1
@@ -370,7 +370,7 @@ def cmd_trace(n='200', seed='1', level='allstar', tag='', *on):
     pol = L.policy(level, 2, L.profiles()[level]['noise'], **_switches(on))
     starts = [pl['starts'][i % len(pl['starts'])] for i in range(int(n))]
     starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]
-    rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, policies=dict(O=pol, X=pol))
+    rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, features=True, policies=dict(O=pol, X=pol))   # features (step 18h): the named readings, for the parts' lines
     name = ('trace_app' if level == 'allstar' else f'trace_{level}') if not tag else f'trace_{tag}'
     level = level if not tag else tag
     json.dump(dict(size='app', rows=rows), open(os.path.join(WORK, f'{name}.json'), 'w'))

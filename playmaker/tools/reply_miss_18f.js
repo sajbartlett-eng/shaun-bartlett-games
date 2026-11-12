@@ -4,7 +4,7 @@
 // follow chosen by the reading with the second action still in hand, (B2b) step 18e's list valued as ended turns,
 // (C) today's root list (8 firsts followed).
 const fs = require('fs'), path = require('path');
-const PM = '/home/user/step18f/playmaker';
+const PM = path.join(__dirname, '..');
 const E = require(path.join(PM, 'playmaker_web/static/engine.js'));
 const root = path.join(PM, 'playmaker_engine/data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
@@ -13,6 +13,7 @@ E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 const prof = job.policies.allstar.profile;
+if (E.setLevel) E.setLevel(prof.level);                // step 18h: read as the level's own search would
 const ctxs = job.contexts.map(c => E.makeCtx(c));
 const res = [];
 for (const p of job.positions) {
@@ -22,7 +23,9 @@ for (const p of job.positions) {
   const quick = n => srch.quick(n);
   const lv = t => { const m = E.playTurn(s, t); return E.isChance(m) ? srch.value(m, 0, VMIN, VMAX) : srch.leaf(srch.playT(s, t)); };
   const best = ts => { let b = -1e9, bt = null; for (const [, t] of ts) { const v = lv(t); if (v > b) { b = v; bt = t; } } return [b, bt]; };
+  if (E.setRankInHand) E.setRankInHand(false);        // step 18h: the list as step 18f's default built it (rank_in_hand is on since D-160)
   const A = best(E.turns(s, prof.beam, null, quick, null, 3, 1, srch.open, true, srch.width));
+  if (E.setRankInHand) E.setRankInHand(true);
   const C = best(E.turns(s, prof.beam, null, quick, null, 8, 2, srch.open, true, srch.width));
   const B2b = best(E.turns(s, prof.beam, null, quick, null, 3, 1, srch.open, false, srch.width));
   // B2a: firsts to follow by the mid-turn reading; the list's values as today
@@ -35,7 +38,8 @@ for (const p of job.positions) {
   }
   out.sort((x, y) => y[0] - x[0]);
   const B2a = best(out.slice(0, prof.beam));
-  res.push({ id: p.id, A: A[0], B2a: B2a[0], B2b: B2b[0], C: C[0], At: A[1].map(E.actionStr).join(' + '), Ct: C[1].map(E.actionStr).join(' + '), Bt: B2a[1].map(E.actionStr).join(' + ') });
+  res.push({ id: p.id, A: A[0], B2a: B2a[0], B2b: B2b[0], C: C[0], At: A[1].map(E.actionStr).join(' + '), Ct: C[1].map(E.actionStr).join(' + '), Bt: B2a[1].map(E.actionStr).join(' + '),
+    Aj: A[1].map(E.actionJSON), Cj: C[1].map(E.actionJSON), state: p.state, ctx: job.contexts[p.ctx] });
 }
 const mean = k => res.reduce((a, r) => a + r[k], 0) / res.length;
 const cnt = (k, d) => res.filter(r => r[k] - r.A > d).length, lose = (k, d) => res.filter(r => r.A - r[k] > d).length;

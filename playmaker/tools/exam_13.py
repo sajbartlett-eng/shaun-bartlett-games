@@ -81,9 +81,9 @@ def set_switches(eng, setting):
         CONFIG.setdefault('search', {})['open_list'] = False if openv in ('', '0', 'false') else openv
         if eng is not None:
             eng.call('setOpenList', 'false' if openv in ('', '0', 'false') else openv)
-    for k, fn in (('whole_turns', 'setWholeTurns'), ('kept_actions', 'setKeptActions'), ('split_ties', 'setSplitTies'), ('rank_in_hand', 'setRankInHand')):   # step 18f: EXAM13_ON=whole_turns,... turns this step's search switches on
+    for k, fn in (('whole_turns', 'setWholeTurns'), ('kept_actions', 'setKeptActions'), ('split_ties', 'setSplitTies'), ('rank_in_hand', 'setRankInHand'), ('no_floor', 'setNoFloor'), ('exact_shot', 'setExactShot')):   # step 18f: EXAM13_ON=whole_turns,... turns this step's search switches on
         if k in os.environ.get('EXAM13_ON', '').split(','):
-            CONFIG.setdefault('eval' if k == 'kept_actions' else 'search', {})[k] = True
+            CONFIG.setdefault('eval' if k in ('kept_actions', 'no_floor', 'exact_shot') else 'search', {})[k] = True
             if eng is not None:
                 eng.call(fn, 'true')
     if os.environ.get('EXAM13_LEAF'):                   # step 18f: eval.leaf_mode ('looks')
