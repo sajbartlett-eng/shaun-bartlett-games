@@ -42,6 +42,7 @@ for (const ln of lines) {
   if (q.whole !== undefined) E.setWholeTurns(q.whole);                  // step 18f
   if (q.kept !== undefined) E.setKeptActions(q.kept);
   if (q.split !== undefined) E.setSplitTies(q.split);
+  if (q.in_hand !== undefined) E.setRankInHand(q.in_hand);
   if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));

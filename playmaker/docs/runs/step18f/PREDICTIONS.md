@@ -114,3 +114,60 @@ Under 30 minutes, so no prediction was owed. Results:
 - Cost: about 6.
 - I expect no clear difference again, between -1 and +1.5 a pair: the switch changes the reading only where a
   defender's last movement was a Quick Step or a Sprint and he is the one covering the look.
+
+## 8. Part 5's timings (no single run over 30 minutes)
+
+- **The machine ran slower today than when step 18e was timed:** 18e's own code, timed again in turn with this
+  step's, takes 0.29 to 0.35 s for the Rookie (0.23 at 18e), 0.82 to 0.97 s for the Starter (0.66), 2.5 to 2.8 s for
+  the All-Star with the open list (2.0). So every timing is given beside 18e's code timed in the same hour.
+- **Whole turns cost more than the 7% I reported at part 1:** 15 to 30% on the time to finish 1 pair, because the
+  node after a one-action turn is now the other side's full list. Two speed-ups that change no result (654 searches
+  each, none different) pay for it: the pass chance read without its parts per defender, and only the six looks kept
+  per attacker built.
+
+## 9. Parts 1 and 4 again: `search.rank_in_hand`
+
+- **Found on the EB3F5B position:** with whole turns the computer went back to the Quick Step, reading it 30.5.
+  The true value is 33: the shooter sidesteps to A2 and shoots open. The search's list of the offence's replies
+  didn't hold that turn, because whole turns ranked each first action as if the turn stopped there, and "move"
+  alone ranks low.
+- **Pilot (under 30 minutes, `tools/reply_miss_18f.js`):** on 145 stored offence positions, today's reply list
+  misses the best reply the root's wider list finds on 19 (by more than 0.5), and by 10 points or more on the worst;
+  every one a "move, then shoot". Ranking the first actions with the second action still in hand (the turn itself
+  still valued whole) recovers 13 of them at no extra reads: the average best reply rises 0.62 of the 0.83 missing.
+- With it and `eval.kept_actions`, part 3's three tests all give the expected answer.
+- **Its head to head, up to 400 pairs, cost about 6.** I expect +0.3 to +2 a pair: the defence stops trusting
+  closeouts that a sidestep beats, on about 1 position in 10.
+
+## The estimate, revised again: about 56 core-hours
+
+The two extra head to heads (the control-aware cover alone, and `rank_in_hand`) are 6 each. Each followed a pilot
+that showed its value. Nearly double the first estimate; the report says so.
+- **Result (the control-aware cover alone, prediction 7):** 4.77 core-hours. 400 pairs: **0.0 points a pair (-1.6
+  to 1.6),** 107 wins, 122 losses, 171 ties. As predicted: no clear difference. **It stays off.**
+- **Result (`rank_in_hand`, prediction 9):** 4.83 core-hours. 400 pairs: **+0.9 points a pair (-0.7 to 2.4),** 139
+  wins, 125 losses, 136 ties. Inside the predicted range, but not clear of 0, and the pairs won are not clear of
+  even (53 in 100, 47 to 59). **It stays off** by the step's rule.
+
+## 10. Self-play on the final default, for the last refit and part 7's measures
+
+- The final default: whole turns, the tie splitter, the open list at every level (the Rookie 2 and 1, the Starter
+  4 and 2), the early refit's map. The All-Star 200 possessions with every action kept (it serves the refit and the
+  measures), the Rookie 240, the Starter 200. Cost: about 6.
+- I expect the All-Star at 27 to 29 points a possession with the ball lost 12 to 16 times in 100 phases kept, and
+  the map's held-out error near 11 before and after: the early refit was on nearly the same play.
+- **Result (self-play on the final default, prediction 10):** 2.43 core-hours, well under the 6 predicted: the
+  speed-ups. The All-Star 28.8 points a possession (26.9 to 30.7): as predicted. **Wrong on the map:** the Rookie
+  and the Starter on the open list lose the ball twice as often as before (15 times in 100 phases kept, where 7),
+  and score less (the Rookie 21.3, where 26.4; the Starter 25.1, where 27.8). So the map's held-out error on this
+  play is 14.4 with the early refit and 14.2 refit again; the Rookie's alone falls from 16.0 to 15.0.
+
+## 11. Part 7's head to head: the final default against the start of the step, up to 400 pairs
+
+- The start of the step: step 18e's default (the old map, this step's switches off), checked search for search
+  against 18e's own code.
+- Cost: about 5.
+- I expect +2 to +4 a pair: whole turns gave +1.7 and the tie splitter +1.2 on top, each with a wide interval.
+- **Result (part 7's head to head, prediction 11):** 4.09 core-hours. 400 pairs: **168 won, 127 lost, 105 tied: 57
+  in 100 of the decided pairs (51 to 63).** In points, +1.2 a pair (-0.3 to 2.6). **Below the predicted +2 to +4:**
+  the two switches' gains don't add up; each was measured with a wide interval.

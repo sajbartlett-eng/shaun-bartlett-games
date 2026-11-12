@@ -1,0 +1,230 @@
+{
+ "closeout, the shooter cannot move": {
+  "chose": "X3 Quick Step to E3, then X2 Move to B6 facing SW",
+  "reads": 29.802,
+  "top": [
+   [
+    "X3 Quick Step to E3, then X2 Move to B6 facing SW",
+    29.802
+   ],
+   [
+    "X3 Move to C4 facing SW, then X2 Move to B6 facing SW",
+    29.802
+   ],
+   [
+    "X3 Quick Step to E3",
+    29.802
+   ],
+   [
+    "X3 Quick Step to E3, then X Pause",
+    29.802
+   ],
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+    29.802
+   ]
+  ],
+  "named": [
+   {
+    "name": "X3 Quick Steps closer (E4)",
+    "reads": 29.802,
+    "behind": 0,
+    "on_the_list": null,
+    "replies": [
+     [
+      29.8,
+      "O2 Move to A6, then O4 Pass to O2"
+     ],
+     [
+      29.8,
+      "O2 Quick Step to A6, then O4 Pass to O2"
+     ]
+    ]
+   },
+   {
+    "name": "X3 Moves closer (C4), facing him",
+    "reads": 29.802,
+    "behind": 0,
+    "on_the_list": 7,
+    "replies": [
+     [
+      29.8,
+      "O2 Move to A6, then O4 Pass to O2"
+     ],
+     [
+      29.8,
+      "O2 Move to A5, then O4 Pass to O2"
+     ]
+    ]
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 32.55,
+    "behind": 2.748,
+    "on_the_list": 16,
+    "replies": [
+     [
+      32.55,
+      "O4 Shot (three)"
+     ],
+     [
+      32.55,
+      "O2 Move to A6, then O4 Shot (three)"
+     ]
+    ]
+   }
+  ]
+ },
+ "closeout, the shooter can move": {
+  "chose": "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+  "reads": 27.169,
+  "top": [
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+    27.169
+   ],
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to J9",
+    27.169
+   ],
+   [
+    "X3 Move to C4 facing SW",
+    27.169
+   ],
+   [
+    "X3 Move to C4 facing SW, then X Pause",
+    27.169
+   ],
+   [
+    "X3 Move to C4 facing W, then X1 Quick Step to I9",
+    27.169
+   ]
+  ],
+  "named": [
+   {
+    "name": "X3 Quick Steps closer (E4)",
+    "reads": 27.169,
+    "behind": 0,
+    "on_the_list": null,
+    "replies": [
+     [
+      27.17,
+      "O Hesitate"
+     ],
+     [
+      27.17,
+      "O1 Move to J10"
+     ]
+    ]
+   },
+   {
+    "name": "X3 Moves closer (C4), facing him",
+    "reads": 27.169,
+    "behind": 0,
+    "on_the_list": 3,
+    "replies": [
+     [
+      27.17,
+      "O Hesitate"
+     ],
+     [
+      27.17,
+      "O1 Move to J10"
+     ]
+    ]
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 32.55,
+    "behind": 5.381,
+    "on_the_list": null,
+    "replies": [
+     [
+      32.55,
+      "O4 Shot (three)"
+     ],
+     [
+      32.55,
+      "O1 Move to J10, then O4 Shot (three)"
+     ]
+    ]
+   }
+  ]
+ },
+ "EB3F5B, the pass in the air": {
+  "chose": "X4 Quick Step to E4",
+  "reads": 28.615,
+  "top": [
+   [
+    "X4 Quick Step to E4",
+    28.615
+   ],
+   [
+    "X4 Quick Step to E4, then X Pause",
+    28.615
+   ],
+   [
+    "X4 Quick Step to E3",
+    28.615
+   ],
+   [
+    "X4 Quick Step to E3, then X Pause",
+    28.615
+   ],
+   [
+    "X4 Move to C4 facing SW",
+    33
+   ]
+  ],
+  "named": [
+   {
+    "name": "X4 Quick Steps closer (E4)",
+    "reads": 28.615,
+    "behind": 0,
+    "on_the_list": 1,
+    "replies": [
+     [
+      28.62,
+      "O2 Move to A7"
+     ],
+     [
+      28.62,
+      "O2 Move to B7"
+     ]
+    ]
+   },
+   {
+    "name": "X4 Moves closer (C4), facing him",
+    "reads": 33,
+    "behind": 4.385,
+    "on_the_list": 5,
+    "replies": [
+     [
+      33,
+      "O4 Move to A5, then O4 Shot (three)"
+     ],
+     [
+      25.91,
+      "O3 Move to L10"
+     ]
+    ]
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 33,
+    "behind": 4.385,
+    "on_the_list": 7,
+    "replies": [
+     [
+      33,
+      "O4 Shot (three)"
+     ],
+     [
+      33,
+      "O2 Move to B7, then O4 Shot (three)"
+     ]
+    ]
+   }
+  ]
+ }
+}

@@ -18,7 +18,7 @@ L = E18.L
 RUN = os.path.join(ROOT, 'docs', 'runs', 'step18f')
 WORK = os.environ.get('STEP18F_WORK', os.path.join(RUN, 'work'))
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
-SWITCHES = ('whole_turns', 'split_ties', 'kept_actions')   # this step's switches, as the tools name them
+SWITCHES = ('whole_turns', 'split_ties', 'kept_actions', 'rank_in_hand')   # this step's switches, as the tools name them
 
 
 def setting(*on, open_list=None):
@@ -30,7 +30,7 @@ def setting(*on, open_list=None):
 
 def run_line(state_json, ctx_json, st, turns, top=6):
     jf, of = os.path.join(WORK, f'line_{os.getpid()}.job.json'), os.path.join(WORK, f'line_{os.getpid()}.out.json')
-    job = dict(state=state_json, ctx=ctx_json, profile=L.profiles()['allstar'], turns=turns, top=top)
+    job = dict(state=state_json, ctx=ctx_json, profile=L.profiles()['allstar'], turns=turns, top=top, replies=int(os.environ.get('LINE_REPLIES', '0')))
     for k, v in st.items():
         if v is not None:
             job[k] = v
@@ -79,7 +79,8 @@ def cmd_lines(*on):
         turns = [t for t in turns if t['turn'] is not None]
         r = run_line(J.state_json(s), J.ctx_json(s.ctx), st, turns, top=5)
         rep[name] = dict(chose=r['rows'][0]['words'], reads=round(r['rows'][0]['value'], 3), top=[(x['words'], round(x['value'], 3)) for x in r['rows']],
-                         named=[dict(name=x['name'], reads=round(x['value'], 3), behind=round(x['behind_the_choice'], 3), on_the_list=x['list_rank']) for x in r['named'] if x['legal']])
+                         named=[dict(name=x['name'], reads=round(x['value'], 3), behind=round(x['behind_the_choice'], 3), on_the_list=x['list_rank'],
+                                     **({'replies': [(round(v, 2), w) for v, w in x['replies']]} if x.get('replies') else {})) for x in r['named'] if x['legal']])
         print(name, '| chose', rep[name]['chose'], rep[name]['reads'])
         for x in rep[name]['named']:
             print('     ', x)
@@ -121,6 +122,13 @@ def _rows(names):
     g, ph, y, hand, looks, side = [], [], [], [], [], []
     k = 0
     for name in names:
+        if name.startswith('trace_'):                # a run with every action kept (cmd_trace): [clock, earned, today's reading, offence to act, the looks reading]
+            for r in json.load(open(os.path.join(WORK, f'{name}.json')))['rows']:
+                for clock, banked, hd, o_to_act, lk in r['reads']:
+                    g.append(k); ph.append(min(6, max(1, (12 - clock) // 2 + 1))); y.append(r['value'] - banked)
+                    hand.append(hd - banked); looks.append(lk - banked); side.append(int(o_to_act))
+                k += 1
+            continue
         d = json.load(open(os.path.join(WORK, f'selfplay_{name}.json')))
         for r in d['rows']:
             for st in r['states']:
@@ -258,6 +266,8 @@ def cmd_ties(tag='default', *on):
 # ---- head to head --------------------------------------------------------------------------------------------------
 
 def _switches(on):
+    if 'start' in on:                                  # the default as it stood at the start of the step (18e's): the old map, this step's switches off
+        return dict(whole_turns=False, split_ties=False, kept_actions=False, rank_in_hand=False, map='start')
     sw = {k: True for k in on if k in SWITCHES}
     sw.update({k.split('=')[0]: k.split('=')[1] for k in on if '=' in k})
     return sw
@@ -346,6 +356,89 @@ def cmd_speed(tag='final', *on):
         v.update(desktop_target=TARGET[lv][0], fits_desktop=v['nine_in_ten'] <= TARGET[lv][0], phone=round(4 * v['nine_in_ten'], 2), phone_target=TARGET[lv][1])
         print(lv, v, flush=True)
     json.dump(rep, open(os.path.join(RUN, f'speed_{tag}.json'), 'w'), indent=1)
+
+
+# ---- the end: self-play with every action kept, the levels' order, the last head to head -----------------------------------
+
+def cmd_trace(n='200', seed='1', level='allstar'):
+    """Self-play at a level on the config as it stands, every action kept (step 18d's measures), with the readings the
+    map is fitted on -> work/trace_app.json (the All-Star's) or work/trace_<level>.json; `fidelity` reads the first."""
+    import time
+    import step_18d as D
+    D.RUN, D.WORK, D.L.WORK = RUN, WORK, WORK
+    pl, t0 = pool(), time.time()
+    pol = L.policy(level, 2, L.profiles()[level]['noise'])
+    starts = [pl['starts'][i % len(pl['starts'])] for i in range(int(n))]
+    starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]
+    rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, policies=dict(O=pol, X=pol))
+    name = 'trace_app' if level == 'allstar' else f'trace_{level}'
+    json.dump(dict(size='app', rows=rows), open(os.path.join(WORK, f'{name}.json'), 'w'))
+    m, sd, ci = L.mean_ci([r['points'] for r in rows])
+    rep = dict(level=level, possessions=len(rows), mean_points=round(m, 2), interval=[round(m - ci, 2), round(m + ci, 2)],
+               positions=sum(len(r['reads']) for r in rows), core_hours=round(secs / 3600, 2), wall_minutes=round((time.time() - t0) / 60, 1))
+    json.dump(rep, open(os.path.join(RUN, f'selfplay_final_{level}.json'), 'w'), indent=1)
+    print(json.dumps(rep))
+
+
+def cmd_fidelity():
+    """Step 18d's measures on the All-Star's self-play (cmd_trace) -> fidelity.json"""
+    import step_18d as D
+    D.RUN, D.WORK, D.L.WORK = RUN, WORK, WORK
+    D.cmd_fidelity('app')
+
+
+def cmd_boards(names='1,3,8,9'):
+    """Boards move by move on the default as the config has it: the computer's choice 1 pair ahead (no pick noise),
+    and what each board move reads when it is searched -> boards.json"""
+    from playmaker_engine import exam as EX, jsbridge as J
+    rep = {}
+    for n in names.split(','):
+        _, s, _ = EX.POSITIONS[int(n) - 1]()
+        turns = [dict(name=nm, turn=tj) for nm, tj in ((nm, E18._named(s, acts, soft=True)) for nm, acts in E18.BOARD_TURNS[n]) if tj is not None]
+        r = run_line(J.state_json(s), J.ctx_json(s.ctx), setting(*default_on()), turns, top=4)
+        rep[n] = dict(side=r['side'], choice=dict(words=r['rows'][0]['words'], value=round(r['rows'][0]['value'], 3)),
+                      top=[(x['words'], round(x['value'], 3)) for x in r['rows']],
+                      named=[dict(name=x['name'], reads=round(x['value'], 3), behind=round(x['behind_the_choice'], 3), on_the_list=x['list_rank']) for x in r['named'] if x['legal']])
+        print('board', n, '| choice:', rep[n]['choice'])
+        for x in rep[n]['named']:
+            print('      ', x)
+    json.dump(rep, open(os.path.join(RUN, 'boards.json'), 'w'), indent=1)
+
+
+def default_on():
+    """This step's switches as the config has them."""
+    cfg = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))
+    return [k for k in SWITCHES if cfg['search'].get(k) is True or cfg['eval'].get(k) is True]
+
+
+def cmd_sense(which='fixed,free,eb3f5b', n='160'):
+    """The sense checks on the default as the config has it: on part 3's three positions, the computer's own choice
+    and each expected move played out by the rules with common dice (the All-Star on both sides) -> sense_checks.json"""
+    from playmaker_engine import jsbridge as J
+    from playmaker_engine import rules_config as RC
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    path = os.path.join(RUN, 'sense_checks.json')
+    rep = json.load(open(path)) if os.path.exists(path) else {}
+    s0 = E18.closeout_board()
+    free = s0.with_(moved_o=0, qs_o=0, cnt=(0,) * len(s0.cnt))
+    before, _ = E18._replay(RC.with_rules(digital=True), ['N'] * 5)
+    lines = [ln.split('] ', 1)[1] for ln in E18.LOG.splitlines()]
+    sb = before[lines.index('O1 Pass to O4')]
+    sp = apply(sb, next(a for a in legal_actions(sb) if str(a) == 'O1 Pass to O4'))
+    for name in which.split(','):
+        s, who = dict(fixed=(s0, 'X3'), free=(free, 'X3'), eb3f5b=(sp, 'X4'))[name]
+        sj, cj = J.state_json(s), J.ctx_json(s.ctx)
+        own = run_line(sj, cj, setting(*default_on()), [], top=1)['rows'][0]
+        named = [(f'{who} Quick Steps closer (E4)', E18._named(s, (f'{who} Quick Step to E4',), soft=True)),
+                 (f'{who} Moves closer (C4), facing him', E18._named(s, (f'{who} Move to C4 facing SW',), soft=True)),
+                 ('the defence Pauses', E18._named(s, ('X Pause',), soft=True))]
+        turns = [("the computer's: " + own['words'], own['turn'])] + [(nm, t) for nm, t in named if t is not None and t != own['turn']]
+        r = E18.sense(name, sj, cj, turns, n=int(n), setting=dict(open_list=None, control=None))
+        r['the_computer_reads_its_choice'] = round(own['value'], 2)
+        rep[name] = r
+        print(name, json.dumps(r, indent=1), flush=True)
+        json.dump(rep, open(path, 'w'), indent=1)
 
 
 if __name__ == '__main__':

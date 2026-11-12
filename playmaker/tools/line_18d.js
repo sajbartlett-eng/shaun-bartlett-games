@@ -14,7 +14,7 @@ E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);        // step 18e (search.open_list)
-for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
+for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
 if (job.leaf_mode != null && E.setLeafMode) E.setLeafMode(job.leaf_mode);
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
@@ -27,10 +27,17 @@ if (s.stage !== 'over') {
   const srch = new E.Searcher(me, job.profile, E.makeEvaluate(job.profile, me, null), Infinity);
   const value = n => (E.isChance(n) ? srch.value(n, 1, VMIN, VMAX) : n.stage === 'over' ? E.terminalValue(n) : srch.value(n, srch.childDepth(s, n, 2), VMIN, VMAX));
   const read = new E.Read(s, { exact: true });
-  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2, srch.open) : srch.turnsOf(s);
+  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2, srch.open, srch.whole, srch.width) : srch.turnsOf(s);
   const done = n => (srch.whole && E.endedTurn ? E.endedTurn(s, n) : n);     // step 18f (search.whole_turns)
-  const rows = ts.map(([, t]) => [value(done(E.playTurn(s, t))), t]);
+  let rows = ts.map(([, t]) => [value(done(E.playTurn(s, t))), t]);
   rows.sort((x, y) => sign * (y[0] - x[0]));
+  if (s.stage === 'play' && job.engine_order !== false) {
+    // step 18f: the engine's own search, so that turns that read the same come in the order it puts them (search.split_ties)
+    const o = E.search({ stateObj: s, ctxObj: ctx, profile: job.profile, budget: null, max_depth: 2, stale: null });
+    const legal = new Map(ts.map(([, t]) => [t.map(key).join('|'), t]));
+    const mine = o.results.map(([v, tj]) => [v, legal.get(tj.map(a => JSON.stringify(a)).join('|'))]).filter(r => r[1]);
+    if (mine.length === o.results.length) rows = mine;
+  }
   out.listed = rows.length;
   out.rows = rows.slice(0, job.top || 6).map(r => ({ words: words(r[1]), value: r[0], turn: r[1].map(a => E.actionJSON(a)) }));
   const onList = new Map(rows.map((r, k) => [r[1].map(key).join('|'), k + 1]));
@@ -52,7 +59,15 @@ if (s.stage !== 'over') {
       const fv = f.floor(n, -1e9), hit = f.fcache.get(E.zobrist(n));
       if (fv > -1e8) shotNow = { value: fv, square: hit && hit[1] >= 0 ? E.sqName(hit[1]) : null, shot: hit ? hit[2] : null };
     }
-    out.named.push({ name: item.name, legal: true, words: words(acts), value: v, behind_the_choice: sign * (rows[0][0] - v),
+    // the other side's replies to it, as the search lists and values them (the best first)
+    let replies = null;
+    const nd = done(n);
+    if (job.replies && !E.isChance(nd) && nd.stage === 'play' && E.actor(nd) !== me) {
+      replies = srch.turnsOf(nd).map(([, t]) => { const m = E.playTurn(nd, t); return [E.isChance(m) ? srch.value(m, 0, VMIN, VMAX) : srch.leaf(srch.playT ? srch.playT(nd, t) : m), words(t)]; });
+      replies.sort((x, y) => sign * (x[0] - y[0]));
+      replies = replies.slice(0, job.replies);
+    }
+    out.named.push({ name: item.name, legal: true, words: words(acts), value: v, replies, behind_the_choice: sign * (rows[0][0] - v),
       list_rank: onList.get(acts.map(key).join('|')) || onList.get(acts.slice().reverse().map(key).join('|')) || null, shot_now: shotNow, after: E.isChance(n) ? null : E.stateJSON(n) });
   }
 }

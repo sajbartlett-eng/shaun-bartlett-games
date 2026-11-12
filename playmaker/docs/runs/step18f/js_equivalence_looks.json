@@ -1,0 +1,148 @@
+{
+ "leaf_mode": "looks",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "control": "app",
+ "settle": true,
+ "help": false,
+ "searches": {
+  "compared": 2,
+  "equal": 2
+ },
+ "states": 200,
+ "seconds_python": 22.7,
+ "seconds_js": 2.4,
+ "by_stage": {
+  "play": 193,
+  "over": 7
+ },
+ "by_phase": {
+  "1": 130,
+  "3": 24,
+  "2": 31,
+  "5": 10,
+  "4": 5
+ },
+ "by_age": {
+  "senior": 73,
+  "youth": 61,
+  "junior": 66
+ },
+ "by_standard": {
+  "pro": 64,
+  "semi_pro": 61,
+  "amateur": 75
+ },
+ "digital": 109,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 200,
+   "equal": 200
+  },
+  "attacker_reach": {
+   "compared": 193,
+   "equal": 193
+  },
+  "defender_reach": {
+   "compared": 193,
+   "equal": 193
+  },
+  "defender_exact": {
+   "compared": 193,
+   "equal": 193
+  },
+  "threat_geo": {
+   "compared": 193,
+   "equal": 193
+  },
+  "cover_geo": {
+   "compared": 193,
+   "equal": 193
+  },
+  "leaf_geo": {
+   "compared": 193,
+   "equal": 193
+  },
+  "threat_exact": {
+   "compared": 193,
+   "equal": 193
+  },
+  "cover_exact": {
+   "compared": 193,
+   "equal": 193
+  },
+  "leaf_exact": {
+   "compared": 193,
+   "equal": 193
+  },
+  "quick": {
+   "compared": 193,
+   "equal": 193
+  },
+  "reach_map": {
+   "compared": 193,
+   "equal": 193
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 192,
+   "equal": 192
+  },
+  "features_exact": {
+   "compared": 192,
+   "equal": 192
+  },
+  "ceiling": {
+   "compared": 193,
+   "equal": 193
+  },
+  "settled": {
+   "compared": 0,
+   "equal": 0
+  },
+  "floored": {
+   "compared": 0,
+   "equal": 0
+  },
+  "open_list": {
+   "compared": 0,
+   "equal": 0
+  }
+ },
+ "mismatches": 0,
+ "first_mismatches": []
+}

@@ -2582,6 +2582,12 @@ const PMEngine = (() => {
   const splitOn = () => (D.config.search || {}).split_ties === true;
   function setSplitTies(v) { D.config.search = D.config.search || {}; D.config.search.split_ties = v === true || v === 'true'; return D.config.search.split_ties; }
   const wholeOn = () => (D.config.search || {}).whole_turns === true;
+  // step 18f (search.rank_in_hand, off): with whole turns, a turn's first actions are ranked, and the ones to follow
+  // with a second action chosen, by the reading with the second action still in hand (as before whole turns). The
+  // search still values a one-action turn as the turn ended. Ranked as ended turns, a first action that only pays
+  // with its second (move, then shoot) was not followed, and the other side's search never saw it.
+  const inHandOn = () => (D.config.search || {}).rank_in_hand === true;
+  function setRankInHand(v) { D.config.search = D.config.search || {}; D.config.search.rank_in_hand = v === true || v === 'true'; return D.config.search.rank_in_hand; }
   function setWholeTurns(v) { D.config.search = D.config.search || {}; D.config.search.whole_turns = v === true || v === 'true'; return D.config.search.whole_turns; }
   function endedTurn(s, n) {
     if (isChance(n) || s.stage !== 'play' || n.stage !== 'play' || n.pending || n.turn_n === 0) return n;
@@ -2797,11 +2803,11 @@ const PMEngine = (() => {
     const open = openOn(side, mode) && !!evaluate;
     if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole, width); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
-    const scored = [];
+    const scored = [], inHand = inHandOn();
     for (const a of first) {
       if (deadline && now() > deadline) throw TIMEOUT;
       const nxt = apply(s, a);
-      scored.push([sign * (evaluate ? evaluate(whole ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
+      scored.push([sign * (evaluate ? evaluate(whole && !inHand ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
     }
     scored.sort((x, y) => y[0] - x[0]);
     const out = scored.slice(0, beam);
@@ -3494,7 +3500,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

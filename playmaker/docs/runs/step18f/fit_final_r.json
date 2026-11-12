@@ -1,0 +1,136 @@
+{
+ "runs": [
+  "final_r"
+ ],
+ "possessions": 240,
+ "positions": 7124,
+ "held_out_error": {
+  "the_map_in_the_file": 15.956,
+  "todays_reading_refit": 14.999,
+  "looks_reading": 14.996
+ },
+ "squared_error_gain": {
+  "refit_over_the_file": [
+   7.06,
+   56.3
+  ],
+  "looks_over_refit": [
+   -1.05,
+   1.06
+  ],
+  "looks_over_the_file": [
+   7.01,
+   56.22
+  ]
+ },
+ "by_phase_and_side": {
+  "1O": {
+   "positions": 1282,
+   "earned": 22.4,
+   "todays_reading": 25.2,
+   "looks_reading": 18.6,
+   "slope_today": 0.746,
+   "slope_looks": 0.565,
+   "below_the_floor": 0.95
+  },
+  "1X": {
+   "positions": 1168,
+   "earned": 21.9,
+   "todays_reading": 24.8,
+   "looks_reading": 15.6,
+   "slope_today": 0.817,
+   "slope_looks": 0.819,
+   "below_the_floor": 1.0
+  },
+  "2O": {
+   "positions": 948,
+   "earned": 22.6,
+   "todays_reading": 26.5,
+   "looks_reading": 20.6,
+   "slope_today": 0.706,
+   "slope_looks": 0.627,
+   "below_the_floor": 0.94
+  },
+  "2X": {
+   "positions": 841,
+   "earned": 22.4,
+   "todays_reading": 26.4,
+   "looks_reading": 17.3,
+   "slope_today": 0.593,
+   "slope_looks": 0.598,
+   "below_the_floor": 1.0
+  },
+  "3O": {
+   "positions": 723,
+   "earned": 21.0,
+   "todays_reading": 25.0,
+   "looks_reading": 20.9,
+   "slope_today": 0.903,
+   "slope_looks": 0.785,
+   "below_the_floor": 0.91
+  },
+  "3X": {
+   "positions": 635,
+   "earned": 20.0,
+   "todays_reading": 25.0,
+   "looks_reading": 17.7,
+   "slope_today": 0.714,
+   "slope_looks": 0.711,
+   "below_the_floor": 1.0
+  },
+  "4O": {
+   "positions": 491,
+   "earned": 20.2,
+   "todays_reading": 26.1,
+   "looks_reading": 21.0,
+   "slope_today": 0.523,
+   "slope_looks": 0.381,
+   "below_the_floor": 0.94
+  },
+  "4X": {
+   "positions": 426,
+   "earned": 19.7,
+   "todays_reading": 25.9,
+   "looks_reading": 17.6,
+   "slope_today": 0.595,
+   "slope_looks": 0.583,
+   "below_the_floor": 1.0
+  },
+  "5O": {
+   "positions": 251,
+   "earned": 20.1,
+   "todays_reading": 26.6,
+   "looks_reading": 19.9,
+   "slope_today": 0.58,
+   "slope_looks": 0.474,
+   "below_the_floor": 0.96
+  },
+  "5X": {
+   "positions": 222,
+   "earned": 19.4,
+   "todays_reading": 26.5,
+   "looks_reading": 16.2,
+   "slope_today": 0.391,
+   "slope_looks": 0.391,
+   "below_the_floor": 1.0
+  },
+  "6O": {
+   "positions": 82,
+   "earned": 15.2,
+   "todays_reading": 25.6,
+   "looks_reading": 17.3,
+   "slope_today": 1.025,
+   "slope_looks": 0.797,
+   "below_the_floor": 0.98
+  },
+  "6X": {
+   "positions": 55,
+   "earned": 11.0,
+   "todays_reading": 25.2,
+   "looks_reading": 14.6,
+   "slope_today": 0.833,
+   "slope_looks": 0.907,
+   "below_the_floor": 1.0
+  }
+ }
+}

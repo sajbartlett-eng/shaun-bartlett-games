@@ -246,6 +246,13 @@ def whole_on():
     return CONFIG.get('search', {}).get('whole_turns') is True
 
 
+def in_hand_on():
+    """search.rank_in_hand (step 18f, off): with whole turns, a turn's first actions are ranked, and the ones to follow
+    with a second action chosen, by the reading with the second action still in hand (as before whole turns); the
+    search still values a one-action turn as the turn ended."""
+    return CONFIG.get('search', {}).get('rank_in_hand') is True
+
+
 def ended_turn(s, n):
     """n: the node a turn from s leads to; the same with a one-action turn ended."""
     if isinstance(n, ChanceNode) or s.stage != 'play' or n.stage != 'play' or n.pending or n.turn_n == 0:
@@ -429,6 +436,7 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
     side = actor(s)
     sign = 1 if side == 'O' else -1
     open_ = open_on(side, mode) and evaluate is not None        # mode: the level's open list (open_mode)
+    in_hand = in_hand_on()                                      # step 18f (search.rank_in_hand)
     if open_ and side == 'X' and s.stage == 'play':
         r = open_turns_x(s, beam, evaluate, deadline, expand, whole, width)
         if r is not None:
@@ -443,7 +451,7 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
             v = evaluate(nxt) if evaluate else 0.0
             scored.append((sign * v, (a,)))
             continue
-        v = evaluate(ended_turn(s, nxt) if whole else nxt) if evaluate else 0.0
+        v = evaluate(ended_turn(s, nxt) if whole and not in_hand else nxt) if evaluate else 0.0
         scored.append((sign * v, (a,)))
         if len(scored) > 4 * beam:
             continue
