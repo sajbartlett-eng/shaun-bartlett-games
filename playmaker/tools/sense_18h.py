@@ -269,6 +269,57 @@ def cmd_build():
             print('      -', c['name'][:110])
 
 
+def cmd_grow(n='10'):
+    """Step 18g: positions two of the defence's turns before a shot nobody could reach (from the harvested play),
+    added to the set without touching what is there. Candidates: the reference's own choice; the listed turn that
+    ends with a defender nearest the player who went on to shoot; the one nearest the square he shot from; a Pause."""
+    positions, answers = load()
+    h = json.load(open(os.path.join(SRC, 'harvest.json')))
+    cx = lambda i: h['contexts'][h['rows'][i]['ctx']]
+    re = [(i, st) for i, r in enumerate(h['rows']) for st in r['reactions']]
+    rres = searches([dict(state=st, ctx=cx(i)) for i, st in re], 'reactions', **REF)
+    picked = []
+    for (i, shot), res in zip(re, rres):
+        if len(set(round(v, 3) for v, _ in res)) >= 2:
+            continue                                     # the defence could do something about this shot
+        xs = [st for st in h['rows'][i]['states'] if st['side'] == 'X' and st['turn_n'] == 0 and st['stage'] == 'play']
+        if len(xs) >= 2 and i not in [j for j, _, _ in picked] and len(picked) < int(n):
+            picked.append((i, xs[-2], shot))
+    lres = searches([dict(state=st, ctx=cx(i)) for i, st, _ in picked], 'two turns before', **REF)
+    xy = lambda q: (ord(q[0]) - 65, int(q[1:]))
+    cheb = lambda a, b: max(abs(xy(a)[0] - xy(b)[0]), abs(xy(a)[1] - xy(b)[1]))
+    have = set(p['id'] for p in positions)
+    for k, ((i, st, shot), res) in enumerate(zip(picked, lres)):
+        pid = f'two turns before an open shot {k + 1}'
+        if pid in have:
+            continue
+        who, sq = shot['ball'], shot['o'][shot['ball']]
+
+        def ends(t):
+            e = list(st['x'])
+            for a in t:
+                if a[0] in ('move', 'qs', 'sprint') and a[1] == 'X':
+                    e[a[2]] = a[3]
+            return e
+        near_him = min(res, key=lambda r: (min(cheb(q, st['o'][who]) for q in ends(r[1])), r[0]))
+        near_sq = min(res, key=lambda r: (min(cheb(q, sq) for q in ends(r[1])), r[0]))
+        pause = next((t for v, t in res if t[0][0] == 'pause'), [['pause', 'X', -1, None, -1, -1, '']])
+        cands, seen = [], set()
+        for name, t in ((f"the reference's choice: " + words(res[0][1]), res[0][1]),
+                        (f"the listed turn that ends nearest O{who + 1}, who went on to shoot: " + words(near_him[1]), near_him[1]),
+                        (f"the listed turn that ends nearest {sq}, where the shot came from: " + words(near_sq[1]), near_sq[1]),
+                        ('the defence Pauses', pause)):
+            if key(t) not in seen:
+                seen.add(key(t))
+                cands.append(dict(name=name, turn=t))
+        positions.append(dict(id=pid, group='two turns before', note=f"O{who + 1} is at {st['o'][who]} now",
+                              what=f"Two of the defence's turns before O{who + 1} shot a {shot['shot']} from {sq} with nobody in reach.",
+                              side=st['side'], stage=st['stage'], clock=st['clock'], state=st, ctx=cx(i), candidates=cands))
+        print(pid, '|', st['clock'], '|', [c['name'][:70] for c in cands])
+    json.dump(positions, open(POS, 'w'), indent=1)
+    print(len(positions), 'positions')
+
+
 def _seed(pid, k):
     import zlib
     return 15485863 * (k + 1) + 1 + 2 * (zlib.crc32(pid.encode()) % 500000)

@@ -128,15 +128,18 @@ def p1():
     lane = lane_squares(s.o[0], RC.RIM, 0.5)
 
     def check(t, s=s):
+        # D-165 (Shaun, 13 Nov 2026): the played-out answer decides. Step 18h's sense-check set: X2 Quick Steps to D6
+        # holds the offence to 28.9; doing nothing gives up 31.4; step 18a's choice (X2 Moves to D6, facing E) 39.0.
+        # The old answer: the straight drive walled, contained or worth less than the best other look.
         n = after(s, t)
         avail, drive, alt = straight_drive(n)
         on = [j for j, q in enumerate(n.x) if q in lane and B.cheb(q, n.o[0]) <= 3]
-        ok = (not avail) or drive < alt
+        ok = any(a.kind == 'qs' and a.piece == 1 and B.sq(a.dest) == 'D6' for a in t)
         return ok, (f"{words(t)} (straight drive {'available' if avail else 'walled or contained'}"
                     + (f", worth {drive:.1f} against the best other look {alt:.1f}" if avail else '')
                     + f"; on the ball-rim line, reported only: {', '.join(f'X{j + 1}' for j in on) or 'nobody'})")
-    return ('Straight lane: after the defence\'s answer the straight drive is walled, contained or worth less than the '
-            'best alternative'), s, check
+    return ('Straight lane: the best by play (step 18h): X2 Quick Steps to D6. The old answer was a straight drive '
+            'walled, contained or worth less than the best alternative'), s, check
 
 
 def p2():
@@ -169,10 +172,14 @@ def p3():
         movers = {a.piece for a in t if a.kind in ('move', 'qs', 'sprint')}
         helper = [j for j in movers if B.cheb(n.x[j], n.o[0]) <= 1 and B.cheb(s.x[j], s.o[0]) > 1]
         rot = [j for j in movers if j not in helper]
-        ok = bool(helper) and bool(rot)
+        # D-165 (Shaun, 13 Nov 2026): the played-out answer decides. Step 18h's sense-check set: doing nothing holds
+        # the offence to 28.4; the old answer (the low man helps and another covers) gives up 32.1 with a Quick Step
+        # and 37.9 with two Moves.
+        ok = not movers
         return ok, f"{words(t)} (help: {', '.join(f'X{j + 1}' for j in helper) or 'none'}; " \
                    f"rotation: {', '.join(f'X{j + 1}' for j in rot) or 'none'})"
-    return 'Help the helper: O1 has beaten X1, who has no movement left; the low man helps and another covers', s, check
+    return ('Help the helper: O1 has beaten X1, who has no movement left. The best by play (step 18h): nobody moves. '
+            'The old answer was the low man helps and another covers'), s, check
 
 
 def p4():
@@ -260,10 +267,13 @@ def p8():
     s = board(['H10', 'D9', 'P7', 'A3', 'Q3'], ['H9', 'E9', 'O7', 'B4', 'P3'], ['N', 'W', 'E', 'W', 'E'], moved_x=3, qs_x=3)
 
     def check(t, s=s):
-        cut = any(a.piece == 1 and a.kind in ('move', 'qs', 'sprint') and B.dist_rim(a.dest) <= B.dist_rim(s.o[1]) - 2
-                  for a in t)
+        # D-165 (Shaun, 13 Nov 2026): the played-out answer decides. Step 18h's sense-check set: O2 cuts to E10 and
+        # O1 passes to him scores 39.0; the old answer (a cut at least two squares closer to the rim, to D7) 33.0.
+        cut = any(a.piece == 1 and a.kind in ('move', 'qs', 'sprint') and B.sq(a.dest) == 'E10' for a in t) and \
+            any(a.kind == 'pass' and a.target == 1 for a in t)
         return cut, words(t)
-    return 'Backdoor: X2 denies O2 on the wing; the lane to the rim is open', s, check
+    return ('Backdoor: X2 denies O2 on the wing. The best by play (step 18h): O2 cuts to E10 and O1 passes to him. '
+            'The old answer was a cut at least two squares closer to the rim'), s, check
 
 
 def p9():

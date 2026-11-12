@@ -760,6 +760,49 @@ step 18h.**
 (the zone of influence) waits for step 18h, because its strength is the defender's movement left, which the floor
 stops the computer from valuing. · Source: Shaun, 12 Nov 2026 · **Ruled; step 18h.**
 
+### Shaun, 13 Nov 2026 (step 18g prompt)
+
+**D-164. Step 18h is accepted.** It is merged into `main`. The maps for each level stay on: level evidence with better
+shot timing is enough. `eval.no_floor`, `eval.exact_shot` and `eval.kept_actions` stay off. The offence's hand-written
+list (it can drop an exact open shot) is opened in the step after 18g, with the sense-check set as its gate. · Source:
+Shaun, 13 Nov 2026 · **Ruled, done.**
+
+**D-165. Boards 1, 3 and 8 take their played-out answers.** The played-out answer decides (D-162). From step 18h's
+sense-check set: board 1, X2 Quick Steps to D6 (28.9 against 31.4 for doing nothing and 39.0 for step 18a's choice);
+board 3, nobody moves (28.4 against 32.1 and 37.9 for the board's help); board 8, O2 cuts to E10 and O1 passes to him
+(39.0 against 33.0 for the cut to D7). Each board's judge in `exam.py` carries the old answer and the evidence. ·
+Source: Shaun, 13 Nov 2026 · **Ruled, done.**
+
+**D-166. The sense-check set is grown first:** about ten positions two of the defence's turns before a shot nobody
+could reach, from play, to answer why only about a quarter of shots are contested. · Source: Shaun, 13 Nov 2026 ·
+**Ruled; step 18g.**
+
+**D-167. The zone of influence (app only, under test; `rules.zone`, off).** The step 18g prompt gives this the number
+D-158, which step 18e's acceptance had already used. In Shaun's words (12 Nov 2026):
+
+> "Two equal arrows on each defender, 45 degrees apart. Normal arrow rules apply. This becomes your zone of influence.
+> An adjacent ball handler captured by one arrow still cannot pass through your zone of influence. The other arrow's
+> reach becomes a barrier to them. It means you can contest and steal within an angle, rather than a pure direction.
+> And you have two angles you can intercept through. The offensive goal doesn't change. A successful Dribble breaks
+> the defender's zone of influence and takes away its move ability. Off-ball movement reduces the zone of influence
+> just the same. A stagnant offence has a court covered in strong defensive influence, and you can see it diminish.
+> Right now the defence can only choose to deny a driving direction or threaten a steal or a contest. Real defenders
+> cover both at once: low stance to one side, force baseline, one hand defends the dribble and one defends the shot."
+
+His rulings on the details: (1) each defender carries two arrows 45 degrees apart, each under the normal arrow rules;
+the wedge between them is his zone of influence; (2) a ball handler or shooter anywhere within the wedge counts as
+"the arrow on him" for a Steal or a Contest; (3) an Intercept goes through either arrow; (4) an adjacent ball handler
+caught by one arrow can't pass through the zone: the other arrow's reach blocks him; (5) "Direction is the intent,
+movement capability is the strength": the zone's reach comes from the movement the defender still has this phase,
+and every movement he spends shrinks it; (6) a successful Dribble against him breaks his zone and takes away his
+movement, as today's lock does; a broken zone is "basically gone; what is left is purely position": he can still
+intercept a pass that goes straight through him, and his Contest is read as having no arrow on the shooter; (7) the
+pair turns as part of a Move, not after a Quick Step alone, both together; (8) a Contest on a shooter outside both
+arrows takes the wrong-angle foul roll; (9) the control rule (D-153) still applies. On strength: "It represents
+smart, high pressure defence, whereas a single arrow represents amateur or low pressure defence." A stronger defence
+is not a fault to fix. Nothing tells the computer how to set its zones (D-156). · Source: Shaun, 12 and 13 Nov 2026 ·
+**Under test; step 18g.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
