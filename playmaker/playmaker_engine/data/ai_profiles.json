@@ -378,6 +378,8 @@
     "whole_turns": true,
     "_split_ties": "Step 18f (D-159): turns that read exactly the same are put in order by the other side's next-best replies (the turn that leaves it the worst second choice first), and share one draw of the pick noise, so chance no longer chooses between them. On: 149 pairs won to 111 lost of 400 (57 in 100 of the decided pairs, 51 to 63); +1.2 points a pair (-0.3 to 2.7).",
     "split_ties": true,
+    "_rank_in_hand": "Step 18f, on since D-160 (Shaun, 12 Nov 2026): with whole turns, a turn's first actions are ranked, and the ones to follow with a second action chosen, by the reading with the second action still in hand; the turn itself is still valued whole. Ranked as ended turns, a first action that only pays with its second (move, then shoot) was not followed, and the other side's search never saw it. Its head to head: +0.9 points a pair (-0.7 to 2.4), 400 pairs.",
+    "rank_in_hand": true,
     "open_list": null,
     "open_full": 8,
     "open_follow": 4,

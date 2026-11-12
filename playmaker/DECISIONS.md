@@ -739,6 +739,27 @@ how the computer values positions, from the rules, the cards and data: no kind o
 favoured, in the list or in the reading (D-156). Where the computer disagrees with an expected move, it is not
 assumed wrong: a sense check, and Shaun rules. · Source: Shaun, 12 Nov 2026 · **Ruled; step 18f.**
 
+### Shaun, 12 Nov 2026 (step 18h prompt)
+
+**D-160. Step 18f is accepted.** It is merged into `main`. The tie splitter (`search.split_ties`) stays on.
+`search.rank_in_hand` is on by default in both engines: it fixes a real reading error at no cost in speed. The
+Rookie's Steals stay as they are; Shaun revisits the levels later. · Source: Shaun, 12 Nov 2026 · **Ruled, done.**
+
+**D-161. Speed is judged against the previous step's code timed in the same hour,** on the same machine, because this
+machine's speed varies by up to 30% in a day. Recorded in `docs/SPEED_BUDGET.md`. · Source: Shaun, 12 Nov 2026 ·
+**Ruled, done.**
+
+**D-162. Sense checks are the main gate from now on.** A fixed set of positions whose answers are measured by playing
+them out by the rules with common dice (`tools/sense_set/`). A change to the reading must improve the set clearly and
+break none that passed. The head to head is a backstop. Where the computer disagrees with an expected move, the
+played-out answer decides, not the reading and not our expectation; Shaun rules on what is still unclear. (The step
+18h prompt gives this the number D-159, which step 18f had already used.) · Source: Shaun, 12 Nov 2026 · **Ruled;
+step 18h.**
+
+**D-163. One calibrated map for each level,** fitted after the floor is fixed, from that level's own play. Step 18g
+(the zone of influence) waits for step 18h, because its strength is the defender's movement left, which the floor
+stops the computer from valuing. · Source: Shaun, 12 Nov 2026 · **Ruled; step 18h.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
