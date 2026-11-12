@@ -392,7 +392,10 @@ def cmd_regret(n_off='48', n_def='12', keep='200', cap='900', switches=''):
     pick.sort(key=lambda p: 0 if p['side'] == 'X' else 1)
     prof = L.profiles()['allstar']
     tag = ('regret' + ('_' + switches.replace(',', '_') if switches else '') + ('_control_' + os.environ['STEP18_CONTROL'] if os.environ.get('STEP18_CONTROL') else '')
-           + ('_open_' + os.environ['STEP18_OPEN'] if os.environ.get('STEP18_OPEN') else ''))
+           + ('_open_' + os.environ['STEP18_OPEN'] if os.environ.get('STEP18_OPEN') else '')
+           + ('_' + os.environ['STEP18_ON'].replace(',', '_') if os.environ.get('STEP18_ON') else '')
+           + ('_' + os.environ['STEP18_LEAF'] if os.environ.get('STEP18_LEAF') else ''))
+    ALSO = json.load(open(os.environ['STEP18_ALSO'])) if os.environ.get('STEP18_ALSO') else {}
     queue, running, rows = list(pick), [], []
     while queue or running:
         while queue and len(running) < L.CORES:
@@ -401,6 +404,9 @@ def cmd_regret(n_off='48', n_def='12', keep='200', cap='900', switches=''):
             json.dump(dict(state=p['state'], ctx=contexts[p['ctx']], profile=prof, judge={}, keep=int(keep), cap_s=float(cap),
                            control=os.environ.get('STEP18_CONTROL') or None,
                            open_list=os.environ.get('STEP18_OPEN') or None,      # step 18e: search.open_list ('defence', 'both')
+                           also=ALSO.get(p['id']),                                # step 18f: turns to value whatever their rank
+                           **{k: True for k in os.environ.get('STEP18_ON', '').split(',') if k},   # step 18f: switches on
+                           leaf_mode=os.environ.get('STEP18_LEAF') or None,
                            switches={k: True for k in switches.split(',') if k and k not in ('settle', 'nosettle', 'help')} or None,
                            settle_shots=True if 'settle' in switches.split(',') else False if 'nosettle' in switches.split(',') else None,
                            help_readings=True if 'help' in switches.split(',') else None), open(jf, 'w'))
@@ -419,7 +425,9 @@ def cmd_regret(n_off='48', n_def='12', keep='200', cap='900', switches=''):
                 rows.append(dict(id=p['id'], side=o['side'], phase=p['phase'], all_turns=o['all_turns'], capped=o['capped'],
                                  legal_first_actions=o['legal_first_actions'], generated_first_actions=o['generated_first_actions'],
                                  generated_turns=o['generated_turns'], rebuilt_equal=o['rebuilt_equal'],
-                                 choice=choice['words'], choice_value=round(choice['pair'], 2), best=best['words'],
+                                 choice=choice['words'], choice_turn=choice['turn'], choice_value=round(choice['pair'], 2), best=best['words'],
+                                 also=[dict(words=x['words'], value=round(x['pair'], 2), behind_best=round(sign * (best['pair'] - x['pair']), 2),
+                                            list_rank=x['list_rank']) for x in o['rows'] if ALSO.get(p['id']) and x['turn'] in ALSO[p['id']]],
                                  best_value=round(best['pair'], 2), best_where=best['where'],
                                  best_one_turn_rank=best['one_turn_rank'], regret=round(sign * (best['pair'] - choice['pair']), 2),
                                  better=sum(1 for x in o['rows'] if sign * (x['pair'] - choice['pair']) > 0.005),

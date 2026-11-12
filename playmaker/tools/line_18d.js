@@ -14,6 +14,8 @@ E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);        // step 18e (search.open_list)
+for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
+if (job.leaf_mode != null && E.setLeafMode) E.setLeafMode(job.leaf_mode);
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
 const key = a => JSON.stringify(E.actionJSON(a));
@@ -26,7 +28,8 @@ if (s.stage !== 'over') {
   const value = n => (E.isChance(n) ? srch.value(n, 1, VMIN, VMAX) : n.stage === 'over' ? E.terminalValue(n) : srch.value(n, srch.childDepth(s, n, 2), VMIN, VMAX));
   const read = new E.Read(s, { exact: true });
   const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2, srch.open) : srch.turnsOf(s);
-  const rows = ts.map(([, t]) => [value(E.playTurn(s, t)), t]);
+  const done = n => (srch.whole && E.endedTurn ? E.endedTurn(s, n) : n);     // step 18f (search.whole_turns)
+  const rows = ts.map(([, t]) => [value(done(E.playTurn(s, t))), t]);
   rows.sort((x, y) => sign * (y[0] - x[0]));
   out.listed = rows.length;
   out.rows = rows.slice(0, job.top || 6).map(r => ({ words: words(r[1]), value: r[0], turn: r[1].map(a => E.actionJSON(a)) }));
@@ -41,7 +44,7 @@ if (s.stage !== 'over') {
       acts.push(a); n = E.apply(n, a);
     }
     if (!ok) { out.named.push({ name: item.name, legal: false }); continue; }
-    const v = value(n);
+    const v = value(done(n));
     // the best shot the ball handler can release at once from the position after the turn (the offence to act), by the rules
     let shotNow = null;
     if (!E.isChance(n) && n.stage === 'play' && !n.pending && E.actor(n) === 'O') {

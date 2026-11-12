@@ -39,6 +39,8 @@ for (const ln of lines) {
   if (q.settle !== undefined) E.setSettle(q.settle);                    // step 18b
   if (q.help !== undefined) E.setHelp(q.help);                          // step 18c
   if (q.open !== undefined) E.setOpenList(q.open);                      // step 18e (null: each level's own)
+  if (q.whole !== undefined) E.setWholeTurns(q.whole);                  // step 18f
+  if (q.kept !== undefined) E.setKeptActions(q.kept);
   if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B
   try {
     if (q.search) out.push(JSON.stringify(E.search(q.search)));
@@ -50,7 +52,7 @@ for (const ln of lines) {
         if (q.help && s18.stage === 'play' && !s18.pending && E.actor(s18) === 'O') p.floored = new E.Searcher('O', PROFILES.allstar, n => new E.Read(n).leaf(), Infinity).leaf(s18);
         if (q.open && s18.stage === 'play' && s18.side === 'X') {          // step 18e: the open list itself
           const sr = new E.Searcher('X', PROFILES.allstar, n => new E.Read(n).leaf(), Infinity);
-          p.open_list = E.turns(s18, 24, null, n => sr.quick(n), null, null, 2, q.open).map(r => [r[0], r[1].map(a => E.actionJSON(a))]);
+          p.open_list = E.turns(s18, 24, null, n => sr.quick(n), null, null, 2, q.open, sr.whole).map(r => [r[0], r[1].map(a => E.actionJSON(a))]);
         }
         if (q.settle && s18.stage !== 'play') {
           const prof = PROFILES.allstar, me = E.actor(s18);

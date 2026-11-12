@@ -1,0 +1,39 @@
+{
+ "name": "looks_a",
+ "level": "allstar",
+ "switches": {
+  "whole_turns": true
+ },
+ "possessions": 240,
+ "positions": 3935,
+ "mean_points": 29.42,
+ "interval": [
+  28.24,
+  30.6
+ ],
+ "shot_timing": {
+  "possessions": 240,
+  "shots_by_phase_pct": [
+   46,
+   31,
+   16,
+   6,
+   0,
+   0
+  ],
+  "shots_in_phases_1_and_2_pct": 77,
+  "decisions": 19.3,
+  "clock_ran_out": 0,
+  "clock_interval_in_100": [
+   0.0,
+   1.6
+  ],
+  "lost_in_100_phases_kept": 7.7,
+  "lost_interval": [
+   4.9,
+   12.0
+  ]
+ },
+ "core_hours": 2.97,
+ "wall_minutes": 45.9
+}

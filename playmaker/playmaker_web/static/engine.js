@@ -1373,11 +1373,26 @@ const PMEngine = (() => {
     const v = row[String(coarseKey(s)[2])];
     return v === undefined ? 0.0 : v;
   }
+  // decide.leaf_mode: eval.leaf_mode ('floor', 'relative'), or 'looks' (step 18f): the looks alone, without the phase
+  // table's floor. 'looks' is in play only under the app's rules with the calibrated reading on and a map fitted to it
+  // (calibration_looks); anywhere else it reads as 'floor'.
+  let FORCE_LOOKS = false;                               // the fitting tool reads positions in the looks mode whatever the config says
+  function leafMode(s) {
+    if (FORCE_LOOKS) return 'looks';
+    const m = D.config.eval.leaf_mode || 'floor';
+    if (m !== 'looks') return m;
+    if (!(s.ctx.digital && calibratedOn() && D.learned.calibration_looks)) return 'floor';
+    // only where the looks map has a line for this phase and side to act (too few positions to fit one: the floor)
+    const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
+    return D.learned.calibration_looks.maps[String(phase) + (s.side === 'O' && s.stage === 'play' ? 'O' : 'X')] ? 'looks' : 'floor';
+  }
   function leafOf(s, banked, sn, now, cont, coarse, budget) {
-    if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(sn || 0.0, now, coarse + cont - relativeAverage(s, budget));
+    const mode = leafMode(s);
+    if (mode === 'relative') return banked + Math.max(sn || 0.0, now, coarse + cont - relativeAverage(s, budget));
+    if (mode === 'looks') return banked + Math.max(sn || 0.0, now, cont);     // step 18f: the floor hides what is below the average
     return banked + Math.max(sn || 0.0, now, cont, coarse);
   }
-  function setLeafMode(mode) { D.config.eval.leaf_mode = mode; return mode; }
+  function setLeafMode(mode) { D.config.eval.leaf_mode = mode; READS = new Map(); READS_OLD = new Map(); return mode; }
   // step 17: the learned judgement (eval.learned, off): what is left to earn, from the named readings and the weights
   // file (learned_weights.json): per phase, intercept + sum of weight x (reading - mean) / sd, in the file's order
   function setLearned(on) { D.config.eval.learned = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.learned; }
@@ -1431,7 +1446,8 @@ const PMEngine = (() => {
   function calibrate(s, oToAct, r) {
     const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
     // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
-    const cal = (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) || D.learned.calibration;
+    // step 18f: the looks reading goes through its own map
+    const cal = (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) || D.learned.calibration;
     const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
     const q = calibrationScale(s, phase);
@@ -1689,7 +1705,7 @@ const PMEngine = (() => {
       if (hit && r.pi[j] > worst) worst = r.pi[j];
       return 1 - worst;
     }
-    _looks(i, s = this.s, cm = this._cm) {
+    _looks(i, s = this.s, cm = this._cm, dj = -1, dfl = undefined) {      // dj, dfl (step 18f): defender dj's control state, given
       if (!ONB[s.o[i]]) return [];
       const card = s.ctx.off[i];
       const leftNow = this.o_to_act ? 2 - s.turn_n : 2;
@@ -1729,7 +1745,7 @@ const PMEngine = (() => {
         if (controlOn(s.ctx)) lk.rushed = n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i);      // D-151 (decide.Read._looks)
         lk.open = lk.rushed ? lk.types.map(t => pts * (card.sh[t] - controlCut(s.ctx, t))) : lk.types.map(t => pts * card.sh[t]);
         lk.vals = [null, null, null, null, null];
-        for (const d of this.att_x) { const v = this._vals(lk, d, cm[d]); if (v) lk.vals[d] = v; }
+        for (const d of this.att_x) { const v = this._vals(lk, d, cm[d], undefined, d === dj ? dfl : undefined); if (v) lk.vals[d] = v; }
         finishLook(lk);
         out.push(lk);
       };
@@ -1809,8 +1825,11 @@ const PMEngine = (() => {
       const front = p => carrierIn && cheb(p, s.o[carrier]) <= 2 && DR[p] < DR[s.o[carrier]];
       let leave = null;
       const out = [];
+      const kept = keptOn() && controlOn(s.ctx), movedJ = hasMoved(s, 'X', j);
       for (const [q, a, used] of cands) {
         const cm = this._contest(j, q, a, used);
+        // step 18f: his control after the answer (2: rushed where he stands, 4: his Move is used)
+        const dfl = !kept ? undefined : used === 'move' ? 4 : (2 | (movedJ ? 4 : 0));
         const left = LEFT; left.set(base);
         let oneJ = null;
         let gain = 0.0;
@@ -1822,7 +1841,7 @@ const PMEngine = (() => {
             const at = into ? q : AWAY;
             const moved = W_(s, { x: setAt(s.x, j, at), arrows: setAt(s.arrows, j, a) });
             const cm2 = this._cm.slice(); cm2[j] = into ? cm : null;
-            const lks = this._looks(carrier, moved, cm2);
+            const lks = this._looks(carrier, moved, cm2, j, dfl);
             left[carrier] = lks.length ? Math.max(...lks.map(l => l.base)) : 0.0;
             if (outOf) leave = left[carrier];
           }
@@ -1842,7 +1861,7 @@ const PMEngine = (() => {
                 if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
                 pNew = this._laneMoved(lk.c, j, q, oneJ);
               }
-              v = swapped(lk, j, this._vals(lk, j, cm), pNew);
+              v = swapped(lk, j, this._vals(lk, j, cm, undefined, dfl), pNew);
             }
             if (v > best) best = v;
           }
@@ -2135,7 +2154,9 @@ const PMEngine = (() => {
       for (const i of this.att_o) if (res[i] >= top - 1e-9) { sum += res[i]; nt++; }
       const bud = this.budgetOn();                       // step 13 B1: after the defence's best shares
       const cont = (bud ? this.budget().value : (nt ? sum / nt : 0.0)) * this.cfg.continuation, coarse = vcoarse(s);
-      if ((D.config.eval.leaf_mode || 'floor') === 'relative') return banked + Math.max(now, coarse + cont - relativeAverage(s, bud));
+      const mode = leafMode(s);
+      if (mode === 'relative') return banked + Math.max(now, coarse + cont - relativeAverage(s, bud));
+      if (mode === 'looks') return banked + Math.max(now, cont);
       return banked + Math.max(now, cont, coarse);
     }
     quickLeaf() {
@@ -2218,7 +2239,7 @@ const PMEngine = (() => {
           const at = into ? q : AWAY;
           const mv = W_(s, { x: setAt(s.x, j, at), arrows: setAt(s.arrows, j, a) });
           const cm2 = this._cm.slice(); cm2[j] = into ? cm : null;
-          const lks = this._looks(carrier, mv, cm2);
+          const lks = keptOn() ? this._looks(carrier, mv, cm2, j, dflags) : this._looks(carrier, mv, cm2);
           lv = [0.0, 0.0, -1];
           for (const l of lks) if (l.base > lv[0]) lv[0] = l.base;
           for (let n = 0; n < Math.min(3, lks.length); n++) {
@@ -2291,7 +2312,9 @@ const PMEngine = (() => {
         let sum = 0.0, nt = 0;
         for (const i of this.att_o) { const t = this.threat[i].value; if (t >= top - 1e-9) { sum += t; nt++; } }
         const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation, coarse = vcoarse(s);
-        if ((D.config.eval.leaf_mode || 'floor') === 'relative') poss = banked + Math.max(now, coarse + cont - relativeAverage(s));
+        const mode = leafMode(s);
+        if (mode === 'relative') poss = banked + Math.max(now, coarse + cont - relativeAverage(s));
+        else if (mode === 'looks') poss = banked + Math.max(now, cont);
         else poss = banked + Math.max(now, cont, coarse);
       }
       return (this._qshot = sn > poss + 1e-9);
@@ -2458,6 +2481,24 @@ const PMEngine = (() => {
     return keep.length ? keep : acts;
   }
   const endsTurn = (s, nxt, side) => isChance(nxt) || nxt.stage === 'over' || actor(nxt) !== side || nxt.stage !== s.stage;
+  // ---- step 18f (search.whole_turns; search.ended_turn in search.py) -------------------------------------------------
+  // A one-action turn is valued as the turn ended there: the side's own End turn is played, so the other side has the
+  // reply the rules give it before the position is judged. (The computer plays one action and then decides again, so
+  // "this action, then stop" is what the turn is worth at least.) n: the node a turn from s leads to.
+  // step 18f (eval.kept_actions; decide.kept_on): a defender's answer is read by what he has left. The cover's
+  // re-read of a defender moved to a square took his control as it stands now; with the switch on, an answer by a
+  // Quick Step or a Sprint is rushed and one by a Move is set, as the control rule says (and the open list's re-read
+  // of a defender stepping into the ball handler's way reads the handler's looks the same way).
+  const keptOn = () => D.config.eval.kept_actions === true;
+  function setKeptActions(v) { D.config.eval.kept_actions = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.kept_actions; }
+  const wholeOn = () => (D.config.search || {}).whole_turns === true;
+  function setWholeTurns(v) { D.config.search = D.config.search || {}; D.config.search.whole_turns = v === true || v === 'true'; return D.config.search.whole_turns; }
+  function endedTurn(s, n) {
+    if (isChance(n) || s.stage !== 'play' || n.stage !== 'play' || n.pending || n.turn_n === 0) return n;
+    const side = actor(s);
+    if (actor(n) !== side) return n;
+    return apply(n, A('end_turn', side));
+  }
   // ---- step 18e (search.open_list, D-156; search.open_turns in search.py) ------------------------------------------
   // The list of turns without the hand-written choice of which actions to consider (candidateActions): every legal
   // action is read, and only the reading decides what goes forward. No kind of action is named, kept or preferred.
@@ -2491,7 +2532,7 @@ const PMEngine = (() => {
     if (s.pending && !isInboundPass(state)) { const ph = s.phase; s = completePass(s); if (s.phase !== ph) return s; }
     return after(state, s, 'X', 'move');
   }
-  function openTurnsX(s, beam, read, evaluate, deadline, expand) {
+  function openTurnsX(s, beam, read, evaluate, deadline, expand, whole) {
     const acts = legalActions(s);
     if (acts.length <= 12) return null;
     const ref1 = nullStep(s);
@@ -2530,7 +2571,7 @@ const PMEngine = (() => {
     for (const a of acts) {
       if (deadline && now() > deadline) throw TIMEOUT;
       const nxt = apply(s, a);
-      if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(nxt), [a]]); continue; }
+      if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(whole ? endedTurn(s, nxt) : nxt), [a]]); continue; }
       const v2 = new Float64Array(7);
       facts(nxt, a.piece, v2, fresh ? ref : nxt);
       const q2 = Qof(v2), c = round6(q2);
@@ -2610,7 +2651,7 @@ const PMEngine = (() => {
         }
         seenC.add(u.key);
       }
-      full.push([-evaluate(playTurn(s, turn)), turn]);
+      { const nd = playTurn(s, turn); full.push([-evaluate(whole ? endedTurn(s, nd) : nd), turn]); }
       done++;
     }
     OPEN_STATS.full += full.length;
@@ -2624,16 +2665,16 @@ const PMEngine = (() => {
     }
     return fin;
   }
-  function turns(s, beam, read, evaluate, deadline, expand, second, mode) {      // mode: the level's open list (openMode)
+  function turns(s, beam, read, evaluate, deadline, expand, second, mode, whole) {      // mode: the level's open list (openMode); whole: search.whole_turns
     const side = actor(s), sign = side === 'O' ? 1 : -1;
     const open = openOn(side, mode) && !!evaluate;
-    if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand); if (r) return r; }
+    if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [];
     for (const a of first) {
       if (deadline && now() > deadline) throw TIMEOUT;
       const nxt = apply(s, a);
-      scored.push([sign * (evaluate ? evaluate(nxt) : 0.0), [a]]);
+      scored.push([sign * (evaluate ? evaluate(whole ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
     }
     scored.sort((x, y) => y[0] - x[0]);
     const out = scored.slice(0, beam);
@@ -2686,8 +2727,10 @@ const PMEngine = (() => {
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
+      this.whole = wholeOn();                                   // step 18f (search.whole_turns)
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
+    playT(s, t) { const n = playTurn(s, t); return this.whole ? endedTurn(s, n) : n; }   // a turn played, ended if it is one action (step 18f)
     leaf(s, z) {
       this.leaves++;
       if (this.settleShots && !isChance(s) && s.stage !== 'play' && s.stage !== 'over') return this.settled(s, z);
@@ -2855,10 +2898,10 @@ const PMEngine = (() => {
       let passive = null;
       if (mix) {
         const w = ts.filter(r => PASSIVE.has(r[1][0].kind)).map(r => r[1]);
-        passive = w.length ? this.value(playTurn(s, w[0]), depth - 1, VMIN, VMAX) : null;
+        passive = w.length ? this.value(this.playT(s, w[0]), depth - 1, VMIN, VMAX) : null;
       }
       for (const [, t] of ts) {
-        const child = playTurn(s, t);
+        const child = this.playT(s, t);
         const d = (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child)) ? depth : depth - 1;
         const v = this.value(child, d, mix ? VMIN : alpha, mix ? VMAX : beta);
         if (side === 'O') { if (best === null || v > best[0]) best = [v, t]; if (!mix) alpha = Math.max(alpha, v); }
@@ -2874,7 +2917,7 @@ const PMEngine = (() => {
       if (mix && this.habit) {
         const kind = this.habit[s.stage + '/' + side];
         let hv = null;
-        for (const [, t] of ts) if (t[0].kind === kind) { hv = this.value(playTurn(s, t), depth - 1, VMIN, VMAX); break; }
+        for (const [, t] of ts) if (t[0].kind === kind) { hv = this.value(this.playT(s, t), depth - 1, VMIN, VMAX); break; }
         if (hv !== null) v = (1 - this.habit_weight) * v + this.habit_weight * hv;
       }
       let flag = 0;
@@ -2897,7 +2940,7 @@ const PMEngine = (() => {
         const ts = this.turnsOf(sub, z);
         if (!ts.length) continue;
         const first = this.order(ts, depth, z, sub)[0][1];
-        const v = this.value(playTurn(sub, first), depth - 1, VMIN, VMAX);
+        const v = this.value(this.playT(sub, first), depth - 1, VMIN, VMAX);
         if (actor(sub) === 'O') lo[k] = Math.max(lo[k], v); else hi[k] = Math.min(hi[k], v);
       }
       let L = 0, Hh = 0;
@@ -2938,7 +2981,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
       if (hit === undefined) {
-        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open);
+        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open, this.whole);
         this.tcache.set(key, hit);
       }
       return hit;
@@ -2969,13 +3012,13 @@ const PMEngine = (() => {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
-      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open);
+      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole);
       const deadline = this.deadline; this.deadline = Infinity;
       let results = [];
       const sign = side === 'O' ? 1 : -1;
       ts.forEach(([q, t], k) => {
         if (k >= 3 && now() > deadline) { results.push([sign * q, t]); return; }
-        const n = playTurn(s, t);
+        const n = this.playT(s, t);
         if (this.quiet || this.playOn) results.push([this.value(n, this.childDepth(s, n, 1), VMIN, VMAX), t]);
         else results.push([!isChance(n) ? this.leaf(n) : this.value(n, 0, VMIN, VMAX), t]);
       });
@@ -2989,7 +3032,7 @@ const PMEngine = (() => {
         const out = [];
         try {
           for (const [, t] of results.slice().sort(byBest)) {
-            const n = playTurn(s, t);
+            const n = this.playT(s, t);
             out.push([this.value(n, this.childDepth(s, n, depth), VMIN, VMAX), t]);
           }
           results = out; reached = depth;
@@ -3287,8 +3330,9 @@ const PMEngine = (() => {
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
-  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS,
+  const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
+  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, endedTurn, setKeptActions,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

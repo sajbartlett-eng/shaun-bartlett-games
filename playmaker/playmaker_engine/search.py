@@ -210,6 +210,15 @@ def open_mode(profile=None):
     return ((profile or {}).get('open_list') or False) if g is None else g
 
 
+def open_width(profile=None):
+    """How many turns a level reads in full, and how many first actions it follows (step 18f, D-157: the levels think
+    the same way and differ in how well they choose): the level's own open_full and open_follow, or the config's."""
+    cfg, p = CONFIG.get('search', {}), profile or {}
+    full = p.get('open_full', cfg.get('open_full'))
+    follow = p.get('open_follow', cfg.get('open_follow'))
+    return (8 if full is None else full, 4 if follow is None else follow)
+
+
 def open_on(side, mode=None):
     v = open_mode() if mode is None else mode
     return v is True or v == 'both' or (v == 'defence' and side == 'X')
@@ -228,7 +237,26 @@ def _ends_turn(s, nxt, side):
     return isinstance(nxt, ChanceNode) or nxt.stage == 'over' or actor(nxt) != side or nxt.stage != s.stage
 
 
-def open_turns_x(s, beam, evaluate, deadline, expand):
+# ---- step 18f (search.whole_turns) -------------------------------------------------------------------------------------
+# A one-action turn is valued as the turn ended there: the side's own End turn is played, so the other side has the
+# reply the rules give it before the position is judged. (The computer plays one action and then decides again, so
+# "this action, then stop" is what the turn is worth at least.)
+
+def whole_on():
+    return CONFIG.get('search', {}).get('whole_turns') is True
+
+
+def ended_turn(s, n):
+    """n: the node a turn from s leads to; the same with a one-action turn ended."""
+    if isinstance(n, ChanceNode) or s.stage != 'play' or n.stage != 'play' or n.pending or n.turn_n == 0:
+        return n
+    side = actor(s)
+    if actor(n) != side:
+        return n
+    return apply(n, Action('end_turn', side))
+
+
+def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
     from .resolve import null_step
     from .decide import _caps
     acts = legal_actions(s)
@@ -243,10 +271,9 @@ def open_turns_x(s, beam, evaluate, deadline, expand):
         return None
     cfg = CONFIG.get('search', {})
     nexp = expand if expand is not None else max(3, beam // 3)
-    full_n = cfg.get('open_full')
-    follow_n = cfg.get('open_follow')
-    K = beam + nexp * (8 if full_n is None else full_n)
-    F = nexp * (4 if follow_n is None else follow_n)
+    full_n, follow_n = width or open_width()
+    K = beam + nexp * full_n
+    F = nexp * follow_n
     # one read to re-read from: the position the turn leaves when it ends (two actions on, or one if that ends it)
     ref = ref2 if two else ref1
     R = Read(ref)
@@ -281,7 +308,7 @@ def open_turns_x(s, beam, evaluate, deadline, expand):
         check()
         nxt = apply(s, a)
         if isinstance(nxt, ChanceNode) or nxt.stage != 'play' or nxt.pending or a.dest is None:
-            full.append((-evaluate(nxt), (a,)))
+            full.append((-evaluate(ended_turn(s, nxt) if whole else nxt), (a,)))
             continue
         v2 = facts(nxt, a.piece, ref if fresh else nxt)
         q2 = q_of(v2)
@@ -379,7 +406,8 @@ def open_turns_x(s, beam, evaluate, deadline, expand):
                     continue
                 turn = (turn[1], turn[0])
             seen_c.add(u['key'])
-        full.append((-evaluate(play_turn(s, turn)), turn))
+        nd = play_turn(s, turn)
+        full.append((-evaluate(ended_turn(s, nd) if whole else nd), turn))
         done += 1
     full.sort(key=lambda r: -r[0])
     seen_t, final = set(), []
@@ -394,7 +422,7 @@ def open_turns_x(s, beam, evaluate, deadline, expand):
     return final
 
 
-def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=2, mode=None):
+def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=2, mode=None, whole=False, width=None):
     """The candidate whole turns from s (lists of 1 or 2 actions), ordered by the value after the turn's
     deterministic part (the side's own point of view), at most `beam`. A turn ends at a turn-ender, a roll, the
     side's second action or a change of side."""
@@ -402,7 +430,7 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
     sign = 1 if side == 'O' else -1
     open_ = open_on(side, mode) and evaluate is not None        # mode: the level's open list (open_mode)
     if open_ and side == 'X' and s.stage == 'play':
-        r = open_turns_x(s, beam, evaluate, deadline, expand)
+        r = open_turns_x(s, beam, evaluate, deadline, expand, whole, width)
         if r is not None:
             return r
     first = legal_actions(s) if open_ else candidate_actions(s, read)
@@ -415,7 +443,7 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
             v = evaluate(nxt) if evaluate else 0.0
             scored.append((sign * v, (a,)))
             continue
-        v = evaluate(nxt) if evaluate else 0.0
+        v = evaluate(ended_turn(s, nxt) if whole else nxt) if evaluate else 0.0
         scored.append((sign * v, (a,)))
         if len(scored) > 4 * beam:
             continue
@@ -510,6 +538,8 @@ class Searcher:
         # can release this turn, settled by the rules (the floor)
         self.help = CONFIG['eval'].get('help_readings') is True
         self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
+        self.whole = whole_on()                       # step 18f (search.whole_turns)
+        self.width = open_width(profile)              # step 18f: how many turns this level reads in full
         self.fcache = {}
         self.t0 = time.time()
 
@@ -718,9 +748,9 @@ class Searcher:
         passive = None
         if mix:
             w = [t for _, t in ts if t[0].kind in ('end_turn', 'pause', 'hesitate', 'forfeit')]
-            passive = self.value(play_turn(s, w[0]), depth - 1, VMIN, VMAX) if w else None
+            passive = self.value(self.play_t(s, w[0]), depth - 1, VMIN, VMAX) if w else None
         for _, t in ts:
-            child = play_turn(s, t)
+            child = self.play_t(s, t)
             d = depth - 1
             if self.quiet and not isinstance(child, ChanceNode) and child.stage != 'over' and actor(child) == side \
                     and mid_turn(child):
@@ -745,7 +775,7 @@ class Searcher:
             v = self.lam * v + (1 - self.lam) * passive
         if mix and self.habit:
             kind = self.habit.get(s.stage + '/' + side)
-            hv = next((self.value(play_turn(s, t), depth - 1, VMIN, VMAX) for _, t in ts if t[0].kind == kind), None)
+            hv = next((self.value(self.play_t(s, t), depth - 1, VMIN, VMAX) for _, t in ts if t[0].kind == kind), None)
             if hv is not None:
                 v = (1 - self.habit_weight) * v + self.habit_weight * hv
         flag = 0
@@ -782,7 +812,7 @@ class Searcher:
             if not ts:
                 continue
             first = self.order(ts, depth, z, sub)[0][1]
-            v = self.value(play_turn(sub, first), depth - 1, VMIN, VMAX)
+            v = self.value(self.play_t(sub, first), depth - 1, VMIN, VMAX)
             if actor(sub) == 'O':
                 lo_b[k] = max(lo_b[k], v)
             else:
@@ -816,6 +846,11 @@ class Searcher:
                 return done_lo
         return total
 
+    def play_t(self, s, t):
+        """A turn played; a one-action turn ended (search.whole_turns)."""
+        n = play_turn(s, t)
+        return ended_turn(s, n) if self.whole else n
+
     def quick(self, node):
         """Move ordering only: THREAT without the coverage search (a cheaper read than the leaf)."""
         if isinstance(node, ChanceNode):
@@ -830,7 +865,7 @@ class Searcher:
         key = zobrist(s)
         hit = self.tcache.get(key)
         if hit is None:
-            hit = turns(s, self.p['beam'], evaluate=self.quick, deadline=self.deadline, expand=3, second=1, mode=self.open)
+            hit = turns(s, self.p['beam'], evaluate=self.quick, deadline=self.deadline, expand=3, second=1, mode=self.open, whole=self.whole, width=self.width)
             self.tcache[key] = hit
         return hit
 
@@ -862,7 +897,7 @@ class Searcher:
         budget = self.deadline - time.time()
         root_read = Read(s, exact=budget >= 0.8)            # the rules' exact reach when the budget allows
         ts = turns(s, self.p['beam'], read=root_read, evaluate=self.quick, deadline=None,
-                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1, mode=self.open)
+                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1, mode=self.open, whole=self.whole, width=self.width)
         deadline, self.deadline = self.deadline, float('inf')
         results = []
         sign = 1 if side == 'O' else -1
@@ -872,7 +907,7 @@ class Searcher:
             if k >= 3 and time.time() > deadline:
                 results.append((sign * q, t))
                 continue
-            n = play_turn(s, t)
+            n = self.play_t(s, t)
             if self.quiet or self.play_on:
                 results.append((self.value(n, self._child_depth(s, n, 1), VMIN, VMAX), t))
             else:
@@ -886,7 +921,7 @@ class Searcher:
             out = []
             try:
                 for _, t in sorted(results, key=lambda r: -r[0] if side == 'O' else r[0]):
-                    n = play_turn(s, t)
+                    n = self.play_t(s, t)
                     v = self.value(n, self._child_depth(s, n, depth), VMIN, VMAX)
                     out.append((v, t))
                 results = out

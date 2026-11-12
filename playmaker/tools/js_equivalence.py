@@ -133,7 +133,7 @@ def py_probe(s, reach_map=False):
         from playmaker_engine.search import Searcher as _S2, turns as _turns
         from playmaker_engine.agent import profile as _p2
         _sr = _S2('X', _p2('allstar'), lambda n: Read(n).leaf(), float('inf'))
-        out['open_list'] = [[v, ' ; '.join(str(a) for a in t)] for v, t in _turns(s, 24, None, _sr.quick, None, None, 2, _OPEN['v'])]
+        out['open_list'] = [[v, ' ; '.join(str(a) for a in t)] for v, t in _turns(s, 24, None, _sr.quick, None, None, 2, _OPEN['v'], _sr.whole)]
     out['defender_reach'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d) for d in range(5))]
     out['defender_exact'] = [[mp(f), fx(x)] for f, x in (defender_map(s, d, exact=True) for d in range(5))]
     if s.stage in ('play', 'reaction'):
@@ -192,7 +192,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -244,11 +244,13 @@ def main():
     ap.add_argument('--no-settle', action='store_true', help='eval.settle_shots off, in both engines')
     ap.add_argument('--help-readings', action='store_true', help='step 18c: eval.help_readings on, in both engines')
     ap.add_argument('--open-list', default=None, choices=('defence', 'both', 'off'), help="step 18e: search.open_list, in both engines (unset: each level's own; off: no level)")
+    ap.add_argument('--whole-turns', action='store_true', help='step 18f: search.whole_turns on, in both engines')
+    ap.add_argument('--kept-actions', action='store_true', help='step 18f: eval.kept_actions on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
     ap.add_argument('--search', type=int, default=0, help='step 12: also compare this many searches (2 moves ahead)')
-    ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative'),
+    ap.add_argument('--leaf-mode', default=None, choices=('floor', 'relative', 'looks'),
                     help="the leaf's mode, in both engines (default: eval.leaf_mode in ai_profiles.json)")
     args = ap.parse_args()
     from playmaker_engine.decide import CONFIG as _CFG
@@ -269,6 +271,10 @@ def main():
     _CFG['eval']['help_readings'] = args.help_readings
     args.open_list = False if args.open_list == 'off' else args.open_list
     _OPEN['v'] = args.open_list
+    _CFG.setdefault('search', {})['whole_turns'] = args.whole_turns or bool(_CFG.get('search', {}).get('whole_turns'))
+    args.whole_turns = _CFG['search']['whole_turns']
+    _CFG['eval']['kept_actions'] = args.kept_actions or bool(_CFG['eval'].get('kept_actions'))
+    args.kept_actions = _CFG['eval']['kept_actions']
     _CFG.setdefault('search', {})['open_list'] = args.open_list
     _HELP['on'] = args.help_readings
     args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
@@ -299,7 +305,7 @@ def main():
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
                                      goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
-                                     open=args.open_list, reach_map=True)))
+                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):
