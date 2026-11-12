@@ -1447,7 +1447,8 @@ const PMEngine = (() => {
     const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
     // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
     // step 18f: the looks reading goes through its own map
-    const cal = (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) || D.learned.calibration;
+    const cal = (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) ||
+      (s.ctx.digital && D.level && D.learned.calibration_levels && D.learned.calibration_levels[D.level]) || D.learned.calibration;      // D-163: the level's own map
     const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
     const q = calibrationScale(s, phase);

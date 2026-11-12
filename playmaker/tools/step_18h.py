@@ -124,5 +124,74 @@ def cmd_fit(variant='SC2', write='no', *sources):
         print('wrote', body['hash'])
 
 
+# ---- self-play, the backstop head to head, speed -----------------------------------------------------------------------
+
+def _f18():
+    import step_18f as F
+    F.RUN, F.WORK = RUN, WORK
+    F.E18.RUN, F.E18.WORK, L.WORK = RUN, WORK, WORK
+    return F
+
+
+def cmd_selfplay(level='allstar', n='200', seed='1', tag='', *on):
+    """Self-play at a level on the config as it stands (and the switches named), every action kept, with the readings
+    the lines are fitted on -> work/trace_<tag or level>.json; the All-Star's untagged run is work/trace_app.json."""
+    F = _f18()
+    t0 = time.time()
+    F.cmd_trace(n, seed, level, tag, *on)
+    name = f'selfplay_final_{tag or level}.json'
+    tally(f'self-play ({tag or level}, {n} possessions)', json.load(open(os.path.join(RUN, name)))['core_hours'] * 3600)
+
+
+def cmd_fidelity(*tags):
+    _f18().cmd_fidelity(*tags)
+
+
+def cmd_h2h(tag, pairs='200', a_on='', b_on=''):
+    """The backstop: a against b at the All-Star, paired possessions, in batches of 40; it stops when the sequential
+    test for a gain of 1 point a pair against none gives its verdict (after 80 pairs), or at `pairs`."""
+    F = _f18()
+    lv = 'allstar'
+    a = L.policy(lv, 2, L.profiles()[lv]['noise'], **F._switches([x for x in a_on.split(',') if x]))
+    b = L.policy(lv, 2, L.profiles()[lv]['noise'], **F._switches([x for x in b_on.split(',') if x]))
+    pl, rows, secs, k = F.pool(), [], 0.0, 0
+    starts = pl['starts']
+    while len(rows) < int(pairs):
+        k += 1
+        n = min(40, int(pairs) - len(rows))
+        part = [starts[(i + 37 * k) % len(starts)] for i in range(n)]
+        part = [dict(p, seed=104729 * (i + 1) + 15485863 * k) for i, p in enumerate(part)]
+        r, s = L.run_jobs('h2h', part, pl['contexts'], n=1, seed=1800 + k, a=a, b=b)
+        rows += r
+        secs += s
+        st = L.h2h_stats(rows, delta=1.0)
+        tally(f'head to head {tag}, pairs {len(rows) - n + 1} to {len(rows)}', s)
+        print(tag, len(rows), st['mean_difference'], st['interval'], st['wins'], st['losses'], st['ties'], st['sequential_stop'], round(secs / 3600, 2), flush=True)
+        json.dump(dict(tag=tag, a=a_on or 'the default', b=b_on or 'the default', stats=st, core_hours=round(secs / 3600, 2),
+                       a_on_offence=F.E18.shot_timing([x['a_end'] for x in rows]), b_on_offence=F.E18.shot_timing([x['b_end'] for x in rows])),
+                  open(os.path.join(RUN, f'h2h_{tag}.json'), 'w'), indent=1)
+        if st['sequential_stop'] and len(rows) >= 80:
+            break
+
+
+def cmd_speed(rounds='2'):
+    """D-161: the time to finish 1 pair at every level, this step's code and step 18f's timed in turn in the same hour
+    (the 22 hand-board decisions, one warm engine, 9 decisions in 10) -> speed.json"""
+    import subprocess
+    code = ("import json, sys; sys.path.insert(0, 'tools'); import step_18f as S; "
+            "print('RESULT ' + json.dumps(S._timed({lv: S._level(lv) for lv in S.TARGET}, runs=1)))")
+    rep = []
+    for r in range(int(rounds)):
+        one = {}
+        for name, cwd in (('18f', '/home/user/step18f/playmaker'), ('18h', ROOT)):
+            t0 = time.time()
+            out = subprocess.run([sys.executable, '-c', code], cwd=cwd, capture_output=True, text=True, check=True).stdout
+            one[name] = json.loads([ln for ln in out.splitlines() if ln.startswith('RESULT ')][0][7:])
+            tally(f'speed ({name}, round {r + 1})', time.time() - t0)       # one core
+            print(r + 1, name, {lv: (v['median'], v['nine_in_ten']) for lv, v in one[name].items()}, flush=True)
+        rep.append(one)
+        json.dump(dict(note='seconds to finish 1 pair; each round times step 18f\'s code and then this step\'s', rounds=rep), open(os.path.join(RUN, 'speed.json'), 'w'), indent=1)
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])

@@ -1476,6 +1476,8 @@ def calibration_for(s, cfg, w):
         return w['calibration_looks']
     if not s.ctx.rules.digital and cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
         return w['calibration_tabletop']
+    if s.ctx.rules.digital and w.get('calibration_levels') and LEVEL[0] in w['calibration_levels']:
+        return w['calibration_levels'][LEVEL[0]]       # D-163: the level's own map, fitted on its own play
     return w['calibration']
 
 

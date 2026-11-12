@@ -78,10 +78,11 @@ def searches(items, tag='ref', noise=0.0, **switches):
     contexts, pos = [], []
     for k, it in enumerate(items):
         contexts.append(it['ctx'])
-        pos.append(dict(id=it.get('id', str(k)), state=it['state'], ctx=k))
+        pos.append(dict(id=str(k), state=it['state'], ctx=k))
     rows, secs = L.run_jobs('search', pos, contexts, policies={'p': L.policy('allstar', 2, noise, **switches)})
     tally(f'searches ({tag}, {len(items)} positions)', secs)
-    return [r['by']['p']['results'] for r in rows]
+    rows = {int(r['id']): r for r in rows}               # the rows come back core by core, not in the order sent
+    return [rows[k]['by']['p']['results'] for k in range(len(items))]
 
 
 def cmd_harvest(n='40', seed='18'):
@@ -190,7 +191,7 @@ def cmd_build():
     for i in open_shots:
         r = h['rows'][i]
         xs = [st for st in r['states'] if st['side'] == 'X' and st['turn_n'] == 0 and st['stage'] == 'play']
-        if xs and len(lasts) < 4 and i not in [j for j, _ in lasts]:
+        if xs and len(lasts) < 3 and i not in [j for j, _ in lasts]:
             lasts.append((i, xs[-1]))
     lres = searches([dict(state=st, ctx=cx(i)) for i, st in lasts], 'last turns', **REF)
     for k, ((i, st), res) in enumerate(zip(lasts, lres)):
@@ -248,6 +249,11 @@ def cmd_build():
         [('the defence Pauses', nm(b2, 'X Pause'))])
     os.makedirs(SET, exist_ok=True)
     json.dump(out, open(POS, 'w'), indent=1)
+    if os.path.exists(ANS):                             # answers are kept only for candidates still in the set
+        ans = json.load(open(ANS))
+        keep = {p['id']: set(key(c['turn']) for c in p['candidates']) for p in out}
+        ans['results'] = {pid: {k: v for k, v in d.items() if k in keep[pid]} for pid, d in ans['results'].items() if pid in keep}
+        json.dump(ans, open(ANS, 'w'))
     print(len(out), 'positions;', sum(len(p['candidates']) for p in out), 'candidates')
     for p in out:
         print(' ', p['id'], '|', p['side'], 'clock', p['clock'], '|', len(p['candidates']), 'candidates')
@@ -260,43 +266,44 @@ def _seed(pid, k):
     return 15485863 * (k + 1) + 1 + 2 * (zlib.crc32(pid.encode()) % 500000)
 
 
-def play(positions, answers, only=None):
-    """Play out every candidate that has no answer yet (the reference engine on both sides, its pick noise; the same
-    dice for every candidate of a position, whenever it is played)."""
-    jobs, contexts = [], []
+def play(positions, answers, only=None, copies=(0, 1)):
+    """Play out every candidate that lacks an answer on one of the named copies (a copy: 16 play-outs with dice of its
+    own; play-out i of copy k has the same dice for every candidate of a position, whenever it is played). The
+    reference engine on both sides, its pick noise."""
+    jobs, contexts, names = [], [], {}
     for p in positions:
         if only and p['id'] not in only:
             continue
-        have = answers['results'].get(p['id'], {})
-        miss = [c['turn'] for c in p['candidates'] if key(c['turn']) not in have]
-        if not miss:
-            continue
-        contexts.append(p['ctx'])
-        for k in range(L.CORES):
-            jobs.append(dict(id=p['id'], state=p['state'], ctx=len(contexts) - 1, seed=_seed(p['id'], k), turns=miss, copy=k))
+        have = answers['results'].setdefault(p['id'], {})
+        for k in copies:
+            miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]]
+            if not miss:
+                continue
+            if p['id'] not in names:
+                names[p['id']] = len(contexts)
+                contexts.append(p['ctx'])
+            jobs.append(dict(id=f"{p['id']}##{k}", state=p['state'], ctx=names[p['id']], seed=_seed(p['id'], k), turns=miss))
     if not jobs:
         return 0.0
     pol = L.policy('allstar', 2, L.profiles()['allstar']['noise'], **REF)
-    rows, secs = L.run_jobs('rollout', jobs, contexts, n=max(1, N // L.CORES), seed=7, keep=True, policies=dict(O=pol, X=pol))
-    by = {}
-    for j, r in zip(jobs, rows):
-        for turn, t in zip(j['turns'], r['turns']):
-            by.setdefault(j['id'], {}).setdefault(key(turn), {})[j['copy']] = t['values']
-    for pid, d in by.items():
-        for tk, copies in d.items():
-            if any(len(copies.get(k, [])) == 0 for k in range(L.CORES)):
-                print('  not legal from this position, left out:', pid, tk[:80])
-                answers['results'].setdefault(pid, {})[tk] = None
+    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol))
+    n = 0
+    for r in rows:                                     # each row names its own position and copy (the rows come back core by core)
+        pid, k = r['id'].rsplit('##', 1)
+        for t in r['turns']:
+            if not t['values']:
+                print('  not legal from this position, left out:', pid, words(t['turn']))
                 continue
-            answers['results'].setdefault(pid, {})[tk] = [round(v, 3) for k in range(L.CORES) for v in copies[k]]
+            answers['results'][pid].setdefault(key(t['turn']), [[], [], [], []])[int(k)] = [round(v, 3) for v in t['values']]
+            n += 1
     json.dump(answers, open(ANS, 'w'))
-    tally(f'play-outs ({sum(len(j["turns"]) for j in jobs) // L.CORES} candidates on {len(by)} positions)', secs)
+    tally(f'play-outs ({n} candidate copies of 16 on {len(names)} positions)', secs)
     return secs
 
 
-def cmd_play(*only):
+def cmd_play(copies='0,1', *only):
     positions, answers = load()
-    play(positions, answers, set(only) or None)
+    play(positions, answers, set(only) or None, tuple(int(k) for k in copies.split(',')))
 
 
 def table(positions, answers, choices=None):
@@ -307,26 +314,32 @@ def table(positions, answers, choices=None):
         res = answers['results'].get(p['id'], {})
         sign = 1 if p['side'] == 'O' else -1                 # the side to act's own point of view
         rows = []
+        flat = lambda v: [x for c in v for x in c]
         for c in p['candidates']:
             v = res.get(key(c['turn']))
-            if not v:
+            if not v or not flat(v):
                 continue
-            m, sd, ci = L.mean_ci(v)
-            rows.append(dict(name=c['name'], turn=c['turn'], scored=round(m, 2), interval=[round(m - ci, 2), round(m + ci, 2)], values=v))
+            m, sd, ci = L.mean_ci(flat(v))
+            rows.append(dict(name=c['name'], turn=c['turn'], play_outs=len(flat(v)), scored=round(m, 2), interval=[round(m - ci, 2), round(m + ci, 2)], values=v))
         if not rows:
             continue
-        best = max(rows, key=lambda r: sign * r['scored'])
+        # candidates are set against each other on the copies they share (the same dice, play-out for play-out)
+        both = lambda a, b: [(x, y) for ca, cb in zip(a['values'], b['values']) if ca and cb for x, y in zip(ca, cb)]
+        common = [k for k in range(4) if all(r['values'][k] for r in rows)]
+        on_common = lambda r: sum(x for k in common for x in r['values'][k]) / max(1, sum(len(r['values'][k]) for k in common)) if common else r['scored']
+        best = max(rows, key=lambda r: sign * on_common(r))
         for r in rows:
-            d = [sign * (b - a) for a, b in zip(r['values'], best['values'])]      # points lost against the best
+            d = [sign * (b - a) for a, b in both(r, best)]      # points lost against the best
             dm, dsd, dci = L.mean_ci(d)
             r['behind_the_best'] = round(dm, 2)
             r['behind_interval'] = [round(dm - dci, 2), round(dm + dci, 2)]
             r['is_best_or_level'] = r is best or dm - dci <= 0
+            r['compared_on'] = len(d)
         one = dict(id=p['id'], group=p['group'], side=p['side'], best=best['name'], rows=[{k: v for k, v in r.items() if k != 'values'} for r in rows])
         if choices is not None:
             ch = next((r for r in rows if key(r['turn']) == key(choices[p['id']])), None)
             one['choice'] = None if ch is None else dict(name=ch['name'], behind_the_best=ch['behind_the_best'], behind_interval=ch['behind_interval'], matches=ch['is_best_or_level'],
-                                                         lost=[sign * (b - a) for a, b in zip(ch['values'], best['values'])])
+                                                         lost=[sign * (b - a) for a, b in both(ch, best)])
         rep.append(one)
     return rep
 
@@ -345,6 +358,21 @@ def _switches(args):
         k, v = a.split('=') if '=' in a else (a, 'true')
         sw[k] = True if v == 'true' else False if v == 'false' else v
     return sw
+
+
+def cmd_choices(tag, *args):
+    """The computer's choice on each position under a setting, and whether the set already has an answer for it
+    (no play-outs)."""
+    positions, answers = load()
+    res = searches(positions, tag + ' choices', **_switches(args))
+    new = 0
+    for p, r in zip(positions, res):
+        t = r[0][1]
+        known = any(key(c['turn']) == key(t) for c in p['candidates'])
+        new += not known
+        tied = sum(1 for v, _ in r if abs(v - r[0][0]) < 1e-9)
+        print(('     ' if known else ' new '), p['id'], '|', words(t), round(r[0][0], 2), f'({tied} level)' if tied > 1 else '')
+    print(tag, ':', new, 'choices without an answer yet')
 
 
 def cmd_score(tag, *args):

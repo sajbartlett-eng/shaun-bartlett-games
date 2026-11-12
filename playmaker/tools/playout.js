@@ -17,7 +17,7 @@ const LEARNED = fs.existsSync(path.join(root, 'learned_weights.json')) ? load('l
 // step 18f: a policy's `map: 'start'` plays with the map as it stood at the start of the step (the end re-measure's other side)
 const START_FILE = path.join(__dirname, '..', 'docs', 'runs', 'step18f', 'start_of_step_weights.json');
 const START_MAP = fs.existsSync(START_FILE) ? JSON.parse(fs.readFileSync(START_FILE)).calibration : null;
-const FILE_MAP = LEARNED ? LEARNED.calibration : null;
+const FILE_MAP = LEARNED ? LEARNED.calibration : null, FILE_LEVELS = LEARNED ? LEARNED.calibration_levels : null;
 // step 18h: a policy's `map: 'reference'` plays with the map the sense-check set's answers were measured with
 const REF_FILE = path.join(__dirname, 'sense_set', 'reference_weights.json');
 const REF_MAP = fs.existsSync(REF_FILE) ? JSON.parse(fs.readFileSync(REF_FILE)).calibration : null;
@@ -44,7 +44,8 @@ function apply(set) {                                  // an engine's switches, 
   if (E.setSettle) E.setSettle(set.settle_shots !== false);            // on by default (D-148)
   if (E.setHelp) E.setHelp(!!set.help_readings);                       // step 18c
   if (E.setOpenList) E.setOpenList(set.open_list === undefined ? OPEN_DEFAULT : set.open_list);   // step 18e (unset: the config's)
-  if (LEARNED) LEARNED.calibration = set.map === 'start' && START_MAP ? START_MAP : set.map === 'reference' && REF_MAP ? REF_MAP : FILE_MAP;      // before setLeafMode, which clears the stored reads
+  if (LEARNED) LEARNED.calibration = set.map === 'start' && START_MAP ? START_MAP : set.map === 'reference' && REF_MAP ? REF_MAP : FILE_MAP;
+  if (LEARNED) LEARNED.calibration_levels = set.map ? undefined : FILE_LEVELS;     // a named map is the one map for every level      // before setLeafMode, which clears the stored reads
   if (E.setLeafMode) E.setLeafMode(set.leaf_mode === undefined ? (EVAL_DEFAULT.leaf_mode || 'floor') : set.leaf_mode);   // step 18f (unset: the config's)
   for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? !!SEARCH_DEFAULT[k] || !!EVAL_DEFAULT[k] : set[k]);   // step 18f (unset: the config's)
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
