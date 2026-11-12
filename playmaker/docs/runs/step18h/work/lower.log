@@ -1,0 +1,5 @@
+{"level": "starter", "possessions": 120, "mean_points": 25.48, "interval": [23.21, 27.74], "positions": 2459, "core_hours": 0.42, "wall_minutes": 6.7}
+[tally] self-play (starter, 120 possessions): 0.42 core-hours; total 8.15
+{"level": "rookie", "possessions": 160, "mean_points": 25.5, "interval": [23.49, 27.51], "positions": 3674, "core_hours": 0.19, "wall_minutes": 2.9}
+[tally] self-play (rookie, 160 possessions): 0.19 core-hours; total 8.34
+DONE

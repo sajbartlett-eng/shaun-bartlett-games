@@ -13,8 +13,9 @@ const CONFIG = load('ai_profiles.json');
 E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
+if (E.setLevel) E.setLevel(job.profile && job.profile.level);          // step 18h: this tool reads outside a search, so it names the level itself
 if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);        // step 18e (search.open_list)
-for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['no_floor', 'setNoFloor']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
+for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
 if (job.leaf_mode != null && E.setLeafMode) E.setLeafMode(job.leaf_mode);
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);

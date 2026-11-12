@@ -13,6 +13,7 @@ E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 const prof = job.policies.allstar.profile;
+if (E.setLevel) E.setLevel(prof.level);                // step 18h: read as the level's own search would
 const ctxs = job.contexts.map(c => E.makeCtx(c));
 const res = [];
 for (const p of job.positions) {

@@ -1443,12 +1443,12 @@ const PMEngine = (() => {
     if (!a || !b || a <= 0 || b <= 0) return 1.0;
     return a / b;
   }
-  function calibrate(s, oToAct, r) {
+  function calibrate(s, oToAct, r, own) {              // own (step 18h): a map given, in place of the one the position would take
     const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
     // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
     // step 18f: the looks reading goes through its own map
-    const cal = (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) ||
-      (s.ctx.digital && D.level && D.learned.calibration_levels && D.learned.calibration_levels[D.level]) || D.learned.calibration;      // D-163: the level's own map
+    const cal = own || (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) ||
+      (s.ctx.digital && D.level && D.config.eval.level_maps !== false && D.learned.calibration_levels && D.learned.calibration_levels[D.level]) || D.learned.calibration;      // D-163: the level's own map
     const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
     const q = calibrationScale(s, phase);
@@ -1468,6 +1468,15 @@ const PMEngine = (() => {
   // only the best counts; what is not the largest is thrown away. With the switch on the parts are kept: what is left
   // to earn is a line fitted to what positions went on to earn (the weights file's calibration_parts block), per level,
   // phase and side to act: a + b1 x the best shot now + b2 x the best look the cover leaves + b3 x the second best.
+  // step 18h (eval.exact_shot, off; decide.play_on_map): a shot that can go up now keeps its exact value; only "play on"
+  // goes through a map of its own (calibration_play_on, per level), and the reading is the larger of the two
+  function setLevelMaps(v) { D.config.eval.level_maps = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.level_maps; }
+  function setExactShot(v) { D.config.eval.exact_shot = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.exact_shot; }
+  function playOnMap(s) {
+    if (D.config.eval.exact_shot !== true || !s.ctx.digital || !D.learned.calibration_play_on || leafMode(s) !== 'relative') return null;
+    const lv = D.learned.calibration_play_on.levels;
+    return (D.level && lv[D.level]) || lv.all || null;
+  }
   const noFloorOn = () => D.config.eval.no_floor === true;
   function setNoFloor(v) { D.config.eval.no_floor = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.no_floor; }
   function setLevel(lv) { const v = lv || null; if (D.level !== v) { D.level = v; READS = new Map(); READS_OLD = new Map(); } return D.level; }
@@ -2311,8 +2320,15 @@ const PMEngine = (() => {
         const top = ceilingOf(s);
         if (v - banked > top) v = banked + top;
         if (calibratedOn() && s.stage === 'play' && !(!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) {
-          const pm = partsMap(s);
+          let pm = partsMap(s);
           let r = null;
+          const po = playOnMap(s);
+          if (po) {                                  // step 18h (eval.exact_shot)
+            let rel = vcoarse(s) + cont - relativeAverage(s, false);
+            if (rel > top) rel = top;
+            r = Math.max(sn || 0.0, now, calibrate(s, this.o_to_act, rel, po));
+            pm = null;
+          }
           if (pm) {                                  // step 18h (eval.no_floor): with no cover read, every look is left
             const t2 = topTwo(this.att_o, tv ? (i => tv[i]) : (i => this.threat[i].value));
             r = partsValue(pm, s, this.o_to_act, Math.max(sn || 0.0, now), t2[0], t2[1]);
@@ -2454,6 +2470,24 @@ const PMEngine = (() => {
       if (!calibratedOn() || (this.k <= 0 && top === null) || s.stage !== 'play' || s.pending || (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) return v;
       let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
       banked += foulExternality(s);
+      const po = playOnMap(s);
+      if (po) {                                      // step 18h (eval.exact_shot): the shot exact, "play on" mapped
+        const sn = this.shotNow();
+        let now = 0.0;
+        for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && lk.base > now) now = lk.base;
+        const res = this.cover().residual;
+        let tp = 0.0, first = true;
+        for (const i of this.att_o) { if (first || res[i] > tp) tp = res[i]; first = false; }
+        let sum = 0.0, nt = 0;
+        for (const i of this.att_o) if (res[i] >= tp - 1e-9) { sum += res[i]; nt++; }
+        const bud = this.budgetOn();
+        const cont = (bud ? this.budget().value : (nt ? sum / nt : 0.0)) * this.cfg.continuation;
+        let rel = vcoarse(s) + cont - relativeAverage(s, bud);
+        if (top !== null && rel > top) rel = top;
+        let rx = Math.max(sn || 0.0, now, calibrate(s, this.o_to_act, rel, po));
+        if (top !== null && rx > top) rx = top;
+        return banked + rx;
+      }
       const pm = partsMap(s);
       if (pm) {                                      // step 18h (eval.no_floor): the reading's parts, each kept
         const sn = this.shotNow();
@@ -2904,7 +2938,6 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
-      setLevel(profile.level);                                  // step 18h: the level's own lines (calibration_parts), if it has them
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
       this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first
@@ -3193,6 +3226,12 @@ const PMEngine = (() => {
       return keyed.map(k => k[2]);
     }
     root(s, maxDepth) {
+      // step 18h: the level's own map is in force for the length of its search and no longer (search.Searcher.root)
+      const prev = D.level === undefined ? null : D.level;
+      setLevel(this.p.level);
+      try { return this._root(s, maxDepth); } finally { setLevel(prev); }
+    }
+    _root(s, maxDepth) {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
@@ -3546,7 +3585,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setLevel,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

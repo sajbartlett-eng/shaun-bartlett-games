@@ -192,7 +192,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, exact_shot=args.exact_shot, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -252,6 +252,7 @@ def main():
     ap.add_argument('--split-ties', action='store_true', help='step 18f: search.split_ties on, in both engines')
     ap.add_argument('--rank-in-hand', action='store_true', help='step 18f: search.rank_in_hand on, in both engines')
     ap.add_argument('--no-floor', action='store_true', help='step 18h: eval.no_floor on, in both engines')
+    ap.add_argument('--exact-shot', action='store_true', help='step 18h: eval.exact_shot on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -287,6 +288,8 @@ def main():
     args.rank_in_hand = _CFG['search']['rank_in_hand']
     _CFG['eval']['no_floor'] = args.no_floor or bool(_CFG['eval'].get('no_floor'))
     args.no_floor = _CFG['eval']['no_floor']
+    _CFG['eval']['exact_shot'] = args.exact_shot or bool(_CFG['eval'].get('exact_shot'))
+    args.exact_shot = _CFG['eval']['exact_shot']
     _CFG.setdefault('search', {})['open_list'] = args.open_list
     _HELP['on'] = args.help_readings
     args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
@@ -317,7 +320,7 @@ def main():
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
                                      goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
-                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, reach_map=True)))
+                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, exact_shot=args.exact_shot, reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):

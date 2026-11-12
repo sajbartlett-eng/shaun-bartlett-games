@@ -777,6 +777,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (no_floor_kept): X3 Quick Steps to E3, then X2 moves to B6, facing SW",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "E3",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      1,
+      "B6",
+      5,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor_kept"
    }
   ]
  },
@@ -1558,6 +1582,54 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "E3",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "B3",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (no_floor): X3 Quick Steps to E3, then X3 moves to B3, facing W",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "E3",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "B3",
+      6,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -3884,6 +3956,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (exact_shot): X1 Quick Steps to N7, then X3 moves to H7, facing W",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "N7",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "H7",
+      6,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "exact_shot"
    }
   ]
  },
@@ -4640,6 +4736,54 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X2 moves to B3, facing N, then X2 Quick Steps to B4",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "X",
+      1,
+      "B4",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (no_floor): X1 Quick Steps to I11, then X1 moves to K10, facing E",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "I11",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      0,
+      "K10",
+      2,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -8369,6 +8513,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (no_floor): X2 Quick Steps to J5",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "J5",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -9141,6 +9300,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (no_floor): X5 moves to E1, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "E1",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -9895,6 +10069,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (no_floor): X1 Quick Steps to I9, then X3 tries a Steal",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "I9",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      2,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -15085,6 +15283,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X2 Quick Steps to D6, then the defence Pauses",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
    }
   ]
  },
@@ -15857,6 +16079,69 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X3 moves to M7, facing N, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "M7",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (no_floor): X2 Quick Steps to D7, then the defence Pauses",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D7",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
+   },
+   {
+    "name": "the computer's choice (kept): X2 Quick Steps to D6",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D6",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "kept"
    }
   ]
  },
@@ -16601,6 +16886,54 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+    "turn": [
+     [
+      "move",
+      "O",
+      1,
+      "E10",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pass",
+      "O",
+      0,
+      null,
+      -1,
+      1,
+      ""
+     ]
+    ],
+    "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (no_floor): O1 moves to F10, then O2 moves to C9",
+    "turn": [
+     [
+      "move",
+      "O",
+      0,
+      "F10",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "O",
+      1,
+      "C9",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -17336,6 +17669,45 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): O1 Quick Steps to K4, then O2 Quick Steps to B8",
+    "turn": [
+     [
+      "qs",
+      "O",
+      0,
+      "K4",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "O",
+      1,
+      "B8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (no_floor): O3 sets a screen",
+    "turn": [
+     [
+      "screen",
+      "O",
+      2,
+      null,
+      -1,
+      4,
+      ""
+     ]
+    ],
+    "added_by": "no_floor"
    }
   ]
  },
@@ -18099,6 +18471,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X3 Quick Steps to N7, then X1 tries a Steal",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N7",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      0,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
    }
   ]
  }

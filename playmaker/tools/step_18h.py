@@ -124,6 +124,108 @@ def cmd_fit(variant='SC2', write='no', *sources):
         print('wrote', body['hash'])
 
 
+# ---- part 4: one map for each level (D-163) -------------------------------------------------------------------------------
+
+def map_rows(files):
+    """(possession, phase, what was left to earn, today's reading, offence to act) from runs with every action kept
+    (their 'reads') or self-play with the named readings (their 'states')."""
+    import numpy as np
+    g, ph, y, hand, side, plays, k = [], [], [], [], [], [], 0
+    for name in files:
+        path = name if os.path.exists(name) else os.path.join(WORK, name) if os.path.exists(os.path.join(WORK, name)) else os.path.join(F18, name)
+        for r in json.load(open(path))['rows']:
+            # the last entry: whether "play on" is what today's reading returned (not a shot that can go up now). A run
+            # with every action kept has no shot reading of its own; its looks reading equals today's when a shot decides
+            if 'reads' in r:
+                sts = [(st[0], st[1], st[2], st[3], (max(st[5], st[6]) < st[2] - st[1] - 1e-9) if len(st) > 6 else abs(st[2] - st[4]) > 1e-9) for st in r['reads']]
+            else:
+                sts = [(st[0], st[1], st[2], st[3 + 12], max(st[3], st[4]) < st[2] - st[1] - 1e-9) for st in r['states']]
+            for clock, banked, hd, o, po in sts:
+                g.append(k); ph.append(min(6, max(1, (12 - clock) // 2 + 1))); y.append(r['value'] - banked); hand.append(hd - banked); side.append(int(o)); plays.append(bool(po))
+            k += 1
+    PLAY_ON[0] = np.array(plays)
+    return np.array(g), np.array(ph), np.array(y, float), np.array(hand, float), np.array(side), k
+
+
+PLAY_ON = [None]
+
+
+def cmd_playon(write='no', *sources):
+    """eval.exact_shot's map: what is left to earn from the "play on" reading alone, fitted on the positions where
+    "play on" is what today's reading returned, one for each level named (level=file,file) and one for all of them
+    -> learned_weights.json, calibration_play_on. The same form as step 17D's."""
+    import hashlib
+    import numpy as np
+    body = json.load(open(L.WEIGHTS))
+    src = {a.split('=')[0]: a.split('=')[1].split(',') for a in sources}
+    levels, rep = {}, {}
+    for lv, files in list(src.items()) + [('all', [x for fs in src.values() for x in fs])]:
+        g, ph, y, hand, side, n = map_rows(files)
+        po = PLAY_ON[0]
+        maps, _ = L.fit_maps('linear', ph, side, hand, y, po)
+        maps = {k: m for k, m in maps.items() if m.get('positions', 0) >= MIN_POSITIONS}
+        levels[lv] = dict(version=1, form='linear', fitted_on=dict(files=[os.path.basename(x) for x in files], possessions=n, positions=int(po.sum())), maps=maps)
+        rep[lv] = dict(possessions=n, positions=int(len(y)), play_on_decides=int(po.sum()), lines=sorted(maps))
+        print(lv, json.dumps(rep[lv]))
+        for k in sorted(maps):
+            print('   ', k, [round(v, 1) for v in maps[k]['x']], [round(v, 1) for v in maps[k]['y']], maps[k].get('positions'))
+    for lv in levels:                                   # a line a level lacks: all levels' line, then the shared map's
+        for k in body['calibration']['maps']:
+            if k not in levels[lv]['maps']:
+                levels[lv]['maps'][k] = dict(levels['all']['maps'].get(k) or body['calibration']['maps'][k], borrowed=True)
+    if write != 'no':
+        body.pop('hash', None)
+        body['calibration_play_on'] = dict(version=1, meaning='what is left to earn from "play on" alone (the phase table plus the best look the cover '
+                                                               "leaves, less the phase's average), per level, phase and side to act; a shot that can go up now is not mapped",
+                                           levels=levels)
+        body['hash'] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:16]
+        json.dump(body, open(L.WEIGHTS, 'w'), indent=1)
+        print('wrote', body['hash'])
+
+
+def cmd_maps(write='no', *sources):
+    """The calibrated map, one for each level named (level=file,file), the same form as step 17D's (a straight line per
+    phase and side to act), fitted on that level's own play -> learned_weights.json, calibration_levels. A phase and
+    side with too few positions for a line keeps the shared map's line, and is marked."""
+    import hashlib
+    import numpy as np
+    body = json.load(open(L.WEIGHTS))
+    src = {a.split('=')[0]: a.split('=')[1].split(',') for a in sources}
+    levels, rep = {}, {}
+    for lv, files in src.items():
+        g, ph, y, hand, side, n = map_rows(files)
+        maps, _ = L.fit_maps('linear', ph, side, hand, y, np.ones(len(y), bool))
+        maps = {k: m for k, m in maps.items() if m.get('positions', 0) >= MIN_POSITIONS}     # a line of its own from 60 positions or more
+        own = sorted(maps)
+        fold = np.random.default_rng(18).permutation(n) % 5
+        pred, shared = np.array(hand, float), np.array(hand, float)
+        for k in range(5):
+            tr, te = fold[g] != k, fold[g] == k
+            m2, _ = L.fit_maps('linear', ph, side, hand, y, tr)
+            for key, m in m2.items():
+                sel = te & (ph == int(key[0])) & (side == (1 if key[1] == 'O' else 0))
+                pred[sel] = L.knot_map(hand[sel], m['x'], m['y'])
+        for key, m in body['calibration']['maps'].items():
+            sel = (ph == int(key[0])) & (side == (1 if key[1] == 'O' else 0))
+            shared[sel] = L.knot_map(hand[sel], m['x'], m['y'])
+        thin = [k for k in body['calibration']['maps'] if k not in maps]
+        for k in thin:                                  # too few positions for a line of its own: the shared map's line
+            maps[k] = dict(body['calibration']['maps'][k], from_the_shared_map=True)
+        rmse = lambda v: round(float(np.sqrt(np.mean((v - y) ** 2))), 3)
+        levels[lv] = dict(version=1, form='linear', fitted_on=dict(files=[os.path.basename(x) for x in files], possessions=n, positions=int(len(y))), maps=maps)
+        rep[lv] = dict(possessions=n, positions=int(len(y)), lines_of_its_own=own, lines_from_the_shared_map=thin,
+                       positions_a_line={k: int(maps[k].get('positions', 0)) for k in own},
+                       held_out_error=dict(its_own_map=rmse(pred), the_shared_map=rmse(shared)))
+        print(lv, json.dumps(rep[lv]))
+    json.dump(rep, open(os.path.join(RUN, f'maps_{write}.json'), 'w'), indent=1)
+    if write != 'no':
+        body.pop('hash', None)
+        body['calibration_levels'] = levels
+        body['hash'] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:16]
+        json.dump(body, open(L.WEIGHTS, 'w'), indent=1)
+        print('wrote', body['hash'])
+
+
 # ---- self-play, the backstop head to head, speed -----------------------------------------------------------------------
 
 def _f18():

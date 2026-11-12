@@ -1,0 +1,25 @@
+      closeout, shooter cannot move | X3 moves to C4, facing SW, then X2 moves to B6, facing SW 30.14 (6 level)
+      closeout, shooter can move | X3 Quick Steps to E3, then X3 moves to B3, facing N 28.88 
+      closeout, step 2 | X3 moves to B4, facing SW, then X3 tries a Steal 19.04 
+      game EB3F5B, the pass in the air | X4 moves to C4, facing SW 33 (24 level)
+      18e's Steal position, clock 2 | the defence Pauses 27 (24 level)
+      18e's Steal position, clock 10 | X3 moves to P6, facing SE, then X3 tries a Steal 33.98 (2 level)
+      Contest or not 1 | X2 Quick Steps to J3 31.9 (2 level)
+      Contest or not 2 | X3 moves to P6, facing NE 30 (2 level)
+      Contest or not 3 | X3 moves to P4, facing NE 24 (2 level)
+      Contest or not 4 | X2 Quick Steps to B7 24 (2 level)
+      before an open shot 1 | X4 moves to G8, facing N 29.51 (19 level)
+      before an open shot 2 | X5 moves to E3, facing S 30.14 (24 level)
+      before an open shot 3 | X3 tries a Steal 32.53 (24 level)
+      shoot now or play on 1 | O1 passes to O2 27.98 
+      shoot now or play on 2 | O5 shoots (layup) 38 (12 level)
+      shoot now or play on 3 | O2 moves to B8 30.66 (24 level)
+      shoot now or play on 4 | O2 sets a screen 27.47 (3 level)
+      move, then shoot 1 | O4 moves to A2, then O4 shoots (three) 28.25 
+      move, then shoot 2 | O4 moves to I2, then O4 shoots (layup) 46 
+      board 1 | X2 Quick Steps to D6, then the defence Pauses 27.62 (3 level)
+      board 3 | X3 moves to M7, facing N, then the defence Pauses 28.46 (21 level)
+      board 8 | O2 moves to E10, then O1 passes to O2 31.72 (6 level)
+      board 9 | O1 Quick Steps to K4, then O2 Quick Steps to B8 29.82 (2 level)
+      board 2 (three 12) | X3 Quick Steps to N7, then X1 tries a Steal 20.08 
+final : 0 choices without an answer yet

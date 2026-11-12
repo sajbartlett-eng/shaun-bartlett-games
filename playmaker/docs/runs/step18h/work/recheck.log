@@ -1,0 +1,7 @@
+{"level": "allstar", "possessions": 200, "mean_points": 28.39, "interval": [26.61, 30.18], "positions": 3641, "core_hours": 1.23, "wall_minutes": 20.3}
+[tally] self-play (allstar, 200 possessions): 1.23 core-hours; total 9.57
+[tally] head to head maps, pairs 1 to 40: 0.35 core-hours; total 9.92
+maps 40 -2.3 [-6.739, 2.139] 11 15 14 None 0.35
+[tally] head to head maps, pairs 41 to 80: 0.539 core-hours; total 10.46
+maps 80 -0.388 [-3.173, 2.398] 26 26 28 None 0.89
+DONE

@@ -1,0 +1,78 @@
+{
+ "tag": "maps",
+ "a": "the default",
+ "b": "map=reference",
+ "stats": {
+  "pairs": 80,
+  "mean_difference": -0.388,
+  "interval": [
+   -3.173,
+   2.398
+  ],
+  "sd": 12.71,
+  "wins": 26,
+  "losses": 26,
+  "ties": 28,
+  "win_rate": 0.5,
+  "win_interval": [
+   0.369,
+   0.631
+  ],
+  "pairs_needed": {
+   "0.5": 2484,
+   "1.0": 621,
+   "2.0": 155
+  },
+  "sequential_stop": null,
+  "a_points": 28.89,
+  "b_points": 29.27,
+  "decisions_per_possession": 18.9
+ },
+ "core_hours": 0.89,
+ "a_on_offence": {
+  "possessions": 80,
+  "shots_by_phase_pct": [
+   44,
+   12,
+   19,
+   15,
+   7,
+   1
+  ],
+  "shots_in_phases_1_and_2_pct": 57,
+  "decisions": 24.8,
+  "clock_ran_out": 0,
+  "clock_interval_in_100": [
+   0.0,
+   4.6
+  ],
+  "lost_in_100_phases_kept": 7.4,
+  "lost_interval": [
+   3.8,
+   13.9
+  ]
+ },
+ "b_on_offence": {
+  "possessions": 80,
+  "shots_by_phase_pct": [
+   71,
+   28,
+   1,
+   0,
+   0,
+   0
+  ],
+  "shots_in_phases_1_and_2_pct": 99,
+  "decisions": 13.0,
+  "clock_ran_out": 0,
+  "clock_interval_in_100": [
+   0.0,
+   4.6
+  ],
+  "lost_in_100_phases_kept": 23.5,
+  "lost_interval": [
+   12.4,
+   40.0
+  ]
+ }
+}

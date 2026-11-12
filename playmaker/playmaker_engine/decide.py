@@ -621,6 +621,13 @@ class Read:
             if w is not None and w.get('calibration') and s.stage == 'play' and not last:
                 pm = parts_map(s, self.cfg, w)
                 r = None
+                po = play_on_map(s, self.cfg, w)
+                if po is not None:                    # step 18h (eval.exact_shot)
+                    rel = vcoarse(s) + cont - relative_average(s, self.cfg, False)
+                    if rel > top:
+                        rel = top
+                    r = max(sn or 0.0, nowv, calibrate(po, s, self.o_to_act, rel))
+                    pm = None
                 if pm is not None:                    # step 18h (eval.no_floor): with no cover read, every look is left
                     res = sorted((self.threat[i]['value'] if tv is None else tv[i] for i in self.att_o), reverse=True)
                     r = parts_value(pm, s, self.o_to_act, max(sn or 0.0, nowv), res[0] if res else 0.0, res[1] if len(res) > 1 else 0.0)
@@ -954,6 +961,18 @@ class Read:
             return v
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
+        po = play_on_map(s, self.cfg, w)
+        if po is not None:
+            # step 18h (eval.exact_shot): a shot that can go up now keeps its exact value; only "play on" is mapped
+            sn = self.shot_now() or 0.0
+            now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
+            rel = vcoarse(s) + self.continuation() - relative_average(s, self.cfg, self._budget_on())
+            if top is not None and rel > top:
+                rel = top
+            r = max(sn, now, calibrate(po, s, self.o_to_act, rel))
+            if top is not None and r > top:
+                r = top
+            return banked + r
         pm = parts_map(s, self.cfg, w)
         if pm is not None:
             # step 18h (eval.no_floor): the reading's parts, each kept, in place of the largest of them
@@ -1449,6 +1468,21 @@ def leaf_mode(s, cfg):
 LEVEL = [None]                                          # the level whose search is running (its own lines, if it has them)
 
 
+def play_on_map(s, cfg, w):
+    """Step 18h (eval.exact_shot, off): today's reading takes the largest of the shot that can go up now and "play
+    on", and then passes it through the map. So a shot's exact value (points x rating less the Contest, from the
+    rules) is bent by a map fitted to what positions went on to earn, and a position whose worth is that very shot
+    reads above the shot itself. With the switch on the shot keeps its exact value and only "play on" (the phase table
+    plus the best look the cover leaves, less the phase's average) goes through a map of its own (the weights file's
+    calibration_play_on block, per level): the reading is the larger of the two. The map, or None."""
+    if cfg.get('exact_shot') is not True or w is None or not w.get('calibration_play_on') or not s.ctx.rules.digital:
+        return None
+    if leaf_mode(s, cfg) != 'relative':
+        return None
+    lv = w['calibration_play_on']['levels']
+    return lv.get(LEVEL[0]) or lv.get('all')
+
+
 def parts_map(s, cfg, w):
     if cfg.get('no_floor') is not True or w is None or not w.get('calibration_parts') or not s.ctx.rules.digital:
         return None
@@ -1476,7 +1510,7 @@ def calibration_for(s, cfg, w):
         return w['calibration_looks']
     if not s.ctx.rules.digital and cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
         return w['calibration_tabletop']
-    if s.ctx.rules.digital and w.get('calibration_levels') and LEVEL[0] in w['calibration_levels']:
+    if s.ctx.rules.digital and cfg.get('level_maps', True) and w.get('calibration_levels') and LEVEL[0] in w['calibration_levels']:
         return w['calibration_levels'][LEVEL[0]]       # D-163: the level's own map, fitted on its own play
     return w['calibration']
 

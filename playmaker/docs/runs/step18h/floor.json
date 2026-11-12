@@ -1,10 +1,10 @@
 {
- "candidates_read": 36,
- "the_offence_to_act": 32,
- "play_on_returned": 27,
- "pairs_whose_shot_now_differs_by_5_or_more": 7,
- "of_them_reading_within_half_a_point_today": 2,
- "of_them_within_half_a_point_with_no_floor": 5,
+ "candidates_read": 53,
+ "the_offence_to_act": 42,
+ "play_on_returned": 36,
+ "pairs_whose_shot_now_differs_by_5_or_more": 15,
+ "of_them_reading_within_half_a_point_today": 3,
+ "of_them_within_half_a_point_with_no_floor": 1,
  "rows": [
   {
    "id": "closeout, shooter cannot move",
@@ -18,8 +18,8 @@
      "second_look_left": 13.649999999999999,
      "todays_reading_before_the_map": 21.94,
      "returns": "play on",
-     "today": 23.756621719216405,
-     "no_floor": 29.15055
+     "today": 27.517717150804547,
+     "no_floor": 25.184337499999998
     },
     {
      "name": "X3 Moves to C4 and keeps the Quick Step; X2 moves to B6",
@@ -29,8 +29,8 @@
      "second_look_left": 11.700000000000001,
      "todays_reading_before_the_map": 21.94,
      "returns": "play on",
-     "today": 23.756621719216405,
-     "no_floor": 29.15055
+     "today": 27.517717150804547,
+     "no_floor": 25.726595
     },
     {
      "name": "X3 Quick Steps to E4, and the computer chooses the rest",
@@ -40,8 +40,8 @@
      "second_look_left": 14,
      "todays_reading_before_the_map": 21.94,
      "returns": "play on",
-     "today": 23.756621719216405,
-     "no_floor": 29.15055
+     "today": 27.517717150804547,
+     "no_floor": 25.21358
     },
     {
      "name": "the defence Pauses",
@@ -51,8 +51,19 @@
      "second_look_left": 6.300000000000001,
      "todays_reading_before_the_map": 28.65,
      "returns": "the shot now",
-     "today": 27.26954948977989,
-     "no_floor": 29.15055
+     "today": 29.171549957980705,
+     "no_floor": 26.1745295
+    },
+    {
+     "name": "the computer's choice (no_floor_kept): X3 Quick Steps to E3, then X2 moves to B6, facing SW",
+     "to_act": "O",
+     "shot_now": 15,
+     "best_look_left": 15,
+     "second_look_left": 13.649999999999999,
+     "todays_reading_before_the_map": 21.94,
+     "returns": "play on",
+     "today": 27.517717150804547,
+     "no_floor": 25.184337499999998
     }
    ]
   },
@@ -68,8 +79,8 @@
      "second_look_left": 9.000000000000002,
      "todays_reading_before_the_map": 30,
      "returns": "the shot now",
-     "today": 27.976323333335884,
-     "no_floor": 29.964959999999998
+     "today": 29.504288302196475,
+     "no_floor": 28.46291
     },
     {
      "name": "X3 Quick Steps to E4",
@@ -79,8 +90,8 @@
      "second_look_left": 14,
      "todays_reading_before_the_map": 33,
      "returns": "the shot now",
-     "today": 29.546931874571428,
-     "no_floor": 29.964959999999998
+     "today": 30.24370684489819,
+     "no_floor": 29.233249999999998
     },
     {
      "name": "X3 Moves to C4; X2 moves to B6",
@@ -90,8 +101,8 @@
      "second_look_left": 11.700000000000001,
      "todays_reading_before_the_map": 37.239999999999995,
      "returns": "play on",
-     "today": 31.76672527951765,
-     "no_floor": 30.77937
+     "today": 31.28875171858327,
+     "no_floor": 30.945214999999997
     },
     {
      "name": "X3 Quick Steps to E4; X2 moves to B6",
@@ -101,8 +112,30 @@
      "second_look_left": 13.649999999999999,
      "todays_reading_before_the_map": 37.239999999999995,
      "returns": "play on",
-     "today": 31.76672527951765,
-     "no_floor": 30.77937
+     "today": 31.28875171858327,
+     "no_floor": 31.108137499999998
+    },
+    {
+     "name": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+     "to_act": "O",
+     "shot_now": 28.65,
+     "best_look_left": 24,
+     "second_look_left": 10.5,
+     "todays_reading_before_the_map": 29.59,
+     "returns": "play on",
+     "today": 29.403234434693907,
+     "no_floor": 28.4295695
+    },
+    {
+     "name": "the computer's choice (no_floor): X3 Quick Steps to E3, then X3 moves to B3, facing W",
+     "to_act": "O",
+     "shot_now": 28.65,
+     "best_look_left": 24,
+     "second_look_left": 10.5,
+     "todays_reading_before_the_map": 29.59,
+     "returns": "play on",
+     "today": 29.403234434693907,
+     "no_floor": 28.4295695
     }
    ]
   },
@@ -122,8 +155,8 @@
      "second_look_left": 8.399999999999999,
      "todays_reading_before_the_map": 21.94,
      "returns": "play on",
-     "today": 23.756621719216405,
-     "no_floor": 29.15055
+     "today": 27.517717150804547,
+     "no_floor": 24.7457
     },
     {
      "name": "the defence Pauses",
@@ -133,8 +166,8 @@
      "second_look_left": 8.399999999999999,
      "todays_reading_before_the_map": 21.94,
      "returns": "play on",
-     "today": 23.756621719216405,
-     "no_floor": 29.15055
+     "today": 27.517717150804547,
+     "no_floor": 24.7457
     }
    ]
   },
@@ -150,8 +183,8 @@
      "second_look_left": 12.8,
      "todays_reading_before_the_map": 37.10000000000001,
      "returns": "play on",
-     "today": 30.789719388924517,
-     "no_floor": 31.75642
+     "today": 31.243252639725398,
+     "no_floor": 31.069588
     },
     {
      "name": "X4 Quick Steps to E4",
@@ -161,8 +194,8 @@
      "second_look_left": 30,
      "todays_reading_before_the_map": 37.10000000000001,
      "returns": "play on",
-     "today": 30.789719388924517,
-     "no_floor": 31.75642
+     "today": 31.243252639725398,
+     "no_floor": 31.53072
     },
     {
      "name": "the defence Pauses (the log)",
@@ -172,8 +205,8 @@
      "second_look_left": 10.8,
      "todays_reading_before_the_map": 37.10000000000001,
      "returns": "play on",
-     "today": 30.789719388924517,
-     "no_floor": 31.75642
+     "today": 31.243252639725398,
+     "no_floor": 31.015968
     }
    ]
   },
@@ -221,17 +254,67 @@
      "second_look_left": 6.4,
      "todays_reading_before_the_map": 31.150000000000006,
      "returns": "play on",
-     "today": 27.53945654067028,
-     "no_floor": 30.169380000000004
+     "today": 29.346829146964524,
+     "no_floor": 27.739323999999996
     },
     {
      "name": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
      "read": null
+    },
+    {
+     "name": "the computer's choice (today): X2 moves to B3, facing N, then X2 Quick Steps to B4",
+     "to_act": "O",
+     "shot_now": 26,
+     "best_look_left": 26,
+     "second_look_left": 7.35,
+     "todays_reading_before_the_map": 31.150000000000006,
+     "returns": "play on",
+     "today": 29.346829146964524,
+     "no_floor": 27.764793499999996
+    },
+    {
+     "name": "the computer's choice (no_floor): X1 Quick Steps to I11, then X1 moves to K10, facing E",
+     "to_act": "O",
+     "shot_now": 26,
+     "best_look_left": 26,
+     "second_look_left": 5.6,
+     "todays_reading_before_the_map": 31.150000000000006,
+     "returns": "play on",
+     "today": 29.346829146964524,
+     "no_floor": 27.717876000000004
     }
    ]
   },
   {
    "id": "Contest or not 1",
+   "side": "X",
+   "candidates": [
+    {
+     "name": "the reference's 1st reading: X2 Quick Steps to J3",
+     "read": null
+    },
+    {
+     "name": "the reference's 2nd reading: the defence ends its turn",
+     "read": null
+    }
+   ]
+  },
+  {
+   "id": "Contest or not 2",
+   "side": "X",
+   "candidates": [
+    {
+     "name": "the reference's 1st reading: X3 moves to P6, facing NE",
+     "read": null
+    },
+    {
+     "name": "the reference's 2nd reading: the defence ends its turn",
+     "read": null
+    }
+   ]
+  },
+  {
+   "id": "Contest or not 3",
    "side": "X",
    "candidates": [
     {
@@ -249,47 +332,15 @@
    ]
   },
   {
-   "id": "Contest or not 2",
-   "side": "X",
-   "candidates": [
-    {
-     "name": "the reference's 1st reading: X1 moves to N9, facing E",
-     "read": null
-    },
-    {
-     "name": "the reference's 2nd reading: X3 Contests",
-     "read": null
-    }
-   ]
-  },
-  {
-   "id": "Contest or not 3",
-   "side": "X",
-   "candidates": [
-    {
-     "name": "the reference's 1st reading: X2 Quick Steps to J3",
-     "read": null
-    },
-    {
-     "name": "the reference's 2nd reading: the defence ends its turn",
-     "read": null
-    }
-   ]
-  },
-  {
    "id": "Contest or not 4",
    "side": "X",
    "candidates": [
     {
-     "name": "the reference's 1st reading: X4 moves to G4, facing SE",
+     "name": "the reference's 1st reading: X2 Quick Steps to B7",
      "read": null
     },
     {
-     "name": "the reference's 2nd reading: X4 moves to G4, facing SE, then X4 tries a Steal",
-     "read": null
-    },
-    {
-     "name": "the reference's 3rd reading: X4 moves to G4, facing N",
+     "name": "the reference's 2nd reading: the defence ends its turn",
      "read": null
     }
    ]
@@ -306,8 +357,8 @@
      "second_look_left": 12,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 29.982979999999998
     },
     {
      "name": "the listed turn that ends nearest the shooter: X1 Quick Steps to N9, then X2 Quick Steps to J5",
@@ -317,8 +368,8 @@
      "second_look_left": 14,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 30.150080000000003
     },
     {
      "name": "the defence Pauses",
@@ -328,8 +379,19 @@
      "second_look_left": 9,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 29.73233
+    },
+    {
+     "name": "the computer's choice (no_floor): X2 Quick Steps to J5",
+     "to_act": "O",
+     "shot_now": 30,
+     "best_look_left": 30,
+     "second_look_left": 6.749999999999999,
+     "todays_reading_before_the_map": 34.69,
+     "returns": "play on",
+     "today": 30.66024595728682,
+     "no_floor": 29.5443425
     }
    ]
   },
@@ -345,8 +407,8 @@
      "second_look_left": 2,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 29.14748
     },
     {
      "name": "the listed turn that ends nearest the shooter: X5 moves to E3, facing S, then X2 Quick Steps to G7",
@@ -356,12 +418,23 @@
      "second_look_left": 3,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 29.23103
     },
     {
      "name": "the defence Pauses",
      "read": null
+    },
+    {
+     "name": "the computer's choice (no_floor): X5 moves to E1, facing N",
+     "to_act": "O",
+     "shot_now": 30,
+     "best_look_left": 30,
+     "second_look_left": 1.5,
+     "todays_reading_before_the_map": 34.69,
+     "returns": "play on",
+     "today": 30.66024595728682,
+     "no_floor": 29.105705
     }
    ]
   },
@@ -381,70 +454,17 @@
      "second_look_left": 10.8,
      "todays_reading_before_the_map": 37.239999999999995,
      "returns": "play on",
-     "today": 31.76672527951765,
-     "no_floor": 30.77937
-    }
-   ]
-  },
-  {
-   "id": "before an open shot 4",
-   "side": "X",
-   "candidates": [
-    {
-     "name": "the reference's 1st reading: X3 Sprints to G4, then X1 tries a Steal",
-     "read": null
+     "today": 31.28875171858327,
+     "no_floor": 30.87002
     },
     {
-     "name": "the listed turn that ends nearest the shooter: X1 tries a Steal",
+     "name": "the computer's choice (no_floor): X1 Quick Steps to I9, then X3 tries a Steal",
      "read": null
-    },
-    {
-     "name": "the defence Pauses",
-     "to_act": "O",
-     "shot_now": 27,
-     "best_look_left": 27,
-     "second_look_left": 7.35,
-     "todays_reading_before_the_map": 31.209999999999997,
-     "returns": "play on",
-     "today": 28.60980211163422,
-     "no_floor": 30.23643
     }
    ]
   },
   {
    "id": "shoot now or play on 1",
-   "side": "O",
-   "candidates": [
-    {
-     "name": "shoot now: O5 shoots (layup)",
-     "read": null
-    },
-    {
-     "name": "play on, the reference's 1st such turn: O5 moves to J4",
-     "read": null
-    }
-   ]
-  },
-  {
-   "id": "shoot now or play on 2",
-   "side": "O",
-   "candidates": [
-    {
-     "name": "shoot now: O3 shoots (three)",
-     "read": null
-    },
-    {
-     "name": "play on, the reference's 1st such turn: O3 passes to O2",
-     "read": null
-    },
-    {
-     "name": "play on, the reference's 2nd such turn: O2 Quick Steps to H2",
-     "read": null
-    }
-   ]
-  },
-  {
-   "id": "shoot now or play on 3",
    "side": "O",
    "candidates": [
     {
@@ -456,8 +476,50 @@
      "read": null
     },
     {
-     "name": "play on, the reference's 2nd such turn: O1 dribbles at X1",
+     "name": "play on, the reference's 2nd such turn: O3 moves to B8, then O1 passes to O2",
      "read": null
+    }
+   ]
+  },
+  {
+   "id": "shoot now or play on 2",
+   "side": "O",
+   "candidates": [
+    {
+     "name": "shoot now: O5 shoots (layup)",
+     "read": null
+    },
+    {
+     "name": "play on, the reference's 1st such turn: O5 moves to J4",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 38,
+     "second_look_left": 4.500000000000001,
+     "todays_reading_before_the_map": 41.489999999999995,
+     "returns": "play on",
+     "today": 30.95596515505681,
+     "no_floor": 33.47795
+    }
+   ]
+  },
+  {
+   "id": "shoot now or play on 3",
+   "side": "O",
+   "candidates": [
+    {
+     "name": "shoot now: O4 shoots (three)",
+     "read": null
+    },
+    {
+     "name": "play on, the reference's 1st such turn: O2 moves to B8",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 30,
+     "second_look_left": 1.5,
+     "todays_reading_before_the_map": 34.69,
+     "returns": "play on",
+     "today": 30.13820068652707,
+     "no_floor": 29.983069999999998
     }
    ]
   },
@@ -466,16 +528,30 @@
    "side": "O",
    "candidates": [
     {
-     "name": "shoot now: O1 shoots (floater)",
+     "name": "shoot now: O1 shoots (three)",
      "read": null
     },
     {
-     "name": "play on, the reference's 1st such turn: O2 Quick Steps to E10",
-     "read": null
+     "name": "play on, the reference's 1st such turn: O2 sets a screen",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 21,
+     "second_look_left": 0,
+     "todays_reading_before_the_map": 27.039999999999996,
+     "returns": "play on",
+     "today": 28.248201235091273,
+     "no_floor": 26.05133
     },
     {
-     "name": "play on, the reference's 2nd such turn: O4 Quick Steps to A6",
-     "read": null
+     "name": "play on, the reference's 2nd such turn: O5 sets a screen",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 21,
+     "second_look_left": 0,
+     "todays_reading_before_the_map": 27.039999999999996,
+     "returns": "play on",
+     "today": 28.248201235091273,
+     "no_floor": 26.05133
     }
    ]
   },
@@ -533,8 +609,8 @@
      "second_look_left": 15,
      "todays_reading_before_the_map": 32,
      "returns": "the shot now",
-     "today": 29.02339569415958,
-     "no_floor": 29.78398
+     "today": 29.99723399733095,
+     "no_floor": 28.77613
     },
     {
      "name": "step 18a's choice",
@@ -544,8 +620,19 @@
      "second_look_left": 19.5,
      "todays_reading_before_the_map": 32,
      "returns": "the shot now",
-     "today": 29.02339569415958,
-     "no_floor": 29.78398
+     "today": 29.99723399733095,
+     "no_floor": 29.152105
+    },
+    {
+     "name": "the computer's choice (today): X2 Quick Steps to D6, then the defence Pauses",
+     "to_act": "O",
+     "shot_now": 32,
+     "best_look_left": 18,
+     "second_look_left": 15,
+     "todays_reading_before_the_map": 32,
+     "returns": "the shot now",
+     "today": 29.99723399733095,
+     "no_floor": 27.92985
     }
    ]
   },
@@ -561,8 +648,8 @@
      "second_look_left": 16.5,
      "todays_reading_before_the_map": 27.890000000000004,
      "returns": "play on",
-     "today": 26.871661992666894,
-     "no_floor": 29.78398
+     "today": 28.984230593829608,
+     "no_floor": 27.726155
     },
     {
      "name": "the board's help: the low man steps up, another covers",
@@ -572,8 +659,8 @@
      "second_look_left": 29.5,
      "todays_reading_before_the_map": 34.69,
      "returns": "play on",
-     "today": 30.431708019467443,
-     "no_floor": 30.5079
+     "today": 30.66024595728682,
+     "no_floor": 31.386339999999997
     },
     {
      "name": "the board's help, both with a Move",
@@ -583,8 +670,41 @@
      "second_look_left": 30,
      "todays_reading_before_the_map": 38.09,
      "returns": "play on",
-     "today": 32.211731032867725,
-     "no_floor": 30.86986
+     "today": 31.498253639015424,
+     "no_floor": 32.33316
+    },
+    {
+     "name": "the computer's choice (today): X3 moves to M7, facing N, then the defence Pauses",
+     "to_act": "O",
+     "shot_now": 22,
+     "best_look_left": 22,
+     "second_look_left": 16.5,
+     "todays_reading_before_the_map": 27.890000000000004,
+     "returns": "play on",
+     "today": 28.984230593829608,
+     "no_floor": 27.726155
+    },
+    {
+     "name": "the computer's choice (no_floor): X2 Quick Steps to D7, then the defence Pauses",
+     "to_act": "O",
+     "shot_now": 22,
+     "best_look_left": 22,
+     "second_look_left": 18.150000000000002,
+     "todays_reading_before_the_map": 27.890000000000004,
+     "returns": "play on",
+     "today": 28.984230593829608,
+     "no_floor": 27.8640125
+    },
+    {
+     "name": "the computer's choice (kept): X2 Quick Steps to D6",
+     "to_act": "O",
+     "shot_now": 22,
+     "best_look_left": 22,
+     "second_look_left": 16.5,
+     "todays_reading_before_the_map": 27.890000000000004,
+     "returns": "play on",
+     "today": 28.984230593829608,
+     "no_floor": 27.726155
     }
    ]
   },
@@ -604,8 +724,23 @@
      "second_look_left": 24,
      "todays_reading_before_the_map": 36.39,
      "returns": "play on",
-     "today": 30.67899028844794,
-     "no_floor": 31.05828
+     "today": 30.558200564623917,
+     "no_floor": 30.85679
+    },
+    {
+     "name": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+     "read": null
+    },
+    {
+     "name": "the computer's choice (no_floor): O1 moves to F10, then O2 moves to C9",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 39,
+     "second_look_left": 24,
+     "todays_reading_before_the_map": 42.34,
+     "returns": "play on",
+     "today": 31.20302390687848,
+     "no_floor": 33.91481
     }
    ]
   },
@@ -625,8 +760,30 @@
      "second_look_left": 11,
      "todays_reading_before_the_map": 26.19,
      "returns": "play on",
-     "today": 25.414406874997038,
-     "no_floor": 28.98984
+     "today": 28.038201296042853,
+     "no_floor": 25.61447
+    },
+    {
+     "name": "the computer's choice (today): O1 Quick Steps to K4, then O2 Quick Steps to B8",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 16,
+     "second_look_left": 12,
+     "todays_reading_before_the_map": 22.790000000000003,
+     "returns": "play on",
+     "today": 27.198201539849165,
+     "no_floor": 23.86703
+    },
+    {
+     "name": "the computer's choice (no_floor): O3 sets a screen",
+     "to_act": "X",
+     "shot_now": 0,
+     "best_look_left": 16,
+     "second_look_left": 12,
+     "todays_reading_before_the_map": 22.790000000000003,
+     "returns": "play on",
+     "today": 27.198201539849165,
+     "no_floor": 23.86703
     }
    ]
   },
@@ -642,8 +799,8 @@
      "second_look_left": 15,
      "todays_reading_before_the_map": 24.669999999999998,
      "returns": "play on",
-     "today": 25.185875491740745,
-     "no_floor": 29.42202
+     "today": 28.190588024663104,
+     "no_floor": 25.22666
     },
     {
      "name": "the board's sag, facing NE: X2 moves to D7, facing NE",
@@ -653,8 +810,8 @@
      "second_look_left": 15,
      "todays_reading_before_the_map": 24.669999999999998,
      "returns": "play on",
-     "today": 25.185875491740745,
-     "no_floor": 29.42202
+     "today": 28.190588024663104,
+     "no_floor": 25.22666
     },
     {
      "name": "the board's sag, facing E: X2 moves to D7, facing E",
@@ -664,8 +821,8 @@
      "second_look_left": 15,
      "todays_reading_before_the_map": 24.669999999999998,
      "returns": "play on",
-     "today": 25.185875491740745,
-     "no_floor": 29.42202
+     "today": 28.190588024663104,
+     "no_floor": 25.22666
     },
     {
      "name": "the defence Pauses",
@@ -675,8 +832,12 @@
      "second_look_left": 13,
      "todays_reading_before_the_map": 20.845000000000002,
      "returns": "play on",
-     "today": 23.183349601665434,
-     "no_floor": 29.014815
+     "today": 27.24782938271842,
+     "no_floor": 24.107495
+    },
+    {
+     "name": "the computer's choice (today): X3 Quick Steps to N7, then X1 tries a Steal",
+     "read": null
     }
    ]
   }

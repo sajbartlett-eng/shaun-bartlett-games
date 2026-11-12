@@ -1,0 +1,340 @@
+{
+ "tag": "maps",
+ "switches": {},
+ "positions": 24,
+ "scored": 24,
+ "matched": 22,
+ "points_lost_a_position": 0.86,
+ "interval": [
+  0.34,
+  1.38
+ ],
+ "candidates_added": 0,
+ "rows": [
+  {
+   "id": "closeout, shooter cannot move",
+   "group": "closeout",
+   "best": "your order: X3 Quick Steps to E4 and keeps the Move; X2 moves to B6",
+   "choice": "X3 Moves to C4 and keeps the Quick Step; X2 moves to B6",
+   "matches": true,
+   "points_lost": 3.98,
+   "interval": [
+    -0.82,
+    8.79
+   ]
+  },
+  {
+   "id": "closeout, shooter can move",
+   "group": "closeout",
+   "best": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+   "choice": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "closeout, step 2",
+   "group": "closeout",
+   "best": "X3 Moves next to him, then tries a Steal",
+   "choice": "X3 Moves next to him, then tries a Steal",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "game EB3F5B, the pass in the air",
+   "group": "closeout",
+   "best": "X4 Moves to C4, facing him",
+   "choice": "X4 Moves to C4, facing him",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "18e's Steal position, clock 2",
+   "group": "steal",
+   "best": "the defence Pauses",
+   "choice": "the defence Pauses",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "18e's Steal position, clock 10",
+   "group": "steal",
+   "best": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
+   "choice": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 1",
+   "group": "contest",
+   "best": "the reference's 1st reading: X2 Quick Steps to J3",
+   "choice": "the reference's 1st reading: X2 Quick Steps to J3",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 2",
+   "group": "contest",
+   "best": "the reference's 1st reading: X3 moves to P6, facing NE",
+   "choice": "the reference's 1st reading: X3 moves to P6, facing NE",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 3",
+   "group": "contest",
+   "best": "the reference's 1st reading: X3 moves to P4, facing NE",
+   "choice": "the reference's 1st reading: X3 moves to P4, facing NE",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 4",
+   "group": "contest",
+   "best": "the reference's 1st reading: X2 Quick Steps to B7",
+   "choice": "the reference's 1st reading: X2 Quick Steps to B7",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "before an open shot 1",
+   "group": "position",
+   "best": "the reference's 1st reading: X4 moves to G8, facing N",
+   "choice": "the reference's 1st reading: X4 moves to G8, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "before an open shot 2",
+   "group": "position",
+   "best": "the reference's 1st reading: X5 moves to E3, facing S",
+   "choice": "the reference's 1st reading: X5 moves to E3, facing S",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "before an open shot 3",
+   "group": "position",
+   "best": "the defence Pauses",
+   "choice": "the reference's 1st reading: X3 tries a Steal",
+   "matches": true,
+   "points_lost": 1.44,
+   "interval": [
+    -0.73,
+    3.6
+   ]
+  },
+  {
+   "id": "shoot now or play on 1",
+   "group": "shoot",
+   "best": "shoot now: O1 shoots (three)",
+   "choice": "play on, the reference's 1st such turn: O1 passes to O2",
+   "matches": false,
+   "points_lost": 6.56,
+   "interval": [
+    1.14,
+    11.98
+   ]
+  },
+  {
+   "id": "shoot now or play on 2",
+   "group": "shoot",
+   "best": "shoot now: O5 shoots (layup)",
+   "choice": "shoot now: O5 shoots (layup)",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "shoot now or play on 3",
+   "group": "shoot",
+   "best": "shoot now: O4 shoots (three)",
+   "choice": "play on, the reference's 1st such turn: O2 moves to B8",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "shoot now or play on 4",
+   "group": "shoot",
+   "best": "play on, the reference's 1st such turn: O2 sets a screen",
+   "choice": "play on, the reference's 1st such turn: O2 sets a screen",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "move, then shoot 1",
+   "group": "move then shoot",
+   "best": "the turn it missed: O4 moves to A2, then O4 shoots (three)",
+   "choice": "the turn it missed: O4 moves to A2, then O4 shoots (three)",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "move, then shoot 2",
+   "group": "move then shoot",
+   "best": "the turn it missed: O4 moves to I2, then O4 shoots (layup)",
+   "choice": "the turn it missed: O4 moves to I2, then O4 shoots (layup)",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 1",
+   "group": "board",
+   "best": "the computer's choice (today): X2 Quick Steps to D6, then the defence Pauses",
+   "choice": "the computer's choice (today): X2 Quick Steps to D6, then the defence Pauses",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 3",
+   "group": "board",
+   "best": "does nothing",
+   "choice": "the computer's choice (today): X3 moves to M7, facing N, then the defence Pauses",
+   "matches": true,
+   "points_lost": 1.97,
+   "interval": [
+    -1.09,
+    5.03
+   ]
+  },
+  {
+   "id": "board 8",
+   "group": "board",
+   "best": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+   "choice": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 9",
+   "group": "board",
+   "best": "the board's move: the kick-out to the corner",
+   "choice": "the computer's choice (today): O1 Quick Steps to K4, then O2 Quick Steps to B8",
+   "matches": false,
+   "points_lost": 4.66,
+   "interval": [
+    0.57,
+    8.74
+   ]
+  },
+  {
+   "id": "board 2 (three 12)",
+   "group": "board",
+   "best": "the defence Pauses",
+   "choice": "the computer's choice (today): X3 Quick Steps to N7, then X1 tries a Steal",
+   "matches": true,
+   "points_lost": 1.97,
+   "interval": [
+    -6.46,
+    10.4
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 5,
+   "matched": 4,
+   "points_lost": 1.72
+  },
+  "closeout": {
+   "positions": 4,
+   "matched": 4,
+   "points_lost": 0.99
+  },
+  "contest": {
+   "positions": 4,
+   "matched": 4,
+   "points_lost": 0.0
+  },
+  "move then shoot": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 0.0
+  },
+  "position": {
+   "positions": 3,
+   "matched": 3,
+   "points_lost": 0.48
+  },
+  "shoot": {
+   "positions": 4,
+   "matched": 3,
+   "points_lost": 1.64
+  },
+  "steal": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 0.0
+  }
+ }
+}

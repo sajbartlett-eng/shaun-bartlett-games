@@ -64,6 +64,10 @@
     "continuation": 0.85,
     "_no_floor": "Step 18h: the reading keeps its parts instead of taking the largest of them. Today's reading is the largest of the shot that can go up now and 'play on' (the phase table plus the best look the cover leaves, less the phase's average), then a map; what is not the largest is thrown away, and of the looks the cover leaves only the best counts. On: what is left to earn is a line fitted to what positions went on to earn (learned_weights.json, calibration_parts), per level, phase and side to act: a + b1 x the best shot now + b2 x the best look the cover leaves + b3 x the second best, b1 to b3 never below 0. Under the app's rules with the calibrated reading on; where no line was fitted, the map as before.",
     "no_floor": false,
+    "_exact_shot": "Step 18h: a shot that can go up now keeps its exact value (points x rating less the Contest, from the rules); only 'play on' (the phase table plus the best look the cover leaves, less the phase's average) goes through a map of its own (learned_weights.json, calibration_play_on, per level), and the reading is the larger of the two. Today the largest is taken first and then mapped, so an exact shot is bent by the map and a position whose worth is that very shot reads above the shot itself.",
+    "exact_shot": false,
+    "_level_maps": "D-163 (Shaun, 12 Nov 2026): each level's reading goes through a map fitted on its own play (learned_weights.json, calibration_levels), under the app's rules. false: the one shared map for every level, as before step 18h.",
+    "level_maps": true,
     "franks_weights": {
       "man": 0.62,
       "ball": 0.11,

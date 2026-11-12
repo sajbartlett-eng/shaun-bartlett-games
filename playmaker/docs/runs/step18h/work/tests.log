@@ -1,0 +1,42 @@
+        """A3 (the full 2,000-state run is tools/js_equivalence.py, docs/runs/3n/3n_equivalence.json): legal actions, reach maps,
+        every threat value and square, the best cover and its value, and the leaf value agree exactly."""
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'tools'))
+        from js_equivalence import random_state, py_probe, run_js, close
+        from playmaker_engine.jsbridge import state_json, ctx_json
+        rng = random.Random(3)
+        states = [random_state(rng)[0] for _ in range(60)]
+        js = run_js([json.dumps(dict(state=state_json(s), ctx=ctx_json(s.ctx))) for s in states])
+        for s, b in zip(states, js):
+            a = py_probe(s)
+            assert 'error' not in b, b
+            for k, v in a.items():
+>               assert close(v, b.get(k)), (k, s.encode())
+E               AssertionError: ('leaf_geo', 'play:X|c10|t2/2|OI9,M10,K3,P12,Q2|XG4E,Q4SE,O11E,F13N,J6W|b2|m021c|n21100010000|u0|L0000|S5N*0|P2>5|f0+0-0|q0304')
+E               assert False
+E                +  where False = <function close at 0x7fbffa0ac180>(6.508577419841308, 5.54059554485804)
+E                +    where 5.54059554485804 = <built-in method get of dict object at 0x7fc013919440>('leaf_geo')
+E                +      where <built-in method get of dict object at 0x7fc013919440> = {'legal': ['X Pause', 'X1 Move to G4 facing N', 'X1 Move to G4 facing NE', 'X1 Move to G4 facing SE', 'X1 Move to G4 f...': 0}}], [{}, {'F13': {'0': 0}, 'F14': {'0': 1}, 'G14': {'0': 1}, 'G13': {'0': 1}, ...}], [{}, {'J6': {'6': 0}}]], ...}.get
+
+tests/test_step3n.py:53: AssertionError
+__________ test_the_agent_only_plays_legal_actions_within_its_budget ___________
+
+    def test_the_agent_only_plays_legal_actions_within_its_budget():
+        g = Game(ai={'A': 'allstar', 'B': 'starter'}, level='learn', seed=9, match_format='digital', per_side=4, place=True)
+        decs = [r for r in g.read_log() if r['type'] == 'computer' and r.get('event') == 'decision']
+        acts = [r for r in g.read_log() if r['type'] == 'action']
+        assert acts and all(r['actor'] == 'ai' for r in acts)                 # Game.act refuses an illegal action
+        for d in decs:
+            prof = AG.profile(d['level'])
+>           assert d['seconds'] <= prof['time_budget_s'] * AG.SCALE['value'] + 1.5, d
+E           AssertionError: {'type': 'computer', 'time': 1794508968.717, 'code': 'CD04D3', 'side': 'O', ...}
+E           assert 2.37 <= ((2.5 * 0.08) + 1.5)
+
+tests/test_step3m.py:229: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_step3n.py::test_javascript_and_python_agree_on_random_legal_states
+FAILED tests/test_step3m.py::test_the_agent_only_plays_legal_actions_within_its_budget
+2 failed, 87 passed, 13 xfailed in 1377.16s (0:22:57)
+SECONDS 1382
+DONE
