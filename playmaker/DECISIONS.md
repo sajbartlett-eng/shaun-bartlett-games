@@ -720,6 +720,25 @@ reading decides what goes forward. The moves steps 18a to 18d found missing are 
 out, never instructions. Where the computer prefers something else, neither side is assumed wrong: Shaun rules on a
 sense check of each. · Source: Shaun, 11 Nov 2026 · **Ruled; built behind `search.open_list` in step 18e.**
 
+### Shaun, 12 Nov 2026 (step 18f prompt)
+
+**D-157. The levels must think the same way.** The Rookie and the Starter must not stay on the old hand-written list.
+Levels differ in how well they choose (their look-ahead, their pick noise, how many turns they read in full), not in a
+scripted list. Step 18f makes the open list affordable for them. · Source: Shaun, 12 Nov 2026 · **Ruled; step 18f.**
+
+**D-158. Step 18e is accepted.** It is merged into `main`. `search.open_list` stays on for the All-Star's defence.
+Steals stay as they are: the ball is lost about as often as in basketball, and their odds are not a lever now. On
+18e's five sense checks Shaun agrees with the views given: his order on the closeout board's step 1; too close to
+call on its step 2; the computer's move on game EB3F5B and on the two Steal positions. · Source: Shaun, 12 Nov 2026 ·
+**Ruled, done.**
+
+**D-159. The reading is released for step 18f.** The parts the step names may change, behind switches: a one-action
+turn judged before the offence replies; turns that read exactly the same; what a player's unused actions are worth;
+how the offence's turns are ranked; the calibrated map (refit last). The learned weights stay held. Every fix is to
+how the computer values positions, from the rules, the cards and data: no kind of move is named, guaranteed or
+favoured, in the list or in the reading (D-156). Where the computer disagrees with an expected move, it is not
+assumed wrong: a sense check, and Shaun rules. · Source: Shaun, 12 Nov 2026 · **Ruled; step 18f.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
