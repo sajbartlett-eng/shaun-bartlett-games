@@ -70,3 +70,47 @@ gives a verdict (after at least 160 pairs), or at 400 pairs.
 - I expect no clear difference: between -1 and +1.5 a pair. The looks reading predicts what positions go on to earn
   only a shade better than today's (held-out error 11.08 against 11.11), and on the closeout board the offence's
   best reply is to pass out of the corner, so the Move kept doesn't change the value there.
+- **Result (part 3's head to head):** 5.91 core-hours. 400 pairs: **+0.8 points a pair (-0.8 to 2.4),** 126 wins,
+  131 losses, 143 ties. Inside the predicted range: no clear difference. It led by 2.3 (0.1 to 4.6) at 240 pairs and
+  fell back, so the early lead was the dice. **Both switches stay off.**
+
+## The estimate, revised after part 3: about 42 core-hours
+
+A 400-pair head to head costs about 6, not the 3 to 4 I allowed, and the looks reading needed self-play at all
+three levels (6) that the first estimate didn't have. Spent so far: about 21. Still to come: part 2's head to head
+(6), part 4's pilot (0.3), part 5 (2.5), self-play at each level for the last refit (5, the All-Star's also serving
+part 7), part 7's head to head (6) and boards (0.2).
+
+## 5. Part 2's pilot: `search.split_ties` on the 218 stored positions and the 19 boards
+
+Under 30 minutes, so no prediction was owed. Results:
+
+- The first turn reads exactly the same as another on 76 decisions in 100 today (70 to 81), 7.6 turns on average.
+  With the switch, 54 in 100 (48 to 61) still can't be told apart after the other side's next-best replies are
+  compared, 3.7 turns on average.
+- The same position decided twice with the All-Star's pick noise: the first action differs 58 times in 100 today
+  (54 to 63), 12 in 100 with the switch (9 to 14).
+- The 19 boards at 1 pair: 9 passed today, 11 with the switch (boards 6 and 16 gained). Board 10 passes both ways;
+  board 2 fails both ways with the same turn ("X2 moves to C7, then X1 tries a Steal").
+
+## 6. Part 2's head to head: `search.split_ties` against the default, up to 400 pairs
+
+- Cost: about 6.
+- I expect a small gain, 0 to +1.5 a pair, and no sequential verdict. The switch takes chance out of the choice
+  between turns that read the same; the turn it prefers leaves the other side worse second choices, which matters
+  only when the other side's own pick noise sends it off its best reply.
+- **Result (part 2's head to head):** 6.0 core-hours. 400 pairs: **149 won, 111 lost, 140 tied: 57 in 100 of the
+  decided pairs (51 to 63).** In points, +1.2 a pair (-0.3 to 2.7): inside the predicted range, and its interval
+  just reaches 0. No sequential verdict. **Turned on:** it won more pairs than it lost, clear of chance, and it does
+  what the part asked (chance no longer chooses between equal turns). The points gain alone would not have been
+  enough; that is said in the report.
+
+## 7. Part 3 again: `eval.kept_actions` alone against the default, up to 400 pairs
+
+- Why: with the map refit, the control-aware cover alone gives the expected answer on the closeout board (the Quick
+  Step closer reads 1.25 better than the Move closer, where the default reads them level). Its first head to head
+  was as a pair with the looks reading, so the switch that passes the test has not been measured alone.
+- The default here: whole turns and the tie splitter on, the refit map.
+- Cost: about 6.
+- I expect no clear difference again, between -1 and +1.5 a pair: the switch changes the reading only where a
+  defender's last movement was a Quick Step or a Sprint and he is the one covering the look.

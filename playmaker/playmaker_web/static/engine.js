@@ -908,7 +908,7 @@ const PMEngine = (() => {
   const REACH_STATS = { calls: 0, same_state: 0, kept: 0, built: 0 };
   // Step 13: the speed-ups that change no result. Each can be turned off by a tool (setSpeed), to time it and to prove
   // the search gives the same choices and values with and without it. All are on in play.
-  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true, open_facts: true };
+  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true, open_facts: true, lane_p: true, look_lazy: true };
   function setSpeed(json) {
     const q = typeof json === 'string' ? JSON.parse(json) : json;
     for (const k in SPEED) if (q[k] !== undefined) SPEED[k] = q[k] === true || q[k] === 'true';
@@ -1650,7 +1650,35 @@ const PMEngine = (() => {
       if (i === s.ball) return 1.0;
       if (count(s, 'O', 'pass') >= 2) return 0.0;
       if (this.exact && c === s.o[i]) return passProb(s, i);
-      return this._lane(c).p;
+      if (!SPEED.lane_p) return this._lane(c).p;
+      // step 18f (a speed-up that changes no result, SPEED.lane_p): the chance alone, as _lane works it out, without
+      // building the parts per defender that only the moved re-reads of the few looks kept ever use
+      const m = this._lpp || (this._lpp = new Map());
+      let p = m.get(c);
+      if (p !== undefined) return p;
+      const a = s.o[s.ball];
+      if (!(ONB[a] && ONB[c])) p = 0;
+      else {
+        const den = laneSquares(a, c);
+        let denied = false;
+        if (den.size) for (let d = 0; d < 5; d++) { const xp = s.x[d]; if (den.has(xp) && adjacent(xp, c)) { denied = true; break; } }
+        if (denied) p = 0;
+        else if (!den.size) p = 1;
+        else {
+          const passer = s.ctx.off[s.ball].r.pass, exact = reachOn(), bi = den.bi;
+          let worst = 0;
+          for (let d = 0; d < 5; d++) {
+            let one;
+            if (exact) one = exactOne(s, d);
+            else { const cp = caps(s, 'X', d); one = oneAction(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, cp[0], cp[1]); }
+            let hit = false;
+            for (let k = 0; k < bi.length; k++) { const b = bi[k]; if ((one[b >> 5] >>> (b & 31)) & 1) { hit = true; break; } }
+            if (hit) { const pi = 1 - pS(passer - s.ctx.dfn[d].r.intercept); if (pi > worst) worst = pi; }
+          }
+          p = 1 - worst;
+        }
+      }
+      m.set(c, p); return p;
     }
     _lane(c) {                                   // laneP(s, ., c) and its parts per defender, for the moved re-reads
       const lp = this._lp || (this._lp = new Map());
@@ -1725,9 +1753,9 @@ const PMEngine = (() => {
           for (let n = 0; n < lst.length; n += 2) { const q = lst[n]; if (lst[n + 1] === 0 || !occAt(s, q)) reach.set(q, lst[n + 1]); }
         } else reach.set(s.o[i], 0);
       }
-      const add = (c, n) => {
+      const build = (c, n) => {
         const z = ZN[c];
-        if (!SHOOT(z)) return;
+        if (!SHOOT(z)) return null;
         let lk;
         if (i === s.ball) {
           if (n === 0 && shotOk && leftNow >= 1) lk = makeLook(i, c, 'shoot', 1.0, this.o_to_act);
@@ -1735,7 +1763,7 @@ const PMEngine = (() => {
           else lk = makeLook(i, c, 'later', this.cfg.later_p, false, this.o_to_act ? 1 : 2);
         } else {
           const p = this.passP(i, c);
-          if (p <= 0) return;
+          if (p <= 0) return null;
           if (n === 0) lk = makeLook(i, c, 'catch', p, false, 1);
           else if (leftNow >= 2 && s.tok_o >= 2 && this.o_to_act) lk = makeLook(i, c, 'cut', p, false, 1);
           else lk = makeLook(i, c, 'cut', p * this.cfg.later_p, false, 2);
@@ -1747,8 +1775,60 @@ const PMEngine = (() => {
         lk.vals = [null, null, null, null, null];
         for (const d of this.att_x) { const v = this._vals(lk, d, cm[d], undefined, d === dj ? dfl : undefined); if (v) lk.vals[d] = v; }
         finishLook(lk);
-        out.push(lk);
+        return lk;
       };
+      if (SPEED.look_lazy) {
+        // step 18f (a speed-up that changes no result, SPEED.look_lazy): only the best L looks are kept, earlier ones
+        // first when level. So each square's value is worked out first, the same sum in the same order and with
+        // nothing built; then only the L kept are built.
+        const ctl = controlOn(s.ctx), laterP = this.cfg.later_p, onBall = i === s.ball, L = this.L;
+        const scratch = { i, c: 0, rushed: false, types: null };
+        const cs = [], ns = [], bs = [];
+        const pre = (c, n) => {
+          const z = ZN[c];
+          if (!SHOOT(z)) return;
+          let p;
+          if (onBall) p = (n === 0 && shotOk && leftNow >= 1) || (n === 1 && shotOk && leftNow >= 2 && s.tok_o >= 2) ? 1.0 : laterP;
+          else {
+            p = this.passP(i, c);
+            if (p <= 0) return;
+            if (!(n === 0 || (leftNow >= 2 && s.tok_o >= 2 && this.o_to_act))) p = p * laterP;
+          }
+          const types = ZONE_SHOTS[z], pts = ZONE_POINTS[z], nt = types.length;
+          const rushed = ctl ? (n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i)) : false;
+          scratch.c = c; scratch.rushed = rushed; scratch.types = types;
+          let best = 0.0, first = true, v0 = 0, v1 = 0, v2 = 0;
+          for (let t = 0; t < nt; t++) { const v = rushed ? pts * (card.sh[types[t]] - controlCut(s.ctx, types[t])) : pts * card.sh[types[t]]; if (t === 0) v0 = v; else if (t === 1) v1 = v; else v2 = v; }
+          for (const d of this.att_x) {
+            const vals = this._vals(scratch, d, cm[d], undefined, d === dj ? dfl : undefined);
+            if (!vals) continue;
+            if (vals[0] < v0) v0 = vals[0];
+            if (nt > 1 && vals[1] < v1) v1 = vals[1];
+            if (nt > 2 && vals[2] < v2) v2 = vals[2];
+          }
+          best = Math.max(best, v0); if (nt > 1) best = Math.max(best, v1); if (nt > 2) best = Math.max(best, v2);
+          cs.push(c); ns.push(n); bs.push(p * best);
+        };
+        for (const [c, n] of reach) pre(c, n);
+        if (onBall && budgetCfg()) {
+          let floor = -Infinity;
+          if (SPEED.two_bound && bs.length >= L) floor = bs.slice().sort((a, b) => b - a)[L - 1];
+          const most = new Map();
+          const keep = c => {
+            const z = ZN[c];
+            if (!SHOOT(z)) return false;
+            let m = most.get(z);
+            if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
+            return m > floor;
+          };
+          for (const q of twoActions(s, i, reach, keep)) pre(q, 2);
+        }
+        const idx = bs.map((_, k) => k).sort((x, y) => (bs[y] - bs[x]) || (x - y));
+        const kept = [];
+        for (let k = 0; k < idx.length && k < L; k++) kept.push(build(cs[idx[k]], ns[idx[k]]));
+        return kept;
+      }
+      const add = (c, n) => { const lk = build(c, n); if (lk) out.push(lk); };
       for (const [c, n] of reach) add(c, n);
       if (i === s.ball && budgetCfg()) {
         // step 13 B2 (D-115): the squares two actions away. Step 13C (a speed-up that changes no result): such a look is
@@ -3136,6 +3216,10 @@ const PMEngine = (() => {
           for (let k = i; k < j; k++) { const key = keyOf(out[k][1]); if (key) { slots.push(k); items.push([key, items.length, out[k]]); } }
           items.sort((x, y) => less(x[0], y[0]) || (x[1] - y[1]));
           slots.forEach((k, m) => { out[k] = items[m][2]; });
+          if (i === 0) {                                 // a measure only: how many turns still read the same as the first
+            const k0 = slots.length && slots[0] === 0 ? items[0][0] : null;
+            this.sameTop = k0 ? items.filter(x => less(x[0], k0) === 0).length : j - i;
+          }
         }
         i = j;
       }
@@ -3240,7 +3324,7 @@ const PMEngine = (() => {
       }
     }
     return { results: results.map(([v, t]) => [v, t.map(actionJSON)]), reached, leaves: srch.leaves, nodes: srch.nodes,
-      partial: srch.partial, seconds: now() - t0, pv,
+      partial: srch.partial, seconds: now() - t0, pv, same_top: srch.sameTop == null ? null : srch.sameTop,
       stable: srch.stable, extensions: srch.extensions, cap_hits: srch.capHits, kept: srch.kept, depth_seconds: srch.depthSeconds,
       trace: srch.trace.map(([d, t, v]) => [d, t.map(actionJSON), v]) };
   }

@@ -213,7 +213,7 @@ def cmd_ties(tag='default', *on):
     rows, secs = L.run_jobs('search', pos, contexts, policies=dict(a=L.policy('allstar', 2, 0.0, **sw)))
     rep = {}
     for side in ('O', 'X', 'both'):
-        tied, near, n, firsts = [], [], 0, 0
+        tied, near, n, firsts, changed = [], [], 0, 0, []
         for p, r in zip(pos, rows):
             if side != 'both' and r['side'] != side:
                 continue
@@ -222,12 +222,33 @@ def cmd_ties(tag='default', *on):
             if len(vals) < 2:
                 continue
             n += 1
-            tied.append(sum(1 for v in vals if v > vals[0] - 1e-6))
+            same = r['by']['a'].get('same_top')
+            tied.append(same if sw.get('split_ties') and same is not None else sum(1 for v in vals if v > vals[0] - 1e-6))
             near.append(sum(1 for v in vals if v > vals[0] - 0.5))
+            # the same position decided twice with the level's pick noise (0.5): how often the two choices differ.
+            # Without split_ties every turn has its own draw; with it, turns that read the same share one and the
+            # first of them is taken
+            import random
+            rn, first, diff = random.Random(7919 * (n + 1)), [], 0
+            res = [(sign * v, json.dumps(t[0])) for v, t in r['by']['a']['results']]
+            for _ in range(400):
+                pick = []
+                for _k in range(2):
+                    best, bv, prev, nz = None, -1e9, None, 0.0
+                    for v, a0 in res:
+                        if not sw.get('split_ties') or prev is None or abs(v - prev) >= 1e-9:
+                            nz = rn.gauss(0, 0.5)
+                        prev = v
+                        if v + nz > bv:
+                            bv, best = v + nz, a0
+                    pick.append(best)
+                diff += pick[0] != pick[1]
+            changed.append(diff / 400)
         k = sum(1 for x in tied if x > 1)
         pr, lo, hi = L.wilson(k, n)
         rep[side] = dict(decisions=n, top_is_a_tie=k, share=round(pr, 3), interval=[round(lo, 3), round(hi, 3)],
-                         turns_tied_at_the_top_mean=round(sum(tied) / max(1, n), 1), turns_within_pick_noise_mean=round(sum(near) / max(1, n), 1))
+                         turns_tied_at_the_top_mean=round(sum(tied) / max(1, n), 1), turns_within_pick_noise_mean=round(sum(near) / max(1, n), 1),
+                         first_action_differs_between_two_runs=[round(x, 3) for x in L.mean_ci(changed)])
     rep['core_hours'] = round(secs / 3600, 2)
     rep['switches'] = sw
     json.dump(rep, open(os.path.join(RUN, f'ties_{tag}.json'), 'w'), indent=1)
@@ -270,6 +291,61 @@ def cmd_h2h(tag, pairs, a_on, b_on='', level='allstar', level_b=None):
                b_on_offence=E18.shot_timing([r['b_end'] for r in rows]), rows=rows)
     json.dump(rep, open(os.path.join(RUN, f'h2h_{tag}.json'), 'w'))
     print(json.dumps({k_: v for k_, v in rep.items() if k_ != 'rows'}, indent=1), flush=True)
+
+
+# ---- part 5: the open list for the Rookie and the Starter ---------------------------------------------------------------
+
+TARGET = dict(rookie=(0.3, 1.0), starter=(1.0, 2.0), allstar=(2.5, 3.0))
+
+
+def _level(lv, open_list=None, full=None, follow=None, **sw):
+    """A level's policy for timing: no pick noise, 1 pair; open_list None = the level's own; full, follow = its list widths."""
+    pol = L.policy(lv, 2, 0.0, **({} if open_list is None else dict(open_list=open_list)), **sw)
+    if full is not None:
+        pol['profile'] = dict(pol['profile'], open_full=int(full), open_follow=int(follow))
+    return pol
+
+
+def _timed(pols, runs=2):
+    """The time to finish 1 pair on the hand boards' 22 decisions for each policy (one warm engine), the best of `runs`."""
+    positions, contexts = L.hand_boards()
+    best = {}
+    for _ in range(runs):
+        L.run_jobs('search', positions[:6], contexts, chunks=1, policies=pols)
+        rows, _s = L.run_jobs('search', positions + positions, contexts, chunks=1, policies=pols)
+        rows = rows[len(positions):]
+        for name in pols:
+            v = sorted(r['by'][name]['seconds'] for r in rows)
+            x = sorted(r['by'][name]['seconds'] for r in rows if r.get('side') == 'X')
+            one = dict(median=round(v[len(v) // 2], 3), nine_in_ten=round(v[int(0.9 * (len(v) - 1) + 0.5)], 3), slowest=round(v[-1], 3),
+                       defence_nine_in_ten=round(x[int(0.9 * (len(x) - 1) + 0.5)], 3) if x else None)
+            if name not in best or one['nine_in_ten'] < best[name]['nine_in_ten']:
+                best[name] = one
+    return best
+
+
+def cmd_widths(level='rookie', widths='8:4,4:2,2:1,1:1', *on):
+    """Part 5: a level's time to finish 1 pair with the open list at each pair of widths (turns read in full : first
+    actions followed), beside its list today."""
+    pols = {'today': _level(level, **_switches(on))}
+    for w in widths.split(','):
+        f, fo = w.split(':')
+        pols[w] = _level(level, 'defence', f, fo, **_switches(on))
+    rep = _timed(pols)
+    for k, v in rep.items():
+        v['desktop_target'] = TARGET[level][0]
+        v['fits'] = v['nine_in_ten'] <= TARGET[level][0]
+        print(level, k, v, flush=True)
+    json.dump(rep, open(os.path.join(RUN, f'widths_{level}.json'), 'w'), indent=1)
+
+
+def cmd_speed(tag='final', *on):
+    """The time to finish 1 pair at every level under the config as it stands (and switches `on`), against the budget."""
+    rep = _timed({lv: _level(lv, **_switches(on)) for lv in TARGET}, runs=3)
+    for lv, v in rep.items():
+        v.update(desktop_target=TARGET[lv][0], fits_desktop=v['nine_in_ten'] <= TARGET[lv][0], phone=round(4 * v['nine_in_ten'], 2), phone_target=TARGET[lv][1])
+        print(lv, v, flush=True)
+    json.dump(rep, open(os.path.join(RUN, f'speed_{tag}.json'), 'w'), indent=1)
 
 
 if __name__ == '__main__':

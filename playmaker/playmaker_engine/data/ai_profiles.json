@@ -14,7 +14,10 @@
       "goal_margin_m0": 8,
       "variety_margin": 0,
       "time_budget_s": 0.3,
-      "scout_human": false
+      "scout_human": false,
+      "open_list": "defence",
+      "open_full": 2,
+      "open_follow": 1
     },
     "starter": {
       "depth": [
@@ -29,7 +32,10 @@
       "goal_margin_m0": 4,
       "variety_margin": 1,
       "time_budget_s": 1.0,
-      "scout_human": false
+      "scout_human": false,
+      "open_list": "defence",
+      "open_full": 4,
+      "open_follow": 2
     },
     "allstar": {
       "depth": [
@@ -367,9 +373,11 @@
     "_anchors": "Step 3n H: from self-play (Rookie v Starter, Starter v All-Star, Rookie v All-Star; 12 matches of 4 possessions each, Senior Pro digital, tools/anchors_3n.py): gaps fitted to the match scores. Youth and junior keep the senior gaps, 20 and 50 lower as before."
   },
   "search": {
-    "_open_list": "Step 18e (D-156): the list of turns without the hand-written choice of which actions to consider: every legal action is read and only the reading decides what goes forward (search.open_turns_x in search.py, openTurnsX in engine.js). open_list: null = each level's own setting (profiles.<level>.open_list: the All-Star plays 'defence'; the Rookie and Starter have none, because it puts them over their speed targets); false = off for every level; 'defence' = the defence's list; 'both' = the offence's too (every legal offence action read in full: slow, measured only). open_full: the full reads taken for each first action followed, beyond the list's length. open_follow: first actions followed for each one the old list followed.",
+    "_open_list": "Step 18e (D-156): the list of turns without the hand-written choice of which actions to consider: every legal action is read and only the reading decides what goes forward (search.open_turns_x in search.py, openTurnsX in engine.js). open_list: null = each level's own setting (profiles.<level>.open_list: every level plays 'defence' since step 18f, D-157); false = off for every level; 'defence' = the defence's list; 'both' = the offence's too (every legal offence action read in full: slow, measured only). open_full: the full reads taken for each first action followed, beyond the list's length. open_follow: first actions followed for each one the old list followed. A level may set its own open_full and open_follow (step 18f: the Rookie 2 and 1, the Starter 4 and 2, the All-Star these), because how many turns a level reads in full is how well it chooses.",
     "_whole_turns": "Step 18f (D-159): a one-action turn is valued as the turn ended there, so the other side has the reply the rules give it before the position is judged. On: it won its head to head (+1.7 points a pair, 0.3 to 3.1, 400 pairs).",
     "whole_turns": true,
+    "_split_ties": "Step 18f (D-159): turns that read exactly the same are put in order by the other side's next-best replies (the turn that leaves it the worst second choice first), and share one draw of the pick noise, so chance no longer chooses between them. On: 149 pairs won to 111 lost of 400 (57 in 100 of the decided pairs, 51 to 63); +1.2 points a pair (-0.3 to 2.7).",
+    "split_ties": true,
     "open_list": null,
     "open_full": 8,
     "open_follow": 4,

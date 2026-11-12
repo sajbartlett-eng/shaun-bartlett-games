@@ -191,7 +191,7 @@ if (job.kind === 'rollout') {
     const s = state(p), ctx = ctxs[p.ctx], row = { id: p.id, side: E.actor(s), by: {} };
     for (const [name, pol] of Object.entries(job.policies)) {
       const o = searchAt(s, ctx, pol);
-      row.by[name] = { results: o.results, reached: o.reached, seconds: o.seconds, explain: o.explain };
+      row.by[name] = { results: o.results, reached: o.reached, seconds: o.seconds, explain: o.explain, same_top: o.same_top };
     }
     out.rows.push(row);
   }
