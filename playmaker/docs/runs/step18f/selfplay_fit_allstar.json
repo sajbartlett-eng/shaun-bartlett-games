@@ -1,0 +1,12 @@
+{
+ "level": "allstar",
+ "possessions": 200,
+ "mean_points": 28.8,
+ "interval": [
+  26.93,
+  30.66
+ ],
+ "positions": 3725,
+ "core_hours": 1.29,
+ "wall_minutes": 22.1
+}

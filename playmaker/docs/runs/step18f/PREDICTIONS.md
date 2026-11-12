@@ -171,3 +171,13 @@ that showed its value. Nearly double the first estimate; the report says so.
 - **Result (part 7's head to head, prediction 11):** 4.09 core-hours. 400 pairs: **168 won, 127 lost, 105 tied: 57
   in 100 of the decided pairs (51 to 63).** In points, +1.2 a pair (-0.3 to 2.6). **Below the predicted +2 to +4:**
   the two switches' gains don't add up; each was measured with a wide interval.
+
+## At the end
+
+- **Used: about 52 core-hours** against the 30 first estimated (42, then 56, as runs were added).
+- The last self-play on the final map (200 possessions, the All-Star; 0.96): 27.8 points a possession (26.1 to 29.6),
+  23 shots in 100 contested (17 to 30), 6 shots in 10 in phase 1. With `rank_in_hand` (0.95): 27.3 points (25.7 to
+  28.9), 30 in 100 contested (23 to 37).
+- The sense checks (1.26): on the closeout board, with X2 covering the pass out either way, the Quick Step closer
+  holds the offence to 20.5 (18.1 to 22.9) against 26.1 for the Move closer: 5.6 better (2.4 to 8.7). On the EB3F5B
+  position the Move closer is 2.6 better than the computer's Quick Step (2.4 to 2.7).

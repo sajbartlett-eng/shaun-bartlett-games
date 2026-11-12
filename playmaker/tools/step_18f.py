@@ -360,18 +360,19 @@ def cmd_speed(tag='final', *on):
 
 # ---- the end: self-play with every action kept, the levels' order, the last head to head -----------------------------------
 
-def cmd_trace(n='200', seed='1', level='allstar'):
+def cmd_trace(n='200', seed='1', level='allstar', tag='', *on):
     """Self-play at a level on the config as it stands, every action kept (step 18d's measures), with the readings the
     map is fitted on -> work/trace_app.json (the All-Star's) or work/trace_<level>.json; `fidelity` reads the first."""
     import time
     import step_18d as D
     D.RUN, D.WORK, D.L.WORK = RUN, WORK, WORK
     pl, t0 = pool(), time.time()
-    pol = L.policy(level, 2, L.profiles()[level]['noise'])
+    pol = L.policy(level, 2, L.profiles()[level]['noise'], **_switches(on))
     starts = [pl['starts'][i % len(pl['starts'])] for i in range(int(n))]
     starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]
     rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, policies=dict(O=pol, X=pol))
-    name = 'trace_app' if level == 'allstar' else f'trace_{level}'
+    name = ('trace_app' if level == 'allstar' else f'trace_{level}') if not tag else f'trace_{tag}'
+    level = level if not tag else tag
     json.dump(dict(size='app', rows=rows), open(os.path.join(WORK, f'{name}.json'), 'w'))
     m, sd, ci = L.mean_ci([r['points'] for r in rows])
     rep = dict(level=level, possessions=len(rows), mean_points=round(m, 2), interval=[round(m - ci, 2), round(m + ci, 2)],
@@ -380,11 +381,11 @@ def cmd_trace(n='200', seed='1', level='allstar'):
     print(json.dumps(rep))
 
 
-def cmd_fidelity():
-    """Step 18d's measures on the All-Star's self-play (cmd_trace) -> fidelity.json"""
+def cmd_fidelity(*tags):
+    """Step 18d's measures on the All-Star's self-play (cmd_trace; a tag names another run) -> fidelity.json"""
     import step_18d as D
     D.RUN, D.WORK, D.L.WORK = RUN, WORK, WORK
-    D.cmd_fidelity('app')
+    D.cmd_fidelity(*(tags or ('app',)))
 
 
 def cmd_boards(names='1,3,8,9'):
