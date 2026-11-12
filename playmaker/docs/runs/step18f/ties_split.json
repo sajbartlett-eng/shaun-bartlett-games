@@ -1,0 +1,54 @@
+{
+ "O": {
+  "decisions": 145,
+  "top_is_a_tie": 80,
+  "share": 0.552,
+  "interval": [
+   0.47,
+   0.63
+  ],
+  "turns_tied_at_the_top_mean": 3.5,
+  "turns_within_pick_noise_mean": 7.2,
+  "first_action_differs_between_two_runs": [
+   0.11,
+   0.193,
+   0.031
+  ]
+ },
+ "X": {
+  "decisions": 73,
+  "top_is_a_tie": 38,
+  "share": 0.521,
+  "interval": [
+   0.408,
+   0.631
+  ],
+  "turns_tied_at_the_top_mean": 4.2,
+  "turns_within_pick_noise_mean": 12.3,
+  "first_action_differs_between_two_runs": [
+   0.13,
+   0.222,
+   0.051
+  ]
+ },
+ "both": {
+  "decisions": 218,
+  "top_is_a_tie": 118,
+  "share": 0.541,
+  "interval": [
+   0.475,
+   0.606
+  ],
+  "turns_tied_at_the_top_mean": 3.7,
+  "turns_within_pick_noise_mean": 8.9,
+  "first_action_differs_between_two_runs": [
+   0.116,
+   0.202,
+   0.027
+  ]
+ },
+ "core_hours": 0.08,
+ "switches": {
+  "split_ties": true
+ }
+}

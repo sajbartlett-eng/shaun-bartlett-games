@@ -58,6 +58,8 @@ const job = JSON.parse(fs.readFileSync(process.argv[2]));
 if (job.settle_shots != null && E.setSettle) E.setSettle(job.settle_shots);      // step 18b
 if (job.help_readings != null && E.setHelp) E.setHelp(job.help_readings);         // step 18c
 if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);         // step 18e (search.open_list)
+for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
+if (job.leaf_mode != null && E.setLeafMode) E.setLeafMode(job.leaf_mode);
 if (job.switches) E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, job.switches));
 // job.control (step 18d, D-151): the position under rules.control at that size
 const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
@@ -68,6 +70,7 @@ const prof = job.profile;
 const srch = new E.Searcher(me, prof, E.makeEvaluate(prof, me, null), Infinity);
 const endsTurn = (st, nxt) => E.isChance(nxt) || nxt.stage === 'over' || E.actor(nxt) !== me || nxt.stage !== st.stage;
 const judge = judgeOf(job.judge || {}, s);
+const done = n => (srch.whole && E.endedTurn ? E.endedTurn(s, n) : n);     // step 18f (search.whole_turns): a one-action turn ended
 
 // ---- the search's own list, stage by stage (turns() in engine.js, rebuilt) ------------------------------------------
 const rootRead = new E.Read(s, { exact: true });
@@ -133,7 +136,7 @@ const visit = (t, n) => {
   const st = stage(t)[0];
   tally[st]++;
   if (acc) { tallyAcc[st]++; nAcc++; }
-  all.push([sign * v1(n), t, acc]);
+  all.push([sign * v1(done(n)), t, acc]);
 };
 outer:
 for (const a of legal) {
@@ -156,12 +159,13 @@ const take = r => { const k = turnKey(r[1]); if (!pick.has(k)) pick.set(k, r); }
 const byKey = new Map(all.map(r => [turnKey(r[1]), r]));
 for (const [, t] of list) { const r = byKey.get(turnKey(t)); if (r) take(r); }   // (a list turn the capped pass didn't reach is left out)
 all.slice(0, job.keep || 300).forEach(take);
+for (const tjn of job.also || []) { const k = [...byKey.keys()].find(key => JSON.stringify(tj(byKey.get(key)[1])) === JSON.stringify(tjn)); if (k) take(byKey.get(k)); }   // step 18f: turns to value whatever their rank
 let ka = 0;
 for (const r of all) { if (r[2]) { take(r); if (++ka >= (job.keep_accepted || 50)) break; } }
 const rows = [];
 for (const r of pick.values()) {
   const [w1, t, acc, rk] = r, n = E.playTurn(s, t, false), st = stage(t);
-  rows.push({ turn: tj(t), words: words(t), one_turn: sign * w1, one_turn_rank: rk, pair: v2(n), stage: st[0], where: STAGES[st[0]], list_rank: st[1], accepted: acc });
+  rows.push({ turn: tj(t), words: words(t), one_turn: sign * w1, one_turn_rank: rk, pair: v2(done(n)), stage: st[0], where: STAGES[st[0]], list_rank: st[1], accepted: acc });
 }
 rows.sort((x, y) => sign * (y.pair - x.pair));
 const out = {

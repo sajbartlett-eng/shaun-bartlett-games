@@ -1,0 +1,118 @@
+{
+ "runs": [
+  "final_s"
+ ],
+ "possessions": 200,
+ "positions": 4411,
+ "held_out_error": {
+  "the_map_in_the_file": 13.338,
+  "todays_reading_refit": 13.263,
+  "looks_reading": 13.259
+ },
+ "squared_error_gain": {
+  "refit_over_the_file": [
+   -5.28,
+   9.29
+  ],
+  "looks_over_refit": [
+   -0.43,
+   0.72
+  ],
+  "looks_over_the_file": [
+   -5.25,
+   9.7
+  ]
+ },
+ "by_phase_and_side": {
+  "1O": {
+   "positions": 1076,
+   "earned": 26.1,
+   "todays_reading": 25.5,
+   "looks_reading": 19.0,
+   "slope_today": 0.278,
+   "slope_looks": 0.25,
+   "below_the_floor": 0.94
+  },
+  "1X": {
+   "positions": 903,
+   "earned": 25.4,
+   "todays_reading": 24.8,
+   "looks_reading": 15.6,
+   "slope_today": 0.208,
+   "slope_looks": 0.209,
+   "below_the_floor": 1.0
+  },
+  "2O": {
+   "positions": 695,
+   "earned": 26.6,
+   "todays_reading": 28.3,
+   "looks_reading": 23.0,
+   "slope_today": 0.322,
+   "slope_looks": 0.291,
+   "below_the_floor": 0.89
+  },
+  "2X": {
+   "positions": 578,
+   "earned": 25.7,
+   "todays_reading": 27.4,
+   "looks_reading": 18.3,
+   "slope_today": 0.057,
+   "slope_looks": 0.055,
+   "below_the_floor": 1.0
+  },
+  "3O": {
+   "positions": 367,
+   "earned": 25.1,
+   "todays_reading": 25.9,
+   "looks_reading": 22.2,
+   "slope_today": 0.141,
+   "slope_looks": 0.132,
+   "below_the_floor": 0.86
+  },
+  "3X": {
+   "positions": 295,
+   "earned": 24.0,
+   "todays_reading": 25.1,
+   "looks_reading": 17.8,
+   "slope_today": -0.089,
+   "slope_looks": -0.109,
+   "below_the_floor": 1.0
+  },
+  "4O": {
+   "positions": 177,
+   "earned": 26.4,
+   "todays_reading": 27.0,
+   "looks_reading": 21.9,
+   "slope_today": 0.134,
+   "slope_looks": 0.089,
+   "below_the_floor": 0.94
+  },
+  "4X": {
+   "positions": 149,
+   "earned": 26.0,
+   "todays_reading": 26.6,
+   "looks_reading": 18.4,
+   "slope_today": 0.124,
+   "slope_looks": 0.13,
+   "below_the_floor": 1.0
+  },
+  "5O": {
+   "positions": 91,
+   "earned": 27.3,
+   "todays_reading": 29.8,
+   "looks_reading": 23.1,
+   "slope_today": 0.114,
+   "slope_looks": 0.139,
+   "below_the_floor": 0.98
+  },
+  "5X": {
+   "positions": 64,
+   "earned": 27.5,
+   "todays_reading": 28.9,
+   "looks_reading": 18.6,
+   "slope_today": 0.149,
+   "slope_looks": 0.156,
+   "below_the_floor": 1.0
+  }
+ }
+}

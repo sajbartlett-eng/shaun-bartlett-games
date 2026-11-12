@@ -1,0 +1,173 @@
+{
+ "fixed": {
+  "moves": [
+   {
+    "move": "the computer's: X3 Move to C4 facing SW, then X2 Move to B6 facing SW",
+    "playouts": 160,
+    "offence_scores": 26.06,
+    "interval": [
+     24.05,
+     28.08
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "X3 Quick Steps closer (E4)",
+    "playouts": 160,
+    "offence_scores": 32.42,
+    "interval": [
+     29.72,
+     35.13
+    ],
+    "against_the_first": 6.36,
+    "difference_interval": [
+     3.08,
+     9.64
+    ]
+   },
+   {
+    "move": "X3 Moves closer (C4), facing him",
+    "playouts": 160,
+    "offence_scores": 26.7,
+    "interval": [
+     24.56,
+     28.84
+    ],
+    "against_the_first": 0.64,
+    "difference_interval": [
+     -2.35,
+     3.62
+    ]
+   },
+   {
+    "move": "the defence Pauses",
+    "playouts": 160,
+    "offence_scores": 31.69,
+    "interval": [
+     29.94,
+     33.44
+    ],
+    "against_the_first": 5.62,
+    "difference_interval": [
+     2.9,
+     8.35
+    ]
+   }
+  ],
+  "core_hours": 0.555,
+  "the_computer_reads_its_choice": 29.8
+ },
+ "eb3f5b": {
+  "moves": [
+   {
+    "move": "the computer's: X4 Quick Step to E4",
+    "playouts": 160,
+    "offence_scores": 33.0,
+    "interval": [
+     33.0,
+     33.0
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "X4 Moves closer (C4), facing him",
+    "playouts": 160,
+    "offence_scores": 30.43,
+    "interval": [
+     30.27,
+     30.59
+    ],
+    "against_the_first": -2.57,
+    "difference_interval": [
+     -2.73,
+     -2.41
+    ]
+   },
+   {
+    "move": "the defence Pauses",
+    "playouts": 160,
+    "offence_scores": 33.0,
+    "interval": [
+     33.0,
+     33.0
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "core_hours": 0.189,
+  "the_computer_reads_its_choice": 28.62
+ },
+ "fixed, the same second action": {
+  "moves": [
+   {
+    "move": "the computer's: X3 Moves closer (C4), then X2 moves to B6",
+    "playouts": 160,
+    "offence_scores": 26.06,
+    "interval": [
+     24.05,
+     28.08
+    ],
+    "against_the_first": 0.0,
+    "difference_interval": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "move": "your order with the same second action: X3 Quick Steps closer (E4), then X2 moves to B6",
+    "playouts": 160,
+    "offence_scores": 20.5,
+    "interval": [
+     18.11,
+     22.89
+    ],
+    "against_the_first": -5.56,
+    "difference_interval": [
+     -8.71,
+     -2.42
+    ]
+   },
+   {
+    "move": "X3 Quick Steps to E3, then X2 moves to B6 (the control-aware cover's choice)",
+    "playouts": 160,
+    "offence_scores": 27.06,
+    "interval": [
+     25.09,
+     29.03
+    ],
+    "against_the_first": 1.0,
+    "difference_interval": [
+     -2.11,
+     4.11
+    ]
+   },
+   {
+    "move": "X2 moves to B6 alone",
+    "playouts": 160,
+    "offence_scores": 31.69,
+    "interval": [
+     29.94,
+     33.44
+    ],
+    "against_the_first": 5.62,
+    "difference_interval": [
+     2.9,
+     8.35
+    ]
+   }
+  ],
+  "core_hours": 0.513
+ }
+}

@@ -1,0 +1,164 @@
+{
+ "1": {
+  "side": "X",
+  "choice": {
+   "words": "X2 Quick Step to D6, then X5 Move to O3 facing N",
+   "value": 24.537
+  },
+  "top": [
+   [
+    "X2 Quick Step to D6, then X5 Move to O3 facing N",
+    24.537
+   ],
+   [
+    "X2 Quick Step to D6",
+    24.537
+   ],
+   [
+    "X2 Quick Step to D6, then X Pause",
+    24.537
+   ],
+   [
+    "X Pause",
+    25.414
+   ]
+  ],
+  "named": [
+   {
+    "name": "does nothing",
+    "reads": 25.414,
+    "behind": 0.877,
+    "on_the_list": 4
+   },
+   {
+    "name": "step 18a's choice",
+    "reads": 26.292,
+    "behind": 1.755,
+    "on_the_list": null
+   }
+  ]
+ },
+ "3": {
+  "side": "X",
+  "choice": {
+   "words": "X2 Quick Step to D6, then X Pause",
+   "value": 26.292
+  },
+  "top": [
+   [
+    "X2 Quick Step to D6, then X Pause",
+    26.292
+   ],
+   [
+    "X2 Quick Step to D7, then X Pause",
+    26.292
+   ],
+   [
+    "X2 Quick Step to C8, then X Pause",
+    26.292
+   ],
+   [
+    "X Pause",
+    26.292
+   ]
+  ],
+  "named": [
+   {
+    "name": "does nothing",
+    "reads": 26.292,
+    "behind": 0,
+    "on_the_list": 4
+   },
+   {
+    "name": "the board's help: the low man steps up, another covers",
+    "reads": 30.679,
+    "behind": 4.387,
+    "on_the_list": null
+   },
+   {
+    "name": "the board's help, both with a Move",
+    "reads": 32.026,
+    "behind": 5.734,
+    "on_the_list": null
+   }
+  ]
+ },
+ "8": {
+  "side": "O",
+  "choice": {
+   "words": "O2 Move to E10, then O1 Pass to O2",
+   "value": 32.688
+  },
+  "top": [
+   [
+    "O2 Move to E10, then O1 Pass to O2",
+    32.688
+   ],
+   [
+    "O2 Move to E10, then O1 Move to J10",
+    32.688
+   ],
+   [
+    "O2 Move to E10, then O1 Move to K10",
+    32.688
+   ],
+   [
+    "O2 Move to E10, then O1 Sprint to J10",
+    32.688
+   ]
+  ],
+  "named": [
+   {
+    "name": "the board's move: the backdoor cut and the pass",
+    "reads": 31.767,
+    "behind": 0.921,
+    "on_the_list": null
+   },
+   {
+    "name": "the cut alone",
+    "reads": 23.175,
+    "behind": 9.513,
+    "on_the_list": null
+   }
+  ]
+ },
+ "9": {
+  "side": "O",
+  "choice": {
+   "words": "O1 Quick Step to K4, then O2 Quick Step to B8",
+   "value": 28.652
+  },
+  "top": [
+   [
+    "O1 Quick Step to K4, then O2 Quick Step to B8",
+    28.652
+   ],
+   [
+    "O1 Quick Step to K4, then O2 Sprint to B8",
+    28.652
+   ],
+   [
+    "O1 Quick Step to K4, then O3 Move to H14",
+    24.515
+   ],
+   [
+    "O1 Quick Step to K4, then O4 Sprint to H3",
+    24.515
+   ]
+  ],
+  "named": [
+   {
+    "name": "the board's move: the kick-out to the corner",
+    "reads": 24.835,
+    "behind": 3.817,
+    "on_the_list": null
+   },
+   {
+    "name": "the corner man relocates",
+    "reads": 23.163,
+    "behind": 5.488,
+    "on_the_list": null
+   }
+  ]
+ }
+}

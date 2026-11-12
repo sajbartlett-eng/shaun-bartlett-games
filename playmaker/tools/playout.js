@@ -11,7 +11,14 @@ const E = require(path.join(__dirname, '..', 'playmaker_web', 'static', 'engine.
 const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
-E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
+const SEARCH_DEFAULT = load('ai_profiles.json').search || {}, EVAL_DEFAULT = load('ai_profiles.json').eval || {};
+const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand']];      // step 18f: [the policy's setting, the engine's setter]
+const LEARNED = fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null;
+// step 18f: a policy's `map: 'start'` plays with the map as it stood at the start of the step (the end re-measure's other side)
+const START_FILE = path.join(__dirname, '..', 'docs', 'runs', 'step18f', 'start_of_step_weights.json');
+const START_MAP = fs.existsSync(START_FILE) ? JSON.parse(fs.readFileSync(START_FILE)).calibration : null;
+const FILE_MAP = LEARNED ? LEARNED.calibration : null;
+E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), learned: LEARNED });
 
 function rng(seed) {                                   // mulberry32: the same dice for the same seed
   let a = seed >>> 0;
@@ -34,6 +41,9 @@ function apply(set) {                                  // an engine's switches, 
   if (E.setSettle) E.setSettle(set.settle_shots !== false);            // on by default (D-148)
   if (E.setHelp) E.setHelp(!!set.help_readings);                       // step 18c
   if (E.setOpenList) E.setOpenList(set.open_list === undefined ? OPEN_DEFAULT : set.open_list);   // step 18e (unset: the config's)
+  if (LEARNED) LEARNED.calibration = set.map === 'start' && START_MAP ? START_MAP : FILE_MAP;      // before setLeafMode, which clears the stored reads
+  if (E.setLeafMode) E.setLeafMode(set.leaf_mode === undefined ? (EVAL_DEFAULT.leaf_mode || 'floor') : set.leaf_mode);   // step 18f (unset: the config's)
+  for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? !!SEARCH_DEFAULT[k] || !!EVAL_DEFAULT[k] : set[k]);   // step 18f (unset: the config's)
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }
@@ -47,8 +57,12 @@ function decide(s, ctx, pol, r) {                      // one action: the first 
   if (legal.length === 1) return legal[0];
   const out = searchAt(s, ctx, pol), sign = E.actor(s) === 'O' ? 1 : -1;
   let best = null, bv = -Infinity;
+  const split = !!(E.splitOn && E.splitOn());            // step 18f (search.split_ties): turns that read the same get one draw
+  let prev = null, nz = 0;
   for (const [v, t] of out.results) {
-    const x = sign * v + (pol.noise ? pol.noise * gauss(pol.rn || r) : 0);     // rn: the engine's own noise, apart from the dice
+    if (!split || prev === null || Math.abs(v - prev) >= 1e-9) nz = pol.noise ? pol.noise * gauss(pol.rn || r) : 0;     // rn: the engine's own noise, apart from the dice
+    prev = v;
+    const x = sign * v + nz;
     if (x > bv) { bv = x; best = t; }
   }
   const want = JSON.stringify(best[0]);
@@ -138,7 +152,7 @@ if (job.kind === 'rollout') {
       const g = playout(state(p), ctx, job.policies, rng((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)), s => {
         if (s.stage !== 'play' || s.pending) return;
         if (job.keepDefence && s.side === 'X' && s.turn_n === 0) defence.push(E.stateJSON(s));   // the defence to act, its turn's start
-        if (job.features) seen.push([s.clock, E.bankedOf(s), E.handLeaf(s)].concat(Array.from(E.featuresOf(s))));
+        if (job.features) seen.push([s.clock, E.bankedOf(s), E.handLeaf(s)].concat(Array.from(E.featuresOf(s))).concat(job.looks && E.looksLeaf ? [E.looksLeaf(s)] : []));   // job.looks (step 18f): the looks reading, last
         else seen.push(E.stateJSON(s));
       });
       out.rows.push({ id: p.id, k, ctx: p.ctx, points: g.points, value: g.value, decisions: g.decisions, states: seen, end: [g.kind, g.clock, g.tokens],
@@ -163,7 +177,7 @@ if (job.kind === 'rollout') {
         if (E.isChance(node)) { node = sample(node, r); continue; }
         if (node.stage === 'over' || n > 300) break;
         const side = E.actor(node);
-        if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0]);
+        if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []));   // job.looks (step 18f): the looks reading, last
         const a = decide(node, ctx, pols[side], r);
         const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;
         events.push([node.phase, node.stage, a.side, a.kind, a.piece, from, a.dest >= 0 ? E.sqName(a.dest) : null, a.target, node.ball, E.sqName(node.o[node.ball]), a.shot || '']);
@@ -183,7 +197,7 @@ if (job.kind === 'rollout') {
     const s = state(p), ctx = ctxs[p.ctx], row = { id: p.id, side: E.actor(s), by: {} };
     for (const [name, pol] of Object.entries(job.policies)) {
       const o = searchAt(s, ctx, pol);
-      row.by[name] = { results: o.results, reached: o.reached, seconds: o.seconds, explain: o.explain };
+      row.by[name] = { results: o.results, reached: o.reached, seconds: o.seconds, explain: o.explain, same_top: o.same_top };
     }
     out.rows.push(row);
   }

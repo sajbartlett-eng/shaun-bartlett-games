@@ -1,0 +1,42 @@
+{
+ "today": {
+  "median": 0.219,
+  "nine_in_ten": 0.314,
+  "slowest": 0.471,
+  "defence_nine_in_ten": 0.384,
+  "desktop_target": 0.3,
+  "fits": false
+ },
+ "8:4": {
+  "median": 0.401,
+  "nine_in_ten": 0.552,
+  "slowest": 0.75,
+  "defence_nine_in_ten": 0.738,
+  "desktop_target": 0.3,
+  "fits": false
+ },
+ "4:2": {
+  "median": 0.298,
+  "nine_in_ten": 0.498,
+  "slowest": 0.608,
+  "defence_nine_in_ten": 0.542,
+  "desktop_target": 0.3,
+  "fits": false
+ },
+ "2:1": {
+  "median": 0.254,
+  "nine_in_ten": 0.375,
+  "slowest": 0.519,
+  "defence_nine_in_ten": 0.487,
+  "desktop_target": 0.3,
+  "fits": false
+ },
+ "1:1": {
+  "median": 0.269,
+  "nine_in_ten": 0.406,
+  "slowest": 0.518,
+  "defence_nine_in_ten": 0.432,
+  "desktop_target": 0.3,
+  "fits": false
+ }
+}

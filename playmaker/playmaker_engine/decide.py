@@ -564,7 +564,8 @@ class Read:
                 lk.open = {t: pts * card.shot(t) for t in lk.types}
             lk.vals = {}
             for d in self.att_x:
-                v = self._vals(lk, d, self._cm[d].get(c))
+                dj = getattr(self, '_dj', None)             # step 18f: a moved defender's control state, given
+                v = self._vals(lk, d, self._cm[d].get(c), dflags=dj[1] if dj and dj[0] == d else None)
                 if v:
                     lk.vals[d] = v
             lk.finish()
@@ -606,8 +607,10 @@ class Read:
         last = not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS
         if last:
             v = banked + max(sn or 0.0, nowv)
-        elif self.cfg.get('leaf_mode', 'floor') == 'relative':
+        elif leaf_mode(s, self.cfg) == 'relative':
             v = banked + max(sn or 0.0, nowv, vcoarse(s) + cont - relative_average(s, self.cfg, False))
+        elif leaf_mode(s, self.cfg) == 'looks':
+            v = banked + max(sn or 0.0, nowv, cont)
         else:
             v = banked + max(sn or 0.0, nowv, cont, vcoarse(s))
         if self.cfg.get('settle_shots') is True:
@@ -616,9 +619,7 @@ class Read:
                 v = banked + top
             w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
             if w is not None and w.get('calibration') and s.stage == 'play' and not last:
-                cal = w['calibration']
-                if not s.ctx.rules.digital and self.cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
-                    cal = w['calibration_tabletop']
+                cal = calibration_for(s, self.cfg, w)
                 r = calibrate(cal, s, self.o_to_act, v - banked)
                 if r > top:
                     r = top
@@ -661,6 +662,7 @@ class Read:
                 sub.s = mv
                 sub._cm = dict(self._cm)
                 sub._cm[j] = cm if into else {}
+                sub._dj = (j, dflags) if kept_on(self.cfg) else None
                 lks = sub._looks(carrier)
                 lv = [0.0, 0.0, -1]
                 for lk in lks:
@@ -760,8 +762,12 @@ class Read:
         leave_cache = {}
         front = lambda p_: (carrier in self.att_o and B.cheb(p_, s.o[carrier]) <= 2 and
                             B.dist_rim(p_) < B.dist_rim(s.o[carrier]))
+        kept = kept_on(self.cfg) and RC.control_size(self.rules) > 0
+        moved_j = s.moved('X', j)
         for q, a, used in cands:
             cm = self._contest(j, q, a, used)
+            # step 18f (eval.kept_actions): his control after the answer (rushed where he stands, his Move used)
+            dfl = None if not kept else ((False, True) if used == 'move' else (True, moved_j))
             left = dict(base)
             gain = 0.0
             moved_state = None
@@ -780,6 +786,7 @@ class Read:
                     sub.s = moved
                     sub._cm = dict(self._cm)
                     sub._cm[j] = cm if into else {}
+                    sub._dj = (j, dfl) if dfl is not None else None
                     left[carrier] = max((lk.base for lk in sub._looks(carrier)), default=0.0)
                     if out_of:
                         leave_cache[j] = left[carrier]
@@ -805,7 +812,7 @@ class Read:
                                                       arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:],
                                                       moved_x=s.moved_x | (1 << j) if used == 'move' else s.moved_x)
                             p_new = _lane_p(moved_state, i, lk.c, reach=False)   # his response changes the lane
-                        v = lk.swapped(j, self._vals(lk, j, row) if row is not None else None, p_new)
+                        v = lk.swapped(j, self._vals(lk, j, row, dflags=dfl) if row is not None else None, p_new)
                     if v > best:
                         best = v
                 left[i] = best
@@ -941,9 +948,7 @@ class Read:
             return v
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
-        cal = w['calibration']
-        if not s.ctx.rules.digital and self.cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
-            cal = w['calibration_tabletop']             # D-141: the table's own map
+        cal = calibration_for(s, self.cfg, w)           # D-141: the table's own map; step 18f: the looks reading's own
         r = calibrate(cal, s, self.o_to_act, v - banked)
         if top is not None and r > top:
             r = top
@@ -975,10 +980,16 @@ class Read:
         coarse = vcoarse(s)
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + max(sn or 0.0, now)     # no offence turn is left before the clock runs out: only a shot now counts
-        if self.cfg.get('leaf_mode', 'floor') == 'relative':
+        mode = leaf_mode(s, self.cfg)
+        if mode == 'relative':
             # step 10 (behind the switch): the phase table's average plus how much better or worse this position reads
             # than an average position at that phase, read the same way (eval.relative_average, from the step 3n seeds)
             return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
+        if mode == 'looks':
+            # step 18f (behind the switch): the looks alone. The phase table's floor hides everything below the
+            # average (a shot worth 15 and one worth 21 read the same); the map fitted to this reading
+            # (calibration_looks) says what such positions went on to earn instead
+            return banked + max(sn or 0.0, now, cont)
         return banked + max(sn or 0.0, now, cont, coarse)
 
     def possession(self):
@@ -992,8 +1003,11 @@ class Read:
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + now
         cont, coarse = self.continuation(), vcoarse(s)
-        if self.cfg.get('leaf_mode', 'floor') == 'relative':
+        mode = leaf_mode(s, self.cfg)
+        if mode == 'relative':
             return banked + max(now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
+        if mode == 'looks':
+            return banked + max(now, cont)
         return banked + max(now, cont, coarse)
 
     # -- step 17: the named readings a learned judgement is built from (FEATURES gives each one's meaning)
@@ -1374,6 +1388,45 @@ def calibration_scale(s, phase):
     if not a or not b or a <= 0 or b <= 0:
         return 1.0
     return a / b
+
+
+def kept_on(cfg):
+    """Step 18f (eval.kept_actions): a defender's answer is read by what he has left. The cover's re-read of a defender
+    moved to a square took his control as it stands now; with the switch on, an answer by a Quick Step or a Sprint is
+    rushed and one by a Move is set, as the control rule says (and the open list's re-read of a defender stepping into
+    the ball handler's way reads the handler's looks the same way)."""
+    return cfg.get('kept_actions') is True
+
+
+_FORCE_LOOKS = [False]              # the fitting tool reads positions in the looks mode whatever the config says
+
+
+def leaf_mode(s, cfg):
+    """The reading's mode at a position: eval.leaf_mode ('floor', 'relative'), or 'looks' (step 18f): the looks
+    alone, without the phase table's floor. 'looks' is in play only under the app's rules with the calibrated reading
+    on and a map fitted to it (calibration_looks); anywhere else it reads as 'floor'."""
+    if _FORCE_LOOKS[0]:
+        return 'looks'
+    m = cfg.get('leaf_mode', 'floor')
+    if m != 'looks':
+        return m
+    w = learned_weights() if cfg.get('calibrated') is True and cfg.get('learned') is not True else None
+    if not (s.ctx.rules.digital and w is not None and w.get('calibration_looks')):
+        return 'floor'
+    # only where the looks map has a line for this phase and side to act (too few positions to fit one: the floor)
+    phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
+    key = str(phase) + ('O' if s.side == 'O' and s.stage == 'play' else 'X')
+    return 'looks' if key in w['calibration_looks']['maps'] else 'floor'
+
+
+def calibration_for(s, cfg, w):
+    """The map a position's reading goes through: the looks reading's own (step 18f), the table's own under the
+    table's rules (D-141), or the app's."""
+    if leaf_mode(s, cfg) == 'looks' and w.get('calibration_looks'):
+        return w['calibration_looks']
+    if not s.ctx.rules.digital and cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
+        return w['calibration_tabletop']
+    return w['calibration']
 
 
 def calibrate(cal, s, o_to_act, r):

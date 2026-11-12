@@ -1,0 +1,140 @@
+{
+ "closeout, the shooter cannot move": {
+  "chose": "X2 Move to C5 facing SW",
+  "reads": 29.162,
+  "top": [
+   [
+    "X2 Move to C5 facing SW",
+    29.162
+   ],
+   [
+    "X3 Move to C4 facing SW",
+    30.713
+   ],
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+    30.713
+   ],
+   [
+    "X3 Move to C4 facing SW, then X2 Move to B6 facing SW",
+    30.713
+   ],
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to J9",
+    30.713
+   ]
+  ],
+  "named": [
+   {
+    "name": "X3 Quick Steps closer (E4)",
+    "reads": 30.713,
+    "behind": 1.551,
+    "on_the_list": null
+   },
+   {
+    "name": "X3 Moves closer (C4), facing him",
+    "reads": 30.713,
+    "behind": 1.551,
+    "on_the_list": 2
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 32.55,
+    "behind": 3.388,
+    "on_the_list": 8
+   }
+  ]
+ },
+ "closeout, the shooter can move": {
+  "chose": "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+  "reads": 29.679,
+  "top": [
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to I9",
+    29.679
+   ],
+   [
+    "X3 Move to C4 facing SW, then X1 Quick Step to J9",
+    29.679
+   ],
+   [
+    "X3 Move to C4 facing SW, then X Pause",
+    29.679
+   ],
+   [
+    "X3 Quick Step to E3",
+    30.713
+   ],
+   [
+    "X3 Quick Step to E3, then X1 Quick Step to I9",
+    30.713
+   ]
+  ],
+  "named": [
+   {
+    "name": "X3 Quick Steps closer (E4)",
+    "reads": 29.679,
+    "behind": 0,
+    "on_the_list": null
+   },
+   {
+    "name": "X3 Moves closer (C4), facing him",
+    "reads": 29.679,
+    "behind": 0,
+    "on_the_list": null
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 32.55,
+    "behind": 2.871,
+    "on_the_list": 19
+   }
+  ]
+ },
+ "EB3F5B, the pass in the air": {
+  "chose": "X4 Quick Step to E4, then X Pause",
+  "reads": 32.185,
+  "top": [
+   [
+    "X4 Quick Step to E4, then X Pause",
+    32.185
+   ],
+   [
+    "X4 Quick Step to E3, then X Pause",
+    32.185
+   ],
+   [
+    "X4 Quick Step to E3, then X4 Move to B3 facing W",
+    32.185
+   ],
+   [
+    "X Pause",
+    33
+   ],
+   [
+    "X2 Quick Step to C8, then X4 Move to C4 facing SW",
+    33
+   ]
+  ],
+  "named": [
+   {
+    "name": "X4 Quick Steps closer (E4)",
+    "reads": 32.185,
+    "behind": 0,
+    "on_the_list": null
+   },
+   {
+    "name": "X4 Moves closer (C4), facing him",
+    "reads": 33,
+    "behind": 0.815,
+    "on_the_list": null
+   },
+   {
+    "name": "the defence Pauses",
+    "reads": 33,
+    "behind": 0.815,
+    "on_the_list": 4
+   }
+  ]
+ }
+}

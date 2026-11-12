@@ -146,7 +146,7 @@ def map_error(rows, cal):
     per = []
     for r in rows:
         se = n = 0
-        for clock, banked, hand, o_to_act in r['reads']:
+        for clock, banked, hand, o_to_act, *_ in r['reads']:
             m = cal['maps'].get(f"{PHASE(clock)}{'O' if o_to_act else 'X'}")
             x = hand - banked
             y = (m['y'][0] + (m['y'][1] - m['y'][0]) * (x - m['x'][0]) / (m['x'][1] - m['x'][0])) if m else x

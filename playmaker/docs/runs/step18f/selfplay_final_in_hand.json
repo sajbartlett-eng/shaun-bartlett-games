@@ -1,0 +1,12 @@
+{
+ "level": "in_hand",
+ "possessions": 200,
+ "mean_points": 27.29,
+ "interval": [
+  25.72,
+  28.86
+ ],
+ "positions": 2504,
+ "core_hours": 0.95,
+ "wall_minutes": 15.6
+}

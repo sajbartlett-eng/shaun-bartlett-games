@@ -1,0 +1,100 @@
+{
+ "runs": [
+  "trace_app"
+ ],
+ "possessions": 200,
+ "positions": 3725,
+ "held_out_error": {
+  "the_map_in_the_file": 12.155,
+  "todays_reading_refit": 12.293,
+  "looks_reading": 12.292
+ },
+ "squared_error_gain": {
+  "refit_over_the_file": [
+   -9.43,
+   0.7
+  ],
+  "looks_over_refit": [
+   -0.5,
+   0.44
+  ],
+  "looks_over_the_file": [
+   -9.66,
+   0.69
+  ]
+ },
+ "by_phase_and_side": {
+  "1O": {
+   "positions": 1073,
+   "earned": 29.4,
+   "todays_reading": 26.7,
+   "looks_reading": 20.8,
+   "slope_today": 0.345,
+   "slope_looks": 0.287,
+   "below_the_floor": 0.93
+  },
+  "1X": {
+   "positions": 806,
+   "earned": 28.8,
+   "todays_reading": 26.4,
+   "looks_reading": 17.2,
+   "slope_today": 0.21,
+   "slope_looks": 0.209,
+   "below_the_floor": 1.0
+  },
+  "2O": {
+   "positions": 621,
+   "earned": 29.5,
+   "todays_reading": 29.1,
+   "looks_reading": 24.3,
+   "slope_today": 0.266,
+   "slope_looks": 0.201,
+   "below_the_floor": 0.89
+  },
+  "2X": {
+   "positions": 483,
+   "earned": 28.7,
+   "todays_reading": 27.1,
+   "looks_reading": 18.1,
+   "slope_today": 0.168,
+   "slope_looks": 0.171,
+   "below_the_floor": 1.0
+  },
+  "3O": {
+   "positions": 296,
+   "earned": 28.1,
+   "todays_reading": 27.2,
+   "looks_reading": 24.2,
+   "slope_today": 0.202,
+   "slope_looks": 0.166,
+   "below_the_floor": 0.82
+  },
+  "3X": {
+   "positions": 231,
+   "earned": 26.9,
+   "todays_reading": 25.4,
+   "looks_reading": 18.1,
+   "slope_today": 0.008,
+   "slope_looks": 0.012,
+   "below_the_floor": 1.0
+  },
+  "4O": {
+   "positions": 117,
+   "earned": 27.4,
+   "todays_reading": 28.4,
+   "looks_reading": 24.1,
+   "slope_today": 0.188,
+   "slope_looks": 0.099,
+   "below_the_floor": 0.9
+  },
+  "4X": {
+   "positions": 82,
+   "earned": 26.4,
+   "todays_reading": 27.0,
+   "looks_reading": 18.7,
+   "slope_today": 0.306,
+   "slope_looks": 0.305,
+   "below_the_floor": 1.0
+  }
+ }
+}

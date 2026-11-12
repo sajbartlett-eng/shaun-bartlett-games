@@ -1,0 +1,37 @@
+{
+ "name": "final_s",
+ "level": "starter",
+ "switches": {},
+ "possessions": 200,
+ "positions": 4411,
+ "mean_points": 25.06,
+ "interval": [
+  22.99,
+  27.13
+ ],
+ "shot_timing": {
+  "possessions": 200,
+  "shots_by_phase_pct": [
+   26,
+   33,
+   20,
+   9,
+   9,
+   3
+  ],
+  "shots_in_phases_1_and_2_pct": 59,
+  "decisions": 24.3,
+  "clock_ran_out": 0,
+  "clock_interval_in_100": [
+   0.0,
+   1.9
+  ],
+  "lost_in_100_phases_kept": 15.3,
+  "lost_interval": [
+   11.8,
+   19.7
+  ]
+ },
+ "core_hours": 0.75,
+ "wall_minutes": 12.6
+}
