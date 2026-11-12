@@ -13,6 +13,7 @@
       "reaction_delay": "previous_board",
       "goal_margin_m0": 8,
       "variety_margin": 0,
+      "level": "rookie",
       "time_budget_s": 0.3,
       "scout_human": false,
       "open_list": "defence",
@@ -31,6 +32,7 @@
       "reaction_delay": "own_attention",
       "goal_margin_m0": 4,
       "variety_margin": 1,
+      "level": "starter",
       "time_budget_s": 1.0,
       "scout_human": false,
       "open_list": "defence",
@@ -49,6 +51,7 @@
       "reaction_delay": "current",
       "goal_margin_m0": 1,
       "variety_margin": 2,
+      "level": "allstar",
       "time_budget_s": 2.5,
       "scout_human": true,
       "open_list": "defence"
@@ -59,6 +62,8 @@
     "responses_per_defender": 3,
     "later_p": 0.7,
     "continuation": 0.85,
+    "_no_floor": "Step 18h: the reading keeps its parts instead of taking the largest of them. Today's reading is the largest of the shot that can go up now and 'play on' (the phase table plus the best look the cover leaves, less the phase's average), then a map; what is not the largest is thrown away, and of the looks the cover leaves only the best counts. On: what is left to earn is a line fitted to what positions went on to earn (learned_weights.json, calibration_parts), per level, phase and side to act: a + b1 x the best shot now + b2 x the best look the cover leaves + b3 x the second best, b1 to b3 never below 0. Under the app's rules with the calibrated reading on; where no line was fitted, the map as before.",
+    "no_floor": false,
     "franks_weights": {
       "man": 0.62,
       "ball": 0.11,

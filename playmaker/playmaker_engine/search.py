@@ -288,7 +288,7 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
     b2 = _banked(ref)
 
     def q_of(vec):
-        return R._quick_cont(R._cont_of(vec), vec[5], vec[6])
+        return R._quick_cont(R._cont_of(vec), vec[5], vec[6], vec)
 
     def facts(n, j, left):
         cm, ql = _caps(left, 'X', j)
@@ -504,6 +504,8 @@ class Searcher:
     evaluate(s): the leaf value (offence's view)."""
 
     def __init__(self, me, profile, evaluate, deadline, rng=None):
+        from . import decide as _decide
+        _decide.LEVEL[0] = profile.get('level')      # step 18h: the level's own lines (calibration_parts), if it has them
         self.me = me
         self.p = profile
         self.evaluate = evaluate

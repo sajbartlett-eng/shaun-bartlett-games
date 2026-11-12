@@ -597,9 +597,9 @@ class Read:
         ties = [t for t in vals if t >= top - 1e-9]
         return (sum(ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
 
-    def _quick_cont(self, cont, nowv, snv):
+    def _quick_cont(self, cont, nowv, snv, tv=None):
         """The quick reading (Read(s, k=0, looks_per=3).leaf(), no pass in the air) from what is left to play for and
-        the shots that can go up now, re-read (snv < 0: none)."""
+        the shots that can go up now, re-read (snv < 0: none). tv (step 18h): each attacker's best look, re-read."""
         s = self.s
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
@@ -619,8 +619,14 @@ class Read:
                 v = banked + top
             w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
             if w is not None and w.get('calibration') and s.stage == 'play' and not last:
-                cal = calibration_for(s, self.cfg, w)
-                r = calibrate(cal, s, self.o_to_act, v - banked)
+                pm = parts_map(s, self.cfg, w)
+                r = None
+                if pm is not None:                    # step 18h (eval.no_floor): with no cover read, every look is left
+                    res = sorted((self.threat[i]['value'] if tv is None else tv[i] for i in self.att_o), reverse=True)
+                    r = parts_value(pm, s, self.o_to_act, max(sn or 0.0, nowv), res[0] if res else 0.0, res[1] if len(res) > 1 else 0.0)
+                if r is None:
+                    cal = calibration_for(s, self.cfg, w)
+                    r = calibrate(cal, s, self.o_to_act, v - banked)
                 if r > top:
                     r = top
                 v = banked + r
@@ -948,6 +954,17 @@ class Read:
             return v
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
         banked += foul_externality(s)
+        pm = parts_map(s, self.cfg, w)
+        if pm is not None:
+            # step 18h (eval.no_floor): the reading's parts, each kept, in place of the largest of them
+            sn = self.shot_now() or 0.0
+            now = max((lk.base for i in self.att_o for lk in self.looks[i] if lk.now), default=0.0)
+            res = sorted((self.cover()['residual'][i] for i in self.att_o), reverse=True)
+            r = parts_value(pm, s, self.o_to_act, max(sn, now), res[0] if res else 0.0, res[1] if len(res) > 1 else 0.0)
+            if r is not None:
+                if top is not None and r > top:
+                    r = top
+                return banked + r
         cal = calibration_for(s, self.cfg, w)           # D-141: the table's own map; step 18f: the looks reading's own
         r = calibrate(cal, s, self.o_to_act, v - banked)
         if top is not None and r > top:
@@ -1417,6 +1434,39 @@ def leaf_mode(s, cfg):
     phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
     key = str(phase) + ('O' if s.side == 'O' and s.stage == 'play' else 'X')
     return 'looks' if key in w['calibration_looks']['maps'] else 'floor'
+
+
+# ---- step 18h (eval.no_floor) ------------------------------------------------------------------------------------------
+# Today's reading takes the largest of three things: the shot the ball handler can release now, the best look another
+# attacker can release this turn, and "play on" (the phase table plus the best look the cover leaves, less the phase's
+# average). Whatever is not the largest is thrown away, and of the looks the cover leaves only the best one counts. So
+# positions that differ in the shot they leave, or in the second look they leave, read the same. With the switch on
+# the parts are kept: what is left to earn is a line fitted to what positions went on to earn (the weights file's
+# calibration_parts block), per level, phase and side to act:
+#   a + b1 x (the best shot that can go up now) + b2 x (the best look the cover leaves) + b3 x (the second best)
+# with b1, b2, b3 never below 0 (a better shot, or a better look left, is never worth less to the offence: it can
+# decline it). Every number is from the fit. Under the app's rules, with the calibrated reading on.
+LEVEL = [None]                                          # the level whose search is running (its own lines, if it has them)
+
+
+def parts_map(s, cfg, w):
+    if cfg.get('no_floor') is not True or w is None or not w.get('calibration_parts') or not s.ctx.rules.digital:
+        return None
+    return w['calibration_parts']['levels']
+
+
+def parts_value(levels, s, o_to_act, shot, look, second):
+    """What is left to earn, from the reading's parts; None where no line was fitted (too few positions): the map then."""
+    phase = min(6, max(1, (RC.START_CLOCK - s.clock) // RC.PHASE_SECONDS + 1))
+    key = str(phase) + ('O' if o_to_act else 'X')
+    row = (levels.get(LEVEL[0]) or {}).get('maps', {}).get(key) or (levels.get('all') or {}).get('maps', {}).get(key)
+    if row is None:
+        return None
+    a, b1, b2, b3 = row['w']
+    q = calibration_scale(s, phase)
+    if q == 1.0:
+        return a + (b1 * shot + b2 * look + b3 * second)
+    return q * (a + (b1 * shot + b2 * look + b3 * second) / q)
 
 
 def calibration_for(s, cfg, w):

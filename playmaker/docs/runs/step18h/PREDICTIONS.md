@@ -33,3 +33,14 @@ Written before the runs. Core-hours on this 4-core machine.
 
 ## Tally (core-hours used)
 
+- harvest (40 possessions): 0.16 (running total 0.16)
+- searches (probe, 6 positions): 0.0 (running total 0.16)
+- searches (probe2, 35 positions): 0.0 (running total 0.16)
+- searches (reactions, 35 positions): 0.0 (running total 0.17)
+- searches (last turns, 4 positions): 0.0 (running total 0.17)
+- searches (offence turns, 154 positions): 0.07 (running total 0.24)
+- searches (board 2, 1 positions): 0.0 (running total 0.24)
+- searches (reactions, 35 positions): 0.0 (running total 0.24)
+- searches (last turns, 4 positions): 0.0 (running total 0.24)
+- searches (offence turns, 154 positions): 0.06 (running total 0.3)
+- searches (board 2, 1 positions): 0.0 (running total 0.31)

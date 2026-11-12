@@ -58,7 +58,7 @@ const job = JSON.parse(fs.readFileSync(process.argv[2]));
 if (job.settle_shots != null && E.setSettle) E.setSettle(job.settle_shots);      // step 18b
 if (job.help_readings != null && E.setHelp) E.setHelp(job.help_readings);         // step 18c
 if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);         // step 18e (search.open_list)
-for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
+for (const [k, fn] of [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['no_floor', 'setNoFloor']]) if (job[k] != null && E[fn]) E[fn](job[k]);   // step 18f
 if (job.leaf_mode != null && E.setLeafMode) E.setLeafMode(job.leaf_mode);
 if (job.switches) E.setSearch(Object.assign({ stable: false, quiet_points: false, like_with_like: true, tempo: false, play_on: false, clear_reason: false }, job.switches));
 // job.control (step 18d, D-151): the position under rules.control at that size
