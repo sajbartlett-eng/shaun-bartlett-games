@@ -2,7 +2,7 @@
 candidate turn out by the rules with common dice. Stored in tools/sense_set/ so that any later step scores a
 setting against it in minutes.
 
-  python3 tools/sense_18h.py harvest [n]          positions from All-Star self-play (work/harvest.json)
+  python3 tools/sense_18h.py harvest [n]          positions from All-Star self-play (sense_set/sources/harvest.json)
   python3 tools/sense_18h.py build                the set's positions and named candidates -> sense_set/positions.json
   python3 tools/sense_18h.py play                 every candidate without an answer played out -> sense_set/answers.json
   python3 tools/sense_18h.py score <tag> [k=v..]  the computer's choice on each position under a setting, against the answers
@@ -25,6 +25,7 @@ RUN = os.path.join(ROOT, 'docs', 'runs', os.environ.get('SENSE_RUN', 'step18h'))
 WORK = os.path.join(RUN, 'work')
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
 POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers.json')
+SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
 REF = dict(whole_turns=True, split_ties=True, rank_in_hand=True, kept_actions=False, no_floor=False, map='reference')
@@ -93,7 +94,8 @@ def cmd_harvest(n='40', seed='18'):
     starts = [pl['starts'][(7 * i + 3) % len(pl['starts'])] for i in range(int(n))]
     starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]
     rows, secs = L.run_jobs('selfplay', starts, pl['contexts'], n=1, seed=int(seed), keepReactions=True, policies=dict(O=pol, X=pol))
-    json.dump(dict(contexts=pl['contexts'], rows=rows), open(os.path.join(WORK, 'harvest.json'), 'w'))
+    os.makedirs(SRC, exist_ok=True)
+    json.dump(dict(contexts=pl['contexts'], rows=rows), open(os.path.join(SRC, 'harvest.json'), 'w'))
     tally(f'harvest ({n} possessions)', secs)
     print(len(rows), 'possessions;', sum(len(r['states']) for r in rows), 'decisions;', sum(len(r['reactions']) for r in rows), 'shot reactions')
 
@@ -158,7 +160,7 @@ def cmd_build():
         [("X4 Moves to C4, facing him", nm(sp, 'X4 Move to C4 facing SW')),
          ("X4 Quick Steps to E4", nm(sp, 'X4 Quick Step to E4')),
          ("the defence Pauses (the log)", nm(sp, 'X Pause'))], note='18e and 18f: the Move closer 2.6 to 3.0 better')
-    src = '/home/user/step18e/playmaker/docs/runs/step18e/work'
+    src = SRC                                          # step 18e's two positions, kept with the set
     for name, label in (('defence242', "18e's Steal position, clock 2"), ('defence377', "18e's Steal position, clock 10")):
         job = json.load(open(os.path.join(src, f'regret_open_defence_{name}.job.json')))
         o = json.load(open(os.path.join(src, f'regret_open_defence_{name}.out.json')))
@@ -170,7 +172,7 @@ def cmd_build():
             [("step 18e's choice: " + words(choice['turn']), choice['turn']), ("step in, then Steal: " + words(steal['turn']), steal['turn'])] +
             ([('the defence Pauses', pause['turn'])] if pause else []), state=job['state'], ctx=job['ctx'], note="18e: the computer's move better")
     # -- from play (work/harvest.json): Contest or not; the defence's last turn before an open shot; shoot now or play on
-    h = json.load(open(os.path.join(WORK, 'harvest.json')))
+    h = json.load(open(os.path.join(SRC, 'harvest.json')))
     cx = lambda i: h['contexts'][h['rows'][i]['ctx']]
     re = [(i, st) for i, r in enumerate(h['rows']) for st in r['reactions']]
     rres = searches([dict(state=st, ctx=cx(i)) for i, st in re], 'reactions', **REF)
@@ -231,7 +233,7 @@ def cmd_build():
             [('shoot now: ' + words(shots[0][1]), shots[0][1])] + [(f"play on, the reference's {j + 1}{['st', 'nd'][j]} such turn: " + words(t), t) for j, (v, t) in enumerate(_distinct(plays, 2))],
             state=st, ctx=cx(i))
     # -- "move, then shoot": the two worst misses of step 18f's reply list (tools/reply_miss_18f.js)
-    rm = json.load(open(os.path.join(WORK, 'reply_miss.json')))
+    rm = json.load(open(os.path.join(SRC, 'reply_miss.json')))
     for k, x in enumerate(sorted(rm, key=lambda x: x['A'] - x['C'])[:2]):
         add(f'move, then shoot {k + 1}', 'move then shoot', "The offence's turn: step 18f's picture of this reply held the first turn and missed the second.", None,
             [("what 18f's reply list held: " + words(x['Aj']), x['Aj']), ("the turn it missed: " + words(x['Cj']), x['Cj'])], state=x['state'], ctx=x['ctx'])
@@ -248,6 +250,12 @@ def cmd_build():
         [("the board's sag: " + words(t), t) for f, t in sag[:1]] + [("the board's sag, facing " + f + ': ' + words(t), t) for f, t in sag[1:3]] +
         [('the defence Pauses', nm(b2, 'X Pause'))])
     os.makedirs(SET, exist_ok=True)
+    if os.path.exists(POS):                             # a choice some setting made when it was scored stays in the set, with its answer
+        old = {p['id']: p for p in json.load(open(POS))}
+        for p in out:
+            for c in old.get(p['id'], {}).get('candidates', []):
+                if c.get('added_by') and not any(key(c['turn']) == key(x['turn']) for x in p['candidates']):
+                    p['candidates'].append(c)
     json.dump(out, open(POS, 'w'), indent=1)
     if os.path.exists(ANS):                             # answers are kept only for candidates still in the set
         ans = json.load(open(ANS))

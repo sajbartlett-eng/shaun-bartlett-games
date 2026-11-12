@@ -13,6 +13,9 @@ main gate for changes to the computer's judgement; the head to head is a backsto
 - `reference_weights.json`: the map the answers were measured with. Every play-out is continued by one fixed
   engine (the All-Star at the start of step 18h), so the answers don't move when the default does.
 
+- `sources/`: what the set is built from: the play harvested for it (`harvest.json`), the two worst misses of step
+  18f's reply list (`reply_miss.json`), and step 18e's two Steal positions.
+
 ## Scoring a setting
 
     python3 tools/sense_18h.py choices <name> [switch=true ...]    its choices, no play-outs (seconds)
