@@ -1,0 +1,2232 @@
+{
+ "setting": "base",
+ "condition": "fixed",
+ "pairs": 2,
+ "rows": [
+  {
+   "board": "1",
+   "desc": "Straight lane: after the defence's answer the straight drive is walled, contained or worth less than the best alternative",
+   "ok": false,
+   "what": "X3 Move to O7 facing SE (straight drive available, worth 32.0 against the best other look 22.0; on the ball-rim line, reported only: nobody)",
+   "seconds": 0.9,
+   "choice": [
+    "X3 Move to O7 facing SE"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Move to O7 facing SE"
+     ],
+     "value": -26.2,
+     "trace": [
+      [
+       1,
+       [
+        "X2 Quick Step to D6"
+       ],
+       25.6
+      ],
+      [
+       2,
+       [
+        "X2 Quick Step to D6"
+       ],
+       27.6
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.845,
+     "depth_seconds": [
+      [
+       1,
+       0.266
+      ],
+      [
+       2,
+       0.817
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "2",
+   "desc": "Sag by shooting: the same board with O2's three rated 4, then 12",
+   "ok": false,
+   "what": "three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest)",
+   "seconds": 4.2,
+   "choice": [
+    "X3 Move to O7 facing SE",
+    "X1 Steal"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Move to O7 facing SE",
+      "X1 Steal"
+     ],
+     "value": -18.1,
+     "trace": [
+      [
+       1,
+       [
+        "X2 Move to D5 facing S",
+        "X1 Steal"
+       ],
+       19.38
+      ],
+      [
+       2,
+       [
+        "X2 Quick Step to D7",
+        "X1 Steal"
+       ],
+       18.86
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.464,
+     "depth_seconds": [
+      [
+       1,
+       0.303
+      ],
+      [
+       2,
+       2.432
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Move to O9 facing N",
+      "X1 Steal"
+     ],
+     "value": -18.13,
+     "trace": [
+      [
+       1,
+       [
+        "X1 Steal"
+       ],
+       19.52
+      ],
+      [
+       2,
+       [
+        "X2 Quick Step to D7",
+        "X1 Steal"
+       ],
+       19.06
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.767,
+     "depth_seconds": [
+      [
+       1,
+       0.134
+      ],
+      [
+       2,
+       1.753
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "3",
+   "desc": "Help the helper: O1 has beaten X1, who has no movement left; the low man helps and another covers",
+   "ok": false,
+   "what": "X5 Move to P4 facing N (help: none; rotation: X5)",
+   "seconds": 1.4,
+   "choice": [
+    "X5 Move to P4 facing N"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X5 Move to P4 facing N"
+     ],
+     "value": -25.33,
+     "trace": [
+      [
+       1,
+       [
+        "X3 Quick Step to N6"
+       ],
+       26.36
+      ],
+      [
+       2,
+       [
+        "X3 Quick Step to N6"
+       ],
+       26.73
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.371,
+     "depth_seconds": [
+      [
+       1,
+       0.338
+      ],
+      [
+       2,
+       1.333
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "4",
+   "desc": "Two threats, one answer: X5 is the only answer to O1's pull-up and O5 at the rim",
+   "ok": true,
+   "what": "O1 Sprint to F10; O2 Sprint to E10 (attacks X5)",
+   "seconds": 1.4,
+   "choice": [
+    "O1 Sprint to F10",
+    "O2 Sprint to E10"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O1 Sprint to F10",
+      "O2 Sprint to E10"
+     ],
+     "value": 27.73,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Sprint to F10",
+        "O2 Sprint to E10"
+       ],
+       26.74
+      ],
+      [
+       2,
+       [
+        "O1 Sprint to F10"
+       ],
+       27.37
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.378,
+     "depth_seconds": [
+      [
+       1,
+       0.255
+      ],
+      [
+       2,
+       1.35
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "5",
+   "desc": "Closeout: X2 closed from 3 squares with his Move; drive when he arrives, shoot when he stops 2 short",
+   "ok": false,
+   "what": "closed to C7: O2 Move to C8; stopped 2 short at D7: O2 Move to C8",
+   "seconds": 2.1,
+   "choice": [
+    "O2 Move to C8"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 39.35,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to B8",
+        "O2 Shot (three)"
+       ],
+       39
+      ],
+      [
+       2,
+       [
+        "O2 Move to B8",
+        "O2 Shot (three)"
+       ],
+       39
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.412,
+     "depth_seconds": [
+      [
+       1,
+       0.225
+      ],
+      [
+       2,
+       1.382
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 39.35,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to B8",
+        "O2 Shot (three)"
+       ],
+       39
+      ],
+      [
+       2,
+       [
+        "O2 Move to B8",
+        "O2 Shot (three)"
+       ],
+       39
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.7,
+     "depth_seconds": [
+      [
+       1,
+       0.061
+      ],
+      [
+       2,
+       0.683
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "6",
+   "desc": "Catch window: O4 caught in the corner with every cover far; he acts on his next action",
+   "ok": false,
+   "what": "O2 Move to A6; O4 Shot (three) (open look 33.0 against the possession 24.9)",
+   "seconds": 1.4,
+   "choice": [
+    "O2 Move to A6",
+    "O4 Shot (three)"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to A6",
+      "O4 Shot (three)"
+     ],
+     "value": 33.48,
+     "trace": [
+      [
+       1,
+       [
+        "O4 Shot (three)"
+       ],
+       33
+      ],
+      [
+       2,
+       [
+        "O4 Shot (three)"
+       ],
+       33
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.409,
+     "depth_seconds": [
+      [
+       1,
+       0.318
+      ],
+      [
+       2,
+       1.361
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "7",
+   "desc": "Clock: the same contested mid-range by O3; pass in phase 2, shoot in phase 6",
+   "ok": true,
+   "what": "phase 2: O3 Sprint to E9; phase 6: O3 Shot (mid)",
+   "seconds": 2.8,
+   "choice": [
+    "O3 Sprint to E9"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Sprint to E9"
+     ],
+     "value": 26.03,
+     "trace": [
+      [
+       1,
+       [
+        "O3 Sprint to E9",
+        "O1 Move to G10"
+       ],
+       25.68
+      ],
+      [
+       2,
+       [
+        "O3 Sprint to E9"
+       ],
+       25.68
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.772,
+     "depth_seconds": [
+      [
+       1,
+       0.343
+      ],
+      [
+       2,
+       1.739
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Shot (mid)"
+     ],
+     "value": 10.35,
+     "trace": [
+      [
+       1,
+       [
+        "O3 Shot (mid)"
+       ],
+       10
+      ],
+      [
+       2,
+       [
+        "O3 Shot (mid)"
+       ],
+       10
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.986,
+     "depth_seconds": [
+      [
+       1,
+       0.021
+      ],
+      [
+       2,
+       0.968
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "8",
+   "desc": "Backdoor: X2 denies O2 on the wing; the lane to the rim is open",
+   "ok": false,
+   "what": "O2 Move to E10",
+   "seconds": 1.3,
+   "choice": [
+    "O2 Move to E10"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to E10"
+     ],
+     "value": 29.34,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to E10"
+       ],
+       29.09
+      ],
+      [
+       2,
+       [
+        "O2 Move to E10"
+       ],
+       28.86
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.312,
+     "depth_seconds": [
+      [
+       1,
+       0.271
+      ],
+      [
+       2,
+       1.287
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "9",
+   "desc": "Corner: O1's wing drive pulled X5 off the corner; O5 relocates or gets the kick",
+   "ok": false,
+   "what": "O1 Quick Step to K4; O4 Sprint to H3",
+   "seconds": 1.6,
+   "choice": [
+    "O1 Quick Step to K4",
+    "O4 Sprint to H3"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O1 Quick Step to K4",
+      "O4 Sprint to H3"
+     ],
+     "value": 25.57,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to J3",
+        "O2 Move to A5"
+       ],
+       25.31
+      ],
+      [
+       2,
+       [
+        "O1 Quick Step to K4",
+        "O2 Quick Step to B8"
+       ],
+       25.22
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.618,
+     "depth_seconds": [
+      [
+       1,
+       0.289
+      ],
+      [
+       2,
+       1.59
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "10",
+   "desc": "Steal: tried with good odds (a weak dribbler, a teammate near); declined early on a strong dribbler",
+   "ok": false,
+   "what": "good odds: X1 Move to I12 facing N; bad odds, early: X5 Move to P4 facing N",
+   "seconds": 3.7,
+   "choice": [
+    "X1 Move to I12 facing N"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X1 Move to I12 facing N"
+     ],
+     "value": -13.85,
+     "trace": [
+      [
+       1,
+       [
+        "X4 Steal"
+       ],
+       14.92
+      ],
+      [
+       2,
+       [
+        "X5 Quick Step to O3"
+       ],
+       14.92
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.365,
+     "depth_seconds": [
+      [
+       1,
+       0.426
+      ],
+      [
+       2,
+       2.341
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "X5 Move to P4 facing N"
+     ],
+     "value": -25.15,
+     "trace": [
+      [
+       1,
+       [
+        "X2 Quick Step to D7"
+       ],
+       25.6
+      ],
+      [
+       2,
+       [
+        "X2 Quick Step to D7"
+       ],
+       26.0
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.36,
+     "depth_seconds": [
+      [
+       1,
+       0.194
+      ],
+      [
+       2,
+       1.336
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "11",
+   "desc": "Contested pass: the pass to O2 crosses X5's lane; declined early, accepted in the final phase (O1 has no forced shot from plain wood)",
+   "ok": false,
+   "what": "early: O4 Sprint to A4; final phase: O3 Screen, T W",
+   "seconds": 3.8,
+   "choice": [
+    "O4 Sprint to A4"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O4 Sprint to A4"
+     ],
+     "value": 24.93,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to A7"
+       ],
+       25.04
+      ],
+      [
+       2,
+       [
+        "O2 Move to A7"
+       ],
+       25.03
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.542,
+     "depth_seconds": [
+      [
+       1,
+       0.53
+      ],
+      [
+       2,
+       2.478
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Screen, T W"
+     ],
+     "value": 10.76,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Dribble vs X1"
+       ],
+       14.33
+      ],
+      [
+       2,
+       [
+        "O1 Dribble vs X1"
+       ],
+       10.41
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.226,
+     "depth_seconds": [
+      [
+       1,
+       0.133
+      ],
+      [
+       2,
+       1.191
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "12",
+   "desc": "Strong-side corner: X2 on the elite shooter O2 in the corner; O1's drive is contained by X1",
+   "ok": true,
+   "what": "X3 Move to O9 facing SE; X1 Steal (X2 ends 1 square(s) from O2)",
+   "seconds": 3.5,
+   "choice": [
+    "X3 Move to O9 facing SE",
+    "X1 Steal"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X3 Move to O9 facing SE",
+      "X1 Steal"
+     ],
+     "value": -21.62,
+     "trace": [
+      [
+       1,
+       [
+        "X1 Steal"
+       ],
+       22.81
+      ],
+      [
+       2,
+       [
+        "X1 Steal"
+       ],
+       22.89
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 3.485,
+     "depth_seconds": [
+      [
+       1,
+       0.515
+      ],
+      [
+       2,
+       3.43
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "13",
+   "desc": "Spacing: O5 stands in O1's driving lane",
+   "ok": false,
+   "what": "O2 Move to B8; O3 Move to Q5",
+   "seconds": 3.2,
+   "choice": [
+    "O2 Move to B8",
+    "O3 Move to Q5"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to B8",
+      "O3 Move to Q5"
+     ],
+     "value": 21.23,
+     "trace": [
+      [
+       1,
+       [
+        "O Hesitate"
+       ],
+       24.45
+      ],
+      [
+       2,
+       [
+        "O Hesitate"
+       ],
+       20.21
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 3.234,
+     "depth_seconds": [
+      [
+       1,
+       0.468
+      ],
+      [
+       2,
+       3.157
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "14",
+   "desc": "Variety: a mirror-image board; clearly best, or no option above 70% over 20 seeds",
+   "ok": true,
+   "what": "7 different first actions over 20 seeds; the most common 30% (the top first move leads by 0.0)",
+   "seconds": 3.7,
+   "choice": [
+    "O3 Move to Q5"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.96,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 3.19,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.67,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.047,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.08,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.049,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.41,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.053,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to O8"
+     ],
+     "value": 25.1,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.029,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 25.78,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.016,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q7"
+     ],
+     "value": 25.59,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.025,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to P8"
+     ],
+     "value": 25.99,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.021,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to A5"
+     ],
+     "value": 25.43,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.022,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.13,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.027,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 26.24,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.016,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to O8"
+     ],
+     "value": 25.12,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.017,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to Q5"
+     ],
+     "value": 25.98,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.017,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to P8"
+     ],
+     "value": 25.77,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.015,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 26.07,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.022,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to B8"
+     ],
+     "value": 25.8,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.026,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to O8"
+     ],
+     "value": 25.94,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.025,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to O8"
+     ],
+     "value": 25.99,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.024,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Move to P8"
+     ],
+     "value": 25.29,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.023,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 26.23,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to K10"
+       ],
+       25.46
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       25.31
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.025,
+     "depth_seconds": [
+      [
+       1,
+       0.618
+      ],
+      [
+       2,
+       3.138
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "15",
+   "desc": "Goal consistency: six turn groups on a fixed board; one goal unless a logged reason",
+   "ok": true,
+   "what": "goals over the line: make X3 the only answer to O3 and O5 > move X1 out of the lane to O3 > make X3 the only answer to O1 and O5 > O2 shoots from the 3 zone; flip-flops 0 (switches: make X3 the only answer to O3 and O5: no turn reaches it now; move X1 out of the lane to O3: no turn reaches it now; left make X3 the only answer to O1 and O5 for one turn: a turn worth +1.8 more; make X3 the only answer to O1 and O5: no turn reaches it now)",
+   "seconds": 9.3,
+   "choice": [
+    "O2 Move to C8"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 25.54,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Dribble vs X1"
+       ],
+       25.26
+      ],
+      [
+       2,
+       [
+        "O2 Move to B8"
+       ],
+       25.14
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 3.276,
+     "depth_seconds": [
+      [
+       1,
+       0.603
+      ],
+      [
+       2,
+       3.241
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Screen, T S"
+     ],
+     "value": 21.51,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Dribble vs X1"
+       ],
+       25.14
+      ],
+      [
+       2,
+       [
+        "O1 Move to K10"
+       ],
+       21.78
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.112,
+     "depth_seconds": [
+      [
+       1,
+       0.077
+      ],
+      [
+       2,
+       2.089
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O1 Sprint to H10"
+     ],
+     "value": 27.65,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to H10",
+        "O1 Pass to O2"
+       ],
+       26.74
+      ],
+      [
+       2,
+       [
+        "O1 Move to H10"
+       ],
+       26.74
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.507,
+     "depth_seconds": [
+      [
+       1,
+       0.1
+      ],
+      [
+       2,
+       1.489
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O1 Pass to O2"
+     ],
+     "value": 24.85,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Pass to O2"
+       ],
+       26.74
+      ],
+      [
+       2,
+       [
+        "O1 Pass to O2"
+       ],
+       25.0
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.726,
+     "depth_seconds": [
+      [
+       1,
+       0.022
+      ],
+      [
+       2,
+       0.706
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O4 Sprint to A4"
+     ],
+     "value": 30.53,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Shot (three)"
+       ],
+       30
+      ],
+      [
+       2,
+       [
+        "O2 Shot (three)"
+       ],
+       30
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.023,
+     "depth_seconds": [
+      [
+       1,
+       0.053
+      ],
+      [
+       2,
+       1.013
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Shot (three)"
+     ],
+     "value": 30.07,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Shot (three)"
+       ],
+       30
+      ],
+      [
+       2,
+       [
+        "O2 Shot (three)"
+       ],
+       30
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.643,
+     "depth_seconds": [
+      [
+       1,
+       0.004
+      ],
+      [
+       2,
+       0.639
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "16",
+   "desc": "Capacity drain: off-ball moves over the phase drain X2 and open O2",
+   "ok": false,
+   "what": "line: O2 Move to A5; O1 Quick Step to H10 / O3 Sprint to K6 / O4 Move to B1; X2 capacity spent: yes; value +25.9 to +28.9; first off-ball move credit -1.3 over one reply, +3.0 over the phase (drain +1.0)",
+   "seconds": 10.7,
+   "choice": [
+    "O2 Move to A5",
+    "O1 Quick Step to H10"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to A5",
+      "O1 Quick Step to H10"
+     ],
+     "value": 24.51,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to A5",
+        "O1 Quick Step to J10"
+       ],
+       25.03
+      ],
+      [
+       2,
+       [
+        "O2 Move to A5"
+       ],
+       25.03
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.716,
+     "depth_seconds": [
+      [
+       1,
+       0.573
+      ],
+      [
+       2,
+       2.671
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to A5",
+      "O1 Quick Step to H10"
+     ],
+     "value": 24.51,
+     "trace": [
+      [
+       1,
+       [
+        "O2 Move to A5",
+        "O1 Quick Step to J10"
+       ],
+       25.03
+      ],
+      [
+       2,
+       [
+        "O2 Move to A5"
+       ],
+       25.03
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.032,
+     "depth_seconds": [
+      [
+       1,
+       0.573
+      ],
+      [
+       2,
+       2.671
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O3 Sprint to K6"
+     ],
+     "value": 26.46,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to G10"
+       ],
+       25.73
+      ],
+      [
+       2,
+       [
+        "O4 Move to A3"
+       ],
+       25.88
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.241,
+     "depth_seconds": [
+      [
+       1,
+       0.122
+      ],
+      [
+       2,
+       1.209
+      ]
+     ]
+    },
+    {
+     "depth": 2,
+     "turn": [
+      "O4 Move to B1"
+     ],
+     "value": 30.0,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Move to F10"
+       ],
+       29.09
+      ],
+      [
+       2,
+       [
+        "O1 Move to F10"
+       ],
+       28.86
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 0.205,
+     "depth_seconds": [
+      [
+       1,
+       0.039
+      ],
+      [
+       2,
+       0.194
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "17",
+   "desc": "Turn economy: at most 2 defensive actions a turn; no threat realised with more actions than the turn allows",
+   "ok": true,
+   "what": "20 boards; no breach",
+   "seconds": 1.7,
+   "choice": null,
+   "depth_min": null,
+   "decisions": []
+  },
+  {
+   "board": "C1",
+   "desc": "Deny the shooter's catch (D-108)",
+   "ok": true,
+   "what": "X1 Move to K8 facing N (lanes to O2 answered: 3, the ball's: True)",
+   "seconds": 1.6,
+   "choice": [
+    "X1 Move to K8 facing N"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "X1 Move to K8 facing N"
+     ],
+     "value": -27.76,
+     "trace": [
+      [
+       1,
+       [
+        "X5 Move to N4 facing NE"
+       ],
+       27.95
+      ],
+      [
+       2,
+       [
+        "X1 Move to I10 facing NE"
+       ],
+       28.68
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 1.611,
+     "depth_seconds": [
+      [
+       1,
+       0.343
+      ],
+      [
+       2,
+       1.569
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "board": "C2",
+   "desc": "Clean pass: two equal shooters; the pass to O2 is clean, the pass to O3 contested",
+   "ok": true,
+   "what": "O2 Move to C8 (the clean pass 27.9, the contested pass not weighed)",
+   "seconds": 2.9,
+   "choice": [
+    "O2 Move to C8"
+   ],
+   "depth_min": 2,
+   "decisions": [
+    {
+     "depth": 2,
+     "turn": [
+      "O2 Move to C8"
+     ],
+     "value": 28.82,
+     "trace": [
+      [
+       1,
+       [
+        "O1 Pass to O2"
+       ],
+       27.89
+      ],
+      [
+       2,
+       [
+        "O2 Move to C8",
+        "O1 Pass to O2"
+       ],
+       28.46
+      ]
+     ],
+     "stable": {
+      "extensions": 0,
+      "cap_hits": 0,
+      "kept": 0
+     },
+     "seconds": 2.858,
+     "depth_seconds": [
+      [
+       1,
+       0.519
+      ],
+      [
+       2,
+       2.795
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}

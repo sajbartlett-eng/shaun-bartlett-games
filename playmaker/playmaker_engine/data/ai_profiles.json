@@ -44,7 +44,8 @@
       "goal_margin_m0": 1,
       "variety_margin": 2,
       "time_budget_s": 2.5,
-      "scout_human": true
+      "scout_human": true,
+      "open_list": "defence"
     }
   },
   "eval": {
@@ -366,6 +367,10 @@
     "_anchors": "Step 3n H: from self-play (Rookie v Starter, Starter v All-Star, Rookie v All-Star; 12 matches of 4 possessions each, Senior Pro digital, tools/anchors_3n.py): gaps fitted to the match scores. Youth and junior keep the senior gaps, 20 and 50 lower as before."
   },
   "search": {
+    "_open_list": "Step 18e (D-156): the list of turns without the hand-written choice of which actions to consider: every legal action is read and only the reading decides what goes forward (search.open_turns_x in search.py, openTurnsX in engine.js). open_list: null = each level's own setting (profiles.<level>.open_list: the All-Star plays 'defence'; the Rookie and Starter have none, because it puts them over their speed targets); false = off for every level; 'defence' = the defence's list; 'both' = the offence's too (every legal offence action read in full: slow, measured only). open_full: the full reads taken for each first action followed, beyond the list's length. open_follow: first actions followed for each one the old list followed.",
+    "open_list": null,
+    "open_full": 8,
+    "open_follow": 4,
     "_about": "Steps 12 and 13: the stable search, in five switches (stable is the shorthand that turns on all five). On by default: like_with_like (D-121). Off: quiet_points, clear_reason and tempo (D-122). play_on is RETIRED (D-149, Shaun, 11 Nov 2026): eval.settle_shots replaced it; the code stays only because the engines' agreement tests turn all five parts on together; don't switch it on. quiet_points: look-ahead counts completed team turns, a side is never judged between its two actions. like_with_like: the answer comes from the deepest even depth (an offence turn and the reply). tempo: each reading is shifted by half of tempo_gap toward the side not to act (tempo_gap: the measured gap between the same position with the offence and with the defence to act, tools/stable_measures.py; D-119). play_on: at the horizon, a declared shot, a pass in the air, a contest choice or a shot worth more than the possession is played on with the forcing replies only, at most extension_cap extra team turns (provisional). clear_reason: the choice from two depths earlier is kept unless the new best beats it by more than stable_margin, one standard error of the reading at the phase (provisional, D-120).",
     "stable": false,
     "quiet_points": false,

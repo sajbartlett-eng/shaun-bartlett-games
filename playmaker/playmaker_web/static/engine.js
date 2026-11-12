@@ -114,9 +114,11 @@ const PMEngine = (() => {
     three_only_ft_on_twos: false, coach_bonus_on_forced: true, diag_move_straight: true, inbound_tie: 'offence',
     forced_shot_choice: 'player', inbound_resolves: 'after_defence_turn', and_one: true, steal_lock: true,
     reach_angle_fouls: true, contest_action: true, turnover_floor: true, steal_foul_always_plus5: true };
-  const CONTROL = { off: 0, 1: 1, 2: 2, 3: 3 };
+  const CONTROL = { off: 0, 0: 0, 1: 1, 2: 2, 3: 3 }, CONTROL_APP = 2;   // D-153: the app's size
+  // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
+  const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   function checkRules(r) {
-    if (r.control !== undefined && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
+    if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
     for (const [k, v] of Object.entries(RULED)) {
       if (k in r && JSON.stringify(r[k]) !== JSON.stringify(v)) throw new Error(`rule ${k}=${JSON.stringify(r[k])} is not ported`);
     }
@@ -136,9 +138,9 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
-      control: CONTROL[(c.rules && c.rules.control) || 'off'] };          // D-151: the size, in rating steps (0: the rule is off)
+      control: controlSize(c.rules) };                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
-  // D-151 (rules.control, a rule candidate under test): the reduction a rushed shot, or a rushed Contest of it, takes
+  // D-151, D-153 (rules.control): the reduction a rushed shot, or a rushed Contest of it, takes
   const controlOn = ctx => ctx.control > 0;
   const controlCut = (ctx, t) => ctx.control;            // one size, for every shot type and for the Contest alike
   // two bits a player in rush_o / rush_x: 1 his last movement this phase was a Quick Step, 2 a Sprint, 0 set
@@ -565,7 +567,7 @@ const PMEngine = (() => {
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
       let clean = dirBetween(xp, spos) === s.arrows[j];
-      if (cut && rushedX(s, j)) { c = Math.max(0, c - cut); clean = false; }     // D-151: a rushed Contest
+      if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c), ft });
     }
@@ -1573,7 +1575,8 @@ const PMEngine = (() => {
       }
       return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft);
     }
-    _vals(lk, d, cm, moves) {                   // moves (step 13C): at most that many reaction movements; 0 = where he stands
+    _vals(lk, d, cm, moves, dflags) {           // moves (step 13C): at most that many reaction movements; 0 = where he stands
+      // dflags (step 18e, the open list's re-read): the defender's control state after his action, in place of now
       if (!cm || this.react_moves < 0) return null;
       const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
@@ -1582,7 +1585,7 @@ const PMEngine = (() => {
         // D-151 (rules.control), as the reading takes it (decide.Read._vals): the kinds he reaches standing are rushed
         // if his last movement was a Quick Step or Sprint; the kinds he must move for are rushed if his Move is used
         const s = this.s, m0 = cm.masks[0][BI[lk.c]] & mask;
-        const flags = (lk.rushed ? 1 : 0) | (rushedX(s, d) ? 2 : 0) | (hasMoved(s, 'X', d) ? 4 : 0);
+        const flags = (lk.rushed ? 1 : 0) | (dflags === undefined ? ((rushedX(s, d) ? 2 : 0) | (hasMoved(s, 'X', d) ? 4 : 0)) : dflags);
         const vc2 = ctx._vc2 || (ctx._vc2 = new Map());
         const key2 = (((((lk.i * NB + BI[lk.c]) * 5 + d) * 64 + mask) * 64 + m0) * 8) + flags;
         let hit2 = vc2.get(key2);
@@ -1610,10 +1613,9 @@ const PMEngine = (() => {
           if (!((mask >> k) & 1)) continue;
           let con = dc.cn[ty] - (KPEN[k] ? 3 : 0);
           con = Math.max(0, con);
-          let foul = KFOUL[k], two = KTWO[k];
+          const foul = KFOUL[k], two = KTWO[k];
           if (cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4))) {       // a rushed Contest
-            con = Math.max(0, con - cut);
-            if (!foul) { foul = true; two = KPEN[k]; }
+            con = Math.max(0, con - cut);                                        // no extra foul roll (D-154)
           }
           let v = Math.max(0, pts * (r - con));
           if (foul) {
@@ -2141,39 +2143,130 @@ const PMEngine = (() => {
       // attacker are that read's looks, its threats are these, and with k = 0 the cover leaves every threat.
       if (this._quick !== undefined) return this._quick;
       const s = this.s;
+      if (!s.pending) return (this._quick = this._quickCont(this._contOf(null)));
       let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
       banked += foulExternality(s);
-      let v;
-      if (s.pending) {
-        const passer = s.pending[0], recv = s.pending[1];
-        const p = laneP(W_(s, { ball: passer }), recv, s.o[recv]);
-        v = p * readOf(W_(s, { ball: recv, pending: null })).quickLeaf() + (1 - p) * turnoverValue(s);
-      } else {
-        let sn = null;
+      const passer = s.pending[0], recv = s.pending[1];
+      const p = laneP(W_(s, { ball: passer }), recv, s.o[recv]);
+      let v = p * readOf(W_(s, { ball: recv, pending: null })).quickLeaf() + (1 - p) * turnoverValue(s);
+      if (settleOn()) { const top = ceilingOf(s); if (v - banked > top) v = banked + top; }   // step 18b: no reading above the ceiling
+      this._quick = v;
+      return v;
+    }
+    // The quick reading's two halves (no pass in the air). _contOf: what the attackers' best looks leave to play for
+    // (tv: each attacker's best look; null: this read's own). _quickCont: the reading from that. Step 18e: the open
+    // list's cheap read gives _contOf the looks re-read with one defender moved.
+    _contOf(tv) {
+      let top = 0.0, first = true;
+      for (const i of this.att_o) { const t = tv === null ? this.threat[i].value : tv[i]; if (first || t > top) top = t; first = false; }
+      let sum = 0.0, nt = 0;
+      for (const i of this.att_o) { const t = tv === null ? this.threat[i].value : tv[i]; if (t >= top - 1e-9) { sum += t; nt++; } }
+      return (nt ? sum / nt : 0.0) * this.cfg.continuation;
+    }
+    _quickCont(cont, nowv, snv) {                 // nowv, snv (step 18e): the shots that can go up now, re-read (snv < 0: none)
+      const s = this.s;
+      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      banked += foulExternality(s);
+      let sn = null, now = 0.0;
+      if (nowv !== undefined) { now = nowv; sn = snv < 0 ? null : snv; }
+      else {
         if (this.o_to_act) { const ls = this.looks[s.ball] || []; for (let n = 0; n < Math.min(3, ls.length); n++) if (ls[n].route === 'shoot') { sn = ls[n].base; break; } }
-        let now = 0.0;
         for (const i of this.att_o) { const ls = this.looks[i]; for (let n = 0; n < Math.min(3, ls.length); n++) if (ls[n].now && ls[n].base > now) now = ls[n].base; }
-        let top = 0.0, first = true;
-        for (const i of this.att_o) { const t = this.threat[i].value; if (first || t > top) top = t; first = false; }
-        let sum = 0.0, nt = 0;
-        for (const i of this.att_o) { const t = this.threat[i].value; if (t >= top - 1e-9) { sum += t; nt++; } }
-        const cont = (nt ? sum / nt : 0.0) * this.cfg.continuation;
-        if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) v = banked + Math.max(sn || 0.0, now);
-        else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
       }
+      let v;
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) v = banked + Math.max(sn || 0.0, now);
+      else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
       if (settleOn()) {
         // step 18b: the ordering reading on the leaf's own scale (the ceiling, the calibrated map, the ceiling), so a
         // settled shot and a position that plays on are ranked together (decide.Read.leaf with k = 0)
         const top = ceilingOf(s);
         if (v - banked > top) v = banked + top;
-        if (calibratedOn() && s.stage === 'play' && !s.pending && !(!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) {
+        if (calibratedOn() && s.stage === 'play' && !(!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) {
           let r = calibrate(s, this.o_to_act, v - banked);
           if (r > top) r = top;
           v = banked + r;
         }
       }
-      this._quick = v;
       return v;
+    }
+    // ---- step 18e (search.open_list, D-156): the cheap read of a defender's action -------------------------------
+    // Every attacker's best look with defender j standing at q facing a, with canMove / qsLeft left to him and his
+    // control state dflags (2: rushed where he stands, 4: his Move is used): this read's own looks, each re-read with
+    // that one defender moved (the re-read decide.responses makes for its hand-picked squares, here for any square,
+    // for every attacker, and for the looks that can go up now as well). Written into out: one value an attacker, then
+    // out[5] the best shot that can go up now and out[6] the ball handler's shot from where he stands (-1: none), each
+    // among an attacker's first three looks as the quick reading takes them.
+    _contestAt(j, q, a, canMove, qsLeft) {
+      const s = this.s;                               // as _contest reads a defender where he stands (this read's position
+      if (s.tok_x <= 0) return contestMap(new Map(), new Map([[q, new Map([[a, 0]])]]));   // is the turn already advanced)
+      return cmapCached(q, a, s.ctx.dfn[j].qs, canMove, qsLeft);
+    }
+    reread(j, q, a, canMove, qsLeft, dflags, out) {
+      const s = this.s, carrier = s.ball, reach = reachOn();
+      const leave = this._leave || (this._leave = new Map());
+      const cm = this._contestAt(j, q, a, canMove, qsLeft);
+      const carrierIn = this.att_o.includes(carrier);
+      const front = p => carrierIn && cheb(p, s.o[carrier]) <= 2 && DR[p] < DR[s.o[carrier]];
+      const moved = q !== s.x[j];
+      const into = moved && front(q), outOf = moved && front(s.x[j]) && !front(q);
+      const blocks = into || outOf;
+      for (let i = 0; i < 5; i++) out[i] = 0.0;
+      let nowv = 0.0, snv = -1;
+      if (blocks) {
+        let lv = outOf ? leave.get(j) : undefined;
+        if (lv === undefined) {
+          const at = into ? q : AWAY;
+          const mv = W_(s, { x: setAt(s.x, j, at), arrows: setAt(s.arrows, j, a) });
+          const cm2 = this._cm.slice(); cm2[j] = into ? cm : null;
+          const lks = this._looks(carrier, mv, cm2);
+          lv = [0.0, 0.0, -1];
+          for (const l of lks) if (l.base > lv[0]) lv[0] = l.base;
+          for (let n = 0; n < Math.min(3, lks.length); n++) {
+            if (lks[n].now && lks[n].base > lv[1]) lv[1] = lks[n].base;
+            if (lv[2] < 0 && this.o_to_act && lks[n].route === 'shoot') lv[2] = lks[n].base;
+          }
+          if (outOf) leave.set(j, lv);
+        }
+        out[carrier] = lv[0]; nowv = lv[1]; snv = lv[2];
+      }
+      let oneJ = null;
+      const rm = this.react_moves;
+      for (const i of this.att_o) {
+        if (i === carrier && blocks) continue;
+        let best = 0.0;
+        const ls = this.looks[i];
+        for (let n = 0; n < ls.length; n++) {
+          const lk = ls[n];
+          let v;
+          if (reach && moved && !lk.now && PATH_ROUTES.has(lk.route) && blocksPath(q, s.o[i], lk.c, s.ctx.off[i].qs)) v = 0.0;
+          else {
+            let pNew = null;
+            if ((lk.route === 'catch' || lk.route === 'cut') && moved) {
+              if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, canMove, qsLeft);
+              pNew = this._laneMoved(lk.c, j, q, oneJ);
+            }
+            // (a speed-up that changes no result: where he can't contest the look, swapped() is the look's best
+            // without him, kept on the look)
+            if (rm < 0 || !cm.masks[rm][BI[lk.c]]) {
+              let bx = lk.bx;
+              if (bx === undefined) {
+                bx = lk.bx = new Float64Array(5);
+                const mx = lk.minex, nt = lk.types.length;
+                for (let d = 0; d < 5; d++) { let b = 0.0; for (let t = 0; t < nt; t++) if (mx[d * nt + t] > b) b = mx[d * nt + t]; bx[d] = b; }
+              }
+              v = (pNew === null ? lk.p : pNew) * bx[j];
+            } else v = swapped(lk, j, this._vals(lk, j, cm, undefined, dflags), pNew);
+          }
+          if (v > best) best = v;
+          if (n < 3) {
+            if (lk.now && v > nowv) nowv = v;
+            if (snv < 0 && i === carrier && this.o_to_act && lk.route === 'shoot') snv = v;
+          }
+        }
+        out[i] = best;
+      }
+      out[5] = nowv; out[6] = snv;
+      return out;
     }
     // Step 13 (a speed-up that changes no result): Read(s, k=0, looks_per=3): is the ball handler's shot now worth more
     // than the possession without it? From this read, as quickLeaf is (the offence to act, no pass in the air).
@@ -2365,9 +2458,177 @@ const PMEngine = (() => {
     return keep.length ? keep : acts;
   }
   const endsTurn = (s, nxt, side) => isChance(nxt) || nxt.stage === 'over' || actor(nxt) !== side || nxt.stage !== s.stage;
-  function turns(s, beam, read, evaluate, deadline, expand, second) {
+  // ---- step 18e (search.open_list, D-156; search.open_turns in search.py) ------------------------------------------
+  // The list of turns without the hand-written choice of which actions to consider (candidateActions): every legal
+  // action is read, and only the reading decides what goes forward. No kind of action is named, kept or preferred.
+  // The defence in open play: reading every legal action in full costs too much (about 1,000 actions a position), so
+  //   1. every legal first action gets a cheap read: the looks of the position the turn leaves when it ends, with
+  //      every piece where it stands (nullStep, twice when the turn has two actions), re-read with that one defender
+  //      where the action leaves him (Read.reread), and the quick reading taken from them. An action that leaves
+  //      every piece where it stands, goes to the dice or keeps a pass in the air has no such re-read and is read in
+  //      full at once;
+  //   2. every pair of those actions by two defenders is read the same way, each attacker's best look being the
+  //      lower of the two re-reads (the rule the reading's own cover uses). A second action is only read as part of
+  //      a turn if the reading says it changes something;
+  //   3. after each of the best `follow` first actions, every other legal second action is read: the same defender
+  //      moving again by a re-read where it leaves him; anything that goes to the dice by its chances, a possession
+  //      that ends at its own value and one that plays on at the first action's reading;
+  //   4. actions the cheap read can't tell apart are one candidate (the first in the rules' order);
+  //   5. the best `full` candidates by the cheap read are read in full (the ordering reading every turn gets today),
+  //      and the best `beam` of those are the list.
+  // Elsewhere (a declared shot's reaction, and the offence under 'both'): every legal action is read in full.
+  // The switch: search.open_list (false, 'defence' or 'both') when it is set; when it is null, the level's own setting
+  // (profiles.<level>.open_list). The All-Star plays 'defence' by default (step 18e); the Rookie and Starter don't.
+  function openMode(profile) { const g = (D.config.search || {}).open_list; return g === null || g === undefined ? ((profile && profile.open_list) || false) : g; }
+  function openOn(side, mode) { const v = mode === undefined ? openMode(null) : mode; return v === true || v === 'both' || (v === 'defence' && side === 'X'); }
+  function setOpenList(v) { D.config.search = D.config.search || {}; D.config.search.open_list = v === 'true' ? true : v === 'false' ? false : (v === 'null' || v === undefined) ? null : v; return D.config.search.open_list; }
+  const OPEN_STATS = { calls: 0, legal: 0, unique: 0, pairs: 0, followed: 0, full: 0 };
+  // The turn as one action of the defence leaves it (the token spent, a pass in the air landed, whose action it is,
+  // the phase), with every piece where it stands: the position the cheap re-reads are made from (apply's own steps
+  // for a movement, without the movement).
+  function nullStep(state) {
+    let s = spend(state, 'X');
+    if (s.pending && !isInboundPass(state)) { const ph = s.phase; s = completePass(s); if (s.phase !== ph) return s; }
+    return after(state, s, 'X', 'move');
+  }
+  function openTurnsX(s, beam, read, evaluate, deadline, expand) {
+    const acts = legalActions(s);
+    if (acts.length <= 12) return null;
+    const ref1 = nullStep(s);
+    if (isChance(ref1) || ref1.stage !== 'play') return null;
+    const two = !endsTurn(s, ref1, 'X');
+    const ref2 = two ? nullStep(ref1) : null;
+    if (two && (isChance(ref2) || ref2.stage !== 'play')) return null;
+    const cfg = D.config.search || {};
+    const nexp = expand != null ? expand : Math.max(3, Math.floor(beam / 3));
+    const K = beam + nexp * (cfg.open_full == null ? 8 : cfg.open_full), F = nexp * (cfg.open_follow == null ? 4 : cfg.open_follow);
+    // one read to re-read from: the position the turn leaves when it ends (two actions on, or one if that ends it)
+    const ref = two ? ref2 : ref1, R = readOf(ref);
+    const att = R.att_o, b2 = bankedOf(ref);
+    const qm = new Map();
+    const Qof = vec => {                                 // the quick reading from a re-read (the same arithmetic, kept by its inputs)
+      const cont = R._contOf(vec), k = cont + '|' + vec[5] + '|' + vec[6];
+      let v = qm.get(k);
+      if (v === undefined) { v = R._quickCont(cont, vec[5], vec[6]); qm.set(k, v); }
+      return v;
+    };
+    // what the quick reading is taken from, before the phase table's floor and the map flatten it: the best shot that
+    // can go up now, or what the best looks leave. The cheap rank's second key (the reading at a finer grain).
+    const rawOf = vec => round6(Math.max(vec[5], vec[6], R._contOf(vec)));
+    // the cheap read of defender j where the state n leaves him; what he has left and his control are read from
+    // `left` (n itself, or the position two actions leave when the turn's end resets them)
+    const facts = (n, j, vec, left) => {
+      const q = n.x[j], a = n.arrows[j], cp = caps(left, 'X', j);
+      R.reread(j, q, a, cp[0], cp[1], (rushedX(left, j) ? 2 : 0) | (hasMoved(left, 'X', j) ? 4 : 0), vec);
+    };
+    const fresh = ref.phase !== s.phase;                  // the turn's end ends the phase: every defender starts the next anew
+    const tieOf = vec => { let t = 0.0; for (const i of att) t += vec[i]; return round6(t); };
+    const keyOf = (c, vec) => { let k = c + '|' + round6(vec[5]) + '|' + round6(vec[6]); for (const i of att) k += '|' + round6(vec[i]); return k; };
+    const full = [], U = [], seen = new Set();
+    OPEN_STATS.calls++; OPEN_STATS.legal += acts.length;
+    // 1. every legal first action
+    for (const a of acts) {
+      if (deadline && now() > deadline) throw TIMEOUT;
+      const nxt = apply(s, a);
+      if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(nxt), [a]]); continue; }
+      const v2 = new Float64Array(7);
+      facts(nxt, a.piece, v2, fresh ? ref : nxt);
+      const q2 = Qof(v2), c = round6(q2);
+      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: keyOf(c, v2), v2, q2 };
+      if (seen.has(u.key)) continue;                     // the same by this read as an action before it
+      seen.add(u.key);
+      U.push(u);
+    }
+    const byCheap = (x, y) => (x.c - y.c) || (x.raw - y.raw) || (x.tie - y.tie) || (x.turn.length - y.turn.length) || (x.n - y.n);
+    U.forEach((u, n) => { u.n = n; });
+    U.sort(byCheap);
+    OPEN_STATS.unique += U.length;
+    const C = U.slice();
+    let n = U.length;
+    if (two) {
+      // 2. every pair of them by two defenders
+      const m = new Float64Array(7);
+      for (let x = 0; x < U.length; x++) {
+        const ua = U[x];
+        if (deadline && now() > deadline) throw TIMEOUT;
+        for (let y = x + 1; y < U.length; y++) {
+          const ub = U[y];
+          if (ub.j === ua.j) continue;
+          let lt = false, gt = false;
+          for (const i of att) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
+          for (let i = 5; i < 7; i++) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
+          if (!(lt && gt)) continue;                     // one of the two changes nothing the other doesn't: not read as a pair
+          const c = round6(Qof(m));
+          C.push({ turn: [ua.turn[0], ub.turn[0]], j: -1, c, raw: rawOf(m), tie: tieOf(m), key: keyOf(c, m) + '|p', pair: true, n: n++ });
+        }
+      }
+      OPEN_STATS.pairs += C.length - U.length;
+      // 3. after the best first actions: the same defender again, and whatever goes to the dice
+      const cheapNode = (nd, u) => {
+        if (isChance(nd)) { let v = 0.0; for (const o of nd.outcomes) v += o[0] * cheapNode(o[2], u); return v; }
+        if (nd.stage === 'over') return terminalValue(nd);
+        return u.q2 + bankedOf(nd) - b2;
+      };
+      let followed = 0;
+      for (const ua of U) {
+        if (followed >= F) break;
+        if (deadline && now() > deadline) throw TIMEOUT;
+        followed++;
+        const a = ua.turn[0], nxt = apply(s, a);
+        for (const b of legalActions(nxt)) {
+          if (b.kind === 'end_turn' || b.kind === 'forfeit') continue;     // ending here is the one-action turn
+          if (b.dest >= 0 && b.piece !== ua.j) continue;  // two defenders moving: read with the pairs above
+          const n2 = apply(nxt, b);
+          if (!isChance(n2) && n2.stage === 'play' && !n2.pending && b.dest >= 0) {
+            const v = new Float64Array(7);
+            facts(n2, ua.j, v, n2);
+            const c = round6(Qof(v));
+            C.push({ turn: [a, b], j: ua.j, c, raw: rawOf(v), tie: tieOf(v), key: keyOf(c, v) + '|s' + ua.j, n: n++ });
+          } else {
+            const c = round6(cheapNode(n2, ua));
+            C.push({ turn: [a, b], j: ua.j, c, raw: rawOf(ua.v2), tie: tieOf(ua.v2), key: keyOf(c, ua.v2) + '|d' + b.id, n: n++ });
+          }
+        }
+      }
+      OPEN_STATS.followed += followed;
+    }
+    // 4, 5. one candidate for each distinct read; the best by the cheap read are read in full
+    C.sort(byCheap);
+    if (OPEN_STATS.debug) OPEN_STATS.debug({ C, U, R, ref, full: full.slice() });
+    const legalAfter = new Map(), seenC = new Set();
+    const idsAfter = a => { let r = legalAfter.get(a.id); if (!r) { const nx = apply(s, a); r = new Set(isChance(nx) ? [] : legalActions(nx).map(b => b.id)); legalAfter.set(a.id, r); } return r; };
+    let done = 0;
+    for (const u of C) {
+      if (done >= K) break;
+      if (deadline && now() > deadline) throw TIMEOUT;
+      let turn = u.turn;
+      if (turn.length === 2) {
+        if (seenC.has(u.key)) continue;
+        if (u.pair && !idsAfter(turn[0]).has(turn[1].id)) {     // two defenders: the rules say which order is legal
+          if (!idsAfter(turn[1]).has(turn[0].id)) continue;
+          turn = [turn[1], turn[0]];
+        }
+        seenC.add(u.key);
+      }
+      full.push([-evaluate(playTurn(s, turn)), turn]);
+      done++;
+    }
+    OPEN_STATS.full += full.length;
+    full.sort((x, y) => y[0] - x[0]);
+    const seenT = new Set(), fin = [];
+    for (const [v, tn] of full) {
+      const key = tn.length === 2 && MOVEMENT.has(tn[0].kind) && MOVEMENT.has(tn[1].kind) ? 'S' + [tn[0].id, tn[1].id].sort((p, q) => p - q).join(',') : 'T' + turnKey(tn);
+      if (seenT.has(key)) continue;
+      seenT.add(key); fin.push([v, tn]);
+      if (fin.length >= beam) break;
+    }
+    return fin;
+  }
+  function turns(s, beam, read, evaluate, deadline, expand, second, mode) {      // mode: the level's open list (openMode)
     const side = actor(s), sign = side === 'O' ? 1 : -1;
-    const first = candidateActions(s, read);
+    const open = openOn(side, mode) && !!evaluate;
+    if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand); if (r) return r; }
+    const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [];
     for (const a of first) {
       if (deadline && now() > deadline) throw TIMEOUT;
@@ -2380,7 +2641,7 @@ const PMEngine = (() => {
     for (const [, t] of scored.slice(0, nexp)) {
       const a = t[0], nxt = apply(s, a);
       if (endsTurn(s, nxt, side)) continue;
-      for (const b of candidateActions(nxt, null, second)) {
+      for (const b of (open ? legalActions(nxt) : candidateActions(nxt, null, second))) {
         if (deadline && now() > deadline) throw TIMEOUT;
         if (b.kind === 'end_turn' || b.kind === 'forfeit') continue;
         const n2 = apply(nxt, b);
@@ -2424,6 +2685,7 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
+      this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     leaf(s, z) {
@@ -2676,7 +2938,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
       if (hit === undefined) {
-        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1);
+        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open);
         this.tcache.set(key, hit);
       }
       return hit;
@@ -2707,7 +2969,7 @@ const PMEngine = (() => {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
-      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1);
+      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open);
       const deadline = this.deadline; this.deadline = Infinity;
       let results = [];
       const sign = side === 'O' ? 1 : -1;
@@ -3026,7 +3288,7 @@ const PMEngine = (() => {
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

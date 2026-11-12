@@ -122,6 +122,10 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 
 ## Split by format
 
+**Control.** At the table: no control rule: a shot or a Contest is worth the same after any movement.  
+In the app: your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is 2 lower. A Move puts you back in control.  
+Why: ruled for the app (D-153). The table's rules are on hold while the app's game settles (D-146).
+
 **Turnover cost.** At the table: −5 and the shot clock loses a phase; play on.  
 In the app: the possession ends and scores 0.  
 Why: a digital match has several possessions a side, so the next possession is the cost.

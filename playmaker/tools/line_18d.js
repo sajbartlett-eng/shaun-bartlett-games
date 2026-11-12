@@ -13,7 +13,8 @@ const CONFIG = load('ai_profiles.json');
 E.init({ zones: load('court_zones.json'), config: CONFIG, vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 const [VMIN, VMAX] = CONFIG.eval.value_bounds;
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
-const cj = job.control && job.control !== 'off' ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
+if (job.open_list != null && E.setOpenList) E.setOpenList(job.open_list);        // step 18e (search.open_list)
+const cj = job.control != null ? Object.assign({}, job.ctx, { rules: Object.assign({}, job.ctx.rules, { control: String(job.control) }) }) : job.ctx;
 const ctx = E.makeCtx(cj), s = E.stateFrom(job.state, ctx);
 const key = a => JSON.stringify(E.actionJSON(a));
 const words = t => t.map(a => E.actionStr(a)).join(', then ');
@@ -24,7 +25,7 @@ if (s.stage !== 'over') {
   const srch = new E.Searcher(me, job.profile, E.makeEvaluate(job.profile, me, null), Infinity);
   const value = n => (E.isChance(n) ? srch.value(n, 1, VMIN, VMAX) : n.stage === 'over' ? E.terminalValue(n) : srch.value(n, srch.childDepth(s, n, 2), VMIN, VMAX));
   const read = new E.Read(s, { exact: true });
-  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2) : srch.turnsOf(s);
+  const ts = s.stage === 'play' ? E.turns(s, job.profile.beam, read, n => srch.quick(n), null, null, 2, srch.open) : srch.turnsOf(s);
   const rows = ts.map(([, t]) => [value(E.playTurn(s, t)), t]);
   rows.sort((x, y) => sign * (y[0] - x[0]));
   out.listed = rows.length;
@@ -49,7 +50,7 @@ if (s.stage !== 'over') {
       if (fv > -1e8) shotNow = { value: fv, square: hit && hit[1] >= 0 ? E.sqName(hit[1]) : null, shot: hit ? hit[2] : null };
     }
     out.named.push({ name: item.name, legal: true, words: words(acts), value: v, behind_the_choice: sign * (rows[0][0] - v),
-      list_rank: onList.get(acts.map(key).join('|')) || null, shot_now: shotNow, after: E.isChance(n) ? null : E.stateJSON(n) });
+      list_rank: onList.get(acts.map(key).join('|')) || onList.get(acts.slice().reverse().map(key).join('|')) || null, shot_now: shotNow, after: E.isChance(n) ? null : E.stateJSON(n) });
   }
 }
 fs.writeFileSync(process.argv[3], JSON.stringify(out, null, 1));

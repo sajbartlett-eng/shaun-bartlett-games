@@ -432,9 +432,11 @@ class Read:
             self.react_moves = keep
             self._phase_away = False
 
-    def _vals(self, look, d, row, moves=None):
+    def _vals(self, look, d, row, moves=None, dflags=None):
         """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
-        at most that many of the reaction's movements; 0 = from where he stands)."""
+        at most that many of the reaction's movements; 0 = from where he stands). dflags (step 18e, the open list's
+        re-read): the defender's control state after his action (rushed where he stands, his Move used), in place of
+        the state's."""
         out = {}
         if row is None:
             return None
@@ -442,13 +444,13 @@ class Read:
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
-        control = rules.control != 'off' and not getattr(self, '_phase_away', False)
+        control = RC.control_size(rules) > 0 and not getattr(self, '_phase_away', False)
         # D-151 (rules.control), as the reading takes it: a defender contesting from where he stands is rushed if his
         # last movement was a Quick Step or Sprint; one who must move to contest is rushed if his Move is already used
         # (only a Quick Step or Sprint is left), and is taken to Move there otherwise. The rules themselves are exact
         # (scoring.contest_options); the search settles every declared shot by them.
-        d_stand = control and self.s.rushed('X', d)
-        d_moved = control and self.s.moved('X', d)
+        d_stand = control and (self.s.rushed('X', d) if dflags is None else dflags[0])
+        d_moved = control and (self.s.moved('X', d) if dflags is None else dflags[1])
         for t in look.types:
             r = card.shot(t)
             cut = RC.control_cut(rules, t) if control else 0
@@ -463,9 +465,7 @@ class Read:
                 if rules.floor_contest_zero:
                     con = max(0, con)
                 if cut and (d_stand if n == 0 else d_moved):
-                    con = max(0, con - cut)              # a rushed Contest: reduced, with the wrong-angle foul roll
-                    if not foul:
-                        foul, two = True, pen
+                    con = max(0, con - cut)              # a rushed Contest: reduced; no extra foul roll (D-154)
                 v = pts * (r - con)
                 if rules.floor_declared_shot:
                     v = max(0, v)
@@ -554,7 +554,7 @@ class Read:
                     lk = Look(i, c, 'cut', p * self.cfg['later_p'], False, replies=2)
             lk.types = RC.ZONE_SHOTS[z]
             pts = RC.ZONE_POINTS[z]
-            if rules.control != 'off':
+            if RC.control_size(rules):
                 # D-151, as the reading takes it: shooting from where he stands he is rushed if his last movement was
                 # a Quick Step or Sprint; if he must move first he is rushed when his Move is already used
                 lk.rushed = s.rushed('O', i) if n == 0 else s.moved('O', i)
@@ -583,6 +583,121 @@ class Read:
         if arg is None:
             return dict(value=0.0, sq=None, route='none', p=0.0, now=False)
         return dict(value=best, sq=arg.c, route=arg.route, p=arg.p, now=arg.now, type=max(arg.types, key=lambda t: arg.open[t]))
+
+    # -- step 18e (search.open_list, D-156): the cheap read of a defender's action
+    def _cont_of(self, tv):
+        """What the attackers' best looks leave to play for, as the quick reading takes it (tv: each attacker's best
+        look, re-read; None: this read's own)."""
+        vals = [self.threat[i]['value'] if tv is None else tv[i] for i in self.att_o]
+        top = 0.0
+        for n, t in enumerate(vals):
+            if n == 0 or t > top:
+                top = t
+        ties = [t for t in vals if t >= top - 1e-9]
+        return (sum(ties) / len(ties) if ties else 0.0) * self.cfg['continuation']
+
+    def _quick_cont(self, cont, nowv, snv):
+        """The quick reading (Read(s, k=0, looks_per=3).leaf(), no pass in the air) from what is left to play for and
+        the shots that can go up now, re-read (snv < 0: none)."""
+        s = self.s
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked += foul_externality(s)
+        sn = None if snv < 0 else snv
+        last = not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS
+        if last:
+            v = banked + max(sn or 0.0, nowv)
+        elif self.cfg.get('leaf_mode', 'floor') == 'relative':
+            v = banked + max(sn or 0.0, nowv, vcoarse(s) + cont - relative_average(s, self.cfg, False))
+        else:
+            v = banked + max(sn or 0.0, nowv, cont, vcoarse(s))
+        if self.cfg.get('settle_shots') is True:
+            top = ceiling(s)
+            if v - banked > top:
+                v = banked + top
+            w = learned_weights() if self.cfg.get('calibrated') is True and self.cfg.get('learned') is not True else None
+            if w is not None and w.get('calibration') and s.stage == 'play' and not last:
+                cal = w['calibration']
+                if not s.ctx.rules.digital and self.cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
+                    cal = w['calibration_tabletop']
+                r = calibrate(cal, s, self.o_to_act, v - banked)
+                if r > top:
+                    r = top
+                v = banked + r
+        return v
+
+    def _contest_at(self, j, q, a, can_move, qs_left):
+        s = self.s
+        if s.tok_x <= 0:
+            return contest_map(self.rules, {}, {q: {a: 0}})
+        return _cmap_cached(self.rules, q, a, s.ctx.dfn[j].qs, can_move, qs_left)
+
+    def reread(self, j, q, a, can_move, qs_left, dflags):
+        """Every attacker's best look with defender j standing at q facing a, with can_move / qs_left left to him and
+        his control state dflags (rushed where he stands, his Move used): this read's own looks, each re-read with that
+        one defender moved (the re-read responses() makes for its hand-picked squares, here for any square, for every
+        attacker, and for the looks that can go up now as well). Returns seven values: one an attacker, then the best
+        shot that can go up now and the ball handler's shot from where he stands (-1: none), each among an attacker's
+        first three looks as the quick reading takes them."""
+        s = self.s
+        carrier = s.ball
+        reach = bool(self.cfg.get('reach'))
+        leave = self.__dict__.setdefault('_leave', {})
+        cm = self._contest_at(j, q, a, can_move, qs_left)
+        front = lambda p_: (carrier in self.att_o and B.cheb(p_, s.o[carrier]) <= 2 and
+                            B.dist_rim(p_) < B.dist_rim(s.o[carrier]))
+        moved = q != s.x[j]
+        into = moved and front(q)
+        out_of = moved and front(s.x[j]) and not front(q)
+        blocks = into or out_of
+        out = [0.0] * 7
+        nowv, snv = 0.0, -1
+        if blocks:
+            lv = leave.get(j) if out_of else None
+            if lv is None:
+                at = q if into else (-9, -9)
+                mv = s.with_(x=s.x[:j] + (at,) + s.x[j + 1:], arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:])
+                sub = Read.__new__(Read)
+                sub.__dict__.update(self.__dict__)
+                sub.s = mv
+                sub._cm = dict(self._cm)
+                sub._cm[j] = cm if into else {}
+                lks = sub._looks(carrier)
+                lv = [0.0, 0.0, -1]
+                for lk in lks:
+                    if lk.base > lv[0]:
+                        lv[0] = lk.base
+                for lk in lks[:3]:
+                    if lk.now and lk.base > lv[1]:
+                        lv[1] = lk.base
+                    if lv[2] < 0 and self.o_to_act and lk.route == 'shoot':
+                        lv[2] = lk.base
+                if out_of:
+                    leave[j] = lv
+            out[carrier], nowv, snv = lv[0], lv[1], lv[2]
+        for i in self.att_o:
+            if i == carrier and blocks:
+                continue
+            best = 0.0
+            for n, lk in enumerate(self.looks[i]):
+                if reach and moved and not lk.now and lk.route in PATH_ROUTES and _blocks(q, s.o[i], lk.c, s.ctx.off[i].qs,
+                                                                                         self.rules):
+                    v = 0.0
+                else:
+                    p_new = None
+                    if lk.route in ('catch', 'cut') and moved:
+                        p_new = _lane_p_moved(s, lk.c, j, q, a, can_move, qs_left)
+                    row = cm.get(lk.c)
+                    v = lk.swapped(j, self._vals(lk, j, row, dflags=dflags) if row is not None else None, p_new)
+                if v > best:
+                    best = v
+                if n < 3:
+                    if lk.now and v > nowv:
+                        nowv = v
+                    if snv < 0 and i == carrier and self.o_to_act and lk.route == 'shoot':
+                        snv = v
+            out[i] = best
+        out[5], out[6] = nowv, snv
+        return out
 
     # -- COVERAGE (B3)
     def responses(self, j):
@@ -1409,6 +1524,36 @@ def _lane_p_calc(s, i, c, reach=False):
     for d, xp in enumerate(s.x):
         can_move, qs_left = _caps(s, 'X', d)
         one = _exact_one(s, d) if reach else _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)
+        if lane.isdisjoint(one):
+            continue
+        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        if pi > worst:
+            worst = pi
+    return 1.0 - worst
+
+
+def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
+    """Step 18e: _lane_p's geometry with defender j at q facing a, with can_move / qs_left left to him (the open
+    list's re-read of a moved defender)."""
+    rules = s.ctx.rules
+    pa = s.o[s.ball]
+    if not (B.on_board(pa) and B.on_board(c)):
+        return 0.0
+    lane = lane_squares(pa, c, 0.5)
+    for d, xp in enumerate(s.x):
+        at = q if d == j else xp
+        if at in lane and B.adjacent(at, c):
+            return 0.0
+    if not lane:
+        return 1.0
+    passer = s.ctx.off[s.ball].r['pass']
+    worst = 0.0
+    for d, xp in enumerate(s.x):
+        if d == j:
+            one = _one_action(q, a, s.ctx.dfn[d].qs, can_move, qs_left, rules)
+        else:
+            cm, ql = _caps(s, 'X', d)
+            one = _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, cm, ql, rules)
         if lane.isdisjoint(one):
             continue
         pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))

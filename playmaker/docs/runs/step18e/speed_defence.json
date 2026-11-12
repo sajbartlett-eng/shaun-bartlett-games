@@ -1,0 +1,173 @@
+{
+ "note": "seconds to finish 1 pair on the hand boards' 22 decisions; median and 9 decisions in 10",
+ "runs": [
+  {
+   "new default": {
+    "rookie": {
+     "median": 0.141,
+     "nine_in_ten": 0.229,
+     "slowest": 0.249,
+     "desktop_target": 0.3,
+     "fits_desktop": true,
+     "phone": 0.92,
+     "phone_target": 1.0,
+     "nine_in_ten_by_side": {
+      "O": 0.24,
+      "X": 0.207
+     }
+    },
+    "starter": {
+     "median": 0.463,
+     "nine_in_ten": 0.686,
+     "slowest": 0.726,
+     "desktop_target": 1.0,
+     "fits_desktop": true,
+     "phone": 2.74,
+     "phone_target": 2.0,
+     "nine_in_ten_by_side": {
+      "O": 0.692,
+      "X": 0.568
+     }
+    },
+    "allstar": {
+     "median": 0.764,
+     "nine_in_ten": 1.042,
+     "slowest": 1.253,
+     "desktop_target": 2.5,
+     "fits_desktop": true,
+     "phone": 4.17,
+     "phone_target": 3.0,
+     "nine_in_ten_by_side": {
+      "O": 1.042,
+      "X": 0.939
+     }
+    }
+   },
+   "open list": {
+    "rookie": {
+     "median": 0.299,
+     "nine_in_ten": 0.447,
+     "slowest": 0.565,
+     "desktop_target": 0.3,
+     "fits_desktop": false,
+     "phone": 1.79,
+     "phone_target": 1.0,
+     "nine_in_ten_by_side": {
+      "O": 0.359,
+      "X": 0.454
+     }
+    },
+    "starter": {
+     "median": 0.791,
+     "nine_in_ten": 1.204,
+     "slowest": 1.511,
+     "desktop_target": 1.0,
+     "fits_desktop": false,
+     "phone": 4.82,
+     "phone_target": 2.0,
+     "nine_in_ten_by_side": {
+      "O": 0.999,
+      "X": 1.463
+     }
+    },
+    "allstar": {
+     "median": 1.416,
+     "nine_in_ten": 1.992,
+     "slowest": 2.309,
+     "desktop_target": 2.5,
+     "fits_desktop": true,
+     "phone": 7.97,
+     "phone_target": 3.0,
+     "nine_in_ten_by_side": {
+      "O": 1.904,
+      "X": 2.158
+     }
+    }
+   }
+  },
+  {
+   "new default": {
+    "rookie": {
+     "median": 0.161,
+     "nine_in_ten": 0.232,
+     "slowest": 0.262,
+     "desktop_target": 0.3,
+     "fits_desktop": true,
+     "phone": 0.93,
+     "phone_target": 1.0,
+     "nine_in_ten_by_side": {
+      "O": 0.217,
+      "X": 0.249
+     }
+    },
+    "starter": {
+     "median": 0.511,
+     "nine_in_ten": 0.643,
+     "slowest": 0.806,
+     "desktop_target": 1.0,
+     "fits_desktop": true,
+     "phone": 2.57,
+     "phone_target": 2.0,
+     "nine_in_ten_by_side": {
+      "O": 0.791,
+      "X": 0.627
+     }
+    },
+    "allstar": {
+     "median": 0.866,
+     "nine_in_ten": 1.083,
+     "slowest": 1.197,
+     "desktop_target": 2.5,
+     "fits_desktop": true,
+     "phone": 4.33,
+     "phone_target": 3.0,
+     "nine_in_ten_by_side": {
+      "O": 1.015,
+      "X": 1.083
+     }
+    }
+   },
+   "open list": {
+    "rookie": {
+     "median": 0.289,
+     "nine_in_ten": 0.438,
+     "slowest": 0.576,
+     "desktop_target": 0.3,
+     "fits_desktop": false,
+     "phone": 1.75,
+     "phone_target": 1.0,
+     "nine_in_ten_by_side": {
+      "O": 0.372,
+      "X": 0.453
+     }
+    },
+    "starter": {
+     "median": 0.758,
+     "nine_in_ten": 1.141,
+     "slowest": 1.406,
+     "desktop_target": 1.0,
+     "fits_desktop": false,
+     "phone": 4.57,
+     "phone_target": 2.0,
+     "nine_in_ten_by_side": {
+      "O": 0.925,
+      "X": 1.366
+     }
+    },
+    "allstar": {
+     "median": 1.342,
+     "nine_in_ten": 2.017,
+     "slowest": 2.281,
+     "desktop_target": 2.5,
+     "fits_desktop": true,
+     "phone": 8.07,
+     "phone_target": 3.0,
+     "nine_in_ten_by_side": {
+      "O": 1.903,
+      "X": 2.244
+     }
+    }
+   }
+  }
+ ]
+}

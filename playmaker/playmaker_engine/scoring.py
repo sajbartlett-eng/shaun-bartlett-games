@@ -58,7 +58,7 @@ def shot_rating(state, shooter, shot_type):
     """The shooter's rating for this shot: the card's, less the control rule's reduction when he is rushed (D-151)."""
     r = state.ctx.off[shooter].shot(shot_type)
     rules = state.ctx.rules
-    if rules.control != 'off' and state.rushed('O', shooter):
+    if RC.control_size(rules) and state.rushed('O', shooter):
         r -= RC.control_cut(rules, shot_type)
     return r
 
@@ -107,7 +107,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     rating = shot_rating(state, shooter, shot_type)
     ft, _ = foul_on_shot_points(card, shot_type, pts, rules, rating)
     floor = forced or rules.floor_declared_shot
-    cut = RC.control_cut(rules, shot_type) if rules.control != 'off' else 0
+    cut = RC.control_cut(rules, shot_type)
 
     def val(c):
         v = pts * (rating - c)
@@ -132,11 +132,10 @@ def contest_options(state, shooter, shot_type, forced=False):
             if rules.floor_contest_zero:
                 c = max(0, c)
         if cut and state.rushed('X', j):
-            # D-151: a rushed Contest: the rating reduced, and the foul roll of a Contest with the arrow off the shooter
+            # D-151, D-154: a rushed Contest: the rating reduced; its foul rolls are today's for its position
             c -= cut
             if rules.floor_contest_zero:
                 c = max(0, c)
-            foul_roll = True
         clean = not foul_roll
         rolls = foul_rolls(rules, xp, spos)
         pf = Fraction(0) if clean else p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
@@ -224,13 +223,14 @@ def score(state):
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
                 detail = (detail + '. ' if detail else '') + f'{who} {r.points} x ({r.rating} - {r.contest}) contested by {cby}'
-            if rules.control != 'off':
+            if RC.control_size(rules):
                 # D-151: name a rushed shot and a late closeout in plain words
                 last = lambda side, i: 'Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step'
                 if state.rushed('O', r.shooter):
-                    detail += f'. A rushed {r.shot_type} off his {last("O", r.shooter)}'
+                    detail += f'. A rushed {r.shot_type} off his {last("O", r.shooter)}: {RC.control_size(rules)} lower'
                 if r.contester >= 0 and state.rushed('X', r.contester):
-                    detail += f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}"
+                    detail += (f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}: his Contest is "
+                               f'{RC.control_size(rules)} lower')
         elif r.kind == 'steal':
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':
