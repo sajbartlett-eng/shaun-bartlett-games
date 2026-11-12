@@ -1,0 +1,39 @@
+{
+ "O": {
+  "decisions": 145,
+  "top_is_a_tie": 113,
+  "share": 0.779,
+  "interval": [
+   0.705,
+   0.839
+  ],
+  "turns_tied_at_the_top_mean": 9.3,
+  "turns_within_pick_noise_mean": 10.5
+ },
+ "X": {
+  "decisions": 73,
+  "top_is_a_tie": 60,
+  "share": 0.822,
+  "interval": [
+   0.719,
+   0.893
+  ],
+  "turns_tied_at_the_top_mean": 10.2,
+  "turns_within_pick_noise_mean": 12.6
+ },
+ "both": {
+  "decisions": 218,
+  "top_is_a_tie": 173,
+  "share": 0.794,
+  "interval": [
+   0.735,
+   0.842
+  ],
+  "turns_tied_at_the_top_mean": 9.6,
+  "turns_within_pick_noise_mean": 11.2
+ },
+ "core_hours": 0.07,
+ "switches": {
+  "whole_turns": ""
+ }
+}

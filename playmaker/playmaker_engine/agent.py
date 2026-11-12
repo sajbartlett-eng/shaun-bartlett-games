@@ -145,7 +145,17 @@ class Agent:
                 srch.habit_weight = self.scouting.get('weight', 0.3)
             results, reached = srch.root(s, hi, lo)
         sign = 1 if side == 'O' else -1
-        scored = [(sign * v + self.rng.gauss(0, self.p['noise']), t, sign * v) for v, t in results]
+        if CONFIG.get('search', {}).get('split_ties') is True:
+            # step 18f (search.split_ties): turns that read exactly the same get one draw of the pick noise, so the
+            # evidence that put them in order chooses between them, not chance
+            scored, prev, nz = [], None, 0.0
+            for v, t in results:
+                if prev is None or abs(v - prev) >= 1e-9:
+                    nz = self.rng.gauss(0, self.p['noise'])
+                prev = v
+                scored.append((sign * v + nz, t, sign * v))
+        else:
+            scored = [(sign * v + self.rng.gauss(0, self.p['noise']), t, sign * v) for v, t in results]
         top8 = sorted(scored, key=lambda r: -r[0])[:8]
         with_goals = []
         if getattr(srch, 'engine', None) == 'js' and JS.get('goals') is not None:
@@ -169,6 +179,13 @@ class Agent:
         turn, val = self.commit.choose(s, side, with_goals, base, None)
         # variety: one at random among the turns within the variety margin of the chosen one
         near = [t for v, t, _ in with_goals if v >= val - self.p['variety_margin']]
+        if CONFIG.get('search', {}).get('split_ties') is True:
+            # variety is between turns that read differently: of those that read the same, the first only
+            seen, near = set(), []
+            for v, t, _ in with_goals:
+                if v >= val - self.p['variety_margin'] and round(v, 9) not in seen:
+                    seen.add(round(v, 9))
+                    near.append(t)
         if self.p['variety_margin'] > 0 and len(near) > 1:
             turn = self.rng.choice(near)
         took = round(time.time() - t0, 3)

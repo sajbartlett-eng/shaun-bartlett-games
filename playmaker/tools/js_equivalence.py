@@ -192,7 +192,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -216,6 +216,9 @@ def compare_searches(args, rng):
         pt = {' ; '.join(t): v for v, t in zip(py['values'], py['turns'])}
         ok = close(py['values'], jj['values']) and close(py['choice_values'], jj['choice_values']) \
             and all(py[f] == jj[f] for f in ('reached', 'extensions', 'cap_hits', 'kept', 'choices')) and close(pt, jt)
+        if args.split_ties:                         # step 18f: the turns in the same order too (ties are put in order)
+            jj['turns'] = [[str(jsbridge.action_from(a)) for a in tn] for _, tn in j['results']]
+            ok = ok and py['turns'] == jj['turns']
         same += ok
         if not ok:
             bad.append(dict(n=k, field='search', state=s.encode(), py={f: py[f] for f in jj}, js=jj))
@@ -246,6 +249,7 @@ def main():
     ap.add_argument('--open-list', default=None, choices=('defence', 'both', 'off'), help="step 18e: search.open_list, in both engines (unset: each level's own; off: no level)")
     ap.add_argument('--whole-turns', action='store_true', help='step 18f: search.whole_turns on, in both engines')
     ap.add_argument('--kept-actions', action='store_true', help='step 18f: eval.kept_actions on, in both engines')
+    ap.add_argument('--split-ties', action='store_true', help='step 18f: search.split_ties on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
     ap.add_argument('--goals', action='store_true', help='step 16: search.goals on (with eval.advantages), in both engines')
     ap.add_argument('--coverage-budget', action='store_true', help='step 13 B: eval.coverage_budget on, in both engines')
@@ -275,6 +279,8 @@ def main():
     args.whole_turns = _CFG['search']['whole_turns']
     _CFG['eval']['kept_actions'] = args.kept_actions or bool(_CFG['eval'].get('kept_actions'))
     args.kept_actions = _CFG['eval']['kept_actions']
+    _CFG['search']['split_ties'] = args.split_ties or bool(_CFG['search'].get('split_ties'))
+    args.split_ties = _CFG['search']['split_ties']
     _CFG.setdefault('search', {})['open_list'] = args.open_list
     _HELP['on'] = args.help_readings
     args.calibrated = not args.no_calibrated and (args.calibrated or bool(_CFG['eval'].get('calibrated'))) and not args.learned
@@ -305,7 +311,7 @@ def main():
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
                                      goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
-                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, reach_map=True)))
+                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):

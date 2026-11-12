@@ -908,7 +908,7 @@ const PMEngine = (() => {
   const REACH_STATS = { calls: 0, same_state: 0, kept: 0, built: 0 };
   // Step 13: the speed-ups that change no result. Each can be turned off by a tool (setSpeed), to time it and to prove
   // the search gives the same choices and values with and without it. All are on in play.
-  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true };
+  const SPEED = { reach_cache: true, forcing: true, quiet_read: true, tt_order: true, two_direct: true, two_bound: true, path_block: true, open_facts: true };
   function setSpeed(json) {
     const q = typeof json === 'string' ? JSON.parse(json) : json;
     for (const k in SPEED) if (q[k] !== undefined) SPEED[k] = q[k] === true || q[k] === 'true';
@@ -2226,10 +2226,14 @@ const PMEngine = (() => {
       const s = this.s, carrier = s.ball, reach = reachOn();
       const leave = this._leave || (this._leave = new Map());
       const cm = this._contestAt(j, q, a, canMove, qsLeft);
-      const carrierIn = this.att_o.includes(carrier);
-      const front = p => carrierIn && cheb(p, s.o[carrier]) <= 2 && DR[p] < DR[s.o[carrier]];
+      // (a speed-up that changes no result: the squares in the ball handler's way, worked out once for this read)
+      let fr = this._front;
+      if (fr === undefined) {
+        fr = this._front = new Uint8Array(NSQ);
+        if (this.att_o.includes(carrier)) { const cs = s.o[carrier]; for (let p = 0; p < NSQ; p++) if (cheb(p, cs) <= 2 && DR[p] < DR[cs]) fr[p] = 1; }
+      }
       const moved = q !== s.x[j];
-      const into = moved && front(q), outOf = moved && front(s.x[j]) && !front(q);
+      const into = moved && fr[q] === 1, outOf = moved && fr[s.x[j]] === 1 && fr[q] !== 1;
       const blocks = into || outOf;
       for (let i = 0; i < 5; i++) out[i] = 0.0;
       let nowv = 0.0, snv = -1;
@@ -2491,6 +2495,12 @@ const PMEngine = (() => {
   // of a defender stepping into the ball handler's way reads the handler's looks the same way).
   const keptOn = () => D.config.eval.kept_actions === true;
   function setKeptActions(v) { D.config.eval.kept_actions = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.kept_actions; }
+  // step 18f (search.split_ties; Searcher.split_ties in search.py): turns that read exactly the same are separated
+  // by evidence the search already has: after the other side's best reply, how good its next-best replies are. The
+  // turn that leaves it the fewest good replies comes first. (Chance, the pick noise, then doesn't choose between
+  // them: the tools and the agent give turns that read the same one draw.)
+  const splitOn = () => (D.config.search || {}).split_ties === true;
+  function setSplitTies(v) { D.config.search = D.config.search || {}; D.config.search.split_ties = v === true || v === 'true'; return D.config.search.split_ties; }
   const wholeOn = () => (D.config.search || {}).whole_turns === true;
   function setWholeTurns(v) { D.config.search = D.config.search || {}; D.config.search.whole_turns = v === true || v === 'true'; return D.config.search.whole_turns; }
   function endedTurn(s, n) {
@@ -2521,6 +2531,13 @@ const PMEngine = (() => {
   // The switch: search.open_list (false, 'defence' or 'both') when it is set; when it is null, the level's own setting
   // (profiles.<level>.open_list). The All-Star plays 'defence' by default (step 18e); the Rookie and Starter don't.
   function openMode(profile) { const g = (D.config.search || {}).open_list; return g === null || g === undefined ? ((profile && profile.open_list) || false) : g; }
+  // search.open_width: how many turns a level reads in full, and how many first actions it follows (step 18f, D-157:
+  // the levels think the same way and differ in how well they choose): the level's own, or the config's
+  function openWidth(profile) {
+    const cfg = D.config.search || {}, p = profile || {};
+    const full = p.open_full != null ? p.open_full : cfg.open_full, follow = p.open_follow != null ? p.open_follow : cfg.open_follow;
+    return [full == null ? 8 : full, follow == null ? 4 : follow];
+  }
   function openOn(side, mode) { const v = mode === undefined ? openMode(null) : mode; return v === true || v === 'both' || (v === 'defence' && side === 'X'); }
   function setOpenList(v) { D.config.search = D.config.search || {}; D.config.search.open_list = v === 'true' ? true : v === 'false' ? false : (v === 'null' || v === undefined) ? null : v; return D.config.search.open_list; }
   const OPEN_STATS = { calls: 0, legal: 0, unique: 0, pairs: 0, followed: 0, full: 0 };
@@ -2532,7 +2549,7 @@ const PMEngine = (() => {
     if (s.pending && !isInboundPass(state)) { const ph = s.phase; s = completePass(s); if (s.phase !== ph) return s; }
     return after(state, s, 'X', 'move');
   }
-  function openTurnsX(s, beam, read, evaluate, deadline, expand, whole) {
+  function openTurnsX(s, beam, read, evaluate, deadline, expand, whole, width) {
     const acts = legalActions(s);
     if (acts.length <= 12) return null;
     const ref1 = nullStep(s);
@@ -2542,7 +2559,7 @@ const PMEngine = (() => {
     if (two && (isChance(ref2) || ref2.stage !== 'play')) return null;
     const cfg = D.config.search || {};
     const nexp = expand != null ? expand : Math.max(3, Math.floor(beam / 3));
-    const K = beam + nexp * (cfg.open_full == null ? 8 : cfg.open_full), F = nexp * (cfg.open_follow == null ? 4 : cfg.open_follow);
+    const wd = width || openWidth(null), K = beam + nexp * wd[0], F = nexp * wd[1];
     // one read to re-read from: the position the turn leaves when it ends (two actions on, or one if that ends it)
     const ref = two ? ref2 : ref1, R = readOf(ref);
     const att = R.att_o, b2 = bankedOf(ref);
@@ -2566,14 +2583,44 @@ const PMEngine = (() => {
     const tieOf = vec => { let t = 0.0; for (const i of att) t += vec[i]; return round6(t); };
     const keyOf = (c, vec) => { let k = c + '|' + round6(vec[5]) + '|' + round6(vec[6]); for (const i of att) k += '|' + round6(vec[i]); return k; };
     const full = [], U = [], seen = new Set();
+    // (a speed-up that changes no result: most actions re-read bit for bit like one before them; those are dropped
+    // before anything is built for them. tmp: the re-read in hand; bits: its bits, for a number to find its like by)
+    const tmp = new Float64Array(7), bits = new Uint32Array(tmp.buffer), same = new Map();
     OPEN_STATS.calls++; OPEN_STATS.legal += acts.length;
     // 1. every legal first action
+    // (a speed-up that changes no result, SPEED.open_facts: with no pass in the air, where a movement leaves a
+    // defender and what he has left follow from the action itself, as apply() and caps() give them, so the action
+    // needn't be played to be re-read)
+    const direct = SPEED.open_facts && !s.pending;
+    const cap0 = [0, 1, 2, 3, 4].map(j => [hasMoved(s, 'X', j), isLocked(s, 'X', j), quickStepped(s, 'X', j)]);
+    const qsCount = count(s, 'X', 'qs'), ctl = controlOn(s.ctx);
+    const refCaps = fresh ? [0, 1, 2, 3, 4].map(j => [caps(ref, 'X', j), (rushedX(ref, j) ? 2 : 0) | (hasMoved(ref, 'X', j) ? 4 : 0)]) : null;
     for (const a of acts) {
       if (deadline && now() > deadline) throw TIMEOUT;
+      if (direct && a.dest >= 0) {
+        const j = a.piece, k = a.kind;
+        let ar = s.arrows[j];
+        if (k === 'move') ar = a.arrow;
+        else if (k === 'sprint') { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); }
+        if (fresh) R.reread(j, a.dest, ar, refCaps[j][0][0], refCaps[j][0][1], refCaps[j][1], tmp);
+        else {
+          const mv = cap0[j][0] || k !== 'qs', qd = cap0[j][2] || k !== 'move';
+          const left = LIMITS.X.qs - qsCount - (k === 'move' ? 0 : 1);
+          R.reread(j, a.dest, ar, !mv && !cap0[j][1], qd ? 0 : Math.min(left, 1), (ctl ? (k === 'move' ? 0 : 2) : 0) | (mv ? 4 : 0), tmp);
+        }
+      } else {
       const nxt = apply(s, a);
       if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(whole ? endedTurn(s, nxt) : nxt), [a]]); continue; }
-      const v2 = new Float64Array(7);
-      facts(nxt, a.piece, v2, fresh ? ref : nxt);
+      facts(nxt, a.piece, tmp, fresh ? ref : nxt);
+      }
+      let h = a.piece;
+      for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
+      let bucket = same.get(h), dup = false;
+      if (bucket === undefined) { bucket = []; same.set(h, bucket); }
+      else for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
+      if (dup) continue;
+      const v2 = Float64Array.from(tmp);
+      v2.j = a.piece; bucket.push(v2);
       const q2 = Qof(v2), c = round6(q2);
       const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: keyOf(c, v2), v2, q2 };
       if (seen.has(u.key)) continue;                     // the same by this read as an action before it
@@ -2665,10 +2712,10 @@ const PMEngine = (() => {
     }
     return fin;
   }
-  function turns(s, beam, read, evaluate, deadline, expand, second, mode, whole) {      // mode: the level's open list (openMode); whole: search.whole_turns
+  function turns(s, beam, read, evaluate, deadline, expand, second, mode, whole, width) {      // mode: the level's open list (openMode); whole: search.whole_turns
     const side = actor(s), sign = side === 'O' ? 1 : -1;
     const open = openOn(side, mode) && !!evaluate;
-    if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole); if (r) return r; }
+    if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole, width); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [];
     for (const a of first) {
@@ -2728,6 +2775,8 @@ const PMEngine = (() => {
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
+      this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first
+      this.width = openWidth(profile);                          // step 18f: how many turns this level reads in full
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
     playT(s, t) { const n = playTurn(s, t); return this.whole ? endedTurn(s, n) : n; }   // a turn played, ended if it is one action (step 18f)
@@ -2893,6 +2942,7 @@ const PMEngine = (() => {
       this.nodes++;
       const a0 = alpha, b0 = beta;
       let best = null;
+      const rec = this.split && depth === 1 && a0 === VMIN && b0 === VMAX ? [] : null;      // step 18f: its replies' values
       const opponent = side !== this.me;
       const mix = opponent && (this.lam < 1.0 || !!this.habit);
       let passive = null;
@@ -2904,6 +2954,7 @@ const PMEngine = (() => {
         const child = this.playT(s, t);
         const d = (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === side && midTurn(child)) ? depth : depth - 1;
         const v = this.value(child, d, mix ? VMIN : alpha, mix ? VMAX : beta);
+        if (rec) rec.push(v);
         if (side === 'O') { if (best === null || v > best[0]) best = [v, t]; if (!mix) alpha = Math.max(alpha, v); }
         else { if (best === null || v < best[0]) best = [v, t]; if (!mix) beta = Math.min(beta, v); }
         if (!mix && alpha >= beta) {
@@ -2912,6 +2963,7 @@ const PMEngine = (() => {
           break;
         }
       }
+      if (rec && rec.length === ts.length) { rec.sort((x, y) => (side === 'O' ? y - x : x - y)); this.spread.set(z, rec); }
       let v = best[0];
       if (mix && passive !== null) v = this.lam * v + (1 - this.lam) * passive;
       if (mix && this.habit) {
@@ -2981,7 +3033,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
       if (hit === undefined) {
-        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open, this.whole);
+        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open, this.whole, this.width);
         this.tcache.set(key, hit);
       }
       return hit;
@@ -3012,7 +3064,7 @@ const PMEngine = (() => {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
-      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole);
+      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
       const deadline = this.deadline; this.deadline = Infinity;
       let results = [];
       const sign = side === 'O' ? 1 : -1;
@@ -3061,7 +3113,33 @@ const PMEngine = (() => {
         this.trace = this.trace.map(r => [r[0], r[1], r[2] - p0]);
       }
       results.sort(byBest);
+      if (this.split) results = this.splitTies(s, results, side);
       return [results, reached];
+    }
+    // step 18f: within each run of turns that read the same (results best first), those whose reply node was wholly
+    // searched are put in order of the other side's next-best replies, the worst for it first; the rest keep their places
+    splitTies(s, results, side) {
+      const keyOf = t => {
+        const n = this.playT(s, t);
+        if (isChance(n) || n.stage === 'over' || actor(n) === side) return null;
+        const sp = this.spread.get(zobrist(n));
+        return sp ? sp.slice(1).map(v => round6(side === 'O' ? -v : v)) : null;
+      };
+      const less = (a, b) => { const n = Math.min(a.length, b.length); for (let k = 0; k < n; k++) if (a[k] !== b[k]) return a[k] - b[k]; return a.length - b.length; };
+      const out = results.slice();
+      let i = 0;
+      while (i < out.length) {
+        let j = i + 1;
+        while (j < out.length && Math.abs(out[j][0] - out[i][0]) < 1e-9) j++;
+        if (j - i > 1) {
+          const slots = [], items = [];
+          for (let k = i; k < j; k++) { const key = keyOf(out[k][1]); if (key) { slots.push(k); items.push([key, items.length, out[k]]); } }
+          items.sort((x, y) => less(x[0], y[0]) || (x[1] - y[1]));
+          slots.forEach((k, m) => { out[k] = items[m][2]; });
+        }
+        i = j;
+      }
+      return out;
     }
     childDepth(s, child, depth) {
       if (this.quiet && !isChance(child) && child.stage !== 'over' && actor(child) === actor(s) && midTurn(child)) return depth;
@@ -3332,7 +3410,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, endedTurn, setKeptActions,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

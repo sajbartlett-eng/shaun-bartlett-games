@@ -57,3 +57,16 @@ gives a verdict (after at least 160 pairs), or at 400 pairs.
     gives 8.84. The outcome is mostly the dice and later play.
   - The All-Star shoots early, so there are too few late positions: the looks map has lines for phases 1 to 4 only.
     Self-play at the Rookie and Starter is added for the later phases.
+- **Result (part 1's head to head):** 7.55 core-hours (it shared the machine with the self-play; alone it is about
+  4.5). 400 pairs: **+1.7 points a pair (0.3 to 3.1),** 155 wins, 137 losses, 108 ties. Inside the predicted range,
+  a little above it. The sequential test gave no verdict; the interval is clear of 0. On offence it loses the ball
+  less (11.1 times in 100 phases kept against 17.6).
+
+## 4. Part 3's head to head: the looks reading and the control-aware cover against the default, up to 400 pairs
+
+- The default here is whole turns on and today's reading with its map refit on the same 800 possessions the looks
+  map is fitted on (an early refit, so that the looks reading isn't helped by a fresher map).
+- Cost: about 4.5.
+- I expect no clear difference: between -1 and +1.5 a pair. The looks reading predicts what positions go on to earn
+  only a shade better than today's (held-out error 11.08 against 11.11), and on the closeout board the offence's
+  best reply is to pass out of the corner, so the Move kept doesn't change the value there.

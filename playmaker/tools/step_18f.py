@@ -18,7 +18,7 @@ L = E18.L
 RUN = os.path.join(ROOT, 'docs', 'runs', 'step18f')
 WORK = os.environ.get('STEP18F_WORK', os.path.join(RUN, 'work'))
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
-SWITCHES = ('whole_turns', 'fine_ties', 'kept_actions')   # this step's switches, as the tools name them
+SWITCHES = ('whole_turns', 'split_ties', 'kept_actions')   # this step's switches, as the tools name them
 
 
 def setting(*on, open_list=None):

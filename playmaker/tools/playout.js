@@ -12,7 +12,7 @@ const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
 const SEARCH_DEFAULT = load('ai_profiles.json').search || {}, EVAL_DEFAULT = load('ai_profiles.json').eval || {};
-const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions']];      // step 18f: [the policy's setting, the engine's setter]
+const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies']];      // step 18f: [the policy's setting, the engine's setter]
 E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), learned: fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null });
 
 function rng(seed) {                                   // mulberry32: the same dice for the same seed
@@ -51,8 +51,12 @@ function decide(s, ctx, pol, r) {                      // one action: the first 
   if (legal.length === 1) return legal[0];
   const out = searchAt(s, ctx, pol), sign = E.actor(s) === 'O' ? 1 : -1;
   let best = null, bv = -Infinity;
+  const split = !!(E.splitOn && E.splitOn());            // step 18f (search.split_ties): turns that read the same get one draw
+  let prev = null, nz = 0;
   for (const [v, t] of out.results) {
-    const x = sign * v + (pol.noise ? pol.noise * gauss(pol.rn || r) : 0);     // rn: the engine's own noise, apart from the dice
+    if (!split || prev === null || Math.abs(v - prev) >= 1e-9) nz = pol.noise ? pol.noise * gauss(pol.rn || r) : 0;     // rn: the engine's own noise, apart from the dice
+    prev = v;
+    const x = sign * v + nz;
     if (x > bv) { bv = x; best = t; }
   }
   const want = JSON.stringify(best[0]);

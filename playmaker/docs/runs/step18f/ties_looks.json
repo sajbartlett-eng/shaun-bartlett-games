@@ -1,0 +1,40 @@
+{
+ "O": {
+  "decisions": 145,
+  "top_is_a_tie": 104,
+  "share": 0.717,
+  "interval": [
+   0.639,
+   0.784
+  ],
+  "turns_tied_at_the_top_mean": 6.0,
+  "turns_within_pick_noise_mean": 6.6
+ },
+ "X": {
+  "decisions": 73,
+  "top_is_a_tie": 62,
+  "share": 0.849,
+  "interval": [
+   0.75,
+   0.914
+  ],
+  "turns_tied_at_the_top_mean": 11.7,
+  "turns_within_pick_noise_mean": 12.7
+ },
+ "both": {
+  "decisions": 218,
+  "top_is_a_tie": 166,
+  "share": 0.761,
+  "interval": [
+   0.701,
+   0.813
+  ],
+  "turns_tied_at_the_top_mean": 7.9,
+  "turns_within_pick_noise_mean": 8.6
+ },
+ "core_hours": 0.08,
+ "switches": {
+  "kept_actions": true,
+  "leaf_mode": "looks"
+ }
+}

@@ -539,6 +539,8 @@ class Searcher:
         self.help = CONFIG['eval'].get('help_readings') is True
         self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
         self.whole = whole_on()                       # step 18f (search.whole_turns)
+        self.split = CONFIG.get('search', {}).get('split_ties') is True      # step 18f (search.split_ties)
+        self.spread = {}                              # a reply node's values, best first
         self.width = open_width(profile)              # step 18f: how many turns this level reads in full
         self.fcache = {}
         self.t0 = time.time()
@@ -743,6 +745,7 @@ class Searcher:
         self.nodes += 1
         a0, b0 = alpha, beta
         best = None
+        rec = [] if self.split and depth == 1 and a0 == VMIN and b0 == VMAX else None     # step 18f: its replies' values
         opponent = side != self.me
         mix = opponent and (self.lam < 1.0 or bool(self.habit))
         passive = None
@@ -756,6 +759,8 @@ class Searcher:
                     and mid_turn(child):
                 d = depth                    # 'quiet points': look-ahead counts completed team turns only
             v = self.value(child, d, VMIN if mix else alpha, VMAX if mix else beta)
+            if rec is not None:
+                rec.append(v)
             if side == 'O':
                 if best is None or v > best[0]:
                     best = (v, t)
@@ -770,6 +775,8 @@ class Searcher:
                 self.killer(depth, t)
                 self.history[t[0]] = self.history.get(t[0], 0) + depth * depth
                 break
+        if rec is not None and len(rec) == len(ts):
+            self.spread[key[0]] = sorted(rec, reverse=side == 'O')
         v = best[0]
         if mix and passive is not None:
             v = self.lam * v + (1 - self.lam) * passive
@@ -948,7 +955,40 @@ class Searcher:
             results = [(v - p0, t) for v, t in results]
             self.trace = [(d, t, v - p0) for d, t, v in self.trace]
         results.sort(key=lambda r: -r[0] if side == 'O' else r[0])
+        if self.split:
+            results = self.split_ties(s, results, side)
         return results, reached
+
+    def split_ties(self, s, results, side):
+        """Step 18f (search.split_ties): turns that read exactly the same are separated by evidence the search already
+        has: after the other side's best reply, how good its next-best replies are. Within each run of turns that read
+        the same (results best first), those whose reply node was wholly searched are put in order, the turn that
+        leaves the other side the fewest good replies first; the rest keep their places."""
+        def key_of(t):
+            n = self.play_t(s, t)
+            if isinstance(n, ChanceNode) or n.stage == 'over' or actor(n) == side:
+                return None
+            sp = self.spread.get(zobrist(n))
+            return tuple(round(-v if side == 'O' else v, 6) for v in sp[1:]) if sp else None
+
+        out = list(results)
+        i = 0
+        while i < len(out):
+            j = i + 1
+            while j < len(out) and abs(out[j][0] - out[i][0]) < 1e-9:
+                j += 1
+            if j - i > 1:
+                slots, items = [], []
+                for k in range(i, j):
+                    key = key_of(out[k][1])
+                    if key is not None:
+                        slots.append(k)
+                        items.append((key, len(items), out[k]))
+                items.sort(key=lambda r: (r[0], r[1]))
+                for k, it in zip(slots, items):
+                    out[k] = it[2]
+            i = j
+        return out
 
     def _child_depth(self, s, child, depth):
         """The depth left after a root turn: a turn that leaves the same side mid-turn isn't a completed team turn."""

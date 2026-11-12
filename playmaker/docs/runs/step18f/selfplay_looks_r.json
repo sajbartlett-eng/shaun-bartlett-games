@@ -1,0 +1,39 @@
+{
+ "name": "looks_r",
+ "level": "rookie",
+ "switches": {
+  "whole_turns": true
+ },
+ "possessions": 320,
+ "positions": 10412,
+ "mean_points": 26.43,
+ "interval": [
+  24.96,
+  27.89
+ ],
+ "shot_timing": {
+  "possessions": 320,
+  "shots_by_phase_pct": [
+   16,
+   21,
+   16,
+   19,
+   16,
+   13
+  ],
+  "shots_in_phases_1_and_2_pct": 37,
+  "decisions": 34.8,
+  "clock_ran_out": 5,
+  "clock_interval_in_100": [
+   0.7,
+   3.6
+  ],
+  "lost_in_100_phases_kept": 6.7,
+  "lost_interval": [
+   5.2,
+   8.7
+  ]
+ },
+ "core_hours": 1.35,
+ "wall_minutes": 20.7
+}
