@@ -1,0 +1,142 @@
+{
+ "tag": "today",
+ "switches": {},
+ "positions": 10,
+ "scored": 10,
+ "matched": 9,
+ "points_lost_a_position": 1.36,
+ "interval": [
+  0.25,
+  2.47
+ ],
+ "candidates_added": 3,
+ "rows": [
+  {
+   "id": "two turns before an open shot 1",
+   "group": "two turns before",
+   "best": "the reference's choice: X1 moves to O8, facing N, then X1 tries a Steal",
+   "choice": "the reference's choice: X1 moves to O8, facing N, then X1 tries a Steal",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "two turns before an open shot 2",
+   "group": "two turns before",
+   "best": "the reference's choice: X3 moves to C8, facing N, then X2 Quick Steps to G7",
+   "choice": "the reference's choice: X3 moves to C8, facing N, then X2 Quick Steps to G7",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "two turns before an open shot 3",
+   "group": "two turns before",
+   "best": "the listed turn that ends nearest O2, who went on to shoot: X4 Quick Steps to N8, then X5 challenge",
+   "choice": "the reference's choice: X5 challenge",
+   "matches": true,
+   "points_lost": 0.22,
+   "interval": [
+    -1.57,
+    2.01
+   ]
+  },
+  {
+   "id": "two turns before an open shot 4",
+   "group": "two turns before",
+   "best": "the reference's choice: X1 Quick Steps to H9",
+   "choice": "the reference's choice: X1 Quick Steps to H9",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "two turns before an open shot 5",
+   "group": "two turns before",
+   "best": "the reference's choice: X2 moves to G4, facing SE",
+   "choice": "the computer's choice (today): X1 moves to P7, facing SE, then X5 moves to M3, facing NE",
+   "matches": true,
+   "points_lost": 0.72,
+   "interval": [
+    -6.14,
+    7.58
+   ]
+  },
+  {
+   "id": "two turns before an open shot 6",
+   "group": "two turns before",
+   "best": "the reference's choice: X1 Quick Steps to J6, then X5 moves to M2, facing N",
+   "choice": "the computer's choice (today): X1 Quick Steps to J6, then X1 tries a Steal",
+   "matches": false,
+   "points_lost": 10.12,
+   "interval": [
+    4.27,
+    15.98
+   ]
+  },
+  {
+   "id": "two turns before an open shot 7",
+   "group": "two turns before",
+   "best": "the reference's choice: X3 moves to M9, facing N",
+   "choice": "the reference's choice: X3 moves to M9, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "two turns before an open shot 8",
+   "group": "two turns before",
+   "best": "the reference's choice: X2 moves to I3, facing S, then X1 moves to C8, facing S",
+   "choice": "the listed turn that ends nearest O3, who went on to shoot: X1 moves to C7, facing SW, then X2 moves to I3, facing S",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "two turns before an open shot 9",
+   "group": "two turns before",
+   "best": "the listed turn that ends nearest O1, who went on to shoot: X1 Quick Steps to I9, then X1 moves to F9, facing NW",
+   "choice": "the reference's choice: X2 moves to D8, facing N, then X2 tries a Steal",
+   "matches": true,
+   "points_lost": 2.05,
+   "interval": [
+    -2.86,
+    6.95
+   ]
+  },
+  {
+   "id": "two turns before an open shot 10",
+   "group": "two turns before",
+   "best": "the reference's choice: X5 moves to Q4, facing N, then X1 moves to N8, facing N",
+   "choice": "the computer's choice (today): X5 moves to Q4, facing N",
+   "matches": true,
+   "points_lost": 0.47,
+   "interval": [
+    -3.32,
+    4.26
+   ]
+  }
+ ],
+ "by_group": {
+  "two turns before": {
+   "positions": 10,
+   "matched": 9,
+   "points_lost": 1.36
+  }
+ }
+}

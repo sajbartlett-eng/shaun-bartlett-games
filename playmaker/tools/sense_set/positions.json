@@ -22302,6 +22302,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X1 moves to P7, facing SE, then X5 moves to M3, facing NE",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "P7",
+      3,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      4,
+      "M3",
+      1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
    }
   ]
  },
@@ -23078,6 +23102,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X1 Quick Steps to J6, then X1 tries a Steal",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "J6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      0,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
    }
   ]
  },
@@ -26184,6 +26232,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (today): X5 moves to Q4, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "Q4",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "today"
    }
   ]
  }

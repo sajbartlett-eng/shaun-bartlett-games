@@ -41,3 +41,6 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs are
 - play-outs (14 candidate copies of 16 on 4 positions): 0.43 (running total 3.08)
 - play-outs (12 candidate copies of 16 on 3 positions): 0.6 (running total 3.68)
 - play-outs (14 candidate copies of 16 on 3 positions): 0.66 (running total 4.34)
+- searches (today choices, 10 positions): 0.02 (running total 4.36)
+- searches (today, 10 positions): 0.01 (running total 4.37)
+- play-outs (6 candidate copies of 16 on 7 positions): 0.44 (running total 4.81)
