@@ -218,7 +218,7 @@ def compare_searches(args, rng):
             sts.append(s)
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
-                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, exact_shot=args.exact_shot, leaf_mode=args.leaf_mode,
+                             learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, dice_in_hand=args.dice_in_hand, ball_loss=args.ball_loss, keep_settled=args.keep_settled, no_floor=args.no_floor, exact_shot=args.exact_shot, leaf_mode=args.leaf_mode,
                              search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
@@ -277,6 +277,9 @@ def main():
     ap.add_argument('--kept-actions', action='store_true', help='step 18f: eval.kept_actions on, in both engines')
     ap.add_argument('--split-ties', action='store_true', help='step 18f: search.split_ties on, in both engines')
     ap.add_argument('--rank-in-hand', action='store_true', help='step 18f: search.rank_in_hand on, in both engines')
+    ap.add_argument('--dice-in-hand', action='store_true', help='step 18j: search.dice_in_hand on, in both engines')
+    ap.add_argument('--ball-loss', action='store_true', help='step 18j: eval.ball_loss on, in both engines')
+    ap.add_argument('--keep-settled', action='store_true', help='step 18j: search.keep_settled on, in both engines')
     ap.add_argument('--zone', action='store_true', help="step 18g: rules.zone 'on' in every position (the zone of influence)")
     ap.add_argument('--broken', action='store_true', help='step 18g: play each position on until a Dribble is won (a zone broken this phase)')
     ap.add_argument('--fiba', action='store_true', help='step 18i: three seconds, closely guarded and the FIBA fouled shot on in every position')
@@ -322,6 +325,12 @@ def main():
     args.split_ties = _CFG['search']['split_ties']
     _CFG['search']['rank_in_hand'] = args.rank_in_hand or bool(_CFG['search'].get('rank_in_hand'))
     args.rank_in_hand = _CFG['search']['rank_in_hand']
+    _CFG['search']['dice_in_hand'] = args.dice_in_hand or bool(_CFG['search'].get('dice_in_hand'))
+    args.dice_in_hand = _CFG['search']['dice_in_hand']
+    _CFG['eval']['ball_loss'] = args.ball_loss or bool(_CFG['eval'].get('ball_loss'))
+    args.ball_loss = _CFG['eval']['ball_loss']
+    _CFG['search']['keep_settled'] = args.keep_settled or bool(_CFG['search'].get('keep_settled'))
+    args.keep_settled = _CFG['search']['keep_settled']
     _CFG['eval']['no_floor'] = args.no_floor or bool(_CFG['eval'].get('no_floor'))
     args.no_floor = _CFG['eval']['no_floor']
     _CFG['eval']['exact_shot'] = args.exact_shot or bool(_CFG['eval'].get('exact_shot'))
@@ -356,7 +365,7 @@ def main():
                                      leaf_mode=args.leaf_mode, stable=args.stable, switches=args.switch_map, speed=args.speed,
                                      reach=args.reach, coverage_budget=args.coverage_budget, advantages=args.advantages,
                                      goals=args.goals, learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings,
-                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, no_floor=args.no_floor, exact_shot=args.exact_shot, reach_map=True)))
+                                     open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, dice_in_hand=args.dice_in_hand, ball_loss=args.ball_loss, keep_settled=args.keep_settled, no_floor=args.no_floor, exact_shot=args.exact_shot, reach_map=True)))
     py = [py_probe(s, reach_map=True) for s in states]
     if args.reaction:
         for s, a in zip(states, py):

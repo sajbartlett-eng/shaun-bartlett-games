@@ -12,7 +12,7 @@ const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
 const SEARCH_DEFAULT = load('ai_profiles.json').search || {}, EVAL_DEFAULT = load('ai_profiles.json').eval || {};
-const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot']];      // step 18f: [the policy's setting, the engine's setter]
+const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['dice_in_hand', 'setDiceInHand'], ['ball_loss', 'setBallLoss'], ['keep_settled', 'setKeepSettled'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot']];      // step 18f: [the policy's setting, the engine's setter]
 const LEARNED = fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null;
 // step 18f: a policy's `map: 'start'` plays with the map as it stood at the start of the step (the end re-measure's other side)
 const START_FILE = path.join(__dirname, '..', 'docs', 'runs', 'step18f', 'start_of_step_weights.json');

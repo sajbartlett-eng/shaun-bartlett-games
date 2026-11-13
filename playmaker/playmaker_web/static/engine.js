@@ -2892,6 +2892,48 @@ const PMEngine = (() => {
   // search still values a one-action turn as the turn ended. Ranked as ended turns, a first action that only pays
   // with its second (move, then shoot) was not followed, and the other side's search never saw it.
   const inHandOn = () => (D.config.search || {}).rank_in_hand === true;
+  // ---- step 18j (search.dice_in_hand, eval.ball_loss; search.py): seeing a Steal that a movement sets up ---------------
+  const DICE = new Set(['steal', 'challenge', 'intercept']);
+  const diceInHandOn = () => (D.config.search || {}).dice_in_hand === true;
+  const ballLossOn = () => D.config.eval.ball_loss === true;
+  const keepSettledOn = () => (D.config.search || {}).keep_settled === true;
+  function setKeepSettled(v) { D.config.search = D.config.search || {}; D.config.search.keep_settled = v === true || v === 'true'; return D.config.search.keep_settled; }
+  function setDiceInHand(v) { D.config.search = D.config.search || {}; D.config.search.dice_in_hand = v === true || v === 'true'; return D.config.search.dice_in_hand; }
+  function setBallLoss(v) { D.config.eval.ball_loss = v === true || v === 'true'; return D.config.eval.ball_loss; }
+  // search.faces_attacker: a defender standing on q with arrow a (as defender j's stance reads it), next to an attacker with an arrow on him
+  function facesAttacker(s, j, q, a) {
+    const st = stanceOf(s, j, a);
+    for (let i = 0; i < 5; i++) { const op = s.o[i]; if (ONB[op] && adjacent(q, op) && onLine(st, dirBetween(q, op))) return true; }
+    return false;
+  }
+  // search.steal_spot: where defender j can try a Steal from within one turn, and his arrow there: [square, arrow] or null
+  function stealSpot(s, j) {
+    const xp = s.x[j], bh = s.o[s.ball], st = stanceOf(s, j);
+    if (st >= 16) return null;
+    if (adjacent(xp, bh) && onLine(st, dirBetween(xp, bh))) return [xp, s.arrows[j]];
+    if (s.tok_x < 2) return null;
+    if (canMoveKind(s, 'X', j, 'move')) {
+      const dests = movementDests(s, 'X', j, 'move');
+      let bk = -1, bq = -1, bd = -1;
+      for (let d = 0; d < 8; d++) {
+        const q = bh - DSTEP[d];
+        if (!ONB[q]) continue;
+        if (q === xp || dests.has(q)) { const k = (DR[q] >= DR[bh] ? 8 : 0) + d; if (bk < 0 || k < bk) { bk = k; bq = q; bd = d; } }
+      }
+      if (bk >= 0) return [bq, bd];
+    }
+    if (canMoveKind(s, 'X', j, 'qs') && s.ctx.dfn[j].qs > 0) {
+      let dests = null;
+      const ls = st >= 8 ? [st - 8, (st - 7) % 8] : [st];
+      for (const d of ls) {
+        const q = bh - DSTEP[d];
+        if (!ONB[q]) continue;
+        if (dests === null) dests = movementDests(s, 'X', j, 'qs');
+        if (dests.has(q)) return [q, s.arrows[j]];
+      }
+    }
+    return null;
+  }
   function setRankInHand(v) { D.config.search = D.config.search || {}; D.config.search.rank_in_hand = v === true || v === 'true'; return D.config.search.rank_in_hand; }
   function setWholeTurns(v) { D.config.search = D.config.search || {}; D.config.search.whole_turns = v === true || v === 'true'; return D.config.search.whole_turns; }
   function endedTurn(s, n) {
@@ -2985,6 +3027,12 @@ const PMEngine = (() => {
     // defender and what he has left follow from the action itself, as apply() and caps() give them, so the action
     // needn't be played to be re-read)
     const direct = SPEED.open_facts && !s.pending;
+    const hand = diceInHandOn() && two;                   // step 18j (search.dice_in_hand)
+    const inHandV = (nd, q2) => {
+      if (isChance(nd)) { let v = 0.0; for (const o of nd.outcomes) v += o[0] * inHandV(o[2], q2); return v; }
+      if (nd.stage === 'over') return terminalValue(nd);
+      return q2 + bankedOf(nd) - b2;
+    };
     const cap0 = [0, 1, 2, 3, 4].map(j => [hasMoved(s, 'X', j), isLocked(s, 'X', j), quickStepped(s, 'X', j)]);
     const qsCount = count(s, 'X', 'qs'), ctl = controlOn(s.ctx);
     const refCaps = fresh ? [0, 1, 2, 3, 4].map(j => [caps(ref, 'X', j), (rushedX(ref, j) ? 2 : 0) | (hasMoved(ref, 'X', j) ? 4 : 0)]) : null;
@@ -3006,16 +3054,32 @@ const PMEngine = (() => {
       if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(whole ? endedTurn(s, nxt) : nxt), [a]]); continue; }
       facts(nxt, a.piece, tmp, fresh ? ref : nxt);
       }
+      // step 18j: a first action that leaves its mover next to an attacker with an arrow on him is never dropped as a
+      // copy of another, and is ranked with whatever he can then send to the dice
+      let har = -1;
+      if (hand) {
+        const j = a.piece, k = a.kind;
+        let ar = s.arrows[j];
+        if (k === 'move') ar = a.arrow;
+        else if (k === 'sprint') { if (a.arrow >= 0) ar = a.arrow; else { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); } }
+        if (facesAttacker(s, j, a.dest, ar)) har = ar;
+      }
       let h = a.piece;
       for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
       let bucket = same.get(h), dup = false;
       if (bucket === undefined) { bucket = []; same.set(h, bucket); }
-      else for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
+      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
       if (dup) continue;
       const v2 = Float64Array.from(tmp);
-      v2.j = a.piece; bucket.push(v2);
-      const q2 = Qof(v2), c = round6(q2);
-      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: keyOf(c, v2), v2, q2 };
+      v2.j = a.piece; if (har < 0) bucket.push(v2);       // (a dice-in-hand action never stands in for a later copy)
+      const q2 = Qof(v2);
+      let c = round6(q2), ukey = keyOf(c, v2);
+      if (har >= 0) {
+        const nx = apply(s, a);
+        for (const b of defenceActions(nx, DICE)) if (b.piece === a.piece) c = Math.min(c, round6(inHandV(apply(nx, b), q2)));
+        ukey += '|h|' + a.dest + '|' + har;
+      }
+      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: ukey, v2, q2 };
       if (seen.has(u.key)) continue;                     // the same by this read as an action before it
       seen.add(u.key);
       U.push(u);
@@ -3111,13 +3175,17 @@ const PMEngine = (() => {
     if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole, width); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [], inHand = inHandOn();
+    // step 18j (search.keep_settled): a turn the rules settle outright is never cut for turns that only read higher
+    const keep = keepSettledOn() && s.stage === 'play' && !!evaluate, exact = new Set();
     for (const a of first) {
       if (deadline && now() > deadline) throw TIMEOUT;
       const nxt = apply(s, a);
       scored.push([sign * (evaluate ? evaluate(whole && !inHand ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
+      if (keep && !isChance(nxt) && nxt.stage !== 'play') exact.add(turnKey([a]));
     }
     scored.sort((x, y) => y[0] - x[0]);
     const out = scored.slice(0, beam);
+    if (exact.size) for (const r of scored.slice(beam)) if (exact.has(turnKey(r[1]))) out.push(r);
     const nexp = expand != null ? expand : Math.max(3, Math.floor(beam / 3));
     for (const [, t] of scored.slice(0, nexp)) {
       const a = t[0], nxt = apply(s, a);
@@ -3127,6 +3195,7 @@ const PMEngine = (() => {
         if (b.kind === 'end_turn' || b.kind === 'forfeit') continue;
         const n2 = apply(nxt, b);
         out.push([sign * (evaluate ? evaluate(n2) : 0.0), [a, b]]);
+        if (keep && !isChance(n2) && n2.stage !== 'play') exact.add(turnKey([a, b]));
       }
     }
     out.sort((x, y) => y[0] - x[0]);
@@ -3134,8 +3203,8 @@ const PMEngine = (() => {
     for (const [v, t] of out) {
       const key = t.length === 2 && MOVEMENT.has(t[0].kind) && MOVEMENT.has(t[1].kind) ? 'S' + [t[0].id, t[1].id].sort((p, q) => p - q).join(',') : 'T' + turnKey(t);
       if (seen.has(key)) continue;
+      if (fin.length >= beam && !exact.has(turnKey(t))) { if (!exact.size) break; continue; }
       seen.add(key); fin.push([v, t]);
-      if (fin.length >= beam) break;
     }
     return fin;
   }
@@ -3166,6 +3235,7 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
+      this.ballLoss = ballLossOn(); this.xcache = new Map();    // step 18j (eval.ball_loss)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
       this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first
@@ -3180,6 +3250,7 @@ const PMEngine = (() => {
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
       if (this.help && !isChance(s) && s.stage === 'play' && !s.pending && actor(s) === 'O') v = this.floor(s, v, key);   // step 18c
+      if (this.ballLoss && !isChance(s) && s.stage === 'play' && !s.pending && actor(s) === 'X' && s.turn_n === 0 && !s.inbound) v = this.loss(s, v, key);   // step 18j
       if (this.tempoOn && !isChance(s) && s.stage === 'play') {
         const t = this.tempo[phaseOf(s)] || 0.0;
         v += actor(s) === 'O' ? -t / 2 : t / 2;
@@ -3196,6 +3267,31 @@ const PMEngine = (() => {
     // in open play the possession is worth at least the best shot the ball handler can release this turn: his shot
     // from where he stands, or after one movement, each settled by the rules. The reading names the candidates (its
     // looks released now, best first); a candidate whose reading is no better than the value so far can't raise it.
+    // search.Searcher.loss (step 18j, eval.ball_loss): the defence to act with a whole turn in hand: the position is worth no
+    // more than what its best Steal leaves, counting a defender who can still get next to the ball handler with an arrow
+    // on him, the Steal settled by the rules' own chances
+    loss(s, v, key) {
+      const hit = this.xcache.get(key);
+      if (hit !== undefined) return hit;
+      let best = v;
+      if (s.tok_x > 0 && count(s, 'X', 'steal') < LIMITS.X.steal && ONB[s.o[s.ball]]) {
+        const b0 = bankedOf(s);
+        const worth = nd => {
+          if (isChance(nd)) { let t = 0.0; for (const o of nd.outcomes) t += o[0] * worth(o[2]); return t; }
+          if (nd.stage === 'over') return terminalValue(nd);
+          return v + bankedOf(nd) - b0;
+        };
+        for (let j = 0; j < 5; j++) {
+          const spot = stealSpot(s, j);
+          if (spot === null) continue;
+          const st = (spot[0] === s.x[j] && spot[1] === s.arrows[j]) ? s : W_(s, { x: setAt(s.x, j, spot[0]), arrows: setAt(s.arrows, j, spot[1]) });
+          const w = worth(apply(st, A('steal', 'X', j)));
+          if (w < best) best = w;
+        }
+      }
+      this.xcache.set(key, best);
+      return best;
+    }
     floor(s, v, z) {
       const key = z === undefined ? zobrist(s) : z;
       const hit = this.fcache.get(key);
@@ -3813,7 +3909,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

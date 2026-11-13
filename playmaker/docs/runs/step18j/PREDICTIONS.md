@@ -36,3 +36,9 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 
 ## Tally (core-hours used)
 
+- the fault shown: one position, 16 play-outs: 0.04 (running total 0.04)
+- the fault shown: one position, 16 play-outs: 0.02 (running total 0.06)
+- searches (j18x choices, 7 positions): 0.01 (running total 0.07)
+- searches (j18x choices, 7 positions): 0.01 (running total 0.08)
+- searches (j18x choices, 7 positions): 0.01 (running total 0.09)
+- searches (j18x choices, 12 positions): 0.01 (running total 0.1)

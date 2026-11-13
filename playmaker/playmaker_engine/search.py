@@ -12,7 +12,8 @@ import time
 
 from . import board as B
 from . import rules_config as RC
-from .actions import Action, legal_actions, MOVEMENT
+from . import geometry as G
+from .actions import Action, legal_actions, MOVEMENT, _defence_actions, stance, can_move_kind, movement_dests
 from .resolve import apply, ChanceNode
 from .scoring import score
 from .decide import Read, CONFIG, foul_externality
@@ -253,6 +254,74 @@ def in_hand_on():
     return CONFIG.get('search', {}).get('rank_in_hand') is True
 
 
+# ---- step 18j: seeing a Steal that a movement sets up ------------------------------------------------------------------
+# search.dice_in_hand: in the defence's list, a first action that leaves its mover able to send something to the dice
+# (a Steal, a Challenge, an Intercept) is ranked by the better of ending there and that roll, by the rules' chances.
+# eval.ball_loss: a position the search stops in with the defence to act and a whole turn in hand is worth no more than
+# what its best Steal leaves, counting a defender who can still get next to the ball handler with an arrow on him.
+# Nothing names the turn to play: the list still ranks every action by one reading, and the search still chooses.
+
+DICE = ('steal', 'challenge', 'intercept')
+
+
+def dice_in_hand_on():
+    return CONFIG.get('search', {}).get('dice_in_hand') is True
+
+
+def keep_settled_on():
+    """search.keep_settled (step 18j): a turn the rules settle outright (the possession ends, or a shot is declared and
+    valued by the rules) is never cut from a list for turns that only read higher: its value is exact, the others'
+    are readings taken before the other side has answered."""
+    return CONFIG.get('search', {}).get('keep_settled') is True
+
+
+def ball_loss_on():
+    return CONFIG.get('eval', {}).get('ball_loss') is True
+
+
+def faces_attacker(s, j):
+    """Is defender j next to an attacker with an arrow on him (what any of his dice actions needs)?"""
+    xp = s.x[j]
+    ls = G.lines(s.ctx.rules, stance(s, j))
+    return any(B.adjacent(xp, op) and B.dir_between(xp, op) in ls for op in s.o)
+
+
+def steal_spot(s, j):
+    """Where defender j can try a Steal from within one turn, and the arrow he has there: his own square if an arrow
+    is already on the ball handler; else a square next to the ball handler his Move reaches (he may face as he likes),
+    one foul roll before two; else the square his Quick Step reaches with his arrow as it is. None if he can't."""
+    rules = s.ctx.rules
+    xp, bh = s.x[j], s.o[s.ball]
+    st = stance(s, j)
+    ls = G.lines(rules, st)
+    if not ls:
+        return None
+    if B.adjacent(xp, bh) and B.dir_between(xp, bh) in ls:
+        return xp, s.arrows[j]
+    if s.tok_x < 2:
+        return None
+    if can_move_kind(s, 'X', j, 'move'):
+        dests = movement_dests(s, 'X', j, 'move', rules)
+        best = None
+        for d, (dx, dy) in enumerate(B.DIRS):
+            q = (bh[0] - dx, bh[1] - dy)
+            if q == xp or q in dests:
+                k = (B.dist_rim(q) >= B.dist_rim(bh), d)
+                if best is None or k < best[0]:
+                    best = (k, q, d)
+        if best is not None:
+            return best[1], best[2]
+    if can_move_kind(s, 'X', j, 'qs') and s.ctx.dfn[j].qs > 0:
+        dests = None
+        for d in ls:
+            q = (bh[0] - B.DIRS[d][0], bh[1] - B.DIRS[d][1])
+            if dests is None:
+                dests = movement_dests(s, 'X', j, 'qs', rules)
+            if q in dests:
+                return q, s.arrows[j]
+    return None
+
+
 def ended_turn(s, n):
     """n: the node a turn from s leads to; the same with a one-action turn ended."""
     if isinstance(n, ChanceNode) or s.stage != 'play' or n.stage != 'play' or n.pending or n.turn_n == 0:
@@ -309,6 +378,15 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
             raise Timeout
 
     fresh = ref.phase != s.phase
+    hand = dice_in_hand_on() and two
+
+    def in_hand(nd, q2):
+        if isinstance(nd, ChanceNode):
+            return sum(float(p) * in_hand(sub, q2) for p, _, sub in nd.outcomes)
+        if nd.stage == 'over':
+            return terminal_value(nd)
+        return q2 + _banked(nd) - b2
+
     full, U, seen = [], [], set()
     # 1. every legal first action
     for a in acts:
@@ -320,7 +398,14 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
         v2 = facts(nxt, a.piece, ref if fresh else nxt)
         q2 = q_of(v2)
         c = _r6(q2)
-        u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key_of(c, v2), v2=v2, q2=q2)
+        key = key_of(c, v2)
+        if hand and faces_attacker(nxt, a.piece):
+            # step 18j (search.dice_in_hand): ranked with whatever its mover can now send to the dice
+            for b in _defence_actions(nxt, nxt.ctx.rules, DICE):
+                if b.piece == a.piece:
+                    c = min(c, _r6(in_hand(apply(nxt, b), q2)))
+            key = key + ('h', a.dest, nxt.arrows[a.piece])
+        u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key, v2=v2, q2=q2)
         if u['key'] in seen:
             continue
         seen.add(u['key'])
@@ -443,6 +528,8 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
             return r
     first = legal_actions(s) if open_ else candidate_actions(s, read)
     scored = []
+    keep = keep_settled_on() and s.stage == 'play' and evaluate is not None
+    exact = set()
     for a in first:
         if deadline and time.time() > deadline:
             raise Timeout
@@ -450,6 +537,8 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
         if isinstance(nxt, ChanceNode) or nxt.stage == 'over' or actor(nxt) != side or nxt.stage != s.stage:
             v = evaluate(nxt) if evaluate else 0.0
             scored.append((sign * v, (a,)))
+            if keep and not isinstance(nxt, ChanceNode) and nxt.stage != 'play':
+                exact.add((a,))
             continue
         v = evaluate(ended_turn(s, nxt) if whole and not in_hand else nxt) if evaluate else 0.0
         scored.append((sign * v, (a,)))
@@ -457,6 +546,8 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
             continue
     scored.sort(key=lambda r: -r[0])
     out = list(scored[:beam])
+    if exact:
+        out += [r for r in scored[beam:] if r[1] in exact]
     # second actions after the best non-ending first actions
     for _, t in scored[:(expand if expand is not None else max(3, beam // 3))]:
         a = t[0]
@@ -471,16 +562,20 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
             n2 = _step(nxt, b)
             v = evaluate(n2) if evaluate else 0.0
             out.append((sign * v, (a, b)))
+            if keep and not isinstance(n2, ChanceNode) and n2.stage != 'play':
+                exact.add((a, b))
     out.sort(key=lambda r: -r[0])
     seen, final = set(), []
     for v, t in out:
         key = frozenset(t) if len(t) == 2 and all(x.kind in ('move', 'qs', 'sprint') for x in t) else t
         if key in seen:
             continue
+        if len(final) >= beam and t not in exact:
+            if not exact:
+                break
+            continue                                     # step 18j (search.keep_settled): a settled turn is never cut
         seen.add(key)
         final.append((v, t))
-        if len(final) >= beam:
-            break
     return final
 
 
@@ -545,6 +640,8 @@ class Searcher:
         # step 18c (eval.help_readings, off): with the offence to act, a position is worth at least the best shot it
         # can release this turn, settled by the rules (the floor)
         self.help = CONFIG['eval'].get('help_readings') is True
+        self.ball_loss = ball_loss_on()              # step 18j (eval.ball_loss)
+        self.xcache = {}
         self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
         self.whole = whole_on()                       # step 18f (search.whole_turns)
         self.split = CONFIG.get('search', {}).get('split_ties') is True      # step 18f (search.split_ties)
@@ -564,6 +661,9 @@ class Searcher:
         v = self.evaluate(s)
         if self.help and not isinstance(s, ChanceNode) and s.stage == 'play' and not s.pending and actor(s) == 'O':
             v = self.floor(s, v)                         # step 18c: never below the shot the offence can take now
+        if (self.ball_loss and not isinstance(s, ChanceNode) and s.stage == 'play' and not s.pending and actor(s) == 'X'
+                and s.turn_n == 0 and not s.inbound):
+            v = self.loss(s, v)                          # step 18j: the Steal a defender's movement left still allows
         if self.tempo_on and self.tempo and not isinstance(s, ChanceNode) and s.stage == 'play':
             # the measured tempo term: the same position reads higher with the offence to act; a leaf is read as the
             # mean of the two (the gap measured on the step 3n positions, ai_profiles.json search.tempo_gap)
@@ -572,6 +672,39 @@ class Searcher:
         if self.goals:
             v += self.phi(s)                 # progress: the potential here (the root's is taken off at the end)
         return v
+
+    def loss(self, s, v):
+        """Step 18j (eval.ball_loss): the defence to act with a whole turn in hand. The position is worth no more than
+        what its best Steal leaves: for each defender who is, or can get with one movement, next to the ball handler
+        with an arrow on him (steal_spot), his Steal settled by the rules' own chances: the possession's score where
+        it ends, and v (with whatever the roll banked) where play goes on. From the rules and the cards."""
+        key = zobrist(s)
+        hit = self.xcache.get(key)
+        if hit is not None:
+            return hit
+        best = v
+        if s.tok_x > 0 and s.count('X', 'steal') < RC.LIMITS['X']['steal'] and B.on_board(s.o[s.ball]):
+            b0 = _banked(s)
+
+            def worth(nd):
+                if isinstance(nd, ChanceNode):
+                    return sum(float(p) * worth(sub) for p, _, sub in nd.outcomes)
+                if nd.stage == 'over':
+                    return terminal_value(nd)
+                return v + _banked(nd) - b0
+
+            for j in range(5):
+                spot = steal_spot(s, j)
+                if spot is None:
+                    continue
+                q, a = spot
+                st = s if (q == s.x[j] and a == s.arrows[j]) else s.with_(x=s.x[:j] + (q,) + s.x[j + 1:],
+                                                                         arrows=s.arrows[:j] + (a,) + s.arrows[j + 1:])
+                w = worth(apply(st, Action('steal', 'X', j)))
+                if w < best:
+                    best = w
+        self.xcache[key] = best
+        return best
 
     def floor(self, s, v):
         """Step 18c, the first help reading: the drive priced by the rules. With the offence to act in open play, the

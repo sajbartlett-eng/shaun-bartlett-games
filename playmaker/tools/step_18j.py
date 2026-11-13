@@ -122,5 +122,50 @@ def cmd_speed(rounds='2'):
                   open(os.path.join(RUN, 'speed.json'), 'w'), indent=1)
 
 
+
+
+def cmd_fault(pid='closeout, shooter cannot move', name='your order', *switches):
+    """Part 1, no code change: after the named candidate, the offence's reading of each of its turns; then, for its
+    turn that keeps the ball where it is, what the defence finds when it is the one to act, and what play gives."""
+    positions, answers = S.load()
+    p = next(q for q in positions if q['id'] == pid)
+    c = next(c for c in p['candidates'] if name in c['name'])
+    pol = {'p': L.policy('allstar', 2, 0.0, **(S._switches(switches) if switches else {}))}
+    rows, _ = L.run_jobs('search', [dict(id='0', state=p['state'], ctx=0, pre=c['turn'])], [p['ctx']], chunks=1, policies=pol, **S.RULE)
+    res = rows[0]['by']['p']['results']
+    print('after', c['name'][:70], '| the offence reads:')
+    for v, t in res[:8]:
+        print('   ', round(v, 2), S.words(t))
+    ball = p['state']['ball']
+    keeps = [(v, t) for v, t in res if all(a[0] in ('move', 'qs', 'sprint', 'hesitate', 'screen') and a[2] != ball for a in t)]
+    if not keeps:
+        print('no turn keeps the ball where it is')
+        return
+    v0, hold = keeps[0]
+    rows, _ = L.run_jobs('search', [dict(id='0', state=p['state'], ctx=0, pre=c['turn'] + hold)], [p['ctx']], chunks=1, policies=pol, **S.RULE)
+    print('the offence holds the ball:', S.words(hold), '| it reads', round(v0, 2), '| then the defence, to act, reads:')
+    for v, t in rows[0]['by']['p']['results'][:6]:
+        print('   ', round(v, 2), S.words(t))
+    rows, secs = L.run_jobs('rollout', [dict(id='0', state=p['state'], ctx=0, seed=S._seed(pid, 0), turns=[c['turn'] + hold])], [p['ctx']], chunks=1,
+                            n=16, seed=7, keep=True, ends=True, policies=dict(O=L.policy('allstar', 2, L.profiles()['allstar']['noise'], **S.REF),
+                                                                              X=L.policy('allstar', 2, L.profiles()['allstar']['noise'], **S.REF)), **S.RULE)
+    t = rows[0]['turns'][0]
+    from collections import Counter
+    print('by play, the ball held:', round(sum(t['values']) / max(1, len(t['values'])), 2), dict(Counter(t['ends'])))
+    tally('the fault shown: one position, 16 play-outs', secs)
+
+
+def cmd_after(pid, *switches):
+    """Each named candidate of a position, and what the other side's best reply to it reads (searches only)."""
+    positions, answers = S.load()
+    p = next(q for q in positions if q['id'] == pid)
+    pol = {'p': L.policy('allstar', 2, 0.0, **(S._switches(switches) if switches else {}))}
+    cands = [c for c in p['candidates'] if not c.get('added_by')]
+    rows, _ = L.run_jobs('search', [dict(id=str(i), state=p['state'], ctx=0, pre=c['turn']) for i, c in enumerate(cands)], [p['ctx']], chunks=1, policies=pol, **S.RULE)
+    for r in sorted(rows, key=lambda r: int(r['id'])):
+        res = r['by']['p']['results']
+        print(cands[int(r['id'])]['name'][:64].ljust(66), '| reply:', round(res[0][0], 2), S.words(res[0][1])[:60])
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])
