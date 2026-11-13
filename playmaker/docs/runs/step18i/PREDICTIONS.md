@@ -41,3 +41,30 @@ core.
 - agreement checks between the two engines: the capture rule, broken zones, the FIBA rules with searches and reactions (one core each): 0.75 (running total 3.34)
 - searches (fiba, 19 positions): 0.01 (running total 3.34)
 - play-outs (108 candidate copies of 16 on 19 positions): 1.84 (running total 5.19)
+- searches (fiba_fouls_0_10, 1 positions): 0.0 (running total 5.19)
+- play-outs (6 candidate copies of 16 on 1 positions): 0.1 (running total 5.29)
+- searches (fiba_fouls_4_10, 1 positions): 0.0 (running total 5.29)
+- play-outs (6 candidate copies of 16 on 1 positions): 0.13 (running total 5.41)
+- searches (fiba_fouls_4_1, 1 positions): 0.0 (running total 5.41)
+- play-outs (6 candidate copies of 16 on 1 positions): 0.13 (running total 5.54)
+- speed, round 1 (one core): 0.09 (running total 5.63)
+- speed, round 2 (one core): 0.09 (running total 5.72)
+- tests: the named files with the three rules on (23 minutes, one core), and the rerun after the measured numbers (9 minutes): 0.55 (running total 6.27)
+
+## How the predictions came out
+
+1. **Three seconds: better than I predicted.** 1 violation in 160 possessions (0.6 in 100) with nothing added to
+   the reading. The computer sees the phase's end at its last turn and steps out.
+2. **Closely guarded: right.** No violation in 160. The ball handler is closely guarded at 35 turns in 100, about
+   the third I expected.
+3. **The fouled shot: wrong on the three.** I said a fouled three would be worth less than today. It is worth more
+   (50.9 against 43.8 across the cards), and so is a layup (41.4 against 35.1). Points a possession moved by 1.9,
+   not the half point I allowed, though that is not clear of chance.
+4. **The foul situation: wrong, the other way round.** The computer holds back at 0 fouls with 10 left and Steals
+   at 4 fouls, with 10 left or with 1. Under today's rules the penalty costs no more than any other foul.
+5. **Speed: right.** No level is slower with the three rules on.
+
+## Compute: 6.3 core-hours used, against an estimate of 7.5 and a hard limit of 12
+
+The tally counts a run by its clock time on each core. The agreement checks and tests shared the machine with some
+play-outs, so the total is slightly high.

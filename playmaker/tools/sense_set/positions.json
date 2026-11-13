@@ -4858,6 +4858,21 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (fiba_fouls_0_10): X5 moves to B3, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "B3",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "fiba_fouls_0_10"
    }
   ]
  },

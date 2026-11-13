@@ -1,0 +1,111 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18g's code, this step's with the three rules off, and with them on",
+ "rounds": [
+  {
+   "18g": {
+    "rookie": {
+     "median": 0.189,
+     "nine_in_ten": 0.24,
+     "slowest": 0.292
+    },
+    "starter": {
+     "median": 0.645,
+     "nine_in_ten": 0.897,
+     "slowest": 1.042
+    },
+    "allstar": {
+     "median": 1.358,
+     "nine_in_ten": 1.907,
+     "slowest": 2.003
+    }
+   },
+   "18i, the three rules off": {
+    "rookie": {
+     "median": 0.205,
+     "nine_in_ten": 0.257,
+     "slowest": 0.297
+    },
+    "starter": {
+     "median": 0.663,
+     "nine_in_ten": 0.892,
+     "slowest": 1.006
+    },
+    "allstar": {
+     "median": 1.414,
+     "nine_in_ten": 1.962,
+     "slowest": 2.171
+    }
+   },
+   "18i, the three rules on": {
+    "rookie": {
+     "median": 0.179,
+     "nine_in_ten": 0.224,
+     "slowest": 0.267
+    },
+    "starter": {
+     "median": 0.651,
+     "nine_in_ten": 0.857,
+     "slowest": 1.051
+    },
+    "allstar": {
+     "median": 1.322,
+     "nine_in_ten": 1.766,
+     "slowest": 1.817
+    }
+   }
+  },
+  {
+   "18g": {
+    "rookie": {
+     "median": 0.198,
+     "nine_in_ten": 0.232,
+     "slowest": 0.307
+    },
+    "starter": {
+     "median": 0.708,
+     "nine_in_ten": 0.918,
+     "slowest": 1.235
+    },
+    "allstar": {
+     "median": 1.32,
+     "nine_in_ten": 1.883,
+     "slowest": 2.046
+    }
+   },
+   "18i, the three rules off": {
+    "rookie": {
+     "median": 0.212,
+     "nine_in_ten": 0.246,
+     "slowest": 0.308
+    },
+    "starter": {
+     "median": 0.703,
+     "nine_in_ten": 0.947,
+     "slowest": 1.211
+    },
+    "allstar": {
+     "median": 1.441,
+     "nine_in_ten": 1.916,
+     "slowest": 2.097
+    }
+   },
+   "18i, the three rules on": {
+    "rookie": {
+     "median": 0.196,
+     "nine_in_ten": 0.256,
+     "slowest": 0.271
+    },
+    "starter": {
+     "median": 0.651,
+     "nine_in_ten": 0.917,
+     "slowest": 1.041
+    },
+    "allstar": {
+     "median": 1.318,
+     "nine_in_ten": 1.863,
+     "slowest": 2.013
+    }
+   }
+  }
+ ]
+}

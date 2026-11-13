@@ -1,0 +1,34 @@
+{
+ "tag": "fiba_fouls_4_10",
+ "switches": {},
+ "positions": 1,
+ "scored": 1,
+ "matched": 1,
+ "points_lost_a_position": 0.0,
+ "interval": [
+  0.0,
+  0.0
+ ],
+ "candidates_added": 0,
+ "rows": [
+  {
+   "id": "18e's Steal position, clock 10",
+   "group": "steal",
+   "best": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
+   "choice": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "by_group": {
+  "steal": {
+   "positions": 1,
+   "matched": 1,
+   "points_lost": 0.0
+  }
+ }
+}
