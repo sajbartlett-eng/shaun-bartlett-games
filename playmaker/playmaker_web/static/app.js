@@ -90,7 +90,7 @@ async function initStart() {
     $('formatRow').classList.toggle('hidden', k !== 'full');
     $('perSideRow').classList.toggle('hidden', $('format').value !== 'digital');
     const s = o.scenarios.find(x => String(x.n) === $('scenario').value);
-    $('scenarioText').textContent = k === 'scenario' && s ? `${s.text} O: ${s.off}. X: ${s.dfn}.` :
+    $('scenarioText').textContent = k === 'scenario' && s ? `${s.text}${s.situation ? ' ' + s.situation : ''} O: ${s.off}. X: ${s.dfn}.` :
       k === 'full' ? 'Sides swap every possession; the higher total wins. Digital: several possessions each and a turnover scores 0. Tabletop: one possession each, the printed rules.' :
       'One possession on the preview table setup.';
   };
@@ -393,6 +393,13 @@ async function create() {
   const humans = matchPlayers(body);
   if (body.match_format === 'digital') {          // step 3n F3: the pairing's running quarter carries into this match
     try { const pr = await PMRecords.pairing(PMRecords.pairingId(humans.players)); if (pr && pr.quarter) body.quarter = pr.quarter; } catch (e) { /* no records */ }
+    // step 18i (D-175): a foul situation set in the address, for a possession played as a scenario: ?fouls=4&left=3
+    // (the defence's team fouls this quarter, or two numbers, 4,1, for player A's team and player B's; possessions left)
+    { const q = new URLSearchParams(location.search), f = q.get('fouls'), l = q.get('left');
+      if (f !== null || l !== null) {
+        const fs = (f || '0').split(',').map(v => Math.max(0, Number(v) || 0)), left = l === null ? 18 : Math.max(1, Math.min(18, Number(l) || 18));
+        body.quarter = { fouls: { A: fs[0], B: fs.length > 1 ? fs[1] : fs[0] }, poss: { A: 18 - left, B: 18 - left }, number: 1 };
+      } }
   }
   if (path === 'computer' && $('aiLevel').value === 'allstar' && humans.mine && humans.mine.profile) {
     try {                                          // the All-Star scouts the human's completed stored games (B8)
@@ -1055,6 +1062,7 @@ function renderScenario() {
   if (!sc) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML = '';
   box.append(el('h3', { text: `${sc.n}. ${sc.title} · ${sc.kind} · clock ${sc.clock}` }), el('p', { text: sc.text }),
+    ...(sc.situation ? [el('p', { class: 'situation', text: sc.situation })] : []),      // step 18i (D-175): the foul situation the card sets
     el('p', { text: `Goal: ${sc.goal}` }), el('ul', {}, sc.rules.map(r => el('li', { text: r }))),
     el('p', { class: 'note', text: `O: ${sc.off} · X: ${sc.dfn}` + (st.target === 'secret' ? " · Coach's Call target: secret" : '') }));
 }

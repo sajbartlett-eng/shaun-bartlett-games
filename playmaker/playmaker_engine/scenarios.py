@@ -70,6 +70,26 @@ def scenario_layout(n):
     return O, X, arrows, errs
 
 
+def situation_context(sc):
+    """Step 18i (D-175): the foul situation a scenario card sets, as the engine reads it: the defence's team fouls this
+    quarter and the possessions it has left. A card that sets none: no fouls, and a foul costs only what it costs now."""
+    sit = sc.get('situation')
+    if not sit:
+        return {}
+    return dict(team_fouls=int(sit.get('team_fouls', {}).get('dfn', 0)), quarter_left=int(sit.get('possessions_left', 0)))
+
+
+def situation_words(sc):
+    """The card's foul situation in plain words, or None."""
+    sit = sc.get('situation')
+    if not sit:
+        return None
+    tf, left = sit.get('team_fouls', {}), int(sit.get('possessions_left', 0))
+    d, o = int(tf.get('dfn', 0)), int(tf.get('off', 0))
+    return (f"The defence has {d} team foul{'s' if d != 1 else ''}; the offence has {o}. "
+            f"{left} possession{'s' if left != 1 else ''} left in the quarter.")
+
+
 def scenario_state(n, rules=None, target=None):
     """The starting GameState for scenario card n. With a Coach's Call card and no target,
     the first decision is the offence's secret target."""
@@ -82,7 +102,8 @@ def scenario_state(n, rules=None, target=None):
     ctx = Context(TEAMS[sc['off']], TEAMS[sc['dfn']], rules, title=f"{n}. {title}", kind=sc['kind'], scenario=n,
                   card_clock=sc['clock'], inbounder=(inb - 1) if inb else -1, coach_call=bool(sc.get('target')),
                   three_only=title == 'Need a Three', two_or_three=title == 'Two or Three',
-                  hold_for_one=title == 'Hold for One', off_team=sc['off'], def_team=sc['dfn'])
+                  hold_for_one=title == 'Hold for One', off_team=sc['off'], def_team=sc['dfn'],
+                  **situation_context(sc))
     kw = dict(o=tuple(O[k] for k in range(1, 6)), x=tuple(X[k] for k in range(1, 6)),
               arrows=tuple(arrows[k] for k in range(1, 6)), ball=sc['ball'] - 1, clock=sc['clock'],
               inbound=1 if inb else 0)

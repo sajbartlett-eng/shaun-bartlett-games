@@ -4,7 +4,7 @@ from playmaker_engine import geometry as G
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import intercept_status
 from playmaker_engine.cards import OFF, DEF, TEAMS
-from playmaker_engine.scenarios import SCENARIOS
+from playmaker_engine.scenarios import SCENARIOS, situation_words
 from playmaker_engine.scoring import score, choose_contest, shot_points, foul_on_shot_points, band, contest_options
 
 from .game import action_to_json, chance_preview, FEEDBACK_QUESTIONS, _score_json
@@ -311,7 +311,7 @@ def state_json(game, token):
         c = SCENARIOS[game.scenario]
         sc_info = dict(n=game.scenario, title=c['title'], kind=c['kind'], clock=c['clock'], text=c['text'],
                        goal='An Excellent look: shot value 30 or more.',
-                       rules=_scenario_rules(c), off=c['off'], dfn=c['dfn'])
+                       rules=_scenario_rules(c), off=c['off'], dfn=c['dfn'], situation=situation_words(c))
     result = None
     if s.stage == 'over':
         sc = score(s)

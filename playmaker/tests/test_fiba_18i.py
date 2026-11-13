@@ -178,3 +178,49 @@ def test_each_contest_carries_its_own_fouled_value():
     assert not opt.clean and opt.p_foul > 0
     assert opt.ft == foul_on_shot_points(card, 'three', 3, ON, card.shot('three'), opt.value, left)[0]
     assert opt.ft > opt.value                                          # the free throws come on top of the shot
+
+
+# ---- the foul situation, set by the scenario (D-175) ---------------------------------------------------------------
+
+def situation(fouls, left):
+    return game_state('Five Out', 'High-Low', O, X, ARROWS, rules=ON, check=False, team_fouls=fouls, quarter_left=left)
+
+
+def test_a_fouls_later_cost_comes_from_bringing_the_penalty_nearer():
+    from playmaker_engine.decide import foul_marginal
+    early, near, last = situation(0, 10).ctx, situation(4, 10).ctx, situation(4, 1).ctx
+    assert foul_marginal(early, 0, 10) != 0                                 # a foul now brings the penalty a foul nearer
+    assert foul_marginal(near, 4, 10) == 0                                  # the 5th is the penalty foul itself: paid now, not later
+    assert foul_marginal(last, 4, 1) == 0                                   # no possessions after this one: no later cost
+
+
+def test_from_the_fifth_team_foul_a_steal_foul_gives_two_free_throws_and_ends_the_possession():
+    """FIBA Article 41: the penalty. X1 next to O1 with his arrow on him: a Steal."""
+    def foul_branch(fouls):
+        s = situation(fouls, 10).with_(side='X')
+        node = apply(s, next(a for a in legal_actions(s) if a.kind == 'steal'))
+        return next(n for _p, label, n in node.flatten() if label == 'foul')
+    play_on, penalty = foul_branch(0), foul_branch(4)
+    assert play_on.stage == 'play' and play_on.bonus5 == 1                  # +5 and play on
+    assert penalty.stage == 'over' and penalty.result.kind == 'free_throws'
+    assert penalty.result.free_throws == 2 * penalty.ctx.off[0].r['free_throw']
+
+
+def test_two_scenario_cards_set_a_foul_situation_in_plain_words():
+    from playmaker_engine.scenarios import scenario_state, situation_words, SCENARIOS
+    a, b = scenario_state(12), scenario_state(13)
+    assert (a.ctx.team_fouls, a.ctx.quarter_left) == (4, 3) and (b.ctx.team_fouls, b.ctx.quarter_left) == (4, 1)
+    assert situation_words(SCENARIOS[12]) == 'The defence has 4 team fouls; the offence has 1. 3 possessions left in the quarter.'
+    assert scenario_state(6).ctx.team_fouls == 0 and situation_words(SCENARIOS[6]) is None     # a card that sets none
+
+
+def test_the_app_shows_what_the_dice_made_of_a_fouled_shot_and_scores_its_expected_value():
+    import random
+    from playmaker_web.game import fouled_shot_dice
+    from playmaker_engine.state import Result
+    s = board(o=['I10', 'C9', 'O9', 'A3', 'Q3'], x=['I9', 'D8', 'N8', 'G4', 'N4'])
+    over = s.with_(stage='over', result=Result('free_throws', 2, 'three', 3, 13, 4, 0, 27, 55, False))
+    out = fouled_shot_dice(over, random.Random(3))
+    assert len(out) == 1 and out[0]['text'].startswith("On the dice: O3's three")
+    assert 'free throw' in out[0]['text'] and 'on average' in out[0]['text']
+    assert fouled_shot_dice(over.with_(ctx=board(rules=OFF).ctx), random.Random(3)) == []       # the rule off: nothing
