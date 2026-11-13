@@ -9,8 +9,8 @@
 - **The two rule changes are built in both engines and the app, and on by default in the app.** Each has its own
   switch. Nothing for the table changed.
 - **The fix for "step in, then Steal" is built in three parts, and all three are off.** None passed your gate
-  cleanly: each fixes a position and each moves board 3. Board 3 turns out to be a coin toss (below), so the gate
-  can't tell me which way to rule. That call is yours, and I give my advice in "For Shaun to decide".
+  cleanly. The two that help each fix a position and each move board 3, and board 3 turns out to be a coin toss
+  (Part 3). So the gate can't settle it. That call is yours, and my advice is in "For Shaun to decide".
 - **One test fails that passed before, and it is a rules question.** The exam expects the computer to decline an
   early Steal on a strong dribbler. With a steal foul now free of points it Steals, and by play the two are level.
   See "What it proves" and decision 3.
@@ -43,7 +43,7 @@ for it turned on (`dice_in_hand`):
   Without the part it reads the held ball at 27.5 and holds.
 - **The defence uses it.** It steps in and Steals on board 1, 8 points better than what it does now.
 - **And it changes the game.** In self-play the defence tries half as many Steals again, fouls twice as often, and
-  the offence answers by shooting in phase 1 on 63 shots in 100, where it was 46. Head to head it leads by 2.4
+  the offence answers by shooting in phase 1 on 63 shots in 100, where it was 49. Head to head it leads by 2.4
   points a pair, not clear of chance.
 
 **The offence's list** drops an open three by default, as it did in 18h. A second part (`keep_settled`) stops that,
@@ -117,7 +117,7 @@ under the new rules. Scores are what the offence went on to score, so the defenc
 | Closeout, the shooter cannot move | Your order 25.3 to 21.5. The Move closer 25.8 to 24.4. Doing nothing 33.0 to 30.0. Your order now leads by 3 where the two were level. | Once the shot is declared a defender now Sprints next to the shooter and gets a hand up: a point off, with no Contest action spent. And the kept Move's Steal costs no points when it fouls. |
 | Closeout, the shooter can move | The Move closer 28.6 to 30.5. Doing nothing is now level with it, 30.0. | The same hand up, which doing nothing now gets for free in the reaction. |
 | Closeout, step 2 | "Moves next to him and stops" 10.0 to 25.8. "Moves next to him, then Steals" 11.4 to 8.5. | When the defender stops, the offence now passes away at once and shoots a three. Before, it held the ball and lost it 8 times in 16. Stealing now is clearly the best turn. |
-| The Steal position, clock 2 | Doing nothing 27.0 to 36.0. Step in, then Steal is now best, 28.1. | The offence moves to a spot the defender can only reach from the side, and the defence no longer jumps from the side. The shot goes up open. |
+| The Steal position, clock 2 | Doing nothing 27.0 to 36.0. Step in, then Steal is now best, 28.1. | The offence now shoots from D9 where it shot from E10, and the defence makes no Contest there. Under 18i it moved and jumped. I read that as the two foul rolls pricing the jump out; not checked further. |
 | Shoot now or play on 1 | Playing on fell from 31.2 to 9.8, and from 29.0 to 5.4. Shooting the open three, 30, is now far the best. | When the pass is caught the defence steps in and Steals, since the foul costs it no points. The ball is lost 7 times in 16. |
 | Board 3 | The board's help 27.6 to 35.1. The computer's own choice, 25.6, is best. | Not traced. |
 | Board 8 | The backdoor cut and the pass 33.0 to 32.0. Level with the cut alone. | A small move, inside chance. |
@@ -336,8 +336,8 @@ Estimate 10.5. Hard limit 12. **Used: 10.4.**
 2. Fouled shots return: **wrong.** None. The computer stopped jumping from the side instead.
 3. Steals tried rise, and the computer holds back at 4 fouls: **wrong on both.** Steals fell, and it Steals at 4
    fouls.
-4. The reply list is too narrow to hold a Move followed by a Steal: **right.** The speed cost I expected did not
-   come.
+4. The reply list is too narrow to hold a Move followed by a Steal: **right.** The speed cost came from a
+   different part, keeping settled turns, and that part was rebuilt.
 5. One chance in 3 that your order is found: **it was not.**
 
 ## 1. Changes to the printed game
@@ -389,17 +389,18 @@ keeps one kind of Contest and its +5 on every steal foul.
    advice: decide it after the list fix in Part 3, because that fix is what lets the computer play the zone's best
    defence.
 2. **Which parts of the fix to turn on.** None passed "break none", so all are off. My advice:
-   - **`keep_settled`: on.** It stops the offence dropping an open three (5.4 points on that position), costs no
-     time, and is level head to head. Its one loss is the board 3 coin toss.
+   - **`keep_settled`: on.** It stops the offence dropping an open three (5.4 points on that position) and costs
+     no time. Its first form was level head to head. Its one loss is the board 3 coin toss.
    - **`dice_in_hand`: on only after item 3.** It does what this step was for, and it leans ahead head to head.
      But with a steal foul free of points it makes the defence Steal about once a possession and the offence shoot
      in phase 1 on 63 shots in 100.
    - **`ball_loss`: leave off.**
 3. **Is a steal foul that costs no points what you want?** That is D-179 as ruled. With the computer's present
    judgement it changes little, though it already fails exam position 10: the computer no longer declines an early
-   Steal on a strong dribbler. If the rule stands as it is, that exam position should change to match. Once the defence sees its Steals (item 2), it Steals about once a possession and
-   fouls on half of them, because outside the penalty the foul only locks the defender. Two simple levers if you
-   want a price back: a smaller bonus than the old +5, or the penalty starting a foul sooner.
+   Steal on a strong dribbler. If the rule stands, that exam position should change to match. Once the defence
+   sees its Steals (item 2), it Steals about once a possession and fouls on half of them, because outside the
+   penalty the foul only locks the defender. Two simple levers if you want a price back: a smaller bonus than the
+   old +5, or the penalty starting a foul sooner.
 4. **Board 3 in the gate.** The computer reads 24 turns level there and they play out 8 points apart, so the board
    passes or fails by luck. Options: leave it; or score a level pick by the average of the turns it reads level,
    which costs about 1 core-hour once to play them all out.
