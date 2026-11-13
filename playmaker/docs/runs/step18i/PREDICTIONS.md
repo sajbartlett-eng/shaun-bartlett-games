@@ -40,3 +40,4 @@ core.
 - self-play (after, 160 possessions): 1.13 (running total 2.59)
 - agreement checks between the two engines: the capture rule, broken zones, the FIBA rules with searches and reactions (one core each): 0.75 (running total 3.34)
 - searches (fiba, 19 positions): 0.01 (running total 3.34)
+- play-outs (108 candidate copies of 16 on 19 positions): 1.84 (running total 5.19)
