@@ -803,6 +803,79 @@ smart, high pressure defence, whereas a single arrow represents amateur or low p
 is not a fault to fix. Nothing tells the computer how to set its zones (D-156). · Source: Shaun, 12 and 13 Nov 2026 ·
 **Under test; step 18g.**
 
+### Shaun, 13 Nov 2026 (step 18i prompt)
+
+**D-168. What the app is.** In Shaun's words: "The app does not simulate full basketball games. It simulates the
+quality of single possessions. Then it gives the chance to switch roles and improve or beat your personal goals and
+each other's results." So every rule is scored within one possession, as the quality of a decision. Nothing simulates
+a match. Where a match situation matters (team fouls, possessions left), the scenario sets it as context. Also in
+`docs/reference/SHAUN_PRINCIPLES.md`. · Source: Shaun, 13 Nov 2026 · **Ruled.**
+
+**D-169. Step 18g is accepted.** It is merged into `main`. `rules.zone` stays off, held, until the computer can see
+"step in, then Steal". It is retested after step 18j. Cases A to E and G to I stand as step 18g read them. The zone's
+levers (by level; by player, Agility 7 or more; by the coach's intent, with team fouls as the cost) wait until the
+retest. · Source: Shaun, 13 Nov 2026 · **Ruled, done.**
+
+**D-170. The zone's barrier (case F) is Shaun's exact words, not step 18g's reading.** In his words:
+
+> "The rule should clearly be one if the arrow catches the ball handler. The other arrow restricts where he can get
+> through. The ball handler can break through with a Dribble action, or can leave in another direction. Picture the
+> arrows as the foot position of the defender. One is in front of the ball handler and one is up in the direction of
+> the second arrow. That direction is now blocked to move past. As soon as the offence touches a square adjacent to
+> an arrow, they are captured. That's where help defence on the drive is enforced even before the defence can react.
+> You're set in a position to capture the offence and control them."
+
+So: (1) the ball handler is caught the moment his movement touches a square one of the defender's arrows points at
+(the square next to the defender in that arrow's direction), checked square by square, mid-movement, with no reaction
+needed; (2) once caught, the other arrow's direction is barred to him: he can't move past the defender that way; he
+may leave in any other direction with the movement he has left, or break through with a won Dribble; (3) "The ball
+handler may hit the arrow boundary but not cross it": he may step onto an arrow's square, but not cross the arrow's
+line into the squares beyond it; (4) a defender whose arrows don't catch him bars nothing. Built in `rules.zone`
+(still off). · Source: Shaun, 13 Nov 2026 · **Ruled; built in step 18i, off.**
+
+**D-171. Time is counted in phase ends.** A phase is 2 seconds and a player can arrive at any point in it, so time is
+counted in phase ends: the end of the phase he arrived in, then each phase after. Two phase ends in a row are about
+3 seconds; three are about 5. One method for every timed rule. Each count shows on the player as a small plain
+marker, like RUSHED. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18i.**
+
+**D-172. Three seconds in the key (the app; FIBA Article 26; the offence only).** An attacker in the key at two phase
+ends in a row commits a violation: the possession is over, scored as a turnover. Defenders have no three-second rule.
+Behind `rules.three_seconds`; on in the app once its checks pass; `?three=0` turns it off. · Source: Shaun, 13 Nov
+2026 · **Ruled; step 18i.**
+
+**D-173. Closely guarded, and picking the ball up (the app; FIBA Article 27).** Closely guarded: a defender next to
+the ball handler with an arrow on him (under `rules.zone`, a defender whose arrows have captured him). Holding after
+a catch: from the catch until he moves or dribbles, if he is still holding and closely guarded at three phase ends in
+a row (the phase he caught it in plus two), it is a violation: a turnover ("Stagnant basketball has consequences").
+Picked up: after he has dribbled, if he goes two full phases without a Move, Quick Step, Sprint, Dribble, pass or
+shot, he has picked the ball up; from then he may only pass or shoot, and the closely guarded count runs. What keeps
+him active: a Move, Quick Step, Sprint, Dribble, pass or shot by him; not a team Hesitate, not a teammate's action.
+The count resets when nobody closely guards him at a phase end, or when he dribbles or moves before picking up. FIBA
+never counts a live dribble, which is why a pick-up needs two idle phases. Behind `rules.closely_guarded`; on in the
+app once its checks pass; `?guarded=0` turns it off. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18i.**
+
+**D-174. The fouled shot, scored by FIBA (the app; Articles 34 and 38).** The shot is still a shot: rolled at its
+contested rating; if it goes in, it counts. Free throws are set by the rules, not dice: 1 if the shot went in, 2 for
+a missed 2, 3 for a missed 3. Each free throw is rolled against the shooter's free-throw rating. Its quality score is
+the expected value: the shot's chance, plus the expected free throws for each outcome. The dice decide what happened;
+decision quality is judged on the expected value, the outcome on the dice. Behind `rules.fiba_fouled_shot`; on in the
+app once its checks pass; `?fouledshot=0` turns it off. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18i.**
+
+**D-175. The foul situation is set by the scenario.** In Shaun's words: "Have the tool calibrate its foul risk to a
+set scenario. The team is on X fouls out of 5 with Y possessions to go in the quarter. No players are in foul
+trouble, or player Z is in foul trouble. That sets actual steal calibration for both teams and is a learning scenario
+that doesn't require a match worth of possessions." Scenario fields: each team's team fouls this quarter; possessions
+left in the quarter; any player's personal fouls, and who replaces him if he fouls out. The cost of a foul is the
+cost now (what the rules give the offence: the +5 on a steal foul; from the 5th team foul, FIBA Article 41, 2 free
+throws on a foul not on a shot) plus the cost later (how much this foul raises the free throws the team is likely to
+give up over the possessions left by bringing the penalty nearer: one number, from the rules and how often fouls
+happen in play; and, for a player on his fifth, what is lost while his replacement plays). Not simulated. The
+computer's reading uses the cost in every foul-risking action, on both sides; the coach judges the player's choice
+against it. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18i.**
+
+**D-176. Not in step 18i:** charges (parked), five fouls in a whole match, shot-clock resets after fouls, defensive
+three seconds, anything for the table. · Source: Shaun, 13 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

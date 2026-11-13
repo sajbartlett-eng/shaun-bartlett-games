@@ -111,11 +111,12 @@ PAGES = [
     dict(key='b1', n='1', title='Straight lane',
          situation='Five-out. O1 has the ball at the top of the key, just inside the arc. X1 has slipped two squares '
                    'to the right of him, so the straight line from O1 to the rim is open. The defence is about to act.',
-         expect='The defence takes away the straight drive: X1 recovers in front of O1, or a helper steps into the '
-                'lane, or the drive is left open only if it is worse than what the offence already has.',
+         expect='X2 Quick Steps to D6 (D-165: the best by play in step 18h\'s sense-check set, 28.9 against 31.4 for '
+                'doing nothing). The old answer: the defence takes away the straight drive, with X1 recovering in '
+                'front of O1 or a helper stepping into the lane.',
          why='A ball handler with a straight line to the rim is the first thing a defence has to take away.',
-         judged='After the defence\'s turn, look at every move O1 could make straight toward the rim. The board is met '
-                'if there is none, or if the best of them is worth less than the offence\'s best other option.',
+         judged='The defence\'s turn holds X2\'s Quick Step to D6 (D-165). Before that ruling it was judged by what '
+                'O1\'s straight drive was worth after the defence\'s turn.',
          instead='',
          rulings='Restated before the 9 November rules: it used to ask for a defender on the line itself, and is now '
                  'judged by what the drive is worth (D-96). The earlier line check failed; the results below use the '
@@ -146,11 +147,13 @@ PAGES = [
          situation='O1 has driven past X1 and has the ball in the lane, 3 squares from the rim. X1 is behind him, '
                    'beaten, and has used his Move. O4 waits on the left baseline, guarded by X4 under the basket. '
                    'The defence is about to act.',
-         expect='A low defender steps up to stop O1, and another defender rotates to cover the man he left.',
+         expect='Nobody moves (D-165: the best by play in step 18h\'s sense-check set, 28.4 against 32.1 and 37.9 '
+                'for the help). The old answer: a low defender steps up to stop O1, and another defender rotates to '
+                'cover the man he left.',
          why='When the ball handler beats his man, the nearest help has to stop the ball, and the next defender '
              'covers the open man so the kick-out isn\'t free.',
-         judged='After the defence\'s turn, at least one defender who was not next to O1 must end next to him, and '
-                'at least one other defender must move.',
+         judged='No defender moves in the defence\'s turn (D-165). Before that ruling: at least one defender who was '
+                'not next to O1 had to end next to him, and at least one other defender had to move.',
          instead='X2 stepped in from the left wing to C6 and X5 came in from the right corner to N3. Nobody stepped '
                  'up to stop O1.',
          rulings='None beyond the three that apply to every board (see the top of the book).'),
@@ -205,9 +208,11 @@ PAGES = [
     dict(key='b8', n='8', title='Backdoor',
          situation='O1 has the ball at the top of the arc. O2 is on the left wing, high, and X2 is between him and '
                    'the ball, denying the pass. The lane behind X2, to the rim, is open. The offence is about to act.',
-         expect='O2 cuts backdoor toward the rim.',
+         expect='O2 cuts to E10 and O1 passes to him (D-165: the best by play in step 18h\'s sense-check set, 39.0 '
+                'against 33.0 for the cut to D7). The old answer: O2 cuts backdoor toward the rim.',
          why='When a defender overplays the pass, the cut behind him is open.',
-         judged='During the turn, O2 moves at least 2 squares closer to the rim.',
+         judged='O2 moves to E10 and O1 passes to him in the same turn (D-165). Before that ruling: O2 had to move '
+                'at least 2 squares closer to the rim.',
          instead='O4 quick-stepped up from the left corner to A4. O2 did not cut.',
          rulings='None beyond the three that apply to every board.',
          note='The step 3n report found the reason: the pass to the cutter has a low chance of arriving, since X1 '

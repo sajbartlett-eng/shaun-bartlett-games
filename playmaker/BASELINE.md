@@ -184,13 +184,13 @@ don't record which).
 |---|---|
 | `test_step3n.py` V by phase never rises | V rises from 24.9 in phase 1 to 29.5 in phase 6 at Senior Pro. |
 | `test_step3n.py` All-Star reaches with 0 team fouls, declines with 4 | On the rebuilt table the bonus no longer deters a reach. |
-| `test_step3m.py` exam board 1 | The defence doesn't put a defender on the ball-rim line. |
+| `test_step3m.py` exam board 1 | The defence doesn't put a defender on the ball-rim line. (Since D-165 the board's answer is X2's Quick Step to D6, the best by play.) |
 | exam board 2 | A speed problem: passes at fixed depth 4, fails within the Python budget. |
-| exam board 3 | The low man doesn't step up to help on the beaten drive. |
+| exam board 3 | The low man doesn't step up to help on the beaten drive. (Since D-165 the board's answer is that nobody moves, the best by play.) |
 | exam board 4 | The overload isn't detected. |
 | exam board 5 | The receiver drives on both closeout boards. |
 | exam board 7 | The clock change doesn't change the choice. |
-| exam board 8 | The denied receiver doesn't cut backdoor. |
+| exam board 8 | The denied receiver doesn't cut backdoor. (Since D-165 the board's answer is O2's cut to E10 and O1's pass, the best by play.) |
 | exam board 9 | Neither the kick nor the corner relocation is chosen. |
 | exam board 11 | The contested-pass boards don't separate early from late. |
 | exam board 13 | The attacker in the driving lane isn't moved out of it. |

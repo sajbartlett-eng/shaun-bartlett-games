@@ -33,6 +33,11 @@ def on_board(p):
     return 0 <= p[0] < W and 1 <= p[1] <= H
 
 
+def in_key(p):
+    """D-172: is this square in the key (the lane as drawn: columns G to K, rows 1 to 6)?"""
+    return RC.KEY_COLS[0] <= p[0] <= RC.KEY_COLS[1] and RC.KEY_ROWS[0] <= p[1] <= RC.KEY_ROWS[1]
+
+
 def sq(p):
     """Square name, including off-board inbounder names."""
     x, y = p

@@ -39,7 +39,7 @@ def random_state(rng):
     d = R.deal(age, std, seed=rng.randrange(36 ** 6))
     tags = d['tags'] or [None, None]
     off, dfn = L.team(d['rosters'][0], age, tags[0]), L.team(d['rosters'][1], age, tags[1])
-    rules = RC.with_rules(digital=digital, control=_CONTROL['size'], zone=_ZONE['v'])     # D-151: the control rule's size; step 18g: rules.zone
+    rules = RC.with_rules(digital=digital, control=_CONTROL['size'], zone=_ZONE['v'], **_FIBA)     # D-151: the control rule's size; step 18g: rules.zone
     ctx = Context(off, dfn, rules, team_fouls=rng.randrange(0, 7) if digital else 0,
                   quarter_left=rng.randrange(0, 19) if digital else 0)
     ctx.levels_key = (age, std)                    # step 18a: each age and standard reads its own phase table and scale
@@ -132,6 +132,7 @@ def py_outcomes(s):
 _ADV = {'on': False}
 _SETTLE = {'on': False}
 _CONTROL = {'size': 'off'}
+_FIBA = {}                                           # step 18i: the FIBA rules in every position (--fiba: all three 'on')
 _ZONE = {'v': 'off'}                                 # step 18g: rules.zone in every position ('on' with --zone)
 _HELP = {'on': False}
 _OPEN = {'v': None}            # step 18e: search.open_list ('defence', 'both')
@@ -278,6 +279,7 @@ def main():
     ap.add_argument('--rank-in-hand', action='store_true', help='step 18f: search.rank_in_hand on, in both engines')
     ap.add_argument('--zone', action='store_true', help="step 18g: rules.zone 'on' in every position (the zone of influence)")
     ap.add_argument('--broken', action='store_true', help='step 18g: play each position on until a Dribble is won (a zone broken this phase)')
+    ap.add_argument('--fiba', action='store_true', help='step 18i: three seconds, closely guarded and the FIBA fouled shot on in every position')
     ap.add_argument('--no-floor', action='store_true', help='step 18h: eval.no_floor on, in both engines')
     ap.add_argument('--exact-shot', action='store_true', help='step 18h: eval.exact_shot on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
@@ -301,6 +303,8 @@ def main():
     _CONTROL['size'] = args.control
     _ZONE['v'] = 'on' if args.zone else 'off'
     _ZONE['broken'] = bool(args.broken)
+    if args.fiba:
+        _FIBA.update(three_seconds='on', closely_guarded='on', fiba_fouled_shot='on')
     args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle

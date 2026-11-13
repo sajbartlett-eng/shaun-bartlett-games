@@ -18,3 +18,4 @@ These come from Shaun's own rulings, steps 1 to 16. They override any method's c
 11. **Speed matters.** The app must answer within the speed budget, on a phone too.
 12. **Long runs must earn their place:** predict the value, demonstrate it on a pilot, then scale, with a cap.
 13. **If a fixed item looks like the problem, stop and flag it.** Don't work around it.
+14. **What the app is (D-168).** "The app does not simulate full basketball games. It simulates the quality of single possessions. Then it gives the chance to switch roles and improve or beat your personal goals and each other's results." Every rule is scored within one possession, as the quality of a decision. Where a match situation matters (team fouls, possessions left), the scenario sets it as context.

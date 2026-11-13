@@ -261,6 +261,7 @@ def shot_value(card, dcards, t, c, contests, window, rules):
     r = card.shot(t)
     best, who = pts * r, -1
     ft = None
+    fiba = RC.app_rule(rules, 'fiba_fouled_shot')
     for d, row in contests.items():
         if row is None:
             continue
@@ -275,7 +276,9 @@ def shot_value(card, dcards, t, c, contests, window, rules):
             if rules.floor_declared_shot:
                 v = max(0, v)
             if foul:
-                if ft is None:
+                if fiba:
+                    ft = float(foul_on_shot_points(card, t, pts, rules, r, v, r - con)[0])     # D-174: by this Contest
+                elif ft is None:
                     ft = foul_on_shot_points(card, t, pts, rules)[0]
                 pf = float(p_fouls(p_foul(dcards[d].r['foul_contest'], rules), 2 if two else 1))
                 v = pf * ft + (1 - pf) * v
@@ -479,7 +482,10 @@ class Read:
                 if rules.floor_declared_shot:
                     v = max(0, v)
                 if foul:
-                    ft = foul_on_shot_points(card, t, pts, rules, r if (cut and look.rushed) else None)[0]
+                    if RC.app_rule(rules, 'fiba_fouled_shot'):
+                        ft = float(foul_on_shot_points(card, t, pts, rules, r, v, r - con)[0])   # D-174
+                    else:
+                        ft = foul_on_shot_points(card, t, pts, rules, r if (cut and look.rushed) else None)[0]
                     pf = float(p_fouls(p_foul(self.dcards[d].r['foul_contest'], rules), 2 if two else 1))
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:

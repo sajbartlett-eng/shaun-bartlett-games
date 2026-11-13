@@ -149,6 +149,8 @@ def path_ok(state, side, i, path, rules, occ=None, zones=None):
                 if B.diag_step_banned(a, b, tsq, rules):
                     return False
     elif i == state.ball:
+        if rules.zone != 'off':              # D-170: caught by one arrow, he can't cross the other arrow's line
+            return capture_ok(start, path, capture_lines(state, i) if zones is None else zones)
         if rules.drive_rule == 'zone':       # ruled: may end in an adjacent defender's zone, not pass through it
             if zones is None:
                 zones = carrier_zones(state, i)
@@ -171,6 +173,71 @@ def carrier_zones(state, i):
             if B.adjacent(xp, start) and (i, j) not in state.beaten}
 
 
+def capture_lines(state, i):
+    """rules.zone (D-170, Shaun, 13 Nov 2026): what can catch ball handler i. For each defender whose zone stands (not
+    broken, and not beaten by him this phase): his square, his two arrow directions, and how far each arrow's line
+    bars: the squares along it that his movement left still reaches (as his zone, the ball handler's own square not
+    stopping it), and always the arrow's own square (his foot)."""
+    rules = state.ctx.rules
+    free = state.with_(o=state.o[:i] + ((-9, -9),) + state.o[i + 1:])
+    out = []
+    for j, xp in enumerate(state.x):
+        st = stance(state, j)
+        if not 8 <= st < 16 or (i, j) in state.beaten:
+            continue
+        z = zone(free, j)
+        ds = G.lines(rules, st)
+        ext = []
+        for d in ds:
+            n, q = 0, xp
+            while True:
+                q = B.add(q, B.DIRS[d])
+                if q not in z:
+                    break
+                n += 1
+            ext.append(max(1, n))
+        out.append((xp, ds, tuple(ext)))
+    return out
+
+
+def _crosses(D, bv, av, n, p, q):
+    """Does the step p -> q cross the barred line (from D along bv, n squares long) to the side away from the arrow
+    that caught him (av)? Stepping onto the line is allowed; leaving it on the far side, or cutting the corner across
+    it, is not."""
+    s0 = bv[0] * av[1] - bv[1] * av[0]
+    sq_ = bv[0] * (q[1] - D[1]) - bv[1] * (q[0] - D[0])
+    if sq_ * s0 >= 0:
+        return False
+    sp = bv[0] * (p[1] - D[1]) - bv[1] * (p[0] - D[0])
+    if sp * s0 < 0:
+        return False
+    bb = bv[0] * bv[0] + bv[1] * bv[1]
+    if sp == 0:
+        dot = (p[0] - D[0]) * bv[0] + (p[1] - D[1]) * bv[1]
+        return bb <= dot <= n * bb
+    dot2 = (p[0] + q[0] - 2 * D[0]) * bv[0] + (p[1] + q[1] - 2 * D[1]) * bv[1]
+    return 0 < dot2 <= 2 * n * bb
+
+
+def capture_ok(start, path, caps):
+    """D-170: the ball handler is caught the moment his movement touches a square an arrow points at (or starts on
+    one); from then the other arrow's line is barred to him for the rest of that movement."""
+    for xp, ds, ext in caps:
+        sqs = (B.add(xp, B.DIRS[ds[0]]), B.add(xp, B.DIRS[ds[1]]))
+        caught = [start == sqs[0], start == sqs[1]]
+        p = start
+        for q in path:
+            for k in (0, 1):
+                if caught[k] and _crosses(xp, B.DIRS[ds[1 - k]], B.DIRS[ds[k]], ext[1 - k], p, q):
+                    return False
+            if q == sqs[0]:
+                caught[0] = True
+            if q == sqs[1]:
+                caught[1] = True
+            p = q
+    return True
+
+
 def movement_dests(state, side, i, kind, rules):
     """dest -> run direction (Sprint) or None, for one movement kind."""
     card = (state.ctx.off if side == 'O' else state.ctx.dfn)[i]
@@ -183,7 +250,9 @@ def movement_dests(state, side, i, kind, rules):
         paths = B.sprint_paths(start, card.qs, rules)
     out = {}
     occ = state.occupied()
-    zs = carrier_zones(state, i) if side == 'O' and i == state.ball and rules.drive_rule == 'zone' else None
+    zs = None
+    if side == 'O' and i == state.ball:
+        zs = capture_lines(state, i) if rules.zone != 'off' else carrier_zones(state, i) if rules.drive_rule == 'zone' else None
     for d, path in paths:
         dest = path[-1]
         if dest in out:
@@ -212,12 +281,25 @@ def screen_blocked(state, i):
     return out
 
 
+def closely_guarded(state):
+    """D-173 (FIBA Article 27): is the ball handler closely guarded: a defender next to him with an arrow on him
+    (under rules.zone, a defender whose standing zone has an arrow on him)."""
+    rules = state.ctx.rules
+    bh = state.o[state.ball]
+    for j, xp in enumerate(state.x):
+        if B.adjacent(xp, bh) and B.dir_between(xp, bh) in G.lines(rules, stance(state, j)):
+            return True
+    return False
+
+
 def can_move_kind(state, side, i, kind):
     """Limits and status for a movement kind (ignores geometry)."""
     rules = state.ctx.rules
     if state.tokens(side) <= 0:
         return False
     if side == 'O':
+        if i == state.ball and state.picked_up() and RC.app_rule(rules, 'closely_guarded'):
+            return False                    # D-173: he has picked the ball up: he may only pass or shoot
         if state.is_screening(i) and rules.screen_rule == 'two_turns':
             return False                    # the old rule: the screener can't move while his screen stands
         if i == state.ctx.inbounder and state.inbound:      # inbounder can't move until the ball is in
@@ -644,7 +726,8 @@ def _offence_actions(s, rules):
             acts.append(Action('shot', 'O', carrier, shot=t))
     # Dribble
     if (not pass_only and s.count('O', 'dribble') < RC.LIMITS['O']['dribble']
-            and (rules.locked_can_dribble or not s.locked('O', carrier))):
+            and (rules.locked_can_dribble or not s.locked('O', carrier))
+            and not (s.picked_up() and RC.app_rule(rules, 'closely_guarded'))):     # D-173: picked up: pass or shoot only
         for j, xp in enumerate(s.x):
             if B.adjacent(xp, cpos):
                 acts.append(Action('dribble', 'O', carrier, target=j))

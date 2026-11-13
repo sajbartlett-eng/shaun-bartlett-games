@@ -63,11 +63,24 @@ def shot_rating(state, shooter, shot_type):
     return r
 
 
-def foul_on_shot_points(card, shot_type, pts, rules, rating=None):
+def foul_on_shot_points(card, shot_type, pts, rules, rating=None, shot_value=None, left=None):
     """Points for a foul on a declared or forced shot: free throws, or under the and-one
     rule the higher of the free throws and the shot's uncontested value (rating: the shooter's rating for it when
     the control rule has reduced it, D-151).
+    Under rules.fiba_fouled_shot (D-174, FIBA Articles 34 and 38) the shot is still a shot: its value as contested
+    (shot_value; left: the rating the Contest leaves it, the chance in 20 that it goes in), plus the free throws the
+    rules give, each at his free-throw rating: 1 if it went in, 2 or 3 (its points) if it missed. The expected value.
     Returns (points, and_one_applied)."""
+    if shot_type and RC.app_rule(rules, 'fiba_fouled_shot'):
+        r = card.shot(shot_type) if rating is None else rating
+        if left is None:
+            left = r
+        if shot_value is None:
+            shot_value = pts * left
+            if rules.floor_declared_shot:
+                shot_value = max(0, shot_value)
+        p = Fraction(max(0, min(RC.DIE, left)), RC.DIE)
+        return shot_value + (p + (1 - p) * pts) * card.r['free_throw'], False
     ft = free_throws(card, pts)
     if rules.and_one and shot_type:
         open_value = pts * (card.shot(shot_type) if rating is None else rating)
@@ -108,6 +121,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     ft, _ = foul_on_shot_points(card, shot_type, pts, rules, rating)
     floor = forced or rules.floor_declared_shot
     cut = RC.control_cut(rules, shot_type)
+    fiba = RC.app_rule(rules, 'fiba_fouled_shot')
 
     def val(c):
         v = pts * (rating - c)
@@ -140,8 +154,9 @@ def contest_options(state, shooter, shot_type, forced=False):
         rolls = foul_rolls(rules, xp, spos)
         pf = Fraction(0) if clean else p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
         v = val(c)
-        ev = pf * ft + (1 - pf) * v
-        opts.append(ContestOption(j, c, clean, pf, v, ft, ev, cat, rolls if not clean else 0))
+        ftj = foul_on_shot_points(card, shot_type, pts, rules, rating, v, rating - c)[0] if fiba else ft     # D-174
+        ev = pf * ftj + (1 - pf) * v
+        opts.append(ContestOption(j, c, clean, pf, v, ftj, ev, cat, rolls if not clean else 0))
     return opts
 
 
