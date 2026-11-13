@@ -2,8 +2,11 @@
 
 ## First
 
-- **Speed with the zone on: SPEED_FIRST**
-- **Compute: COMPUTE_FIRST**
+- **Speed fits with the zone on.** It costs 7 to 11% a level and every level stays inside its target. With the
+  zone off this step's code runs as fast as 18h's.
+- **Compute: 11.4 core-hours of the 12 hard limit,** against my estimate of 9.5. I started no run after 10.2.
+  Left out to stay inside it: the strong-defenders-only setting, 13 of the 34 positions under the zone, and 40 of
+  the 200 possessions a side.
 - **The zone is built in both engines and the app, off by default.** Today's rules are untouched. Nothing for the
   table was changed, measured or printed.
 
@@ -90,6 +93,8 @@ and marked it. None of them blocked the test.
 - **The log says it in plain words:** "O1's Dribble broke X2's stance: his zone is gone until the phase ends. He
   can't Steal, his Contest takes the foul roll, and he can only Intercept a pass through his own square."
 - **The two engines agree** with the switch off and on (section 3).
+- **One line is not built:** "X3's stance covered both the drive and the shot" in the coach's explanations. The
+  court shows it (the ball handler on an arrow, the shaded square beside him), but no sentence says it yet.
 
 ![The zone of influence in the app](../zone_of_influence_18g.png)
 
@@ -279,11 +284,44 @@ ball handler and a square beside him barred:
 
 ## Part 7: speed
 
-SPEED_PART
+The time to finish 1 pair on 9 decisions in 10, in seconds. Two rounds on a quiet machine, each timing 18h's code,
+this step's with the zone off, and this step's with the zone on (`speed.json`).
+
+| Level | Target | 18h's code | This step, zone off | This step, zone on | Zone on against 18h | Scaled to 18h's report |
+|---|---|---|---|---|---|---|
+| Rookie | 0.3 | 0.23, 0.25 | 0.25, 0.22 | 0.25, 0.27 | 11% slower | **about 0.25** |
+| Starter | 1.0 | 0.82, 0.87 | 0.83, 0.87 | 0.88, 0.94 | 7% slower | **about 0.85** |
+| All-Star | 2.5 | 1.74, 1.87 | 1.84, 1.62 | 1.94, 2.02 | 10% slower | **about 1.9** |
+
+- **Every level fits** by D-161, with the zone on and off.
+- **Where the zone's cost comes from:** a defender's Sprint has two facings to choose from, and more squares are in
+  a zone, so more of the offence's paths are checked against one.
+- A first round taken while play-outs shared the machine is not used.
 
 ## Compute against the estimate and the hard limit
 
-COMPUTE_PART
+Estimate 9.5. Hard limit 12. **Used: 11.4.**
+
+| Run | Estimated | Used | |
+|---|---|---|---|
+| Grow the set: ten positions, 32 play-outs a candidate | 2.8 | 1.5 | cheaper than 18h's positions |
+| Bring the new positions to 64 play-outs | 0.5 | 1.7 | every candidate, as you ruled; I had planned only those in contention |
+| Today's default scored on the grown set | 0 | 0.8 | not in the estimate; 0.35 of it was a slip (below) |
+| The zone's gate, with the sense-check detail | 2.5 | 2.6 | 21 positions |
+| Fidelity: self-play under each rule set | 1.6 | 2.3 | 160 possessions each, and 48 more under the zone for the funnel |
+| The zone for strong defenders only | 0.7 | 0 | not run |
+| Speed | 0.3 | 0.3 | |
+| Agreement checks and tests | 1.0 | 1.7 | the tests ran twice: before and after the register fix |
+| Searches | 0.1 | 0.1 | |
+| Lost when the session's worker restarted | 0 | 0.55 | four cores of play-outs, about 8 minutes, nothing kept |
+
+- **A slip of mine cost 0.35.** Scoring today's default again on the gated positions also played the zone's own
+  choices under today's rules, which nothing needed.
+- **How the tally counts.** A run is counted by its clock time on each core. Three runs shared the four cores with
+  another run, so their clock time counted double. Each has a correction in `PREDICTIONS.md`, taken from the
+  processor time the jobs used.
+- **What the rest would cost:** the other 13 positions under the zone, about 2.5; 200 possessions a side, 0.5; the
+  strong-defenders-only run, 0.7 after about half a step of building.
 
 ## 1. Changes to the printed game
 
@@ -311,7 +349,10 @@ None. The zone is for the app only, under test, and off by default.
   Dribble broke a zone with 12 searches, no differences.
 - **One fault found by that check and fixed:** the JavaScript engine's quick re-read took a Sprint's facing from
   the run alone and ignored the side the defender picked. Two searches in 24 differed until it was fixed.
-- **Tests:** TESTS_LINE
+- **Tests, with the switch off:** the 20 named test files: 344 passed, 13 expected failures, 6 failed. Three were
+  the rules register not knowing the new setting: fixed, and they pass. One is the timing test that has failed
+  since 18f. Two are browser tests that fail only in a long run (section 5); on their own all 11 browser tests
+  pass. `tests/test_rules_current.py` passes and `RULES_CURRENT.md` is unchanged.
 - **What it does not prove:** that the zone is the better rule. That is yours to judge from how it plays.
 
 ## 4. For Shaun to decide

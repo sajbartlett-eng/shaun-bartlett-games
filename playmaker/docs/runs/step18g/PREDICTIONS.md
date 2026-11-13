@@ -65,3 +65,24 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs are
 - play-outs (12 candidate copies of 16 on 9 positions): 0.35 (running total 10.2)
 - searches (today_all, 34 positions): 0.01 (running total 10.21)
 - play-outs (0 candidate copies of 16 on 10 positions): 0.0 (running total 10.21)
+- speed, round 1 (one core): 0.08 (running total 10.29)
+- speed, round 2 (one core): 0.08 (running total 10.38)
+- agreement checks after the fix: the zone on (300 positions, 16 searches) and broken zones (200, 12), one core each: 0.25 (running total 10.63)
+- tests: the named files with the switch off (28 minutes, one core), the rerun after the register fix (18 minutes), the browser tests on their own (2 minutes): 0.8 (running total 11.43)
+
+## How the predictions came out
+
+1. **The new positions: half right.** The computer's choice is the best tested, or level with it, on all ten. But a
+   turn changes the result by more than 2 points on five of them (a Pause is clearly worse on three), and no turn
+   that stays nearer the shooter was clearly better anywhere. I expected such turns to be the ones that mattered.
+2. **The closeout board under the zone: wrong side of my 1 in 2.** The computer does not keep the Move. It leaves X3
+   where he is. By play your order is 18.0 better under the zone (11.4 to 24.6).
+3. **Defence stronger: partly.** The offence scores 1.8 a possession less (not clear of chance; I said 2 to 5).
+   Dribbles double, as predicted. Contested shots do not rise: 22% (16 to 31), where I said above 30.
+4. **Speed: about right.** The zone costs 7 to 11% a level; I said under 10. Every level is inside its target.
+
+## Compute: 11.4 core-hours used of the 12 hard limit (estimate 9.5)
+
+The tally above counts a run by its clock time on each core. Three runs shared the four cores with another run, so
+their clock time counted double; each has a correction line beside it, taken from the processor time the jobs
+really used. Two earlier overlaps (about 15 minutes) were not corrected, so the total is slightly high.
