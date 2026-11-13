@@ -79,8 +79,10 @@ def foul_on_shot_points(card, shot_type, pts, rules, rating=None, shot_value=Non
             shot_value = pts * left
             if rules.floor_declared_shot:
                 shot_value = max(0, shot_value)
-        p = Fraction(max(0, min(RC.DIE, left)), RC.DIE)
-        return shot_value + (p + (1 - p) * pts) * card.r['free_throw'], False
+        # the chance it goes in is left in 20; the whole is kept a whole number, as every score is (half a point rounds up)
+        left = max(0, min(RC.DIE, left))
+        n = RC.DIE * shot_value + card.r['free_throw'] * (left + (RC.DIE - left) * pts)
+        return int((n + RC.DIE // 2) // RC.DIE), False
     ft = free_throws(card, pts)
     if rules.and_one and shot_type:
         open_value = pts * (card.shot(shot_type) if rating is None else rating)
@@ -234,6 +236,8 @@ def score(state):
             who = f'O{r.shooter + 1} {r.shot_type}'
             if r.kind == 'free_throws':
                 how = 'and-one, scores the open shot' if r.and_one else 'free throws'
+                if RC.app_rule(rules, 'fiba_fouled_shot') and r.shot_type:
+                    how = 'the shot as contested plus the free throws that follow (1 if it went in, its points if it missed), on average'
                 detail = (detail + '. ' if detail else '') + f'{who}: fouled, {how} {r.free_throws}'
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
@@ -250,6 +254,10 @@ def score(state):
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':
             detail = 'turnover ended the possession'
+            if r.violation == 'three_seconds':
+                detail = f'three seconds: O{r.violator + 1} was in the key when two phases in a row ended'
+            elif r.violation == 'closely_guarded':
+                detail = f'closely guarded: O{r.violator + 1} held the ball with a defender on him when three phases in a row ended'
     look = ft if (r and r.kind == 'free_throws') else sv
     bonus = RC.STEAL_FOUL_BONUS * state.bonus5
     tpts = RC.TURNOVER_POINTS * state.tos

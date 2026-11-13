@@ -106,6 +106,14 @@ def consequences(before, after, a):
         elif a.kind == 'steal':
             what = 'Shot stolen: cancelled. ' if before.stage == 'reaction' and after.stage != 'over' else 'Stolen: '
             out.append(('bad_O', f'{what}turnover, −5{tail}. Play on.'))
+        elif after.stage == 'over' and after.result is not None and after.result.violation:
+            # step 18i: a violation counted at the phase's end (D-172, D-173)
+            who = f'O{after.result.violator + 1}'
+            if after.result.violation == 'three_seconds':
+                out.append(('bad_O', f'Three seconds: {who} was in the key when two phases in a row ended. A violation: turnover.'))
+            else:
+                out.append(('bad_O', f'Closely guarded: {who} held the ball with a defender on him when three phases in a row ended. '
+                                     'A violation: turnover.'))
         else:
             out.append(('bad_O', 'Turnover, −5.'))
     if after.bonus5 > before.bonus5:
@@ -144,6 +152,30 @@ def consequences(before, after, a):
     if after.phase != before.phase and after.stage != 'over':
         out.append(('info', f'New phase: clock {after.clock}, tokens back to 6 each.'))
     return [dict(tone=t, text=x) for t, x in out]
+
+
+def fouled_shot_dice(after, rng):
+    """Step 18i (D-174): what the dice made of a fouled shot. The possession's score is its expected value (the quality
+    of the decision); this line is only what happened: the shot rolled at its contested rating, then each free throw
+    at the shooter's free-throw rating."""
+    r = after.result
+    if after.stage != 'over' or r is None or r.kind != 'free_throws' or not r.shot_type:
+        return []
+    if not RC.app_rule(after.ctx.rules, 'fiba_fouled_shot'):
+        return []
+    need = max(0, min(RC.DIE, r.rating - r.contest))
+    roll = rng.randint(1, RC.DIE)
+    made = roll <= need
+    n = 1 if made else r.points
+    ft = after.ctx.off[r.shooter].r['free_throw']
+    rolls = [rng.randint(1, RC.DIE) for _ in range(n)]
+    good = sum(1 for x in rolls if x <= ft)
+    shot = (f"went in (rolled {roll}, needed {need} or lower)" if made
+            else f"missed (rolled {roll}, needed {need} or lower)")
+    text = (f"On the dice: O{r.shooter + 1}'s {r.shot_type} {shot}. {n} free throw{'s' if n > 1 else ''} at {ft}: "
+            f"{good} went in ({', '.join(str(x) for x in rolls)}). The possession's score is what the fouled shot is "
+            f"worth on average, whatever the dice did.")
+    return [dict(tone='info', text=text)]
 
 
 def notation(before, after, a, turn):
@@ -220,7 +252,8 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None):
+                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
+                 three=None, guarded=None, fouledshot=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -245,6 +278,10 @@ class Game:
             if zone in ('on', '1', 1, True):
                 # step 18g (D-167, under test): the zone of influence, the app only
                 rules = replace(rules, zone='on')
+            # step 18i (D-172 to D-174): the FIBA rules are on in the app's format; each may be turned off
+            for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot)):
+                if v in ('off', '0', 0, False):
+                    rules = replace(rules, **{name: 'off'})
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
         self.full = full and scenario is None
         self.n_poss = 2 * self.per_side if self.full else 1
@@ -1175,7 +1212,7 @@ class Game:
         from .view import board_json
         from playmaker_engine.review import best_look
         entry = dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
-                     outcomes=consequences(before, node, a), possession=self.possession,
+                     outcomes=consequences(before, node, a) + fouled_shot_dice(node, self.rng), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
                      turn=turn, mark=mark, board=board_json(node, self.slots))
         # the read the board offered before this action (the best ▲ look): kept aside, never in a play payload

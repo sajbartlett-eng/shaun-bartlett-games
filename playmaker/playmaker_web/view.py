@@ -93,12 +93,20 @@ def influence(s):
                 sq |= set(movement_dests(st, 'O', i, kind, rules))
         reach.append([dict(sq=B.sq(q), x=q[0], y=q[1]) for q in sorted(sq)])
     # rushed (D-151, rules.control): 0 set, 1 his last movement this phase was a Quick Step, 2 a Sprint
-    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i), rushed=s.rush('O', i))
+    # step 18i: the counts shown on the player: in the key at the last phase end (D-172); the ball handler's phase ends
+    # held while closely guarded, and whether he has picked the ball up (D-173)
+    three, guarded = RC.app_rule(rules, 'three_seconds'), RC.app_rule(rules, 'closely_guarded')
+    ballg = s.guard()
+    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i), rushed=s.rush('O', i),
+                          key=bool(three and s.key_o >> i & 1),
+                          held=ballg[1] if (guarded and i == s.ball) else 0,
+                          picked=bool(guarded and i == s.ball and ballg[0] == 2))
                      for i in range(5)],
                   X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=s.rush('X', j))
                      for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
-                drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off')
+                drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off',
+                three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'))
 
 
 def rv(card, name):

@@ -43,6 +43,9 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | Late Clock results | Shared | result first, then shot value | result first, then shot value | How Late Clock cards are compared. |
 | Tie-break roll | Tabletop only | roll for the final shot | see Tied match | A tied two-possession game. The app has no tie-break: see Tied match. |
 | control | Split by format | none (the table's rules are on hold, D-146) | a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154) | A shot or a Contest after a Quick Step or a Sprint. The app plays the control rule at size 2 (D-153, D-154). The table's rules are on hold (D-146). |
+| three_seconds | Split by format | none | in the key when two phases in a row end: a turnover (D-172) | An attacker who stays in the key. The app plays three seconds (D-172). The table has no such rule. |
+| closely_guarded | Split by format | none | holding the ball closely guarded when three phases in a row end: a turnover (D-173) | A ball handler who holds the ball with a defender on him. The app plays the closely guarded rule (D-173). The table has no such rule. |
+| fiba_fouled_shot | Split by format | the free throws, or the open shot if that is higher | the contested shot plus the free throws that follow, on average (D-174) | What a fouled shot scores. The app scores a fouled shot as the contested shot plus the free throws that follow (D-174). |
 | turnover_play_on | Shared | not in play (kept so old logs replay) | not in play (kept so old logs replay) |  |
 | pass_resolution | Shared | the defence answers first | the defence answers first |  |
 | sprint_orth_base | Shared | 3 + Quick Step straight | 3 + Quick Step straight |  |

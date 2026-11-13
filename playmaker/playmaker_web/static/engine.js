@@ -671,8 +671,9 @@ const PMEngine = (() => {
       const r = rating === undefined ? card.sh[t] : rating;
       if (left === undefined) left = r;
       if (shotValue === undefined) shotValue = Math.max(0, pts * left);
-      const pin = Math.max(0, Math.min(20, left)) / 20;
-      return [shotValue + (pin + (1 - pin) * pts) * card.r.free_throw, false];
+      // the chance it goes in is left in 20; the whole is kept a whole number, as every score is (half a point rounds up)
+      left = Math.max(0, Math.min(20, left));
+      return [Math.floor((20 * shotValue + card.r.free_throw * (left + (20 - left) * pts) + 10) / 20), false];
     }
     const ft = freeThrows(card, pts);
     if (t) { const open = pts * (rating === undefined ? card.sh[t] : rating); if (open > ft) return [open, true]; }

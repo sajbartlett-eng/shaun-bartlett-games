@@ -77,6 +77,12 @@ ENTRIES = [
      'The app has no tie-break: see Tied match.'),
     ('control', SPLIT, dict(rules='control'), 'A shot or a Contest after a Quick Step or a Sprint.',
      'The app plays the control rule at size 2 (D-153, D-154). The table\'s rules are on hold (D-146).'),
+    ('three_seconds', SPLIT, dict(rules='three_seconds'), 'An attacker who stays in the key.',
+     'The app plays three seconds (D-172). The table has no such rule.'),
+    ('closely_guarded', SPLIT, dict(rules='closely_guarded'), 'A ball handler who holds the ball with a defender on him.',
+     'The app plays the closely guarded rule (D-173). The table has no such rule.'),
+    ('fiba_fouled_shot', SPLIT, dict(rules='fiba_fouled_shot'), 'What a fouled shot scores.',
+     'The app scores a fouled shot as the contested shot plus the free throws that follow (D-174).'),
 ]
 # every Rules setting not named above is shared: the same ruling in both formats
 _NAMED = {e[2].get('rules') for e in ENTRIES if e[2].get('rules')}
@@ -455,6 +461,11 @@ WORDS = {
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
     'zone': dict(sec=None, src=None, tab='off (a rule test for the app, D-167; not adopted)',
                  dig='off (a rule test for the app, D-167; not adopted)'),
+    'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover (D-172)'),
+    'closely_guarded': dict(sec=None, src=None, tab='none',
+                            dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
+    'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
+                             dig='the contested shot plus the free throws that follow, on average (D-174)'),
     'control': dict(sec=None, src=None, tab='none (the table\'s rules are on hold, D-146)',
                     dig='a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154)'),
 }
@@ -479,6 +490,19 @@ CONTROL_WORDS = ("Your last movement this phase decides your control. After a Qu
 SPLITS = [
     ('Control', 'No control rule: a shot or a Contest is worth the same after any movement.', CONTROL_WORDS,
      'Ruled for the app (D-153). The table\'s rules are on hold while the app\'s game settles (D-146).'),
+    ('Three seconds', 'No such rule.', 'Time is counted in phase ends. An attacker in the key (columns G to K, from '
+     'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders '
+     'have no such rule.', 'FIBA Article 26, ruled for the app (D-171, D-172).'),
+    ('Closely guarded', 'No such rule.', 'A ball handler is closely guarded when a defender is next to him with an '
+     'arrow on him. If he has held the ball since he caught it and is closely guarded when three phases in a row end, '
+     'it is a violation: a turnover. Moving with the ball or a Dribble starts his dribble, and a dribble is never '
+     'counted. After that, two whole phases without an action from him and he has picked the ball up: he may only '
+     'pass or shoot, and the count runs. The count starts again when nobody closely guards him at a phase end.',
+     'FIBA Article 27, ruled for the app (D-173).'),
+    ('The fouled shot', 'The free throws (2 or 3 times the shooter\'s free-throw rating), or the open shot if that is '
+     'higher.', 'The shot still counts as a shot, at its contested rating. Free throws follow: 1 if it went in, 2 or 3 '
+     '(its points) if it missed, each at the shooter\'s free-throw rating. The score is what that is worth on average, '
+     'to the nearest point.', 'FIBA Articles 34 and 38, ruled for the app (D-174).'),
     ('Turnover cost', '−5 and the shot clock loses a phase; play on.', 'The possession ends and scores 0.',
      'A digital match has several possessions a side, so the next possession is the cost.'),
     ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover: the '
