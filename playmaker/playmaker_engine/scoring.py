@@ -117,7 +117,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     for j, xp in enumerate(state.x):
         if not B.adjacent(xp, spos):
             continue
-        eligible, foul_roll, penalty, cat = G.terms(rules, xp, state.arrows[j], spos)
+        eligible, foul_roll, penalty, cat = G.terms(rules, xp, G.stance(rules, state.arrows[j], any(b[1] == j for b in state.beaten)), spos)
         if not eligible:
             continue                    # step 3h geometries: arrow lines off the shooter, no contest
         if rules.late_closeout and state.react_moved >> j & 1:

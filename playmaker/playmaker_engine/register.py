@@ -453,6 +453,8 @@ WORDS = {
     'turnover_play_on': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'arrow_line_strict': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
+    'zone': dict(sec=None, src=None, tab='off (a rule test for the app, D-167; not adopted)',
+                 dig='off (a rule test for the app, D-167; not adopted)'),
     'control': dict(sec=None, src=None, tab='none (the table\'s rules are on hold, D-146)',
                     dig='a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154)'),
 }

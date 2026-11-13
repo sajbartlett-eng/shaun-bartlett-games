@@ -1,0 +1,46 @@
+{
+ "tag": "zone_two",
+ "switches": {},
+ "positions": 2,
+ "scored": 2,
+ "matched": 2,
+ "points_lost_a_position": 4.28,
+ "interval": [
+  -0.56,
+  9.13
+ ],
+ "candidates_added": 2,
+ "rows": [
+  {
+   "id": "two turns before an open shot 4",
+   "group": "two turns before",
+   "best": "the reference's choice: X1 Quick Steps to H9",
+   "choice": "the computer's choice (zone_two): X1 Quick Steps to H9, then X1 tries a Steal",
+   "matches": true,
+   "points_lost": 8.56,
+   "interval": [
+    -1.13,
+    18.25
+   ]
+  },
+  {
+   "id": "two turns before an open shot 6",
+   "group": "two turns before",
+   "best": "the computer's choice (zone_two): X1 Quick Steps to J6, then X3 moves to L8, facing N",
+   "choice": "the computer's choice (zone_two): X1 Quick Steps to J6, then X3 moves to L8, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "by_group": {
+  "two turns before": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 4.28
+  }
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "position": "closeout, shooter cannot move",
+ "zone": false,
+ "candidates": [
+  {
+   "name": "your order: X3 Quick Steps to E4 and keeps the Move; X2 moves to B6",
+   "turn": "X3 Quick Steps to E4, then X2 moves to B6, facing SW",
+   "scored": 21.25,
+   "ended": {
+    "shot": 10,
+    "turnover_end": 6
+   },
+   "values": [
+    35,
+    0,
+    35,
+    0,
+    35,
+    35,
+    0,
+    0,
+    0,
+    30,
+    35,
+    0,
+    35,
+    35,
+    35,
+    30
+   ],
+   "lines": [
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Move to B4 facing NW",
+     "X3 Steal",
+     "O2 Quick Step to A6",
+     "O2 Shot (three)",
+     "X2 Quick Step to B7",
+     "X2 contests"
+    ],
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Move to B4 facing NW",
+     "X3 Steal"
+    ],
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Move to B4 facing NW",
+     "X3 Steal",
+     "O2 Quick Step to A6",
+     "O2 Shot (three)",
+     "X2 Quick Step to B7",
+     "X2 contests"
+    ]
+   ]
+  }
+ ]
+}

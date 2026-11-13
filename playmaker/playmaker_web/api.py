@@ -31,7 +31,7 @@ class Manager:
                  random_for=body.get('random', 'both'), coherent=bool(body.get('coherent')),
                  draft=self.drafts.get(str(body.get('draft') or '').upper()),
                  match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8),
-                 scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'))
+                 scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'), zone=body.get('zone'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g

@@ -1,0 +1,266 @@
+{
+ "position": "closeout, shooter cannot move",
+ "zone": true,
+ "candidates": [
+  {
+   "name": "your order: X3 Quick Steps to E4 and keeps the Move; X2 moves to B6",
+   "turn": "X3 Quick Steps to E4, then X2 moves to B6, facing SW",
+   "scored": 2.0,
+   "ended": {
+    "turnover_end": 12,
+    "steal": 3,
+    "shot": 1
+   },
+   "values": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    32,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "lines": [
+    [
+     "O2 Move to A5",
+     "O3 Move to P8",
+     "X3 Move to B4 facing S",
+     "X3 Steal"
+    ],
+    [
+     "O2 Move to A5",
+     "O3 Move to P8",
+     "X3 Move to B4 facing S",
+     "X3 Steal",
+     "O4 Pass to O2",
+     "X1 Move to G8 facing N",
+     "X2 Steal",
+     "O1 Move to K10",
+     "O2 Quick Step to A6",
+     "X2 Steal"
+    ]
+   ]
+  },
+  {
+   "name": "X3 Moves to C4 and keeps the Quick Step; X2 moves to B6",
+   "turn": "X3 moves to C4, facing SW, then X2 moves to B6, facing SW",
+   "scored": 16.94,
+   "ended": {
+    "shot": 7,
+    "turnover_end": 9
+   },
+   "values": [
+    41,
+    0,
+    0,
+    0,
+    41,
+    0,
+    33,
+    0,
+    0,
+    38,
+    33,
+    0,
+    0,
+    0,
+    46,
+    39
+   ],
+   "lines": [
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Quick Step to B5",
+     "X3 Steal",
+     "O2 Quick Step to B4",
+     "O2 Dribble vs X3",
+     "X2 Quick Step to B7",
+     "X4 Move to P5 facing N",
+     "O Hesitate",
+     "X3 Quick Step to C5",
+     "X3 Steal",
+     "O2 Move to A2",
+     "O2 Shot (three)",
+     "X2 Sprint to B3",
+     "X2 contests"
+    ],
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Quick Step to B5",
+     "X3 Steal"
+    ]
+   ]
+  },
+  {
+   "name": "X3 Quick Steps to E4, and the computer chooses the rest",
+   "turn": "X3 Quick Steps to E4",
+   "scored": 28.06,
+   "ended": {
+    "shot": 15,
+    "free_throws": 1
+   },
+   "values": [
+    30,
+    30,
+    30,
+    54,
+    30,
+    30,
+    30,
+    15,
+    15,
+    30,
+    30,
+    30,
+    15,
+    30,
+    35,
+    15
+   ],
+   "lines": [
+    [
+     "X3 Move to B4 facing N",
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X Pause",
+     "O3 Quick Step to P8",
+     "O2 Shot (three)",
+     "X2 Move to A6 facing SE",
+     "X2 contests"
+    ],
+    [
+     "X3 Move to B4 facing N",
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X Pause",
+     "O2 Shot (three)",
+     "X2 Move to A6 facing SE",
+     "X2 contests"
+    ]
+   ]
+  },
+  {
+   "name": "the defence Pauses",
+   "turn": "the defence Pauses",
+   "scored": 20.25,
+   "ended": {
+    "free_throws": 1,
+    "turnover_end": 6,
+    "shot": 9
+   },
+   "values": [
+    59,
+    0,
+    0,
+    38,
+    21,
+    0,
+    27,
+    0,
+    24,
+    24,
+    36,
+    21,
+    0,
+    44,
+    0,
+    30
+   ],
+   "lines": [
+    [
+     "O2 Move to A6",
+     "O4 Pass to O2",
+     "X3 Move to C4 facing W",
+     "X1 Quick Step to J11",
+     "O3 Move to Q5",
+     "O2 Pass to O1",
+     "X1 Move to J11 facing NE",
+     "X End turn",
+     "O5 Move to O1",
+     "O1 Move to H10",
+     "X2 Move to E8 facing N",
+     "X5 Move to O4 facing N",
+     "O1 Move to H7",
+     "O1 Pass to O2",
+     "X3 Move to B5 facing NW",
+     "X3 Steal",
+     "O2 Move to A4",
+     "O2 Shot (three)",
+     "X3 contests"
+    ],
+    [
+     "O2 Move to A6",
+     "O4 Pass to O2",
+     "X3 Move to C4 facing W",
+     "X1 Quick Step to J11",
+     "O3 Move to Q5",
+     "O2 Pass to O1",
+     "X1 Move to J11 facing NE",
+     "X End turn",
+     "O5 Move to O1",
+     "O1 Dribble vs X1",
+     "X4 Move to M7 facing N",
+     "X3 Quick Step to C3",
+     "O2 Screen, T NE",
+     "X1 Move to I10 facing NW",
+     "X1 Steal"
+    ]
+   ]
+  },
+  {
+   "name": "the computer's choice (zone_near): X2 moves to B6, facing N, then X1 Quick Steps to I9",
+   "turn": "X2 moves to B6, facing N, then X1 Quick Steps to I9",
+   "scored": 23.12,
+   "ended": {
+    "shot": 10,
+    "turnover_end": 6
+   },
+   "values": [
+    38,
+    0,
+    38,
+    0,
+    38,
+    38,
+    0,
+    0,
+    0,
+    33,
+    38,
+    0,
+    38,
+    38,
+    38,
+    33
+   ],
+   "lines": [
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Sprint to B4",
+     "X3 Steal",
+     "O2 Quick Step to A6",
+     "O2 Shot (three)",
+     "X End turn"
+    ],
+    [
+     "O2 Move to A5",
+     "O4 Pass to O2",
+     "X3 Sprint to B4",
+     "X3 Steal"
+    ]
+   ]
+  }
+ ]
+}

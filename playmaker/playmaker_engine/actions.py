@@ -33,7 +33,7 @@ class Action(NamedTuple):
         if k == 'qs':
             return f'{who} Quick Step to {B.sq(self.dest)}'
         if k == 'sprint':
-            return f'{who} Sprint to {B.sq(self.dest)}'
+            return f'{who} Sprint to {B.sq(self.dest)}' + (f' facing {B.DIR_NAMES[self.arrow]}' if self.arrow >= 0 else '')
         if k == 'pass':
             return f'{who} Pass to O{self.target + 1}'
         if k == 'screen':
@@ -77,6 +77,19 @@ def t_square(state, screen):
     return B.add(state.o[i], B.DIRS[d])
 
 
+def stance(state, j, arrow=None):
+    """Defender j's stance as the arrow rules read it (geometry.stance): his arrow (or the arrow given), and under
+    rules.zone whether a Dribble won against him this phase has broken his zone."""
+    rules = state.ctx.rules
+    a = state.arrows[j] if arrow is None else arrow
+    if rules.zone == 'off':
+        return a
+    for b in state.beaten:
+        if b[1] == j:
+            return 16
+    return 8 + a
+
+
 def zone(state, j):
     """Defender j's zone of influence (ruled, step 3i follow-up): the squares along each of his arrow
     directions that he could reach with one movement in that direction, with his remaining capacity: a Move
@@ -92,7 +105,8 @@ def zone(state, j):
             dests[kind] = movement_dests(state, 'X', j, kind, rules)
     occ = state.occupied()
     out = {}
-    for d in G.lines(rules, state.arrows[j]):
+    st = stance(state, j)
+    for d in G.lines(rules, st):
         step = B.DIRS[d]
         q = start
         while True:
@@ -103,6 +117,13 @@ def zone(state, j):
             if kind is None:
                 break
             out[q] = kind
+    if 8 <= st < 16:
+        # step 18g (D-167): the zone is the wedge, not only its two edges: every square between the lines that a
+        # Move or a Quick Step still left to him reaches
+        for kind in ('move', 'qs'):
+            for q in dests.get(kind, ()):
+                if q not in out and G.in_wedge(st, (q[0] - start[0], q[1] - start[1])):
+                    out[q] = kind
     return out
 
 
@@ -138,7 +159,7 @@ def path_ok(state, side, i, path, rules, occ=None, zones=None):
         pts = (start,) + tuple(path)
         for j, xp in enumerate(state.x):
             if B.adjacent(xp, start) and (i, j) not in state.beaten:
-                if G.path_crosses(rules, pts, xp, state.arrows[j], rules.arrow_line_strict):
+                if G.path_crosses(rules, pts, xp, stance(state, j), rules.arrow_line_strict):
                     return False
     return True
 
@@ -228,7 +249,7 @@ def movement_actions(state, side, rules):
                 acts += [_new(Action, ('move', 'X', i, dest, d, -1, '')) for dest in dests for d in range(8)]
             else:
                 acts += [_new(Action, (kind, side, i, dest, -1, -1, '')) for dest in dests]
-                if side == 'X' and kind == 'sprint' and rules.arrow_mode == 'wedge':
+                if side == 'X' and kind == 'sprint' and G.two(rules):
                     # wedge: the run direction is one edge; the other may go either side (-1 = clockwise)
                     start = pieces[i]
                     for dest in dests:
@@ -352,7 +373,7 @@ def lane_jumps(state, j):
     a, b = state.o[passer], state.o[recv]
     occ = state.occupied()
     out = []
-    for d in G.lines(rules, state.arrows[j]):
+    for d in G.lines(rules, stance(state, j)):
         k = lane_crossing(p, d, a, b)
         if k is None:
             continue
@@ -414,7 +435,7 @@ def follow_jumps(state):
             if state.moved('X', j) or state.locked('X', j):
                 continue
         hit = False
-        for d in G.lines(rules, arrow):
+        for d in G.lines(rules, stance(state, j, arrow)):
             k = lane_crossing(m.dest, d, a, b)
             if k is None:
                 continue
@@ -454,14 +475,14 @@ def mti_approach(state, a):
     if n == 0 or dx not in (-n, 0, n) or dy not in (-n, 0, n):
         return False                                  # not a straight line
     d = B.DIRS.index((dx // n, dy // n))
-    if d not in G.lines(rules, state.arrows[j]):
+    if d not in G.lines(rules, stance(state, j)):
         return False                                  # off the arrow
     passer, recv = state.pending
     pa, pb = state.o[passer], state.o[recv]
     if lane_meet(p, d, pa, pb) != n:
         return False                                  # doesn't end where his path meets the pass line
     if a.kind == 'sprint':
-        keep = a.arrow if (rules.arrow_mode == 'wedge' and a.arrow == (d - 1) % 8) else d
+        keep = a.arrow if (G.two(rules) and a.arrow == (d - 1) % 8) else d
         if keep != state.arrows[j]:
             return False                              # a Sprint along the arrow keeps his facing
     elif a.kind == 'move' and rules.lane_jump_keeps_facing and a.arrow != state.arrows[j]:
@@ -484,7 +505,7 @@ def approach_moves(state, j=None):
     for jj in (range(5) if j is None else (j,)):
         p = state.x[jj]
         qs = state.ctx.dfn[jj].qs
-        for d in G.lines(rules, state.arrows[jj]):
+        for d in G.lines(rules, stance(state, jj)):
             n = lane_meet(p, d, pa, pb)
             if not n:
                 continue
@@ -510,7 +531,7 @@ def approach_moves(state, j=None):
                     cands = [_new(Action, ('qs', 'X', jj, q, -1, -1, ''))]
                 else:
                     cands = [_new(Action, ('sprint', 'X', jj, q, -1, -1, ''))]
-                    if rules.arrow_mode == 'wedge':
+                    if G.two(rules):
                         cands.append(_new(Action, ('sprint', 'X', jj, q, (d - 1) % 8, -1, '')))
                 out += [c for c in cands if mti_approach(state, c)]
     return out
@@ -574,12 +595,12 @@ def intercept_status(state, j):
     p = state.x[j]
     on = B.on_segment(p, a, b, rules.on_line_tolerance)
     if B.adjacent(p, a):
-        if G.faces(rules, state.arrows[j], p, a):
+        if G.faces(rules, stance(state, j), p, a):
             return 'direct' if on else None
-        return 'approach' if G.crosses(rules, p, state.arrows[j], a, b) else None
+        return 'approach' if G.crosses(rules, p, stance(state, j), a, b) else None
     if on:
         return 'direct'
-    if G.crosses(rules, p, state.arrows[j], a, b):
+    if G.crosses(rules, p, stance(state, j), a, b):
         return 'approach'
     return None
 
@@ -656,7 +677,7 @@ def _defence_actions(s, rules, kinds=None):
     ok = (lambda k: True) if kinds is None else (lambda k: k in kinds)
     if ok('steal') and s.count('X', 'steal') < RC.LIMITS['X']['steal']:
         for j, xp in enumerate(s.x):
-            if G.faces(rules, s.arrows[j], xp, cpos):
+            if G.faces(rules, stance(s, j), xp, cpos):
                 acts.append(Action('steal', 'X', j))
     if ok('challenge') and s.count('X', 'challenge') < RC.LIMITS['X']['challenge']:
         for scr in s.screens:

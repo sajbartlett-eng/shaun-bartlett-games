@@ -65,12 +65,13 @@ def influence(s):
     a Sprint as the lighter extension), each active screen's T and the diagonal steps it blocks, capacity
     badges (Move used, Quick Step used, locked) for every piece, and each attacker's movement reach this
     phase (shown when he is selected)."""
-    from playmaker_engine.actions import zone, movement_dests, can_move_kind
+    from playmaker_engine.actions import zone, stance, movement_dests, can_move_kind
     rules = s.ctx.rules
     zones = []
     for j in range(5):
         z = zone(s, j)
-        zones.append(dict(defender=j, lines=list(G.lines(rules, s.arrows[j])),
+        st = stance(s, j)                               # step 18g: two lines under the zone, none when it is broken
+        zones.append(dict(defender=j, lines=list(G.lines(rules, st)), broken=st >= 16,
                           squares=[dict(sq=B.sq(q), x=q[0], y=q[1], kind=k) for q, k in sorted(z.items())]))
     screens = []
     for sc in s.screens:
@@ -97,7 +98,7 @@ def influence(s):
                   X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=s.rush('X', j))
                      for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
-                drive_rule=rules.drive_rule, control=RC.control_size(rules))
+                drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off')
 
 
 def rv(card, name):

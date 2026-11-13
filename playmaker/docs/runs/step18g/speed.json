@@ -1,0 +1,117 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18h's code, this step's, and this step's with the zone on",
+ "rounds": [
+  {
+   "18h": {
+    "rookie": {
+     "median": 0.165,
+     "nine_in_ten": 0.228,
+     "slowest": 0.243,
+     "defence_nine_in_ten": 0.195
+    },
+    "starter": {
+     "median": 0.603,
+     "nine_in_ten": 0.823,
+     "slowest": 0.891,
+     "defence_nine_in_ten": 0.844
+    },
+    "allstar": {
+     "median": 1.126,
+     "nine_in_ten": 1.74,
+     "slowest": 1.925,
+     "defence_nine_in_ten": 1.747
+    }
+   },
+   "18g": {
+    "rookie": {
+     "median": 0.172,
+     "nine_in_ten": 0.252,
+     "slowest": 0.26
+    },
+    "starter": {
+     "median": 0.598,
+     "nine_in_ten": 0.832,
+     "slowest": 0.962
+    },
+    "allstar": {
+     "median": 1.239,
+     "nine_in_ten": 1.837,
+     "slowest": 1.858
+    }
+   },
+   "18g, the zone on": {
+    "rookie": {
+     "median": 0.193,
+     "nine_in_ten": 0.254,
+     "slowest": 0.321
+    },
+    "starter": {
+     "median": 0.661,
+     "nine_in_ten": 0.875,
+     "slowest": 1.074
+    },
+    "allstar": {
+     "median": 1.53,
+     "nine_in_ten": 1.94,
+     "slowest": 2.074
+    }
+   }
+  },
+  {
+   "18h": {
+    "rookie": {
+     "median": 0.177,
+     "nine_in_ten": 0.245,
+     "slowest": 0.281,
+     "defence_nine_in_ten": 0.225
+    },
+    "starter": {
+     "median": 0.632,
+     "nine_in_ten": 0.871,
+     "slowest": 0.965,
+     "defence_nine_in_ten": 0.925
+    },
+    "allstar": {
+     "median": 1.247,
+     "nine_in_ten": 1.872,
+     "slowest": 1.92,
+     "defence_nine_in_ten": 1.884
+    }
+   },
+   "18g": {
+    "rookie": {
+     "median": 0.149,
+     "nine_in_ten": 0.222,
+     "slowest": 0.269
+    },
+    "starter": {
+     "median": 0.553,
+     "nine_in_ten": 0.867,
+     "slowest": 0.939
+    },
+    "allstar": {
+     "median": 1.149,
+     "nine_in_ten": 1.622,
+     "slowest": 1.836
+    }
+   },
+   "18g, the zone on": {
+    "rookie": {
+     "median": 0.202,
+     "nine_in_ten": 0.269,
+     "slowest": 0.274
+    },
+    "starter": {
+     "median": 0.676,
+     "nine_in_ten": 0.943,
+     "slowest": 1.005
+    },
+    "allstar": {
+     "median": 1.579,
+     "nine_in_ten": 2.015,
+     "slowest": 2.198
+    }
+   }
+  }
+ ]
+}

@@ -39,7 +39,7 @@ def random_state(rng):
     d = R.deal(age, std, seed=rng.randrange(36 ** 6))
     tags = d['tags'] or [None, None]
     off, dfn = L.team(d['rosters'][0], age, tags[0]), L.team(d['rosters'][1], age, tags[1])
-    rules = RC.with_rules(digital=digital, control=_CONTROL['size'])     # D-151: the control rule's size ('off' by default)
+    rules = RC.with_rules(digital=digital, control=_CONTROL['size'], zone=_ZONE['v'])     # D-151: the control rule's size; step 18g: rules.zone
     ctx = Context(off, dfn, rules, team_fouls=rng.randrange(0, 7) if digital else 0,
                   quarter_left=rng.randrange(0, 19) if digital else 0)
     ctx.levels_key = (age, std)                    # step 18a: each age and standard reads its own phase table and scale
@@ -61,6 +61,30 @@ def random_state(rng):
         if isinstance(node, ChanceNode):
             node, _ = sample(node, rng)
         s = node
+    if _ZONE.get('broken'):
+        # step 18g: carry on until a Dribble is won, so the position holds a zone broken this phase (then 0 to 2 more actions)
+        for _ in range(60):
+            if s.stage != 'play' or s.beaten:
+                break
+            acts = legal_actions(s)
+            if not acts:
+                break
+            drib = [a for a in acts if a.kind == 'dribble']
+            node = apply(s, rng.choice(drib or acts))
+            if isinstance(node, ChanceNode):
+                wins = [n for _p, _l, n in node.flatten() if getattr(n, 'beaten', None)]
+                node = rng.choice(wins) if wins else sample(node, rng)[0]
+            s = node
+        for _ in range(rng.randrange(3)):
+            acts = legal_actions(s) if s.stage == 'play' else []
+            if not acts:
+                break
+            node = apply(s, rng.choice(acts))
+            if isinstance(node, ChanceNode):
+                node, _ = sample(node, rng)
+            if not node.beaten:
+                break
+            s = node
     return s, dict(age=age, standard=std, digital=digital, steps=steps)
 
 
@@ -108,6 +132,7 @@ def py_outcomes(s):
 _ADV = {'on': False}
 _SETTLE = {'on': False}
 _CONTROL = {'size': 'off'}
+_ZONE = {'v': 'off'}                                 # step 18g: rules.zone in every position ('on' with --zone)
 _HELP = {'on': False}
 _OPEN = {'v': None}            # step 18e: search.open_list ('defence', 'both')
 
@@ -251,6 +276,8 @@ def main():
     ap.add_argument('--kept-actions', action='store_true', help='step 18f: eval.kept_actions on, in both engines')
     ap.add_argument('--split-ties', action='store_true', help='step 18f: search.split_ties on, in both engines')
     ap.add_argument('--rank-in-hand', action='store_true', help='step 18f: search.rank_in_hand on, in both engines')
+    ap.add_argument('--zone', action='store_true', help="step 18g: rules.zone 'on' in every position (the zone of influence)")
+    ap.add_argument('--broken', action='store_true', help='step 18g: play each position on until a Dribble is won (a zone broken this phase)')
     ap.add_argument('--no-floor', action='store_true', help='step 18h: eval.no_floor on, in both engines')
     ap.add_argument('--exact-shot', action='store_true', help='step 18h: eval.exact_shot on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
@@ -272,6 +299,8 @@ def main():
     _ADV['on'] = args.advantages
     _CFG['eval']['learned'] = args.learned
     _CONTROL['size'] = args.control
+    _ZONE['v'] = 'on' if args.zone else 'off'
+    _ZONE['broken'] = bool(args.broken)
     args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle

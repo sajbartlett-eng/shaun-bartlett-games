@@ -24,7 +24,12 @@ SET = os.path.join(HERE, 'sense_set')
 RUN = os.path.join(ROOT, 'docs', 'runs', os.environ.get('SENSE_RUN', 'step18h'))
 WORK = os.path.join(RUN, 'work')
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
-POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers.json')
+# SENSE_ZONE=1 (step 18g): the set's positions replayed under rules.zone, with answers of their own (the answers
+# under today's rules stay as they are). SENSE_ONLY: score only the positions whose name starts with one of these.
+ZONE = os.environ.get('SENSE_ZONE') == '1'
+ONLY = [x for x in os.environ.get('SENSE_ONLY', '').split('|') if x]
+RULE = dict(zone=True) if ZONE else {}
+POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers_zone.json' if ZONE else 'answers.json')
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
@@ -80,7 +85,7 @@ def searches(items, tag='ref', noise=0.0, **switches):
     for k, it in enumerate(items):
         contexts.append(it['ctx'])
         pos.append(dict(id=str(k), state=it['state'], ctx=k))
-    rows, secs = L.run_jobs('search', pos, contexts, policies={'p': L.policy('allstar', 2, noise, **switches)})
+    rows, secs = L.run_jobs('search', pos, contexts, policies={'p': L.policy('allstar', 2, noise, **switches)}, **RULE)
     tally(f'searches ({tag}, {len(items)} positions)', secs)
     rows = {int(r['id']): r for r in rows}               # the rows come back core by core, not in the order sent
     return [rows[k]['by']['p']['results'] for k in range(len(items))]
@@ -269,6 +274,57 @@ def cmd_build():
             print('      -', c['name'][:110])
 
 
+def cmd_grow(n='10'):
+    """Step 18g: positions two of the defence's turns before a shot nobody could reach (from the harvested play),
+    added to the set without touching what is there. Candidates: the reference's own choice; the listed turn that
+    ends with a defender nearest the player who went on to shoot; the one nearest the square he shot from; a Pause."""
+    positions, answers = load()
+    h = json.load(open(os.path.join(SRC, 'harvest.json')))
+    cx = lambda i: h['contexts'][h['rows'][i]['ctx']]
+    re = [(i, st) for i, r in enumerate(h['rows']) for st in r['reactions']]
+    rres = searches([dict(state=st, ctx=cx(i)) for i, st in re], 'reactions', **REF)
+    picked = []
+    for (i, shot), res in zip(re, rres):
+        if len(set(round(v, 3) for v, _ in res)) >= 2:
+            continue                                     # the defence could do something about this shot
+        xs = [st for st in h['rows'][i]['states'] if st['side'] == 'X' and st['turn_n'] == 0 and st['stage'] == 'play']
+        if len(xs) >= 2 and i not in [j for j, _, _ in picked] and len(picked) < int(n):
+            picked.append((i, xs[-2], shot))
+    lres = searches([dict(state=st, ctx=cx(i)) for i, st, _ in picked], 'two turns before', **REF)
+    xy = lambda q: (ord(q[0]) - 65, int(q[1:]))
+    cheb = lambda a, b: max(abs(xy(a)[0] - xy(b)[0]), abs(xy(a)[1] - xy(b)[1]))
+    have = set(p['id'] for p in positions)
+    for k, ((i, st, shot), res) in enumerate(zip(picked, lres)):
+        pid = f'two turns before an open shot {k + 1}'
+        if pid in have:
+            continue
+        who, sq = shot['ball'], shot['o'][shot['ball']]
+
+        def ends(t):
+            e = list(st['x'])
+            for a in t:
+                if a[0] in ('move', 'qs', 'sprint') and a[1] == 'X':
+                    e[a[2]] = a[3]
+            return e
+        near_him = min(res, key=lambda r: (min(cheb(q, st['o'][who]) for q in ends(r[1])), r[0]))
+        near_sq = min(res, key=lambda r: (min(cheb(q, sq) for q in ends(r[1])), r[0]))
+        pause = next((t for v, t in res if t[0][0] == 'pause'), [['pause', 'X', -1, None, -1, -1, '']])
+        cands, seen = [], set()
+        for name, t in ((f"the reference's choice: " + words(res[0][1]), res[0][1]),
+                        (f"the listed turn that ends nearest O{who + 1}, who went on to shoot: " + words(near_him[1]), near_him[1]),
+                        (f"the listed turn that ends nearest {sq}, where the shot came from: " + words(near_sq[1]), near_sq[1]),
+                        ('the defence Pauses', pause)):
+            if key(t) not in seen:
+                seen.add(key(t))
+                cands.append(dict(name=name, turn=t))
+        positions.append(dict(id=pid, group='two turns before', note=f"O{who + 1} is at {st['o'][who]} now",
+                              what=f"Two of the defence's turns before O{who + 1} shot a {shot['shot']} from {sq} with nobody in reach.",
+                              side=st['side'], stage=st['stage'], clock=st['clock'], state=st, ctx=cx(i), candidates=cands))
+        print(pid, '|', st['clock'], '|', [c['name'][:70] for c in cands])
+    json.dump(positions, open(POS, 'w'), indent=1)
+    print(len(positions), 'positions')
+
+
 def _seed(pid, k):
     import zlib
     return 15485863 * (k + 1) + 1 + 2 * (zlib.crc32(pid.encode()) % 500000)
@@ -284,7 +340,9 @@ def play(positions, answers, only=None, copies=(0, 1)):
             continue
         have = answers['results'].setdefault(p['id'], {})
         for k in copies:
-            miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]]
+            # under the zone only the named candidates and the zone's own choices are played (the limit on compute)
+            miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]
+                    and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -294,7 +352,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
     if not jobs:
         return 0.0
     pol = L.policy('allstar', 2, L.profiles()['allstar']['noise'], **REF)
-    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol))
+    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol), **RULE)
     n = 0
     for r in rows:                                     # each row names its own position and copy (the rows come back core by core)
         pid, k = r['id'].rsplit('##', 1)
@@ -307,6 +365,43 @@ def play(positions, answers, only=None, copies=(0, 1)):
     json.dump(answers, open(ANS, 'w'))
     tally(f'play-outs ({n} candidate copies of 16 on {len(names)} positions)', secs)
     return secs
+
+
+def cmd_reply(pid, name, top='8'):
+    """A sense check's detail (step 18g): the other side's reply to one candidate, as the reference engine reads it:
+    its turns best first with their values. Under SENSE_ZONE the zone rule."""
+    positions, answers = load()
+    p = next(q for q in positions if q['id'] == pid)
+    c = next(c for c in p['candidates'] if name in c['name'])
+    rows, secs = L.run_jobs('search', [dict(id='0', state=p['state'], ctx=0, pre=c['turn'])], [p['ctx']], chunks=1,
+                            policies={'p': L.policy('allstar', 2, 0.0, **REF)}, **RULE)
+    print(pid, '| after', c['name'][:80], '| to act:', rows[0]['side'])
+    for v, t in rows[0]['by']['p']['results'][:int(top)]:
+        print('   ', round(v, 2), words(t))
+
+
+def cmd_lines(pid, lines='2', *names):
+    """A sense check's detail (step 18g): each candidate of one position played out on copy 0's dice again, keeping how
+    each play-out ended and the actions of the first few. Under SENSE_ZONE the zone rule. -> runs/<step>/lines_*.json"""
+    from collections import Counter
+    positions, answers = load()
+    p = next(q for q in positions if q['id'] == pid)
+    cands = [c for c in p['candidates'] if (not names or any(n in c['name'] for n in names))
+             and (key(c['turn']) in answers['results'].get(pid, {}))]
+    jobs = [dict(id=str(i), state=p['state'], ctx=0, seed=_seed(pid, 0), turns=[c['turn']]) for i, c in enumerate(cands)]
+    pol = L.policy('allstar', 2, L.profiles()['allstar']['noise'], **REF)
+    rows, secs = L.run_jobs('rollout', jobs, [p['ctx']], n=16, seed=7, keep=True, ends=True, lines=int(lines), policies=dict(O=pol, X=pol), **RULE)
+    out = []
+    for r in sorted(rows, key=lambda r: int(r['id'])):
+        t = r['turns'][0]
+        c = cands[int(r['id'])]
+        out.append(dict(name=c['name'], turn=words(c['turn']), scored=round(sum(t['values']) / max(1, len(t['values'])), 2),
+                        ended=dict(Counter(t['ends'])), values=t['values'], lines=t['lines']))
+        print(c['name'][:90], '|', out[-1]['scored'], '|', out[-1]['ended'])
+        for ln, v in zip(t['lines'], t['values']):
+            print('     ', round(v, 1), '<-', '; '.join(ln)[:400])
+    json.dump(dict(position=pid, zone=ZONE, candidates=out), open(os.path.join(RUN, f"lines_{'zone' if ZONE else 'today'}_{pid.replace(' ', '_').replace(',', '')}.json"), 'w'), indent=1)
+    tally(f"sense check detail ({pid}, {'zone' if ZONE else 'today'})", secs)
 
 
 def cmd_play(copies='0,1', *only):
@@ -354,6 +449,7 @@ def table(positions, answers, choices=None):
 
 def cmd_answers():
     positions, answers = load()
+    positions = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
     for one in table(positions, answers):
         print(one['id'], '|', one['side'])
         for r in one['rows']:
@@ -372,6 +468,7 @@ def cmd_choices(tag, *args):
     """The computer's choice on each position under a setting, and whether the set already has an answer for it
     (no play-outs)."""
     positions, answers = load()
+    positions = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
     res = searches(positions, tag + ' choices', **_switches(args))
     new = 0
     for p, r in zip(positions, res):
@@ -389,18 +486,25 @@ def cmd_score(tag, *args):
     set and played out. -> runs/<step>/sense_<tag>.json"""
     import math
     positions, answers = load()
-    res = searches(positions, tag, **_switches(args))
+    scored = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
+    res = searches(scored, tag, **_switches(args))
     choices, added = {}, 0
-    for p, r in zip(positions, res):
+    for p, r in zip(scored, res):
         t = r[0][1]
         choices[p['id']] = t
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
             p['candidates'].append(dict(name=f"the computer's choice ({tag}): " + words(t), turn=t, added_by=tag))
             added += 1
+        elif ZONE:
+            # the zone's choice is a turn an earlier setting added: it is played under the zone too
+            for c in p['candidates']:
+                if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'):
+                    c['zone_too'] = True
+                    added += 1
     if added:
         json.dump(positions, open(POS, 'w'), indent=1)
-        play(positions, answers)
-    rep = table(positions, answers, choices)
+    play(positions, answers, set(p['id'] for p in scored), tuple(int(k) for k in os.environ.get('SENSE_COPIES', '0,1').split(',')))
+    rep = table(scored, answers, choices)
     rows, lost, var = [], [], 0.0
     for one in rep:
         ch = one.get('choice')

@@ -15,11 +15,41 @@ from . import rules_config as RC
 FRONT, SIDE, BEHIND = 'front', 'side', 'behind'
 
 
+def zone_on(rules):
+    return rules.zone != 'off'
+
+
+def two(rules):
+    """Does a defender carry two arrow lines (the old wedge test, or step 18g's zone of influence)?"""
+    return rules.arrow_mode == 'wedge' or rules.zone != 'off'
+
+
+def stance(rules, a, broken=False):
+    """A defender's stance as the arrow rules read it. Without rules.zone: his arrow index (0 to 7). With it
+    (step 18g, D-167): 8 + the index (two lines, a and a + 1), or 16 when a Dribble has broken his zone (no line)."""
+    if rules.zone == 'off':
+        return a
+    return 16 if broken else 8 + a
+
+
 def lines(rules, a):
-    """The arrow-line directions for arrow index a."""
+    """The arrow-line directions for a stance (stance()): none when broken, two under the zone or the wedge."""
+    if a >= 16:
+        return ()
+    if a >= 8:
+        return (a - 8, (a - 7) % 8)
     if rules.arrow_mode == 'wedge':
         return (a, (a + 1) % 8)
     return (a,)
+
+
+def in_wedge(a, v):
+    """Is vector v strictly between the two lines of a zone stance (8 + index)? Whole numbers only."""
+    r1, r2 = B.DIRS[a - 8], B.DIRS[(a - 7) % 8]
+    c0 = r1[0] * r2[1] - r1[1] * r2[0]
+    c1 = r1[0] * v[1] - r1[1] * v[0]
+    c2 = v[0] * r2[1] - v[1] * r2[0]
+    return (c1 > 0) == (c0 > 0) and (c2 > 0) == (c0 > 0) and c1 != 0 and c2 != 0
 
 
 def faces(rules, a, frm, to):
@@ -43,7 +73,7 @@ def sprint_arrows(rules, run_dir):
     """Arrow indices a Sprint in direction run_dir can end with: one edge is the run direction; with a
     wedge the defender chooses the side of the other (a = run_dir, lines run_dir and run_dir+1, or
     a = run_dir-1, lines run_dir-1 and run_dir)."""
-    if rules.arrow_mode == 'wedge':
+    if two(rules):
         return (run_dir, (run_dir - 1) % 8)
     return (run_dir,)
 
