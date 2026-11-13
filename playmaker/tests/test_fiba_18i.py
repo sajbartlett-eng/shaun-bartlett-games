@@ -224,3 +224,24 @@ def test_the_app_shows_what_the_dice_made_of_a_fouled_shot_and_scores_its_expect
     assert len(out) == 1 and out[0]['text'].startswith("On the dice: O3's three")
     assert 'free throw' in out[0]['text'] and 'on average' in out[0]['text']
     assert fouled_shot_dice(over.with_(ctx=board(rules=OFF).ctx), random.Random(3)) == []       # the rule off: nothing
+
+
+def test_the_counts_show_on_the_players_in_the_app():
+    """D-171: each timed count is a small plain marker on the player, like RUSHED."""
+    from playmaker_web.game import Game
+    from playmaker_web.view import state_json
+    from playmaker_engine.state import pack_guard
+    g = Game(level='learn', seed=11, full=True, match_format='digital', per_side=4, place=False)
+    assert RC.app_rule(g.rules, 'three_seconds') and RC.app_rule(g.rules, 'closely_guarded')    # on in the app's format
+    g.state = g.state.with_(key_o=1 << 3, grd=pack_guard(0, 2, 0, 0))
+    inf = state_json(g, 'both')['influence']
+    assert inf['three'] and inf['guarded'] and inf['fiba']
+    assert inf['badges']['O'][3]['key'] and not inf['badges']['O'][1]['key']         # IN KEY on O4 only
+    assert inf['badges']['O'][g.state.ball]['held'] == 2                             # HELD 2 on the ball handler
+    g.state = g.state.with_(grd=pack_guard(2, 0, 0, 0))
+    assert state_json(g, 'both')['influence']['badges']['O'][g.state.ball]['picked']  # PICKED UP
+    off = Game(level='learn', seed=11, full=True, match_format='digital', per_side=4, place=False, three='0', guarded='0', fouledshot='0')
+    inf = state_json(off, 'both')['influence']
+    assert not (inf['three'] or inf['guarded'] or inf['fiba'])                       # each can be turned off from the address
+    table = Game(level='learn', seed=11, full=True, place=False)
+    assert not RC.app_rule(table.rules or RC.DEFAULT_RULES, 'three_seconds')         # nothing for the table

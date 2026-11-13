@@ -36,3 +36,7 @@ core.
 
 - self-play (pilot_on, 32 possessions): 0.24 (running total 0.24)
 - self-play (pilot_off, 32 possessions): 0.22 (running total 0.47)
+- self-play (before, 160 possessions): 0.99 (running total 1.46)
+- self-play (after, 160 possessions): 1.13 (running total 2.59)
+- agreement checks between the two engines: the capture rule, broken zones, the FIBA rules with searches and reactions (one core each): 0.75 (running total 3.34)
+- searches (fiba, 19 positions): 0.01 (running total 3.34)
