@@ -46,6 +46,7 @@ for (const ln of lines) {
   if (q.dice_in_hand !== undefined) E.setDiceInHand(q.dice_in_hand);
   if (q.ball_loss !== undefined) E.setBallLoss(q.ball_loss);
   if (q.keep_settled !== undefined) E.setKeepSettled(q.keep_settled);
+  if (q.keep_in_hand !== undefined) E.setKeepInHand(q.keep_in_hand);
   if (q.no_floor !== undefined) E.setNoFloor(q.no_floor);
   if (q.exact_shot !== undefined) E.setExactShot(q.exact_shot);
   if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B

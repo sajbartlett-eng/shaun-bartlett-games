@@ -276,6 +276,13 @@ def keep_settled_on():
     return CONFIG.get('search', {}).get('keep_settled') is True
 
 
+def keep_in_hand_on():
+    """search.keep_in_hand (step 18k): in the defence's list two turns are not copies when they leave a defender
+    different things he can still do this phase: whether he can still Move, still Quick Step, is set or rushed, and a
+    Steal he can roll from where he stands or still reach with the movement he has left."""
+    return CONFIG.get('search', {}).get('keep_in_hand') is True
+
+
 def ball_loss_on(me=None):
     """eval.ball_loss: true (either side's search), 'offence' (only when the offence is the one choosing), or off.
     In the defence's own search the same Steal is counted after every one of its turns alike, whether it steps in
@@ -392,6 +399,51 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
             return terminal_value(nd)
         return q2 + _banked(nd) - b2
 
+    # step 18k (search.keep_in_hand): what a first action leaves its mover able to do this phase: whether he can still
+    # Move, still Quick Step, is set or rushed, and a Steal: 1 if he can roll one from where he stands (next to the ball
+    # handler with an arrow on him), 2 if a movement he has left gets him there by its shape (onto a free square next
+    # to the ball handler, facing him: a Move turns him as he likes, a Quick Step keeps his arrow), 0 if not
+    kih = keep_in_hand_on() and two
+    rules_ = s.ctx.rules
+    bhq, mvr, qsr, code0 = None, set(), {}, None
+
+    def steal_code(n, j, q, can_move, qs_left):
+        if bhq is None:
+            return 0
+        ls = G.lines(rules_, stance(n, j))
+        if not ls:
+            return 0
+        if B.adjacent(q, bhq) and B.dir_between(q, bhq) in ls:
+            return 1
+        if can_move and q in mvr:
+            return 2
+        if qs_left > 0 and j in qsr:
+            for d in ls:
+                if q in qsr[j].get(d, ()):
+                    return 2
+        return 0
+
+    def sig_of(can_move, qs_left, rushed, code):
+        return (1 if can_move else 0) | (2 if qs_left > 0 else 0) | (4 if rushed else 0) | (code << 3)
+
+    if kih and B.on_board(s.o[s.ball]):
+        bhq = s.o[s.ball]
+        occ = set(s.o) | set(s.x)
+
+        def ends(paths, into):
+            for path in paths:
+                if all(B.on_board(sq) for sq in path):
+                    into.add(path[-1])
+        for d, (dx, dy) in enumerate(B.DIRS):
+            q = (bhq[0] - dx, bhq[1] - dy)
+            if not B.on_board(q) or q in occ:
+                continue
+            ends(B.move_paths(q, rules_), mvr)            # (a movement's shape is the same both ways)
+            for j in range(5):
+                if s.ctx.dfn[j].qs > 0:
+                    ends(B.qs_paths(q, s.ctx.dfn[j].qs, rules_), qsr.setdefault(j, {}).setdefault(d, set()))
+        code0 = [steal_code(s, j, s.x[j], *_caps(s, 'X', j)) for j in range(5)]
+
     full, U, seen = [], [], set()
     # 1. every legal first action
     for a in acts:
@@ -412,7 +464,16 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
                 c = min(c, _r6(in_hand(apply(nxt, b), q2)))
             if dice:
                 key = key + ('h', a.dest, nxt.arrows[a.piece])
-        u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key, v2=v2, q2=q2)
+        sg, adds = 0, False
+        if kih:
+            # not a copy of an action that leaves him something else in hand
+            lf = ref if fresh else nxt
+            cm, ql = _caps(lf, 'X', a.piece)
+            code = steal_code(nxt, a.piece, nxt.x[a.piece], cm, ql)
+            sg = sig_of(cm, ql, lf.rushed('X', a.piece), code)
+            key = key + ('g', sg)
+            adds = code0 is not None and code > code0[a.piece]
+        u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key, v2=v2, q2=q2, sg=sg, adds=adds)
         if u['key'] in seen:
             continue
         seen.add(u['key'])
@@ -443,10 +504,15 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
                         if va < vb:
                             gt = True
                         m[i] = va
-                if not (lt and gt):
+                # one of the two changes nothing the other doesn't: not read as a pair (step 18k: putting a Steal in
+                # hand that the defender didn't have is a change)
+                if not ((lt or ub['adds']) and (gt or ua['adds'])):
                     continue
                 c = _r6(q_of(m))
-                C.append(dict(turn=(ua['turn'][0], ub['turn'][0]), j=-1, c=c, raw=raw_of(m), tie=tie_of(m), key=key_of(c, m) + ('p',),
+                pk = ()
+                if kih:
+                    pk = ((ua['j'], ua['sg'], ub['j'], ub['sg']) if ua['j'] < ub['j'] else (ub['j'], ub['sg'], ua['j'], ua['sg']))
+                C.append(dict(turn=(ua['turn'][0], ub['turn'][0]), j=-1, c=c, raw=raw_of(m), tie=tie_of(m), key=key_of(c, m) + ('p',) + pk,
                               pair=True, n=n))
                 n += 1
 
@@ -475,7 +541,11 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
                 if not isinstance(n2, ChanceNode) and n2.stage == 'play' and not n2.pending and b.dest is not None:
                     v = facts(n2, ua['j'], n2)
                     c = _r6(q_of(v))
-                    C.append(dict(turn=(a, b), j=ua['j'], c=c, raw=raw_of(v), tie=tie_of(v), key=key_of(c, v) + ('s', ua['j']), n=n))
+                    gk = ()
+                    if kih:
+                        cm2, ql2 = _caps(n2, 'X', ua['j'])
+                        gk = ('g', sig_of(cm2, ql2, n2.rushed('X', ua['j']), steal_code(n2, ua['j'], n2.x[ua['j']], cm2, ql2)))
+                    C.append(dict(turn=(a, b), j=ua['j'], c=c, raw=raw_of(v), tie=tie_of(v), key=key_of(c, v) + ('s', ua['j']) + gk, n=n))
                 else:
                     c = _r6(cheap_node(n2, ua))
                     C.append(dict(turn=(a, b), j=ua['j'], c=c, raw=raw_of(ua['v2']), tie=tie_of(ua['v2']), key=key_of(c, ua['v2']) + ('d', b), n=n))

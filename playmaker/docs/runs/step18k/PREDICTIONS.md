@@ -32,3 +32,5 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 
 ## Tally (core-hours used)
 
+- searches (x_kdef choices, 19 positions): 0.01 (running total 0.01)
+- searches (x_kih choices, 19 positions): 0.01 (running total 0.03)
