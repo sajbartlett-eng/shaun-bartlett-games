@@ -124,6 +124,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     floor = forced or rules.floor_declared_shot
     cut = RC.control_cut(rules, shot_type)
     fiba = RC.app_rule(rules, 'fiba_fouled_shot')
+    soft = RC.app_rule(rules, 'soft_contest')
 
     def val(c):
         v = pts * (rating - c)
@@ -152,6 +153,8 @@ def contest_options(state, shooter, shot_type, forced=False):
             c -= cut
             if rules.floor_contest_zero:
                 c = max(0, c)
+        if soft and not forced and B.dist_rim(xp) >= B.dist_rim(spos):
+            foul_roll = True             # D-177: a hard contest from the side or behind rolls for a foul, as a Steal does
         clean = not foul_roll
         rolls = foul_rolls(rules, xp, spos)
         pf = Fraction(0) if clean else p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
@@ -160,6 +163,40 @@ def contest_options(state, shooter, shot_type, forced=False):
         ev = pf * ftj + (1 - pf) * v
         opts.append(ContestOption(j, c, clean, pf, v, ftj, ev, cat, rolls if not clean else 0))
     return opts
+
+
+def soft_contest(state, shooter, shot_type):
+    """D-177: the defence's best soft contest of this shot: (defender, contest), or (-1, 0). Every defender next to
+    the shooter gives one with no action: his contest rating less 3, 3 less again from behind (further from the rim
+    than the shooter), 2 less if he is rushed (the control rule). It never fouls and is never below 0."""
+    ctx, rules = state.ctx, state.ctx.rules
+    spos = state.o[shooter]
+    cut = RC.control_cut(rules, shot_type)
+    best = (-1, 0)
+    for j, xp in enumerate(state.x):
+        if not B.adjacent(xp, spos):
+            continue
+        c = ctx.dfn[j].con(shot_type) - RC.SOFT_CONTEST
+        if B.dist_rim(xp) > B.dist_rim(spos):
+            c -= RC.FAR_CONTEST_PENALTY
+        if cut and state.rushed('X', j):
+            c -= cut
+        if c > best[1]:
+            best = (j, c)
+    return best
+
+
+def soft_option(state, shooter, shot_type):
+    """The shot with no Contest action under rules.soft_contest: the best soft contest as a contest option."""
+    opts = contest_options(state, shooter, shot_type, False)
+    j, c = soft_contest(state, shooter, shot_type)
+    if c <= 0:
+        return opts[0]
+    pts = shot_points(state.o[shooter])
+    v = pts * (shot_rating(state, shooter, shot_type) - c)
+    if state.ctx.rules.floor_declared_shot:
+        v = max(0, v)
+    return ContestOption(j, c, True, Fraction(0), v, opts[0].ft, Fraction(v), 'soft', 0)
 
 
 def choose_contest(state, shooter, shot_type, forced=False):
@@ -242,6 +279,13 @@ def score(state):
             else:
                 cby = f'X{r.contester + 1}' if r.contester >= 0 else 'nobody'
                 detail = (detail + '. ' if detail else '') + f'{who} {r.points} x ({r.rating} - {r.contest}) contested by {cby}'
+                if RC.app_rule(rules, 'soft_contest') and r.contester >= 0 and r.kind == 'shot':
+                    # D-177: say which contest applied, and from where, in plain words
+                    dq, sq_ = state.x[r.contester], state.o[r.shooter]
+                    place = ('from in front' if B.dist_rim(dq) < B.dist_rim(sq_) else 'from the side'
+                             if B.dist_rim(dq) == B.dist_rim(sq_) else 'from behind')
+                    detail += (f". X{r.contester + 1}'s soft contest, a hand up {place}: {r.contest} off" if r.soft
+                               else f". X{r.contester + 1}'s hard contest {place}: {r.contest} off")
             if RC.control_size(rules):
                 # D-151: name a rushed shot and a late closeout in plain words
                 last = lambda side, i: 'Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step'

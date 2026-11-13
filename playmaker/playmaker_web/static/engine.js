@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -143,6 +143,7 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
+      soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
@@ -679,6 +680,26 @@ const PMEngine = (() => {
     if (t) { const open = pts * (rating === undefined ? card.sh[t] : rating); if (open > ft) return [open, true]; }
     return [ft, false];
   }
+  // scoring.soft_contest (D-177): the defence's best soft contest: [defender, contest] or [-1, 0]. Every defender next
+  // to the shooter gives one with no action: his contest rating less 3, 3 less again from behind, 2 less if rushed.
+  function softContest(s, shooter, t) {
+    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
+    let bj = -1, bc = 0;
+    for (let j = 0; j < 5; j++) {
+      const xp = s.x[j];
+      if (!adjacent(xp, spos)) continue;
+      let c = ctx.dfn[j].cn[t] - 3;
+      if (DR[xp] > DR[spos]) c -= 3;
+      if (cut && rushedX(s, j)) c -= cut;
+      if (c > bc) { bc = c; bj = j; }
+    }
+    return [bj, bc];
+  }
+  function softOption(s, shooter, t) {
+    const opts = contestOptions(s, shooter, t, false), [j, c] = softContest(s, shooter, t);
+    if (c <= 0) return opts[0];
+    return { defender: j, contest: c, clean: true, k: 0, rolls: 0, value: Math.max(0, shotPoints(s.o[shooter]) * (shotRating(s, shooter, t) - c)), ft: opts[0].ft, soft: true };
+  }
   function contestOptions(s, shooter, t, forced) {
     const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
     const ft = footPoints(card, t, pts, rating, ctx.fiba)[0];
@@ -692,6 +713,7 @@ const PMEngine = (() => {
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
       let clean = onLine(stanceOf(s, j), dirBetween(xp, spos));
+      if (ctx.soft && !forced && DR[xp] >= DR[spos]) clean = false;      // D-177: a hard contest from the side or behind rolls for a foul
       if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c),
@@ -712,8 +734,8 @@ const PMEngine = (() => {
     const total = sv + ft + 5 * s.bonus5 - 5 * s.tos + coach;
     return s.zeroed ? (r ? r.floor : 0) : total;           // D-82: a zeroing turnover scores min(0, banked before it)
   }
-  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0, violation = '', violator = -1) =>
-    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor, violation, violator });
+  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0, violation = '', violator = -1, soft = false) =>
+    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor, violation, violator, soft });
 
   // ---- resolve ----------------------------------------------------------------------------------------------------
   const isChance = n => n.outcomes !== undefined;
@@ -755,13 +777,18 @@ const PMEngine = (() => {
       if (types.length > 1) return W_(s, { stage: 'forced', side: 'O', shot: null, forced: true, turn_n: 0, pending: null });
       s = W_(s, { shot: types[0], forced: true });
     }
-    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18
+    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), s.ctx.soft ? softOption(s, s.ball, s.shot) : contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18; D-177: no Contest action, the best soft contest counts
     return W_(s, { stage: 'contest', side: 'X', turn_n: 0, forced, pending: null });
   }
   function contestOutcome(s, opt, forced) {
     const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos);
     const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
-    const made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0));
+    let made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0, false, 0, '', -1, !!opt.soft));
+    if (opt.defender >= 0 && !opt.soft && !forced && s.ctx.soft) {
+      // D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
+      const [j2, c2] = softContest(s, shooter, t);
+      if (c2 > opt.contest) made = terminal(s, Result('shot', shooter, t, pts, rating, c2, j2, Math.max(0, pts * (rating - c2)), 0, false, 0, '', -1, true));
+    }
     if (opt.clean || opt.k === 0) return made;
     const and1 = footPoints(card, t, pts, rating, s.ctx.fiba, opt.value, rating - opt.contest)[1];
     const fouled = terminal(W_(s, { fouls: s.fouls + 1 }),
@@ -960,7 +987,8 @@ const PMEngine = (() => {
     if (k === 'steal') {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = O[carrier].r.dribble - X[a.piece].r.steal;
       // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
-      const fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (s.stage === 'reaction' ? 0 : 1) });
+      const fibaSf = s.ctx.fibaSteal;                    // D-179: no +5 outside the penalty
+      let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + ((s.stage === 'reaction' || fibaSf) ? 0 : 1) });
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
@@ -976,8 +1004,10 @@ const PMEngine = (() => {
         }
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
-        if (inBonus) foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
-        else foulNode = after(state, fs, side, k);
+        if (inBonus) {
+          if (fibaSf) fs = W_(fs, { bonus5: fs.bonus5 + 1 });    // the penalty is as before: the +5 and two free throws
+          foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
+        } else foulNode = after(state, fibaSf ? lock(fs, 'X', a.piece) : fs, side, k);      // D-179: a team foul, the defender locked, play on
         const st = pickoff(s);
         stolenNode = st.stage === 'over' ? st : after(state, st, side, k);
       }
@@ -1371,7 +1401,9 @@ const PMEngine = (() => {
   }
   // contest kinds (penalty, foul roll, two foul rolls): KINDS order of decide.py
   const KPEN = [false, false, false, true, true, true], KFOUL = [false, true, true, false, true, true], KTWO = [false, false, true, false, true, false];
+  let SOFTK = 0;                                         // D-177 (rules.soft_contest), set by each Read from its position's rules
   function kindOf(q, c, pen, foul) {
+    if (!foul && SOFTK && DR[q] >= DR[c]) foul = true;   // a hard contest from the side or behind rolls for a foul
     if (pen) return foul ? 4 : 3;
     if (!foul) return 0;
     return DR[q] >= DR[c] ? 2 : 1;
@@ -1400,7 +1432,7 @@ const PMEngine = (() => {
   }
   const _CM = new Map();
   function cmapCached(frm, arrow, qs, canMove, qsLeft, mode = 0) {
-    const key = (((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode;
+    const key = ((((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode) * 2 + SOFTK;
     let hit = _CM.get(key); if (hit) return hit;
     const [free, fixed] = geoReach(frm, arrow, qs, canMove, qsLeft);
     hit = contestMap(free, fixed, mode); _CM.set(key, hit); return hit;
@@ -1481,7 +1513,7 @@ const PMEngine = (() => {
     const q = D.config.eval.fouls_per_possession ?? 0.25;
     let ft2 = 0; for (const c of ctx.off) ft2 += 2 * c.r.free_throw; ft2 /= ctx.off.length;
     const cont = D.config.eval.play_on_value ?? 20.0;
-    const extra = ft2 + 5 - (5 + cont);                   // D-89: the bonus foul is +5 as well
+    const extra = ft2 + 5 - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: the bonus foul is +5 as well; D-179: an ordinary one is not
     const N = ctx.quarter_possessions + 1, F = ctx.bonus_from + 12;
     const Cm = []; for (let f = 0; f < F + 2; f++) Cm.push(new Float64Array(N + 1));
     for (let n = 1; n <= N; n++) for (let f = F; f >= 0; f--) {
@@ -1754,6 +1786,7 @@ const PMEngine = (() => {
   class Read {
     constructor(s, opts = {}) {
       this.s = s;
+      SOFTK = s.ctx.soft ? 1 : 0;
       this.exact = !!opts.exact;
       this.cfg = D.config.eval;
       this.k = opts.k != null ? opts.k : this.cfg.responses_per_defender;
@@ -1798,10 +1831,26 @@ const PMEngine = (() => {
     }
     _vals(lk, d, cm, moves, dflags) {           // moves (step 13C): at most that many reaction movements; 0 = where he stands
       // dflags (step 18e, the open list's re-read): the defender's control state after his action, in place of now
+      const ctx = this.s.ctx;
+      if (ctx.soft) {
+        // D-177: a soft contest needs no action, so every action of the reaction may be a movement (decide.Read._vals)
+        if (!cm) return null;
+        const b = BI[lk.c], s = this.s, control = controlOn(ctx);
+        const hard = this.react_moves < 0 ? 0 : cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][b];
+        const sl = Math.min(2, Math.max(this.react, this.react_moves, 0));
+        const smask = cm.masks[moves === undefined ? sl : Math.min(moves, sl)][b];
+        if (!hard && !smask) return null;
+        const st0 = cm.masks[0][b];
+        const flags = control ? ((lk.rushed ? 1 : 0) | (dflags === undefined ? ((rushedX(s, d) ? 2 : 0) | (hasMoved(s, 'X', d) ? 4 : 0)) : dflags)) : 0;
+        const vc3 = ctx._vc3 || (ctx._vc3 = new Map());
+        const key3 = ((((((lk.i * NB + b) * 5 + d) * 64 + hard) * 64 + smask) * 64 + st0) * 8 + flags) * 2 + (control ? 1 : 0);
+        let hit3 = vc3.get(key3);
+        if (hit3 === undefined) { hit3 = this._valsCalc(lk, d, hard, st0 & hard, control ? flags : undefined, smask, st0); vc3.set(key3, hit3); }
+        return hit3;
+      }
       if (!cm || this.react_moves < 0) return null;
       const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
-      const ctx = this.s.ctx;
       if (controlOn(ctx)) {
         // D-151 (rules.control), as the reading takes it (decide.Read._vals): the kinds he reaches standing are rushed
         // if his last movement was a Quick Step or Sprint; the kinds he must move for are rushed if his Move is used
@@ -1819,7 +1868,7 @@ const PMEngine = (() => {
       if (hit === undefined) { hit = this._valsCalc(lk, d, mask); vc[key] = hit; }
       return hit;
     }
-    _valsCalc(lk, d, mask, m0, flags) {         // m0, flags: only under rules.control (D-151)
+    _valsCalc(lk, d, mask, m0, flags, smask, st0) {         // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
       const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[ZN[lk.c]], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
       const control = flags !== undefined;
@@ -1846,7 +1895,18 @@ const PMEngine = (() => {
           }
           if (best === null || v < best) best = v;
         }
+        if (smask) {
+          for (let k = 0; k < 6; k++) {
+            if (!((smask >> k) & 1)) continue;
+            let con = dc.cn[ty] - 3 - (KPEN[k] ? 3 : 0);
+            if (cut > 0 && (((st0 >> k) & 1) ? (flags & 2) : (flags & 4))) con -= cut;
+            if (con <= 0) continue;
+            const v = Math.max(0, pts * (r - con));
+            if (best === null || v < best) best = v;
+          }
+        }
         if (best !== null) { out[t] = best; any = true; }
+        else out[t] = Math.max(0, pts * r);              // D-177: a soft contest worth nothing on this shot: it stays open to him
       }
       return any ? out : null;
     }
@@ -2302,7 +2362,7 @@ const PMEngine = (() => {
         const lk = makeLook(i, c, 'later', 1.0, false);
         lk.types = ZONE_SHOTS[PAINT];
         const vals = [null, null, null, null, null];
-        for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask); } }
+        for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask, 0, undefined, s.ctx.soft ? mask : 0, 0); } }      // D-177: hard or soft, whichever is better for the defence
         let top = 0.0;
         for (let t = 0; t < lk.types.length; t++) {
           let v = ZONE_POINTS[PAINT] * card.sh[lk.types[t]];
@@ -2570,7 +2630,7 @@ const PMEngine = (() => {
             }
             // (a speed-up that changes no result: where he can't contest the look, swapped() is the look's best
             // without him, kept on the look)
-            if (rm < 0 || !cm.masks[rm][BI[lk.c]]) {
+            if (s.ctx.soft ? !cm.masks[Math.min(2, Math.max(this.react, rm, 0))][BI[lk.c]] : (rm < 0 || !cm.masks[rm][BI[lk.c]])) {      // D-177: a soft contest reaches a movement further
               let bx = lk.bx;
               if (bx === undefined) {
                 bx = lk.bx = new Float64Array(5);

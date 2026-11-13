@@ -58,6 +58,7 @@ class Result:
     floor: int = 0            # D-82: a turnover that zeroes the possession scores min(0, what was banked before it)
     violation: str = ''       # step 18i: 'three_seconds' or 'closely_guarded' when that ended it (kind 'turnover_end')
     violator: int = -1        # the attacker who committed it
+    soft: bool = False        # step 18j (D-177): the contest that counted was a soft one (a hand up, no action)
 
 
 @dataclass(frozen=True)

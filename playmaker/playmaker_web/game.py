@@ -121,9 +121,12 @@ def consequences(before, after, a):
             out.append(('good_O', 'Foul on the steal: +5 to the offence, and free throws. The possession ends.'))
         else:
             out.append(('good_O', 'Foul on the steal: +5 to the offence. Play on.'))
+    if a.kind == 'steal' and after.fouls > before.fouls and after.bonus5 == before.bonus5 and after.stage != 'over':
+        # step 18j (D-179): outside the penalty a steal foul gives no +5
+        out.append(('good_O', f'Foul on the steal: a team foul. X{a.piece + 1} is locked. Play on.'))
     if a.kind == 'intercept' and after.tos == before.tos and before.pending:
         out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
-    if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.stage != 'over':
+    if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.fouls == before.fouls and after.stage != 'over':
         out.append(('good_O', f'Ball kept by O{before.ball + 1}.'))
     if before.pending and not after.pending and a.kind != 'intercept' and after.ball == before.pending[1]:
         out.append(('info', f'The pass lands: O{after.ball + 1} has the ball.'))
@@ -253,7 +256,7 @@ class Game:
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
-                 three=None, guarded=None, fouledshot=None):
+                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -279,7 +282,8 @@ class Game:
                 # step 18g (D-167, under test): the zone of influence, the app only
                 rules = replace(rules, zone='on')
             # step 18i (D-172 to D-174): the FIBA rules are on in the app's format; each may be turned off
-            for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot)):
+            for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot),
+                            ('soft_contest', softcontest), ('fiba_steal_foul', stealfoul)):
                 if v in ('off', '0', 0, False):
                     rules = replace(rules, **{name: 'off'})
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)

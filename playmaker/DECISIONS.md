@@ -876,6 +876,38 @@ against it. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18i.**
 **D-176. Not in step 18i:** charges (parked), five fouls in a whole match, shot-clock resets after fouls, defensive
 three seconds, anything for the table. · Source: Shaun, 13 Nov 2026 · **Ruled.**
 
+### Shaun, 13 Nov 2026 (step 18j prompt)
+
+**D-177. The soft and the hard contest (the app only; `rules.soft_contest`).** In Shaun's words: "Adjacency is a form
+of contest. We need to distinguish a weak contest from a hard contest. A soft contest is just position with a hand
+up. A hard contest is jumping to get a hand on the ball. Good defenders are better at hard contests without fouling.
+Weak contests are probably most shots outside the keyway." Keep it simple for players: no halving or mental
+arithmetic; side and behind consistent with the Steal. The rule: (1) next to the shooter is a soft contest: the
+defender's contest rating less 3; it never fouls and needs no action; (2) a Contest action is a hard contest: the
+full contest rating; (3) from behind him (further from the rim than the shooter): 3 less again, on either kind;
+(4) fouls on a hard contest: from in front with the arrow on him, no foul roll; from in front with the arrow off
+him, one; from the side or behind, two, as with a Steal. A soft contest costs no action ("a free action because you
+are just there"), so a reaction may spend both its actions on movement and still contest softly from where the
+defender ends. Only one contest counts per shot, the defence's best. The control rule applies on top (a rushed
+defender's contest, soft or hard, is 2 less). The forced shot's free Contest is unchanged. A soft contest can't be
+negative; at 0 it does nothing. Player-facing words: "soft contest", "hard contest". On by default in the app once
+its checks pass. · Source: Shaun, 13 Nov 2026 · **Ruled; step 18j.**
+
+**D-178. Step 18i is accepted.** It is merged into `main`. The key is the lane as drawn (G to K, rows 1 to 6),
+FIBA's restricted area. The three-second cases that don't fall out of the phase-end count stay as they are. The
+capture rule's three choices stand (the barred line's length, caught for the rest of that movement, the capture
+square). A player in foul trouble is left out. · Source: Shaun, 13 Nov 2026 · **Ruled, done.**
+
+**D-179. The penalty gets its bite, the FIBA way (the app only; `rules.fiba_steal_foul`).** A steal foul outside the
+penalty no longer gives +5: it costs a team foul, the defender is locked, and play goes on. In the penalty (from the
+5th team foul), two free throws, as now. The table keeps its +5. The two numbers that price a foul over the quarter
+are remeasured. Reason: two penalty free throws are worth about 1.6 average half-court possessions under FIBA, so
+the penalty should cost more than an ordinary foul; under step 18i's rules it didn't. · Source: Shaun, 13 Nov 2026 ·
+**Ruled; step 18j.**
+
+**D-180. A scenario card that sets a foul situation plays under the app's rules.** · Source: Shaun, 13 Nov 2026 ·
+**Ruled; step 18j.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

@@ -21,6 +21,9 @@ const isPhone = () => window.matchMedia('(max-width: 820px)').matches;
 const THREE_RULE = 'Three seconds: an attacker in the key when two phases in a row end commits a violation. It is a turnover. IN KEY marks a player who was in it at the last phase end.';
 const GUARDED_RULE = 'Closely guarded: a ball handler who holds the ball with a defender next to him, arrow on him, when three phases in a row end loses it: a turnover. Moving or a Dribble starts his dribble and stops the count. Two whole phases without an action from him and he has picked the ball up: he may only pass or shoot, and the count runs.';
 const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus free throws: 1 if it went in, 2 or 3 if it missed. The score is what that is worth on average.';
+// Step 18j (D-177, D-179)
+const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
+const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the defender is locked, play on. From the 5th: +5 and two free throws.';
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const CONTROL_RULE = n => `Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is ${n} lower. A Move puts you back in control.`;
 const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
@@ -373,7 +376,7 @@ async function create() {
     // step 18g (D-167): ?zone=1 in the address plays the zone of influence (the app's format only, under test)
     { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
-    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot']) if (q.get(k) === '0') body[k] = 'off'; }
+    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul']) if (q.get(k) === '0') body[k] = 'off'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -619,6 +622,8 @@ function renderTracker(id, side) {
     s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: THREE_RULE }) : null,
     s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: GUARDED_RULE }) : null,
     s.influence && s.influence.fiba ? el('div', { class: 'waits controlrule fibarule', text: FOULED_RULE }) : null,
+    s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: SOFT_RULE }) : null,
+    s.influence && s.influence.steal_foul ? el('div', { class: 'waits controlrule fibarule', text: STEAL_FOUL_RULE }) : null,
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
       ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."

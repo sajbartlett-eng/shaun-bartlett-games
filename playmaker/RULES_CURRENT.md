@@ -126,6 +126,14 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 In the app: your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is 2 lower. A Move puts you back in control.  
 Why: ruled for the app (D-153). The table's rules are on hold while the app's game settles (D-146).
 
+**Soft and hard contest.** At the table: one Contest: the defender's contest rating, with a foul roll if his arrow is off the shooter.  
+In the app: a defender next to the shooter gives a soft contest with no action: his contest rating less 3. It never fouls. A Contest action is a hard contest: the full rating. From behind the shooter (further from the rim) either is 3 lower again. A hard contest from in front with the arrow on him rolls no foul; from in front with the arrow off him, one foul roll; from the side or behind, two, as a Steal does. Only the defence's best contest counts. A rushed defender's contest, soft or hard, is 2 lower.  
+Why: ruled for the app (D-177).
+
+**The steal foul.** At the table: +5 to the offence; the second of the possession also gives free throws and ends it.  
+In the app: outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the quarter: +5 and two free throws, and the possession ends.  
+Why: fIBA Article 41, ruled for the app (D-179).
+
 **Three seconds.** At the table: no such rule.  
 In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders have no such rule.  
 Why: fIBA Article 26, ruled for the app (D-171, D-172).

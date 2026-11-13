@@ -280,6 +280,14 @@ class Rules:
     #   fiba_fouled_shot (D-174, Articles 34 and 38): a fouled shot scores the contested shot plus the free throws the
     #     rules give (1 if it went in, 2 or 3 if it missed), each at the shooter's free-throw rating: the expected value.
     three_seconds: str = 'app'
+    # Step 18j (Shaun, 13 Nov 2026), the app only, as the three above ('app', 'on' or 'off'):
+    #   soft_contest (D-177): next to the shooter is a soft contest (the contest rating less 3, no action, never a
+    #     foul); a Contest action is a hard contest (the full rating); from the side or behind a hard contest rolls
+    #     twice for a foul even with the arrow on him, as a Steal does.
+    #   fiba_steal_foul (D-179): a steal foul outside the penalty gives no +5: a team foul, the defender locked, play
+    #     on. In the penalty, two free throws, as before.
+    soft_contest: str = 'app'
+    fiba_steal_foul: str = 'app'
     closely_guarded: str = 'app'
     fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
@@ -320,6 +328,7 @@ RUSH_QS, RUSH_SPRINT = 1, 2          # what left a player rushed (two bits a pla
 
 # D-172: the key, as the lines are drawn on the board: columns G to K, from the baseline row to the free-throw line
 KEY_COLS, KEY_ROWS = (6, 10), (1, 6)
+SOFT_CONTEST = 3                    # D-177: a soft contest is the contest rating less this
 # D-171: time is counted in phase ends: two in a row are about 3 seconds, three about 5
 THREE_SECOND_ENDS, GUARDED_ENDS, PICKUP_IDLE_PHASES = 2, 3, 2
 

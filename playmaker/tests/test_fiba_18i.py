@@ -201,7 +201,7 @@ def test_from_the_fifth_team_foul_a_steal_foul_gives_two_free_throws_and_ends_th
         node = apply(s, next(a for a in legal_actions(s) if a.kind == 'steal'))
         return next(n for _p, label, n in node.flatten() if label == 'foul')
     play_on, penalty = foul_branch(0), foul_branch(4)
-    assert play_on.stage == 'play' and play_on.bonus5 == 1                  # +5 and play on
+    assert play_on.stage == 'play' and play_on.bonus5 == 0                  # since D-179: a team foul, no +5, play on
     assert penalty.stage == 'over' and penalty.result.kind == 'free_throws'
     assert penalty.result.free_throws == 2 * penalty.ctx.off[0].r['free_throw']
 
