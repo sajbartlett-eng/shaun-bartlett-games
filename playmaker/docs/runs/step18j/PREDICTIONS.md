@@ -42,3 +42,7 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 - searches (j18x choices, 7 positions): 0.01 (running total 0.08)
 - searches (j18x choices, 7 positions): 0.01 (running total 0.09)
 - searches (j18x choices, 12 positions): 0.01 (running total 0.1)
+- searches (j18x choices, 6 positions): 0.01 (running total 0.1)
+- self-play (rules, 160 possessions): 0.81 (running total 0.92)
+- searches (j18, 19 positions): 0.01 (running total 0.93)
+- play-outs (112 candidate copies of 16 on 19 positions): 2.25 (running total 3.18)

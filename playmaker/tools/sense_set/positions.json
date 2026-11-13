@@ -1656,6 +1656,21 @@
      ]
     ],
     "added_by": "no_floor"
+   },
+   {
+    "name": "the computer's choice (j18): the defence Pauses",
+    "turn": [
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -3229,6 +3244,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (j18): X2 moves to B7, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -4030,6 +4060,21 @@
      ]
     ],
     "added_by": "exact_shot"
+   },
+   {
+    "name": "the computer's choice (j18): X2 Quick Steps to H8",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "H8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -10993,6 +11038,30 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (j18): O3 moves to B8, then O1 passes to O5",
+    "turn": [
+     [
+      "move",
+      "O",
+      2,
+      "B8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pass",
+      "O",
+      0,
+      null,
+      -1,
+      4,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -13209,6 +13278,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (j18): O2 moves to B9",
+    "turn": [
+     [
+      "move",
+      "O",
+      1,
+      "B9",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -16337,6 +16421,30 @@
     ],
     "added_by": "kept",
     "fiba_too": true
+   },
+   {
+    "name": "the computer's choice (j18): X2 Quick Steps to D6, then the defence Pauses",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
@@ -17131,6 +17239,30 @@
      ]
     ],
     "added_by": "no_floor"
+   },
+   {
+    "name": "the computer's choice (j18): O1 moves to E10, then O1 dribbles at X2",
+    "turn": [
+     [
+      "move",
+      "O",
+      0,
+      "E10",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "dribble",
+      "O",
+      0,
+      null,
+      -1,
+      1,
+      ""
+     ]
+    ],
+    "added_by": "j18"
    }
   ]
  },
