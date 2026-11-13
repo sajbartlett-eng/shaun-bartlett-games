@@ -394,7 +394,7 @@
     "_dice_in_hand": "Step 18j: in the defence's list, a first action that leaves its mover next to an attacker with an arrow on him is ranked by the better of ending there and whatever he can then send to the dice (a Steal, a Challenge, an Intercept), by the rules' chances, and is never dropped as a copy of another action. No kind of move is named: every action is ranked by the one reading.",
     "dice_in_hand": false,
     "_keep_settled": "Step 18j: a turn the rules settle outright (the possession ends, or a shot is declared and valued by the rules) is never cut from a list for turns that only read higher before the other side has answered.",
-    "keep_settled": false,
+    "keep_settled": true,
     "open_list": null,
     "open_full": 8,
     "open_follow": 4,

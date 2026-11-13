@@ -825,6 +825,45 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (j18fix): X2 Quick Steps to C7",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C7",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18fix"
+   },
+   {
+    "name": "the computer's choice (j18ksd): X4 moves to O8, facing N, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      3,
+      "O8",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18ksd"
    }
   ]
  },
@@ -1671,6 +1710,21 @@
      ]
     ],
     "added_by": "j18"
+   },
+   {
+    "name": "the computer's choice (j18fix): X2 Quick Steps to C7",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C7",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18fix"
    }
   ]
  },
@@ -4918,6 +4972,21 @@
      ]
     ],
     "added_by": "fiba_fouls_0_10"
+   },
+   {
+    "name": "the computer's choice (j18fix): the defence Pauses",
+    "turn": [
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18fix"
    }
   ]
  },
@@ -15584,6 +15653,30 @@
     "added_by": "today",
     "zone_too": true,
     "fiba_too": true
+   },
+   {
+    "name": "the computer's choice (j18fix): X1 moves to I9, facing S, then X1 tries a Steal",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "I9",
+      4,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      0,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18fix"
    }
   ]
  },
@@ -16445,6 +16538,30 @@
      ]
     ],
     "added_by": "j18"
+   },
+   {
+    "name": "the computer's choice (j18fix): X4 moves to H4, facing NE, then X4 tries a Steal",
+    "turn": [
+     [
+      "move",
+      "X",
+      3,
+      "H4",
+      1,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      3,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "j18fix"
    }
   ]
  },

@@ -47,7 +47,7 @@ function apply(set) {                                  // an engine's switches, 
   if (LEARNED) LEARNED.calibration = set.map === 'start' && START_MAP ? START_MAP : set.map === 'reference' && REF_MAP ? REF_MAP : FILE_MAP;
   if (LEARNED) LEARNED.calibration_levels = set.map ? undefined : FILE_LEVELS;     // a named map is the one map for every level      // before setLeafMode, which clears the stored reads
   if (E.setLeafMode) E.setLeafMode(set.leaf_mode === undefined ? (EVAL_DEFAULT.leaf_mode || 'floor') : set.leaf_mode);   // step 18f (unset: the config's)
-  for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? !!SEARCH_DEFAULT[k] || !!EVAL_DEFAULT[k] : set[k]);   // step 18f (unset: the config's)
+  for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? (SEARCH_DEFAULT[k] || EVAL_DEFAULT[k] || false) : set[k]);   // step 18f (unset: the config's)
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }

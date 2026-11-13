@@ -2895,11 +2895,11 @@ const PMEngine = (() => {
   // ---- step 18j (search.dice_in_hand, eval.ball_loss; search.py): seeing a Steal that a movement sets up ---------------
   const DICE = new Set(['steal', 'challenge', 'intercept']);
   const diceInHandOn = () => (D.config.search || {}).dice_in_hand === true;
-  const ballLossOn = () => D.config.eval.ball_loss === true;
+  const ballLossOn = me => { const v = D.config.eval.ball_loss; return v === true || (v === 'offence' && me === 'O'); };   // 'offence': only when the offence is the one choosing
   const keepSettledOn = () => (D.config.search || {}).keep_settled === true;
   function setKeepSettled(v) { D.config.search = D.config.search || {}; D.config.search.keep_settled = v === true || v === 'true'; return D.config.search.keep_settled; }
   function setDiceInHand(v) { D.config.search = D.config.search || {}; D.config.search.dice_in_hand = v === true || v === 'true'; return D.config.search.dice_in_hand; }
-  function setBallLoss(v) { D.config.eval.ball_loss = v === true || v === 'true'; return D.config.eval.ball_loss; }
+  function setBallLoss(v) { D.config.eval.ball_loss = v === 'offence' ? 'offence' : (v === true || v === 'true'); return D.config.eval.ball_loss; }
   // search.faces_attacker: a defender standing on q with arrow a (as defender j's stance reads it), next to an attacker with an arrow on him
   function facesAttacker(s, j, q, a) {
     const st = stanceOf(s, j, a);
@@ -3056,13 +3056,16 @@ const PMEngine = (() => {
       }
       // step 18j: a first action that leaves its mover next to an attacker with an arrow on him is never dropped as a
       // copy of another, and is ranked with whatever he can then send to the dice
-      let har = -1;
+      let har = -1, hnx = null, hdice = null;
       if (hand) {
         const j = a.piece, k = a.kind;
         let ar = s.arrows[j];
         if (k === 'move') ar = a.arrow;
         else if (k === 'sprint') { if (a.arrow >= 0) ar = a.arrow; else { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); } }
-        if (facesAttacker(s, j, a.dest, ar)) har = ar;
+        if (facesAttacker(s, j, a.dest, ar)) {
+          hnx = apply(s, a); hdice = defenceActions(hnx, DICE).filter(b => b.piece === j);
+          if (hdice.length) har = ar;                     // (if he can send nothing to the dice, it is read like any other action)
+        }
       }
       let h = a.piece;
       for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
@@ -3075,8 +3078,7 @@ const PMEngine = (() => {
       const q2 = Qof(v2);
       let c = round6(q2), ukey = keyOf(c, v2);
       if (har >= 0) {
-        const nx = apply(s, a);
-        for (const b of defenceActions(nx, DICE)) if (b.piece === a.piece) c = Math.min(c, round6(inHandV(apply(nx, b), q2)));
+        for (const b of hdice) c = Math.min(c, round6(inHandV(apply(hnx, b), q2)));
         ukey += '|h|' + a.dest + '|' + har;
       }
       const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: ukey, v2, q2 };
@@ -3235,7 +3237,7 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
-      this.ballLoss = ballLossOn(); this.xcache = new Map();    // step 18j (eval.ball_loss)
+      this.ballLoss = ballLossOn(me); this.xcache = new Map();    // step 18j (eval.ball_loss)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
       this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first

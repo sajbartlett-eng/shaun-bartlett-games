@@ -327,7 +327,7 @@ def main():
     args.rank_in_hand = _CFG['search']['rank_in_hand']
     _CFG['search']['dice_in_hand'] = args.dice_in_hand or bool(_CFG['search'].get('dice_in_hand'))
     args.dice_in_hand = _CFG['search']['dice_in_hand']
-    _CFG['eval']['ball_loss'] = args.ball_loss or bool(_CFG['eval'].get('ball_loss'))
+    _CFG['eval']['ball_loss'] = True if args.ball_loss else (_CFG['eval'].get('ball_loss') or False)
     args.ball_loss = _CFG['eval']['ball_loss']
     _CFG['search']['keep_settled'] = args.keep_settled or bool(_CFG['search'].get('keep_settled'))
     args.keep_settled = _CFG['search']['keep_settled']

@@ -1,0 +1,37 @@
+{
+ "tag": "j18ksd",
+ "switches": {
+  "keep_settled": true,
+  "dice_in_hand": true
+ },
+ "positions": 1,
+ "scored": 1,
+ "matched": 0,
+ "points_lost_a_position": 5.52,
+ "interval": [
+  1.46,
+  9.57
+ ],
+ "candidates_added": 0,
+ "rows": [
+  {
+   "id": "board 3",
+   "group": "board",
+   "best": "the computer's choice (j18): X2 Quick Steps to D6, then the defence Pauses",
+   "choice": "the computer's choice (j18fix): X4 moves to H4, facing NE, then X4 tries a Steal",
+   "matches": false,
+   "points_lost": 5.52,
+   "interval": [
+    1.46,
+    9.57
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 1,
+   "matched": 0,
+   "points_lost": 5.52
+  }
+ }
+}

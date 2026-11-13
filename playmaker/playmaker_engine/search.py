@@ -275,8 +275,12 @@ def keep_settled_on():
     return CONFIG.get('search', {}).get('keep_settled') is True
 
 
-def ball_loss_on():
-    return CONFIG.get('eval', {}).get('ball_loss') is True
+def ball_loss_on(me=None):
+    """eval.ball_loss: true (either side's search), 'offence' (only when the offence is the one choosing), or off.
+    In the defence's own search the same Steal is counted after every one of its turns alike, whether it steps in
+    now or waits, so there it can only put the Steal off; the offence is the side the Steal is a danger to."""
+    v = CONFIG.get('eval', {}).get('ball_loss')
+    return v is True or (v == 'offence' and me == 'O')
 
 
 def faces_attacker(s, j):
@@ -400,11 +404,13 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
         c = _r6(q2)
         key = key_of(c, v2)
         if hand and faces_attacker(nxt, a.piece):
-            # step 18j (search.dice_in_hand): ranked with whatever its mover can now send to the dice
-            for b in _defence_actions(nxt, nxt.ctx.rules, DICE):
-                if b.piece == a.piece:
-                    c = min(c, _r6(in_hand(apply(nxt, b), q2)))
-            key = key + ('h', a.dest, nxt.arrows[a.piece])
+            # step 18j (search.dice_in_hand): ranked with whatever its mover can now send to the dice (if he can
+            # send nothing, it is read like any other action)
+            dice = [b for b in _defence_actions(nxt, nxt.ctx.rules, DICE) if b.piece == a.piece]
+            for b in dice:
+                c = min(c, _r6(in_hand(apply(nxt, b), q2)))
+            if dice:
+                key = key + ('h', a.dest, nxt.arrows[a.piece])
         u = dict(turn=(a,), j=a.piece, c=c, raw=raw_of(v2), tie=tie_of(v2), key=key, v2=v2, q2=q2)
         if u['key'] in seen:
             continue
@@ -640,7 +646,7 @@ class Searcher:
         # step 18c (eval.help_readings, off): with the offence to act, a position is worth at least the best shot it
         # can release this turn, settled by the rules (the floor)
         self.help = CONFIG['eval'].get('help_readings') is True
-        self.ball_loss = ball_loss_on()              # step 18j (eval.ball_loss)
+        self.ball_loss = ball_loss_on(me)            # step 18j (eval.ball_loss)
         self.xcache = {}
         self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
         self.whole = whole_on()                       # step 18f (search.whole_turns)

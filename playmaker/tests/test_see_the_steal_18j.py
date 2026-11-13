@@ -38,4 +38,4 @@ def test_a_defender_who_has_spent_his_move_and_cannot_quick_step_there_cannot():
 def test_the_three_switches_are_off_unless_the_gate_passed_them():
     cfg = SE.CONFIG
     for group, name in (('search', 'dice_in_hand'), ('search', 'keep_settled'), ('eval', 'ball_loss')):
-        assert cfg[group].get(name) in (True, False)
+        assert cfg[group].get(name) in (True, False, 'offence')
