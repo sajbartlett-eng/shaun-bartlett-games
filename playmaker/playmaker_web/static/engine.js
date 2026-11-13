@@ -318,7 +318,7 @@ const PMEngine = (() => {
   // and whose zone denies him a step closer to the rim; arrow on him only; step denied only; neither; of those that
   // deny a step, how many take the middle away (the denied squares lie nearer the centre line than he does) and how
   // many take the outside away].
-  function stanceFacts(s) {
+  function stanceFacts(s, ex) {
     const bh = s.o[s.ball];
     let strength = 0, both = 0, cover = 0, block = 0, neither = 0, mid = 0, out = 0;
     for (let j = 0; j < 5; j++) {
@@ -329,6 +329,7 @@ const PMEngine = (() => {
       let nb = 0, off = 0;
       for (const q of z) if (adjacent(q, bh) && DR[q] < DR[bh]) { nb++; off += Math.abs(SX[q] - RIMX) - Math.abs(SX[bh] - RIMX); }
       if (covers && nb) both++; else if (covers) cover++; else if (nb) block++; else neither++;
+      if (ex && covers && nb) ex.push([j, sqName(s.x[j]), s.arrows[j], sqName(bh), z.filter(q => adjacent(q, bh) && DR[q] < DR[bh]).map(sqName), off < 0 ? 'mid' : off > 0 ? 'out' : 'level']);
       if (nb) { if (off < 0) mid++; else if (off > 0) out++; }
     }
     return [strength, both, cover, block, neither, mid, out];

@@ -187,7 +187,7 @@ if (job.kind === 'rollout') {
       const events = [], shots = [], reads = [];
       // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
       // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
-      const stances = [], dribbles = [];
+      const stances = [], dribbles = [], examples = [];
       let movesB = 0, passesB = 0, lastBall = node.ball, drib = null;
       const sqs = a => a.map(q => E.sqName(q));
       while (true) {
@@ -199,7 +199,9 @@ if (job.kind === 'rollout') {
         if (node.stage === 'over' || n > 300) break;
         const side = E.actor(node);
         if (job.stances && side === 'O' && node.stage === 'play' && !node.pending && node.turn_n === 0) {
-          stances.push([node.phase, movesB, passesB, node.ball !== lastBall ? 1 : 0].concat(E.stanceFacts(node)));
+          const ex = [];
+          stances.push([node.phase, movesB, passesB, node.ball !== lastBall ? 1 : 0].concat(E.stanceFacts(node, ex)));
+          for (const e of ex) examples.push([events.length, node.phase].concat(e));
           lastBall = node.ball;
         }
         if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []));   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
@@ -216,7 +218,7 @@ if (job.kind === 'rollout') {
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined });
+        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, examples: job.stances ? examples : undefined });
     }
   }
 } else if (job.kind === 'search') {

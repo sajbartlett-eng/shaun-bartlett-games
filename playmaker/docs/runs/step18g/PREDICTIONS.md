@@ -38,3 +38,6 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs are
 - play-outs (40 candidate copies of 16 on 11 positions): 1.47 (running total 1.5)
 - play-outs lost when the session's worker restarted (4 cores, about 8 minutes, nothing kept): 0.55 (running total 2.05)
 - agreement checks between the two engines, zone off and on (one core each, some lost to the restart): 0.6 (running total 2.65)
+- play-outs (14 candidate copies of 16 on 4 positions): 0.43 (running total 3.08)
+- play-outs (12 candidate copies of 16 on 3 positions): 0.6 (running total 3.68)
+- play-outs (14 candidate copies of 16 on 3 positions): 0.66 (running total 4.34)
