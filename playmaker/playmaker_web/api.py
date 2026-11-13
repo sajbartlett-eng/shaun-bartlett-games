@@ -4,7 +4,7 @@ import json
 import threading
 
 from playmaker_engine.cards import TEAMS, TEAM_TAGLINES, FIRST_GAME, PRESCRIBED, CARDS
-from playmaker_engine.scenarios import SCENARIOS
+from playmaker_engine.scenarios import SCENARIOS, situation_words
 
 from playmaker_engine.scouting import position
 
@@ -31,7 +31,8 @@ class Manager:
                  random_for=body.get('random', 'both'), coherent=bool(body.get('coherent')),
                  draft=self.drafts.get(str(body.get('draft') or '').upper()),
                  match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8),
-                 scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'), zone=body.get('zone'))
+                 scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'), zone=body.get('zone'),
+                 three=body.get('three'), guarded=body.get('guarded'), fouledshot=body.get('fouledshot'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
@@ -154,7 +155,7 @@ def options(manager):
                 cards=[dict(key=c.key, role=c.role, tier=c.tier, position=position(c), num=c.num) for c in CARDS.values()],
                 first_game=list(FIRST_GAME), levels=levels_info(), trainer=trainer_info(),
                 scenarios=[dict(n=n, title=s['title'], kind=s['kind'], clock=s['clock'], text=s['text'],
-                                off=s['off'], dfn=s['dfn']) for n, s in SCENARIOS.items()])
+                                off=s['off'], dfn=s['dfn'], situation=situation_words(s)) for n, s in SCENARIOS.items()])
 
 
 def handle(manager, method, path, query=None, body=None):

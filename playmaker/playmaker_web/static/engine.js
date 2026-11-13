@@ -29,6 +29,8 @@ const PMEngine = (() => {
   const cheb = (a, b) => Math.max(Math.abs(SX[a] - SX[b]), Math.abs(SY[a] - SY[b]));
   const adjacent = (a, b) => cheb(a, b) === 1;
   const STEPDIR = new Map(DSTEP.map((v, d) => [v, d]));
+  const INKEY = new Uint8Array(NSQ);                      // D-172: the key as drawn: columns G to K, rows 1 to 6
+  for (let c = 0; c < NSQ; c++) INKEY[c] = SX[c] >= 6 && SX[c] <= 10 && SY[c] >= 1 && SY[c] <= 6 ? 1 : 0;
   const dirBetween = (a, b) => (cheb(a, b) === 1 ? STEPDIR.get(b - a) : -1);
   function sqName(c) { const x = SX[c], y = SY[c]; return `${x === -1 ? '@' : x === W ? 'R' : COLS[x]}${y}`; }
   function parseSq(s) { const ch = s[0], r = parseInt(s.slice(1), 10); return C(ch === '@' ? -1 : ch === 'R' ? W : COLS.indexOf(ch), r); }
@@ -117,6 +119,9 @@ const PMEngine = (() => {
   const CONTROL = { off: 0, 0: 0, 1: 1, 2: 2, 3: 3 }, CONTROL_APP = 2;   // D-153: the app's size
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
+  // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app' };     // the defaults: on in the app
+  const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
     for (const [k, v] of Object.entries(RULED)) {
@@ -138,6 +143,7 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
+      three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
   // D-151, D-153 (rules.control): the reduction a rushed shot, or a rushed Contest of it, takes
@@ -204,6 +210,8 @@ const PMEngine = (() => {
       this.turn_x = s.turn_x;
       this.rush_o = s.rush_o || 0;                       // D-151: last movement this phase was a Quick Step or Sprint
       this.rush_x = s.rush_x || 0;
+      this.key_o = s.key_o || 0;                         // D-172: attackers in the key at the last phase end
+      this.grd = s.grd || 0;                             // D-173: the ball handler's count, packed as GameState.grd
       this._occ = s._occ || null;
       this._dre = null;                                  // step 13: this state's exact reach, per defender
     }
@@ -223,6 +231,7 @@ const PMEngine = (() => {
       fouls: js.fouls, bonus5: js.bonus5, tos: js.tos, inbound: js.inbound, target: js.target, result: js.result || null,
       zeroed: js.zeroed, phase: js.phase, turn_moved: js.turn_moved, qs_o: js.qs_o, qs_x: js.qs_x, forced: js.forced,
       react_moved: js.react_moved, turn_lead: js.turn_lead, rush_o: js.rush_o || 0, rush_x: js.rush_x || 0,
+      key_o: js.key_o || 0, grd: js.grd || 0,
       turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null };
     return new St(s);
   }
@@ -235,7 +244,7 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      rush_o: s.rush_o, rush_x: s.rush_x, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
+      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
@@ -273,6 +282,7 @@ const PMEngine = (() => {
   function canMoveKind(s, side, i, kind) {
     if (tokens(s, side) <= 0) return false;
     if (side === 'O' && i === s.ctx.inbounder && s.inbound) return false;
+    if (side === 'O' && s.ctx.guarded && i === s.ball && (s.grd & 3) === 2) return false;     // D-173: picked up: pass or shoot only
     if (kind === 'move' || kind === 'sprint') { if (hasMoved(s, side, i) || isLocked(s, side, i)) return false; }
     if (kind === 'qs' || kind === 'sprint') {
       if (count(s, side, 'qs') >= LIMITS[side].qs) return false;
@@ -373,6 +383,46 @@ const PMEngine = (() => {
     }
     return out;
   }
+  // rules.zone (D-170, Shaun, 13 Nov 2026): what can catch ball handler i. For each defender whose zone stands: his
+  // square, his two arrow directions, and how far each arrow's line bars (the squares along it his movement left
+  // still reaches, the ball handler's own square not stopping it; always the arrow's own square).
+  function captureLines(s, i) {
+    const out = [], bh = s.o[i];
+    for (let j = 0; j < 5; j++) {
+      const st = stanceOf(s, j);
+      if (st < 8 || st >= 16) continue;
+      if (s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+      const d0 = st - 8, d1 = (st - 7) % 8;
+      out.push([s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, bh, -1).length), Math.max(1, zoneRay(s, j, d1, bh, -1).length)]);
+    }
+    return out;
+  }
+  // does the step p -> q cross the barred line (from D along direction b, n squares) to the side away from arrow a?
+  function crossesLine(D, b, a, n, p, q) {
+    const bx = DX[b], by = DY[b], s0 = bx * DY[a] - by * DX[a];
+    const sq = bx * (SY[q] - SY[D]) - by * (SX[q] - SX[D]);
+    if (sq * s0 >= 0) return false;
+    const sp = bx * (SY[p] - SY[D]) - by * (SX[p] - SX[D]);
+    if (sp * s0 < 0) return false;
+    const bb = bx * bx + by * by;
+    if (sp === 0) { const dot = (SX[p] - SX[D]) * bx + (SY[p] - SY[D]) * by; return bb <= dot && dot <= n * bb; }
+    const dot2 = (SX[p] + SX[q] - 2 * SX[D]) * bx + (SY[p] + SY[q] - 2 * SY[D]) * by;
+    return 0 < dot2 && dot2 <= 2 * n * bb;
+  }
+  function captureOk(start, path, caps) {
+    for (const c of caps) {
+      const D = c[0], dir = [c[1], c[2]], ext = [c[3], c[4]], sq0 = D + DSTEP[c[1]], sq1 = D + DSTEP[c[2]];
+      let c0 = start === sq0, c1 = start === sq1, p = start;
+      for (const q of path) {
+        if (c0 && crossesLine(D, dir[1], dir[0], ext[1], p, q)) return false;
+        if (c1 && crossesLine(D, dir[0], dir[1], ext[0], p, q)) return false;
+        if (q === sq0) c0 = true;
+        if (q === sq1) c1 = true;
+        p = q;
+      }
+    }
+    return true;
+  }
   function pathOk(s, side, i, path, occ, zones) {
     const start = side === 'O' ? s.o[i] : s.x[i];
     for (const q of path) if (!ONB[q] || (occ ? occ.has(q) : occAt(s, q))) return false;
@@ -387,6 +437,7 @@ const PMEngine = (() => {
       return true;
     }
     if (i === s.ball) {
+      if (s.ctx.zone) return captureOk(start, path, zones == null ? captureLines(s, i) : zones);
       if (zones == null) zones = carrierZones(s, i);
       for (let n = 0; n < path.length - 1; n++) if (zones.has(path[n])) return false;
     }
@@ -400,7 +451,7 @@ const PMEngine = (() => {
     else if (kind === 'qs') paths = qsPaths(start, card.qs).map(p => [-1, p]);
     else paths = sprintPaths(start, card.qs);
     const out = new Map();
-    const zs = side === 'O' && i === s.ball ? carrierZones(s, i) : null;
+    const zs = side === 'O' && i === s.ball ? (s.ctx.zone ? captureLines(s, i) : carrierZones(s, i)) : null;
     for (const [d, path] of paths) {
       const dest = path[path.length - 1];
       if (out.has(dest)) continue;
@@ -492,7 +543,7 @@ const PMEngine = (() => {
     if (!passOnly && ONB[cpos] && z !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2)) {
       for (const t of ZONE_SHOTS[z]) acts.push(A('shot', 'O', carrier, -1, -1, -1, t));
     }
-    if (!passOnly && count(s, 'O', 'dribble') < LIMITS.O.dribble && !isLocked(s, 'O', carrier)) {
+    if (!passOnly && count(s, 'O', 'dribble') < LIMITS.O.dribble && !isLocked(s, 'O', carrier) && !(s.ctx.guarded && (s.grd & 3) === 2)) {
       for (let j = 0; j < 5; j++) if (adjacent(s.x[j], cpos)) acts.push(A('dribble', 'O', carrier, -1, -1, j));
     }
     if (count(s, 'O', 'screen') < LIMITS.O.screen) {
@@ -612,14 +663,25 @@ const PMEngine = (() => {
   const pFouls = (k, rolls) => { k = clampT(k); return rolls === 1 ? k / 20 : (400 - (20 - k) * (20 - k)) / 400; };
   const shotPoints = pos => ZONE_POINTS[ZN[pos]];
   const freeThrows = (card, points) => (points === 3 ? 3 : 2) * card.r.free_throw;
-  function footPoints(card, t, pts, rating) {             // scoring.foul_on_shot_points: [points, and_one]; rating: reduced (D-151)
+  // scoring.foul_on_shot_points: [points, and_one]; rating: reduced (D-151). Under rules.fiba_fouled_shot (fiba, D-174)
+  // the shot's value as contested (shotValue; left: the rating the Contest leaves it) plus the free throws the rules
+  // give, each at his free-throw rating: 1 if it went in, its points if it missed.
+  function footPoints(card, t, pts, rating, fiba, shotValue, left) {
+    if (fiba && t) {
+      const r = rating === undefined ? card.sh[t] : rating;
+      if (left === undefined) left = r;
+      if (shotValue === undefined) shotValue = Math.max(0, pts * left);
+      // the chance it goes in is left in 20; the whole is kept a whole number, as every score is (half a point rounds up)
+      left = Math.max(0, Math.min(20, left));
+      return [Math.floor((20 * shotValue + card.r.free_throw * (left + (20 - left) * pts) + 10) / 20), false];
+    }
     const ft = freeThrows(card, pts);
     if (t) { const open = pts * (rating === undefined ? card.sh[t] : rating); if (open > ft) return [open, true]; }
     return [ft, false];
   }
   function contestOptions(s, shooter, t, forced) {
     const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
-    const ft = footPoints(card, t, pts, rating)[0];
+    const ft = footPoints(card, t, pts, rating, ctx.fiba)[0];
     const cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
     const val = c => Math.max(0, pts * (rating - c));
     const opts = [{ defender: -1, contest: 0, clean: true, k: 0, rolls: 0, value: val(0), ft }];
@@ -632,7 +694,8 @@ const PMEngine = (() => {
       let clean = onLine(stanceOf(s, j), dirBetween(xp, spos));
       if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
-      opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c), ft });
+      opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c),
+        ft: ctx.fiba ? footPoints(card, t, pts, rating, true, val(c), rating - c)[0] : ft });
     }
     return opts;
   }
@@ -649,8 +712,8 @@ const PMEngine = (() => {
     const total = sv + ft + 5 * s.bonus5 - 5 * s.tos + coach;
     return s.zeroed ? (r ? r.floor : 0) : total;           // D-82: a zeroing turnover scores min(0, banked before it)
   }
-  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0) =>
-    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor });
+  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0, violation = '', violator = -1) =>
+    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor, violation, violator });
 
   // ---- resolve ----------------------------------------------------------------------------------------------------
   const isChance = n => n.outcomes !== undefined;
@@ -680,7 +743,7 @@ const PMEngine = (() => {
   }
   function completePass(s) {
     const passer = s.pending[0], recv = s.pending[1];
-    s = W_(s, { ball: recv, pending: null, approach: -1 });
+    s = W_(s, { ball: recv, pending: null, approach: -1, grd: 0 });      // D-173: a catch starts the new holder's count
     if (s.inbound && passer === s.ctx.inbounder) s = newPhase(W_(s, { inbound: 0 }), s.ctx.card_clock);
     return s;
   }
@@ -700,7 +763,7 @@ const PMEngine = (() => {
     const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
     const made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0));
     if (opt.clean || opt.k === 0) return made;
-    const and1 = footPoints(card, t, pts, rating)[1];
+    const and1 = footPoints(card, t, pts, rating, s.ctx.fiba, opt.value, rating - opt.contest)[1];
     const fouled = terminal(W_(s, { fouls: s.fouls + 1 }),
       Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1));
     const one = opt.k / 20, no = (20 - opt.k) / 20;
@@ -709,6 +772,41 @@ const PMEngine = (() => {
       return chance([[one, 'foul', fouled], [no, 'no foul', second]]);
     }
     return chance([[one, 'foul', fouled], [no, 'no foul', made]]);
+  }
+  // D-173 (FIBA Article 27): a defender next to the ball handler with an arrow on him
+  function closelyGuarded(s) {
+    const bh = s.o[s.ball];
+    for (let j = 0; j < 5; j++) if (adjacent(s.x[j], bh) && onLine(stanceOf(s, j), dirBetween(s.x[j], bh))) return true;
+    return false;
+  }
+  const violation = (s, what, i) => terminal(W_(s, { tos: s.tos + 1 }), Result('turnover_end', -1, '', 0, 0, 0, -1, 0, 0, false, 0, what, i), s.ctx.hold_for_one || s.ctx.digital);
+  // resolve.phase_counts (step 18i, D-171 to D-173): the counts taken at a phase end
+  function phaseCounts(s) {
+    const ctx = s.ctx;
+    if (ctx.three) {
+      let k = 0;
+      for (let i = 0; i < 5; i++) {
+        if (!INKEY[s.o[i]]) continue;
+        if ((s.key_o >> i) & 1) return violation(s, 'three_seconds', i);
+        k |= 1 << i;
+      }
+      if (k !== s.key_o) s = W_(s, { key_o: k });
+    }
+    if (ctx.guarded) {
+      let ball = s.grd & 3, held = (s.grd >> 2) & 3, idle = (s.grd >> 4) & 3;
+      const acted = (s.grd >> 6) & 1;
+      if (ball === 1) {
+        idle = acted ? 0 : idle + 1;
+        held = 0;
+        if (idle >= 2) { ball = 2; idle = 0; }
+      } else if (closelyGuarded(s)) {
+        held += 1;
+        if (held >= 3) return violation(s, 'closely_guarded', s.ball);
+      } else held = 0;
+      const g = ball | (held << 2) | (idle << 4);
+      if (g !== s.grd) s = W_(s, { grd: g });
+    }
+    return s;
   }
   function endPhase(s) {
     if (s.stage === 'over') return s;
@@ -723,8 +821,10 @@ const PMEngine = (() => {
       const tied = cands.filter(i => DR[s.o[i]] === far);
       s = newPhase(W_(s, { inbound: 0 }), s.ctx.card_clock);
       if (tied.length > 1) return W_(s, { stage: 'pick' });
-      return W_(s, { ball: tied[0] });
+      return W_(s, { ball: tied[0], grd: 0 });
     }
+    s = phaseCounts(s);                                  // step 18i: three seconds and closely guarded, counted at a phase end
+    if (s.stage === 'over') return s;
     const clock = s.clock - 2;
     if (clock <= 0) {
       s = W_(s, { clock: 0, tos: s.tos + 1 });
@@ -768,7 +868,7 @@ const PMEngine = (() => {
     let s = state;
     const side = a.side, k = a.kind;
     if (k === 'target') return W_(s, { target: a.target, stage: 'play' });
-    if (k === 'pick') return W_(s, { ball: a.target, stage: 'play' });
+    if (k === 'pick') return W_(s, { ball: a.target, stage: 'play', grd: 0 });
     if (k === 'forced_shot') return W_(s, { shot: a.shot, stage: 'contest', side: 'X', forced: true });
     if (k === 'contest') {
       const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece);
@@ -786,6 +886,7 @@ const PMEngine = (() => {
     if (MOVEMENT.has(k)) {
       if (side === 'O') {
         s = W_(s, { o: setAt(s.o, a.piece, a.dest) });
+        if (s.ctx.guarded && a.piece === s.ball) s = W_(s, { grd: 65 });     // D-173: he moves with the ball: a live dribble (ball 1, acted)
         if (screenOf(s, a.piece)) s = W_(s, { screens: s.screens.filter(x => x[0] !== a.piece) });
         if (k === 'move' && state.turn_n === 0 && state.side === 'O' && state.stage === 'play') s = W_(s, { turn_lead: a.piece });
       } else {
@@ -828,6 +929,7 @@ const PMEngine = (() => {
       return s;
     }
     if (k === 'dribble') {
+      if (s.ctx.guarded) s = W_(s, { grd: 65 });         // D-173: a Dribble keeps him active
       const t = O[s.ball].r.dribble - X[a.target].r.agility;
       const nb = s.beaten.filter(b => !(b[0] === s.ball && b[1] === a.target)).concat([[s.ball, a.target]]);
       nb.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
@@ -863,7 +965,7 @@ const PMEngine = (() => {
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
         const rating = shotRating(s, carrier, s.shot);   // D-151
-        const [fpts, and1] = footPoints(card, s.shot, pts, rating);
+        const [fpts, and1] = footPoints(card, s.shot, pts, rating, s.ctx.fiba);
         foulNode = terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0, fpts, and1));
         if (s.ctx.digital) {
           stolenNode = terminal(W_(s, { tos: s.tos + 1 }), Result('steal', carrier, s.shot, pts), true);
@@ -1125,7 +1227,8 @@ const PMEngine = (() => {
     // step 13C (a speed-up that changes no result): the second action is read straight from the paths and the pieces,
     // with his own square moved, instead of building a new position for every first square. The plain way is kept
     // for the tools (SPEED.two_direct off) and for an attacker holding a screen.
-    const plain = !SPEED.two_direct || s.screens.some(sc => sc[0] === i);
+    // (under rules.zone the capture rule, D-170, reads the whole path: the plain way)
+    const plain = !SPEED.two_direct || s.ctx.zone || s.screens.some(sc => sc[0] === i);
     for (const [first, second] of [['move', 'qs'], ['qs', 'move']]) {
       if (!canMoveKind(s, 'O', i, first)) continue;
       let can2 = null;
@@ -1737,7 +1840,7 @@ const PMEngine = (() => {
           }
           let v = Math.max(0, pts * (r - con));
           if (foul) {
-            const ft = footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
+            const ft = ctx.fiba ? footPoints(card, ty, pts, r, true, v, r - con)[0] : footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
             const pf = pFouls(dc.r.foul_contest, two ? 2 : 1);
             v = pf * ft + (1 - pf) * v;
           }
@@ -2639,7 +2742,7 @@ const PMEngine = (() => {
     mix(s.fouls); mix(s.bonus5); mix(s.tos); mix(s.qs_o); mix(s.qs_x); mix(s.phase); mix(s.inbound); mix(s.target); mix(s.approach);
     mix(s.turn_lead);
     if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
-    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x);
+    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd);
     if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
     h1 ^= a; h2 ^= b;
     return (h1 >>> 0) * 65536 + ((h2 >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
@@ -3650,7 +3753,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

@@ -1630,7 +1630,8 @@
      ]
     ],
     "added_by": "today",
-    "zone_too": true
+    "zone_too": true,
+    "fiba_too": true
    },
    {
     "name": "the computer's choice (no_floor): X3 Quick Steps to E3, then X3 moves to B3, facing W",
@@ -4857,6 +4858,21 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (fiba_fouls_0_10): X5 moves to B3, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "B3",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "fiba_fouls_0_10"
    }
   ]
  },
@@ -14699,6 +14715,30 @@
       "layup"
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (fiba): O4 moves to H2, then O4 shoots (layup)",
+    "turn": [
+     [
+      "move",
+      "O",
+      3,
+      "H2",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "shot",
+      "O",
+      3,
+      null,
+      -1,
+      -1,
+      "layup"
+     ]
+    ],
+    "added_by": "fiba"
    }
   ]
  },
@@ -15458,7 +15498,8 @@
      ]
     ],
     "added_by": "today",
-    "zone_too": true
+    "zone_too": true,
+    "fiba_too": true
    }
   ]
  },
@@ -16294,7 +16335,8 @@
       ""
      ]
     ],
-    "added_by": "kept"
+    "added_by": "kept",
+    "fiba_too": true
    }
   ]
  },
@@ -17063,7 +17105,8 @@
      ]
     ],
     "added_by": "today",
-    "zone_too": true
+    "zone_too": true,
+    "fiba_too": true
    },
    {
     "name": "the computer's choice (no_floor): O1 moves to F10, then O2 moves to C9",

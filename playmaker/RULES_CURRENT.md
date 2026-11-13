@@ -126,6 +126,18 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 In the app: your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is 2 lower. A Move puts you back in control.  
 Why: ruled for the app (D-153). The table's rules are on hold while the app's game settles (D-146).
 
+**Three seconds.** At the table: no such rule.  
+In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders have no such rule.  
+Why: fIBA Article 26, ruled for the app (D-171, D-172).
+
+**Closely guarded.** At the table: no such rule.  
+In the app: a ball handler is closely guarded when a defender is next to him with an arrow on him. If he has held the ball since he caught it and is closely guarded when three phases in a row end, it is a violation: a turnover. Moving with the ball or a Dribble starts his dribble, and a dribble is never counted. After that, two whole phases without an action from him and he has picked the ball up: he may only pass or shoot, and the count runs. The count starts again when nobody closely guards him at a phase end.  
+Why: fIBA Article 27, ruled for the app (D-173).
+
+**The fouled shot.** At the table: the free throws (2 or 3 times the shooter's free-throw rating), or the open shot if that is higher.  
+In the app: the shot still counts as a shot, at its contested rating. Free throws follow: 1 if it went in, 2 or 3 (its points) if it missed, each at the shooter's free-throw rating. The score is what that is worth on average, to the nearest point.  
+Why: fIBA Articles 34 and 38, ruled for the app (D-174).
+
 **Turnover cost.** At the table: −5 and the shot clock loses a phase; play on.  
 In the app: the possession ends and scores 0.  
 Why: a digital match has several possessions a side, so the next possession is the cost.

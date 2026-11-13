@@ -74,7 +74,7 @@ def zobrist(s):
     rest = (s.stage, s.side, s.clock, s.tok_o, s.tok_x, s.moved_o, s.moved_x, s.cnt, s.turn_n, s.final, s.lock_o,
             s.lock_x, s.screens, s.pending, s.shot, s.prev_wait, s.beaten, s.fouls, s.bonus5, s.tos, s.qs_o, s.qs_x,
             s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.react_moved, s.forced, s.result,
-            s.rush_o, s.rush_x)
+            s.rush_o, s.rush_x, s.key_o, s.grd)
     return h ^ (hash(rest) & 0xFFFFFFFFFFFFFFFF)
 
 

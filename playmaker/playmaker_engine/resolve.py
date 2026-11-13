@@ -5,9 +5,9 @@ from fractions import Fraction
 from . import board as B
 from . import geometry as _G
 from . import rules_config as RC
-from .actions import Action, intercept_status, is_approach, inbound_held, MOVEMENT, TOKEN_FREE
+from .actions import Action, intercept_status, is_approach, inbound_held, closely_guarded, MOVEMENT, TOKEN_FREE
 from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points, shot_rating
-from .state import CI, ZERO_COUNTS, Result, count_key
+from .state import CI, ZERO_COUNTS, Result, count_key, pack_guard
 
 
 @dataclass(frozen=True)
@@ -175,7 +175,7 @@ def new_phase(s, clock):
 
 def complete_pass(s):
     passer, recv = s.pending
-    s = s.with_(ball=recv, pending=None, approach=-1)
+    s = s.with_(ball=recv, pending=None, approach=-1, grd=0)     # D-173: a catch starts the new holder's count
     if s.inbound and passer == s.ctx.inbounder:
         # The ball is in: reset to a new phase with the card's clock.
         s = new_phase(s.with_(inbound=0), s.ctx.card_clock)
@@ -219,7 +219,7 @@ def contest_outcome(s, opt, forced):
     made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0))
     if opt.clean or opt.p_foul == 0:
         return made
-    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating)
+    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating, opt.value, rating - opt.contest)
     fouled = _terminal(s.with_(fouls=s.fouls + 1),
                        Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
@@ -249,6 +249,45 @@ def settle(node):
     return node
 
 
+def phase_counts(s):
+    """Step 18i (D-171 to D-173): the counts taken at a phase end. An attacker in the key at two phase ends in a row,
+    or a ball handler holding the ball closely guarded at three in a row, is a violation: the possession is over, a
+    turnover. Otherwise the state with its counts moved on."""
+    rules = s.ctx.rules
+    if RC.app_rule(rules, 'three_seconds'):
+        k = 0
+        for i, q in enumerate(s.o):
+            if B.in_key(q):
+                if s.key_o >> i & 1:
+                    return _violation(s, 'three_seconds', i)
+                k |= 1 << i
+        if k != s.key_o:
+            s = s.with_(key_o=k)
+    if RC.app_rule(rules, 'closely_guarded'):
+        ball, held, idle, acted = s.guard()
+        if ball == 1:
+            # a live dribble is never counted; two full phases with no action by him and he has picked the ball up
+            idle = 0 if acted else idle + 1
+            held = 0
+            if idle >= RC.PICKUP_IDLE_PHASES:
+                ball, idle = 2, 0
+        elif closely_guarded(s):
+            held += 1
+            if held >= RC.GUARDED_ENDS:
+                return _violation(s, 'closely_guarded', s.ball)
+        else:
+            held = 0                         # nobody closely guards him at a phase end: the count starts again
+        g = pack_guard(ball, held, idle, 0)
+        if g != s.grd:
+            s = s.with_(grd=g)
+    return s
+
+
+def _violation(s, what, i):
+    return _terminal(s.with_(tos=s.tos + 1), Result('turnover_end', violation=what, violator=i),
+                     zeroed=s.ctx.hold_for_one or s.ctx.rules.digital)
+
+
 def end_phase(s):
     if s.stage == 'over':
         return s
@@ -271,7 +310,10 @@ def end_phase(s):
         s = new_phase(s.with_(inbound=0), s.ctx.card_clock)
         if len(tied) > 1 and s.ctx.rules.inbound_tie == 'offence':
             return s.with_(stage='pick')                 # the offence picks who gets the ball
-        return s.with_(ball=tied[0])
+        return s.with_(ball=tied[0], grd=0)
+    s = phase_counts(s)                    # step 18i: three seconds and closely guarded are counted at a phase end
+    if s.stage == 'over':
+        return s
     clock = s.clock - RC.PHASE_SECONDS
     if clock <= 0:
         s = s.with_(clock=0, tos=s.tos + 1, phase=s.phase)
@@ -367,7 +409,7 @@ def apply(state, action, check=False):
     if k == 'target':
         return s.with_(target=a.target, stage='play')
     if k == 'pick':
-        return s.with_(ball=a.target, stage='play')
+        return s.with_(ball=a.target, stage='play', grd=0)
     if k == 'forced_shot':
         s = s.with_(shot=a.shot, stage='play')
         if s.ctx.rules.contest_choice == 'player':
@@ -402,6 +444,8 @@ def apply(state, action, check=False):
             o = list(s.o)
             o[a.piece] = a.dest
             s = s.with_(o=tuple(o))
+            if a.piece == s.ball and RC.app_rule(s.ctx.rules, 'closely_guarded'):
+                s = s.with_(grd=pack_guard(1, 0, 0, 1))      # D-173: he moves with the ball: a live dribble
             if s.is_screening(a.piece):          # OQ-29: the screener's movement ends his screen
                 s = s.with_(screens=tuple(x for x in s.screens if x[0] != a.piece))
             if (k == 'move' and state.turn_n == 0 and state.side == 'O' and state.stage == 'play'
@@ -471,6 +515,8 @@ def apply(state, action, check=False):
         return s
 
     if k == 'dribble':
+        if RC.app_rule(rules, 'closely_guarded'):
+            s = s.with_(grd=pack_guard(1, 0, 0, 1))          # D-173: a Dribble keeps him active
         p = p_success(O[s.ball].r['dribble'] - X[a.target].r['agility'], rules)
         win = _lock(s, 'X', a.target).with_(beaten=tuple(sorted(set(s.beaten) | {(s.ball, a.target)})))
         lose = _lock(s, 'O', s.ball)

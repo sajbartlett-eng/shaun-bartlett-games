@@ -37,6 +37,11 @@ class Context:
         self.team_fouls, self.quarter_left = team_fouls, quarter_left
 
 
+def pack_guard(ball, held, idle, acted):
+    """GameState.grd from its parts (GameState.guard())."""
+    return ball | held << 2 | idle << 4 | acted << 6
+
+
 @dataclass(frozen=True)
 class Result:
     """How the possession ended."""
@@ -51,6 +56,8 @@ class Result:
     free_throws: int = 0
     and_one: bool = False     # the foul scored the uncontested shot value (higher than the free throws)
     floor: int = 0            # D-82: a turnover that zeroes the possession scores min(0, what was banked before it)
+    violation: str = ''       # step 18i: 'three_seconds' or 'closely_guarded' when that ended it (kind 'turnover_end')
+    violator: int = -1        # the attacker who committed it
 
 
 @dataclass(frozen=True)
@@ -95,12 +102,26 @@ class GameState:
     turn_x: tuple = ()        # intercept ruling: the defence's squares and arrows at the start of its turn
     rush_o: int = 0           # D-151 (rules.control): two bits a player, his last movement this phase: 1 a Quick Step,
     rush_x: int = 0           # 2 a Sprint (0 after a Move, and at the phase's end); always 0 when the rule is off
+    key_o: int = 0            # D-172 (rules.three_seconds): bitmask, attackers who were in the key at the last phase end
+    grd: int = 0              # D-173 (rules.closely_guarded): the ball handler's count, packed (see guard()): his ball
+                              # (0 held since the catch, 1 dribbling, 2 picked up), phase ends in a row closely guarded
+                              # while holding, idle phases in a row while dribbling, and whether he has acted this phase
 
     # ---- helpers ----
     def count(self, side, kind):
         if kind == 'contest':
             return 0        # D-18: a Contest (one a phase) resolves the shot and ends the possession, so no count is kept
         return self.cnt[CI[count_key(side, kind)]]
+
+    def guard(self):
+        """D-173: (ball, held, idle, acted): the ball handler's ball (0 held since the catch, 1 dribbling, 2 picked up),
+        the phase ends in a row he has held it closely guarded, the full phases in a row he has dribbled without
+        acting, and whether he has acted this phase."""
+        g = self.grd
+        return g & 3, g >> 2 & 3, g >> 4 & 3, g >> 6 & 1
+
+    def picked_up(self):
+        return self.grd & 3 == 2
 
     def tokens(self, side):
         return self.tok_o if side == 'O' else self.tok_x
@@ -177,6 +198,8 @@ class GameState:
             parts.append(f'v{self.react_moved:02x}')
         if self.rush_o or self.rush_x:
             parts.append(f'j{self.rush_o:03x}{self.rush_x:03x}')
+        if self.key_o or self.grd:
+            parts.append(f'g{self.key_o:02x}{self.grd:02x}')
         if self.turn_lead >= 0:
             parts.append(f'g{self.turn_lead + 1}')
         return '|'.join(parts)

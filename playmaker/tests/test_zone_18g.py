@@ -62,12 +62,41 @@ def test_a_steal_and_a_contest_are_on_him_along_either_arrow():
     assert roll(ZONE, 'NE')                                            # outside both arrows: the wrong-angle foul roll
 
 
-def test_an_adjacent_ball_handler_cannot_pass_through_the_zone():
-    """The drive I11-J10-K9 crosses X1's E line. Facing NE the zone's second line (E) is the barrier."""
+def test_a_ball_handler_caught_by_one_arrow_cannot_cross_the_other_arrows_line():
+    """D-170 (Shaun, 13 Nov 2026). O1 on I11, X1 on I10 under him. Facing N and NE: the N arrow has caught O1, so the NE
+    line (J11, K12) is barred. He may step onto it, not cross it."""
+    legal = lambda rules, a, x1='I10': legal_actions(board(O, [x1] + X[1:], [a, 'NE', 'NW', 'N', 'N'], rules))
+    mv = lambda sq: Action('move', 'O', 0, P(sq))
+    caught = legal(ZONE, 'N')
+    assert mv('J11') in caught                                         # onto the barred arrow's own square: allowed
+    assert mv('K11') not in caught and mv('L11') not in caught         # past it, along the row: every path crosses
+    assert mv('J12') in caught                                         # J12 is on his own side of the line: no crossing
+    assert mv('H11') in caught and mv('G11') in caught                 # away in another direction: free
+    assert mv('K11') in legal(None, 'N')                               # today's rules: nothing bars it
+
+
+def test_a_defender_whose_arrows_do_not_catch_him_bars_nothing():
+    """X1 on I10 facing E and SE: neither arrow points at O1 on I11. Step 18g's reading barred the drive through his
+    zone; Shaun's words (D-170) bar nothing."""
     drive = Action('move', 'O', 0, P('K9'))
     can = lambda rules, a: drive in legal_actions(board(O, X, [a, 'NE', 'NW', 'N', 'N'], rules))
-    assert can(None, 'NE') and not can(ZONE, 'NE')
-    assert can(ZONE, 'SE')                                             # SE+S: neither line is crossed
+    assert can(ZONE, 'E')                                              # the zone: not caught, nothing barred
+    assert not can(None, 'E')                                          # today's rules: the E arrow's zone bars it
+
+
+def test_he_is_caught_mid_movement_by_a_help_defenders_arrow():
+    """X2 stands two squares off, on K10, facing W and NW: his W arrow points at J10. O1 steps I11 - J10 and is caught
+    there, with no reaction; the NW line (J11) is then barred, so he can't go on to K11 or J12 across it."""
+    x = ['G4', 'K10', 'N8', 'G5', 'N4']
+    s = board(O, x, ['N', 'W', 'NW', 'N', 'N'], ZONE)
+    from playmaker_engine.actions import capture_lines, capture_ok
+    caps = capture_lines(s, 0)
+    assert capture_ok(P('I11'), [P('J10')], caps)                      # he may step onto the arrow's square
+    assert not capture_ok(P('I11'), [P('J10'), P('K11')], caps)        # caught there: the corner across the NW line
+    assert capture_ok(P('I11'), [P('J10'), P('J9')], caps)             # away from the barred line: free
+    assert capture_ok(P('I11'), [P('J11'), P('K11')], caps)            # never touched an arrow's square: not caught
+    broken = s.with_(beaten=((0, 1),))
+    assert capture_ok(P('I11'), [P('J10'), P('K11')], capture_lines(broken, 0))   # a won Dribble: nothing bars him
 
 
 def test_a_pass_can_be_intercepted_along_either_arrow():
