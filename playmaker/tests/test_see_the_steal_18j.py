@@ -39,3 +39,22 @@ def test_the_three_switches_are_off_unless_the_gate_passed_them():
     cfg = SE.CONFIG
     for group, name in (('search', 'dice_in_hand'), ('search', 'keep_settled'), ('eval', 'ball_loss')):
         assert cfg[group].get(name) in (True, False, 'offence')
+
+
+def test_keep_settled_keeps_the_best_settled_turn_and_the_list_is_no_longer(monkeypatch):
+    from playmaker_engine.search import ChanceNode
+    s = game_state('Five Out', 'High-Low', O, ['I10', 'D8', 'E4', 'G4', 'N4'], ['N', 'NE', 'W', 'N', 'N'], rules=APP, check=False, ball=3)
+
+    def settled(n):
+        return not isinstance(n, ChanceNode) and n.stage != 'play'
+
+    def reading(n):                                    # every turn the rules settle reads below every other turn
+        return 5.0 if settled(n) else 10.0
+
+    monkeypatch.setitem(SE.CONFIG['search'], 'keep_settled', False)
+    off = SE.turns(s, 3, evaluate=reading)
+    monkeypatch.setitem(SE.CONFIG['search'], 'keep_settled', True)
+    on = SE.turns(s, 3, evaluate=reading)
+    assert len(off) == len(on) == 3
+    assert not any(settled(SE.play_turn(s, t)) for _, t in off)          # off: the shot is cut
+    assert [settled(SE.play_turn(s, t)) for _, t in on] == [False, False, True]   # on: it takes the last place

@@ -152,9 +152,9 @@ def test_each_turnover_type_ends_the_possession_at_zero():
     ex = s.with_(clock=2, phase=6, tok_o=0, side='X', final=True)
     end = apply(ex, Action('end_turn', 'X'))
     assert end.stage == 'over' and end.result.kind == 'turnover_end' and score(end).total == 0
-    # steal fouls are unchanged: the first is +5 and play goes on
+    # a steal foul outside the penalty: since D-179 (step 18j) a team foul, no +5, and play goes on
     fouled = [n for p, n in leaves(apply(s.with_(side='X'), Action('steal', 'X', 0))) if p[-1] == 'foul']
-    assert fouled and all(n.stage == 'play' and n.bonus5 == 2 for n in fouled)
+    assert fouled and all(n.stage == 'play' and n.bonus5 == 1 and n.fouls == s.fouls + 1 for n in fouled)
 
 
 def test_tabletop_format_is_the_printed_rules():

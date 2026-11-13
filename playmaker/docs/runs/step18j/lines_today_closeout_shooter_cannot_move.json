@@ -1,0 +1,42 @@
+{
+ "position": "closeout, shooter cannot move",
+ "zone": false,
+ "candidates": [
+  {
+   "name": "the defence Pauses",
+   "turn": "the defence Pauses",
+   "scored": 33.0,
+   "ended": {
+    "shot": 16
+   },
+   "values": [
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33,
+    33
+   ],
+   "lines": [
+    [
+     "O4 Shot (three)",
+     "X End turn"
+    ],
+    [
+     "O4 Shot (three)",
+     "X End turn"
+    ]
+   ]
+  }
+ ]
+}

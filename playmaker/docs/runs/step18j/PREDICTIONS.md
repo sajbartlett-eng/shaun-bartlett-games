@@ -74,3 +74,40 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 - sense check detail (18e's Steal position, clock 2, today): 0.01 (running total 4.12)
 - self-play (final, 160 possessions): 0.77 (running total 4.89)
 - head to head final_vs_rules, pairs 1 to 40: 0.36 (running total 5.25)
+- head to head final_vs_rules, pairs 41 to 80: 0.35 (running total 5.6)
+- head to head dice_vs_final, pairs 1 to 40: 0.28 (running total 5.88)
+- head to head dice_vs_final, pairs 41 to 80: 0.27 (running total 6.15)
+- self-play (dice, 160 possessions): 0.6 (running total 6.75)
+- searches (jnone, 19 positions): 0.01 (running total 6.76)
+- searches (jks, 19 positions): 0.01 (running total 6.77)
+- searches (jksd, 19 positions): 0.01 (running total 6.77)
+- speed, round 1 (one core): 0.06 (running total 6.84)
+- speed, round 2 (one core): 0.06 (running total 6.9)
+- searches (jks2 choices, 19 positions): 0.01 (running total 6.91)
+- the fault shown: one position, 16 play-outs: 0.04 (running total 6.95)
+- searches (jks2, 1 positions): 0.0 (running total 6.95)
+- searches (jks2, 19 positions): 0.01 (running total 6.96)
+- play-outs (2 candidate copies of 16 on 1 positions): 0.04 (running total 7.0)
+- speed, round 1 (one core): 0.06 (running total 7.06)
+- speed, round 2 (one core): 0.06 (running total 7.12)
+- speed, round 1 (one core): 0.06 (running total 7.19)
+- speed, round 2 (one core): 0.06 (running total 7.25)
+- sense check detail (closeout, shooter cannot move, today): 0.01 (running total 7.26)
+- sense check detail (closeout, shooter cannot move, today): 0.0 (running total 7.26)
+- exam position 10 by play (new rules): 0.32 (running total 7.58)
+- agreement checks between the two engines, one core (not written by the tools): 1.2 (running total 8.78)
+- tests, one core: the named files, the browser tests, the two exam files again, 18i's exam positions: 0.79 (running total 9.57)
+- speed, one core, beyond the rounds above: each change timed apart, and dice_in_hand: 0.77 (running total 10.34)
+- a play-out stopped part way (exam position 10 under 18i's rules): 0.02 (running total 10.36)
+
+**Used: 10.4 core-hours.** Estimate 10.5. Hard stop 12.
+
+## How the predictions came out
+
+1. **Wrong.** Shots contested rose from 24 to 30 in 100, not above 45. Points did not clearly move.
+2. **Wrong.** No shot was fouled. The computer stopped making hard contests from the side or behind instead.
+3. **Wrong on both.** Steals tried fell (0.83 to 0.60 a possession), and the computer Steals at 4 fouls with 10
+   possessions left. By play it is right to.
+4. **Right** about the cause: the reply list follows too few first actions and drops a Move that only sets up a
+   Steal. The speed cost I expected came from a different part (keeping settled turns), and was removed.
+5. **Not found.** The order is cut from the defence's list as a copy of other turns before the search compares it.

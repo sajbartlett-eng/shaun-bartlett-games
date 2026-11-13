@@ -1,0 +1,33 @@
+{
+ "tag": "dice_vs_final",
+ "a": "dice_in_hand=true",
+ "b": "the default",
+ "stats": {
+  "pairs": 80,
+  "mean_difference": 2.425,
+  "interval": [
+   -0.503,
+   5.353
+  ],
+  "sd": 13.36,
+  "wins": 25,
+  "losses": 18,
+  "ties": 37,
+  "win_rate": 0.581,
+  "win_interval": [
+   0.433,
+   0.716
+  ],
+  "pairs_needed": {
+   "0.5": 2744,
+   "1.0": 686,
+   "2.0": 171
+  },
+  "sequential_stop": null,
+  "a_points": 25.94,
+  "b_points": 23.51,
+  "decisions_per_possession": 13.1
+ },
+ "core_hours": 0.55,
+ "note": "a: search.dice_in_hand with search.keep_settled (first form); b: search.keep_settled (first form)"
+}

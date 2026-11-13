@@ -16562,6 +16562,31 @@
      ]
     ],
     "added_by": "j18fix"
+   },
+   {
+    "name": "the computer's choice (jks2): X2 Quick Steps to C8, then the defence Pauses",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "jks2",
+    "j18_too": true
    }
   ]
  },

@@ -269,9 +269,10 @@ def dice_in_hand_on():
 
 
 def keep_settled_on():
-    """search.keep_settled (step 18j): a turn the rules settle outright (the possession ends, or a shot is declared and
-    valued by the rules) is never cut from a list for turns that only read higher: its value is exact, the others'
-    are readings taken before the other side has answered."""
+    """search.keep_settled (step 18j): the best turn the rules settle outright (the possession ends, or a shot is
+    declared and valued by the rules) is never cut from a list for turns that only read higher: its value is exact,
+    the others' are readings taken before the other side has answered. It takes the place of the lowest-reading
+    turn on the list, so the list is no longer and the search no slower."""
     return CONFIG.get('search', {}).get('keep_settled') is True
 
 
@@ -576,10 +577,17 @@ def turns(s, beam, read=None, evaluate=None, deadline=None, expand=None, second=
         key = frozenset(t) if len(t) == 2 and all(x.kind in ('move', 'qs', 'sprint') for x in t) else t
         if key in seen:
             continue
-        if len(final) >= beam and t not in exact:
+        if len(final) >= beam:
             if not exact:
                 break
-            continue                                     # step 18j (search.keep_settled): a settled turn is never cut
+            if t not in exact:
+                continue
+            # step 18j (search.keep_settled): the best turn the rules settle outright is never cut. If none is on the
+            # list, it takes the place of the lowest-reading turn there (the list is no longer than before); a
+            # settled turn already on the list is worth more than this one, so this one adds nothing
+            if not any(x[1] in exact for x in final):
+                final[-1] = (v, t)
+            break
         seen.add(key)
         final.append((v, t))
     return final

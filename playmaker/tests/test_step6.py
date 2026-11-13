@@ -111,10 +111,11 @@ def _steal(rules=None, **kw):
 
 
 @pytest.mark.parametrize('fmt', ['tabletop', 'digital'])
-def test_every_steal_foul_is_plus_5_and_the_bonus_adds_free_throws(fmt):
+def test_a_steal_foul_by_format_and_the_bonus_adds_free_throws(fmt):
     rules = RC.with_rules(digital=fmt == 'digital')
     first = force(apply(_steal(rules), Action('steal', 'X', 0)), 'foul')
-    assert first.stage == 'play' and first.bonus5 == 1 and first.fouls == 1          # +5, play on
+    # the table: +5, play on. The app, since D-179 (step 18j): a team foul, no +5, play on
+    assert first.stage == 'play' and first.fouls == 1 and first.bonus5 == (1 if fmt == 'tabletop' else 0)
     if fmt == 'tabletop':
         bonus = _steal(rules, fouls=1, bonus5=1)                                     # the second of the possession
     else:

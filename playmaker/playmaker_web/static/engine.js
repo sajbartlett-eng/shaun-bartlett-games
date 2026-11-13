@@ -3205,7 +3205,13 @@ const PMEngine = (() => {
     for (const [v, t] of out) {
       const key = t.length === 2 && MOVEMENT.has(t[0].kind) && MOVEMENT.has(t[1].kind) ? 'S' + [t[0].id, t[1].id].sort((p, q) => p - q).join(',') : 'T' + turnKey(t);
       if (seen.has(key)) continue;
-      if (fin.length >= beam && !exact.has(turnKey(t))) { if (!exact.size) break; continue; }
+      if (fin.length >= beam) {
+        if (!exact.size) break;
+        if (!exact.has(turnKey(t))) continue;
+        // the best settled turn takes the place of the lowest-reading turn, unless a settled turn is already on the list
+        if (!fin.some(x => exact.has(turnKey(x[1])))) fin[fin.length - 1] = [v, t];
+        break;
+      }
       seen.add(key); fin.push([v, t]);
     }
     return fin;
