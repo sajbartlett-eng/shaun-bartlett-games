@@ -1,0 +1,61 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18h's code, this step's, and this step's with the zone on",
+ "rounds": [
+  {
+   "18h": {
+    "rookie": {
+     "median": 0.192,
+     "nine_in_ten": 0.292,
+     "slowest": 0.425,
+     "defence_nine_in_ten": 0.292
+    },
+    "starter": {
+     "median": 0.603,
+     "nine_in_ten": 0.951,
+     "slowest": 0.993,
+     "defence_nine_in_ten": 0.952
+    },
+    "allstar": {
+     "median": 1.37,
+     "nine_in_ten": 1.964,
+     "slowest": 2.029,
+     "defence_nine_in_ten": 1.964
+    }
+   },
+   "18g": {
+    "rookie": {
+     "median": 0.171,
+     "nine_in_ten": 0.268,
+     "slowest": 0.294
+    },
+    "starter": {
+     "median": 0.635,
+     "nine_in_ten": 1.089,
+     "slowest": 1.187
+    },
+    "allstar": {
+     "median": 1.666,
+     "nine_in_ten": 2.041,
+     "slowest": 2.349
+    }
+   },
+   "18g, the zone on": {
+    "rookie": {
+     "median": 0.205,
+     "nine_in_ten": 0.308,
+     "slowest": 0.32
+    },
+    "starter": {
+     "median": 0.691,
+     "nine_in_ten": 1.052,
+     "slowest": 1.413
+    },
+    "allstar": {
+     "median": 1.723,
+     "nine_in_ten": 2.255,
+     "slowest": 3.394
+    }
+   }
+  }
+ ]
+}
