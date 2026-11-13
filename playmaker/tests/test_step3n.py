@@ -133,7 +133,7 @@ def test_the_bonus_starts_at_the_fifth_team_foul():
     four = force(apply(_steal_board(team_fouls=4, quarter_left=8), Action('steal', 'X', 0)), 'foul')
     three = force(apply(_steal_board(team_fouls=3, quarter_left=8), Action('steal', 'X', 0)), 'foul')
     assert four.stage == 'over' and four.result.kind == 'free_throws'          # the 5th: free throws, possession over
-    assert three.stage != 'over' and three.bonus5 == 1                          # the 4th: +5 and play on
+    assert three.stage != 'over' and three.bonus5 == 0 and three.fouls == 1     # the 4th: a team foul, no +5 (D-179), play on
 
 
 def test_the_tabletop_format_keeps_its_within_possession_rule():

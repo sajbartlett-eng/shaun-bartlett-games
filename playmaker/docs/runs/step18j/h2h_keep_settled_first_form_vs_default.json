@@ -1,0 +1,33 @@
+{
+ "tag": "final_vs_rules",
+ "a": "the default",
+ "b": "keep_settled=false",
+ "stats": {
+  "pairs": 80,
+  "mean_difference": -0.787,
+  "interval": [
+   -3.362,
+   1.787
+  ],
+  "sd": 11.75,
+  "wins": 17,
+  "losses": 25,
+  "ties": 38,
+  "win_rate": 0.405,
+  "win_interval": [
+   0.27,
+   0.555
+  ],
+  "pairs_needed": {
+   "0.5": 2121,
+   "1.0": 530,
+   "2.0": 133
+  },
+  "sequential_stop": null,
+  "a_points": 25.86,
+  "b_points": 26.65,
+  "decisions_per_possession": 16.8
+ },
+ "core_hours": 0.71,
+ "note": "a: search.keep_settled in its first form (every settled turn added to the list); b: this step's default (the two rule changes, no fix)"
+}

@@ -6,7 +6,8 @@ from . import board as B
 from . import geometry as _G
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, inbound_held, closely_guarded, MOVEMENT, TOKEN_FREE
-from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points, shot_rating
+from .scoring import (p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
+                      shot_rating, soft_contest, soft_option)
 from .state import CI, ZERO_COUNTS, Result, count_key, pack_guard
 
 
@@ -201,6 +202,9 @@ def resolve_shot(s, forced=False):
         s = s.with_(shot=t, forced=True)
     if rules.contest_action and not forced:
         # D-18: the reaction ended without a Contest (a Contest resolves the shot itself): a contest of 0
+        if RC.app_rule(rules, 'soft_contest'):
+            # D-177: no Contest action: the best soft contest (a defender next to the shooter, a hand up) counts
+            return contest_outcome(s.with_(forced=False, pending=None), soft_option(s, shooter, s.shot), False)
         return contest_outcome(s.with_(forced=False, pending=None), contest_options(s, shooter, s.shot, False)[0], False)
     if rules.contest_choice == 'player':
         return s.with_(stage='contest', side='X', turn_n=0, forced=forced, pending=None)
@@ -216,7 +220,16 @@ def contest_outcome(s, opt, forced):
     pts = shot_points(spos)
     kind = 'forced' if forced else 'shot'
     rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
-    made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0))
+    made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0,
+                               soft=opt.category == 'soft'))
+    if opt.defender >= 0 and opt.category != 'soft' and not forced and RC.app_rule(s.ctx.rules, 'soft_contest'):
+        # D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
+        j2, c2 = soft_contest(s, shooter, t)
+        if c2 > opt.contest:
+            v2 = pts * (rating - c2)
+            if s.ctx.rules.floor_declared_shot:
+                v2 = max(0, v2)
+            made = _terminal(s, Result(kind, shooter, t, pts, rating, c2, j2, v2, 0, soft=True))
     if opt.clean or opt.p_foul == 0:
         return made
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating, opt.value, rating - opt.contest)
@@ -589,7 +602,8 @@ def apply(state, action, check=False):
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
         pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
         fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
-        if rules.steal_foul_always_plus5 and s.stage != 'reaction':
+        fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179: no +5 outside the penalty
+        if rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
             fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
         legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
         if s.stage == 'reaction':
@@ -613,8 +627,13 @@ def apply(state, action, check=False):
             # team foul of the quarter (the defence's fouls before this possession travel in the context)
             in_bonus = (s.ctx.team_fouls + fs.fouls >= rules.bonus_from) if rules.digital else fs.fouls >= 2
             if in_bonus:
+                if fiba_sf:
+                    fs = fs.with_(bonus5=fs.bonus5 + 1)  # the penalty is as before: the +5 and two free throws
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))
+            elif fiba_sf:
+                # D-179: a team foul, the defender locked, play on
+                foul_node = _after(state, _lock(fs, 'X', a.piece), side, k)
             else:
                 foul_node = _after(state, fs if rules.steal_foul_always_plus5 else fs.with_(bonus5=fs.bonus5 + 1), side, k)
             st = _turnover(s) if legacy else pickoff(s)

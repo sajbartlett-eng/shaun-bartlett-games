@@ -106,7 +106,8 @@ def influence(s):
                      for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
                 drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off',
-                three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'))
+                three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'),
+                soft=RC.app_rule(rules, 'soft_contest'), steal_foul=RC.app_rule(rules, 'fiba_steal_foul'))
 
 
 def rv(card, name):

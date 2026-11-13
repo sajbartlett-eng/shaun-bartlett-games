@@ -1,0 +1,57 @@
+{
+ "position": "closeout, step 2",
+ "zone": false,
+ "candidates": [
+  {
+   "name": "X3 Moves next to him and stops",
+   "turn": "X3 moves to B4, facing SW, then the defence ends its turn",
+   "scored": 11.69,
+   "ended": {
+    "shot": 8,
+    "turnover_end": 8
+   },
+   "values": [
+    20,
+    29,
+    0,
+    0,
+    20,
+    0,
+    20,
+    0,
+    20,
+    0,
+    0,
+    0,
+    20,
+    29,
+    0,
+    29
+   ],
+   "lines": [
+    [
+     "O2 Screen, T E",
+     "X2 Move to B6 facing N",
+     "X3 Steal",
+     "O4 Shot (three)",
+     "X3 contests"
+    ],
+    [
+     "O2 Screen, T E",
+     "X1 Quick Step to I9",
+     "X3 Steal",
+     "O3 Move to O8",
+     "O4 Pass to O2",
+     "X1 Move to G9 facing N",
+     "X2 Steal",
+     "O2 Move to D9",
+     "O Hesitate",
+     "X1 Move to E9 facing W",
+     "X1 Steal",
+     "O2 Shot (three)",
+     "X1 contests"
+    ]
+   ]
+  }
+ ]
+}

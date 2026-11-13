@@ -190,6 +190,8 @@ NK = len(KINDS)
 
 
 def _kind(rules, q, c, pen, foul):
+    if not foul and RC.app_rule(rules, 'soft_contest') and B.dist_rim(q) >= B.dist_rim(c):
+        foul = True                  # D-177: a hard contest from the side or behind rolls for a foul, arrow on him or not
     two = foul and rules.reach_angle_fouls and B.dist_rim(q) >= B.dist_rim(c)
     if pen and foul:
         two = rules.reach_angle_fouls
@@ -453,6 +455,10 @@ class Read:
         if row is None:
             return None
         limit = self.react_moves if moves is None else min(moves, self.react_moves)
+        soft = RC.app_rule(self.rules, 'soft_contest')
+        soft_limit = max(self.react, self.react_moves, 0)
+        if moves is not None:
+            soft_limit = min(moves, soft_limit)
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
@@ -490,6 +496,19 @@ class Read:
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:
                     best = v
+            if soft:
+                # D-177: a soft contest needs no action, so every action of the reaction may be a movement
+                for k, n in enumerate(row):
+                    if n > soft_limit:
+                        continue
+                    con = self.dcards[d].con(t) - RC.SOFT_CONTEST - (RC.FAR_CONTEST_PENALTY if KINDS[k][0] else 0)
+                    if cut and (d_stand if n == 0 else d_moved):
+                        con -= cut
+                    if con <= 0:
+                        continue
+                    v = max(0, pts * (r - con))
+                    if best is None or v < best:
+                        best = v
             if best is not None:
                 out[t] = best
         return out or None
@@ -1761,14 +1780,16 @@ def foul_table(ctx):
     team foul on) a steal foul is two free throws for the pairing's cards (and, D-89, the +5) and ends the possession,
     instead of +5 and play on."""
     rules = ctx.rules
-    key = (id(ctx.off), id(ctx.dfn), rules.bonus_from, rules.quarter_possessions, rules.steal_foul_always_plus5)
+    fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')
+    key = (id(ctx.off), id(ctx.dfn), rules.bonus_from, rules.quarter_possessions, rules.steal_foul_always_plus5, fiba_sf)
     if key in _FOUL:
         return _FOUL[key]
     q = CONFIG['eval'].get('fouls_per_possession', 0.25)
     ft2 = sum(RC.FT_MULT_TWO * c.r['free_throw'] for c in ctx.off) / len(ctx.off)
     cont = CONFIG['eval'].get('play_on_value', 20.0)
     plus5 = RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0     # D-89: the bonus foul is +5 as well
-    extra = ft2 + plus5 - (RC.STEAL_FOUL_BONUS + cont)  # a bonus foul against +5 and play on
+    # a bonus foul against an ordinary one: +5 and play on, or (D-179) no +5 and play on
+    extra = ft2 + plus5 - ((0 if fiba_sf else RC.STEAL_FOUL_BONUS) + cont)
     N, F = rules.quarter_possessions + 1, rules.bonus_from + 12
     C = [[0.0] * (N + 1) for _ in range(F + 2)]
     for n in range(1, N + 1):

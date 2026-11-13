@@ -12,7 +12,7 @@ const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
 const SEARCH_DEFAULT = load('ai_profiles.json').search || {}, EVAL_DEFAULT = load('ai_profiles.json').eval || {};
-const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot']];      // step 18f: [the policy's setting, the engine's setter]
+const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['dice_in_hand', 'setDiceInHand'], ['ball_loss', 'setBallLoss'], ['keep_settled', 'setKeepSettled'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot']];      // step 18f: [the policy's setting, the engine's setter]
 const LEARNED = fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null;
 // step 18f: a policy's `map: 'start'` plays with the map as it stood at the start of the step (the end re-measure's other side)
 const START_FILE = path.join(__dirname, '..', 'docs', 'runs', 'step18f', 'start_of_step_weights.json');
@@ -47,7 +47,7 @@ function apply(set) {                                  // an engine's switches, 
   if (LEARNED) LEARNED.calibration = set.map === 'start' && START_MAP ? START_MAP : set.map === 'reference' && REF_MAP ? REF_MAP : FILE_MAP;
   if (LEARNED) LEARNED.calibration_levels = set.map ? undefined : FILE_LEVELS;     // a named map is the one map for every level      // before setLeafMode, which clears the stored reads
   if (E.setLeafMode) E.setLeafMode(set.leaf_mode === undefined ? (EVAL_DEFAULT.leaf_mode || 'floor') : set.leaf_mode);   // step 18f (unset: the config's)
-  for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? !!SEARCH_DEFAULT[k] || !!EVAL_DEFAULT[k] : set[k]);   // step 18f (unset: the config's)
+  for (const [k, fn] of SWITCHES_18F) if (E[fn]) E[fn](set[k] === undefined ? (SEARCH_DEFAULT[k] || EVAL_DEFAULT[k] || false) : set[k]);   // step 18f (unset: the config's)
   if (E.setCalibrated) E.setCalibrated(set.calibrated !== false);      // on by default (D-138)
   if (E.setPrior) E.setPrior(!!set.prior);
 }

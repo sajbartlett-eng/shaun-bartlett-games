@@ -81,6 +81,10 @@ ENTRIES = [
      'The app plays three seconds (D-172). The table has no such rule.'),
     ('closely_guarded', SPLIT, dict(rules='closely_guarded'), 'A ball handler who holds the ball with a defender on him.',
      'The app plays the closely guarded rule (D-173). The table has no such rule.'),
+    ('soft_contest', SPLIT, dict(rules='soft_contest'), 'A defender next to the shooter, and the Contest action.',
+     'The app plays the soft and the hard contest (D-177). The table keeps one Contest.'),
+    ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives outside the penalty.',
+     'In the app a steal foul outside the penalty gives no +5 (D-179). The table keeps its +5.'),
     ('fiba_fouled_shot', SPLIT, dict(rules='fiba_fouled_shot'), 'What a fouled shot scores.',
      'The app scores a fouled shot as the contested shot plus the free throws that follow (D-174).'),
 ]
@@ -461,6 +465,10 @@ WORDS = {
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
     'zone': dict(sec=None, src=None, tab='off (a rule test for the app, D-167; not adopted)',
                  dig='off (a rule test for the app, D-167; not adopted)'),
+    'soft_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
+                         dig='next to the shooter is a soft contest, 3 lower, no action, no foul; a Contest action is a hard contest (D-177)'),
+    'fiba_steal_foul': dict(sec=None, src=None, tab='+5 to the offence on every steal foul',
+                            dig='outside the penalty: a team foul, the defender locked, no +5 (D-179)'),
     'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover (D-172)'),
     'closely_guarded': dict(sec=None, src=None, tab='none',
                             dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
@@ -490,6 +498,16 @@ CONTROL_WORDS = ("Your last movement this phase decides your control. After a Qu
 SPLITS = [
     ('Control', 'No control rule: a shot or a Contest is worth the same after any movement.', CONTROL_WORDS,
      'Ruled for the app (D-153). The table\'s rules are on hold while the app\'s game settles (D-146).'),
+    ('Soft and hard contest', 'One Contest: the defender\'s contest rating, with a foul roll if his arrow is off the '
+     'shooter.', 'A defender next to the shooter gives a soft contest with no action: his contest rating less 3. It '
+     'never fouls. A Contest action is a hard contest: the full rating. From behind the shooter (further from the rim) '
+     'either is 3 lower again. A hard contest from in front with the arrow on him rolls no foul; from in front with '
+     'the arrow off him, one foul roll; from the side or behind, two, as a Steal does. Only the defence\'s best '
+     'contest counts. A rushed defender\'s contest, soft or hard, is 2 lower.',
+     'Ruled for the app (D-177).'),
+    ('The steal foul', '+5 to the offence; the second of the possession also gives free throws and ends it.',
+     'Outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the '
+     'quarter: +5 and two free throws, and the possession ends.', 'FIBA Article 41, ruled for the app (D-179).'),
     ('Three seconds', 'No such rule.', 'Time is counted in phase ends. An attacker in the key (columns G to K, from '
      'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders '
      'have no such rule.', 'FIBA Article 26, ruled for the app (D-171, D-172).'),

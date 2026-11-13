@@ -97,6 +97,10 @@ def scenario_state(n, rules=None, target=None):
     O, X, arrows, errs = scenario_layout(n)
     if errs:
         raise ValueError(f'scenario {n}: ' + '; '.join(errs))
+    if sc.get('situation'):
+        # D-180 (Shaun, 13 Nov 2026): a card that sets a foul situation plays under the app's rules
+        from dataclasses import replace
+        rules = replace(rules or RC.DEFAULT_RULES, digital=True)
     title = sc['title']
     inb = sc.get('inb')
     ctx = Context(TEAMS[sc['off']], TEAMS[sc['dfn']], rules, title=f"{n}. {title}", kind=sc['kind'], scenario=n,

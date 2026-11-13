@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -143,6 +143,7 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
+      soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
@@ -679,6 +680,26 @@ const PMEngine = (() => {
     if (t) { const open = pts * (rating === undefined ? card.sh[t] : rating); if (open > ft) return [open, true]; }
     return [ft, false];
   }
+  // scoring.soft_contest (D-177): the defence's best soft contest: [defender, contest] or [-1, 0]. Every defender next
+  // to the shooter gives one with no action: his contest rating less 3, 3 less again from behind, 2 less if rushed.
+  function softContest(s, shooter, t) {
+    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
+    let bj = -1, bc = 0;
+    for (let j = 0; j < 5; j++) {
+      const xp = s.x[j];
+      if (!adjacent(xp, spos)) continue;
+      let c = ctx.dfn[j].cn[t] - 3;
+      if (DR[xp] > DR[spos]) c -= 3;
+      if (cut && rushedX(s, j)) c -= cut;
+      if (c > bc) { bc = c; bj = j; }
+    }
+    return [bj, bc];
+  }
+  function softOption(s, shooter, t) {
+    const opts = contestOptions(s, shooter, t, false), [j, c] = softContest(s, shooter, t);
+    if (c <= 0) return opts[0];
+    return { defender: j, contest: c, clean: true, k: 0, rolls: 0, value: Math.max(0, shotPoints(s.o[shooter]) * (shotRating(s, shooter, t) - c)), ft: opts[0].ft, soft: true };
+  }
   function contestOptions(s, shooter, t, forced) {
     const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
     const ft = footPoints(card, t, pts, rating, ctx.fiba)[0];
@@ -692,6 +713,7 @@ const PMEngine = (() => {
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
       let clean = onLine(stanceOf(s, j), dirBetween(xp, spos));
+      if (ctx.soft && !forced && DR[xp] >= DR[spos]) clean = false;      // D-177: a hard contest from the side or behind rolls for a foul
       if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c),
@@ -712,8 +734,8 @@ const PMEngine = (() => {
     const total = sv + ft + 5 * s.bonus5 - 5 * s.tos + coach;
     return s.zeroed ? (r ? r.floor : 0) : total;           // D-82: a zeroing turnover scores min(0, banked before it)
   }
-  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0, violation = '', violator = -1) =>
-    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor, violation, violator });
+  const Result = (kind, shooter = -1, shot_type = '', points = 0, rating = 0, contest = 0, contester = -1, shot_value = 0, free_throws = 0, and_one = false, floor = 0, violation = '', violator = -1, soft = false) =>
+    ({ kind, shooter, shot_type, points, rating, contest, contester, shot_value, free_throws, and_one, floor, violation, violator, soft });
 
   // ---- resolve ----------------------------------------------------------------------------------------------------
   const isChance = n => n.outcomes !== undefined;
@@ -755,13 +777,18 @@ const PMEngine = (() => {
       if (types.length > 1) return W_(s, { stage: 'forced', side: 'O', shot: null, forced: true, turn_n: 0, pending: null });
       s = W_(s, { shot: types[0], forced: true });
     }
-    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18
+    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), s.ctx.soft ? softOption(s, s.ball, s.shot) : contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18; D-177: no Contest action, the best soft contest counts
     return W_(s, { stage: 'contest', side: 'X', turn_n: 0, forced, pending: null });
   }
   function contestOutcome(s, opt, forced) {
     const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos);
     const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
-    const made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0));
+    let made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0, false, 0, '', -1, !!opt.soft));
+    if (opt.defender >= 0 && !opt.soft && !forced && s.ctx.soft) {
+      // D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
+      const [j2, c2] = softContest(s, shooter, t);
+      if (c2 > opt.contest) made = terminal(s, Result('shot', shooter, t, pts, rating, c2, j2, Math.max(0, pts * (rating - c2)), 0, false, 0, '', -1, true));
+    }
     if (opt.clean || opt.k === 0) return made;
     const and1 = footPoints(card, t, pts, rating, s.ctx.fiba, opt.value, rating - opt.contest)[1];
     const fouled = terminal(W_(s, { fouls: s.fouls + 1 }),
@@ -960,7 +987,8 @@ const PMEngine = (() => {
     if (k === 'steal') {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = O[carrier].r.dribble - X[a.piece].r.steal;
       // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
-      const fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (s.stage === 'reaction' ? 0 : 1) });
+      const fibaSf = s.ctx.fibaSteal;                    // D-179: no +5 outside the penalty
+      let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + ((s.stage === 'reaction' || fibaSf) ? 0 : 1) });
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
@@ -976,8 +1004,10 @@ const PMEngine = (() => {
         }
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
-        if (inBonus) foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
-        else foulNode = after(state, fs, side, k);
+        if (inBonus) {
+          if (fibaSf) fs = W_(fs, { bonus5: fs.bonus5 + 1 });    // the penalty is as before: the +5 and two free throws
+          foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
+        } else foulNode = after(state, fibaSf ? lock(fs, 'X', a.piece) : fs, side, k);      // D-179: a team foul, the defender locked, play on
         const st = pickoff(s);
         stolenNode = st.stage === 'over' ? st : after(state, st, side, k);
       }
@@ -1371,7 +1401,9 @@ const PMEngine = (() => {
   }
   // contest kinds (penalty, foul roll, two foul rolls): KINDS order of decide.py
   const KPEN = [false, false, false, true, true, true], KFOUL = [false, true, true, false, true, true], KTWO = [false, false, true, false, true, false];
+  let SOFTK = 0;                                         // D-177 (rules.soft_contest), set by each Read from its position's rules
   function kindOf(q, c, pen, foul) {
+    if (!foul && SOFTK && DR[q] >= DR[c]) foul = true;   // a hard contest from the side or behind rolls for a foul
     if (pen) return foul ? 4 : 3;
     if (!foul) return 0;
     return DR[q] >= DR[c] ? 2 : 1;
@@ -1400,7 +1432,7 @@ const PMEngine = (() => {
   }
   const _CM = new Map();
   function cmapCached(frm, arrow, qs, canMove, qsLeft, mode = 0) {
-    const key = (((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode;
+    const key = ((((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode) * 2 + SOFTK;
     let hit = _CM.get(key); if (hit) return hit;
     const [free, fixed] = geoReach(frm, arrow, qs, canMove, qsLeft);
     hit = contestMap(free, fixed, mode); _CM.set(key, hit); return hit;
@@ -1481,7 +1513,7 @@ const PMEngine = (() => {
     const q = D.config.eval.fouls_per_possession ?? 0.25;
     let ft2 = 0; for (const c of ctx.off) ft2 += 2 * c.r.free_throw; ft2 /= ctx.off.length;
     const cont = D.config.eval.play_on_value ?? 20.0;
-    const extra = ft2 + 5 - (5 + cont);                   // D-89: the bonus foul is +5 as well
+    const extra = ft2 + 5 - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: the bonus foul is +5 as well; D-179: an ordinary one is not
     const N = ctx.quarter_possessions + 1, F = ctx.bonus_from + 12;
     const Cm = []; for (let f = 0; f < F + 2; f++) Cm.push(new Float64Array(N + 1));
     for (let n = 1; n <= N; n++) for (let f = F; f >= 0; f--) {
@@ -1754,6 +1786,7 @@ const PMEngine = (() => {
   class Read {
     constructor(s, opts = {}) {
       this.s = s;
+      SOFTK = s.ctx.soft ? 1 : 0;
       this.exact = !!opts.exact;
       this.cfg = D.config.eval;
       this.k = opts.k != null ? opts.k : this.cfg.responses_per_defender;
@@ -1798,10 +1831,26 @@ const PMEngine = (() => {
     }
     _vals(lk, d, cm, moves, dflags) {           // moves (step 13C): at most that many reaction movements; 0 = where he stands
       // dflags (step 18e, the open list's re-read): the defender's control state after his action, in place of now
+      const ctx = this.s.ctx;
+      if (ctx.soft) {
+        // D-177: a soft contest needs no action, so every action of the reaction may be a movement (decide.Read._vals)
+        if (!cm) return null;
+        const b = BI[lk.c], s = this.s, control = controlOn(ctx);
+        const hard = this.react_moves < 0 ? 0 : cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][b];
+        const sl = Math.min(2, Math.max(this.react, this.react_moves, 0));
+        const smask = cm.masks[moves === undefined ? sl : Math.min(moves, sl)][b];
+        if (!hard && !smask) return null;
+        const st0 = cm.masks[0][b];
+        const flags = control ? ((lk.rushed ? 1 : 0) | (dflags === undefined ? ((rushedX(s, d) ? 2 : 0) | (hasMoved(s, 'X', d) ? 4 : 0)) : dflags)) : 0;
+        const vc3 = ctx._vc3 || (ctx._vc3 = new Map());
+        const key3 = ((((((lk.i * NB + b) * 5 + d) * 64 + hard) * 64 + smask) * 64 + st0) * 8 + flags) * 2 + (control ? 1 : 0);
+        let hit3 = vc3.get(key3);
+        if (hit3 === undefined) { hit3 = this._valsCalc(lk, d, hard, st0 & hard, control ? flags : undefined, smask, st0); vc3.set(key3, hit3); }
+        return hit3;
+      }
       if (!cm || this.react_moves < 0) return null;
       const mask = cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][BI[lk.c]];
       if (!mask) return null;
-      const ctx = this.s.ctx;
       if (controlOn(ctx)) {
         // D-151 (rules.control), as the reading takes it (decide.Read._vals): the kinds he reaches standing are rushed
         // if his last movement was a Quick Step or Sprint; the kinds he must move for are rushed if his Move is used
@@ -1819,7 +1868,7 @@ const PMEngine = (() => {
       if (hit === undefined) { hit = this._valsCalc(lk, d, mask); vc[key] = hit; }
       return hit;
     }
-    _valsCalc(lk, d, mask, m0, flags) {         // m0, flags: only under rules.control (D-151)
+    _valsCalc(lk, d, mask, m0, flags, smask, st0) {         // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
       const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[ZN[lk.c]], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
       const control = flags !== undefined;
@@ -1846,7 +1895,18 @@ const PMEngine = (() => {
           }
           if (best === null || v < best) best = v;
         }
+        if (smask) {
+          for (let k = 0; k < 6; k++) {
+            if (!((smask >> k) & 1)) continue;
+            let con = dc.cn[ty] - 3 - (KPEN[k] ? 3 : 0);
+            if (cut > 0 && (((st0 >> k) & 1) ? (flags & 2) : (flags & 4))) con -= cut;
+            if (con <= 0) continue;
+            const v = Math.max(0, pts * (r - con));
+            if (best === null || v < best) best = v;
+          }
+        }
         if (best !== null) { out[t] = best; any = true; }
+        else out[t] = Math.max(0, pts * r);              // D-177: a soft contest worth nothing on this shot: it stays open to him
       }
       return any ? out : null;
     }
@@ -2302,7 +2362,7 @@ const PMEngine = (() => {
         const lk = makeLook(i, c, 'later', 1.0, false);
         lk.types = ZONE_SHOTS[PAINT];
         const vals = [null, null, null, null, null];
-        for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask); } }
+        for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask, 0, undefined, s.ctx.soft ? mask : 0, 0); } }      // D-177: hard or soft, whichever is better for the defence
         let top = 0.0;
         for (let t = 0; t < lk.types.length; t++) {
           let v = ZONE_POINTS[PAINT] * card.sh[lk.types[t]];
@@ -2570,7 +2630,7 @@ const PMEngine = (() => {
             }
             // (a speed-up that changes no result: where he can't contest the look, swapped() is the look's best
             // without him, kept on the look)
-            if (rm < 0 || !cm.masks[rm][BI[lk.c]]) {
+            if (s.ctx.soft ? !cm.masks[Math.min(2, Math.max(this.react, rm, 0))][BI[lk.c]] : (rm < 0 || !cm.masks[rm][BI[lk.c]])) {      // D-177: a soft contest reaches a movement further
               let bx = lk.bx;
               if (bx === undefined) {
                 bx = lk.bx = new Float64Array(5);
@@ -2832,6 +2892,48 @@ const PMEngine = (() => {
   // search still values a one-action turn as the turn ended. Ranked as ended turns, a first action that only pays
   // with its second (move, then shoot) was not followed, and the other side's search never saw it.
   const inHandOn = () => (D.config.search || {}).rank_in_hand === true;
+  // ---- step 18j (search.dice_in_hand, eval.ball_loss; search.py): seeing a Steal that a movement sets up ---------------
+  const DICE = new Set(['steal', 'challenge', 'intercept']);
+  const diceInHandOn = () => (D.config.search || {}).dice_in_hand === true;
+  const ballLossOn = me => { const v = D.config.eval.ball_loss; return v === true || (v === 'offence' && me === 'O'); };   // 'offence': only when the offence is the one choosing
+  const keepSettledOn = () => (D.config.search || {}).keep_settled === true;
+  function setKeepSettled(v) { D.config.search = D.config.search || {}; D.config.search.keep_settled = v === true || v === 'true'; return D.config.search.keep_settled; }
+  function setDiceInHand(v) { D.config.search = D.config.search || {}; D.config.search.dice_in_hand = v === true || v === 'true'; return D.config.search.dice_in_hand; }
+  function setBallLoss(v) { D.config.eval.ball_loss = v === 'offence' ? 'offence' : (v === true || v === 'true'); return D.config.eval.ball_loss; }
+  // search.faces_attacker: a defender standing on q with arrow a (as defender j's stance reads it), next to an attacker with an arrow on him
+  function facesAttacker(s, j, q, a) {
+    const st = stanceOf(s, j, a);
+    for (let i = 0; i < 5; i++) { const op = s.o[i]; if (ONB[op] && adjacent(q, op) && onLine(st, dirBetween(q, op))) return true; }
+    return false;
+  }
+  // search.steal_spot: where defender j can try a Steal from within one turn, and his arrow there: [square, arrow] or null
+  function stealSpot(s, j) {
+    const xp = s.x[j], bh = s.o[s.ball], st = stanceOf(s, j);
+    if (st >= 16) return null;
+    if (adjacent(xp, bh) && onLine(st, dirBetween(xp, bh))) return [xp, s.arrows[j]];
+    if (s.tok_x < 2) return null;
+    if (canMoveKind(s, 'X', j, 'move')) {
+      const dests = movementDests(s, 'X', j, 'move');
+      let bk = -1, bq = -1, bd = -1;
+      for (let d = 0; d < 8; d++) {
+        const q = bh - DSTEP[d];
+        if (!ONB[q]) continue;
+        if (q === xp || dests.has(q)) { const k = (DR[q] >= DR[bh] ? 8 : 0) + d; if (bk < 0 || k < bk) { bk = k; bq = q; bd = d; } }
+      }
+      if (bk >= 0) return [bq, bd];
+    }
+    if (canMoveKind(s, 'X', j, 'qs') && s.ctx.dfn[j].qs > 0) {
+      let dests = null;
+      const ls = st >= 8 ? [st - 8, (st - 7) % 8] : [st];
+      for (const d of ls) {
+        const q = bh - DSTEP[d];
+        if (!ONB[q]) continue;
+        if (dests === null) dests = movementDests(s, 'X', j, 'qs');
+        if (dests.has(q)) return [q, s.arrows[j]];
+      }
+    }
+    return null;
+  }
   function setRankInHand(v) { D.config.search = D.config.search || {}; D.config.search.rank_in_hand = v === true || v === 'true'; return D.config.search.rank_in_hand; }
   function setWholeTurns(v) { D.config.search = D.config.search || {}; D.config.search.whole_turns = v === true || v === 'true'; return D.config.search.whole_turns; }
   function endedTurn(s, n) {
@@ -2925,6 +3027,12 @@ const PMEngine = (() => {
     // defender and what he has left follow from the action itself, as apply() and caps() give them, so the action
     // needn't be played to be re-read)
     const direct = SPEED.open_facts && !s.pending;
+    const hand = diceInHandOn() && two;                   // step 18j (search.dice_in_hand)
+    const inHandV = (nd, q2) => {
+      if (isChance(nd)) { let v = 0.0; for (const o of nd.outcomes) v += o[0] * inHandV(o[2], q2); return v; }
+      if (nd.stage === 'over') return terminalValue(nd);
+      return q2 + bankedOf(nd) - b2;
+    };
     const cap0 = [0, 1, 2, 3, 4].map(j => [hasMoved(s, 'X', j), isLocked(s, 'X', j), quickStepped(s, 'X', j)]);
     const qsCount = count(s, 'X', 'qs'), ctl = controlOn(s.ctx);
     const refCaps = fresh ? [0, 1, 2, 3, 4].map(j => [caps(ref, 'X', j), (rushedX(ref, j) ? 2 : 0) | (hasMoved(ref, 'X', j) ? 4 : 0)]) : null;
@@ -2946,16 +3054,34 @@ const PMEngine = (() => {
       if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(whole ? endedTurn(s, nxt) : nxt), [a]]); continue; }
       facts(nxt, a.piece, tmp, fresh ? ref : nxt);
       }
+      // step 18j: a first action that leaves its mover next to an attacker with an arrow on him is never dropped as a
+      // copy of another, and is ranked with whatever he can then send to the dice
+      let har = -1, hnx = null, hdice = null;
+      if (hand) {
+        const j = a.piece, k = a.kind;
+        let ar = s.arrows[j];
+        if (k === 'move') ar = a.arrow;
+        else if (k === 'sprint') { if (a.arrow >= 0) ar = a.arrow; else { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); } }
+        if (facesAttacker(s, j, a.dest, ar)) {
+          hnx = apply(s, a); hdice = defenceActions(hnx, DICE).filter(b => b.piece === j);
+          if (hdice.length) har = ar;                     // (if he can send nothing to the dice, it is read like any other action)
+        }
+      }
       let h = a.piece;
       for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
       let bucket = same.get(h), dup = false;
       if (bucket === undefined) { bucket = []; same.set(h, bucket); }
-      else for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
+      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
       if (dup) continue;
       const v2 = Float64Array.from(tmp);
-      v2.j = a.piece; bucket.push(v2);
-      const q2 = Qof(v2), c = round6(q2);
-      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: keyOf(c, v2), v2, q2 };
+      v2.j = a.piece; if (har < 0) bucket.push(v2);       // (a dice-in-hand action never stands in for a later copy)
+      const q2 = Qof(v2);
+      let c = round6(q2), ukey = keyOf(c, v2);
+      if (har >= 0) {
+        for (const b of hdice) c = Math.min(c, round6(inHandV(apply(hnx, b), q2)));
+        ukey += '|h|' + a.dest + '|' + har;
+      }
+      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: ukey, v2, q2 };
       if (seen.has(u.key)) continue;                     // the same by this read as an action before it
       seen.add(u.key);
       U.push(u);
@@ -3051,13 +3177,17 @@ const PMEngine = (() => {
     if (open && side === 'X' && s.stage === 'play') { const r = openTurnsX(s, beam, read, evaluate, deadline, expand, whole, width); if (r) return r; }
     const first = open ? legalActions(s) : candidateActions(s, read);
     const scored = [], inHand = inHandOn();
+    // step 18j (search.keep_settled): a turn the rules settle outright is never cut for turns that only read higher
+    const keep = keepSettledOn() && s.stage === 'play' && !!evaluate, exact = new Set();
     for (const a of first) {
       if (deadline && now() > deadline) throw TIMEOUT;
       const nxt = apply(s, a);
       scored.push([sign * (evaluate ? evaluate(whole && !inHand ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
+      if (keep && !isChance(nxt) && nxt.stage !== 'play') exact.add(turnKey([a]));
     }
     scored.sort((x, y) => y[0] - x[0]);
     const out = scored.slice(0, beam);
+    if (exact.size) for (const r of scored.slice(beam)) if (exact.has(turnKey(r[1]))) out.push(r);
     const nexp = expand != null ? expand : Math.max(3, Math.floor(beam / 3));
     for (const [, t] of scored.slice(0, nexp)) {
       const a = t[0], nxt = apply(s, a);
@@ -3067,6 +3197,7 @@ const PMEngine = (() => {
         if (b.kind === 'end_turn' || b.kind === 'forfeit') continue;
         const n2 = apply(nxt, b);
         out.push([sign * (evaluate ? evaluate(n2) : 0.0), [a, b]]);
+        if (keep && !isChance(n2) && n2.stage !== 'play') exact.add(turnKey([a, b]));
       }
     }
     out.sort((x, y) => y[0] - x[0]);
@@ -3074,8 +3205,14 @@ const PMEngine = (() => {
     for (const [v, t] of out) {
       const key = t.length === 2 && MOVEMENT.has(t[0].kind) && MOVEMENT.has(t[1].kind) ? 'S' + [t[0].id, t[1].id].sort((p, q) => p - q).join(',') : 'T' + turnKey(t);
       if (seen.has(key)) continue;
+      if (fin.length >= beam) {
+        if (!exact.size) break;
+        if (!exact.has(turnKey(t))) continue;
+        // the best settled turn takes the place of the lowest-reading turn, unless a settled turn is already on the list
+        if (!fin.some(x => exact.has(turnKey(x[1])))) fin[fin.length - 1] = [v, t];
+        break;
+      }
       seen.add(key); fin.push([v, t]);
-      if (fin.length >= beam) break;
     }
     return fin;
   }
@@ -3106,6 +3243,7 @@ const PMEngine = (() => {
       this.depthSeconds = []; this.t0 = now();   // step 13: the time each completed depth was reached at
       this.settleShots = settleOn(); this.scache = new Map();   // step 18b (eval.settle_shots)
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
+      this.ballLoss = ballLossOn(me); this.xcache = new Map();    // step 18j (eval.ball_loss)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
       this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first
@@ -3120,6 +3258,7 @@ const PMEngine = (() => {
       let v = this.lcache.get(key);
       if (v === undefined) { v = this.evaluate(s); this.lcache.set(key, v); }
       if (this.help && !isChance(s) && s.stage === 'play' && !s.pending && actor(s) === 'O') v = this.floor(s, v, key);   // step 18c
+      if (this.ballLoss && !isChance(s) && s.stage === 'play' && !s.pending && actor(s) === 'X' && s.turn_n === 0 && !s.inbound) v = this.loss(s, v, key);   // step 18j
       if (this.tempoOn && !isChance(s) && s.stage === 'play') {
         const t = this.tempo[phaseOf(s)] || 0.0;
         v += actor(s) === 'O' ? -t / 2 : t / 2;
@@ -3136,6 +3275,31 @@ const PMEngine = (() => {
     // in open play the possession is worth at least the best shot the ball handler can release this turn: his shot
     // from where he stands, or after one movement, each settled by the rules. The reading names the candidates (its
     // looks released now, best first); a candidate whose reading is no better than the value so far can't raise it.
+    // search.Searcher.loss (step 18j, eval.ball_loss): the defence to act with a whole turn in hand: the position is worth no
+    // more than what its best Steal leaves, counting a defender who can still get next to the ball handler with an arrow
+    // on him, the Steal settled by the rules' own chances
+    loss(s, v, key) {
+      const hit = this.xcache.get(key);
+      if (hit !== undefined) return hit;
+      let best = v;
+      if (s.tok_x > 0 && count(s, 'X', 'steal') < LIMITS.X.steal && ONB[s.o[s.ball]]) {
+        const b0 = bankedOf(s);
+        const worth = nd => {
+          if (isChance(nd)) { let t = 0.0; for (const o of nd.outcomes) t += o[0] * worth(o[2]); return t; }
+          if (nd.stage === 'over') return terminalValue(nd);
+          return v + bankedOf(nd) - b0;
+        };
+        for (let j = 0; j < 5; j++) {
+          const spot = stealSpot(s, j);
+          if (spot === null) continue;
+          const st = (spot[0] === s.x[j] && spot[1] === s.arrows[j]) ? s : W_(s, { x: setAt(s.x, j, spot[0]), arrows: setAt(s.arrows, j, spot[1]) });
+          const w = worth(apply(st, A('steal', 'X', j)));
+          if (w < best) best = w;
+        }
+      }
+      this.xcache.set(key, best);
+      return best;
+    }
     floor(s, v, z) {
       const key = z === undefined ? zobrist(s) : z;
       const hit = this.fcache.get(key);
@@ -3753,7 +3917,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

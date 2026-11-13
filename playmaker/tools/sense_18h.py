@@ -35,11 +35,18 @@ RULE = dict(zone=True) if ZONE else {}
 FIBA = os.environ.get('SENSE_FIBA') == '1'
 FOULS = os.environ.get('SENSE_FOULS', '')
 RULE['rules'] = {k: ('on' if FIBA else 'off') for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
+# SENSE_18J=1 (step 18j): the rules as they stand after step 18j's part 0: the three above, the soft and hard contest
+# (D-177) and the FIBA steal foul (D-179), with answers of their own. Without it those two are held off.
+J18 = os.environ.get('SENSE_18J') == '1'
+if J18:
+    FIBA = True
+    RULE['rules'] = {k: 'on' for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
+RULE['rules'].update(soft_contest='on' if J18 else 'off', fiba_steal_foul='on' if J18 else 'off')
 if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = 'answers_fiba' + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+    _NAME = ('answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
 POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
@@ -354,7 +361,8 @@ def play(positions, answers, only=None, copies=(0, 1)):
             # under the zone only the named candidates and the zone's own choices are played (the limit on compute)
             miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]
                     and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))
-                    and not (FIBA and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))]
+                    and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
+                    and not (J18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -531,7 +539,7 @@ def cmd_score(tag, *args):
             added += 1
         elif ZONE or FIBA:
             # the choice is a turn an earlier setting added: it is played under this rule set too
-            w = 'zone' if ZONE else 'fiba'
+            w = 'zone' if ZONE else 'j18' if J18 else 'fiba'
             for c in p['candidates']:
                 if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith(w) and not c.get(w + '_too'):
                     c[w + '_too'] = True
