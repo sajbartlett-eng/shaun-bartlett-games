@@ -1005,7 +1005,6 @@ const PMEngine = (() => {
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
         if (inBonus) {
-          if (fibaSf) fs = W_(fs, { bonus5: fs.bonus5 + 1 });    // the penalty is as before: the +5 and two free throws
           foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
         } else foulNode = after(state, fibaSf ? lock(fs, 'X', a.piece) : fs, side, k);      // D-179: a team foul, the defender locked, play on
         const st = pickoff(s);
@@ -1513,7 +1512,7 @@ const PMEngine = (() => {
     const q = D.config.eval.fouls_per_possession ?? 0.25;
     let ft2 = 0; for (const c of ctx.off) ft2 += 2 * c.r.free_throw; ft2 /= ctx.off.length;
     const cont = D.config.eval.play_on_value ?? 20.0;
-    const extra = ft2 + 5 - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: the bonus foul is +5 as well; D-179: an ordinary one is not
+    const extra = ft2 + (ctx.fibaSteal ? 0 : 5) - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: +5 on every steal foul; in the app (D-179, D-181) on none
     const N = ctx.quarter_possessions + 1, F = ctx.bonus_from + 12;
     const Cm = []; for (let f = 0; f < F + 2; f++) Cm.push(new Float64Array(N + 1));
     for (let n = 1; n <= N; n++) for (let f = F; f >= 0; f--) {

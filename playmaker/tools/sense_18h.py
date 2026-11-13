@@ -38,6 +38,16 @@ RULE['rules'] = {k: ('on' if FIBA else 'off') for k in ('three_seconds', 'closel
 # SENSE_18J=1 (step 18j): the rules as they stand after step 18j's part 0: the three above, the soft and hard contest
 # (D-177) and the FIBA steal foul (D-179), with answers of their own. Without it those two are held off.
 J18 = os.environ.get('SENSE_18J') == '1'
+# SENSE_18K=1 (step 18k): the rules after step 18k's part 0: step 18j's, no +5 on any foul (D-181, in the engine), and
+# the default foul situation, 2 team fouls with 8 possessions left (D-182), with answers of their own.
+K18 = os.environ.get('SENSE_18K') == '1'
+# SENSE_LEVEL: the positions (by the start of their names) where a pick among level turns is scored by the average of
+# those turns played out (D-183). Under step 18k's rules: board 3, as ruled.
+LEVEL = [x for x in os.environ.get('SENSE_LEVEL', 'board 3' if K18 else '').split('|') if x]
+if K18:
+    J18 = True
+    if not os.environ.get('SENSE_FOULS'):
+        RULE['fouls'] = dict(team_fouls=2, quarter_left=8)
 if J18:
     FIBA = True
     RULE['rules'] = {k: 'on' for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
@@ -46,13 +56,22 @@ if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = ('answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+    _NAME = ('answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
 POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
 REF = dict(whole_turns=True, split_ties=True, rank_in_hand=True, kept_actions=False, no_floor=False, map='reference')
 N = int(os.environ.get('SENSE_N', '64'))               # play-outs a candidate
+
+
+def _j18_had():
+    # under step 18k's rules the candidates replayed are the named ones, the ones step 18j had answers for, and this step's
+    path = os.path.join(SET, 'answers_18j.json')
+    return {pid: set(v) for pid, v in json.load(open(path))['results'].items()} if K18 and os.path.exists(path) else {}
+
+
+_J18_HAD = _j18_had()
 
 
 def tally(what, secs):
@@ -362,7 +381,8 @@ def play(positions, answers, only=None, copies=(0, 1)):
             miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]
                     and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))
                     and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
-                    and not (J18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))]
+                    and not (J18 and not K18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))
+                    and not (K18 and c.get('added_by') and not c['added_by'].startswith('k') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -451,7 +471,7 @@ def cmd_play(copies='0,1', *only):
     play(positions, answers, set(only) or None, tuple(int(k) for k in copies.split(',')))
 
 
-def table(positions, answers, choices=None):
+def table(positions, answers, choices=None, level=None):
     """Each position: every candidate's played-out value (what the offence went on to score; the side to act wants it
     low on defence, high on offence), the best, and each against the best with a paired interval."""
     rep = []
@@ -481,7 +501,21 @@ def table(positions, answers, choices=None):
             r['is_best_or_level'] = r is best or dm - dci <= 0
             r['compared_on'] = len(d)
         one = dict(id=p['id'], group=p['group'], side=p['side'], best=best['name'], rows=[{k: v for k, v in r.items() if k != 'values'} for r in rows])
-        if choices is not None:
+        lv = (level or {}).get(p['id']) or []
+        lrows = [next((r for r in rows if key(r['turn']) == key(t)), None) for t in lv]
+        if choices is not None and len(lv) > 1 and all(lrows):
+            # D-183 (step 18k): a pick among turns the computer reads level is scored by the average of those turns,
+            # play-out for play-out on the copies they all share
+            ks = [k for k in range(4) if best['values'][k] and all(r['values'][k] for r in lrows)]
+            avg = [sum(r['values'][k][i] for r in lrows) / len(lrows) for k in ks for i in range(len(best['values'][k]))]
+            top = [best['values'][k][i] for k in ks for i in range(len(best['values'][k]))]
+            d = [sign * (b - a) for a, b in zip(avg, top)]
+            dm, dsd, dci = L.mean_ci(d)
+            means = sorted(round(sum(x for c in r['values'] for x in c) / max(1, sum(len(c) for c in r['values'])), 1) for r in lrows)
+            one['choice'] = dict(name=f"a pick among {len(lv)} turns it reads level (they play out from {means[0]} to {means[-1]}; scored by their average)",
+                                 behind_the_best=round(dm, 2), behind_interval=[round(dm - dci, 2), round(dm + dci, 2)], matches=dm - dci <= 0, lost=d,
+                                 level=len(lv), level_from=means[0], level_to=means[-1])
+        elif choices is not None:
             ch = next((r for r in rows if key(r['turn']) == key(choices[p['id']])), None)
             one['choice'] = None if ch is None else dict(name=ch['name'], behind_the_best=ch['behind_the_best'], behind_interval=ch['behind_interval'], matches=ch['is_best_or_level'],
                                                          lost=[sign * (b - a) for a, b in both(ch, best)])
@@ -530,10 +564,17 @@ def cmd_score(tag, *args):
     positions, answers = load()
     scored = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
     res = searches(scored, tag, **_switches(args))
-    choices, added = {}, 0
+    choices, added, level = {}, 0, {}
     for p, r in zip(scored, res):
         t = r[0][1]
         choices[p['id']] = t
+        if any(p['id'].startswith(x) for x in LEVEL):
+            # D-183: every turn the computer reads level with its choice is played out, and the pick scored by their average
+            level[p['id']] = [tt for v, tt in r if abs(v - r[0][0]) < 1e-9]
+            for tt in level[p['id']][1:]:
+                if not any(key(c['turn']) == key(tt) for c in p['candidates']):
+                    p['candidates'].append(dict(name=f"level with the computer's choice ({tag}): " + words(tt), turn=tt, added_by=tag))
+                    added += 1
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
             p['candidates'].append(dict(name=f"the computer's choice ({tag}): " + words(t), turn=t, added_by=tag))
             added += 1
@@ -547,7 +588,7 @@ def cmd_score(tag, *args):
     if added:
         json.dump(positions, open(POS, 'w'), indent=1)
     play(positions, answers, set(p['id'] for p in scored), tuple(int(k) for k in os.environ.get('SENSE_COPIES', '0,1').split(',')))
-    rep = table(scored, answers, choices)
+    rep = table(scored, answers, choices, level)
     rows, lost, var = [], [], 0.0
     for one in rep:
         ch = one.get('choice')
@@ -560,6 +601,9 @@ def cmd_score(tag, *args):
         var += sd * sd / len(d)
         rows.append(dict(id=one['id'], group=one['group'], best=one['best'], choice=ch['name'], matches=ch['matches'], points_lost=ch['behind_the_best'], interval=ch['behind_interval']))
     n = len(lost)
+    if not n:
+        print(tag, ': no position has an answer for its choice yet')
+        return
     mean = sum(lost) / n
     half = 1.96 * math.sqrt(var) / n
     k = sum(1 for r in rows if r['matches'])

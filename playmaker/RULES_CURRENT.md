@@ -97,7 +97,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 ## Scoring
 
 - A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot is cancelled. In the last phase the possession scores 0 (or less: see the turnover floor). The app differs (see Split by format). (setting: turnover_cost)
-- Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession; the app counts team fouls across a quarter (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). †
+- At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). †
 - Free throws from a steal foul score 2 × the ball carrier's free-throw rating. †
 - On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. †
 - A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. † (setting: turnover_floor)
@@ -131,8 +131,8 @@ In the app: a defender next to the shooter gives a soft contest with no action: 
 Why: ruled for the app (D-177).
 
 **The steal foul.** At the table: +5 to the offence; the second of the possession also gives free throws and ends it.  
-In the app: outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the quarter: +5 and two free throws, and the possession ends.  
-Why: fIBA Article 41, ruled for the app (D-179).
+In the app: outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app plays 2 team fouls each with 8 possessions left.  
+Why: fIBA Article 41, ruled for the app (D-179, D-181, D-182).
 
 **Three seconds.** At the table: no such rule.  
 In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders have no such rule.  
@@ -155,7 +155,7 @@ In the app: a turnover: the possession scores 0.
 Why: as in basketball: no shot before the clock runs out is a turnover.
 
 **Steal-foul bonus.** At the table: every steal foul +5; the second of the possession also gives free throws and ends it.  
-In the app: every steal foul +5; from the 5th team foul of the quarter it also gives free throws and ends the possession.  
+In the app: no foul gives +5; from the 5th team foul of the quarter a steal foul gives two free throws and ends the possession.  
 Why: one possession is the whole tabletop game; the app keeps fouls across a quarter.
 
 **Junior growth.** At the table: none: the junior cards play as printed.  
@@ -192,7 +192,7 @@ Rules the engine plays that no line of the rulebook or the trackers states. Shau
 16. The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest. See D-18. (setting: reaction_may_decline)
 17. Contest is an action: the reaction's last, one a phase, by one defender next to the shooter at that moment, using a token. A Steal ends the reaction, so it can't also Contest. No Contest: the contest is 0. See D-18. (setting: contest_action)
 18. The −3 never takes a contest below 0. See D-15. (setting: floor_contest_zero)
-19. Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession; the app counts team fouls across a quarter (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). See D-89.
+19. At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). See D-89.
 20. Free throws from a steal foul score 2 × the ball carrier's free-throw rating. See D-30.
 21. On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. See D-36.
 22. A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. See D-82. (setting: turnover_floor)
