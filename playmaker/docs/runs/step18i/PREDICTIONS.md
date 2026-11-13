@@ -34,3 +34,5 @@ core.
 
 ## Tally (core-hours used)
 
+- self-play (pilot_on, 32 possessions): 0.24 (running total 0.24)
+- self-play (pilot_off, 32 possessions): 0.22 (running total 0.47)

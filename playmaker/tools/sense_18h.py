@@ -29,7 +29,18 @@ E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
 ZONE = os.environ.get('SENSE_ZONE') == '1'
 ONLY = [x for x in os.environ.get('SENSE_ONLY', '').split('|') if x]
 RULE = dict(zone=True) if ZONE else {}
-POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers_zone.json' if ZONE else 'answers.json')
+# SENSE_FIBA=1 (step 18i): the positions replayed with three seconds, closely guarded and the FIBA fouled shot on, with
+# answers of their own. Without it those three rules are held off, so the set's first answers keep their meaning.
+# SENSE_FOULS='4,10' (D-175): the defence's team fouls and its possessions left in the quarter, laid over every position.
+FIBA = os.environ.get('SENSE_FIBA') == '1'
+FOULS = os.environ.get('SENSE_FOULS', '')
+RULE['rules'] = {k: ('on' if FIBA else 'off') for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
+if FOULS:
+    RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
+_NAME = 'answers_zone.json' if ZONE else 'answers.json'
+if FIBA:
+    _NAME = 'answers_fiba' + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
@@ -342,7 +353,8 @@ def play(positions, answers, only=None, copies=(0, 1)):
         for k in copies:
             # under the zone only the named candidates and the zone's own choices are played (the limit on compute)
             miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]
-                    and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))]
+                    and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))
+                    and not (FIBA and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -378,6 +390,28 @@ def cmd_reply(pid, name, top='8'):
     print(pid, '| after', c['name'][:80], '| to act:', rows[0]['side'])
     for v, t in rows[0]['by']['p']['results'][:int(top)]:
         print('   ', round(v, 2), words(t))
+
+
+def cmd_split(pid, name):
+    """Step 18i: a Steal's value in its parts, as the All-Star reads each way it can come out: the foul, the ball
+    won, the miss. The candidate's turn is played up to and including its Steal. Under the rules and foul situation
+    the environment sets."""
+    positions, answers = load()
+    p = next(q for q in positions if q['id'] == pid)
+    c = next(c for c in p['candidates'] if name in c['name'])
+    k = max(i for i, a in enumerate(c['turn']) if a[0] == 'steal')
+    rows, secs = L.run_jobs('split', [dict(id='0', state=p['state'], ctx=0, pre=c['turn'][:k + 1])], [p['ctx']], chunks=1,
+                            policies={'p': L.policy('allstar', 2, 0.0)}, **RULE)
+    parts = rows[0]['parts']
+    print(pid, '|', c['name'][:70], '| fiba' if FIBA else '| before', '| fouls', FOULS or 'none')
+    tot = 0.0
+    out = []
+    for q in parts:
+        tot += q['p'] * q['value']
+        out.append(dict(what=q['label'], chance=round(q['p'], 3), worth=round(q['value'], 2), share=round(q['p'] * q['value'], 2), ended=q['ended']))
+        print('   ', q['label'].ljust(22), 'chance', round(q['p'], 3), '| worth to the offence', round(q['value'], 2), '| share', round(q['p'] * q['value'], 2), '|', q['ended'] or 'play goes on')
+    print('    the Steal as a whole:', round(tot, 2))
+    return dict(position=pid, candidate=c['name'], fiba=FIBA, fouls=FOULS, parts=out, whole=round(tot, 2))
 
 
 def cmd_lines(pid, lines='2', *names):
@@ -495,11 +529,12 @@ def cmd_score(tag, *args):
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
             p['candidates'].append(dict(name=f"the computer's choice ({tag}): " + words(t), turn=t, added_by=tag))
             added += 1
-        elif ZONE:
-            # the zone's choice is a turn an earlier setting added: it is played under the zone too
+        elif ZONE or FIBA:
+            # the choice is a turn an earlier setting added: it is played under this rule set too
+            w = 'zone' if ZONE else 'fiba'
             for c in p['candidates']:
-                if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'):
-                    c['zone_too'] = True
+                if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith(w) and not c.get(w + '_too'):
+                    c[w + '_too'] = True
                     added += 1
     if added:
         json.dump(positions, open(POS, 'w'), indent=1)

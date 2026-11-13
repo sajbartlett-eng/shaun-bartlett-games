@@ -272,16 +272,16 @@ class Rules:
     #   an Intercept only through his own square), and his movement is locked as today. 'off': today's rules.
     zone: str = 'off'
     # Step 18i (Shaun, 13 Nov 2026): FIBA rules for single possessions, the app only. Each: 'app' (on in the app's
-    # format, off at the table, as control), 'on' or 'off'.
+    # format, off at the table, as control), 'on' or 'off'. On in the app since their checks passed (step 18i).
     #   three_seconds (D-172, FIBA Article 26): an attacker in the key at two phase ends in a row: a turnover.
     #   closely_guarded (D-173, Article 27): a ball handler holding the ball, closely guarded at three phase ends in a
     #     row: a turnover. After dribbling, two full phases with no action by him and he has picked the ball up: he
     #     may only pass or shoot, and the count runs.
     #   fiba_fouled_shot (D-174, Articles 34 and 38): a fouled shot scores the contested shot plus the free throws the
     #     rules give (1 if it went in, 2 or 3 if it missed), each at the shooter's free-throw rating: the expected value.
-    three_seconds: str = 'off'
-    closely_guarded: str = 'off'
-    fiba_fouled_shot: str = 'off'
+    three_seconds: str = 'app'
+    closely_guarded: str = 'app'
+    fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
     #   False: in the bonus the foul gives free throws only (no +5).
     steal_foul_always_plus5: bool = True

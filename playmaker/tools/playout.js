@@ -110,9 +110,12 @@ const meanSe = v => { const n = v.length; if (!n) return [0, 0]; const m = v.red
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 // job.control (step 18d, D-151): play every position under rules.control at that size ('1', '2', '3'; unset: today's rules)
 // job.zone (step 18g, D-167): play every position under rules.zone 'on' (the zone of influence)
+// job.rules (step 18i): rule settings laid over every position's own, e.g. { three_seconds: 'on' }
+// job.fouls (step 18i, D-175): the foul situation laid over every position's own: { team_fouls, quarter_left }
 const withControl = c => {
-  if (job.control == null && !job.zone) return c;
-  const r = Object.assign({}, c.rules);
+  if (job.control == null && !job.zone && !job.rules && !job.fouls) return c;
+  const r = Object.assign({}, c.rules, job.rules || {});
+  if (job.fouls) c = Object.assign({}, c, job.fouls);
   if (job.control != null) r.control = String(job.control);
   if (job.zone) r.zone = 'on';
   return Object.assign({}, c, { rules: r });
@@ -192,7 +195,7 @@ if (job.kind === 'rollout') {
       const events = [], shots = [], reads = [];
       // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
       // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
-      const stances = [], dribbles = [], examples = [];
+      const stances = [], dribbles = [], examples = [], guards = [];
       let movesB = 0, passesB = 0, lastBall = node.ball, drib = null;
       const sqs = a => a.map(q => E.sqName(q));
       while (true) {
@@ -204,6 +207,7 @@ if (job.kind === 'rollout') {
         if (node.stage === 'over' || n > 300) break;
         const side = E.actor(node);
         if (job.stances && side === 'O' && node.stage === 'play' && !node.pending && node.turn_n === 0) {
+          guards.push([events.length, node.phase, node.ball, E.closelyGuarded(node) ? 1 : 0, node.grd, node.key_o]);   // step 18i
           const ex = [];
           stances.push([node.phase, movesB, passesB, node.ball !== lastBall ? 1 : 0].concat(E.stanceFacts(node, ex)));
           for (const e of ex) examples.push([events.length, node.phase].concat(e));
@@ -222,9 +226,29 @@ if (job.kind === 'rollout') {
       }
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
-        decisions: n, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, examples: job.stances ? examples : undefined });
+        decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
+        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
     }
+  }
+} else if (job.kind === 'split') {
+  // step 18i: an action's value in its parts. p.pre: the turn up to and including the action that rolls (a Steal).
+  // Each way the roll can come out: its chance and what the possession is then worth to the offence (finished: its
+  // score with the foul situation's cost; still going: the policy's own search from there).
+  for (const p of job.positions) {
+    let node = state(p);
+    const ctx = ctxs[p.ctx], parts = [];
+    for (const aj of p.pre) {
+      const want = JSON.stringify(aj), a = E.isChance(node) ? null : E.legalActions(node).find(x => key(x) === want);
+      if (!a) { node = null; break; }
+      node = E.apply(node, a);
+    }
+    const walk = (n, pr, label) => {
+      if (E.isChance(n)) { for (const o of n.outcomes) if (o[0] > 0) walk(o[2], pr * o[0], label ? label + ' / ' + o[1] : o[1]); return; }
+      const v = n.stage === 'over' ? E.terminalValue(n) : searchAt(n, ctx, job.policies.p).results[0][0];
+      parts.push({ label, p: pr, value: v, over: n.stage === 'over', fouls: n.fouls, bonus5: n.bonus5, ended: n.result ? n.result.kind : null });
+    };
+    if (node) walk(node, 1, '');
+    out.rows.push({ id: p.id, parts });
   }
 } else if (job.kind === 'search') {
   // one search per position per policy: every root turn with its value, the look-ahead reached, the time

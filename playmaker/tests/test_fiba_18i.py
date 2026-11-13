@@ -31,9 +31,10 @@ def win(node):
 # ---- the settings ---------------------------------------------------------------------------------------------------
 
 def test_the_three_rules_are_the_apps_and_never_the_tables():
-    table = RC.with_rules()
+    table, app = RC.with_rules(), RC.with_rules(digital=True)
     for name in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot'):
         assert not RC.app_rule(table, name)                            # nothing for the table
+        assert RC.app_rule(app, name)                                  # on by default in the app's format
         assert RC.app_rule(ON, name) and not RC.app_rule(OFF, name)
     # 'app' means on in the app's format only
     assert RC.app_rule(RC.with_rules(digital=True, three_seconds='app'), 'three_seconds')
