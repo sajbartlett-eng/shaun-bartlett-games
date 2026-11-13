@@ -16,6 +16,8 @@ const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-we
 const ZONE_WORD = { K: 'rim zone', '3': 'three-point zone', M: 'mid-range zone', L: 'long-two zone', '.': 'plain wood' };
 const isPhone = () => window.matchMedia('(max-width: 820px)').matches;
 // D-153: the app's control rule, in the words of the rules text (register.CONTROL_WORDS)
+// Step 18g (D-167, under test): the zone of influence, in the rule's own words
+const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), a pass can be Intercepted along either, and an adjacent ball handler can't pass through the shaded zone between them. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const CONTROL_RULE = n => `Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is ${n} lower. A Move puts you back in control.`;
 const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
   shot: 'Shot', intercept: 'Intercept', challenge: 'Challenge Screen', steal: 'Steal', hesitate: 'Hesitate', pause: 'Pause',
@@ -364,6 +366,8 @@ async function create() {
     body.teams = [$('teamA').value, $('teamB').value]; body.full = k === 'full';
     if (k === 'full') { body.match_format = $('format').value; body.per_side = Number($('perSide').value); }
     // D-153: the app plays the control rule at size 2. ?control=0 in the address turns it off; 1 or 3 plays another size
+    // step 18g (D-167): ?zone=1 in the address plays the zone of influence (the app's format only, under test)
+    { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -594,6 +598,7 @@ function renderTracker(id, side) {
       el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
       el('div', { text: 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
     s.influence && s.influence.control ? el('div', { class: 'waits controlrule', text: CONTROL_RULE(s.influence.control) }) : null,
+    s.influence && s.influence.zone ? el('div', { class: 'waits controlrule zonerule', text: ZONE_RULE }) : null,
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
       ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
@@ -698,7 +703,10 @@ function drawO(c, p, opts) {
 function drawX(c, p, opts) {
   const g = pieceGroup('X', p.i, opts);
   const wedge = st.influence && st.influence.arrow_mode === 'wedge';
-  PM.pieceX(g, p.x, p.y, p.i + 1, wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
+  // step 18g: under the zone of influence the arrows are the stance's lines: two, or none once a Dribble has broken it
+  const zl = st.influence && st.influence.zone && st.influence.zones && st.influence.zones[p.i];
+  PM.pieceX(g, p.x, p.y, p.i + 1, zl ? zl.lines : wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
+  if (zl && zl.broken) g.classList.add('zone-broken');
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
   const tg = svg('g', { class: 'tags', 'aria-hidden': 'true' }); PM.tags(tg, p.x, p.y, b, p.locked, null); c.append(tg);

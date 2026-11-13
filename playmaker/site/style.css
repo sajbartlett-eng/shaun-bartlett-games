@@ -353,3 +353,7 @@ table.skills caption { text-align: left; font-family: var(--marker); font-size: 
 ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; border-bottom: 1px dotted var(--line); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .h2hline { font-family: var(--marker); font-size: 22px; }
 .topbar .strip { flex: 1 1 100%; }
+
+/* step 18g (D-167, under test): a defender whose zone of influence a Dribble has broken */
+.piece.zone-broken .xarms { opacity: 0.45; stroke-dasharray: 3 3; }
+.zonerule { border-left: 3px solid #783c00; }
