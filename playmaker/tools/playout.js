@@ -107,7 +107,14 @@ const meanSe = v => { const n = v.length; if (!n) return [0, 0]; const m = v.red
 
 const job = JSON.parse(fs.readFileSync(process.argv[2]));
 // job.control (step 18d, D-151): play every position under rules.control at that size ('1', '2', '3'; unset: today's rules)
-const withControl = c => (job.control != null ? Object.assign({}, c, { rules: Object.assign({}, c.rules, { control: String(job.control) }) }) : c);
+// job.zone (step 18g, D-167): play every position under rules.zone 'on' (the zone of influence)
+const withControl = c => {
+  if (job.control == null && !job.zone) return c;
+  const r = Object.assign({}, c.rules);
+  if (job.control != null) r.control = String(job.control);
+  if (job.zone) r.zone = 'on';
+  return Object.assign({}, c, { rules: r });
+};
 const ctxs = (job.contexts || []).map(c => E.makeCtx(withControl(c)));
 const state = p => E.stateFrom(p.state, ctxs[p.ctx]);
 const out = { kind: job.kind, rows: [] };
@@ -178,23 +185,38 @@ if (job.kind === 'rollout') {
         X: Object.assign({}, job.policies.X, { rn: rng(((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)) * 31 + 2) }) };
       let node = state(p), n = 0;
       const events = [], shots = [], reads = [];
+      // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
+      // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
+      const stances = [], dribbles = [];
+      let movesB = 0, passesB = 0, lastBall = node.ball, drib = null;
       const sqs = a => a.map(q => E.sqName(q));
       while (true) {
-        if (E.isChance(node)) { node = sample(node, r); continue; }
+        if (E.isChance(node)) {
+          node = sample(node, r);
+          if (drib && !E.isChance(node)) { dribbles.push([drib[0], node.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]) ? 1 : 0]); drib = null; }
+          continue;
+        }
         if (node.stage === 'over' || n > 300) break;
         const side = E.actor(node);
+        if (job.stances && side === 'O' && node.stage === 'play' && !node.pending && node.turn_n === 0) {
+          stances.push([node.phase, movesB, passesB, node.ball !== lastBall ? 1 : 0].concat(E.stanceFacts(node)));
+          lastBall = node.ball;
+        }
         if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []));   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
         const a = decide(node, ctx, pols[side], r);
         const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;
         events.push([node.phase, node.stage, a.side, a.kind, a.piece, from, a.dest >= 0 ? E.sqName(a.dest) : null, a.target, node.ball, E.sqName(node.o[node.ball]), a.shot || '']);
         if (a.kind === 'shot' || a.kind === 'forced_shot') shots.push({ at: events.length - 1, o: sqs(node.o), x: sqs(node.x), ball: node.ball, phase: node.phase, type: a.shot, forced: a.kind === 'forced_shot' });
+        if (a.side === 'O' && (a.kind === 'move' || a.kind === 'qs' || a.kind === 'sprint')) movesB++;
+        if (a.kind === 'pass') passesB++;
+        if (a.kind === 'dribble') drib = [node.phase, node.ball, a.target];
         node = E.apply(node, a);
         n++;
       }
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, events, shots, reads });
+        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined });
     }
   }
 } else if (job.kind === 'search') {

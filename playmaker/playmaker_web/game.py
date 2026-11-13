@@ -125,6 +125,10 @@ def consequences(before, after, a):
                 why = {'dribble': 'beaten on the dribble' if side == 'X' else 'lost the dribble',
                        'challenge': 'held by the screen'}.get(a.kind, '')
                 out.append(('bad_X' if side == 'X' else 'bad_O', f'{side}{i + 1} is locked' + (f' ({why}).' if why else '.')))
+                if side == 'X' and a.kind == 'dribble' and after.ctx.rules.zone != 'off':
+                    # step 18g (D-167): the zone of influence
+                    out.append(('bad_X', f"O{before.ball + 1}'s Dribble broke X{i + 1}'s stance: his zone is gone until the phase ends. "
+                                         f"He can't Steal, his Contest takes the foul roll, and he can only Intercept a pass through his own square."))
     if a.kind == 'dribble' and after.lock_o == before.lock_o and after.lock_x == before.lock_x:
         out.append(('info', 'Dribble: no change.'))
     if a.kind == 'challenge':
@@ -216,7 +220,7 @@ class Game:
     def __init__(self, mode='hotseat', scenario=None, teams=None, seed=None, ai=None, full=False, rules=None,
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
-                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None):
+                 draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -238,6 +242,9 @@ class Game:
             if control is not None and str(control) in RC.CONTROL:
                 # D-153: the app plays the control rule at size 2; another size, or '0' for none, may be asked for
                 rules = replace(rules, control=str(control))
+            if zone in ('on', '1', 1, True):
+                # step 18g (D-167, under test): the zone of influence, the app only
+                rules = replace(rules, zone='on')
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
         self.full = full and scenario is None
         self.n_poss = 2 * self.per_side if self.full else 1
@@ -301,7 +308,7 @@ class Game:
                   timer=self.timer, computer={side: p.describe() for side, p in self.policies.items()
                                               if hasattr(p, 'describe')} or None,
                   rules=dict({k: getattr(self.state.ctx.rules, k) for k in RC.RULED_3I},
-                             control=str(RC.control_size(self.state.ctx.rules))),
+                             control=str(RC.control_size(self.state.ctx.rules)), zone=self.state.ctx.rules.zone),
                   start=self.state.encode())
         for side in ('O', 'X'):
             if side in self.ai and self.picks_needed(side):

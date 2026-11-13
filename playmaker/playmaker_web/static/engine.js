@@ -138,7 +138,7 @@ const PMEngine = (() => {
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
-      control: controlSize(c.rules) };                    // D-151, D-153: the size, in rating steps (0: the rule is off)
+      control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
   // D-151, D-153 (rules.control): the reduction a rushed shot, or a rushed Contest of it, takes
   const controlOn = ctx => ctx.control > 0;
@@ -252,7 +252,7 @@ const PMEngine = (() => {
     const who = a.piece >= 0 ? `${a.side}${a.piece + 1}` : a.side, k = a.kind;
     if (k === 'move') return `${who} Move to ${sqName(a.dest)}` + (a.arrow >= 0 ? ` facing ${DIR_NAMES[a.arrow]}` : '');
     if (k === 'qs') return `${who} Quick Step to ${sqName(a.dest)}`;
-    if (k === 'sprint') return `${who} Sprint to ${sqName(a.dest)}`;
+    if (k === 'sprint') return `${who} Sprint to ${sqName(a.dest)}` + (a.arrow >= 0 ? ` facing ${DIR_NAMES[a.arrow]}` : '');
     if (k === 'pass') return `${who} Pass to O${a.target + 1}`;
     if (k === 'screen') return `${who} Screen, T ${DIR_NAMES[a.target]}`;
     if (k === 'dribble') return `${who} Dribble vs X${a.target + 1}`;
@@ -280,10 +280,63 @@ const PMEngine = (() => {
     }
     return true;
   }
+  // ---- step 18g (rules.zone, D-167): the zone of influence -----------------------------------------------------------
+  // A defender's stance as the arrow rules read it (actions.stance, geometry.lines): without the rule, his arrow index
+  // (one line); with it, 8 + the index (two lines, a and a + 1), or 16 when a Dribble won against him this phase has
+  // broken his zone (no line at all).
+  function stanceOf(s, j, arrow) {
+    const a = arrow === undefined ? s.arrows[j] : arrow;
+    if (!s.ctx.zone) return a;
+    for (const b of s.beaten) if (b[1] === j) return 16;
+    return 8 + a;
+  }
+  const onLine = (st, d) => (st < 8 ? d === st : st < 16 ? (d === st - 8 || d === (st - 7) % 8) : false);
+  const stanceMode = (s, j) => { if (!s.ctx.zone) return 0; for (const b of s.beaten) if (b[1] === j) return 2; return 1; };
+  function inWedge(st, vx, vy) {                       // strictly between the two lines of a zone stance (geometry.in_wedge)
+    const a = st - 8, b = (st - 7) % 8;
+    const c0 = DX[a] * DY[b] - DY[a] * DX[b], c1 = DX[a] * vy - DY[a] * vx, c2 = vx * DY[b] - vy * DX[b];
+    return (c1 > 0) === (c0 > 0) && (c2 > 0) === (c0 > 0) && c1 !== 0 && c2 !== 0;
+  }
   function zoneOf(s, j, vacated, taken) {            // vacated, taken (step 13C): one attacker's square moved
+    const st = stanceOf(s, j);
+    if (st < 8) return zoneRay(s, j, st, vacated, taken);
+    if (st >= 16) return [];
+    const out = zoneRay(s, j, st - 8, vacated, taken);
+    for (const q of zoneRay(s, j, (st - 7) % 8, vacated, taken)) out.push(q);
+    // the zone is the wedge, not only its two edges: every square between the lines that a Move or a Quick Step still
+    // left to him reaches (with the attacker's square moved, on that board)
+    const t = vacated === undefined ? s : W_(s, { o: s.o.map(q => (q === vacated ? taken : q)) });
+    const start = s.x[j], card = s.ctx.dfn[j];
+    for (const kind of ['move', 'qs']) {
+      if (!canMoveKind(t, 'X', j, kind) || (kind === 'qs' && !(card.qs > 0))) continue;
+      for (const q of movementDests(t, 'X', j, kind).keys()) if (!out.includes(q) && inWedge(st, SX[q] - SX[start], SY[q] - SY[start])) out.push(q);
+    }
+    return out;
+  }
+  // Measuring only (step 18g): how much zone is on the court, and what the stance of each defender next to the ball
+  // handler does: [squares in all five zones; defenders next to him whose arrow is on him (a Steal or a clean Contest)
+  // and whose zone denies him a step closer to the rim; arrow on him only; step denied only; neither; of those that
+  // deny a step, how many take the middle away (the denied squares lie nearer the centre line than he does) and how
+  // many take the outside away].
+  function stanceFacts(s) {
+    const bh = s.o[s.ball];
+    let strength = 0, both = 0, cover = 0, block = 0, neither = 0, mid = 0, out = 0;
+    for (let j = 0; j < 5; j++) {
+      const z = zoneOf(s, j);
+      strength += z.length;
+      if (!ONB[bh] || !adjacent(s.x[j], bh)) continue;
+      const covers = onLine(stanceOf(s, j), dirBetween(s.x[j], bh));
+      let nb = 0, off = 0;
+      for (const q of z) if (adjacent(q, bh) && DR[q] < DR[bh]) { nb++; off += Math.abs(SX[q] - RIMX) - Math.abs(SX[bh] - RIMX); }
+      if (covers && nb) both++; else if (covers) cover++; else if (nb) block++; else neither++;
+      if (nb) { if (off < 0) mid++; else if (off > 0) out++; }
+    }
+    return [strength, both, cover, block, neither, mid, out];
+  }
+  function zoneRay(s, j, d, vacated, taken) {
     // actions.zone: the squares along his arrow he reaches with one movement left to him (only membership is used).
     // Only the straight path reaches a square on the arrow ray, so the walk checks that path directly.
-    const start = s.x[j], card = s.ctx.dfn[j], d = s.arrows[j], diag = d & 1, step = DSTEP[d];
+    const start = s.x[j], card = s.ctx.dfn[j], diag = d & 1, step = DSTEP[d];
     const mvR = canMoveKind(s, 'X', j, 'move') ? (diag ? 2 : 3) : 0;
     const qsR = canMoveKind(s, 'X', j, 'qs') && card.qs > 0 ? card.qs : 0;
     const spR = canMoveKind(s, 'X', j, 'sprint') && card.qs > 0 ? (diag ? 2 : 3) + card.qs : 0;
@@ -359,6 +412,8 @@ const PMEngine = (() => {
           for (const dest of dests.keys()) for (let d = 0; d < 8; d++) acts.push(A('move', 'X', i, dest, d));
         } else {
           for (const dest of dests.keys()) acts.push(A(kind, side, i, dest));
+          // the zone (as the old wedge): the run direction is one line; the other may fall either side of it
+          if (side === 'X' && kind === 'sprint' && s.ctx.zone) for (const [dest, r] of dests) acts.push(A(kind, side, i, dest, (r + 7) % 8));
         }
       }
     }
@@ -399,9 +454,9 @@ const PMEngine = (() => {
     const dx = SX[q] - SX[p], dy = SY[q] - SY[p], n = Math.max(Math.abs(dx), Math.abs(dy));
     if (n === 0 || (dx !== -n && dx !== 0 && dx !== n) || (dy !== -n && dy !== 0 && dy !== n)) return false;
     const d = STEPDIR.get((dx / n) * WID + dy / n);
-    if (d !== s.arrows[j]) return false;
+    if (!onLine(stanceOf(s, j), d)) return false;
     if (laneMeet(p, d, s.o[s.pending[0]], s.o[s.pending[1]]) !== n) return false;
-    if (a.kind === 'sprint') { if (d !== s.arrows[j]) return false; }
+    if (a.kind === 'sprint') { const keep = (s.ctx.zone && a.arrow === (d + 7) % 8) ? a.arrow : d; if (keep !== s.arrows[j]) return false; }
     else if (a.kind === 'move' && a.arrow !== s.arrows[j]) return false;
     const path = []; for (let k = 1; k <= n; k++) path.push(p + DSTEP[d] * k);
     return pathOk(s, 'X', j, path, null);
@@ -452,7 +507,7 @@ const PMEngine = (() => {
     const cpos = s.o[s.ball];
     const ok = k => !kinds || kinds.has(k);
     if (ok('steal') && count(s, 'X', 'steal') < LIMITS.X.steal) {
-      for (let j = 0; j < 5; j++) if (adjacent(s.x[j], cpos) && dirBetween(s.x[j], cpos) === s.arrows[j]) acts.push(A('steal', 'X', j));
+      for (let j = 0; j < 5; j++) if (adjacent(s.x[j], cpos) && onLine(stanceOf(s, j), dirBetween(s.x[j], cpos))) acts.push(A('steal', 'X', j));
     }
     if (ok('challenge') && count(s, 'X', 'challenge') < LIMITS.X.challenge) {
       for (const scr of s.screens) for (let j = 0; j < 5; j++) {
@@ -566,7 +621,7 @@ const PMEngine = (() => {
       let c = ctx.dfn[j].cn[t];
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
-      let clean = dirBetween(xp, spos) === s.arrows[j];
+      let clean = onLine(stanceOf(s, j), dirBetween(xp, spos));
       if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c), ft });
@@ -730,7 +785,8 @@ const PMEngine = (() => {
         if (k === 'move') arr[a.piece] = a.arrow;
         else if (k === 'sprint') {
           const st = state.x[a.piece], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy));
-          arr[a.piece] = STEPDIR.get((dx / n) * WID + dy / n);
+          const run = STEPDIR.get((dx / n) * WID + dy / n);
+          arr[a.piece] = (s.ctx.zone && a.arrow === (run + 7) % 8) ? a.arrow : run;
         }
         s = W_(s, { x: setAt(s.x, a.piece, a.dest), arrows: arr });
         if (state.stage === 'reaction' && a.dest !== state.x[a.piece]) s = W_(s, { react_moved: s.react_moved | (1 << a.piece) });
@@ -1209,13 +1265,14 @@ const PMEngine = (() => {
     if (!foul) return 0;
     return DR[q] >= DR[c] ? 2 : 1;
   }
-  function contestMap(free, fixed) {                    // Int8Array(board index * 6 + kind): fewest actions
+  function contestMap(free, fixed, mode = 0) {          // Int8Array(board index * 6 + kind): fewest actions
+    // mode (step 18g, rules.zone): 0 one arrow line; 1 the zone's two (a and a + 1); 2 a broken zone (no line)
     const out = new Int8Array(NB * 6).fill(INF);
     const put = (q, a, n, anyArrow) => {
       for (let d = 0; d < 8; d++) {
         const c = q + DSTEP[d];
         if (!ONB[c]) continue;
-        const foul = anyArrow ? false : d !== a;
+        const foul = mode === 2 ? true : anyArrow ? false : mode === 1 ? (d !== a && d !== (a + 1) % 8) : d !== a;
         const k = BI[c] * 6 + kindOf(q, c, DR[q] > DR[c], foul);
         if (out[k] > n) out[k] = n;
       }
@@ -1231,11 +1288,11 @@ const PMEngine = (() => {
     return out;
   }
   const _CM = new Map();
-  function cmapCached(frm, arrow, qs, canMove, qsLeft) {
-    const key = ((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft;
+  function cmapCached(frm, arrow, qs, canMove, qsLeft, mode = 0) {
+    const key = (((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode;
     let hit = _CM.get(key); if (hit) return hit;
     const [free, fixed] = geoReach(frm, arrow, qs, canMove, qsLeft);
-    hit = contestMap(free, fixed); _CM.set(key, hit); return hit;
+    hit = contestMap(free, fixed, mode); _CM.set(key, hit); return hit;
   }
 
   // ---- decide: lanes and passes -----------------------------------------------------------------------------------
@@ -1610,10 +1667,10 @@ const PMEngine = (() => {
       const s = this.s;
       if (!ONB[s.x[d]]) return null;
       if (at < 0 && (this.exact || reachOn())) {
-        const r = defenderMap(s, d, true);
-        if (r.cm) return r.cm;
-        const cm = contestMap(r[0], r[1]);
-        if (SPEED.reach_cache) r.cm = cm;
+        const r = defenderMap(s, d, true), mode = stanceMode(s, d);
+        if (r.cm && r.cm[mode]) return r.cm[mode];
+        const cm = contestMap(r[0], r[1], mode);
+        if (SPEED.reach_cache) { if (!r.cm) r.cm = [null, null, null]; r.cm[mode] = cm; }
         return cm;
       }
       let [canMove, qsLeft] = caps(s, 'X', d);
@@ -1624,9 +1681,9 @@ const PMEngine = (() => {
         else if (used === 'qs' || used === 'sprint') { qsLeft = 0; canMove = canMove && used === 'qs'; }
         if (s.tok_x <= 2) { canMove = false; qsLeft = 0; }
       } else if (s.tok_x <= 0) {
-        return contestMap(new Map(), new Map([[frm, new Map([[a, 0]])]]));
+        return contestMap(new Map(), new Map([[frm, new Map([[a, 0]])]]), stanceMode(s, d));
       }
-      return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft);
+      return cmapCached(frm, a, s.ctx.dfn[d].qs, canMove, qsLeft, stanceMode(s, d));
     }
     _vals(lk, d, cm, moves, dflags) {           // moves (step 13C): at most that many reaction movements; 0 = where he stands
       // dflags (step 18e, the open list's re-read): the defender's control state after his action, in place of now
@@ -2349,8 +2406,8 @@ const PMEngine = (() => {
     // among an attacker's first three looks as the quick reading takes them.
     _contestAt(j, q, a, canMove, qsLeft) {
       const s = this.s;                               // as _contest reads a defender where he stands (this read's position
-      if (s.tok_x <= 0) return contestMap(new Map(), new Map([[q, new Map([[a, 0]])]]));   // is the turn already advanced)
-      return cmapCached(q, a, s.ctx.dfn[j].qs, canMove, qsLeft);
+      if (s.tok_x <= 0) return contestMap(new Map(), new Map([[q, new Map([[a, 0]])]]), stanceMode(s, j));   // is the turn already advanced)
+      return cmapCached(q, a, s.ctx.dfn[j].qs, canMove, qsLeft, stanceMode(s, j));
     }
     reread(j, q, a, canMove, qsLeft, dflags, out) {
       const s = this.s, carrier = s.ball, reach = reachOn();
@@ -2766,7 +2823,7 @@ const PMEngine = (() => {
         const j = a.piece, k = a.kind;
         let ar = s.arrows[j];
         if (k === 'move') ar = a.arrow;
-        else if (k === 'sprint') { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); }
+        else if (k === 'sprint') { if (a.arrow >= 0) ar = a.arrow; else { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); } }
         if (fresh) R.reread(j, a.dest, ar, refCaps[j][0][0], refCaps[j][0][1], refCaps[j][1], tmp);
         else {
           const mv = cap0[j][0] || k !== 'qs', qd = cap0[j][2] || k !== 'move';
@@ -3585,7 +3642,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

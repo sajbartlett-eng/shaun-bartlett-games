@@ -263,6 +263,14 @@ class Rules:
     #   '3': the reduction in rating steps, the same for every shot type and for the Contest. control_size(rules) is
     #   the size in play.
     control: str = 'app'
+    # Step 18g (D-167, Shaun, 12 Nov 2026; the app only, under test): the zone of influence. 'on': each defender
+    #   carries two equal arrows 45 degrees apart (directions a and a+1 for arrow index a), each under the normal
+    #   arrow rules. A ball handler or shooter on either counts as "the arrow on him" (a Steal, a Contest); an
+    #   Intercept goes along either. The wedge between them, out to the squares one movement still left to him
+    #   reaches, is his zone: an adjacent ball handler may end in it but not pass through it. A Dribble won against
+    #   him breaks it for the rest of the phase: no arrow at all (no Steal, a Contest with the wrong-angle foul roll,
+    #   an Intercept only through his own square), and his movement is locked as today. 'off': today's rules.
+    zone: str = 'off'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
     #   False: in the bonus the foul gives free throws only (no +5).
     steal_foul_always_plus5: bool = True

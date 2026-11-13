@@ -33,3 +33,8 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs are
 
 - searches (reactions, 35 positions): 0.0 (running total 0.0)
 - searches (two turns before, 10 positions): 0.01 (running total 0.01)
+- searches (zone choices, 9 positions): 0.01 (running total 0.01)
+- searches (today choices, 9 positions): 0.01 (running total 0.02)
+- play-outs (40 candidate copies of 16 on 11 positions): 1.47 (running total 1.5)
+- play-outs lost when the session's worker restarted (4 cores, about 8 minutes, nothing kept): 0.55 (running total 2.05)
+- agreement checks between the two engines, zone off and on (one core each, some lost to the restart): 0.6 (running total 2.65)

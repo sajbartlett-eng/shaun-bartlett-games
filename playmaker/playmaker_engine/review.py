@@ -44,6 +44,8 @@ def log_rules(setup):
         rec = {**RC.PRE_9NOV, **rec}                # a log from before Shaun's rulings of 9 Nov 2026
     if 'control' not in rec:
         rec = {'control': '0', **rec}               # a log from before the control rule (D-153): played without it
+    if 'zone' not in rec:
+        rec = {'zone': 'off', **rec}                # a log from before the zone of influence (step 18g): today's arrows
     return RC.with_rules(**{'intercept_rule': 'approach', 'turnover_cost': 'legacy', **RC.PRE_RULEBOOK, **rec, **extra})
 
 

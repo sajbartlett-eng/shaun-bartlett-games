@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from . import board as B
+from . import geometry as _G
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, inbound_held, MOVEMENT, TOKEN_FREE
 from .scoring import p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points, shot_rating
@@ -419,7 +420,7 @@ def apply(state, action, check=False):
                 run = B.DIRS.index((dx // n, dy // n))
                 # wedge (step 3h): the run direction is one edge; a.arrow = run - 1 puts the other edge
                 # anticlockwise, otherwise it goes clockwise (arrow index = run)
-                arr[a.piece] = a.arrow if (s.ctx.rules.arrow_mode == 'wedge' and a.arrow == (run - 1) % 8) else run
+                arr[a.piece] = a.arrow if (_G.two(s.ctx.rules) and a.arrow == (run - 1) % 8) else run
             s = s.with_(x=tuple(x), arrows=tuple(arr))
             if state.stage == 'reaction' and a.dest != state.x[a.piece]:
                 s = s.with_(react_moved=s.react_moved | 1 << a.piece)     # late_closeout test: moved to contest

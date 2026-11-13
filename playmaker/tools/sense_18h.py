@@ -24,7 +24,12 @@ SET = os.path.join(HERE, 'sense_set')
 RUN = os.path.join(ROOT, 'docs', 'runs', os.environ.get('SENSE_RUN', 'step18h'))
 WORK = os.path.join(RUN, 'work')
 E18.RUN, E18.WORK, L.WORK = RUN, WORK, WORK
-POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers.json')
+# SENSE_ZONE=1 (step 18g): the set's positions replayed under rules.zone, with answers of their own (the answers
+# under today's rules stay as they are). SENSE_ONLY: score only the positions whose name starts with one of these.
+ZONE = os.environ.get('SENSE_ZONE') == '1'
+ONLY = [x for x in os.environ.get('SENSE_ONLY', '').split('|') if x]
+RULE = dict(zone=True) if ZONE else {}
+POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, 'answers_zone.json' if ZONE else 'answers.json')
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
@@ -80,7 +85,7 @@ def searches(items, tag='ref', noise=0.0, **switches):
     for k, it in enumerate(items):
         contexts.append(it['ctx'])
         pos.append(dict(id=str(k), state=it['state'], ctx=k))
-    rows, secs = L.run_jobs('search', pos, contexts, policies={'p': L.policy('allstar', 2, noise, **switches)})
+    rows, secs = L.run_jobs('search', pos, contexts, policies={'p': L.policy('allstar', 2, noise, **switches)}, **RULE)
     tally(f'searches ({tag}, {len(items)} positions)', secs)
     rows = {int(r['id']): r for r in rows}               # the rows come back core by core, not in the order sent
     return [rows[k]['by']['p']['results'] for k in range(len(items))]
@@ -335,7 +340,9 @@ def play(positions, answers, only=None, copies=(0, 1)):
             continue
         have = answers['results'].setdefault(p['id'], {})
         for k in copies:
-            miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]]
+            # under the zone only the named candidates and the zone's own choices are played (the limit on compute)
+            miss = [c['turn'] for c in p['candidates'] if not (have.get(key(c['turn'])) or [[], [], [], []])[k]
+                    and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone'))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -345,7 +352,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
     if not jobs:
         return 0.0
     pol = L.policy('allstar', 2, L.profiles()['allstar']['noise'], **REF)
-    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol))
+    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol), **RULE)
     n = 0
     for r in rows:                                     # each row names its own position and copy (the rows come back core by core)
         pid, k = r['id'].rsplit('##', 1)
@@ -405,6 +412,7 @@ def table(positions, answers, choices=None):
 
 def cmd_answers():
     positions, answers = load()
+    positions = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
     for one in table(positions, answers):
         print(one['id'], '|', one['side'])
         for r in one['rows']:
@@ -423,6 +431,7 @@ def cmd_choices(tag, *args):
     """The computer's choice on each position under a setting, and whether the set already has an answer for it
     (no play-outs)."""
     positions, answers = load()
+    positions = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
     res = searches(positions, tag + ' choices', **_switches(args))
     new = 0
     for p, r in zip(positions, res):
@@ -440,9 +449,10 @@ def cmd_score(tag, *args):
     set and played out. -> runs/<step>/sense_<tag>.json"""
     import math
     positions, answers = load()
-    res = searches(positions, tag, **_switches(args))
+    scored = [p for p in positions if not ONLY or any(p['id'].startswith(x) for x in ONLY)]
+    res = searches(scored, tag, **_switches(args))
     choices, added = {}, 0
-    for p, r in zip(positions, res):
+    for p, r in zip(scored, res):
         t = r[0][1]
         choices[p['id']] = t
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
@@ -450,8 +460,8 @@ def cmd_score(tag, *args):
             added += 1
     if added:
         json.dump(positions, open(POS, 'w'), indent=1)
-        play(positions, answers)
-    rep = table(positions, answers, choices)
+    play(positions, answers, set(p['id'] for p in scored))
+    rep = table(scored, answers, choices)
     rows, lost, var = [], [], 0.0
     for one in rep:
         ch = one.get('choice')

@@ -202,15 +202,24 @@ def _terms(rules, q, a, c):
     return e, foul, pen
 
 
-def contest_map(rules, free, fixed):
-    """c -> [fewest actions for each contest kind (KINDS order)], from a defender's reach maps."""
+def stance_mode(s, d):
+    """Step 18g (rules.zone): how defender d's arrow reads in a Contest: 0 one line; 1 the zone's two (a and a + 1);
+    2 a zone broken by a Dribble (no line: every Contest takes the wrong-angle foul roll)."""
+    if s.ctx.rules.zone == 'off':
+        return 0
+    return 2 if any(b[1] == d for b in s.beaten) else 1
+
+
+def contest_map(rules, free, fixed, mode=0):
+    """c -> [fewest actions for each contest kind (KINDS order)], from a defender's reach maps. mode: stance_mode."""
     out = {}
+    code = (lambda a: a) if mode == 0 else (lambda a: 8 + a) if mode == 1 else (lambda a: 16)
     for q, n in free.items():                 # after a Move: any arrow; face the shooter
         for dx, dy in NEAR:
             c = (q[0] + dx, q[1] + dy)
             if not B.on_board(c):
                 continue
-            e, foul, pen = _terms(rules, q, B.dir_between(q, c), c)
+            e, foul, pen = _terms(rules, q, 16 if mode == 2 else B.dir_between(q, c), c)
             if not e:
                 continue
             k = _kind(rules, q, c, pen, foul)
@@ -225,7 +234,7 @@ def contest_map(rules, free, fixed):
                 c = (q[0] + dx, q[1] + dy)
                 if not B.on_board(c):
                     continue
-                e, foul, pen = _terms(rules, q, a, c)
+                e, foul, pen = _terms(rules, q, code(a), c)
                 if not e:
                     continue
                 k = _kind(rules, q, c, pen, foul)
@@ -238,9 +247,9 @@ def contest_map(rules, free, fixed):
 
 
 @lru_cache(maxsize=200000)
-def _cmap_cached(rules, frm, arrow, qs, can_move, qs_left):
+def _cmap_cached(rules, frm, arrow, qs, can_move, qs_left, mode=0):
     free, fixed = geo_reach(frm, arrow, qs, can_move, qs_left, rules)
-    return contest_map(rules, free, fixed)
+    return contest_map(rules, free, fixed, mode)
 
 
 # ---- shot values -------------------------------------------------------------------------------------------------------
@@ -406,7 +415,7 @@ class Read:
         if at is None and (self.exact or self.cfg.get('reach')):
             # step 12 (eval.reach): the reach map's exact movement (blocking, screens, locks) for every reading
             free, fixed = defender_map(s, d, exact=True)
-            return contest_map(self.rules, free, fixed)
+            return contest_map(self.rules, free, fixed, stance_mode(s, d))
         can_move, qs_left = _caps(s, 'X', d)
         frm, a = s.x[d], s.arrows[d]
         if at is not None:                    # after a response: what is left of his capacity for the reaction
@@ -419,8 +428,8 @@ class Read:
             if s.tok_x <= 2:
                 can_move, qs_left = False, 0
         elif s.tok_x <= 0:
-            return contest_map(self.rules, {}, {frm: {a: 0}})
-        return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left)
+            return contest_map(self.rules, {}, {frm: {a: 0}}, stance_mode(s, d))
+        return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left, stance_mode(s, d))
 
     def _vals2(self, look, d, row):
         """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions."""
@@ -642,8 +651,8 @@ class Read:
     def _contest_at(self, j, q, a, can_move, qs_left):
         s = self.s
         if s.tok_x <= 0:
-            return contest_map(self.rules, {}, {q: {a: 0}})
-        return _cmap_cached(self.rules, q, a, s.ctx.dfn[j].qs, can_move, qs_left)
+            return contest_map(self.rules, {}, {q: {a: 0}}, stance_mode(s, j))
+        return _cmap_cached(self.rules, q, a, s.ctx.dfn[j].qs, can_move, qs_left, stance_mode(s, j))
 
     def reread(self, j, q, a, can_move, qs_left, dflags):
         """Every attacker's best look with defender j standing at q facing a, with can_move / qs_left left to him and
