@@ -180,6 +180,16 @@ window.PMNotation = (function () {
       g.append(svg('rect', { class: 'rushtag', x: X - 21, y: Y - 22, width: 42, height: 12, rx: 3, fill: '#fff', stroke: '#8a2f00', 'stroke-width': 1.4 }));
       g.append(svg('text', { x: X, y: Y - 12.5, 'text-anchor': 'middle', 'font-size': 8.5, 'font-weight': 'bold', fill: '#8a2f00', 'aria-hidden': 'true' }, 'RUSHED'));
     }
+    // step 18i (D-171): each timed count shows on the player as a small plain marker, like RUSHED
+    const counts = [];
+    if (b && b.key) counts.push('IN KEY');
+    if (b && b.picked) counts.push('PICKED UP');
+    if (b && b.held) counts.push('HELD ' + b.held);
+    counts.forEach((t, k) => {
+      const w = 6 * t.length + 8, ty = Y + 21 + k * 13;
+      g.append(svg('rect', { class: 'counttag', x: X - w / 2, y: ty, width: w, height: 12, rx: 3, fill: '#fff', stroke: '#8a2f00', 'stroke-width': 1.4 }));
+      g.append(svg('text', { x: X, y: ty + 9.5, 'text-anchor': 'middle', 'font-size': 8.5, 'font-weight': 'bold', fill: '#8a2f00', 'aria-hidden': 'true' }, t));
+    });
     if (locked) {
       g.append(svg('rect', { x: X - 22, y: Y + 7, width: 26, height: 12, rx: 3, fill: '#4a4a4a', stroke: INK, 'stroke-width': 1.2 }));
       g.append(svg('text', { x: X - 9, y: Y + 16.5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 'bold', fill: '#fff', 'aria-hidden': 'true' }, 'LOCK'));
