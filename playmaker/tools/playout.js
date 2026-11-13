@@ -79,13 +79,15 @@ function sample(node, r) {                             // a roll: one outcome by
 }
 // Play on from a state (or a roll) to the end of the possession. pols: { O, X }. Returns the points, the engine's own
 // end value (points and the price of fouls) and the number of decisions; visit(s) sees each decision's state.
-function playout(node, ctx, pols, r, visit) {
+function playout(node, ctx, pols, r, visit, log) {
   let n = 0;
   while (true) {
     if (E.isChance(node)) { node = sample(node, r); continue; }
     if (node.stage === 'over' || n > 300) break;
     if (visit) visit(node);
-    node = E.apply(node, decide(node, ctx, pols[E.actor(node)], r));
+    const act = decide(node, ctx, pols[E.actor(node)], r);
+    if (log) log.push(E.actionStr(act));                 // step 18g: the play-out's actions, for a sense check
+    node = E.apply(node, act);
     n++;
   }
   // how it ended (a shot, free throws, or the clock or a turnover with no shot) and the clock when it did
@@ -125,16 +127,19 @@ if (job.kind === 'rollout') {
   for (const p of job.positions) {
     const s = state(p), ctx = ctxs[p.ctx], cands = p.turns || [null], row = { id: p.id, turns: [] };
     for (const turn of cands) {
-      const vals = [], pts = [];
+      const vals = [], pts = [], ends = [], lines = [];
       for (let k = 0; k < job.n; k++) {
         const r = rng((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0));
         const start = turn ? playTurn(s, turn, r) : s;
         if (start === null) { vals.length = 0; break; }
-        const g = playout(start, ctx, job.policies, r);
-        vals.push(g.value); pts.push(g.points);
+        const lg = job.lines && k < job.lines ? [] : null;
+        const g = playout(start, ctx, job.policies, r, null, lg);
+        vals.push(g.value); pts.push(g.points); ends.push(g.kind);
+        if (lg) lines.push(lg);
       }
       const [m, se] = meanSe(vals);
-      row.turns.push({ turn, mean: m, se, n: vals.length, points: meanSe(pts)[0], values: job.keep ? vals : undefined });
+      row.turns.push({ turn, mean: m, se, n: vals.length, points: meanSe(pts)[0], values: job.keep ? vals : undefined,
+        ends: job.ends ? ends : undefined, lines: job.lines ? lines : undefined });
     }
     out.rows.push(row);
   }
@@ -224,7 +229,8 @@ if (job.kind === 'rollout') {
 } else if (job.kind === 'search') {
   // one search per position per policy: every root turn with its value, the look-ahead reached, the time
   for (const p of job.positions) {
-    const s = state(p), ctx = ctxs[p.ctx], row = { id: p.id, side: E.actor(s), by: {} };
+    // p.pre (step 18g): a turn played first (its actions need no dice), so the reply to a candidate can be read
+    const s = p.pre ? playTurn(state(p), p.pre, rng(1)) : state(p), ctx = ctxs[p.ctx], row = { id: p.id, side: E.actor(s), by: {} };
     for (const [name, pol] of Object.entries(job.policies)) {
       const o = searchAt(s, ctx, pol);
       row.by[name] = { results: o.results, reached: o.reached, seconds: o.seconds, explain: o.explain, same_top: o.same_top };

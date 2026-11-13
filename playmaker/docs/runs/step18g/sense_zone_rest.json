@@ -1,0 +1,75 @@
+{
+ "tag": "zone_rest",
+ "switches": {},
+ "positions": 4,
+ "scored": 4,
+ "matched": 4,
+ "points_lost_a_position": 0.12,
+ "interval": [
+  -1.03,
+  1.26
+ ],
+ "candidates_added": 4,
+ "rows": [
+  {
+   "id": "closeout, shooter can move",
+   "group": "closeout",
+   "best": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+   "choice": "the computer's choice (today): X3 Quick Steps to E3, then X3 moves to B3, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 1",
+   "group": "board",
+   "best": "does nothing",
+   "choice": "the computer's choice (today): X2 Quick Steps to D6, then the defence Pauses",
+   "matches": true,
+   "points_lost": 0.47,
+   "interval": [
+    -4.1,
+    5.04
+   ]
+  },
+  {
+   "id": "board 3",
+   "group": "board",
+   "best": "the computer's choice (today): X3 moves to M7, facing N, then the defence Pauses",
+   "choice": "the computer's choice (today): X3 moves to M7, facing N, then the defence Pauses",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 8",
+   "group": "board",
+   "best": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+   "choice": "the computer's choice (today): O2 moves to E10, then O1 passes to O2",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 3,
+   "matched": 3,
+   "points_lost": 0.16
+  },
+  "closeout": {
+   "positions": 1,
+   "matched": 1,
+   "points_lost": 0.0
+  }
+ }
+}

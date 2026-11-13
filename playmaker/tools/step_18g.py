@@ -51,6 +51,53 @@ def _share(k, n):
     return dict(n=k, of=n, pct=round(100 * p, 1), interval=[round(100 * lo, 1), round(100 * hi, 1)])
 
 
+def _in_phase(rows):
+    """Each turn of the offence, from the kept actions: [its number in the phase, the offence's movements and passes so
+    far this phase, defenders with their Move still in hand, defenders with any movement still in hand, zone squares on
+    the court]. A defender's Move is spent by a Move or a Sprint, his Quick Step by a Quick Step or a Sprint; a Dribble
+    won against him takes both. The stance rows are the offence's turns in order."""
+    out = []
+    for r in rows:
+        qs_card = [c['qs'] for c in r['cards_x']] if r.get('cards_x') else None
+        drib = iter(r['dribbles'])
+        phase, turn, acts, moved, quick, beaten, prev, k = None, 0, 0, set(), set(), set(), None, 0
+        for e in r['events']:
+            if e[0] != phase:
+                phase, turn, acts, moved, quick, beaten, prev = e[0], 0, 0, set(), set(), set(), None
+            if e[2] == 'O' and prev != 'O':
+                st = r['stances'][k] if k < len(r['stances']) else None
+                k += 1
+                turn += 1
+                if st is not None:
+                    out.append([turn, acts, 5 - len(moved | beaten), 5 - len((moved & quick) | beaten), st[4]])
+            prev = e[2]
+            if e[2] == 'O':
+                if e[3] in ('move', 'qs', 'sprint', 'pass'):
+                    acts += 1
+                if e[3] == 'dribble':
+                    d = next(drib, None)
+                    if d and d[1] and e[7] is not None and e[7] >= 0:
+                        beaten.add(e[7])
+            elif e[2] == 'X':
+                if e[3] in ('move', 'sprint'):
+                    moved.add(e[4])
+                if e[3] in ('qs', 'sprint'):
+                    quick.add(e[4])
+    return out
+
+
+def _within(rows):
+    v = _in_phase(rows)
+    by_turn, by_acts = {}, {}
+    for t, a, mv, anym, sq in v:
+        by_turn.setdefault(min(t, 4), []).append((mv, anym, sq))
+        by_acts.setdefault('0' if a == 0 else '1 or 2' if a <= 2 else '3 or 4' if a <= 4 else '5 or more', []).append((mv, anym, sq))
+    row = lambda x: dict(turns=len(x), defenders_with_their_move_in_hand=_ci([y[0] for y in x]),
+                         defenders_with_any_movement_in_hand=_ci([y[1] for y in x]), zone_squares_shaded=_ci([y[2] for y in x]))
+    return dict(by_the_offences_turn_in_the_phase={('4th or later' if k == 4 else f'turn {k}'): row(x) for k, x in sorted(by_turn.items())},
+                by_offence_movements_and_passes_so_far_this_phase={k: row(by_acts[k]) for k in ('0', '1 or 2', '3 or 4', '5 or more') if k in by_acts})
+
+
 def cmd_measures(*tags):
     """Step 18g's own measures from the kept runs (the usual ones come from step 18d's fidelity tool)."""
     import step_18d as D
@@ -93,12 +140,13 @@ def cmd_measures(*tags):
                           points_when_one_is_tried_and_none_won=_ci([rows[i]['points'] for i in tried - won]),
                           points_when_none_is_tried=_ci([r['points'] for i, r in enumerate(rows) if i not in tried])),
             a_possession=dict(passes=_ci(passes), off_ball_movements=_ci(offball), ball_handler_movements=_ci(onball), steals_tried=_ci(steals)),
+            within_a_phase=_within(rows),
             usual=fid.get(tag))
     json.dump(rep, open(os.path.join(RUN, 'measures.json'), 'w'), indent=1)
     for tag in tags:
         r = rep[tag]
         print('==', tag)
-        for k in ('zone_squares_on_the_court', 'defenders_next_to_the_ball_handler', 'where_the_denied_step_lies', 'dribbles', 'a_possession'):
+        for k in ('within_a_phase', 'defenders_next_to_the_ball_handler', 'where_the_denied_step_lies', 'dribbles', 'a_possession'):
             print('  ', k, json.dumps(r[k]))
 
 

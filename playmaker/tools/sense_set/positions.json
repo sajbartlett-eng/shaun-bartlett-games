@@ -801,6 +801,30 @@
      ]
     ],
     "added_by": "no_floor_kept"
+   },
+   {
+    "name": "the computer's choice (zone_near): X2 moves to B6, facing N, then X1 Quick Steps to I9",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B6",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "X",
+      0,
+      "I9",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -1605,7 +1629,8 @@
       ""
      ]
     ],
-    "added_by": "today"
+    "added_by": "today",
+    "zone_too": true
    },
    {
     "name": "the computer's choice (no_floor): X3 Quick Steps to E3, then X3 moves to B3, facing W",
@@ -2412,6 +2437,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_near): X3 moves to B4, facing S, then X3 tries a Steal",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "B4",
+      4,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      2,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -4784,6 +4833,30 @@
      ]
     ],
     "added_by": "no_floor"
+   },
+   {
+    "name": "the computer's choice (zone_near): X3 moves to P6, facing E, then X3 tries a Steal",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "P6",
+      2,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      2,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -6259,6 +6332,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_near): X3 moves to P6, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "P6",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -7007,6 +7095,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_near): X3 moves to P4, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "P4",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -10850,6 +10953,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_near): O3 moves to B8, then O4 moves to D5",
+    "turn": [
+     [
+      "move",
+      "O",
+      2,
+      "B8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "O",
+      3,
+      "D5",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -13807,6 +13934,30 @@
       "three"
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_near): O4 moves to A3, then O4 shoots (three)",
+    "turn": [
+     [
+      "move",
+      "O",
+      3,
+      "A3",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "shot",
+      "O",
+      3,
+      null,
+      -1,
+      -1,
+      "three"
+     ]
+    ],
+    "added_by": "zone_near"
    }
   ]
  },
@@ -15306,7 +15457,8 @@
       ""
      ]
     ],
-    "added_by": "today"
+    "added_by": "today",
+    "zone_too": true
    }
   ]
  },
@@ -16102,7 +16254,8 @@
       ""
      ]
     ],
-    "added_by": "today"
+    "added_by": "today",
+    "zone_too": true
    },
    {
     "name": "the computer's choice (no_floor): X2 Quick Steps to D7, then the defence Pauses",
@@ -16909,7 +17062,8 @@
       ""
      ]
     ],
-    "added_by": "today"
+    "added_by": "today",
+    "zone_too": true
    },
    {
     "name": "the computer's choice (no_floor): O1 moves to F10, then O2 moves to C9",
@@ -21539,6 +21693,30 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (zone_two): X1 Quick Steps to H9, then X1 tries a Steal",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "H9",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      0,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_two"
    }
   ]
  },
@@ -23126,6 +23304,30 @@
      ]
     ],
     "added_by": "today"
+   },
+   {
+    "name": "the computer's choice (zone_two): X1 Quick Steps to J6, then X3 moves to L8, facing N",
+    "turn": [
+     [
+      "qs",
+      "X",
+      0,
+      "J6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "L8",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "zone_two"
    }
   ]
  },
