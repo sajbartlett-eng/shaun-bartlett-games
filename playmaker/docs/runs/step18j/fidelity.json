@@ -1219,5 +1219,617 @@
     12.2
    ]
   }
+ },
+ "final": {
+  "possessions": 160,
+  "shots": 140,
+  "usual": {
+   "points": {
+    "n": 160,
+    "mean": 27.4,
+    "interval": [
+     25.7,
+     29.1
+    ]
+   },
+   "shots_in_phases_1_and_2": 0.843,
+   "shot_by_phase": {
+    "1": 0.464,
+    "2": 0.379,
+    "3": 0.093,
+    "4": 0.057,
+    "5": 0.007,
+    "6": 0.0
+   },
+   "decisions": 17.5,
+   "clock_ran_out": {
+    "n": 0,
+    "of": 160,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     2.3
+    ]
+   },
+   "lost_in_100_phases_kept": {
+    "n": 20,
+    "of": 132,
+    "pct": 15.2,
+    "interval": [
+     10.0,
+     22.2
+    ]
+   }
+  },
+  "help": {
+   "contested": {
+    "n": 41,
+    "of": 140,
+    "pct": 29.3,
+    "interval": [
+     22.4,
+     37.3
+    ]
+   },
+   "open": {
+    "n": 99,
+    "of": 140,
+    "pct": 70.7,
+    "interval": [
+     62.7,
+     77.6
+    ]
+   },
+   "early": {
+    "n": 12,
+    "of": 41,
+    "pct": 29.3,
+    "interval": [
+     17.6,
+     44.5
+    ]
+   },
+   "late": {
+    "n": 29,
+    "of": 41,
+    "pct": 70.7,
+    "interval": [
+     55.5,
+     82.4
+    ]
+   },
+   "by_a_helper": {
+    "n": 27,
+    "of": 41,
+    "pct": 65.9,
+    "interval": [
+     50.5,
+     78.4
+    ]
+   },
+   "late_from_how_far": {
+    "n": 29,
+    "mean": 2.7,
+    "interval": [
+     2.3,
+     3.1
+    ]
+   },
+   "late_from_3_or_more": {
+    "n": 14,
+    "of": 29,
+    "pct": 48.3,
+    "interval": [
+     31.4,
+     65.6
+    ]
+   },
+   "points_allowed": {
+    "open": {
+     "n": 99,
+     "mean": 32.2,
+     "interval": [
+      31.6,
+      32.8
+     ]
+    },
+    "early": {
+     "n": 12,
+     "mean": 27.8,
+     "interval": [
+      25.6,
+      29.9
+     ]
+    },
+    "late": {
+     "n": 29,
+     "mean": 29.7,
+     "interval": [
+      28.6,
+      30.7
+     ]
+    }
+   }
+  },
+  "closeouts": {
+   "none": {
+    "share": {
+     "n": 1,
+     "of": 41,
+     "pct": 2.4,
+     "interval": [
+      0.4,
+      12.6
+     ]
+    },
+    "points": {
+     "n": 1,
+     "mean": 30,
+     "interval": null
+    }
+   },
+   "move": {
+    "share": {
+     "n": 26,
+     "of": 41,
+     "pct": 63.4,
+     "interval": [
+      48.1,
+      76.4
+     ]
+    },
+    "points": {
+     "n": 26,
+     "mean": 28.9,
+     "interval": [
+      27.7,
+      30.0
+     ]
+    }
+   },
+   "qs": {
+    "share": {
+     "n": 10,
+     "of": 41,
+     "pct": 24.4,
+     "interval": [
+      13.8,
+      39.3
+     ]
+    },
+    "points": {
+     "n": 10,
+     "mean": 29.2,
+     "interval": [
+      26.6,
+      31.8
+     ]
+    }
+   },
+   "sprint": {
+    "share": {
+     "n": 4,
+     "of": 41,
+     "pct": 9.8,
+     "interval": [
+      3.9,
+      22.5
+     ]
+    },
+    "points": {
+     "n": 4,
+     "mean": 30.0,
+     "interval": [
+      25.8,
+      34.2
+     ]
+    }
+   }
+  },
+  "rushed_contests": {
+   "n": 14,
+   "of": 41,
+   "pct": 34.1,
+   "interval": [
+    21.6,
+    49.5
+   ]
+  },
+  "contest_fouls": {
+   "n": 0,
+   "of": 41,
+   "pct": 0.0,
+   "interval": [
+    0.0,
+    8.6
+   ]
+  },
+  "shots_set_and_rushed": {
+   "set": {
+    "share": {
+     "n": 119,
+     "of": 140,
+     "pct": 85.0,
+     "interval": [
+      78.2,
+      90.0
+     ]
+    },
+    "points": {
+     "n": 119,
+     "mean": 31.5,
+     "interval": [
+      30.8,
+      32.1
+     ]
+    }
+   },
+   "rushed": {
+    "share": {
+     "n": 21,
+     "of": 140,
+     "pct": 15.0,
+     "interval": [
+      10.0,
+      21.8
+     ]
+    },
+    "points": {
+     "n": 21,
+     "mean": 30.6,
+     "interval": [
+      29.2,
+      32.0
+     ]
+    }
+   }
+  },
+  "shots_by_last_movement": {
+   "none": {
+    "share": {
+     "n": 25,
+     "of": 140,
+     "pct": 17.9,
+     "interval": [
+      12.4,
+      25.0
+     ]
+    },
+    "points": {
+     "n": 25,
+     "mean": 31.6,
+     "interval": [
+      30.2,
+      33.0
+     ]
+    }
+   },
+   "move": {
+    "share": {
+     "n": 94,
+     "of": 140,
+     "pct": 67.1,
+     "interval": [
+      59.0,
+      74.4
+     ]
+    },
+    "points": {
+     "n": 94,
+     "mean": 31.4,
+     "interval": [
+      30.7,
+      32.1
+     ]
+    }
+   },
+   "qs": {
+    "share": {
+     "n": 8,
+     "of": 140,
+     "pct": 5.7,
+     "interval": [
+      2.9,
+      10.9
+     ]
+    },
+    "points": {
+     "n": 8,
+     "mean": 30.8,
+     "interval": [
+      28.4,
+      33.1
+     ]
+    }
+   },
+   "sprint": {
+    "share": {
+     "n": 13,
+     "of": 140,
+     "pct": 9.3,
+     "interval": [
+      5.5,
+      15.2
+     ]
+    },
+    "points": {
+     "n": 13,
+     "mean": 30.5,
+     "interval": [
+      28.7,
+      32.3
+     ]
+    }
+   }
+  },
+  "shots_by_how": {
+   "catch and shoot": {
+    "share": {
+     "n": 36,
+     "of": 140,
+     "pct": 25.7,
+     "interval": [
+      19.2,
+      33.5
+     ]
+    },
+    "points": {
+     "n": 36,
+     "mean": 31.8,
+     "interval": [
+      30.5,
+      33.0
+     ]
+    }
+   },
+   "off the dribble or a movement": {
+    "share": {
+     "n": 104,
+     "of": 140,
+     "pct": 74.3,
+     "interval": [
+      66.5,
+      80.8
+     ]
+    },
+    "points": {
+     "n": 104,
+     "mean": 31.2,
+     "interval": [
+      30.5,
+      31.8
+     ]
+    }
+   },
+   "from a standstill": {
+    "share": {
+     "n": 0,
+     "of": 140,
+     "pct": 0.0,
+     "interval": [
+      0.0,
+      2.7
+     ]
+    },
+    "points": {
+     "n": 0,
+     "mean": null,
+     "interval": null
+    }
+   }
+  },
+  "extra_pass": {
+   "closeouts": 91,
+   "pass": {
+    "share": {
+     "n": 30,
+     "of": 91,
+     "pct": 33.0,
+     "interval": [
+      24.2,
+      43.1
+     ]
+    },
+    "possession_points": {
+     "n": 30,
+     "mean": 29.4,
+     "interval": [
+      26.2,
+      32.6
+     ]
+    }
+   },
+   "shot": {
+    "share": {
+     "n": 16,
+     "of": 91,
+     "pct": 17.6,
+     "interval": [
+      11.1,
+      26.7
+     ]
+    },
+    "possession_points": {
+     "n": 16,
+     "mean": 27.8,
+     "interval": [
+      23.7,
+      31.8
+     ]
+    }
+   },
+   "dribble": {
+    "share": {
+     "n": 14,
+     "of": 91,
+     "pct": 15.4,
+     "interval": [
+      9.4,
+      24.2
+     ]
+    },
+    "possession_points": {
+     "n": 14,
+     "mean": 28.9,
+     "interval": [
+      26.7,
+      31.0
+     ]
+    }
+   },
+   "other": {
+    "share": {
+     "n": 31,
+     "of": 91,
+     "pct": 34.1,
+     "interval": [
+      25.2,
+      44.3
+     ]
+    },
+    "possession_points": {
+     "n": 31,
+     "mean": 26.2,
+     "interval": [
+      22.2,
+      30.1
+     ]
+    }
+   }
+  },
+  "archetypes": {
+   "shooters_by_quick_step": {
+    "0": {
+     "shots": 12,
+     "rushed": {
+      "n": 0,
+      "of": 12,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       24.3
+      ]
+     },
+     "points": {
+      "n": 12,
+      "mean": 29.9,
+      "interval": [
+       28.1,
+       31.7
+      ]
+     }
+    },
+    "1": {
+     "shots": 93,
+     "rushed": {
+      "n": 11,
+      "of": 93,
+      "pct": 11.8,
+      "interval": [
+       6.7,
+       20.0
+      ]
+     },
+     "points": {
+      "n": 93,
+      "mean": 31.7,
+      "interval": [
+       31.1,
+       32.4
+      ]
+     }
+    },
+    "2": {
+     "shots": 35,
+     "rushed": {
+      "n": 10,
+      "of": 35,
+      "pct": 28.6,
+      "interval": [
+       16.3,
+       45.1
+      ]
+     },
+     "points": {
+      "n": 35,
+      "mean": 30.7,
+      "interval": [
+       29.4,
+       31.9
+      ]
+     }
+    }
+   },
+   "contesters_by_quick_step": {
+    "0": {
+     "contests": 3,
+     "rushed": {
+      "n": 0,
+      "of": 3,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       56.2
+      ]
+     },
+     "points_allowed": {
+      "n": 3,
+      "mean": 28.7,
+      "interval": [
+       27.4,
+       30.0
+      ]
+     }
+    },
+    "1": {
+     "contests": 32,
+     "rushed": {
+      "n": 12,
+      "of": 32,
+      "pct": 37.5,
+      "interval": [
+       22.9,
+       54.7
+      ]
+     },
+     "points_allowed": {
+      "n": 32,
+      "mean": 29.2,
+      "interval": [
+       28.0,
+       30.5
+      ]
+     }
+    },
+    "2": {
+     "contests": 6,
+     "rushed": {
+      "n": 2,
+      "of": 6,
+      "pct": 33.3,
+      "interval": [
+       9.7,
+       70.0
+      ]
+     },
+     "points_allowed": {
+      "n": 6,
+      "mean": 28.5,
+      "interval": [
+       26.5,
+       30.5
+      ]
+     }
+    }
+   }
+  },
+  "map_error": {
+   "positions": 2415,
+   "error": 9.19,
+   "interval": [
+    7.74,
+    10.75
+   ]
+  }
  }
 }

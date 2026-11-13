@@ -1,0 +1,46 @@
+{
+ "position": "18e's Steal position, clock 2",
+ "zone": false,
+ "candidates": [
+  {
+   "name": "the defence Pauses",
+   "turn": "the defence Pauses",
+   "scored": 27.0,
+   "ended": {
+    "shot": 16
+   },
+   "values": [
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27
+   ],
+   "lines": [
+    [
+     "O2 Move to E10",
+     "O2 Shot (three)",
+     "X2 Move to F9 facing NW",
+     "X2 contests"
+    ],
+    [
+     "O2 Move to E10",
+     "O2 Shot (three)",
+     "X2 Move to F9 facing NW",
+     "X2 contests"
+    ]
+   ]
+  }
+ ]
+}

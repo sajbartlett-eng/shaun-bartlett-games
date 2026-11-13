@@ -1,0 +1,130 @@
+{
+ "position": "shoot now or play on 1",
+ "zone": false,
+ "candidates": [
+  {
+   "name": "play on, the reference's 1st such turn: O1 passes to O2",
+   "turn": "O1 passes to O2",
+   "scored": 12.81,
+   "ended": {
+    "turnover_end": 7,
+    "shot": 9
+   },
+   "values": [
+    0,
+    0,
+    18,
+    0,
+    0,
+    30,
+    26,
+    18,
+    0,
+    18,
+    0,
+    0,
+    33,
+    26,
+    18,
+    18
+   ],
+   "lines": [
+    [
+     "X2 Move to H5 facing E",
+     "X3 Sprint to F4",
+     "O4 Screen, T NE",
+     "X3 Move to H6 facing E",
+     "X3 Steal"
+    ],
+    [
+     "X2 Move to H5 facing E",
+     "X3 Sprint to F4",
+     "O4 Screen, T NE",
+     "X3 Move to H6 facing E",
+     "X3 Steal"
+    ],
+    [
+     "X2 Move to H5 facing E",
+     "X3 Sprint to F4",
+     "O4 Screen, T NE",
+     "X3 Move to H6 facing E",
+     "X3 Steal",
+     "O2 Move to K6",
+     "O2 Quick Step to J5",
+     "X2 Move to J4 facing N",
+     "X2 Steal",
+     "O2 Shot (mid)",
+     "X2 contests"
+    ]
+   ]
+  },
+  {
+   "name": "play on, the reference's 2nd such turn: O3 moves to B8, then O1 passes to O2",
+   "turn": "O3 moves to B8, then O1 passes to O2",
+   "scored": 18.0,
+   "ended": {
+    "shot": 11,
+    "turnover_end": 5
+   },
+   "values": [
+    38,
+    38,
+    18,
+    0,
+    18,
+    0,
+    18,
+    0,
+    20,
+    38,
+    0,
+    18,
+    0,
+    26,
+    38,
+    18
+   ],
+   "lines": [
+    [
+     "X2 Move to H5 facing E",
+     "X3 Move to E5 facing N",
+     "O4 Screen, T NE",
+     "X2 Move to I5 facing N",
+     "X2 Steal",
+     "O2 Move to K6",
+     "O2 Pass to O5",
+     "X Pause",
+     "O5 Move to K2",
+     "O5 Shot (layup)",
+     "X End turn"
+    ],
+    [
+     "X2 Move to H5 facing E",
+     "X3 Move to E5 facing N",
+     "O4 Screen, T NE",
+     "X2 Move to I5 facing N",
+     "X2 Steal",
+     "O2 Move to K6",
+     "O2 Pass to O5",
+     "X Pause",
+     "O5 Move to K2",
+     "O5 Shot (layup)",
+     "X End turn"
+    ],
+    [
+     "X2 Move to H5 facing E",
+     "X3 Sprint to F4",
+     "O4 Screen, T NE",
+     "X3 Move to H6 facing E",
+     "X3 Steal",
+     "O2 Move to K6",
+     "O2 Quick Step to J5",
+     "X2 Move to J4 facing N",
+     "X2 Steal",
+     "O2 Shot (mid)",
+     "X2 contests"
+    ]
+   ]
+  }
+ ]
+}
