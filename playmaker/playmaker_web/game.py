@@ -124,6 +124,10 @@ def consequences(before, after, a):
     if a.kind == 'steal' and after.fouls > before.fouls and after.bonus5 == before.bonus5 and after.stage != 'over':
         # step 18j (D-179): outside the penalty a steal foul gives no +5
         out.append(('good_O', f'Foul on the steal: a team foul. X{a.piece + 1} is locked. Play on.'))
+    if (a.kind == 'steal' and after.fouls > before.fouls and after.bonus5 == before.bonus5 and after.stage == 'over'
+            and after.result is not None and after.result.kind == 'free_throws' and not after.result.shot_type):
+        # step 18k (D-181): in the penalty a steal foul gives two free throws and nothing more
+        out.append(('good_O', 'Foul on the steal, in the penalty: two free throws. The possession ends.'))
     if a.kind == 'intercept' and after.tos == before.tos and before.pending:
         out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
     if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.fouls == before.fouls and after.stage != 'over':
