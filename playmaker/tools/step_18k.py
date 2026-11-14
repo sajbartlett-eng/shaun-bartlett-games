@@ -62,12 +62,13 @@ def cmd_measures(*tags):
     json.dump(rep, open(os.path.join(RUN, 'measures.json'), 'w'), indent=1)
 
 
-def cmd_h2h(tag, pairs='80', a_on='', b_on=''):
-    """The backstop: a against b at the All-Star under this step's rules and foul situation, paired possessions."""
+def cmd_h2h(tag, pairs='80', a_on='', b_on='', first='1'):
+    """The backstop: a against b at the All-Star under this step's rules and foul situation, paired possessions.
+    first: the batch of 40 to start from (each batch has dice of its own), so a run can be added to."""
     lv = 'allstar'
     a = L.policy(lv, 2, L.profiles()[lv]['noise'], **S._switches([x for x in a_on.split(',') if x]))
     b = L.policy(lv, 2, L.profiles()[lv]['noise'], **S._switches([x for x in b_on.split(',') if x]))
-    pl, rows, secs, k = G.pool(), [], 0.0, 0
+    pl, rows, secs, k = G.pool(), [], 0.0, int(first) - 1
     starts = pl['starts']
     while len(rows) < int(pairs):
         k += 1
@@ -80,8 +81,9 @@ def cmd_h2h(tag, pairs='80', a_on='', b_on=''):
         st = L.h2h_stats(rows, delta=1.0)
         tally(f'head to head {tag}, pairs {len(rows) - n + 1} to {len(rows)}', sec)
         print(tag, len(rows), st['mean_difference'], st['interval'], st['wins'], st['losses'], st['ties'], round(secs / 3600, 2), flush=True)
-        json.dump(dict(tag=tag, a=a_on or 'the default', b=b_on or 'the default', stats=st, core_hours=round(secs / 3600, 2)),
-                  open(os.path.join(RUN, f'h2h_{tag}.json'), 'w'), indent=1)
+        json.dump(dict(tag=tag, a=a_on or 'the default', b=b_on or 'the default', stats=st, core_hours=round(secs / 3600, 2),
+                       pairs=[[r_['a_offence'], r_['b_offence']] for r_ in rows]),
+                  open(os.path.join(RUN, f'h2h_{tag}{"" if first == "1" else "_from_batch_" + first}.json'), 'w'), indent=1)
 
 
 def _timed(sw):
