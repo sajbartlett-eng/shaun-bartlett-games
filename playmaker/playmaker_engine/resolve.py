@@ -602,7 +602,7 @@ def apply(state, action, check=False):
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
         pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
         fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
-        fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179: no +5 outside the penalty
+        fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179, D-181: no +5 on a steal foul in the app
         if rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
             fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
         legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
@@ -627,8 +627,7 @@ def apply(state, action, check=False):
             # team foul of the quarter (the defence's fouls before this possession travel in the context)
             in_bonus = (s.ctx.team_fouls + fs.fouls >= rules.bonus_from) if rules.digital else fs.fouls >= 2
             if in_bonus:
-                if fiba_sf:
-                    fs = fs.with_(bonus5=fs.bonus5 + 1)  # the penalty is as before: the +5 and two free throws
+                # D-181 (Shaun, 14 Nov 2026): in the app no foul carries +5; the penalty is two free throws, nothing more
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))
             elif fiba_sf:

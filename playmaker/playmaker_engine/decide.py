@@ -1787,8 +1787,9 @@ def foul_table(ctx):
     q = CONFIG['eval'].get('fouls_per_possession', 0.25)
     ft2 = sum(RC.FT_MULT_TWO * c.r['free_throw'] for c in ctx.off) / len(ctx.off)
     cont = CONFIG['eval'].get('play_on_value', 20.0)
-    plus5 = RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 else 0     # D-89: the bonus foul is +5 as well
-    # a bonus foul against an ordinary one: +5 and play on, or (D-179) no +5 and play on
+    plus5 = RC.STEAL_FOUL_BONUS if rules.steal_foul_always_plus5 and not fiba_sf else 0     # D-89: the bonus foul is +5 as well
+    # a bonus foul against an ordinary one: +5 and play on; in the app (D-179, D-181) no foul carries +5: two free
+    # throws against play on
     extra = ft2 + plus5 - ((0 if fiba_sf else RC.STEAL_FOUL_BONUS) + cont)
     N, F = rules.quarter_possessions + 1, rules.bonus_from + 12
     C = [[0.0] * (N + 1) for _ in range(F + 2)]

@@ -1005,7 +1005,6 @@ const PMEngine = (() => {
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
         if (inBonus) {
-          if (fibaSf) fs = W_(fs, { bonus5: fs.bonus5 + 1 });    // the penalty is as before: the +5 and two free throws
           foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
         } else foulNode = after(state, fibaSf ? lock(fs, 'X', a.piece) : fs, side, k);      // D-179: a team foul, the defender locked, play on
         const st = pickoff(s);
@@ -1513,7 +1512,7 @@ const PMEngine = (() => {
     const q = D.config.eval.fouls_per_possession ?? 0.25;
     let ft2 = 0; for (const c of ctx.off) ft2 += 2 * c.r.free_throw; ft2 /= ctx.off.length;
     const cont = D.config.eval.play_on_value ?? 20.0;
-    const extra = ft2 + 5 - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: the bonus foul is +5 as well; D-179: an ordinary one is not
+    const extra = ft2 + (ctx.fibaSteal ? 0 : 5) - ((ctx.fibaSteal ? 0 : 5) + cont);     // D-89: +5 on every steal foul; in the app (D-179, D-181) on none
     const N = ctx.quarter_possessions + 1, F = ctx.bonus_from + 12;
     const Cm = []; for (let f = 0; f < F + 2; f++) Cm.push(new Float64Array(N + 1));
     for (let n = 1; n <= N; n++) for (let f = F; f >= 0; f--) {
@@ -2897,6 +2896,10 @@ const PMEngine = (() => {
   const diceInHandOn = () => (D.config.search || {}).dice_in_hand === true;
   const ballLossOn = me => { const v = D.config.eval.ball_loss; return v === true || (v === 'offence' && me === 'O'); };   // 'offence': only when the offence is the one choosing
   const keepSettledOn = () => (D.config.search || {}).keep_settled === true;
+  // step 18k (search.keep_in_hand): in the defence's list two turns are not copies when they leave a defender
+  // different things he can still do this phase
+  const keepInHandOn = () => { const v = (D.config.search || {}).keep_in_hand; return v === true || v === 'moves'; };   // 'moves': without the Steal in hand
+  function setKeepInHand(v) { D.config.search = D.config.search || {}; D.config.search.keep_in_hand = v === 'moves' ? 'moves' : (v === true || v === 'true'); return D.config.search.keep_in_hand; }
   function setKeepSettled(v) { D.config.search = D.config.search || {}; D.config.search.keep_settled = v === true || v === 'true'; return D.config.search.keep_settled; }
   function setDiceInHand(v) { D.config.search = D.config.search || {}; D.config.search.dice_in_hand = v === true || v === 'true'; return D.config.search.dice_in_hand; }
   function setBallLoss(v) { D.config.eval.ball_loss = v === 'offence' ? 'offence' : (v === true || v === 'true'); return D.config.eval.ball_loss; }
@@ -3035,24 +3038,59 @@ const PMEngine = (() => {
     };
     const cap0 = [0, 1, 2, 3, 4].map(j => [hasMoved(s, 'X', j), isLocked(s, 'X', j), quickStepped(s, 'X', j)]);
     const qsCount = count(s, 'X', 'qs'), ctl = controlOn(s.ctx);
+    // step 18k (search.keep_in_hand): what a first action leaves its mover able to do this phase: whether he can still
+    // Move, still Quick Step, is set or rushed, and a Steal: 1 if he can roll one from where he stands (next to the
+    // ball handler with an arrow on him), 2 if a movement he has left gets him there by its shape (onto a free square
+    // next to the ball handler, facing him: a Move turns him as he likes, a Quick Step keeps his arrow), 0 if not
+    const kih = keepInHandOn() && two;
+    let bhq = -1, mvr = null, qsr = null, code0 = null;
+    const stealCode = (j, q, ar, canMove, qsLeft) => {
+      if (bhq < 0) return 0;
+      const st = stanceOf(s, j, ar);
+      if (st >= 16) return 0;
+      if (adjacent(q, bhq) && onLine(st, dirBetween(q, bhq))) return 1;
+      if (canMove && mvr.has(q)) return 2;
+      if (qsLeft > 0 && qsr[j]) { const ls = st >= 8 ? [st - 8, (st - 7) % 8] : [st]; for (const d of ls) if (qsr[j][d] && qsr[j][d].has(q)) return 2; }
+      return 0;
+    };
+    const sigOf = (canMove, qsLeft, rushed, code) => (canMove ? 1 : 0) | (qsLeft > 0 ? 2 : 0) | (rushed ? 4 : 0) | (code << 3);
+    if (kih && (D.config.search || {}).keep_in_hand === true && ONB[s.o[s.ball]]) {
+      bhq = s.o[s.ball];
+      const occ = new Set(); for (let i = 0; i < 5; i++) { occ.add(s.o[i]); occ.add(s.x[i]); }
+      const ends = (paths, into) => { for (const path of paths) { let ok = true; for (const sq of path) if (!ONB[sq]) { ok = false; break; } if (ok) into.add(path[path.length - 1]); } };
+      mvr = new Set(); qsr = [0, 1, 2, 3, 4].map(j => (s.ctx.dfn[j].qs > 0 ? [] : null));
+      for (let d = 0; d < 8; d++) {
+        const q = bhq - DSTEP[d];
+        if (!ONB[q] || occ.has(q)) continue;
+        ends(movePaths(q), mvr);                        // (a movement's shape is the same both ways)
+        for (let j = 0; j < 5; j++) if (qsr[j]) { qsr[j][d] = new Set(); ends(qsPaths(q, s.ctx.dfn[j].qs), qsr[j][d]); }
+      }
+      code0 = [0, 1, 2, 3, 4].map(j => { const cp = caps(s, 'X', j); return stealCode(j, s.x[j], s.arrows[j], cp[0], cp[1]); });
+    }
     const refCaps = fresh ? [0, 1, 2, 3, 4].map(j => [caps(ref, 'X', j), (rushedX(ref, j) ? 2 : 0) | (hasMoved(ref, 'X', j) ? 4 : 0)]) : null;
     for (const a of acts) {
       if (deadline && now() > deadline) throw TIMEOUT;
+      let sg = 0, scode = 0;                             // step 18k: what the action leaves its mover in hand
       if (direct && a.dest >= 0) {
         const j = a.piece, k = a.kind;
         let ar = s.arrows[j];
         if (k === 'move') ar = a.arrow;
         else if (k === 'sprint') { if (a.arrow >= 0) ar = a.arrow; else { const st = s.x[j], dx = SX[a.dest] - SX[st], dy = SY[a.dest] - SY[st], n = Math.max(Math.abs(dx), Math.abs(dy)); ar = STEPDIR.get((dx / n) * WID + dy / n); } }
-        if (fresh) R.reread(j, a.dest, ar, refCaps[j][0][0], refCaps[j][0][1], refCaps[j][1], tmp);
-        else {
+        if (fresh) {
+          R.reread(j, a.dest, ar, refCaps[j][0][0], refCaps[j][0][1], refCaps[j][1], tmp);
+          if (kih) { scode = stealCode(j, a.dest, ar, refCaps[j][0][0], refCaps[j][0][1]); sg = sigOf(refCaps[j][0][0], refCaps[j][0][1], refCaps[j][1] & 2, scode); }
+        } else {
           const mv = cap0[j][0] || k !== 'qs', qd = cap0[j][2] || k !== 'move';
           const left = LIMITS.X.qs - qsCount - (k === 'move' ? 0 : 1);
-          R.reread(j, a.dest, ar, !mv && !cap0[j][1], qd ? 0 : Math.min(left, 1), (ctl ? (k === 'move' ? 0 : 2) : 0) | (mv ? 4 : 0), tmp);
+          const cm = !mv && !cap0[j][1], ql = qd ? 0 : Math.min(left, 1), fl = (ctl ? (k === 'move' ? 0 : 2) : 0) | (mv ? 4 : 0);
+          R.reread(j, a.dest, ar, cm, ql, fl, tmp);
+          if (kih) { scode = stealCode(j, a.dest, ar, cm, ql); sg = sigOf(cm, ql, fl & 2, scode); }
         }
       } else {
       const nxt = apply(s, a);
       if (isChance(nxt) || nxt.stage !== 'play' || nxt.pending || !(a.dest >= 0)) { full.push([-evaluate(whole ? endedTurn(s, nxt) : nxt), [a]]); continue; }
       facts(nxt, a.piece, tmp, fresh ? ref : nxt);
+      if (kih) { const lf = fresh ? ref : nxt, cp = caps(lf, 'X', a.piece); scode = stealCode(a.piece, nxt.x[a.piece], nxt.arrows[a.piece], cp[0], cp[1]); sg = sigOf(cp[0], cp[1], rushedX(lf, a.piece), scode); }
       }
       // step 18j: a first action that leaves its mover next to an attacker with an arrow on him is never dropped as a
       // copy of another, and is ranked with whatever he can then send to the dice
@@ -3071,17 +3109,18 @@ const PMEngine = (() => {
       for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
       let bucket = same.get(h), dup = false;
       if (bucket === undefined) { bucket = []; same.set(h, bucket); }
-      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
+      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o.sg === sg && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
       if (dup) continue;
       const v2 = Float64Array.from(tmp);
-      v2.j = a.piece; if (har < 0) bucket.push(v2);       // (a dice-in-hand action never stands in for a later copy)
+      v2.j = a.piece; v2.sg = sg; if (har < 0) bucket.push(v2);       // (a dice-in-hand action never stands in for a later copy)
       const q2 = Qof(v2);
       let c = round6(q2), ukey = keyOf(c, v2);
       if (har >= 0) {
         for (const b of hdice) c = Math.min(c, round6(inHandV(apply(hnx, b), q2)));
         ukey += '|h|' + a.dest + '|' + har;
       }
-      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: ukey, v2, q2 };
+      if (kih) ukey += '|g' + sg;                        // step 18k: not a copy of an action that leaves him something else in hand
+      const u = { turn: [a], j: a.piece, c, raw: rawOf(v2), tie: tieOf(v2), key: ukey, v2, q2, sg, adds: kih && code0 !== null && scode > code0[a.piece] };
       if (seen.has(u.key)) continue;                     // the same by this read as an action before it
       seen.add(u.key);
       U.push(u);
@@ -3104,9 +3143,12 @@ const PMEngine = (() => {
           let lt = false, gt = false;
           for (const i of att) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
           for (let i = 5; i < 7; i++) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
-          if (!(lt && gt)) continue;                     // one of the two changes nothing the other doesn't: not read as a pair
+          // one of the two changes nothing the other doesn't: not read as a pair (step 18k: putting a Steal in hand
+          // that the defender didn't have is a change)
+          if (!((lt || ub.adds) && (gt || ua.adds))) continue;
           const c = round6(Qof(m));
-          C.push({ turn: [ua.turn[0], ub.turn[0]], j: -1, c, raw: rawOf(m), tie: tieOf(m), key: keyOf(c, m) + '|p', pair: true, n: n++ });
+          const pk = kih ? (ua.j < ub.j ? '|' + ua.j + ':' + ua.sg + ',' + ub.j + ':' + ub.sg : '|' + ub.j + ':' + ub.sg + ',' + ua.j + ':' + ua.sg) : '';
+          C.push({ turn: [ua.turn[0], ub.turn[0]], j: -1, c, raw: rawOf(m), tie: tieOf(m), key: keyOf(c, m) + '|p' + pk, pair: true, n: n++ });
         }
       }
       OPEN_STATS.pairs += C.length - U.length;
@@ -3130,7 +3172,9 @@ const PMEngine = (() => {
             const v = new Float64Array(7);
             facts(n2, ua.j, v, n2);
             const c = round6(Qof(v));
-            C.push({ turn: [a, b], j: ua.j, c, raw: rawOf(v), tie: tieOf(v), key: keyOf(c, v) + '|s' + ua.j, n: n++ });
+            let gk = '';
+            if (kih) { const cp = caps(n2, 'X', ua.j); gk = '|g' + sigOf(cp[0], cp[1], rushedX(n2, ua.j), stealCode(ua.j, n2.x[ua.j], n2.arrows[ua.j], cp[0], cp[1])); }
+            C.push({ turn: [a, b], j: ua.j, c, raw: rawOf(v), tie: tieOf(v), key: keyOf(c, v) + '|s' + ua.j + gk, n: n++ });
           } else {
             const c = round6(cheapNode(n2, ua));
             C.push({ turn: [a, b], j: ua.j, c, raw: rawOf(ua.v2), tie: tieOf(ua.v2), key: keyOf(c, ua.v2) + '|d' + b.id, n: n++ });
@@ -3917,7 +3961,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

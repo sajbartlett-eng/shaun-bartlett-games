@@ -1,0 +1,14 @@
+{
+ "tag": "moves_vs_default, both batches",
+ "a": "keep_in_hand=moves",
+ "b": "the default",
+ "pairs": 80,
+ "mean_difference": -1.8,
+ "interval": [
+  -4.24,
+  0.64
+ ],
+ "wins": 15,
+ "losses": 22,
+ "ties": 43
+}

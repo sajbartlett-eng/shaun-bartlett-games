@@ -70,11 +70,15 @@ def scenario_layout(n):
     return O, X, arrows, errs
 
 
-def situation_context(sc):
+def situation_context(sc, rules=None):
     """Step 18i (D-175): the foul situation a scenario card sets, as the engine reads it: the defence's team fouls this
-    quarter and the possessions it has left. A card that sets none: no fouls, and a foul costs only what it costs now."""
+    quarter and the possessions it has left. A card that sets none: at the table, no fouls; under the app's rules, the
+    typical mid-quarter situation (D-182)."""
     sit = sc.get('situation')
     if not sit:
+        if rules is not None and rules.digital:
+            # D-182: under the app's rules a card that sets none plays the typical mid-quarter situation
+            return dict(team_fouls=RC.DEFAULT_FOUL_SITUATION[0], quarter_left=RC.DEFAULT_FOUL_SITUATION[1])
         return {}
     return dict(team_fouls=int(sit.get('team_fouls', {}).get('dfn', 0)), quarter_left=int(sit.get('possessions_left', 0)))
 
@@ -107,7 +111,7 @@ def scenario_state(n, rules=None, target=None):
                   card_clock=sc['clock'], inbounder=(inb - 1) if inb else -1, coach_call=bool(sc.get('target')),
                   three_only=title == 'Need a Three', two_or_three=title == 'Two or Three',
                   hold_for_one=title == 'Hold for One', off_team=sc['off'], def_team=sc['dfn'],
-                  **situation_context(sc))
+                  **situation_context(sc, rules))
     kw = dict(o=tuple(O[k] for k in range(1, 6)), x=tuple(X[k] for k in range(1, 6)),
               arrows=tuple(arrows[k] for k in range(1, 6)), ball=sc['ball'] - 1, clock=sc['clock'],
               inbound=1 if inb else 0)

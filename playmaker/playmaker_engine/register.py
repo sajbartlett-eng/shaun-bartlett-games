@@ -27,10 +27,10 @@ ENTRIES = [
      'Tabletop: each player rolls for their final shot. Digital: overtime, one more possession a side until a side '
      'leads after equal possessions (DECISIONS.md D-19, built in step 6); team fouls carry on as in the quarter.'),
     ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul also gives free throws.',
-     'Every steal foul is +5 in both formats (D-89). Tabletop: the second steal foul of the possession also gives free '
-     'throws and ends it (one possession is the whole game). Digital (step 3n F3): team fouls run across a quarter; '
-     'from the 5th a steal foul also gives free throws and ends the possession. A steal foul on a shooter is a '
-     'shooting foul in both formats: free throws only (a team foul in the app).'),
+     'Tabletop: every steal foul is +5 (D-89), and the second steal foul of the possession also gives free throws and '
+     'ends it (one possession is the whole game). Digital (step 3n F3; D-179, D-181): no foul gives +5; team fouls run '
+     'across a quarter, and from the 5th a steal foul gives two free throws and ends the possession. A steal foul on a '
+     'shooter is a shooting foul in both formats: free throws only (a team foul in the app).'),
     ('Junior growth', SPLIT_APPROVED, dict(how='growth'), 'Growth at Junior (D-88).',
      'Tabletop: none, the junior cards play as printed. Digital: dealt at random when a junior roster is made, shown '
      'only in the ratings and in a Coach Vision line. At the table it needed markers and a term players found '
@@ -51,7 +51,7 @@ ENTRIES = [
     ('Far-contest -3', SHARED, dict(const=('FAR_CONTEST_PENALTY',)), 'Contester further from the rim than the shooter.', ''),
     ('Turnover points (-5)', SHARED, dict(const=('TURNOVER_POINTS',)), 'The value of a turnover where one is scored.',
      'The number is shared; when it applies is the turnover-cost split above.'),
-    ('Steal foul +5', SHARED, dict(const=('STEAL_FOUL_BONUS',)), 'Every steal foul (D-89).', ''),
+    ('Steal foul +5', TABLETOP, dict(const=('STEAL_FOUL_BONUS',)), 'Every steal foul at the table (D-89). In the app no foul gives +5 (D-181).', ''),
     ('Steal-foul free throws', SHARED, dict(how='steal_ft'), 'Whose rating a steal foul\'s free throws use (D-30).', ''),
     ('Fouled three on Two or Three', SHARED, dict(how='fouled_three'), 'A fouled three on the Two or Three card (D-36).', ''),
     ('Free-throw multipliers (x2, x3)', SHARED, dict(const=('FT_MULT_TWO', 'FT_MULT_THREE')), '', ''),
@@ -83,8 +83,8 @@ ENTRIES = [
      'The app plays the closely guarded rule (D-173). The table has no such rule.'),
     ('soft_contest', SPLIT, dict(rules='soft_contest'), 'A defender next to the shooter, and the Contest action.',
      'The app plays the soft and the hard contest (D-177). The table keeps one Contest.'),
-    ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives outside the penalty.',
-     'In the app a steal foul outside the penalty gives no +5 (D-179). The table keeps its +5.'),
+    ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives.',
+     'In the app no foul gives +5: a steal foul is a team foul, and from the 5th two free throws (D-179, D-181). The table keeps its +5.'),
     ('fiba_fouled_shot', SPLIT, dict(rules='fiba_fouled_shot'), 'What a fouled shot scores.',
      'The app scores a fouled shot as the contested shot plus the free throws that follow (D-174).'),
 ]
@@ -398,12 +398,14 @@ WORDS = {
     'Turnover points (-5)': dict(sec=None, src='rulebook', tab='−5', dig='−5 (where a turnover is scored)'),
     'Steal-foul bonus': dict(
         sec='Scoring', src=None, q='What does a steal foul give in the bonus?',
-        text='Every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free '
-             'throws and the possession ends: at the table the bonus is the second steal foul of the possession; the '
-             'app counts team fouls across a quarter (see Split by format). A steal foul on a shooter is a shooting '
-             'foul: free throws only (it counts as a team foul in the app).',
-        tab='+5 every time; the 2nd also free throws, over', dig='+5 every time; from the 5th team foul also free throws, over'),
-    'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='+5'),
+        text='At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it '
+             'also gives free throws and the possession ends: at the table the bonus is the second steal foul of the '
+             'possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a '
+             'quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by '
+             'format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the '
+             'app).',
+        tab='+5 every time; the 2nd also free throws, over', dig='no +5; from the 5th team foul two free throws, over'),
+    'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='none (D-181)'),
     'steal_foul_always_plus5': dict(sec=None, src=None, tab='every steal foul +5', dig='every steal foul +5'),
     'Steal-foul free throws': dict(
         sec='Scoring', src=None, q='Whose free-throw rating do a steal foul\'s free throws use?',
@@ -468,7 +470,7 @@ WORDS = {
     'soft_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
                          dig='next to the shooter is a soft contest, 3 lower, no action, no foul; a Contest action is a hard contest (D-177)'),
     'fiba_steal_foul': dict(sec=None, src=None, tab='+5 to the offence on every steal foul',
-                            dig='outside the penalty: a team foul, the defender locked, no +5 (D-179)'),
+                            dig='no +5: a team foul and the defender locked; from the 5th team foul two free throws (D-179, D-181)'),
     'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover (D-172)'),
     'closely_guarded': dict(sec=None, src=None, tab='none',
                             dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
@@ -507,7 +509,8 @@ SPLITS = [
      'Ruled for the app (D-177).'),
     ('The steal foul', '+5 to the offence; the second of the possession also gives free throws and ends it.',
      'Outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the '
-     'quarter: +5 and two free throws, and the possession ends.', 'FIBA Article 41, ruled for the app (D-179).'),
+     'quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app '
+     'plays 2 team fouls each with 8 possessions left.', 'FIBA Article 41, ruled for the app (D-179, D-181, D-182).'),
     ('Three seconds', 'No such rule.', 'Time is counted in phase ends. An attacker in the key (columns G to K, from '
      'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders '
      'have no such rule.', 'FIBA Article 26, ruled for the app (D-171, D-172).'),
@@ -526,7 +529,7 @@ SPLITS = [
     ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover: the '
      'possession scores 0.', 'As in basketball: no shot before the clock runs out is a turnover.'),
     ('Steal-foul bonus', 'Every steal foul +5; the second of the possession also gives free throws and ends it.',
-     'Every steal foul +5; from the 5th team foul of the quarter it also gives free throws and ends the possession.',
+     'No foul gives +5; from the 5th team foul of the quarter a steal foul gives two free throws and ends the possession.',
      'One possession is the whole tabletop game; the app keeps fouls across a quarter.'),
     ('Junior growth', 'None: the junior cards play as printed.', 'Dealt at random when a junior roster is made; the '
      'cards show the ratings, Coach Vision names the two players it changes.', 'At the table it needed markers and a '

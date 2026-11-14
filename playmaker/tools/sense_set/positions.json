@@ -1709,7 +1709,8 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
    },
    {
     "name": "the computer's choice (j18fix): X2 Quick Steps to C7",
@@ -3312,7 +3313,32 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
+   },
+   {
+    "name": "the computer's choice (k18h): X2 moves to B7, facing SW, then X4 moves to C4, facing SW",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B7",
+      5,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      3,
+      "C4",
+      5,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18h"
    }
   ]
  },
@@ -4128,7 +4154,32 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
+   },
+   {
+    "name": "the computer's choice (k18h): X2 Quick Steps to H8, then X1 moves to O6, facing SE",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "H8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      0,
+      "O6",
+      3,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18h"
    }
   ]
  },
@@ -13361,7 +13412,8 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
    }
   ]
  },
@@ -15676,7 +15728,8 @@
       ""
      ]
     ],
-    "added_by": "j18fix"
+    "added_by": "j18fix",
+    "k_too": true
    }
   ]
  },
@@ -16497,7 +16550,8 @@
       ""
      ]
     ],
-    "added_by": "no_floor"
+    "added_by": "no_floor",
+    "k_too": true
    },
    {
     "name": "the computer's choice (kept): X2 Quick Steps to D6",
@@ -16537,7 +16591,8 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
    },
    {
     "name": "the computer's choice (j18fix): X4 moves to H4, facing NE, then X4 tries a Steal",
@@ -16561,7 +16616,8 @@
       ""
      ]
     ],
-    "added_by": "j18fix"
+    "added_by": "j18fix",
+    "k_too": true
    },
    {
     "name": "the computer's choice (jks2): X2 Quick Steps to C8, then the defence Pauses",
@@ -16586,7 +16642,575 @@
      ]
     ],
     "added_by": "jks2",
-    "j18_too": true
+    "j18_too": true,
+    "k_too": true
+   },
+   {
+    "name": "level with the computer's choice (k18a): X2 Quick Steps to D7",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D7",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X2 Quick Steps to C8",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X5 moves to P4, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P4",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X5 moves to P4, facing N, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P4",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X2 Quick Steps to C8, then X5 moves to P3, facing N",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X5 moves to P3, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X5 moves to P3, facing N, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 moves to N7, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "N7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 moves to N7, facing N, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "N7",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 moves to M6, facing NE",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "M6",
+      1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 moves to M6, facing NE, then the defence Pauses",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "M6",
+      1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 Quick Steps to N6, then X2 Quick Steps to D6",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "X",
+      1,
+      "D6",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 Quick Steps to N6",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N6",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 Quick Steps to N6, then the defence Pauses",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "pause",
+      "X",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X2 Quick Steps to D6, then X3 Sprints to O3",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "sprint",
+      "X",
+      2,
+      "O3",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X2 Quick Steps to D7, then X3 Sprints to O3",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "D7",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "sprint",
+      "X",
+      2,
+      "O3",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 Quick Steps to N6, then X3 moves to N7, facing N",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "N7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 Quick Steps to N6, then X3 moves to L6, facing NE",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "N6",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "L6",
+      1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18a): X3 moves to N6, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      2,
+      "N6",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18a"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X5 moves to P3, facing N, then X3 Sprints to O3",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "sprint",
+      "X",
+      2,
+      "O3",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X5 moves to P3, facing N, then X3 Sprints to N7",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "sprint",
+      "X",
+      2,
+      "N7",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X2 Quick Steps to C8, then X3 moves to N7, facing N",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "N7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X2 Quick Steps to C8, then X3 Quick Steps to O8",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "X",
+      2,
+      "O8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X5 moves to P3, facing N, then X3 Quick Steps to O8",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "qs",
+      "X",
+      2,
+      "O8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X3 Quick Steps to O8",
+    "turn": [
+     [
+      "qs",
+      "X",
+      2,
+      "O8",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X2 Quick Steps to C8, then X3 Sprints to N7",
+    "turn": [
+     [
+      "qs",
+      "X",
+      1,
+      "C8",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "sprint",
+      "X",
+      2,
+      "N7",
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
+   },
+   {
+    "name": "level with the computer's choice (k18m): X5 moves to P3, facing N, then X3 moves to N7, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      4,
+      "P3",
+      0,
+      -1,
+      ""
+     ],
+     [
+      "move",
+      "X",
+      2,
+      "N7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "k18m"
    }
   ]
  },
@@ -17404,7 +18028,8 @@
       ""
      ]
     ],
-    "added_by": "j18"
+    "added_by": "j18",
+    "k_too": true
    }
   ]
  },

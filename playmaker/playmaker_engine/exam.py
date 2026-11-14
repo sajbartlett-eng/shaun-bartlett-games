@@ -295,10 +295,12 @@ def p10():
                    off='Ball Movement', dfn='Twin Towers', ball=0, side='X', clock=12)
 
     def check(lt):
+        # D-183 (Shaun, 14 Nov 2026): with no points on a steal foul in the app, stealing early on a strong dribbler
+        # and holding back are level by play (step 18j: 30.5 against 29.5 on 48 play-outs each), so either passes
         tw, ts = lt['good odds'], lt['bad odds']
-        ok = any(a.kind == 'steal' for a in tw) and not any(a.kind == 'steal' for a in ts)
+        ok = any(a.kind == 'steal' for a in tw)
         return ok, f'good odds: {words(tw)}; bad odds, early: {words(ts)}'
-    return 'Steal: tried with good odds (a weak dribbler, a teammate near); declined early on a strong dribbler', \
+    return 'Steal: tried with good odds (a weak dribbler, a teammate near); early on a strong dribbler either is right', \
         {'good odds': weak, 'bad odds': strong}, check
 
 
