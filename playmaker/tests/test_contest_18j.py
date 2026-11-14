@@ -15,18 +15,24 @@ OFF = RC.with_rules(digital=True, soft_contest='off', fiba_steal_foul='off')
 O = ['I10', 'C9', 'O9', 'A3', 'Q3']                                    # O1 shoots the three from I10
 
 
-def board(x1, arrow, rules=ON, x4='G4', **kw):
-    s = game_state('Five Out', 'High-Low', O, [x1, 'D8', 'N8', x4, 'N4'], [arrow, 'NE', 'NW', 'N', 'N'], rules=rules, check=False)
+def board(x1, arrow, rules=ON, x4='G4', o1='I10', **kw):
+    s = game_state('Five Out', 'High-Low', [o1] + O[1:], [x1, 'D8', 'N8', x4, 'N4'], [arrow, 'NE', 'NW', 'N', 'N'], rules=rules, check=False)
     return s.with_(**kw) if kw else s
 
 
-def shoot(s):
-    return apply(s, next(a for a in legal_actions(s) if a.kind == 'shot' and a.shot == 'three'))
+def rim(x1, arrow, rules=ON, **kw):
+    """Step 18l, re-recorded for the D-184 cards: a three's contest rating is now 2 or 3, so next to a jump shooter a
+    soft contest (the rating less 3) is nothing. The soft-contest tests moved to a layup: O1 on I4, the rim at I2."""
+    return board(x1, arrow, rules=rules, x4='N5', o1='I4', **kw)
 
 
-def no_contest(s):
+def shoot(s, shot='three'):
+    return apply(s, next(a for a in legal_actions(s) if a.kind == 'shot' and a.shot == shot))
+
+
+def no_contest(s, shot='three'):
     """The shot with the reaction ended at once: no Contest action."""
-    r = shoot(s)
+    r = shoot(s, shot)
     return apply(r, next(a for a in legal_actions(r) if a.kind in ('end_turn', 'forfeit')))
 
 
@@ -43,26 +49,30 @@ def test_the_two_rules_are_the_apps():
 
 
 def test_next_to_the_shooter_is_a_soft_contest_with_no_action_and_no_foul():
-    s = board('I9', 'E')                                               # X1 in front of O1, his arrow off him
-    con = s.ctx.dfn[0].con('three')
-    end = no_contest(s)
+    s = rim('I3', 'E')                                                 # X1 in front of O1, his arrow off him
+    con = s.ctx.dfn[0].con('layup')
+    assert con - 3 > 0                                                 # D-184 cards: at the rim a hand up still counts
+    end = no_contest(s, 'layup')
     assert not isinstance(end, ChanceNode)                             # it never fouls: nothing is rolled
     r = end.result
     assert r.kind == 'shot' and r.soft and r.contester == 0 and r.contest == con - 3
-    assert r.shot_value == 3 * (s.ctx.off[0].shot('three') - (con - 3))
+    assert r.shot_value == 2 * (s.ctx.off[0].shot('layup') - (con - 3))
     assert "soft contest, a hand up from in front" in score(end).detail
-    off = no_contest(board('I9', 'E', rules=OFF))                      # the rule off: no Contest action, no contest
+    off = no_contest(rim('I3', 'E', rules=OFF), 'layup')               # the rule off: no Contest action, no contest
     assert off.result.contest == 0 and not off.result.soft
+    three = no_contest(board('I9', 'E'))                               # D-184 cards: next to a three, nothing
+    assert three.result.contest == 0 and not three.result.soft
 
 
 def test_from_behind_either_contest_is_three_lower_again():
-    front, behind = board('I9', 'N'), board('I11', 'S')
-    con = front.ctx.dfn[0].con('three')
-    assert soft_contest(front, 0, 'three') == (0, con - 3)
-    assert soft_contest(behind, 0, 'three')[1] == max(0, con - 6)
-    hard_front = next(c for c in contest_options(front, 0, 'three') if c.defender == 0)
-    hard_behind = next(c for c in contest_options(behind, 0, 'three') if c.defender == 0)
-    assert hard_front.contest == con and hard_behind.contest == max(0, con - 3)
+    front, behind = rim('I3', 'N'), rim('I5', 'S')                     # re-recorded at the rim: D-184 cards
+    con = front.ctx.dfn[0].con('layup')
+    assert con - 6 > 0
+    assert soft_contest(front, 0, 'layup') == (0, con - 3)
+    assert soft_contest(behind, 0, 'layup') == (0, con - 6)
+    hard_front = next(c for c in contest_options(front, 0, 'layup') if c.defender == 0)
+    hard_behind = next(c for c in contest_options(behind, 0, 'layup') if c.defender == 0)
+    assert hard_front.contest == con and hard_behind.contest == con - 3
 
 
 def test_a_hard_contest_rolls_for_a_foul_by_where_it_comes_from():
@@ -108,9 +118,10 @@ def test_a_soft_contest_is_never_below_nothing():
 
 
 def test_a_rushed_defenders_soft_contest_is_two_lower():
-    s = board('I9', 'N')
+    s = rim('I3', 'N')                                                 # re-recorded at the rim: D-184 cards
     rushed = s.with_(rush_x=RC.RUSH_QS)                                # X1's last movement was a Quick Step
-    assert soft_contest(rushed, 0, 'three')[1] == soft_contest(s, 0, 'three')[1] - RC.control_size(ON)
+    assert soft_contest(s, 0, 'layup')[1] > RC.control_size(ON)
+    assert soft_contest(rushed, 0, 'layup')[1] == soft_contest(s, 0, 'layup')[1] - RC.control_size(ON)
 
 
 def test_the_forced_shots_contest_is_unchanged():

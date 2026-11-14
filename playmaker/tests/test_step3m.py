@@ -42,13 +42,18 @@ def leaves(node, path=()):
 def test_jobs_at_senior_are_teamtools_and_junior_jobs_follow_the_junior_deck():
     tt = CD._load('teamtools', {'data': CD.DATA})
     assert all(RO.jobs(k) == tt.jobs(k) for k in CARDS)
-    cut = RO._cut('shot_three', 10, 'junior')
-    assert cut < 10                                              # juniors shoot worse: the cut moves with the deck
-    pro_share = sum(1 for c in CARDS.values() if c.r['shot_three'] >= 10)
+    # step 18l: the shooter test is a three of 9 on the D-184 cards (it was 10), and the nearest share of the deck is
+    # taken in proportion (D-188)
+    import math
+    pro = dict(RO.JOB_TESTS['shooter'])['shot_three']
+    assert pro == 9
+    cut = RO._cut('shot_three', pro, 'junior')
+    assert cut < pro                                             # juniors shoot worse: the cut moves with the deck
+    pro_share = sum(1 for c in CARDS.values() if c.r['shot_three'] >= pro)
     jun = [LV.effective_card(k, 'junior').r['shot_three'] for k in CARDS]
-    best = min(abs(sum(v >= t for v in jun) - pro_share) for t in range(21))
-    assert abs(sum(v >= cut for v in jun) - pro_share) == best
-    k = next(k for k in CARDS if cut <= LV.effective_card(k, 'junior').r['shot_three'] < 10)
+    off = lambda t: abs(math.log(sum(v >= t for v in jun) / pro_share)) if sum(v >= t for v in jun) else float('inf')
+    assert off(cut) == min(off(t) for t in range(21))
+    k = next(k for k in CARDS if cut <= LV.effective_card(k, 'junior').r['shot_three'] < pro)
     assert RO.jobs(k, 'junior')['shooter']                       # a shooter among juniors
     assert RO.coherent_ok([k for k, _ in RO.deal_one('amateur', random.Random(3), True, age='junior')], 'junior')
 

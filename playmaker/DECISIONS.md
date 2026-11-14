@@ -977,6 +977,15 @@ think the current ratings are better": a Steal is a deliberate hand in the pot, 
 often than basketball because a missed reach costs too little, not because of the odds of each reach). · Source:
 Shaun, 14 Nov 2026 · **Ruled, done.**
 
+**D-188. The shooter test at junior age.** The senior test stays a three of 9, as ruled (D-187). A job threshold is
+carried to a younger age as the same share of the deck (step 3m): the cut that as many cards reach at that age as
+reach the pro cut. On the D-186 cards no junior cut gives 24 shooters: a junior three of 7 gives 15 and 6 gives 37.
+The nearest by difference was 7, and with 15 junior shooters (14 of them A-tier) coherent junior semi-pro deals
+stopped existing and coherent junior pro deals fell from 37 in 100 random deals to 7. The nearest is now taken in
+proportion (15 against 24 is further off than 37 against 24), which picks 6: 37 junior shooters (36 before the card
+update), and junior deals as they were. No other job's cut at any age changes. · Source: step 18l, under Shaun's
+"keep it at 9 unless the coherent random deals look wrong" (14 Nov 2026) · **Built; for Shaun to confirm.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

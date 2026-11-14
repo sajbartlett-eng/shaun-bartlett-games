@@ -67,17 +67,19 @@ def test_senior_is_the_pro_card_unchanged():
         assert s.r == p.r and s.qs == p.qs and s.bands == p.bands
 
 
-# ---- junior (spot-checked against the printed U16 sheet, Playmaker_Cards_U16_Junior.pdf) ---------------------------
+# ---- junior (first spot-checked against the printed U16 sheet, Playmaker_Cards_U16_Junior.pdf; re-recorded in step 18l
+# from the junior cards as the app now deals them, reason: D-184 cards. The printed sheet is for the table and still
+# shows the cards before D-184) ----
 U16 = {   # key: (QS, offence in sheet order: dribble pass screen | layup dunk post floater mid long three ft)
-    'apgA': (2, [18, 15, 14, 17, 16, 10, 11, 11, 9, 8, 12], 'HAAAHLHAAAA'),
-    'apgC': (1, [15, 13, 11, 15, 13, 7, 8, 8, 6, 5, 9], 'ALLLLLALLLL'),
-    'shsA': (1, [15, 14, 14, 17, 14, 10, 9, 13, 11, 9, 14], 'AAAAALAHHHH'),
-    'shsB': (1, [14, 13, 12, 15, 13, 9, 8, 12, 10, 8, 13], 'ALLLLLAHHAA'),
-    'twsfA': (1, [16, 15, 17, 17, 15, 13, 9, 11, 9, 8, None], 'AAHAAAAAAA-'),
-    'pspfB': (0, [13, 13, 17, 17, 16, 15, 7, 10, 7, 5, None], 'LLHAHHLAAL-'),
-    'pspfC': (0, [12, 13, 16, 15, 14, 13, 6, 8, 5, 4, None], 'LLALAALLLL-'),
-    'rpcA': (0, [14, 13, 18, 17, 16, 15, 7, 9, 7, 6, 11], 'ALHAHHLAAAA'),
-    'rpcB': (0, [13, 13, 17, 17, 15, 14, 7, 8, 7, 6, 11], 'LLHAAHLLAAA'),
+    'apgA': (2, [18, 15, 14, 18, 16, 10, 11, 8, 7, 7, 12], 'HAAHHLHAAAA'),
+    'apgC': (1, [15, 13, 11, 16, 13, 7, 8, 5, 4, 4, 9], 'ALLLLLALLLL'),
+    'shsA': (1, [15, 14, 14, 17, 14, 10, 9, 9, 8, 8, 14], 'AAAAALAHHHH'),
+    'shsB': (1, [14, 13, 12, 16, 13, 9, 8, 8, 7, 7, 13], 'ALLLLLAAAAA'),
+    'twsfA': (1, [16, 15, 17, 17, 15, 13, 9, 8, 7, 7, None], 'AAHAAAAAAA-'),
+    'pspfB': (0, [13, 13, 17, 18, 16, 15, 7, 6, 6, 5, None], 'LLHHHHLLAL-'),
+    'pspfC': (0, [12, 13, 16, 16, 14, 13, 6, 5, 5, 4, None], 'LLALAALLLL-'),
+    'rpcA': (0, [14, 13, 18, 17, 16, 15, 7, 7, 6, 5, 11], 'ALHAHHLAALA'),
+    'rpcB': (0, [13, 13, 17, 17, 15, 14, 7, 6, 6, 5, 11], 'LLHAAHLLALA'),
 }
 SHEET = ['dribble', 'pass', 'screen', 'shot_layup', 'shot_dunk', 'shot_post', 'shot_floater', 'shot_mid', 'shot_long',
          'shot_three', 'free_throw']
@@ -100,7 +102,7 @@ def test_junior_is_the_u16_card_and_matches_the_printed_sheet():
     assert positions == {1, 2, 3, 4, 5} and len(U16) >= 6
     back = LV.effective_card('apgA', 'junior')              # a defence side too: agility 8 H, intercept 10 H, steal 6 H
     assert (back.r['agility'], back.r['intercept'], back.r['challenge'], back.r['steal']) == (8, 10, 8, 6)
-    assert (back.r['con_layup'], back.r['con_three']) == (7, 4)
+    assert (back.r['con_layup'], back.r['con_three']) == (7, 2)             # re-recorded: D-184 cards
 
 
 def test_card_labels():
@@ -186,8 +188,8 @@ def test_engine_shot_value_and_roll_targets_use_junior_ratings(junior_game):
     assert isinstance(node, ChanceNode)
     assert max(p for p, _, _ in node.outcomes) == max(p_success(10, s.ctx.rules), 1 - p_success(10, s.ctx.rules))
     assert p_success(10, s.ctx.rules) in [p for p, _, _ in node.outcomes]
-    # A three by O1 (junior three 8; pro is higher) contested by X1 (junior three contest 4, nearer the rim):
-    # 3 x (8 - 4) = 12; open, 3 x 8 = 24. Fouled on a three: 3 x junior FT 12 = 36.
+    # Re-recorded in step 18l, reason: D-184 cards. A three by O1 (junior three 7; pro is higher) contested by X1
+    # (junior three contest 2, nearer the rim): 3 x (7 - 2) = 15; open, 3 x 7 = 21. Fouled on a three: 3 x junior FT 12 = 36.
     from playmaker_engine import board as B
     from playmaker_engine import rules_config as RC
     sq3 = next((x, y) for y in range(1, B.H + 1) for x in range(B.W) if B.zone((x, y)) == '3' and y > 3)
@@ -196,11 +198,11 @@ def test_engine_shot_value_and_roll_targets_use_junior_ratings(junior_game):
     x_sq = [B.sq(near)] + [q for q in TABLE_X[1:] if B.parse_sq(q) not in (sq3, near)]
     s3 = game_state(off, dfn, o_sq, x_sq, [B.dir_between(near, sq3)] + TABLE_ARROWS[1:], ball=0, check=False)
     opts = {o.defender: o for o in contest_options(s3, 0, 'three')}
-    assert opts[-1].value == 24
-    assert opts[0].contest == 4 and opts[0].value == 12
+    assert opts[-1].value == 21
+    assert opts[0].contest == 2 and opts[0].value == 15
     assert opts[0].ft == RC.FT_MULT_THREE * 12 == 36
     # the pro card differs, so pro ratings leaking in would fail these numbers
-    assert CARDS['apgA'].shot('three') != 8 and CARDS['apgA'].r['free_throw'] != 12
+    assert CARDS['apgA'].shot('three') != 7 and CARDS['apgA'].r['free_throw'] != 12
 
 
 def test_scout_report_and_team_sheet_read_junior_cards(junior_game):
@@ -342,8 +344,9 @@ def test_pure_deal_shape_frequencies_match_the_legal_proportions(std):
 
 
 def test_legal_roster_counts():
-    assert {s: RO.count(s, flex=False) for s in LV.STANDARD_ORDER} == {'pro': 159375, 'semi_pro': 109375, 'amateur': 46875}
-    assert {s: RO.count(s, flex=True) for s in LV.STANDARD_ORDER} == {'pro': 1369375, 'semi_pro': 939375, 'amateur': 386875}
+    # re-recorded in step 18l, reason: D-184 cards (the two types the app adds: 81 cards, 75 at the table)
+    assert {s: RO.count(s, flex=False) for s in LV.STANDARD_ORDER} == {'pro': 229500, 'semi_pro': 157500, 'amateur': 67500}
+    assert {s: RO.count(s, flex=True) for s in LV.STANDARD_ORDER} == {'pro': 2000700, 'semi_pro': 1372500, 'amateur': 567000}
 
 
 def test_random_for_one_side_keeps_the_other_prescribed():
