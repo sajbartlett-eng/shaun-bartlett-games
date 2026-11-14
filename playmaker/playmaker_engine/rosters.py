@@ -13,7 +13,7 @@ from . import cards as CD
 from .levels import STANDARDS, TIER_VALUE, STANDARD_ORDER, AGE_ORDER, deal_growth
 
 POS_NAME = {1: 'PG', 2: 'SG', 3: 'SF', 4: 'PF', 5: 'C'}
-PER = 5                                     # cards per position per tier
+PER = 5                                     # cards per position per tier at the table (the app has more: BY_POS_TIER)
 BY_POS_TIER = {}
 for _k, _c in CD.CARDS.items():
     BY_POS_TIER.setdefault((_c.num, _c.tier), []).append(_k)
@@ -94,7 +94,7 @@ def _templates(standard, flex=True):
             n = 1
             for (p, t), k in Counter(zip(pos, tiers)).items():
                 for i in range(k):
-                    n *= PER - i
+                    n *= len(BY_POS_TIER.get((p, t), ())) - i      # D-184: the app has 6 small forwards and centres a tier
             if n:
                 out.append((pos, tiers, n))
     return out
@@ -158,8 +158,10 @@ def _bisect(cum, x):
 
 _TT = None
 # The four jobs as the data tools define them on the pro cards (teamtools.jobs): a rating at or above a threshold.
-JOB_TESTS = {'creator': (('dribble', 17), ('pass', 17)), 'shooter': (('shot_three', 10),),
-             'anchor': (('con_layup', 10), ('con_dunk', 11)), 'stopper': (('agility', 8),)}
+# D-184: the thresholds on rescaled ratings are carried through the same maps as the cards (three 10 -> 9, dunk
+# contest 11 -> 5), so the same cards hold the same jobs where the maps allow
+JOB_TESTS = {'creator': (('dribble', 17), ('pass', 17)), 'shooter': (('shot_three', 9),),
+             'anchor': (('con_layup', 10), ('con_dunk', 5)), 'stopper': (('agility', 8),)}
 _AGE_CUT = {}
 
 
