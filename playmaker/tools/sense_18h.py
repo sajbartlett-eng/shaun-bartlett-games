@@ -592,7 +592,8 @@ def cmd_score(tag, *args):
                     added += 1
     if added:
         json.dump(positions, open(POS, 'w'), indent=1)
-    play(positions, answers, set(p['id'] for p in scored), tuple(int(k) for k in os.environ.get('SENSE_COPIES', '0,1').split(',')))
+    if os.environ.get('SENSE_PLAY') != '0':            # SENSE_PLAY=0: score on the answers there are, play nothing
+        play(positions, answers, set(p['id'] for p in scored), tuple(int(k) for k in os.environ.get('SENSE_COPIES', '0,1').split(',')))
     rep = table(scored, answers, choices, level)
     rows, lost, var = [], [], 0.0
     for one in rep:
