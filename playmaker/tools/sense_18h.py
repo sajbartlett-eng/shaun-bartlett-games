@@ -382,7 +382,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
                     and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))
                     and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
                     and not (J18 and not K18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))
-                    and not (K18 and c.get('added_by') and not c['added_by'].startswith('k') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))]
+                    and not (K18 and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -571,16 +571,21 @@ def cmd_score(tag, *args):
         if any(p['id'].startswith(x) for x in LEVEL):
             # D-183: every turn the computer reads level with its choice is played out, and the pick scored by their average
             level[p['id']] = [tt for v, tt in r if abs(v - r[0][0]) < 1e-9]
-            for tt in level[p['id']][1:]:
+            for tt in level[p['id']]:
                 if not any(key(c['turn']) == key(tt) for c in p['candidates']):
                     p['candidates'].append(dict(name=f"level with the computer's choice ({tag}): " + words(tt), turn=tt, added_by=tag))
                     added += 1
+                else:
+                    for c in p['candidates']:      # a turn an earlier setting added is played under these rules too
+                        if key(c['turn']) == key(tt) and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too'):
+                            c['k_too'] = True
+                            added += 1
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
             p['candidates'].append(dict(name=f"the computer's choice ({tag}): " + words(t), turn=t, added_by=tag))
             added += 1
         elif ZONE or FIBA:
             # the choice is a turn an earlier setting added: it is played under this rule set too
-            w = 'zone' if ZONE else 'j18' if J18 else 'fiba'
+            w = 'zone' if ZONE else 'k' if K18 else 'j18' if J18 else 'fiba'
             for c in p['candidates']:
                 if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith(w) and not c.get(w + '_too'):
                     c[w + '_too'] = True
