@@ -28,7 +28,7 @@ from functools import lru_cache
 from . import board as B
 from . import geometry as G
 from . import rules_config as RC
-from .scoring import p_success, p_foul, p_fouls, foul_on_shot_points
+from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INF = 99
@@ -1646,6 +1646,15 @@ def _one_action(frm, arrow, qs, can_move, qs_left, rules):
 _LP = {}
 
 
+def _off_balance_key(s):
+    """D-185 (rules.off_balance): what a pass's chance now also turns on, for the keys of the two caches below: whether
+    the passer is rushed, and which defenders are (a rushed Pass and a rushed Intercept are rolled lower). Without
+    it a chance worked out with a player set was handed back for the same board with him rushed or locked."""
+    if not RC.off_balance_cut(s.ctx.rules):
+        return 0
+    return (1 if s.rushed('O', s.ball) else 0) | sum(2 << d for d in range(5) if s.rushed('X', d))
+
+
 def turnover_value(s):
     """What a pick-off leaves the offence: 0 in the digital format or the final phase; else -5 and the clock cost,
     then the coarse value of playing on."""
@@ -1664,7 +1673,7 @@ def _lane_p(s, i, c, reach=None):
     if reach is None:
         reach = bool(CONFIG['eval'].get('reach'))
     key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
-           s.o if reach else None, s.screens if reach else None)
+           s.o if reach else None, s.screens if reach else None, _off_balance_key(s))
     hit = _LP.get(key)
     if hit is None:
         if len(_LP) > 300000:
@@ -1692,14 +1701,14 @@ def _lane_p_calc(s, i, c, reach=False):
     lane = lane_squares(a, c, 0.5)
     if not lane:
         return 1.0
-    passer = s.ctx.off[s.ball].r['pass']
+    passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
     worst = 0.0
     for d, xp in enumerate(s.x):
         can_move, qs_left = _caps(s, 'X', d)
         one = _exact_one(s, d) if reach else _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)
         if lane.isdisjoint(one):
             continue
-        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        pi = 1 - float(p_success(passer - rolled(s, 'X', d, 'intercept'), rules))
         if pi > worst:
             worst = pi
     return 1.0 - worst
@@ -1719,7 +1728,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
             return 0.0
     if not lane:
         return 1.0
-    passer = s.ctx.off[s.ball].r['pass']
+    passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
     worst = 0.0
     for d, xp in enumerate(s.x):
         if d == j:
@@ -1729,7 +1738,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
             one = _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, cm, ql, rules)
         if lane.isdisjoint(one):
             continue
-        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        pi = 1 - float(p_success(passer - rolled(s, 'X', d, 'intercept'), rules))
         if pi > worst:
             worst = pi
     return 1.0 - worst
@@ -1738,7 +1747,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
 def _pass_prob(s, i):
     """P(a pass from the carrier to attacker i now arrives): 0 if not legal; else 1 - the best Intercept chance
     over the defence's legal intercepts once it is in the air (the rules' own options)."""
-    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens)
+    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s))
     if key in _PP:
         return _PP[key]
     from .actions import Action, legal_actions
@@ -1754,7 +1763,7 @@ def _pass_prob(s, i):
             if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and nxt.pending:
                 for b in legal_actions(nxt):
                     if b.kind == 'intercept':
-                        worst = max(worst, 1 - float(p_success(s.ctx.off[s.ball].r['pass'] - s.ctx.dfn[b.piece].r['intercept'],
+                        worst = max(worst, 1 - float(p_success(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept'),
                                                                s.ctx.rules)))
             p = 1.0 - worst
     except Exception:

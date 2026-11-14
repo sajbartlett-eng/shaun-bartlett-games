@@ -285,6 +285,7 @@ def main():
     ap.add_argument('--broken', action='store_true', help='step 18g: play each position on until a Dribble is won (a zone broken this phase)')
     ap.add_argument('--fiba', action='store_true', help='step 18i: three seconds, closely guarded and the FIBA fouled shot on in every position')
     ap.add_argument('--soft', action='store_true', help='step 18j: the soft and hard contest and the FIBA steal foul on in every position')
+    ap.add_argument('--off-balance', default=None, choices=('on', 'off'), help="step 18l: rules.off_balance in every position (unset: the format's own)")
     ap.add_argument('--no-floor', action='store_true', help='step 18h: eval.no_floor on, in both engines')
     ap.add_argument('--exact-shot', action='store_true', help='step 18h: eval.exact_shot on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
@@ -312,6 +313,8 @@ def main():
         _FIBA.update(three_seconds='on', closely_guarded='on', fiba_fouled_shot='on')
     if args.soft:
         _FIBA.update(soft_contest='on', fiba_steal_foul='on')
+    if args.off_balance:
+        _FIBA.update(off_balance=args.off_balance)
     args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle

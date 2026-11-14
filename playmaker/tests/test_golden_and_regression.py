@@ -101,18 +101,21 @@ def test_legacy_ceilings_reproduced_exactly():
 def test_engine_ceilings_recorded():
     from playmaker_engine.analysis import engine_ceilings
     eng = engine_ceilings([6, 10, 14])
-    assert eng[6][0][0] == 9 and eng[6][1][0] == 30
-    assert eng[10][0][0] == F(51, 4)            # 12.75: see REGRESSION.md
+    # step 18l: re-recorded, reason: D-184 cards (with D-186's correction). On the cards before them these were 9
+    # and 30, and 12.75 (docs/history/REGRESSION.md keeps the old table). D-185 is the app's and changes nothing here.
+    assert eng[6][0][0] == 15 and eng[6][1][0] == 27
+    assert eng[10][0][0] == 15
     assert eng[14] == (None, None)              # Hold for One: no shot before the final phase
 
 
 @pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_two_action_reaction_closes_the_gap():
-    # Late Clock Reset: one reaction action leaves O1's three worth 12.75; with two actions X4
-    # Moves (arrow set) and Quick Steps in to contest clean: 3.
+    # Late Clock Reset: one reaction action leaves O1's three worth 15; with two actions X4 Moves (arrow set) and
+    # Quick Steps in to contest clean: 12. Step 18l: re-recorded, reason: D-184 cards (with D-186's correction): a
+    # three's contest is now 2 or 3, so the clean contest takes less off. On the cards before them: 12.75 and 3.
     from playmaker_engine.analysis import two_action_ceilings
     gift = two_action_ceilings([10], parts=('gift',))[10][0]
-    assert gift[0] == 3 and 'then' in gift[1]
+    assert gift[0] == 12 and 'then' in gift[1]
 
 
 # ---- play() -------------------------------------------------------------------------------

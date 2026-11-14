@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -144,6 +144,7 @@ const PMEngine = (() => {
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
       soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
+      offCut: appRule(c.rules, 'off_balance') ? controlSize(c.rules) : 0,                          // step 18l (D-185): off balance, the reduction on every rolled rating
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
@@ -151,8 +152,14 @@ const PMEngine = (() => {
   const controlOn = ctx => ctx.control > 0;
   const controlCut = (ctx, t) => ctx.control;            // one size, for every shot type and for the Contest alike
   // two bits a player in rush_o / rush_x: 1 his last movement this phase was a Quick Step, 2 a Sprint, 0 set
-  const rushedO = (s, i) => ((s.rush_o >> (2 * i)) & 3) !== 0;
-  const rushedX = (s, j) => ((s.rush_x >> (2 * j)) & 3) !== 0;
+  // D-185 (rules.off_balance): a locked player is rushed too (he can't Move, so it lasts the phase)
+  const rushedO = (s, i) => ((s.rush_o >> (2 * i)) & 3) !== 0 || (s.ctx.offCut > 0 && ((s.lock_o >> i) & 1) === 1);
+  const rushedX = (s, j) => ((s.rush_x >> (2 * j)) & 3) !== 0 || (s.ctx.offCut > 0 && ((s.lock_x >> j) & 1) === 1);
+  // D-185: the rating a player rolls with: his card's, less the off-balance reduction when he is rushed (not fouls)
+  const rolled = (s, side, i, name) => {
+    const v = (side === 'O' ? s.ctx.off : s.ctx.dfn)[i].r[name];
+    return s.ctx.offCut > 0 && (side === 'O' ? rushedO(s, i) : rushedX(s, i)) ? v - s.ctx.offCut : v;
+  };
   const shotRating = (s, shooter, t) => s.ctx.off[shooter].sh[t] - (controlOn(s.ctx) && rushedO(s, shooter) ? controlCut(s.ctx, t) : 0);
 
   // ---- state --------------------------------------------------------------------------------------------------------
@@ -957,7 +964,7 @@ const PMEngine = (() => {
     }
     if (k === 'dribble') {
       if (s.ctx.guarded) s = W_(s, { grd: 65 });         // D-173: a Dribble keeps him active
-      const t = O[s.ball].r.dribble - X[a.target].r.agility;
+      const t = rolled(s, 'O', s.ball, 'dribble') - rolled(s, 'X', a.target, 'agility');
       const nb = s.beaten.filter(b => !(b[0] === s.ball && b[1] === a.target)).concat([[s.ball, a.target]]);
       nb.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
       const win = W_(lock(s, 'X', a.target), { beaten: nb });
@@ -966,7 +973,7 @@ const PMEngine = (() => {
     }
     if (k === 'intercept') {
       const passer = s.pending[0], j = a.piece;
-      const t = O[passer].r.pass - X[j].r.intercept;
+      const t = rolled(s, 'O', passer, 'pass') - rolled(s, 'X', j, 'intercept');
       const ok = completePass(W_(s, { moved_x: s.moved_x | (1 << j) }));
       const okNode = ok.phase !== s.phase ? ok : after(state, ok, side, k);
       let back = s;
@@ -979,13 +986,13 @@ const PMEngine = (() => {
       return chance([[pS(t), 'success', okNode], [pNot(t), 'failure', lostNode]]);
     }
     if (k === 'challenge') {
-      const t = O[a.target].r.screen - X[a.piece].r.challenge;
+      const t = rolled(s, 'O', a.target, 'screen') - rolled(s, 'X', a.piece, 'challenge');
       const holds = lock(s, 'X', a.piece);
       const fails = W_(s, { screens: s.screens.filter(x => x[0] !== a.target) });
       return chance([[pS(t), 'success', after(state, holds, side, k)], [pNot(t), 'failure', after(state, fails, side, k)]]);
     }
     if (k === 'steal') {
-      const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = O[carrier].r.dribble - X[a.piece].r.steal;
+      const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = rolled(s, 'O', carrier, 'dribble') - rolled(s, 'X', a.piece, 'steal');
       // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
       const fibaSf = s.ctx.fibaSteal;                    // D-179: no +5 outside the penalty
       let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + ((s.stage === 'reaction' || fibaSf) ? 0 : 1) });
@@ -1476,7 +1483,7 @@ const PMEngine = (() => {
     for (const xp of s.x) if (den.has(xp) && adjacent(xp, c)) return 0;
     const lane = den;
     if (!lane.size) return 1;
-    const passer = s.ctx.off[s.ball].r.pass;
+    const passer = rolled(s, 'O', s.ball, 'pass');
     let worst = 0;
     const exact = reach === undefined ? reachOn() : reach;
     for (let d = 0; d < 5; d++) {
@@ -1484,7 +1491,7 @@ const PMEngine = (() => {
       const one = exact ? exactOne(s, d) : oneAction(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, canMove, qsLeft);
       let hit = false; for (const b of lane.bi) if ((one[b >> 5] >>> (b & 31)) & 1) { hit = true; break; }
       if (!hit) continue;
-      const pi = 1 - pS(passer - s.ctx.dfn[d].r.intercept);
+      const pi = 1 - pS(passer - rolled(s, 'X', d, 'intercept'));
       if (pi > worst) worst = pi;
     }
     return 1 - worst;
@@ -1498,7 +1505,7 @@ const PMEngine = (() => {
       let worst = 0;
       if (!isChance(nxt) && nxt.stage === 'play' && nxt.side === 'X' && nxt.pending) {
         for (const b of legalActions(nxt)) {
-          if (b.kind === 'intercept') worst = Math.max(worst, 1 - pS(s.ctx.off[s.ball].r.pass - s.ctx.dfn[b.piece].r.intercept));
+          if (b.kind === 'intercept') worst = Math.max(worst, 1 - pS(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept')));
         }
       }
       return 1 - worst;
@@ -1929,7 +1936,7 @@ const PMEngine = (() => {
         if (denied) p = 0;
         else if (!den.size) p = 1;
         else {
-          const passer = s.ctx.off[s.ball].r.pass, exact = reachOn(), bi = den.bi;
+          const passer = rolled(s, 'O', s.ball, 'pass'), exact = reachOn(), bi = den.bi;
           let worst = 0;
           for (let d = 0; d < 5; d++) {
             let one;
@@ -1937,7 +1944,7 @@ const PMEngine = (() => {
             else { const cp = caps(s, 'X', d); one = oneAction(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, cp[0], cp[1]); }
             let hit = false;
             for (let k = 0; k < bi.length; k++) { const b = bi[k]; if ((one[b >> 5] >>> (b & 31)) & 1) { hit = true; break; } }
-            if (hit) { const pi = 1 - pS(passer - s.ctx.dfn[d].r.intercept); if (pi > worst) worst = pi; }
+            if (hit) { const pi = 1 - pS(passer - rolled(s, 'X', d, 'intercept')); if (pi > worst) worst = pi; }
           }
           p = 1 - worst;
         }
@@ -1952,7 +1959,7 @@ const PMEngine = (() => {
       r = { off: !(ONB[a] && ONB[c]), den: null, denies: [false, false, false, false, false], hit: [false, false, false, false, false], pi: [0, 0, 0, 0, 0], p: 0 };
       if (!r.off) {
         const den = laneSquares(a, c); r.den = den;
-        const passer = s.ctx.off[s.ball].r.pass;
+        const passer = rolled(s, 'O', s.ball, 'pass');
         for (let d = 0; d < 5; d++) {
           const xp = s.x[d];
           r.denies[d] = den.has(xp) && adjacent(xp, c);
@@ -1961,7 +1968,7 @@ const PMEngine = (() => {
             const one = oneAction(xp, s.arrows[d], s.ctx.dfn[d].qs, canMove, qsLeft);
             let hit = false; for (const b of den.bi) if ((one[b >> 5] >>> (b & 31)) & 1) { hit = true; break; }
             r.hit[d] = hit;
-            r.pi[d] = 1 - pS(passer - s.ctx.dfn[d].r.intercept);
+            r.pi[d] = 1 - pS(passer - rolled(s, 'X', d, 'intercept'));
           }
         }
         // step 12 (eval.reach): who can step into the pass, by the reach map's exact movement (the moved re-reads keep

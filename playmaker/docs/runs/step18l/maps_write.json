@@ -1,0 +1,95 @@
+{
+ "rookie": {
+  "possessions": 120,
+  "positions": 1321,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X"
+  ],
+  "lines_from_the_shared_map": [
+   "3X",
+   "3O",
+   "4X",
+   "4O",
+   "5X",
+   "5O",
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 532,
+   "1X": 418,
+   "2O": 197,
+   "2X": 136
+  },
+  "held_out_error": {
+   "its_own_map": 10.008,
+   "the_shared_map": 10.824
+  }
+ },
+ "starter": {
+  "possessions": 90,
+  "positions": 959,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X"
+  ],
+  "lines_from_the_shared_map": [
+   "3X",
+   "3O",
+   "4X",
+   "4O",
+   "5X",
+   "5O",
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 413,
+   "1X": 302,
+   "2O": 137,
+   "2X": 78
+  },
+  "held_out_error": {
+   "its_own_map": 9.628,
+   "the_shared_map": 9.441
+  }
+ },
+ "allstar": {
+  "possessions": 200,
+  "positions": 3329,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X",
+   "3O",
+   "3X",
+   "4O"
+  ],
+  "lines_from_the_shared_map": [
+   "4X",
+   "5X",
+   "5O",
+   "6X",
+   "6O"
+  ],
+  "positions_a_line": {
+   "1O": 1129,
+   "1X": 825,
+   "2O": 540,
+   "2X": 367,
+   "3O": 196,
+   "3X": 146,
+   "4O": 63
+  },
+  "held_out_error": {
+   "its_own_map": 7.992,
+   "the_shared_map": 8.34
+  }
+ }
+}

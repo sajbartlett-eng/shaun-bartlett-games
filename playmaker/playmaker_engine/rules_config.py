@@ -291,6 +291,11 @@ class Rules:
     #     on. In the penalty, two free throws, as before.
     soft_contest: str = 'app'
     fiba_steal_foul: str = 'app'
+    # D-185 (Shaun, 14 Nov 2026), the app only: off balance. A player is rushed if his last movement this phase was a
+    #   Quick Step or a Sprint, or he is locked. Rushed is 2 off every rating he rolls (not foul ratings): shots, soft
+    #   and hard contests, Dribble, Pass, Screen, Agility, Steal, Intercept and Challenge. A Move resets it; a locked
+    #   player can't Move, so it lasts the phase. It needs the control rule (its size is the control rule's).
+    off_balance: str = 'app'
     closely_guarded: str = 'app'
     fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
@@ -348,6 +353,12 @@ def control_size(rules):
     if rules.control == 'app':
         return CONTROL_APP if rules.digital else 0
     return CONTROL[rules.control]
+
+
+def off_balance_cut(rules):
+    """D-185: what a rushed (or locked) player loses on every rating he rolls, shots and contests aside (those are
+    control_cut): the control rule's size when rules.off_balance is on, else 0."""
+    return control_size(rules) if app_rule(rules, 'off_balance') else 0
 
 
 def control_cut(rules, shot_type=None):

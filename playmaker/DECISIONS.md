@@ -944,6 +944,48 @@ to 9 when asked.) Two new types, the app only for now, three tiers each and plai
 forward) and the Switch Centre. No conditionals on cards. The table keeps its 25 types; the printed cards are not
 reprinted now. · Source: Shaun, 14 Nov 2026 · **Ruled; card update.**
 
+**D-185. Off balance (the app only; `rules.off_balance`).** Shaun: "A sprint closeout is easy to beat. A sprint drive
+is harder to control and susceptible to losing the ball off a targeted dribble move." (1) You're rushed if your last
+movement this phase was a Quick Step or a Sprint (as now), or you're locked. (2) Rushed is 2 off every rating you
+roll, except foul ratings: shots, soft and hard contests, Dribble, Pass, Screen, Agility, Steal, Intercept and
+Challenge. (3) A Move resets it; a locked player can't Move, so it lasts the phase. So a missed Steal, which locks the
+defender, leaves him easier to drive past for the rest of the phase: that is the cost of a failed gamble. **This
+reverses D-151's "No drive rule" line** (step 18d: "a defender who closed out hard is not made easier to beat off the
+dribble"). One state, one marker: the RUSHED marker also shows on a locked player. The rule text: "Rushed: after a
+Quick Step or Sprint, or while locked, every roll you make is 2 worse (not fouls) until you Move." · Source: Shaun,
+14 Nov 2026 · **Ruled; step 18l.**
+
+**D-186. A correction to D-184's jump-shot maps.** Reason: D-184's maps for threes, mid-range and long twos lowered
+the top but left average shooters a step high, and squeezed good, decent and average shooters onto the same number.
+The three ratings are re-derived for the 75 table cards from the cards as they were before D-184: three 13 to 11, 12
+to 10, 11 and 10 to 9, 9 to 8, 8 to 7; mid-range 16 to 12, 15 to 11, 14 and 13 to 10, 12 to 9, 11 and 10 to 8, 9 to
+7; long two 14 and 13 to 11, 12 to 10, 11 to 9, 10 to 8, 9 and 8 to 7. Then, to keep a shooting type's tiers apart on
+its own shots, 20 single changes: threes `spgC` 8, `bgsC` 8, `tndC` 8, `stpfB` 8, `stpfC` 7, `scsfB` 8, `scsfC` 7,
+`stsfC` 8; mid-range `spgC` 9, `bgsC` 9, `tndC` 9, `stpfC` 9, `scsfC` 9, `stsfB` 9, `stsfC` 8, `pnpB` 9, `pnpC` 8,
+`stcC` 9; long twos `shsB` 10, `shsC` 9. Each band's average lands near FIBA's (threes 51 / 43 / 33%, mid-range 56 /
+48 / 38%, long twos 52 / 43 / 35%: above average / average / below), no tier is out of order, and the Sharpshooter
+reads 55 / 50 / 45% from three. All other D-184 changes stand; the range table is unchanged and every band is
+recomputed. · Source: Shaun, 14 Nov 2026 · **Ruled; step 18l.**
+
+**D-187. Rulings on step 18k and the card update.** Step 18k is accepted and merged as it stands (no +5 on any foul
+in the app; the mid-quarter foul situation; `search.keep_settled` on; the shortlist fix and `search.dice_in_hand`
+off). Its proposal to score penalty free throws at three times the rating is rejected: the cause was the open
+jump-shot ratings, now fixed by D-184. The card update (D-184) is accepted and merged. The new types are named
+"Slashing Wing" (small forward) and "Switch Centre". The "shooter" job threshold stays a three of 9 (on the corrected
+cards that is 24 of the 75 table cards; it was 30 before D-184). Steal and foul ratings stay as they are (Shaun: "I
+think the current ratings are better": a Steal is a deliberate hand in the pot, a real gamble; the game reaches more
+often than basketball because a missed reach costs too little, not because of the odds of each reach). · Source:
+Shaun, 14 Nov 2026 · **Ruled, done.**
+
+**D-188. The shooter test at junior age.** The senior test stays a three of 9, as ruled (D-187). A job threshold is
+carried to a younger age as the same share of the deck (step 3m): the cut that as many cards reach at that age as
+reach the pro cut. On the D-186 cards no junior cut gives 24 shooters: a junior three of 7 gives 15 and 6 gives 37.
+The nearest by difference was 7, and with 15 junior shooters (14 of them A-tier) coherent junior semi-pro deals
+stopped existing and coherent junior pro deals fell from 37 in 100 random deals to 7. The nearest is now taken in
+proportion (15 against 24 is further off than 37 against 24), which picks 6: 37 junior shooters (36 before the card
+update), and junior deals as they were. No other job's cut at any age changes. · Source: step 18l, under Shaun's
+"keep it at 9 unless the coherent random deals look wrong" (14 Nov 2026) · **Built; for Shaun to confirm.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

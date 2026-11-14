@@ -167,8 +167,12 @@ _AGE_CUT = {}
 
 def _cut(rating, pro_cut, age):
     """Step 3m Part 0: a job threshold at the playing age. The pro threshold is carried over as the same share of the
-    deck: the cut at this age is the value that the same number of the 75 cards (as they play at this age) reach as
-    reach the pro cut on the pro cards. So a junior team's shooters are the cards that shoot well among juniors."""
+    deck: the cut at this age is the value that the same number of the cards (as they play at this age) reach as
+    reach the pro cut on the pro cards. So a junior team's shooters are the cards that shoot well among juniors.
+    Step 18l (D-188): where no cut gives the same number, the nearest is taken in proportion (15 against 24 is
+    further off than 37 against 24), not by the difference. On the D-186 cards the difference picked a junior three
+    of 7, which 15 cards reach, and coherent junior semi-pro deals stopped existing; in proportion it picks 6, which
+    37 reach (36 before the card update)."""
     key = (rating, pro_cut, age)
     if key not in _AGE_CUT:
         if age == 'senior':
@@ -177,7 +181,9 @@ def _cut(rating, pro_cut, age):
             from .levels import effective_card
             share = sum(1 for c in CD.CARDS.values() if c.r[rating] >= pro_cut)
             vals = sorted((effective_card(k, age).r[rating] for k in CD.CARDS), reverse=True)
-            best = min(range(0, 21), key=lambda t: (abs(sum(1 for v in vals if v >= t) - share), -t))
+            import math
+            off = lambda n: abs(math.log(n / share)) if n and share else float('inf')
+            best = min(range(0, 21), key=lambda t: (round(off(sum(1 for v in vals if v >= t)), 9), -t))
             _AGE_CUT[key] = best
     return _AGE_CUT[key]
 
