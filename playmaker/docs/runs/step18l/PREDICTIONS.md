@@ -58,3 +58,14 @@ this 4-core machine; single-core runs count as one core.
 - self-play (new_allstar, allstar, 200 possessions): 1.45 (running total 8.28)
 - self-play (new_starter, starter, 90 possessions): 0.16 (running total 8.44)
 - self-play (new_rookie, rookie, 120 possessions): 0.07 (running total 8.51)
+- speed, round 1 (one core): 0.11 (running total 8.62)
+- speed, round 2 (one core): 0.1 (running total 8.72)
+- a second pass of the old-card set replay stopped 2 minutes in (4 cores), when the old cards were found: 0.13 (running total 8.85)
+- searches: the set on the cards before D-184 and on the cards now (19 positions each): 0.02 (running total 8.87)
+- the named tests, three runs, and the changed files once (one core): 1.13 (running total 10.0)
+- agreement checks between the two engines, twice: before and after the store fix (one core): 1.03 (running total 11.03)
+- finding the store fault: the two failing checks again with the rule off, and the comparisons that tracked it down (one core): 0.56 (running total 11.59)
+- small test runs while re-recording the card-value tests (one core): 0.13 (running total 11.72)
+- the static test on its own (one core): 0.03 (running total 11.75)
+
+**Total: 11.75 core-hours of the 12 allowed** (estimate 9.5). 6.9 of them went on runs that played the cards from before D-184 by mistake: see the report.

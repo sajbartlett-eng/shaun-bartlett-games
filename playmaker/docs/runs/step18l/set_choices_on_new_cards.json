@@ -1,0 +1,173 @@
+[
+ {
+  "id": "closeout, shooter cannot move",
+  "side": "X",
+  "before_d184": "X3 moves to C4, facing SW, then X2 moves to B6, facing SW",
+  "now": "X2 moves to B6, facing SW",
+  "same": false,
+  "reads_before": 27.94,
+  "reads_now": 27
+ },
+ {
+  "id": "closeout, shooter can move",
+  "side": "X",
+  "before_d184": "X3 Quick Steps to E3, then the defence Pauses",
+  "now": "the defence Pauses",
+  "same": false,
+  "reads_before": 27.94,
+  "reads_now": 27.16
+ },
+ {
+  "id": "closeout, step 2",
+  "side": "X",
+  "before_d184": "X3 moves to B4, facing SW, then X3 tries a Steal",
+  "now": "X3 moves to B4, facing SW, then X3 tries a Steal",
+  "same": true,
+  "reads_before": 18.82,
+  "reads_now": 18.99
+ },
+ {
+  "id": "game EB3F5B, the pass in the air",
+  "side": "X",
+  "before_d184": "X4 Quick Steps to E4",
+  "now": "X2 moves to B7, facing N",
+  "same": false,
+  "reads_before": 33,
+  "reads_now": 27.68
+ },
+ {
+  "id": "18e's Steal position, clock 2",
+  "side": "X",
+  "before_d184": "the defence Pauses",
+  "now": "X1 moves to M11, facing N, then the defence Pauses",
+  "same": false,
+  "reads_before": 27,
+  "reads_now": 24
+ },
+ {
+  "id": "18e's Steal position, clock 10",
+  "side": "X",
+  "before_d184": "X2 moves to B3, facing N, then X2 Quick Steps to B4",
+  "now": "X3 moves to P6, facing SE, then X3 tries a Steal",
+  "same": false,
+  "reads_before": 33.07,
+  "reads_now": 29.93
+ },
+ {
+  "id": "Contest or not 1",
+  "side": "X",
+  "before_d184": "X2 Quick Steps to J3",
+  "now": "X2 Quick Steps to J3",
+  "same": true,
+  "reads_before": 31.9,
+  "reads_now": 31.9
+ },
+ {
+  "id": "Contest or not 2",
+  "side": "X",
+  "before_d184": "X3 moves to P6, facing NE",
+  "now": "X3 moves to P6, facing NE",
+  "same": true,
+  "reads_before": 30,
+  "reads_now": 27
+ },
+ {
+  "id": "Contest or not 3",
+  "side": "X",
+  "before_d184": "X3 moves to P4, facing NE",
+  "now": "X3 moves to P4, facing NE",
+  "same": true,
+  "reads_before": 24,
+  "reads_now": 21
+ },
+ {
+  "id": "Contest or not 4",
+  "side": "X",
+  "before_d184": "X2 Quick Steps to B7",
+  "now": "the defence ends its turn",
+  "same": false,
+  "reads_before": 24,
+  "reads_now": 24
+ },
+ {
+  "id": "shoot now or play on 1",
+  "side": "O",
+  "before_d184": "O1 shoots (three)",
+  "now": "O3 moves to E6, then O1 passes to O5",
+  "same": false,
+  "reads_before": 30,
+  "reads_now": 28.77
+ },
+ {
+  "id": "shoot now or play on 2",
+  "side": "O",
+  "before_d184": "O5 shoots (layup)",
+  "now": "O5 shoots (layup)",
+  "same": true,
+  "reads_before": 38,
+  "reads_now": 38
+ },
+ {
+  "id": "shoot now or play on 3",
+  "side": "O",
+  "before_d184": "O4 shoots (three)",
+  "now": "O2 moves to B8",
+  "same": false,
+  "reads_before": 30,
+  "reads_now": 28.11
+ },
+ {
+  "id": "shoot now or play on 4",
+  "side": "O",
+  "before_d184": "O2 sets a screen",
+  "now": "O5 moves to J2",
+  "same": false,
+  "reads_before": 27.86,
+  "reads_now": 27.79
+ },
+ {
+  "id": "move, then shoot 1",
+  "side": "O",
+  "before_d184": "O4 moves to A2, then O4 shoots (three)",
+  "now": "O4 moves to A2, then O4 shoots (three)",
+  "same": true,
+  "reads_before": 28.25,
+  "reads_now": 29
+ },
+ {
+  "id": "move, then shoot 2",
+  "side": "O",
+  "before_d184": "O4 moves to I2, then O4 shoots (layup)",
+  "now": "O4 moves to I2, then O4 shoots (layup)",
+  "same": true,
+  "reads_before": 46,
+  "reads_now": 46
+ },
+ {
+  "id": "board 1",
+  "side": "X",
+  "before_d184": "X2 Quick Steps to D6, then the defence Pauses",
+  "now": "X2 moves to C6, facing N, then X1 moves to L10, facing N",
+  "same": false,
+  "reads_before": 28,
+  "reads_now": 28.07
+ },
+ {
+  "id": "board 3",
+  "side": "X",
+  "before_d184": "X3 moves to M7, facing N, then the defence Pauses",
+  "now": "the defence Pauses",
+  "same": false,
+  "reads_before": 27.25,
+  "reads_now": 27.77
+ },
+ {
+  "id": "board 8",
+  "side": "O",
+  "before_d184": "O1 moves to J10",
+  "now": "O2 moves to E10, then O1 passes to O2",
+  "same": false,
+  "reads_before": 29.74,
+  "reads_now": 29.22
+ }
+]

@@ -1,0 +1,112 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18k's code and this step's",
+ "switches": {},
+ "rounds": [
+  {
+   "18k": {
+    "rookie": {
+     "median": 0.203,
+     "nine_in_ten": 0.348,
+     "slowest": 0.383
+    },
+    "starter": {
+     "median": 0.816,
+     "nine_in_ten": 1.168,
+     "slowest": 1.234
+    },
+    "allstar": {
+     "median": 1.816,
+     "nine_in_ten": 2.204,
+     "slowest": 2.287
+    }
+   },
+   "18l": {
+    "rookie": {
+     "median": 0.217,
+     "nine_in_ten": 0.275,
+     "slowest": 0.326
+    },
+    "starter": {
+     "median": 0.808,
+     "nine_in_ten": 1.059,
+     "slowest": 1.201
+    },
+    "allstar": {
+     "median": 1.612,
+     "nine_in_ten": 2.256,
+     "slowest": 2.468
+    }
+   },
+   "18l, the rule off": {
+    "rookie": {
+     "median": 0.212,
+     "nine_in_ten": 0.284,
+     "slowest": 0.345
+    },
+    "starter": {
+     "median": 0.8,
+     "nine_in_ten": 1.01,
+     "slowest": 1.153
+    },
+    "allstar": {
+     "median": 1.562,
+     "nine_in_ten": 2.104,
+     "slowest": 2.427
+    }
+   }
+  },
+  {
+   "18k": {
+    "rookie": {
+     "median": 0.227,
+     "nine_in_ten": 0.327,
+     "slowest": 0.456
+    },
+    "starter": {
+     "median": 0.839,
+     "nine_in_ten": 1.084,
+     "slowest": 1.188
+    },
+    "allstar": {
+     "median": 1.774,
+     "nine_in_ten": 2.271,
+     "slowest": 2.525
+    }
+   },
+   "18l": {
+    "rookie": {
+     "median": 0.187,
+     "nine_in_ten": 0.276,
+     "slowest": 0.321
+    },
+    "starter": {
+     "median": 0.716,
+     "nine_in_ten": 0.861,
+     "slowest": 1.048
+    },
+    "allstar": {
+     "median": 1.45,
+     "nine_in_ten": 1.92,
+     "slowest": 2.131
+    }
+   },
+   "18l, the rule off": {
+    "rookie": {
+     "median": 0.215,
+     "nine_in_ten": 0.279,
+     "slowest": 0.329
+    },
+    "starter": {
+     "median": 0.716,
+     "nine_in_ten": 0.962,
+     "slowest": 1.035
+    },
+    "allstar": {
+     "median": 1.432,
+     "nine_in_ten": 1.98,
+     "slowest": 2.118
+    }
+   }
+  }
+ ]
+}
