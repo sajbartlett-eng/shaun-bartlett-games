@@ -1,0 +1,145 @@
+{
+ "leaf_mode": "relative",
+ "stable": false,
+ "switches": [
+  "like_with_like"
+ ],
+ "reach": true,
+ "speedups_off": [],
+ "coverage_budget": false,
+ "advantages": false,
+ "goals": false,
+ "learned": false,
+ "calibrated": true,
+ "control": "app",
+ "settle": true,
+ "help": false,
+ "searches": {
+  "compared": 12,
+  "equal": 12
+ },
+ "states": 60,
+ "seconds_python": 5.8,
+ "seconds_js": 0.6,
+ "by_stage": {
+  "play": 52,
+  "over": 8
+ },
+ "by_phase": {
+  "1": 41,
+  "3": 4,
+  "2": 15
+ },
+ "by_age": {
+  "senior": 19,
+  "youth": 14,
+  "junior": 27
+ },
+ "by_standard": {
+  "pro": 14,
+  "semi_pro": 21,
+  "amateur": 25
+ },
+ "digital": 26,
+ "reaction_kinds": null,
+ "reaction_after_one_action": null,
+ "checks": {
+  "legal": {
+   "compared": 60,
+   "equal": 60
+  },
+  "attacker_reach": {
+   "compared": 52,
+   "equal": 52
+  },
+  "defender_reach": {
+   "compared": 52,
+   "equal": 52
+  },
+  "defender_exact": {
+   "compared": 52,
+   "equal": 52
+  },
+  "threat_geo": {
+   "compared": 52,
+   "equal": 52
+  },
+  "cover_geo": {
+   "compared": 52,
+   "equal": 52
+  },
+  "leaf_geo": {
+   "compared": 52,
+   "equal": 52
+  },
+  "threat_exact": {
+   "compared": 52,
+   "equal": 52
+  },
+  "cover_exact": {
+   "compared": 52,
+   "equal": 52
+  },
+  "leaf_exact": {
+   "compared": 52,
+   "equal": 52
+  },
+  "quick": {
+   "compared": 52,
+   "equal": 52
+  },
+  "reach_map": {
+   "compared": 52,
+   "equal": 52
+  },
+  "budget_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "budget_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "split_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_geo": {
+   "compared": 0,
+   "equal": 0
+  },
+  "adv_exact": {
+   "compared": 0,
+   "equal": 0
+  },
+  "features_geo": {
+   "compared": 52,
+   "equal": 52
+  },
+  "features_exact": {
+   "compared": 52,
+   "equal": 52
+  },
+  "ceiling": {
+   "compared": 52,
+   "equal": 52
+  },
+  "settled": {
+   "compared": 0,
+   "equal": 0
+  },
+  "floored": {
+   "compared": 0,
+   "equal": 0
+  },
+  "open_list": {
+   "compared": 0,
+   "equal": 0
+  }
+ },
+ "mismatches": 0
+}

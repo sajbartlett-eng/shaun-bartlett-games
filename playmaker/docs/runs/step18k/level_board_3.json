@@ -1,0 +1,174 @@
+{
+ "position": "board 3",
+ "switches": {},
+ "rows": [
+  {
+   "place": 1,
+   "turn": "X2 Quick Steps to C8, then the defence Pauses",
+   "played": 28.4,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 2,
+   "turn": "X2 Quick Steps to D6",
+   "played": 31.1,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 3,
+   "turn": "X2 Quick Steps to D6, then the defence Pauses",
+   "played": 27.4,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 4,
+   "turn": "X2 Quick Steps to D7",
+   "played": 33.0,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 5,
+   "turn": "X2 Quick Steps to D7, then the defence Pauses",
+   "played": null,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 6,
+   "turn": "X2 Quick Steps to C8",
+   "played": 34.9,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 7,
+   "turn": "the defence Pauses",
+   "played": 33.0,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 8,
+   "turn": "X5 moves to P4, facing N",
+   "played": 35.6,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 9,
+   "turn": "X5 moves to P4, facing N, then the defence Pauses",
+   "played": 28.4,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 10,
+   "turn": "X2 Quick Steps to C8, then X5 moves to P3, facing N",
+   "played": 28.7,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 11,
+   "turn": "X5 moves to P3, facing N",
+   "played": 36.2,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 12,
+   "turn": "X5 moves to P3, facing N, then the defence Pauses",
+   "played": 32.6,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 13,
+   "turn": "X3 moves to N7, facing N",
+   "played": 33.0,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 14,
+   "turn": "X3 moves to N7, facing N, then the defence Pauses",
+   "played": 32.4,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 15,
+   "turn": "X3 moves to M6, facing NE",
+   "played": 28.3,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 16,
+   "turn": "X3 moves to M6, facing NE, then the defence Pauses",
+   "played": 30.1,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 17,
+   "turn": "X3 Quick Steps to N6, then X2 Quick Steps to D6",
+   "played": 28.0,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 18,
+   "turn": "X3 Quick Steps to N6",
+   "played": 32.6,
+   "shorter": 30.24,
+   "deeper": 29.72
+  },
+  {
+   "place": 19,
+   "turn": "X3 Quick Steps to N6, then the defence Pauses",
+   "played": 28.6,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 20,
+   "turn": "X2 Quick Steps to D6, then X3 Sprints to O3",
+   "played": 29.3,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 21,
+   "turn": "X2 Quick Steps to D7, then X3 Sprints to O3",
+   "played": 27.5,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 22,
+   "turn": "X3 Quick Steps to N6, then X3 moves to N7, facing N",
+   "played": 30.0,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 23,
+   "turn": "X3 Quick Steps to N6, then X3 moves to L6, facing NE",
+   "played": 30.0,
+   "shorter": 30.24,
+   "deeper": 30.24
+  },
+  {
+   "place": 24,
+   "turn": "X3 moves to N6, facing N",
+   "played": 33.2,
+   "shorter": 30.24,
+   "deeper": 29.72
+  }
+ ]
+}

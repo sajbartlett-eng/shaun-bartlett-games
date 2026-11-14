@@ -34,4 +34,69 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 
 - searches (x_kdef choices, 19 positions): 0.01 (running total 0.01)
 - searches (x_kih choices, 19 positions): 0.01 (running total 0.03)
-- searches (x_moves choices, 19 positions): 0.01 (running total 0.04)
+- searches (k18a, 19 positions) (frozen copy): 0.01 (running total 0.03)
+- the set replay lost to a machine restart 41 minutes in (4 cores): 2.75 (running total 2.79)
+- searches (k18a, 3 positions): 0.0 (running total 2.79)
+- play-outs (15 candidate copies of 16 on 3 positions): 0.17 (running total 2.96)
+- searches (k18a, 3 positions): 0.0 (running total 2.96)
+- play-outs (11 candidate copies of 16 on 3 positions): 0.08 (running total 3.04)
+- searches (k18a, 4 positions): 0.0 (running total 3.04)
+- play-outs (9 candidate copies of 16 on 4 positions): 0.0 (running total 3.04)
+- searches (k18a, 4 positions): 0.0 (running total 3.04)
+- play-outs (12 candidate copies of 16 on 4 positions): 0.3 (running total 3.34)
+- searches (k18a, 4 positions): 0.0 (running total 3.35)
+- play-outs (10 candidate copies of 16 on 4 positions): 0.11 (running total 3.45)
+- searches (k18a, 1 positions): 0.0 (running total 3.45)
+- play-outs (26 candidate copies of 16 on 1 positions): 0.47 (running total 3.92)
+- searches (k18h, 19 positions): 0.01 (running total 3.93)
+- searches (check, 1 positions): 0.0 (running total 3.93)
+- play-outs (2 candidate copies of 16 on 2 positions): 0.01 (running total 3.94)
+- searches (k18d, 19 positions): 0.01 (running total 3.95)
+- searches (k18hd, 19 positions): 0.01 (running total 3.96)
+- self-play (base, 160 possessions): 0.64 (running total 4.6)
+- self-play (dice, 160 possessions): 0.53 (running total 5.13)
+- self-play (hand, 160 possessions): 0.62 (running total 5.75)
+- searches (k18a, 3 positions): 0.0 (running total 5.75)
+- play-outs (15 candidate copies of 16 on 3 positions): 0.18 (running total 5.92)
+- searches (k18a, 2 positions): 0.0 (running total 5.92)
+- play-outs (8 candidate copies of 16 on 2 positions): 0.06 (running total 5.98)
+- searches (k18a, 2 positions): 0.0 (running total 5.98)
+- searches run in the working copy (choices under each setting, the fault checks), about: 0.05 (running total 6.03)
+- play-outs (6 candidate copies of 16 on 2 positions): 0.1 (running total 6.13)
+- searches (k18a, 1 positions): 0.0 (running total 6.13)
+- speed, round 1 (one core): 0.06 (running total 6.2)
+- speed, round 2 (one core): 0.06 (running total 6.25)
+- speed, round 1 (one core) keep_in_hand=moves: 0.05 (running total 6.3)
+- speed, round 2 (one core) keep_in_hand=moves: 0.05 (running total 6.36)
+- speed, round 1 (one core) keep_in_hand=true: 0.05 (running total 6.41)
+- speed, round 2 (one core) keep_in_hand=true: 0.05 (running total 6.46)
+- play-outs (28 candidate copies of 16 on 1 positions): 0.53 (running total 6.99)
+- searches (k18h, 3 positions): 0.0 (running total 7.0)
+- play-outs (9 candidate copies of 16 on 2 positions): 0.21 (running total 7.2)
+- searches (k18a, 19 positions): 0.01 (running total 7.21)
+- searches (k18h, 19 positions): 0.01 (running total 7.22)
+- searches (k18d, 19 positions): 0.01 (running total 7.23)
+- searches (k18hd, 19 positions): 0.01 (running total 7.23)
+- searches (k18m, 3 positions): 0.0 (running total 7.23)
+- play-outs (16 candidate copies of 16 on 1 positions): 0.34 (running total 7.57)
+- searches (k18m, 19 positions): 0.01 (running total 7.58)
+- self-play (moves, 160 possessions): 0.64 (running total 8.22)
+- head to head moves_vs_default, pairs 1 to 40: 0.26 (running total 8.48)
+- head to head moves_vs_default, pairs 1 to 40: 0.32 (running total 8.81)
+- agreement checks between the two engines, one core (not written by the tools): 0.95 (running total 9.76)
+- tests, one core: the named files, the browser tests, the new tests while writing them: 0.39 (running total 10.15)
+- timing where the search spends its time on three positions, one core: 0.05 (running total 10.2)
+
+**Used: 10.2 core-hours.** Estimate 10.0. Hard stop 12. Of the 10.2, 2.75 was a set replay lost to a machine restart
+41 minutes in; the replay was then run in small batches that save as they go, and trimmed (every candidate 16 times,
+the positions the gate turns on 32 times) to stay inside the limit.
+
+## How the predictions came out
+
+1. **Right.** A steal foul's later cost is close to nothing, and with `dice_in_hand` on Steals and steal fouls land
+   far outside the band (111 tried and 56 fouled in 100 possessions). It stays off.
+2. **Wrong.** Your closeout order is not found. Keeping turns that leave different things in hand does not bring it
+   back: the order only pays off on the defence's next turn, one turn past where its search stops.
+3. **Right.** Reading one more turn after the reply costs 3.5% of the All-Star's time; reading a turn one turn
+   further costs about a whole search.
+4. **Half right.** Board 3 scored by its average is 4.6 behind the best turn, inside chance on these play-outs.
