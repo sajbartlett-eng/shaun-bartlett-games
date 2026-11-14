@@ -72,6 +72,12 @@ function decide(s, ctx, pol, r) {                      // one action: the first 
   const want = JSON.stringify(best[0]);
   return legal.find(a => key(a) === want) || legal[0];
 }
+function chanceOf(node, pred) {                        // the chance, over the rolls still to come, that pred holds
+  if (!E.isChance(node)) return pred(node) ? 1 : 0;
+  let t = 0;
+  for (const o of node.outcomes) if (o[0] > 0) t += o[0] * chanceOf(o[2], pred);
+  return t;
+}
 function sample(node, r) {                             // a roll: one outcome by its chance
   let u = r(), last = null;
   for (const o of node.outcomes) { if (o[0] <= 0) continue; last = o; u -= o[0]; if (u < 0) return o[2]; }
@@ -208,7 +214,7 @@ if (job.kind === 'rollout') {
           if (drib && !E.isChance(node)) { dribbles.push([drib[0], node.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]) ? 1 : 0].concat(drib.slice(3))); drib = null; }
           if (stl && !E.isChance(node)) {
             const won = node.stage === 'over' && node.result && (node.result.kind === 'steal' || node.result.kind === 'turnover_end');
-            steals.push(stl.slice(0, 6).concat([won ? 'won' : node.fouls > stl[6] ? 'foul' : 'miss'])); stl = null;
+            steals.push(stl.slice(0, 6).concat([won ? 'won' : node.fouls > stl[6] ? 'foul' : 'miss', stl[7]])); stl = null;
           }
           continue;
         }
@@ -231,6 +237,9 @@ if (job.kind === 'rollout') {
         if (a.kind === 'dribble') drib = [node.phase, node.ball, a.target, events.length - 1, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.target), lbit(node.lock_x, a.target)];
         if (a.kind === 'steal') stl = [node.phase, events.length - 1, a.piece, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.piece), node.fouls];
         node = E.apply(node, a);
+        // step 18l: the roll's own chance, by the rules, kept with the Dribble (that it is won) and the Steal (that it wins the ball)
+        if (drib && drib.length === 8) drib.push(Math.round(1e4 * chanceOf(node, m => m.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]))) / 1e4);
+        if (stl && stl.length === 7) stl.push(Math.round(1e4 * chanceOf(node, m => m.stage === 'over' && m.result && (m.result.kind === 'steal' || m.result.kind === 'turnover_end'))) / 1e4);
         n++;
       }
       const over = node.stage === 'over';

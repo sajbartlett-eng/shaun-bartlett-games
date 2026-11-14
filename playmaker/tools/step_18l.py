@@ -142,51 +142,63 @@ def cmd_measures(*tags):
 
 def _off_balance(rows):
     """From each possession's record of its Dribbles ([phase, won, place, how the ball handler stood (0 set, 1 after a
-    Quick Step, 2 after a Sprint), whether he was locked, the same two for the defender]) and its Steals ([phase, place,
-    defender, how the ball handler stood, whether he was locked, how the defender stood, the outcome])."""
-    names = ('at_a_set_defender', 'at_a_rushed_defender', 'at_a_defender_who_sprinted', 'at_a_defender_who_quick_stepped', 'at_a_locked_defender',
-             'by_a_set_ball_handler', 'by_a_rushed_ball_handler', 'by_a_ball_handler_who_sprinted')
-    d = {k: [0, 0] for k in names}
-    st = {k: [0, 0, 0] for k in ('on_a_set_ball_handler', 'on_a_rushed_ball_handler', 'on_a_ball_handler_who_sprinted', 'by_a_set_defender', 'by_a_rushed_defender')}
-    after = dict(steals_missed_or_fouled_with_play_going_on=0, offence_acts_again_that_phase=0, next_offence_action={}, drives_at_that_defender_next=0,
-                 drives_at_that_defender_later_that_phase=0, drives_at_him_won=[0, 0])
+    Quick Step, 2 after a Sprint), whether he was locked, the same two for the defender, the roll's chance by the
+    rules]) and its Steals ([phase, place, defender, how the ball handler stood, whether he was locked, how the
+    defender stood, the outcome, the chance of winning the ball])."""
+    names = ('all', 'both_set', 'at_a_set_defender', 'at_a_rushed_defender', 'at_a_defender_who_sprinted', 'at_a_defender_who_quick_stepped',
+             'at_a_locked_defender', 'by_a_set_ball_handler', 'by_a_rushed_ball_handler', 'by_a_ball_handler_who_sprinted',
+             'set_ball_handler_at_a_rushed_defender', 'rushed_ball_handler_at_a_set_defender')
+    d = {k: [0, 0, 0.0] for k in names}
+    snames = ('all', 'on_a_set_ball_handler', 'on_a_rushed_ball_handler', 'on_a_ball_handler_who_sprinted', 'by_a_set_defender', 'by_a_rushed_defender')
+    st = {k: [0, 0, 0, 0.0] for k in snames}
+    after = dict(steals_missed_or_fouled_with_play_going_on=0, offence_acts_again_that_phase=0, next_offence_action={}, shoots_next=0, shoots_later_that_phase=0,
+                 ball_handler_moves_nearer_the_rim_next=0, drives_at_that_defender_next=0, drives_at_that_defender_later_that_phase=0, drives_at_him_won=[0, 0])
     for r in rows:
         ev = r['events']
         for x in r.get('dribbles') or []:
-            if len(x) < 7:
+            if len(x) < 8 or x[7] >= 1:                    # a defender this ball handler had already beaten: no roll
                 continue
-            won, ro, lo, rx, lx = x[1], x[3], x[4], x[5], x[6]
-            for name, cond in (('at_a_set_defender', not rx and not lx), ('at_a_rushed_defender', bool(rx or lx)), ('at_a_defender_who_sprinted', rx == 2),
-                               ('at_a_defender_who_quick_stepped', rx == 1), ('at_a_locked_defender', bool(lx)),
-                               ('by_a_set_ball_handler', not ro and not lo), ('by_a_rushed_ball_handler', bool(ro or lo)), ('by_a_ball_handler_who_sprinted', ro == 2)):
+            won, ro, lo, rx, lx, pr = x[1], x[3], x[4], x[5], x[6], x[7]
+            ro_, rx_ = bool(ro or lo), bool(rx or lx)
+            for name, cond in (('all', True), ('both_set', not ro_ and not rx_), ('at_a_set_defender', not rx_), ('at_a_rushed_defender', rx_),
+                               ('at_a_defender_who_sprinted', rx == 2), ('at_a_defender_who_quick_stepped', rx == 1), ('at_a_locked_defender', bool(lx)),
+                               ('by_a_set_ball_handler', not ro_), ('by_a_rushed_ball_handler', ro_), ('by_a_ball_handler_who_sprinted', ro == 2),
+                               ('set_ball_handler_at_a_rushed_defender', rx_ and not ro_), ('rushed_ball_handler_at_a_set_defender', ro_ and not rx_)):
                 if cond:
-                    d[name][0] += 1; d[name][1] += won
+                    d[name][0] += 1; d[name][1] += won; d[name][2] += pr
         for x in r.get('steals') or []:
-            ph, at, j, ro, lo, rx, out = x
-            for name, cond in (('on_a_set_ball_handler', not ro and not lo), ('on_a_rushed_ball_handler', bool(ro or lo)), ('on_a_ball_handler_who_sprinted', ro == 2),
+            ph, at, j, ro, lo, rx, out = x[:7]
+            pr = x[7] if len(x) > 7 else 0.0
+            for name, cond in (('all', True), ('on_a_set_ball_handler', not ro and not lo), ('on_a_rushed_ball_handler', bool(ro or lo)), ('on_a_ball_handler_who_sprinted', ro == 2),
                                ('by_a_set_defender', not rx), ('by_a_rushed_defender', bool(rx))):
                 if cond:
-                    st[name][0] += 1; st[name][1] += out == 'won'; st[name][2] += out == 'foul'
+                    st[name][0] += 1; st[name][1] += out == 'won'; st[name][2] += out == 'foul'; st[name][3] += pr
             if out == 'won' or at + 1 >= len(ev):
                 continue
             after['steals_missed_or_fouled_with_play_going_on'] += 1
-            rest = [(k, e) for k, e in enumerate(ev) if k > at and e[0] == ph and e[2] == 'O']
+            rest = [(k, e) for k, e in enumerate(ev) if k > at and e[0] == ph and e[2] == 'O' and e[3] not in ('end_turn', 'pause')]
             if not rest:
                 continue
             after['offence_acts_again_that_phase'] += 1
-            kind = rest[0][1][3]
+            k0, e0 = rest[0]
+            kind = e0[3]
             after['next_offence_action'][kind] = after['next_offence_action'].get(kind, 0) + 1
+            after['shoots_next'] += kind in ('shot', 'forced_shot')
+            after['shoots_later_that_phase'] += any(e[3] in ('shot', 'forced_shot') for _k, e in rest)
+            if kind in ('move', 'qs', 'sprint') and e0[4] == e0[8] and e0[5] and e0[6] and _rim(e0[6]) < _rim(e0[5]):
+                after['ball_handler_moves_nearer_the_rim_next'] += 1
             at_him = [(k, e) for k, e in rest if e[3] == 'dribble' and e[7] == j]
             if at_him:
                 after['drives_at_that_defender_later_that_phase'] += 1
-                if at_him[0][0] == rest[0][0]:
+                if at_him[0][0] == k0:
                     after['drives_at_that_defender_next'] += 1
                 dr = next((y for y in r.get('dribbles') or [] if len(y) >= 7 and y[2] == at_him[0][0]), None)
                 if dr is not None:
                     after['drives_at_him_won'][0] += 1; after['drives_at_him_won'][1] += dr[1]
     sh = lambda w, m: J._share(w, m) if m else None
-    return dict(drives={k: dict(drives=m, won=w, share=sh(w, m)) for k, (m, w) in d.items()},
-                steals={k: dict(tried=m, won=w, fouled=f, won_share=sh(w, m), foul_share=sh(f, m)) for k, (m, w, f) in st.items()},
+    return dict(drives={k: dict(drives=m, won=w, share=sh(w, m), chance_by_the_rules=round(100 * pr / m, 1) if m else None) for k, (m, w, pr) in d.items()},
+                steals={k: dict(tried=m, won=w, fouled=f, won_share=sh(w, m), foul_share=sh(f, m), chance_by_the_rules=round(100 * pr / m, 1) if m else None)
+                        for k, (m, w, f, pr) in st.items()},
                 after_a_steal_that_missed=dict(after, drives_at_him_won=dict(drives=after['drives_at_him_won'][0], won=after['drives_at_him_won'][1])))
 
 

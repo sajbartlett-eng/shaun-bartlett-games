@@ -1,0 +1,14 @@
+{
+ "run": "fit_allstar,fit_allstar2",
+ "possessions": 400,
+ "fouls_per_possession": 0.26,
+ "fouls_interval": [
+  0.21,
+  0.31
+ ],
+ "play_on_value": 26.9,
+ "value_interval": [
+  25.8,
+  28.0
+ ]
+}

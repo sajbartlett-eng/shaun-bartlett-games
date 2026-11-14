@@ -35,3 +35,8 @@ this 4-core machine; single-core runs count as one core.
 ## Tally (core-hours used)
 
 - self-play (smoke, rookie, 8 possessions): 0.01 (running total 0.01)
+- self-play (fit_rookie, rookie, 160 possessions): 0.14 (running total 0.15)
+- self-play (fit_starter, starter, 120 possessions): 0.3 (running total 0.45)
+- self-play (fit_allstar, allstar, 200 possessions): 1.06 (running total 1.51)
+- the final-default run stopped a minute in, to add a second 200 possessions to the All-Star's map (its phase 3 lines had 105 and 70 positions and sloped down): 0.03 (running total 1.54)
+- self-play (fit_allstar2, allstar, 200 possessions): 1.14 (running total 2.68)
