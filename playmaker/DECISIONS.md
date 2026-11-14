@@ -986,6 +986,44 @@ proportion (15 against 24 is further off than 37 against 24), which picks 6: 37 
 update), and junior deals as they were. No other job's cut at any age changes. · Source: step 18l, under Shaun's
 "keep it at 9 unless the coherent random deals look wrong" (14 Nov 2026) · **Built; for Shaun to confirm.**
 
+**D-189. Contest ratings restored.** Shaun: "Reducing the contest ratings was a mistake." D-184 lowered them without
+tracing their effect through the modifiers built on them. Every contest rating on the 75 table cards goes back to its
+value before D-184 (layup, dunk, post, floater, mid-range, long two, three), with their range entries and the chart
+fixes D-184 removed. The two new types take an existing type's original contests tier for tier: the Slashing Wing
+takes the Scoring Small Forward's, the Switch Centre the Defensive Power Forward's. They keep their own foul ratings.
+Everything else from D-184 and D-186 stays (open jump shots as corrected, the 85% layup floor, the Rim Runner B
+dunk). The anchor job's dunk-contest threshold goes back to 11 with the rating (D-184 had carried it to 5). (The
+mid-range, long two and three contests are then set by D-192.) · Source: Shaun, 14 Nov 2026 · **Ruled; step 18n.**
+
+**D-190. No card value or rule changes without Shaun's explicit agreement.** Every proposal comes with a table of every
+rule and modifier it touches, and every case before and after. · Source: Shaun, 14 Nov 2026 · **Ruled.**
+
+**D-191. Jump shots are contested by position only (the app only; `rules.position_contest`).** Shaun: "There is no
+contest decision for jump shots. There is only position. Hard contest is specific to inside scoring moves."
+**Jump shots** (mid-range, long two, three): an adjacent defender's contest is automatic. It takes off the card's
+contest rating in full, with no hand-up subtraction: from behind, 3 less; rushed (D-185: after a Quick Step or
+Sprint, or while locked), 2 less; only the best contest counts; the arrow has no effect on the shot; there is no hard
+contest and no shooting foul. **Inside scoring moves** (layup, dunk, post, floater): as before, with one change. The
+hand up is automatic: the contest rating less 3, never a foul. The defender may go for the full contest, with the foul
+rolls as before: one from in front with the arrow off, two from the side or behind. The change: from in front with
+the arrow on him, the full contest is automatic and never a foul. The choice only existed where it cost nothing, so
+it wasn't a real choice (FIBA's verticality principle). The rule sentence: "Jump shots: an adjacent defender's
+contest is automatic and set by position. Inside shots: you may go for the block and risk the foul, except straight
+up from in front with your arrow on him, which is automatic and safe." · Source: Shaun, 14 Nov 2026 · **Ruled; step
+18n.**
+
+**D-192. New jump-shot contest ratings** (Shaun agreed to test them). For mid-range, long two and three contests, one
+map on Shaun's original values, on every card including the new types (from the source type's originals): 2 to 1, 3
+and 4 to 2, 5 and 6 to 3, 7 and 8 to 4. Card by card: `docs/reference/JUMP_CONTESTS_14NOV.md`. The reason: with one
+automatic contest the card number is the whole contest, and a professional's hand up on a jump shot takes about 5%
+(weak) to 20% (elite) off, about 10% for an average defender. The range for all three: average from 2, above average
+from 3. Inside contests stay at Shaun's original values. Contest ratings don't change with the level. · Source:
+Shaun, 14 Nov 2026 · **Ruled, to be tested; step 18n.**
+
+**D-193. Nothing is zero** (Shaun's ratings rule: 5% is the lowest). A contesting defender always takes at least 1
+off the shot, after every modifier (behind, rushed, the hand-up 3). Built with D-191, under the same switch. · Source:
+Shaun, 14 Nov 2026 · **Ruled; step 18n.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

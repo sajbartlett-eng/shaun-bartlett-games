@@ -296,6 +296,15 @@ class Rules:
     #   and hard contests, Dribble, Pass, Screen, Agility, Steal, Intercept and Challenge. A Move resets it; a locked
     #   player can't Move, so it lasts the phase. It needs the control rule (its size is the control rule's).
     off_balance: str = 'app'
+    # D-191 and D-193 (Shaun, 14 Nov 2026), the app only: jump shots are contested by position only. It needs the soft
+    #   contest rule. Jump shots (mid-range, long two, three): every defender next to the shooter contests with no
+    #   action, at his full contest rating: 3 less from behind, 2 less if he is rushed; the arrow has no effect; there
+    #   is no Contest action and no shooting foul. Inside shots (layup, dunk, post, floater): the hand up is automatic
+    #   (the rating less 3, never a foul); from in front with the arrow on him the full contest is automatic and never
+    #   a foul; from anywhere else a Contest action gives the full contest with its foul rolls (one from in front with
+    #   the arrow off, two from the side or behind). Only the best contest counts. D-193: a contesting defender always
+    #   takes at least 1 off the shot, after every modifier.
+    position_contest: str = 'app'
     closely_guarded: str = 'app'
     fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
@@ -345,6 +354,15 @@ def app_rule(rules, name):
     """A step 18i rule's setting: 'app' is on in the app's format and off at the table; 'on'; 'off'."""
     v = getattr(rules, name)
     return rules.digital if v == 'app' else v == 'on'
+
+
+JUMP_SHOTS = ('mid', 'long', 'three')        # D-191: contested by position only; the rest are inside scoring moves
+CONTEST_FLOOR = 1                            # D-193: a contesting defender always takes at least this off the shot
+
+
+def position_contest(rules):
+    """D-191 and D-193 in play: the app's format with the soft contest rule on (the automatic contest is built on it)."""
+    return app_rule(rules, 'position_contest') and app_rule(rules, 'soft_contest')
 
 
 def control_size(rules):

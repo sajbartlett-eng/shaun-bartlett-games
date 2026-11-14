@@ -843,10 +843,16 @@ class Searcher:
         side = actor(s)
         acts = legal_actions(s)
         if s.stage == 'reaction':
-            if s.turn_n >= 1:        # after a movement: only a Contest, a Steal or ending the reaction counts
+            sp = s.o[s.ball]
+            if RC.position_contest(s.ctx.rules):
+                # D-191: position decides the contest, so both of the reaction's actions may be movements. Only one
+                # that ends next to the shooter is played, and a Move only with its arrow on him (in front that is the
+                # automatic full contest inside, and it is what a Steal needs; on a jump shot the arrow changes nothing)
+                acts = [a for a in acts if a.kind not in MOVEMENT
+                        or (B.adjacent(a.dest, sp) and (a.kind != 'move' or a.arrow == B.dir_between(a.dest, sp)))]
+            elif s.turn_n >= 1:      # after a movement: only a Contest, a Steal or ending the reaction counts
                 acts = [a for a in acts if a.kind not in MOVEMENT]
             else:
-                sp = s.o[s.ball]
                 acts = [a for a in acts if a.kind not in MOVEMENT or B.adjacent(a.dest, sp)]
         best = None
         for a in acts:

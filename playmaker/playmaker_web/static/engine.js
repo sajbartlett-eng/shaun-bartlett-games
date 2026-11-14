@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -144,6 +144,7 @@ const PMEngine = (() => {
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
       soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
+      pos: appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),                // step 18n (D-191, D-193): jump shots are contested by position only
       offCut: appRule(c.rules, 'off_balance') ? controlSize(c.rules) : 0,                          // step 18l (D-185): off balance, the reduction on every rolled rating
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
@@ -689,15 +690,21 @@ const PMEngine = (() => {
   }
   // scoring.soft_contest (D-177): the defence's best soft contest: [defender, contest] or [-1, 0]. Every defender next
   // to the shooter gives one with no action: his contest rating less 3, 3 less again from behind, 2 less if rushed.
+  // D-191 (rules.position_contest, scoring.auto_contest): on a jump shot the contest is his full rating (3 less from
+  // behind, 2 less rushed; the arrow has no effect); on an inside shot the hand up is as D-177, and from in front with
+  // the arrow on him the full contest is automatic. D-193: a contesting defender always takes at least 1 off.
+  const JUMP = { mid: true, long: true, three: true };
   function softContest(s, shooter, t) {
-    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
+    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0, pos = ctx.pos, jump = pos && JUMP[t] === true;
     let bj = -1, bc = 0;
     for (let j = 0; j < 5; j++) {
       const xp = s.x[j];
       if (!adjacent(xp, spos)) continue;
-      let c = ctx.dfn[j].cn[t] - 3;
+      let c = ctx.dfn[j].cn[t];
+      if (!(jump || (pos && DR[xp] < DR[spos] && onLine(stanceOf(s, j), dirBetween(xp, spos))))) c -= 3;
       if (DR[xp] > DR[spos]) c -= 3;
       if (cut && rushedX(s, j)) c -= cut;
+      if (pos && c < 1) c = 1;
       if (c > bc) { bc = c; bj = j; }
     }
     return [bj, bc];
@@ -713,6 +720,8 @@ const PMEngine = (() => {
     const cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
     const val = c => Math.max(0, pts * (rating - c));
     const opts = [{ defender: -1, contest: 0, clean: true, k: 0, rolls: 0, value: val(0), ft }];
+    const pos = ctx.pos && !forced;
+    if (pos && JUMP[t] === true) return opts;             // D-191: a jump shot is contested by position only: no Contest action
     for (let j = 0; j < 5; j++) {
       const xp = s.x[j];
       if (!adjacent(xp, spos)) continue;
@@ -720,8 +729,10 @@ const PMEngine = (() => {
       if (DR[xp] > DR[spos]) c -= 3;
       c = Math.max(0, c);
       let clean = onLine(stanceOf(s, j), dirBetween(xp, spos));
+      if (pos && clean && DR[xp] < DR[spos]) continue;      // D-191: from in front with the arrow on him the full contest is automatic (softContest)
       if (ctx.soft && !forced && DR[xp] >= DR[spos]) clean = false;      // D-177: a hard contest from the side or behind rolls for a foul
       if (cut && rushedX(s, j)) c = Math.max(0, c - cut);       // D-151, D-154: a rushed Contest, no extra foul roll
+      if (pos && c < 1) c = 1;                                  // D-193: a contesting defender always takes at least 1 off
       const rolls = foulRolls(xp, spos);
       opts.push({ defender: j, contest: c, clean, k: clean ? 0 : clampT(ctx.dfn[j].r.foul_contest), rolls: clean ? 0 : rolls, value: val(c),
         ft: ctx.fiba ? footPoints(card, t, pts, rating, true, val(c), rating - c)[0] : ft });
@@ -1885,14 +1896,17 @@ const PMEngine = (() => {
         const cut = control ? controlCut(ctx, ty) : 0, shooterCut = cut > 0 && (flags & 1) === 1;
         if (shooterCut) r -= cut;
         let best = null;
+        const pos = ctx.pos, jump = pos && JUMP[ty] === true;    // D-191: a jump shot has no Contest action: position only (below)
         for (let k = 0; k < 6; k++) {
-          if (!((mask >> k) & 1)) continue;
+          if (jump || !((mask >> k) & 1)) continue;
+          const foul = KFOUL[k], two = KTWO[k];
+          if (pos && !foul) continue;                            // D-191: in front with the arrow on him: automatic (below)
           let con = dc.cn[ty] - (KPEN[k] ? 3 : 0);
           con = Math.max(0, con);
-          const foul = KFOUL[k], two = KTWO[k];
           if (cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4))) {       // a rushed Contest
             con = Math.max(0, con - cut);                                        // no extra foul roll (D-154)
           }
+          if (pos && con < 1) con = 1;                           // D-193
           let v = Math.max(0, pts * (r - con));
           if (foul) {
             const ft = ctx.fiba ? footPoints(card, ty, pts, r, true, v, r - con)[0] : footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
@@ -1904,8 +1918,10 @@ const PMEngine = (() => {
         if (smask) {
           for (let k = 0; k < 6; k++) {
             if (!((smask >> k) & 1)) continue;
-            let con = dc.cn[ty] - 3 - (KPEN[k] ? 3 : 0);
+            // D-191: the full rating on a jump shot, and on an inside shot from in front with the arrow on him
+            let con = dc.cn[ty] - ((jump || (pos && !KFOUL[k])) ? 0 : 3) - (KPEN[k] ? 3 : 0);
             if (cut > 0 && (((st0 >> k) & 1) ? (flags & 2) : (flags & 4))) con -= cut;
+            if (pos && con < 1) con = 1;                         // D-193
             if (con <= 0) continue;
             const v = Math.max(0, pts * (r - con));
             if (best === null || v < best) best = v;
@@ -3387,8 +3403,12 @@ const PMEngine = (() => {
       let acts;
       if (s.stage === 'reaction') {
         // a second movement can't be followed by a Contest or a Steal (two actions at most): only those and ending count
-        if (s.turn_n >= 1) acts = forcingActions(s, 'stage');
-        else { const sp = s.o[s.ball]; acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || adjacent(a.dest, sp)); }
+        const sp = s.o[s.ball];
+        // D-191 (search.Searcher.settled): position decides the contest, so both of the reaction's actions may be
+        // movements; only one that ends next to the shooter is played, a Move only with its arrow on him
+        if (s.ctx.pos) acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))));
+        else if (s.turn_n >= 1) acts = forcingActions(s, 'stage');
+        else acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || adjacent(a.dest, sp));
       } else acts = legalActions(s);
       let best = null;
       for (const a of acts) {

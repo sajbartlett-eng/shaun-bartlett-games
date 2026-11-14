@@ -211,6 +211,9 @@ def resolve_shot(s, forced=False):
     return contest_outcome(s, choose_contest(s, shooter, s.shot, forced), forced)
 
 
+AUTO_CONTESTS = ('soft', 'position', 'full')      # contests that take no action (D-177; D-191): Result.soft marks them
+
+
 def contest_outcome(s, opt, forced):
     """The result of one contest option: a terminal state, or a foul roll (arrow off the shooter)."""
     shooter = s.ball
@@ -221,8 +224,8 @@ def contest_outcome(s, opt, forced):
     kind = 'forced' if forced else 'shot'
     rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
     made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0,
-                               soft=opt.category == 'soft'))
-    if opt.defender >= 0 and opt.category != 'soft' and not forced and RC.app_rule(s.ctx.rules, 'soft_contest'):
+                               soft=opt.category in AUTO_CONTESTS))
+    if opt.defender >= 0 and opt.category not in AUTO_CONTESTS and not forced and RC.app_rule(s.ctx.rules, 'soft_contest'):
         # D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
         j2, c2 = soft_contest(s, shooter, t)
         if c2 > opt.contest:
