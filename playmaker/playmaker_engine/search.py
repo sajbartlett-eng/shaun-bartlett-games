@@ -279,8 +279,9 @@ def keep_settled_on():
 def keep_in_hand_on():
     """search.keep_in_hand (step 18k): in the defence's list two turns are not copies when they leave a defender
     different things he can still do this phase: whether he can still Move, still Quick Step, is set or rushed, and a
-    Steal he can roll from where he stands or still reach with the movement he has left."""
-    return CONFIG.get('search', {}).get('keep_in_hand') is True
+    Steal he can roll from where he stands or still reach with the movement he has left. true: all of these;
+    'moves': without the Steal (movement left, and set or rushed)."""
+    return CONFIG.get('search', {}).get('keep_in_hand') in (True, 'moves')
 
 
 def ball_loss_on(me=None):
@@ -426,7 +427,7 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
     def sig_of(can_move, qs_left, rushed, code):
         return (1 if can_move else 0) | (2 if qs_left > 0 else 0) | (4 if rushed else 0) | (code << 3)
 
-    if kih and B.on_board(s.o[s.ball]):
+    if kih and CONFIG.get('search', {}).get('keep_in_hand') is True and B.on_board(s.o[s.ball]):
         bhq = s.o[s.ball]
         occ = set(s.o) | set(s.x)
 

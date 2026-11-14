@@ -95,5 +95,5 @@ def test_turns_that_leave_different_things_in_hand_are_not_copies(monkeypatch):
 
 
 def test_the_switch_is_a_plain_on_or_off():
-    assert SE.CONFIG['search'].get('keep_in_hand') in (True, False)
+    assert SE.CONFIG['search'].get('keep_in_hand') in (True, False, 'moves')
     assert SE.CONFIG['search'].get('keep_settled') is True     # D-183: on by default

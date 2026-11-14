@@ -34,3 +34,4 @@ Written before the runs. Core-hours on this 4-core machine; single-core runs cou
 
 - searches (x_kdef choices, 19 positions): 0.01 (running total 0.01)
 - searches (x_kih choices, 19 positions): 0.01 (running total 0.03)
+- searches (x_moves choices, 19 positions): 0.01 (running total 0.04)

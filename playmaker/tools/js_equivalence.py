@@ -280,7 +280,7 @@ def main():
     ap.add_argument('--dice-in-hand', action='store_true', help='step 18j: search.dice_in_hand on, in both engines')
     ap.add_argument('--ball-loss', action='store_true', help='step 18j: eval.ball_loss on, in both engines')
     ap.add_argument('--keep-settled', action='store_true', help='step 18j: search.keep_settled on, in both engines')
-    ap.add_argument('--keep-in-hand', action='store_true', help='step 18k: search.keep_in_hand on, in both engines')
+    ap.add_argument('--keep-in-hand', nargs='?', const=True, default=False, help="step 18k: search.keep_in_hand on, in both engines (or 'moves')")
     ap.add_argument('--zone', action='store_true', help="step 18g: rules.zone 'on' in every position (the zone of influence)")
     ap.add_argument('--broken', action='store_true', help='step 18g: play each position on until a Dribble is won (a zone broken this phase)')
     ap.add_argument('--fiba', action='store_true', help='step 18i: three seconds, closely guarded and the FIBA fouled shot on in every position')
@@ -332,7 +332,7 @@ def main():
     args.ball_loss = _CFG['eval']['ball_loss']
     _CFG['search']['keep_settled'] = args.keep_settled or bool(_CFG['search'].get('keep_settled'))
     args.keep_settled = _CFG['search']['keep_settled']
-    _CFG['search']['keep_in_hand'] = args.keep_in_hand or bool(_CFG['search'].get('keep_in_hand'))
+    _CFG['search']['keep_in_hand'] = args.keep_in_hand or (_CFG['search'].get('keep_in_hand') or False)
     args.keep_in_hand = _CFG['search']['keep_in_hand']
     _CFG['eval']['no_floor'] = args.no_floor or bool(_CFG['eval'].get('no_floor'))
     args.no_floor = _CFG['eval']['no_floor']

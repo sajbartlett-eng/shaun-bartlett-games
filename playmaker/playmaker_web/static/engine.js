@@ -2898,8 +2898,8 @@ const PMEngine = (() => {
   const keepSettledOn = () => (D.config.search || {}).keep_settled === true;
   // step 18k (search.keep_in_hand): in the defence's list two turns are not copies when they leave a defender
   // different things he can still do this phase
-  const keepInHandOn = () => (D.config.search || {}).keep_in_hand === true;
-  function setKeepInHand(v) { D.config.search = D.config.search || {}; D.config.search.keep_in_hand = v === true || v === 'true'; return D.config.search.keep_in_hand; }
+  const keepInHandOn = () => { const v = (D.config.search || {}).keep_in_hand; return v === true || v === 'moves'; };   // 'moves': without the Steal in hand
+  function setKeepInHand(v) { D.config.search = D.config.search || {}; D.config.search.keep_in_hand = v === 'moves' ? 'moves' : (v === true || v === 'true'); return D.config.search.keep_in_hand; }
   function setKeepSettled(v) { D.config.search = D.config.search || {}; D.config.search.keep_settled = v === true || v === 'true'; return D.config.search.keep_settled; }
   function setDiceInHand(v) { D.config.search = D.config.search || {}; D.config.search.dice_in_hand = v === true || v === 'true'; return D.config.search.dice_in_hand; }
   function setBallLoss(v) { D.config.eval.ball_loss = v === 'offence' ? 'offence' : (v === true || v === 'true'); return D.config.eval.ball_loss; }
@@ -3054,7 +3054,7 @@ const PMEngine = (() => {
       return 0;
     };
     const sigOf = (canMove, qsLeft, rushed, code) => (canMove ? 1 : 0) | (qsLeft > 0 ? 2 : 0) | (rushed ? 4 : 0) | (code << 3);
-    if (kih && ONB[s.o[s.ball]]) {
+    if (kih && (D.config.search || {}).keep_in_hand === true && ONB[s.o[s.ball]]) {
       bhq = s.o[s.ball];
       const occ = new Set(); for (let i = 0; i < 5; i++) { occ.add(s.o[i]); occ.add(s.x[i]); }
       const ends = (paths, into) => { for (const path of paths) { let ok = true; for (const sq of path) if (!ONB[sq]) { ok = false; break; } if (ok) into.add(path[path.length - 1]); } };
