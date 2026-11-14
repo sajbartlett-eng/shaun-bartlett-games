@@ -28,7 +28,7 @@ from functools import lru_cache
 from . import board as B
 from . import geometry as G
 from . import rules_config as RC
-from .scoring import p_success, p_foul, p_fouls, foul_on_shot_points
+from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INF = 99
@@ -1692,14 +1692,14 @@ def _lane_p_calc(s, i, c, reach=False):
     lane = lane_squares(a, c, 0.5)
     if not lane:
         return 1.0
-    passer = s.ctx.off[s.ball].r['pass']
+    passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
     worst = 0.0
     for d, xp in enumerate(s.x):
         can_move, qs_left = _caps(s, 'X', d)
         one = _exact_one(s, d) if reach else _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, rules)
         if lane.isdisjoint(one):
             continue
-        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        pi = 1 - float(p_success(passer - rolled(s, 'X', d, 'intercept'), rules))
         if pi > worst:
             worst = pi
     return 1.0 - worst
@@ -1719,7 +1719,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
             return 0.0
     if not lane:
         return 1.0
-    passer = s.ctx.off[s.ball].r['pass']
+    passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
     worst = 0.0
     for d, xp in enumerate(s.x):
         if d == j:
@@ -1729,7 +1729,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
             one = _one_action(xp, s.arrows[d], s.ctx.dfn[d].qs, cm, ql, rules)
         if lane.isdisjoint(one):
             continue
-        pi = 1 - float(p_success(passer - s.ctx.dfn[d].r['intercept'], rules))
+        pi = 1 - float(p_success(passer - rolled(s, 'X', d, 'intercept'), rules))
         if pi > worst:
             worst = pi
     return 1.0 - worst
@@ -1754,7 +1754,7 @@ def _pass_prob(s, i):
             if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and nxt.pending:
                 for b in legal_actions(nxt):
                     if b.kind == 'intercept':
-                        worst = max(worst, 1 - float(p_success(s.ctx.off[s.ball].r['pass'] - s.ctx.dfn[b.piece].r['intercept'],
+                        worst = max(worst, 1 - float(p_success(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept'),
                                                                s.ctx.rules)))
             p = 1.0 - worst
     except Exception:

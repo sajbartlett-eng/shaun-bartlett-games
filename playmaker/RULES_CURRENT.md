@@ -126,6 +126,10 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 In the app: your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is 2 lower. A Move puts you back in control.  
 Why: ruled for the app (D-153). The table's rules are on hold while the app's game settles (D-146).
 
+**Off balance.** At the table: no such rule.  
+In the app: rushed: after a Quick Step or Sprint, or while locked, every roll you make is 2 worse (not fouls) until you Move. That covers shots, soft and hard contests, Dribble, Pass, Screen, Agility, Steal, Intercept and Challenge. A locked player can't Move, so he stays rushed until the phase ends.  
+Why: ruled for the app (D-185). It reverses the "no drive rule" line of D-151.
+
 **Soft and hard contest.** At the table: one Contest: the defender's contest rating, with a foul roll if his arrow is off the shooter.  
 In the app: a defender next to the shooter gives a soft contest with no action: his contest rating less 3. It never fouls. A Contest action is a hard contest: the full rating. From behind the shooter (further from the rim) either is 3 lower again. A hard contest from in front with the arrow on him rolls no foul; from in front with the arrow off him, one foul roll; from the side or behind, two, as a Steal does. Only the defence's best contest counts. A rushed defender's contest, soft or hard, is 2 lower.  
 Why: ruled for the app (D-177).

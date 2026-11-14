@@ -153,8 +153,11 @@ class GameState:
         return (self.rush_o if side == 'O' else self.rush_x) >> (2 * i) & 3
 
     def rushed(self, side, i):
-        """D-151: his last movement this phase was a Quick Step or a Sprint."""
-        return self.rush(side, i) != 0
+        """D-151: his last movement this phase was a Quick Step or a Sprint. D-185 (rules.off_balance): or he is
+        locked (a locked player can't Move, so it lasts the phase)."""
+        if self.rush(side, i) != 0:
+            return True
+        return self.locked(side, i) and RC.off_balance_cut(self.ctx.rules) > 0
 
     @property
     def carrier_pos(self):

@@ -97,17 +97,31 @@ def influence(s):
     # held while closely guarded, and whether he has picked the ball up (D-173)
     three, guarded = RC.app_rule(rules, 'three_seconds'), RC.app_rule(rules, 'closely_guarded')
     ballg = s.guard()
-    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i), rushed=s.rush('O', i),
+    badges = dict(O=[dict(move=s.moved('O', i), qs=s.quick_stepped('O', i), locked=s.locked('O', i), rushed=_rush_mark(s, 'O', i),
                           key=bool(three and s.key_o >> i & 1),
                           held=ballg[1] if (guarded and i == s.ball) else 0,
                           picked=bool(guarded and i == s.ball and ballg[0] == 2))
                      for i in range(5)],
-                  X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=s.rush('X', j))
+                  X=[dict(move=s.moved('X', j), qs=s.quick_stepped('X', j), locked=s.locked('X', j), rushed=_rush_mark(s, 'X', j))
                      for j in range(5)])
     return dict(zones=zones, screens=screens, reach=reach, badges=badges, arrow_mode=rules.arrow_mode,
                 drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off',
                 three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'),
-                soft=RC.app_rule(rules, 'soft_contest'), steal_foul=RC.app_rule(rules, 'fiba_steal_foul'))
+                soft=RC.app_rule(rules, 'soft_contest'), steal_foul=RC.app_rule(rules, 'fiba_steal_foul'),
+                off_balance=RC.off_balance_cut(rules))
+
+
+def _rush_mark(s, side, i):
+    """The RUSHED marker: 1 after a Quick Step, 2 after a Sprint, 3 locked (D-185: a locked player is off balance)."""
+    return s.rush(side, i) or (3 if s.rushed(side, i) else 0)
+
+
+def rr(s, side, i, name):
+    """A rolled rating as the roll will use it (D-185): 2 lower, and marked, when the player is off balance."""
+    from playmaker_engine.scoring import rolled
+    card = (s.ctx.off if side == 'O' else s.ctx.dfn)[i]
+    v = rolled(s, side, i, name)
+    return f'{v} (rushed: {card.r[name]} less {card.r[name] - v})' if v != card.r[name] else rv(card, name)
 
 
 def rv(card, name):
@@ -184,24 +198,24 @@ def legal_json(s, acts):
                                  by=m['by'], via=B.sq(m['via']) if m['via'] else None) for m in marks]
             d['ring'] = [dict(sq=B.sq(q), x=q[0], y=q[1]) for q in ring if B.on_board(q)]
             uniq = sorted({t['defender'] for t in d['threats']})
-            d['chips'] = [f'Pass {rv(s.ctx.off[a.piece], "pass")} v Intercept {rv(s.ctx.dfn[j], "intercept")} (X{j + 1})' for j in uniq]
+            d['chips'] = [f'Pass {rr(s, "O", a.piece, "pass")} v Intercept {rr(s, "X", j, "intercept")} (X{j + 1})' for j in uniq]
         elif a.kind == 'pass':
             pend = s.with_(pending=(a.piece, a.target))
             d['threats'] = [dict(defender=j, how=intercept_status(pend, j)) for j in range(5)
                             if intercept_status(pend, j)]
-            d['chips'] = [f'Pass {rv(s.ctx.off[a.piece], "pass")} v Intercept {rv(s.ctx.dfn[t["defender"]], "intercept")} '
+            d['chips'] = [f'Pass {rr(s, "O", a.piece, "pass")} v Intercept {rr(s, "X", t["defender"], "intercept")} '
                           f'(X{t["defender"] + 1})' for t in d['threats']]
         if a.kind == 'dribble':
-            d['chips'] = [f'Dribble {rv(s.ctx.off[a.piece], "dribble")} v Agility {rv(s.ctx.dfn[a.target], "agility")} (X{a.target + 1})']
+            d['chips'] = [f'Dribble {rr(s, "O", a.piece, "dribble")} v Agility {rr(s, "X", a.target, "agility")} (X{a.target + 1})']
         if a.kind == 'screen':
             tq = B.add(s.o[a.piece], B.DIRS[a.target])
-            d['chips'] = [f'Screen {rv(s.ctx.off[a.piece], "screen")} v Challenge {rv(s.ctx.dfn[j], "challenge")} (X{j + 1} on the T square)'
+            d['chips'] = [f'Screen {rr(s, "O", a.piece, "screen")} v Challenge {rr(s, "X", j, "challenge")} (X{j + 1} on the T square)'
                           for j, xp in enumerate(s.x) if xp == tq]
         if a.kind == 'steal':
-            d['chips'] = [f'Steal {rv(s.ctx.dfn[a.piece], "steal")} v Dribble {rv(s.ctx.off[s.ball], "dribble")} (O{s.ball + 1})',
+            d['chips'] = [f'Steal {rr(s, "X", a.piece, "steal")} v Dribble {rr(s, "O", s.ball, "dribble")} (O{s.ball + 1})',
                           f'Foul (steal) {rv(s.ctx.dfn[a.piece], "foul_steal")}: a straight foul roll first']
         if a.kind == 'intercept':
-            d['chips'] = [f'Intercept {rv(s.ctx.dfn[a.piece], "intercept")} v Pass {rv(s.ctx.off[s.pending[0]], "pass")} (O{s.pending[0] + 1})']
+            d['chips'] = [f'Intercept {rr(s, "X", a.piece, "intercept")} v Pass {rr(s, "O", s.pending[0], "pass")} (O{s.pending[0] + 1})']
         if a.kind == 'challenge':
             d['chips'] = [f'Challenge {rv(s.ctx.dfn[a.piece], "challenge")} v Screen {rv(s.ctx.off[a.target], "screen")} (O{a.target + 1})']
         if a.kind == 'contest':

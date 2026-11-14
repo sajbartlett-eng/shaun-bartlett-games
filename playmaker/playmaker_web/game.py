@@ -132,6 +132,20 @@ def consequences(before, after, a):
         out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
     if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.fouls == before.fouls and after.stage != 'over':
         out.append(('good_O', f'Ball kept by O{before.ball + 1}.'))
+    cut = RC.off_balance_cut(after.ctx.rules)
+    if cut and a.kind == 'steal' and after.stage != 'over' and after.locked('X', a.piece) and not before.locked('X', a.piece):
+        # step 18l (D-185): the cost of a failed gamble, in plain words
+        out.append(('bad_X', f"X{a.piece + 1} reached and missed, so he's off balance: every roll he makes is {cut} worse until the "
+                             f"phase ends. O{after.ball + 1}'s drive at him is easier."))
+    if cut and a.kind == 'dribble':
+        if before.rushed('X', a.target):
+            why = ('is locked' if before.locked('X', a.target) else 'closed out on a Sprint' if before.rush('X', a.target) == RC.RUSH_SPRINT
+                   else 'came on a Quick Step')
+            out.append(('info', f"X{a.target + 1} {why}, so he's off balance: his Agility was {cut} lower against the drive."))
+        if before.rushed('O', a.piece):
+            why = ('is locked' if before.locked('O', a.piece) else 'came off a Sprint' if before.rush('O', a.piece) == RC.RUSH_SPRINT
+                   else 'came off a Quick Step')
+            out.append(('info', f"O{a.piece + 1} {why}, so he's off balance: his Dribble was {cut} lower."))
     if before.pending and not after.pending and a.kind != 'intercept' and after.ball == before.pending[1]:
         out.append(('info', f'The pass lands: O{after.ball + 1} has the ball.'))
     for side, mask_b, mask_a in (('O', before.lock_o, after.lock_o), ('X', before.lock_x, after.lock_x)):
@@ -260,7 +274,7 @@ class Game:
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
-                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None):
+                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -287,7 +301,7 @@ class Game:
                 rules = replace(rules, zone='on')
             # step 18i (D-172 to D-174): the FIBA rules are on in the app's format; each may be turned off
             for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot),
-                            ('soft_contest', softcontest), ('fiba_steal_foul', stealfoul)):
+                            ('soft_contest', softcontest), ('fiba_steal_foul', stealfoul), ('off_balance', offbalance)):
                 if v in ('off', '0', 0, False):
                     rules = replace(rules, **{name: 'off'})
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)
