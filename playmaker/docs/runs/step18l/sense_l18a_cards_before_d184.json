@@ -1,0 +1,34 @@
+{
+ "tag": "l18a",
+ "switches": {},
+ "positions": 1,
+ "scored": 1,
+ "matched": 1,
+ "points_lost_a_position": 2.83,
+ "interval": [
+  -0.91,
+  6.56
+ ],
+ "candidates_added": 23,
+ "rows": [
+  {
+   "id": "board 3",
+   "group": "board",
+   "best": "level with the computer's choice (k18a): X3 Quick Steps to N6, then X2 Quick Steps to D6",
+   "choice": "a pick among 24 turns it reads level (they play out from 28.3 to 35.1; scored by their average)",
+   "matches": true,
+   "points_lost": 2.83,
+   "interval": [
+    -0.91,
+    6.56
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 1,
+   "matched": 1,
+   "points_lost": 2.83
+  }
+ }
+}

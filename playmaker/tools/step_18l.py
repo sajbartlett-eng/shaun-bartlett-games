@@ -26,12 +26,26 @@ FOULS = K.FOULS
 ROOT = os.path.dirname(HERE)
 
 
+def pool_is_current(pl):
+    """The pool (docs/runs/step18/pools.json, not kept in the repository) holds its own copy of each card as it was
+    when the pool was made. This step's first runs played on a pool copied from the last step's folder, made before
+    D-184, so they played the old cards. A pool is only played if every card in it is a card as it is now; rebuild
+    one with: python3 tools/step_18.py pools"""
+    from playmaker_engine.cards import CARDS
+    from playmaker_engine.jsbridge import card_json
+    now = {json.dumps(card_json(c), sort_keys=True) for c in CARDS.values()}
+    stale = sum(1 for c in pl['contexts'] for side in ('off', 'dfn') for card in c[side] if json.dumps(card, sort_keys=True) not in now)
+    if stale:
+        raise SystemExit(f'the pool holds {stale} cards that are not the cards as they are now: rebuild it with "python3 tools/step_18.py pools"')
+
+
 def cmd_trace(tag, n='200', level='allstar', seed='1', *switches):
     sw = S._switches(switches) if switches else {}
     rules = dict(RULES)
     if 'off_balance' in sw:
         rules['off_balance'] = sw.pop('off_balance')
     pl = G.pool()
+    pool_is_current(pl)
     pol = L.policy(level, 2, L.profiles()[level]['noise'], **sw)
     starts = [pl['starts'][i % len(pl['starts'])] for i in range(int(n))]
     starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]

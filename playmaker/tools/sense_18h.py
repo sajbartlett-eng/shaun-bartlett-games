@@ -62,7 +62,7 @@ if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = ('answers_18l' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+    _NAME = ('answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
 POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
