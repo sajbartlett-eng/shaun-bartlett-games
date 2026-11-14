@@ -33,3 +33,7 @@ core and is in the tally too.
 
 ## Tally (core-hours used)
 
+- a trial of the measuring tool (rookie, 8 possessions): 0.01 (running total 0.01)
+- self-play (fit_allstar, allstar, 200 possessions): 2.17 (running total 2.18)
+- self-play (fit_starter, starter, 90 possessions): 0.27 (running total 2.45)
+- self-play (fit_rookie, rookie, 120 possessions): 0.08 (running total 2.52)

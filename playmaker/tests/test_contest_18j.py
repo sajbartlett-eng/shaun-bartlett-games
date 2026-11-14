@@ -10,7 +10,8 @@ from playmaker_engine.resolve import apply, ChanceNode
 from playmaker_engine.scenarios import game_state, scenario_state
 from playmaker_engine.scoring import contest_options, soft_contest, score
 
-ON = RC.with_rules(digital=True, soft_contest='on', fiba_steal_foul='on')
+# step 18n: in the app D-191 now replaces the soft and hard contest; these tests keep D-177 itself, with D-191's switch off
+ON = RC.with_rules(digital=True, soft_contest='on', fiba_steal_foul='on', position_contest='off')
 OFF = RC.with_rules(digital=True, soft_contest='off', fiba_steal_foul='off')
 O = ['I10', 'C9', 'O9', 'A3', 'Q3']                                    # O1 shoots the three from I10
 

@@ -236,10 +236,10 @@ def test_free_throw_multipliers():
 
 
 def test_declared_negative_shot_floors_at_zero():
-    # Ruling OQ-5. Re-recorded in step 18l, reason: D-184 cards. On the new cards no contest is larger than the shot
-    # it meets, so the only declared shot below nothing is a rushed one: the Defensive Point Guard C (post 8, rushed
-    # 6) against the Rim Protector A's hard contest from in front (post contest 8): 2 x (6 - 8) = -4 scores 0. With
-    # the old setting it scores -4.
+    # Ruling OQ-5. Re-recorded in step 18l (D-184 cards) and step 18n (D-189 to D-193). No contest is larger than the
+    # open shot it meets, so the only declared shot below nothing is a rushed one: the Defensive Point Guard C (post 8,
+    # rushed 6) against the Rim Protector A straight up in front of him with his arrow on him (post contest 8, the
+    # automatic full contest of D-191): 2 x (6 - 8) = -4 scores 0. With the old setting it scores -4.
     from playmaker_engine import board as B
     from playmaker_engine.cards import CARDS
     from playmaker_engine.state import Context, GameState
@@ -251,7 +251,7 @@ def test_declared_negative_shot_floors_at_zero():
         sq = lambda names: tuple(B.parse_sq(n) for n in names)
         s = GameState(ctx=ctx, o=sq(['I4', 'A14', 'C14', 'Q3', 'E14']), x=sq(['I3', 'P3', 'M14', 'K14', 'O14']),
                       arrows=(B.DIR_NAMES.index('N'),) * 5, ball=0, clock=RC.START_CLOCK, rush_o=RC.RUSH_QS)
-        return settle(apply(apply(s, Action('shot', 'O', 0, shot='post')), Action('contest', 'X', 0)))
+        return settle(apply(apply(s, Action('shot', 'O', 0, shot='post')), Action('end_turn', 'X')))
 
     assert (end(True).result.rating, end(True).result.contest) == (6, 8)
     assert end(True).result.shot_value == 0 and score(end(True)).total == 0
