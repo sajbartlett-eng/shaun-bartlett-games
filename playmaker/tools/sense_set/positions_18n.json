@@ -5141,7 +5141,8 @@
       ""
      ]
     ],
-    "added_by": "j18fix"
+    "added_by": "j18fix",
+    "n_too": true
    },
    {
     "name": "the computer's choice (l18a): X4 Quick Steps to K7, then X5 moves to B5, facing N",
@@ -15935,6 +15936,21 @@
      ]
     ],
     "added_by": "n18a"
+   },
+   {
+    "name": "the exam's All-Star choice (step 18n): X4 moves to B4, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      3,
+      "B4",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18x"
    }
   ]
  },

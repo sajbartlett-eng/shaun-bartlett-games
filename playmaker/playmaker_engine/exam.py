@@ -134,12 +134,20 @@ def p1():
         n = after(s, t)
         avail, drive, alt = straight_drive(n)
         on = [j for j, q in enumerate(n.x) if q in lane and B.cheb(q, n.o[0]) <= 3]
-        ok = any(a.kind == 'qs' and a.piece == 1 and B.sq(a.dest) == 'D6' for a in t)
+        # Step 18n (D-189 to D-193), replayed on today's cards and rules, 16 play-outs a turn: X1 steps in front of O1
+        # and tries a Steal holds the offence to 25.8 (19.5 to 32.1); doing nothing, step 18a's choice (X2 Moves to
+        # D6, facing E) and the computer's choices (X2 or X4 Moves to B4, facing N) each give up exactly 30.0, level
+        # with it within the play-outs. X1 is behind the drive, and a hand up from behind takes little off the layup
+        # whatever else the defence does. A turn that was not played out is not passed: it needs its own play-outs.
+        played = {('X1 Move to I9 facing S', 'X1 Steal'), (), ('X2 Move to D6 facing E',), ('X2 Move to B4 facing N',),
+                  ('X4 Move to B4 facing N',)}
+        ok = tuple(str(a) for a in t if a.kind not in ('end_turn', 'pause')) in played
         return ok, (f"{words(t)} (straight drive {'available' if avail else 'walled or contained'}"
                     + (f", worth {drive:.1f} against the best other look {alt:.1f}" if avail else '')
                     + f"; on the ball-rim line, reported only: {', '.join(f'X{j + 1}' for j in on) or 'nobody'})")
-    return ('Straight lane: the best by play (step 18h): X2 Quick Steps to D6. The old answer was a straight drive '
-            'walled, contained or worth less than the best alternative'), s, check
+    return ('Straight lane: by play (step 18n) X1 stepping in for a Steal, doing nothing, or X2 moving to D6 or B4 are '
+            'level. Step 18h\'s best was X2 Quick Steps to D6; the old answer a straight drive walled, contained or worth '
+            'less than the best alternative'), s, check
 
 
 def p2():
