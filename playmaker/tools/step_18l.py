@@ -44,16 +44,37 @@ def cmd_trace(tag, n='200', level='allstar', seed='1', *switches):
 
 
 def cmd_maps(write='no', *sources):
-    """Step 18h's fit, on this step's runs: level=tag[,tag] names the trace files."""
+    """Step 18h's fit, on this step's runs: level=tag[,tag] names the trace files. First the one shared map (the
+    'calibration' block: the line a level borrows where it has too few positions of its own) from all the runs
+    together, so no borrowed line is left from the cards before D-184 where this step's play can fit one."""
+    import hashlib
+    import numpy as np
     import step_18h as H
     H.RUN, H.WORK = RUN, WORK
-    H.cmd_maps(write, *[a.split('=')[0] + '=' + ','.join(f'trace_{t}.json' for t in a.split('=')[1].split(',')) for a in sources])
+    named = [a.split('=')[0] + '=' + ','.join(f'trace_{t}.json' for t in a.split('=')[1].split(',')) for a in sources]
+    files = [f for a in named for f in a.split('=')[1].split(',')]
+    g, ph, y, hand, side, n = H.map_rows(files)
+    maps, _ = L.fit_maps('linear', ph, side, hand, y, np.ones(len(y), bool))
+    body = json.load(open(L.WEIGHTS))
+    fresh = sorted(k for k, m in maps.items() if m.get('positions', 0) >= H.MIN_POSITIONS)
+    old = sorted(k for k in body['calibration']['maps'] if k not in fresh)
+    print('the shared map:', len(y), 'positions from', n, 'possessions; refitted', fresh, '| kept from before D-184 (too few positions)', old)
+    if write != 'no':
+        for k in fresh:
+            body['calibration']['maps'][k] = maps[k]
+        for k in old:
+            body['calibration']['maps'][k] = dict(body['calibration']['maps'][k], from_before_d184=True)
+        body['calibration']['fitted_on'] = dict(runs=[os.path.basename(f) for f in files], possessions=n, positions=int(len(y)))
+        body.pop('hash', None)
+        body['hash'] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:16]
+        json.dump(body, open(L.WEIGHTS, 'w'), indent=1)
+    H.cmd_maps(write, *named)
 
 
 def cmd_fouls(tag, write='no'):
     """The two numbers that price a foul over the quarter: the defence's fouls a possession, and what a possession is
     worth, from a self-play run."""
-    rows = json.load(open(os.path.join(WORK, f'trace_{tag}.json')))['rows']
+    rows = [r for t in tag.split(',') for r in json.load(open(os.path.join(WORK, f'trace_{t}.json')))['rows']]
     f = L.mean_ci([r.get('fouls', 0) for r in rows]); p = L.mean_ci([r['points'] for r in rows])
     rep = dict(run=tag, possessions=len(rows), fouls_per_possession=round(f[0], 2), fouls_interval=[round(f[0] - f[2], 2), round(f[0] + f[2], 2)],
                play_on_value=round(p[0], 1), value_interval=[round(p[0] - p[2], 1), round(p[0] + p[2], 1)])
