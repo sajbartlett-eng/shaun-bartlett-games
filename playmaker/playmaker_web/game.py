@@ -124,6 +124,10 @@ def consequences(before, after, a):
     if a.kind == 'steal' and after.fouls > before.fouls and after.bonus5 == before.bonus5 and after.stage != 'over':
         # step 18j (D-179): outside the penalty a steal foul gives no +5
         out.append(('good_O', f'Foul on the steal: a team foul. X{a.piece + 1} is locked. Play on.'))
+    if (a.kind == 'steal' and after.fouls > before.fouls and after.bonus5 == before.bonus5 and after.stage == 'over'
+            and after.result is not None and after.result.kind == 'free_throws' and not after.result.shot_type):
+        # step 18k (D-181): in the penalty a steal foul gives two free throws and nothing more
+        out.append(('good_O', 'Foul on the steal, in the penalty: two free throws. The possession ends.'))
     if a.kind == 'intercept' and after.tos == before.tos and before.pending:
         out.append(('good_O', f'Pass completes to O{before.pending[1] + 1}.'))
     if a.kind == 'steal' and after.tos == before.tos and after.bonus5 == before.bonus5 and after.fouls == before.fouls and after.stage != 'over':
@@ -293,6 +297,11 @@ class Game:
         # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
         # between the same pairing (the client stores it with the pairing and passes it in)
         q = quarter if isinstance(quarter, dict) else {}
+        if not q and self.match_format == 'digital':
+            # D-182 (Shaun, 14 Nov 2026): nothing sets a foul situation, so the app plays a typical mid-quarter one
+            f0, left0 = RC.DEFAULT_FOUL_SITUATION
+            n0 = (rules or RC.DEFAULT_RULES).quarter_possessions
+            q = dict(fouls=dict(A=f0, B=f0), poss=dict(A=n0 - left0, B=n0 - left0), number=1)
         self.quarter = dict(fouls=dict(A=int((q.get('fouls') or {}).get('A', 0)), B=int((q.get('fouls') or {}).get('B', 0))),
                             poss=dict(A=int((q.get('poss') or {}).get('A', 0)), B=int((q.get('poss') or {}).get('B', 0))),
                             number=int(q.get('number', 1)))

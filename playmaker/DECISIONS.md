@@ -908,6 +908,29 @@ the penalty should cost more than an ordinary foul; under step 18i's rules it di
 **D-180. A scenario card that sets a foul situation plays under the app's rules.** · Source: Shaun, 13 Nov 2026 ·
 **Ruled; step 18j.**
 
+**D-181. No +5 on any foul in the app (consistency).** In Shaun's words: "You cannot have the +5 on the shot foul and
+take it off the steal foul." In the app no foul carries +5: a foul on a shot is FIBA scoring, as now (D-174); a steal
+foul outside the penalty is a team foul, the defender locked, play on (D-179); a steal foul in the penalty (from the
+5th team foul) is two free throws, nothing more. This replaces step 18j's reading 3 (the +5 kept in the penalty). The
+table keeps its +5: a deliberate difference between the formats. · Source: Shaun, 14 Nov 2026 · **Ruled; step 18k.**
+
+**D-182. Every foul's price comes from the foul situation.** With no points on a foul, its cost is what it is in
+basketball: it brings the penalty nearer. When nothing sets a foul situation, the app plays a typical mid-quarter one:
+2 team fouls each, 8 possessions left. The foul's later cost is priced as built in step 18i (D-175). The screen shows
+it plainly. Steals tried, steals won and steal fouls per 100 possessions are checked against basketball as a band, not
+a target (NBA: about 8 steals and 8 to 10 non-shooting fouls per 100 possessions a team); nothing is tuned to hit it.
+· Source: Shaun, 14 Nov 2026 · **Ruled; step 18k.**
+
+**D-183. Step 18j is accepted.** It is merged into `main`. `search.keep_settled` is on by default in its final form.
+`search.dice_in_hand` goes on by default if, under D-181 and D-182, Steals tried and steal fouls land within about
+twice basketball's band and the sense-check set doesn't get worse; otherwise it stays off. `eval.ball_loss` stays off.
+The contest rule's readings 1 and 2 stand (the side is level with the shooter; a hard contest from the side or behind
+rolls twice even with the arrow on him), and the hard contest from the side vanishing from the computer's play is
+accepted. Exam position 10's expected answer is updated to the rules: by play, stealing early on a strong dribbler and
+holding back are level, so either passes. On the sense-check set, a pick among turns the computer reads level is
+scored by the average of those turns played out, so a board stops passing or failing by luck. The zone waits until
+after step 18k. · Source: Shaun, 14 Nov 2026 · **Ruled; step 18k.**
+
 **D-184. The card fidelity update.** Reason: FIBA-based card audit, 14 Nov: open jump shots and hard contests on jump
 shots and dunks were above real basketball; layups, dunks, floaters, post shots and free throws were faithful
 (`docs/reference/CARD_AUDIT_14NOV.md`). On every card: three 10 to 9, 11 to 9, 12 to 10, 13 to 11; mid-range 10 to 9,

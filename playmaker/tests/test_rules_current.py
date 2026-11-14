@@ -34,7 +34,8 @@ def pages():
                 dfn=printed('Defence_tracker.pdf'))
 
 
-SHARED = {e[0] for e in RG.ENTRIES if e[1] == RG.SHARED}
+# the numbers the table plays by: Shared, or (step 18k, D-181: the steal foul's +5) the table's alone
+SHARED = {e[0] for e in RG.ENTRIES if e[1] in (RG.SHARED, RG.TABLETOP)}
 
 # (register entry, value the register holds, pattern in the printed text, page)
 CHECKS = [
@@ -61,7 +62,7 @@ CHECKS = [
 @needs_pdftotext
 @pytest.mark.parametrize('entry,held,pattern,page', CHECKS, ids=[f'{c[0]}:{c[3]}:{c[2][:24]}' for c in CHECKS])
 def test_every_shared_number_is_the_printed_number(pages, entry, held, pattern, page):
-    assert entry in SHARED, f'{entry} is not marked Shared in the register'
+    assert entry in SHARED, f'{entry} is not marked Shared or Tabletop only in the register'
     assert number(pattern, pages[page]) == held
 
 

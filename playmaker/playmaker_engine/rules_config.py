@@ -17,6 +17,9 @@ DIE = 20                   # d20
 FAR_CONTEST_PENALTY = 3    # defender further from the rim than the shooter
 TURNOVER_POINTS = -5
 STEAL_FOUL_BONUS = 5       # first foul on a steal
+# D-182 (Shaun, 14 Nov 2026): when nothing sets a foul situation, the app plays a typical mid-quarter one: 2 team
+# fouls each, 8 possessions left. (the defence's team fouls, its possessions left in the quarter)
+DEFAULT_FOUL_SITUATION = (2, 8)
 FT_MULT_TWO = 2
 FT_MULT_THREE = 3
 MAX_ACTIONS_PER_TURN = 2

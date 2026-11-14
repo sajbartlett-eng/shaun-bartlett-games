@@ -1,0 +1,80 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18j's code and this step's",
+ "switches": {
+  "keep_in_hand": true
+ },
+ "rounds": [
+  {
+   "18j": {
+    "rookie": {
+     "median": 0.151,
+     "nine_in_ten": 0.236,
+     "slowest": 0.261
+    },
+    "starter": {
+     "median": 0.574,
+     "nine_in_ten": 0.719,
+     "slowest": 0.809
+    },
+    "allstar": {
+     "median": 1.279,
+     "nine_in_ten": 1.678,
+     "slowest": 1.81
+    }
+   },
+   "18k": {
+    "rookie": {
+     "median": 0.152,
+     "nine_in_ten": 0.189,
+     "slowest": 0.257
+    },
+    "starter": {
+     "median": 0.573,
+     "nine_in_ten": 0.723,
+     "slowest": 0.756
+    },
+    "allstar": {
+     "median": 1.255,
+     "nine_in_ten": 1.518,
+     "slowest": 1.839
+    }
+   }
+  },
+  {
+   "18j": {
+    "rookie": {
+     "median": 0.158,
+     "nine_in_ten": 0.278,
+     "slowest": 0.346
+    },
+    "starter": {
+     "median": 0.547,
+     "nine_in_ten": 0.814,
+     "slowest": 0.874
+    },
+    "allstar": {
+     "median": 1.291,
+     "nine_in_ten": 1.614,
+     "slowest": 1.854
+    }
+   },
+   "18k": {
+    "rookie": {
+     "median": 0.142,
+     "nine_in_ten": 0.21,
+     "slowest": 0.237
+    },
+    "starter": {
+     "median": 0.574,
+     "nine_in_ten": 0.744,
+     "slowest": 0.789
+    },
+    "allstar": {
+     "median": 1.295,
+     "nine_in_ten": 1.786,
+     "slowest": 1.919
+    }
+   }
+  }
+ ]
+}

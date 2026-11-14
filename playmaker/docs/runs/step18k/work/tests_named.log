@@ -1,0 +1,38 @@
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+........................................................................ [ 49%]
+........................................................................ [ 66%]
+............................F......X....xx..x..xx.x.xx..............x..x [ 82%]
+x....................................................................... [ 99%]
+....                                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_the_agent_only_plays_legal_actions_within_its_budget ___________
+
+    def test_the_agent_only_plays_legal_actions_within_its_budget():
+        g = Game(ai={'A': 'allstar', 'B': 'starter'}, level='learn', seed=9, match_format='digital', per_side=4, place=True)
+        decs = [r for r in g.read_log() if r['type'] == 'computer' and r.get('event') == 'decision']
+        acts = [r for r in g.read_log() if r['type'] == 'action']
+        assert acts and all(r['actor'] == 'ai' for r in acts)                 # Game.act refuses an illegal action
+        for d in decs:
+            prof = AG.profile(d['level'])
+>           assert d['seconds'] <= prof['time_budget_s'] * AG.SCALE['value'] + 1.5, d
+E           AssertionError: {'type': 'computer', 'time': 1794619517.113, 'code': '18110C', 'side': 'O', ...}
+E           assert 1.923 <= ((2.5 * 0.08) + 1.5)
+
+tests/test_step3m.py:229: AssertionError
+=================================== XPASSES ====================================
+=========================== short test summary info ============================
+XFAIL tests/test_step3m.py::test_exam_position[1] - the defence does not yet put a defender on the ball-rim line (it covers the corner threes first) (X Pause (straight drive available, worth 32.0 against the best other look 22.0; on the ball-rim line, reported only: nobody))
+XFAIL tests/test_step3m.py::test_exam_position[2] - step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget (three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest))
+XFAIL tests/test_step3m.py::test_exam_position[5] - the receiver drives in both closeout boards (closed to C7: O2 Move to B8; O2 Shot (three); stopped 2 short at D7: O2 Shot (three))
+XFAIL tests/test_step3m.py::test_exam_position[8] - the denied receiver does not cut backdoor (O1 Move to E10; O1 Dribble vs X2)
+XFAIL tests/test_step3m.py::test_exam_position[9] - neither the kick nor the corner relocation is chosen (O1 Quick Step to K4; O1 Move to I2)
+XFAIL tests/test_step3m.py::test_exam_position[11] - the contested-pass boards do not separate early from late (early: O2 Move to A5; O1 Quick Step to J10; final phase: O1 Move to K10)
+XFAIL tests/test_step3m.py::test_exam_position[13] - the attacker in the driving lane is not moved out of it (O2 Move to B8; O4 Sprint to A4)
+XFAIL tests/test_step3m.py::test_exam_position[14] - step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B) (2 different first actions over 20 seeds; the most common 90% (the top first move leads by 0.0))
+XFAIL tests/test_step3n.py::test_all_star_reaches_with_no_team_fouls_and_declines_with_four - Step 3n F4 finding: on the rebuilt phase table an average possession is worth about 28, so a foul before the bonus costs +5 and play on (about 33) while a bonus foul costs two free throws (2 x the rating, 29 to 31) and ends the possession: the bonus no longer deters a reach. The board was found on the step 3m table. A designer decision (docs/reports/STEP3N_REPORT.md, F).
+XFAIL tests/test_step3n.py::test_v_by_phase_never_rises_at_senior_pro - Step 3n C finding (220 Senior Pro possessions): V rises from phase 1 (24.9) to phase 6 (29.5), about 1 point a phase against a standard error near 1; half the turnovers (at 0) come in phase 1, and possessions that run long end on better looks. Reported for the designer.
+XFAIL tests/test_step3n.py::test_credit_names_the_helper_who_answered_the_decoy - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+XPASS tests/test_step3m.py::test_an_early_cut_is_flagged_with_a_legal_reorder - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+1 failed, 423 passed, 11 xfailed, 1 xpassed in 1176.63s (0:19:36)
+DONE

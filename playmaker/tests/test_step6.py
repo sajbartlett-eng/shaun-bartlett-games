@@ -123,7 +123,9 @@ def test_a_steal_foul_by_format_and_the_bonus_adds_free_throws(fmt):
     end = force(apply(bonus, Action('steal', 'X', 0)), 'foul')
     sc = score(end)
     assert end.stage == 'over' and end.result.kind == 'free_throws'
-    assert end.bonus5 == bonus.bonus5 + 1 and sc.bonus == 5 * end.bonus5 and sc.free_throws == 2 * end.ctx.off[0].r['free_throw']
+    # the table: the +5 as well. The app, since D-181 (step 18k): two free throws, nothing more
+    assert end.bonus5 == bonus.bonus5 + (1 if fmt == 'tabletop' else 0)
+    assert sc.bonus == 5 * end.bonus5 and sc.free_throws == 2 * end.ctx.off[0].r['free_throw']
     assert sc.total == sc.bonus + sc.free_throws + sc.turnover_points
 
 
