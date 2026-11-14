@@ -888,6 +888,21 @@
      ]
     ],
     "added_by": "l18a"
+   },
+   {
+    "name": "the computer's choice (n18a): X2 moves to B6, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B6",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -1774,6 +1789,21 @@
      ]
     ],
     "added_by": "l18a"
+   },
+   {
+    "name": "the computer's choice (n18a): X2 moves to A7, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "A7",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -3362,7 +3392,8 @@
      ]
     ],
     "added_by": "j18",
-    "k_too": true
+    "k_too": true,
+    "n_too": true
    },
    {
     "name": "the computer's choice (k18h): X2 moves to B7, facing SW, then X4 moves to C4, facing SW",
@@ -5876,6 +5907,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (n18a): X1 moves to N8, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "N8",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -6625,6 +6671,21 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (n18a): X1 moves to L8, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "L8",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -7388,6 +7449,21 @@
      ]
     ],
     "added_by": "zone_near"
+   },
+   {
+    "name": "the computer's choice (n18a): X1 moves to D13, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "D13",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -8122,6 +8198,21 @@
       ""
      ]
     ]
+   },
+   {
+    "name": "the computer's choice (n18a): X1 moves to N10, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      0,
+      "N10",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -14276,7 +14367,8 @@
       "three"
      ]
     ],
-    "added_by": "zone_near"
+    "added_by": "zone_near",
+    "n_too": true
    }
   ]
  },
@@ -15828,6 +15920,21 @@
     ],
     "added_by": "j18fix",
     "k_too": true
+   },
+   {
+    "name": "the computer's choice (n18a): X2 moves to B4, facing N",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B4",
+      0,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },
@@ -18166,6 +18273,30 @@
      ]
     ],
     "added_by": "l18a"
+   },
+   {
+    "name": "the computer's choice (n18a): O1 moves to E10, then the offence Hesitates",
+    "turn": [
+     [
+      "move",
+      "O",
+      0,
+      "E10",
+      -1,
+      -1,
+      ""
+     ],
+     [
+      "hesitate",
+      "O",
+      -1,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "n18a"
    }
   ]
  },

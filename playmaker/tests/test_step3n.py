@@ -111,19 +111,20 @@ def test_a_reach_from_closer_to_the_rim_makes_one_foul_roll_level_or_behind_two(
 
 
 def test_contest_foul_rolls_follow_the_same_angle_and_the_minus_three_is_unchanged():
-    # shooter O1 on I6 (mid); X1 on I5 (closer, arrow off him), on H6 (level, arrow off), on I7 (behind, arrow off)
+    # step 18n: re-recorded, reason: D-189 to D-193. A jump shot has no Contest action in the app now (D-191), so the
+    # foul rolls are shown on a layup. Shooter O1 on I4; X1 on I3 (closer, arrow off him), on J4 (level), on I5 (behind)
     def opt(xsq, arrow):
-        s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], [xsq, 'D8', 'N8', 'F4', 'L4'], [arrow, 0, 0, 0, 0])
-        o = [o for o in contest_options(s, 0, 'mid') if o.defender == 0][0]
+        s = _state(['I4', 'C9', 'O9', 'E4', 'M4'], [xsq, 'D8', 'N8', 'F4', 'L4'], [arrow, 0, 0, 0, 0])
+        o = [o for o in contest_options(s, 0, 'layup') if o.defender == 0][0]
         return o, s
-    closer, s = opt('I5', B.DIR_NAMES.index('S'))
-    level, _ = opt('H6', B.DIR_NAMES.index('W'))
-    further, _ = opt('I7', B.DIR_NAMES.index('N'))
+    closer, s = opt('I3', B.DIR_NAMES.index('E'))
+    level, _ = opt('J4', B.DIR_NAMES.index('E'))
+    further, _ = opt('I5', B.DIR_NAMES.index('N'))
     assert not closer.clean and closer.rolls == 1
     assert not level.clean and level.rolls == 2
     assert not further.clean and further.rolls == 2
-    con = s.ctx.dfn[0].con('mid')
-    assert closer.contest == max(0, con) and level.contest == max(0, con) and further.contest == max(0, con - 3)
+    con = s.ctx.dfn[0].con('layup')
+    assert closer.contest == max(1, con) and level.contest == max(1, con) and further.contest == max(1, con - 3)
     assert abs(float(further.p_foul) - (1 - (1 - min(20, max(0, s.ctx.dfn[0].r['foul_contest'])) / 20) ** 2)) < 1e-12
 
 
@@ -145,8 +146,9 @@ def test_the_tabletop_format_keeps_its_within_possession_rule():
 
 
 def test_a_shooting_foul_counts_toward_the_team_total():
-    s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], ['H6', 'D8', 'N8', 'F4', 'L4'], [B.DIR_NAMES.index('W'), 0, 0, 0, 0])
-    s = s.with_(stage='contest', side='X', shot='mid')
+    # step 18n: re-recorded, reason: D-191 (no shooting foul on a jump shot in the app): the foul is on a layup
+    s = _state(['I4', 'C9', 'O9', 'E4', 'M4'], ['J4', 'D8', 'N8', 'F4', 'L4'], [B.DIR_NAMES.index('W'), 0, 0, 0, 0])
+    s = s.with_(stage='contest', side='X', shot='layup')
     fouled = force(apply(s, Action('contest', 'X', 0)), 'foul')
     assert fouled.result.kind == 'free_throws' and fouled.fouls == 1
 

@@ -3312,6 +3312,7 @@ const PMEngine = (() => {
       this.help = helpOn(); this.fcache = new Map();            // step 18c (eval.help_readings, off)
       this.ballLoss = ballLossOn(me); this.xcache = new Map();    // step 18j (eval.ball_loss)
       this.open = openMode(profile);                            // step 18e (search.open_list, or the level's own)
+      this.twice = !!(profile && profile.closeout_twice);       // step 18n: a second closeout movement in a settled reaction
       this.whole = wholeOn();                                   // step 18f (search.whole_turns)
       this.split = splitOn(); this.spread = new Map();          // step 18f (search.split_ties): a reply node's values, best first
       this.width = openWidth(profile);                          // step 18f: how many turns this level reads in full
@@ -3406,7 +3407,8 @@ const PMEngine = (() => {
         const sp = s.o[s.ball];
         // D-191 (search.Searcher.settled): position decides the contest, so both of the reaction's actions may be
         // movements; only one that ends next to the shooter is played, a Move only with its arrow on him
-        if (s.ctx.pos) acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))));
+        // a level with closeout_twice (the All-Star) plays a second such movement; the others stop at one, as before
+        if (s.ctx.pos && (s.turn_n === 0 || this.twice)) acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))));
         else if (s.turn_n >= 1) acts = forcingActions(s, 'stage');
         else acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || adjacent(a.dest, sp));
       } else acts = legalActions(s);

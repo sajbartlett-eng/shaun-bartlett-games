@@ -1,0 +1,2394 @@
+{
+ "fit_allstar": {
+  "possessions": 200,
+  "points": {
+   "n": 200,
+   "mean": 25.82,
+   "interval": [
+    24.43,
+    27.2
+   ]
+  },
+  "shots": 178,
+  "shots_contested": {
+   "n": 98,
+   "of": 178,
+   "pct": 55.1,
+   "interval": [
+    47.7,
+    62.2
+   ]
+  },
+  "by_a_soft_contest": {
+   "n": 98,
+   "of": 178,
+   "pct": 55.1,
+   "interval": [
+    47.7,
+    62.2
+   ]
+  },
+  "by_a_hard_contest": {
+   "n": 0,
+   "of": 178,
+   "pct": 0.0,
+   "interval": [
+    0.0,
+    2.1
+   ]
+  },
+  "threes_contested": {
+   "n": 27,
+   "of": 79,
+   "pct": 34.2,
+   "interval": [
+    24.7,
+    45.2
+   ]
+  },
+  "hard_contests_by_position": {
+   "front": 0,
+   "side": 0,
+   "behind": 0
+  },
+  "fouled_shots": {
+   "n": 0,
+   "of": 200,
+   "pct": 0.0,
+   "interval": [
+    0.0,
+    1.9
+   ]
+  },
+  "steals_tried_a_possession": {
+   "n": 200,
+   "mean": 0.46,
+   "interval": [
+    0.36,
+    0.55
+   ]
+  },
+  "steal_fouls_a_possession": {
+   "n": 200,
+   "mean": 0.22,
+   "interval": [
+    0.15,
+    0.29
+   ]
+  },
+  "defence_fouls_a_possession": {
+   "n": 200,
+   "mean": 0.22,
+   "interval": [
+    0.15,
+    0.29
+   ]
+  },
+  "violations": {
+   "three_seconds": 1,
+   "closely_guarded": 0
+  },
+  "usual": {
+   "possessions": 200,
+   "shots": 178,
+   "usual": {
+    "points": {
+     "n": 200,
+     "mean": 25.8,
+     "interval": [
+      24.4,
+      27.2
+     ]
+    },
+    "shots_in_phases_1_and_2": 0.407,
+    "shot_by_phase": {
+     "1": 0.156,
+     "2": 0.251,
+     "3": 0.207,
+     "4": 0.223,
+     "5": 0.128,
+     "6": 0.034
+    },
+    "decisions": 32.7,
+    "clock_ran_out": {
+     "n": 0,
+     "of": 200,
+     "pct": 0.0,
+     "interval": [
+      0.0,
+      1.9
+     ]
+    },
+    "lost_in_100_phases_kept": {
+     "n": 21,
+     "of": 404,
+     "pct": 5.2,
+     "interval": [
+      3.4,
+      7.8
+     ]
+    }
+   },
+   "help": {
+    "contested": {
+     "n": 98,
+     "of": 178,
+     "pct": 55.1,
+     "interval": [
+      47.7,
+      62.2
+     ]
+    },
+    "open": {
+     "n": 80,
+     "of": 178,
+     "pct": 44.9,
+     "interval": [
+      37.8,
+      52.3
+     ]
+    },
+    "early": {
+     "n": 27,
+     "of": 98,
+     "pct": 27.6,
+     "interval": [
+      19.7,
+      37.1
+     ]
+    },
+    "late": {
+     "n": 71,
+     "of": 98,
+     "pct": 72.4,
+     "interval": [
+      62.9,
+      80.3
+     ]
+    },
+    "by_a_helper": {
+     "n": 62,
+     "of": 98,
+     "pct": 63.3,
+     "interval": [
+      53.4,
+      72.1
+     ]
+    },
+    "late_from_how_far": {
+     "n": 71,
+     "mean": 3.1,
+     "interval": [
+      2.9,
+      3.4
+     ]
+    },
+    "late_from_3_or_more": {
+     "n": 48,
+     "of": 71,
+     "pct": 67.6,
+     "interval": [
+      56.1,
+      77.3
+     ]
+    },
+    "points_allowed": {
+     "open": {
+      "n": 80,
+      "mean": 29.8,
+      "interval": [
+       28.7,
+       30.8
+      ]
+     },
+     "early": {
+      "n": 27,
+      "mean": 28.8,
+      "interval": [
+       27.2,
+       30.4
+      ]
+     },
+     "late": {
+      "n": 71,
+      "mean": 27.8,
+      "interval": [
+       26.6,
+       29.0
+      ]
+     }
+    }
+   },
+   "closeouts": {
+    "none": {
+     "share": {
+      "n": 5,
+      "of": 98,
+      "pct": 5.1,
+      "interval": [
+       2.2,
+       11.4
+      ]
+     },
+     "points": {
+      "n": 5,
+      "mean": 29.0,
+      "interval": [
+       27.8,
+       30.2
+      ]
+     }
+    },
+    "move": {
+     "share": {
+      "n": 64,
+      "of": 98,
+      "pct": 65.3,
+      "interval": [
+       55.5,
+       74.0
+      ]
+     },
+     "points": {
+      "n": 64,
+      "mean": 27.4,
+      "interval": [
+       26.1,
+       28.7
+      ]
+     }
+    },
+    "qs": {
+     "share": {
+      "n": 24,
+      "of": 98,
+      "pct": 24.5,
+      "interval": [
+       17.0,
+       33.9
+      ]
+     },
+     "points": {
+      "n": 24,
+      "mean": 28.9,
+      "interval": [
+       27.2,
+       30.5
+      ]
+     }
+    },
+    "sprint": {
+     "share": {
+      "n": 5,
+      "of": 98,
+      "pct": 5.1,
+      "interval": [
+       2.2,
+       11.4
+      ]
+     },
+     "points": {
+      "n": 5,
+      "mean": 32.0,
+      "interval": [
+       30.8,
+       33.2
+      ]
+     }
+    }
+   },
+   "rushed_contests": {
+    "n": 29,
+    "of": 98,
+    "pct": 29.6,
+    "interval": [
+     21.5,
+     39.3
+    ]
+   },
+   "contest_fouls": {
+    "n": 0,
+    "of": 98,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     3.8
+    ]
+   },
+   "shots_set_and_rushed": {
+    "set": {
+     "share": {
+      "n": 150,
+      "of": 178,
+      "pct": 84.3,
+      "interval": [
+       78.2,
+       88.9
+      ]
+     },
+     "points": {
+      "n": 150,
+      "mean": 28.9,
+      "interval": [
+       28.1,
+       29.7
+      ]
+     }
+    },
+    "rushed": {
+     "share": {
+      "n": 28,
+      "of": 178,
+      "pct": 15.7,
+      "interval": [
+       11.1,
+       21.8
+      ]
+     },
+     "points": {
+      "n": 28,
+      "mean": 28.5,
+      "interval": [
+       26.5,
+       30.5
+      ]
+     }
+    }
+   },
+   "shots_by_last_movement": {
+    "none": {
+     "share": {
+      "n": 27,
+      "of": 178,
+      "pct": 15.2,
+      "interval": [
+       10.6,
+       21.2
+      ]
+     },
+     "points": {
+      "n": 27,
+      "mean": 27.4,
+      "interval": [
+       25.2,
+       29.6
+      ]
+     }
+    },
+    "move": {
+     "share": {
+      "n": 123,
+      "of": 178,
+      "pct": 69.1,
+      "interval": [
+       62.0,
+       75.4
+      ]
+     },
+     "points": {
+      "n": 123,
+      "mean": 29.2,
+      "interval": [
+       28.4,
+       30.0
+      ]
+     }
+    },
+    "qs": {
+     "share": {
+      "n": 7,
+      "of": 178,
+      "pct": 3.9,
+      "interval": [
+       1.9,
+       7.9
+      ]
+     },
+     "points": {
+      "n": 7,
+      "mean": 23.4,
+      "interval": [
+       17.2,
+       29.6
+      ]
+     }
+    },
+    "sprint": {
+     "share": {
+      "n": 21,
+      "of": 178,
+      "pct": 11.8,
+      "interval": [
+       7.8,
+       17.4
+      ]
+     },
+     "points": {
+      "n": 21,
+      "mean": 30.2,
+      "interval": [
+       29.0,
+       31.3
+      ]
+     }
+    }
+   },
+   "shots_by_how": {
+    "catch and shoot": {
+     "share": {
+      "n": 52,
+      "of": 178,
+      "pct": 29.2,
+      "interval": [
+       23.0,
+       36.3
+      ]
+     },
+     "points": {
+      "n": 52,
+      "mean": 28.6,
+      "interval": [
+       27.3,
+       29.9
+      ]
+     }
+    },
+    "off the dribble or a movement": {
+     "share": {
+      "n": 126,
+      "of": 178,
+      "pct": 70.8,
+      "interval": [
+       63.7,
+       77.0
+      ]
+     },
+     "points": {
+      "n": 126,
+      "mean": 28.9,
+      "interval": [
+       28.0,
+       29.8
+      ]
+     }
+    },
+    "from a standstill": {
+     "share": {
+      "n": 0,
+      "of": 178,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       2.1
+      ]
+     },
+     "points": {
+      "n": 0,
+      "mean": null,
+      "interval": null
+     }
+    }
+   },
+   "extra_pass": {
+    "closeouts": 186,
+    "pass": {
+     "share": {
+      "n": 60,
+      "of": 186,
+      "pct": 32.3,
+      "interval": [
+       26.0,
+       39.3
+      ]
+     },
+     "possession_points": {
+      "n": 60,
+      "mean": 25.0,
+      "interval": [
+       22.5,
+       27.5
+      ]
+     }
+    },
+    "shot": {
+     "share": {
+      "n": 19,
+      "of": 186,
+      "pct": 10.2,
+      "interval": [
+       6.6,
+       15.4
+      ]
+     },
+     "possession_points": {
+      "n": 19,
+      "mean": 27.8,
+      "interval": [
+       25.8,
+       29.8
+      ]
+     }
+    },
+    "dribble": {
+     "share": {
+      "n": 25,
+      "of": 186,
+      "pct": 13.4,
+      "interval": [
+       9.3,
+       19.1
+      ]
+     },
+     "possession_points": {
+      "n": 25,
+      "mean": 25.4,
+      "interval": [
+       22.0,
+       28.7
+      ]
+     }
+    },
+    "other": {
+     "share": {
+      "n": 82,
+      "of": 186,
+      "pct": 44.1,
+      "interval": [
+       37.1,
+       51.3
+      ]
+     },
+     "possession_points": {
+      "n": 82,
+      "mean": 25.0,
+      "interval": [
+       23.1,
+       26.8
+      ]
+     }
+    }
+   },
+   "archetypes": {
+    "shooters_by_quick_step": {
+     "0": {
+      "shots": 25,
+      "rushed": {
+       "n": 0,
+       "of": 25,
+       "pct": 0.0,
+       "interval": [
+        0.0,
+        13.3
+       ]
+      },
+      "points": {
+       "n": 25,
+       "mean": 30.4,
+       "interval": [
+        28.0,
+        32.8
+       ]
+      }
+     },
+     "1": {
+      "shots": 120,
+      "rushed": {
+       "n": 15,
+       "of": 120,
+       "pct": 12.5,
+       "interval": [
+        7.7,
+        19.6
+       ]
+      },
+      "points": {
+       "n": 120,
+       "mean": 28.7,
+       "interval": [
+        27.8,
+        29.6
+       ]
+      }
+     },
+     "2": {
+      "shots": 33,
+      "rushed": {
+       "n": 13,
+       "of": 33,
+       "pct": 39.4,
+       "interval": [
+        24.7,
+        56.3
+       ]
+      },
+      "points": {
+       "n": 33,
+       "mean": 28.2,
+       "interval": [
+        26.6,
+        29.7
+       ]
+      }
+     }
+    },
+    "contesters_by_quick_step": {
+     "0": {
+      "contests": 18,
+      "rushed": {
+       "n": 0,
+       "of": 18,
+       "pct": 0.0,
+       "interval": [
+        0.0,
+        17.6
+       ]
+      },
+      "points_allowed": {
+       "n": 18,
+       "mean": 27.0,
+       "interval": [
+        23.8,
+        30.2
+       ]
+      }
+     },
+     "1": {
+      "contests": 63,
+      "rushed": {
+       "n": 20,
+       "of": 63,
+       "pct": 31.7,
+       "interval": [
+        21.6,
+        44.0
+       ]
+      },
+      "points_allowed": {
+       "n": 63,
+       "mean": 28.3,
+       "interval": [
+        27.2,
+        29.4
+       ]
+      }
+     },
+     "2": {
+      "contests": 17,
+      "rushed": {
+       "n": 9,
+       "of": 17,
+       "pct": 52.9,
+       "interval": [
+        31.0,
+        73.8
+       ]
+      },
+      "points_allowed": {
+       "n": 17,
+       "mean": 28.5,
+       "interval": [
+        26.5,
+        30.4
+       ]
+      }
+     }
+    }
+   },
+   "map_error": {
+    "positions": 5817,
+    "error": 8.34,
+    "interval": [
+     7.23,
+     9.46
+    ]
+   }
+  },
+  "basketball": {
+   "steals_tried": {
+    "n": 91,
+    "of": 200,
+    "per_100": 45.5,
+    "interval": [
+     36.2,
+     54.8
+    ]
+   },
+   "steals_won": {
+    "n": 20,
+    "of": 200,
+    "per_100": 10.0,
+    "interval": [
+     5.6,
+     14.4
+    ]
+   },
+   "steal_fouls": {
+    "n": 44,
+    "of": 200,
+    "per_100": 22.0,
+    "interval": [
+     15.5,
+     28.5
+    ]
+   },
+   "possessions_ended_by_penalty_free_throws": {
+    "n": 1,
+    "of": 200,
+    "per_100": 0.5,
+    "interval": [
+     0.0,
+     1.5
+    ]
+   }
+  },
+  "fiba": {
+   "turnovers_per_possession": {
+    "n": 21,
+    "of": 200,
+    "per_100": 10.5,
+    "interval": [
+     6.0,
+     15.0
+    ]
+   },
+   "live_ball": {
+    "n": 20,
+    "of": 200,
+    "per_100": 10.0,
+    "interval": [
+     5.6,
+     14.4
+    ]
+   },
+   "steals_per_possession": {
+    "n": 20,
+    "of": 200,
+    "per_100": 10.0,
+    "interval": [
+     5.6,
+     14.4
+    ]
+   },
+   "steals_from_a_reach": {
+    "n": 20,
+    "of": 200,
+    "per_100": 10.0,
+    "interval": [
+     5.6,
+     14.4
+    ]
+   },
+   "steals_from_an_intercept": {
+    "n": 0,
+    "of": 200,
+    "per_100": 0.0,
+    "interval": [
+     0.0,
+     1.0
+    ]
+   },
+   "steal_attempts_per_possession": {
+    "n": 91,
+    "of": 200,
+    "per_100": 45.5,
+    "interval": [
+     36.2,
+     54.8
+    ]
+   },
+   "fouls_on_a_steal_per_possession": {
+    "n": 44,
+    "of": 200,
+    "per_100": 22.0,
+    "interval": [
+     15.5,
+     28.5
+    ]
+   },
+   "shooting_fouls_on_threes": {
+    "n": 0,
+    "of": 79,
+    "pct": 0.0,
+    "interval": [
+     -0.0,
+     4.6
+    ]
+   },
+   "shooting_fouls_at_the_rim": {
+    "n": 0,
+    "of": 88,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     4.2
+    ]
+   },
+   "free_throw_trips": {
+    "n": 1,
+    "of": 200,
+    "per_100": 0.5,
+    "interval": [
+     0.0,
+     1.5
+    ]
+   },
+   "twos_taken_to_nothing_by_a_hard_contest": {
+    "n": 0,
+    "of": 99,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     3.7
+    ]
+   },
+   "points_per_possession": {
+    "mean": 1.291,
+    "interval": [
+     1.221,
+     1.36
+    ]
+   },
+   "shots": {
+    "threes": 79,
+    "rim": 88,
+    "other_twos": 11
+   }
+  },
+  "off_balance": {
+   "drives": {
+    "all": {
+     "drives": 89,
+     "won": 45,
+     "share": {
+      "n": 45,
+      "of": 89,
+      "pct": 50.6,
+      "interval": [
+       40.4,
+       60.7
+      ]
+     },
+     "chance_by_the_rules": 48.5
+    },
+    "both_set": {
+     "drives": 70,
+     "won": 40,
+     "share": {
+      "n": 40,
+      "of": 70,
+      "pct": 57.1,
+      "interval": [
+       45.5,
+       68.1
+      ]
+     },
+     "chance_by_the_rules": 49.0
+    },
+    "at_a_set_defender": {
+     "drives": 78,
+     "won": 40,
+     "share": {
+      "n": 40,
+      "of": 78,
+      "pct": 51.3,
+      "interval": [
+       40.4,
+       62.1
+      ]
+     },
+     "chance_by_the_rules": 48.1
+    },
+    "at_a_rushed_defender": {
+     "drives": 11,
+     "won": 5,
+     "share": {
+      "n": 5,
+      "of": 11,
+      "pct": 45.5,
+      "interval": [
+       21.3,
+       72.0
+      ]
+     },
+     "chance_by_the_rules": 51.8
+    },
+    "at_a_defender_who_sprinted": {
+     "drives": 2,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 2,
+      "pct": 50.0,
+      "interval": [
+       9.5,
+       90.5
+      ]
+     },
+     "chance_by_the_rules": 55.0
+    },
+    "at_a_defender_who_quick_stepped": {
+     "drives": 8,
+     "won": 3,
+     "share": {
+      "n": 3,
+      "of": 8,
+      "pct": 37.5,
+      "interval": [
+       13.7,
+       69.4
+      ]
+     },
+     "chance_by_the_rules": 50.0
+    },
+    "at_a_locked_defender": {
+     "drives": 2,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 2,
+      "pct": 50.0,
+      "interval": [
+       9.5,
+       90.5
+      ]
+     },
+     "chance_by_the_rules": 52.5
+    },
+    "by_a_set_ball_handler": {
+     "drives": 76,
+     "won": 44,
+     "share": {
+      "n": 44,
+      "of": 76,
+      "pct": 57.9,
+      "interval": [
+       46.7,
+       68.4
+      ]
+     },
+     "chance_by_the_rules": 49.5
+    },
+    "by_a_rushed_ball_handler": {
+     "drives": 13,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 13,
+      "pct": 7.7,
+      "interval": [
+       1.4,
+       33.3
+      ]
+     },
+     "chance_by_the_rules": 43.1
+    },
+    "by_a_ball_handler_who_sprinted": {
+     "drives": 6,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 6,
+      "pct": 16.7,
+      "interval": [
+       3.0,
+       56.4
+      ]
+     },
+     "chance_by_the_rules": 47.5
+    },
+    "set_ball_handler_at_a_rushed_defender": {
+     "drives": 6,
+     "won": 4,
+     "share": {
+      "n": 4,
+      "of": 6,
+      "pct": 66.7,
+      "interval": [
+       30.0,
+       90.3
+      ]
+     },
+     "chance_by_the_rules": 55.0
+    },
+    "rushed_ball_handler_at_a_set_defender": {
+     "drives": 8,
+     "won": 0,
+     "share": {
+      "n": 0,
+      "of": 8,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       32.4
+      ]
+     },
+     "chance_by_the_rules": 40.0
+    }
+   },
+   "steals": {
+    "all": {
+     "tried": 91,
+     "won": 20,
+     "fouled": 44,
+     "won_share": {
+      "n": 20,
+      "of": 91,
+      "pct": 22.0,
+      "interval": [
+       14.7,
+       31.5
+      ]
+     },
+     "foul_share": {
+      "n": 44,
+      "of": 91,
+      "pct": 48.4,
+      "interval": [
+       38.4,
+       58.5
+      ]
+     },
+     "chance_by_the_rules": 19.9
+    },
+    "on_a_set_ball_handler": {
+     "tried": 72,
+     "won": 15,
+     "fouled": 34,
+     "won_share": {
+      "n": 15,
+      "of": 72,
+      "pct": 20.8,
+      "interval": [
+       13.1,
+       31.6
+      ]
+     },
+     "foul_share": {
+      "n": 34,
+      "of": 72,
+      "pct": 47.2,
+      "interval": [
+       36.1,
+       58.6
+      ]
+     },
+     "chance_by_the_rules": 19.4
+    },
+    "on_a_rushed_ball_handler": {
+     "tried": 19,
+     "won": 5,
+     "fouled": 10,
+     "won_share": {
+      "n": 5,
+      "of": 19,
+      "pct": 26.3,
+      "interval": [
+       11.8,
+       48.8
+      ]
+     },
+     "foul_share": {
+      "n": 10,
+      "of": 19,
+      "pct": 52.6,
+      "interval": [
+       31.7,
+       72.7
+      ]
+     },
+     "chance_by_the_rules": 22.0
+    },
+    "on_a_ball_handler_who_sprinted": {
+     "tried": 4,
+     "won": 1,
+     "fouled": 2,
+     "won_share": {
+      "n": 1,
+      "of": 4,
+      "pct": 25.0,
+      "interval": [
+       4.6,
+       69.9
+      ]
+     },
+     "foul_share": {
+      "n": 2,
+      "of": 4,
+      "pct": 50.0,
+      "interval": [
+       15.0,
+       85.0
+      ]
+     },
+     "chance_by_the_rules": 24.3
+    },
+    "by_a_set_defender": {
+     "tried": 63,
+     "won": 12,
+     "fouled": 30,
+     "won_share": {
+      "n": 12,
+      "of": 63,
+      "pct": 19.0,
+      "interval": [
+       11.2,
+       30.4
+      ]
+     },
+     "foul_share": {
+      "n": 30,
+      "of": 63,
+      "pct": 47.6,
+      "interval": [
+       35.8,
+       59.7
+      ]
+     },
+     "chance_by_the_rules": 19.9
+    },
+    "by_a_rushed_defender": {
+     "tried": 28,
+     "won": 8,
+     "fouled": 14,
+     "won_share": {
+      "n": 8,
+      "of": 28,
+      "pct": 28.6,
+      "interval": [
+       15.3,
+       47.1
+      ]
+     },
+     "foul_share": {
+      "n": 14,
+      "of": 28,
+      "pct": 50.0,
+      "interval": [
+       32.6,
+       67.4
+      ]
+     },
+     "chance_by_the_rules": 20.0
+    }
+   },
+   "after_a_steal_that_missed": {
+    "steals_missed_or_fouled_with_play_going_on": 70,
+    "offence_acts_again_that_phase": 68,
+    "next_offence_action": {
+     "qs": 10,
+     "move": 46,
+     "shot": 2,
+     "sprint": 3,
+     "pass": 4,
+     "screen": 2,
+     "hesitate": 1
+    },
+    "shoots_next": 2,
+    "shoots_later_that_phase": 20,
+    "ball_handler_moves_nearer_the_rim_next": 12,
+    "drives_at_that_defender_next": 0,
+    "drives_at_that_defender_later_that_phase": 2,
+    "drives_at_him_won": {
+     "drives": 2,
+     "won": 1
+    }
+   }
+  }
+ },
+ "final": {
+  "possessions": 200,
+  "points": {
+   "n": 200,
+   "mean": 25.54,
+   "interval": [
+    24.3,
+    26.78
+   ]
+  },
+  "shots": 182,
+  "shots_contested": {
+   "n": 100,
+   "of": 182,
+   "pct": 54.9,
+   "interval": [
+    47.7,
+    62.0
+   ]
+  },
+  "by_a_soft_contest": {
+   "n": 99,
+   "of": 182,
+   "pct": 54.4,
+   "interval": [
+    47.1,
+    61.5
+   ]
+  },
+  "by_a_hard_contest": {
+   "n": 1,
+   "of": 182,
+   "pct": 0.5,
+   "interval": [
+    0.1,
+    3.0
+   ]
+  },
+  "threes_contested": {
+   "n": 37,
+   "of": 90,
+   "pct": 41.1,
+   "interval": [
+    31.5,
+    51.4
+   ]
+  },
+  "hard_contests_by_position": {
+   "front": 1,
+   "side": 0,
+   "behind": 0
+  },
+  "fouled_shots": {
+   "n": 0,
+   "of": 200,
+   "pct": 0.0,
+   "interval": [
+    0.0,
+    1.9
+   ]
+  },
+  "steals_tried_a_possession": {
+   "n": 200,
+   "mean": 0.47,
+   "interval": [
+    0.38,
+    0.55
+   ]
+  },
+  "steal_fouls_a_possession": {
+   "n": 200,
+   "mean": 0.2,
+   "interval": [
+    0.14,
+    0.26
+   ]
+  },
+  "defence_fouls_a_possession": {
+   "n": 200,
+   "mean": 0.2,
+   "interval": [
+    0.14,
+    0.26
+   ]
+  },
+  "violations": {
+   "three_seconds": 0,
+   "closely_guarded": 0
+  },
+  "usual": {
+   "possessions": 200,
+   "shots": 182,
+   "usual": {
+    "points": {
+     "n": 200,
+     "mean": 25.5,
+     "interval": [
+      24.3,
+      26.8
+     ]
+    },
+    "shots_in_phases_1_and_2": 0.596,
+    "shot_by_phase": {
+     "1": 0.219,
+     "2": 0.377,
+     "3": 0.164,
+     "4": 0.109,
+     "5": 0.104,
+     "6": 0.027
+    },
+    "decisions": 27.6,
+    "clock_ran_out": {
+     "n": 0,
+     "of": 200,
+     "pct": 0.0,
+     "interval": [
+      0.0,
+      1.9
+     ]
+    },
+    "lost_in_100_phases_kept": {
+     "n": 17,
+     "of": 321,
+     "pct": 5.3,
+     "interval": [
+      3.3,
+      8.3
+     ]
+    }
+   },
+   "help": {
+    "contested": {
+     "n": 100,
+     "of": 182,
+     "pct": 54.9,
+     "interval": [
+      47.7,
+      62.0
+     ]
+    },
+    "open": {
+     "n": 82,
+     "of": 182,
+     "pct": 45.1,
+     "interval": [
+      38.0,
+      52.3
+     ]
+    },
+    "early": {
+     "n": 39,
+     "of": 100,
+     "pct": 39.0,
+     "interval": [
+      30.0,
+      48.8
+     ]
+    },
+    "late": {
+     "n": 61,
+     "of": 100,
+     "pct": 61.0,
+     "interval": [
+      51.2,
+      70.0
+     ]
+    },
+    "by_a_helper": {
+     "n": 59,
+     "of": 100,
+     "pct": 59.0,
+     "interval": [
+      49.2,
+      68.1
+     ]
+    },
+    "late_from_how_far": {
+     "n": 61,
+     "mean": 2.9,
+     "interval": [
+      2.7,
+      3.2
+     ]
+    },
+    "late_from_3_or_more": {
+     "n": 36,
+     "of": 61,
+     "pct": 59.0,
+     "interval": [
+      46.5,
+      70.5
+     ]
+    },
+    "points_allowed": {
+     "open": {
+      "n": 82,
+      "mean": 29.0,
+      "interval": [
+       28.0,
+       30.0
+      ]
+     },
+     "early": {
+      "n": 39,
+      "mean": 26.7,
+      "interval": [
+       25.4,
+       28.1
+      ]
+     },
+     "late": {
+      "n": 61,
+      "mean": 27.2,
+      "interval": [
+       26.0,
+       28.3
+      ]
+     }
+    }
+   },
+   "closeouts": {
+    "none": {
+     "share": {
+      "n": 7,
+      "of": 100,
+      "pct": 7.0,
+      "interval": [
+       3.4,
+       13.7
+      ]
+     },
+     "points": {
+      "n": 7,
+      "mean": 22.9,
+      "interval": [
+       18.9,
+       26.8
+      ]
+     }
+    },
+    "move": {
+     "share": {
+      "n": 71,
+      "of": 100,
+      "pct": 71.0,
+      "interval": [
+       61.5,
+       79.0
+      ]
+     },
+     "points": {
+      "n": 71,
+      "mean": 27.1,
+      "interval": [
+       26.0,
+       28.1
+      ]
+     }
+    },
+    "qs": {
+     "share": {
+      "n": 20,
+      "of": 100,
+      "pct": 20.0,
+      "interval": [
+       13.3,
+       28.9
+      ]
+     },
+     "points": {
+      "n": 20,
+      "mean": 27.7,
+      "interval": [
+       26.4,
+       29.0
+      ]
+     }
+    },
+    "sprint": {
+     "share": {
+      "n": 2,
+      "of": 100,
+      "pct": 2.0,
+      "interval": [
+       0.6,
+       7.0
+      ]
+     },
+     "points": {
+      "n": 2,
+      "mean": 31.0,
+      "interval": [
+       29.0,
+       33.0
+      ]
+     }
+    }
+   },
+   "rushed_contests": {
+    "n": 22,
+    "of": 100,
+    "pct": 22.0,
+    "interval": [
+     15.0,
+     31.1
+    ]
+   },
+   "contest_fouls": {
+    "n": 0,
+    "of": 100,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     3.7
+    ]
+   },
+   "shots_set_and_rushed": {
+    "set": {
+     "share": {
+      "n": 153,
+      "of": 182,
+      "pct": 84.1,
+      "interval": [
+       78.1,
+       88.7
+      ]
+     },
+     "points": {
+      "n": 153,
+      "mean": 27.9,
+      "interval": [
+       27.1,
+       28.6
+      ]
+     }
+    },
+    "rushed": {
+     "share": {
+      "n": 29,
+      "of": 182,
+      "pct": 15.9,
+      "interval": [
+       11.3,
+       21.9
+      ]
+     },
+     "points": {
+      "n": 29,
+      "mean": 28.1,
+      "interval": [
+       26.3,
+       30.0
+      ]
+     }
+    }
+   },
+   "shots_by_last_movement": {
+    "none": {
+     "share": {
+      "n": 30,
+      "of": 182,
+      "pct": 16.5,
+      "interval": [
+       11.8,
+       22.6
+      ]
+     },
+     "points": {
+      "n": 30,
+      "mean": 27.8,
+      "interval": [
+       25.8,
+       29.9
+      ]
+     }
+    },
+    "move": {
+     "share": {
+      "n": 123,
+      "of": 182,
+      "pct": 67.6,
+      "interval": [
+       60.5,
+       74.0
+      ]
+     },
+     "points": {
+      "n": 123,
+      "mean": 27.9,
+      "interval": [
+       27.1,
+       28.6
+      ]
+     }
+    },
+    "qs": {
+     "share": {
+      "n": 9,
+      "of": 182,
+      "pct": 4.9,
+      "interval": [
+       2.6,
+       9.1
+      ]
+     },
+     "points": {
+      "n": 9,
+      "mean": 27.4,
+      "interval": [
+       23.0,
+       31.9
+      ]
+     }
+    },
+    "sprint": {
+     "share": {
+      "n": 20,
+      "of": 182,
+      "pct": 11.0,
+      "interval": [
+       7.2,
+       16.4
+      ]
+     },
+     "points": {
+      "n": 20,
+      "mean": 28.4,
+      "interval": [
+       26.6,
+       30.3
+      ]
+     }
+    }
+   },
+   "shots_by_how": {
+    "catch and shoot": {
+     "share": {
+      "n": 54,
+      "of": 182,
+      "pct": 29.7,
+      "interval": [
+       23.5,
+       36.7
+      ]
+     },
+     "points": {
+      "n": 54,
+      "mean": 28.2,
+      "interval": [
+       26.8,
+       29.6
+      ]
+     }
+    },
+    "off the dribble or a movement": {
+     "share": {
+      "n": 128,
+      "of": 182,
+      "pct": 70.3,
+      "interval": [
+       63.3,
+       76.5
+      ]
+     },
+     "points": {
+      "n": 128,
+      "mean": 27.8,
+      "interval": [
+       27.0,
+       28.6
+      ]
+     }
+    },
+    "from a standstill": {
+     "share": {
+      "n": 0,
+      "of": 182,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       2.1
+      ]
+     },
+     "points": {
+      "n": 0,
+      "mean": null,
+      "interval": null
+     }
+    }
+   },
+   "extra_pass": {
+    "closeouts": 170,
+    "pass": {
+     "share": {
+      "n": 47,
+      "of": 170,
+      "pct": 27.6,
+      "interval": [
+       21.5,
+       34.8
+      ]
+     },
+     "possession_points": {
+      "n": 47,
+      "mean": 25.4,
+      "interval": [
+       23.0,
+       27.7
+      ]
+     }
+    },
+    "shot": {
+     "share": {
+      "n": 20,
+      "of": 170,
+      "pct": 11.8,
+      "interval": [
+       7.7,
+       17.5
+      ]
+     },
+     "possession_points": {
+      "n": 20,
+      "mean": 26.6,
+      "interval": [
+       24.9,
+       28.3
+      ]
+     }
+    },
+    "dribble": {
+     "share": {
+      "n": 24,
+      "of": 170,
+      "pct": 14.1,
+      "interval": [
+       9.7,
+       20.1
+      ]
+     },
+     "possession_points": {
+      "n": 24,
+      "mean": 25.7,
+      "interval": [
+       22.0,
+       29.4
+      ]
+     }
+    },
+    "other": {
+     "share": {
+      "n": 79,
+      "of": 170,
+      "pct": 46.5,
+      "interval": [
+       39.1,
+       54.0
+      ]
+     },
+     "possession_points": {
+      "n": 79,
+      "mean": 24.0,
+      "interval": [
+       22.3,
+       25.7
+      ]
+     }
+    }
+   },
+   "archetypes": {
+    "shooters_by_quick_step": {
+     "0": {
+      "shots": 22,
+      "rushed": {
+       "n": 0,
+       "of": 22,
+       "pct": 0.0,
+       "interval": [
+        0.0,
+        14.9
+       ]
+      },
+      "points": {
+       "n": 22,
+       "mean": 27.3,
+       "interval": [
+        24.4,
+        30.3
+       ]
+      }
+     },
+     "1": {
+      "shots": 130,
+      "rushed": {
+       "n": 16,
+       "of": 130,
+       "pct": 12.3,
+       "interval": [
+        7.7,
+        19.1
+       ]
+      },
+      "points": {
+       "n": 130,
+       "mean": 27.9,
+       "interval": [
+        27.2,
+        28.6
+       ]
+      }
+     },
+     "2": {
+      "shots": 30,
+      "rushed": {
+       "n": 13,
+       "of": 30,
+       "pct": 43.3,
+       "interval": [
+        27.4,
+        60.8
+       ]
+      },
+      "points": {
+       "n": 30,
+       "mean": 28.5,
+       "interval": [
+        26.9,
+        30.1
+       ]
+      }
+     }
+    },
+    "contesters_by_quick_step": {
+     "0": {
+      "contests": 20,
+      "rushed": {
+       "n": 0,
+       "of": 20,
+       "pct": 0.0,
+       "interval": [
+        0.0,
+        16.1
+       ]
+      },
+      "points_allowed": {
+       "n": 20,
+       "mean": 25.4,
+       "interval": [
+        22.6,
+        28.3
+       ]
+      }
+     },
+     "1": {
+      "contests": 65,
+      "rushed": {
+       "n": 16,
+       "of": 65,
+       "pct": 24.6,
+       "interval": [
+        15.8,
+        36.3
+       ]
+      },
+      "points_allowed": {
+       "n": 65,
+       "mean": 27.7,
+       "interval": [
+        26.8,
+        28.5
+       ]
+      }
+     },
+     "2": {
+      "contests": 15,
+      "rushed": {
+       "n": 6,
+       "of": 15,
+       "pct": 40.0,
+       "interval": [
+        19.8,
+        64.3
+       ]
+      },
+      "points_allowed": {
+       "n": 15,
+       "mean": 26.1,
+       "interval": [
+        23.9,
+        28.3
+       ]
+      }
+     }
+    }
+   },
+   "map_error": {
+    "positions": 4864,
+    "error": 7.36,
+    "interval": [
+     6.0,
+     8.65
+    ]
+   }
+  },
+  "basketball": {
+   "steals_tried": {
+    "n": 93,
+    "of": 200,
+    "per_100": 46.5,
+    "interval": [
+     37.0,
+     56.0
+    ]
+   },
+   "steals_won": {
+    "n": 17,
+    "of": 200,
+    "per_100": 8.5,
+    "interval": [
+     4.5,
+     12.5
+    ]
+   },
+   "steal_fouls": {
+    "n": 40,
+    "of": 200,
+    "per_100": 20.0,
+    "interval": [
+     13.8,
+     26.2
+    ]
+   },
+   "possessions_ended_by_penalty_free_throws": {
+    "n": 1,
+    "of": 200,
+    "per_100": 0.5,
+    "interval": [
+     0.0,
+     1.5
+    ]
+   }
+  },
+  "fiba": {
+   "turnovers_per_possession": {
+    "n": 17,
+    "of": 200,
+    "per_100": 8.5,
+    "interval": [
+     4.5,
+     12.5
+    ]
+   },
+   "live_ball": {
+    "n": 17,
+    "of": 200,
+    "per_100": 8.5,
+    "interval": [
+     4.5,
+     12.5
+    ]
+   },
+   "steals_per_possession": {
+    "n": 17,
+    "of": 200,
+    "per_100": 8.5,
+    "interval": [
+     4.5,
+     12.5
+    ]
+   },
+   "steals_from_a_reach": {
+    "n": 17,
+    "of": 200,
+    "per_100": 8.5,
+    "interval": [
+     4.5,
+     12.5
+    ]
+   },
+   "steals_from_an_intercept": {
+    "n": 0,
+    "of": 200,
+    "per_100": 0.0,
+    "interval": [
+     0.0,
+     1.0
+    ]
+   },
+   "steal_attempts_per_possession": {
+    "n": 93,
+    "of": 200,
+    "per_100": 46.5,
+    "interval": [
+     37.0,
+     56.0
+    ]
+   },
+   "fouls_on_a_steal_per_possession": {
+    "n": 40,
+    "of": 200,
+    "per_100": 20.0,
+    "interval": [
+     13.8,
+     26.2
+    ]
+   },
+   "shooting_fouls_on_threes": {
+    "n": 0,
+    "of": 90,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     4.1
+    ]
+   },
+   "shooting_fouls_at_the_rim": {
+    "n": 0,
+    "of": 78,
+    "pct": 0.0,
+    "interval": [
+     0.0,
+     4.7
+    ]
+   },
+   "free_throw_trips": {
+    "n": 1,
+    "of": 200,
+    "per_100": 0.5,
+    "interval": [
+     0.0,
+     1.5
+    ]
+   },
+   "twos_taken_to_nothing_by_a_hard_contest": {
+    "n": 0,
+    "of": 92,
+    "pct": 0.0,
+    "interval": [
+     -0.0,
+     4.0
+    ]
+   },
+   "points_per_possession": {
+    "mean": 1.277,
+    "interval": [
+     1.215,
+     1.339
+    ]
+   },
+   "shots": {
+    "threes": 90,
+    "rim": 78,
+    "other_twos": 14
+   }
+  },
+  "off_balance": {
+   "drives": {
+    "all": {
+     "drives": 90,
+     "won": 48,
+     "share": {
+      "n": 48,
+      "of": 90,
+      "pct": 53.3,
+      "interval": [
+       43.1,
+       63.3
+      ]
+     },
+     "chance_by_the_rules": 49.7
+    },
+    "both_set": {
+     "drives": 69,
+     "won": 40,
+     "share": {
+      "n": 40,
+      "of": 69,
+      "pct": 58.0,
+      "interval": [
+       46.2,
+       68.9
+      ]
+     },
+     "chance_by_the_rules": 50.9
+    },
+    "at_a_set_defender": {
+     "drives": 79,
+     "won": 41,
+     "share": {
+      "n": 41,
+      "of": 79,
+      "pct": 51.9,
+      "interval": [
+       41.1,
+       62.6
+      ]
+     },
+     "chance_by_the_rules": 49.4
+    },
+    "at_a_rushed_defender": {
+     "drives": 11,
+     "won": 7,
+     "share": {
+      "n": 7,
+      "of": 11,
+      "pct": 63.6,
+      "interval": [
+       35.4,
+       84.8
+      ]
+     },
+     "chance_by_the_rules": 51.8
+    },
+    "at_a_defender_who_sprinted": {
+     "drives": 1,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 1,
+      "pct": 100.0,
+      "interval": [
+       20.7,
+       100.0
+      ]
+     },
+     "chance_by_the_rules": 30.0
+    },
+    "at_a_defender_who_quick_stepped": {
+     "drives": 7,
+     "won": 4,
+     "share": {
+      "n": 4,
+      "of": 7,
+      "pct": 57.1,
+      "interval": [
+       25.0,
+       84.2
+      ]
+     },
+     "chance_by_the_rules": 47.1
+    },
+    "at_a_locked_defender": {
+     "drives": 3,
+     "won": 2,
+     "share": {
+      "n": 2,
+      "of": 3,
+      "pct": 66.7,
+      "interval": [
+       20.8,
+       93.9
+      ]
+     },
+     "chance_by_the_rules": 70.0
+    },
+    "by_a_set_ball_handler": {
+     "drives": 78,
+     "won": 46,
+     "share": {
+      "n": 46,
+      "of": 78,
+      "pct": 59.0,
+      "interval": [
+       47.9,
+       69.2
+      ]
+     },
+     "chance_by_the_rules": 51.4
+    },
+    "by_a_rushed_ball_handler": {
+     "drives": 12,
+     "won": 2,
+     "share": {
+      "n": 2,
+      "of": 12,
+      "pct": 16.7,
+      "interval": [
+       4.7,
+       44.8
+      ]
+     },
+     "chance_by_the_rules": 38.7
+    },
+    "by_a_ball_handler_who_sprinted": {
+     "drives": 9,
+     "won": 0,
+     "share": {
+      "n": 0,
+      "of": 9,
+      "pct": 0.0,
+      "interval": [
+       0.0,
+       29.9
+      ]
+     },
+     "chance_by_the_rules": 35.6
+    },
+    "set_ball_handler_at_a_rushed_defender": {
+     "drives": 9,
+     "won": 6,
+     "share": {
+      "n": 6,
+      "of": 9,
+      "pct": 66.7,
+      "interval": [
+       35.4,
+       87.9
+      ]
+     },
+     "chance_by_the_rules": 55.0
+    },
+    "rushed_ball_handler_at_a_set_defender": {
+     "drives": 10,
+     "won": 1,
+     "share": {
+      "n": 1,
+      "of": 10,
+      "pct": 10.0,
+      "interval": [
+       1.8,
+       40.4
+      ]
+     },
+     "chance_by_the_rules": 39.0
+    }
+   },
+   "steals": {
+    "all": {
+     "tried": 93,
+     "won": 17,
+     "fouled": 40,
+     "won_share": {
+      "n": 17,
+      "of": 93,
+      "pct": 18.3,
+      "interval": [
+       11.7,
+       27.3
+      ]
+     },
+     "foul_share": {
+      "n": 40,
+      "of": 93,
+      "pct": 43.0,
+      "interval": [
+       33.4,
+       53.2
+      ]
+     },
+     "chance_by_the_rules": 19.3
+    },
+    "on_a_set_ball_handler": {
+     "tried": 67,
+     "won": 9,
+     "fouled": 26,
+     "won_share": {
+      "n": 9,
+      "of": 67,
+      "pct": 13.4,
+      "interval": [
+       7.2,
+       23.6
+      ]
+     },
+     "foul_share": {
+      "n": 26,
+      "of": 67,
+      "pct": 38.8,
+      "interval": [
+       28.0,
+       50.8
+      ]
+     },
+     "chance_by_the_rules": 17.9
+    },
+    "on_a_rushed_ball_handler": {
+     "tried": 26,
+     "won": 8,
+     "fouled": 14,
+     "won_share": {
+      "n": 8,
+      "of": 26,
+      "pct": 30.8,
+      "interval": [
+       16.5,
+       50.0
+      ]
+     },
+     "foul_share": {
+      "n": 14,
+      "of": 26,
+      "pct": 53.8,
+      "interval": [
+       35.5,
+       71.2
+      ]
+     },
+     "chance_by_the_rules": 22.8
+    },
+    "on_a_ball_handler_who_sprinted": {
+     "tried": 10,
+     "won": 2,
+     "fouled": 6,
+     "won_share": {
+      "n": 2,
+      "of": 10,
+      "pct": 20.0,
+      "interval": [
+       5.7,
+       51.0
+      ]
+     },
+     "foul_share": {
+      "n": 6,
+      "of": 10,
+      "pct": 60.0,
+      "interval": [
+       31.3,
+       83.2
+      ]
+     },
+     "chance_by_the_rules": 22.9
+    },
+    "by_a_set_defender": {
+     "tried": 58,
+     "won": 10,
+     "fouled": 27,
+     "won_share": {
+      "n": 10,
+      "of": 58,
+      "pct": 17.2,
+      "interval": [
+       9.6,
+       28.9
+      ]
+     },
+     "foul_share": {
+      "n": 27,
+      "of": 58,
+      "pct": 46.6,
+      "interval": [
+       34.3,
+       59.2
+      ]
+     },
+     "chance_by_the_rules": 20.0
+    },
+    "by_a_rushed_defender": {
+     "tried": 35,
+     "won": 7,
+     "fouled": 13,
+     "won_share": {
+      "n": 7,
+      "of": 35,
+      "pct": 20.0,
+      "interval": [
+       10.0,
+       35.9
+      ]
+     },
+     "foul_share": {
+      "n": 13,
+      "of": 35,
+      "pct": 37.1,
+      "interval": [
+       23.2,
+       53.7
+      ]
+     },
+     "chance_by_the_rules": 18.0
+    }
+   },
+   "after_a_steal_that_missed": {
+    "steals_missed_or_fouled_with_play_going_on": 75,
+    "offence_acts_again_that_phase": 74,
+    "next_offence_action": {
+     "qs": 17,
+     "shot": 4,
+     "move": 39,
+     "pass": 4,
+     "dribble": 2,
+     "sprint": 7,
+     "screen": 1
+    },
+    "shoots_next": 4,
+    "shoots_later_that_phase": 25,
+    "ball_handler_moves_nearer_the_rim_next": 17,
+    "drives_at_that_defender_next": 2,
+    "drives_at_that_defender_later_that_phase": 2,
+    "drives_at_him_won": {
+     "drives": 2,
+     "won": 2
+    }
+   }
+  }
+ }
+}

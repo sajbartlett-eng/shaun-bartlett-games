@@ -53,6 +53,10 @@ N18 = os.environ.get('SENSE_18N') == '1'
 if N18:
     L18 = True
 WTAG = 'n' if N18 else 'l'                              # the letter this step's own choices and marks carry
+# step 18n, to fit its compute (a possession under D-191 runs about half as long again): SENSE_NAMED=1 plays only the
+# candidates the set names and this step's own choices; SENSE_PLAYOUTS sets the play-outs in a copy (16 unless given)
+NAMED = os.environ.get('SENSE_NAMED') == '1'
+PLAYOUTS = int(os.environ.get('SENSE_PLAYOUTS', '16'))
 if L18:
     K18 = True
 # SENSE_LEVEL: the positions (by the start of their names) where a pick among level turns is scored by the average of
@@ -449,6 +453,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
                     and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
                     and not (J18 and not K18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))
                     and not (K18 and not L18 and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))
+                    and not (NAMED and c.get('added_by') and not c['added_by'].startswith(WTAG) and not c.get(WTAG + '_too'))
                     and not (L18 and c.get('added_by') and not c['added_by'].startswith(WTAG) and not c.get(WTAG + '_too') and (key(c['turn']) not in _K18_HAD.get(p['id'], ()) or c['name'].startswith('level with')))]
             if not miss:
                 continue
@@ -459,7 +464,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
     if not jobs:
         return 0.0
     pol = L.policy('allstar', 2, L.profiles()['allstar']['noise'], **REF)
-    rows, secs = L.run_jobs('rollout', jobs, contexts, n=16, seed=7, keep=True, policies=dict(O=pol, X=pol), **RULE)
+    rows, secs = L.run_jobs('rollout', jobs, contexts, n=PLAYOUTS, seed=7, keep=True, policies=dict(O=pol, X=pol), **RULE)
     n = 0
     for r in rows:                                     # each row names its own position and copy (the rows come back core by core)
         pid, k = r['id'].rsplit('##', 1)
@@ -470,7 +475,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
             answers['results'][pid].setdefault(key(t['turn']), [[], [], [], []])[int(k)] = [round(v, 3) for v in t['values']]
             n += 1
     json.dump(answers, open(ANS, 'w'))
-    tally(f'play-outs ({n} candidate copies of 16 on {len(names)} positions)', secs)
+    tally(f'play-outs ({n} candidate copies of {PLAYOUTS} on {len(names)} positions)', secs)
     return secs
 
 

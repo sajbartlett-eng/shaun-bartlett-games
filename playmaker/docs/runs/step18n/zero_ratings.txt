@@ -1,0 +1,49 @@
+Step 18n, D-193: every roll whose rating can reach 0 after modifiers, by level (rushed is 2 off, D-185). Listed for Shaun; nothing changed.
+
+== senior
+  dribble: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  pass: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  screen: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  agility: lowest 3; rushed 1; cards at 0 or under when rushed: 0 
+  intercept: lowest 5; rushed 3; cards at 0 or under when rushed: 0 
+  challenge: lowest 4; rushed 2; cards at 0 or under when rushed: 0 
+  steal: lowest 1; rushed -1; cards at 0 or under when rushed: 35 arpfC bgsA bgsB bgsC cgC pfsfB pfsfC pmcB pmcC pmsC pnpA pnpB pnpC pscA pscB pscC pspfA pspfB pspfC rpcB rpcC rrcC scsfB scsfC shsA shsB shsC spgC stcC stpfB stpfC stsfB stsfC swcC twsfC
+  shot three: lowest rating 5, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 172
+  shot long: lowest rating 6, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 11
+  shot mid: lowest rating 7, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 0
+  shot floater: lowest rating 8, highest contest 7; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 123
+  shot post: lowest rating 8, highest contest 8; shooter and defender pairs where the full contest leaves 0 or less: 1; with the shooter rushed as well: 77
+  shot dunk: lowest rating 15, highest contest 14; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 122
+  shot layup: lowest rating 17, highest contest 12; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 0
+
+== youth
+  dribble: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  pass: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  screen: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  agility: lowest 3; rushed 1; cards at 0 or under when rushed: 0 
+  intercept: lowest 6; rushed 4; cards at 0 or under when rushed: 0 
+  challenge: lowest 4; rushed 2; cards at 0 or under when rushed: 0 
+  steal: lowest 2; rushed 0; cards at 0 or under when rushed: 6 pfsfC pscC pspfC scsfC shsC stsfC
+  shot three: lowest rating 4, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 16; with the shooter rushed as well: 824
+  shot long: lowest rating 5, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 406
+  shot mid: lowest rating 6, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 168
+  shot floater: lowest rating 7, highest contest 7; shooter and defender pairs where the full contest leaves 0 or less: 27; with the shooter rushed as well: 829
+  shot post: lowest rating 7, highest contest 8; shooter and defender pairs where the full contest leaves 0 or less: 14; with the shooter rushed as well: 245
+  shot dunk: lowest rating 14, highest contest 14; shooter and defender pairs where the full contest leaves 0 or less: 20; with the shooter rushed as well: 349
+  shot layup: lowest rating 16, highest contest 12; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 0
+
+== junior
+  dribble: lowest 12; rushed 10; cards at 0 or under when rushed: 0 
+  pass: lowest 12; rushed 10; cards at 0 or under when rushed: 0 
+  screen: lowest 11; rushed 9; cards at 0 or under when rushed: 0 
+  agility: lowest 3; rushed 1; cards at 0 or under when rushed: 0 
+  intercept: lowest 7; rushed 5; cards at 0 or under when rushed: 0 
+  challenge: lowest 4; rushed 2; cards at 0 or under when rushed: 0 
+  steal: lowest 3; rushed 1; cards at 0 or under when rushed: 0 
+  shot three: lowest rating 3, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 223; with the shooter rushed as well: 2668
+  shot long: lowest rating 4, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 88; with the shooter rushed as well: 1839
+  shot mid: lowest rating 4, highest contest 4; shooter and defender pairs where the full contest leaves 0 or less: 28; with the shooter rushed as well: 1415
+  shot floater: lowest rating 5, highest contest 7; shooter and defender pairs where the full contest leaves 0 or less: 120; with the shooter rushed as well: 1741
+  shot post: lowest rating 6, highest contest 8; shooter and defender pairs where the full contest leaves 0 or less: 59; with the shooter rushed as well: 431
+  shot dunk: lowest rating 12, highest contest 14; shooter and defender pairs where the full contest leaves 0 or less: 241; with the shooter rushed as well: 1043
+  shot layup: lowest rating 15, highest contest 12; shooter and defender pairs where the full contest leaves 0 or less: 0; with the shooter rushed as well: 0

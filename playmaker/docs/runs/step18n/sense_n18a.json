@@ -1,0 +1,46 @@
+{
+ "tag": "n18a",
+ "switches": {},
+ "positions": 2,
+ "scored": 2,
+ "matched": 2,
+ "points_lost_a_position": 0.31,
+ "interval": [
+  -1.61,
+  2.22
+ ],
+ "candidates_added": 2,
+ "rows": [
+  {
+   "id": "board 1",
+   "group": "board",
+   "best": "does nothing",
+   "choice": "the computer's choice (n18a): X2 moves to B4, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 8",
+   "group": "board",
+   "best": "the cut alone",
+   "choice": "the computer's choice (n18a): O1 moves to E10, then the offence Hesitates",
+   "matches": true,
+   "points_lost": 0.61,
+   "interval": [
+    -3.21,
+    4.44
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 0.3
+  }
+ }
+}

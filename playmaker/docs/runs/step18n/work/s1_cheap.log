@@ -1,0 +1,11 @@
+[tally] searches (n18a, 7 positions): 0.002 core-hours; total 4.84
+[tally] play-outs (22 candidate copies of 16 on 7 positions): 0.21 core-hours; total 5.05
+  ok  game EB3F5B, the pass in the air | the computer's choice (j18): X2 moves to B7, facing N | lost 0.0 [0.0, 0.0] | best: the computer's choice (j18): X2 moves to B7, facin
+  ok  Contest or not 1 | the computer's choice (n18a): X1 moves to N8, facing N | lost 0.0 [0.0, 0.0] | best: the reference's 1st reading: X2 Quick Steps to J3
+  ok  Contest or not 2 | the computer's choice (n18a): X1 moves to L8, facing N | lost 0.0 [0.0, 0.0] | best: the reference's 1st reading: X3 moves to P6, facin
+  ok  Contest or not 3 | the computer's choice (n18a): X1 moves to D13, facing N | lost 0.0 [0.0, 0.0] | best: the reference's 1st reading: X3 moves to P4, facin
+  ok  Contest or not 4 | the computer's choice (n18a): X1 moves to N10, facing N | lost 0.0 [0.0, 0.0] | best: the reference's 1st reading: X2 Quick Steps to B7
+  ok  move, then shoot 1 | the computer's choice (zone_near): O4 moves to A3, then O4 shoots (thr | lost 0.0 [0.0, 0.0] | best: the turn it missed: O4 moves to A2, then O4 shoots
+  ok  move, then shoot 2 | the turn it missed: O4 moves to I2, then O4 shoots (layup) | lost 0.0 [0.0, 0.0] | best: the turn it missed: O4 moves to I2, then O4 shoots
+n18a: matched 7 of 7; points lost a position 0.0 [0.0, 0.0]; 6 choices added
+{"closeout": {"positions": 1, "matched": 1, "points_lost": 0.0}, "contest": {"positions": 4, "matched": 4, "points_lost": 0.0}, "move then shoot": {"positions": 2, "matched": 2, "points_lost": 0.0}}

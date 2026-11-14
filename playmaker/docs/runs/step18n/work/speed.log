@@ -1,0 +1,7 @@
+[tally] speed, round 1 (one core): 0.067 core-hours; total 5.63
+1 18l {'rookie': (0.2, 0.268), 'starter': (0.653, 0.978), 'allstar': (1.427, 1.998)}
+1 18n {'rookie': (0.315, 0.454), 'starter': (0.765, 1.121), 'allstar': (1.587, 1.867)}
+[tally] speed, round 2 (one core): 0.072 core-hours; total 5.7
+2 18l {'rookie': (0.19, 0.249), 'starter': (0.72, 0.949), 'allstar': (1.551, 1.893)}
+2 18n {'rookie': (0.307, 0.393), 'starter': (0.871, 1.182), 'allstar': (1.627, 2.027)}
+SPEED_DONE
