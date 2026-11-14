@@ -41,6 +41,12 @@ J18 = os.environ.get('SENSE_18J') == '1'
 # SENSE_18K=1 (step 18k): the rules after step 18k's part 0: step 18j's, no +5 on any foul (D-181, in the engine), and
 # the default foul situation, 2 team fouls with 8 possessions left (D-182), with answers of their own.
 K18 = os.environ.get('SENSE_18K') == '1'
+# SENSE_18L=1 (step 18l): the rules after step 18l's part 0 on the new cards (D-184, D-186): step 18k's and off balance
+# (D-185), with answers of their own. The play-outs are continued by the default engine as it stands (its maps are
+# refitted on the new cards), not by the old reference map.
+L18 = os.environ.get('SENSE_18L') == '1'
+if L18:
+    K18 = True
 # SENSE_LEVEL: the positions (by the start of their names) where a pick among level turns is scored by the average of
 # those turns played out (D-183). Under step 18k's rules: board 3, as ruled.
 LEVEL = [x for x in os.environ.get('SENSE_LEVEL', 'board 3' if K18 else '').split('|') if x]
@@ -51,17 +57,20 @@ if K18:
 if J18:
     FIBA = True
     RULE['rules'] = {k: 'on' for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
-RULE['rules'].update(soft_contest='on' if J18 else 'off', fiba_steal_foul='on' if J18 else 'off')
+RULE['rules'].update(soft_contest='on' if J18 else 'off', fiba_steal_foul='on' if J18 else 'off', off_balance='on' if L18 else 'off')
 if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = ('answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+    _NAME = ('answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
 POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
 REF = dict(whole_turns=True, split_ties=True, rank_in_hand=True, kept_actions=False, no_floor=False, map='reference')
+if L18:
+    REF = dict(whole_turns=True, split_ties=True, rank_in_hand=True, kept_actions=False, no_floor=False, keep_settled=True,
+               dice_in_hand=False, keep_in_hand=False)
 N = int(os.environ.get('SENSE_N', '64'))               # play-outs a candidate
 
 
@@ -72,6 +81,15 @@ def _j18_had():
 
 
 _J18_HAD = _j18_had()
+
+
+def _k18_had():
+    # under step 18l's rules: the named candidates, the ones step 18k had answers for, and this step's
+    path = os.path.join(SET, 'answers_18k.json')
+    return {pid: set(v) for pid, v in json.load(open(path))['results'].items()} if L18 and os.path.exists(path) else {}
+
+
+_K18_HAD = _k18_had()
 
 
 def tally(what, secs):
@@ -382,7 +400,8 @@ def play(positions, answers, only=None, copies=(0, 1)):
                     and not (ZONE and c.get('added_by') and not c['added_by'].startswith('zone') and not c.get('zone_too'))
                     and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
                     and not (J18 and not K18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))
-                    and not (K18 and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))]
+                    and not (K18 and not L18 and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))
+                    and not (L18 and c.get('added_by') and not c['added_by'].startswith('l') and not c.get('l_too') and (key(c['turn']) not in _K18_HAD.get(p['id'], ()) or c['name'].startswith('level with')))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -577,15 +596,16 @@ def cmd_score(tag, *args):
                     added += 1
                 else:
                     for c in p['candidates']:      # a turn an earlier setting added is played under these rules too
-                        if key(c['turn']) == key(tt) and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too'):
-                            c['k_too'] = True
+                        w_ = 'l' if L18 else 'k'
+                        if key(c['turn']) == key(tt) and c.get('added_by') and not c['added_by'].startswith(w_) and not c.get(w_ + '_too'):
+                            c[w_ + '_too'] = True
                             added += 1
         if not any(key(c['turn']) == key(t) for c in p['candidates']):
             p['candidates'].append(dict(name=f"the computer's choice ({tag}): " + words(t), turn=t, added_by=tag))
             added += 1
         elif ZONE or FIBA:
             # the choice is a turn an earlier setting added: it is played under this rule set too
-            w = 'zone' if ZONE else 'k' if K18 else 'j18' if J18 else 'fiba'
+            w = 'zone' if ZONE else 'l' if L18 else 'k' if K18 else 'j18' if J18 else 'fiba'
             for c in p['candidates']:
                 if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith(w) and not c.get(w + '_too'):
                     c[w + '_too'] = True

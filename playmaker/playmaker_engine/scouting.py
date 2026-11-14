@@ -17,6 +17,7 @@ SHOTS = ['layup', 'dunk', 'post', 'floater', 'mid', 'long', 'three']
 POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C']
 _SUFFIX = {'Point Guard': 'PG', 'Combo Guard': 'PG', 'Shooting Guard': 'SG', 'Small Forward': 'SF',
            'Power Forward': 'PF', 'Centre': 'C'}
+_BY_NUM = {1: 'PG', 2: 'SG', 3: 'SF', 4: 'PF', 5: 'C'}
 
 with open(os.path.join(os.path.dirname(__file__), 'scout_phrases.json')) as _f:
     CONFIG = json.load(_f)
@@ -31,6 +32,8 @@ def position(card):
     for suffix, pos in _SUFFIX.items():
         if card.role.endswith(suffix):
             return pos
+    if card.num in _BY_NUM:                  # a role that doesn't end in its position (the Slashing Wing): the card's number
+        return _BY_NUM[card.num]
     raise ValueError(f'no position for {card.role}')
 
 

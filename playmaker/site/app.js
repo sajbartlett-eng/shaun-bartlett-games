@@ -25,6 +25,7 @@ const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus
 const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
 const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the defender is locked, play on. From the 5th: two free throws. No foul gives +5 in the app.';
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
+const OFF_BALANCE_RULE = n => `Rushed: after a Quick Step or Sprint, or while locked, every roll you make is ${n} worse (not fouls) until you Move.`;
 const CONTROL_RULE = n => `Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is ${n} lower. A Move puts you back in control.`;
 const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
   shot: 'Shot', intercept: 'Intercept', challenge: 'Challenge Screen', steal: 'Steal', hesitate: 'Hesitate', pause: 'Pause',
@@ -376,7 +377,7 @@ async function create() {
     // step 18g (D-167): ?zone=1 in the address plays the zone of influence (the app's format only, under test)
     { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
-    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul']) if (q.get(k) === '0') body[k] = 'off'; }
+    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance']) if (q.get(k) === '0') body[k] = 'off'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -594,7 +595,7 @@ function renderTracker(id, side) {
     const chips = p.slots.map(k => el('span', { class: 'chip', text: KIND_NAME[k] || k }));
     if (p.locked) chips.push(el('span', { class: 'chip lock', text: 'LOCK' }));
     { const rb = s.influence && s.influence.badges && s.influence.badges[side] && s.influence.badges[side][p.i];
-      if (rb && rb.rushed) chips.push(el('span', { class: 'chip rushed', text: 'RUSHED', title: `His last movement this phase was a ${rb.rushed === 2 ? 'Sprint' : 'Quick Step'}: a shot or Contest from him is rushed until he Moves or the phase ends` })); }
+      if (rb && rb.rushed) chips.push(el('span', { class: 'chip rushed', text: 'RUSHED', title: (rb.rushed === 3 ? 'He is locked, so off balance' : `His last movement this phase was a ${rb.rushed === 2 ? 'Sprint' : 'Quick Step'}`) + (s.influence && s.influence.off_balance ? ': every roll he makes is ' + s.influence.off_balance + ' worse (not fouls) until he Moves or the phase ends' : ': a shot or Contest from him is rushed until he Moves or the phase ends') })); }
     { const rb = s.influence && s.influence.badges && s.influence.badges[side] && s.influence.badges[side][p.i];      // step 18i: the timed counts
       if (rb && rb.key) chips.push(el('span', { class: 'chip rushed', text: 'IN KEY', title: 'He was in the key when the last phase ended. Still in it when this phase ends: three seconds, a turnover' }));
       if (rb && rb.picked) chips.push(el('span', { class: 'chip rushed', text: 'PICKED UP', title: 'Two phases without an action from him: he has picked the ball up. He may only pass or shoot' }));
@@ -617,7 +618,7 @@ function renderTracker(id, side) {
       el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
       el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
       el('div', { text: 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
-    s.influence && s.influence.control ? el('div', { class: 'waits controlrule', text: CONTROL_RULE(s.influence.control) }) : null,
+    s.influence && s.influence.control ? el('div', { class: 'waits controlrule', text: s.influence.off_balance ? OFF_BALANCE_RULE(s.influence.off_balance) : CONTROL_RULE(s.influence.control) }) : null,
     s.influence && s.influence.zone ? el('div', { class: 'waits controlrule zonerule', text: ZONE_RULE }) : null,
     s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: THREE_RULE }) : null,
     s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: GUARDED_RULE }) : null,
@@ -697,7 +698,7 @@ function pieceLabel(side, p) {
   const b = st.influence && st.influence.badges && st.influence.badges[side] && st.influence.badges[side][p.i];
   if (b && b.move) bits.push('Move used');
   if (b && b.qs) bits.push('Quick Step used');
-  if (b && b.rushed) bits.push(`rushed after a ${b.rushed === 2 ? 'Sprint' : 'Quick Step'}`);
+  if (b && b.rushed) bits.push(b.rushed === 3 ? 'rushed while locked' : `rushed after a ${b.rushed === 2 ? 'Sprint' : 'Quick Step'}`);
   if (b && b.key) bits.push('in the key at the last phase end');
   if (b && b.picked) bits.push('has picked the ball up');
   if (b && b.held) bits.push(`held the ball closely guarded at ${b.held} phase end${b.held > 1 ? 's' : ''}`);

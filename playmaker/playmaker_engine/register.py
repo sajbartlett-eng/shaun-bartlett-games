@@ -85,6 +85,8 @@ ENTRIES = [
      'The app plays the soft and the hard contest (D-177). The table keeps one Contest.'),
     ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives.',
      'In the app no foul gives +5: a steal foul is a team foul, and from the 5th two free throws (D-179, D-181). The table keeps its +5.'),
+    ('off_balance', SPLIT, dict(rules='off_balance'), 'What being rushed, or locked, costs on every roll.',
+     'The app plays off balance (D-185): a rushed or locked player is 2 worse on every roll he makes, fouls aside.'),
     ('fiba_fouled_shot', SPLIT, dict(rules='fiba_fouled_shot'), 'What a fouled shot scores.',
      'The app scores a fouled shot as the contested shot plus the free throws that follow (D-174).'),
 ]
@@ -476,6 +478,8 @@ WORDS = {
                             dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
+    'off_balance': dict(sec=None, src=None, tab='none',
+                        dig='rushed (after a Quick Step or Sprint, or while locked): 2 off every rating he rolls, not fouls, until he Moves (D-185)'),
     'control': dict(sec=None, src=None, tab='none (the table\'s rules are on hold, D-146)',
                     dig='a rushed shot or Contest is 2 lower (D-153); no extra foul roll (D-154)'),
 }
@@ -500,6 +504,10 @@ CONTROL_WORDS = ("Your last movement this phase decides your control. After a Qu
 SPLITS = [
     ('Control', 'No control rule: a shot or a Contest is worth the same after any movement.', CONTROL_WORDS,
      'Ruled for the app (D-153). The table\'s rules are on hold while the app\'s game settles (D-146).'),
+    ('Off balance', 'No such rule.', 'Rushed: after a Quick Step or Sprint, or while locked, every roll you make is 2 '
+     'worse (not fouls) until you Move. That covers shots, soft and hard contests, Dribble, Pass, Screen, Agility, Steal, '
+     'Intercept and Challenge. A locked player can\'t Move, so he stays rushed until the phase ends.',
+     'Ruled for the app (D-185). It reverses the "no drive rule" line of D-151.'),
     ('Soft and hard contest', 'One Contest: the defender\'s contest rating, with a foul roll if his arrow is off the '
      'shooter.', 'A defender next to the shooter gives a soft contest with no action: his contest rating less 3. It '
      'never fouls. A Contest action is a hard contest: the full rating. From behind the shooter (further from the rim) '

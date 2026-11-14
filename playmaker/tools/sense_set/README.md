@@ -38,3 +38,19 @@ decides.
 `python3 tools/sense_18h.py build` rebuilds the set from its sources and keeps every answer whose candidate is still
 there. `python3 tools/sense_18h.py play 0,1` plays whatever lacks an answer on copies 0 and 1; `play 2,3` brings
 candidates up to 64 play-outs.
+
+## The set keeps its own copy of the cards (found in step 18l)
+
+Each position in `positions.json` carries the two teams' cards as they were when the position was made. The 19
+scored positions were made before the card update (D-184, D-186), so every answer file here was played on the cards
+before it.
+
+- `answers_18l_cards_before_d184.json`: the set replayed under step 18l's rules (the six rules of the app,
+  `rules.off_balance` on) **on those older cards.** It is not the re-record on the new cards that step 18l was asked
+  for: the mistake was found too late in that step's compute to play it again.
+- **To re-record on the new cards:** replace each card in each position's `ctx` by the card of the same key as it is
+  now (a card is found by its old ratings: `docs/runs/step18l/work/set_on_new_cards.py` does it for the searches),
+  then play the set. About 2.2 core-hours.
+- The self-play pool (`docs/runs/step18/pools.json`, not kept in the repository) keeps its own copy of the cards too.
+  Rebuild it after any card change: `python3 tools/step_18.py pools`. `tools/step_18l.py` now refuses a pool whose
+  cards are not today's.

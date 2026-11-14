@@ -6,7 +6,7 @@ from . import board as B
 from . import geometry as _G
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, inbound_held, closely_guarded, MOVEMENT, TOKEN_FREE
-from .scoring import (p_success, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
+from .scoring import (p_success, rolled, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
                       shot_rating, soft_contest, soft_option)
 from .state import CI, ZERO_COUNTS, Result, count_key, pack_guard
 
@@ -530,10 +530,11 @@ def apply(state, action, check=False):
     if k == 'dribble':
         if RC.app_rule(rules, 'closely_guarded'):
             s = s.with_(grd=pack_guard(1, 0, 0, 1))          # D-173: a Dribble keeps him active
-        p = p_success(O[s.ball].r['dribble'] - X[a.target].r['agility'], rules)
+        rd, ra = rolled(s, 'O', s.ball, 'dribble'), rolled(s, 'X', a.target, 'agility')      # D-185: off balance
+        p = p_success(rd - ra, rules)
         win = _lock(s, 'X', a.target).with_(beaten=tuple(sorted(set(s.beaten) | {(s.ball, a.target)})))
         lose = _lock(s, 'O', s.ball)
-        return chance(f'Dribble {O[s.ball].r["dribble"]} v Agility {X[a.target].r["agility"]} (O{s.ball + 1} v X{a.target + 1})', [
+        return chance(f'Dribble {rd} v Agility {ra} (O{s.ball + 1} v X{a.target + 1})', [
             (p, 'success', _after(state, win, side, k)),
             (1 - p, 'failure', _after(state, lose, side, k))], 'O')
 
@@ -554,20 +555,22 @@ def apply(state, action, check=False):
                 s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
             if RC.control_size(rules):                       # D-151: the jump into the lane counts as his movement
                 s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * j)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * j))
-        p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
+        rp, ri = rolled(s, 'O', passer, 'pass'), rolled(s, 'X', j, 'intercept')              # D-185: off balance
+        p = p_success(rp - ri, rules)
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
         ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)
         won = s.with_(pending=None, approach=-1, tos=s.tos + 1)
         lost_node = (_terminal(won, Result('turnover_end'), zeroed=True) if s.ctx.hold_for_one or rules.digital
                      else _terminal(won, Result('turnover_end')))   # the possession ends at -5
-        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[j].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
+        return chance(f'Pass {rp} v Intercept {ri} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
             (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
 
     if k == 'intercept':
         passer, recv = s.pending
         j = a.piece
         mti = rules.intercept_rule == 'move_then_intercept'
-        p = p_success(O[passer].r['pass'] - X[j].r['intercept'], rules)
+        rp, ri = rolled(s, 'O', passer, 'pass'), rolled(s, 'X', j, 'intercept')              # D-185: off balance
+        p = p_success(rp - ri, rules)
         ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j) if mti else s)   # missed: on the line, Move used
         if ok.phase != s.phase:
             ok_node = ok                                   # inbound pass landed: new phase
@@ -582,25 +585,27 @@ def apply(state, action, check=False):
         else:
             lost = _turnover(back.with_(pending=None, approach=-1))   # ball stays with the passer
         lost_node = lost if lost.stage == 'over' else _after(state, lost, side, k)
-        return chance(f'Pass {O[passer].r["pass"]} v Intercept {X[j].r["intercept"]} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
+        return chance(f'Pass {rp} v Intercept {ri} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
             (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
 
     if k == 'challenge':
         scr = s.screen_of(a.target)
-        p = p_success(O[a.target].r['screen'] - X[a.piece].r['challenge'], rules)
+        rs_, rc_ = rolled(s, 'O', a.target, 'screen'), rolled(s, 'X', a.piece, 'challenge')    # D-185: off balance
+        p = p_success(rs_ - rc_, rules)
         holds = _lock(s, 'X', a.piece)
         if rules.screen_rule == 'hold_until_move':   # OQ-29: a Challenge that wins removes the screen for everyone
             fails = s.with_(screens=tuple(x for x in s.screens if x[0] != a.target))
         else:
             fails = s.with_(screens=tuple((i, d, f, m | (1 << a.piece) if i == a.target else m) for i, d, f, m in s.screens))
-        return chance(f'Screen {O[a.target].r["screen"]} v Challenge {X[a.piece].r["challenge"]} (O{a.target + 1}, X{a.piece + 1})', [
+        return chance(f'Screen {rs_} v Challenge {rc_} (O{a.target + 1}, X{a.piece + 1})', [
             (p, 'success', _after(state, holds, side, k)),
             (1 - p, 'failure', _after(state, fails, side, k))], 'O')
 
     if k == 'steal':
         carrier = s.ball
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
-        pk = p_success(O[carrier].r['dribble'] - X[a.piece].r['steal'], rules)
+        rd, rk = rolled(s, 'O', carrier, 'dribble'), rolled(s, 'X', a.piece, 'steal')         # D-185: off balance
+        pk = p_success(rd - rk, rules)
         fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
         fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179, D-181: no +5 on a steal foul in the app
         if rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
@@ -639,7 +644,7 @@ def apply(state, action, check=False):
             stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
         # step 3n F1: a failed Steal (no foul, the ball kept) locks the defender, as a failed Challenge does
         kept_node = _after(state, _lock(s, 'X', a.piece) if rules.steal_lock else s, side, k)
-        inner = chance(f'Dribble {O[carrier].r["dribble"]} v Steal {X[a.piece].r["steal"]} (O{carrier + 1} v X{a.piece + 1})',
+        inner = chance(f'Dribble {rd} v Steal {rk} (O{carrier + 1} v X{a.piece + 1})',
                        [(pk, 'kept', kept_node), (1 - pk, 'stolen', stolen_node)], 'O')
         from .scoring import foul_rolls
         if foul_rolls(rules, s.x[a.piece], s.o[carrier]) == 2:

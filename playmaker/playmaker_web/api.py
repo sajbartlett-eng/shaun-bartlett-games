@@ -33,7 +33,8 @@ class Manager:
                  match_format=body.get('match_format', 'tabletop'), per_side=int(body.get('per_side') or 8),
                  scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'), zone=body.get('zone'),
                  three=body.get('three'), guarded=body.get('guarded'), fouledshot=body.get('fouledshot'),
-                 softcontest=body.get('softcontest'), stealfoul=body.get('stealfoul'))
+                 softcontest=body.get('softcontest'), stealfoul=body.get('stealfoul'),
+                 offbalance=body.get('offbalance'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g

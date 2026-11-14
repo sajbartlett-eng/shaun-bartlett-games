@@ -1,0 +1,14 @@
+{
+ "run": "new_allstar",
+ "possessions": 200,
+ "fouls_per_possession": 0.21,
+ "fouls_interval": [
+  0.15,
+  0.28
+ ],
+ "play_on_value": 27.2,
+ "value_interval": [
+  25.9,
+  28.5
+ ]
+}

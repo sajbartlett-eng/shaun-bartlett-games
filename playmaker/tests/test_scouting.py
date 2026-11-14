@@ -43,19 +43,18 @@ import random
 from playmaker_engine import scouting as S
 from playmaker_engine.cards import CARDS
 
+# step 18l: re-recorded from the cards, reason: D-184 cards (the jump-shot ratings and their bands moved, so fewer
+# teams hold two above-average three-point shooters and no team holds three below-average three-point contesters)
 GOLD = {
-    'Pace and Space': (['fast and athletic', 'shooters to space the floor'], ['foul-prone']),
-    'Iron Wall': (['disruptive in the passing lanes'], ['limited half-court offence']),
-    'Twin Towers': (['shooters to space the floor', 'multiple creators', 'attacks the rim', 'inside-out'],
-                    ['leaks dribble penetration', 'gives up open threes']),
-    'Run and Gun': (['fast and athletic', 'multiple creators', 'attacks the rim', 'disruptive in the passing lanes'],
-                    ['no spacing', 'gives up open threes']),
+    'Pace and Space': (['fast and athletic'], ['limited half-court offence', 'foul-prone']),
+    'Iron Wall': (['disruptive in the passing lanes'], ['no spacing', 'limited half-court offence']),
+    'Twin Towers': (['multiple creators', 'attacks the rim', 'inside-out'], ['no spacing', 'leaks dribble penetration']),
+    'Run and Gun': (['fast and athletic', 'multiple creators', 'attacks the rim', 'disruptive in the passing lanes'], ['no spacing']),
     'Ball Movement': (['fast and athletic', 'moves the ball', 'inside-out'], ['leaks dribble penetration']),
     'Shoot and Protect': (['shooters to space the floor'], ['leaks dribble penetration']),
-    'Bucket Brigade': (['multiple creators', 'attacks the rim', 'inside-out'],
-                       ['leaks dribble penetration', 'gives up open threes']),
-    'Five Out': (['fast and athletic', 'shooters to space the floor'], ['gives up open threes']),
-    'High-Low': (['inside-out'], ['limited half-court offence', 'leaks dribble penetration', 'foul-prone']),
+    'Bucket Brigade': (['multiple creators', 'attacks the rim', 'inside-out'], ['leaks dribble penetration']),
+    'Five Out': (['fast and athletic'], ['limited half-court offence']),
+    'High-Low': (['inside-out'], ['no spacing', 'limited half-court offence', 'leaks dribble penetration', 'foul-prone']),
     'Lockdown': (['protects the paint', 'disruptive in the passing lanes'], ['no spacing', 'limited half-court offence']),
 }
 BAND_WORDS = ['above average', 'below average', 'poor', 'okay', 'great', 'excellent']
@@ -131,8 +130,9 @@ def test_caps_and_order():
 def test_typical_phrases_are_computed_from_the_cards():
     assert set(S.typical_text('PG')) == {'foul-prone', 'soft screens', 'no resistance at the rim', 'creates off the dribble'}
     assert set(S.typical_text('SG')) == {'limited passer', 'soft screens'}
-    assert set(S.typical_text('PF')) == {'limited passer', 'slow-footed'}
-    assert S.typical_text('SF') == []
+    # step 18l: re-recorded, reason: D-184 cards
+    assert set(S.typical_text('PF')) == {'limited passer', 'slow-footed', 'no threat from three', 'closes out on shooters'}
+    assert S.typical_text('SF') == ['closes out on shooters']
     assert len(S.typical_text('C')) >= 6
 
 
@@ -342,8 +342,11 @@ def test_board_advantages_on_the_golden_position():
     top = board_advantages(rec)
     o4, o2 = TEAMS['Five Out'][3], TEAMS['Five Out'][1]
     x2 = TEAMS['High-Low'][1]
-    assert (top[0]['o'], top[0]['square'], top[0]['shot'], top[0]['value']) == (4, 'A3', 'three', 3 * o4.shot('three'))
-    assert (top[1]['o'], top[1]['square'], top[1]['value'], top[1]['contester']) == (2, 'C9', 3 * (o2.shot('three') - x2.con('three')), 2)
+    # step 18l: re-recorded, reason: D-184 cards. O4's corner three (9) is an average three on the new bands, so it is
+    # no longer a marked shot; O2's three against X2's contest is the one on the list
+    assert o4.bands['shot_three'] == 'A' and o2.bands['shot_three'] == 'H'
+    assert [t['o'] for t in top] == [2]
+    assert (top[0]['square'], top[0]['shot'], top[0]['value'], top[0]['contester']) == ('C9', 'three', 3 * (o2.shot('three') - x2.con('three')), 2)
     assert all(not t['used'] for t in top)
 
 

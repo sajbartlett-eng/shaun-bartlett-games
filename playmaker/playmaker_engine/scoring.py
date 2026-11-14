@@ -9,6 +9,14 @@ from . import rules_config as RC
 
 # ---- rolls ------------------------------------------------------------------
 
+def rolled(state, side, i, name):
+    """D-185 (rules.off_balance): the rating a player rolls with: his card's, less the off-balance reduction when
+    he is rushed (his last movement this phase was a Quick Step or a Sprint, or he is locked). Not foul ratings."""
+    card = (state.ctx.off if side == 'O' else state.ctx.dfn)[i]
+    cut = RC.off_balance_cut(state.ctx.rules)
+    return card.r[name] - cut if cut and state.rushed(side, i) else card.r[name]
+
+
 def p_success(target, rules=RC.DEFAULT_RULES):
     """P(d20 <= target). Defaults: >= 20 always succeeds, <= 0 always fails (OQ-4)."""
     if rules.natural_rolls:                     # alternative: natural 1 succeeds, 20 fails
@@ -288,12 +296,14 @@ def score(state):
                                else f". X{r.contester + 1}'s hard contest {place}: {r.contest} off")
             if RC.control_size(rules):
                 # D-151: name a rushed shot and a late closeout in plain words
-                last = lambda side, i: 'Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step'
+                last = lambda side, i: ('Sprint' if state.rush(side, i) == RC.RUSH_SPRINT else 'Quick Step' if state.rush(side, i) else 'lock')
                 if state.rushed('O', r.shooter):
-                    detail += f'. A rushed {r.shot_type} off his {last("O", r.shooter)}: {RC.control_size(rules)} lower'
+                    detail += (f'. A rushed {r.shot_type} off his {last("O", r.shooter)}: {RC.control_size(rules)} lower' if state.rush('O', r.shooter)
+                               else f'. A rushed {r.shot_type}: he is locked, so off balance: {RC.control_size(rules)} lower')
                 if r.contester >= 0 and state.rushed('X', r.contester):
-                    detail += (f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}: his Contest is "
-                               f'{RC.control_size(rules)} lower')
+                    detail += ((f". A late closeout after X{r.contester + 1}'s {last('X', r.contester)}: his Contest is "
+                                f'{RC.control_size(rules)} lower') if state.rush('X', r.contester)
+                               else f". X{r.contester + 1} is locked, so off balance: his Contest is {RC.control_size(rules)} lower")
         elif r.kind == 'steal':
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':
