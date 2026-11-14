@@ -908,6 +908,19 @@ the penalty should cost more than an ordinary foul; under step 18i's rules it di
 **D-180. A scenario card that sets a foul situation plays under the app's rules.** · Source: Shaun, 13 Nov 2026 ·
 **Ruled; step 18j.**
 
+**D-184. The card fidelity update.** Reason: FIBA-based card audit, 14 Nov: open jump shots and hard contests on jump
+shots and dunks were above real basketball; layups, dunks, floaters, post shots and free throws were faithful
+(`docs/reference/CARD_AUDIT_14NOV.md`). On every card: three 10 to 9, 11 to 9, 12 to 10, 13 to 11; mid-range 10 to 9,
+11 and 12 to 10, 13 and 14 to 11, 15 and 16 to 12; long two 9 to 8, 10 and 11 to 9, 12 and 13 to 10, 14 to 11;
+layup 16 to 17; the Rim Runner Centre B's dunk 18 to 19; three contest 2 to 1, 3 to 2, 4 and 5 to 2, 6 and 7 to 3;
+mid-range and long-two contests 2 to 1, 3 and 4 to 2, 5 and 6 to 3, 7 and 8 to 4; floater contest 3 to 2, 4 to 3, 5
+to 4, 6 and 7 to 5; dunk contest 4 to 1, 5 and 6 to 2, 7 and 8 to 3, 9 and 10 to 4, 11 and 12 to 5, 13 and 14 to 6;
+layup contest 11 and 12 to 10. The range table changes for those ratings and every band is recomputed from it. (The
+prompt's three-point map read 10 to 8 with 9 unchanged, which put 11 A-tier cards below their B tier; Shaun chose 10
+to 9 when asked.) Two new types, the app only for now, three tiers each and plain ratings: the Slashing Wing (small
+forward) and the Switch Centre. No conditionals on cards. The table keeps its 25 types; the printed cards are not
+reprinted now. · Source: Shaun, 14 Nov 2026 · **Ruled; card update.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

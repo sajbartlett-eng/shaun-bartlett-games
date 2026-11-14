@@ -46,9 +46,9 @@ for s in SC:
     for p,who in occ.items():
         if len(who)>1: errs.append('shared square '+'+'.join(who))
     offk=T[s['off']]
-    open_ex=[k for k in offk if val(k,'shot_three')>=10 or val(k,'shot_layup')>=16]
+    open_ex=[k for k in offk if val(k,'shot_three')>=9 or val(k,'shot_layup')>=17]
     if not open_ex: errs.append('no player can make an open look Excellent')
-    if s['kind']=='LATE CLOCK' and 'Three' in s['title'] and not any(val(k,'shot_three')>=10 for k in offk): errs.append('no 10+ three-point shooter')
+    if s['kind']=='LATE CLOCK' and 'Three' in s['title'] and not any(val(k,'shot_three')>=9 for k in offk): errs.append('no 10+ three-point shooter')
     out[s['n']]=arrows
     print(f"{s['n']:2} {s['title']:24} {'OK' if not errs else 'FAIL: '+'; '.join(errs)}")
     bad+=bool(errs)

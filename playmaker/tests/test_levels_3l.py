@@ -33,7 +33,9 @@ def test_levels_data_is_pure_literals():
 
 
 def test_junior_cards_parse_and_match_the_pro_deck():
-    assert len(LV.JUNIOR) == 75 == len(CARDS)
+    from playmaker_engine.cards import DATA
+    assert len(LV.JUNIOR) == len(CARDS) == 81                # D-184: 75 table cards and 6 app-only
+    assert len(DATA.TABLE_CARDS) == 75 and len(DATA.APP_ONLY) == 6
     for k, c in LV.JUNIOR.items():
         p = CARDS[k]
         assert (c.num, c.role, c.tier) == (p.num, p.role, p.tier)

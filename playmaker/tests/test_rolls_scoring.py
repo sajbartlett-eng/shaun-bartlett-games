@@ -299,7 +299,8 @@ def test_matchup_check_every_pairing():
     from playmaker_engine.matchups import closeout_report
     rep = closeout_report()
     print(rep['summary'])
-    assert rep['total'] == 75 * 75 * 7
+    from playmaker_engine.cards import CARDS
+    assert rep['total'] == len(CARDS) * len(CARDS) * 7          # D-184: every card, the app's six included
     assert rep['foul_breaks'] == 0, rep['examples']          # a foul never beats leaving the shot open
     assert rep['clean_breaks'] == 0                          # a clean closeout always pays (or ties)
     assert 0 < rep['share'] < 1
