@@ -364,7 +364,10 @@ def test_horizon_credit_on_the_capacity_drain_board(table_3m, floor_leaf):
     one = TR.credit(s, [a], horizon='reply')[0]
     phase = TR.credit(s, [a], horizon='phase')[0]
     assert abs(one['phi']) < 1.0                                 # over one reply: about 0 (one for one is neutral)
-    assert phase['phi'] > 1.0 and phase['drain'] > 0              # over the phase: positive, through the drain channel
+    # step 18l: re-recorded, reason: D-184 cards (with D-186). Over the phase the credit was +2.5 (above 1.0) on the
+    # cards before them; it is +0.13 now, because X2's contest of O2's three fell from 3 to 2 and O2's three from 13
+    # to 11, so taking the contester away is worth less. Still positive, still through the drain channel.
+    assert phase['phi'] > 0 and phase['drain'] > 1.0              # over the phase: positive, through the drain channel
     assert phase['drained'] is not None and phase['drained_what']
 
 

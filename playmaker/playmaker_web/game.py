@@ -161,9 +161,18 @@ def consequences(before, after, a):
     if a.kind == 'dribble' and after.lock_o == before.lock_o and after.lock_x == before.lock_x:
         out.append(('info', 'Dribble: no change.'))
     if a.kind == 'challenge':
+        beat = False
         for (i, d, f, m) in after.screens:
             if m != dict((x[0], x[3]) for x in before.screens).get(i, m):
+                beat = True
                 out.append(('good_X', f'X{a.piece + 1} beats the screen: may cross the T square.'))
+        if not beat and before.locked('X', a.piece) and after.locked('X', a.piece):
+            # step 18l: a defender already locked who loses another Challenge (no change to report otherwise)
+            out.append(('bad_X', f'X{a.piece + 1} is held by the screen again: he stays locked.'))
+        if cut and before.rushed('X', a.piece):
+            why = ('is locked' if before.locked('X', a.piece) else 'came on a Sprint' if before.rush('X', a.piece) == RC.RUSH_SPRINT
+                   else 'came on a Quick Step')
+            out.append(('info', f"X{a.piece + 1} {why}, so he's off balance: his Challenge was {cut} lower."))
     if a.kind == 'shot':
         out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions, a Contest last. No Contest: '
                             'a contest of 0.'))
