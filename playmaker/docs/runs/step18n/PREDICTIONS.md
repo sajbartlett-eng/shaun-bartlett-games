@@ -58,3 +58,13 @@ core and is in the tally too.
 - play-outs (1 candidate copies of 16 on 1 positions): 0.01 (running total 6.91)
 - searches (n18a, 14 positions): 0.01 (running total 6.92)
 - play-outs (1 candidate copies of 16 on 1 positions): 0.01 (running total 6.93)
+- one core: early test runs while building: 0.14 (running total 7.07)
+- one core: small agreement checks while building: 0.06 (running total 7.13)
+- one core: the full agreement checks (1,334 seconds): 0.37 (running total 7.5)
+- one core: the named tests, first full run (1,594 seconds): 0.44 (running total 7.94)
+- one core: the timing check: 0.04 (running total 7.98)
+- one core: agreement on the lighter settle: 0.06 (running total 8.04)
+- one core: exam runs: 0.07 (running total 8.11)
+- one core: the named tests, final run (133 + 1,585 seconds): 0.48 (running total 8.59)
+
+**Total: 8.6 core-hours. The estimate was 7.0 and the hard stop 10.**

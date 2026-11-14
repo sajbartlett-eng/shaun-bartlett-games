@@ -2,7 +2,17 @@
 
 ## In five lines
 
-FIVE_LINES
+1. **Jump shots are contested by where the defender stands, and nothing else.** Anyone next to the shooter takes his
+   card's contest off: no Contest move, no foul. Inside, the hand up is automatic and the block is a real gamble.
+   Built in both engines, on in the app.
+2. **Does the computer take contested threes only with its good shooters? Mostly yes.** 35 of its 37 contested
+   threes came from shooters rated 9 or more. Shooters rated 8 or less took 13 threes, 2 of them contested.
+3. **Scoring came down from 1.36 to 1.28 points a possession (1.22 to 1.34). FIBA is about 1.0.** Shots contested
+   rose from 33 in 100 to 55.
+4. **The generous part is now inside, and the block is never used.** Inside shots go in 75 times in 100. The defence
+   went for the block once in 92, because on these cards it fouls half the time or more.
+5. **A speed fault found and fixed on the way; the sense-check set only part re-recorded.** 14 of its 19 positions
+   were replayed. Compute: 8.6 core-hours of the 10 allowed.
 
 ## Parts 0 and 1: merged, ruled, and the cards
 
@@ -49,9 +59,9 @@ FIVE_LINES
 3. **Inside, a rushed defender straight up in front still contests in full, 2 lower.** Rushed takes 2 off every
    contest.
 4. **The block is held at 1 too.** A defender who goes for it from behind while rushed takes at least 1 off.
-5. **The computer's reading of a declared shot plays a second movement only after a first that ends next to the
-   shooter.** A closeout from two movements away is seen when the defence is the one moving, and by the reading of a
-   look, but not inside the offence's own look-ahead at a declared shot.
+5. **How far the look-ahead follows a closeout differs by level.** The All-Star plays a second movement that ends
+   next to the shooter; Starter and Rookie stop at one (Part 5). None of them plays a closeout whose first movement
+   ends away from the shooter, inside the look-ahead at a declared shot.
 
 **Nothing is zero: the other rolls (D-193, listed, not changed).**
 
@@ -68,7 +78,61 @@ FIVE_LINES
 
 ## Part 3: the refit and the re-recording
 
-REFIT_TEXT
+**The maps.** Each level's own self-play on today's cards and rules, as in 18h.
+
+| | Possessions | Positions | Lines of its own | Points a possession | As real points |
+|---|---|---|---|---|---|
+| All-Star | 200 | 5,817 | phases 1 to 5, both sides | 25.8 (24.4 to 27.2) | 1.29 |
+| Starter | 90 | 1,207 | phases 1 and 2 | 21.8 (20.0 to 23.6) | 1.09 |
+| Rookie | 120 | 1,129 | phases 1 and 2 | 17.7 (16.1 to 19.4) | 0.89 |
+
+- **Every line slopes the right way.** The All-Star now has lines of its own through phase 5: possessions run
+  longer, so later phases have enough positions.
+- Starter and Rookie were played twice. Their first runs came before the speed fix in Part 5, which changes how
+  they value a declared shot. The table is the second run. The All-Star's play did not change, so its run stands.
+
+**The foul-price numbers,** from the All-Star's run: 0.22 fouls a possession (0.15 to 0.29) and 25.8 a possession
+(24.4 to 27.2). They were 0.21 and 27.2.
+
+**The sense-check set, on today's cards and rules.** The set is rebuilt card for card (`positions_18n.json`), and
+the tool refuses a position holding a card that is not today's.
+
+- **14 of the 19 positions were replayed, not all 19.** A possession under the new rule runs half as long again
+  (28 decisions, from 19), so a play-out costs about 30 core-seconds. The full set at 16 play-outs would have cost
+  about 5 core-hours.
+- **What was played:** the candidates the set names and the computer's own choice. 10 positions at 16 play-outs, 4
+  at 8.
+- **Not replayed:** board 3 (it needs its 24 level turns played out) and the four "shoot now or play on" positions.
+- **The computer is best or level on all 14.** Points lost a position: 2.1 (0.6 to 3.6). With 8 or 16 play-outs
+  "level" is a wide band, so read that as "nothing clearly wrong", not "all right".
+
+| Position | Best by play | The computer |
+|---|---|---|
+| Closeout, the shooter cannot move | X3 Moves to C4 and keeps the Quick Step; X2 to B6: 24.0 | X2 to B6 alone: 2.3 behind (1.0 ahead to 5.7 behind) |
+| The same, your order | | 0.7 behind the best (3.8 ahead to 5.1 behind): level |
+| Closeout, the shooter can move | X3 Moves to C4; X2 to B6 | 5.3 behind (1.0 ahead to 11.6 behind) |
+| Closeout, step 2 | X3 Moves next to him, then a Steal | pauses: 2.3 behind (8.7 ahead to 13.3 behind) |
+| Game EB3F5B | four turns level, 26.6 to 26.9 | X2 to B7: level |
+| The Steal position, clock 2 | step in, then Steal | pauses: 2.9 behind (6.2 ahead to 11.9 behind) |
+| The Steal position, clock 10 | step in, then Steal | pauses: 11.7 behind (0.1 ahead to 23.4 behind) |
+| Contest or not, 1 to 4 | every turn level | level |
+| Move, then shoot, 1 and 2 | the move, then the shot | level, and the same turn on 2 |
+| Board 1 | X1 steps in for a Steal: 25.8; every other turn 30.0 | X2 to B4: 4.2 behind (2.1 ahead to 10.5 behind) |
+| Board 8 | the cut alone: 27.8 | O1 to E10, then waits: 0.6 behind |
+
+- **Your closeout order is level with the best again.** The best by play now is the Move that arrives set. A set
+  contest is the full rating; a Quick Step in is 2 lower.
+- **On both Steal positions stepping in to Steal still plays out best,** and the computer pauses. On the second it
+  is nearly a clear miss.
+- **"Contest or not" no longer asks anything.** The contest is automatic, so every turn there scores the same.
+
+**The exam.** Position 1 takes its answer from the replay: stepping in for a Steal, doing nothing, or moving X2 or
+X4 are level by play, and each was played out. It passes again. Position 3's answer hangs on board 3, which was not
+replayed: it fails and is listed as open. Position 16 fails as in 18l.
+
+**Golden values re-recorded, each with the reason "D-189 to D-193" in the test:** the two ceilings in
+`test_golden_and_regression.py`, and seven tests that held contest values or a Contest on a jump shot.
+`test_contest_18j.py` now tests D-177 with D-191's switch off, since D-191 replaces it in the app.
 
 ## Part 4: the test, player against player
 
@@ -201,24 +265,122 @@ no make or miss, so "made" is that chance added up.)
 
 ## Part 5: speed
 
-SPEED_TEXT
+**A speed fault, reported first as the rules ask.** My first build was too slow at Rookie and Starter.
+
+- **The cause:** when the search values a declared shot it plays the reaction out. With no Contest move on a jump
+  shot, both of the reaction's actions can be movements, and I had it play a second movement ending next to the
+  shooter.
+- **The fix:** that second movement is the All-Star's alone (`closeout_twice` in its profile). Rookie and Starter
+  play the reaction as before: one movement, then a Steal, the block or the end.
+- **What it costs them:** their look-ahead does not see a defender Quick Step in and then Move to be set. The
+  defence still does it when it is the one moving.
+
+The time to finish 1 pair on 9 decisions in 10, in seconds, two rounds, 18l's code timed in turn with this step's.
+
+| Level | Target | 18l's code | First build | | 18l's code, later | After the fix |
+|---|---|---|---|---|---|---|
+| Rookie | 0.3 | 0.27, 0.25 | **0.45, 0.39** | | 0.36, 0.39 | 0.36, 0.32 |
+| Starter | 1.0 | 0.98, 0.95 | **1.12, 1.18** | | 1.18, 1.40 | 1.01, 1.09 |
+| All-Star | 2.5 | 2.00, 1.89 | 1.87, 2.03 | | 2.59, 2.92 | 2.43, 2.59 |
+
+- **After the fix this step is no slower than 18l's code at any level,** timed side by side. Every level fits, judged
+  as D-161 says.
+- **The second pair of rounds ran on a busier machine** (play-outs were running beside them), so read them against
+  18l's code in the same rounds, not against the targets.
+- **How much faster without the jump-shot Contest move?** By the middle decision, in the second pair of rounds:
+  Rookie 0.23 against 0.27, Starter 0.77 against 0.91, All-Star 1.80 against 1.96. About a seventh faster at Rookie
+  and Starter, a twelfth at the All-Star, which also spends time on its second closeout movement.
 
 ## What it proves
 
-PROVES_TEXT
+- **The two engines agree.** With the rule on: 150 positions and 8 searches; 200 shot reactions; with `rules.zone`
+  on as well, 100 positions and 4 searches; 60 positions with a broken zone and 2 searches; 40 positions and 6
+  searches with the three search switches on; with the rule off, 60 positions and 3 searches; and 6 searches the way
+  Starter and Rookie settle a shot. No differences.
+- **The cards:** every contest value matches the table, by a test. No other rating changed.
+- **Tests:** `tests/test_rules_current.py` passes. The 28 named test files: 468 passed and 1 failed, the timing test
+  (2.3 seconds on one decision against a limit of 1.7), as since 18f. `tests/test_static.py`, run on its own: 11
+  passed. 13 tests are marked as known failures, as before, and none of them is new.
+- **One recorded value moved after the maps were redone, and I re-recorded it.** A trainer board in
+  `tests/test_step3m.py` asks what an off-ball move is worth over a phase because it uses up a defender's actions.
+  It was worth +2.5 before D-184 and +0.3 on my first maps; it is worth 0.6 less than nothing now. The move still
+  uses up X2's Move and Quick Step. The test holds the new value, with the reason.
+- **What it does not prove:**
+  - How a person plays under the rule.
+  - The five positions of the set that were not replayed.
+  - Starter and Rookie against FIBA: the tables are the All-Star's.
 
 ## Compute
 
-COMPUTE_TEXT
+| | Core-hours |
+|---|---|
+| Self-play to fit the maps (All-Star 200, Starter 90 twice, Rookie 120 twice) | 2.8 |
+| The test run (All-Star, 200 possessions) | 1.7 |
+| The set: replays that count | 1.5 |
+| The set: a first replay stopped as too costly | 0.6 |
+| Speed, four rounds | 0.3 |
+| Agreement checks, tests and exam runs, on one core | 1.7 |
+| **Total** | **8.6** |
+
+- **The estimate was 7.0 and the hard stop 10.** The 1.6 over the estimate is the stopped replay (0.6), the second
+  Starter and Rookie runs after the speed fix (0.3) and the tests, which I had not counted (0.9 of the 1.7).
+- The line by line tally is at the foot of `docs/runs/step18n/PREDICTIONS.md`.
 
 ## Noticed, not touched
 
-NOTICED_TEXT
+- **The reaction got longer in effect.** A defender two movements away can now reach a jump shooter and contest.
+  That is case 1 in Part 2. It is the main reason contested shots rose.
+- **No mid-range shot or long two was taken in 200 possessions.** They are never the best shot on these cards.
+- **No dunk was taken either.** A dunk's contest is back at 4 to 14, above the layup's 5 to 12, and the dunk's
+  rating is lower.
+- **Every turnover is still a reach.** No pass was intercepted and no violation called.
+- **Steals tried and fouled did not move:** 47 and 20 in 100 possessions.
+- **The timing test still fails** as it has since 18f. Not loosened.
+- **An off-ball move that uses up a defender's actions is worth less under D-191.** The contest it used to take
+  away is automatic now. One trainer board changed sign because of it ("What it proves", tests). The trainer's teaching on
+  that point may need a look once the rules settle.
+- **Predictions.** Scoring: wrong, I expected 1.10 to 1.25 and got 1.28. Contested threes going to the good
+  shooters: right. The block on fewer than 1 inside shot in 4 and few fouls: right, more than I expected. Speed:
+  wrong at first, see Part 5. The set: all 14 played were level, above my 13 to 16 of 19, but 5 went unplayed.
 
 ## For Shaun to decide (three)
 
-DECISIONS_TEXT
+1. **Keep D-192's contest ratings. And test one thing: rushed takes 1 off a jump-shot contest, not 2.**
+   *Recommend: keep them, and test that next.* Why: the ratings do what you wanted. But 18 of the 37 contested
+   threes met a rushed defender, and those scored like open threes (1.33 a shot against 1.35). On a scale of 1 to
+   4, taking 2 off leaves the floor of 1 almost every time. The table D-190 asks for:
+
+   | Card contest | Set | Rushed: now, proposed | Behind | Behind and rushed: now, proposed |
+   |---|---|---|---|---|
+   | 4 | 4 | 2, **3** | 1 | 1, 1 |
+   | 3 | 3 | 1, **2** | 1 | 1, 1 |
+   | 2 | 2 | 1, 1 | 1 | 1, 1 |
+   | 1 | 1 | 1, 1 | 1 | 1, 1 |
+
+   It touches one modifier: D-185's 2 off, for mid-range, long two and three contests only. Shots, inside contests
+   and every other roll keep their 2. D-193's floor is unchanged.
+2. **Is the block meant to be a live choice?** *Recommend: yes, and test reading the block's foul roll as the
+   rating in 40, not in 20.* Why: today it is never right. Take a layup of 18 against a contest of 9 and a Contest
+   foul rating of 10:
+
+   | The defender is | Hand up: the shot scores | The block: no foul / fouled | Foul chance now | The block scores on average | The block pays under |
+   |---|---|---|---|---|---|
+   | In front, arrow off | 24 | 18 / 41 | 50 in 100 | 29.5 | 26 in 100 |
+   | Beside | 24 | 18 / 41 | 75 in 100 | 35.3 | 26 in 100 |
+   | Behind | 30 | 24 / 45 | 75 in 100 | 39.8 | 29 in 100 |
+
+   With the roll read in 40 the chances become 25, 44 and 44 in 100: the block from in front becomes about even,
+   and from the side or behind stays a bad bet unless the defender's foul rating is low. That would bring fouls
+   back to rim shots, where FIBA has 20 to 30 in 100 and the game has none. It touches the block's foul roll only:
+   not the Steal's foul roll, not the ratings on the cards.
+3. **The sense-check set.** *Recommend: leave the last five positions until the next rule test is settled, then
+   replay all 19 once.* Why: a full replay costs about 5 core-hours now, and decisions 1 and 2 would each make it
+   out of date again.
+
+**Not a decision, but yours to know:** the open-shot ratings you expected to revisit. The evidence is in Part 4's
+last list. The clearest is the inside shot with a trailing defender.
 
 ## Model for the next step
 
-MODEL_TEXT
+Claude Fable 5.2, effort high, if decisions 1 and 2 go ahead: two small rule changes in both engines, then the
+refit and the same test. Budget about 12 core-hours: a possession now costs half as much again to play out.
