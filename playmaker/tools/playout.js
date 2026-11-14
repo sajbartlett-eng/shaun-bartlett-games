@@ -195,13 +195,21 @@ if (job.kind === 'rollout') {
       const events = [], shots = [], reads = [];
       // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
       // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
-      const stances = [], dribbles = [], examples = [], guards = [];
-      let movesB = 0, passesB = 0, lastBall = node.ball, drib = null;
+      const stances = [], dribbles = [], examples = [], guards = [], steals = [];
+      // step 18l: each Dribble also carries its place in the actions and how both players stood (0 set, 1 after a
+      // Quick Step, 2 after a Sprint; locked or not); each Steal [phase, place, defender, how the ball handler stood,
+      // whether he was locked, how the defender stood, the outcome: 'won', 'foul' or 'miss']
+      const rcode = (bits, i) => (bits >> (2 * i)) & 3, lbit = (bits, i) => (bits >> i) & 1;
+      let movesB = 0, passesB = 0, lastBall = node.ball, drib = null, stl = null;
       const sqs = a => a.map(q => E.sqName(q));
       while (true) {
         if (E.isChance(node)) {
           node = sample(node, r);
-          if (drib && !E.isChance(node)) { dribbles.push([drib[0], node.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]) ? 1 : 0]); drib = null; }
+          if (drib && !E.isChance(node)) { dribbles.push([drib[0], node.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]) ? 1 : 0].concat(drib.slice(3))); drib = null; }
+          if (stl && !E.isChance(node)) {
+            const won = node.stage === 'over' && node.result && (node.result.kind === 'steal' || node.result.kind === 'turnover_end');
+            steals.push(stl.slice(0, 6).concat([won ? 'won' : node.fouls > stl[6] ? 'foul' : 'miss'])); stl = null;
+          }
           continue;
         }
         if (node.stage === 'over' || n > 300) break;
@@ -220,14 +228,15 @@ if (job.kind === 'rollout') {
         if (a.kind === 'shot' || a.kind === 'forced_shot') shots.push({ at: events.length - 1, o: sqs(node.o), x: sqs(node.x), ball: node.ball, phase: node.phase, type: a.shot, forced: a.kind === 'forced_shot' });
         if (a.side === 'O' && (a.kind === 'move' || a.kind === 'qs' || a.kind === 'sprint')) movesB++;
         if (a.kind === 'pass') passesB++;
-        if (a.kind === 'dribble') drib = [node.phase, node.ball, a.target];
+        if (a.kind === 'dribble') drib = [node.phase, node.ball, a.target, events.length - 1, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.target), lbit(node.lock_x, a.target)];
+        if (a.kind === 'steal') stl = [node.phase, events.length - 1, a.piece, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.piece), node.fouls];
         node = E.apply(node, a);
         n++;
       }
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
+        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
     }
   }
 } else if (job.kind === 'split') {
