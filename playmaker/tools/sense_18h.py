@@ -45,6 +45,14 @@ K18 = os.environ.get('SENSE_18K') == '1'
 # (D-185), with answers of their own. The play-outs are continued by the default engine as it stands (its maps are
 # refitted on the new cards), not by the old reference map.
 L18 = os.environ.get('SENSE_18L') == '1'
+# SENSE_18N=1 (step 18n): the rules after step 18n on today's cards (D-189, D-192): step 18l's and the position contest
+# (D-191, D-193), with answers of their own, on the set's positions with every card replaced by today's card of the same
+# key (positions_18n.json: python3 tools/sense_18h.py today). Each position keeps its own copy of its cards, so a
+# position is only played if every card in it is a card as it is now.
+N18 = os.environ.get('SENSE_18N') == '1'
+if N18:
+    L18 = True
+WTAG = 'n' if N18 else 'l'                              # the letter this step's own choices and marks carry
 if L18:
     K18 = True
 # SENSE_LEVEL: the positions (by the start of their names) where a pick among level turns is scored by the average of
@@ -57,13 +65,14 @@ if K18:
 if J18:
     FIBA = True
     RULE['rules'] = {k: 'on' for k in ('three_seconds', 'closely_guarded', 'fiba_fouled_shot')}
-RULE['rules'].update(soft_contest='on' if J18 else 'off', fiba_steal_foul='on' if J18 else 'off', off_balance='on' if L18 else 'off')
+RULE['rules'].update(soft_contest='on' if J18 else 'off', fiba_steal_foul='on' if J18 else 'off', off_balance='on' if L18 else 'off',
+                     position_contest='on' if N18 else 'off')
 if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = ('answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
-POS, ANS = os.path.join(SET, 'positions.json'), os.path.join(SET, _NAME)
+    _NAME = ('answers_18n' if N18 else 'answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+POS, ANS = os.path.join(SET, 'positions_18n.json' if N18 else 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
@@ -131,7 +140,46 @@ def words(turn):
 
 
 def load():
-    return json.load(open(POS)), (json.load(open(ANS)) if os.path.exists(ANS) else dict(play_outs=N, engine=REF, results={}))
+    positions = json.load(open(POS))
+    if N18:
+        cards_are_current(positions)
+    return positions, (json.load(open(ANS)) if os.path.exists(ANS) else dict(play_outs=N, engine=REF, results={}))
+
+
+def _today():
+    from playmaker_engine.cards import CARDS
+    from playmaker_engine.jsbridge import card_json
+    return {k: card_json(c) for k, c in CARDS.items()}
+
+
+def cards_are_current(positions):
+    """Step 18n: every card a position carries must be a card as it is now (step 18l replayed the set on the cards it
+    was made with, from before D-184, by mistake)."""
+    now = {json.dumps(c, sort_keys=True) for c in _today().values()}
+    stale = [p['id'] for p in positions if any(json.dumps(c, sort_keys=True) not in now for side in ('off', 'dfn') for c in p['ctx'][side])]
+    if stale:
+        raise SystemExit(f"{len(stale)} positions hold cards that are not the cards as they are now (first: {stale[0]}): "
+                         f"rebuild them with 'SENSE_18N=1 python3 tools/sense_18h.py today'")
+
+
+def cmd_today():
+    """positions.json (each position with the cards it was made with) -> positions_18n.json: the same positions and
+    candidates, every card replaced by today's card of the same key. A card is found by its ratings before D-184
+    (sense_set/cards_before_d184.json) or, for a position made since, by its ratings now. A position holding a card
+    that is neither (a board with a changed copy of a card) is left out, and named."""
+    today = _today()
+    fp = lambda c: json.dumps([c['qs'], sorted(c['r'].items())])
+    by = {fp(c): k for k, c in json.load(open(os.path.join(SET, 'cards_before_d184.json'))).items()}
+    by.update({fp(c): k for k, c in today.items()})
+    out, left = [], []
+    for p in json.load(open(os.path.join(SET, 'positions.json'))):
+        keys = {side: [by.get(fp(c)) for c in p['ctx'][side]] for side in ('off', 'dfn')}
+        if any(k is None for ks in keys.values() for k in ks):
+            left.append(p['id'])
+            continue
+        out.append(dict(p, ctx=dict(p['ctx'], off=[today[k] for k in keys['off']], dfn=[today[k] for k in keys['dfn']])))
+    json.dump(out, open(os.path.join(SET, 'positions_18n.json'), 'w'), indent=1)
+    print(len(out), "positions on today's cards -> positions_18n.json; left out:", left or 'none')
 
 
 def searches(items, tag='ref', noise=0.0, **switches):
@@ -401,7 +449,7 @@ def play(positions, answers, only=None, copies=(0, 1)):
                     and not (FIBA and not J18 and c.get('added_by') and not c['added_by'].startswith('fiba') and not c.get('fiba_too'))
                     and not (J18 and not K18 and c.get('added_by') and not c['added_by'].startswith('j18') and not c.get('j18_too'))
                     and not (K18 and not L18 and c.get('added_by') and not c['added_by'].startswith('k') and not c.get('k_too') and key(c['turn']) not in _J18_HAD.get(p['id'], ()))
-                    and not (L18 and c.get('added_by') and not c['added_by'].startswith('l') and not c.get('l_too') and (key(c['turn']) not in _K18_HAD.get(p['id'], ()) or c['name'].startswith('level with')))]
+                    and not (L18 and c.get('added_by') and not c['added_by'].startswith(WTAG) and not c.get(WTAG + '_too') and (key(c['turn']) not in _K18_HAD.get(p['id'], ()) or c['name'].startswith('level with')))]
             if not miss:
                 continue
             if p['id'] not in names:
@@ -596,7 +644,7 @@ def cmd_score(tag, *args):
                     added += 1
                 else:
                     for c in p['candidates']:      # a turn an earlier setting added is played under these rules too
-                        w_ = 'l' if L18 else 'k'
+                        w_ = WTAG if L18 else 'k'
                         if key(c['turn']) == key(tt) and c.get('added_by') and not c['added_by'].startswith(w_) and not c.get(w_ + '_too'):
                             c[w_ + '_too'] = True
                             added += 1
@@ -605,7 +653,7 @@ def cmd_score(tag, *args):
             added += 1
         elif ZONE or FIBA:
             # the choice is a turn an earlier setting added: it is played under this rule set too
-            w = 'zone' if ZONE else 'l' if L18 else 'k' if K18 else 'j18' if J18 else 'fiba'
+            w = 'zone' if ZONE else WTAG if L18 else 'k' if K18 else 'j18' if J18 else 'fiba'
             for c in p['candidates']:
                 if key(c['turn']) == key(t) and c.get('added_by') and not c['added_by'].startswith(w) and not c.get(w + '_too'):
                     c[w + '_too'] = True

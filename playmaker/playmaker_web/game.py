@@ -174,8 +174,17 @@ def consequences(before, after, a):
                    else 'came on a Quick Step')
             out.append(('info', f"X{a.piece + 1} {why}, so he's off balance: his Challenge was {cut} lower."))
     if a.kind == 'shot':
-        out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions, a Contest last. No Contest: '
-                            'a contest of 0.'))
+        if RC.position_contest(after.ctx.rules):
+            # D-191: position decides a jump shot's contest; an inside shot has the automatic contest and the block
+            if a.shot in RC.JUMP_SHOTS:
+                out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions. A defender next to the '
+                                    f'shooter when it ends contests by where he stands: there is no Contest action.'))
+            else:
+                out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions. Next to the shooter a hand '
+                                    f'up counts with no action. Going for the block is a Contest, the last action, and risks the foul.'))
+        else:
+            out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions, a Contest last. No Contest: '
+                                'a contest of 0.'))
     if after.stage == 'over' and before.stage != 'over':
         sc = score(after)
         out.append(('end', f'Possession over: {sc.total} ({sc.band}). {sc.detail}'))
@@ -283,7 +292,7 @@ class Game:
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
-                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None):
+                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None, positioncontest=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -310,7 +319,8 @@ class Game:
                 rules = replace(rules, zone='on')
             # step 18i (D-172 to D-174): the FIBA rules are on in the app's format; each may be turned off
             for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot),
-                            ('soft_contest', softcontest), ('fiba_steal_foul', stealfoul), ('off_balance', offbalance)):
+                            ('soft_contest', softcontest), ('fiba_steal_foul', stealfoul), ('off_balance', offbalance),
+                            ('position_contest', positioncontest)):
                 if v in ('off', '0', 0, False):
                     rules = replace(rules, **{name: 'off'})
         self.per_side = int(per_side) if self.match_format == 'digital' else (1 if full else 0)

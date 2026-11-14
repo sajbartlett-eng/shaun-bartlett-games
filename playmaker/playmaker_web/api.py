@@ -34,7 +34,7 @@ class Manager:
                  scouting=body.get('scouting'), quarter=body.get('quarter'), control=body.get('control'), zone=body.get('zone'),
                  three=body.get('three'), guarded=body.get('guarded'), fouledshot=body.get('fouledshot'),
                  softcontest=body.get('softcontest'), stealfoul=body.get('stealfoul'),
-                 offbalance=body.get('offbalance'))
+                 offbalance=body.get('offbalance'), positioncontest=body.get('positioncontest'))
         g.static = self.static
         with self.lock:
             self.games[g.code] = g
