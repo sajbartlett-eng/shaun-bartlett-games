@@ -174,17 +174,18 @@ def position_chips(s, shooter, t):
         front, behind = B.dist_rim(xp) < B.dist_rim(sp), B.dist_rim(xp) > B.dist_rim(sp)
         where = 'in front' if front else 'behind' if behind else 'beside him'
         on = G.faces(rules, G.stance(rules, s.arrows[j], any(b[1] == j for b in s.beaten)), xp, sp)
-        full = t in RC.JUMP_SHOTS or (front and on)
+        full = front and on                # D-194: square, on every shot
         c = dc.con(t) - (0 if full else RC.SOFT_CONTEST) - (RC.FAR_CONTEST_PENALTY if behind else 0) - (cut if cut and s.rushed('X', j) else 0)
         c = max(RC.CONTEST_FLOOR, c)
-        why = [] if full else ['a hand up: 3 less']
+        why = [] if full else ['not square: 3 less' if t in RC.JUMP_SHOTS else 'a hand up: 3 less']
         if behind:
             why.append('behind: 3 less')
         if cut and s.rushed('X', j):
             why.append(f'rushed: {cut} less')
         tail = f' ({", ".join(why)})' if why else ''
         if t in RC.JUMP_SHOTS:
-            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {where}: contest {rv(dc, "con_" + t)}{tail}, {c} off by position'
+            spot = 'square in front' if full else 'in front, arrow off him' if front else where
+            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {spot}: contest {rv(dc, "con_" + t)}{tail}, {c} off by position'
         elif full:
             line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} in front, arrow on him: contest {rv(dc, "con_" + t)}{tail}, {c} off, no foul'
         else:
@@ -320,7 +321,8 @@ def turn_summary(s):
             n = f'{left} action{"s" if left != 1 else ""} left'
             if s.shot in RC.JUMP_SHOTS:
                 return (f'Shot declared ({s.shot}). Defence reacts: {n} (Move, Quick Step, Sprint or Steal). A defender next to '
-                        f'the shooter when the reaction ends contests by where he stands: there is no Contest action')
+                        f'the shooter when the reaction ends contests by where he stands and where his arrow points: square '
+                        f'in front is the full contest. There is no Contest action')
             return (f'Shot declared ({s.shot}). Defence reacts: {n} (Move, Quick Step, Sprint, Steal, or going for the block: '
                     f'a Contest, the last action). Next to the shooter a hand up counts with no action; straight up from '
                     f'in front with the arrow on him is the full contest, automatic and safe')

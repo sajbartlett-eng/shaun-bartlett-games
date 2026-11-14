@@ -1012,7 +1012,7 @@ contest is automatic and set by position. Inside shots: you may go for the block
 up from in front with your arrow on him, which is automatic and safe." · Source: Shaun, 14 Nov 2026 · **Ruled; step
 18n.**
 
-**D-192. New jump-shot contest ratings** (Shaun agreed to test them). For mid-range, long two and three contests, one
+**D-192. New jump-shot contest ratings** (Shaun agreed to test them; **replaced by D-194, 15 Nov 2026**). For mid-range, long two and three contests, one
 map on Shaun's original values, on every card including the new types (from the source type's originals): 2 to 1, 3
 and 4 to 2, 5 and 6 to 3, 7 and 8 to 4. Card by card: `docs/reference/JUMP_CONTESTS_14NOV.md`. The reason: with one
 automatic contest the card number is the whole contest, and a professional's hand up on a jump shot takes about 5%
@@ -1023,6 +1023,35 @@ Shaun, 14 Nov 2026 · **Ruled, to be tested; step 18n.**
 **D-193. Nothing is zero** (Shaun's ratings rule: 5% is the lowest). A contesting defender always takes at least 1
 off the shot, after every modifier (behind, rushed, the hand-up 3). Built with D-191, under the same switch. · Source:
 Shaun, 14 Nov 2026 · **Ruled; step 18n.**
+
+**D-194. The square defender (replaces D-192's ratings; the app only).** Shaun's evidence, from a live NBL game:
+"Kristian Doolittle defending guards like Tyler Harvey on the 3 point line. They physically could not get a shot off
+over him unless they made a move first." Real tracking data only counts shots that were taken, so it hides the shots
+a square defender takes away. The 18n test measured beaten defenders. **Jump-shot contests go back to Shaun's
+original values** (before D-184) on every card; the new types take their source types' originals, as D-189; the
+`con_mid`, `con_long` and `con_three` ranges and chart fixes are back in their form before D-184. **One contest
+table for every shot, set by position:** in front with his arrow on the shooter, set: the full rating. In front with
+the arrow off, or beside: the rating less 3. Behind: the rating less 6 (less 3, and 3 more from behind). Rushed
+(D-185): 2 more off, wherever he is. Always at least 1 (D-193). **Jump shots:** that is the whole rule: no choice and
+no shooting foul (D-191 stands). **Inside shots:** as in 18n: when he isn't square the defender may go for the block,
+with the foul rolls as they were. In effect the only change from 18n is that on a jump shot a defender who isn't
+square takes 3 less, and a square one takes his full original rating: the arrow now matters on jump shots.
+**Not taken from step 18n's report:** halving the block's foul roll, and rushed taking 1 off jump-shot contests. Both
+would make one modifier mean different things on different rolls. The block stays a live choice for low-foul
+defenders who get in front. **Step 18n's open case 1 stands as built:** with no contest action, a defender may use
+both reaction actions as movements to reach a jump shooter. Shaun may rule on it later. · Source: Shaun, 15 Nov 2026
+· **Ruled; step 18o.**
+
+**D-195. The setup must fit the players (restates D-70 and D-71).** Shaun's playtest: two post scorers, poor outside
+shooters, stood on the low wings with X4 and X5 next to them, arrows on, and the lane was empty for a drive once the
+point guard was beaten. "Help defence appears broken." The cause: both sides' setups were improved by the quick
+reading from a fixed start (each defender next to his man; the offence on the table's squares), never judged by
+play, and the setup offered to a human was the table's fixed squares whatever his cards. **Ruled:** setup placements
+are judged by the search's own played-out reading, both sides, every level, and the proposal shown to a human; they
+are searched without a fixed starting answer, and nothing names or favours a placement; arrows are part of every
+placement and every direction can be played out; in the app the setup offered to a human by default is the engine's
+proposal for his cards (the fixed squares stay for the table format); setup stays inside its time budget. · Source:
+Shaun, 15 Nov 2026 · **Ruled; step 18o.**
 
 ## 2. Engine defaults awaiting sign-off
 

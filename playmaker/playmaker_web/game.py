@@ -178,7 +178,8 @@ def consequences(before, after, a):
             # D-191: position decides a jump shot's contest; an inside shot has the automatic contest and the block
             if a.shot in RC.JUMP_SHOTS:
                 out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions. A defender next to the '
-                                    f'shooter when it ends contests by where he stands: there is no Contest action.'))
+                                    f'shooter when it ends contests by where he stands and where his arrow points: there is '
+                                    f'no Contest action.'))
             else:
                 out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions. Next to the shooter a hand '
                                     f'up counts with no action. Going for the block is a Contest, the last action, and risks the foul.'))

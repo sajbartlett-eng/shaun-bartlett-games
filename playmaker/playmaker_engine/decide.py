@@ -507,8 +507,8 @@ class Read:
                 for k, n in enumerate(row):
                     if n > soft_limit:
                         continue
-                    # D-191: the full rating on a jump shot, and on an inside shot from in front with the arrow on him
-                    full = jump or (position and not KINDS[k][1])
+                    # D-194: the full rating from in front with the arrow on him, on every shot; else 3 less
+                    full = position and not KINDS[k][1]
                     con = self.dcards[d].con(t) - (0 if full else RC.SOFT_CONTEST) - (RC.FAR_CONTEST_PENALTY if KINDS[k][0] else 0)
                     if cut and (d_stand if n == 0 else d_moved):
                         con -= cut

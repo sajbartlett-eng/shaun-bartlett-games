@@ -690,18 +690,18 @@ const PMEngine = (() => {
   }
   // scoring.soft_contest (D-177): the defence's best soft contest: [defender, contest] or [-1, 0]. Every defender next
   // to the shooter gives one with no action: his contest rating less 3, 3 less again from behind, 2 less if rushed.
-  // D-191 (rules.position_contest, scoring.auto_contest): on a jump shot the contest is his full rating (3 less from
-  // behind, 2 less rushed; the arrow has no effect); on an inside shot the hand up is as D-177, and from in front with
-  // the arrow on him the full contest is automatic. D-193: a contesting defender always takes at least 1 off.
+  // D-191 (rules.position_contest, scoring.auto_contest): a jump shot is contested by position only. D-194: one
+  // table for every shot: square (in front, his arrow on the shooter) the full rating; in front with the arrow off,
+  // or beside, 3 less; behind 6 less; rushed 2 more off. D-193: a contesting defender always takes at least 1 off.
   const JUMP = { mid: true, long: true, three: true };
   function softContest(s, shooter, t) {
-    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0, pos = ctx.pos, jump = pos && JUMP[t] === true;
+    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0, pos = ctx.pos;
     let bj = -1, bc = 0;
     for (let j = 0; j < 5; j++) {
       const xp = s.x[j];
       if (!adjacent(xp, spos)) continue;
       let c = ctx.dfn[j].cn[t];
-      if (!(jump || (pos && DR[xp] < DR[spos] && onLine(stanceOf(s, j), dirBetween(xp, spos))))) c -= 3;
+      if (!(pos && DR[xp] < DR[spos] && onLine(stanceOf(s, j), dirBetween(xp, spos)))) c -= 3;      // D-194: square or 3 less, every shot
       if (DR[xp] > DR[spos]) c -= 3;
       if (cut && rushedX(s, j)) c -= cut;
       if (pos && c < 1) c = 1;
@@ -1918,8 +1918,8 @@ const PMEngine = (() => {
         if (smask) {
           for (let k = 0; k < 6; k++) {
             if (!((smask >> k) & 1)) continue;
-            // D-191: the full rating on a jump shot, and on an inside shot from in front with the arrow on him
-            let con = dc.cn[ty] - ((jump || (pos && !KFOUL[k])) ? 0 : 3) - (KPEN[k] ? 3 : 0);
+            // D-194: the full rating from in front with the arrow on him, on every shot; else 3 less
+            let con = dc.cn[ty] - ((pos && !KFOUL[k]) ? 0 : 3) - (KPEN[k] ? 3 : 0);
             if (cut > 0 && (((st0 >> k) & 1) ? (flags & 2) : (flags & 4))) con -= cut;
             if (pos && con < 1) con = 1;                         // D-193
             if (con <= 0) continue;
