@@ -1,0 +1,77 @@
+{
+ "note": "seconds to finish 1 pair; each round times step 18l's code and this step's",
+ "rounds": [
+  {
+   "18l": {
+    "rookie": {
+     "median": 0.239,
+     "nine_in_ten": 0.359,
+     "slowest": 0.419
+    },
+    "starter": {
+     "median": 0.872,
+     "nine_in_ten": 1.175,
+     "slowest": 1.261
+    },
+    "allstar": {
+     "median": 1.96,
+     "nine_in_ten": 2.594,
+     "slowest": 2.63
+    }
+   },
+   "18n": {
+    "rookie": {
+     "median": 0.24,
+     "nine_in_ten": 0.362,
+     "slowest": 0.48
+    },
+    "starter": {
+     "median": 0.799,
+     "nine_in_ten": 1.008,
+     "slowest": 1.254
+    },
+    "allstar": {
+     "median": 1.666,
+     "nine_in_ten": 2.433,
+     "slowest": 2.688
+    }
+   }
+  },
+  {
+   "18l": {
+    "rookie": {
+     "median": 0.296,
+     "nine_in_ten": 0.386,
+     "slowest": 0.468
+    },
+    "starter": {
+     "median": 0.952,
+     "nine_in_ten": 1.399,
+     "slowest": 1.547
+    },
+    "allstar": {
+     "median": 1.958,
+     "nine_in_ten": 2.92,
+     "slowest": 3.06
+    }
+   },
+   "18n": {
+    "rookie": {
+     "median": 0.223,
+     "nine_in_ten": 0.322,
+     "slowest": 0.499
+    },
+    "starter": {
+     "median": 0.735,
+     "nine_in_ten": 1.089,
+     "slowest": 1.211
+    },
+    "allstar": {
+     "median": 1.943,
+     "nine_in_ten": 2.594,
+     "slowest": 3.001
+    }
+   }
+  }
+ ]
+}

@@ -216,16 +216,19 @@ def compare_searches(args, rng):
         s, _ = random_state(rng)
         if s.stage == 'play':
             sts.append(s)
+    prof = dict(profile('allstar'))
+    if getattr(args, 'no_closeout_twice', False):
+        prof['closeout_twice'] = False
     lines = [json.dumps(dict(stable=args.stable, switches=args.switch_map, speed=args.speed, reach=args.reach,
                              coverage_budget=args.coverage_budget, advantages=args.advantages, goals=args.goals,
                              learned=args.learned, calibrated=args.calibrated, settle=args.settle, help=args.help_readings, open=args.open_list, whole=args.whole_turns, kept=args.kept_actions, split=args.split_ties, in_hand=args.rank_in_hand, dice_in_hand=args.dice_in_hand, ball_loss=args.ball_loss, keep_settled=args.keep_settled, keep_in_hand=args.keep_in_hand, no_floor=args.no_floor, exact_shot=args.exact_shot, leaf_mode=args.leaf_mode,
-                             search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=profile('allstar'),
+                             search=dict(state=state_json(s), ctx=ctx_json(s.ctx), profile=prof,
                                          budget=None, max_depth=2, stale=None))) for s in sts]
     js = [json.loads(x) if isinstance(x, str) else x for x in run_js(lines)]
     bad, same = [], 0
     for k, (s, j) in enumerate(zip(sts, js)):
         ag = Agent(actor(s), 'allstar', seed=1)
-        sr = Searcher(actor(s), ag.p, ag._evaluate(s), float('inf'))
+        sr = Searcher(actor(s), dict(ag.p, closeout_twice=prof.get('closeout_twice', False)), ag._evaluate(s), float('inf'))
         res, reached = sr.root(s, 2, 2)
         py = dict(values=[v for v, _ in res], turns=[[str(a) for a in t] for _, t in res], reached=reached,
                   extensions=getattr(sr, 'extensions', 0), cap_hits=getattr(sr, 'cap_hits', 0), kept=getattr(sr, 'kept', 0),
@@ -286,6 +289,8 @@ def main():
     ap.add_argument('--fiba', action='store_true', help='step 18i: three seconds, closely guarded and the FIBA fouled shot on in every position')
     ap.add_argument('--soft', action='store_true', help='step 18j: the soft and hard contest and the FIBA steal foul on in every position')
     ap.add_argument('--off-balance', default=None, choices=('on', 'off'), help="step 18l: rules.off_balance in every position (unset: the format's own)")
+    ap.add_argument('--position-contest', default=None, choices=('on', 'off'), help="step 18n: rules.position_contest in every position (unset: the format's own)")
+    ap.add_argument('--no-closeout-twice', action='store_true', help="step 18n: the searches without the All-Star's closeout_twice (as Starter and Rookie settle a declared shot), in both engines")
     ap.add_argument('--no-floor', action='store_true', help='step 18h: eval.no_floor on, in both engines')
     ap.add_argument('--exact-shot', action='store_true', help='step 18h: eval.exact_shot on, in both engines')
     ap.add_argument('--advantages', action='store_true', help='step 16: eval.advantages on, in both engines')
@@ -315,6 +320,8 @@ def main():
         _FIBA.update(soft_contest='on', fiba_steal_foul='on')
     if args.off_balance:
         _FIBA.update(off_balance=args.off_balance)
+    if args.position_contest:
+        _FIBA.update(position_contest=args.position_contest)
     args.settle = not args.no_settle and (args.settle or bool(_CFG['eval'].get('settle_shots')))
     _CFG['eval']['settle_shots'] = args.settle
     _SETTLE['on'] = args.settle

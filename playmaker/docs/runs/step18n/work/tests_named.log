@@ -1,0 +1,128 @@
+........................................................................ [ 14%]
+........................................................................ [ 29%]
+........................................................................ [ 44%]
+........................................................................ [ 59%]
+..............................................F......XF...xxx.xx.xx.x.xx [ 74%]
+.x......F..F..x..xx..................................................... [ 89%]
+...................................................                      [100%]
+=================================== FAILURES ===================================
+__________ test_the_agent_only_plays_legal_actions_within_its_budget ___________
+
+    def test_the_agent_only_plays_legal_actions_within_its_budget():
+        g = Game(ai={'A': 'allstar', 'B': 'starter'}, level='learn', seed=9, match_format='digital', per_side=4, place=True)
+        decs = [r for r in g.read_log() if r['type'] == 'computer' and r.get('event') == 'decision']
+        acts = [r for r in g.read_log() if r['type'] == 'action']
+        assert acts and all(r['actor'] == 'ai' for r in acts)                 # Game.act refuses an illegal action
+        for d in decs:
+            prof = AG.profile(d['level'])
+>           assert d['seconds'] <= prof['time_budget_s'] * AG.SCALE['value'] + 1.5, d
+E           AssertionError: {'type': 'computer', 'time': 1794672778.261, 'code': '9ED857', 'side': 'O', ...}
+E           assert 2.859 <= ((2.5 * 0.08) + 1.5)
+
+tests/test_step3m.py:234: AssertionError
+_______________ test_horizon_credit_on_the_capacity_drain_board ________________
+
+table_3m = None, floor_leaf = None
+
+    def test_horizon_credit_on_the_capacity_drain_board(table_3m, floor_leaf):
+        from playmaker_engine import trainer as TR
+        from playmaker_engine.exam import p16
+        _, s, _ = p16()
+        a = Action('move', 'O', 2, dest=B.parse_sq('G9'))           # O3 lifts: X2 must answer it
+        assert a in legal_actions(s)
+        one = TR.credit(s, [a], horizon='reply')[0]
+        phase = TR.credit(s, [a], horizon='phase')[0]
+        assert abs(one['phi']) < 1.0                                 # over one reply: about 0 (one for one is neutral)
+        # step 18l: re-recorded, reason: D-184 cards (with D-186). Over the phase the credit was +2.5 (above 1.0) on the
+        # cards before them; it is +0.13 now, because X2's contest of O2's three fell from 3 to 2 and O2's three from 13
+        # to 11, so taking the contester away is worth less. Still positive, still through the drain channel.
+>       assert phase['phi'] > 0 and phase['drain'] > 1.0              # over the phase: positive, through the drain channel
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert (0.31 > 0 and 0.91 > 1.0)
+
+tests/test_step3m.py:370: AssertionError
+_ test_contest_foul_rolls_follow_the_same_angle_and_the_minus_three_is_unchanged _
+
+    def test_contest_foul_rolls_follow_the_same_angle_and_the_minus_three_is_unchanged():
+        # shooter O1 on I6 (mid); X1 on I5 (closer, arrow off him), on H6 (level, arrow off), on I7 (behind, arrow off)
+        def opt(xsq, arrow):
+            s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], [xsq, 'D8', 'N8', 'F4', 'L4'], [arrow, 0, 0, 0, 0])
+            o = [o for o in contest_options(s, 0, 'mid') if o.defender == 0][0]
+            return o, s
+>       closer, s = opt('I5', B.DIR_NAMES.index('S'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_step3n.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+xsq = 'I5', arrow = 4
+
+    def opt(xsq, arrow):
+        s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], [xsq, 'D8', 'N8', 'F4', 'L4'], [arrow, 0, 0, 0, 0])
+>       o = [o for o in contest_options(s, 0, 'mid') if o.defender == 0][0]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests/test_step3n.py:117: IndexError
+______________ test_a_shooting_foul_counts_toward_the_team_total _______________
+
+    def test_a_shooting_foul_counts_toward_the_team_total():
+        s = _state(['I6', 'C9', 'O9', 'E4', 'M4'], ['H6', 'D8', 'N8', 'F4', 'L4'], [B.DIR_NAMES.index('W'), 0, 0, 0, 0])
+        s = s.with_(stage='contest', side='X', shot='mid')
+>       fouled = force(apply(s, Action('contest', 'X', 0)), 'foul')
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_step3n.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = GameState(o=((8, 6), (2, 9), (14, 9), (4, 4), (12, 4)), x=((7, 6), (3, 8), (13, 8), (5, 4), (11, 4)), arrows=(6, 0, 0,...turn_moved=0, qs_o=0, qs_x=0, forced=False, react_moved=0, turn_lead=-1, turn_x=(), rush_o=0, rush_x=0, key_o=0, grd=0)
+action = X1 contests, check = False
+
+    def apply(state, action, check=False):
+        """Apply an action. Returns a new GameState, or a ChanceNode listing every outcome."""
+        if check:
+            from .actions import legal_actions
+            if action not in legal_actions(state):
+                from .actions import why_illegal
+                why = why_illegal(state, action)
+                raise ValueError(f'illegal action {action}' + (f' ({why})' if why else '') + f' in {state.encode()}')
+        s = state
+        a = action
+        side = a.side
+        k = a.kind
+    
+        if k == 'target':
+            return s.with_(target=a.target, stage='play')
+        if k == 'pick':
+            return s.with_(ball=a.target, stage='play', grd=0)
+        if k == 'forced_shot':
+            s = s.with_(shot=a.shot, stage='play')
+            if s.ctx.rules.contest_choice == 'player':
+                return s.with_(stage='contest', side='X', forced=True)
+            return contest_outcome(s, choose_contest(s, s.ball, a.shot, True), True)
+        if k == 'contest':
+            opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
+            if a.piece not in opts:
+>               raise ValueError(f'X{a.piece + 1} cannot contest this shot')
+E               ValueError: X1 cannot contest this shot
+
+playmaker_engine/resolve.py:437: ValueError
+=================================== XPASSES ====================================
+=========================== short test summary info ============================
+XFAIL tests/test_step3m.py::test_exam_position[1] - the defence does not yet put a defender on the ball-rim line (it covers the corner threes first) (X4 Move to B4 facing N (straight drive available, worth 34.0 against the best other look 16.0; on the ball-rim line, reported only: nobody))
+XFAIL tests/test_step3m.py::test_exam_position[2] - step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget (three 4: X2 to C6 (rim distance 6); three 12: X2 to C8 (rim distance 6, can contest))
+XFAIL tests/test_step3m.py::test_exam_position[3] - the low man does not yet step up to help on the beaten drive (X4 Move to I4 facing N; X4 Steal (help: X4; rotation: none))
+XFAIL tests/test_step3m.py::test_exam_position[5] - the receiver drives in both closeout boards (closed to C7: O2 Move to C9; O2 Shot (three); stopped 2 short at D7: O2 Move to B8; O2 Shot (three))
+XFAIL tests/test_step3m.py::test_exam_position[6] - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12 (O2 Move to B8 (open look 27.0 against the possession 24.9))
+XFAIL tests/test_step3m.py::test_exam_position[8] - the denied receiver does not cut backdoor (O1 Move to E10; O1 Pass to O2)
+XFAIL tests/test_step3m.py::test_exam_position[9] - neither the kick nor the corner relocation is chosen (O1 Quick Step to K4; O1 Move to I2)
+XFAIL tests/test_step3m.py::test_exam_position[11] - the contested-pass boards do not separate early from late (early: O3 Move to Q7; final phase: O2 Move to A7)
+XFAIL tests/test_step3m.py::test_exam_position[13] - the attacker in the driving lane is not moved out of it (O2 Move to A7; O Hesitate)
+XFAIL tests/test_step3m.py::test_exam_position[14] - step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B) (1 different first actions over 20 seeds; the most common 100% (the top first move leads by 0.2))
+XFAIL tests/test_step3m.py::test_exam_position[16] - All-Star does not yet find the drain sequence in its first turn (line: O1 Move to H10 / O3 Move to F10; O1 Dribble vs X1 / O2 Sprint to E10; O1 Pass to O2; X2 capacity spent: no; value +23.5 to +24.1; first off-ball move credit none: no off-ball move in its first turn)
+XFAIL tests/test_step3n.py::test_all_star_reaches_with_no_team_fouls_and_declines_with_four - Step 3n F4 finding: on the rebuilt phase table an average possession is worth about 28, so a foul before the bonus costs +5 and play on (about 33) while a bonus foul costs two free throws (2 x the rating, 29 to 31) and ends the possession: the bonus no longer deters a reach. The board was found on the step 3m table. A designer decision (docs/reports/STEP3N_REPORT.md, F).
+XFAIL tests/test_step3n.py::test_v_by_phase_never_rises_at_senior_pro - Step 3n C finding (220 Senior Pro possessions): V rises from phase 1 (24.9) to phase 6 (29.5), about 1 point a phase against a standard error near 1; half the turnovers (at 0) come in phase 1, and possessions that run long end on better looks. Reported for the designer.
+XFAIL tests/test_step3n.py::test_credit_names_the_helper_who_answered_the_decoy - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+XPASS tests/test_step3m.py::test_an_early_cut_is_flagged_with_a_legal_reorder - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+4 failed, 464 passed, 14 xfailed, 1 xpassed in 1594.29s (0:26:34)
+DONE

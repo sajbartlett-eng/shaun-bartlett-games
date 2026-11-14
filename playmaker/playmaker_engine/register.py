@@ -85,6 +85,8 @@ ENTRIES = [
      'The app plays the soft and the hard contest (D-177). The table keeps one Contest.'),
     ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives.',
      'In the app no foul gives +5: a steal foul is a team foul, and from the 5th two free throws (D-179, D-181). The table keeps its +5.'),
+    ('position_contest', SPLIT, dict(rules='position_contest'), 'How a shot is contested: by position, and the block inside.',
+     'The app contests a jump shot by position only and keeps the block for inside shots; a contest always takes at least 1 off (D-191, D-193).'),
     ('off_balance', SPLIT, dict(rules='off_balance'), 'What being rushed, or locked, costs on every roll.',
      'The app plays off balance (D-185): a rushed or locked player is 2 worse on every roll he makes, fouls aside.'),
     ('fiba_fouled_shot', SPLIT, dict(rules='fiba_fouled_shot'), 'What a fouled shot scores.',
@@ -478,6 +480,8 @@ WORDS = {
                             dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
+    'position_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
+                             dig='a jump shot is contested by position only, at the full rating; inside, a hand up is automatic and the block is a Contest; at least 1 off (D-191, D-193)'),
     'off_balance': dict(sec=None, src=None, tab='none',
                         dig='rushed (after a Quick Step or Sprint, or while locked): 2 off every rating he rolls, not fouls, until he Moves (D-185)'),
     'control': dict(sec=None, src=None, tab='none (the table\'s rules are on hold, D-146)',
@@ -508,13 +512,18 @@ SPLITS = [
      'worse (not fouls) until you Move. That covers shots, soft and hard contests, Dribble, Pass, Screen, Agility, Steal, '
      'Intercept and Challenge. A locked player can\'t Move, so he stays rushed until the phase ends.',
      'Ruled for the app (D-185). It reverses the "no drive rule" line of D-151.'),
-    ('Soft and hard contest', 'One Contest: the defender\'s contest rating, with a foul roll if his arrow is off the '
-     'shooter.', 'A defender next to the shooter gives a soft contest with no action: his contest rating less 3. It '
-     'never fouls. A Contest action is a hard contest: the full rating. From behind the shooter (further from the rim) '
-     'either is 3 lower again. A hard contest from in front with the arrow on him rolls no foul; from in front with '
-     'the arrow off him, one foul roll; from the side or behind, two, as a Steal does. Only the defence\'s best '
-     'contest counts. A rushed defender\'s contest, soft or hard, is 2 lower.',
-     'Ruled for the app (D-177).'),
+    ('Contests: position, and the block', 'One Contest: the defender\'s contest rating, with a foul roll if his arrow is off the '
+     'shooter.', 'Jump shots: an adjacent defender\'s contest is automatic and set by position. Inside shots: you may go '
+     'for the block and risk the foul, except straight up from in front with your arrow on him, which is automatic and '
+     'safe. On a jump shot (mid-range, long two, three) every defender next to the shooter takes off his contest rating '
+     'in full: 3 less from behind the shooter (further from the rim), 2 less if he is rushed. His arrow changes nothing, '
+     'there is no Contest action and there is no shooting foul. On an inside shot (layup, dunk, post, floater) a defender '
+     'next to the shooter has a hand up with no action: his contest rating less 3, 3 less again from behind, never a '
+     'foul. From in front with his arrow on the shooter his full rating counts with no action and no foul. From anywhere '
+     'else he may go for the block, a Contest action at the full rating: one foul roll from in front with the arrow '
+     'off him, two from the side or behind. Only the defence\'s best contest counts. A contesting defender always takes '
+     'at least 1 off the shot.',
+     'Ruled for the app (D-191, D-193). There it replaces the soft and hard contest of D-177.'),
     ('The steal foul', '+5 to the offence; the second of the possession also gives free throws and ends it.',
      'Outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the '
      'quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app '

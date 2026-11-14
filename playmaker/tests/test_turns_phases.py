@@ -117,9 +117,10 @@ def test_clock_expiry_plain_wood_scores_zero():
 
 def test_clock_expiry_negative_value_floors_at_zero():
     # Weak three-point shooter heavily contested: value would be negative, forced shot scores 0.
-    # Re-recorded in step 18l, reason: D-184 cards. No real pair of cards now gives a forced shot below nothing (the
-    # lowest three is 5, the highest three contest 3), so the shooter is a test copy of Twin Towers' O4 with a three
-    # of 2: v X2 tndA con_three 3, arrow on the shooter, nearer the rim: 3 x (2 - 3) = -3 -> 0.
+    # Re-recorded in step 18l (D-184 cards) and step 18n (D-192: the contest is 4 now). No real pair of cards gives a
+    # forced shot below nothing (the lowest three is 5, the highest three contest 4), so the shooter is a test copy
+    # of Twin Towers' O4 with a three of 2: v X2 tndA con_three 4, arrow on the shooter, nearer the rim:
+    # 3 x (2 - 4) = -6 -> 0.
     from playmaker_engine.cards import TEAMS
     from playmaker_engine.exam import card_with
     from playmaker_engine.state import Context
@@ -127,10 +128,10 @@ def test_clock_expiry_negative_value_floors_at_zero():
            ball=3, off='Twin Towers', dfn='Shoot and Protect', clock=2, side='X', tok_x=1)
     off = list(TEAMS['Twin Towers'])
     off[3] = card_with(off[3].key, shot_three=2)
-    assert TEAMS['Shoot and Protect'][1].con('three') == 3
+    assert TEAMS['Shoot and Protect'][1].con('three') == 4
     s = s.with_(ctx=Context(off, TEAMS['Shoot and Protect'], s.ctx.rules, title=s.ctx.title, kind='GAME'))
     end = settle(apply(s, Action('move', 'X', 4, P('O13'), 0)))
-    assert (end.result.rating, end.result.contest) == (2, 3)
+    assert (end.result.rating, end.result.contest) == (2, 4)
     assert end.result.kind == 'forced' and end.result.shot_value == 0 and score(end).total == -5
 
 

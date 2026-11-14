@@ -1,0 +1,210 @@
+{
+ "tag": "n18a",
+ "switches": {},
+ "positions": 14,
+ "scored": 14,
+ "matched": 14,
+ "points_lost_a_position": 2.09,
+ "interval": [
+  0.58,
+  3.6
+ ],
+ "candidates_added": 0,
+ "rows": [
+  {
+   "id": "closeout, shooter cannot move",
+   "group": "closeout",
+   "best": "X3 Moves to C4 and keeps the Quick Step; X2 moves to B6",
+   "choice": "the computer's choice (n18a): X2 moves to B6, facing N",
+   "matches": true,
+   "points_lost": 2.33,
+   "interval": [
+    -1.04,
+    5.7
+   ]
+  },
+  {
+   "id": "closeout, shooter can move",
+   "group": "closeout",
+   "best": "X3 Moves to C4; X2 moves to B6",
+   "choice": "the computer's choice (n18a): X2 moves to A7, facing N",
+   "matches": true,
+   "points_lost": 5.3,
+   "interval": [
+    -1.02,
+    11.63
+   ]
+  },
+  {
+   "id": "closeout, step 2",
+   "group": "closeout",
+   "best": "X3 Moves next to him, then tries a Steal",
+   "choice": "the defence Pauses",
+   "matches": true,
+   "points_lost": 2.32,
+   "interval": [
+    -8.65,
+    13.3
+   ]
+  },
+  {
+   "id": "game EB3F5B, the pass in the air",
+   "group": "closeout",
+   "best": "the computer's choice (j18): X2 moves to B7, facing N",
+   "choice": "the computer's choice (j18): X2 moves to B7, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "18e's Steal position, clock 2",
+   "group": "steal",
+   "best": "step in, then Steal: X2 moves to G9, facing NW, then X2 tries a Steal",
+   "choice": "the defence Pauses",
+   "matches": true,
+   "points_lost": 2.85,
+   "interval": [
+    -6.2,
+    11.9
+   ]
+  },
+  {
+   "id": "18e's Steal position, clock 10",
+   "group": "steal",
+   "best": "step in, then Steal: X3 moves to P6, facing SE, then X3 tries a Steal",
+   "choice": "the computer's choice (j18fix): the defence Pauses",
+   "matches": true,
+   "points_lost": 11.65,
+   "interval": [
+    -0.05,
+    23.35
+   ]
+  },
+  {
+   "id": "Contest or not 1",
+   "group": "contest",
+   "best": "the reference's 1st reading: X2 Quick Steps to J3",
+   "choice": "the computer's choice (n18a): X1 moves to N8, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 2",
+   "group": "contest",
+   "best": "the reference's 1st reading: X3 moves to P6, facing NE",
+   "choice": "the computer's choice (n18a): X1 moves to L8, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 3",
+   "group": "contest",
+   "best": "the reference's 1st reading: X3 moves to P4, facing NE",
+   "choice": "the computer's choice (n18a): X1 moves to D13, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "Contest or not 4",
+   "group": "contest",
+   "best": "the reference's 1st reading: X2 Quick Steps to B7",
+   "choice": "the computer's choice (n18a): X1 moves to N10, facing N",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "move, then shoot 1",
+   "group": "move then shoot",
+   "best": "the turn it missed: O4 moves to A2, then O4 shoots (three)",
+   "choice": "the computer's choice (zone_near): O4 moves to A3, then O4 shoots (three)",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "move, then shoot 2",
+   "group": "move then shoot",
+   "best": "the turn it missed: O4 moves to I2, then O4 shoots (layup)",
+   "choice": "the turn it missed: O4 moves to I2, then O4 shoots (layup)",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "board 1",
+   "group": "board",
+   "best": "the computer's choice (j18fix): X1 moves to I9, facing S, then X1 tries a Steal",
+   "choice": "the computer's choice (n18a): X2 moves to B4, facing N",
+   "matches": true,
+   "points_lost": 4.17,
+   "interval": [
+    -2.13,
+    10.48
+   ]
+  },
+  {
+   "id": "board 8",
+   "group": "board",
+   "best": "the cut alone",
+   "choice": "the computer's choice (n18a): O1 moves to E10, then the offence Hesitates",
+   "matches": true,
+   "points_lost": 0.61,
+   "interval": [
+    -3.21,
+    4.44
+   ]
+  }
+ ],
+ "by_group": {
+  "board": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 2.39
+  },
+  "closeout": {
+   "positions": 4,
+   "matched": 4,
+   "points_lost": 2.49
+  },
+  "contest": {
+   "positions": 4,
+   "matched": 4,
+   "points_lost": 0.0
+  },
+  "move then shoot": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 0.0
+  },
+  "steal": {
+   "positions": 2,
+   "matched": 2,
+   "points_lost": 7.25
+  }
+ }
+}

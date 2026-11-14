@@ -158,10 +158,11 @@ def _bisect(cum, x):
 
 _TT = None
 # The four jobs as the data tools define them on the pro cards (teamtools.jobs): a rating at or above a threshold.
-# D-184: the thresholds on rescaled ratings are carried through the same maps as the cards (three 10 -> 9, dunk
-# contest 11 -> 5), so the same cards hold the same jobs where the maps allow
+# D-184: the threshold on a rescaled rating is carried through the same map as the cards (three 10 -> 9), so the
+# same cards hold the same job where the map allows. D-189 (step 18n): the dunk contest is back at its value
+# before D-184, and the anchor's threshold with it (11; D-184 had carried it to 5)
 JOB_TESTS = {'creator': (('dribble', 17), ('pass', 17)), 'shooter': (('shot_three', 9),),
-             'anchor': (('con_layup', 10), ('con_dunk', 5)), 'stopper': (('agility', 8),)}
+             'anchor': (('con_layup', 10), ('con_dunk', 11)), 'stopper': (('agility', 8),)}
 _AGE_CUT = {}
 
 

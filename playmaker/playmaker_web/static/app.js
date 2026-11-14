@@ -23,6 +23,8 @@ const GUARDED_RULE = 'Closely guarded: a ball handler who holds the ball with a 
 const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus free throws: 1 if it went in, 2 or 3 if it missed. The score is what that is worth on average.';
 // Step 18j (D-177, D-179)
 const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
+// Step 18n (D-191, D-193): jump shots are contested by position only
+const POSITION_RULE = "Jump shots: an adjacent defender's contest is automatic and set by position. Inside shots: you may go for the block and risk the foul, except straight up from in front with your arrow on him, which is automatic and safe.";
 const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the defender is locked, play on. From the 5th: two free throws. No foul gives +5 in the app.';
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const OFF_BALANCE_RULE = n => `Rushed: after a Quick Step or Sprint, or while locked, every roll you make is ${n} worse (not fouls) until you Move.`;
@@ -377,7 +379,7 @@ async function create() {
     // step 18g (D-167): ?zone=1 in the address plays the zone of influence (the app's format only, under test)
     { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
-    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance']) if (q.get(k) === '0') body[k] = 'off'; }
+    { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance', 'positioncontest']) if (q.get(k) === '0') body[k] = 'off'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -623,7 +625,7 @@ function renderTracker(id, side) {
     s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: THREE_RULE }) : null,
     s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: GUARDED_RULE }) : null,
     s.influence && s.influence.fiba ? el('div', { class: 'waits controlrule fibarule', text: FOULED_RULE }) : null,
-    s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: SOFT_RULE }) : null,
+    s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: s.influence.position ? POSITION_RULE : SOFT_RULE }) : null,
     s.influence && s.influence.steal_foul ? el('div', { class: 'waits controlrule fibarule', text: STEAL_FOUL_RULE }) : null,
     el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'

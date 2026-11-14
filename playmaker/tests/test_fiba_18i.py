@@ -170,13 +170,16 @@ def test_a_fouled_shot_scores_the_contested_shot_plus_the_free_throws_that_follo
 
 
 def test_each_contest_carries_its_own_fouled_value():
-    s = board(o=['I10', 'C9', 'O9', 'A3', 'Q3'], x=['I9', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=2)
-    s = s.with_(o=s.o[:2] + (P('O9'),) + s.o[3:], x=(P('O8'),) + s.x[1:])       # X1 under O3 on the arc, arrow off him
-    opt = next(c for c in contest_options(s, 2, 'three') if c.defender == 0)
-    card = s.ctx.off[2]
-    left = card.shot('three') - opt.contest
+    # step 18n: re-recorded, reason: D-189 to D-193. A jump shot has no Contest action and no shooting foul in the app
+    # now (D-191), so the fouled value is shown on a layup: X1 beside O1 at the rim goes for the block
+    s = board(o=['I4', 'C9', 'O9', 'A3', 'Q3'], x=['J4', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0)
+    assert not [c for c in contest_options(board(o=['I10', 'C9', 'O9', 'A3', 'Q3'], x=['I9', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0), 0, 'three')
+                if c.defender >= 0]                                    # a three: nobody can foul the shooter
+    opt = next(c for c in contest_options(s, 0, 'layup') if c.defender == 0)
+    card = s.ctx.off[0]
+    left = card.shot('layup') - opt.contest
     assert not opt.clean and opt.p_foul > 0
-    assert opt.ft == foul_on_shot_points(card, 'three', 3, ON, card.shot('three'), opt.value, left)[0]
+    assert opt.ft == foul_on_shot_points(card, 'layup', 2, ON, card.shot('layup'), opt.value, left)[0]
     assert opt.ft > opt.value                                          # the free throws come on top of the shot
 
 

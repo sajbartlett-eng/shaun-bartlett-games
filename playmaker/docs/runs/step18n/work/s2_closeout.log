@@ -1,0 +1,5 @@
+[tally] searches (n18a, 1 positions): 0.0 core-hours; total 5.05
+[tally] play-outs (6 candidate copies of 16 on 1 positions): 0.508 core-hours; total 5.56
+  ok  closeout, shooter cannot move | the computer's choice (n18a): X2 moves to B6, facing N | lost 2.33 [-1.04, 5.7] | best: X3 Moves to C4 and keeps the Quick Step; X2 moves 
+n18a: matched 1 of 1; points lost a position 2.33 [-1.04, 5.7]; 0 choices added
+{"closeout": {"positions": 1, "matched": 1, "points_lost": 2.33}}

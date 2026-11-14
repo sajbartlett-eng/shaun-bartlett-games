@@ -138,9 +138,9 @@ def test_late_closeout_off_by_default():
 def test_a_late_contester_on_a_three_takes_the_minus_three_and_no_foul_roll():
     set_ = _contest('three', 'J10', 'I10', 'E', False)
     late = _contest('three', 'J10', 'I10', 'E', True)
-    # step 18l: re-recorded, reason: D-184 cards. A three's contest is now 2 or 3, so the minus three takes it to
-    # nothing (a contest is never below nothing)
-    assert set_.contest == 2 and RC.FAR_CONTEST_PENALTY == 3
+    # step 18l and 18n: re-recorded, reason: D-184 and D-192 cards. A three's contest is now 1 to 4 (3 here), so the
+    # minus three takes it to nothing (a contest is never below nothing)
+    assert set_.contest == 3 and RC.FAR_CONTEST_PENALTY == 3
     assert late.clean and late.contest == max(0, set_.contest - RC.FAR_CONTEST_PENALTY) == 0
 
 

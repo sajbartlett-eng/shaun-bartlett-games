@@ -245,7 +245,7 @@ if (job.kind === 'rollout') {
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
+        endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
     }
   }
 } else if (job.kind === 'split') {

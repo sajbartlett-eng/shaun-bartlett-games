@@ -469,21 +469,27 @@ class Read:
         # (scoring.contest_options); the search settles every declared shot by them.
         d_stand = control and (self.s.rushed('X', d) if dflags is None else dflags[0])
         d_moved = control and (self.s.moved('X', d) if dflags is None else dflags[1])
+        position = RC.position_contest(rules)
         for t in look.types:
             r = card.shot(t)
             cut = RC.control_cut(rules, t) if control else 0
             if cut and look.rushed:
                 r -= cut
             best = None
+            jump = position and t in RC.JUMP_SHOTS      # D-191: a jump shot has no Contest action: position only (below)
             for k, n in enumerate(row):
-                if n > limit:
+                if n > limit or jump:
                     continue
                 pen, foul, two = KINDS[k]
+                if position and not foul:
+                    continue                             # D-191: in front with the arrow on him: automatic (below)
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
                 if rules.floor_contest_zero:
                     con = max(0, con)
                 if cut and (d_stand if n == 0 else d_moved):
                     con = max(0, con - cut)              # a rushed Contest: reduced; no extra foul roll (D-154)
+                if position:
+                    con = max(RC.CONTEST_FLOOR, con)     # D-193
                 v = pts * (r - con)
                 if rules.floor_declared_shot:
                     v = max(0, v)
@@ -501,9 +507,13 @@ class Read:
                 for k, n in enumerate(row):
                     if n > soft_limit:
                         continue
-                    con = self.dcards[d].con(t) - RC.SOFT_CONTEST - (RC.FAR_CONTEST_PENALTY if KINDS[k][0] else 0)
+                    # D-191: the full rating on a jump shot, and on an inside shot from in front with the arrow on him
+                    full = jump or (position and not KINDS[k][1])
+                    con = self.dcards[d].con(t) - (0 if full else RC.SOFT_CONTEST) - (RC.FAR_CONTEST_PENALTY if KINDS[k][0] else 0)
                     if cut and (d_stand if n == 0 else d_moved):
                         con -= cut
+                    if position:
+                        con = max(RC.CONTEST_FLOOR, con)  # D-193
                     if con <= 0:
                         continue
                     v = max(0, pts * (r - con))

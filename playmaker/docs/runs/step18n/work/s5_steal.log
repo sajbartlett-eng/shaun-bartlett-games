@@ -1,0 +1,8 @@
+[tally] searches (n18a, 4 positions): 0.003 core-hours; total 6.46
+[tally] play-outs (16 candidate copies of 8 on 4 positions): 0.438 core-hours; total 6.9
+  ok  closeout, shooter can move | the computer's choice (n18a): X2 moves to A7, facing N | lost 5.3 [-1.02, 11.63] | best: X3 Moves to C4; X2 moves to B6
+  ok  closeout, step 2 | the defence Pauses | lost 2.32 [-8.65, 13.3] | best: X3 Moves next to him, then tries a Steal
+  ok  18e's Steal position, clock 2 | the defence Pauses | lost 2.85 [-6.2, 11.9] | best: step in, then Steal: X2 moves to G9, facing NW, th
+  ok  18e's Steal position, clock 10 | the computer's choice (j18fix): the defence Pauses | lost 11.65 [-0.05, 23.35] | best: step in, then Steal: X3 moves to P6, facing SE, th
+n18a: matched 4 of 4; points lost a position 5.53 [0.66, 10.4]; 1 choices added
+{"closeout": {"positions": 2, "matched": 2, "points_lost": 3.81}, "steal": {"positions": 2, "matched": 2, "points_lost": 7.25}}

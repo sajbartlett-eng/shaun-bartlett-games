@@ -728,6 +728,7 @@ class Searcher:
         self.ball_loss = ball_loss_on(me)            # step 18j (eval.ball_loss)
         self.xcache = {}
         self.open = open_mode(profile)                # step 18e (search.open_list, or the level's own)
+        self.twice = bool((profile or {}).get('closeout_twice'))   # step 18n: a second closeout movement in a settled reaction
         self.whole = whole_on()                       # step 18f (search.whole_turns)
         self.split = CONFIG.get('search', {}).get('split_ties') is True      # step 18f (search.split_ties)
         self.spread = {}                              # a reply node's values, best first
@@ -843,10 +844,18 @@ class Searcher:
         side = actor(s)
         acts = legal_actions(s)
         if s.stage == 'reaction':
-            if s.turn_n >= 1:        # after a movement: only a Contest, a Steal or ending the reaction counts
+            sp = s.o[s.ball]
+            if RC.position_contest(s.ctx.rules) and (s.turn_n == 0 or self.twice):
+                # D-191: position decides the contest. Only a movement that ends next to the shooter is played, and a
+                # Move only with its arrow on him (in front that is the automatic full contest inside, and it is what
+                # a Steal needs; on a jump shot the arrow changes nothing). A level with closeout_twice (the All-Star)
+                # plays a second such movement too (a Quick Step in, then a Move to be set; a second defender
+                # arriving); the others stop at one, as before: the second costs them their speed target.
+                acts = [a for a in acts if a.kind not in MOVEMENT
+                        or (B.adjacent(a.dest, sp) and (a.kind != 'move' or a.arrow == B.dir_between(a.dest, sp)))]
+            elif s.turn_n >= 1:      # after a movement: only a Contest, a Steal or ending the reaction counts
                 acts = [a for a in acts if a.kind not in MOVEMENT]
             else:
-                sp = s.o[s.ball]
                 acts = [a for a in acts if a.kind not in MOVEMENT or B.adjacent(a.dest, sp)]
         best = None
         for a in acts:

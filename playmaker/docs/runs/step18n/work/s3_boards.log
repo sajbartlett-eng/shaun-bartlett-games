@@ -1,0 +1,6 @@
+[tally] searches (n18a, 2 positions): 0.001 core-hours; total 5.56
+[tally] play-outs (7 candidate copies of 16 on 2 positions): 0.312 core-hours; total 6.09
+  ok  board 1 | the computer's choice (n18a): X2 moves to B4, facing N | lost 0.0 [0.0, 0.0] | best: does nothing
+  ok  board 8 | the computer's choice (n18a): O1 moves to E10, then the offence Hesita | lost 0.61 [-3.21, 4.44] | best: the cut alone
+n18a: matched 2 of 2; points lost a position 0.31 [-1.61, 2.22]; 2 choices added
+{"board": {"positions": 2, "matched": 2, "points_lost": 0.3}}

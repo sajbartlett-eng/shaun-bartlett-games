@@ -1,0 +1,5 @@
+[tally] searches (n18a, 1 positions): 0.0 core-hours; total 6.9
+[tally] play-outs (1 candidate copies of 16 on 1 positions): 0.01 core-hours; total 6.91
+  ok  board 1 | the computer's choice (n18a): X2 moves to B4, facing N | lost 4.17 [-2.13, 10.48] | best: the computer's choice (j18fix): X1 moves to I9, fa
+n18a: matched 1 of 1; points lost a position 4.17 [-2.13, 10.48]; 0 choices added
+{"board": {"positions": 1, "matched": 1, "points_lost": 4.17}}
