@@ -1,0 +1,77 @@
+{
+ "note": "seconds to finish 1 pair, the zone on; each round times step 18o's code and this step's",
+ "rounds": [
+  {
+   "18o, zone on": {
+    "rookie": {
+     "median": 0.16,
+     "nine_in_ten": 0.251,
+     "slowest": 0.288
+    },
+    "starter": {
+     "median": 0.555,
+     "nine_in_ten": 0.659,
+     "slowest": 1.009
+    },
+    "allstar": {
+     "median": 1.337,
+     "nine_in_ten": 1.654,
+     "slowest": 2.232
+    }
+   },
+   "18p (the zone on by default)": {
+    "rookie": {
+     "median": 0.137,
+     "nine_in_ten": 0.197,
+     "slowest": 0.22
+    },
+    "starter": {
+     "median": 0.548,
+     "nine_in_ten": 0.682,
+     "slowest": 0.758
+    },
+    "allstar": {
+     "median": 1.194,
+     "nine_in_ten": 1.592,
+     "slowest": 1.772
+    }
+   }
+  },
+  {
+   "18o, zone on": {
+    "rookie": {
+     "median": 0.136,
+     "nine_in_ten": 0.186,
+     "slowest": 0.198
+    },
+    "starter": {
+     "median": 0.478,
+     "nine_in_ten": 0.607,
+     "slowest": 0.777
+    },
+    "allstar": {
+     "median": 1.149,
+     "nine_in_ten": 1.549,
+     "slowest": 1.656
+    }
+   },
+   "18p (the zone on by default)": {
+    "rookie": {
+     "median": 0.218,
+     "nine_in_ten": 0.375,
+     "slowest": 0.417
+    },
+    "starter": {
+     "median": 0.624,
+     "nine_in_ten": 0.948,
+     "slowest": 1.055
+    },
+    "allstar": {
+     "median": 1.472,
+     "nine_in_ten": 2.336,
+     "slowest": 2.754
+    }
+   }
+  }
+ ]
+}

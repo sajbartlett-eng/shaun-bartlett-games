@@ -114,3 +114,24 @@ The weights are data (principle 7): fitted, with their uncertainty, never set by
 has, the reading needs a new part (for example what standing next to a ball handler is worth). A new part is a new
 measurement from the rules, not a weight, but it is a design choice about what the computer looks at, so I will
 name it and ask before building more than one.
+
+## After stage 1's first attempt (15 Nov 2026)
+
+The plan's method for stage 1 was tried and failed its gate (`docs/reports/STEP18P_REPORT.md`). What changes:
+
+- **Fitting the parts the reading already has is not enough.** With a turn drawn at random in the play, 320
+  possessions and 4,360 positions, the fit gives "the layup next phase" almost no worth, and no design check falls
+  out. A second round would play the same way as the first, so it was not run.
+- **The missing part is the race to the rim.** A player who Sprints can't move again until the next phase, and the
+  defence may still have up to 5 actions in that phase. Whether a defender gets between the ball and the rim in
+  time is settled by the movement rules. The reading measures the layup against the defenders where they stand,
+  as if none would move.
+- **Stage 1 now reads:** (1) add the race to the rim as a part of the reading, played out by the movement rules
+  the way a declared shot's reaction is; (2) refit the map on play where lanes are taken; (3) the design checks
+  by forced lines. This waits on Shaun's word (decision 1 of the step 18p report), because it changes what the
+  computer looks at.
+- **Exam position 1 is design check 1,** the defence's side of it: a man on the line from the ball to the rim when
+  the straight drive is worth 34. It fails. Its pass in 18n rested on self-play and is not counted.
+- **The baseline the next attempt must beat** (the zone on, 16 play-outs each): with the lane open the offence by
+  its own choice scores 25.1 (20.1 to 30.0) and chooses the Sprint 0 times in 16; made to Sprint it scores 26.9
+  (21.6 to 32.1); with help in the lane, 22.5 and 23.4.

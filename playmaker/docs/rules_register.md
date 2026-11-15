@@ -97,7 +97,7 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | reach_angle_fouls | Shared | 1 roll from closer, 2 from level or behind | 1 roll from closer, 2 from level or behind |  |
 | contest_action | Shared | an action, the last of the reaction | an action, the last of the reaction |  |
 | turnover_floor | Shared | 0 or the banked total if lower | 0 or the banked total if lower |  |
-| zone | Shared | off (a rule test for the app, D-167; not adopted) | off (a rule test for the app, D-167; not adopted) |  |
+| zone | Shared | off (the app only, D-167) | on in the app since step 18p (D-167, D-196): a defender has two arrows, and can be square to the shot and wall the drive at once; the game sets it for the app |  |
 | steal_foul_always_plus5 | Shared | every steal foul +5 | every steal foul +5 |  |
 
 ## Splits for the designer

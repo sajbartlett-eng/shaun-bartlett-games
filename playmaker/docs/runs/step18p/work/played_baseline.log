@@ -1,0 +1,5 @@
+[tally] check 1 played (baseline) (4 positions, 16 each): 0.34 core-hours; total 2.61
+lane open: the offence as it chooses          25.1 (20.1 to 30.0) {'layup': 10, 'three': 3, 'turnover_end': 2, 'free_throws': 1} first: [['O2 screen', 11], ['O1 move K10', 5]]
+lane open: O1 Sprints into the lane           26.9 (21.6 to 32.1) {'turnover_end': 2, 'post': 1, 'layup': 13} first: [['O2 sprint D9', 10], ['O1 pass', 5], ['O2 qs D9', 1]]
+help in the lane: the offence as it chooses   22.5 (18.0 to 27.0) {'turnover_end': 2, 'three': 12, 'layup': 1, 'post': 1} first: [['O1 move K10', 14], ['O2 screen', 2]]
+help in the lane: O1 Sprints into the lane    23.4 (19.9 to 26.9) {'three': 9, 'layup': 4, 'floater': 1, 'post': 1, 'turnover_end': 1} first: [['O1 pass', 16]]

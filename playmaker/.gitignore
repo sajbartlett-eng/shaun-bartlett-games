@@ -21,3 +21,7 @@ docs/runs/step18j/work/
 docs/runs/step18o/work/*.job.json
 docs/runs/step18o/work/*.out.json
 docs/runs/step18o/work/pool_*.json
+docs/runs/step18p/work/*.job.json
+docs/runs/step18p/work/*.out.json
+docs/runs/step18p/work/trace_*.json
+docs/runs/step18p/work/played_*_rows.json
