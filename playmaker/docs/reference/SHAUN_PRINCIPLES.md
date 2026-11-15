@@ -2,6 +2,26 @@
 
 These come from Shaun's own rulings, steps 1 to 16. They override any method's convenience. When a principle and an experiment's result conflict, report it; don't resolve it yourself.
 
+## Shaun's rule for Fable (D-196, 15 Nov 2026). It comes before everything below.
+
+> "The computer simulations lie. If the computer cannot set up the offence and defence properly and cannot do it based on goals then no play that comes from it can be trusted. I let it set up as it wills and it left a clear lane through the middle for a layup with nothing in between. That means the metrics vs real basketball are garbage."
+
+1. **Trust the design pillars more than the computer simulation data.** System Fidelity first. Then Neutrality, Player Agency, Legibility and Accessibility may bend but never break.
+2. **Fable's sole job is to plan, then fix in logical order, what the computer is poor at or can't do at all.**
+3. **Anything that clearly meets the whole design hierarchy stays on.** If the data doesn't fit, the starting assumption is always that the computer is wrong.
+4. **Fidelity is questioned only after proving the computer is not wrong,** and only after a factor for human error is accounted for.
+5. **Human error** may be modelled on elite chess engines measured against semi-pro chess players. The reason: professional basketball relies heavily on physical traits, not purely on basketball IQ.
+6. **The primary target is senior pro level.** Other levels are rolled out as each part is locked in.
+7. **Use what is needed for proof, and no more.**
+
+What this means in practice:
+
+- **The FIBA comparison is not a gate** until the computer is proven to play properly. It is not reported as one.
+- **Computer-against-computer play-outs are only proof when both sides play the position properly.** When one side's play is in question, the evidence comes from that side played properly: a stronger search for it, or forced lines. Self-play alone isn't enough.
+- **The design checks** in `docs/plans/COMPUTER_FIX_PLAN.md` are the gate for every stage. They come from the pillars and basketball, not from the data. Each is a check, never an instruction or a weight in the engine (D-156).
+
+## The standing principles
+
 1. **The priority order:** System Fidelity (it plays like real basketball) > Neutrality (no side or level favoured by the system) > Player Agency (decisions matter) > Legibility (players can see why) > Accessibility. When unsure, fidelity wins.
 2. **"It depends."** No fixed distances, no coaching rules of thumb, no fixed plays. Coaching guidance is vocabulary and a sanity check, never a rule. The tool should make the adjustments coaching manuals can't teach yet, case by case from these ratings, this reach, this clock and these tokens. Existing methods are options to weigh by one test: do they make case-by-case judgement better?
 3. **An advantage is not the shot (D-94).** "An advantage is what creates a better shot, not the shot itself. A shot is an option, held against a standard that can differ for each team: the offence is satisfied when the look beats what its possession is worth now; the defence may deliberately offer looks below what it can live with." Never call a shot an advantage in player-facing words.
