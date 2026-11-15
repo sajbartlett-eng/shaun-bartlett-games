@@ -50,9 +50,15 @@ L18 = os.environ.get('SENSE_18L') == '1'
 # key (positions_18n.json: python3 tools/sense_18h.py today). Each position keeps its own copy of its cards, so a
 # position is only played if every card in it is a card as it is now.
 N18 = os.environ.get('SENSE_18N') == '1'
+# SENSE_18O=1 (step 18o): step 18n's rules with the square defender (D-194) on today's cards (the jump-shot contests
+# back at Shaun's originals), with answers of their own, on positions_18o.json (python3 tools/sense_18h.py today):
+# step 18n's positions and candidates, every card replaced by today's card of the same key.
+O18 = os.environ.get('SENSE_18O') == '1'
+if O18:
+    N18 = True
 if N18:
     L18 = True
-WTAG = 'n' if N18 else 'l'                              # the letter this step's own choices and marks carry
+WTAG = 'o' if O18 else 'n' if N18 else 'l'              # the letter this step's own choices and marks carry
 # step 18n, to fit its compute (a possession under D-191 runs about half as long again): SENSE_NAMED=1 plays only the
 # candidates the set names and this step's own choices; SENSE_PLAYOUTS sets the play-outs in a copy (16 unless given)
 NAMED = os.environ.get('SENSE_NAMED') == '1'
@@ -75,8 +81,8 @@ if FOULS:
     RULE['fouls'] = dict(team_fouls=int(FOULS.split(',')[0]), quarter_left=int(FOULS.split(',')[1]))
 _NAME = 'answers_zone.json' if ZONE else 'answers.json'
 if FIBA:
-    _NAME = ('answers_18n' if N18 else 'answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
-POS, ANS = os.path.join(SET, 'positions_18n.json' if N18 else 'positions.json'), os.path.join(SET, _NAME)
+    _NAME = ('answers_18o_zone' if O18 and ZONE else 'answers_18o' if O18 else 'answers_18n' if N18 else 'answers_18l_cards_before_d184' if L18 else 'answers_18k' if K18 else 'answers_18j' if J18 else 'answers_fiba') + ('_' + FOULS.replace(',', '_') if FOULS else '') + '.json'
+POS, ANS = os.path.join(SET, 'positions_18o.json' if O18 else 'positions_18n.json' if N18 else 'positions.json'), os.path.join(SET, _NAME)
 SRC = os.path.join(SET, 'sources')                    # what the set is built from: play harvested for it, and earlier steps' positions
 # The reference engine: the one the answers are measured with (the default at the start of step 18h, its map kept in
 # sense_set/reference_weights.json). Every play-out, in this step and later ones, is continued by it.
@@ -172,6 +178,20 @@ def cmd_today():
     (sense_set/cards_before_d184.json) or, for a position made since, by its ratings now. A position holding a card
     that is neither (a board with a changed copy of a card) is left out, and named."""
     today = _today()
+    if O18:
+        # step 18o: from step 18n's positions (they hold its added candidates); only the three jump-shot contests
+        # differ between its cards and today's, so a card is found by every other rating
+        fp = lambda c: json.dumps([c['qs'], sorted((k, v) for k, v in c['r'].items() if k not in ('con_mid', 'con_long', 'con_three'))])
+        by = {}
+        for k, c in today.items():
+            assert fp(c) not in by, (k, by.get(fp(c)))
+            by[fp(c)] = k
+        out = []
+        for p in json.load(open(os.path.join(SET, 'positions_18n.json'))):
+            out.append(dict(p, ctx=dict(p['ctx'], off=[today[by[fp(c)]] for c in p['ctx']['off']], dfn=[today[by[fp(c)]] for c in p['ctx']['dfn']])))
+        json.dump(out, open(os.path.join(SET, 'positions_18o.json'), 'w'), indent=1)
+        print(len(out), "of step 18n's positions on today's cards -> positions_18o.json")
+        return
     fp = lambda c: json.dumps([c['qs'], sorted(c['r'].items())])
     by = {fp(c): k for k, c in json.load(open(os.path.join(SET, 'cards_before_d184.json'))).items()}
     by.update({fp(c): k for k, c in today.items()})

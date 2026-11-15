@@ -1,0 +1,5 @@
+[tally] sense check: beaten_drive (4 placements, 16 each, allstar): 0.961 core-hours; total 5.8
+beaten_drive | X4 and X5 as in his game: the offence plays on as it chooses | 26.9 [25.1, 28.6] {'layup': 8, 'three': 5, 'floater': 1, 'post': 2} inside 11 with a square defender in front 0 
+beaten_drive | X4 and X5 as in his game: O1 drives | 20.2 [14.3, 26.2] {'turnover_end': 3, 'layup': 4, 'three': 6, 'post': 2, 'long': 1} inside 6 with a square defender in front 1 O1 Sprints to I6
+beaten_drive | X4 and X5 in the lane (H5, J5): the offence plays on as it chooses | 25.4 [22.7, 28.1] {'layup': 10, 'post': 3, 'floater': 1, 'three': 2} inside 14 with a square defender in front 4 
+beaten_drive | X4 and X5 in the lane (H5, J5): O1 drives | 24.3 [19.3, 29.3] {'layup': 9, 'turnover_end': 2, 'three': 4, 'floater': 1} inside 10 with a square defender in front 0 O1 Sprints to I6

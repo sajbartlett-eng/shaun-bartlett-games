@@ -1,0 +1,4 @@
+[tally] sense check: zone_beaten (3 placements, 16 each, allstar, zone on): 0.331 core-hours; total 4.16
+zone_beaten | X4 and X5 as in his game (B4, P2, arrows on their men) | 18.9 [11.3, 26.6] {'turnover_end': 6, 'layup': 6, 'free_throws': 1, 'three': 3} inside 6 with a square defender in front 0 
+zone_beaten | X4 and X5 in the lane (H5, J5, facing the ball) | 22.9 [18.4, 27.5] {'three': 10, 'layup': 4, 'turnover_end': 2} inside 4 with a square defender in front 0 
+zone_beaten | X4 and X5 as the search placed them (M6, D4) | 21.6 [16.3, 27.0] {'three': 8, 'free_throws': 1, 'post': 1, 'floater': 1, 'layup': 2, 'turnover_end': 3} inside 4 with a square defender in front 0 

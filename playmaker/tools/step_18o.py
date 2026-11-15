@@ -322,6 +322,27 @@ def cmd_sense(group, copies='16'):
         if pz['arrows'][3:] == HIS[1][3:]:
             cands.pop('X4 and X5 on his game\'s squares, arrows as the search rates them')
         named = [(k, _beaten(shaun_state(x, a, zone=zone))) for k, (x, a) in cands.items()]
+    elif kind == 'beaten_drive':
+        # after the beat the computer's offence did not drive (it stepped to the side), so the drive itself is played:
+        # the beaten X1 reaches and misses (what the defence did 16 times in 16), then O1 takes his straight drive, or
+        # the offence plays on as it chooses. With X4 and X5 next to their men, and in the lane.
+        from playmaker_engine.actions import legal_actions
+        from playmaker_engine.resolve import apply, ChanceNode
+        for label, (x, a) in {'X4 and X5 as in his game': x45('B4', 'SW', 'P2', 'NE'), 'X4 and X5 in the lane (H5, J5)': x45('H5', 'N', 'J5', 'N')}.items():
+            st = _beaten(shaun_state(x, a, zone=zone))
+            n = apply(st, next(z for z in legal_actions(st) if z.kind == 'steal' and z.piece == 0))
+            fouls = st.fouls
+            while isinstance(n, ChanceNode):          # the reach misses, no foul: the outcome that plays on with no foul added
+                n = next(sub for p_, lab, sub in n.outcomes if isinstance(sub, ChanceNode) or (sub.stage != 'over' and sub.fouls == fouls))
+            st = n
+            while st.side == 'X' and st.stage == 'play':
+                st = apply(st, next(z for z in legal_actions(st) if z.kind in ('pause', 'end_turn')))
+                if isinstance(st, ChanceNode):
+                    raise SystemExit('a roll where none was expected')
+            drv, to = _drive(st)
+            named.append((f'{label}: the offence plays on as it chooses', st))
+            named.append((f'{label}: O1 drives', drv))
+            notes[f'{label}: O1 drives'] = f'O1 Sprints to {to}'
     elif kind == 'drive':
         sq, ar = pz['x1'].split()
         cands = {'X1 on J10, arrow on O1 (his game)': ('J10', 'NW'), 'X1 on I10, arrow on O1 (square)': ('I10', 'N'),
@@ -356,7 +377,7 @@ def cmd_trace(tag, n='200', level='allstar', seed='1', zone='off'):
     pol = L.policy(level, 2, L.profiles()[level]['noise'])
     starts = [pl['starts'][i % len(pl['starts'])] for i in range(int(n))]
     starts = [dict(p, seed=104729 * (i + 1) + 7919 * int(seed)) for i, p in enumerate(starts)]
-    rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, features=True, stances=True, boards=True,
+    rows, secs = L.run_jobs('trace', starts, pl['contexts'], n=1, seed=int(seed), looks=True, features=True, stances=True, boards=tag.startswith('arm'),
                             policies=dict(O=pol, X=pol), rules=rules, fouls=T.FOULS)
     json.dump(dict(size=tag, rows=rows, zone=zone == 'zone'), open(os.path.join(WORK, f'trace_{tag}.json'), 'w'))
     tally(f'self-play ({tag}, {level}, {n} possessions{", zone on" if zone == "zone" else ""})', secs)
@@ -592,6 +613,224 @@ def cmd_arm(tag):
         print('==', name)
         for rr, cols in tb.items():
             print('  open', rr, '|', ' '.join(f"{c}: {v['taken']} ({v['made']})" for c, v in cols.items()))
+
+
+def cmd_armtable(*tags):
+    """The arms' tables for the report, as markdown (docs/runs/step18o/arm_tables.md)."""
+    arms = [json.load(open(os.path.join(RUN, f'arm_{t}.json'))) for t in tags]
+    names = ['Arm A (zone off)', 'Arm B (zone on)'][:len(arms)]
+    out = []
+    pct = lambda a, b: f'{round(100 * a / b)} in 100' if b else 'none'
+    for nm, a in zip(names, arms):
+        out.append(f'**{nm}: every three, shooter against the contest that counted.** Each cell: taken (made).\n')
+        cols = ['open'] + [str(c) for c in range(1, 9)]
+        used = [c for c in cols if any(c in row for row in a['tables']['three'].values())]
+        out.append('| The shooter\'s open three | ' + ' | '.join('Open' if c == 'open' else f'Contest {c}' for c in used) + ' | All |')
+        out.append('|---' * (len(used) + 2) + '|')
+        tot = {c: [0, 0.0] for c in used}
+        for r, row in a['tables']['three'].items():
+            cells = []
+            for c in used:
+                v = row.get(c)
+                cells.append(f"{v['taken']} ({v['made']})" if v else '')
+                if v:
+                    tot[c][0] += v['taken']
+                    tot[c][1] += v['made']
+            out.append(f"| {r} | " + ' | '.join(cells) + f" | {sum(v['taken'] for v in row.values())} ({round(sum(v['made'] for v in row.values()), 1)}) |")
+        out.append('| **All** | ' + ' | '.join(f'{tot[c][0]} ({round(tot[c][1], 1)})' for c in used) + f" | {sum(v[0] for v in tot.values())} ({round(sum(v[1] for v in tot.values()), 1)}) |")
+        out.append('')
+        for kind, label in (('mid', 'mid-range shots'), ('long', 'long twos')):
+            n = sum(v['taken'] for row in a['tables'][kind].values() for v in row.values())
+            out.append(f'- **{nm}, {label}:** {n} taken' + ('.' if not n else ': ' + '; '.join(f"open rating {r}: " + ', '.join(f"{'open' if c == 'open' else 'contest ' + c} {v['taken']} ({v['made']})" for c, v in row.items()) for r, row in a['tables'][kind].items()) + '.'))
+        out.append('')
+    out.append('**Contested threes, by where the defender stood.** Taken, and points a shot.\n')
+    out.append('| The defender | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for k, lab in (('square in front, set', 'Square in front, set'), ('square in front, rushed', 'Square in front, rushed'), ('not square', 'Not square (in front with his arrow off, or beside)'), ('behind', 'Behind'), ('open', 'Nobody: open')):
+        out.append(f'| {lab} | ' + ' | '.join((lambda p: f"{p['taken']}, {p['points']} a shot" if p else '0')(a['threes']['by_defender_position'].get(k)) for a in arms) + ' |')
+    out.append('')
+    out.append('**Threes by the shooter\'s open rating.** Taken, contested, and over a square defender.\n')
+    out.append('| Open three | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for r in sorted({r for a in arms for r in a['threes']['by_open_rating']}, key=lambda x: -int(x)):
+        out.append(f'| {r} | ' + ' | '.join((lambda t: f"{t['taken']} taken, {t['contested']} contested, {t['square']} over a square defender" if t else '0')(a['threes']['by_open_rating'].get(r)) for a in arms) + ' |')
+    out.append('')
+    out.append('**Faced with a square, set defender on a jump-shot square, at the start of his turn.**\n')
+    out.append('| | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    out.append('| Turns it happened, in 200 possessions | ' + ' | '.join(str(a['faced_with_a_square_defender']['turns']) for a in arms) + ' |')
+    firsts = sorted({k for a in arms for k in a['faced_with_a_square_defender']['first']})
+    for k in firsts:
+        out.append(f'| First: {k} | ' + ' | '.join(str(a['faced_with_a_square_defender']['first'].get(k, 0)) for a in arms) + ' |')
+    out.append('| His Dribble at him: tried, won | ' + ' | '.join(f"{a['faced_with_a_square_defender']['dribble']['tried']}, {a['faced_with_a_square_defender']['dribble']['won']}" for a in arms) + ' |')
+    for k, lab in (('free', 'After his move: no square defender on him'), ('defender_rushed', 'After his move: a square defender, but rushed'), ('still_square', 'After his move: still square and set'),
+                   ('passed_on', 'After his move: he gave the ball up'), ('ball_lost', 'After his move: the ball was lost')):
+        out.append(f'| {lab} | ' + ' | '.join(str(a['faced_with_a_square_defender']['after_a_move'][k]) for a in arms) + ' |')
+    out.append('')
+    out.append('**Inside shots, by where the defender stood.** Shots, the makes the cards give, the block tried, fouls.\n')
+    out.append('| The defender | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for k, lab in (('square in front, set', 'Square in front, set'), ('square in front, rushed', 'Square in front, rushed'), ('not square', 'Not square'), ('behind', 'Behind'), ('open', 'Nobody: open')):
+        out.append(f'| {lab} | ' + ' | '.join((lambda p: f"{p['shots']} shots, {p['made']} made ({pct(p['made'], p['shots'])}), block {p['block_tried']}, fouls {p['fouled']}" if p else '0')(a['inside']['by_position'].get(k)) for a in arms) + ' |')
+    out.append('| **All** | ' + ' | '.join(f"{a['inside']['shots']} shots, {a['inside']['made']} made ({pct(a['inside']['made'], a['inside']['shots'])}), block {a['inside']['block_tried']}, fouls {a['inside']['fouled']}" for a in arms) + ' |')
+    out.append('')
+    out.append('**The block, by the defender\'s Contest foul rating** (inside shots where he wasn\'t square, so he could go for it): could, tried, fouled.\n')
+    out.append('| Contest foul rating | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for r in sorted({r for a in arms for r in a['inside']['by_contest_foul_rating']}, key=int):
+        out.append(f'| {r} | ' + ' | '.join((lambda f: f"{f['could_block']}, {f['block_tried']}, {f['fouled']}" if f else '0')(a['inside']['by_contest_foul_rating'].get(r)) for a in arms) + ' |')
+    out.append('')
+    out.append('**Help: drives that reached the key and finished inside.**\n')
+    out.append('| At the finish | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for k, lab in (('drives_finished_inside', 'Drives finished inside'), ('no_square_defender', 'No defender square in front'), ('his_own_defender_square', 'Only his own defender square in front'), ('another_defender_square', 'Another defender square in front (help)')):
+        out.append(f'| {lab} | ' + ' | '.join(str(a['help']['finishes'][k]) for a in arms) + ' |')
+    st = arms[0]['help']['defenders_of_non_shooters_at_the_start']
+    out.append('')
+    out.append(f"**Where the defenders of non-shooters started** (a non-shooter: his three is below average on his card; the starts are the same in both arms): of {st['non_shooters']}, "
+               f"{st['next_to_his_man']} next to their man, {st['in_the_key']} in the key, {st['elsewhere']} elsewhere.\n")
+    so, sx = arms[0]['setup']['offence'], arms[0]['setup']['defence']
+    merge = lambda d: {('Point Guard' if k == 'Combo Guard' else 'Small Forward' if k == 'Wing' else k): v for k, v in d.items()}
+    def fold(d):
+        o = {}
+        for k, v in d.items():
+            k2 = 'Point Guard' if k == 'Combo Guard' else 'Small Forward' if k == 'Wing' else k
+            for a_, n in v.items():
+                o.setdefault(k2, {})[a_] = o.setdefault(k2, {}).get(a_, 0) + n
+        return o
+    so, sx = fold(so), fold(sx)
+    areas = ['beyond the line', 'the three-point line', 'long two', 'mid-range', 'the key']
+    out.append('**Setup: where each type started, on offence.**\n')
+    out.append('| Type | ' + ' | '.join(x[0].upper() + x[1:] for x in areas) + ' |')
+    out.append('|---' * (len(areas) + 1) + '|')
+    for t in ('Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Centre'):
+        out.append(f'| {t} | ' + ' | '.join(str(so.get(t, {}).get(x, 0)) for x in areas) + ' |')
+    out.append('')
+    out.append('**Setup: where each type started, on defence.**\n')
+    out.append('| Type | Next to his man | In the key | Elsewhere |')
+    out.append('|---|---|---|---|')
+    for t in ('Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Centre'):
+        out.append(f"| {t} | {sx.get(t, {}).get('next to his man', 0)} | {sx.get(t, {}).get('in the key', 0)} | {sx.get(t, {}).get('elsewhere', 0)} |")
+    out.append('')
+    out.append('**Arrows off the ball, at every defence turn.**\n')
+    out.append('| The off-ball defender\'s arrow pointed | ' + ' | '.join(names) + ' |')
+    out.append('|---' * (len(arms) + 1) + '|')
+    for k, lab in (('at_his_man', 'At his man'), ('at_the_ball_handler', 'At the ball handler'), ('along_a_passing_lane', 'Along a passing lane'), ('toward_the_rim', 'Toward the rim'), ('other', 'Somewhere else')):
+        out.append(f'| {lab} | ' + ' | '.join((lambda d: f"{d[k]} ({pct(d[k], sum(d.values()))})")(a['arrows_off_the_ball']['defender_turns']) for a in arms) + ' |')
+    out.append('| Passes thrown | ' + ' | '.join(str(a['arrows_off_the_ball']['passes']) for a in arms) + ' |')
+    out.append('| Intercepts tried | ' + ' | '.join(str(a['arrows_off_the_ball']['intercepts_tried']) for a in arms) + ' |')
+    out.append('| Intercepts won | ' + ' | '.join(str(a['arrows_off_the_ball']['intercepts_won']) for a in arms) + ' |')
+    open(os.path.join(RUN, 'arm_tables.md'), 'w').write('\n'.join(out) + '\n')
+    print('\n'.join(out))
+
+
+def cmd_sensetable():
+    """The sense checks as tables for the report (docs/runs/step18o/sense_tables.md), recounted from the kept rows:
+    how each candidate's 16 possessions ended, and at inside finishes whether a defender was square in front."""
+    from playmaker_engine import board as B
+    P = B.parse_sq
+    d = _sense()
+    out = []
+    order = ['setup', 'arrows', 'beaten', 'beaten_drive', 'drive', 'zone_setup', 'zone_arrows', 'zone_beaten', 'zone_drive']
+    for g in order:
+        if g not in d:
+            continue
+        zone = g.startswith('zone_')
+        rows_of = json.load(open(os.path.join(WORK, f'sense_{g}.json'))) if os.path.exists(os.path.join(WORK, f'sense_{g}.json')) else {}
+        out.append(f'### {g}\n')
+        out.append('| Candidate | Points a possession | Threes | Inside shots | Other twos | Ball lost | Fouled | Inside finishes with a square defender in front |')
+        out.append('|---|---|---|---|---|---|---|---|')
+        for name, f in d[g]['candidates'].items():
+            e = f['ends']
+            ins = sum(e.get(t, 0) for t in INSIDE)
+            sq = ''
+            if name in rows_of:
+                k = 0
+                for r in rows_of[name]:
+                    x = r.get('result') or {}
+                    if x.get('shot_type') in INSIDE and r.get('endX'):
+                        sp = P(r['endO'][x['shooter']])
+                        k += any(B.adjacent(P(r['endX'][j]), sp) and B.dist_rim(P(r['endX'][j])) < B.dist_rim(sp) and _arrow_on(r['endArrows'][j], P(r['endX'][j]), sp, zone) for j in range(5))
+                sq = f'{k} of {ins}'
+                f['inside_square_defender'] = k
+            note = d[g].get('notes', {}).get(name, '')
+            out.append(f"| {name}{' (' + note + ')' if note else ''} | {f['mean']} ({f['low']} to {f['high']}) | {e.get('three', 0)} | {ins} | {e.get('mid', 0) + e.get('long', 0)} | "
+                       f"{e.get('turnover_end', 0) + e.get('steal', 0) + e.get('violation', 0)} | {e.get('free_throws', 0)} | {sq or 'not kept'} |")
+        out.append('')
+    json.dump(d, open(SENSE, 'w'), indent=1)
+    open(os.path.join(RUN, 'sense_tables.md'), 'w').write('\n'.join(out))
+    print('\n'.join(out))
+
+
+def cmd_firstlook():
+    """The six placements played before the sense tool was written (the same dice, 16 each): their scores and how
+    each possession ended, added to the 'setup' group. The rows themselves were not kept."""
+    pts = json.load(open(os.path.join(RUN, 'first_look_points.json')))
+    ends = {'his game': {'turnover_end': 3, 'layup': 4, 'three': 7, 'free_throws': 1, 'post': 1},
+            'X1 square, rest his': {'three': 9, 'layup': 2, 'turnover_end': 4, 'post': 1},
+            'X1 square, X4 X5 in the lane': {'three': 10, 'turnover_end': 2, 'post': 1, 'layup': 2, 'floater': 1},
+            'search A (J10N E4N K7N M6NW D4SW)': {'layup': 7, 'post': 1, 'floater': 1, 'three': 7},
+            'search B (L7W D3E N3NE I10NE I5N)': {'three': 8, 'layup': 4, 'post': 2, 'turnover_end': 2},
+            'starter junk (H12NE N5E I7SE F2SW N3SE)': {'three': 13, 'layup': 2, 'floater': 1}}
+    names = {'his game': 'his game', 'X1 square, rest his': 'his game, X1 square on I10', 'X1 square, X4 X5 in the lane': 'X1 square, X4 and X5 in the lane (H5, J5)',
+             'search A (J10N E4N K7N M6NW D4SW)': 'the search, first pick (J10 E4 K7 M6 D4)', 'search B (L7W D3E N3NE I10NE I5N)': 'the search, second pick (L7 D3 N3 I10 I5)',
+             'starter junk (H12NE N5E I7SE F2SW N3SE)': 'the search at Starter (H12 N5 I7 F2 N3)'}
+    d = _sense()
+    g = d.setdefault('setup', dict(candidates={}, notes={}))
+    for k, p in pts.items():
+        m, sd, ci = L.mean_ci(p)
+        g['candidates'][names[k]] = dict(n=len(p), mean=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1), ends=ends[k], points=p, first_look=True)
+    json.dump(d, open(SENSE, 'w'), indent=1)
+    for k, f in g['candidates'].items():
+        print(k, f['mean'], [f['low'], f['high']], f['ends'])
+
+
+def cmd_speed(rounds='2'):
+    """D-161: step 18n's code (on the cards it had) and this step's, timed in turn."""
+    import subprocess
+    code = ("import json, sys; sys.path.insert(0, 'tools'); import step_18n as N; "
+            "print('RESULT ' + json.dumps(N.T._timed({}, N.T.RULES)))")
+    rep = []
+    for r in range(int(rounds)):
+        t0 = time.time()
+        out = subprocess.run([sys.executable, '-c', code], cwd='/home/user/step18n/playmaker', capture_output=True, text=True, check=True,
+                             env=dict(os.environ, SENSE_RUN='step18n', SENSE_18N='1')).stdout
+        one = {'18n': json.loads([ln for ln in out.splitlines() if ln.startswith('RESULT ')][0][7:])}
+        one['18o'] = T._timed({}, T.RULES)
+        tally(f'speed, round {r + 1} (one core)', time.time() - t0)
+        for k, v in one.items():
+            print(r + 1, k, {lv: (x['median'], x['nine_in_ten']) for lv, x in v.items()}, flush=True)
+        rep.append(one)
+        json.dump(dict(note="seconds to finish 1 pair; each round times step 18n's code and this step's", rounds=rep),
+                  open(os.path.join(RUN, 'speed.json'), 'w'), indent=1)
+
+
+def cmd_setuptime(n='12'):
+    """Setup time against its budget (game._setup_budget in the app's format: 0.4 of a decision's time), each level,
+    both sides: the setup as it was (the default) and the search (off), with the JavaScript engine as in the app."""
+    from playmaker_engine import agent as AG, board as B
+    from playmaker_engine.jsbridge import NodeEngine
+    NodeEngine().install()
+    src = stored_starts()[:: max(1, len(stored_starts()) // int(n))][:int(n)]
+    out, t0 = {}, time.time()
+    for level in ('rookie', 'starter', 'allstar'):
+        budget = AG.profile(level)['time_budget_s'] * 0.4
+        for search in (False, True):
+            to, tx = [], []
+            for k, (off, dfn, s) in enumerate(src):
+                make = maker(off, dfn)
+                mem_o, mem_x = {}, {}
+                a = time.time()
+                ro = AG.propose_offence(make, 77 + k, budget=budget, level=level, memory=mem_o, search=search)
+                b = time.time()
+                AG.propose_defence(make, ro['squares'], ro['ball'], 78 + k, budget=budget, level=level, memory=mem_x, search=search)
+                to.append(b - a)
+                tx.append(time.time() - b)
+            out[f'{level}, {"the search" if search else "as it was"}'] = dict(budget=budget, offence_median=round(sorted(to)[len(to) // 2], 3), offence_slowest=round(max(to), 3),
+                                                                             defence_median=round(sorted(tx)[len(tx) // 2], 3), defence_slowest=round(max(tx), 3))
+            print(level, 'search' if search else 'as it was', out[f'{level}, {"the search" if search else "as it was"}'], flush=True)
+    tally('one core: setup time against its budget', time.time() - t0)
+    json.dump(out, open(os.path.join(RUN, 'setup_time.json'), 'w'), indent=1)
 
 
 if __name__ == '__main__':
