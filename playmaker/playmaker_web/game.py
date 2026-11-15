@@ -293,7 +293,8 @@ class Game:
                  place=False, code=None, level='scout', custom=None, timer=None, clock=None, age='senior',
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
-                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None, positioncontest=None):
+                 three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None, positioncontest=None,
+                 setup=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -328,6 +329,11 @@ class Game:
         self.full = full and scenario is None
         self.n_poss = 2 * self.per_side if self.full else 1
         self.last_setup = {}             # (player, side) -> the human's last setup, for "repeat my last setup"
+        # step 18o (D-195): the setup searched from no starting answer and judged by play. Off unless ai_profiles.json
+        # setup.search is on or this game asks for it (?setup=search); its searches are carried through the game
+        from playmaker_engine import agent as _AG
+        self.setup_search = self.match_format == 'digital' and (setup == 'search' or _AG.setup_search())
+        self.setup_memory = {}           # (the team placing, side) -> that side's searches so far
         # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
         # between the same pairing (the client stores it with the pairing and passes it in)
         q = quarter if isinstance(quarter, dict) else {}
@@ -989,7 +995,8 @@ class Game:
             budget = self._setup_budget(level)
             if self.placing == 'O':
                 if level:
-                    r = AG.propose_offence(self._possession_state, seed, self.levels_key(), budget=budget, level=level)
+                    r = AG.propose_offence(self._possession_state, seed, self.levels_key(), budget=budget, level=level,
+                                           memory=self._setup_memory('O'), search=self.setup_search)
                     self._log('computer', side='O', event='setup', possession=self.possession,
                               squares=[B.sq(q) for q in r['squares']], ball=r['ball'], value=r['value'],
                               candidates=r['candidates'], within=r['within'], text=r['text'])
@@ -1000,7 +1007,7 @@ class Game:
                 o_sq, ball = self.placed['O']
                 if level:
                     r = AG.propose_defence(self._possession_state, o_sq, ball, seed + 7, self.levels_key(), budget=budget,
-                                           level=level)
+                                           level=level, memory=self._setup_memory('X'), search=self.setup_search)
                     comp.setup_perm = tuple(r['perm'])
                     self._log('computer', side='X', event='setup', possession=self.possession,
                               matchup=[f'X{j + 1} on O{r["perm"][j] + 1}' for j in range(5)], value=r['value'], text=r['text'])
@@ -1008,6 +1015,11 @@ class Game:
                 else:
                     xs, arrows = man_to_man(o_sq, ball)
                     self._place_side('X', xs, None, arrows, actor='ai')
+
+    def _setup_memory(self, side):
+        """Step 18o: the searches this team has run so far on this side of the ball, carried to its next setup."""
+        team = self.possession % 2 if side == 'O' else 1 - self.possession % 2
+        return self.setup_memory.setdefault((team, side), {})
 
     def _setup_budget(self, level):
         """Setup thinking time: instant-feeling in the digital format (a fraction of the level's decision budget)."""
@@ -1052,7 +1064,11 @@ class Game:
                     # against the computer: the standard setup for the human's own side only; the computer places its own
                     if self.placing in self.ai:
                         raise GameError('the computer places this side')
-                    if self.placing == 'O':
+                    if self.setup_search:
+                        # step 18o (D-195): in the app the setup offered to a human is the engine's proposal for his cards
+                        prop = self.proposal(self.placing)
+                        self._place_side(self.placing, prop['squares'], prop.get('ball'), prop.get('arrows'), actor='human')
+                    elif self.placing == 'O':
                         self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='human')
                     else:
                         xs, arrows = man_to_man(self.placed['O'][0], self.placed['O'][1])
@@ -1084,11 +1100,13 @@ class Game:
         if key not in cache:
             from playmaker_engine import agent as AG
             if side == 'O':
-                r = AG.propose_offence(self._possession_state, self.seed * 31 + self.possession, self.levels_key())
+                r = AG.propose_offence(self._possession_state, self.seed * 31 + self.possession, self.levels_key(),
+                                       memory=self._setup_memory('O'), search=self.setup_search)
                 cache[key] = dict(squares=r['squares'], ball=r['ball'], text=r.get('text', ''))
             else:
                 o_sq, ball = self.placed['O']
-                r = AG.propose_defence(self._possession_state, o_sq, ball, self.seed * 37 + self.possession, self.levels_key())
+                r = AG.propose_defence(self._possession_state, o_sq, ball, self.seed * 37 + self.possession, self.levels_key(),
+                                       memory=self._setup_memory('X'), search=self.setup_search)
                 cache[key] = dict(squares=r['squares'], arrows=r['arrows'], text=r.get('text', ''))
             self._proposals = cache
         return cache[key]

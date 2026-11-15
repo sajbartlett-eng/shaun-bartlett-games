@@ -24,7 +24,7 @@ const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus
 // Step 18j (D-177, D-179)
 const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
 // Step 18n (D-191, D-193): jump shots are contested by position only
-const POSITION_RULE = "Jump shots: an adjacent defender's contest is automatic and set by position. Inside shots: you may go for the block and risk the foul, except straight up from in front with your arrow on him, which is automatic and safe.";
+const POSITION_RULE = "A defender next to the shooter contests with no action: his full rating when he is square (in front, his arrow on the shooter), 3 less when he isn't, 6 less from behind. Jump shots: that is all, with no foul. Inside shots: when he isn't square he may go for the block and risk the foul.";
 const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the defender is locked, play on. From the 5th: two free throws. No foul gives +5 in the app.';
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const OFF_BALANCE_RULE = n => `Rushed: after a Quick Step or Sprint, or while locked, every roll you make is ${n} worse (not fouls) until you Move.`;
@@ -380,6 +380,8 @@ async function create() {
     { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
     { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance', 'positioncontest']) if (q.get(k) === '0') body[k] = 'off'; }
+    // step 18o (D-195): ?setup=search in the address plays the setup searched from no starting answer and judged by play (built, off)
+    { const su = new URLSearchParams(location.search).get('setup'); if (su === 'search' && body.match_format === 'digital') body.setup = 'search'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -1244,11 +1246,15 @@ let place = null;      // {side, squares: [sq or null] x5, ball, arrows: [d] x5,
 const sqXY = q => [COLS.indexOf(q[0]), Number(q.slice(1))];
 function placeInit(P) {
   if (P.side === 'O') {
+    if (P.draft) {                                   // step 18o (D-195, ?setup=search): the engine's proposal for these cards
+      place = { side: 'O', squares: P.draft.squares.slice(), ball: P.draft.ball, arrows: [], pick: null, orig: P.draft.squares.slice() };
+      return;
+    }
     const squares = st.o.map(p => p.sq);
     place = { side: 'O', squares, ball: st.o.findIndex(p => p.ball), arrows: [], pick: null, orig: squares.slice() };
   } else {
     const occ = new Set(P.offence || []);
-    if (P.draft) {                                   // man-to-man against the offence on the floor
+    if (P.draft) {                                   // man-to-man against the offence on the floor (or the engine's proposal: step 18o)
       place = { side: 'X', squares: P.draft.squares.slice(), ball: null, arrows: P.draft.arrows.slice(), pick: null, orig: P.draft.squares.slice() };
       return;
     }

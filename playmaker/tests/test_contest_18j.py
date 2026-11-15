@@ -61,8 +61,10 @@ def test_next_to_the_shooter_is_a_soft_contest_with_no_action_and_no_foul():
     assert "soft contest, a hand up from in front" in score(end).detail
     off = no_contest(rim('I3', 'E', rules=OFF), 'layup')               # the rule off: no Contest action, no contest
     assert off.result.contest == 0 and not off.result.soft
-    three = no_contest(board('I9', 'E'))                               # D-184 cards: next to a three, nothing
-    assert three.result.contest == 0 and not three.result.soft
+    # Re-recorded in step 18o, reason: D-194 (the three contests are back at Shaun's originals): next to a three with
+    # his arrow off him, the hand up is his contest of 5 less 3
+    three = no_contest(board('I9', 'E'))
+    assert three.result.contest == three.ctx.dfn[0].con('three') - 3 == 2 and three.result.soft
 
 
 def test_from_behind_either_contest_is_three_lower_again():

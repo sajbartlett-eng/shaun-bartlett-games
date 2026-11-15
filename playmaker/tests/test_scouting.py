@@ -44,16 +44,18 @@ from playmaker_engine import scouting as S
 from playmaker_engine.cards import CARDS
 
 # step 18l: re-recorded from the cards, reason: D-184 cards (the jump-shot ratings and their bands moved, so fewer
-# teams hold two above-average three-point shooters and no team holds three below-average three-point contesters)
+# teams hold two above-average three-point shooters and no team holds three below-average three-point contesters).
+# Step 18o: re-recorded again, reason: D-194 (the three-point contests are back at Shaun's original values and their
+# first range, so four teams hold three below-average three-point contesters again: 'gives up open threes')
 GOLD = {
     'Pace and Space': (['fast and athletic'], ['limited half-court offence', 'foul-prone']),
     'Iron Wall': (['disruptive in the passing lanes'], ['no spacing', 'limited half-court offence']),
-    'Twin Towers': (['multiple creators', 'attacks the rim', 'inside-out'], ['no spacing', 'leaks dribble penetration']),
-    'Run and Gun': (['fast and athletic', 'multiple creators', 'attacks the rim', 'disruptive in the passing lanes'], ['no spacing']),
+    'Twin Towers': (['multiple creators', 'attacks the rim', 'inside-out'], ['no spacing', 'leaks dribble penetration', 'gives up open threes']),
+    'Run and Gun': (['fast and athletic', 'multiple creators', 'attacks the rim', 'disruptive in the passing lanes'], ['no spacing', 'gives up open threes']),
     'Ball Movement': (['fast and athletic', 'moves the ball', 'inside-out'], ['leaks dribble penetration']),
     'Shoot and Protect': (['shooters to space the floor'], ['leaks dribble penetration']),
-    'Bucket Brigade': (['multiple creators', 'attacks the rim', 'inside-out'], ['leaks dribble penetration']),
-    'Five Out': (['fast and athletic'], ['limited half-court offence']),
+    'Bucket Brigade': (['multiple creators', 'attacks the rim', 'inside-out'], ['leaks dribble penetration', 'gives up open threes']),
+    'Five Out': (['fast and athletic'], ['limited half-court offence', 'gives up open threes']),
     'High-Low': (['inside-out'], ['no spacing', 'limited half-court offence', 'leaks dribble penetration', 'foul-prone']),
     'Lockdown': (['protects the paint', 'disruptive in the passing lanes'], ['no spacing', 'limited half-court offence']),
 }
@@ -130,9 +132,10 @@ def test_caps_and_order():
 def test_typical_phrases_are_computed_from_the_cards():
     assert set(S.typical_text('PG')) == {'foul-prone', 'soft screens', 'no resistance at the rim', 'creates off the dribble'}
     assert set(S.typical_text('SG')) == {'limited passer', 'soft screens'}
-    # step 18l: re-recorded, reason: D-184 cards
-    assert set(S.typical_text('PF')) == {'limited passer', 'slow-footed', 'no threat from three', 'closes out on shooters'}
-    assert S.typical_text('SF') == ['closes out on shooters']
+    # step 18l: re-recorded, reason: D-184 cards. Step 18o: again, reason: D-194 (the jump-shot contests are back on
+    # their first range, so "closes out on shooters" is no longer typical of a position)
+    assert set(S.typical_text('PF')) == {'limited passer', 'slow-footed', 'no threat from three'}
+    assert S.typical_text('SF') == []
     assert len(S.typical_text('C')) >= 6
 
 

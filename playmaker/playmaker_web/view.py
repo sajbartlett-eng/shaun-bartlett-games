@@ -403,7 +403,12 @@ def state_json(game, token):
                        ball_squares=[q for q in squares if B.zone(B.parse_sq(q)) == '.' and B.parse_sq(q)[1] > 1],
                        offence=[B.sq(q) for q in o_sq] if o_sq else None,
                        ball=game.placed.get('O', (None, None))[1])
-        if game.placing == 'X' and o_sq:
+        if getattr(game, 'setup_search', False) and placing['mine']:
+            # step 18o (D-195): the draft a human starts from is the engine's proposal for his cards
+            prop = game.proposal(game.placing)
+            placing['draft'] = dict(squares=[B.sq(q) for q in prop['squares']], arrows=list(prop['arrows']) if prop.get('arrows') else None,
+                                    ball=prop.get('ball'))
+        elif game.placing == 'X' and o_sq:
             # the defence's draft: man-to-man against the offence actually on the floor (not the table squares)
             from playmaker_web.game import man_to_man
             mx, ma = man_to_man(o_sq, game.placed['O'][1])

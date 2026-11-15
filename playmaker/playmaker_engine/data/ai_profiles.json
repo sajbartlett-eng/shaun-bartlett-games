@@ -428,5 +428,9 @@
       "5": 2.92,
       "6": 2.51
     }
+  },
+  "setup": {
+    "_search": "Step 18o (D-195): true: both sides' setups, and the setup proposed to a human, are searched from no starting answer (any square, any arrow), shortlisted by the quick reading and the shortlist judged by the search's played-out reading; the app then offers the proposal as the human's default setup. Built and off: played out, the placements it finds give up more than the old setup's (docs/reports/STEP18O_REPORT.md). Shaun turns it on.",
+    "search": false
   }
 }

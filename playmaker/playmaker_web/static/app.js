@@ -380,6 +380,8 @@ async function create() {
     { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
     { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance', 'positioncontest']) if (q.get(k) === '0') body[k] = 'off'; }
+    // step 18o (D-195): ?setup=search in the address plays the setup searched from no starting answer and judged by play (built, off)
+    { const su = new URLSearchParams(location.search).get('setup'); if (su === 'search' && body.match_format === 'digital') body.setup = 'search'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();
@@ -1244,11 +1246,15 @@ let place = null;      // {side, squares: [sq or null] x5, ball, arrows: [d] x5,
 const sqXY = q => [COLS.indexOf(q[0]), Number(q.slice(1))];
 function placeInit(P) {
   if (P.side === 'O') {
+    if (P.draft) {                                   // step 18o (D-195, ?setup=search): the engine's proposal for these cards
+      place = { side: 'O', squares: P.draft.squares.slice(), ball: P.draft.ball, arrows: [], pick: null, orig: P.draft.squares.slice() };
+      return;
+    }
     const squares = st.o.map(p => p.sq);
     place = { side: 'O', squares, ball: st.o.findIndex(p => p.ball), arrows: [], pick: null, orig: squares.slice() };
   } else {
     const occ = new Set(P.offence || []);
-    if (P.draft) {                                   // man-to-man against the offence on the floor
+    if (P.draft) {                                   // man-to-man against the offence on the floor (or the engine's proposal: step 18o)
       place = { side: 'X', squares: P.draft.squares.slice(), ball: null, arrows: P.draft.arrows.slice(), pick: null, orig: P.draft.squares.slice() };
       return;
     }

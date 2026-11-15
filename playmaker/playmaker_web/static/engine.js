@@ -3951,6 +3951,23 @@ const PMEngine = (() => {
     return JSON.stringify(search(req));
   }
 
+  // Step 18o (D-195, agent._reads): the quick reading's own parts for a list of setup placements of one matchup: the
+  // position's value (the offence's view), then each attacker's best look after the defence's best cover, largest first.
+  function readsJSON(text) {
+    const req = JSON.parse(text);
+    const key = JSON.stringify(req.ctx);
+    let ctx = CTXS.get(key);
+    if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
+    const out = [];
+    for (const it of req.items) {
+      const js = Object.assign({}, req.state, { o: it.o, ball: it.ball, x: it.x, arrows: it.arrows });
+      const s = stateFrom(js, ctx), r = new Read(s), cv = r.cover();
+      const res = [0, 1, 2, 3, 4].map(i => (cv.residual[i] === undefined ? 0 : cv.residual[i])).sort((a, b) => b - a);
+      out.push([r.leaf()].concat(res));
+    }
+    return JSON.stringify(out);
+  }
+
   // ---- the equivalence probe: every measured quantity of one state --------------------------------------------------
   function probe(js, ctxJs, opts = {}) {
     const ctx = makeCtx(ctxJs), s = stateFrom(js, ctx);
@@ -3989,7 +4006,7 @@ const PMEngine = (() => {
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
-  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

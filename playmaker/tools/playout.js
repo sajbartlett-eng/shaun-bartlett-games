@@ -202,6 +202,7 @@ if (job.kind === 'rollout') {
       // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
       // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
       const stances = [], dribbles = [], examples = [], guards = [], steals = [];
+      const boards = [];
       // step 18l: each Dribble also carries its place in the actions and how both players stood (0 set, 1 after a
       // Quick Step, 2 after a Sprint; locked or not); each Steal [phase, place, defender, how the ball handler stood,
       // whether he was locked, how the defender stood, the outcome: 'won', 'foul' or 'miss']
@@ -227,6 +228,9 @@ if (job.kind === 'rollout') {
           for (const e of ex) examples.push([events.length, node.phase].concat(e));
           lastBall = node.ball;
         }
+        // job.boards (step 18o): the board at the start of every turn, both sides: [place in the actions, phase, side, the
+        // attackers' squares, the defenders', their arrows, the ball, who is rushed or locked]
+        if (job.boards && node.stage === 'play' && !node.pending && node.turn_n === 0) boards.push([events.length, node.phase, side, sqs(node.o), sqs(node.x), Array.from(node.arrows), node.ball, node.rush_x, node.lock_x, node.rush_o, node.lock_o, node.beaten.map(b => [b[0], b[1]])]);
         if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []));   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
         const a = decide(node, ctx, pols[side], r);
         const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;
@@ -245,7 +249,7 @@ if (job.kind === 'rollout') {
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined });
+        endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined, boards: job.boards ? boards : undefined, startArrows: p.state.arrows });
     }
   }
 } else if (job.kind === 'split') {
