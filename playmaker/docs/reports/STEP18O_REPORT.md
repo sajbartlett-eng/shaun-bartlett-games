@@ -14,7 +14,7 @@
 4. **Check 4 is confirmed: with the zone off, a defender whose arrow is on the ball handler can't wall his drive.**
    So arm A can't be compared with real basketball on drives. Arm B is the comparison that counts.
 5. **Against real FIBA basketball (about 1.0 a possession):** arm A scores 1.20 (1.13 to 1.27), arm B 1.09 (1.01 to
-   1.17). 18n was 1.28. Fouls at the rim are 0 in both: the block was never tried. Compute: COMPUTE_TOTAL
+   1.17). 18n was 1.28. Fouls at the rim are 0 in both: the block was never tried. Compute: 11.8
    core-hours of the 14 allowed.
 
 ## Stopped and flagged: the setup, as ordered, plays worse
@@ -23,7 +23,7 @@ This is the part of the step that is not done the way the prompt asked, so it co
 
 - **I built the setup you ordered** (D-195): both sides, every level, and the proposal shown to a human. It starts
   from no placement, can put any player on any square with any arrow, shortlists by the quick reading, and judges
-  the shortlist by the search's own played-out reading. It fits the setup's time at every level.
+  the shortlist by the search's own played-out reading. It keeps to the setup's time at every level (Part 5).
 - **Played out, it is clearly worse.** The same 48 deals, All-Star against All-Star, the same dice:
 
   | The setup | Points a possession | Against the old setup, deal by deal |
@@ -43,9 +43,10 @@ This is the part of the step that is not done the way the prompt asked, so it co
     defenders). The search can't tell an arrow on a man from an arrow on a passing lane.
 - **What that means for your two questions.**
   - *Why do the arrows hug their men?* Not because the reading prefers it. The reading has no preference at all.
-    They hug because the old setup starts each arrow on its man and only ever tries one other direction.
+    They hug because the old setup starts each arrow on its man and only ever tries two directions: at the
+    nearest attacker and at the ball handler.
   - *Why did X4 and X5 stand next to non-shooters?* The same cause: the old setup starts every defender next to his
-    man, and in the browser it has time for almost nothing else.
+    man and moves him only where the quick reading says another square near an attacker is better.
 - **What it costs to do it properly:** a real play-out takes about 25 core-seconds, and it takes about 50 for each
   of two placements to tell them 5 points apart. That is about 40 core-minutes for one comparison, against a setup
   time of 0.1 to 1.0 seconds. No form of "judged by play" fits inside the setup's time. Decision 1 at the end is
@@ -193,7 +194,9 @@ the starts are the stored ones every step has played from, rebuilt on today's ca
   are seldom square, and a defender who isn't square now takes 3 less off a jump shot.
 - **The foul-price numbers,** from the All-Star's run: 0.33 fouls a possession (0.24 to 0.42) and 24.1 a possession
   (22.6 to 25.6). They were 0.22 and 25.8.
-- **Golden values re-recorded, each with the reason "D-194" in the test:** TESTS_REDONE
+- **Golden values re-recorded, each with the reason "D-194" in the test:** the two ceilings in
+  `test_golden_and_regression.py`, seven tests that held a contest value or a scouting read built on one, and one
+  trainer board in `test_step3m.py`. The 18n card-table test now checks the cards against your originals.
 
 **The sense-check set.** The rule can move almost every position in it, because almost every one turns on a shot's
 contest. I replayed the ones where a jump shot's contest decides, and your game:
@@ -463,7 +466,14 @@ this step's on a quiet machine.
 
 - **The two engines agree** on the rule (Part 0).
 - **The cards:** all seven contests on every card match your originals, by a test. No other rating changed.
-- **Tests:** TESTS_TEXT
+- **Tests:** `tests/test_rules_current.py` passes. The 29 named test files: 477 passed and 1 failed, the
+  timing test (2.4 seconds on one decision against a limit of 1.7), as since 18f. Not loosened. `tests/test_static.py`,
+  run on its own: 11 passed. 14 tests are marked as known failures, the same ones as before.
+- **The site tests caught a fault of mine.** My first build of the new engine call broke the browser version's
+  start-up line. Fixed, and the 11 site tests pass.
+- **One more file, `tests/test_computer.py`,** which tests the setup code I changed: 2 passed, 1 failed. That one
+  replays a stored game from before D-184 and already fails on 18n's code. Not touched.
+- **The exam at the All-Star:** as in 18n. Position 1 passes; 2, 3, 5, 6, 8, 9, 11, 13, 14 and 16 are listed open.
 - **What it does not prove:**
   - Anything about a human's play. Every play-out is the computer against itself.
   - Help defence in general. The sense checks are one board, 16 play-outs a candidate.
@@ -471,7 +481,26 @@ this step's on a quiet machine.
 
 ## Compute
 
-COMPUTE_TEXT
+| | Core-hours |
+|---|---|
+| Sense checks on your board (9 groups of play-outs, and the search's own readings) | 4.0 |
+| The test: arm A and arm B | 2.2 |
+| The refit: self-play at three levels | 1.9 |
+| Tests, on one core | 1.0 |
+| The setup: the same 48 deals set up three ways and played out | 0.9 |
+| The set's closeout positions and game EB3F5B in each arm | 0.8 |
+| Agreement checks of the two engines, on one core | 0.4 |
+| A preparation run stopped after 18 minutes (the slow engine under the zone) | 0.3 |
+| Speed and setup time | 0.2 |
+| **Total, as tallied** | **11.8** |
+
+- **The estimate was 12.5 and the hard stop 14.**
+- **About 0.9 of the 11.8 is time counted twice.** Twice I let two runs share the four cores, and the tally counts
+  each run's own clock. The All-Star's refit run used 1.27 core-hours by its processor time and is tallied at
+  1.73. The true total is about 10.9.
+- **More than planned:** the sense checks (4.0 against 2.7), because I added the drive after the beat and the
+  arrows check. **Less than planned:** the two arms (2.2 against 3.7), because possessions are a third shorter now.
+- The line by line tally is at the foot of `docs/runs/step18o/PREDICTIONS.md`.
 
 ## Noticed, not touched
 
@@ -487,15 +516,19 @@ COMPUTE_TEXT
   By play that was the better choice against the computer's own defence (Part 2), so it is not a fault I can
   show. It is the main way its offence differs from yours.
 - **The defence is seldom square.** A ball handler on a jump-shot square starts his turn facing a square, set
-  defender about once in 10 to 15 possessions. D-194 rewards being square, and the search has not learned to be.
+  defender about once in 9 to 15 possessions. D-194 rewards being square, and the search has not learned to be.
+- **The All-Star no longer closes out on a shooter who can't move** (Part 3, the set). It pauses and gives up
+  about 20 points more than stepping next to him. In 18n the turns there were level.
 - **No mid-range shot or long two is taken** (1 in 400 possessions), and no dunk.
 - **The timing test still fails** as it has since 18f. Not loosened.
 - **Predictions.** Jump shots: right that fewer go up over a set defender in front (13 to 6); wrong that
   contested threes would fall under 30 in 100 (34). Scoring in arm A: right, at the edge (1.20). The setup: right
   that the readings can't tell placements apart; wrong that play couldn't either: the search's picks were clearly
   worse. Help: right that the lane would not be clearly better; I did not expect it to be worse. The straight
-  drive: confirmed, with the correction about an arrow across the path. Arm B: right (0.11 lower, fewer rim
-  shots). Speed in play: right. Setup inside its time: right for the search, and the old setup turned out not to be.
+  drive: confirmed, with the correction about an arrow across the path; wrong that X1 on I10 walls it under the
+  zone (he closes one side). Arm B: right (0.11 lower, fewer rim shots). Speed in play: wrong by a little (a few
+  in 100 slower than 18n's code, inside the targets). Setup inside its time: right for the search, and the old
+  setup turned out not to be.
 
 ## For Shaun to decide (three)
 
@@ -505,7 +538,9 @@ COMPUTE_TEXT
    against it, though it does not fit the players (centres start on the three-point line). The rival that would
    work: play out starts in bulk offline, record what each went on to earn, and fit a setup reading on that, the
    way the map is fitted. That is the learned-weights work you kept out of this step. The other choice is to turn
-   the search on as it is (`setup.search`), which I don't recommend.
+   the search on as it is (`setup.search`), which I don't recommend. While the old setup stays I would also make
+   it keep its time (Part 5): each possession would start 4 to 6 seconds sooner, and by play a defender simply
+   next to his man is level with what the old setup finds (22.1 against 22.2).
 2. **The zone as the app's default.** *Recommend: yes, as the next step, after the one-line bridge fix and a speed
    check on a phone.* Why: check 4 confirms that with the zone off a square defender can't wall a drive, so the
    defence must choose between the shot and the drive. With the zone on it scores 1.09 a possession against 1.20,

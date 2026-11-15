@@ -364,12 +364,12 @@ def test_horizon_credit_on_the_capacity_drain_board(table_3m, floor_leaf):
     one = TR.credit(s, [a], horizon='reply')[0]
     phase = TR.credit(s, [a], horizon='phase')[0]
     assert abs(one['phi']) < 1.0                                 # over one reply: about 0 (one for one is neutral)
-    # Re-recorded in step 18l (D-184, D-186) and step 18n (D-189 to D-193). Over the phase the credit was +2.5 (above
-    # 1.0) on the cards before them. On today's cards, rules and maps it is -0.6: the drain is still credited (1.7,
-    # X2's Move and Quick Step), but O2's three fell from 13 to 11 and X2's contest of it from 3 to 2, and under D-191
-    # that contest is automatic from next to him, so taking the contester's actions away is worth less than the
-    # move costs. The sign change is reported in docs/reports/STEP18N_REPORT.md (Noticed, not touched).
-    assert phase['drain'] > 0 and abs(phase['phi'] + 0.6) < 0.3   # over the phase: the drain channel, the value as recorded
+    # Re-recorded in step 18l (D-184, D-186), step 18n (D-189 to D-193) and step 18o (D-194 and its maps). Over the
+    # phase the credit was +2.5 (above 1.0) on the cards before them, and -0.6 under D-192. On today's cards, rules
+    # and maps it is +0.1: the drain is still credited (1.0, X2's Move and Quick Step), and it is about what the move
+    # costs. O2's three is 11 (it was 13), and X2's contest of it is back at Shaun's original, automatic from next to
+    # him under D-191.
+    assert phase['drain'] > 0 and abs(phase['phi'] - 0.12) < 0.3  # over the phase: the drain channel, the value as recorded
     assert phase['drained'] is not None and phase['drained_what']
 
 

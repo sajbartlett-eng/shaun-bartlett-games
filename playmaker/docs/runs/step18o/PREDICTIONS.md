@@ -38,6 +38,7 @@ then the Starter and Rookie refit runs are shortened. Arm B gets a map of its ow
 
 ## Compute tally (core-hours)
 
+- one core: a first agreement check of the contest table (151 seconds): 0.04 (running total 0.04)
 - a first look at placements on Shaun's board (6 placements, 16 each, allstar): 0.69 (running total 0.73)
 - one core: the search setup for 48 deals (3 setups each, allstar): 0.06 (running total 0.79)
 - self-play (setup stored, allstar, 48 possessions): 0.3 (running total 1.09)
@@ -69,3 +70,6 @@ then the Starter and Rookie refit runs are shortened. Arm B gets a map of its ow
 - one core: setup time against its budget: 0.05 (running total 10.97)
 - searches (o18z, 1 positions): 0.0 (running total 10.97)
 - play-outs (1 candidate copies of 16 on 1 positions): 0.01 (running total 10.97)
+- one core: the named tests, final run (1,537 seconds), the site tests (113), reruns, and two site-test runs stopped part way: 0.79 (running total 11.76)
+
+**Total: 11.8 core-hours as tallied. About 0.9 of it is time counted twice, when two runs shared the four cores (each run's own clock is tallied), so the true total is about 10.9. The estimate was 12.5 and the hard stop 14.**

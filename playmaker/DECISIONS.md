@@ -1051,7 +1051,9 @@ are judged by the search's own played-out reading, both sides, every level, and 
 are searched without a fixed starting answer, and nothing names or favours a placement; arrows are part of every
 placement and every direction can be played out; in the app the setup offered to a human by default is the engine's
 proposal for his cards (the fixed squares stay for the table format); setup stays inside its time budget. · Source:
-Shaun, 15 Nov 2026 · **Ruled; step 18o.**
+Shaun, 15 Nov 2026 · **Ruled; built in step 18o behind `setup.search` (`?setup=search`) and left off: played out,
+it gives up 6.8 more points a possession than the setup as it was (2.8 to 10.7), because the engine has no reading
+that can judge a setup (docs/reports/STEP18O_REPORT.md). Awaiting Shaun.**
 
 ## 2. Engine defaults awaiting sign-off
 

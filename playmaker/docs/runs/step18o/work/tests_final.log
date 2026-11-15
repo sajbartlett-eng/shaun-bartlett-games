@@ -1,3 +1,175 @@
 ........................................................................ [ 14%]
 ........................................................................ [ 29%]
-........................
+........................................................................ [ 43%]
+........................................................................ [ 58%]
+.......................................FF..............F......xF....xx.x [ 72%]
+x.xx.x.xx.x............x..xx............................................ [ 87%]
+..............................................................F          [100%]
+=================================== FAILURES ===================================
+________________________ test_engine_ceilings_recorded _________________________
+
+    @pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
+    def test_engine_ceilings_recorded():
+        from playmaker_engine.analysis import engine_ceilings
+        eng = engine_ceilings([6, 10, 14])
+        # step 18l and 18n: re-recorded, reason: D-184 and D-186 (the open jump shots), then D-189 to D-193 (the contest
+        # ratings: a three's contest is 1 to 4). On the cards before them these were 9 and 30, and 12.75
+        # (docs/history/REGRESSION.md keeps the old table). D-185 and D-191 are the app's and change nothing here.
+>       assert eng[6][0][0] == 12 and eng[6][1][0] == 27
+E       assert (Fraction(6, 1) == 12)
+
+tests/test_golden_and_regression.py:107: AssertionError
+___________________ test_two_action_reaction_closes_the_gap ____________________
+
+    @pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
+    def test_two_action_reaction_closes_the_gap():
+        # Late Clock Reset: one reaction action leaves O1's three worth 15; with two actions X4 Moves (arrow set) and
+        # Quick Steps in to contest clean: 9. Re-recorded in step 18l (D-184 and D-186) and step 18n (D-189 to D-193: the
+        # contest ratings). On the cards before all of them: 12.75 and 3.
+        from playmaker_engine.analysis import two_action_ceilings
+        gift = two_action_ceilings([10], parts=('gift',))[10][0]
+>       assert gift[0] == 9 and 'then' in gift[1]
+E       assert (Fraction(0, 1) == 9)
+
+tests/test_golden_and_regression.py:119: AssertionError
+__________ test_the_agent_only_plays_legal_actions_within_its_budget ___________
+
+    def test_the_agent_only_plays_legal_actions_within_its_budget():
+        g = Game(ai={'A': 'allstar', 'B': 'starter'}, level='learn', seed=9, match_format='digital', per_side=4, place=True)
+        decs = [r for r in g.read_log() if r['type'] == 'computer' and r.get('event') == 'decision']
+        acts = [r for r in g.read_log() if r['type'] == 'action']
+        assert acts and all(r['actor'] == 'ai' for r in acts)                 # Game.act refuses an illegal action
+        for d in decs:
+            prof = AG.profile(d['level'])
+>           assert d['seconds'] <= prof['time_budget_s'] * AG.SCALE['value'] + 1.5, d
+E           AssertionError: {'type': 'computer', 'time': 1794713196.151, 'code': 'C4BB88', 'side': 'O', ...}
+E           assert 2.436 <= ((2.5 * 0.08) + 1.5)
+
+tests/test_step3m.py:234: AssertionError
+_______________ test_horizon_credit_on_the_capacity_drain_board ________________
+
+table_3m = None, floor_leaf = None
+
+    def test_horizon_credit_on_the_capacity_drain_board(table_3m, floor_leaf):
+        from playmaker_engine import trainer as TR
+        from playmaker_engine.exam import p16
+        _, s, _ = p16()
+        a = Action('move', 'O', 2, dest=B.parse_sq('G9'))           # O3 lifts: X2 must answer it
+        assert a in legal_actions(s)
+        one = TR.credit(s, [a], horizon='reply')[0]
+        phase = TR.credit(s, [a], horizon='phase')[0]
+        assert abs(one['phi']) < 1.0                                 # over one reply: about 0 (one for one is neutral)
+        # Re-recorded in step 18l (D-184, D-186) and step 18n (D-189 to D-193). Over the phase the credit was +2.5 (above
+        # 1.0) on the cards before them. On today's cards, rules and maps it is -0.6: the drain is still credited (1.7,
+        # X2's Move and Quick Step), but O2's three fell from 13 to 11 and X2's contest of it from 3 to 2, and under D-191
+        # that contest is automatic from next to him, so taking the contester's actions away is worth less than the
+        # move costs. The sign change is reported in docs/reports/STEP18N_REPORT.md (Noticed, not touched).
+>       assert phase['drain'] > 0 and abs(phase['phi'] + 0.6) < 0.3   # over the phase: the drain channel, the value as recorded
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert (1.0 > 0 and 0.72 < 0.3)
+E        +  where 0.72 = abs((0.12 + 0.6))
+
+tests/test_step3m.py:372: AssertionError
+_______________ test_a_play_cannot_run_past_the_end_of_its_turn ________________
+
+    def test_a_play_cannot_run_past_the_end_of_its_turn():
+        from playmaker_engine.solver import Play, apply_play
+>       s0 = _d7d923()[18][0]                             # X has already taken one of its two actions
+             ^^^^^^^^^
+
+tests/test_computer.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_computer.py:86: in _d7d923
+    return replay_states(recs)
+           ^^^^^^^^^^^^^^^^^^^
+playmaker_engine/review.py:207: in replay_states
+    _replay_all(records, grab)
+playmaker_engine/review.py:217: in _replay_all
+    replay(orig, on_decision=fn)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+records = [{'type': 'setup', 'time': 1793857029.48, 'code': 'D7D923', 'mode': 'hotseat', ...}, {'type': 'scout', 'time': 1793857...D7D923', 'side': 'X', ...}, {'type': 'placement', 'time': 1793857030.487, 'code': 'D7D923', 'possession': 1, ...}, ...]
+on_decision = <function replay_states.<locals>.grab at 0x7f6f7edb7560>
+
+    def replay(records, on_decision=None):
+        """Rebuild every state from the log. Rolls are replayed from the logged outcomes.
+        Returns a list of (possession, final state)."""
+        setup = next(r for r in records if r['type'] == 'setup')
+        register_custom(setup)
+        possession = 1
+        quarter = setup.get('quarter')
+        state = _start(setup, 1, quarter=quarter)
+        finals = []
+        undo = []                         # states before each action since the last roll (as the server keeps)
+        placed_o = None
+        i = 0
+        while i < len(records):
+            r = records[i]
+            if r['type'] == 'placement':
+                if r['side'] == 'O':
+                    placed_o = (r['squares'], r['ball'])
+                else:
+                    state = _start(setup, possession, placed_o[0], r['squares'], r['arrows'], placed_o[1], quarter=quarter)
+                    if r.get('start') and not _same(state, r['start']):
+                        raise ValueError('placement replay diverged')
+            elif r['type'] == 'quarter':
+                quarter = dict(fouls=r['fouls'], poss=r['poss'], number=r.get('number', 1))
+            elif r['type'] == 'possession':
+                finals.append((possession, state))
+                possession = r['possession']
+                state = _start(setup, possession, quarter=quarter)
+                undo = []
+            elif r['type'] == 'undo':
+                state = undo.pop()
+                if not _same(state, r['state']):
+                    raise ValueError('undo replay diverged')
+            elif r['type'] == 'timer' and r.get('event') == 'forfeit':
+                from .timer import timer_forfeit
+                node, _ = timer_forfeit(state)
+                j = i + 1
+                while isinstance(node, ChanceNode) and j < len(records) and records[j]['type'] == 'roll':
+                    node = force(node, records[j]['picked'])
+                    j += 1
+                state = node
+                undo = []
+                i = j - 1
+                if not _same(state, r['after']):
+                    raise ValueError(f'timer forfeit replay diverged: {state.encode()} != {r["after"]}')
+            elif r['type'] == 'action':
+                a = _action(r['action'])
+                if on_decision and r.get('actor') == 'human':
+                    on_decision(state, a, r)
+                before = state
+                node = apply(state, a)
+                j = i + 1
+                rolled = isinstance(node, ChanceNode)
+                while isinstance(node, ChanceNode) and j < len(records) and records[j]['type'] == 'roll':
+                    node = force(node, records[j]['picked'])
+                    j += 1
+                if isinstance(node, ChanceNode):
+                    raise ValueError(f'log is missing a roll after {a}')
+                undo = [] if rolled else undo + [before]
+                state = node
+                i = j - 1
+                if not _same(state, r['after']):
+>                   raise ValueError(f'replay diverged after {a}: {state.encode()} != {r["after"]}')
+E                   ValueError: replay diverged after X: don't contest: over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:27:0 != over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:33:0
+
+playmaker_engine/review.py:154: ValueError
+=========================== short test summary info ============================
+XFAIL tests/test_step3m.py::test_an_early_cut_is_flagged_with_a_legal_reorder - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+XFAIL tests/test_step3m.py::test_exam_position[2] - step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget (three 4: X2 to C7 (rim distance 6); three 12: X2 to C7 (rim distance 6, can contest))
+XFAIL tests/test_step3m.py::test_exam_position[3] - the low man does not yet step up to help on the beaten drive (X4 Move to I4 facing N; X4 Steal (help: X4; rotation: none))
+XFAIL tests/test_step3m.py::test_exam_position[5] - the receiver drives in both closeout boards (closed to C7: O2 Move to C9; O2 Shot (three); stopped 2 short at D7: O2 Move to B8; O2 Shot (three))
+XFAIL tests/test_step3m.py::test_exam_position[6] - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12 (O2 Move to B8 (open look 27.0 against the possession 24.9))
+XFAIL tests/test_step3m.py::test_exam_position[8] - the denied receiver does not cut backdoor (O1 Move to E10)
+XFAIL tests/test_step3m.py::test_exam_position[9] - neither the kick nor the corner relocation is chosen (O1 Quick Step to K4; O1 Move to I2)
+XFAIL tests/test_step3m.py::test_exam_position[11] - the contested-pass boards do not separate early from late (early: O2 Move to A7; O1 Move to H10; final phase: O1 Move to G10)
+XFAIL tests/test_step3m.py::test_exam_position[13] - the attacker in the driving lane is not moved out of it (O2 Move to A7; O Hesitate)
+XFAIL tests/test_step3m.py::test_exam_position[14] - step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B) (3 different first actions over 20 seeds; the most common 80% (the top first move leads by 0.6))
+XFAIL tests/test_step3m.py::test_exam_position[16] - All-Star does not yet find the drain sequence in its first turn (line: O3 Move to H10 / O1 Move to K10 / O1 Quick Step to L10; X2 capacity spent: no; value +22.4 to +30.6; first off-ball move credit -0.9 over one reply, +0.2 over the phase (drain -0.1))
+XFAIL tests/test_step3n.py::test_all_star_reaches_with_no_team_fouls_and_declines_with_four - Step 3n F4 finding: on the rebuilt phase table an average possession is worth about 28, so a foul before the bonus costs +5 and play on (about 33) while a bonus foul costs two free throws (2 x the rating, 29 to 31) and ends the possession: the bonus no longer deters a reach. The board was found on the step 3m table. A designer decision (docs/reports/STEP3N_REPORT.md, F).
+XFAIL tests/test_step3n.py::test_v_by_phase_never_rises_at_senior_pro - Step 3n C finding (220 Senior Pro possessions): V rises from phase 1 (24.9) to phase 6 (29.5), about 1 point a phase against a standard error near 1; half the turnovers (at 0) come in phase 1, and possessions that run long end on better looks. Reported for the designer.
+XFAIL tests/test_step3n.py::test_credit_names_the_helper_who_answered_the_decoy - step 7: Contest as an action (D-18) changed the reading; re-based with the exam in step 12
+5 failed, 476 passed, 14 xfailed in 1536.97s (0:25:36)
+After this run: the two ceilings (test_golden_and_regression.py) and the trainer board (test_step3m.py) re-recorded with the reason D-194, and they pass. Left failing: the timing test (as since 18f) and tests/test_computer.py::test_a_play_cannot_run_past_the_end_of_its_turn (a stored game from before D-184; it fails on 18n's code too).
