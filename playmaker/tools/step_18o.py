@@ -797,6 +797,8 @@ def cmd_speed(rounds='2'):
                              env=dict(os.environ, SENSE_RUN='step18n', SENSE_18N='1')).stdout
         one = {'18n': json.loads([ln for ln in out.splitlines() if ln.startswith('RESULT ')][0][7:])}
         one['18o'] = T._timed({}, T.RULES)
+        if r == 0:
+            one['18o, zone on'] = T._timed({}, dict(T.RULES, zone='on'))        # arm B's rules, once
         tally(f'speed, round {r + 1} (one core)', time.time() - t0)
         for k, v in one.items():
             print(r + 1, k, {lv: (x['median'], x['nine_in_ten']) for lv, x in v.items()}, flush=True)

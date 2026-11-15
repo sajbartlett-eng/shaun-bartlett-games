@@ -1749,7 +1749,8 @@
      ]
     ],
     "added_by": "j18",
-    "k_too": true
+    "k_too": true,
+    "o_too": true
    },
    {
     "name": "the computer's choice (j18fix): X2 Quick Steps to C7",
@@ -3442,6 +3443,46 @@
      ]
     ],
     "added_by": "l18a"
+   },
+   {
+    "name": "the computer's choice (o18a): X2 moves to B7, facing W",
+    "turn": [
+     [
+      "move",
+      "X",
+      1,
+      "B7",
+      6,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "o18a"
+   },
+   {
+    "name": "the computer's choice (o18z): X4 Sprints to B4, then X4 tries a Steal",
+    "turn": [
+     [
+      "sprint",
+      "X",
+      3,
+      "B4",
+      5,
+      -1,
+      ""
+     ],
+     [
+      "steal",
+      "X",
+      3,
+      null,
+      -1,
+      -1,
+      ""
+     ]
+    ],
+    "added_by": "o18z",
+    "zone_too": true
    }
   ]
  },

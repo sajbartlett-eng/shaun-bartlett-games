@@ -1,0 +1,285 @@
+{
+ "run": "armB",
+ "zone": true,
+ "possessions": 200,
+ "shots": 157,
+ "threes": {
+  "taken": 79,
+  "contested": 33,
+  "by_defender_position": {
+   "open": {
+    "taken": 46,
+    "made": 20.1,
+    "points": 1.31
+   },
+   "not square": {
+    "taken": 17,
+    "made": 7.0,
+    "points": 1.23
+   },
+   "square in front, rushed": {
+    "taken": 12,
+    "made": 5.0,
+    "points": 1.24
+   },
+   "behind": {
+    "taken": 4,
+    "made": 1.8,
+    "points": 1.35
+   }
+  },
+  "by_open_rating": {
+   "11": {
+    "taken": 4,
+    "contested": 3,
+    "square": 1
+   },
+   "10": {
+    "taken": 16,
+    "contested": 11,
+    "square": 4
+   },
+   "9": {
+    "taken": 41,
+    "contested": 16,
+    "square": 6
+   },
+   "8": {
+    "taken": 15,
+    "contested": 2,
+    "square": 1
+   },
+   "7": {
+    "taken": 2,
+    "contested": 1,
+    "square": 0
+   },
+   "6": {
+    "taken": 1,
+    "contested": 0,
+    "square": 0
+   }
+  }
+ },
+ "inside": {
+  "shots": 78,
+  "made": 56.4,
+  "block_tried": 0,
+  "fouled": 0,
+  "by_position": {
+   "behind": {
+    "shots": 45,
+    "made": 32.8,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "not square": {
+    "shots": 9,
+    "made": 6.1,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "open": {
+    "shots": 12,
+    "made": 10.7,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "square in front, set": {
+    "shots": 5,
+    "made": 2.8,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "square in front, rushed": {
+    "shots": 7,
+    "made": 4.0,
+    "block_tried": 0,
+    "fouled": 0
+   }
+  },
+  "by_contest_foul_rating": {
+   "6": {
+    "could_block": 5,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "7": {
+    "could_block": 14,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "8": {
+    "could_block": 10,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "9": {
+    "could_block": 15,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "10": {
+    "could_block": 3,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "11": {
+    "could_block": 3,
+    "block_tried": 0,
+    "fouled": 0
+   },
+   "12": {
+    "could_block": 4,
+    "block_tried": 0,
+    "fouled": 0
+   }
+  },
+  "by_shot": {
+   "layup": 60,
+   "dunk": 0,
+   "post": 6,
+   "floater": 12
+  }
+ },
+ "faced_with_a_square_defender": {
+  "turns": 22,
+  "first": {
+   "Move away": 10,
+   "Sprint away": 1,
+   "Dribble at him": 5,
+   "Quick Step away": 3,
+   "passed": 2,
+   "waited, or only others moved": 1
+  },
+  "after_a_move": {
+   "free": 13,
+   "defender_rushed": 3,
+   "still_square": 0,
+   "ball_lost": 2,
+   "passed_on": 1
+  },
+  "dribble": {
+   "tried": 5,
+   "won": 3
+  }
+ },
+ "help": {
+  "finishes": {
+   "drives_finished_inside": 47,
+   "no_square_defender": 42,
+   "his_own_defender_square": 1,
+   "another_defender_square": 4
+  },
+  "defenders_of_non_shooters_at_the_start": {
+   "non_shooters": 415,
+   "next_to_his_man": 365,
+   "in_the_key": 2,
+   "elsewhere": 48
+  }
+ },
+ "setup": {
+  "offence": {
+   "Point Guard": {
+    "beyond the line": 143
+   },
+   "Shooting Guard": {
+    "long two": 23,
+    "the three-point line": 129,
+    "mid-range": 27,
+    "beyond the line": 12,
+    "the key": 9
+   },
+   "Small Forward": {
+    "mid-range": 25,
+    "the key": 5,
+    "the three-point line": 121,
+    "beyond the line": 20,
+    "long two": 29
+   },
+   "Power Forward": {
+    "beyond the line": 24,
+    "the three-point line": 115,
+    "the key": 8,
+    "long two": 31,
+    "mid-range": 22
+   },
+   "Centre": {
+    "the three-point line": 121,
+    "long two": 27,
+    "mid-range": 31,
+    "beyond the line": 12,
+    "the key": 9
+   },
+   "Combo Guard": {
+    "beyond the line": 57
+   }
+  },
+  "defence": {
+   "Combo Guard": {
+    "in the key": 2,
+    "next to his man": 36,
+    "elsewhere": 2
+   },
+   "Shooting Guard": {
+    "next to his man": 165,
+    "in the key": 2,
+    "elsewhere": 33
+   },
+   "Small Forward": {
+    "next to his man": 178,
+    "elsewhere": 22
+   },
+   "Power Forward": {
+    "next to his man": 165,
+    "elsewhere": 35
+   },
+   "Centre": {
+    "next to his man": 168,
+    "in the key": 2,
+    "elsewhere": 30
+   },
+   "Point Guard": {
+    "next to his man": 154,
+    "elsewhere": 4,
+    "in the key": 2
+   }
+  }
+ },
+ "arrows_off_the_ball": {
+  "defender_turns": {
+   "at_his_man": 1034,
+   "at_the_ball_handler": 145,
+   "along_a_passing_lane": 407,
+   "toward_the_rim": 7,
+   "other": 1087
+  },
+  "passes": 226,
+  "intercepts_tried": 2,
+  "intercepts_won": 1,
+  "pass_turnovers": 1
+ },
+ "shot_mix": {
+  "threes": 79,
+  "rim shots (layup, dunk)": 60,
+  "other twos": 18
+ }
+}
+== three
+  open 11 | open: 1 (0.6) 1: 2 (1.0) 2: 1 (0.5)
+  open 10 | open: 5 (2.5) 1: 10 (4.5) 2: 1 (0.4)
+  open 9 | open: 25 (11.2) 1: 15 (6.0) 2: 1 (0.3)
+  open 8 | open: 13 (5.2) 1: 2 (0.7)
+  open 7 | open: 1 (0.3) 1: 1 (0.3)
+  open 6 | open: 1 (0.3)
+== mid
+== long
+== inside
+  open 19 | open: 5 (4.6) 1: 3 (2.5) 2: 3 (2.4) 3: 3 (2.2) 5: 2 (1.4) 7: 1 (0.5)
+  open 18 | open: 7 (6.0) 1: 2 (1.7) 2: 5 (3.8) 3: 9 (6.6) 4: 9 (6.2) 5: 2 (1.2) 8: 1 (0.5)
+  open 17 | 1: 4 (3.2) 2: 1 (0.7) 3: 2 (1.4) 4: 3 (1.9)
+  open 16 | 1: 2 (1.5)
+  open 15 | 1: 2 (1.3) 2: 1 (0.7) 5: 1 (0.5) 7: 1 (0.4)
+  open 14 | 1: 6 (3.8)
+  open 13 | 1: 1 (0.6)
+  open 12 | 1: 1 (0.6) 2: 1 (0.4)
