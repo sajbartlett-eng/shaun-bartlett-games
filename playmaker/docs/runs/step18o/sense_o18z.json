@@ -1,0 +1,34 @@
+{
+ "tag": "o18z",
+ "switches": {},
+ "positions": 1,
+ "scored": 1,
+ "matched": 1,
+ "points_lost_a_position": 0.0,
+ "interval": [
+  0.0,
+  0.0
+ ],
+ "candidates_added": 0,
+ "rows": [
+  {
+   "id": "game EB3F5B, the pass in the air",
+   "group": "closeout",
+   "best": "the computer's choice (o18z): X4 Sprints to B4, then X4 tries a Steal",
+   "choice": "the computer's choice (o18z): X4 Sprints to B4, then X4 tries a Steal",
+   "matches": true,
+   "points_lost": 0.0,
+   "interval": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "by_group": {
+  "closeout": {
+   "positions": 1,
+   "matched": 1,
+   "points_lost": 0.0
+  }
+ }
+}

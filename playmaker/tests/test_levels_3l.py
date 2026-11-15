@@ -102,7 +102,7 @@ def test_junior_is_the_u16_card_and_matches_the_printed_sheet():
     assert positions == {1, 2, 3, 4, 5} and len(U16) >= 6
     back = LV.effective_card('apgA', 'junior')              # a defence side too: agility 8 H, intercept 10 H, steal 6 H
     assert (back.r['agility'], back.r['intercept'], back.r['challenge'], back.r['steal']) == (8, 10, 8, 6)
-    assert (back.r['con_layup'], back.r['con_three']) == (7, 2)             # re-recorded: D-184 cards
+    assert (back.r['con_layup'], back.r['con_three']) == (7, 4)             # re-recorded: D-184 cards, then D-194 (the original 4)
 
 
 def test_card_labels():
@@ -188,8 +188,9 @@ def test_engine_shot_value_and_roll_targets_use_junior_ratings(junior_game):
     assert isinstance(node, ChanceNode)
     assert max(p for p, _, _ in node.outcomes) == max(p_success(10, s.ctx.rules), 1 - p_success(10, s.ctx.rules))
     assert p_success(10, s.ctx.rules) in [p for p, _, _ in node.outcomes]
-    # Re-recorded in step 18l, reason: D-184 cards. A three by O1 (junior three 7; pro is higher) contested by X1
-    # (junior three contest 2, nearer the rim): 3 x (7 - 2) = 15; open, 3 x 7 = 21. Fouled on a three: 3 x junior FT 12 = 36.
+    # Re-recorded in step 18l, reason: D-184 cards, and in step 18o, reason: D-194. A three by O1 (junior three 7; pro
+    # is higher) contested by X1 (three contest 4, nearer the rim): 3 x (7 - 4) = 9; open, 3 x 7 = 21. Fouled on a
+    # three: 3 x junior FT 12 = 36.
     from playmaker_engine import board as B
     from playmaker_engine import rules_config as RC
     sq3 = next((x, y) for y in range(1, B.H + 1) for x in range(B.W) if B.zone((x, y)) == '3' and y > 3)
@@ -199,7 +200,7 @@ def test_engine_shot_value_and_roll_targets_use_junior_ratings(junior_game):
     s3 = game_state(off, dfn, o_sq, x_sq, [B.dir_between(near, sq3)] + TABLE_ARROWS[1:], ball=0, check=False)
     opts = {o.defender: o for o in contest_options(s3, 0, 'three')}
     assert opts[-1].value == 21
-    assert opts[0].contest == 2 and opts[0].value == 15
+    assert opts[0].contest == 4 and opts[0].value == 9
     assert opts[0].ft == RC.FT_MULT_THREE * 12 == 36
     # the pro card differs, so pro ratings leaking in would fail these numbers
     assert CARDS['apgA'].shot('three') != 7 and CARDS['apgA'].r['free_throw'] != 12

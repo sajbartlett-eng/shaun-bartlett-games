@@ -1,0 +1,7 @@
+rookie as it was {'budget': 0.12, 'offence_median': 1.369, 'offence_slowest': 1.786, 'defence_median': 2.304, 'defence_slowest': 3.253}
+rookie search {'budget': 0.12, 'offence_median': 0.129, 'offence_slowest': 0.151, 'defence_median': 0.135, 'defence_slowest': 0.143}
+starter as it was {'budget': 0.4, 'offence_median': 1.329, 'offence_slowest': 1.635, 'defence_median': 2.73, 'defence_slowest': 3.275}
+starter search {'budget': 0.4, 'offence_median': 0.362, 'offence_slowest': 0.431, 'defence_median': 0.366, 'defence_slowest': 0.428}
+allstar as it was {'budget': 1.0, 'offence_median': 3.658, 'offence_slowest': 4.828, 'defence_median': 2.647, 'defence_slowest': 4.393}
+allstar search {'budget': 1.0, 'offence_median': 0.768, 'offence_slowest': 0.872, 'defence_median': 0.813, 'defence_slowest': 0.871}
+[tally] one core: setup time against its budget: 0.054 core-hours; total 10.97

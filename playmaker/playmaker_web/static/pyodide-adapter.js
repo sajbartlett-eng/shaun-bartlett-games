@@ -33,7 +33,7 @@
             const f = m.bundle.files, dataf = n => JSON.parse(f['playmaker_engine/data/' + n]);
             self.PMEngine.init({ zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json'),
               learned: (() => { try { return dataf('learned_weights.json'); } catch (e) { return null; } })() });   // step 17
-            py.runPython("import js\\nfrom playmaker_engine import agent as _AG\\n_AG.JS['search'] = js.PMEngine.searchJSON\\n_AG.JS['goals'] = js.PMEngine.goalsJSON");
+            py.runPython("import js\\nfrom playmaker_engine import agent as _AG\\n_AG.JS['search'] = js.PMEngine.searchJSON\\n_AG.JS['goals'] = js.PMEngine.goalsJSON\\n_AG.JS['reads'] = js.PMEngine.readsJSON");
           }
           self.postMessage({ type: 'ready' });
         } catch (e) { self.postMessage({ type: 'failed', error: String(e && e.message || e) }); }

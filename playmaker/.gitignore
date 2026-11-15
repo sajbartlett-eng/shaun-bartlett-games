@@ -18,3 +18,6 @@ docs/runs/step18h/work/
 docs/runs/step18g/work/
 docs/runs/step18i/work/
 docs/runs/step18j/work/
+docs/runs/step18o/work/*.job.json
+docs/runs/step18o/work/*.out.json
+docs/runs/step18o/work/pool_*.json

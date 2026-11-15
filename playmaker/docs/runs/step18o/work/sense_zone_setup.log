@@ -1,0 +1,5 @@
+[tally] sense check: zone_setup (4 placements, 16 each, allstar, zone on): 0.515 core-hours; total 3.83
+zone_setup | his game | 18.0 [10.7, 25.3] {'turnover_end': 6, 'three': 5, 'layup': 2, 'free_throws': 2, 'post': 1} inside 3 with a square defender in front 0 
+zone_setup | his game, X1 square on I10 | 17.5 [11.5, 23.5] {'three': 8, 'turnover_end': 5, 'layup': 2, 'floater': 1} inside 3 with a square defender in front 0 
+zone_setup | X1 square, X4 and X5 in the lane (H5, J5) | 21.2 [15.4, 27.0] {'turnover_end': 3, 'free_throws': 1, 'layup': 4, 'floater': 1, 'three': 7} inside 5 with a square defender in front 0 
+zone_setup | the search, first pick (J10 E4 K7 M6 D4) | 19.9 [13.7, 26.2] {'layup': 1, 'turnover_end': 4, 'post': 2, 'three': 7, 'free_throws': 1, 'floater': 1} inside 4 with a square defender in front 0 

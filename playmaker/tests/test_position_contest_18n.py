@@ -1,6 +1,10 @@
 """Step 18n (Shaun, 14 Nov 2026), the app only. D-189: contest ratings restored. D-191: jump shots are contested by
 position only; inside shots keep the hand up and the block, and from in front with the arrow on him the full contest is
-automatic and safe. D-192: the new jump-shot contest ratings. D-193: a contesting defender always takes at least 1 off."""
+automatic and safe. D-193: a contesting defender always takes at least 1 off.
+Step 18o (Shaun, 15 Nov 2026), D-194, the square defender: D-192's ratings are gone, the jump-shot contests are back at
+Shaun's original values, and one table sets every contest by position: square (in front, his arrow on the shooter) the
+full rating; in front with the arrow off, or beside, 3 less; behind 6 less; rushed 2 more off; at least 1."""
+import json
 import os
 import re
 
@@ -44,10 +48,11 @@ def test_the_rule_is_the_apps_and_needs_the_soft_contest():
 
 def test_a_jump_shot_is_contested_by_position_only():
     con = board('I10', 'I9', 'N').ctx.dfn[0].con('three')
-    assert con == 3
-    for x1, arrow, want in (('I9', 'N', con), ('I9', 'E', con),       # in front: the arrow has no effect
-                            ('J10', 'W', con), ('J10', 'N', con),     # beside him: the full rating too
-                            ('I11', 'S', max(1, con - 3))):           # behind: 3 less, and never under 1 (D-193)
+    assert con == 5                                                    # Shaun's original (D-194); it was 3 under D-192
+    for x1, arrow, want in (('I9', 'N', con),                          # square: in front, his arrow on the shooter
+                            ('I9', 'E', con - 3),                      # in front with the arrow off him: 3 less
+                            ('J10', 'W', con - 3), ('J10', 'N', con - 3),   # beside him: 3 less, whatever the arrow
+                            ('I11', 'S', max(1, con - 6))):            # behind: 6 less, and never under 1 (D-193)
         s = board('I10', x1, arrow)
         assert auto_contest(s, 0, 'three') == (0, want, 'position'), (x1, arrow)
         assert not blocks(s, 'three')                                  # no Contest action on a jump shot
@@ -58,22 +63,38 @@ def test_a_jump_shot_is_contested_by_position_only():
 
 
 def test_a_jump_shots_contest_names_position_in_plain_words():
-    assert 'X1 was beside O1, so the three was contested (15% off)' in score(no_action(board('I10', 'J10', 'W'), 'three')).detail
+    assert 'X1 was square in front of O1, so the three was contested (25% off)' in score(no_action(board('I10', 'I9', 'N'), 'three')).detail
+    assert 'X1 was in front of O1 with his arrow off him, so the three was contested (10% off)' in score(no_action(board('I10', 'I9', 'E'), 'three')).detail
+    assert 'X1 was beside O1, so the three was contested (10% off)' in score(no_action(board('I10', 'J10', 'W'), 'three')).detail
     assert 'X1 was behind O1, so the three was contested (5% off)' in score(no_action(board('I10', 'I11', 'S'), 'three')).detail
 
 
 def test_a_rushed_defender_contests_a_jump_shot_two_lower():
-    s = board('I10', 'I9', 'N', rush_x=RC.RUSH_QS)                     # after a Quick Step
-    assert auto_contest(s, 0, 'three')[1] == 3 - 2
+    s = board('I10', 'I9', 'N', rush_x=RC.RUSH_QS)                     # square, after a Quick Step
+    assert auto_contest(s, 0, 'three')[1] == 5 - 2
     locked = board('I10', 'I9', 'N', lock_x=1)                         # locked is rushed too (D-185)
-    assert auto_contest(locked, 0, 'three')[1] == 3 - 2
+    assert auto_contest(locked, 0, 'three')[1] == 5 - 2
+    beside = board('I10', 'J10', 'W', rush_x=RC.RUSH_QS)               # not square and rushed: 3 less and 2 less
+    assert auto_contest(beside, 0, 'three')[1] == max(1, 5 - 3 - 2)
 
 
 def test_only_the_best_contest_counts_on_a_jump_shot():
-    s = board('I10', 'I11', 'S', x4='I9')                              # X1 behind (1 off), X4 in front (his full rating)
+    s = board('I10', 'I11', 'S', x4='I9')                              # X1 behind (1 off), X4 square (his full rating)
     j, c, kind = auto_contest(s, 0, 'three')
     assert (j, c) == (3, s.ctx.dfn[3].con('three')) and c > 1
     assert no_action(s, 'three').result.contester == 3
+
+
+def test_one_table_sets_every_shot_by_position():
+    """D-194: the automatic contest of a jump shot and of an inside shot is the same table."""
+    for o1, spots in (('I10', (('I9', 'N'), ('I9', 'E'), ('J10', 'W'), ('I11', 'S'))),
+                      ('I4', (('I3', 'N'), ('I3', 'E'), ('J4', 'W'), ('I5', 'N')))):
+        for t in (('three',) if o1 == 'I10' else ('layup', 'floater')):
+            for (x1, arrow), less in zip(spots, (0, 3, 3, 6)):
+                for rush in (0, RC.RUSH_QS):
+                    s = board(o1, x1, arrow, rush_x=rush)
+                    want = max(1, s.ctx.dfn[0].con(t) - less - (2 if rush else 0))
+                    assert auto_contest(s, 0, t)[1] == want, (o1, x1, arrow, t, rush)
 
 
 def test_inside_from_in_front_with_the_arrow_on_him_the_full_contest_is_automatic_and_safe():
@@ -113,29 +134,39 @@ def test_a_contesting_defender_always_takes_at_least_one_off():
 
 def test_with_the_rule_off_the_soft_and_hard_contest_are_as_before():
     s = board('I10', 'I9', 'N', rules=OFF)
-    assert auto_contest(s, 0, 'three') == (-1, 0, '')                  # a three's hand up: 3 less 3
+    assert auto_contest(s, 0, 'three') == (0, 2, 'soft')               # a three's hand up: 5 less 3 (D-177)
     assert [a.piece for a in blocks(s, 'three')] == [0]                # and the Contest action is there
-    rim = board('I4', 'I3', 'N', rules=OFF)
-    assert auto_contest(rim, 0, 'layup')[1:] == (rim.ctx.dfn[0].con('layup') - 3, 'soft')
 
 
-def test_every_contest_rating_matches_the_table():
+def test_every_contest_rating_is_shauns_original():
+    """D-189 and D-194: all seven contests on every card are the values before D-184 (the table's "orig" columns; the
+    new types take their source types')."""
     rows = {}
     for ln in open(os.path.join(ROOT, 'docs', 'reference', 'JUMP_CONTESTS_14NOV.md')):
         m = re.match(r"\| `(\w+)` \| .*? \| [ABC] \| (\d+) \| (\d+) \| (\d+) \| (\d+) \| (\d+) → \*\*(\d+)\*\* \| (\d+) → \*\*(\d+)\*\* \| (\d+) → \*\*(\d+)\*\* \|", ln)
         if m:
             g = [int(x) for x in m.groups()[1:]]
-            rows[m.group(1)] = dict(layup=g[0], dunk=g[1], post=g[2], floater=g[3], mid=g[5], long=g[7], three=g[9], was=(g[4], g[6], g[8]))
+            rows[m.group(1)] = dict(layup=g[0], dunk=g[1], post=g[2], floater=g[3], mid=g[4], long=g[6], three=g[8])
     assert set(rows) == set(CARDS) and len(rows) == 81
-    jump = {2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4}                  # D-192
+    before = json.load(open(os.path.join(ROOT, 'tools', 'sense_set', 'cards_before_d184.json')))
     for k, c in CARDS.items():
+        src = {'slsf': 'scsf', 'swc': 'dpf'}.get(k[:-1], k[:-1]) + k[-1]
         for t in ('layup', 'dunk', 'post', 'floater', 'mid', 'long', 'three'):
-            assert c.con(t) == rows[k][t], (k, t)
-        assert tuple(jump[v] for v in rows[k]['was']) == (rows[k]['mid'], rows[k]['long'], rows[k]['three']), k
+            assert c.con(t) == rows[k][t] == before[src]['r']['con_' + t], (k, t)
 
 
-def test_jump_shot_contest_colours_follow_the_new_range():
+def test_no_other_rating_changed_from_the_cards_of_step_18n():
+    """D-190: this step changes the three jump-shot contests and nothing else. Against the cards before D-184, every
+    difference is one D-184 or D-186 made to a shot rating, never a defence rating."""
+    before = json.load(open(os.path.join(ROOT, 'tools', 'sense_set', 'cards_before_d184.json')))
+    shots = {'shot_layup', 'shot_dunk', 'shot_post', 'shot_floater', 'shot_mid', 'shot_long', 'shot_three'}
+    for k, c in before.items():
+        moved = {n for n, v in c['r'].items() if CARDS[k].r[n] != v}
+        assert moved <= shots, (k, moved)
+
+
+def test_jump_shot_contest_colours_follow_the_first_range():
     from playmaker_engine.data import data as D
-    for name in ('con_mid', 'con_long', 'con_three'):
-        assert D.RANGES[name] == (2, 3)                                # average from 2, above average from 3
-        assert all(c.bands[name] == ('H' if c.r[name] >= 3 else 'A' if c.r[name] >= 2 else 'L') for c in CARDS.values())
+    for name, (a, h) in (('con_mid', (4, 7)), ('con_long', (4, 7)), ('con_three', (4, 6))):
+        assert D.RANGES[name] == (a, h)
+        assert all(c.bands[name] == ('H' if c.r[name] >= h else 'A' if c.r[name] >= a else 'L') for c in CARDS.values())

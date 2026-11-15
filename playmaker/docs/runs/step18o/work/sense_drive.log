@@ -1,0 +1,5 @@
+[tally] sense check: drive (4 placements, 16 each, allstar): 0.433 core-hours; total 3.32
+drive | X1 on J10, arrow on O1 (his game) | 22.3 [15.5, 29.1] {'layup': 10, 'turnover_end': 4, 'post': 1, 'three': 1} inside 11 with a square defender in front 1 O1 Sprints to I6
+drive | X1 on I10, arrow on O1 (square) | 21.2 [14.9, 27.4] {'post': 3, 'three': 4, 'turnover_end': 4, 'layup': 5} inside 8 with a square defender in front 3 O1 Sprints to E7
+drive | X1 where the search rates him best (J11 facing E) | 25.2 [20.2, 30.3] {'turnover_end': 2, 'layup': 9, 'three': 2, 'free_throws': 1, 'post': 2} inside 11 with a square defender in front 3 O1 Sprints to I6
+drive | X1 on J10 facing W (his arrow across the lane) | 24.8 [19.7, 29.8] {'layup': 9, 'three': 2, 'post': 2, 'turnover_end': 2, 'free_throws': 1} inside 11 with a square defender in front 2 O1 Sprints to I10

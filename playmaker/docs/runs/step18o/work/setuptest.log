@@ -1,0 +1,9 @@
+[tally] self-play (setup stored, allstar, 48 possessions): 0.298 core-hours; total 1.09
+stored allstar 48 possessions 22.21 [18.81, 25.61]
+[tally] self-play (setup man, allstar, 48 possessions): 0.338 core-hours; total 1.43
+man allstar 48 possessions 22.12 [18.64, 25.61]
+[tally] self-play (setup search, allstar, 48 possessions): 0.186 core-hours; total 1.61
+search allstar 48 possessions 28.96 [27.21, 30.71]
+man less stored, start by start: [-0.08, -3.97, 3.81]
+search less stored, start by start: [6.75, 2.8, 10.7]
+search less man, start by start: [6.83, 2.79, 10.88]

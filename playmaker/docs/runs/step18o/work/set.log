@@ -1,0 +1,8 @@
+[tally] searches (o18a, 4 positions): 0.003 core-hours; total 9.95
+[tally] play-outs (16 candidate copies of 16 on 4 positions): 0.683 core-hours; total 10.63
+  --  closeout, shooter cannot move | the defence Pauses | lost 19.9 [13.91, 25.89] | best: X3 Quick Steps to E4, and the computer chooses the
+  ok  closeout, shooter can move | the computer's choice (j18): the defence Pauses | lost 0.51 [-0.69, 1.72] | best: X3 Quick Steps to E4
+  ok  closeout, step 2 | X3 Moves next to him, then tries a Steal | lost 0.0 [0.0, 0.0] | best: X3 Moves next to him, then tries a Steal
+  ok  game EB3F5B, the pass in the air | the computer's choice (o18a): X2 moves to B7, facing W | lost 3.12 [-0.34, 6.59] | best: the defence Pauses (the log)
+o18a: matched 3 of 4; points lost a position 5.88 [4.13, 7.64]; 2 choices added
+{"closeout": {"positions": 4, "matched": 3, "points_lost": 5.88}}

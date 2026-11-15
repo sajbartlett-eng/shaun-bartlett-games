@@ -101,22 +101,25 @@ def test_legacy_ceilings_reproduced_exactly():
 def test_engine_ceilings_recorded():
     from playmaker_engine.analysis import engine_ceilings
     eng = engine_ceilings([6, 10, 14])
-    # step 18l and 18n: re-recorded, reason: D-184 and D-186 (the open jump shots), then D-189 to D-193 (the contest
-    # ratings: a three's contest is 1 to 4). On the cards before them these were 9 and 30, and 12.75
-    # (docs/history/REGRESSION.md keeps the old table). D-185 and D-191 are the app's and change nothing here.
-    assert eng[6][0][0] == 12 and eng[6][1][0] == 27
-    assert eng[10][0][0] == 15
+    # step 18l, 18n and 18o: re-recorded, reason: D-184 and D-186 (the open jump shots), then D-189 to D-193, then
+    # D-194 (the three contests are back at Shaun's originals, 2 to 8, on the lower jump shots of D-184). On the cards
+    # before all of them these were 9 and 30, and 12.75 (docs/history/REGRESSION.md keeps the old table); under
+    # D-192 they were 12 and 27, and 15. D-185 and D-191 are the app's and change nothing here.
+    from fractions import Fraction
+    assert eng[6][0][0] == 6 and eng[6][1][0] == 24
+    assert eng[10][0][0] == Fraction(21, 2)
     assert eng[14] == (None, None)              # Hold for One: no shot before the final phase
 
 
 @pytest.mark.usefixtures('legacy_rules')   # recorded under the rules before the step 3i follow-up rulings
 def test_two_action_reaction_closes_the_gap():
-    # Late Clock Reset: one reaction action leaves O1's three worth 15; with two actions X4 Moves (arrow set) and
-    # Quick Steps in to contest clean: 9. Re-recorded in step 18l (D-184 and D-186) and step 18n (D-189 to D-193: the
-    # contest ratings). On the cards before all of them: 12.75 and 3.
+    # Late Clock Reset: one reaction action leaves O1's three worth 10.5; with two actions X4 Moves (arrow set) and
+    # Quick Steps in to contest clean: 0. Re-recorded in step 18l (D-184 and D-186), step 18n (D-189 to D-193) and
+    # step 18o (D-194: the three contests back at Shaun's originals). On the cards before all of them: 12.75 and 3;
+    # under D-192: 15 and 9.
     from playmaker_engine.analysis import two_action_ceilings
     gift = two_action_ceilings([10], parts=('gift',))[10][0]
-    assert gift[0] == 9 and 'then' in gift[1]
+    assert gift[0] == 0 and 'then' in gift[1]
 
 
 # ---- play() -------------------------------------------------------------------------------

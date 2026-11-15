@@ -138,10 +138,10 @@ def test_late_closeout_off_by_default():
 def test_a_late_contester_on_a_three_takes_the_minus_three_and_no_foul_roll():
     set_ = _contest('three', 'J10', 'I10', 'E', False)
     late = _contest('three', 'J10', 'I10', 'E', True)
-    # step 18l and 18n: re-recorded, reason: D-184 and D-192 cards. A three's contest is now 1 to 4 (3 here), so the
-    # minus three takes it to nothing (a contest is never below nothing)
-    assert set_.contest == 3 and RC.FAR_CONTEST_PENALTY == 3
-    assert late.clean and late.contest == max(0, set_.contest - RC.FAR_CONTEST_PENALTY) == 0
+    # step 18l, 18n and 18o: re-recorded, reason: D-184, D-192, then D-194 (the three contests are back at Shaun's
+    # originals: 5 here, so the minus three leaves 2)
+    assert set_.contest == 5 and RC.FAR_CONTEST_PENALTY == 3
+    assert late.clean and late.contest == max(0, set_.contest - RC.FAR_CONTEST_PENALTY) == 2
 
 
 def test_a_late_contester_at_the_rim_contests_with_a_foul_roll():

@@ -79,12 +79,13 @@ class NodeEngine:
         from . import agent as AG
         AG.JS['search'] = lambda t: self.call('searchJSON', t)
         AG.JS['goals'] = lambda t: self.call('goalsJSON', t)
+        AG.JS['reads'] = lambda t: self.call('readsJSON', t)
         return self
 
     @staticmethod
     def uninstall():
         from . import agent as AG
-        AG.JS['search'] = AG.JS['goals'] = None
+        AG.JS['search'] = AG.JS['goals'] = AG.JS['reads'] = None
 
     def close(self):
         self.uninstall()

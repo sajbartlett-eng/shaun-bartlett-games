@@ -26,7 +26,7 @@ LEVELS = ('rookie', 'starter', 'allstar')
 SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
 # step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
 # PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
-JS = {'search': None, 'goals': None}
+JS = {'search': None, 'goals': None, 'reads': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
 # step 3n Part B: the exam's fixed-depth run (the design verdict): every level searches exactly this depth, no time limit
 FIXED = {'depth': None}
 
@@ -365,11 +365,292 @@ def _with_stale(s, side, stale):
     return s.with_(o=os_)
 
 
-# ---- setup (B6) -------------------------------------------------------------------------------------------------------
+# ---- setup (B6; rebuilt in step 18o, D-195) ---------------------------------------------------------------------------
+#
+# The setup must fit the players (Shaun, 15 Nov 2026). Before step 18o both sides were improved from a fixed start (the
+# table's squares; each defender next to his man) by the quick reading, with two arrow directions tried, and were never
+# judged by play. Now:
+#   - nothing is a starting answer: a search starts from a placement drawn at random;
+#   - every placement is treated alike: a change moves one player, drawn at random, to any empty square of the court
+#     or to a square next to his own, and gives a defender any of the eight arrows;
+#   - the quick reading shortlists (speed needs it): a change is kept when the reading's own parts say it is better
+#     for the side placing: the position's value first, then the best look the defence's cover leaves, then the next;
+#   - the shortlist is judged by play: each search's placement is read by the search itself, with the level's own
+#     settings, the offence's turn played out and its shot settled; the best by that reading is taken.
+# Setup has a fraction of a decision's time (game._setup_budget), which holds a few hundred quick readings and a
+# handful of played-out ones. So the searches of a game are carried on from possession to possession (memory): each
+# setup starts from where that side's own search stood, never from a set placement.
+#
+# It is behind a switch, off (ai_profiles.json setup.search): played out on Shaun's board, the placements it finds
+# give up more than the old setup's (docs/reports/STEP18O_REPORT.md). The readings can't tell a good setup from a
+# bad one at the start of a possession; only play can, and play doesn't fit in the setup's time.
+SETUP = dict(chains=3, batch=6, quick_share=0.55)   # how many searches side by side, changes read at a time, the quick reading's share of the time
+
 
 def _legal_o(sq, ball):
     return (len(set(sq)) == 5 and all(B.on_board(q) for q in sq) and B.zone(sq[ball]) == '.' and sq[ball][1] > 1)
 
+
+def _court():
+    return [(x, y) for x in range(B.W) for y in range(1, B.H + 1)]
+
+
+def _read_key(s):
+    """The quick reading's own parts, the offence's view: the position's value, then each attacker's best look after
+    the defence's best cover, largest first (decide.Read.leaf and .cover)."""
+    r = Read(s)
+    res = r.cover()['residual']
+    return tuple([r.leaf()] + sorted((float(res.get(i, 0.0)) for i in range(5)), reverse=True))
+
+
+def _reads(make, items):
+    """[(o_sq, ball, xs, arrows)] -> the reading's parts of each (None for a placement that isn't legal). One call to
+    the JavaScript engine when it is there (engine.js readsJSON: the same Read)."""
+    ok = [(_legal_o(list(o), b) and len(set(xs) | set(o)) == 10 and all(B.on_board(q) for q in xs)) for o, b, xs, ar in items]
+    out = [None] * len(items)
+    live = [k for k, v in enumerate(ok) if v]
+    if not live:
+        return out
+    if JS.get('reads') is not None:
+        o, b, xs, ar = items[live[0]]
+        s0 = make(o, b, xs, ar)
+        if jsbridge.ported(s0.ctx.rules):
+            req = dict(state=jsbridge.state_json(s0), ctx=jsbridge.ctx_json(s0.ctx),
+                       items=[dict(o=[B.sq(q) for q in items[k][0]], ball=items[k][1], x=[B.sq(q) for q in items[k][2]],
+                                   arrows=list(items[k][3])) for k in live])
+            for k, key in zip(live, json.loads(JS['reads'](json.dumps(req)))):
+                out[k] = tuple(key)
+            return out
+    for k in live:
+        o, b, xs, ar = items[k]
+        out[k] = _read_key(make(o, b, xs, ar))
+    return out
+
+
+def _better(a, b, sign):
+    """Is reading a better than b for the side placing (sign +1 the offence, -1 the defence), part by part?"""
+    for u, v in zip(a, b):
+        if sign * (u - v) > 1e-9:
+            return True
+        if sign * (u - v) < -1e-9:
+            return False
+    return False
+
+
+def _played(make, o_sq, ball, xs, arrows, level, t_end, depth=1):
+    """The search's own played-out reading of a placement (the offence to act): the level's search, the offence's
+    turn played out and its shot settled, `depth` turns ahead. None if it could not finish."""
+    s = make(o_sq, ball, xs, arrows)
+    p = dict(profile(level), noise=0.0, depth=[depth, depth])
+    budget = max(0.02, t_end - time.time())
+    try:
+        if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
+            req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=p, budget=budget, max_depth=depth, stale=None)
+            out = json.loads(JS['search'](json.dumps(req)))
+            if out['reached'] < depth or not out['results']:
+                return None
+            return max(v for v, _ in out['results'])
+        ag = Agent('O', level)
+        srch = Searcher('O', p, ag._evaluate(s), time.time() + budget, random.Random(0))
+        results, reached = srch.root(s, depth, depth)
+        if reached < depth or not results:
+            return None
+        return max(v for v, _ in results)
+    except Exception:
+        return None
+
+
+def _random_x(o_sq, rng):
+    free = [q for q in _court() if q not in set(o_sq)]
+    return rng.sample(free, 5), [rng.randrange(8) for _ in range(5)]
+
+
+def _random_o(rng):
+    court = _court()
+    ball = rng.choice([q for q in court if B.zone(q) == '.' and q[1] > 1])
+    return [ball] + rng.sample([q for q in court if q != ball], 4)
+
+
+def _change(sq, taken, rng):
+    """One player's new square, drawn alike from two kinds of change: any empty square of the court, or a square next
+    to his own (or his own). None if the square drawn is taken."""
+    i = rng.randrange(5)
+    if rng.random() < 0.5:
+        q = rng.choice(_court())
+    else:
+        q = (sq[i][0] + rng.randint(-1, 1), sq[i][1] + rng.randint(-1, 1))
+    if not B.on_board(q) or q in taken or (q in sq and q != sq[i]):
+        return None
+    return i, q
+
+
+def _legalise(o_sq, xs, rng):
+    """A carried defence against a new offence: a defender whose square an attacker now stands on is drawn again."""
+    xs, taken = list(xs), set(o_sq)
+    for j in range(5):
+        if xs[j] in taken or xs[j] in xs[:j]:
+            xs[j] = rng.choice([q for q in _court() if q not in taken and q not in xs])
+    return xs
+
+
+def _defence_chains(make, o_sq, ball, rng, t_end, chains):
+    """Carry the defence's searches on until t_end. chains: [dict(xs, arrows)], changed in place; each gets 'key'."""
+    o_sq = list(o_sq)
+    keys = _reads(make, [(o_sq, ball, c['xs'], c['arrows']) for c in chains])
+    for c, k in zip(chains, keys):
+        c['key'] = k
+    reads = len(chains)
+    while time.time() < t_end:
+        items, who = [], []
+        for n, c in enumerate(chains):
+            for _ in range(SETUP['batch']):
+                ch = _change(c['xs'], set(o_sq), rng)
+                if ch is None:
+                    continue
+                j, q = ch
+                a = rng.randrange(8)
+                xs, ar = c['xs'][:j] + [q] + c['xs'][j + 1:], c['arrows'][:j] + [a] + c['arrows'][j + 1:]
+                items.append((o_sq, ball, xs, ar))
+                who.append(n)
+        if not items:
+            continue
+        keys = _reads(make, items)
+        reads += len(items)
+        for (o, b, xs, ar), n, k in zip(items, who, keys):
+            if k is not None and (chains[n]['key'] is None or _better(k, chains[n]['key'], -1)):
+                chains[n].update(xs=list(xs), arrows=list(ar), key=k, played=None)
+    return reads
+
+
+def _pick(heads, value_of, sign, rng, margin):
+    """Of the placements judged by play, one of those within the level's variety margin of the best (as a turn in
+    play is picked); if none could be judged in time, the best by the quick reading."""
+    judged = [h for h in heads if h.get('played') is not None]
+    if judged:
+        best = max(sign * h['played'] for h in judged)
+        near = [h for h in judged if sign * h['played'] >= best - margin]
+        return (rng.choice(near) if margin > 0 else max(judged, key=lambda h: sign * h['played'])), len(judged)
+    live = [h for h in heads if h.get('key') is not None]
+    best = live[0]
+    for h in live[1:]:
+        if _better(h['key'], best['key'], sign):
+            best = h
+    return best, 0
+
+
+def _search_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar', memory=None):
+    """The defence's setup (D-195): squares and arrows searched from no starting answer, shortlisted by the quick
+    reading, the shortlist judged by the search's played-out reading. memory (a dict the caller keeps for the game)
+    carries the searches from one possession to the next. Returns dict(squares, arrows, perm, text, value, ...)."""
+    p = profile(level)
+    rng = random.Random(seed)
+    t0 = time.time()
+    total = budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value']
+    make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
+    o_sq = list(o_sq)
+    mem = memory if memory is not None else {}
+    chains = mem.get('X')
+    if not chains:
+        chains = []
+        for _ in range(SETUP['chains']):
+            xs, ar = _random_x(o_sq, rng)
+            chains.append(dict(xs=xs, arrows=ar))
+        mem['X'] = chains
+    for c in chains:
+        c['xs'] = _legalise(o_sq, c['xs'], rng)
+        if c.get('against') != (tuple(o_sq), ball):
+            c.update(against=(tuple(o_sq), ball), played=None)
+    reads = _defence_chains(make, o_sq, ball, rng, t0 + total * SETUP['quick_share'], chains)
+    order = sorted(range(len(chains)), key=lambda n: chains[n]['key'] or (1e9,))
+    for n in order:                                   # judged by play, the best by the quick reading first
+        c = chains[n]
+        if c.get('played') is None and time.time() < t0 + total:
+            c['played'] = _played(make, o_sq, ball, c['xs'], c['arrows'], level, t0 + total)
+    best, judged = _pick(chains, None, -1, rng, p['variety_margin'])
+    xs, arrows = list(best['xs']), list(best['arrows'])
+    perm = [min(range(5), key=lambda i: (B.cheb(xs[j], o_sq[i]), i)) for j in range(5)]
+    words = []
+    for j in range(5):
+        i = perm[j]
+        d = B.cheb(xs[j], o_sq[i])
+        words.append(f'X{j + 1} {"on" if d <= 1 else f"{d} squares off"} O{i + 1}')
+    how = (f'{len(chains)} placements searched from no starting answer ({reads} quick readings this time), '
+           + (f'{judged} of them judged by play' if judged else 'none could be judged by play in the time, so the quick reading chose'))
+    value = best['played'] if best.get('played') is not None else best['key'][0]
+    text = f'Placed by search ({how}): ' + '; '.join(words) + '.'
+    return dict(squares=xs, arrows=arrows, perm=perm, value=round(value, 2), text=text, reads=reads, judged=judged,
+                seconds=round(time.time() - t0, 3), shortlist=[dict(squares=[B.sq(q) for q in c['xs']], arrows=list(c['arrows']),
+                                                                    played=c.get('played'), key=list(c['key'] or [])) for c in chains])
+
+
+def _search_offence(make_names, seed, levels_key=None, budget=None, level='allstar', memory=None):
+    """The offence's setup (D-195). It never sees the real defence: each of its searches carries a placement of its
+    own and a defence that answers it, improved in turn (the offence's change kept when the reading is better for
+    the offence, the answering defence's when better for the defence). The shortlist is judged by the search's
+    played-out reading against its answering defence. Returns dict(squares, ball, text, value, candidates, within)."""
+    p = profile(level)
+    rng = random.Random(seed)
+    t0 = time.time()
+    total = budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value']
+    make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
+    mem = memory if memory is not None else {}
+    chains = mem.get('O')
+    if not chains:
+        chains = []
+        for _ in range(SETUP['chains']):
+            o = _random_o(rng)
+            xs, ar = _random_x(o, rng)
+            chains.append(dict(o=o, ball=0, xs=xs, arrows=ar))
+        mem['O'] = chains
+    t_quick = t0 + total * SETUP['quick_share']
+    keys = _reads(make, [(c['o'], c['ball'], c['xs'], c['arrows']) for c in chains])
+    for c, k in zip(chains, keys):
+        c['key'] = k
+    reads, turn = len(chains), 0
+    while time.time() < t_quick:
+        items, who = [], []
+        side = 'X' if turn % 2 else 'O'               # the offence's change, then its answering defence's, in turn
+        turn += 1
+        for n, c in enumerate(chains):
+            for _ in range(SETUP['batch']):
+                if side == 'O':
+                    ch = _change(c['o'], set(c['xs']), rng)
+                    if ch is None:
+                        continue
+                    i, q = ch
+                    o = c['o'][:i] + [q] + c['o'][i + 1:]
+                    items.append((o, c['ball'], c['xs'], c['arrows']))
+                else:
+                    ch = _change(c['xs'], set(c['o']), rng)
+                    if ch is None:
+                        continue
+                    j, q = ch
+                    a = rng.randrange(8)
+                    items.append((c['o'], c['ball'], c['xs'][:j] + [q] + c['xs'][j + 1:], c['arrows'][:j] + [a] + c['arrows'][j + 1:]))
+                who.append(n)
+        if not items:
+            continue
+        keys = _reads(make, items)
+        reads += len(items)
+        for (o, b, xs, ar), n, k in zip(items, who, keys):
+            if k is not None and (chains[n]['key'] is None or _better(k, chains[n]['key'], 1 if side == 'O' else -1)):
+                chains[n].update(o=list(o), xs=list(xs), arrows=list(ar), key=k, played=None)
+    order = sorted(range(len(chains)), key=lambda n: [-v for v in (chains[n]['key'] or (-1e9,))])
+    for n in order:
+        c = chains[n]
+        if c.get('played') is None and time.time() < t0 + total:
+            c['played'] = _played(make, c['o'], c['ball'], c['xs'], c['arrows'], level, t0 + total)
+    best, judged = _pick(chains, None, 1, rng, p['variety_margin'])
+    value = best['played'] if best.get('played') is not None else best['key'][0]
+    how = (f'{len(chains)} placements searched from no starting answer, each against a defence that answers it '
+           f'({reads} quick readings this time), '
+           + (f'{judged} of them judged by play' if judged else 'none could be judged by play in the time, so the quick reading chose'))
+    text = f'Placed by search ({how}); the value by that reading is {value:.1f}.'
+    return dict(squares=list(best['o']), ball=best['ball'], value=round(value, 2), text=text, candidates=len(chains),
+                within=max(1, judged), reads=reads, judged=judged, seconds=round(time.time() - t0, 3))
+
+
+# ---- the setup as it was before step 18o (still the default: setup_search() is off) -----------------------------------
 
 def _o_value(make, o_sq, ball, rng, budget_end):
     xs, arrows = _defence_reply(make, o_sq, ball, rng, budget_end, rounds=1)
@@ -421,7 +702,7 @@ def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
     return xs, arrows
 
 
-def propose_offence(make_names, seed, levels_key=None, budget=None, level='allstar'):
+def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allstar'):
     """The offence's setup (B6): the placement that maximises V against the defence's best reply placement, searched
     over sampled legal placements and refined locally. It never sees the real defence. make_names(o_names, x_names,
     arrows, ball) builds the state. Returns dict(squares, ball, text, value, candidates)."""
@@ -477,7 +758,7 @@ def propose_offence(make_names, seed, levels_key=None, budget=None, level='allst
                 within=len(near_best))
 
 
-def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar'):
+def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar'):
     """The defence's setup (B6): placement and matchups by best cover (search over squares and arrows, minimising the
     offence's position value). Returns dict(squares, arrows, perm, text, value)."""
     p = profile(level)
@@ -497,3 +778,23 @@ def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, 
         words.append(f'X{j + 1} {"on" if d <= 1 else f"{d} squares off"} O{i + 1}')
     text = 'Placed by best cover (the offence\'s best open look kept as low as it can be): ' + '; '.join(words) + '.'
     return dict(squares=xs, arrows=arrows, perm=perm, value=round(r.leaf(), 2), text=text)
+
+
+def setup_search():
+    """Step 18o (D-195): is the setup searched from no starting answer and judged by play (setup.search in
+    ai_profiles.json)? Off: the setup as it was."""
+    return CONFIG.get('setup', {}).get('search') is True
+
+
+def propose_offence(make_names, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
+    """The offence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
+    if setup_search() if search is None else search:
+        return _search_offence(make_names, seed, levels_key, budget, level, memory)
+    return _fixed_offence(make_names, seed, levels_key, budget, level)
+
+
+def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
+    """The defence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
+    if setup_search() if search is None else search:
+        return _search_defence(make_names, o_sq, ball, seed, levels_key, budget, level, memory)
+    return _fixed_defence(make_names, o_sq, ball, seed, levels_key, budget, level)
