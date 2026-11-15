@@ -677,6 +677,8 @@ def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
             return Read(make(o_sq, ball, xq, ar)).leaf()
         except ValueError:
             return 1e9
+    if time.time() > budget_end:                        # step 18p: out of time before the first reading
+        return xs, arrows
     cur = v(xs, arrows)
     occ_o = set(o_sq)
     cands = sorted({(x, y) for (ox, oy) in o_sq for x in range(ox - 3, ox + 4) for y in range(oy - 3, oy + 4)
@@ -692,6 +694,8 @@ def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
                 for a in {B.nearest_dir(q, o_sq[ball]), B.nearest_dir(q, min(o_sq, key=lambda p: B.cheb(p, q)))}:
                     if q == xs[j] and a == arrows[j]:
                         continue
+                    if time.time() > budget_end:        # step 18p: the setup keeps its time (it read the clock only between defenders, and ran 4 to 6 seconds over)
+                        return xs, arrows
                     xq = xs[:j] + [q] + xs[j + 1:]
                     ar = arrows[:j] + [a] + arrows[j + 1:]
                     val = v(xq, ar)
@@ -733,11 +737,13 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
         except ValueError:
             continue
         scored.append((v, sq, ball))
-        if time.time() > t_end - 0.6 * (t_end - t0) and len(scored) >= 4:
+        if time.time() > t_end - 0.6 * (t_end - t0):    # step 18p: the setup keeps its time (it used to finish 4 placements whatever the clock said)
             break
     scored.sort(key=lambda r: -r[0])
     top = []
     for v0, sq, ball in scored[:3]:
+        if top and time.time() > t_end:                 # step 18p: out of time: the placements already answered stand
+            break
         v, _, _ = _o_value(make, sq, ball, rng, t_end)
         top.append((v, sq, ball))
     top.sort(key=lambda r: -r[0])

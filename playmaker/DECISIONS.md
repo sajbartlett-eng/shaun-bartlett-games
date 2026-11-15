@@ -1055,6 +1055,26 @@ Shaun, 15 Nov 2026 · **Ruled; built in step 18o behind `setup.search` (`?setup=
 it gives up 6.8 more points a possession than the setup as it was (2.8 to 10.7), because the engine has no reading
 that can judge a setup (docs/reports/STEP18O_REPORT.md). Awaiting Shaun.**
 
+**D-196. Shaun's rule for Fable: the pillars before the simulations.** "The computer simulations lie. If the computer
+cannot set up the offence and defence properly and cannot do it based on goals then no play that comes from it can
+be trusted. I let it set up as it wills and it left a clear lane through the middle for a layup with nothing in
+between. That means the metrics vs real basketball are garbage." (1) Trust the design pillars more than the
+computer simulation data: System Fidelity first; then Neutrality, Player Agency, Legibility and Accessibility may
+bend but never break. (2) Fable's sole job is to plan, then fix in logical order, what the computer is poor at or
+can't do at all. (3) Anything that clearly meets the whole design hierarchy stays on; if the data doesn't fit, the
+starting assumption is always that the computer is wrong. (4) Fidelity is questioned only after proving the
+computer is not wrong, and only after a factor for human error is accounted for. (5) Human error may be modelled on
+elite chess engines measured against semi-pro chess players, because professional basketball relies heavily on
+physical traits, not purely on basketball IQ. (6) The primary target is senior pro level; other levels are rolled
+out as each part is locked in. (7) Use what is needed for proof, and no more. **In practice:** the FIBA comparison
+is not a gate until the computer is proven to play properly; computer-against-computer play-outs are only proof
+when both sides play the position properly (else: a stronger search for the side in question, or forced lines);
+D-191, D-193 and D-194 stand, with Shaun's original contest ratings, and the Contest foul ratings are unchanged
+(Shaun: "No"). The zone (D-167) goes on by default in the app; the old setup is made to keep its time;
+`setup.search` stays off until the reading can judge a setup. The full text is at the top of
+`docs/reference/SHAUN_PRINCIPLES.md`; the plan it asks for is `docs/plans/COMPUTER_FIX_PLAN.md`. · Source: Shaun,
+15 Nov 2026 · **Ruled; step 18p.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

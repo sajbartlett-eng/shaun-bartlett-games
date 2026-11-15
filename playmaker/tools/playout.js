@@ -56,10 +56,19 @@ function searchAt(s, ctx, pol) {
   apply(pol.set);
   return E.search({ stateObj: s, ctxObj: ctx, profile: pol.profile, budget: pol.budget == null ? null : pol.budget, max_depth: pol.depth, stale: null });
 }
+// Step 18p (D-196): play the computer wouldn't choose, for the fit of the reading. With pol.explore, at most once in a
+// possession, an open-play decision takes the first action of a turn drawn at random from all the turns the search
+// weighed there (every weighed turn alike; nothing is named). EXPLORE.hit tells the caller it has just happened.
+const EXPLORE = { done: false, hit: false };
 function decide(s, ctx, pol, r) {                      // one action: the first of the turn the policy picks
   const legal = E.legalActions(s);
   if (legal.length === 1) return legal[0];
   const out = searchAt(s, ctx, pol), sign = E.actor(s) === 'O' ? 1 : -1;
+  if (pol.explore && !EXPLORE.done && s.stage === 'play' && !s.pending && out.results.length > 1 && (pol.rn || r)() < pol.explore) {
+    const t = out.results[Math.floor((pol.rn || r)() * out.results.length)][1];
+    const a = legal.find(x => key(x) === JSON.stringify(t[0]));
+    if (a) { EXPLORE.done = true; EXPLORE.hit = true; return a; }
+  }
   let best = null, bv = -Infinity;
   const split = !!(E.splitOn && E.splitOn());            // step 18f (search.split_ties): turns that read the same get one draw
   let prev = null, nz = 0;
@@ -199,6 +208,8 @@ if (job.kind === 'rollout') {
         X: Object.assign({}, job.policies.X, { rn: rng(((job.seed || 1) * 1000003 + k * 7919 + (p.seed || 0)) * 31 + 2) }) };
       let node = state(p), n = 0;
       const events = [], shots = [], reads = [];
+      EXPLORE.done = false; EXPLORE.hit = false;
+      let cleanFrom = 0, drawn = null;                   // step 18p: the readings from here on have no drawn turn after them
       // step 18g: the stance rows (the offence's turn starts: [phase, its movements so far, its passes so far, whether
       // the ball has just been caught, then engine.stanceFacts]) and each Dribble [phase, won]
       const stances = [], dribbles = [], examples = [], guards = [], steals = [];
@@ -233,6 +244,7 @@ if (job.kind === 'rollout') {
         if (job.boards && node.stage === 'play' && !node.pending && node.turn_n === 0) boards.push([events.length, node.phase, side, sqs(node.o), sqs(node.x), Array.from(node.arrows), node.ball, node.rush_x, node.lock_x, node.rush_o, node.lock_o, node.beaten.map(b => [b[0], b[1]])]);
         if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []));   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
         const a = decide(node, ctx, pols[side], r);
+        if (EXPLORE.hit) { EXPLORE.hit = false; cleanFrom = reads.length; drawn = [events.length, node.phase, side]; }
         const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;
         events.push([node.phase, node.stage, a.side, a.kind, a.piece, from, a.dest >= 0 ? E.sqName(a.dest) : null, a.target, node.ball, E.sqName(node.o[node.ball]), a.shot || '']);
         if (a.kind === 'shot' || a.kind === 'forced_shot') shots.push({ at: events.length - 1, o: sqs(node.o), x: sqs(node.x), ball: node.ball, phase: node.phase, type: a.shot, forced: a.kind === 'forced_shot' });
@@ -249,7 +261,7 @@ if (job.kind === 'rollout') {
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
         decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
-        endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined, boards: job.boards ? boards : undefined, startArrows: p.state.arrows });
+        endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined, boards: job.boards ? boards : undefined, startArrows: p.state.arrows, clean_from: cleanFrom, drawn });
     }
   }
 } else if (job.kind === 'split') {

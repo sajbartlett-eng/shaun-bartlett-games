@@ -56,9 +56,13 @@ def play(named, level='allstar', copies=16, zone=False, seed=1, what='play-outs'
         rules['zone'] = 'on'
     rows, secs = L.run_jobs('trace', positions, [ctx], n=1, seed=seed, stances=True, policies=dict(O=pol, X=pol), rules=rules, fouls=T.FOULS)
     tally(f'{what} ({len(named)} placements, {copies} each, {level}{", zone on" if zone else ""})', secs)
-    out = {}
-    for p, r in zip(positions, rows):
-        out.setdefault(p['id'], []).append(r)
+    # The rows come back grouped by the core that played them, not in the order they were sent, so each is filed by
+    # the name it carries. Step 18o filed them by the order sent, which mixed the candidates of every group of more
+    # than one: its sense-check tables were wrong (found and regrouped in step 18p; docs/runs/step18p).
+    out = {name: [] for name, _ in named}
+    for r in rows:
+        out[r['id']].append(r)
+    assert all(len(v) == copies for v in out.values()), {k: len(v) for k, v in out.items()}
     return out
 
 

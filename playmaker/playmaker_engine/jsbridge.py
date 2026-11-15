@@ -11,7 +11,7 @@ from . import rules_config as RC
 from .actions import Action
 
 _DEFAULTS = {f.name: getattr(RC.DEFAULT_RULES, f.name) for f in fields(RC.Rules)}
-PORTED_FREE = ('digital', 'quarter_possessions', 'bonus_from')
+PORTED_FREE = ('digital', 'quarter_possessions', 'bonus_from', 'zone')      # step 18p: engine.js plays rules.zone (proved equal by tools/js_equivalence.py --zone), so the app's zone runs on the fast engine
 
 
 def ported(rules):

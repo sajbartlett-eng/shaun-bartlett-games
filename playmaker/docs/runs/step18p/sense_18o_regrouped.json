@@ -1,0 +1,621 @@
+{
+ "beaten": {
+  "X4 and X5 as in his game (B4, P2, arrows on their men)": {
+   "mean": 18.1,
+   "low": 11.5,
+   "high": 24.8,
+   "ends": {
+    "turnover_end": 5,
+    "three": 6,
+    "layup": 3,
+    "floater": 1,
+    "free_throws": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X4 and X5 in the lane (H5, J5, facing the ball)": {
+   "mean": 24.2,
+   "low": 19.6,
+   "high": 28.9,
+   "ends": {
+    "turnover_end": 2,
+    "three": 10,
+    "floater": 2,
+    "layup": 2
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "H5",
+    "J5"
+   ]
+  },
+  "X4 and X5 as the search placed them (M6, D4)": {
+   "mean": 25.7,
+   "low": 20.6,
+   "high": 30.8,
+   "ends": {
+    "turnover_end": 2,
+    "three": 7,
+    "layup": 7
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "M6",
+    "D4"
+   ]
+  }
+ },
+ "beaten_drive": {
+  "X4 and X5 as in his game: the offence plays on as it chooses": {
+   "mean": 22.2,
+   "low": 16.3,
+   "high": 28.1,
+   "ends": {
+    "layup": 10,
+    "three": 2,
+    "turnover_end": 3,
+    "post": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X4 and X5 as in his game: O1 drives": {
+   "mean": 27.8,
+   "low": 26.4,
+   "high": 29.2,
+   "ends": {
+    "layup": 13,
+    "floater": 1,
+    "post": 1,
+    "three": 1
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X4 and X5 in the lane (H5, J5): the offence plays on as it chooses": {
+   "mean": 24.6,
+   "low": 20.5,
+   "high": 28.8,
+   "ends": {
+    "layup": 4,
+    "three": 7,
+    "post": 2,
+    "turnover_end": 1,
+    "floater": 2
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "H5",
+    "J5"
+   ]
+  },
+  "X4 and X5 in the lane (H5, J5): O1 drives": {
+   "mean": 22.2,
+   "low": 18.0,
+   "high": 26.5,
+   "ends": {
+    "three": 7,
+    "post": 3,
+    "layup": 4,
+    "long": 1,
+    "turnover_end": 1
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "H5",
+    "J5"
+   ]
+  }
+ },
+ "drive": {
+  "X1 on J10, arrow on O1 (his game)": {
+   "mean": 23.1,
+   "low": 17.4,
+   "high": 28.8,
+   "ends": {
+    "layup": 8,
+    "turnover_end": 3,
+    "post": 2,
+    "three": 3
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 on I10, arrow on O1 (square)": {
+   "mean": 22.9,
+   "low": 16.1,
+   "high": 29.8,
+   "ends": {
+    "layup": 9,
+    "turnover_end": 4,
+    "free_throws": 1,
+    "three": 1,
+    "post": 1
+   },
+   "start_o": "E7",
+   "start_x": [
+    "I10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 where the search rates him best (J11 facing E)": {
+   "mean": 25.8,
+   "low": 21.9,
+   "high": 29.6,
+   "ends": {
+    "layup": 14,
+    "turnover_end": 1,
+    "three": 1
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J11",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 on J10 facing W (his arrow across the lane)": {
+   "mean": 21.8,
+   "low": 15.2,
+   "high": 28.3,
+   "ends": {
+    "turnover_end": 4,
+    "post": 5,
+    "three": 4,
+    "layup": 2,
+    "free_throws": 1
+   },
+   "start_o": "I10",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  }
+ },
+ "zone_setup": {
+  "his game": {
+   "mean": 15.9,
+   "low": 8.6,
+   "high": 23.3,
+   "ends": {
+    "turnover_end": 7,
+    "three": 3,
+    "layup": 4,
+    "free_throws": 1,
+    "post": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "his game, X1 square on I10": {
+   "mean": 21.9,
+   "low": 15.8,
+   "high": 28.0,
+   "ends": {
+    "turnover_end": 3,
+    "three": 5,
+    "free_throws": 1,
+    "layup": 4,
+    "floater": 2,
+    "post": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "I10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 square, X4 and X5 in the lane (H5, J5)": {
+   "mean": 14.9,
+   "low": 8.9,
+   "high": 21.0,
+   "ends": {
+    "turnover_end": 6,
+    "three": 7,
+    "layup": 1,
+    "free_throws": 1,
+    "floater": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "I10",
+    "D8",
+    "O8",
+    "H5",
+    "J5"
+   ]
+  },
+  "the search, first pick (J10 E4 K7 M6 D4)": {
+   "mean": 23.8,
+   "low": 19.2,
+   "high": 28.4,
+   "ends": {
+    "post": 1,
+    "three": 12,
+    "free_throws": 1,
+    "turnover_end": 2
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "E4",
+    "K7",
+    "M6",
+    "D4"
+   ]
+  }
+ },
+ "zone_beaten": {
+  "X4 and X5 as in his game (B4, P2, arrows on their men)": {
+   "mean": 22.4,
+   "low": 15.6,
+   "high": 29.2,
+   "ends": {
+    "turnover_end": 4,
+    "layup": 9,
+    "free_throws": 1,
+    "three": 1,
+    "floater": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X4 and X5 in the lane (H5, J5, facing the ball)": {
+   "mean": 22.5,
+   "low": 18.0,
+   "high": 27.0,
+   "ends": {
+    "turnover_end": 2,
+    "three": 14
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "H5",
+    "J5"
+   ]
+  },
+  "X4 and X5 as the search placed them (M6, D4)": {
+   "mean": 18.6,
+   "low": 12.2,
+   "high": 25.1,
+   "ends": {
+    "turnover_end": 5,
+    "three": 6,
+    "layup": 3,
+    "free_throws": 1,
+    "post": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "M6",
+    "D4"
+   ]
+  }
+ },
+ "zone_drive": {
+  "X1 on J10, arrow on O1 (his game)": {
+   "mean": 25.2,
+   "low": 21.6,
+   "high": 28.9,
+   "ends": {
+    "layup": 7,
+    "three": 4,
+    "post": 3,
+    "turnover_end": 1,
+    "floater": 1
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 on I10, arrow on O1 (square)": {
+   "mean": 10.8,
+   "low": 3.6,
+   "high": 17.9,
+   "ends": {
+    "post": 1,
+    "three": 3,
+    "layup": 3,
+    "turnover_end": 9
+   },
+   "start_o": "E7",
+   "start_x": [
+    "I10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 where the search rates him best (J11 facing E)": {
+   "mean": 26.0,
+   "low": 22.4,
+   "high": 29.6,
+   "ends": {
+    "layup": 15,
+    "turnover_end": 1
+   },
+   "start_o": "I6",
+   "start_x": [
+    "J11",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  },
+  "X1 on J10 facing W (his arrow across the lane)": {
+   "mean": 20.9,
+   "low": 13.7,
+   "high": 28.1,
+   "ends": {
+    "turnover_end": 5,
+    "layup": 9,
+    "post": 1,
+    "floater": 1
+   },
+   "start_o": "I10",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  }
+ },
+ "arrows": {
+  "his game, off-ball arrows along the passing lanes (X2 N, X3 NW, X4 NE, X5 N)": {
+   "mean": 24.9,
+   "low": 18.5,
+   "high": 31.3,
+   "ends": {
+    "layup": 6,
+    "three": 4,
+    "post": 2,
+    "turnover_end": 3,
+    "floater": 1
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  }
+ },
+ "zone_arrows": {
+  "his game, off-ball arrows along the passing lanes (X2 N, X3 NW, X4 NE, X5 N)": {
+   "mean": 18.8,
+   "low": 11.3,
+   "high": 26.2,
+   "ends": {
+    "turnover_end": 6,
+    "layup": 6,
+    "post": 2,
+    "three": 2
+   },
+   "start_o": "I11",
+   "start_x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ]
+  }
+ },
+ "setup": {
+  "his game": {
+   "mean": 23.1,
+   "low": 16.2,
+   "high": 29.9,
+   "points": [
+    0,
+    28,
+    30,
+    27,
+    27,
+    0,
+    0,
+    34,
+    36,
+    30,
+    32,
+    32,
+    34,
+    32,
+    27,
+    0
+   ]
+  },
+  "X1 square, rest his": {
+   "mean": 24.5,
+   "low": 18.4,
+   "high": 30.6,
+   "points": [
+    28,
+    27,
+    34,
+    30,
+    27,
+    0,
+    30,
+    0,
+    34,
+    28,
+    34,
+    26,
+    32,
+    28,
+    0,
+    34
+   ]
+  },
+  "X1 square, X4 X5 in the lane": {
+   "mean": 21.9,
+   "low": 17.4,
+   "high": 26.5,
+   "points": [
+    27,
+    20,
+    24,
+    0,
+    21,
+    0,
+    18,
+    28,
+    27,
+    24,
+    24,
+    30,
+    21,
+    27,
+    32,
+    28
+   ]
+  },
+  "search A (J10N E4N K7N M6NW D4SW)": {
+   "mean": 25.4,
+   "low": 22.1,
+   "high": 28.7,
+   "points": [
+    0,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    28,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27
+   ]
+  },
+  "search B (L7W D3E N3NE I10NE I5N)": {
+   "mean": 26.1,
+   "low": 24.9,
+   "high": 27.4,
+   "points": [
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    27,
+    18,
+    27,
+    22
+   ]
+  },
+  "starter junk (H12NE N5E I7SE F2SW N3SE)": {
+   "mean": 25.1,
+   "low": 21.7,
+   "high": 28.6,
+   "points": [
+    27,
+    32,
+    27,
+    27,
+    28,
+    0,
+    27,
+    26,
+    27,
+    27,
+    22,
+    24,
+    27,
+    27,
+    27,
+    27
+   ]
+  }
+ }
+}

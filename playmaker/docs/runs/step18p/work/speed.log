@@ -1,0 +1,7 @@
+[tally] speed, round 1 (one core): 0.055 core-hours; total 2.67
+1 18o, zone on {'rookie': (0.16, 0.251), 'starter': (0.555, 0.659), 'allstar': (1.337, 1.654)}
+1 18p (the zone on by default) {'rookie': (0.137, 0.197), 'starter': (0.548, 0.682), 'allstar': (1.194, 1.592)}
+[tally] speed, round 2 (one core): 0.055 core-hours; total 2.72
+2 18o, zone on {'rookie': (0.136, 0.186), 'starter': (0.478, 0.607), 'allstar': (1.149, 1.549)}
+2 18p (the zone on by default) {'rookie': (0.218, 0.375), 'starter': (0.624, 0.948), 'allstar': (1.472, 2.336)}
+SPEED_DONE

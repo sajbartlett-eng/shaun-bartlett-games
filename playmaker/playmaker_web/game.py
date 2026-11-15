@@ -316,8 +316,9 @@ class Game:
             if control is not None and str(control) in RC.CONTROL:
                 # D-153: the app plays the control rule at size 2; another size, or '0' for none, may be asked for
                 rules = replace(rules, control=str(control))
-            if zone in ('on', '1', 1, True):
-                # step 18g (D-167, under test): the zone of influence, the app only
+            if zone not in ('off', '0', 0, False):
+                # D-167, on by default in the app since step 18p (D-196): the zone of influence, the only version
+                # where a defender can be square to the shot and wall the drive at once. zone='off' (?zone=0) plays without it
                 rules = replace(rules, zone='on')
             # step 18i (D-172 to D-174): the FIBA rules are on in the app's format; each may be turned off
             for name, v in (('three_seconds', three), ('closely_guarded', guarded), ('fiba_fouled_shot', fouledshot),

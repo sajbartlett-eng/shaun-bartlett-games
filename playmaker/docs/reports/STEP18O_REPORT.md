@@ -1,5 +1,16 @@
 # Step 18o report: the square defender, the setup, help defence, and the test with and without the zone
 
+> **Correction, found in step 18p (15 Nov 2026). Read this first.**
+> The sense-check play-outs in this report (Part 2) were filed under the wrong candidates: the rows came back from
+> the four cores in a different order and I filed them by the order sent. Every table in Part 2 that compares more
+> than one candidate is wrong, and so are the lines that lean on them: line 3 of the five lines ("help defence did
+> not play out best"), "the search's first pick played worst (29.1)" on your board, and the played-out tables of
+> checks 1 to 4. **The corrected tables are in `docs/reports/STEP18P_REPORT.md`.** The main changes: the straight
+> drive into the empty lane after the beat scores 27.8 (26.4 to 29.2), not 20.2; help in the lane takes it down to
+> 22.2; and the computer's own offence gets only 22.2 from the same position, so it leaves the drive on the table.
+> **Not affected:** the 48 deals (the search setup is 6.8 worse), both arms and their tables, the refit, the set's
+> closeout positions and game EB3F5B, the code readings of check 4, speed, and the tests.
+
 ## In five lines
 
 1. **A square defender takes the jump shot away, as you saw in the NBL game.** With the zone off only 6 of 89
