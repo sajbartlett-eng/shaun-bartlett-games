@@ -377,7 +377,7 @@ async function create() {
     if (k === 'full') { body.match_format = $('format').value; body.per_side = Number($('perSide').value); }
     // D-153: the app plays the control rule at size 2. ?control=0 in the address turns it off; 1 or 3 plays another size
     // step 18g (D-167): ?zone=1 in the address plays the zone of influence (the app's format only, under test)
-    { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '1' && body.match_format === 'digital') body.zone = 'on'; }
+    { const zn = new URLSearchParams(location.search).get('zone'); if (zn === '0' && body.match_format === 'digital') body.zone = 'off'; }   // step 18p (D-196): the zone is on in the app; ?zone=0 turns it off
     // step 18i: the FIBA rules are on in the app's format; ?three=0, ?guarded=0 or ?fouledshot=0 in the address turns one off
     { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance', 'positioncontest']) if (q.get(k) === '0') body[k] = 'off'; }
     // step 18o (D-195): ?setup=search in the address plays the setup searched from no starting answer and judged by play (built, off)
