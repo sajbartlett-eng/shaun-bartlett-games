@@ -1,0 +1,29 @@
+{
+ "fit_rookie": {
+  "possessions": 120,
+  "points": 23.38,
+  "low": 22.23,
+  "high": 24.53,
+  "a_possession": {
+   "reaches": 0.17,
+   "dribbles": 0.52,
+   "intercepts": 0.18,
+   "passes": 1.99,
+   "actions": 16.02
+  },
+  "fouls_a_possession": 0.05,
+  "turnovers_a_possession": 0.17,
+  "ended_in_a_turnover": 0.0,
+  "below_zero": 0,
+  "phases_a_possession": 1.71,
+  "ends": {
+   "three": 75,
+   "floater": 13,
+   "layup": 21,
+   "long": 1,
+   "dunk": 6,
+   "mid": 1,
+   "post": 3
+  }
+ }
+}

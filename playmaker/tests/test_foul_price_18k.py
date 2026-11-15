@@ -13,7 +13,9 @@ from playmaker_engine.scenarios import game_state
 from playmaker_engine.scoring import score
 from playmaker_web.game import Game
 
-APP = RC.with_rules(digital=True)
+# D-198 (step 18r) replaced this in the app: fouls and turnovers are points and play goes on (tests/test_points_play_on_18r.py).
+# The rule as it was ruled stays in the engine behind points_play_on, and is tested here with that switch off.
+APP = RC.with_rules(digital=True, points_play_on='off')
 TABLE = RC.with_rules(digital=False)
 O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 X = ['I10', 'D8', 'N8', 'G4', 'N4']

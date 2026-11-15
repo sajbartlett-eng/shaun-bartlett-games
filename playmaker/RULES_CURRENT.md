@@ -114,7 +114,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 
 ## Digital only
 
-- **Quarters and team fouls.** Each side's defensive fouls (steal fouls and shooting fouls) count across a running quarter of 18 possessions a side. The count carries across matches between the same two players, or a player and a computer level, and resets when both sides have had 18. The screen shows the count, the bonus line and the possessions left. (settings: quarter_possessions, bonus_from)
+- **Quarters and team fouls.** Each side's defensive fouls (steal fouls and shooting fouls) count across a running quarter of 18 possessions a side. The count carries across matches between the same two players, or a player and a computer level, and resets when both sides have had 18. The screen shows the count and the possessions left. Since D-198 the count carries no penalty: every foul is +5. (settings: quarter_possessions, bonus_from)
 - **Match length.** A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie goes to overtime (see Split by format).
 - **The decision timer.** Each player may set an optional thinking clock.
 - **Computer levels.** The computer plays at three levels: Rookie, Starter and All-Star. The levels differ in how deep and how long they look ahead, not in the rules.

@@ -1090,6 +1090,28 @@ goal in the engine is a measure read off the board by the rules, a side that wan
 proved by design checks on forced lines (D-196), and only then used by the layers above it. · Source: Shaun, 15 Nov
 2026 · **Ruled; step 18q builds the first measure (the way to the rim, `eval.lane`, `?lane=1`).**
 
+**D-198. Fouls and turnovers are priced in points, and play goes on; no shot from the rim square.** (1) Fouls and
+turnovers are priced in points. A foul is +5 to the offence and play goes on. A steal is −5 to the offence and play
+goes on: the possession doesn't end. "The steal is a lesson: 'keep showing me what you've got.' A team shouldn't
+spend ten minutes on a possession only to end up on minus points because the defence got lucky." Every other
+turnover is also −5 with play going on: an intercepted pass and the violations (three seconds, closely guarded, the
+shot clock). (2) After any turnover the current phase ends and the next phase begins. After an intercepted pass the
+passer gets the ball back and the defender goes back to the square and arrow he started the phase on. (3) A shooting
+foul is +5 plus its free throws. (4) The +5 replaces step 18i's foul pricing, which priced a foul by how it brings
+the penalty nearer; that pricing is retired. (5) Why: Playmaker is a game about shot quality. The teams swap and the
+defence's aim is to beat the offence's shot quality score; after a turnover the pressure is on the offence to win
+those points back with an even better shot; fouls must sting enough to really hurt a team's chance of winning the
+possession battle, if the other team stays honest. (6) The risk tolerance must fall out, not be set by hand: a reach
+should be a rare decision when the foul risk is bigger than the chance of a steal, and when a miss can get the
+defender beaten and open up valuable driving lanes. (7) The rim square: no shot from directly under the rim; the
+offence must choose a side to put the ball up, even for a reverse layup. **As built (the app only, as every ruling
+since D-190; `rules.points_play_on`, `rules.no_rim_shot`):** with every foul priced at +5 there is no penalty for
+team fouls (no free throws from the 5th), which is how point 4 is read; the defender who fouls on a steal is still
+locked (D-179); a turnover in the last phase, and the shot clock running out, end the possession on what it has
+banked, which can be below 0; the counts of three seconds and closely guarded start again after a turnover; in the
+possession's first phase "where he started the phase" is where he stood when the defence's turn began. D-179's and
+D-181's free throws in the penalty are replaced. · Source: Shaun, 16 Nov 2026 · **Ruled; built in step 18r.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

@@ -13,7 +13,9 @@ from playmaker_engine.scenarios import game_state
 from playmaker_engine.scoring import contest_options
 
 needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node')
-DIGITAL = RC.with_rules(digital=True)
+# D-198 (step 18r) replaced this in the app: fouls and turnovers are points and play goes on (tests/test_points_play_on_18r.py).
+# The rule as it was ruled stays in the engine behind points_play_on, and is tested here with that switch off.
+DIGITAL = RC.with_rules(digital=True, points_play_on='off')
 TABLE = RC.DEFAULT_RULES
 
 
@@ -165,7 +167,7 @@ def test_team_fouls_carry_across_matches_for_the_pairing_and_reset_after_eightee
     g.next_possession(g.tokens['both'])
     assert g.quarter == dict(fouls=dict(A=0, B=0), poss=dict(A=0, B=0), number=3)     # both had 18: reset
     words = g.quarter_words()['text']
-    assert words.startswith('Team fouls 0 · bonus from the 5th · 18 possessions left this quarter')
+    assert words.startswith('Team fouls 0 · every foul is +5 · 18 possessions left this quarter')      # D-198: no penalty line
 
 
 def test_the_possession_sees_the_defences_team_fouls_before_it():

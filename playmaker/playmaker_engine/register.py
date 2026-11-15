@@ -17,10 +17,10 @@ ENTRIES = [
     # ---- the format itself and what differs on purpose
     ('digital', SPLIT, dict(rules='digital'), 'The match format switch.', 'The two formats themselves.'),
     ('Turnover cost', SPLIT, dict(rules='turnover_cost'), 'A successful Intercept or Steal (and a steal of a declared shot).',
-     'Tabletop: -5 and the shot clock loses a phase, play on (the setting). Digital, whatever the setting: the possession ends and scores 0, '
-     'because a digital match is several possessions a side and the next possession is the cost.'),
+     'Tabletop: -5 and the shot clock loses a phase, play on (the setting). Digital, whatever the setting: -5, the phase ends there and '
+     'the next begins, play on; after an Intercept the defender goes back to where he began the phase (D-198).'),
     ('Shot-clock expiry', SPLIT, dict(how='expiry'), 'The clock reaches 0.',
-     'Tabletop: -5 and a forced shot. Digital: a turnover, the possession scores 0 (as in basketball).'),
+     'Tabletop: -5 and a forced shot. Digital: a turnover, -5, and the possession is over (D-198).'),
     ('Match length', SPLIT, dict(how='match'), 'Possessions a side.',
      'Tabletop: one possession each. Digital: 4, 8 or 12 a side (per_side), sides alternating.'),
     ('Tied match', SPLIT_APPROVED, dict(how='tie'), 'What settles a tied match.',
@@ -84,7 +84,12 @@ ENTRIES = [
     ('soft_contest', SPLIT, dict(rules='soft_contest'), 'A defender next to the shooter, and the Contest action.',
      'The app plays the soft and the hard contest (D-177). The table keeps one Contest.'),
     ('fiba_steal_foul', SPLIT, dict(rules='fiba_steal_foul'), 'What a steal foul gives.',
-     'In the app no foul gives +5: a steal foul is a team foul, and from the 5th two free throws (D-179, D-181). The table keeps its +5.'),
+     'In the app every foul is +5 to the offence and play goes on; the defender who fouled on a steal is locked (D-198, D-179). The table keeps its +5.'),
+    ('points_play_on', SPLIT, dict(rules='points_play_on'), 'How fouls and turnovers are priced.',
+     'The app prices them in points and plays on (D-198): a foul +5, a shooting foul +5 and its free throws, every turnover -5 with the phase '
+     'ending there. There is no penalty for team fouls. The table keeps its own rules.'),
+    ('no_rim_shot', SPLIT, dict(rules='no_rim_shot'), 'A shot from the rim\'s own square.',
+     'In the app there is none: the offence must pick a side to put the ball up (D-198). The table allows it.'),
     ('position_contest', SPLIT, dict(rules='position_contest'), 'How a shot is contested: by position, and the block inside.',
      'The app contests every shot by position (a square defender takes his full rating off), has no Contest on a jump shot and keeps the block for inside shots; a contest always takes at least 1 off (D-191, D-193, D-194).'),
     ('off_balance', SPLIT, dict(rules='off_balance'), 'What being rushed, or locked, costs on every roll.',
@@ -272,7 +277,7 @@ WORDS = {
         text='If the clock reaches 0 before a shot, at the table: a turnover, −5, and the ball carrier takes '
              'a forced shot from where the pieces stand, contested as normal; plain wood scores 0. The app differs '
              '(see Split by format).',
-        tab='turnover, −5, then a forced shot', dig='turnover, the possession scores 0'),
+        tab='turnover, −5, then a forced shot', dig='turnover, −5, and the possession is over (D-198)'),
     'forced_shot_choice': dict(
         sec='Playing a possession', src=None, oq=30, q='On a forced shot from a tile with two shot types, who picks?',
         text='On a forced shot the offence picks the shot type its tile allows.', tab='offence picks the type',
@@ -398,7 +403,8 @@ WORDS = {
         sec='Scoring', src='rulebook',
         text='A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot '
              'is cancelled. In the last phase the possession scores 0 (or less: see the turnover floor). The app differs '
-             '(see Split by format).', tab='−5, the shot clock loses a phase, play on', dig='the possession ends and scores 0'),
+             '(see Split by format).', tab='−5, the shot clock loses a phase, play on',
+        dig='−5, the phase ends there and the next begins, play on; with no phase left the possession is over on what it has banked (D-198)'),
     'Turnover points (-5)': dict(sec=None, src='rulebook', tab='−5', dig='−5 (where a turnover is scored)'),
     'Steal-foul bonus': dict(
         sec='Scoring', src=None, q='What does a steal foul give in the bonus?',
@@ -474,10 +480,16 @@ WORDS = {
     'soft_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
                          dig='next to the shooter is a soft contest, 3 lower, no action, no foul; a Contest action is a hard contest (D-177)'),
     'fiba_steal_foul': dict(sec=None, src=None, tab='+5 to the offence on every steal foul',
-                            dig='no +5: a team foul and the defender locked; from the 5th team foul two free throws (D-179, D-181)'),
-    'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover (D-172)'),
+                            dig='+5 to the offence, the defender locked, play on; no penalty for team fouls (D-198, D-179)'),
+    'points_play_on': dict(sec=None, src=None, tab='none: the table keeps its own turnover and foul rules',
+                           dig='a foul is +5 and play goes on (a shooting foul: +5 and its free throws); a steal, an intercepted pass, three '
+                               'seconds, closely guarded and the shot clock are each −5, the phase ends there and the next begins; after an '
+                               'intercepted pass the passer keeps the ball and the defender goes back to where he began the phase (D-198)'),
+    'no_rim_shot': dict(sec=None, src=None, tab='a shot may go up from the rim\'s own square',
+                        dig='no shot from the rim\'s own square: the offence picks a side to put the ball up (D-198)'),
+    'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover, −5, play on (D-172, D-198)'),
     'closely_guarded': dict(sec=None, src=None, tab='none',
-                            dig='holding the ball closely guarded when three phases in a row end: a turnover (D-173)'),
+                            dig='holding the ball closely guarded when three phases in a row end: a turnover, −5, play on (D-173, D-198)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
     'position_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
@@ -491,8 +503,8 @@ WORDS = {
 DIGITAL_ONLY = [
     ('Quarters and team fouls', 'Each side\'s defensive fouls (steal fouls and shooting fouls) count across a running '
      'quarter of 18 possessions a side. The count carries across matches between the same two players, or a player and '
-     'a computer level, and resets when both sides have had 18. The screen shows the count, the bonus line and the '
-     'possessions left. (settings: quarter_possessions, bonus_from)'),
+     'a computer level, and resets when both sides have had 18. The screen shows the count and the possessions left. '
+     'Since D-198 the count carries no penalty: every foul is +5. (settings: quarter_possessions, bonus_from)'),
     ('Match length', 'A match is 4, 8 or 12 possessions a side, sides alternating. The higher total wins; a tie goes '
      'to overtime (see Split by format).'),
     ('The decision timer', 'Each player may set an optional thinking clock.'),

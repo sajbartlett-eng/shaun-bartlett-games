@@ -112,7 +112,8 @@ def _steal(rules=None, **kw):
 
 @pytest.mark.parametrize('fmt', ['tabletop', 'digital'])
 def test_a_steal_foul_by_format_and_the_bonus_adds_free_throws(fmt):
-    rules = RC.with_rules(digital=fmt == 'digital')
+    # D-198 (step 18r) replaced the app's side of this; it is tested as it was ruled, with points_play_on off
+    rules = RC.with_rules(digital=fmt == 'digital', points_play_on='off')
     first = force(apply(_steal(rules), Action('steal', 'X', 0)), 'foul')
     # the table: +5, play on. The app, since D-179 (step 18j): a team foul, no +5, play on
     assert first.stage == 'play' and first.fouls == 1 and first.bonus5 == (1 if fmt == 'tabletop' else 0)
@@ -263,7 +264,8 @@ def test_the_distance_rings_show_by_default_and_toggle_off(tmp_path):
 def test_a_steal_foul_on_a_shooter_is_free_throws_only(fmt):
     """Step 7 (D-89): a Steal against a declared shot that fouls is a shooting foul: the free throws only, no +5; it still
     counts as a foul (a team foul in the app)."""
-    r = _shot(rules=RC.with_rules(digital=fmt == 'digital'))
+    # D-198 (step 18r) replaced the app's side of this; it is tested as it was ruled, with points_play_on off
+    r = _shot(rules=RC.with_rules(digital=fmt == 'digital', points_play_on='off'))
     end = force(apply(r, Action('steal', 'X', 0)), 'foul')
     sc = score(end)
     assert end.stage == 'over' and end.result.kind == 'free_throws' and end.fouls == r.fouls + 1

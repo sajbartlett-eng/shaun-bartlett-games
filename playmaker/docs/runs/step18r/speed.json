@@ -1,0 +1,77 @@
+{
+ "note": "seconds to finish 1 pair, the app's rules; each round times step 18q's code and this step's",
+ "rounds": [
+  {
+   "18q": {
+    "rookie": {
+     "median": 0.131,
+     "nine_in_ten": 0.192,
+     "slowest": 0.239
+    },
+    "starter": {
+     "median": 0.445,
+     "nine_in_ten": 0.586,
+     "slowest": 0.722
+    },
+    "allstar": {
+     "median": 1.152,
+     "nine_in_ten": 1.585,
+     "slowest": 1.636
+    }
+   },
+   "18r": {
+    "rookie": {
+     "median": 0.192,
+     "nine_in_ten": 0.509,
+     "slowest": 0.656
+    },
+    "starter": {
+     "median": 0.527,
+     "nine_in_ten": 1.677,
+     "slowest": 1.844
+    },
+    "allstar": {
+     "median": 1.698,
+     "nine_in_ten": 3.02,
+     "slowest": 3.537
+    }
+   }
+  },
+  {
+   "18q": {
+    "rookie": {
+     "median": 0.134,
+     "nine_in_ten": 0.204,
+     "slowest": 0.223
+    },
+    "starter": {
+     "median": 0.482,
+     "nine_in_ten": 0.664,
+     "slowest": 0.734
+    },
+    "allstar": {
+     "median": 1.27,
+     "nine_in_ten": 1.522,
+     "slowest": 1.557
+    }
+   },
+   "18r": {
+    "rookie": {
+     "median": 0.179,
+     "nine_in_ten": 0.28,
+     "slowest": 0.634
+    },
+    "starter": {
+     "median": 0.573,
+     "nine_in_ten": 1.546,
+     "slowest": 2.112
+    },
+    "allstar": {
+     "median": 1.499,
+     "nine_in_ten": 2.393,
+     "slowest": 4.17
+    }
+   }
+  }
+ ]
+}

@@ -358,7 +358,9 @@ def score(state):
             detail = 'stolen after the shot was declared'
         elif r.kind == 'turnover_end':
             detail = 'turnover ended the possession'
-            if r.violation == 'three_seconds':
+            if r.violation == 'shot_clock':
+                detail = 'the shot clock ran out: −5, and nothing was left to play'      # D-198
+            elif r.violation == 'three_seconds':
                 detail = f'three seconds: O{r.violator + 1} was in the key when two phases in a row ended'
             elif r.violation == 'closely_guarded':
                 detail = f'closely guarded: O{r.violator + 1} held the ball with a defender on him when three phases in a row ended'

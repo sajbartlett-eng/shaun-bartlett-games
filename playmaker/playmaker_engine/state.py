@@ -101,6 +101,7 @@ class GameState:
     react_moved: int = 0      # step 3i (late_closeout test): defenders who moved square in the reaction to a shot
     turn_lead: int = -1       # OQ-29 ruling: the offence player whose Move opened this turn (he may Screen next)
     turn_x: tuple = ()        # intercept ruling: the defence's squares and arrows at the start of its turn
+    phase_x: tuple = ()       # D-198: the defence's squares and arrows when the phase began (only under points_play_on)
     rush_o: int = 0           # D-151 (rules.control): two bits a player, his last movement this phase: 1 a Quick Step,
     rush_x: int = 0           # 2 a Sprint (0 after a Move, and at the phase's end); always 0 when the rule is off
     key_o: int = 0            # D-172 (rules.three_seconds): bitmask, attackers who were in the key at the last phase end

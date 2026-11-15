@@ -168,3 +168,40 @@ Dribble takes the on-ball defender out of the race; and the off-balance finish.
     stands next to the ball handler with his arrow on him. No defensive goal outweighs it.
   - **The rim square** (I2) can never be faced square: every contest there counts as from behind.
 - **The lane stays off by default** until the setup uses it and the offence's half of check 1 holds.
+
+## After the agreed rules (step 18r, 16 Nov 2026)
+
+Shaun ruled D-198 and set the order: the agreed rules first, then the offence takes an open lane (with what a drive
+opens for the other four), then the lane read inside the speed budget, then setup judged by the lane, then passing
+options and the rest of the map.
+
+**Built:** fouls and turnovers in points with play going on, the phase ending after a turnover, no shot from the
+rim square, 18i's foul pricing retired (the app only; `docs/reports/STEP18R_REPORT.md`).
+
+**What the rules settled without a ruling:**
+
+- **The reach.** 0.80 a possession before, 0.07 after, with nothing set by hand. On Shaun's board it is no longer the
+  defence's best turn.
+- **The rim square.** No shot from it, so the contest that could never be square is gone.
+
+**The baseline every later stage is judged on** (Shaun's board after the beat, forced lines, 16 a line, the lane
+reading off):
+
+| Line | Points |
+|---|---|
+| Lane open, the offence as it chooses | 27.3 (25.0 to 29.7) |
+| Lane open, made to sprint into it | 27.1 (25.2 to 29.1) |
+| Help in the lane, the offence as it chooses | 19.9 (16.4 to 23.3) |
+| Help in the lane, made to sprint into it | 24.8 (22.7 to 26.8) |
+
+- **Design check 1, the defence's half, holds by play:** help is worth 7 points and the ranges are apart.
+- **The offence's fault is now exact:** against help it settles for a three 16 times in 16 and scores 19.9; made to
+  drive and kick it scores 24.8. It doesn't read what a drive opens for the other four.
+
+**What is new on the list:**
+
+- **Speed under the new rules.** A steal or an intercepted pass no longer ends the line the computer reads, and its
+  slow decisions run over at every level. First in the next step, with the lane's speed.
+- **The refit makes the reading flatter.** Refitted on play under the new rules, the maps fail exam position 12 and
+  were not kept. The flattening map (fault A3) is now in the way of any refit; it goes with the reading work of
+  the offence stage.

@@ -110,9 +110,29 @@ def rules_ij(state):
     return state.ctx.rules.intercept_rule == 'ring_jump'
 
 
+def ppo(s):
+    """D-198 (rules.points_play_on) is in force for this possession."""
+    return RC.app_rule(s.ctx.rules, 'points_play_on') and not s.ctx.hold_for_one
+
+
+def play_on(s):
+    """D-198: after a turnover (its -5 already banked) the phase ends there and the next begins, the ball where it
+    was; the counts of three seconds and closely guarded start again. With no phase left the possession is over on
+    what it has banked."""
+    s = s.with_(pending=None, approach=-1, shot=None, stage='play')
+    if s.inbound:
+        return end_phase(s)
+    clock = s.clock - RC.PHASE_SECONDS
+    if clock <= 0:
+        return _terminal(s.with_(clock=0), Result('turnover_end'))
+    return new_phase(s.with_(key_o=0, grd=0), clock)
+
+
 def _turnover(s):
     """A turnover that plays on (OQ-1), or ends the possession."""
     s = s.with_(tos=s.tos + 1)
+    if ppo(s):
+        return play_on(s)
     if s.ctx.hold_for_one or s.ctx.rules.digital:
         return _terminal(s, Result('turnover_end'), zeroed=True)
     if s.ctx.rules.turnover_play_on == 'end':
@@ -129,7 +149,7 @@ def pickoff(s):
     with the passer or carrier. Returns the state play goes on from, or a terminal state. The -5s are banked
     in s.tos (one per -5)."""
     cost = s.ctx.rules.turnover_cost
-    if cost == 'legacy':
+    if cost == 'legacy' or ppo(s):
         return _turnover(s)
     s = s.with_(tos=s.tos + COST_UNITS[cost])
     units = COST_UNITS[cost]
@@ -154,7 +174,9 @@ def pickoff_value(pre, keep, tol=1.0, relative=False):
     rules = pre.ctx.rules
     cost = rules.turnover_cost
     zero = float(min(0, banked)) if rules.turnover_floor else 0.0     # D-82: 0, or what is banked if that is lower
-    if pre.ctx.hold_for_one:
+    if ppo(pre):                                        # D-198: -5, and the next phase with the ball where it was
+        v = banked + RC.TURNOVER_POINTS * tol + (keep if pre.clock > RC.PHASE_SECONDS else 0.0)
+    elif pre.ctx.hold_for_one:
         v = zero
     elif rules.intercept_rule == 'ring_jump' or cost in ('legacy', 'end_possession'):
         v = banked + RC.TURNOVER_POINTS * tol           # the possession ends (or, legacy, valued as if it did)
@@ -168,6 +190,8 @@ def pickoff_value(pre, keep, tol=1.0, relative=False):
 def new_phase(s, clock):
     if s.ctx.rules.screen_rule == 'hold_until_move':
         s = s.with_(screens=())                  # OQ-29: a screen ends with the phase
+    if RC.app_rule(s.ctx.rules, 'points_play_on'):
+        s = s.with_(phase_x=(s.x, s.arrows))     # D-198: an interceptor goes back to where the phase began for him
     return s.with_(clock=clock, turn_lead=-1, turn_x=(), tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
                    cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
                    beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0,
@@ -236,8 +260,10 @@ def contest_outcome(s, opt, forced):
     if opt.clean or opt.p_foul == 0:
         return made
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating, opt.value, rating - opt.contest)
-    fouled = _terminal(s.with_(fouls=s.fouls + 1),
-                       Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
+    fs = s.with_(fouls=s.fouls + 1)
+    if ppo(s):
+        fs = fs.with_(bonus5=fs.bonus5 + 1)             # D-198: a shooting foul is +5 and its free throws
+    fouled = _terminal(fs, Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
     fr = s.ctx.dfn[opt.defender].r['foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
     one = p_foul(fr, s.ctx.rules)
@@ -268,14 +294,18 @@ def settle(node):
 def phase_counts(s):
     """Step 18i (D-171 to D-173): the counts taken at a phase end. An attacker in the key at two phase ends in a row,
     or a ball handler holding the ball closely guarded at three in a row, is a violation: the possession is over, a
-    turnover. Otherwise the state with its counts moved on."""
+    turnover. Otherwise the state with its counts moved on. D-198 (points_play_on): a violation is -5 and play goes
+    on; the count that caught him starts again."""
     rules = s.ctx.rules
     if RC.app_rule(rules, 'three_seconds'):
         k = 0
         for i, q in enumerate(s.o):
             if B.in_key(q):
                 if s.key_o >> i & 1:
-                    return _violation(s, 'three_seconds', i)
+                    if not ppo(s):
+                        return _violation(s, 'three_seconds', i)
+                    s = s.with_(tos=s.tos + 1)           # D-198: -5 and play goes on; his count starts again
+                    continue
                 k |= 1 << i
         if k != s.key_o:
             s = s.with_(key_o=k)
@@ -290,7 +320,10 @@ def phase_counts(s):
         elif closely_guarded(s):
             held += 1
             if held >= RC.GUARDED_ENDS:
-                return _violation(s, 'closely_guarded', s.ball)
+                if not ppo(s):
+                    return _violation(s, 'closely_guarded', s.ball)
+                s = s.with_(tos=s.tos + 1)               # D-198: -5 and play goes on; the count starts again
+                held = 0
         else:
             held = 0                         # nobody closely guards him at a phase end: the count starts again
         g = pack_guard(ball, held, idle, 0)
@@ -333,6 +366,8 @@ def end_phase(s):
     clock = s.clock - RC.PHASE_SECONDS
     if clock <= 0:
         s = s.with_(clock=0, tos=s.tos + 1, phase=s.phase)
+        if ppo(s):                                         # D-198: the shot clock: -5, and nothing is left to play
+            return _terminal(s, Result('turnover_end', violation='shot_clock'))
         if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital: shot-clock expiry is a turnover, scores 0
             return _terminal(s, Result('turnover_end'), zeroed=True)
         return resolve_shot(s, forced=True)
@@ -580,7 +615,10 @@ def apply(state, action, check=False):
         else:
             ok_node = _after(state, ok, side, k)
         back = s
-        if s.ctx.rules.intercept_return and state.turn_x:  # ruled: a successful interceptor goes back to where he
+        if ppo(s) and (state.phase_x or state.turn_x):     # D-198: back to the square and arrow he began the phase on
+            sx, sa = state.phase_x or state.turn_x         # (the possession's first phase: where he stood when his turn began)
+            back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
+        elif s.ctx.rules.intercept_return and state.turn_x:  # ruled: a successful interceptor goes back to where he
             sx, sa = state.turn_x                          # stood at the start of the defence's turn (Move still used)
             back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
         if mti:
@@ -611,7 +649,10 @@ def apply(state, action, check=False):
         pk = p_success(rd - rk, rules)
         fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
         fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179, D-181: no +5 on a steal foul in the app
-        if rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
+        d198 = ppo(s)
+        if d198:
+            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-198: every foul is +5, a foul on a shooter included
+        elif rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
             fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
         legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
         if s.stage == 'reaction':
@@ -621,7 +662,7 @@ def apply(state, action, check=False):
             fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules, rating)
             foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0,
                                               fpts, and1))
-            if legacy or rules.digital:
+            if legacy or (rules.digital and not d198):
                 stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
                                         zeroed=s.ctx.hold_for_one or rules.digital)
             else:
@@ -634,7 +675,10 @@ def apply(state, action, check=False):
             # the bonus: tabletop, the second steal foul of the possession; digital (step 3n F3), the bonus_from-th
             # team foul of the quarter (the defence's fouls before this possession travel in the context)
             in_bonus = (s.ctx.team_fouls + fs.fouls >= rules.bonus_from) if rules.digital else fs.fouls >= 2
-            if in_bonus:
+            if d198:
+                # D-198: +5 (banked above), the defender locked as D-179 has it, and play goes on; no penalty
+                foul_node = _after(state, _lock(fs, 'X', a.piece), side, k)
+            elif in_bonus:
                 # D-181 (Shaun, 14 Nov 2026): in the app no foul carries +5; the penalty is two free throws, nothing more
                 foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
                                                  free_throws(O[carrier], 2)))

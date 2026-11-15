@@ -10,8 +10,10 @@ from playmaker_engine.resolve import apply, end_phase, ChanceNode
 from playmaker_engine.scenarios import game_state
 from playmaker_engine.scoring import contest_options, foul_on_shot_points, score
 
-ON = RC.with_rules(digital=True, three_seconds='on', closely_guarded='on', fiba_fouled_shot='on')
-OFF = RC.with_rules(digital=True, three_seconds='off', closely_guarded='off', fiba_fouled_shot='off')
+# D-198 (step 18r) replaced this in the app: fouls and turnovers are points and play goes on (tests/test_points_play_on_18r.py).
+# The rule as it was ruled stays in the engine behind points_play_on, and is tested here with that switch off.
+ON = RC.with_rules(digital=True, three_seconds='on', closely_guarded='on', fiba_fouled_shot='on', points_play_on='off')
+OFF = RC.with_rules(digital=True, three_seconds='off', closely_guarded='off', fiba_fouled_shot='off', points_play_on='off')
 O = ['I11', 'C9', 'O9', 'A3', 'Q3']
 X = ['I10', 'D8', 'N8', 'G4', 'N4']
 ARROWS = ['N', 'NE', 'NW', 'N', 'N']
