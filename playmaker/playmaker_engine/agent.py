@@ -163,7 +163,7 @@ class Agent:
             req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), side=side,
                        turns=[[[a.kind, a.side, a.piece, B.sq(a.dest) if a.dest else None, a.arrow, a.target, a.shot]
                                for a in t] for _, t, _ in top8])
-            g = json.loads(JS['goals'](json.dumps(req)))
+            g = json.loads(JS['goals'](json.dumps(_lane_req(req))))
             base = sign * g['base']
             for (v, t, raw), gl in zip(top8, g['goals']):
                 with_goals.append((v, t, {tuple(k): w for k, w in gl}))
@@ -308,7 +308,7 @@ class Agent:
         if self.scouting and self.scouting.get('habit'):
             req['habit'] = self.scouting['habit']
             req['habit_weight'] = self.scouting.get('weight', 0.3)
-        out = json.loads(JS['search'](json.dumps(req)))
+        out = json.loads(JS['search'](json.dumps(_lane_req(req))))
         results = [(v, tuple(jsbridge.action_from(a) for a in t)) for v, t in out['results']]
 
         class _Stats:
@@ -418,7 +418,7 @@ def _reads(make, items):
             req = dict(state=jsbridge.state_json(s0), ctx=jsbridge.ctx_json(s0.ctx),
                        items=[dict(o=[B.sq(q) for q in items[k][0]], ball=items[k][1], x=[B.sq(q) for q in items[k][2]],
                                    arrows=list(items[k][3])) for k in live])
-            for k, key in zip(live, json.loads(JS['reads'](json.dumps(req)))):
+            for k, key in zip(live, json.loads(JS['reads'](json.dumps(_lane_req(req))))):
                 out[k] = tuple(key)
             return out
     for k in live:
@@ -437,6 +437,21 @@ def _better(a, b, sign):
     return False
 
 
+_LANE_FILE = CONFIG.get('eval', {}).get('lane') is True      # eval.lane as ai_profiles.json has it
+
+
+def set_lane(on):
+    """Step 18q: eval.lane for this process: on, or back to the file's own setting. The JavaScript search follows it
+    request by request (_lane_req)."""
+    CONFIG['eval']['lane'] = bool(on) or _LANE_FILE
+    return CONFIG['eval']['lane']
+
+
+def _lane_req(req):
+    req['lane'] = CONFIG['eval'].get('lane') is True
+    return req
+
+
 def _played(make, o_sq, ball, xs, arrows, level, t_end, depth=1):
     """The search's own played-out reading of a placement (the offence to act): the level's search, the offence's
     turn played out and its shot settled, `depth` turns ahead. None if it could not finish."""
@@ -446,7 +461,7 @@ def _played(make, o_sq, ball, xs, arrows, level, t_end, depth=1):
     try:
         if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
             req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=p, budget=budget, max_depth=depth, stale=None)
-            out = json.loads(JS['search'](json.dumps(req)))
+            out = json.loads(JS['search'](json.dumps(_lane_req(req))))
             if out['reached'] < depth or not out['results']:
                 return None
             return max(v for v, _ in out['results'])
@@ -792,15 +807,27 @@ def setup_search():
     return CONFIG.get('setup', {}).get('search') is True
 
 
+def _as_it_was(fn, *args):
+    """Step 18q: the setup as it was reads positions as it did, without the lane (eval.lane): its readings run in the
+    slow engine, where the lane takes it past its time (3.7 seconds against 1.2 on Shaun's board). The lane judges a
+    setup when the setup is searched (setup.search), the next stage of the plan."""
+    keep = CONFIG['eval'].get('lane')
+    CONFIG['eval']['lane'] = False
+    try:
+        return fn(*args)
+    finally:
+        CONFIG['eval']['lane'] = keep
+
+
 def propose_offence(make_names, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
     """The offence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
     if setup_search() if search is None else search:
         return _search_offence(make_names, seed, levels_key, budget, level, memory)
-    return _fixed_offence(make_names, seed, levels_key, budget, level)
+    return _as_it_was(_fixed_offence, make_names, seed, levels_key, budget, level)
 
 
 def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
     """The defence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
     if setup_search() if search is None else search:
         return _search_defence(make_names, o_sq, ball, seed, levels_key, budget, level, memory)
-    return _fixed_defence(make_names, o_sq, ball, seed, levels_key, budget, level)
+    return _as_it_was(_fixed_defence, make_names, o_sq, ball, seed, levels_key, budget, level)

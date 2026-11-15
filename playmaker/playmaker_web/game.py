@@ -294,7 +294,7 @@ class Game:
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
                  three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None, positioncontest=None,
-                 setup=None):
+                 setup=None, lane=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -335,6 +335,9 @@ class Game:
         from playmaker_engine import agent as _AG
         self.setup_search = self.match_format == 'digital' and (setup == 'search' or _AG.setup_search())
         self.setup_memory = {}           # (the team placing, side) -> that side's searches so far
+        # step 18q (D-196, stage 1): the way to the rim in the computer's reading (eval.lane: built, off). ?lane=1 turns it
+        # on for the games played from here on (the app plays one game at a time); any other game sets it back
+        _AG.set_lane(self.match_format == 'digital' and lane in ('on', '1', 1, True))
         # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
         # between the same pairing (the client stores it with the pairing and passes it in)
         q = quarter if isinstance(quarter, dict) else {}

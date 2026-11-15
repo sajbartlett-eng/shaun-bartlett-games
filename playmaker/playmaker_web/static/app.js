@@ -382,6 +382,8 @@ async function create() {
     { const q = new URLSearchParams(location.search); if (body.match_format === 'digital') for (const k of ['three', 'guarded', 'fouledshot', 'softcontest', 'stealfoul', 'offbalance', 'positioncontest']) if (q.get(k) === '0') body[k] = 'off'; }
     // step 18o (D-195): ?setup=search in the address plays the setup searched from no starting answer and judged by play (built, off)
     { const su = new URLSearchParams(location.search).get('setup'); if (su === 'search' && body.match_format === 'digital') body.setup = 'search'; }
+    // step 18q (D-196): ?lane=1 in the address plays the computer with the way to the rim in its reading (built, off)
+    { const ln = new URLSearchParams(location.search).get('lane'); if (ln === '1' && body.match_format === 'digital') body.lane = 'on'; }
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();

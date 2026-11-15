@@ -85,6 +85,8 @@
     "play_on_value": 24.1,
     "_fouls": "Step 3n F4, remeasured in step 18n on today's cards (D-189, D-192) and rules (D-191, D-193: jump shots contested by position only): the defence's fouls a possession, 0.22 (0.15 to 0.29), and what a possession is worth to the offence, 25.8 (24.4 to 27.2), from 200 possessions of All-Star self-play under the app's rules (docs/runs/step18n/foul_numbers.json, run 'fit_allstar'). Used to price a foul over the rest of the quarter. No jump shot can be fouled in the app now, so this prices steal fouls and fouls on inside shots only. Step 18l measured 0.21 and 27.2; step 18j 0.25 and 26.9; step 18i 0.35 and 27.5; before that they were set by hand at 0.25 and 20.",
     "leaf_mode": "relative",
+    "_lane": "Step 18q (D-196, design checks 1 and 4): true: the reading counts the ball handler's way to the rim next phase (step 16's penetration: his best paint look next phase against every defender who can get to a Contest of it), read as this turn's looks are, one phase on. The reading looked one turn ahead, so a drive that finishes next phase read as nothing.",
+    "lane": false,
     "reach": true,
     "coverage_budget": false,
     "calibrated": true,

@@ -1,0 +1,225 @@
+{
+ "lane open: the offence as it chooses": {
+  "mean": 20.1,
+  "low": 14.2,
+  "high": 26.1,
+  "ends": {
+   "layup": 6,
+   "turnover_end": 3,
+   "three": 4,
+   "long": 1,
+   "floater": 2
+  },
+  "first_action": [
+   [
+    "O2 move E10",
+    15
+   ],
+   [
+    "O5 screen",
+    1
+   ]
+  ],
+  "points": [
+   22,
+   0,
+   34,
+   24,
+   12,
+   27,
+   24,
+   30,
+   28,
+   32,
+   6,
+   0,
+   28,
+   27,
+   0,
+   28
+  ]
+ },
+ "lane open: O1 Sprints into the lane": {
+  "mean": 28.0,
+  "low": 26.5,
+  "high": 29.5,
+  "ends": {
+   "three": 8,
+   "layup": 8
+  },
+  "first_action": [
+   [
+    "O3 sprint M7",
+    15
+   ],
+   [
+    "O end_turn",
+    1
+   ]
+  ],
+  "points": [
+   27,
+   30,
+   34,
+   27,
+   34,
+   27,
+   30,
+   27,
+   24,
+   28,
+   27,
+   27,
+   27,
+   30,
+   27,
+   22
+  ]
+ },
+ "help in the lane: the offence as it chooses": {
+  "mean": 21.2,
+  "low": 16.0,
+  "high": 26.5,
+  "ends": {
+   "three": 8,
+   "turnover_end": 3,
+   "floater": 1,
+   "post": 3,
+   "layup": 1
+  },
+  "first_action": [
+   [
+    "O2 move D9",
+    13
+   ],
+   [
+    "O3 move M9",
+    3
+   ]
+  ],
+  "points": [
+   27,
+   0,
+   28,
+   24,
+   26,
+   0,
+   24,
+   27,
+   27,
+   24,
+   24,
+   27,
+   24,
+   30,
+   28,
+   0
+  ]
+ },
+ "help in the lane: O1 Sprints into the lane": {
+  "mean": 22.8,
+  "low": 20.1,
+  "high": 25.5,
+  "ends": {
+   "three": 9,
+   "layup": 7
+  },
+  "first_action": [
+   [
+    "O1 pass",
+    16
+   ]
+  ],
+  "points": [
+   24,
+   24,
+   28,
+   21,
+   21,
+   24,
+   27,
+   24,
+   12,
+   24,
+   12,
+   21,
+   34,
+   24,
+   18,
+   27
+  ]
+ },
+ "nobody able to get between: the offence as it chooses": {
+  "mean": 22.1,
+  "low": 15.4,
+  "high": 28.8,
+  "ends": {
+   "layup": 9,
+   "turnover_end": 4,
+   "post": 1,
+   "three": 2
+  },
+  "first_action": [
+   [
+    "O2 move D9",
+    16
+   ]
+  ],
+  "points": [
+   38,
+   0,
+   30,
+   0,
+   26,
+   0,
+   34,
+   24,
+   28,
+   24,
+   32,
+   34,
+   30,
+   28,
+   26,
+   0
+  ]
+ },
+ "nobody able to get between: O1 Sprints into the lane": {
+  "mean": 23.3,
+  "low": 17.4,
+  "high": 29.2,
+  "ends": {
+   "turnover_end": 3,
+   "layup": 12,
+   "three": 1
+  },
+  "first_action": [
+   [
+    "O4 move A1",
+    11
+   ],
+   [
+    "O1 pass",
+    5
+   ]
+  ],
+  "points": [
+   0,
+   26,
+   30,
+   0,
+   27,
+   0,
+   24,
+   28,
+   28,
+   24,
+   28,
+   34,
+   34,
+   34,
+   28,
+   28
+  ]
+ }
+}

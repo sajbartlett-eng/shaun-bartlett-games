@@ -24,9 +24,9 @@ holds.
 | 4 | An open layup in an empty lane is worth about what the card says. | 1 |
 | 5 | The offence places players where their cards are worth something; the defence answers the players in front of it. | 3 |
 | 6 | Setup and play follow the goal set for the possession. | 3 |
-| 7 | **New, for Shaun to confirm.** Stepping next to a ball handler who can't get away is worth more to the defence than standing off him. | 1, 2 |
-| 8 | **New, for Shaun to confirm.** A defender who can reach the ball handler and reach for the ball is read the same wherever he starts from: the reading of a reach doesn't depend on which square he came from. | 1 |
-| 9 | **New, for Shaun to confirm.** The same position reads the same for both sides: what the offence thinks a lane is worth is what the defence thinks it costs. (Neutrality.) | 1 |
+| 7 | **Confirmed by Shaun, 15 Nov 2026.** Stepping next to a ball handler who can't get away is worth more to the defence than standing off him. | 1, 2 |
+| 8 | **Confirmed by Shaun, 15 Nov 2026.** A defender who can reach the ball handler and reach for the ball is read the same wherever he starts from: the reading of a reach doesn't depend on which square he came from. | 1 |
+| 9 | **Confirmed by Shaun, 15 Nov 2026.** The same position reads the same for both sides: what the offence thinks a lane is worth is what the defence thinks it costs. (Neutrality.) | 1 |
 
 How each check is tested: a named position on Shaun's board of 15 November (and its mirror on other cards), the
 candidates played by **forced lines** for the side in question, and the reading compared with the played result.
@@ -135,3 +135,36 @@ The plan's method for stage 1 was tried and failed its gate (`docs/reports/STEP1
 - **The baseline the next attempt must beat** (the zone on, 16 play-outs each): with the lane open the offence by
   its own choice scores 25.1 (20.1 to 30.0) and chooses the Sprint 0 times in 16; made to Sprint it scores 26.9
   (21.6 to 32.1); with help in the lane, 22.5 and 23.4.
+
+## After stage 1's second attempt (step 18q, 15 Nov 2026)
+
+Shaun agreed the race to the rim as a new part of the reading and confirmed checks 7 to 9 (D-197). The whole system
+this plan serves is now mapped in `docs/plans/SYSTEM_MAP.md`; this plan is its order of work.
+
+**Built (off by default, `eval.lane`, `?lane=1`):** the way to the rim, from the movement rules. The ball handler's
+movement this phase and one movement the next, against each defender's movement left this phase and the reaction;
+bodies and barring arrows as they stand; what is left after the defence's best single step into it; the chance a
+Dribble takes the on-ball defender out of the race; and the off-balance finish.
+
+| Check | By the reading | By play (forced lines) |
+|---|---|---|
+| 1, the defence's half: a clear lane is bad for the defence | Holds: 25.1 against 23.2 with help. | Holds: help costs the offence 3.8 and 6.7 (16 play-outs a line; before, 2.6 and 3.5). |
+| 1, the offence's half: the offence takes it | The sprint no longer reads as nothing (25.1 before and after). | **Fails:** made to sprint 27.8, by its own choice 22.0. |
+| 2: in front beats beside or behind | Holds: 24.2 against 25.1. | Not played. |
+| 3: an arrow that covers | Not shown (what the search shows is the reach). | Not played. |
+| 4: an open layup is worth about the card | Holds only off the rim square (see below). | |
+| 9: both sides read the same | Holds (one measure). | |
+
+**What changes in this plan:**
+
+- **Help must come from the setup.** On Shaun's board no big can get behind the on-ball defender in one turn, so
+  nothing the defence does in play changes the reading. Stage 3 (setup from the goals) is now the next stage, judged
+  by the lane ("who is behind the on-ball defender").
+- **The offence's half of check 1 needs the drive's effect on the other four defenders.** Thirteen of sixteen forced
+  sprints ended in a kick-out three. The reading sees the lane; it does not yet see what collapsing the defence
+  opens. This is the passing measure (iteration 2 of the map), and it is built with stage 3.
+- **Two things that are not the computer, for Shaun to rule** (step 18q report, decisions 1 and 2):
+  - **The reach** wins the ball 1 time in 4 and is the defence's best turn by about 5 points whenever a defender
+    stands next to the ball handler with his arrow on him. No defensive goal outweighs it.
+  - **The rim square** (I2) can never be faced square: every contest there counts as from behind.
+- **The lane stays off by default** until the setup uses it and the offence's half of check 1 holds.

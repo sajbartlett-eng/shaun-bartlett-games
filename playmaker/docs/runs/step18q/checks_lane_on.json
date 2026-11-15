@@ -1,0 +1,112 @@
+{
+ "check 1 and 4, lane open (X4, X5 next to their men)": {
+  "reading_before": 25.9,
+  "reading_after_the_sprint_into_the_lane": 25.8,
+  "search_choice": [
+   "O2 Move to E10"
+  ],
+  "search_value": 25.1,
+  "best_sprint_turn": [
+   "O1 Sprint to I6"
+  ],
+  "best_sprint_value": 24.0,
+  "offence_takes_the_lane": false,
+  "defence_answer_to_the_sprint": [
+   "X3 Quick Step to M6",
+   "X3 Move to J6 facing SW"
+  ],
+  "defence_answer_value": 23.4,
+  "defence_pause_value": null
+ },
+ "check 1 and 4, help in the lane (X4, X5 on H5, J5)": {
+  "reading_before": 23.7,
+  "reading_after_the_sprint_into_the_lane": 23.8,
+  "search_choice": [
+   "O2 Move to D9"
+  ],
+  "search_value": 23.2,
+  "best_sprint_turn": null,
+  "best_sprint_value": null,
+  "offence_takes_the_lane": false,
+  "defence_answer_to_the_sprint": [
+   "X4 Move to H5 facing NE",
+   "X4 Steal"
+  ],
+  "defence_answer_value": 16.5,
+  "defence_pause_value": null
+ },
+ "check 2, where X1 stands": {
+  "square in front (I10, arrow on him)": {
+   "reading": 24.8,
+   "search_value": 23.6,
+   "offence_choice": [
+    "O1 Quick Step to G9"
+   ]
+  },
+  "in front, arrow off him (I10 facing E)": {
+   "reading": 24.8,
+   "search_value": 23.7,
+   "offence_choice": [
+    "O5 Screen, T SW"
+   ]
+  },
+  "diagonal, arrow on him (J10, his game)": {
+   "reading": 24.8,
+   "search_value": 19.4,
+   "offence_choice": [
+    "O4 Move to A1"
+   ]
+  },
+  "beside (J11 facing W, on him)": {
+   "reading": 25.9,
+   "search_value": 23.7,
+   "offence_choice": [
+    "O1 Sprint to I6"
+   ]
+  },
+  "behind (I12 facing S, on him)": {
+   "reading": 25.9,
+   "search_value": 24.2,
+   "offence_choice": [
+    "O1 Sprint to I7"
+   ]
+  }
+ },
+ "check 3, X1's arrow": {
+  "arrow across the lane (facing W)": {
+   "reading": 24.8,
+   "search_value": 19.4,
+   "offence_choice": [
+    "O4 Move to A1"
+   ]
+  },
+  "arrow on him (NW)": {
+   "reading": 24.8,
+   "search_value": 19.4,
+   "offence_choice": [
+    "O4 Move to A1"
+   ]
+  },
+  "arrow away from everything (facing E)": {
+   "reading": 24.8,
+   "search_value": 24.2,
+   "offence_choice": [
+    "O2 Move to D9"
+   ]
+  }
+ },
+ "check 3, an off-ball arrow": {
+  "X3 arrow on his man (N)": {
+   "reading": 24.8,
+   "search_value": 19.4
+  },
+  "X3 arrow on the pass to his man (NW)": {
+   "reading": 24.8,
+   "search_value": 19.4
+  },
+  "X3 arrow away (SE)": {
+   "reading": 24.8,
+   "search_value": 19.4
+  }
+ }
+}

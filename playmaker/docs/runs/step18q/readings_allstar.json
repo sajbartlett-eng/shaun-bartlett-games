@@ -1,0 +1,72 @@
+{
+ "after the beat, lane open": {
+  "reading_lane_off": 24.8,
+  "reading_lane_on": 25.1,
+  "lane": 24,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "after the beat, help in the lane (H5, J5)": {
+  "reading_lane_off": 23.7,
+  "reading_lane_on": 23.2,
+  "lane": 16,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "after the beat, X5 on I4": {
+  "reading_lane_off": 24.4,
+  "reading_lane_on": 23.5,
+  "lane": 16,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "after the Sprint into the lane": {
+  "reading_lane_off": 23.1,
+  "reading_lane_on": 25.1,
+  "lane": 24,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "start, X1 square in front (I10)": {
+  "reading_lane_off": 23.4,
+  "reading_lane_on": 24.2,
+  "lane": 18,
+  "lane_if_the_dribble_beats_his_man": 24,
+  "chance_of_that": 0.35
+ },
+ "start, X1 as in his game (J10)": {
+  "reading_lane_off": 23.4,
+  "reading_lane_on": 24.2,
+  "lane": 18,
+  "lane_if_the_dribble_beats_his_man": 24,
+  "chance_of_that": 0.35
+ },
+ "start, X1 beside (J11)": {
+  "reading_lane_off": 23.4,
+  "reading_lane_on": 25.1,
+  "lane": 24,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "start, X1 behind (I12)": {
+  "reading_lane_off": 23.4,
+  "reading_lane_on": 25.1,
+  "lane": 24,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "start, his game but X5 on I4": {
+  "reading_lane_off": 23.3,
+  "reading_lane_on": 23.5,
+  "lane": 16,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ },
+ "start, his game but X4, X5 on H5, J5": {
+  "reading_lane_off": 23.1,
+  "reading_lane_on": 23.2,
+  "lane": 16,
+  "lane_if_the_dribble_beats_his_man": -1.0,
+  "chance_of_that": 0.0
+ }
+}
