@@ -134,8 +134,8 @@ def test_every_square_carries_value_reach_influence_and_weakness(cov):
 
 @needs_node
 def test_the_pass_chance_is_the_rules_own(cov):
-    """A pass can be intercepted only by the rules' own answers. The reading's pass chance (decide._lane_p) lets the
-    on-ball defender take every pass on this board; the map does not use it."""
+    """A pass can be intercepted only by the rules' own answers. At stop one the reading's pass chance (decide._lane_p)
+    let the on-ball defender take every pass on this board; stop two mended it (tests/test_strength_18s.py)."""
     for arrow in ('NW', 'E'):
         s = with_x(1, 'D8', arrow)
         c = cov(s, 0)
@@ -144,7 +144,7 @@ def test_the_pass_chance_is_the_rules_own(cov):
             assert abs(c['passes'][a] - pass_arrives(s, a)) < 0.002
     assert cov(board(), 0)['passes'][1] < 0.5 and cov(with_x(1, 'D8', 'E'), 0)['passes'][1] == 1
     s = board()
-    assert max(_lane_p(s, a, s.o[a]) for a in (2, 4)) < 0.5      # the reading's own: flagged in the report, not changed here
+    assert [_lane_p(s, a, s.o[a]) for a in (2, 4)] == [1.0, 1.0]  # stop two: the reading's own is now the rules' too (it read 0.25)
 
 
 # ---- the design checks -------------------------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ def test_the_view_is_kept_for_each_phase_and_only_in_the_app(cov):
 
 def test_the_app_has_the_toggle_and_the_static_site_wires_the_map():
     js = open(os.path.join(ROOT, 'playmaker_web', 'static', 'app.js'), encoding='utf-8').read()
-    assert "'Defence map: shown' : 'Defence map: hidden'" in js and "localStorage.getItem('pm_covmap') === '1'" in js      # hidden unless asked for
+    assert "'Coverage: shown' : 'Coverage: hidden'" in js and "localStorage.getItem('pm_covmap') === '1'" in js      # hidden unless asked for
     assert "/api/covmap" in js and "/api/covmap" in open(os.path.join(ROOT, 'playmaker_web', 'api.py'), encoding='utf-8').read()
     assert "_AG.JS['coverage'] = js.PMEngine.coverageJSON" in open(os.path.join(ROOT, 'playmaker_web', 'static', 'pyodide-adapter.js'), encoding='utf-8').read()
 

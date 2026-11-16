@@ -790,7 +790,7 @@ function drawCov(c) {
   c.append(g);
 }
 function covPanel() {
-  $('sideButtons').append(el('button', { class: 'small', id: 'covToggle', 'aria-pressed': showCov() ? 'true' : 'false', text: showCov() ? 'Defence map: shown' : 'Defence map: hidden',
+  $('sideButtons').append(el('button', { class: 'small', id: 'covToggle', 'aria-pressed': showCov() ? 'true' : 'false', text: showCov() ? 'Coverage: shown' : 'Coverage: hidden',
     onclick: () => { try { localStorage.setItem('pm_covmap', showCov() ? '0' : '1'); } catch (e) { /* ignore */ } covAsk = ''; render(); } }));
   if (!showCov()) return;
   fetchCov();
@@ -798,7 +798,7 @@ function covPanel() {
   const box = el('div', { class: 'waits covbox', id: 'covBox' });
   const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` The defence is weaker than at the start of the last phase (by ${Math.round(covMap.change)}).` :
     covMap.change < -0.5 ? ` The defence is stronger than at the start of the last phase (by ${Math.round(-covMap.change)}).` : ' About as strong as at the start of the last phase.';
-  box.append(el('div', { id: 'covWords', text: 'The defence at the start of this phase. ' + covMap.words + change }));
+  box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + change }));
   const pick = el('div', { class: 'covpick' });
   for (const k of ['all', 0, 1, 2, 3, 4]) {
     pick.append(el('button', { class: 'small', 'aria-pressed': covFor === k ? 'true' : 'false', text: k === 'all' ? 'All five' : `O${k + 1}`,

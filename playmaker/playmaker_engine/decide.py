@@ -29,6 +29,7 @@ from . import board as B
 from . import geometry as G
 from . import rules_config as RC
 from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points
+from .actions import lane_meet
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INF = 99
@@ -836,7 +837,7 @@ class Read:
                 else:
                     p_new = None
                     if lk.route in ('catch', 'cut') and moved:
-                        p_new = _lane_p_moved(s, lk.c, j, q, a, can_move, qs_left)
+                        p_new = _lane_p_moved(s, lk.c, j, q, a, can_move, qs_left, i)
                     row = cm.get(lk.c)
                     v = lk.swapped(j, self._vals(lk, j, row, dflags=dflags) if row is not None else None, p_new)
                 if v > best:
@@ -2077,8 +2078,10 @@ def _lane_p(s, i, c, reach=None):
     Move or Quick Step. reach (step 12, eval.reach): who can step onto it from the reach map's exact movement."""
     if reach is None:
         reach = bool(CONFIG['eval'].get('reach'))
+    rl = pass_by_rules(s.ctx.rules)                      # by the rules the chance also turns on bodies, screens, broken zones
     key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
-           s.o if reach else None, s.screens if reach else None, _off_balance_key(s))
+           s.o if reach or rl else None, s.screens if reach or rl else None, _off_balance_key(s),
+           (i, s.cnt, s.beaten) if rl else None)
     hit = _LP.get(key)
     if hit is None:
         if len(_LP) > 300000:
@@ -2094,6 +2097,74 @@ def _exact_one(s, d):
                      [q for q, arr in fixed.items() if min(arr.values()) <= 1])
 
 
+def pass_by_rules(rules):
+    """Step 18s, stop two (D-199): is the reading's pass chance the rules' own? It is wherever the Intercept is the
+    current rule ('move_then_intercept') and eval.pass_rules is not switched off."""
+    return rules.intercept_rule == 'move_then_intercept' and CONFIG['eval'].get('pass_rules', True) is not False
+
+
+def icpt_pi(s, pa, pc, j, p, arrow, can_move, qs_left, occ, passer, recv=-1):
+    """Step 18s, stop two: the best chance defender j, on p with this arrow and with can_move / qs_left left to him,
+    takes a pass from pa to pc, by the rules' own Intercept: through his square (not next to the passer), or one
+    straight Move, Quick Step or Sprint along one of his arrow lines to the square where it meets the pass (not next
+    to the passer, the way clear), and then the Intercept, rolled as he then stands. 0.0: by the rules he can't."""
+    rules = s.ctx.rules
+    if s.tok_x <= 0 or s.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:
+        return 0.0
+    base = s.ctx.dfn[j].r['intercept']
+    cut = RC.off_balance_cut(rules)
+    best = None
+    if B.cheb(p, pa) != 1 and B.on_segment(p, pa, pc, rules.on_line_tolerance):
+        best = base - cut if cut and s.rushed('X', j) else base
+    if s.tok_x >= 2 and (can_move or qs_left > 0) and (best is None or best < base):
+        broken = rules.zone != 'off' and any(b[1] == j for b in s.beaten)
+        qs = s.ctx.dfn[j].qs
+        for d in G.lines(rules, G.stance(rules, arrow, broken)):
+            n = lane_meet(p, d, pa, pc)
+            if not n:
+                continue
+            step = B.DIRS[d]
+            path = [(p[0] + step[0] * k, p[1] + step[1] * k) for k in range(1, n + 1)]
+            q = path[-1]
+            if B.cheb(q, pa) == 1 or any(not B.on_board(z) or z in occ for z in path):
+                continue
+            ok = True
+            for scr in s.screens:
+                if scr[0] == recv and pc != s.o[recv]:
+                    continue                                 # the receiver has moved to catch it: his screen is gone
+                tsq = B.add(s.o[scr[0]], B.DIRS[scr[1]])
+                if scr[3] >> j & 1:
+                    if q == tsq:
+                        ok = False
+                        break
+                    continue
+                prev = p
+                for z in path:
+                    if B.diag_step_banned(prev, z, tsq, rules):
+                        ok = False
+                        break
+                    prev = z
+                if not ok:
+                    break
+            if not ok:
+                continue
+            orth = d % 2 == 0
+            if can_move and n <= (RC.MOVE_STRAIGHT if orth else RC.MOVE_DIAGONAL):
+                roll = base                                  # a Move: he is set when he gets there
+            elif qs_left > 0 and qs > 0 and (n <= qs if rules.qs_up_to else n == qs):
+                roll = base - cut                            # a Quick Step or a Sprint: off balance (D-185)
+            elif (can_move and qs_left > 0 and (qs > 0 or not rules.sprint_needs_qs)
+                  and n <= (rules.sprint_orth_base if orth else rules.sprint_diag_base) + qs):
+                roll = base - cut
+            else:
+                continue
+            if best is None or roll > best:
+                best = roll
+    if best is None:
+        return 0.0
+    return 1 - float(p_success(passer - best, rules))
+
+
 def _lane_p_calc(s, i, c, reach=False):
     rules = s.ctx.rules
     a = s.o[s.ball]
@@ -2103,6 +2174,18 @@ def _lane_p_calc(s, i, c, reach=False):
         den = lane_squares(a, c, float(rules.receiver_denial_tol))
         if any(xp in den and B.adjacent(xp, c) for xp in s.x):
             return 0.0
+    if pass_by_rules(rules):                             # step 18s, stop two: who can take it is the rules' own answer
+        passer = rolled(s, 'O', s.ball, 'pass')
+        occ = set(s.x)
+        occ.update(q for k, q in enumerate(s.o) if k != i)
+        occ.add(c)
+        worst = 0.0
+        for d, xp in enumerate(s.x):
+            can_move, qs_left = _caps(s, 'X', d)
+            pi = icpt_pi(s, a, c, d, xp, s.arrows[d], can_move, qs_left, occ, passer, i)
+            if pi > worst:
+                worst = pi
+        return 1.0 - worst
     lane = lane_squares(a, c, 0.5)
     if not lane:
         return 1.0
@@ -2119,7 +2202,7 @@ def _lane_p_calc(s, i, c, reach=False):
     return 1.0 - worst
 
 
-def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
+def _lane_p_moved(s, c, j, q, a, can_move, qs_left, i=None):
     """Step 18e: _lane_p's geometry with defender j at q facing a, with can_move / qs_left left to him (the open
     list's re-read of a moved defender)."""
     rules = s.ctx.rules
@@ -2131,6 +2214,21 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
         at = q if d == j else xp
         if at in lane and B.adjacent(at, c):
             return 0.0
+    if pass_by_rules(rules):                             # step 18s, stop two
+        passer = rolled(s, 'O', s.ball, 'pass')
+        occ = set(s.x[:j] + (q,) + s.x[j + 1:])
+        occ.update(z for k, z in enumerate(s.o) if k != i)
+        occ.add(c)
+        worst = 0.0
+        for d, xp in enumerate(s.x):
+            if d == j:
+                pi = icpt_pi(s, pa, c, d, q, a, can_move, qs_left, occ, passer, -1 if i is None else i)
+            else:
+                cm, ql = _caps(s, 'X', d)
+                pi = icpt_pi(s, pa, c, d, xp, s.arrows[d], cm, ql, occ, passer, -1 if i is None else i)
+            if pi > worst:
+                worst = pi
+        return 1.0 - worst
     if not lane:
         return 1.0
     passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
@@ -2152,10 +2250,11 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
 def _pass_prob(s, i):
     """P(a pass from the carrier to attacker i now arrives): 0 if not legal; else 1 - the best Intercept chance
     over the defence's legal intercepts once it is in the air (the rules' own options)."""
-    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s))
+    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s),
+           s.beaten if pass_by_rules(s.ctx.rules) else None)
     if key in _PP:
         return _PP[key]
-    from .actions import Action, legal_actions
+    from .actions import Action, legal_actions, mti_approach
     from .resolve import apply, ChanceNode
     st = s.with_(side='O', stage='play', turn_n=0, tok_o=max(1, s.tok_o), pending=None)
     a = Action('pass', 'O', s.ball, target=i)
@@ -2166,10 +2265,16 @@ def _pass_prob(s, i):
             nxt = apply(st, a)
             worst = 0.0
             if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and nxt.pending:
+                jump = pass_by_rules(s.ctx.rules)        # step 18s, stop two: one movement and then the Intercept counts too
                 for b in legal_actions(nxt):
                     if b.kind == 'intercept':
                         worst = max(worst, 1 - float(p_success(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept'),
                                                                s.ctx.rules)))
+                    elif jump and b.kind in ('move', 'qs', 'sprint') and mti_approach(nxt, b):
+                        af = apply(nxt, b)
+                        if not isinstance(af, ChanceNode) and af.pending:
+                            worst = max(worst, 1 - float(p_success(rolled(af, 'O', s.ball, 'pass') - rolled(af, 'X', b.piece, 'intercept'),
+                                                                   s.ctx.rules)))
             p = 1.0 - worst
     except Exception:
         p = 0.0

@@ -1548,11 +1548,82 @@ const PMEngine = (() => {
     for (const [q, arr] of fixed) { let m = INF; for (const v of arr.values()) if (v < m) m = v; if (m <= 1) put(q); }
     _OA.set(key, hit); return hit;
   }
+  // step 18s, stop two (decide.pass_by_rules, decide.icpt_pi): the reading's pass chance is the rules' own. The best
+  // chance defender j, on p with this arrow and with canMove / qsLeft left to him, takes a pass from pa to pc: through
+  // his square (not next to the passer), or one straight Move, Quick Step or Sprint along one of his arrow lines to the
+  // square where it meets the pass (not next to the passer, the way clear), then the Intercept, rolled as he then
+  // stands. 0: by the rules he can't.
+  const passRulesOn = () => D.config.eval.pass_rules !== false;
+  function setPassRules(v) { D.config.eval.pass_rules = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.pass_rules; }
+  // occ: a Set of the squares taken, or null with (oi, oc, oj, oq): receiver oi on oc, defender oj on oq (passTaken)
+  function passTaken(s, z, oi, oc, oj, oq) {
+    if (z === oc) return true;
+    const x = s.x, o = s.o;
+    for (let d = 0; d < 5; d++) if ((d === oj ? oq : x[d]) === z) return true;
+    for (let k = 0; k < 5; k++) if (k !== oi && o[k] === z) return true;
+    return false;
+  }
+  function icptPi(s, pa, pc, j, p, arrow, canMove, qsLeft, occ, passer, oi, oc, oj, oq) {
+    if (s.tok_x <= 0 || count(s, 'X', 'intercept') >= LIMITS.X.intercept) return 0;
+    const base = s.ctx.dfn[j].r.intercept, cut = s.ctx.offCut > 0 ? s.ctx.offCut : 0;
+    let best = -Infinity;
+    if (cheb(p, pa) !== 1 && onSegment(p, pa, pc, 0)) best = (cut && rushedX(s, j)) ? base - cut : base;
+    if (s.tok_x >= 2 && (canMove || qsLeft > 0) && best < base) {
+      const st = stanceOf(s, j, arrow), qs = s.ctx.dfn[j].qs;
+      for (let k = 0; k < 2; k++) {
+        let d;
+        if (st < 8) { if (k) break; d = st; } else if (st < 16) d = k ? (st - 7) % 8 : st - 8; else break;
+        const n = laneMeet(p, d, pa, pc);
+        if (!n) continue;
+        const q = p + DSTEP[d] * n;
+        let ok = ONB[q] && cheb(q, pa) !== 1;
+        for (let m = 1; ok && m <= n; m++) { const z = p + DSTEP[d] * m; if (!ONB[z] || (occ ? occ.has(z) : passTaken(s, z, oi, oc, oj, oq))) ok = false; }
+        if (!ok) continue;
+        for (const scr of s.screens) {
+          if (scr[0] === oi && oc !== s.o[oi]) continue;        // the receiver has moved to catch it: his screen is gone
+          const tsq = tSquare(s, scr);
+          if ((scr[3] >> j) & 1) { if (q === tsq) { ok = false; break; } continue; }
+          let prev = p;
+          for (let m = 1; m <= n; m++) { const z = p + DSTEP[d] * m; if (diagStepBanned(prev, z, tsq)) { ok = false; break; } prev = z; }
+          if (!ok) break;
+        }
+        if (!ok) continue;
+        const orth = (d & 1) === 0;
+        let roll;
+        if (canMove && n <= (orth ? 3 : 2)) roll = base;                       // a Move: he is set when he gets there
+        else if (qsLeft > 0 && qs > 0 && n <= qs) roll = base - cut;           // a Quick Step or a Sprint: off balance (D-185)
+        else if (canMove && qsLeft > 0 && qs > 0 && n <= (orth ? 3 : 2) + qs) roll = base - cut;
+        else continue;
+        if (roll > best) best = roll;
+      }
+    }
+    return best === -Infinity ? 0 : 1 - pS(passer - best);
+  }
+  function passOcc(s, i, c, j, q) {                    // the squares taken with receiver i on c (and defender j on q)
+    const occ = new Set();
+    for (let d = 0; d < 5; d++) occ.add(d === j ? q : s.x[d]);
+    for (let k = 0; k < 5; k++) if (k !== i) occ.add(s.o[k]);
+    occ.add(c);
+    return occ;
+  }
+  function lanePRules(s, i, c, j, q, a, cm, ql) {      // the chance by the rules; j >= 0: defender j on q facing a with cm / ql left
+    if (s.tok_x <= 0 || count(s, 'X', 'intercept') >= LIMITS.X.intercept) return 1;
+    const pa = s.o[s.ball], passer = rolled(s, 'O', s.ball, 'pass');
+    let worst = 0;
+    for (let d = 0; d < 5; d++) {
+      let pi;
+      if (d === j) pi = icptPi(s, pa, c, d, q, a, cm, ql, null, passer, i, c, j, q);
+      else { const cp = caps(s, 'X', d); pi = icptPi(s, pa, c, d, s.x[d], s.arrows[d], cp[0], cp[1], null, passer, i, c, j, q); }
+      if (pi > worst) worst = pi;
+    }
+    return 1 - worst;
+  }
   function laneP(s, i, c, reach) {
     const a = s.o[s.ball];
     if (!(ONB[a] && ONB[c])) return 0;
     const den = laneSquares(a, c);
     for (const xp of s.x) if (den.has(xp) && adjacent(xp, c)) return 0;
+    if (passRulesOn()) return lanePRules(s, i, c, -1, -1, 0, false, 0);
     const lane = den;
     if (!lane.size) return 1;
     const passer = rolled(s, 'O', s.ball, 'pass');
@@ -1576,8 +1647,13 @@ const PMEngine = (() => {
       const nxt = apply(st, a);
       let worst = 0;
       if (!isChance(nxt) && nxt.stage === 'play' && nxt.side === 'X' && nxt.pending) {
+        const jump = passRulesOn();                      // step 18s, stop two: one movement and then the Intercept counts too
         for (const b of legalActions(nxt)) {
           if (b.kind === 'intercept') worst = Math.max(worst, 1 - pS(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept')));
+          else if (jump && MOVEMENT.has(b.kind) && mtiApproach(nxt, b)) {
+            const af = apply(nxt, b);
+            if (!isChance(af) && af.pending) worst = Math.max(worst, 1 - pS(rolled(af, 'O', s.ball, 'pass') - rolled(af, 'X', b.piece, 'intercept')));
+          }
         }
       }
       return 1 - worst;
@@ -2009,6 +2085,12 @@ const PMEngine = (() => {
       if (i === s.ball) return 1.0;
       if (count(s, 'O', 'pass') >= 2) return 0.0;
       if (this.exact && c === s.o[i]) return passProb(s, i);
+      if (passRulesOn()) {                         // step 18s, stop two: by the rules, kept for this reading
+        const m = this._lpr || (this._lpr = new Map());
+        let p = m.get(c * 8 + i);
+        if (p === undefined) { p = laneP(s, i, c); m.set(c * 8 + i, p); }
+        return p;
+      }
       if (!SPEED.lane_p) return this._lane(c).p;
       // step 18f (a speed-up that changes no result, SPEED.lane_p): the chance alone, as _lane works it out, without
       // building the parts per defender that only the moved re-reads of the few looks kept ever use
@@ -2080,7 +2162,14 @@ const PMEngine = (() => {
       }
       lp.set(c, r); return r;
     }
-    _laneMoved(c, j, q, oneJ) {                  // laneP with defender j at q (decide.responses' moved state)
+    _laneMoved(c, j, q, oneJ, a, cm, ql, i) {    // laneP with defender j at q (decide.responses' moved state)
+      if (passRulesOn()) {                         // step 18s, stop two: by the rules, with him there
+        const s = this.s, pa = s.o[s.ball];
+        if (!(ONB[pa] && ONB[c])) return 0;
+        const den = laneSquares(pa, c);
+        for (let d = 0; d < 5; d++) { const at = d === j ? q : s.x[d]; if (den.has(at) && adjacent(at, c)) return 0; }
+        return lanePRules(s, i, c, j, q, a, cm, ql);
+      }
       const r = this._lane(c);
       if (r.off) return 0;
       if (r.dx[j]) return 0;
@@ -2298,7 +2387,7 @@ const PMEngine = (() => {
               let pNew = null;
               if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
                 if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
-                pNew = this._laneMoved(lk.c, j, q, oneJ);
+                pNew = this._laneMoved(lk.c, j, q, oneJ, a, used === 'move' ? false : capsJ[0], capsJ[1], i);
               }
               v = swapped(lk, j, this._vals(lk, j, cm, undefined, dfl), pNew);
             }
@@ -2521,7 +2610,7 @@ const PMEngine = (() => {
               let p = lk.p;
               if ((lk.route === 'catch' || lk.route === 'cut') && q !== s.x[j]) {
                 if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, used === 'move' ? false : capsJ[0], capsJ[1]);
-                p = this._laneMoved(lk.c, j, q, oneJ);
+                p = this._laneMoved(lk.c, j, q, oneJ, a, used === 'move' ? false : capsJ[0], capsJ[1], i);
               }
               const others = free[l].slice(); others[j] = null;
               w0 = best(lk, p, others.concat([this._vals(lk, j, cm, 0)]));
@@ -2731,7 +2820,7 @@ const PMEngine = (() => {
             let pNew = null;
             if ((lk.route === 'catch' || lk.route === 'cut') && moved) {
               if (!oneJ) oneJ = oneAction(q, a, s.ctx.dfn[j].qs, canMove, qsLeft);
-              pNew = this._laneMoved(lk.c, j, q, oneJ);
+              pNew = this._laneMoved(lk.c, j, q, oneJ, a, canMove, qsLeft, i);
             }
             // (a speed-up that changes no result: where he can't contest the look, swapped() is the look's best
             // without him, kept on the look)
@@ -4356,11 +4445,15 @@ const PMEngine = (() => {
   // Intercept through a defender's square, or one straight movement along his arrow onto the pass line and then the
   // Intercept (never from a square next to the passer; rushed if he got there by a Quick Step or Sprint). 0: no pass.
   const COV_STEP = new Set(['move', 'qs', 'sprint']);
+  const COV_SLOW = { on: false };
   function passChanceExact(s, i) {
     const st = W_(s, { side: 'O', stage: 'play', turn_n: 0, tok_o: Math.max(1, s.tok_o), pending: null });
     const a = A('pass', 'O', s.ball, -1, -1, i);
     try {
       if (!isLegal(st, a)) return 0;
+      // stop two: the same chance worked out directly (icptPi), equal to the actions below on every random position
+      // tried (tools/step_18s.py passproof); COV_SLOW keeps the actions' own way for that check
+      if (!COV_SLOW.on) return lanePRules(s, i, s.o[i], -1, -1, 0, false, 0);
       const nxt = apply(st, a);
       if (isChance(nxt) || nxt.stage !== 'play' || nxt.side !== 'X' || !nxt.pending) return 1;
       let worst = 0;
@@ -4391,7 +4484,15 @@ const PMEngine = (() => {
     if (cov < 0 && top < ob) { cov = cb; nxt = nb; }   // he is left a lesser shot nobody contests: the cover is whoever took the better one
     return [top, tt, cov, nxt];
   }
-  function covBuild(s) {
+  function covPass(s, i, q) {                          // the chance a pass to attacker i on q arrives, by the rules (0: denied)
+    if (COV_SLOW.on) return passChanceExact(q === s.o[i] ? s : W_(s, { o: setAt(s.o, i, q) }), i);
+    const a = s.o[s.ball];
+    for (let j = 0; j < 5; j++) { const xp = s.x[j]; if (adjacent(xp, q) && onSegment(xp, a, q, 0.5)) return 0; }
+    return lanePRules(s, i, q, -1, -1, 0, false, 0);
+  }
+  // lean (stop two, for the search): only each square's best open way is kept, not every way to it. The same options,
+  // values and worths; no paths, so nothing can be re-read with a defender moved (covWith, the answers).
+  function covBuild(s, lean) {
     const r = new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
@@ -4408,7 +4509,7 @@ const PMEngine = (() => {
       } else if (s.tok_o > 0 && count(s, 'O', 'pass') < LIMITS.O.pass) {
         for (const [q, n] of attackerReach(s, a)) {
           if (n > 1 || n + 1 > s.tok_o) continue;
-          const p = passChanceExact(q === s.o[a] ? s : W_(s, { o: setAt(s.o, a, q) }), a);      // the rules' own chance, not the reading's
+          const p = covPass(s, a, q);                 // the rules' own chance
           if (p > 0) starts.push([q, p]);
         }
       }
@@ -4433,6 +4534,24 @@ const PMEngine = (() => {
       for (const [q0, pr] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
+        if (lean) {
+          const put = (c, rushed) => {
+            const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
+            const o = byKey.get(key);
+            if (!o) { const n = { a, c, rushed, paths: null, pr }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) o.pr = pr;
+          };
+          if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) put(q0, false);
+          for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
+            const c = p[p.length - 1], o = byKey.get((a * 4096 + c) * 2 + (rushed ? 1 : 0));
+            if (o && o.pr >= pr) continue;
+            let bad = false;
+            for (const q of p) if (mates.has(q) || xat.has(q)) { bad = true; break; }
+            if (bad) continue;
+            for (const ln of lines) if (!captureOk(q0, p, ln[1])) { bad = true; break; }
+            if (!bad) put(c, rushed);
+          }
+          continue;
+        }
         if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop });      // a set shot from where the phase finds him
         for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
           let dm = 0, bad = false;
@@ -4456,7 +4575,8 @@ const PMEngine = (() => {
         if (mask) o.vals[d] = r._valsCalc(lk, d, mask, 0, o.fl, ctx.soft ? mask : 0, 0);
       }
       let pr = 0;
-      for (const pt of o.paths) if (pt.dm === 0 && pt.zm === 0 && pt.pr > pr) pr = pt.pr;
+      if (lean) pr = o.pr;
+      else for (const pt of o.paths) if (pt.dm === 0 && pt.zm === 0 && pt.pr > pr) pr = pt.pr;
       const cv = covValue(o, -1, null);
       o.r = pr; o.w = cv[0]; o.t = cv[1]; o.cover = cv[2]; o.next = cv[3];
       o.e = pr > 0 ? pr * o.w - (1 - pr) * TURNOVER_COST : -Infinity;
@@ -4541,8 +4661,30 @@ const PMEngine = (() => {
     return { o: o.a, sq: sqName(o.c), shot: o.lk.types[o.t], value: o.v, reach: +o.r.toFixed(3), weakness: +o.w.toFixed(2), worth: +o.e.toFixed(2),
       cover: o.cover, next: o.next, rushed: !!o.rushed };
   }
+  // ---- stop two (the addendum on the defence's strength, D-201) -------------------------------------------------------
+  // What playing on is worth from the next phase, as the game already measures it: the phase table's average for that
+  // phase. 0 in the last phase (nothing is left to play on for).
+  function carryOn(s) {
+    if (s.clock <= 2) return 0;
+    const tab = D.vcoarse[s.ctx.table] || D.vcoarse['senior/pro'] || {};
+    const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
+    const v = tab['_phase' + Math.min(6, phase + 1)];
+    return v === undefined ? 0 : v;
+  }
+  // Broken: the ball handler has a shot now, the defence's reaction counted, worth more than playing on.
+  function covBreak(s, r) {
+    const so = s.side === 'O' ? s : null;
+    let shot = null;
+    if (so !== null && s.stage === 'play' && !s.pending) {
+      r = r || new Read(s);
+      for (const lk of r.looks[s.ball] || []) if (lk.route === 'shoot') { shot = { o: s.ball, sq: sqName(lk.c), worth: +lk.base.toFixed(2) }; break; }
+    }
+    const carry = carryOn(s);
+    return { shot, carry_on: +carry.toFixed(2), broken: shot !== null && shot.worth > carry + 1e-9 };
+  }
   function coverage(s0, opts) {
     opts = opts || {};
+    if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     const s = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
     const m0 = covBuild(s);
     const ans = covAnswers(m0, opts.answers);
@@ -4592,7 +4734,18 @@ const PMEngine = (() => {
       } else words.push(s.tok_x <= 0 ? 'The defence has no token left this phase to answer it.' : 'No step by the defence makes it smaller.');
       if (dribble !== null && dribble.worth > leftWorth + 0.5) words.push(`A Dribble at X${dribble.target + 1} wins ${Math.round(dribble.chance * 20)} times in 20 and is worth ${dribble.worth.toFixed(0)}.`);
     }
+    // strength: the most the offence can force by the start of the next phase, the defence's best answers counted
+    // (lower is a stronger defence). fragility: the separate attackers who hold a way worth at least that before the
+    // defence answers: each is one more thing it had to deal with, or is what it could not. broken: covBreak.
+    const strength = Math.max(leftWorth, dribble ? dribble.worth : -Infinity);
+    const mine = [-Infinity, -Infinity, -Infinity, -Infinity, -Infinity];
+    for (const o of m0.sorted) if (o.e > mine[o.a]) mine[o.a] = o.e;
+    const ways = [];
+    for (let a = 0; a < 5; a++) if (left && mine[a] > 0 && mine[a] >= left.e - 1e-9) ways.push(a);
+    const brk = covBreak(s, m0.r);
+    if (brk.broken) words.push(`The defence is broken now: O${brk.shot.o + 1} has a shot on ${brk.shot.sq} worth ${brk.shot.worth.toFixed(0)}, more than playing on (${brk.carry_on.toFixed(0)}).`);
     return { phase: s.phase, clock: s.clock, squares, covers, top: m0.sorted.slice(0, 8).map(covOption),
+      strength: +strength.toFixed(2), fragility: ways.length, ways, shot_now: brk.shot, carry_on: brk.carry_on, broken: brk.broken,
       best: top ? covOption(top) : null, answers: ans.answers.map(q => ({ x: q.x, kind: q.kind, to: sqName(q.to), arrow: q.arrow, leaves: +q.leaves.toFixed(2) })),
       left: left ? covOption(left) : null, left_worth: +leftWorth.toFixed(2), dribble,
       after: { x: ans.m.s.x.map(q => sqName(q)), arrows: Array.from(ans.m.s.arrows), tokens_left: ans.m.s.tok_x },
@@ -4610,7 +4763,7 @@ const PMEngine = (() => {
   }
 
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

@@ -87,6 +87,8 @@
     "leaf_mode": "relative",
     "_lane": "Step 18q (D-196, design checks 1 and 4): true: the reading counts the ball handler's way to the rim next phase (step 16's penetration: his best paint look next phase against every defender who can get to a Contest of it), read as this turn's looks are, one phase on. The reading looked one turn ahead, so a drive that finishes next phase read as nothing.",
     "lane": false,
+    "_pass_rules": "Step 18s, stop two (D-199): true: the chance a pass arrives is the rules' own. A defender takes it through his square, or after one straight movement along an arrow line to where it meets the pass, never from next to the passer. Before, any defender who could step onto any square of the pass's line counted, the on-ball defender included; on 7,504 random passes that agreed with the rules 48 times in 100, and this agrees every time (docs/runs/step18s/pass_proof.json).",
+    "pass_rules": true,
     "reach": true,
     "coverage_budget": false,
     "calibrated": true,

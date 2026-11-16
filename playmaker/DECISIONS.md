@@ -1144,6 +1144,20 @@ need to find the right way to make it smart enough and then worry about speed at
 Speed is still reported, for the record; correctness is not traded for it and the timing test does not block the
 work (it is not loosened either). Speed comes back once the map is proven. · Source: Shaun, 16 Nov 2026 · **Ruled.**
 
+**D-201. Position at a phase's start: the rules stay as they are.** No new modifier, and no limit on the reaction.
+"Positioning barely matters at the start of a phase. Correct. What matters is how you influenced the zones of
+influence on the previous phase to gain advantages and impact the zone of influence on the next phase. The offence
+always gets to move first, so the example is weak. If you didn't take advantage of the play in the previous phase
+then you have to start fresh but hopefully in a better position. You were either trying to get a shot or trying to
+improve your situation for the next phase, or both." A defender recovering during the shot is the offence stagnating
+and indecisive, and the defence holding its shape. The strength measure (the addendum,
+`docs/reference/COVERAGE_MAP_BLUEPRINT_ADDENDUM_STRENGTH.md`) is what captures it: design checks 3 and 5 are judged
+by that measure, not by a defender's square at a phase's start. · Source: Shaun, 16 Nov 2026 · **Ruled.**
+
+**D-202. The button reads "Coverage: shown / hidden".** It is Shaun's word (D-199). "coverage" comes off step 3n's
+list of engine words a player never reads (`playmaker_engine/plain.py`): it was an engine word then; it is the
+designer's own name for the map now. · Source: Shaun, 16 Nov 2026 · **Ruled; built in step 18s, stop two.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

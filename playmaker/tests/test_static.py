@@ -309,7 +309,7 @@ const [url] = process.argv.slice(2);
 
 
 def test_the_coverage_view_shows_in_the_browser_build(static_site, tmp_path):
-    """Step 18s (D-199): 'Defence map: hidden' by default; shown, the board carries the heat map, the box its one line of
+    """Step 18s (D-199): 'Coverage: hidden' by default; shown, the board carries the heat map, the box its one line of
     words, and a tapped square says who gets what there and who covers it. Nothing while the pieces are being placed."""
     (tmp_path / 'cov.js').write_text(NODE_COVERAGE)
     url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
@@ -317,7 +317,7 @@ def test_the_coverage_view_shows_in_the_browser_build(static_site, tmp_path):
     assert r.returncode == 0, r.stderr[-800:]
     out = json.loads(r.stdout.strip().splitlines()[-1])
     assert out['during'] == 0
-    assert out['hidden'] == dict(text='Defence map: hidden', cells=0, box=False)
-    assert out['shown']['text'] == 'Defence map: shown' and out['shown']['cells'] > 20
-    assert out['shown']['words'].startswith('The defence at the start of this phase.') and 'worth' in out['shown']['words']
+    assert out['hidden'] == dict(text='Coverage: hidden', cells=0, box=False)
+    assert out['shown']['text'] == 'Coverage: shown' and out['shown']['cells'] > 20
+    assert out['shown']['words'].startswith('Coverage at the start of this phase.') and 'worth' in out['shown']['words']
     assert 'can get' in out['note'] and 'next phase' in out['note']

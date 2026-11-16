@@ -232,5 +232,142 @@ def cmd_played(tag='check1', copies='16'):
         print(k, v if k == 'the_map_reads' else (v['mean'], v['low'], v['high'], v['ends']))
 
 
+# ---- stop two, part 1: the pass chance by the rules -------------------------------------------------------------------
+
+def rules_pass(s, i):
+    """The chance a pass from the ball handler to attacker i arrives, from the rules' own actions: every Intercept the
+    defence may make once it is in the air, through a square or after one movement. None: the pass isn't legal."""
+    from playmaker_engine.actions import Action, legal_actions, mti_approach
+    from playmaker_engine.resolve import apply, ChanceNode
+    from playmaker_engine.scoring import p_success, rolled
+    st = s.with_(side='O', stage='play', turn_n=0, tok_o=max(1, s.tok_o), pending=None)
+    a = Action('pass', 'O', s.ball, target=i)
+    if a not in legal_actions(st):
+        return None
+    nxt = apply(st, a)
+    if isinstance(nxt, ChanceNode) or nxt.stage != 'play' or nxt.side != 'X' or not nxt.pending:
+        return 1.0
+    worst = 0.0
+    for b in legal_actions(nxt):
+        if b.kind == 'intercept':
+            worst = max(worst, 1 - float(p_success(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept'), s.ctx.rules)))
+        elif b.kind in ('move', 'qs', 'sprint') and mti_approach(nxt, b):
+            af = apply(nxt, b)
+            if not isinstance(af, ChanceNode) and af.pending:
+                worst = max(worst, 1 - float(p_success(rolled(af, 'O', s.ball, 'pass') - rolled(af, 'X', b.piece, 'intercept'), s.ctx.rules)))
+    return 1.0 - worst
+
+
+def cmd_passproof(n='400', seed='7', broken=''):
+    """The reading's pass chance against the rules' own actions, on random positions under the app's rules (the zone
+    on): every legal pass of every position. -> docs/runs/step18s/pass_proof.json"""
+    import random
+    import js_equivalence as E
+    from playmaker_engine import decide as D
+    E._ZONE['v'] = 'on'
+    if broken:
+        E._ZONE['broken'] = True
+    E._CONTROL['size'] = 'app'
+    E._FIBA.update(three_seconds='on', closely_guarded='on', fiba_fouled_shot='on', soft_contest='on', fiba_steal_foul='on', off_balance='on', position_contest='on')
+    rng = random.Random(int(seed))
+    t0 = time.time()
+    seen = same = old_same = 0
+    bad, kinds = [], dict(cant_be_intercepted=0, through_or_jump=0)
+    while seen < int(n):
+        s, meta = E.random_state(rng)
+        if s.stage != 'play' or s.pending or not B_on(s):
+            continue
+        for i in range(5):
+            if i == s.ball:
+                continue
+            want = rules_pass(s, i)
+            if want is None:
+                continue
+            got = D._lane_p_calc(s, i, s.o[i])
+            D.CONFIG['eval']['pass_rules'] = False
+            old = D._lane_p_calc(s, i, s.o[i])
+            D.CONFIG['eval'].pop('pass_rules')
+            seen += 1
+            kinds['cant_be_intercepted' if want >= 1 else 'through_or_jump'] += 1
+            same += abs(got - want) < 1e-9
+            old_same += abs(old - want) < 1e-9
+            if abs(got - want) >= 1e-9 and len(bad) < 12:
+                from playmaker_engine.jsbridge import state_json
+                bad.append(dict(to=i, rules=want, reading=got, state=state_json(s), digital=meta['digital']))
+    out = dict(passes=seen, the_new_reading_equal_to_the_rules=same, the_old_reading_equal_to_the_rules=old_same, kinds=kinds, different=bad,
+               seconds=round(time.time() - t0, 1))
+    json.dump(out, open(os.path.join(RUN, 'pass_proof' + ('_broken' if broken else '') + '.json'), 'w'), indent=1)
+    print(json.dumps({k: v for k, v in out.items() if k != 'different'}, indent=1))
+    for b in bad[:4]:
+        print(b)
+    tally(f'part 1: the pass chance against the rules on {seen} random passes', time.time() - t0)
+
+
+def B_on(s):
+    from playmaker_engine import board as B
+    return all(B.on_board(q) for q in s.o) and all(B.on_board(q) for q in s.x)
+
+
+def play2(named, copies=16, sets=None, seed=1, what='play-outs'):
+    """Each named position played out `copies` times, All-Star against All-Star, the app's rules, the same dice copy by
+    copy. sets: dict(O=..., X=...), each side's own settings (pass_rules, ...). Rows filed by the name they carry."""
+    from playmaker_engine import jsbridge
+    ctx = jsbridge.ctx_json(named[0][1].ctx)
+    sets = sets or dict(O={}, X={})
+    pol = {k: L.policy('allstar', 2, L.profiles()['allstar']['noise'], **v) for k, v in sets.items()}
+    positions = [dict(id=name, state=jsbridge.state_json(s), ctx=0, seed=104729 * (k + 1) + 7919 * seed) for name, s in named for k in range(copies)]
+    rows, secs = L.run_jobs('trace', positions, [ctx], n=1, seed=seed, stances=True, policies=pol, rules=RULES, fouls=T.FOULS)
+    tally(f'{what} ({len(named)} positions, {copies} each, {sets})', secs)
+    out = {name: [] for name, _ in named}
+    for r in rows:
+        out[r['id']].append(r)
+    assert all(len(v) == copies for v in out.values())
+    return out
+
+
+def passes_of(rows):
+    """Passes thrown and passes intercepted a possession, and how often the possession's first two actions hold a pass."""
+    n = len(rows)
+    thrown = sum(1 for r in rows for e in r['events'] if e[2] == 'O' and e[3] == 'pass')
+    return dict(passes_a_possession=round(thrown / n, 2), turnovers_a_possession=round(sum(r.get('tos', 0) or 0 for r in rows) / n, 2))
+
+
+def cmd_passlines(tag='pass', copies='16', which='help'):
+    """Part 1 by forced lines: 18r's position after the beat (the lane open, help in it; the offence as it chooses, and
+    made to sprint in), and Shaun's board from the start. Each line with the old pass chance and with the rules' own."""
+    named = []
+    if which in ('help', 'all'):
+        for label, kw in (('lane open', {}), ('help in the lane', dict(x4='H5', a4='N', x5='J5', a5='N'))):
+            a = P._after_beat(**kw)
+            named.append((f'{label}: the offence as it chooses', a))
+            named.append((f'{label}: made to sprint into the lane', P._act(a, 'sprint', 0, 'I6')))
+    if which in ('board', 'all'):
+        named.append(("Shaun's board from the start: his game", board()))
+        named.append(("Shaun's board from the start: X4 and X5 in the lane", board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N'])))
+    rep = {}
+    for arm, on in (('the old pass chance', False), ("the rules' own", True)):
+        out = play2(named, int(copies), dict(O=dict(pass_rules=on), X=dict(pass_rules=on)), what=f'part 1 forced lines ({tag}, {arm})')
+        json.dump(out, open(os.path.join(WORK, f'passlines_{tag}_{"new" if on else "old"}_rows.json'), 'w'))
+        for k, v in out.items():
+            rep.setdefault(k, {})[arm] = dict(P._summary(v), **passes_of(v))
+    json.dump(rep, open(os.path.join(RUN, f'passlines_{tag}.json'), 'w'), indent=1)
+    for k, arms in rep.items():
+        for arm, v in arms.items():
+            print(f"{k:52} {arm:20} {v['mean']} ({v['low']} to {v['high']}) {v['ends']} passes {v['passes_a_possession']} first: {v['first_action'][:2]}")
+
+
+def cmd_passcross(tag='cross', copies='16'):
+    """Part 1, the offence alone: the offence with the rules' own pass chance against the defence with the old one, on
+    the lines where the offence chooses for itself. Same dice as cmd_passlines."""
+    a0, a1 = P._after_beat(), P._after_beat(x4='H5', a4='N', x5='J5', a5='N')
+    named = [('lane open: the offence as it chooses', a0), ('help in the lane: the offence as it chooses', a1), ("Shaun's board from the start: his game", board())]
+    out = play2(named, int(copies), dict(O=dict(pass_rules=True), X=dict(pass_rules=False)), what=f'part 1 forced lines ({tag}, the offence alone on the rules\' own)')
+    json.dump(out, open(os.path.join(WORK, f'passlines_{tag}_rows.json'), 'w'))
+    rep = {k: dict(P._summary(v), **passes_of(v)) for k, v in out.items()}
+    json.dump(rep, open(os.path.join(RUN, f'passlines_{tag}.json'), 'w'), indent=1)
+    for k, v in rep.items():
+        print(f"{k:52} {v['mean']} ({v['low']} to {v['high']}) {v['ends']} passes {v['passes_a_possession']} first: {v['first_action'][:2]}")
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])
