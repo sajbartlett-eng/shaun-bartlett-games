@@ -12,7 +12,7 @@ const root = path.join(__dirname, '..', 'playmaker_engine', 'data');
 const load = n => JSON.parse(fs.readFileSync(path.join(root, n)));
 const OPEN_DEFAULT = (load('ai_profiles.json').search || {}).open_list;      // null: each level's own setting
 const SEARCH_DEFAULT = load('ai_profiles.json').search || {}, EVAL_DEFAULT = load('ai_profiles.json').eval || {};
-const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['dice_in_hand', 'setDiceInHand'], ['ball_loss', 'setBallLoss'], ['keep_settled', 'setKeepSettled'], ['keep_in_hand', 'setKeepInHand'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot'], ['lane', 'setLane'], ['pass_rules', 'setPassRules']];      // step 18f: [the policy's setting, the engine's setter]
+const SWITCHES_18F = [['whole_turns', 'setWholeTurns'], ['kept_actions', 'setKeptActions'], ['split_ties', 'setSplitTies'], ['rank_in_hand', 'setRankInHand'], ['dice_in_hand', 'setDiceInHand'], ['ball_loss', 'setBallLoss'], ['keep_settled', 'setKeepSettled'], ['keep_in_hand', 'setKeepInHand'], ['no_floor', 'setNoFloor'], ['exact_shot', 'setExactShot'], ['lane', 'setLane'], ['pass_rules', 'setPassRules'], ['map', 'setMap']];      // step 18f: [the policy's setting, the engine's setter]
 const LEARNED = fs.existsSync(path.join(root, 'learned_weights.json')) ? load('learned_weights.json') : null;
 // step 18f: a policy's `map: 'start'` plays with the map as it stood at the start of the step (the end re-measure's other side)
 const START_FILE = path.join(__dirname, '..', 'docs', 'runs', 'step18f', 'start_of_step_weights.json');
@@ -242,7 +242,7 @@ if (job.kind === 'rollout') {
         // job.boards (step 18o): the board at the start of every turn, both sides: [place in the actions, phase, side, the
         // attackers' squares, the defenders', their arrows, the ball, who is rushed or locked]
         if (job.boards && node.stage === 'play' && !node.pending && node.turn_n === 0) boards.push([events.length, node.phase, side, sqs(node.o), sqs(node.x), Array.from(node.arrows), node.ball, node.rush_x, node.lock_x, node.rush_o, node.lock_o, node.beaten.map(b => [b[0], b[1]])]);
-        if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []));   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
+        if (node.stage === 'play' && !node.pending) reads.push([node.clock, E.bankedOf(node), E.handLeaf(node), side === 'O' ? 1 : 0].concat(job.looks && E.looksLeaf ? [E.looksLeaf(node)] : []).concat(job.features ? Array.from(E.featuresOf(node)) : []).concat(job.mapparts ? E.mapParts(node) : []));   // job.mapparts (step 18s, stop two): the map's shot, best way and second way, last   // job.features (step 18h): the named readings, last   // job.looks (step 18f): the looks reading, last
         const a = decide(node, ctx, pols[side], r);
         if (EXPLORE.hit) { EXPLORE.hit = false; cleanFrom = reads.length; drawn = [events.length, node.phase, side]; }
         const from = a.piece >= 0 ? E.sqName((a.side === 'O' ? node.o : node.x)[a.piece]) : null;

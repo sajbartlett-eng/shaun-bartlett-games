@@ -46,3 +46,4 @@ it in a few thousandths. If it can't be made that fast without changing what it 
 - part 1 forced lines (pass, the rules' own) (6 positions, 16 each, {'O': {'pass_rules': True}, 'X': {'pass_rules': True}}): 1.88 (running total 4.54)
 - part 1 forced lines (cross, the offence alone on the rules' own) (3 positions, 16 each, {'O': {'pass_rules': True}, 'X': {'pass_rules': False}}): 0.64 (running total 5.17)
 - part 1: the pass chance against the rules on 6002 random passes: 0.01 (running total 5.19)
+- part 2: play for the fit (a, 128 possessions, a drawn turn at rate 0.125): 1.97 (running total 7.15)

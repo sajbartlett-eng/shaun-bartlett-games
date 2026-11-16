@@ -161,3 +161,83 @@ def test_the_proof_is_kept_beside_the_run():
     rep = json.load(open(os.path.join(ROOT, 'docs', 'runs', 'step18s', 'pass_proof.json')))
     assert rep['passes'] >= 6000 and rep['the_new_reading_equal_to_the_rules'] == rep['passes']
     assert rep['the_old_reading_equal_to_the_rules'] < 0.6 * rep['passes']
+
+
+# ---- part 2: the defence's strength, phase by phase ---------------------------------------------------------------------
+
+import shutil
+
+needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node for the JavaScript engine')
+
+
+@pytest.fixture(scope='module')
+def cov():
+    from playmaker_engine import agent as AG
+    from playmaker_engine.jsbridge import NodeEngine
+    eng = NodeEngine().install()
+    yield AG.coverage
+    NodeEngine.uninstall()
+    eng.p.kill()
+
+
+@needs_node
+def test_strength_fragility_and_broken_are_read_off_the_map(cov):
+    his = cov(board())
+    helped = cov(board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N']))
+    # strength: the most the offence can force by the next phase's start, the defence's best answers counted
+    assert his['strength'] == max(his['left_worth'], his['dribble']['worth'] if his['dribble'] else 0)
+    assert helped['strength'] < his['strength']                  # help in the lane is the stronger defence (lower)
+    # fragility: the separate attackers who hold a way worth at least what is left
+    assert his['fragility'] == len(his['ways']) and 1 <= helped['fragility'] <= his['fragility'] <= 5
+    for c in (his, helped):
+        best = {}
+        for a, squares in enumerate(c['squares']):
+            best[a] = max((v['worth'] for v in squares.values()), default=-99)
+        assert c['ways'] == [a for a in range(5) if best[a] > 0 and best[a] >= c['left']['worth'] - 1e-6]
+    # broken: a shot now worth more than playing on (the phase table); the point guard on plain wood has no shot
+    assert his['shot_now'] is None and his['broken'] is False and 24 < his['carry_on'] < 30
+
+
+@needs_node
+def test_broken_is_a_shot_now_worth_more_than_playing_on(cov):
+    from playmaker_engine import agent as AG
+    lay = board(o=['I3'] + O_[1:], x=['J10', 'D8', 'O8', 'B4', 'P2'])              # the point guard alone at the rim
+    r = AG.coverage(lay, only='break')
+    assert r['broken'] and r['shot']['kind'] in ('layup', 'dunk') and r['shot']['open'] and r['shot']['worth'] > r['carry_on']
+    three = AG.coverage(board().with_(ball=4), only='break')                       # the centre's three, his man on him
+    assert three['shot']['kind'] == 'three' and not three['broken'] and three['shot']['worth'] < three['carry_on']
+    assert AG.coverage(board().with_(side='X'), only='break')['shot'] is None      # the defence to act: no shot is going up
+
+
+@needs_node
+def test_every_finished_phase_gets_a_line_and_the_possession_gets_one(cov):
+    from playmaker_engine import agent as AG
+    from playmaker_web.game import Game
+    from playmaker_web.view import coverage_json
+    keep = AG.SCALE['value']
+    AG.SCALE['value'] = 0.2
+    try:
+        g = Game(mode='hotseat', teams=['Five Out', 'High-Low'], seed=3, full=True, level='pro', match_format='digital', place=True, per_side=4,
+                 ai=dict(A='rookie', B='rookie'))
+        n = 0
+        while g.state.stage != 'over' and n < 300:
+            n += 1
+            g._run_ai()
+        sc = g.phase_scores()
+    finally:
+        AG.SCALE['value'] = keep
+    assert sc['over'] and sc['possession'] == 1 and sc['lines']
+    assert [ln['phase'] for ln in sc['lines']] == list(range(1, len(sc['lines']) + 1))
+    for ln in sc['lines']:
+        assert ln['text'].startswith(('Defence weakened from', 'Defence strengthened from', 'Defence held at', 'The defence was broken', 'The shot went up',
+                                      'The possession ended without a shot')), ln
+        assert plain.check(ln['text']) == []
+    assert sc['verdict'].startswith(('A good possession', 'A weak possession', 'A wasted possession')) and plain.check(sc['verdict']) == []
+    assert coverage_json(g, None)['scores'] == sc                 # the view carries them once the possession is over
+    table = Game(mode='hotseat', teams=['Five Out', 'High-Low'], seed=3, full=True, level='pro')
+    assert table.phase_scores() is None                           # the app only
+
+
+def test_the_app_shows_the_phase_lines_under_the_board():
+    js = open(os.path.join(ROOT, 'playmaker_web', 'static', 'app.js'), encoding='utf-8').read()
+    assert "id: 'covScores'" in js and '`Phase ${ln.phase}: ${ln.text}`' in js and 'sc.verdict' in js

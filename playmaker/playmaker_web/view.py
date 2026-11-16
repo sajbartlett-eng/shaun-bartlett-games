@@ -364,8 +364,9 @@ def coverage_json(game, token):
     (who, the shot, what it is worth, who covers it and who is next), the same for each attacker alone, the defence's
     best answers, and one line of words. {} when there is none."""
     c = game.coverage_snapshot()
+    scores = game.phase_scores()               # stop two: the phase lines and the possession's line
     if not c:
-        return {}
+        return dict(scores=scores) if scores else {}
     layers, best = [], {}
     for a, sq in enumerate(c['squares']):
         rows = []
@@ -378,7 +379,8 @@ def coverage_json(game, token):
                 best[name] = row
         layers.append(sorted(rows, key=lambda r: r['sq']))
     return dict(possession=c['possession'], phase=c['phase'], words=c['words'], change=c.get('change'), worth=c['worth'], best=c['best'], left=c['left'],
-                answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers)
+                answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
+                strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers)
 
 
 def state_json(game, token):

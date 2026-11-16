@@ -309,6 +309,49 @@ def ahead_row(rules, c, frm, arrow, qs, can_move, qs_left, budget, mode=0):
 
 
 @lru_cache(maxsize=None)
+def _shot_paths(start, qs, rules, no_rim):
+    """Step 18s (the coverage map): every movement path from start that ends where a shot may go up, all on the board:
+    (path, rushed), rushed for a Quick Step or a Sprint, not for a Move."""
+    out = []
+
+    def ok(p):
+        c = p[-1]
+        return all(B.on_board(q) for q in p) and B.zone(c) in RC.ZONE_POINTS and not (no_rim and c == RC.RIM)
+    for p in B.move_paths(start, rules):
+        if ok(p):
+            out.append((tuple(p), False))
+    for p in B.qs_paths(start, qs, rules):
+        if ok(p):
+            out.append((tuple(p), True))
+    for _, p in B.sprint_paths(start, qs, rules):
+        if ok(p):
+            out.append((tuple(p), True))
+    return tuple(out)
+
+
+def cov_pass(s, i, q):
+    """Step 18s (engine.js covPass): the chance a pass to attacker i on q arrives, by the rules (0: denied)."""
+    rules = s.ctx.rules
+    a = s.o[s.ball]
+    for xp in s.x:
+        if B.adjacent(xp, q) and B.on_segment(xp, a, q, 0.5):
+            return 0.0
+    if s.tok_x <= 0 or s.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:
+        return 1.0
+    passer = rolled(s, 'O', s.ball, 'pass')
+    occ = set(s.x)
+    occ.update(z for k, z in enumerate(s.o) if k != i)
+    occ.add(q)
+    worst = 0.0
+    for d, xp in enumerate(s.x):
+        can_move, qs_left = _caps(s, 'X', d)
+        pi = icpt_pi(s, a, q, d, xp, s.arrows[d], can_move, qs_left, occ, passer, i)
+        if pi > worst:
+            worst = pi
+    return 1.0 - worst
+
+
+@lru_cache(maxsize=None)
 def _lane_paths(start, qs, rules):
     """Every movement path from start that ends on a paint square, all on the board: (path, rushed), rushed for a
     Quick Step or a Sprint (the shot after it is off balance, D-151 and D-185), not for a Move."""
@@ -485,6 +528,7 @@ class Read:
         self._adv = None
         self._ahead = False                # step 18q: lane_ahead(), once
         self._lane = False                 # step 18q: _lane_data(), once
+        self._map2 = None                  # step 18s, stop two: map_two(), once
         self._drib = None                  # step 18q: _dribble_ok(), once
 
     # -- contest maps
@@ -1078,9 +1122,211 @@ class Read:
                 return lk.base
         return None
 
+    # ---- step 18s, stop two (eval.map, off until its checks pass): the search reads the coverage map ----
+    def map_options(self):
+        """The coverage map in its lean form (engine.js covBuild, lean): for every attacker and every square he could
+        shoot from next phase, the chance he has the ball where he needs it when the phase starts (reach) and what the
+        defence leaves of the shot, each defender given the reaction's two actions from where he stands (weakness).
+        {(attacker, square, rushed): [reach, weakness, worth, the look, each type's open value, each defender's
+        contest of it]}; empty in the last phase."""
+        s, rules = self.s, self.rules
+        out = {}
+        if s.clock <= RC.PHASE_SECONDS:
+            return out
+        from .actions import movement_dests, can_move_kind, capture_lines, capture_ok
+        no_rim = RC.rim_shot_barred(rules)
+        xat = {s.x[j]: j for j in range(5) if B.on_board(s.x[j])}
+        cms = [(_cmap_cached(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, True, 1, stance_mode(s, d)) if B.on_board(s.x[d]) else None) for d in range(5)]
+        off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
+        for a in range(5):
+            home = s.o[a]
+            if not B.on_board(home):
+                continue
+            starts = []                            # where he can have the ball when the next phase starts, and the chance
+            if a == s.ball:
+                one = {home: 0}
+                if s.tok_o > 0:
+                    for kind in ('move', 'qs', 'sprint'):
+                        if can_move_kind(s, 'O', a, kind):
+                            for q in movement_dests(s, 'O', a, kind, rules):
+                                one.setdefault(q, 1)
+                for q in list(one) + (two_actions(s, a, one) if s.tok_o > 0 else []):
+                    starts.append((q, 1.0))
+            elif s.tok_o > 0 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
+                for q, n in attacker_reach(s, a).items():
+                    if n > 1 or n + 1 > s.tok_o:
+                        continue
+                    p = cov_pass(s, a, q)
+                    if p > 0:
+                        starts.append((q, p))
+            mates = {s.o[k] for k in range(5) if k != a}
+            lines = capture_lines(s, a) if rules.zone != 'off' else []
+            card, qs = s.ctx.off[a], s.ctx.off[a].qs
+            best = {}
+            for q0, pr in starts:
+                if q0 in mates or (q0 != home and q0 in xat):
+                    continue
+                if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
+                    best[q0, False] = pr           # a set shot from where the phase finds him
+                for p, rushed in _shot_paths(q0, qs, rules, no_rim):
+                    c = p[-1]
+                    if best.get((c, rushed), 0.0) >= pr:
+                        continue
+                    if any(q in mates or q in xat for q in p):
+                        continue
+                    if lines and not capture_ok(q0, p, lines):
+                        continue
+                    best[c, rushed] = pr
+            for (c, rushed), pr in best.items():
+                z = B.zone(c)
+                lk = Look(a, c, 'later', 1.0, False)
+                lk.types = RC.ZONE_SHOTS[z]
+                lk.rushed = rushed
+                pts = RC.ZONE_POINTS[z]
+                vals = [None] * 5
+                for d in range(5):
+                    row = cms[d].get(c) if cms[d] is not None else None
+                    vals[d] = (self._vals2(lk, d, row) or None) if row is not None else None
+                opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
+                top = self._map_weak(lk, opens, vals)
+                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals]
+        return out
+
+    @staticmethod
+    def _map_weak(lk, opens, vals, d=-1, mine=None):
+        """What the defence leaves of a look: its best type, each against the best Contest of every defender (defender
+        d's taken from `mine`)."""
+        top = -1.0
+        for n, ty in enumerate(lk.types):
+            v = opens[n]
+            for j in range(5):
+                vd = mine if j == d else vals[j]
+                if vd and ty in vd and vd[ty] < opens[n] and vd[ty] < v:
+                    v = vd[ty]
+            if v > top:
+                top = v
+        return top
+
+    def map_answers(self, opts):
+        """engine.js covLeanAnswers: the defence's answers in a fast form. While it has tokens, the defender whose one
+        movement this phase takes most off the offence's best option makes it, and then contests everything from where
+        he now stands; each defender moves once. Changes opts in place; -> the number of answers."""
+        s, rules = self.s, self.rules
+        if s.tok_x <= 0:
+            return 0
+        taken = set(s.o) | set(s.x)
+        moved = [False] * 5
+        tok, steps = s.tok_x, 0
+        while tok > 0:
+            top = None
+            for key, o in opts.items():
+                if o[0] > 0 and (top is None or o[2] > opts[top][2] or (o[2] == opts[top][2] and key < top)):
+                    top = key
+            if top is None or opts[top][2] <= 0:
+                break
+            pr, _, e0, lk, opens, vals = opts[top]
+            c = top[1]
+            best = None
+            for d in range(5):
+                if moved[d] or not B.on_board(s.x[d]):
+                    continue
+                can_move, qs_left = _caps(s, 'X', d)
+                if not can_move and qs_left <= 0:
+                    continue
+                qs, mode = s.ctx.dfn[d].qs, stance_mode(s, d)
+                free, fixed = geo_reach(s.x[d], s.arrows[d], qs, can_move, qs_left, rules)
+                cands = [(q, -1, _any_arrow_cmap(rules, q, qs, mode).get(c)) for q, n in free.items() if n == 1]
+                cands += [(q, a, _cmap_cached(rules, q, a, qs, True, 1, mode).get(c)) for q, arrs in fixed.items() for a, n in arrs.items() if n == 1]
+                for q, a, row in cands:
+                    if row is None or q in taken:
+                        continue
+                    mine = self._vals2(lk, d, row) or None
+                    e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * 5
+                    if not e < e0 - 1e-9:
+                        continue
+                    if best is None or e < best[0] - 1e-9 or (abs(e - best[0]) <= 1e-9 and (d, q, a) < best[1:]):
+                        best = (e, d, q, a)
+            if best is None:
+                break
+            _, d, q, a = best
+            qs, mode = s.ctx.dfn[d].qs, stance_mode(s, d)
+            cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
+            moved[d] = True
+            tok -= 1
+            steps += 1
+            taken.add(q)
+            for key, o in opts.items():
+                if key[1] == q:
+                    o[0], o[2] = 0.0, float('-inf')
+                    continue
+                row = cm.get(key[1])
+                o[5][d] = (self._vals2(o[3], d, row) or None) if row is not None else None
+                o[1] = self._map_weak(o[3], o[4], o[5])
+                o[2] = o[0] * o[1] - (1 - o[0]) * 5 if o[0] > 0 else float('-inf')
+        return steps
+
+    def map_two(self):
+        """The map's numbers for the search: the best any attacker can have at the start of the next phase and the best
+        a second, separate attacker can have; then the same two after the defence's answers (map_answers)."""
+        if self._map2 is None:
+            opts = self.map_options()
+
+            def two():
+                mine = [0.0] * 5
+                for (a, c, rushed), o in opts.items():
+                    if o[0] > 0 and o[2] > mine[a]:
+                        mine[a] = o[2]
+                first = second = 0.0
+                for v in mine:
+                    if v > first:
+                        first, second = v, first
+                    elif v > second:
+                        second = v
+                return (first, second)
+            raw = two()
+            self.map_answers(opts)
+            self._map2 = raw + two()
+        return self._map2
+
+    def map_shot(self):
+        """The best shot that can go up now, as the reading has it."""
+        now = 0.0
+        for i in self.att_o:
+            for lk in self.looks[i]:
+                if lk.now and lk.base > now:
+                    now = lk.base
+        return max(self.shot_now() or 0.0, now)
+
+    def _map_leaf(self):
+        """The reading from the coverage map: what is left to earn = a fitted line over the shot now, the best way and
+        the second way, per phase and side to act (the weights file's calibration_map). None: no line (the reading as
+        it was)."""
+        s = self.s
+        if self.cfg.get('map') is not True or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
+            return None
+        w = learned_weights()
+        if not w or not w.get('calibration_map'):
+            return None
+        phase = min(6, max(1, (12 - s.clock) // 2 + 1))
+        row = w['calibration_map']['maps'].get(f"{phase}{'O' if self.o_to_act else 'X'}")
+        if not row:
+            return None
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
+        banked += foul_externality(s)
+        shot = self.map_shot()
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            return banked + shot
+        two, k = self.map_two(), row['w']
+        line = k[0] + (k[1] * shot + k[2] * two[2] + k[3] * two[3])      # the ways the defence's answers leave
+        sn = (self.shot_now() or 0.0) if self.o_to_act else 0.0       # the offence to act can simply shoot
+        return banked + max(sn, line)
+
     def leaf(self):
         """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
         eval.calibrated on (step 17D), that reading passed through the map fitted to what positions went on to earn."""
+        ml = self._map_leaf()
+        if ml is not None:
+            return ml
         v, s = self._hand_leaf(), self.s
         top = None
         if self.cfg.get('settle_shots') is True:

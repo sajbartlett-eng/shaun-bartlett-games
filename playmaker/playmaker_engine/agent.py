@@ -437,7 +437,7 @@ def _better(a, b, sign):
     return False
 
 
-def coverage(s, answers=None):
+def coverage(s, answers=None, only=None):
     """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
     engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
     who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
@@ -447,6 +447,8 @@ def coverage(s, answers=None):
     req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx))
     if answers is not None:
         req['options'] = dict(answers=answers)
+    if only is not None:                      # stop two: only='break': the shot that can go up now against playing on
+        req['options'] = dict(only=only)
     return json.loads(JS['coverage'](json.dumps(req)))
 
 

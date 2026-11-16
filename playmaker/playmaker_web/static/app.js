@@ -769,14 +769,14 @@ function covLine(r) {
 }
 async function fetchCov() {
   if (!showCov() || !st || !G || replay) return;
-  const key = `${G.code}:${st.possession}:${st.phase}`;
+  const key = `${G.code}:${st.possession}:${st.phase}:${st.stage === 'over' ? 'over' : 'play'}`;
   if (covAsk === key) return;
   covAsk = key;
-  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}`); covMap = c && c.words ? c : null; covNote = ''; render(); }
+  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}`); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
   catch (e) { covMap = null; }
 }
 function drawCov(c) {
-  if (!showCov() || !covMap || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
+  if (!showCov() || !covMap || !covMap.all || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
   const rows = covFor === 'all' ? covMap.all : (covMap.attackers[covFor] || []);
   const g = svg('g', { class: 'covmap' });
   for (const r of rows) {
@@ -794,11 +794,25 @@ function covPanel() {
     onclick: () => { try { localStorage.setItem('pm_covmap', showCov() ? '0' : '1'); } catch (e) { /* ignore */ } covAsk = ''; render(); } }));
   if (!showCov()) return;
   fetchCov();
-  if (!covMap || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
+  if (!covMap) return;
+  const live = !!covMap.words && covMap.phase === st.phase && covMap.possession === st.possession;
+  const sc = covMap.scores && covMap.scores.possession === st.possession ? covMap.scores : null;
+  if (!live && !sc) return;
   const box = el('div', { class: 'waits covbox', id: 'covBox' });
+  const scoreLines = () => {                 // stop two: one line for every finished phase, and one for the possession
+    if (!sc || (!sc.lines.length && !sc.verdict)) return;
+    const list = el('div', { id: 'covScores', class: 'covscores' });
+    for (const ln of sc.lines) list.append(el('div', { text: `Phase ${ln.phase}: ${ln.text}` }));
+    if (sc.verdict) list.append(el('div', { class: 'covverdict', text: sc.verdict }));
+    if (sc.setup_note) list.append(el('div', { text: sc.setup_note }));
+    box.append(list);
+  };
+  if (!live) { scoreLines(); $('sideButtons').append(box); return; }
   const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` The defence is weaker than at the start of the last phase (by ${Math.round(covMap.change)}).` :
     covMap.change < -0.5 ? ` The defence is stronger than at the start of the last phase (by ${Math.round(-covMap.change)}).` : ' About as strong as at the start of the last phase.';
-  box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + change }));
+  const strong = covMap.strength == null ? '' : ` The most the offence can force by next phase: ${Math.round(covMap.strength)} (lower is a stronger defence), by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
+  box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + strong + change }));
+  scoreLines();
   const pick = el('div', { class: 'covpick' });
   for (const k of ['all', 0, 1, 2, 3, 4]) {
     pick.append(el('button', { class: 'small', 'aria-pressed': covFor === k ? 'true' : 'false', text: k === 'all' ? 'All five' : `O${k + 1}`,

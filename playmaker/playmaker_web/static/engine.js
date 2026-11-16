@@ -1554,6 +1554,10 @@ const PMEngine = (() => {
   // square where it meets the pass (not next to the passer, the way clear), then the Intercept, rolled as he then
   // stands. 0: by the rules he can't.
   const passRulesOn = () => D.config.eval.pass_rules !== false;
+  // step 18s, stop two (eval.map): the search reads the coverage map at the end of every line (Read._mapLeaf)
+  const mapOn = () => D.config.eval.map === true;
+  function setMap(v) { D.config.eval.map = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.map; }
+  function mapParts(s) { const r = readOf(s); return [r.mapShot()].concat(r.mapTwo()).concat([s.tok_o, s.tok_x]); }
   function setPassRules(v) { D.config.eval.pass_rules = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.pass_rules; }
   // occ: a Set of the squares taken, or null with (oi, oc, oj, oq): receiver oi on oc, defender oj on oq (passTaken)
   function passTaken(s, z, oi, oc, oj, oq) {
@@ -2879,7 +2883,47 @@ const PMEngine = (() => {
       if (this._leaf !== undefined) return this._leaf;
       return (this._leaf = this._leafCalc());
     }
+    // step 18s, stop two (eval.map, off until its checks pass): the coverage map's two numbers for the search. The
+    // best any attacker can have at the start of the next phase (the map's strength as the board stands), and the best
+    // a second, separate attacker can have (a second way: what makes a defence fragile).
+    mapTwo() {                                     // [best way, second way, the same two after the defence's answers]
+      if (this._map2 !== undefined) return this._map2;
+      const m = covBuild(this.s, true, this);
+      const two = () => {
+        const mine = [0, 0, 0, 0, 0];
+        for (const o of m.options) if (o.r > 0 && o.e > mine[o.a]) mine[o.a] = o.e;
+        let a = 0, b = 0;
+        for (let i = 0; i < 5; i++) { const v = mine[i]; if (v > a) { b = a; a = v; } else if (v > b) b = v; }
+        return [a, b];
+      };
+      const raw = two();
+      covLeanAnswers(m);
+      return (this._map2 = raw.concat(two()));
+    }
+    mapShot() {                                    // the best shot that can go up now, as the reading has it
+      const sn = this.shotNow();
+      let now = 0.0;
+      for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && lk.base > now) now = lk.base;
+      return Math.max(sn || 0.0, now);
+    }
+    _mapLeaf() {                                   // null: no fitted line for this phase and side (the reading as it was)
+      const s = this.s;
+      if (!mapOn() || !s.ctx.digital || s.stage !== 'play' || s.pending || !D.learned.calibration_map) return null;
+      const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
+      const row = D.learned.calibration_map.maps[String(phase) + (this.o_to_act ? 'O' : 'X')];
+      if (!row) return null;
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
+      banked += foulExternality(s);
+      const shot = this.mapShot();
+      if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + shot;
+      const two = this.mapTwo(), w = row.w;
+      const line = w[0] + (w[1] * shot + w[2] * two[2] + w[3] * two[3]);     // the ways the defence's answers leave
+      const sn = this.o_to_act ? (this.shotNow() || 0.0) : 0.0;     // the offence to act can simply shoot
+      return banked + Math.max(sn, line);
+    }
     _leafCalc() {
+      const ml = this._mapLeaf();
+      if (ml !== null) return ml;
       let v = this._handLeaf();
       const s = this.s;
       let top = null;
@@ -4492,8 +4536,8 @@ const PMEngine = (() => {
   }
   // lean (stop two, for the search): only each square's best open way is kept, not every way to it. The same options,
   // values and worths; no paths, so nothing can be re-read with a defender moved (covWith, the answers).
-  function covBuild(s, lean) {
-    const r = new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
+  function covBuild(s, lean, r0) {
+    const r = r0 || new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
     const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cmapCached(s.x[d], s.arrows[d], ctx.dfn[d].qs, true, 1, stanceMode(s, d)).masks[2] : null));
@@ -4603,6 +4647,54 @@ const PMEngine = (() => {
     const mine = mask ? m.r._valsCalc(o.lk, d, mask, 0, o.fl, s.ctx.soft ? mask : 0, 0) : null;
     return pr * covValue(o, d, mine)[0] - (1 - pr) * TURNOVER_COST;
   }
+  // stop two, for the search: the defence's answers in a fast form. While it has tokens, the defender whose one
+  // movement this phase takes most off the offence's best option makes it (a Move: any arrow; a Quick Step or Sprint:
+  // the arrow it leaves him), and then contests everything from where he now stands. Each defender moves once. What
+  // is left is what the defence could not take away with the tokens it has. Approximations: his way there is taken
+  // from the board's geometry (a body on it isn't counted), and only his new square's body is added to the board.
+  function covLeanAnswers(m) {
+    const s = m.s, r = m.r, soft = s.ctx.soft, opts = m.options;
+    if (s.tok_x <= 0) return 0;
+    const taken = new Set(); for (let k = 0; k < 5; k++) { taken.add(s.o[k]); taken.add(s.x[k]); }
+    const moved = [false, false, false, false, false];
+    let tok = s.tok_x, steps = 0;
+    while (tok > 0) {
+      let top = null;
+      for (const o of opts) if (o.r > 0 && (top === null || o.e > top.e || (o.e === top.e && (o.a - top.a || o.c - top.c || (o.rushed ? 1 : 0) - (top.rushed ? 1 : 0)) < 0))) top = o;
+      if (top === null || top.e <= 0) break;
+      const b = BI[top.c], pr = top.r;
+      let best = null;
+      const offer = (d, q, a, mask) => {                  // a: the arrow a Quick Step or Sprint leaves him, or -1 after a Move
+        if (!mask || taken.has(q)) return;
+        const vals = r._valsCalc(top.lk, d, mask, 0, top.fl, soft ? mask : 0, 0);
+        const e = pr * covValue(top, d, vals)[0] - (1 - pr) * TURNOVER_COST;
+        if (!(e < top.e - 1e-9)) return;
+        if (best === null || e < best.e - 1e-9 || (Math.abs(e - best.e) <= 1e-9 && (d - best.d || q - best.q || a - best.a) < 0)) best = { d, q, a, e };
+      };
+      for (let d = 0; d < 5; d++) {
+        if (moved[d] || !ONB[s.x[d]]) continue;
+        const cp = caps(s, 'X', d);
+        if (!cp[0] && cp[1] <= 0) continue;
+        const qs = s.ctx.dfn[d].qs, mode = stanceMode(s, d), fr = geoReach(s.x[d], s.arrows[d], qs, cp[0], cp[1]);
+        for (const [q, n] of fr[0]) if (n === 1) offer(d, q, -1, anyArrowMask(q, qs, mode)[b]);
+        for (const [q, arrs] of fr[1]) for (const [a, n] of arrs) if (n === 1) offer(d, q, a, cmapCached(q, a, qs, true, 1, mode).masks[2][b]);
+      }
+      if (best === null) break;
+      const d = best.d, qs = s.ctx.dfn[d].qs, mode = stanceMode(s, d);
+      const cm = best.a < 0 ? anyArrowMask(best.q, qs, mode) : cmapCached(best.q, best.a, qs, true, 1, mode).masks[2];
+      moved[d] = true; tok--; steps++;
+      taken.add(best.q);
+      for (const o of opts) {
+        if (o.c === best.q) { o.r = 0; o.e = -Infinity; continue; }
+        const mask = cm[BI[o.c]];
+        o.vals[d] = mask ? r._valsCalc(o.lk, d, mask, 0, o.fl, soft ? mask : 0, 0) : null;
+        const cv = covValue(o, -1, null);
+        o.w = cv[0]; o.t = cv[1]; o.cover = cv[2]; o.next = cv[3];
+        o.e = o.r > 0 ? o.r * o.w - (1 - o.r) * TURNOVER_COST : -Infinity;
+      }
+    }
+    return steps;
+  }
   const COV_MOVES = new Set(['move', 'qs', 'sprint']);
   // the defence's answers: one movement action at a time while it has tokens, each the action that leaves the offence
   // the least (the best few by a quick look are then built in full, and the best of those is taken)
@@ -4663,9 +4755,9 @@ const PMEngine = (() => {
   }
   // ---- stop two (the addendum on the defence's strength, D-201) -------------------------------------------------------
   // What playing on is worth from the next phase, as the game already measures it: the phase table's average for that
-  // phase. 0 in the last phase (nothing is left to play on for).
+  // phase. In the last phase there is no next one: the last phase's own average stands in, so "broken" still means a
+  // shot better than a possession that got this far usually ends with.
   function carryOn(s) {
-    if (s.clock <= 2) return 0;
     const tab = D.vcoarse[s.ctx.table] || D.vcoarse['senior/pro'] || {};
     const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
     const v = tab['_phase' + Math.min(6, phase + 1)];
@@ -4677,13 +4769,19 @@ const PMEngine = (() => {
     let shot = null;
     if (so !== null && s.stage === 'play' && !s.pending) {
       r = r || new Read(s);
-      for (const lk of r.looks[s.ball] || []) if (lk.route === 'shoot') { shot = { o: s.ball, sq: sqName(lk.c), worth: +lk.base.toFixed(2) }; break; }
+      for (const lk of r.looks[s.ball] || []) if (lk.route === 'shoot') {
+        let bt = 0;
+        for (let k = 1; k < lk.types.length; k++) if (lk.open[k] > lk.open[bt]) bt = k;
+        shot = { o: s.ball, sq: sqName(lk.c), worth: +lk.base.toFixed(2), kind: lk.types[bt], open: lk.base >= lk.open[bt] - 1e-9 };
+        break;
+      }
     }
     const carry = carryOn(s);
     return { shot, carry_on: +carry.toFixed(2), broken: shot !== null && shot.worth > carry + 1e-9 };
   }
   function coverage(s0, opts) {
     opts = opts || {};
+    if (opts.only === 'parts') return { parts: mapParts(s0) };                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     const s = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
     const m0 = covBuild(s);
@@ -4763,7 +4861,7 @@ const PMEngine = (() => {
   }
 
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
