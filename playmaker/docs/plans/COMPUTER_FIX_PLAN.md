@@ -205,3 +205,42 @@ reading off):
 - **The refit makes the reading flatter.** Refitted on play under the new rules, the maps fail exam position 12 and
   were not kept. The flattening map (fault A3) is now in the way of any refit; it goes with the reading work of
   the offence stage.
+
+## After the coverage map, stop one (step 18s, 16 Nov 2026)
+
+Shaun's design (D-199): the coverage map is the reading for both sides. Agreed before the build: two stops. Stop one
+is the map, the coach's view and design checks 1 to 6, in the fast engine, so the map can be judged by eye before
+anything plays from it. Speed is waived for now (D-200).
+
+**Built:** `engine.js coverage`: for every attacker and square, what the look is worth with nobody on it (value, from
+his card), the chance he has the ball there when the next phase starts (reach, by the rules' own pass and movement),
+what the defence takes off it (influence) and what is left (weakness); who covers it and who is next; the defence's
+best answers inside the tokens it has; one line of words. A snapshot is kept for each phase. In the app:
+"Defence map: shown / hidden" (the name is a decision in the report). Nothing in the computer's play reads it yet (`docs/reports/STEP18S_REPORT.md`).
+
+**What the map is built from, and what it leaves out.** The game's own movement, pass, contest and reaction rules.
+No fitted map is in its path. Three approximations, stated in the code: an off-ball attacker gets one movement before
+the catch; an arrow's bar is taken at its present length, and a defender who steps bars his new arrow's first square
+only; the defence's answers are chosen one action at a time, each the best left.
+
+**Design checks by the map (Shaun's board):** 1 to 5 fall out. 6 falls out for a body on the helper's way and not for
+the Screen action (it bars only a diagonal step; the helpers on this board travel straight).
+
+**Three things the map showed that the reading has wrong or lacks:**
+
+- **The reading's pass chance is not the rules'.** `decide._lane_p` (and the fast engine's twin) lets any defender who
+  can step onto any square of the pass's line take the pass, the on-ball defender next to the passer included. On
+  Shaun's board it reads every pass at 1 in 4. By the rules the passes to O3 and O5 can't be intercepted, and the one
+  to O2 arrives 3 times in 10. This is likely the root of "the offence against help settles for a three" (18r) and
+  of passes being undervalued everywhere. The map uses the rules' own chance. The reading is mended at stop two, in
+  both engines, with its own proof.
+- **At a phase's start, where a defender stands next to a shooter hardly matters.** The reaction gives a fresh
+  defender two actions, enough to get square in front from beside or behind. Position and arrows count through
+  reach, an arrow's bar, a lane he can jump, and when the tokens are gone (in front 12, beside 21, behind 24 for the
+  sharpshooter's three).
+- **The reading priced a shooting foul without D-198's +5.** Mended in both engines (they agree).
+
+**Stop two, in order:** the search and the setup read the map (and the reading's pass chance is replaced by the
+rules'); checks 7 to 9 on forced lines, the 18o closeout position replayed under D-198 first and check 8 on named
+positions; then the port to the other engine. Whatever must be fitted (the cost of waiting a phase) is fitted on
+forced lines only.

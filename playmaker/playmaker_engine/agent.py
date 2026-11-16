@@ -26,7 +26,7 @@ LEVELS = ('rookie', 'starter', 'allstar')
 SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
 # step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
 # PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
-JS = {'search': None, 'goals': None, 'reads': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
+JS = {'search': None, 'goals': None, 'reads': None, 'coverage': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
 # step 3n Part B: the exam's fixed-depth run (the design verdict): every level searches exactly this depth, no time limit
 FIXED = {'depth': None}
 
@@ -435,6 +435,19 @@ def _better(a, b, sign):
         if sign * (u - v) < -1e-9:
             return False
     return False
+
+
+def coverage(s, answers=None):
+    """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
+    engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
+    who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
+    computer's play yet: it is shown to the coach and checked (stop one)."""
+    if JS.get('coverage') is None or not jsbridge.ported(s.ctx.rules) or s.stage != 'play':
+        return None
+    req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx))
+    if answers is not None:
+        req['options'] = dict(answers=answers)
+    return json.loads(JS['coverage'](json.dumps(req)))
 
 
 _LANE_FILE = CONFIG.get('eval', {}).get('lane') is True      # eval.lane as ai_profiles.json has it

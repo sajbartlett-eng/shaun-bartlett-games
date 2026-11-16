@@ -276,3 +276,48 @@ def test_zones_render_shrink_after_a_move_and_fit_a_phone(static_site, tmp_path)
     assert a['badges'] > b['badges'], res                           # and his piece shows the used Move
     for v in (b, a):
         assert v['scroll'] <= v['vw'], res                          # nothing scrolls sideways
+
+
+NODE_COVERAGE = r"""
+const { chromium } = require('playwright');
+const [url] = process.argv.slice(2);
+(async () => {
+  const b = await chromium.launch(); const page = await b.newPage({ viewport: { width: 1280, height: 1000 } });
+  page.on('pageerror', e => console.error('pageerror', e.message));
+  await page.goto(url);
+  await page.waitForSelector('#loading', { state: 'detached', timeout: 180000 });
+  const made = await page.evaluate(async () => {
+    const g = await window.PM_BACKEND('/api/new', { mode: 'hotseat', match_format: 'digital', teams: ['Five Out', 'High-Low'], seed: 3, level: 'pro', full: true, per_side: 4 });
+    const during = await window.PM_BACKEND(`/api/covmap?code=${g.code}&token=${g.token}`);
+    await window.PM_BACKEND('/api/place', { code: g.code, token: g.token, preview: true });
+    return { code: g.code, token: g.token, during: Object.keys(during || {}).length };
+  });
+  await page.evaluate(`G = { code: ${JSON.stringify(made.code)}, token: ${JSON.stringify(made.token)} }; enterTable();`);
+  await page.waitForSelector('#covToggle', { timeout: 30000 });
+  const hidden = await page.evaluate(() => ({ text: document.getElementById('covToggle').textContent, cells: document.querySelectorAll('.covmap .covsq').length, box: !!document.getElementById('covBox') }));
+  await page.click('#covToggle');
+  await page.waitForSelector('#covBox', { timeout: 30000 });
+  await page.waitForSelector('.covmap .covsq', { timeout: 30000 });
+  const shown = await page.evaluate(() => ({ text: document.getElementById('covToggle').textContent, cells: document.querySelectorAll('.covmap .covsq').length,
+    words: document.getElementById('covWords').textContent }));
+  await page.click('.covmap .covsq');
+  const note = await page.evaluate(() => document.getElementById('covNote').textContent);
+  console.log(JSON.stringify({ during: made.during, hidden, shown, note }));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });
+"""
+
+
+def test_the_coverage_view_shows_in_the_browser_build(static_site, tmp_path):
+    """Step 18s (D-199): 'Defence map: hidden' by default; shown, the board carries the heat map, the box its one line of
+    words, and a tapped square says who gets what there and who covers it. Nothing while the pieces are being placed."""
+    (tmp_path / 'cov.js').write_text(NODE_COVERAGE)
+    url = f'{static_site}/site/index.html?pyodide={static_site}/pyodide/'
+    r = subprocess.run(['node', str(tmp_path / 'cov.js'), url], capture_output=True, text=True, timeout=600)
+    assert r.returncode == 0, r.stderr[-800:]
+    out = json.loads(r.stdout.strip().splitlines()[-1])
+    assert out['during'] == 0
+    assert out['hidden'] == dict(text='Defence map: hidden', cells=0, box=False)
+    assert out['shown']['text'] == 'Defence map: shown' and out['shown']['cells'] > 20
+    assert out['shown']['words'].startswith('The defence at the start of this phase.') and 'worth' in out['shown']['words']
+    assert 'can get' in out['note'] and 'next phase' in out['note']

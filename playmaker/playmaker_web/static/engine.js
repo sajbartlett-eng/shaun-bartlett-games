@@ -1983,7 +1983,7 @@ const PMEngine = (() => {
           if (foul) {
             const ft = ctx.fiba ? footPoints(card, ty, pts, r, true, v, r - con)[0] : footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
             const pf = pFouls(dc.r.foul_contest, two ? 2 : 1);
-            v = pf * ft + (1 - pf) * v;
+            v = pf * (ft + (ctx.ppo ? 5 : 0)) + (1 - pf) * v;      // D-198: a shooting foul is +5 and its free throws (step 18s)
           }
           if (best === null || v < best) best = v;
         }
@@ -4331,7 +4331,285 @@ const PMEngine = (() => {
   const bankedOf = s => 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
-  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
+  // ---- step 18s (D-199): the coverage map -------------------------------------------------------------------------
+  // Shaun's design (docs/reference/COVERAGE_MAP_BLUEPRINT.md). For every attacker and every square a shot may go up
+  // from: value (his best open shot there, from his card), reach (the chance he can be shooting there with the ball
+  // when the next phase starts, by the movement and pass rules), influence (what the best defender who can get there
+  // takes off it, by the contest rules) and weakness (what the offence can get there). Then who covers each square,
+  // and what is left after the defence spends the tokens it has: "a defence can't cover two at once" is worked out by
+  // the rules, never fitted. Nothing here is read by the search yet (stop one): it is shown to the coach and checked.
+  // Approximated, and why: (1) an attacker without the ball is given one movement before his catch, as the reading's
+  // looks are; (2) the bars of the defence's arrows are taken at the length they have now, and a defender who steps
+  // bars his new arrow's foot only: next phase's exact bars need next phase's board; (3) the defence's answers are
+  // chosen one action at a time, each the one that leaves the least, not by trying every set of actions.
+  const _SHP = new Map();
+  function shotPaths(start, qs, noRim) {               // every movement path from start that ends where a shot may go up: [path, rushed]
+    const key = (start * 8 + qs) * 2 + (noRim ? 1 : 0); let hit = _SHP.get(key); if (hit) return hit;
+    hit = [];
+    const ok = p => { const c = p[p.length - 1]; return p.every(q => ONB[q]) && SHOOT(ZN[c]) && !(noRim && c === RIM); };
+    for (const p of movePaths(start)) if (ok(p)) hit.push([p, false]);
+    for (const p of qsPaths(start, qs)) if (ok(p)) hit.push([p, true]);
+    for (const [, p] of sprintPaths(start, qs)) if (ok(p)) hit.push([p, true]);
+    _SHP.set(key, hit); return hit;
+  }
+  // The chance a pass from the ball handler to attacker i arrives, by the rules' own options once it is in the air: an
+  // Intercept through a defender's square, or one straight movement along his arrow onto the pass line and then the
+  // Intercept (never from a square next to the passer; rushed if he got there by a Quick Step or Sprint). 0: no pass.
+  const COV_STEP = new Set(['move', 'qs', 'sprint']);
+  function passChanceExact(s, i) {
+    const st = W_(s, { side: 'O', stage: 'play', turn_n: 0, tok_o: Math.max(1, s.tok_o), pending: null });
+    const a = A('pass', 'O', s.ball, -1, -1, i);
+    try {
+      if (!isLegal(st, a)) return 0;
+      const nxt = apply(st, a);
+      if (isChance(nxt) || nxt.stage !== 'play' || nxt.side !== 'X' || !nxt.pending) return 1;
+      let worst = 0;
+      for (const b of legalActions(nxt)) {
+        if (b.kind === 'intercept') worst = Math.max(worst, 1 - pS(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept')));
+        else if (COV_STEP.has(b.kind) && mtiApproach(nxt, b)) {
+          const af = apply(nxt, b);
+          if (!isChance(af) && af.pending) worst = Math.max(worst, 1 - pS(rolled(af, 'O', s.ball, 'pass') - rolled(af, 'X', b.piece, 'intercept')));
+        }
+      }
+      return 1 - worst;
+    } catch (e) { return 0; }
+  }
+  const COV_NONE = [];
+  const TURNOVER_COST = 5;                             // D-198: a lost ball is -5
+  function covValue(o, skip, extra) {                 // [weakness, best shot type's index, the defender who covers, the next best]
+    let top = -1, tt = 0, cov = -1, nxt = -1, ob = -1, cb = -1, nb = -1;      // ob, cb, nb: his best shot open, and who takes it away
+    for (let t = 0; t < o.open.length; t++) {
+      let v = o.open[t], d1 = -1, v2 = o.open[t], d2 = -1;
+      for (let d = 0; d < 5; d++) {
+        const vals = d === skip ? extra : o.vals[d];
+        if (!vals || !(vals[t] < o.open[t])) continue;
+        if (vals[t] < v) { v2 = v; d2 = d1; v = vals[t]; d1 = d; } else if (vals[t] < v2) { v2 = vals[t]; d2 = d; }
+      }
+      if (v > top) { top = v; tt = t; cov = d1; nxt = d2; }
+      if (o.open[t] > ob) { ob = o.open[t]; cb = d1; nb = d2; }
+    }
+    if (cov < 0 && top < ob) { cov = cb; nxt = nb; }   // he is left a lesser shot nobody contests: the cover is whoever took the better one
+    return [top, tt, cov, nxt];
+  }
+  function covBuild(s) {
+    const r = new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
+    const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
+    // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
+    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cmapCached(s.x[d], s.arrows[d], ctx.dfn[d].qs, true, 1, stanceMode(s, d)).masks[2] : null));
+    const options = [], byKey = new Map();
+    const last = s.clock <= 2;                         // no phase after this one
+    for (let a = 0; a < 5 && !last; a++) {
+      if (!ONB[s.o[a]]) continue;
+      const starts = [];                               // where he can have the ball when the next phase starts, and the chance
+      if (a === s.ball) {
+        const one = new Map([[s.o[a], 0]]);
+        if (s.tok_o > 0) for (const kind of ['move', 'qs', 'sprint']) if (canMoveKind(s, 'O', a, kind)) for (const q of movementDests(s, 'O', a, kind).keys()) if (!one.has(q)) one.set(q, 1);
+        for (const q of [...one.keys()].concat(s.tok_o > 0 ? twoActions(s, a, one) : [])) starts.push([q, 1.0]);
+      } else if (s.tok_o > 0 && count(s, 'O', 'pass') < LIMITS.O.pass) {
+        for (const [q, n] of attackerReach(s, a)) {
+          if (n > 1 || n + 1 > s.tok_o) continue;
+          const p = passChanceExact(q === s.o[a] ? s : W_(s, { o: setAt(s.o, a, q) }), a);      // the rules' own chance, not the reading's
+          if (p > 0) starts.push([q, p]);
+        }
+      }
+      const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== a) mates.add(s.o[k]);
+      const lines = [];
+      if (ctx.zone) {
+        for (let j = 0; j < 5; j++) {                 // actions.capture_lines, a defender at a time, for this attacker with the ball
+          const st = stanceOf(s, j);
+          if (st < 8 || st >= 16 || !ONB[s.x[j]]) continue;
+          if (s.beaten.some(b => b[0] === a && b[1] === j)) continue;
+          const d0 = st - 8, d1 = (st - 7) % 8;
+          lines.push([j, [[s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, s.o[a], -1).length), Math.max(1, zoneRay(s, j, d1, s.o[a], -1).length)]]]);
+        }
+      }
+      const qs = ctx.off[a].qs, home = s.o[a];
+      const add = (c, rushed, path) => {
+        const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
+        let o = byKey.get(key);
+        if (!o) { o = { a, c, rushed, paths: [] }; byKey.set(key, o); options.push(o); }
+        o.paths.push(path);
+      };
+      for (const [q0, pr] of starts) {
+        if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
+        const stop = q0 !== home ? q0 : -1;
+        if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop });      // a set shot from where the phase finds him
+        for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
+          let dm = 0, bad = false;
+          for (const q of p) { if (mates.has(q)) { bad = true; break; } const j = xat.get(q); if (j !== undefined) dm |= 1 << j; }
+          if (bad) continue;
+          let zm = 0;
+          for (const ln of lines) if (!captureOk(q0, p, ln[1])) zm |= 1 << ln[0];
+          add(p[p.length - 1], rushed, { q0, p, dm, zm, pr, stop });
+        }
+      }
+    }
+    for (const o of options) {
+      const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ZONE_POINTS[ZN[o.c]];
+      lk.types = ZONE_SHOTS[ZN[o.c]]; lk.rushed = o.rushed;
+      o.lk = lk; o.fl = (o.rushed && off > 0) ? 1 : undefined;
+      o.open = lk.types.map(t => pts * (card.sh[t] - (o.rushed ? off : 0)));
+      o.v = Math.max(...o.open);                       // value: his best shot there with nobody on it, as he would take it
+      o.vals = [null, null, null, null, null];
+      for (let d = 0; d < 5; d++) {
+        const mask = cms[d] ? cms[d][BI[o.c]] : 0;
+        if (mask) o.vals[d] = r._valsCalc(lk, d, mask, 0, o.fl, ctx.soft ? mask : 0, 0);
+      }
+      let pr = 0;
+      for (const pt of o.paths) if (pt.dm === 0 && pt.zm === 0 && pt.pr > pr) pr = pt.pr;
+      const cv = covValue(o, -1, null);
+      o.r = pr; o.w = cv[0]; o.t = cv[1]; o.cover = cv[2]; o.next = cv[3];
+      o.e = pr > 0 ? pr * o.w - (1 - pr) * TURNOVER_COST : -Infinity;
+    }
+    const sorted = options.filter(o => o.r > 0).sort((x, y) => (y.e - x.e) || (x.a - y.a) || (x.c - y.c) || ((x.rushed ? 1 : 0) - (y.rushed ? 1 : 0)));
+    // the best shot that can go up this phase, as the reading has it
+    let now = null;
+    for (const i of r.att_o) for (const lk of r.looks[i] || []) if (lk.now && (now === null || lk.base > now.e)) now = { a: i, c: lk.c, e: lk.base, route: lk.route };
+    return { s, r, options, sorted, now, cms };
+  }
+  // one option with defender d standing on p facing `arrow` (his Contest from there `cm`), every other piece as it stands
+  function covWith(m, o, d, p, arrow, cm) {
+    if (o.c === p) return -Infinity;
+    const s = m.s, bd = 1 << d, same = p === s.x[d] && arrow === s.arrows[d];
+    const line = (!same && s.ctx.zone && stanceMode(s, d) === 1) ? [[p, arrow, (arrow + 1) % 8, 1, 1]] : null;
+    let pr = 0;
+    for (const pt of o.paths) {
+      if (pt.pr <= pr || (pt.dm & ~bd) || (same ? pt.zm : (pt.zm & ~bd)) || pt.stop === p || (pt.p.length && pt.p.includes(p))) continue;
+      if (line !== null && pt.p.length && !captureOk(pt.q0, pt.p, line)) continue;
+      pr = pt.pr;
+    }
+    if (pr <= 0) return -Infinity;
+    const mask = cm[BI[o.c]];
+    const mine = mask ? m.r._valsCalc(o.lk, d, mask, 0, o.fl, s.ctx.soft ? mask : 0, 0) : null;
+    return pr * covValue(o, d, mine)[0] - (1 - pr) * TURNOVER_COST;
+  }
+  const COV_MOVES = new Set(['move', 'qs', 'sprint']);
+  // the defence's answers: one movement action at a time while it has tokens, each the action that leaves the offence
+  // the least (the best few by a quick look are then built in full, and the best of those is taken)
+  // is the list of worths a (largest first) smaller than b, comparing the largest first, then the next, and so on?
+  function covLess(a, b) {
+    for (let k = 0; k < Math.max(a.length, b.length); k++) {
+      const x = k < a.length ? a[k] : -Infinity, y = k < b.length ? b[k] : -Infinity;
+      if (x < y - 1e-9) return true;
+      if (x > y + 1e-9) return false;
+    }
+    return false;
+  }
+  function covAnswers(m0, limit) {
+    let m = m0;
+    const answers = [], N = 14;
+    for (let step = 0; step < (limit == null ? 6 : limit); step++) {
+      const top = m.sorted[0];
+      if (!top || top.e <= 0 || m.s.tok_x <= 0) break;
+      const sx = W_(m.s, { side: 'X', turn_n: 0, stage: 'play', prev_wait: '' });
+      const seen = new Set(), quick = [];
+      const head = m.sorted.slice(0, N), cur = head.map(o => o.e);
+      const spare = W_(sx, { tok_x: sx.tok_x + 1 });   // (the defence's last token ends the phase in play; here the answer is read inside this phase)
+      for (const act of defenceActions(sx, COV_MOVES)) {
+        let nx = apply(spare, act);
+        if (isChance(nx) || nx.stage !== 'play' || nx.phase !== sx.phase) continue;
+        nx = W_(nx, { tok_x: sx.tok_x - 1 });
+        const d = act.piece, p = nx.x[d], arrow = nx.arrows[d], key = (d * 4096 + p) * 8 + arrow;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const cm = cmapCached(p, arrow, sx.ctx.dfn[d].qs, true, 1, stanceMode(sx, d)).masks[2];
+        // a defence can't cover two at once: an action counts if it makes the offence's best options smaller, the
+        // largest first, then the next (so with two equal threats, taking one away is still an answer)
+        let touched = false;
+        const after = [];
+        for (const o of head) { const e = covWith(m, o, d, p, arrow, cm); if (e < o.e - 1e-9) touched = true; after.push(e); }
+        if (!touched) continue;
+        after.sort((x, y) => y - x);
+        if (covLess(after, cur)) quick.push([after, quick.length, act, nx]);
+      }
+      if (!quick.length) break;
+      quick.sort((x, y) => (covLess(x[0], y[0]) ? -1 : covLess(y[0], x[0]) ? 1 : x[1] - y[1]));
+      let best = null;
+      for (const q of quick.slice(0, 5)) {
+        const nm = covBuild(W_(q[3], { side: m.s.side, turn_n: m.s.turn_n, prev_wait: m.s.prev_wait }));
+        const es = nm.sorted.slice(0, N).map(o => o.e);
+        if (best === null || covLess(es, best[0])) best = [es, q[2], nm];
+      }
+      if (best === null || !covLess(best[0], cur)) break;
+      answers.push({ x: best[1].piece, kind: best[1].kind, to: best[2].s.x[best[1].piece], arrow: best[2].s.arrows[best[1].piece], leaves: best[0].length ? best[0][0] : 0 });
+      m = best[2];
+    }
+    return { m, answers };
+  }
+  const COV_SHOT = { layup: 'a layup', dunk: 'a dunk', post: 'a post shot', mid: 'a mid-range shot', floater: 'a floater', long: 'a long two', three: 'a three' };
+  function covOption(o) {
+    return { o: o.a, sq: sqName(o.c), shot: o.lk.types[o.t], value: o.v, reach: +o.r.toFixed(3), weakness: +o.w.toFixed(2), worth: +o.e.toFixed(2),
+      cover: o.cover, next: o.next, rushed: !!o.rushed };
+  }
+  function coverage(s0, opts) {
+    opts = opts || {};
+    const s = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
+    const m0 = covBuild(s);
+    const ans = covAnswers(m0, opts.answers);
+    const left = ans.m.sorted.length ? ans.m.sorted[0] : null;
+    // every square, for each attacker: his best option there (the map the coach sees: the defence as it stands)
+    const squares = [0, 1, 2, 3, 4].map(() => ({}));
+    for (const o of m0.sorted) {
+      const k = sqName(o.c), cur = squares[o.a][k];
+      if (!cur || o.e > cur.worth) squares[o.a][k] = { value: o.v, reach: +o.r.toFixed(3), weakness: +o.w.toFixed(2), worth: +o.e.toFixed(2), influence: +(o.v - o.w).toFixed(2),
+        cover: o.cover, next: o.next, shot: o.lk.types[o.t], rushed: !!o.rushed };
+    }
+    // who covers what: one defender covers many squares, and several attackers at once
+    const covers = [0, 1, 2, 3, 4].map(() => ({ squares: 0, attackers: [] }));
+    for (let a = 0; a < 5; a++) for (const k of Object.keys(squares[a])) {
+      const d = squares[a][k].cover;
+      if (d >= 0) { covers[d].squares++; if (!covers[d].attackers.includes(a)) covers[d].attackers.push(a); }
+    }
+    const top = m0.sorted.length ? m0.sorted[0] : null;
+    let dribble = null;
+    if (!opts.noDribble && top !== null && s.tok_o > 0) {
+      // the Dribble: a defender next to the ball handler only stays in the race if he wins the roll
+      const so = W_(s, { side: 'O', turn_n: 0, stage: 'play' });
+      for (const act of legalActions(so)) {
+        if (act.kind !== 'dribble') continue;
+        const node = apply(so, act);
+        if (!isChance(node)) continue;
+        let ev = 0, p = 0, won = null;
+        for (const out of node.outcomes) {
+          const sub = W_(out[2], { side: s.side, turn_n: s.turn_n });
+          const c2 = coverage(sub, { noDribble: true, answers: opts.answers });
+          ev += out[0] * c2.left_worth;
+          if (out[1] === 'success') { p = out[0]; won = c2; }
+        }
+        if (dribble === null || ev > dribble.worth) dribble = { target: act.target, chance: +p.toFixed(3), worth: +ev.toFixed(2), if_won: won ? won.left_worth : null, best_if_won: won ? won.left : null };
+      }
+    }
+    const leftWorth = left ? left.e : (m0.now ? m0.now.e : 0);
+    const words = [];
+    const name = o => `O${o.a + 1}`;
+    if (top === null) words.push(s.clock <= 2 ? 'The last phase: only a shot now counts.' : 'Nothing can be reached next phase.');
+    else {
+      const help = top.cover < 0 ? 'Nobody can get there to contest it.' : `X${top.cover + 1} covers it${top.next >= 0 ? `, then X${top.next + 1}` : ', and nobody is behind him'}.`;
+      words.push(`${name(top)} can get ${COV_SHOT[top.lk.types[top.t]]} on ${sqName(top.c)} next phase, worth ${top.e.toFixed(0)}. ${help}`);
+      if (ans.answers.length) {
+        const steps = ans.answers.map(q => `X${q.x + 1} to ${sqName(q.to)}`).join(', ');
+        words.push(left ? `The defence's best answer: ${steps}. That leaves ${COV_SHOT[left.lk.types[left.t]]} for ${name(left)} on ${sqName(left.c)}, worth ${left.e.toFixed(0)}.` : `The defence's best answer: ${steps}. That leaves nothing.`);
+      } else words.push(s.tok_x <= 0 ? 'The defence has no token left this phase to answer it.' : 'No step by the defence makes it smaller.');
+      if (dribble !== null && dribble.worth > leftWorth + 0.5) words.push(`A Dribble at X${dribble.target + 1} wins ${Math.round(dribble.chance * 20)} times in 20 and is worth ${dribble.worth.toFixed(0)}.`);
+    }
+    return { phase: s.phase, clock: s.clock, squares, covers, top: m0.sorted.slice(0, 8).map(covOption),
+      best: top ? covOption(top) : null, answers: ans.answers.map(q => ({ x: q.x, kind: q.kind, to: sqName(q.to), arrow: q.arrow, leaves: +q.leaves.toFixed(2) })),
+      left: left ? covOption(left) : null, left_worth: +leftWorth.toFixed(2), dribble,
+      after: { x: ans.m.s.x.map(q => sqName(q)), arrows: Array.from(ans.m.s.arrows), tokens_left: ans.m.s.tok_x },
+      // the chance a pass straight to each teammate where he stands arrives, by the rules (null: the ball handler, or no pass)
+      passes: [0, 1, 2, 3, 4].map(a => (a === s.ball || !ONB[s.o[a]] || s.tok_o <= 0 || !isLegal(W_(s, { side: 'O', stage: 'play', turn_n: 0, pending: null }), A('pass', 'O', s.ball, -1, -1, a)) ? null : +passChanceExact(s, a).toFixed(3))),
+      now: m0.now ? { o: m0.now.a, sq: sqName(m0.now.c), worth: +m0.now.e.toFixed(2), route: m0.now.route } : null,
+      worth: +Math.max(leftWorth, dribble ? dribble.worth : -Infinity, m0.now ? m0.now.e : -Infinity).toFixed(2), words: words.join(' ') };
+  }
+  function coverageJSON(text) {
+    const req = JSON.parse(text);
+    const key = JSON.stringify(req.ctx);
+    let ctx = CTXS.get(key);
+    if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
+    return JSON.stringify(coverage(stateFrom(req.state, ctx), req.options || null));
+  }
+
+  return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();

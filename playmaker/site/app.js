@@ -663,6 +663,7 @@ function renderCourt() {
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   drawInfluence(c);
+  drawCov(c);
   // arrow lines the ball carrier can't cross (the old drive rule only)
   const carrier = s.o.find(p => p.ball);
   if (sel.side === 'O' && carrier && sel.i === carrier.i) {
@@ -757,6 +758,59 @@ function drawX(c, p, opts) {
 // Zones of influence (every defender, along the arrow line, out to the current reach), active screens and the
 // diagonal steps they block, the passer's ring and intercept marks when a pass is being chosen, and the selected
 // attacker's movement reach. Patterns, not colour alone; each zone square numbered for its defender.
+// ---- step 18s (D-199): the coach's view of the defence's map: what the offence can get on each square next phase, and who covers it
+function showCov() { try { return localStorage.getItem('pm_covmap') === '1'; } catch (e) { return false; } }
+let covMap = null, covFor = 'all', covAsk = '', covNote = '';
+const COV_SHOT = { layup: 'a layup', dunk: 'a dunk', post: 'a post shot', mid: 'a mid-range shot', floater: 'a floater', long: 'a long two', three: 'a three' };
+function covLine(r) {
+  const who = r.cover < 0 ? 'Nobody can get there to contest it.' : `X${r.cover + 1} covers it${r.next >= 0 ? `, then X${r.next + 1}` : ', and nobody is behind him'}.`;
+  const how = r.reach < 1 ? ` The pass gets there ${Math.round(r.reach * 20)} times in 20.` : '';
+  return `${r.sq}: O${r.o + 1} can get ${COV_SHOT[r.shot] || r.shot} here next phase${r.rushed ? ', off balance' : ''}, worth ${Math.round(r.worth)} (open ${Math.round(r.value)}).${how} ${who}`;
+}
+async function fetchCov() {
+  if (!showCov() || !st || !G || replay) return;
+  const key = `${G.code}:${st.possession}:${st.phase}`;
+  if (covAsk === key) return;
+  covAsk = key;
+  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}`); covMap = c && c.words ? c : null; covNote = ''; render(); }
+  catch (e) { covMap = null; }
+}
+function drawCov(c) {
+  if (!showCov() || !covMap || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
+  const rows = covFor === 'all' ? covMap.all : (covMap.attackers[covFor] || []);
+  const g = svg('g', { class: 'covmap' });
+  for (const r of rows) {
+    const a = Math.max(0, Math.min(0.72, (r.worth - 6) / 40));
+    if (a <= 0) continue;
+    const cell = svg('rect', { class: 'covsq', x: px(r.x) + 1, y: py(r.y) + 1, width: S - 2, height: S - 2, fill: `rgba(196,38,30,${a.toFixed(2)})`, tabindex: -1 });
+    const t = svg('title', {}); t.textContent = covLine(r); cell.append(t);
+    cell.addEventListener('click', () => { covNote = covLine(r); const w = $('covNote'); if (w) w.textContent = covNote; });
+    g.append(cell);
+  }
+  c.append(g);
+}
+function covPanel() {
+  $('sideButtons').append(el('button', { class: 'small', id: 'covToggle', 'aria-pressed': showCov() ? 'true' : 'false', text: showCov() ? 'Defence map: shown' : 'Defence map: hidden',
+    onclick: () => { try { localStorage.setItem('pm_covmap', showCov() ? '0' : '1'); } catch (e) { /* ignore */ } covAsk = ''; render(); } }));
+  if (!showCov()) return;
+  fetchCov();
+  if (!covMap || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
+  const box = el('div', { class: 'waits covbox', id: 'covBox' });
+  const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` The defence is weaker than at the start of the last phase (by ${Math.round(covMap.change)}).` :
+    covMap.change < -0.5 ? ` The defence is stronger than at the start of the last phase (by ${Math.round(-covMap.change)}).` : ' About as strong as at the start of the last phase.';
+  box.append(el('div', { id: 'covWords', text: 'The defence at the start of this phase. ' + covMap.words + change }));
+  const pick = el('div', { class: 'covpick' });
+  for (const k of ['all', 0, 1, 2, 3, 4]) {
+    pick.append(el('button', { class: 'small', 'aria-pressed': covFor === k ? 'true' : 'false', text: k === 'all' ? 'All five' : `O${k + 1}`,
+      onclick: () => { covFor = k; render(); } }));
+  }
+  box.append(pick);
+  const pc = covFor !== 'all' && covMap.passes ? covMap.passes[covFor] : null;
+  const passWords = pc == null ? '' : pc >= 1 ? ` A pass straight to O${covFor + 1} can't be intercepted.` : ` A pass straight to O${covFor + 1} arrives ${Math.round(pc * 20)} times in 20.`;
+  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there. Tap a square for who gets what, and who covers it.' + passWords }));
+  $('sideButtons').append(box);
+}
+
 function drawInfluence(c) {
   const inf = st.influence;
   if (!inf) return;
@@ -957,6 +1011,7 @@ function renderActions() {
 
 function addUndo() {
   const s = st;
+  if (s.match_format === 'digital') covPanel();
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',

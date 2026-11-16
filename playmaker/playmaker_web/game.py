@@ -660,6 +660,32 @@ class Game:
         n = (self.rules or RC.DEFAULT_RULES).quarter_possessions
         return self.quarter['fouls'][dfn], max(1, n - self.quarter['poss'][att])
 
+    def coverage_snapshot(self):
+        """Step 18s (D-199): the coverage map as the coach sees it, kept for each phase of the possession from the first
+        time it is asked for in that phase (the app asks as the phase starts). None where the fast engine isn't there,
+        the format isn't the app's, or the possession isn't in play. Each snapshot carries the change in what the
+        offence can get since the phase before."""
+        s = self.state
+        if self.match_format != 'digital' or s is None or self.placing or s.stage not in ('play', 'reaction', 'contest'):
+            return None
+        snaps = self.__dict__.setdefault('_coverage', {})
+        key = (self.possession, s.phase)
+        if key not in snaps:
+            from playmaker_engine import agent as _AG
+            try:
+                c = _AG.coverage(s.with_(stage='play', shot=None) if s.stage != 'play' else s)
+            except Exception:               # the view must never stop a game
+                c = None
+            if c is None:
+                return None
+            prev = snaps.get((self.possession, s.phase - 1))
+            c['change'] = round(c['worth'] - prev['worth'], 1) if prev else None
+            c['possession'] = self.possession
+            for k in [k for k in snaps if k[0] != self.possession]:
+                del snaps[k]
+            snaps[key] = c
+        return snaps[key]
+
     def quarter_words(self):
         if self.match_format != 'digital':
             return None

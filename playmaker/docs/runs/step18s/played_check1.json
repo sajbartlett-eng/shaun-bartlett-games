@@ -1,0 +1,90 @@
+{
+ "his game: X4 and X5 next to their men": {
+  "mean": 26.5,
+  "low": 24.6,
+  "high": 28.4,
+  "ends": {
+   "layup": 8,
+   "post": 2,
+   "three": 5,
+   "floater": 1
+  },
+  "first_action": [
+   [
+    "O1 move G10",
+    9
+   ],
+   [
+    "O2 screen",
+    3
+   ],
+   [
+    "O1 qs I10",
+    3
+   ]
+  ],
+  "points": [
+   22,
+   28,
+   30,
+   18,
+   24,
+   25,
+   24,
+   27,
+   28,
+   24,
+   28,
+   27,
+   36,
+   26,
+   30,
+   27
+  ]
+ },
+ "the map's placement: J10, D4, O8, F4, M2": {
+  "mean": 23.2,
+  "low": 20.5,
+  "high": 25.9,
+  "ends": {
+   "three": 15,
+   "layup": 1
+  },
+  "first_action": [
+   [
+    "O1 move H10",
+    11
+   ],
+   [
+    "O1 qs I10",
+    3
+   ],
+   [
+    "O1 qs H10",
+    2
+   ]
+  ],
+  "points": [
+   22,
+   27,
+   27,
+   24,
+   27,
+   27,
+   24,
+   27,
+   8,
+   27,
+   27,
+   19,
+   17,
+   17,
+   27,
+   24
+  ]
+ },
+ "the_map_reads": {
+  "his_game": 34,
+  "its_own_placement": 22
+ }
+}

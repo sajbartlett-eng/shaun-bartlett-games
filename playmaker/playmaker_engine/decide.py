@@ -545,6 +545,7 @@ class Read:
         d_stand = control and (self.s.rushed('X', d) if dflags is None else dflags[0])
         d_moved = control and (self.s.moved('X', d) if dflags is None else dflags[1])
         position = RC.position_contest(rules)
+        plus5 = RC.app_rule(rules, 'points_play_on') and not self.s.ctx.hold_for_one
         for t in look.types:
             r = card.shot(t)
             # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
@@ -575,6 +576,8 @@ class Read:
                         ft = foul_on_shot_points(card, t, pts, rules, r, v, r - con)[0]   # D-174
                     else:
                         ft = foul_on_shot_points(card, t, pts, rules, r if (cut and look.rushed) else None)[0]
+                    if plus5:
+                        ft += RC.STEAL_FOUL_BONUS          # D-198: a shooting foul is +5 and its free throws (step 18s)
                     pf = float(p_fouls(p_foul(self.dcards[d].r['foul_contest'], rules), 2 if two else 1))
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:
