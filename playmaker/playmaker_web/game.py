@@ -96,7 +96,27 @@ def chance_preview(state, a):
 def consequences(before, after, a):
     """What an action changed, in plain words (from the state difference, so it is always true)."""
     out = []
-    if after.tos > before.tos:
+    d198 = RC.app_rule(after.ctx.rules, 'points_play_on') and not after.ctx.hold_for_one
+    if d198 and after.tos > before.tos:
+        # D-198: every turnover is -5; the phase ends there and the next begins (or nothing is left to play)
+        rest = ' No phase is left: the possession is over.' if after.stage == 'over' else ' The phase ends; the next one begins.'
+        if a.kind == 'intercept':
+            out.append(('bad_O', f'Pass intercepted: −5. The ball goes back to the passer and X{a.piece + 1} goes back to where he began the phase.{rest}'))
+        elif a.kind == 'steal':
+            what = 'Shot stolen: cancelled, −5.' if before.stage == 'reaction' else 'Stolen: −5.'
+            out.append(('bad_O', f'{what} The ball stays with O{before.ball + 1}.{rest}'))
+        else:
+            late = [i for i in range(5) if before.key_o >> i & 1 and B.in_key(after.o[i])] if RC.app_rule(after.ctx.rules, 'three_seconds') else []
+            n = after.tos - before.tos
+            if after.stage == 'over' and after.result is not None and after.result.violation == 'shot_clock':
+                out.append(('bad_O', 'The shot clock ran out: −5. The possession is over.'))
+                n -= 1
+            for i in late[:n]:
+                out.append(('bad_O', f'Three seconds: O{i + 1} was in the key when two phases in a row ended. −5. Play on.'))
+            if n > len(late):
+                out.append(('bad_O', f'Closely guarded: O{before.ball + 1} held the ball with a defender on him when three phases in a row '
+                                     'ended. −5. Play on.'))
+    elif after.tos > before.tos:
         lost = before.clock - after.clock if after.stage != 'over' and after.clock < before.clock else 0
         tail = f' and {lost} seconds off the clock' if lost else ''
         if after.stage == 'over' and after.zeroed and a.kind in ('intercept', 'steal'):
@@ -116,7 +136,12 @@ def consequences(before, after, a):
                                      'A violation: turnover.'))
         else:
             out.append(('bad_O', 'Turnover, −5.'))
-    if after.bonus5 > before.bonus5:
+    if d198 and after.bonus5 > before.bonus5:
+        if after.stage == 'over':
+            out.append(('good_O', 'Foul on the shot: +5 to the offence, and the free throws.'))
+        else:
+            out.append(('good_O', f'Foul on the steal: +5 to the offence. X{a.piece + 1} is locked. Play on.'))
+    elif after.bonus5 > before.bonus5:
         if after.stage == 'over':          # D-89: in the bonus (or on a shot) the +5 comes with the free throws
             out.append(('good_O', 'Foul on the steal: +5 to the offence, and free throws. The possession ends.'))
         else:
@@ -644,8 +669,10 @@ class Game:
         left = max(0, r.quarter_possessions - min(self.quarter['poss'].values()))
         return dict(A=self.quarter['fouls']['A'], B=self.quarter['fouls']['B'], bonus_from=r.bonus_from, left=left,
                     number=self.quarter['number'], defending=dfn,
-                    text=f"Team fouls {self.quarter['fouls'][dfn]} · bonus from the {r.bonus_from}th · {left} "
-                         f"possession{'s' if left != 1 else ''} left this quarter")
+                    text=(f"Team fouls {self.quarter['fouls'][dfn]} · every foul is +5 · {left} "
+                          f"possession{'s' if left != 1 else ''} left this quarter") if RC.app_rule(r, 'points_play_on') else
+                         (f"Team fouls {self.quarter['fouls'][dfn]} · bonus from the {r.bonus_from}th · {left} "
+                          f"possession{'s' if left != 1 else ''} left this quarter"))
 
     # ---- the pre-game scouting call (hunt one matchup, protect one weakness) ----
     def picks_needed(self, side):

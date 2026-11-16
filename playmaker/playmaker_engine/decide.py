@@ -649,9 +649,10 @@ class Read:
                     reach[q] = 2
         else:
             reach = {q: n for q, n in attacker_reach(s, i).items() if n <= 1}
+        no_rim = RC.rim_shot_barred(rules)
         for c, n in reach.items():
             z = B.zone(c)
-            if z not in SHOOT:
+            if z not in SHOOT or (no_rim and c == RC.RIM):       # D-198: no shot from the rim's own square
                 continue
             # B0/B2: count the offence's actions. The ball handler can move then shoot in one turn; a receiver catches
             # and shoots where he stands after the pass (one defence reply between); a receiver who must move first
@@ -722,7 +723,7 @@ class Read:
         """The quick reading (Read(s, k=0, looks_per=3).leaf(), no pass in the air) from what is left to play for and
         the shots that can go up now, re-read (snv < 0: none). tv (step 18h): each attacker's best look, re-read."""
         s = self.s
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         sn = None if snv < 0 else snv
         last = not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS
@@ -1080,7 +1081,7 @@ class Read:
         top = None
         if self.cfg.get('settle_shots') is True:
             # step 18b (D-145): no reading is above the most the possession can still earn, before or after the map
-            banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+            banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
             banked += foul_externality(s)
             top = ceiling(s)
             if v - banked > top:
@@ -1091,7 +1092,7 @@ class Read:
         if w is None or not w.get('calibration') or (self.k <= 0 and top is None) or s.stage != 'play' or s.pending or \
                 (not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS):
             return v
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         po = play_on_map(s, self.cfg, w)
         if po is not None:
@@ -1127,7 +1128,7 @@ class Read:
         now, the best look the defence can't cover in its next turn (released this turn: uncoverable), and the
         coarse table."""
         s = self.s
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         if s.pending:
             # a pass in the air: the catch (the receiver with the ball, the defence still to answer) weighted by the
@@ -1177,7 +1178,7 @@ class Read:
         """Step 12 (stable search, 'play on while pending'): what the position is worth without the ball handler's shot
         now: the leaf with the carrier's shot left out (a look another attacker releases this turn still counts)."""
         s = self.s
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         now = max((lk.base for i in self.att_o for lk in self.looks[i]
                    if lk.now and not (i == s.ball and lk.route == 'shoot')), default=0.0)
@@ -1245,7 +1246,7 @@ class Read:
             return out
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return out                   # no offence turn is left before the clock runs out: nothing can be built
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         now_worth = self.leaf() - banked                      # what the possession is worth now
         best = {}
@@ -1314,7 +1315,7 @@ class Read:
         card, qs = s.ctx.off[i], s.ctx.off[i].qs
         best = None
         for c in PAINT_SQUARES:
-            if c in here or c in occ:
+            if c in here or c in occ or (c == RC.RIM and RC.rim_shot_barred(self.rules)):   # D-198
                 continue
             if not any(all(q not in occ for q in p) for q0 in stops for p in paths_to(q0, c, qs, self.rules)):
                 continue
@@ -1355,6 +1356,7 @@ class Read:
         stops = list(one) + two_actions(s, i, one)
         here = set(stops)
         mates = set(s.o) - {s.o[i]}
+        no_rim = RC.rim_shot_barred(self.rules)      # D-198: no shot from the rim's own square
         xat = {s.x[j]: j for j in range(5) if B.on_board(s.x[j])}
         lines = []
         if self.rules.zone != 'off':
@@ -1365,7 +1367,7 @@ class Read:
         for q0 in stops:
             for p, rushed in _lane_paths(q0, qs, self.rules):
                 c = p[-1]
-                if c in here or any(q in mates for q in p):
+                if c in here or any(q in mates for q in p) or (no_rim and c == RC.RIM):
                     continue
                 dm = zm = 0
                 for q in p:
@@ -2052,6 +2054,12 @@ def _off_balance_key(s):
 def turnover_value(s):
     """What a pick-off leaves the offence: 0 in the digital format or the final phase; else -5 and the clock cost,
     then the coarse value of playing on."""
+    if RC.app_rule(s.ctx.rules, 'points_play_on') and not s.ctx.hold_for_one:
+        # D-198: -5, then the next phase with the ball where it was; with no phase left, what is banked
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * (s.tos + 1)
+        if s.clock <= RC.PHASE_SECONDS:
+            return float(banked)
+        return banked + vcoarse(s.with_(clock=s.clock - RC.PHASE_SECONDS))
     if s.ctx.rules.digital or s.ctx.hold_for_one or s.clock <= RC.PHASE_SECONDS:
         if s.ctx.rules.turnover_floor:                  # D-82: 0, or what is banked if that is lower
             return float(min(0, RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * s.tos))
@@ -2217,8 +2225,8 @@ def foul_marginal(ctx, f, n):
 def foul_externality(s):
     """The quarter's price of the fouls the defence has committed this possession (added to the offence's value)."""
     ctx = s.ctx
-    if not ctx.rules.digital or not s.fouls or not ctx.quarter_left:
-        return 0.0
+    if not ctx.rules.digital or not s.fouls or not ctx.quarter_left or RC.app_rule(ctx.rules, 'points_play_on'):
+        return 0.0                                   # D-198: a foul is +5 and nothing else; 18i's price is retired
     return sum(foul_marginal(ctx, ctx.team_fouls + i, ctx.quarter_left) for i in range(s.fouls))
 
 

@@ -25,6 +25,11 @@ const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus
 const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
 // Step 18n (D-191, D-193): jump shots are contested by position only
 const POSITION_RULE = "A defender next to the shooter contests with no action: his full rating when he is square (in front, his arrow on the shooter), 3 less when he isn't, 6 less from behind. Jump shots: that is all, with no foul. Inside shots: when he isn't square he may go for the block and risk the foul.";
+// D-198 (Shaun, 16 Nov 2026): fouls and turnovers in points, play on
+const POINTS_RULE = 'Fouls and turnovers are points, and play goes on. A foul: +5 to the offence (a shooting foul: +5 and its free throws). A steal, an intercepted pass, three seconds, closely guarded and the shot clock: −5 each. After a turnover the phase ends and the next one begins, the ball where it was. After an intercepted pass the defender goes back to where he began the phase.';
+const NO_RIM_RULE = 'No shot from the square under the rim: pick a side to put the ball up.';
+const THREE_RULE_198 = 'Three seconds: an attacker in the key when two phases in a row end commits a violation: −5, and play goes on. IN KEY marks a player who was in it at the last phase end.';
+const GUARDED_RULE_198 = 'Closely guarded: a ball handler who holds the ball with a defender next to him, arrow on him, when three phases in a row end commits a violation: −5, and play goes on. Moving or a Dribble starts his dribble and stops the count. Two whole phases without an action from him and he has picked the ball up: he may only pass or shoot, and the count runs.';
 const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the defender is locked, play on. From the 5th: two free throws. No foul gives +5 in the app.';
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const OFF_BALANCE_RULE = n => `Rushed: after a Quick Step or Sprint, or while locked, every roll you make is ${n} worse (not fouls) until you Move.`;
@@ -97,7 +102,7 @@ async function initStart() {
     $('perSideRow').classList.toggle('hidden', $('format').value !== 'digital');
     const s = o.scenarios.find(x => String(x.n) === $('scenario').value);
     $('scenarioText').textContent = k === 'scenario' && s ? `${s.text}${s.situation ? ' ' + s.situation : ''} O: ${s.off}. X: ${s.dfn}.` :
-      k === 'full' ? 'Sides swap every possession; the higher total wins. Digital: several possessions each and a turnover scores 0. Tabletop: one possession each, the printed rules.' :
+      k === 'full' ? 'Sides swap every possession; the higher total wins. Digital: several possessions each; a foul is +5, a turnover −5, and play goes on. Tabletop: one possession each, the printed rules.' :
       'One possession on the preview table setup.';
   };
   $('kind').onchange = showKind; $('scenario').onchange = showKind; showKind();
@@ -623,15 +628,17 @@ function renderTracker(id, side) {
       el('div', { text: 'Jump the lane: one straight Move, Quick Step or Sprint along your arrow onto the pass line, then Intercept.' }),
       el('div', { text: 'Next to the passer: no intercept on any square around the passer. Steal instead.' }),
       el('div', { text: "Denied: a pass can't go through a defender next to the receiver." }),
-      el('div', { text: 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
+      el('div', { text: s.influence && s.influence.points ? 'Intercepted: −5. The passer keeps the ball, the defender goes back to where he began the phase, and the next phase begins.' : 'Intercepted or stolen: −5 and lose 2 seconds. On the last phase, the possession scores 0, or the total banked so far if that is lower.' })]),
+    s.influence && s.influence.points ? el('div', { class: 'waits controlrule fibarule pointsrule', text: POINTS_RULE }) : null,
+    s.influence && s.influence.no_rim ? el('div', { class: 'waits controlrule fibarule', text: NO_RIM_RULE }) : null,
     s.influence && s.influence.control ? el('div', { class: 'waits controlrule', text: s.influence.off_balance ? OFF_BALANCE_RULE(s.influence.off_balance) : CONTROL_RULE(s.influence.control) }) : null,
     s.influence && s.influence.zone ? el('div', { class: 'waits controlrule zonerule', text: ZONE_RULE }) : null,
-    s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: THREE_RULE }) : null,
-    s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: GUARDED_RULE }) : null,
+    s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: s.influence.points ? THREE_RULE_198 : THREE_RULE }) : null,
+    s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: s.influence.points ? GUARDED_RULE_198 : GUARDED_RULE }) : null,
     s.influence && s.influence.fiba ? el('div', { class: 'waits controlrule fibarule', text: FOULED_RULE }) : null,
     s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: s.influence.position ? POSITION_RULE : SOFT_RULE }) : null,
-    s.influence && s.influence.steal_foul ? el('div', { class: 'waits controlrule fibarule', text: STEAL_FOUL_RULE }) : null,
-    el('div', { class: 'waits stealrule', text: 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
+    s.influence && s.influence.steal_foul && !s.influence.points ? el('div', { class: 'waits controlrule fibarule', text: STEAL_FOUL_RULE }) : null,
+    el('div', { class: 'waits stealrule', text: s.influence && s.influence.points ? 'Stolen (in play or on a shot): −5; the ball stays with you, a stolen shot is cancelled, and the next phase begins.' : 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'
       ? "Screen: ends your turn. The screener can't move; it flips back after your next turn."
       : "Screen: First action, or second after your own Move. Ends your turn. Lasts until you move or it's beaten." }) : null]);

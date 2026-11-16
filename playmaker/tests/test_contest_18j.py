@@ -11,8 +11,11 @@ from playmaker_engine.scenarios import game_state, scenario_state
 from playmaker_engine.scoring import contest_options, soft_contest, score
 
 # step 18n: in the app D-191 now replaces the soft and hard contest; these tests keep D-177 itself, with D-191's switch off
-ON = RC.with_rules(digital=True, soft_contest='on', fiba_steal_foul='on', position_contest='off')
-OFF = RC.with_rules(digital=True, soft_contest='off', fiba_steal_foul='off')
+# D-198 (step 18r) replaced the app's steal-foul rules (every foul is +5, no penalty). D-179 and D-181 stay in the engine
+# behind points_play_on, and are tested here as they were ruled, with that switch off.
+ON = RC.with_rules(digital=True, soft_contest='on', fiba_steal_foul='on', position_contest='off', points_play_on='off')
+OFF = RC.with_rules(digital=True, soft_contest='off', fiba_steal_foul='off', points_play_on='off')
+D198 = RC.with_rules(digital=True, soft_contest='on', fiba_steal_foul='on', position_contest='off')
 O = ['I10', 'C9', 'O9', 'A3', 'Q3']                                    # O1 shoots the three from I10
 
 
@@ -148,6 +151,8 @@ def test_a_steal_foul_outside_the_penalty_gives_no_plus_five():
     assert n.locked('X', 0)                                            # and the defender is locked
     old = steal_foul(OFF)
     assert old.bonus5 == 1 and not old.locked('X', 0)                  # before: +5, no lock
+    new = steal_foul(D198)
+    assert new.stage == 'play' and new.bonus5 == 1 and new.locked('X', 0)      # D-198: +5, the defender locked, play on
 
 
 def test_in_the_penalty_a_steal_foul_is_two_free_throws_and_nothing_more():
@@ -155,6 +160,8 @@ def test_in_the_penalty_a_steal_foul_is_two_free_throws_and_nothing_more():
     assert n.stage == 'over' and n.result.kind == 'free_throws' and n.bonus5 == 0          # D-181: no +5 on any foul in the app
     assert n.result.free_throws == 2 * n.ctx.off[0].r['free_throw']
     assert score(n).total == score(steal_foul(OFF, fouls=4)).total - 5                    # before: the +5 as well
+    new = steal_foul(D198, fouls=4)
+    assert new.stage == 'play' and new.bonus5 == 1                                        # D-198: no penalty; +5 and play on
 
 
 def test_the_table_keeps_its_plus_five():

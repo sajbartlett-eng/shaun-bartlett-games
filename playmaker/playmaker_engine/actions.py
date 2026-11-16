@@ -721,7 +721,8 @@ def _offence_actions(s, rules):
     # Shot
     z = B.zone(cpos)
     if (not pass_only and B.on_board(cpos) and z != '.' and s.count('O', 'shot') < RC.LIMITS['O']['shot']
-            and not (ctx.hold_for_one and s.clock > RC.PHASE_SECONDS)):
+            and not (ctx.hold_for_one and s.clock > RC.PHASE_SECONDS)
+            and not (cpos == RC.RIM and RC.rim_shot_barred(rules))):       # D-198: no shot from the rim's own square
         for t in RC.ZONE_SHOTS[z]:
             acts.append(Action('shot', 'O', carrier, shot=t))
     # Dribble

@@ -108,6 +108,7 @@ def influence(s):
                 drive_rule=rules.drive_rule, control=RC.control_size(rules), zone=rules.zone != 'off',
                 three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'),
                 soft=RC.app_rule(rules, 'soft_contest'), steal_foul=RC.app_rule(rules, 'fiba_steal_foul'),
+                points=RC.app_rule(rules, 'points_play_on') and not s.ctx.hold_for_one, no_rim=RC.rim_shot_barred(rules),      # D-198
                 off_balance=RC.off_balance_cut(rules), position=RC.position_contest(rules))
 
 

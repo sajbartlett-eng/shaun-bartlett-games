@@ -1,0 +1,27 @@
+{
+ "fit_allstar": {
+  "possessions": 200,
+  "points": 26.81,
+  "low": 26.07,
+  "high": 27.55,
+  "a_possession": {
+   "reaches": 0.07,
+   "dribbles": 0.69,
+   "intercepts": 0.15,
+   "passes": 1.83,
+   "actions": 23.32
+  },
+  "fouls_a_possession": 0.01,
+  "turnovers_a_possession": 0.15,
+  "ended_in_a_turnover": 0.0,
+  "below_zero": 0,
+  "phases_a_possession": 2.14,
+  "ends": {
+   "layup": 69,
+   "floater": 18,
+   "three": 108,
+   "post": 3,
+   "dunk": 2
+  }
+ }
+}

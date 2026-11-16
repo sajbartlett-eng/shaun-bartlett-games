@@ -74,7 +74,7 @@ def zobrist(s):
         h ^= _ZPIECE[('X', i, p[0], p[1])] ^ _ZARROW[(i, s.arrows[i])]
     rest = (s.stage, s.side, s.clock, s.tok_o, s.tok_x, s.moved_o, s.moved_x, s.cnt, s.turn_n, s.final, s.lock_o,
             s.lock_x, s.screens, s.pending, s.shot, s.prev_wait, s.beaten, s.fouls, s.bonus5, s.tos, s.qs_o, s.qs_x,
-            s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.react_moved, s.forced, s.result,
+            s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.phase_x, s.react_moved, s.forced, s.result,
             s.rush_o, s.rush_x, s.key_o, s.grd)
     return h ^ (hash(rest) & 0xFFFFFFFFFFFFFFFF)
 
@@ -230,7 +230,7 @@ def _r6(x):
 
 
 def _banked(s):
-    return (RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+    return (RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
             + foul_externality(s))
 
 
@@ -812,7 +812,7 @@ class Searcher:
         hit = self.fcache.get(key)
         if hit is not None:
             return hit[0]
-        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (0 if s.ctx.rules.digital else RC.TURNOVER_POINTS * s.tos)
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         best = (v, None, None)
         acts = None

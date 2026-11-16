@@ -60,7 +60,10 @@ def test_design_check_1_a_clear_lane_is_bad_for_the_defence(lane):
     clear = with_x(0, 'I12', 'S')
     helped = board(['I12'] + X_[1:4] + ['I4'], ['S'] + A_[1:4] + ['N'])
     assert Read(clear)._lane_static()[0] > Read(helped)._lane_static()[0]
-    assert Read(clear).leaf() > Read(helped).leaf() + 0.5
+    # (step 18r: with the rim square barred and the maps refitted under D-198 the map is flatter: the reading before
+    # the map keeps a clear margin, and the mapped reading keeps the order)
+    assert Read(clear)._hand_leaf() > Read(helped)._hand_leaf() + 1.0
+    assert Read(clear).leaf() > Read(helped).leaf() + 0.3
 
 
 def test_design_check_2_a_defender_in_front_beats_one_beside_or_behind(lane):

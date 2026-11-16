@@ -225,7 +225,7 @@ if (job.kind === 'rollout') {
           node = sample(node, r);
           if (drib && !E.isChance(node)) { dribbles.push([drib[0], node.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]) ? 1 : 0].concat(drib.slice(3))); drib = null; }
           if (stl && !E.isChance(node)) {
-            const won = node.stage === 'over' && node.result && (node.result.kind === 'steal' || node.result.kind === 'turnover_end');
+            const won = node.tos > stl[8] || (node.stage === 'over' && node.result && (node.result.kind === 'steal' || node.result.kind === 'turnover_end'));      // step 18r (D-198): a steal may play on
             steals.push(stl.slice(0, 6).concat([won ? 'won' : node.fouls > stl[6] ? 'foul' : 'miss', stl[7]])); stl = null;
           }
           continue;
@@ -251,7 +251,7 @@ if (job.kind === 'rollout') {
         if (a.side === 'O' && (a.kind === 'move' || a.kind === 'qs' || a.kind === 'sprint')) movesB++;
         if (a.kind === 'pass') passesB++;
         if (a.kind === 'dribble') drib = [node.phase, node.ball, a.target, events.length - 1, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.target), lbit(node.lock_x, a.target)];
-        if (a.kind === 'steal') stl = [node.phase, events.length - 1, a.piece, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.piece), node.fouls];
+        if (a.kind === 'steal') stl = [node.phase, events.length - 1, a.piece, rcode(node.rush_o, node.ball), lbit(node.lock_o, node.ball), rcode(node.rush_x, a.piece), node.fouls, a.target, node.tos];
         node = E.apply(node, a);
         // step 18l: the roll's own chance, by the rules, kept with the Dribble (that it is won) and the Steal (that it wins the ball)
         if (drib && drib.length === 8) drib.push(Math.round(1e4 * chanceOf(node, m => m.beaten.some(b => b[0] === drib[1] && b[1] === drib[2]))) / 1e4);
@@ -260,7 +260,7 @@ if (job.kind === 'rollout') {
       }
       const over = node.stage === 'over';
       out.rows.push({ id: p.id, k, ctx: p.ctx, start: { o: p.state.o, x: p.state.x, ball: p.state.ball }, points: over ? E.scoreTotal(node) : 0, value: over ? E.terminalValue(node) : 0,
-        decisions: n, fouls: node.fouls, bonus5: node.bonus5, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
+        decisions: n, fouls: node.fouls, bonus5: node.bonus5, tos: node.tos, result: over ? node.result : null, end: [over && node.result ? node.result.kind : 'unfinished', node.clock, node.tok_o],
         endX: over ? sqs(node.x) : null, endO: over ? sqs(node.o) : null, endArrows: over ? Array.from(node.arrows) : null, endRushX: node.rush_x, endLockX: node.lock_x, endRushO: node.rush_o, endLockO: node.lock_o, events, shots, reads, stances: job.stances ? stances : undefined, dribbles: job.stances ? dribbles : undefined, steals: job.stances ? steals : undefined, examples: job.stances ? examples : undefined, guards: job.stances ? guards : undefined, boards: job.boards ? boards : undefined, startArrows: p.state.arrows, clean_from: cleanFrom, drawn });
     }
   }

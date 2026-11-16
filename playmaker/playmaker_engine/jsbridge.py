@@ -11,7 +11,7 @@ from . import rules_config as RC
 from .actions import Action
 
 _DEFAULTS = {f.name: getattr(RC.DEFAULT_RULES, f.name) for f in fields(RC.Rules)}
-PORTED_FREE = ('digital', 'quarter_possessions', 'bonus_from', 'zone')      # step 18p: engine.js plays rules.zone (proved equal by tools/js_equivalence.py --zone), so the app's zone runs on the fast engine
+PORTED_FREE = ('digital', 'quarter_possessions', 'bonus_from', 'zone', 'points_play_on', 'no_rim_shot')      # step 18p: engine.js plays rules.zone (proved equal by tools/js_equivalence.py --zone), so the app's zone runs on the fast engine
 
 
 def ported(rules):
@@ -46,7 +46,8 @@ def state_json(s):
                 fouls=s.fouls, bonus5=s.bonus5, tos=s.tos, inbound=s.inbound, target=s.target, result=res,
                 zeroed=s.zeroed, phase=s.phase, turn_moved=s.turn_moved, qs_o=s.qs_o, qs_x=s.qs_x, forced=s.forced,
                 react_moved=s.react_moved, turn_lead=s.turn_lead, rush_o=s.rush_o, rush_x=s.rush_x, key_o=s.key_o, grd=s.grd,
-                turn_x=[[sq(p) for p in s.turn_x[0]], list(s.turn_x[1])] if s.turn_x else [])
+                turn_x=[[sq(p) for p in s.turn_x[0]], list(s.turn_x[1])] if s.turn_x else [],
+                phase_x=[[sq(p) for p in s.phase_x[0]], list(s.phase_x[1])] if s.phase_x else [])
 
 
 def action_from(t):

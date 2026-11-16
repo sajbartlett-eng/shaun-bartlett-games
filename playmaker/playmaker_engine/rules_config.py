@@ -296,6 +296,15 @@ class Rules:
     #   and hard contests, Dribble, Pass, Screen, Agility, Steal, Intercept and Challenge. A Move resets it; a locked
     #   player can't Move, so it lasts the phase. It needs the control rule (its size is the control rule's).
     off_balance: str = 'app'
+    # D-198 (Shaun, 16 Nov 2026), the app only: fouls and turnovers are priced in points, and play goes on.
+    #   points_play_on: a foul is +5 to the offence and play goes on (a shooting foul: +5 and its free throws); there
+    #     is no penalty for team fouls and no foul carries any other price. A steal, an intercepted pass, three
+    #     seconds, closely guarded and the shot clock are each -5 to the offence; the phase ends there and the next
+    #     begins (with no phase left the possession is over on what it has banked). After an intercepted pass the
+    #     passer keeps the ball and the defender goes back to the square and arrow he started the phase on.
+    #   no_rim_shot: no shot from the rim's own square: the offence must pick a side to put the ball up.
+    points_play_on: str = 'app'
+    no_rim_shot: str = 'app'
     # D-191 and D-193 (Shaun, 14 Nov 2026), the app only: jump shots are contested by position only. It needs the soft
     #   contest rule. Jump shots (mid-range, long two, three): every defender next to the shooter contests with no
     #   action, at his full contest rating: 3 less from behind, 2 less if he is rushed; the arrow has no effect; there
@@ -348,6 +357,17 @@ KEY_COLS, KEY_ROWS = (6, 10), (1, 6)
 SOFT_CONTEST = 3                    # D-177: a soft contest is the contest rating less this
 # D-171: time is counted in phase ends: two in a row are about 3 seconds, three about 5
 THREE_SECOND_ENDS, GUARDED_ENDS, PICKUP_IDLE_PHASES = 2, 3, 2
+
+
+def turnover_counts(rules):
+    """Does a turnover's -5 stay in what the possession has banked? At the table, yes; in the app since D-198 (before
+    it a turnover there ended the possession at 0)."""
+    return not rules.digital or app_rule(rules, 'points_play_on')
+
+
+def rim_shot_barred(rules):
+    """D-198: no shot from the rim's own square (the app)."""
+    return app_rule(rules, 'no_rim_shot')
 
 
 def app_rule(rules, name):

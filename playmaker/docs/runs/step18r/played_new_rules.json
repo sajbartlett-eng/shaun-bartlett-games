@@ -1,0 +1,143 @@
+{
+ "lane open: the offence as it chooses": {
+  "mean": 27.3,
+  "low": 25.0,
+  "high": 29.7,
+  "ends": {
+   "layup": 9,
+   "three": 5,
+   "floater": 2
+  },
+  "first_action": [
+   [
+    "O2 screen",
+    11
+   ],
+   [
+    "O1 move K10",
+    5
+   ]
+  ],
+  "points": [
+   38,
+   24,
+   32,
+   24,
+   28,
+   22,
+   25,
+   24,
+   28,
+   32,
+   28,
+   22,
+   34,
+   22,
+   30,
+   24
+  ]
+ },
+ "lane open: O1 Sprints into the lane": {
+  "mean": 27.1,
+  "low": 25.2,
+  "high": 29.1,
+  "ends": {
+   "layup": 8,
+   "three": 8
+  },
+  "first_action": [
+   [
+    "O1 pass",
+    16
+   ]
+  ],
+  "points": [
+   22,
+   24,
+   27,
+   24,
+   24,
+   34,
+   34,
+   32,
+   24,
+   22,
+   32,
+   28,
+   27,
+   27,
+   27,
+   26
+  ]
+ },
+ "help in the lane: the offence as it chooses": {
+  "mean": 19.9,
+  "low": 16.4,
+  "high": 23.3,
+  "ends": {
+   "three": 16
+  },
+  "first_action": [
+   [
+    "O1 move K10",
+    14
+   ],
+   [
+    "O2 screen",
+    2
+   ]
+  ],
+  "points": [
+   2,
+   24,
+   21,
+   11,
+   24,
+   22,
+   11,
+   16,
+   22,
+   21,
+   27,
+   27,
+   27,
+   24,
+   15,
+   24
+  ]
+ },
+ "help in the lane: O1 Sprints into the lane": {
+  "mean": 24.8,
+  "low": 22.7,
+  "high": 26.8,
+  "ends": {
+   "three": 10,
+   "layup": 5,
+   "post": 1
+  },
+  "first_action": [
+   [
+    "O1 pass",
+    16
+   ]
+  ],
+  "points": [
+   24,
+   27,
+   27,
+   21,
+   32,
+   27,
+   27,
+   16,
+   22,
+   24,
+   27,
+   24,
+   21,
+   32,
+   21,
+   24
+  ]
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "after_refit": {
+  "possessions": 100,
+  "points": 26.58,
+  "low": 25.44,
+  "high": 27.72,
+  "a_possession": {
+   "reaches": 0.21,
+   "dribbles": 0.81,
+   "intercepts": 0.08,
+   "passes": 2.13,
+   "actions": 27.33
+  },
+  "fouls_a_possession": 0.06,
+  "turnovers_a_possession": 0.22,
+  "ended_in_a_turnover": 0.0,
+  "below_zero": 0,
+  "phases_a_possession": 2.42,
+  "ends": {
+   "layup": 40,
+   "three": 49,
+   "post": 6,
+   "floater": 4,
+   "mid": 1
+  }
+ }
+}

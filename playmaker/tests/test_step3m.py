@@ -130,6 +130,16 @@ def _digital(o, x, arrows, ball=0, **kw):
 
 
 def test_each_turnover_type_ends_the_possession_at_zero():
+    # D-198 (step 18r) replaced this in the app: a turnover is -5 and play goes on (tests/test_points_play_on_18r.py).
+    # The rule as it was stays in the engine behind points_play_on, and is tested here with that switch off.
+    import copy
+    from dataclasses import replace as _replace
+
+    def _digital(*a, **kw):
+        s = globals()['_digital'](*a, **kw)
+        ctx = copy.copy(s.ctx)
+        ctx.rules = _replace(ctx.rules, points_play_on='off')
+        return s.with_(ctx=ctx)
     s = _digital(['I11', 'B7', 'P7', 'A3', 'Q3'], ['I10', 'C7', 'O7', 'B3', 'P3'], ['N', 'W', 'E', 'W', 'E'], bonus5=1)
     # a successful steal in play
     stolen = [n for p, n in leaves(apply(s.with_(side='X'), Action('steal', 'X', 0))) if p[-1] == 'stolen']

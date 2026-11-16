@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app', points_play_on: 'app', no_rim_shot: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -147,6 +147,8 @@ const PMEngine = (() => {
       pos: appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),                // step 18n (D-191, D-193): jump shots are contested by position only
       offCut: appRule(c.rules, 'off_balance') ? controlSize(c.rules) : 0,                          // step 18l (D-185): off balance, the reduction on every rolled rating
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
+      ppoRule: appRule(c.rules, 'points_play_on'), ppo: appRule(c.rules, 'points_play_on') && !c.hold_for_one, noRim: appRule(c.rules, 'no_rim_shot'),                   // D-198: fouls and turnovers in points, play on; no shot from the rim's own square
+      tosOn: !(c.rules && c.rules.digital) || appRule(c.rules, 'points_play_on'),                    // a turnover's -5 stays in what is banked
       control: controlSize(c.rules), zone: !!(c.rules && c.rules.zone === 'on') };      // zone (step 18g, D-167): the zone of influence                    // D-151, D-153: the size, in rating steps (0: the rule is off)
   }
   // D-151, D-153 (rules.control): the reduction a rushed shot, or a rushed Contest of it, takes
@@ -217,6 +219,7 @@ const PMEngine = (() => {
       this.react_moved = s.react_moved;
       this.turn_lead = s.turn_lead;
       this.turn_x = s.turn_x;
+      this.phase_x = s.phase_x || null;                 // D-198: the defence's squares and arrows when the phase began
       this.rush_o = s.rush_o || 0;                       // D-151: last movement this phase was a Quick Step or Sprint
       this.rush_x = s.rush_x || 0;
       this.key_o = s.key_o || 0;                         // D-172: attackers in the key at the last phase end
@@ -241,7 +244,8 @@ const PMEngine = (() => {
       zeroed: js.zeroed, phase: js.phase, turn_moved: js.turn_moved, qs_o: js.qs_o, qs_x: js.qs_x, forced: js.forced,
       react_moved: js.react_moved, turn_lead: js.turn_lead, rush_o: js.rush_o || 0, rush_x: js.rush_x || 0,
       key_o: js.key_o || 0, grd: js.grd || 0,
-      turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null };
+      turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null,
+      phase_x: js.phase_x && js.phase_x.length ? [js.phase_x[0].map(sq), js.phase_x[1].slice()] : null };
     return new St(s);
   }
   // Step 17: a state back to the form stateFrom reads (for the tools that play positions out and store them)
@@ -253,7 +257,8 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null };
+      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
+      phase_x: s.phase_x ? [s.phase_x[0].map(sq), s.phase_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
@@ -549,7 +554,7 @@ const PMEngine = (() => {
     }
     const passOnly = !!inbounderHasIt;
     const z = ZN[cpos];
-    if (!passOnly && ONB[cpos] && z !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2)) {
+    if (!passOnly && ONB[cpos] && z !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2) && !(cpos === RIM && ctx.noRim)) {      // D-198: no shot from the rim's own square
       for (const t of ZONE_SHOTS[z]) acts.push(A('shot', 'O', carrier, -1, -1, -1, t));
     }
     if (!passOnly && count(s, 'O', 'dribble') < LIMITS.O.dribble && !isLocked(s, 'O', carrier) && !(s.ctx.guarded && (s.grd & 3) === 2)) {
@@ -770,13 +775,24 @@ const PMEngine = (() => {
     return W_(s, { stage: 'over', side: '-', result, zeroed: s.zeroed || zeroed, pending: null, shot: null });
   };
   const ZERO = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // D-198 (resolve.play_on): after a turnover the phase ends there and the next begins, the ball where it was; with no
+  // phase left the possession is over on what it has banked
+  function playOn(s) {
+    s = W_(s, { pending: null, approach: -1, shot: null, stage: 'play' });
+    if (s.inbound) return endPhase(s);
+    const clock = s.clock - 2;
+    if (clock <= 0) return terminal(W_(s, { clock: 0 }), Result('turnover_end'));
+    return newPhase(W_(s, { key_o: 0, grd: 0 }), clock);
+  }
   function pickoff(s) {
     s = W_(s, { tos: s.tos + 1 });
+    if (s.ctx.ppo) return playOn(s);
     if (s.ctx.hold_for_one || s.ctx.digital) return terminal(s, Result('turnover_end'), true);
     if (s.clock <= 2) return terminal(s, Result('turnover_end'), true);
     return W_(s, { clock: s.clock - 2 });
   }
   function newPhase(s, clock) {
+    if (s.ctx.ppoRule) s = W_(s, { phase_x: [s.x, s.arrows] });      // D-198: where an interceptor goes back to
     return W_(s, { screens: [], clock, turn_lead: -1, turn_x: null, tok_o: 6, tok_x: 6, moved_o: 0, moved_x: 0, cnt: ZERO, turn_n: 0,
       final: false, lock_o: 0, lock_x: 0, approach: -1, prev_wait: '', beaten: [], side: 'O', phase: s.phase + 1, pending: null,
       turn_moved: 0, qs_o: 0, qs_x: 0, react_moved: 0, rush_o: 0, rush_x: 0 });
@@ -809,7 +825,7 @@ const PMEngine = (() => {
     }
     if (opt.clean || opt.k === 0) return made;
     const and1 = footPoints(card, t, pts, rating, s.ctx.fiba, opt.value, rating - opt.contest)[1];
-    const fouled = terminal(W_(s, { fouls: s.fouls + 1 }),
+    const fouled = terminal(W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (s.ctx.ppo ? 1 : 0) }),      // D-198: a shooting foul is +5 and its free throws
       Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1));
     const one = opt.k / 20, no = (20 - opt.k) / 20;
     if (opt.rolls === 2) {
@@ -832,7 +848,11 @@ const PMEngine = (() => {
       let k = 0;
       for (let i = 0; i < 5; i++) {
         if (!INKEY[s.o[i]]) continue;
-        if ((s.key_o >> i) & 1) return violation(s, 'three_seconds', i);
+        if ((s.key_o >> i) & 1) {
+          if (!ctx.ppo) return violation(s, 'three_seconds', i);
+          s = W_(s, { tos: s.tos + 1 });                 // D-198: -5 and play goes on; his count starts again
+          continue;
+        }
         k |= 1 << i;
       }
       if (k !== s.key_o) s = W_(s, { key_o: k });
@@ -846,7 +866,10 @@ const PMEngine = (() => {
         if (idle >= 2) { ball = 2; idle = 0; }
       } else if (closelyGuarded(s)) {
         held += 1;
-        if (held >= 3) return violation(s, 'closely_guarded', s.ball);
+        if (held >= 3) {
+          if (!ctx.ppo) return violation(s, 'closely_guarded', s.ball);
+          s = W_(s, { tos: s.tos + 1 }); held = 0;       // D-198: -5 and play goes on; the count starts again
+        }
       } else held = 0;
       const g = ball | (held << 2) | (idle << 4);
       if (g !== s.grd) s = W_(s, { grd: g });
@@ -873,6 +896,7 @@ const PMEngine = (() => {
     const clock = s.clock - 2;
     if (clock <= 0) {
       s = W_(s, { clock: 0, tos: s.tos + 1 });
+      if (s.ctx.ppo) return terminal(s, Result('turnover_end', -1, '', 0, 0, 0, -1, 0, 0, false, 0, 'shot_clock', -1));      // D-198: -5, nothing left to play
       if (s.ctx.hold_for_one || s.ctx.digital) return terminal(s, Result('turnover_end'), true);
       return resolveShot(s, true);
     }
@@ -988,8 +1012,9 @@ const PMEngine = (() => {
       const ok = completePass(W_(s, { moved_x: s.moved_x | (1 << j) }));
       const okNode = ok.phase !== s.phase ? ok : after(state, ok, side, k);
       let back = s;
-      if (state.turn_x) {
-        const sx = state.turn_x[0], sa = state.turn_x[1];
+      const from = s.ctx.ppo ? (state.phase_x || state.turn_x) : state.turn_x;      // D-198: where he began the phase
+      if (from) {
+        const sx = from[0], sa = from[1];
         back = W_(s, { x: setAt(s.x, j, sx[j]), arrows: setAt(s.arrows, j, sa[j]) });
       }
       const lost = pickoff(W_(back, { pending: null, approach: -1, moved_x: back.moved_x | (1 << j) }));
@@ -1006,14 +1031,15 @@ const PMEngine = (() => {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = rolled(s, 'O', carrier, 'dribble') - rolled(s, 'X', a.piece, 'steal');
       // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
       const fibaSf = s.ctx.fibaSteal;                    // D-179: no +5 outside the penalty
-      let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + ((s.stage === 'reaction' || fibaSf) ? 0 : 1) });
+      const d198 = s.ctx.ppo;                            // D-198: every foul is +5, a foul on a shooter included; no penalty
+      let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (d198 ? 1 : (s.stage === 'reaction' || fibaSf) ? 0 : 1) });
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
         const pts = shotPoints(s.o[carrier]), card = O[carrier];
         const rating = shotRating(s, carrier, s.shot);   // D-151
         const [fpts, and1] = footPoints(card, s.shot, pts, rating, s.ctx.fiba);
         foulNode = terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0, fpts, and1));
-        if (s.ctx.digital) {
+        if (s.ctx.digital && !d198) {
           stolenNode = terminal(W_(s, { tos: s.tos + 1 }), Result('steal', carrier, s.shot, pts), true);
         } else {
           const cnt = s.cnt.slice(); cnt[5] = Math.max(0, cnt[5] - 1);
@@ -1022,7 +1048,8 @@ const PMEngine = (() => {
         }
       } else {
         const inBonus = s.ctx.digital ? (s.ctx.team_fouls + fs.fouls >= s.ctx.bonus_from) : fs.fouls >= 2;
-        if (inBonus) {
+        if (d198) foulNode = after(state, lock(fs, 'X', a.piece), side, k);      // +5 (banked above), the defender locked, play on
+        else if (inBonus) {
           foulNode = terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0, freeThrows(O[carrier], 2)));
         } else foulNode = after(state, fibaSf ? lock(fs, 'X', a.piece) : fs, side, k);      // D-179: a team foul, the defender locked, play on
         const st = pickoff(s);
@@ -1580,7 +1607,7 @@ const PMEngine = (() => {
   }
   function foulExternality(s) {
     const ctx = s.ctx;
-    if (!ctx.digital || !s.fouls || !ctx.quarter_left) return 0.0;
+    if (!ctx.digital || !s.fouls || !ctx.quarter_left || ctx.ppoRule) return 0.0;      // D-198: a foul is +5 and nothing else
     let t = 0; for (let i = 0; i < s.fouls; i++) t += foulMarginal(ctx, ctx.team_fouls + i, ctx.quarter_left);
     return t;
   }
@@ -1786,6 +1813,10 @@ const PMEngine = (() => {
   }
   function setReach(on) { D.config.eval.reach = on === true || on === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.reach; }
   function turnoverValue(s) {
+    if (s.ctx.ppo) {                                     // D-198: -5, then the next phase with the ball where it was
+      const banked = 5 * s.bonus5 - 5 * (s.tos + 1);
+      return s.clock <= 2 ? banked : banked + vcoarse(W_(s, { clock: s.clock - 2 }));
+    }
     if (s.ctx.digital || s.ctx.hold_for_one || s.clock <= 2) return Math.min(0, 5 * s.bonus5 - 5 * s.tos);   // D-82
     return 5 * s.bonus5 - 5 * (s.tos + 1) + vcoarse(W_(s, { clock: s.clock - 2 }));
   }
@@ -2083,7 +2114,7 @@ const PMEngine = (() => {
       }
       const build = (c, n) => {
         const z = ZN[c];
-        if (!SHOOT(z)) return null;
+        if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return null;
         let lk;
         if (i === s.ball) {
           if (n === 0 && shotOk && leftNow >= 1) lk = makeLook(i, c, 'shoot', 1.0, this.o_to_act);
@@ -2114,7 +2145,7 @@ const PMEngine = (() => {
         const cs = [], ns = [], bs = [];
         const pre = (c, n) => {
           const z = ZN[c];
-          if (!SHOOT(z)) return;
+          if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return;
           let p;
           if (onBall) p = (n === 0 && shotOk && leftNow >= 1) || (n === 1 && shotOk && leftNow >= 2 && s.tok_o >= 2) ? 1.0 : laterP;
           else {
@@ -2144,7 +2175,7 @@ const PMEngine = (() => {
           const most = new Map();
           const keep = c => {
             const z = ZN[c];
-            if (!SHOOT(z)) return false;
+            if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
             let m = most.get(z);
             if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
             return m > floor;
@@ -2167,7 +2198,7 @@ const PMEngine = (() => {
         const most = new Map();
         const keep = c => {
           const z = ZN[c];
-          if (!SHOOT(z)) return false;
+          if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
           let m = most.get(z);
           if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
           return m > floor;
@@ -2355,7 +2386,7 @@ const PMEngine = (() => {
       this._adv = out;
       if (s.stage !== 'play' || s.pending) return out;
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return out;   // no offence turn is left: nothing can be built
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       const nowWorth = this.leaf() - banked;
       const best = new Map();
@@ -2415,7 +2446,7 @@ const PMEngine = (() => {
       const blocked = q => q !== old && occAt(s, q);
       let best = null;
       for (const c of paintSquares()) {
-        if (here.has(c) || blocked(c)) continue;
+        if (here.has(c) || blocked(c) || (c === RIM && s.ctx.noRim)) continue;      // D-198
         let ok = false;
         for (const q0 of stops) {
           for (const p of pathsTo(q0, c, qs)) { let free = true; for (const q of p) if (blocked(q)) { free = false; break; } if (free) { ok = true; break; } }
@@ -2549,7 +2580,7 @@ const PMEngine = (() => {
     // step 12 (decide.Read.possession): the leaf without the ball handler's shot now
     possession() {
       const s = this.s;
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       let now = 0.0;
       for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && !(i === s.ball && lk.route === 'shoot') && lk.base > now) now = lk.base;
@@ -2573,7 +2604,7 @@ const PMEngine = (() => {
       if (this._quick !== undefined) return this._quick;
       const s = this.s;
       if (!s.pending) return (this._quick = this._quickCont(this._contOf(null)));
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       const passer = s.pending[0], recv = s.pending[1];
       const p = laneP(W_(s, { ball: passer }), recv, s.o[recv]);
@@ -2594,7 +2625,7 @@ const PMEngine = (() => {
     }
     _quickCont(cont, nowv, snv, tv) {             // nowv, snv (step 18e): the shots that can go up now, re-read (snv < 0: none); tv (step 18h): each attacker's best look, re-read
       const s = this.s;
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       let sn = null, now = 0.0;
       if (nowv !== undefined) { now = nowv; sn = snv < 0 ? null : snv; }
@@ -2733,7 +2764,7 @@ const PMEngine = (() => {
       let sn = null;
       if (this.o_to_act) { const ls = this.looks[s.ball] || []; for (let n = 0; n < Math.min(3, ls.length); n++) if (ls[n].route === 'shoot') { sn = ls[n].base; break; } }
       if (sn === null) return (this._qshot = false);
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       let now = 0.0;
       for (const i of this.att_o) {
@@ -2764,13 +2795,13 @@ const PMEngine = (() => {
       const s = this.s;
       let top = null;
       if (settleOn()) {                              // step 18b (D-145): the ceiling, before the map
-        let b0 = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+        let b0 = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
         b0 += foulExternality(s);
         top = ceilingOf(s);
         if (v - b0 > top) v = b0 + top;
       }
       if (!calibratedOn() || (this.k <= 0 && top === null) || s.stage !== 'play' || s.pending || (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2)) return v;
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       const po = playOnMap(s);
       if (po) {                                      // step 18h (eval.exact_shot): the shot exact, "play on" mapped
@@ -2805,7 +2836,7 @@ const PMEngine = (() => {
     }
     _handLeaf() {                                 // today's hand-combined reading
       const s = this.s;
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       if (s.pending) {
         const passer = s.pending[0], recv = s.pending[1];
@@ -2870,7 +2901,7 @@ const PMEngine = (() => {
       for (const q0 of stops) {
         for (const [p, rushed] of lanePaths(q0, qs)) {
           const c = p[p.length - 1];
-          if (here.has(c)) continue;
+          if (here.has(c) || (c === RIM && s.ctx.noRim)) continue;      // D-198
           let dm = 0, bad = false;
           for (const q of p) { if (mates.has(q)) { bad = true; break; } const j = xat.get(q); if (j !== undefined) dm |= 1 << j; }
           if (bad) continue;
@@ -3111,6 +3142,7 @@ const PMEngine = (() => {
     mix(s.fouls); mix(s.bonus5); mix(s.tos); mix(s.qs_o); mix(s.qs_x); mix(s.phase); mix(s.inbound); mix(s.target); mix(s.approach);
     mix(s.turn_lead);
     if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
+    if (s.phase_x) { for (const q of s.phase_x[0]) mix(q); for (const q of s.phase_x[1]) mix(q); }
     mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd);
     if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
     h1 ^= a; h2 ^= b;
@@ -3662,7 +3694,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       const hit = this.fcache.get(key);
       if (hit !== undefined) return hit[0];
-      let banked = 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos);
+      let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       let best = [v, -1, ''], acts = null;
       const looks = readOf(s).looks[s.ball] || [];
@@ -4296,7 +4328,7 @@ const PMEngine = (() => {
   }
 
   const featuresOf = s => (s.stage === 'play' && !s.pending ? readOf(s).features() : null);    // step 17
-  const bankedOf = s => 5 * s.bonus5 + (s.ctx.digital ? 0 : -5 * s.tos) + foulExternality(s);   // what the possession has already earned
+  const bankedOf = s => 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0) + foulExternality(s);   // what the possession has already earned
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
