@@ -376,14 +376,22 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
         cm, ql = _caps(left, 'X', j)
         return R.reread(j, n.x[j], n.arrows[j], cm, ql, (left.rushed('X', j), left.moved('X', j)))
 
+    lane = R.cfg.get('lane') is True                 # step 18q (eval.lane): the lane's value is re-read too (vec[7])
+
     def raw_of(vec):
         # what the quick reading is taken from, before the phase table's floor and the map flatten it
+        if lane and vec[7] > 0:
+            return _r6(max(vec[5], vec[6], R._cont_of(vec), R.cfg['continuation'] * vec[7]))
         return _r6(max(vec[5], vec[6], R._cont_of(vec)))
 
     def tie_of(vec):
+        if lane and vec[7] > 0:
+            return _r6(sum(vec[i] for i in att) + vec[7])
         return _r6(sum(vec[i] for i in att))
 
     def key_of(c, vec):
+        if lane:
+            return (c, _r6(vec[5]), _r6(vec[6])) + tuple(_r6(vec[i]) for i in att) + (_r6(vec[7]), _r6(vec[8]), _r6(vec[9]))
         return (c, _r6(vec[5]), _r6(vec[6])) + tuple(_r6(vec[i]) for i in att)
 
     def check():
@@ -487,14 +495,15 @@ def open_turns_x(s, beam, evaluate, deadline, expand, whole=False, width=None):
     n = len(U)
     if two:
         # 2. every pair of them by two defenders
-        idx = list(att) + [5, 6]
+        idx = list(att) + [5, 6] + ([7, 8, 9] if lane else [])
         for x, ua in enumerate(U):
             check()
             for ub in U[x + 1:]:
                 if ub['j'] == ua['j']:
                     continue
                 lt = gt = False
-                m = [0.0] * 7
+                m = [0.0] * 10
+                m[7] = m[8] = -1.0
                 va_, vb_ = ua['v2'], ub['v2']
                 for i in idx:
                     va, vb = va_[i], vb_[i]

@@ -1,0 +1,17 @@
+{
+ "tag": "lane3",
+ "level": "allstar",
+ "possessions": 160,
+ "mean": 20.3,
+ "low": 18.3,
+ "high": 22.3,
+ "ends": {
+  "turnover_end": 43,
+  "layup": 49,
+  "free_throws": 5,
+  "floater": 10,
+  "three": 51,
+  "post": 2
+ },
+ "positions": 2358
+}

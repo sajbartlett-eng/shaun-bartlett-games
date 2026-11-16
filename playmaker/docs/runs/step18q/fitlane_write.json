@@ -1,0 +1,28 @@
+{
+ "allstar": {
+  "possessions": 160,
+  "positions": 2358,
+  "lines_of_its_own": [
+   "1O",
+   "1X",
+   "2O",
+   "2X",
+   "3O",
+   "3X"
+  ],
+  "lines_kept": [
+   "4X",
+   "4O",
+   "5O",
+   "5X",
+   "6X",
+   "6O"
+  ],
+  "error": {
+   "the_map_without_the_lane": 11.24,
+   "this_map_on_its_own_positions": 11.132
+  },
+  "mean_reading": 25.96,
+  "mean_earned": 24.36
+ }
+}

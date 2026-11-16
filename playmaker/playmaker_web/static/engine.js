@@ -1454,6 +1454,40 @@ const PMEngine = (() => {
     const [free, fixed] = geoReach(frm, arrow, qs, canMove, qsLeft);
     hit = contestMap(free, fixed, mode); _CM.set(key, hit); return hit;
   }
+  // ---- step 18q: the race to the rim (eval.lane; decide._any_arrow_cmap, ahead_row, _lane_paths) ---------------------
+  // What the ball handler's way to the rim is worth one phase on. Both halves of the race come from the movement rules:
+  // he gets what he has left this phase and one movement the next; each defender gets what he has left this phase
+  // (within the defence's tokens) and then the reaction's two actions, fresh. No square or kind of move is named.
+  const INF_V = Infinity;
+  const _AAM = new Map();
+  function anyArrowMask(q, qs, mode) {                 // a defender on q at a phase's start, whichever way he faces
+    const key = ((q * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    let hit = _AAM.get(key); if (hit) return hit;
+    hit = new Uint8Array(NB);
+    for (let a = 0; a < 8; a++) { const m = cmapCached(q, a, qs, true, 1, mode).masks[2]; for (let b = 0; b < NB; b++) hit[b] |= m[b]; }
+    _AAM.set(key, hit); return hit;
+  }
+  function aheadMask(c, frm, arrow, qs, canMove, qsLeft, budget, mode) {   // bit k: KINDS[k] within the reaction's two actions
+    const b = BI[c];
+    let m = cmapCached(frm, arrow, qs, true, 1, mode).masks[2][b];
+    if (budget > 0) {
+      const fr = geoReach(frm, arrow, qs, canMove, qsLeft);
+      for (const [q, n] of fr[0]) if (n <= budget) m |= anyArrowMask(q, qs, mode)[b];
+      for (const [q, arrs] of fr[1]) for (const [a, n] of arrs) if (n > 0 && n <= budget) m |= cmapCached(q, a, qs, true, 1, mode).masks[2][b];
+    }
+    return m;
+  }
+  const _LNP = new Map();
+  function lanePaths(start, qs) {                      // every movement path from start that ends on a paint square
+    const key = start * 8 + qs; let hit = _LNP.get(key); if (hit) return hit;
+    hit = [];
+    const ok = p => p.every(q => ONB[q]) && ZN[p[p.length - 1]] === PAINT;
+    // [path, rushed]: rushed for a Quick Step or a Sprint (the shot after it is off balance), not for a Move
+    for (const p of movePaths(start)) if (ok(p)) hit.push([p, false]);
+    for (const p of qsPaths(start, qs)) if (ok(p)) hit.push([p, true]);
+    for (const [, p] of sprintPaths(start, qs)) if (ok(p)) hit.push([p, true]);
+    _LNP.set(key, hit); return hit;
+  }
 
   // ---- decide: lanes and passes -----------------------------------------------------------------------------------
   const _LS = new Map();
@@ -1665,6 +1699,7 @@ const PMEngine = (() => {
     // D-141: under the table's rules, the table's own map (fitted on tabletop-rules play) when the file has one
     // step 18f: the looks reading goes through its own map
     const cal = own || (leafMode(s) === 'looks' && D.learned.calibration_looks) || (!s.ctx.digital && TABLETOP_MAP && D.learned.calibration_tabletop) ||
+      (s.ctx.digital && D.level && D.config.eval.lane === true && D.learned.calibration_lane && D.learned.calibration_lane[D.level]) ||      // step 18q: the map fitted with the lane reading on
       (s.ctx.digital && D.level && D.config.eval.level_maps !== false && D.learned.calibration_levels && D.learned.calibration_levels[D.level]) || D.learned.calibration;      // D-163: the level's own map
     const m = cal.maps[String(phase) + (oToAct ? 'O' : 'X')];
     if (!m) return r;
@@ -1688,6 +1723,9 @@ const PMEngine = (() => {
   // step 18h (eval.exact_shot, off; decide.play_on_map): a shot that can go up now keeps its exact value; only "play on"
   // goes through a map of its own (calibration_play_on, per level), and the reading is the larger of the two
   function setLevelMaps(v) { D.config.eval.level_maps = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.level_maps; }
+  // step 18q (eval.lane, off until its checks pass): the reading counts the ball handler's way to the rim next phase
+  const laneOn = () => D.config.eval.lane === true;
+  function setLane(v) { D.config.eval.lane = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.lane; }
   function setExactShot(v) { D.config.eval.exact_shot = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.exact_shot; }
   function playOnMap(s) {
     if (D.config.eval.exact_shot !== true || !s.ctx.digital || !D.learned.calibration_play_on || leafMode(s) !== 'relative') return null;
@@ -1823,6 +1861,9 @@ const PMEngine = (() => {
       this._cover = null;
       this._budget = null;
       this._adv = null;
+      this._ahead = undefined;                       // step 18q: laneAhead(), once
+      this._lane18q = undefined;                     // step 18q: _laneData(), once
+      this._drib = undefined;                        // step 18q: _dribbleOk(), once
     }
     _contest(d, at = -1, arrow = -1, used = null) {
       const s = this.s;
@@ -2563,7 +2604,12 @@ const PMEngine = (() => {
       }
       let v;
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) v = banked + Math.max(sn || 0.0, now);
-      else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
+      else if (laneOn() && leafMode(s) === 'relative') {   // step 18q: the lane, re-read (tv[7]) or this read's own
+        let rel = vcoarse(s) + cont - relativeAverage(s, false);
+        if (tv !== undefined && tv !== null && tv.length > 7) rel = this.laneRel(rel, tv[7], tv[8], tv[9], false);
+        else rel = this.laneOwn(rel, false);
+        v = banked + Math.max(sn || 0.0, now, rel);
+      } else v = leafOf(s, banked, sn, now, cont, vcoarse(s));
       if (settleOn()) {
         // step 18b: the ordering reading on the leaf's own scale (the ceiling, the calibrated map, the ceiling), so a
         // settled shot and a position that plays on are ranked together (decide.Read.leaf with k = 0)
@@ -2616,6 +2662,12 @@ const PMEngine = (() => {
       const into = moved && fr[q] === 1, outOf = moved && fr[s.x[j]] === 1 && fr[q] !== 1;
       const blocks = into || outOf;
       for (let i = 0; i < 5; i++) out[i] = 0.0;
+      out[7] = -1.0; out[8] = -1.0; out[9] = 0.0;
+      if (laneOn()) {                                 // step 18q: the lane, and the lane with the man his Dribble would beat out of it
+        out[7] = this.laneReread(j, q, a, canMove, qsLeft);
+        const dr = this.laneDribble(out[7], [0, 0], j, q, a, canMove, qsLeft, (dflags & 2) !== 0);
+        out[8] = dr[0]; out[9] = dr[1];
+      }
       let nowv = 0.0, snv = -1;
       if (blocks) {
         let lv = outOf ? leave.get(j) : undefined;
@@ -2779,7 +2831,242 @@ const PMEngine = (() => {
       const bud = this.budgetOn();                       // step 13 B1: after the defence's best shares
       const cont = (bud ? this.budget().value : (nt ? sum / nt : 0.0)) * this.cfg.continuation;
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + Math.max(sn || 0.0, now);
+      if (laneOn() && leafMode(s) === 'relative') {
+        // step 18q (decide.Read._hand_leaf, eval.lane): the ball handler's way to the rim next phase, read as this
+        // turn's looks are, one phase on
+        const rel = this.laneOwn(vcoarse(s) + cont - relativeAverage(s, bud), bud);
+        return banked + Math.max(sn || 0.0, now, rel);
+      }
       return leafOf(s, banked, sn, now, cont, vcoarse(s), bud);
+    }
+    aheadOf(value, budget) {                      // decide.Read.ahead_of
+      const nxt = W_(this.s, { clock: this.s.clock - 2 });
+      return vcoarse(nxt) + this.cfg.continuation * value - relativeAverage(nxt, budget);
+    }
+    _laneData() {                                 // decide.Read._lane_data
+      if (this._lane18q !== undefined) return this._lane18q;
+      this._lane18q = null;
+      const s = this.s, i = s.ball;
+      if (s.clock <= 2 || !this.att_o.includes(i) || !ONB[s.o[i]] || s.tok_o <= 0) return null;
+      const one = new Map([[s.o[i], 0]]);
+      for (const kind of ['move', 'qs', 'sprint']) {
+        if (canMoveKind(s, 'O', i, kind)) for (const q of movementDests(s, 'O', i, kind).keys()) if (!one.has(q)) one.set(q, 1);
+      }
+      const stops = [...one.keys()].concat(twoActions(s, i, one));
+      const here = new Set(stops), old = s.o[i], card = s.ctx.off[i], qs = card.qs;
+      const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== i) mates.add(s.o[k]);
+      const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
+      const lines = [];
+      if (s.ctx.zone) {
+        for (let j = 0; j < 5; j++) {                 // actions.capture_lines, a defender at a time
+          const st = stanceOf(s, j);
+          if (st < 8 || st >= 16 || !ONB[s.x[j]]) continue;
+          if (s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+          const d0 = st - 8, d1 = (st - 7) % 8;
+          lines.push([j, [[s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, old, -1).length), Math.max(1, zoneRay(s, j, d1, old, -1).length)]]]);
+        }
+      }
+      const paths = new Map();
+      for (const q0 of stops) {
+        for (const [p, rushed] of lanePaths(q0, qs)) {
+          const c = p[p.length - 1];
+          if (here.has(c)) continue;
+          let dm = 0, bad = false;
+          for (const q of p) { if (mates.has(q)) { bad = true; break; } const j = xat.get(q); if (j !== undefined) dm |= 1 << j; }
+          if (bad) continue;
+          let zm = 0;
+          for (const ln of lines) if (!captureOk(q0, p, ln[1])) zm |= 1 << ln[0];
+          const pk = c * 2 + (rushed ? 1 : 0);
+          let list = paths.get(pk);
+          if (!list) { list = []; paths.set(pk, list); }
+          list.push({ q0, p, dm, zm, stop: q0 !== old ? q0 : -1 });
+        }
+      }
+      const budget = Math.max(0, Math.min(2, s.tok_x));
+      const cands = [];
+      const off = s.ctx.control > 0 ? s.ctx.control : 0;
+      for (const c of paintSquares()) {
+        let masks = null;
+        for (let rushed = 0; rushed < 2; rushed++) {  // reached by a Move (a set shot), or by a Quick Step or Sprint (rushed)
+          const list = paths.get(c * 2 + rushed);
+          if (!list) continue;
+          if (masks === null) {
+            masks = [0, 0, 0, 0, 0];
+            for (const d of this.att_x) {
+              if (!ONB[s.x[d]]) continue;
+              const cp = caps(s, 'X', d);
+              masks[d] = aheadMask(c, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, cp[0], cp[1], budget, stanceMode(s, d));
+            }
+          }
+          const lk = makeLook(i, c, 'later', 1.0, false);
+          lk.types = ZONE_SHOTS[PAINT];
+          lk.rushed = rushed === 1;
+          const fl = (rushed === 1 && off > 0) ? 1 : undefined;      // the shooter rushed by his own movement; no defender's state carries over
+          const vals = [null, null, null, null, null];
+          for (const d of this.att_x) if (masks[d]) vals[d] = this._valsCalc(lk, d, masks[d], 0, fl, s.ctx.soft ? masks[d] : 0, 0);
+          const open = [];
+          for (let t = 0; t < lk.types.length; t++) open.push(ZONE_POINTS[PAINT] * (card.sh[lk.types[t]] - (rushed === 1 ? off : 0)));
+          cands.push({ c, lk, paths: list, open, vals, fl });
+        }
+      }
+      this._lane18q = cands.length ? { cands, budget, by: [], stat: [null, null, null, null, null, null], onWay: null } : null;
+      return this._lane18q;
+    }
+    _laneValue(e, skip, extra, t) {               // decide.Read._lane_value (t: a defender a Dribble has beaten)
+      let top = 0.0;
+      for (let n = 0; n < e.open.length; n++) {
+        let v = e.open[n];
+        for (let d = 0; d < 5; d++) {
+          if (d === skip || !e.vals[d]) continue;
+          if (d === t) { const vb = this._laneBeatenVals(e, d); if (vb && vb[n] < v) v = vb[n]; continue; }
+          if (e.vals[d][n] < v) v = e.vals[d][n];
+        }
+        if (extra && extra[n] < v) v = extra[n];
+        if (v > top) top = v;
+      }
+      return top;
+    }
+    _laneBeatenVals(e, d, frm, arrow, qsLeft) {   // decide.Read._lane_beaten_vals: locked, his zone broken
+      const s = this.s, mode = s.ctx.zone ? 2 : 0, budget = this._lane18q.budget;
+      if (frm !== undefined) {
+        const mask = aheadMask(e.c, frm, arrow, s.ctx.dfn[d].qs, false, qsLeft, budget, mode);
+        return mask ? this._valsCalc(e.lk, d, mask, 0, e.fl, s.ctx.soft ? mask : 0, 0) : null;
+      }
+      if (!e.vb) e.vb = [undefined, undefined, undefined, undefined, undefined];
+      if (e.vb[d] === undefined) {
+        const mask = aheadMask(e.c, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, false, caps(s, 'X', d)[1], budget, mode);
+        e.vb[d] = mask ? this._valsCalc(e.lk, d, mask, 0, e.fl, s.ctx.soft ? mask : 0, 0) : null;
+      }
+      return e.vb[d];
+    }
+    _laneNext(t = -1) {                           // decide.Read._lane_next
+      const data = this._laneData();
+      if (!data) return null;
+      const bt = t >= 0 ? (1 << t) : 0;
+      let best = null;
+      for (const e of data.cands) {
+        let clear = false;
+        for (const pt of e.paths) if (pt.dm === 0 && !(pt.zm & ~bt)) { clear = true; break; }
+        if (!clear) continue;
+        const top = this._laneValue(e, -1, null, t);
+        if (best === null || top > best[1] + 1e-9) best = [e.c, top];
+      }
+      return best;
+    }
+    _laneStatic(t = -1) {                         // decide.Read._lane_static: [value, the lowest another defender's step leaves]
+      const data = this._laneData();
+      if (!data) return [-1.0, [INF_V, INF_V, INF_V, INF_V, INF_V]];
+      const hit = data.stat[t + 1];
+      if (hit) return hit;
+      const s = this.s, bt = t >= 0 ? (1 << t) : 0, tgt = this._laneNext(t), base = tgt !== null ? tgt[1] : -1.0;
+      const resp = [INF_V, INF_V, INF_V, INF_V, INF_V];
+      if (data.budget > 0) {
+        const cands = data.cands;
+        const order = cands.map((e, n) => [this._laneValue(e, -1, null, t), n]);
+        order.sort((x, y) => (y[0] - x[0]) || (x[1] - y[1]));
+        let onWay = data.onWay;
+        if (!onWay) {
+          onWay = data.onWay = new Set();
+          for (const e of cands) for (const pt of e.paths) { for (const q of pt.p) onWay.add(q); if (pt.stop >= 0) onWay.add(pt.stop); }
+        }
+        for (const j of this.att_x) {
+          if (j === t || !ONB[s.x[j]]) continue;
+          const r = defenderMap(s, j, true), reach = new Set(), bj = 1 << j;
+          for (const [q, n] of r[0]) if (n > 0 && n <= data.budget) reach.add(q);
+          for (const [q, arrs] of r[1]) for (const n of arrs.values()) if (n > 0 && n <= data.budget) { reach.add(q); break; }
+          for (const q of reach) {
+            if (!onWay.has(q) || occAt(s, q)) continue;
+            let left = -1.0;
+            for (const [v, n] of order) {
+              const e = cands[n];
+              if (e.c === q) continue;
+              let open = false;
+              for (const pt of e.paths) if (!(pt.dm & ~bj) && !(pt.zm & ~bj & ~bt) && pt.stop !== q && !pt.p.includes(q)) { open = true; break; }
+              if (open) { left = v; break; }
+            }
+            if (left < resp[j]) resp[j] = left;
+          }
+        }
+      }
+      const low = Math.min(resp[0], resp[1], resp[2], resp[3], resp[4]);
+      const excl = [0, 1, 2, 3, 4].map(j => { let m = INF_V; for (let k = 0; k < 5; k++) if (k !== j && resp[k] < m) m = resp[k]; return m; });
+      data.stat[t + 1] = [Math.min(base, low), excl];
+      return data.stat[t + 1];
+    }
+    laneReread(j, q, a, canMove, qsLeft, t = -1) {   // decide.Read.lane_reread
+      const data = this._laneData();
+      if (!data) return -1.0;
+      const s = this.s, bj = 1 << j, bt = t >= 0 ? (1 << t) : 0, same = q === s.x[j] && a === s.arrows[j], mode = stanceMode(s, j);
+      const line = (!same && mode === 1 && t !== j) ? [[q, a, (a + 1) % 8, 1, 1]] : null;
+      const ok_ = (t + 1) * 5 + j;
+      let order = data.by[ok_];
+      if (!order) {
+        order = data.by[ok_] = data.cands.map((e, n) => [this._laneValue(e, j, null, t), n]);
+        order.sort((x, y) => (y[0] - x[0]) || (x[1] - y[1]));
+      }
+      let best = -1.0;
+      for (const [bw, n] of order) {
+        if (bw <= best + 1e-9) break;
+        const e = data.cands[n];
+        if (e.c === q) continue;
+        let ok = false;
+        for (const pt of e.paths) {
+          if ((pt.dm & ~bj) || (same ? (pt.zm & ~bt) : (pt.zm & ~bj & ~bt)) || pt.stop === q || pt.p.includes(q)) continue;
+          if (line !== null && !captureOk(pt.q0, pt.p, line)) continue;
+          ok = true; break;
+        }
+        if (!ok) continue;
+        let mine;
+        if (t === j) mine = this._laneBeatenVals(e, j, q, a, qsLeft);
+        else {
+          const mask = aheadMask(e.c, q, a, s.ctx.dfn[j].qs, canMove, qsLeft, data.budget, mode);
+          mine = mask ? this._valsCalc(e.lk, j, mask, 0, e.fl, s.ctx.soft ? mask : 0, 0) : null;
+        }
+        const v = this._laneValue(e, j, mine, t);
+        if (v > best) best = v;
+      }
+      const other = this._laneStatic(t)[1][j];      // and after another defender's best step into it
+      return other < best ? other : best;
+    }
+    // the Dribble in the race: a defender next to the ball handler only stays in it if he wins the roll
+    _dribbleOk() {                                // decide.Read._dribble_ok
+      if (this._drib === undefined) {
+        const s = this.s, i = s.ball;
+        const ok = s.tok_o > 0 && this.att_o.includes(i) && ONB[s.o[i]] && count(s, 'O', 'dribble') < LIMITS.O.dribble &&
+          !(s.inbound && i === s.ctx.inbounder) && !isLocked(s, 'O', i) && !(s.ctx.guarded && (s.grd & 3) === 2);
+        this._drib = [ok, ok ? rolled(s, 'O', i, 'dribble') : 0];
+      }
+      return this._drib;
+    }
+    _beatChance(t, rushed) {                      // decide.Read._beat_chance
+      const s = this.s;
+      const ag = rushed === undefined ? rolled(s, 'X', t, 'agility') : s.ctx.dfn[t].r.agility - (s.ctx.offCut > 0 && rushed ? s.ctx.offCut : 0);
+      return pS(this._dribbleOk()[1] - ag);
+    }
+    laneDribble(lane, into, j = -1, q = -1, a = -1, canMove = false, qsLeft = 0, rushed = false) {   // decide.Read.lane_dribble -> into[0], into[1]
+      into[0] = -1.0; into[1] = 0.0;
+      if (!this._dribbleOk()[0] || !this._laneData()) return into;
+      const s = this.s, bq = s.o[s.ball], floor = lane > 0 ? lane : 0.0;
+      let gain = 0.0;
+      for (let t = 0; t < 5; t++) {
+        const at = t === j ? q : s.x[t];
+        if (!ONB[at] || !adjacent(at, bq)) continue;
+        const p = this._beatChance(t, t === j ? rushed : undefined);
+        if (p <= 0) continue;
+        const v = j < 0 ? this._laneStatic(t)[0] : this.laneReread(j, q, a, canMove, qsLeft, t);
+        const g = p * (v - floor);
+        if (g > gain + 1e-9) { into[0] = v; into[1] = p; gain = g; }
+      }
+      return into;
+    }
+    laneRel(rel, lane, beaten, p, budget) {       // decide.Read.lane_rel
+      if (lane >= 0) { const ahead = this.aheadOf(lane, budget); if (ahead > rel) rel = ahead; }
+      if (p > 0 && beaten >= 0) { const ahead = this.aheadOf(beaten, budget); if (ahead > rel) rel += p * (ahead - rel); }
+      return rel;
+    }
+    laneOwn(rel, budget) {                        // decide.Read.lane_own
+      const lane = this._laneStatic()[0], d = this.laneDribble(lane, [0, 0]);
+      return this.laneRel(rel, lane, d[0], d[1], budget);
     }
   }
 
@@ -3022,10 +3309,11 @@ const PMEngine = (() => {
     // one read to re-read from: the position the turn leaves when it ends (two actions on, or one if that ends it)
     const ref = two ? ref2 : ref1, R = readOf(ref);
     const att = R.att_o, b2 = bankedOf(ref);
-    const qm = new Map(), parts = !!partsMap(ref);
+    const qm = new Map(), parts = !!partsMap(ref), lane = laneOn();
     const Qof = vec => {                                 // the quick reading from a re-read (the same arithmetic, kept by its inputs)
       const cont = R._contOf(vec);
       let k = cont + '|' + vec[5] + '|' + vec[6];
+      if (lane) k += '|' + vec[7] + '|' + vec[8] + '|' + vec[9];      // step 18q: the lane's values, re-read
       if (parts) { const t2 = topTwo(att, i => vec[i]); k += '|' + t2[0] + '|' + t2[1]; }      // step 18h: the parts the reading keeps
       let v = qm.get(k);
       if (v === undefined) { v = R._quickCont(cont, vec[5], vec[6], vec); qm.set(k, v); }
@@ -3033,7 +3321,7 @@ const PMEngine = (() => {
     };
     // what the quick reading is taken from, before the phase table's floor and the map flatten it: the best shot that
     // can go up now, or what the best looks leave. The cheap rank's second key (the reading at a finer grain).
-    const rawOf = vec => round6(Math.max(vec[5], vec[6], R._contOf(vec)));
+    const rawOf = vec => (lane && vec[7] > 0) ? round6(Math.max(vec[5], vec[6], R._contOf(vec), R.cfg.continuation * vec[7])) : round6(Math.max(vec[5], vec[6], R._contOf(vec)));
     // the cheap read of defender j where the state n leaves him; what he has left and his control are read from
     // `left` (n itself, or the position two actions leave when the turn's end resets them)
     const facts = (n, j, vec, left) => {
@@ -3041,12 +3329,13 @@ const PMEngine = (() => {
       R.reread(j, q, a, cp[0], cp[1], (rushedX(left, j) ? 2 : 0) | (hasMoved(left, 'X', j) ? 4 : 0), vec);
     };
     const fresh = ref.phase !== s.phase;                  // the turn's end ends the phase: every defender starts the next anew
-    const tieOf = vec => { let t = 0.0; for (const i of att) t += vec[i]; return round6(t); };
-    const keyOf = (c, vec) => { let k = c + '|' + round6(vec[5]) + '|' + round6(vec[6]); for (const i of att) k += '|' + round6(vec[i]); return k; };
+    const tieOf = vec => { let t = 0.0; for (const i of att) t += vec[i]; if (lane && vec[7] > 0) t += vec[7]; return round6(t); };
+    const keyOf = (c, vec) => { let k = c + '|' + round6(vec[5]) + '|' + round6(vec[6]); for (const i of att) k += '|' + round6(vec[i]); if (lane) k += '|' + round6(vec[7]) + '|' + round6(vec[8]) + '|' + round6(vec[9]); return k; };
     const full = [], U = [], seen = new Set();
     // (a speed-up that changes no result: most actions re-read bit for bit like one before them; those are dropped
     // before anything is built for them. tmp: the re-read in hand; bits: its bits, for a number to find its like by)
-    const tmp = new Float64Array(7), bits = new Uint32Array(tmp.buffer), same = new Map();
+    const tmp = new Float64Array(10), bits = new Uint32Array(tmp.buffer), same = new Map();
+    tmp[7] = -1.0; tmp[8] = -1.0;
     OPEN_STATS.calls++; OPEN_STATS.legal += acts.length;
     // 1. every legal first action
     // (a speed-up that changes no result, SPEED.open_facts: with no pass in the air, where a movement leaves a
@@ -3129,10 +3418,10 @@ const PMEngine = (() => {
         }
       }
       let h = a.piece;
-      for (let w = 0; w < 14; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
+      for (let w = 0; w < 20; w++) h = (Math.imul(h, 16777619) ^ bits[w]) | 0;
       let bucket = same.get(h), dup = false;
       if (bucket === undefined) { bucket = []; same.set(h, bucket); }
-      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o.sg === sg && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6]) { dup = true; break; } }
+      else if (har < 0) for (const o of bucket) { if (o.j === a.piece && o.sg === sg && o[0] === tmp[0] && o[1] === tmp[1] && o[2] === tmp[2] && o[3] === tmp[3] && o[4] === tmp[4] && o[5] === tmp[5] && o[6] === tmp[6] && o[7] === tmp[7] && o[8] === tmp[8] && o[9] === tmp[9]) { dup = true; break; } }
       if (dup) continue;
       const v2 = Float64Array.from(tmp);
       v2.j = a.piece; v2.sg = sg; if (har < 0) bucket.push(v2);       // (a dice-in-hand action never stands in for a later copy)
@@ -3156,7 +3445,8 @@ const PMEngine = (() => {
     let n = U.length;
     if (two) {
       // 2. every pair of them by two defenders
-      const m = new Float64Array(7);
+      const m = new Float64Array(10);
+      m[7] = -1.0; m[8] = -1.0;
       for (let x = 0; x < U.length; x++) {
         const ua = U[x];
         if (deadline && now() > deadline) throw TIMEOUT;
@@ -3165,7 +3455,7 @@ const PMEngine = (() => {
           if (ub.j === ua.j) continue;
           let lt = false, gt = false;
           for (const i of att) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
-          for (let i = 5; i < 7; i++) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
+          for (let i = 5; i < (lane ? 10 : 7); i++) { const va = ua.v2[i], vb = ub.v2[i]; if (vb < va) { lt = true; m[i] = vb; } else { if (va < vb) gt = true; m[i] = va; } }
           // one of the two changes nothing the other doesn't: not read as a pair (step 18k: putting a Steal in hand
           // that the defender didn't have is a change)
           if (!((lt || ub.adds) && (gt || ua.adds))) continue;
@@ -3192,7 +3482,7 @@ const PMEngine = (() => {
           if (b.dest >= 0 && b.piece !== ua.j) continue;  // two defenders moving: read with the pairs above
           const n2 = apply(nxt, b);
           if (!isChance(n2) && n2.stage === 'play' && !n2.pending && b.dest >= 0) {
-            const v = new Float64Array(7);
+            const v = new Float64Array(10);
             facts(n2, ua.j, v, n2);
             const c = round6(Qof(v));
             let gk = '';
@@ -3926,6 +4216,7 @@ const PMEngine = (() => {
   // agent.Agent.choose after its search: the base leaf and the goals of each turn it weighs. req: {state, ctx, side, turns}
   function goalsJSON(text) {
     const req = JSON.parse(text);
+    if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -3944,6 +4235,7 @@ const PMEngine = (() => {
   const CTXS = new Map();
   function searchJSON(text) {
     const req = JSON.parse(text);
+    if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -3955,6 +4247,7 @@ const PMEngine = (() => {
   // position's value (the offence's view), then each attacker's best look after the defence's best cover, largest first.
   function readsJSON(text) {
     const req = JSON.parse(text);
+    if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -4007,7 +4300,7 @@ const PMEngine = (() => {
   const handLeaf = s => readOf(s)._handLeaf();                                                       // today's hand-combined reading
   const looksLeaf = s => { FORCE_LOOKS = true; try { return readOf(s)._handLeaf(); } finally { FORCE_LOOKS = false; } };   // step 18f: the same in the looks mode, for fitting its map
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

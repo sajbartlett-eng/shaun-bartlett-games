@@ -254,6 +254,77 @@ def _cmap_cached(rules, frm, arrow, qs, can_move, qs_left, mode=0):
     return contest_map(rules, free, fixed, mode)
 
 
+# ---- step 18q: the race to the rim (eval.lane) -------------------------------------------------------------------------
+# What the ball handler's way to the rim is worth one phase on. Both halves of the race come from the movement rules:
+# he gets what he has left this phase and one movement the next; each defender gets what he has left this phase (within
+# the defence's tokens) and then the reaction's two actions, fresh. Bodies and arrows that bar his way count as they
+# stand. No square, distance or kind of move is named.
+
+@lru_cache(maxsize=None)
+def _any_arrow_cmap(rules, q, qs, mode):
+    """A defender standing on q at the start of a phase, whichever way he faces: c -> [fewest reaction actions for each
+    contest kind] (he chose his arrow when a Move took him there)."""
+    out = {}
+    for a in range(8):
+        for c, row in _cmap_cached(rules, q, a, qs, True, 1, mode).items():
+            cur = out.get(c)
+            if cur is None:
+                out[c] = list(row)
+            else:
+                for k, n in enumerate(row):
+                    if n < cur[k]:
+                        cur[k] = n
+    return out
+
+
+def ahead_row(rules, c, frm, arrow, qs, can_move, qs_left, budget, mode=0):
+    """A defender's Contest of square c a phase on: from where he stands, or from any square the movement he has left
+    this phase gets him to (`budget` actions: the defence's tokens left, at most two; any arrow after a Move, his own
+    after a Quick Step or Sprint), with the next phase's movement fresh for the reaction. [fewest reaction actions for
+    each contest kind], or None if he can't contest it at all."""
+    out = None
+
+    def merge(row):
+        nonlocal out
+        if row is None:
+            return
+        if out is None:
+            out = list(row)
+        else:
+            for k, n in enumerate(row):
+                if n < out[k]:
+                    out[k] = n
+    merge(_cmap_cached(rules, frm, arrow, qs, True, 1, mode).get(c))
+    if budget > 0:
+        free, fixed = geo_reach(frm, arrow, qs, can_move, qs_left, rules)
+        for q, n in free.items():
+            if n <= budget:
+                merge(_any_arrow_cmap(rules, q, qs, mode).get(c))
+        for q, arrs in fixed.items():
+            for a, n in arrs.items():
+                if 0 < n <= budget:
+                    merge(_cmap_cached(rules, q, a, qs, True, 1, mode).get(c))
+    return out
+
+
+@lru_cache(maxsize=None)
+def _lane_paths(start, qs, rules):
+    """Every movement path from start that ends on a paint square, all on the board: (path, rushed), rushed for a
+    Quick Step or a Sprint (the shot after it is off balance, D-151 and D-185), not for a Move."""
+    paint = set(PAINT_SQUARES)
+    out = []
+    for p in B.move_paths(start, rules):
+        if p[-1] in paint and all(B.on_board(q) for q in p):
+            out.append((tuple(p), False))
+    for p in B.qs_paths(start, qs, rules):
+        if p[-1] in paint and all(B.on_board(q) for q in p):
+            out.append((tuple(p), True))
+    for _, p in B.sprint_paths(start, qs, rules):
+        if p[-1] in paint and all(B.on_board(q) for q in p):
+            out.append((tuple(p), True))
+    return tuple(out)
+
+
 # ---- shot values -------------------------------------------------------------------------------------------------------
 
 def shot_value(card, dcards, t, c, contests, window, rules):
@@ -411,6 +482,9 @@ class Read:
         self._cover = None
         self._budget = None
         self._adv = None
+        self._ahead = False                # step 18q: lane_ahead(), once
+        self._lane = False                 # step 18q: _lane_data(), once
+        self._drib = None                  # step 18q: _dribble_ok(), once
 
     # -- contest maps
     def _contest(self, d, at=None, arrow=None, used=None):
@@ -462,7 +536,8 @@ class Read:
         card = self.s.ctx.off[look.i]
         pts = RC.ZONE_POINTS[B.zone(look.c)]
         rules = self.rules
-        control = RC.control_size(rules) > 0 and not getattr(self, '_phase_away', False)
+        away = getattr(self, '_phase_away', False)
+        control = RC.control_size(rules) > 0 and not away
         # D-151 (rules.control), as the reading takes it: a defender contesting from where he stands is rushed if his
         # last movement was a Quick Step or Sprint; one who must move to contest is rushed if his Move is already used
         # (only a Quick Step or Sprint is left), and is taken to Move there otherwise. The rules themselves are exact
@@ -472,7 +547,9 @@ class Read:
         position = RC.position_contest(rules)
         for t in look.types:
             r = card.shot(t)
-            cut = RC.control_cut(rules, t) if control else 0
+            # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
+            # movement itself; the defenders' own rushed states still don't carry over)
+            cut = RC.control_cut(rules, t) if (control or (away and look.rushed)) else 0
             if cut and look.rushed:
                 r -= cut
             best = None
@@ -652,7 +729,13 @@ class Read:
         if last:
             v = banked + max(sn or 0.0, nowv)
         elif leaf_mode(s, self.cfg) == 'relative':
-            v = banked + max(sn or 0.0, nowv, vcoarse(s) + cont - relative_average(s, self.cfg, False))
+            rel = vcoarse(s) + cont - relative_average(s, self.cfg, False)
+            if self.cfg.get('lane') is True:             # step 18q: the lane, re-read (tv[7]) or this read's own
+                if tv is not None and len(tv) > 7:
+                    rel = self.lane_rel(rel, tv[7], tv[8], tv[9], False)
+                else:
+                    rel = self.lane_own(rel, False)
+            v = banked + max(sn or 0.0, nowv, rel)
         elif leaf_mode(s, self.cfg) == 'looks':
             v = banked + max(sn or 0.0, nowv, cont)
         else:
@@ -693,9 +776,10 @@ class Read:
         """Every attacker's best look with defender j standing at q facing a, with can_move / qs_left left to him and
         his control state dflags (rushed where he stands, his Move used): this read's own looks, each re-read with that
         one defender moved (the re-read responses() makes for its hand-picked squares, here for any square, for every
-        attacker, and for the looks that can go up now as well). Returns seven values: one an attacker, then the best
+        attacker, and for the looks that can go up now as well). Returns eight values: one an attacker, then the best
         shot that can go up now and the ball handler's shot from where he stands (-1: none), each among an attacker's
-        first three looks as the quick reading takes them."""
+        first three looks as the quick reading takes them; and (step 18q, eval.lane) the lane's value (-1: none), its
+        value with the defender a Dribble would beat out of the race (-1: none), and the chance of that."""
         s = self.s
         carrier = s.ball
         reach = bool(self.cfg.get('reach'))
@@ -707,7 +791,11 @@ class Read:
         into = moved and front(q)
         out_of = moved and front(s.x[j]) and not front(q)
         blocks = into or out_of
-        out = [0.0] * 7
+        out = [0.0] * 10
+        out[7], out[8] = -1.0, -1.0
+        if self.cfg.get('lane') is True:             # step 18q: the lane, and the lane with the man his Dribble would beat out of it
+            out[7] = self.lane_reread(j, q, a, can_move, qs_left)
+            out[8], out[9] = self.lane_dribble(out[7], j, q, a, can_move, qs_left, bool(dflags[0]))
         nowv, snv = 0.0, -1
         if blocks:
             lv = leave.get(j) if out_of else None
@@ -1064,13 +1152,26 @@ class Read:
         if mode == 'relative':
             # step 10 (behind the switch): the phase table's average plus how much better or worse this position reads
             # than an average position at that phase, read the same way (eval.relative_average, from the step 3n seeds)
-            return banked + max(sn or 0.0, now, coarse + cont - relative_average(s, self.cfg, self._budget_on()))
+            rel = coarse + cont - relative_average(s, self.cfg, self._budget_on())
+            if self.cfg.get('lane') is True:
+                # step 18q (D-196, design checks 1 and 4): the reading looked one turn ahead, so a way to the rim that
+                # finishes next phase read as nothing. The ball handler's best paint look next phase (step 16's
+                # penetration, against every defender who can get to a Contest of it) is read as this turn's looks
+                # are, one phase on. The search plays the defence's answer to it; the reading no longer hides it.
+                rel = self.lane_own(rel, self._budget_on())
+            return banked + max(sn or 0.0, now, rel)
         if mode == 'looks':
             # step 18f (behind the switch): the looks alone. The phase table's floor hides everything below the
             # average (a shot worth 15 and one worth 21 read the same); the map fitted to this reading
             # (calibration_looks) says what such positions went on to earn instead
             return banked + max(sn or 0.0, now, cont)
         return banked + max(sn or 0.0, now, cont, coarse)
+
+    def ahead_of(self, value, budget):
+        """A lane worth `value` next phase, on the reading's own scale: the next phase's average, plus the look carried
+        forward as a look is this phase, less what an average position reads then."""
+        nxt = self.s.with_(clock=self.s.clock - RC.PHASE_SECONDS)
+        return vcoarse(nxt) + self.cfg['continuation'] * value - relative_average(nxt, self.cfg, budget)
 
     def possession(self):
         """Step 12 (stable search, 'play on while pending'): what the position is worth without the ball handler's shot
@@ -1232,6 +1333,287 @@ class Read:
             if best is None or top > best[1] + 1e-9:
                 best = (c, top)
         return best
+
+    def _lane_data(self):
+        """Step 18q (eval.lane): the race to the rim, worked out once for this read. None when the ball handler has no
+        way to the paint next phase. Else the paint squares he can't reach this phase but could next (in PAINT_SQUARES'
+        order), each with its paths from every square he reaches this phase, and for each path the defenders whose
+        bodies stand on it and the defenders whose arrows bar it (the rules' own crossing test, D-170), and the shot's
+        value there against each defender's Contest a phase on (ahead_row)."""
+        if self._lane is not False:
+            return self._lane
+        self._lane = None
+        s, i = self.s, self.s.ball
+        if s.clock <= RC.PHASE_SECONDS or i not in self.att_o or not B.on_board(s.o[i]) or s.tok_o <= 0:
+            return None
+        from .actions import movement_dests, can_move_kind, capture_lines, capture_ok
+        one = {s.o[i]: 0}
+        for kind in ('move', 'qs', 'sprint'):
+            if can_move_kind(s, 'O', i, kind):
+                for q in movement_dests(s, 'O', i, kind, self.rules):
+                    one.setdefault(q, 1)
+        stops = list(one) + two_actions(s, i, one)
+        here = set(stops)
+        mates = set(s.o) - {s.o[i]}
+        xat = {s.x[j]: j for j in range(5) if B.on_board(s.x[j])}
+        lines = []
+        if self.rules.zone != 'off':
+            for ln in capture_lines(s, i):
+                lines.append((xat[ln[0]], (ln,)))
+        card, qs = s.ctx.off[i], s.ctx.off[i].qs
+        paths = {}
+        for q0 in stops:
+            for p, rushed in _lane_paths(q0, qs, self.rules):
+                c = p[-1]
+                if c in here or any(q in mates for q in p):
+                    continue
+                dm = zm = 0
+                for q in p:
+                    j = xat.get(q)
+                    if j is not None:
+                        dm |= 1 << j
+                for j, ln in lines:
+                    if not capture_ok(q0, p, ln):
+                        zm |= 1 << j
+                paths.setdefault((c, rushed), []).append((q0, p, frozenset(p) | ({q0} if q0 != s.o[i] else frozenset()), dm, zm))
+        budget = max(0, min(2, s.tok_x))
+        pts = RC.ZONE_POINTS[PAINT]
+        cands = []
+        off = RC.control_cut(self.rules) if RC.control_size(self.rules) > 0 else 0
+        for c in PAINT_SQUARES:
+            rows = None
+            for rushed in (False, True):           # reached by a Move (a set shot), or by a Quick Step or Sprint (rushed)
+                if (c, rushed) not in paths:
+                    continue
+                if rows is None:
+                    rows = {}
+                    for d in self.att_x:
+                        if B.on_board(s.x[d]):
+                            can_move, qs_left = _caps(s, 'X', d)
+                            rows[d] = ahead_row(self.rules, c, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, can_move, qs_left, budget, stance_mode(s, d))
+                lk = Look(i, c, 'later', 1.0, False)
+                lk.types = RC.ZONE_SHOTS[PAINT]
+                lk.rushed = rushed
+                vals = {}
+                for d, row in rows.items():
+                    v = self._vals2(lk, d, row) if row is not None else None
+                    if v:
+                        vals[d] = v
+                cands.append(dict(c=c, lk=lk, paths=paths[c, rushed], open=[pts * (card.shot(t) - (off if rushed else 0)) for t in lk.types], vals=vals))
+        self._lane = dict(cands=cands, budget=budget, by={}, static={}) if cands else None
+        return self._lane
+
+    def _lane_value(self, e, skip=-1, extra=None, t=-1):
+        """The shot's value on a lane square: its best type, each against the best Contest of every defender but `skip`,
+        and `extra` (one defender's values, re-read). t: a defender a Dribble has beaten, contesting as he then can."""
+        top = 0.0
+        for n, ty in enumerate(e['lk'].types):
+            v = e['open'][n]
+            for d, vals in e['vals'].items():
+                if d == skip:
+                    continue
+                if d == t:
+                    vals = self._lane_beaten_vals(e, d)
+                if ty in vals and vals[ty] < v:
+                    v = vals[ty]
+            if extra and ty in extra and extra[ty] < v:
+                v = extra[ty]
+            if v > top:
+                top = v
+        return top
+
+    def _lane_beaten_vals(self, e, d, frm=None, arrow=None, qs_left=None):
+        """Defender d's Contest of a lane square once a Dribble has beaten him: locked (no Move left this phase), his
+        zone broken. frm, arrow, qs_left: the open list's re-read of him moved (not kept)."""
+        s = self.s
+        mode = 2 if self.rules.zone != 'off' else 0
+        if frm is not None:
+            row = ahead_row(self.rules, e['c'], frm, arrow, s.ctx.dfn[d].qs, False, qs_left, self._lane['budget'], mode)
+            return (self._vals2(e['lk'], d, row) if row is not None else None) or {}
+        vb = e.setdefault('vb', {})
+        if d not in vb:
+            row = ahead_row(self.rules, e['c'], s.x[d], s.arrows[d], s.ctx.dfn[d].qs, False, _caps(s, 'X', d)[1], self._lane['budget'], mode)
+            vb[d] = (self._vals2(e['lk'], d, row) if row is not None else None) or {}
+        return vb[d]
+
+    def _lane_next(self, t=-1):
+        """(square, value): the best lane square with a way to it clear as the pieces stand; None if there is none.
+        t: with defender t beaten by a Dribble (his arrow bars nothing)."""
+        data = self._lane_data()
+        if not data:
+            return None
+        bt = (1 << t) if t >= 0 else 0
+        best = None
+        for e in data['cands']:
+            if not any(dm == 0 and not (zm & ~bt) for _, _, _, dm, zm in e['paths']):
+                continue
+            top = self._lane_value(e, -1, None, t)
+            if best is None or top > best[1] + 1e-9:
+                best = (e['c'], top)
+        return best
+
+    def _lane_static(self, t=-1):
+        """Step 18q: the lane after the defence's best single answer with a body ("no defender able to get between").
+        (value, [for each defender: the lowest value any other defender's step leaves]); value -1: no lane. A defender
+        answers by stepping, with the movement he has left this phase (his exact reach: other pieces and screens stop
+        him), onto a square of a way to the rim; the lane is then worth its best square still open. With no defence
+        token left nobody can answer, and the lane is worth what it reads as it stands. t: the same with defender t
+        beaten by a Dribble: his arrow bars nothing, he is locked and makes no answer, and he contests as he then can."""
+        data = self._lane_data()
+        if not data:
+            return -1.0, [INF] * 5
+        hit = data['static'].get(t)
+        if hit is not None:
+            return hit
+        s = self.s
+        bt = (1 << t) if t >= 0 else 0
+        tgt = self._lane_next(t)
+        base = tgt[1] if tgt is not None else -1.0
+        resp = [INF] * 5
+        if data['budget'] > 0:
+            cands = data['cands']
+            order = sorted(((self._lane_value(e, -1, None, t), n) for n, e in enumerate(cands)), key=lambda r: (-r[0], r[1]))
+            on_way = data.get('on_way')
+            if on_way is None:
+                on_way = data['on_way'] = set()
+                for e in cands:
+                    for _, _, pset, _, _ in e['paths']:
+                        on_way |= pset
+            occ = set(s.o) | set(s.x)
+            for j in self.att_x:
+                if j == t or not B.on_board(s.x[j]):
+                    continue
+                free, fixed = defender_map(s, j, exact=True)
+                reach = {q for q, n in free.items() if 0 < n <= data['budget']}
+                reach |= {q for q, arrs in fixed.items() if any(0 < n <= data['budget'] for n in arrs.values())}
+                bj = 1 << j
+                for q in reach:
+                    if q not in on_way or q in occ:
+                        continue
+                    left = -1.0
+                    for v, n in order:
+                        e = cands[n]
+                        if e['c'] != q and any(not (dm & ~bj) and not (zm & ~bj & ~bt) and q not in pset for _, _, pset, dm, zm in e['paths']):
+                            left = v
+                            break
+                    if left < resp[j]:
+                        resp[j] = left
+        low = min(resp)
+        excl = [min((resp[k] for k in range(5) if k != j), default=INF) for j in range(5)]
+        data['static'][t] = (min(base, low), excl)
+        return data['static'][t]
+
+    def lane_reread(self, j, q, a, can_move, qs_left, t=-1):
+        """The lane's value with defender j standing on q facing a, with can_move / qs_left left to him (the open list's
+        cheap read): his body where it now stands, his old arrow's bar lifted and his new arrow's foot barred, his
+        Contest a phase on from there; every other piece as it stands. -1: no lane. t: with defender t beaten by a
+        Dribble (t may be j himself, where the action leaves him)."""
+        data = self._lane_data()
+        if not data:
+            return -1.0
+        from .actions import capture_ok
+        s = self.s
+        bj = 1 << j
+        bt = (1 << t) if t >= 0 else 0
+        same = q == s.x[j] and a == s.arrows[j]
+        mode = stance_mode(s, j)
+        line = None
+        if not same and mode == 1 and t != j:
+            line = ((q, (a, (a + 1) % 8), (1, 1)),)
+        order = data['by'].get((t, j))
+        if order is None:
+            order = data['by'][t, j] = sorted(((self._lane_value(e, j, None, t), n) for n, e in enumerate(data['cands'])), key=lambda r: (-r[0], r[1]))
+        best = -1.0
+        for bw, n in order:
+            if bw <= best + 1e-9:
+                break
+            e = data['cands'][n]
+            if e['c'] == q:
+                continue
+            ok = False
+            for q0, p, pset, dm, zm in e['paths']:
+                if dm & ~bj or ((zm & ~bt) if same else (zm & ~bj & ~bt)) or q in pset:
+                    continue
+                if line is not None and not capture_ok(q0, p, line):
+                    continue
+                ok = True
+                break
+            if not ok:
+                continue
+            if t == j:
+                mine = self._lane_beaten_vals(e, j, q, a, qs_left)
+            else:
+                row = ahead_row(self.rules, e['c'], q, a, s.ctx.dfn[j].qs, can_move, qs_left, data['budget'], mode)
+                mine = self._vals2(e['lk'], j, row) if row is not None else None
+            v = self._lane_value(e, j, mine, t)
+            if v > best:
+                best = v
+        other = self._lane_static(t)[1][j]           # and after another defender's best step into it
+        return other if other < best else best
+
+    # -- the Dribble in the race: a defender next to the ball handler only stays in it if he wins the roll
+    def _dribble_ok(self):
+        """Can the ball handler Dribble at a defender next to him this phase, by the rules? (and his rating for it)"""
+        if self._drib is None:
+            s, i = self.s, self.s.ball
+            ok = (s.tok_o > 0 and i in self.att_o and B.on_board(s.o[i]) and s.count('O', 'dribble') < RC.LIMITS['O']['dribble']
+                  and not (s.inbound and i == s.ctx.inbounder and self.rules.inbounder_pass_only)
+                  and (self.rules.locked_can_dribble or not s.locked('O', i))
+                  and not (s.picked_up() and RC.app_rule(self.rules, 'closely_guarded')))
+            self._drib = (ok, rolled(s, 'O', i, 'dribble') if ok else 0)
+        return self._drib
+
+    def _beat_chance(self, t, rushed=None):
+        """The chance his Dribble beats defender t (rushed: t's state where the open list's re-read leaves him)."""
+        s = self.s
+        if rushed is None:
+            ag = rolled(s, 'X', t, 'agility')
+        else:
+            cut = RC.off_balance_cut(self.rules)
+            ag = s.ctx.dfn[t].r['agility'] - (cut if cut and rushed else 0)
+        return float(p_success(self._dribble_ok()[1] - ag, self.rules))
+
+    def lane_dribble(self, lane, j=-1, q=None, a=None, can_move=False, qs_left=0, rushed=False):
+        """(the lane's value with the defender his Dribble would beat out of the race, the chance he beats him): the
+        defender next to him whose beating gains most (the chance times what the lane gains). (-1, 0): no Dribble, or
+        none that gains. lane: the lane's value as it stands. j, q, ...: the open list's re-read of defender j moved."""
+        if not self._dribble_ok()[0] or not self._lane_data():
+            return -1.0, 0.0
+        s = self.s
+        bq = s.o[s.ball]
+        floor = lane if lane > 0 else 0.0
+        best, gain = (-1.0, 0.0), 0.0
+        for t in range(5):
+            at = q if t == j else s.x[t]
+            if not B.on_board(at) or not B.adjacent(at, bq):
+                continue
+            p = self._beat_chance(t, rushed if t == j else None)
+            if p <= 0:
+                continue
+            v = self._lane_static(t)[0] if j < 0 else self.lane_reread(j, q, a, can_move, qs_left, t)
+            g = p * (v - floor)
+            if g > gain + 1e-9:
+                best, gain = (v, p), g
+        return best
+
+    def lane_rel(self, rel, lane, beaten, p, budget):
+        """The play-on reading with the lane in it: the larger of the reading and the lane a phase on; and, where a
+        Dribble would take a defender out of the race, the chance of it times what that adds."""
+        if lane >= 0:
+            ahead = self.ahead_of(lane, budget)
+            if ahead > rel:
+                rel = ahead
+        if p > 0 and beaten >= 0:
+            ahead = self.ahead_of(beaten, budget)
+            if ahead > rel:
+                rel += p * (ahead - rel)
+        return rel
+
+    def lane_own(self, rel, budget):
+        """lane_rel for this read's own position."""
+        lane = self._lane_static()[0]
+        beaten, p = self.lane_dribble(lane)
+        return self.lane_rel(rel, lane, beaten, p, budget)
 
     def phi(self):
         """Step 16, stage 4: the goal potential: each attacker's best advantage, summed (0 when the possession ends)."""
@@ -1554,6 +1936,8 @@ def calibration_for(s, cfg, w):
         return w['calibration_looks']
     if not s.ctx.rules.digital and cfg.get('tabletop_map', True) and w.get('calibration_tabletop'):
         return w['calibration_tabletop']
+    if s.ctx.rules.digital and cfg.get('lane') is True and w.get('calibration_lane') and LEVEL[0] in w['calibration_lane']:
+        return w['calibration_lane'][LEVEL[0]]         # step 18q: the map fitted on play with the lane reading on
     if s.ctx.rules.digital and cfg.get('level_maps', True) and w.get('calibration_levels') and LEVEL[0] in w['calibration_levels']:
         return w['calibration_levels'][LEVEL[0]]       # D-163: the level's own map, fitted on its own play
     return w['calibration']

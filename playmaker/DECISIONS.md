@@ -1075,6 +1075,21 @@ D-191, D-193 and D-194 stand, with Shaun's original contest ratings, and the Con
 `docs/reference/SHAUN_PRINCIPLES.md`; the plan it asks for is `docs/plans/COMPUTER_FIX_PLAN.md`. · Source: Shaun,
 15 Nov 2026 · **Ruled; step 18p.**
 
+**D-197. The system of feedback loops: the scout informs the goals, the goals dictate play, for both sides.** "I'd
+like to get to a point where the offence and defence reads are intelligent. Scouting informs goals. And goals
+dictate intelligent play for both sides. For example, a constant defensive goal might be to limit future passing
+options. Protecting access to the middle of the court might fall out from such goals. Fluid goals might be things
+like 'deny all passes to O2' and 'if O2 gets the ball contain the three point shot and force a drive, pass or
+contested two pointer'. Then you get a scout that informs the goals for both teams that informs decision making for
+smart offensive and defensive computers. That's the goal. That's the system of feedback loops. And I need you to
+map the full system to basketball fidelity and perfect it iteratively." With it Shaun agreed the three decisions of
+the step 18p report: the race to the rim is built as a new part of the reading; design checks 7, 8 and 9 are
+confirmed; the step 18o and 18p pull requests are merged. **In practice:** the map is `docs/plans/SYSTEM_MAP.md`. A
+goal in the engine is a measure read off the board by the rules, a side that wants it up or down, and a source
+(constant, or switched on by the scout): it never names a move (D-156). One measure is added or mended at a time,
+proved by design checks on forced lines (D-196), and only then used by the layers above it. · Source: Shaun, 15 Nov
+2026 · **Ruled; step 18q builds the first measure (the way to the rim, `eval.lane`, `?lane=1`).**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
