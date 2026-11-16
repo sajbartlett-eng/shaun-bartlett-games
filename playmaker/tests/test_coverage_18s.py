@@ -103,11 +103,11 @@ def test_the_decisions_are_recorded():
     assert os.path.exists(os.path.join(ROOT, 'docs', 'reference', 'COVERAGE_MAP_BLUEPRINT.md'))
 
 
-def test_there_is_no_map_without_the_fast_engine_and_nothing_in_play_reads_it():
+def test_there_is_no_coach_view_without_the_fast_engine():
+    """The coach's map (every square, the words) is the fast engine's. Since stop two the search reads the map's lean
+    form, which both engines hold (tests/test_strength_18s.py)."""
     assert AG.JS.get('coverage') is None
     assert AG.coverage(board()) is None
-    for f in ('search.py', 'decide.py'):                       # stop one: the map is shown and checked, never played from
-        assert 'coverage(' not in open(os.path.join(ROOT, 'playmaker_engine', f), encoding='utf-8').read()
 
 
 # ---- the four numbers --------------------------------------------------------------------------------------------------

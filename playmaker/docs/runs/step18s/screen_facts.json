@@ -1,0 +1,87 @@
+{
+ "position": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "J10"
+  ],
+  "x": [
+   "I10",
+   "D8",
+   "O8",
+   "B4",
+   "K9"
+  ],
+  "arrows": [
+   "N",
+   "NW",
+   "N",
+   "SW",
+   "N"
+  ]
+ },
+ "no_screen": {
+  "one_movement": 34,
+  "two_movements": 85
+ },
+ "screens": {
+  "J11": {
+   "t_on": "J11",
+   "where": "next to the defender",
+   "one_movement": 31,
+   "two_movements": 80,
+   "he_may_challenge": false
+  },
+  "K11": {
+   "t_on": "K11",
+   "where": "away from him",
+   "one_movement": 31,
+   "two_movements": 79,
+   "he_may_challenge": false
+  },
+  "K10": {
+   "t_on": "K10",
+   "where": "away from him",
+   "one_movement": 34,
+   "two_movements": 85,
+   "he_may_challenge": false
+  },
+  "K9": {
+   "t_on": "K9",
+   "where": "away from him",
+   "one_movement": 31,
+   "two_movements": 79,
+   "he_may_challenge": true
+  },
+  "J9": {
+   "t_on": "J9",
+   "where": "next to the defender",
+   "one_movement": 31,
+   "two_movements": 80,
+   "he_may_challenge": false
+  },
+  "I9": {
+   "t_on": "I9",
+   "where": "next to the defender",
+   "one_movement": 24,
+   "two_movements": 76,
+   "he_may_challenge": false
+  },
+  "I10": {
+   "t_on": "I10",
+   "where": "on the defender",
+   "one_movement": 15,
+   "two_movements": 51,
+   "he_may_challenge": true
+  },
+  "I11": {
+   "t_on": "I11",
+   "where": "on the ball handler",
+   "one_movement": 23,
+   "two_movements": 63,
+   "he_may_challenge": false
+  }
+ }
+}

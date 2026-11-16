@@ -1,0 +1,321 @@
+{
+ "lane open: the offence as it chooses": {
+  "mean": 26.8,
+  "low": 23.7,
+  "high": 29.8,
+  "ends": {
+   "layup": 11,
+   "three": 3,
+   "floater": 1,
+   "post": 1
+  },
+  "first_action": [
+   [
+    "O2 move E10",
+    8
+   ],
+   [
+    "O2 move A7",
+    3
+   ],
+   [
+    "O1 move K10",
+    3
+   ]
+  ],
+  "points": [
+   28,
+   18,
+   30,
+   22,
+   34,
+   27,
+   10,
+   32,
+   32,
+   26,
+   26,
+   32,
+   32,
+   24,
+   28,
+   27
+  ],
+  "passes_a_possession": 2.44,
+  "turnovers_a_possession": 0.25,
+  "without_the_map": {
+   "mean": 24.5,
+   "low": 22.5,
+   "high": 26.5,
+   "ends": {
+    "post": 6,
+    "three": 5,
+    "floater": 3,
+    "layup": 2
+   }
+  }
+ },
+ "lane open: made to sprint into the lane": {
+  "mean": 26.6,
+  "low": 23.5,
+  "high": 29.6,
+  "ends": {
+   "layup": 8,
+   "three": 3,
+   "post": 5
+  },
+  "first_action": [
+   [
+    "O2 move E9",
+    8
+   ],
+   [
+    "O1 pass",
+    4
+   ],
+   [
+    "O2 sprint E9",
+    4
+   ]
+  ],
+  "points": [
+   34,
+   24,
+   36,
+   26,
+   28,
+   28,
+   26,
+   28,
+   27,
+   34,
+   19,
+   32,
+   11,
+   26,
+   24,
+   22
+  ],
+  "passes_a_possession": 2.19,
+  "turnovers_a_possession": 0.19,
+  "without_the_map": {
+   "mean": 27.8,
+   "low": 25.5,
+   "high": 30.1,
+   "ends": {
+    "three": 4,
+    "layup": 12
+   }
+  }
+ },
+ "help in the lane: the offence as it chooses": {
+  "mean": 23.1,
+  "low": 20.7,
+  "high": 25.6,
+  "ends": {
+   "three": 13,
+   "post": 2,
+   "layup": 1
+  },
+  "first_action": [
+   [
+    "O4 move A2",
+    8
+   ],
+   [
+    "O3 move N9",
+    3
+   ],
+   [
+    "O2 move E9",
+    2
+   ]
+  ],
+  "points": [
+   16,
+   27,
+   27,
+   27,
+   27,
+   27,
+   24,
+   18,
+   16,
+   27,
+   27,
+   19,
+   24,
+   13,
+   24,
+   27
+  ],
+  "passes_a_possession": 3.19,
+  "turnovers_a_possession": 0.25,
+  "without_the_map": {
+   "mean": 19.6,
+   "low": 16.7,
+   "high": 22.4,
+   "ends": {
+    "three": 13,
+    "floater": 1,
+    "layup": 1,
+    "post": 1
+   }
+  }
+ },
+ "help in the lane: made to sprint into the lane": {
+  "mean": 22.8,
+  "low": 19.8,
+  "high": 25.8,
+  "ends": {
+   "floater": 1,
+   "three": 14,
+   "layup": 1
+  },
+  "first_action": [
+   [
+    "O1 pass",
+    16
+   ]
+  ],
+  "points": [
+   11,
+   27,
+   27,
+   19,
+   21,
+   27,
+   27,
+   22,
+   27,
+   27,
+   21,
+   21,
+   27,
+   27,
+   7,
+   27
+  ],
+  "passes_a_possession": 3.25,
+  "turnovers_a_possession": 0.25,
+  "without_the_map": {
+   "mean": 22.0,
+   "low": 19.4,
+   "high": 24.6,
+   "ends": {
+    "three": 11,
+    "layup": 5
+   }
+  }
+ },
+ "Shaun's board from the start: his game": {
+  "mean": 26.8,
+  "low": 24.3,
+  "high": 29.2,
+  "ends": {
+   "three": 10,
+   "post": 1,
+   "layup": 5
+  },
+  "first_action": [
+   [
+    "O4 move A4",
+    7
+   ],
+   [
+    "O2 move D9",
+    6
+   ],
+   [
+    "O2 move E10",
+    3
+   ]
+  ],
+  "points": [
+   27,
+   27,
+   24,
+   27,
+   34,
+   27,
+   27,
+   24,
+   30,
+   27,
+   38,
+   27,
+   24,
+   28,
+   22,
+   15
+  ],
+  "passes_a_possession": 2.38,
+  "turnovers_a_possession": 0.06,
+  "without_the_map": {
+   "mean": 24.8,
+   "low": 22.3,
+   "high": 27.3,
+   "ends": {
+    "layup": 5,
+    "three": 6,
+    "post": 5
+   }
+  }
+ },
+ "Shaun's board from the start: X4 and X5 in the lane": {
+  "mean": 23.4,
+  "low": 21.6,
+  "high": 25.2,
+  "ends": {
+   "three": 13,
+   "layup": 1,
+   "mid": 1,
+   "post": 1
+  },
+  "first_action": [
+   [
+    "O1 qs H10",
+    7
+   ],
+   [
+    "O3 qs N9",
+    4
+   ],
+   [
+    "O1 move I10",
+    3
+   ]
+  ],
+  "points": [
+   27,
+   27,
+   27,
+   22,
+   22,
+   19,
+   17,
+   22,
+   27,
+   18,
+   22,
+   28,
+   22,
+   21,
+   27,
+   27
+  ],
+  "passes_a_possession": 3.56,
+  "turnovers_a_possession": 0.44,
+  "without_the_map": {
+   "mean": 20.7,
+   "low": 18.3,
+   "high": 23.0,
+   "ends": {
+    "three": 11,
+    "post": 1,
+    "floater": 1,
+    "layup": 3
+   }
+  }
+ }
+}

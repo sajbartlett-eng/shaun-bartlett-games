@@ -32,10 +32,13 @@ def with_x(j, sq, arrow):
 
 @pytest.fixture
 def lane():
-    keep = CONFIG['eval'].get('lane')
-    CONFIG['eval']['lane'] = True
+    """The lane reading as step 18q built and proved it: switched on, with the pass chance of its day and without the
+    coverage map. Step 18s, stop two replaced that pass chance with the rules' own (eval.pass_rules) and has the
+    offence read the map (eval.map); both are set aside here so these checks still test what they were written for."""
+    keep = {k: CONFIG['eval'].get(k) for k in ('lane', 'pass_rules', 'map')}
+    CONFIG['eval'].update(lane=True, pass_rules=False, map=False)
     yield
-    CONFIG['eval']['lane'] = keep
+    CONFIG['eval'].update(keep)
 
 
 def test_the_lane_reading_is_off_by_default():

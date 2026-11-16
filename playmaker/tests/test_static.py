@@ -302,7 +302,19 @@ const [url] = process.argv.slice(2);
     words: document.getElementById('covWords').textContent }));
   await page.click('.covmap .covsq');
   const note = await page.evaluate(() => document.getElementById('covNote').textContent);
-  console.log(JSON.stringify({ during: made.during, hidden, shown, note }));
+  // stop two: play on to the second phase (each side passes its turn where it can): the first phase gets its line
+  await page.evaluate(async ([code, token]) => {
+    for (let i = 0; i < 60; i++) {
+      const s = await window.PM_BACKEND(`/api/state?code=${code}&token=${token}`);
+      if (s.stage === 'over' || s.phase >= 2 || !s.legal.length) break;
+      const a = s.legal.find(x => x.kind === 'hesitate') || s.legal.find(x => x.kind === 'pause') || s.legal.find(x => x.kind === 'end_turn') || s.legal.find(x => x.kind === 'move') || s.legal[0];
+      await window.PM_BACKEND('/api/act', { code, token, action: a });
+    }
+  }, [made.code, made.token]);
+  await page.evaluate('enterTable();');
+  await page.waitForSelector('#covScores', { timeout: 60000 });
+  const scores = await page.evaluate(() => document.getElementById('covScores').textContent);
+  console.log(JSON.stringify({ during: made.during, hidden, shown, note, scores }));
   await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
 """
@@ -321,3 +333,4 @@ def test_the_coverage_view_shows_in_the_browser_build(static_site, tmp_path):
     assert out['shown']['text'] == 'Coverage: shown' and out['shown']['cells'] > 20
     assert out['shown']['words'].startswith('Coverage at the start of this phase.') and 'worth' in out['shown']['words']
     assert 'can get' in out['note'] and 'next phase' in out['note']
+    assert out['scores'].startswith('Phase 1: ') and ('Defence' in out['scores'] or 'defence' in out['scores'])     # stop two: the phase's line

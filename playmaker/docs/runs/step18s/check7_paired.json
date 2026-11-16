@@ -1,0 +1,15 @@
+{
+ "the_offence_on_the_map_less_off_it": {
+  "mean": 2.09,
+  "low": 0.39,
+  "high": 3.8,
+  "possessions": 64
+ },
+ "the_defence_on_the_map_less_off_it": {
+  "mean": 0.53,
+  "low": -1.1,
+  "high": 2.16,
+  "possessions": 64
+ },
+ "note": "the same dice possession by possession; the offence: both sides on the map against the defence alone on it; the defence: the defence alone on it against neither (a lower number is the better defence)"
+}

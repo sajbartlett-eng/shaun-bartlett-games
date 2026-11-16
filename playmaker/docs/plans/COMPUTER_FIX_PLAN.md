@@ -244,3 +244,48 @@ the Screen action (it bars only a diagonal step; the helpers on this board trave
 rules'); checks 7 to 9 on forced lines, the 18o closeout position replayed under D-198 first and check 8 on named
 positions; then the port to the other engine. Whatever must be fitted (the cost of waiting a phase) is fitted on
 forced lines only.
+
+## After the coverage map, stop two (step 18s, 16 Nov 2026)
+
+Shaun's rulings: D-201 (position at a phase's start: the rules stay; the strength measure carries it) and D-202 (the
+button reads "Coverage"). His addendum (`docs/reference/COVERAGE_MAP_BLUEPRINT_ADDENDUM_STRENGTH.md`): strength,
+fragility, broken; a good possession weakens the defence every phase until it breaks.
+
+**Built, in order:**
+
+1. **The pass chance by the rules** (`eval.pass_rules`, on). A defender takes a pass through his square, or after one
+   straight movement along an arrow line to where it meets the pass, never from next to the passer. Equal to the
+   rules' own actions on 7,504 of 7,504 random passes (the old reading: 48 in 100). Both engines.
+2. **The measures.** Strength (the most the offence can force by the next phase's start, the defence's answers
+   counted), fragility (the separate attackers who hold a way worth at least that), broken (a shot now worth more than
+   playing on, by the phase table). In the coach's view, with one line for every finished phase and one for the
+   possession.
+3. **The map in a lean form, with fast answers,** in both engines and equal (the search's three numbers: the shot
+   now, the best way, the second way).
+4. **The search reads the map** (`eval.map`): a line fitted to play over those three numbers, per phase and side to
+   act (`calibration_map`).
+
+**Two corrections to stop one's map, found here:** a zone broken by a Dribble and a screen both end with the phase, so
+neither is carried into the next phase's options (the map had carried the broken zone); and a moved screener's screen
+is gone.
+
+**What the fit showed.** The best way as the board stands predicts what positions go on to earn better than today's
+reading (agreement 0.24 against 0.16 on possessions held out). The best way after the defence's answers predicts
+almost nothing (0.05): in the play the fit learned from, the defence did not make those answers. The line is fitted
+on the standing form; the answered form is for the refit once the defence plays from the map.
+
+**By the checks** (`docs/reports/STEP18S_REPORT.md`, stop two):
+
+- **Check 7 holds for the offence.** Reading the map it takes the open lane by choice (layups 11 in 16, from 2) and
+  matches the forced drive and kick against help. Same dice, 64 possessions: 2.1 more a possession (0.4 to 3.8).
+- **The defence is no better for the map** (0.5 worse, -1.1 to 2.2): the line was fitted on the board as it stands.
+- **Check 8 is not shown** at 16 play-outs a line; S2's direction is right. S3: the screen sequence can be played and
+  doesn't pay (0.1, -2.6 to 2.7). S4: the direction is right, not proven.
+- **18o's closeout fault is gone under D-198:** the computer's pick is the best line on all three positions.
+- **Exam position 15 (goal consistency) fails with the map on,** so `eval.map` is off by default (D-196) and `?map=1`
+  turns it on for the offence in a game. Position 14 passes again with the rules' own pass chance.
+
+**Next, in order:** the defence's own fit (play with the map on for both, then fit the line again, the answered form
+beside the standing one); check 8 on fewer turns with 60 or more play-outs each; the goals read off the map (so that
+position 15's "one goal" means the weakness being worked on), with the scout setting them; then the setup search on
+more deals. The Screen rule waits on Shaun.

@@ -389,6 +389,7 @@ async function create() {
     { const su = new URLSearchParams(location.search).get('setup'); if (su === 'search' && body.match_format === 'digital') body.setup = 'search'; }
     // step 18q (D-196): ?lane=1 in the address plays the computer with the way to the rim in its reading (built, off)
     { const ln = new URLSearchParams(location.search).get('lane'); if (ln === '1' && body.match_format === 'digital') body.lane = 'on'; }
+    { const mp = new URLSearchParams(location.search).get('map'); if (mp && body.match_format === 'digital') body.map = mp === '0' ? 'off' : mp === 'both' ? 'both' : 'offence'; }     // step 18s, stop two
     { const ctl = new URLSearchParams(location.search).get('control'); if (ctl && ['0', '1', '2', '3'].includes(ctl) && body.match_format === 'digital') body.control = ctl; }
     if (path === 'computer') body.place = true;      // step 3k: the computer sets up its own side; you place yours
     const m = rosterMode();

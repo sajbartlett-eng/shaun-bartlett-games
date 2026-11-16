@@ -241,3 +241,104 @@ def test_every_finished_phase_gets_a_line_and_the_possession_gets_one(cov):
 def test_the_app_shows_the_phase_lines_under_the_board():
     js = open(os.path.join(ROOT, 'playmaker_web', 'static', 'app.js'), encoding='utf-8').read()
     assert "id: 'covScores'" in js and '`Phase ${ln.phase}: ${ln.text}`' in js and 'sc.verdict' in js
+
+
+# ---- part 2: the search reads the map (eval.map, off until its checks pass) -------------------------------------------
+
+@pytest.fixture
+def map_on():
+    keep = D.CONFIG['eval'].get('map')
+    D.CONFIG['eval']['map'] = True
+    yield
+    D.CONFIG['eval']['map'] = keep
+
+
+def test_the_map_reading_is_a_fitted_line_and_the_switch_says_whether_it_is_played_from(map_on):
+    w = D.learned_weights()['calibration_map']
+    assert w['form'] in ('standing', 'answered') and len(w['maps']) >= 6
+    for key, row in w['maps'].items():
+        assert key[0] in '123456' and key[1] in 'OX' and len(row['w']) == 4 and min(row['w'][1:]) >= 0     # fitted, never below 0
+    s = board()
+    r = D.Read(s)
+    row = w['maps']['1O']['w']
+    two = r.map_two(w['form'] == 'answered')
+    line = row[0] + (row[1] * r.map_shot() + row[2] * two[0] + row[3] * two[1])
+    with_map = r.leaf()
+    assert with_map == pytest.approx(max(r.shot_now() or 0.0, line) + D.foul_externality(s))
+    D.CONFIG['eval']['map'] = False
+    assert D.Read(s).leaf() != pytest.approx(with_map)           # with the switch off: the reading as it was
+    assert D.Read(s, k=0, looks_per=3)._map_leaf() is None       # the quick look that orders the list keeps its own reading
+
+
+def test_the_maps_numbers_follow_the_rules():
+    his = D.Read(board())
+    helped = D.Read(board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N']))
+    assert his.map_two()[0] == 34 and helped.map_two()[0] < his.map_two()[0]          # the open lane; help in it
+    assert his.map_two(True)[0] <= his.map_two()[0]                                   # the defence's answers take something off
+    spent = D.Read(board(tok_x=0))
+    assert spent.map_two(True) == spent.map_two()                                     # no token, no answer
+    assert D.Read(board(clock=2)).map_two() == (0.0, 0.0)                             # the last phase: no next one
+    # a zone a Dribble has broken is whole again when the next phase starts, and so is a locked defender's movement
+    beaten = board().with_(beaten=((0, 0),), lock_x=1)
+    opts, plain_opts = D.Read(beaten).map_options(), D.Read(board()).map_options()
+    far = (1, B.parse_sq('C9'), False)                           # the sharpshooter's three where he stands: X1 has no part in it
+    assert opts[far][1] == plain_opts[far][1]
+
+
+@needs_node
+def test_both_engines_agree_on_the_maps_numbers(cov):
+    import json as _json
+    from playmaker_engine import agent as AG, jsbridge
+    sys.path.insert(0, os.path.join(ROOT, 'tools'))
+    import js_equivalence as E
+    keep = dict(E._ZONE), dict(E._FIBA), dict(E._CONTROL)
+    E._ZONE['v'] = 'on'
+    E._CONTROL['size'] = 'app'
+    E._FIBA.update(three_seconds='on', closely_guarded='on', fiba_fouled_shot='on', soft_contest='on', fiba_steal_foul='on', off_balance='on',
+                   position_contest='on')
+    try:
+        rng = random.Random(5)
+        seen = 0
+        while seen < 40:
+            s, meta = E.random_state(rng)
+            if s.stage != 'play' or s.pending or not meta['digital'] or not all(B.on_board(q) for q in s.o + s.x):
+                continue
+            js = _json.loads(AG.JS['coverage'](_json.dumps(dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), options=dict(only='parts')))))['parts']
+            r = D.Read(s)
+            py = [r.map_shot()] + list(r.map_two(False)) + list(r.map_two(True)) + [s.tok_o, s.tok_x]
+            assert py == pytest.approx(js, abs=1e-9), s
+            seen += 1
+    finally:
+        E._ZONE.clear(), E._ZONE.update(keep[0]), E._FIBA.clear(), E._FIBA.update(keep[1]), E._CONTROL.update(keep[2])
+
+
+def test_the_map_is_played_from_only_where_asked_and_only_by_the_offence_then():
+    """The default (eval.map off): on the same dice the offence scores 2.1 more a possession playing from the map (0.4
+    to 3.8), but exam position 15 (goal consistency) fails with it on, so it isn't the default (D-196). ?map=1 turns it
+    on for the offence's decisions in a game; ?map=both for the defence's too (nothing shown for the defence)."""
+    from playmaker_web.game import Game
+    cfg = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))['eval']
+    assert cfg['map'] is False and cfg['pass_rules'] is True
+    proof = json.load(open(os.path.join(ROOT, 'docs', 'runs', 'step18s', 'check7_paired.json')))
+    assert proof['the_offence_on_the_map_less_off_it']['low'] > 0 and proof['the_defence_on_the_map_less_off_it']['high'] > 0
+    keep, me = D.CONFIG['eval'].get('map'), D.MAP_ME[0]
+    try:
+        D.CONFIG['eval']['map'] = 'offence'
+        r = D.Read(board())
+        D.MAP_ME[0] = 'O'
+        assert r._map_leaf() is not None
+        D.MAP_ME[0] = 'X'
+        assert r._map_leaf() is None                              # the defence's decision: the reading as it was
+        D.MAP_ME[0] = None
+        assert r._map_leaf() is None                              # no decision in hand: the reading as it was
+        kw = dict(mode='hotseat', teams=['Five Out', 'High-Low'], seed=3, full=True, level='pro')
+        Game(match_format='digital', map_read='offence', **kw)   # ?map=1
+        assert D.CONFIG['eval']['map'] == 'offence'
+        Game(match_format='digital', map_read='both', **kw)      # ?map=both
+        assert D.CONFIG['eval']['map'] is True
+        Game(match_format='digital', **kw)                       # the next game: the file's own setting
+        assert D.CONFIG['eval']['map'] is False
+        Game(map_read='offence', **kw)                           # nothing for the table
+        assert D.CONFIG['eval']['map'] is False
+    finally:
+        D.CONFIG['eval']['map'], D.MAP_ME[0] = keep, me

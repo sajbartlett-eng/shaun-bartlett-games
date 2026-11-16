@@ -1,0 +1,402 @@
+{
+ "summary": {
+  "the setup as it was": {
+   "points": 27.0,
+   "low": 25.2,
+   "high": 28.8,
+   "possessions": 24,
+   "strength_at_the_start": 23.5,
+   "weak_first_phases": "20 of 22"
+  },
+  "the setup judged by the map, both sides": {
+   "points": 24.9,
+   "low": 22.2,
+   "high": 27.7,
+   "possessions": 24,
+   "strength_at_the_start": 21.8,
+   "weak_first_phases": "7 of 10"
+  },
+  "the map's offence against the old way of setting the defence": {
+   "points": 28.0,
+   "low": 26.8,
+   "high": 29.2,
+   "possessions": 24,
+   "strength_at_the_start": 22.5,
+   "weak_first_phases": "8 of 11"
+  }
+ },
+ "deals": {
+  "deal 1: the setup as it was": {
+   "o": [
+    "E14",
+    "C5",
+    "M5",
+    "A8",
+    "J10"
+   ],
+   "x": [
+    "K2",
+    "D6",
+    "L4",
+    "B9",
+    "K9"
+   ],
+   "arrows": [
+    1,
+    5,
+    1,
+    5,
+    7
+   ],
+   "ball": 0,
+   "strength_at_the_start": 22,
+   "points": 26.5,
+   "low": 23.8,
+   "high": 29.2,
+   "possessions": 6,
+   "reached_a_second_phase": 5,
+   "first_phase_left_the_defence_no_weaker": 5
+  },
+  "deal 1: the setup judged by the map, both sides": {
+   "o": [
+    "L11",
+    "M7",
+    "Q5",
+    "N14",
+    "A11"
+   ],
+   "x": [
+    "D6",
+    "N6",
+    "I9",
+    "K3",
+    "G14"
+   ],
+   "arrows": [
+    7,
+    4,
+    0,
+    1,
+    1
+   ],
+   "ball": 0,
+   "strength_at_the_start": 27,
+   "points": 23.0,
+   "low": 15.6,
+   "high": 30.4,
+   "possessions": 6,
+   "reached_a_second_phase": 2,
+   "first_phase_left_the_defence_no_weaker": 2
+  },
+  "deal 1: the map's offence against the old way of setting the defence": {
+   "o": [
+    "L11",
+    "M7",
+    "Q5",
+    "N14",
+    "A11"
+   ],
+   "x": [
+    "M10",
+    "M6",
+    "K6",
+    "O13",
+    "B10"
+   ],
+   "arrows": [
+    7,
+    0,
+    0,
+    7,
+    7
+   ],
+   "ball": 0,
+   "strength_at_the_start": 16,
+   "points": 28.2,
+   "low": 25.9,
+   "high": 30.5,
+   "possessions": 6,
+   "reached_a_second_phase": 3,
+   "first_phase_left_the_defence_no_weaker": 0
+  },
+  "deal 2: the setup as it was": {
+   "o": [
+    "P13",
+    "A3",
+    "G4",
+    "Q10",
+    "A5"
+   ],
+   "x": [
+    "E2",
+    "B4",
+    "H3",
+    "P9",
+    "B6"
+   ],
+   "arrows": [
+    1,
+    5,
+    7,
+    1,
+    5
+   ],
+   "ball": 0,
+   "strength_at_the_start": 26,
+   "points": 24.2,
+   "low": 19.3,
+   "high": 29.0,
+   "possessions": 6,
+   "reached_a_second_phase": 6,
+   "first_phase_left_the_defence_no_weaker": 5
+  },
+  "deal 2: the setup judged by the map, both sides": {
+   "o": [
+    "J13",
+    "Q1",
+    "M7",
+    "M3",
+    "G1"
+   ],
+   "x": [
+    "L11",
+    "E8",
+    "J5",
+    "P4",
+    "I5"
+   ],
+   "arrows": [
+    4,
+    2,
+    5,
+    7,
+    3
+   ],
+   "ball": 0,
+   "strength_at_the_start": 18,
+   "points": 23.0,
+   "low": 18.8,
+   "high": 27.2,
+   "possessions": 6,
+   "reached_a_second_phase": 2,
+   "first_phase_left_the_defence_no_weaker": 1
+  },
+  "deal 2: the map's offence against the old way of setting the defence": {
+   "o": [
+    "J13",
+    "Q1",
+    "M7",
+    "M3",
+    "G1"
+   ],
+   "x": [
+    "E4",
+    "P1",
+    "M6",
+    "L2",
+    "H2"
+   ],
+   "arrows": [
+    1,
+    2,
+    0,
+    1,
+    5
+   ],
+   "ball": 0,
+   "strength_at_the_start": 21,
+   "points": 27.7,
+   "low": 26.7,
+   "high": 28.6,
+   "possessions": 6,
+   "reached_a_second_phase": 3,
+   "first_phase_left_the_defence_no_weaker": 3
+  },
+  "deal 3: the setup as it was": {
+   "o": [
+    "I11",
+    "C9",
+    "O9",
+    "A3",
+    "Q3"
+   ],
+   "x": [
+    "J10",
+    "D8",
+    "O8",
+    "B4",
+    "P2"
+   ],
+   "arrows": [
+    7,
+    7,
+    0,
+    5,
+    1
+   ],
+   "ball": 0,
+   "strength_at_the_start": 22,
+   "points": 30.7,
+   "low": 27.3,
+   "high": 34.0,
+   "possessions": 6,
+   "reached_a_second_phase": 6,
+   "first_phase_left_the_defence_no_weaker": 6
+  },
+  "deal 3: the setup judged by the map, both sides": {
+   "o": [
+    "A8",
+    "L4",
+    "O2",
+    "I10",
+    "P5"
+   ],
+   "x": [
+    "G4",
+    "O12",
+    "Q6",
+    "F2",
+    "J2"
+   ],
+   "arrows": [
+    3,
+    5,
+    6,
+    4,
+    0
+   ],
+   "ball": 0,
+   "strength_at_the_start": 24,
+   "points": 27.8,
+   "low": 22.5,
+   "high": 33.1,
+   "possessions": 6,
+   "reached_a_second_phase": 3,
+   "first_phase_left_the_defence_no_weaker": 3
+  },
+  "deal 3: the map's offence against the old way of setting the defence": {
+   "o": [
+    "A8",
+    "L4",
+    "O2",
+    "I10",
+    "P5"
+   ],
+   "x": [
+    "B9",
+    "K3",
+    "N1",
+    "J9",
+    "O4"
+   ],
+   "arrows": [
+    5,
+    1,
+    1,
+    7,
+    1
+   ],
+   "ball": 0,
+   "strength_at_the_start": 26,
+   "points": 26.8,
+   "low": 24.1,
+   "high": 29.5,
+   "possessions": 6,
+   "reached_a_second_phase": 3,
+   "first_phase_left_the_defence_no_weaker": 3
+  },
+  "deal 4: the setup as it was": {
+   "o": [
+    "I11",
+    "C9",
+    "O9",
+    "A3",
+    "Q3"
+   ],
+   "x": [
+    "J10",
+    "D8",
+    "O8",
+    "D5",
+    "P2"
+   ],
+   "arrows": [
+    7,
+    7,
+    0,
+    1,
+    1
+   ],
+   "ball": 0,
+   "strength_at_the_start": 24,
+   "points": 26.5,
+   "low": 25.5,
+   "high": 27.5,
+   "possessions": 6,
+   "reached_a_second_phase": 5,
+   "first_phase_left_the_defence_no_weaker": 4
+  },
+  "deal 4: the setup judged by the map, both sides": {
+   "o": [
+    "F11",
+    "C5",
+    "H1",
+    "L12",
+    "L2"
+   ],
+   "x": [
+    "I7",
+    "F8",
+    "B10",
+    "J1",
+    "D11"
+   ],
+   "arrows": [
+    4,
+    0,
+    3,
+    0,
+    3
+   ],
+   "ball": 0,
+   "strength_at_the_start": 18,
+   "points": 25.8,
+   "low": 20.7,
+   "high": 31.0,
+   "possessions": 6,
+   "reached_a_second_phase": 3,
+   "first_phase_left_the_defence_no_weaker": 1
+  },
+  "deal 4: the map's offence against the old way of setting the defence": {
+   "o": [
+    "F11",
+    "C5",
+    "H1",
+    "L12",
+    "L2"
+   ],
+   "x": [
+    "G10",
+    "D6",
+    "I2",
+    "M11",
+    "K1"
+   ],
+   "arrows": [
+    7,
+    5,
+    5,
+    7,
+    1
+   ],
+   "ball": 0,
+   "strength_at_the_start": 27,
+   "points": 29.3,
+   "low": 26.4,
+   "high": 32.3,
+   "possessions": 6,
+   "reached_a_second_phase": 2,
+   "first_phase_left_the_defence_no_weaker": 2
+  }
+ }
+}

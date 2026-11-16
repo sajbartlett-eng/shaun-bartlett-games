@@ -1555,9 +1555,11 @@ const PMEngine = (() => {
   // stands. 0: by the rules he can't.
   const passRulesOn = () => D.config.eval.pass_rules !== false;
   // step 18s, stop two (eval.map): the search reads the coverage map at the end of every line (Read._mapLeaf)
-  const mapOn = () => D.config.eval.map === true;
-  function setMap(v) { D.config.eval.map = v === true || v === 'true'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.map; }
-  function mapParts(s) { const r = readOf(s); return [r.mapShot()].concat(r.mapTwo()).concat([s.tok_o, s.tok_x]); }
+  // true: both sides; 'offence': only where the decision being searched is the offence's (MAP_ME, set by search())
+  let MAP_ME = null;
+  const mapOn = () => D.config.eval.map === true || (D.config.eval.map === 'offence' && MAP_ME === 'O');
+  function setMap(v) { D.config.eval.map = v === 'offence' ? 'offence' : (v === true || v === 'true'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.map; }
+  function mapParts(s) { const r = readOf(s); return [r.mapShot()].concat(r.mapTwo(false)).concat(r.mapTwo(true)).concat([s.tok_o, s.tok_x]); }
   function setPassRules(v) { D.config.eval.pass_rules = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.pass_rules; }
   // occ: a Set of the squares taken, or null with (oi, oc, oj, oq): receiver oi on oc, defender oj on oq (passTaken)
   function passTaken(s, z, oi, oc, oj, oq) {
@@ -2886,8 +2888,10 @@ const PMEngine = (() => {
     // step 18s, stop two (eval.map, off until its checks pass): the coverage map's two numbers for the search. The
     // best any attacker can have at the start of the next phase (the map's strength as the board stands), and the best
     // a second, separate attacker can have (a second way: what makes a defence fragile).
-    mapTwo() {                                     // [best way, second way, the same two after the defence's answers]
-      if (this._map2 !== undefined) return this._map2;
+    mapTwo(answered) {                             // [best way, second way]: as the board stands, or after the defence's answers
+      // (only the numbers are kept with the reading: the map itself is let go, or a long search holds thousands of them)
+      const c = this._map2 || (this._map2 = { raw: null, ans: null });
+      if (answered ? c.ans !== null : c.raw !== null) return answered ? c.ans : c.raw;
       const m = covBuild(this.s, true, this);
       const two = () => {
         const mine = [0, 0, 0, 0, 0];
@@ -2896,9 +2900,9 @@ const PMEngine = (() => {
         for (let i = 0; i < 5; i++) { const v = mine[i]; if (v > a) { b = a; a = v; } else if (v > b) b = v; }
         return [a, b];
       };
-      const raw = two();
-      covLeanAnswers(m);
-      return (this._map2 = raw.concat(two()));
+      c.raw = two();
+      if (answered) { covLeanAnswers(m); c.ans = two(); }
+      return answered ? c.ans : c.raw;
     }
     mapShot() {                                    // the best shot that can go up now, as the reading has it
       const sn = this.shotNow();
@@ -2908,7 +2912,7 @@ const PMEngine = (() => {
     }
     _mapLeaf() {                                   // null: no fitted line for this phase and side (the reading as it was)
       const s = this.s;
-      if (!mapOn() || !s.ctx.digital || s.stage !== 'play' || s.pending || !D.learned.calibration_map) return null;
+      if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play' || s.pending || !D.learned.calibration_map) return null;
       const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
       const row = D.learned.calibration_map.maps[String(phase) + (this.o_to_act ? 'O' : 'X')];
       if (!row) return null;
@@ -2916,8 +2920,9 @@ const PMEngine = (() => {
       banked += foulExternality(s);
       const shot = this.mapShot();
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + shot;
-      const two = this.mapTwo(), w = row.w;
-      const line = w[0] + (w[1] * shot + w[2] * two[2] + w[3] * two[3]);     // the ways the defence's answers leave
+      // the two ways as the board stands, or as the defence's answers leave them: whichever form the line was fitted on
+      const two = this.mapTwo(D.learned.calibration_map.form === 'answered'), w = row.w;
+      const line = w[0] + (w[1] * shot + w[2] * two[0] + w[3] * two[1]);
       const sn = this.o_to_act ? (this.shotNow() || 0.0) : 0.0;     // the offence to act can simply shoot
       return banked + Math.max(sn, line);
     }
@@ -4089,7 +4094,8 @@ const PMEngine = (() => {
       // step 18h: the level's own map is in force for the length of its search and no longer (search.Searcher.root)
       const prev = D.level === undefined ? null : D.level;
       setLevel(this.p.level);
-      try { return this._root(s, maxDepth); } finally { setLevel(prev); }
+      MAP_ME = this.me;                              // step 18s, stop two: eval.map 'offence', likewise for the search's length
+      try { return this._root(s, maxDepth); } finally { setLevel(prev); MAP_ME = null; if (D.config.eval.map === 'offence') { READS = new Map(); READS_OLD = new Map(); } }
     }
     _root(s, maxDepth) {
       const side = actor(s);
@@ -4257,6 +4263,7 @@ const PMEngine = (() => {
     const t0 = now();
     const deadline = req.budget == null ? Infinity : t0 + req.budget;
     READS = new Map(); READS_OLD = new Map();
+    MAP_ME = me;                                         // step 18s, stop two: eval.map 'offence' reads the map for the offence's decisions only
     const srch = new Searcher(me, prof, makeEvaluate(prof, me, stale), deadline);
     if (req.habit) { srch.habit = req.habit; srch.habit_weight = req.habit_weight == null ? 0.3 : req.habit_weight; }
     const maxDepth = req.max_depth != null ? req.max_depth : prof.depth[1];
@@ -4382,6 +4389,9 @@ const PMEngine = (() => {
   function goalsJSON(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
+    if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
+    if (req.map_me) MAP_ME = req.map_me;                 // (a setup's readings: the side placing)
+    if (req.pass_rules !== undefined && (req.pass_rules !== false) !== passRulesOn()) setPassRules(req.pass_rules !== false);
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -4401,6 +4411,9 @@ const PMEngine = (() => {
   function searchJSON(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
+    if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
+    if (req.map_me) MAP_ME = req.map_me;                 // (a setup's readings: the side placing)
+    if (req.pass_rules !== undefined && (req.pass_rules !== false) !== passRulesOn()) setPassRules(req.pass_rules !== false);
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -4413,6 +4426,9 @@ const PMEngine = (() => {
   function readsJSON(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
+    if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
+    if (req.map_me) MAP_ME = req.map_me;                 // (a setup's readings: the side placing)
+    if (req.pass_rules !== undefined && (req.pass_rules !== false) !== passRulesOn()) setPassRules(req.pass_rules !== false);
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
@@ -4428,6 +4444,7 @@ const PMEngine = (() => {
 
   // ---- the equivalence probe: every measured quantity of one state --------------------------------------------------
   function probe(js, ctxJs, opts = {}) {
+    MAP_ME = null;                                       // no decision is being searched
     const ctx = makeCtx(ctxJs), s = stateFrom(js, ctx);
     const mapOut = m => { const o = {}; for (const [q, n] of m) o[sqName(q)] = n; return o; };
     const fixedOut = m => { const o = {}; for (const [q, arrs] of m) { const r = {}; for (const [a, n] of arrs) r[a] = n; o[sqName(q)] = r; } return o; };
@@ -4536,11 +4553,15 @@ const PMEngine = (() => {
   }
   // lean (stop two, for the search): only each square's best open way is kept, not every way to it. The same options,
   // values and worths; no paths, so nothing can be re-read with a defender moved (covWith, the answers).
+  // The board as the next phase finds it if nobody moves again (resolve.new_phase): the defence's movement fresh, no
+  // zone broken (a won Dribble lasts the phase), no screen standing (a screen ends with the phase).
+  const covNext = s => W_(s, { screens: [], tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [], cnt: ZERO });
   function covBuild(s, lean, r0) {
     const r = r0 || new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
+    const sN = covNext(s);
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
-    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cmapCached(s.x[d], s.arrows[d], ctx.dfn[d].qs, true, 1, stanceMode(s, d)).masks[2] : null));
+    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cmapCached(s.x[d], s.arrows[d], ctx.dfn[d].qs, true, 1, stanceMode(sN, d)).masks[2] : null));
     const options = [], byKey = new Map();
     const last = s.clock <= 2;                         // no phase after this one
     for (let a = 0; a < 5 && !last; a++) {
@@ -4560,12 +4581,11 @@ const PMEngine = (() => {
       const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== a) mates.add(s.o[k]);
       const lines = [];
       if (ctx.zone) {
-        for (let j = 0; j < 5; j++) {                 // actions.capture_lines, a defender at a time, for this attacker with the ball
-          const st = stanceOf(s, j);
+        for (let j = 0; j < 5; j++) {                 // actions.capture_lines, a defender at a time, for this attacker with the ball, a phase on
+          const st = stanceOf(sN, j);
           if (st < 8 || st >= 16 || !ONB[s.x[j]]) continue;
-          if (s.beaten.some(b => b[0] === a && b[1] === j)) continue;
           const d0 = st - 8, d1 = (st - 7) % 8;
-          lines.push([j, [[s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, s.o[a], -1).length), Math.max(1, zoneRay(s, j, d1, s.o[a], -1).length)]]]);
+          lines.push([j, [[s.x[j], d0, d1, Math.max(1, zoneRay(sN, j, d0, s.o[a], -1).length), Math.max(1, zoneRay(sN, j, d1, s.o[a], -1).length)]]]);
         }
       }
       const qs = ctx.off[a].qs, home = s.o[a];
@@ -4629,13 +4649,13 @@ const PMEngine = (() => {
     // the best shot that can go up this phase, as the reading has it
     let now = null;
     for (const i of r.att_o) for (const lk of r.looks[i] || []) if (lk.now && (now === null || lk.base > now.e)) now = { a: i, c: lk.c, e: lk.base, route: lk.route };
-    return { s, r, options, sorted, now, cms };
+    return { s, sN, r, options, sorted, now, cms };
   }
   // one option with defender d standing on p facing `arrow` (his Contest from there `cm`), every other piece as it stands
   function covWith(m, o, d, p, arrow, cm) {
     if (o.c === p) return -Infinity;
     const s = m.s, bd = 1 << d, same = p === s.x[d] && arrow === s.arrows[d];
-    const line = (!same && s.ctx.zone && stanceMode(s, d) === 1) ? [[p, arrow, (arrow + 1) % 8, 1, 1]] : null;
+    const line = (!same && s.ctx.zone) ? [[p, arrow, (arrow + 1) % 8, 1, 1]] : null;
     let pr = 0;
     for (const pt of o.paths) {
       if (pt.pr <= pr || (pt.dm & ~bd) || (same ? pt.zm : (pt.zm & ~bd)) || pt.stop === p || (pt.p.length && pt.p.includes(p))) continue;
@@ -4647,43 +4667,64 @@ const PMEngine = (() => {
     const mine = mask ? m.r._valsCalc(o.lk, d, mask, 0, o.fl, s.ctx.soft ? mask : 0, 0) : null;
     return pr * covValue(o, d, mine)[0] - (1 - pr) * TURNOVER_COST;
   }
-  // stop two, for the search: the defence's answers in a fast form. While it has tokens, the defender whose one
-  // movement this phase takes most off the offence's best option makes it (a Move: any arrow; a Quick Step or Sprint:
-  // the arrow it leaves him), and then contests everything from where he now stands. Each defender moves once. What
-  // is left is what the defence could not take away with the tokens it has. Approximations: his way there is taken
-  // from the board's geometry (a body on it isn't counted), and only his new square's body is added to the board.
+  // stop two, for the search: the defence's answers in a fast form. While it has tokens, one defender makes the one
+  // movement this phase that takes something off the offence's best option and leaves its best six the smallest, the
+  // largest first (a Move: any arrow; a Quick Step or Sprint: the arrow it leaves him), and then contests everything
+  // from where he now stands. Each defender moves once. What
+  // is left is what the defence could not take away with the tokens it has. His way there is his exact movement (bodies
+  // and screens counted). Approximation: of the board's changes only his new square's body is counted.
   function covLeanAnswers(m) {
-    const s = m.s, r = m.r, soft = s.ctx.soft, opts = m.options;
+    const s = m.s, r = m.r, soft = s.ctx.soft, opts = m.options, K = 6;
     if (s.tok_x <= 0) return 0;
     const taken = new Set(); for (let k = 0; k < 5; k++) { taken.add(s.o[k]); taken.add(s.x[k]); }
     const moved = [false, false, false, false, false];
+    const before = (x, y) => y.e - x.e || x.a - y.a || x.c - y.c || (x.rushed ? 1 : 0) - (y.rushed ? 1 : 0);
     let tok = s.tok_x, steps = 0;
     while (tok > 0) {
-      let top = null;
-      for (const o of opts) if (o.r > 0 && (top === null || o.e > top.e || (o.e === top.e && (o.a - top.a || o.c - top.c || (o.rushed ? 1 : 0) - (top.rushed ? 1 : 0)) < 0))) top = o;
-      if (top === null || top.e <= 0) break;
-      const b = BI[top.c], pr = top.r;
+      const head = [];                                  // the offence's best few options, the largest first
+      for (const o of opts) {
+        if (!(o.r > 0)) continue;
+        let k = head.length;
+        while (k > 0 && before(o, head[k - 1]) < 0) k--;
+        if (k < K) { head.splice(k, 0, o); if (head.length > K) head.pop(); }
+      }
+      const top = head[0];
+      if (!top || top.e <= 0) break;
+      const b = BI[top.c];
+      const cur = head.map(o => o.e);
       let best = null;
-      const offer = (d, q, a, mask) => {                  // a: the arrow a Quick Step or Sprint leaves him, or -1 after a Move
-        if (!mask || taken.has(q)) return;
-        const vals = r._valsCalc(top.lk, d, mask, 0, top.fl, soft ? mask : 0, 0);
-        const e = pr * covValue(top, d, vals)[0] - (1 - pr) * TURNOVER_COST;
-        if (!(e < top.e - 1e-9)) return;
-        if (best === null || e < best.e - 1e-9 || (Math.abs(e - best.e) <= 1e-9 && (d - best.d || q - best.q || a - best.a) < 0)) best = { d, q, a, e };
+      const offer = (d, q, a, cm) => {                    // a: the arrow a Quick Step or Sprint leaves him, or -1 after a Move
+        if (!cm[b] || taken.has(q)) return;
+        const after = [];
+        for (let k = 0; k < head.length; k++) {
+          const o = head[k];
+          let e;
+          if (o.c === q) e = -Infinity;
+          else {
+            const mask = cm[BI[o.c]];
+            const vals = mask ? r._valsCalc(o.lk, d, mask, 0, o.fl, soft ? mask : 0, 0) : null;
+            e = o.r * covValue(o, d, vals)[0] - (1 - o.r) * TURNOVER_COST;
+          }
+          if (k === 0 && !(e < top.e - 1e-9)) return;     // an answer takes something off the best option
+          after.push(e);
+        }
+        after.sort((x, y) => y - x);
+        if (best === null || covLess(after, best.after) || (!covLess(best.after, after) && (d - best.d || q - best.q || a - best.a) < 0)) best = { d, q, a, after };
       };
       for (let d = 0; d < 5; d++) {
         if (moved[d] || !ONB[s.x[d]]) continue;
         const cp = caps(s, 'X', d);
         if (!cp[0] && cp[1] <= 0) continue;
-        const qs = s.ctx.dfn[d].qs, mode = stanceMode(s, d), fr = geoReach(s.x[d], s.arrows[d], qs, cp[0], cp[1]);
-        for (const [q, n] of fr[0]) if (n === 1) offer(d, q, -1, anyArrowMask(q, qs, mode)[b]);
-        for (const [q, arrs] of fr[1]) for (const [a, n] of arrs) if (n === 1) offer(d, q, a, cmapCached(q, a, qs, true, 1, mode).masks[2][b]);
+        const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), fr = defenderReachExact(s, d);
+        for (const [q, n] of fr[0]) if (n === 1) offer(d, q, -1, anyArrowMask(q, qs, mode));
+        for (const [q, arrs] of fr[1]) for (const [a, n] of arrs) if (n === 1) offer(d, q, a, cmapCached(q, a, qs, true, 1, mode).masks[2]);
       }
-      if (best === null) break;
-      const d = best.d, qs = s.ctx.dfn[d].qs, mode = stanceMode(s, d);
+      if (best === null || !covLess(best.after, cur)) break;
+      const d = best.d, qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d);
       const cm = best.a < 0 ? anyArrowMask(best.q, qs, mode) : cmapCached(best.q, best.a, qs, true, 1, mode).masks[2];
       moved[d] = true; tok--; steps++;
       taken.add(best.q);
+      if (m.steps) m.steps.push([d, best.q, best.a]);
       for (const o of opts) {
         if (o.c === best.q) { o.r = 0; o.e = -Infinity; continue; }
         const mask = cm[BI[o.c]];
@@ -4724,7 +4765,7 @@ const PMEngine = (() => {
         const d = act.piece, p = nx.x[d], arrow = nx.arrows[d], key = (d * 4096 + p) * 8 + arrow;
         if (seen.has(key)) continue;
         seen.add(key);
-        const cm = cmapCached(p, arrow, sx.ctx.dfn[d].qs, true, 1, stanceMode(sx, d)).masks[2];
+        const cm = cmapCached(p, arrow, sx.ctx.dfn[d].qs, true, 1, stanceMode(m.sN, d)).masks[2];
         // a defence can't cover two at once: an action counts if it makes the offence's best options smaller, the
         // largest first, then the next (so with two equal threats, taking one away is still an answer)
         let touched = false;
@@ -4861,7 +4902,7 @@ const PMEngine = (() => {
   }
 
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
-    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
+    actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;

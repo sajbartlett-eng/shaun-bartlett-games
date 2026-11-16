@@ -49,6 +49,7 @@ for (const ln of lines) {
   if (q.keep_in_hand !== undefined) E.setKeepInHand(q.keep_in_hand);
   if (q.no_floor !== undefined) E.setNoFloor(q.no_floor);
   if (q.lane !== undefined) E.setLane(q.lane);                           // step 18q
+  if (q.map !== undefined) E.setMap(q.map);                             // step 18s, stop two
   if (q.exact_shot !== undefined) E.setExactShot(q.exact_shot);
   if (q.calibrated !== undefined) E.setCalibrated(q.calibrated);        // step 17D                  // step 17   // step 13 B
   try {

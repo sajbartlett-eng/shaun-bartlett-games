@@ -486,28 +486,28 @@ def forced(items, n=16, sets=None, what='forced lines', seed=1):
     """items: [(id, position, [(name, turn)])], a turn being a list of actions as JSON, or None for the position as it
     stands. Each turn is made, then played out n times, All-Star against All-Star (sets: each side's settings), the
     same dice for every turn of a position. -> {id: {name: dict(mean, low, high, ends, values)}}"""
+    import collections
     import zlib
     contexts, jobs, names = [], [], {}
     for pid, s, cands in items:
         sj, cj = _sj(s)
         contexts.append(cj)
-        names[pid] = [nm for nm, _ in cands]
-        jobs.append(dict(id=pid, state=sj, ctx=len(contexts) - 1, seed=15485863 * seed + 1 + 2 * (zlib.crc32(pid.encode()) % 500000), turns=[t for _, t in cands]))
+        for k, (nm, turn) in enumerate(cands):         # a job of its own for every line, so the lines share the cores
+            names[f'{pid}##{k}'] = (pid, nm)
+            jobs.append(dict(id=f'{pid}##{k}', state=sj, ctx=len(contexts) - 1, seed=15485863 * seed + 1 + 2 * (zlib.crc32(pid.encode()) % 500000), turns=[turn]))
     sets = sets or dict(O={}, X={})
     pol = {k: L.policy('allstar', 2, L.profiles()['allstar']['noise'], **v) for k, v in sets.items()}
     rows, secs = L.run_jobs('rollout', jobs, contexts, n=n, seed=7, keep=True, ends=True, policies=pol, rules=RULES, fouls=T.FOULS)
-    tally(f'{what} ({sum(len(c) for _, _, c in items)} lines on {len(items)} positions, {n} each, {sets})', secs)
-    out = {}
+    tally(f'{what} ({len(jobs)} lines on {len(items)} positions, {n} each, {sets})', secs)
+    out = {pid: {} for pid, _, _ in items}
     for r in rows:
-        res = {}
-        for nm, t in zip(names[r['id']], r['turns']):
-            if not t['values']:
-                res[nm] = None
-                continue
-            m, sd, ci = L.mean_ci(t['values'])
-            import collections
-            res[nm] = dict(mean=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1), ends=dict(collections.Counter(t.get('ends') or [])), values=[round(v, 2) for v in t['values']])
-        out[r['id']] = res
+        pid, nm = names[r['id']]
+        t = r['turns'][0]
+        if not t['values']:
+            out[pid][nm] = None
+            continue
+        m, sd, ci = L.mean_ci(t['values'])
+        out[pid][nm] = dict(mean=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1), ends=dict(collections.Counter(t.get('ends') or [])), values=[round(v, 2) for v in t['values']])
     return out
 
 
@@ -518,7 +518,7 @@ def paired(a, b):
     return dict(diff=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1))
 
 
-def cmd_mapequal(n='200', seed='5'):
+def cmd_mapequal(n='200', seed='5', broken=''):
     """The map's numbers for the search in the two engines: the shot now, the best way, the second way, on random
     positions under the app's rules. -> docs/runs/step18s/map_equal.json"""
     import random
@@ -527,6 +527,8 @@ def cmd_mapequal(n='200', seed='5'):
     E._ZONE['v'] = 'on'
     E._CONTROL['size'] = 'app'
     E._FIBA.update(three_seconds='on', closely_guarded='on', fiba_fouled_shot='on', soft_contest='on', fiba_steal_foul='on', off_balance='on', position_contest='on')
+    if broken:
+        E._ZONE['broken'] = True
     cov(board(), 0)                                    # the fast engine, installed
     rng = random.Random(int(seed))
     t0 = time.time()
@@ -539,7 +541,7 @@ def cmd_mapequal(n='200', seed='5'):
         from playmaker_engine import jsbridge
         js = json.loads(AG.JS['coverage'](json.dumps(dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), options=dict(only='parts')))))['parts']
         r = D.Read(s)
-        py = [r.map_shot()] + list(r.map_two()) + [s.tok_o, s.tok_x]
+        py = [r.map_shot()] + list(r.map_two(False)) + list(r.map_two(True)) + [s.tok_o, s.tok_x]
         seen += 1
         ok = all(abs(a - b) < 1e-9 for a, b in zip(js, py))
         same += ok
@@ -547,7 +549,7 @@ def cmd_mapequal(n='200', seed='5'):
             from playmaker_engine.jsbridge import state_json
             bad.append(dict(js=js, py=py, state=state_json(s)))
     out = dict(positions=seen, equal=same, different=bad, seconds=round(time.time() - t0, 1))
-    json.dump(out, open(os.path.join(RUN, 'map_equal.json'), 'w'), indent=1)
+    json.dump(out, open(os.path.join(RUN, 'map_equal' + ('_broken' if broken else '') + '.json'), 'w'), indent=1)
     print(json.dumps({k: v for k, v in out.items() if k != 'different'}))
     for b in bad[:3]:
         print(b['js'], b['py'], json.dumps(b['state'])[:400])
@@ -620,6 +622,239 @@ def cmd_check7(tag='check7', copies='16'):
         v['without_the_map'] = {x: base[k]["the rules' own"][x] for x in ('mean', 'low', 'high', 'ends')} if k in base else None
         print(f"{k:52} {v['mean']} ({v['low']} to {v['high']}) {v['ends']} | without the map {v['without_the_map'] and v['without_the_map']['mean']} | first: {v['first_action'][:2]}")
     json.dump(rep, open(os.path.join(RUN, f'{tag}.json'), 'w'), indent=1)
+
+
+def parts_of(s):
+    """The map's numbers for the search at a position: dict(shot, way, second, way_answered, second_answered)."""
+    from playmaker_engine import agent as AG, jsbridge
+    cov(board(), 0)
+    p = json.loads(AG.JS['coverage'](json.dumps(dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), options=dict(only='parts')))))['parts']
+    return dict(shot=round(p[0], 1), way=round(p[1], 1), second=round(p[2], 1), way_answered=round(p[3], 1), second_answered=round(p[4], 1))
+
+
+def cmd_check8(tag='check8', copies='16', map_on='map'):
+    """Check 8 and S2 by forced lines on named positions: the turn the computer picks against the other turns it
+    weighed, each made and then played out. For each turn: the search's reading of it, the defence's strength it leaves
+    (the most the offence can then force by the next phase), and what it scored by play."""
+    sets = dict(pass_rules=True, **(dict(map=True) if map_on == 'map' else {}))
+    a1 = P._after_beat(x4='H5', a4='N', x5='J5', a5='N')
+    named = [("Shaun's board, the offence's first turn", board())]
+    res = weighed([s for _, s in named], sets, what=f'part 3: check 8, the turns weighed ({tag})')
+    # the defence's first turn on Shaun's board, after the offence's own pick
+    d0 = after_turn(board(), res[0][0][1])
+    if d0 is not None and d0.side == 'X':
+        named.append(("Shaun's board, the defence's first turn", d0))
+        res += weighed([d0], sets, what=f'part 3: check 8, the turns weighed, the defence ({tag})')
+    items, info = [], {}
+    for (name, s), rs in zip(named, res):
+        seen, cands = set(), []
+        after = []
+        for v, turn in rs[:14]:
+            n = after_turn(s, turn)
+            if n is None or n.stage != 'play':
+                continue
+            after.append((v, turn, parts_of(n)['way_answered']))
+        pick = after[0] if after and _same(after[0][1], rs[0][1]) else None
+        most = max(after, key=lambda x: x[2]) if after else None
+        least = min(after, key=lambda x: x[2]) if after else None
+        for label, c in (('the computer\'s pick', (rs[0][0], rs[0][1], pick[2] if pick else None)), ('the turn that leaves the defence weakest', most), ('the turn that leaves the defence strongest', least),
+                         ('its last choice', (rs[-1][0], rs[-1][1], next((x[2] for x in after if _same(x[1], rs[-1][1])), None)))):
+            if c is None or json.dumps(c[1]) in seen:
+                continue
+            seen.add(json.dumps(c[1]))
+            cands.append((label, c[1]))
+            info[name, label] = dict(turn=turn_names(c[1]), reads=round(c[0], 1), strength_left=c[2])
+        items.append((name, s, cands))
+    out = forced(items, int(copies), dict(O=sets, X=sets), what=f'part 3: check 8 and S2 by forced lines ({tag})')
+    rep = {}
+    for name, s, cands in items:
+        rep[name] = dict(side=s.side, strength_at_the_start=parts_of(s)['way_answered'], lines={})
+        for label, _ in cands:
+            v = out[name][label]
+            rep[name]['lines'][label] = dict(info[name, label], **({k: v[k] for k in ('mean', 'low', 'high', 'ends')} if v else {}))
+            if v and label != "the computer's pick" and out[name].get("the computer's pick"):
+                rep[name]['lines'][label]['the_pick_less_this'] = paired(out[name]["the computer's pick"], v)
+            print(f"{name[:44]:44} {label:42} reads {info[name, label]['reads']:5} leaves {info[name, label]['strength_left']} played {v and (v['mean'], v['low'], v['high'])} {info[name, label]['turn']}")
+    json.dump(rep, open(os.path.join(RUN, f'{tag}.json'), 'w'), indent=1)
+
+
+SCREEN_X, SCREEN_A, SCREEN_O = ['I10', 'D8', 'O8', 'B4', 'K9'], ['N', 'NW', 'N', 'SW', 'N'], ['I11', 'C9', 'O9', 'A3', 'J10']
+
+
+def screen_board(**kw):
+    """S3's named position: Shaun's board with the on-ball defender square in front of the point guard (I10, facing
+    him) and the centre (O5) next to that defender (J10), his own man (X5) a step below him. The offence to act."""
+    return board(SCREEN_X, SCREEN_A, o=SCREEN_O, **kw)
+
+
+def cmd_screenfacts():
+    """What a Screen takes from a defender, by the rules: the on-ball defender's squares within one movement and within
+    two, for every way the centre can point the screen's T. -> docs/runs/step18s/screen_facts.json"""
+    from playmaker_engine import board as B
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply
+    from playmaker_engine.decide import defender_map
+    s0 = screen_board()
+
+    def reach(s):
+        free, fixed = defender_map(s.with_(side='X', turn_n=0), 0, exact=True)
+        one = {q for q, n in free.items() if n <= 1} | {q for q, arr in fixed.items() if min(arr.values()) <= 1}
+        return len(one), len(set(free) | set(fixed))
+    out = dict(position=dict(o=SCREEN_O, x=SCREEN_X, arrows=SCREEN_A), no_screen=dict(zip(('one_movement', 'two_movements'), reach(s0))), screens={})
+    for a in legal_actions(s0):
+        if a.kind == 'screen' and a.piece == 4:
+            n = apply(s0, a)
+            tsq = B.sq(B.add(n.o[4], B.DIRS[n.screens[-1][1]]))
+            r = reach(n)
+            out['screens'][tsq] = dict(t_on=tsq, where=('on the defender' if tsq == 'I10' else 'on the ball handler' if tsq == 'I11' else 'next to the defender' if B.cheb(B.parse_sq(tsq), B.parse_sq('I10')) == 1 else 'away from him'),
+                                       one_movement=r[0], two_movements=r[1], he_may_challenge=any(x.kind == 'challenge' for x in legal_actions(n)))
+    json.dump(out, open(os.path.join(RUN, 'screen_facts.json'), 'w'), indent=1)
+    print(json.dumps(out, indent=1))
+
+
+def cmd_s3(tag='s3', copies='16', map_on='map'):
+    """S3, Shaun's screen sequence on a named position, by forced lines. From the start: the offence as it chooses; the
+    centre made to screen the on-ball defender (the T on him); the T on his way back. Then the defence's turn after
+    that screen: its own pick, the Challenge, the Pause."""
+    from playmaker_engine.actions import legal_actions
+    sets = dict(pass_rules=True, **(dict(map=True) if map_on == 'map' else {}))
+    s0 = screen_board()
+    on_him, behind = P_names(s0, 'O5 Screen, T W'), P_names(s0, 'O5 Screen, T SW')
+    pick0 = weighed([s0], sets, what=f'part 3: S3, the offence\'s own pick ({tag})')[0]
+    s1 = after_turn(s0, on_him)
+    pick1 = weighed([s1], sets, what=f'part 3: S3, the defence\'s own pick after the screen ({tag})')[0]
+    c1 = [("the defence's own pick", pick1[0][1])]
+    for nm, words in (('X1 challenges the screen', 'X1 Challenge screen of O5'), ('the defence pauses', 'X Pause')):
+        tn = P_names(s1, words)
+        if tn and not any(_same(tn, t) for _, t in c1):
+            c1.append((nm, tn))
+    c0 = [('the offence as it chooses', None), ('the screen set on the on-ball defender (the T on his square)', on_him), ('the screen set behind him (the T on his way back)', behind)]
+    out = forced([('S3 start', s0, c0), ('S3 after the screen', s1, c1)], int(copies), dict(O=sets, X=sets), what=f'part 3: S3 by forced lines ({tag})')
+    rep = dict(the_offences_own_first_turn=turn_names(pick0[0][1]), it_reads=round(pick0[0][0], 1),
+               does_it_screen=any('Screen' in w for w in turn_names(pick0[0][1])),
+               the_defences_pick_after_the_screen=turn_names(pick1[0][1]),
+               strength=dict(at_the_start=parts_of(s0), after_the_screen=parts_of(s1)), lines={})
+    for pid, cands in (('S3 start', c0), ('S3 after the screen', c1)):
+        for nm, _ in cands:
+            v = out[pid][nm]
+            rep['lines'][f'{pid}: {nm}'] = v and {k: v[k] for k in ('mean', 'low', 'high', 'ends')}
+            print(pid, '|', nm, v and (v['mean'], v['low'], v['high'], v['ends']))
+    rep['the_screen_less_its_own_choice'] = paired(out['S3 start'][c0[1][0]], out['S3 start'][c0[0][0]])
+    json.dump(rep, open(os.path.join(RUN, f'{tag}.json'), 'w'), indent=1)
+    print(json.dumps({k: v for k, v in rep.items() if k != 'lines'}, indent=1))
+
+
+def P_names(s, *names):
+    """A turn (as JSON) from the actions' own words, or None if one isn't legal."""
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply, ChanceNode
+    from playmaker_engine.jsbridge import state_json
+    import playmaker_engine.jsbridge as J
+    out, n = [], s
+    for nm in names:
+        if isinstance(n, ChanceNode):
+            return None
+        a = next((x for x in legal_actions(n) if str(x) == nm), None)
+        if a is None:
+            return None
+        out.append(action_json(a))
+        n = apply(n, a)
+    return out
+
+
+def action_json(a):
+    from playmaker_engine import board as B
+    return [a.kind, a.side, a.piece, B.sq(a.dest) if a.dest is not None and a.dest != -1 and not isinstance(a.dest, int) else None, a.arrow if a.arrow is not None else -1,
+            a.target if a.target is not None else -1, a.shot or '']
+
+
+def cmd_s4(tag='s4', deals='6', copies='6', turns='2'):
+    """S4 on named deals (the stored starts, evenly spaced): the setup as it was; the setup searched and judged by the
+    map, both sides; and the searched offence against the old way of setting the defence. For each: the defence's
+    strength at the start (by the map), then by play: points, and how often the first phase left the defence no weaker."""
+    from playmaker_engine import agent as AG, board as B, decide as D
+    src = O.stored_starts()
+    n = int(deals)
+    src = src[::max(1, len(src) // n)][:n]
+    cov(board(), 0)                                    # the fast engine, installed
+    keep = D.CONFIG['eval'].get('map')
+    D.CONFIG['eval']['map'] = True                     # the setup's reading is the map's
+    budget = AG.profile('allstar')['time_budget_s'] * 0.4
+    named, notes, makes = [], {}, {}
+    t0 = time.time()
+    try:
+        for k, (off, dfn, s) in enumerate(src):
+            make = O.maker(off, dfn, zone=True)
+            sq = lambda qs: [B.sq(q) for q in qs]
+            old = make(sq(s.o), sq(s.x), list(s.arrows), s.ball)
+            mem_o, mem_x = {}, {}
+            for t_ in range(int(turns)):
+                ro = AG.propose_offence(make, 1000 * k + t_, budget=budget, level='allstar', memory=mem_o, search=True)
+                rx = AG.propose_defence(make, ro['squares'], ro['ball'], 1000 * k + t_ + 7, budget=budget, level='allstar', memory=mem_x, search=True)
+            new = make(sq(ro['squares']), sq(rx['squares']), rx['arrows'], ro['ball'])
+            rz = AG.propose_defence(make, ro['squares'], ro['ball'], 1000 * k + 7, budget=budget, level='allstar', search=False)
+            mixed = make(sq(ro['squares']), sq(rz['squares']), rz['arrows'], ro['ball'])
+            for label, st in (('the setup as it was', old), ('the setup judged by the map, both sides', new), ('the map\'s offence against the old way of setting the defence', mixed)):
+                name = f'deal {k + 1}: {label}'
+                named.append((name, st))
+                makes[name] = make
+                notes[name] = dict(o=sq(st.o), x=sq(st.x), arrows=list(st.arrows), ball=st.ball, strength_at_the_start=parts_of(st)['way_answered'])
+    finally:
+        D.CONFIG['eval']['map'] = keep
+    tally(f'part 3: S4, one core: the setups searched for {len(src)} deals ({tag})', time.time() - t0)
+    from playmaker_engine import jsbridge
+    on = dict(pass_rules=True, map=True)
+    pol = {k: L.policy('allstar', 2, L.profiles()['allstar']['noise'], **on) for k in 'OX'}
+    contexts, positions = [], []
+    for name, st in named:
+        contexts.append(jsbridge.ctx_json(st.ctx))
+        positions += [dict(id=name, state=jsbridge.state_json(st), ctx=len(contexts) - 1, seed=104729 * (c + 1) + 7919) for c in range(int(copies))]
+    rows, secs = L.run_jobs('trace', positions, contexts, n=1, seed=1, boards=True, policies=pol, rules=RULES, fouls=T.FOULS)
+    tally(f'part 3: S4 by play ({len(named)} setups, {copies} each, the map read) ({tag})', secs)
+    json.dump(dict(rows=rows, notes=notes), open(os.path.join(WORK, f'{tag}_rows.json'), 'w'))
+    starts = dict(named)
+    by = {}
+    for r in rows:
+        by.setdefault(r['id'], []).append(r)
+    rep, kinds = {}, {}
+    for name, st in named:
+        rs = by[name]
+        weak = seen = 0
+        for r in rs:
+            b2 = next((b for b in r.get('boards') or [] if b[1] == 2 and b[2] == 'O'), None)
+            if b2 is None:
+                continue                               # the shot went up in the first phase
+            s2 = starts[name].with_(o=tuple(B.parse_sq(q) for q in b2[3]), x=tuple(B.parse_sq(q) for q in b2[4]), arrows=tuple(b2[5]), ball=b2[6], clock=10, phase=2)
+            seen += 1
+            weak += parts_of(s2)['way_answered'] <= notes[name]['strength_at_the_start'] + 1e-9
+        m, sd, ci = L.mean_ci([r['points'] for r in rs])
+        rep[name] = dict(notes[name], points=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1), possessions=len(rs), reached_a_second_phase=seen, first_phase_left_the_defence_no_weaker=weak)
+        kind = name.split(': ', 1)[1]
+        kinds.setdefault(kind, dict(points=[], strength=[], weak=0, seen=0, n=0))
+        kk = kinds[kind]
+        kk['points'] += [r['points'] for r in rs]; kk['strength'].append(notes[name]['strength_at_the_start']); kk['weak'] += weak; kk['seen'] += seen; kk['n'] += len(rs)
+    summary = {}
+    for kind, kk in kinds.items():
+        m, sd, ci = L.mean_ci(kk['points'])
+        summary[kind] = dict(points=round(m, 1), low=round(m - ci, 1), high=round(m + ci, 1), possessions=kk['n'], strength_at_the_start=round(sum(kk['strength']) / len(kk['strength']), 1),
+                             weak_first_phases=f"{kk['weak']} of {kk['seen']}")
+        print(kind, summary[kind])
+    json.dump(dict(summary=summary, deals=rep), open(os.path.join(RUN, f'{tag}.json'), 'w'), indent=1)
+
+
+def cmd_check7x(tag='check7x', copies='16', who='X'):
+    """Check 7, one side alone on the map (who: X or O), the other reading as it did: the four lines where the offence
+    chooses for itself. Same dice as cmd_check7."""
+    a0, a1 = P._after_beat(), P._after_beat(x4='H5', a4='N', x5='J5', a5='N')
+    named = [('lane open: the offence as it chooses', a0), ('help in the lane: the offence as it chooses', a1), ("Shaun's board from the start: his game", board()),
+             ("Shaun's board from the start: X4 and X5 in the lane", board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N']))]
+    sets = dict(O=dict(pass_rules=True, map=who == 'O'), X=dict(pass_rules=True, map=who == 'X'))
+    out = play2(named, int(copies), sets, what=f'part 3: check 7, {"the defence" if who == "X" else "the offence"} alone on the map ({tag})')
+    json.dump(out, open(os.path.join(WORK, f'{tag}_rows.json'), 'w'))
+    rep = {k: dict(P._summary(v), **passes_of(v)) for k, v in out.items()}
+    json.dump(rep, open(os.path.join(RUN, f'{tag}.json'), 'w'), indent=1)
+    for k, v in rep.items():
+        print(f"{k:52} {v['mean']} ({v['low']} to {v['high']}) {v['ends']} first: {v['first_action'][:2]}")
 
 
 if __name__ == '__main__':

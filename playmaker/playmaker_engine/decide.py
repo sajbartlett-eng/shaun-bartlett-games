@@ -1136,7 +1136,12 @@ class Read:
         from .actions import movement_dests, can_move_kind, capture_lines, capture_ok
         no_rim = RC.rim_shot_barred(rules)
         xat = {s.x[j]: j for j in range(5) if B.on_board(s.x[j])}
-        cms = [(_cmap_cached(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, True, 1, stance_mode(s, d)) if B.on_board(s.x[d]) else None) for d in range(5)]
+        # the board as the next phase finds it if nobody moves again (resolve.new_phase): the defence's movement fresh,
+        # no zone broken, no screen standing
+        from .state import ZERO_COUNTS
+        s_next = s.with_(screens=(), tok_x=RC.TOKENS_PER_PHASE, moved_x=0, qs_x=0, lock_x=0, rush_x=0, beaten=(), cnt=ZERO_COUNTS)
+        mode = 0 if rules.zone == 'off' else 1
+        cms = [(_cmap_cached(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, True, 1, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
         for a in range(5):
             home = s.o[a]
@@ -1160,7 +1165,7 @@ class Read:
                     if p > 0:
                         starts.append((q, p))
             mates = {s.o[k] for k in range(5) if k != a}
-            lines = capture_lines(s, a) if rules.zone != 'off' else []
+            lines = capture_lines(s_next, a) if rules.zone != 'off' else []
             card, qs = s.ctx.off[a], s.ctx.off[a].qs
             best = {}
             for q0, pr in starts:
@@ -1208,24 +1213,32 @@ class Read:
         return top
 
     def map_answers(self, opts):
-        """engine.js covLeanAnswers: the defence's answers in a fast form. While it has tokens, the defender whose one
-        movement this phase takes most off the offence's best option makes it, and then contests everything from where
-        he now stands; each defender moves once. Changes opts in place; -> the number of answers."""
+        """engine.js covLeanAnswers: the defence's answers in a fast form. While it has tokens, one defender makes the
+        one movement this phase that takes something off the offence's best option and leaves its best six the
+        smallest, the largest first; he then contests everything from where he now stands. Each defender moves once.
+        Changes opts in place; -> the number of answers."""
         s, rules = self.s, self.rules
         if s.tok_x <= 0:
             return 0
+        K = 6
         taken = set(s.o) | set(s.x)
         moved = [False] * 5
         tok, steps = s.tok_x, 0
+        mode = 0 if rules.zone == 'off' else 1
+
+        def less(x, y):
+            for u, v in zip(x, y):
+                if u < v - 1e-9:
+                    return True
+                if u > v + 1e-9:
+                    return False
+            return False
         while tok > 0:
-            top = None
-            for key, o in opts.items():
-                if o[0] > 0 and (top is None or o[2] > opts[top][2] or (o[2] == opts[top][2] and key < top)):
-                    top = key
-            if top is None or opts[top][2] <= 0:
+            head = sorted((key for key, o in opts.items() if o[0] > 0), key=lambda key: (-opts[key][2], key))[:K]
+            if not head or opts[head[0]][2] <= 0:
                 break
-            pr, _, e0, lk, opens, vals = opts[top]
-            c = top[1]
+            cur = [opts[key][2] for key in head]
+            c0 = head[0][1]
             best = None
             for d in range(5):
                 if moved[d] or not B.on_board(s.x[d]):
@@ -1233,23 +1246,38 @@ class Read:
                 can_move, qs_left = _caps(s, 'X', d)
                 if not can_move and qs_left <= 0:
                     continue
-                qs, mode = s.ctx.dfn[d].qs, stance_mode(s, d)
-                free, fixed = geo_reach(s.x[d], s.arrows[d], qs, can_move, qs_left, rules)
-                cands = [(q, -1, _any_arrow_cmap(rules, q, qs, mode).get(c)) for q, n in free.items() if n == 1]
-                cands += [(q, a, _cmap_cached(rules, q, a, qs, True, 1, mode).get(c)) for q, arrs in fixed.items() for a, n in arrs.items() if n == 1]
-                for q, a, row in cands:
-                    if row is None or q in taken:
+                qs = s.ctx.dfn[d].qs
+                free, fixed = defender_map(s, d, exact=True)
+                cands = [(q, -1) for q, n in free.items() if n == 1]
+                cands += [(q, a) for q, arrs in fixed.items() for a, n in arrs.items() if n == 1]
+                for q, a in cands:
+                    if q in taken:
                         continue
-                    mine = self._vals2(lk, d, row) or None
-                    e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * 5
-                    if not e < e0 - 1e-9:
+                    cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
+                    if cm.get(c0) is None:
                         continue
-                    if best is None or e < best[0] - 1e-9 or (abs(e - best[0]) <= 1e-9 and (d, q, a) < best[1:]):
-                        best = (e, d, q, a)
-            if best is None:
+                    after = []
+                    for n, key in enumerate(head):
+                        pr, _, e0, lk, opens, vals = opts[key]
+                        if key[1] == q:
+                            e = float('-inf')
+                        else:
+                            row = cm.get(key[1])
+                            mine = (self._vals2(lk, d, row) or None) if row is not None else None
+                            e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * 5
+                        if n == 0 and not e < e0 - 1e-9:
+                            after = None
+                            break
+                        after.append(e)
+                    if after is None:
+                        continue
+                    after.sort(reverse=True)
+                    if best is None or less(after, best[0]) or (not less(best[0], after) and (d, q, a) < best[1:]):
+                        best = (after, d, q, a)
+            if best is None or not less(best[0], cur):
                 break
             _, d, q, a = best
-            qs, mode = s.ctx.dfn[d].qs, stance_mode(s, d)
+            qs = s.ctx.dfn[d].qs
             cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
             moved[d] = True
             tok -= 1
@@ -1265,28 +1293,33 @@ class Read:
                 o[2] = o[0] * o[1] - (1 - o[0]) * 5 if o[0] > 0 else float('-inf')
         return steps
 
-    def map_two(self):
-        """The map's numbers for the search: the best any attacker can have at the start of the next phase and the best
-        a second, separate attacker can have; then the same two after the defence's answers (map_answers)."""
+    def map_two(self, answered=False):
+        """The map's two numbers for the search: the best any attacker can have at the start of the next phase and the
+        best a second, separate attacker can have; as the board stands, or after the defence's answers (map_answers)."""
         if self._map2 is None:
-            opts = self.map_options()
+            self._map2 = dict(opts=self.map_options(), raw=None, ans=None)
+        c = self._map2
 
-            def two():
-                mine = [0.0] * 5
-                for (a, c, rushed), o in opts.items():
-                    if o[0] > 0 and o[2] > mine[a]:
-                        mine[a] = o[2]
-                first = second = 0.0
-                for v in mine:
-                    if v > first:
-                        first, second = v, first
-                    elif v > second:
-                        second = v
-                return (first, second)
-            raw = two()
-            self.map_answers(opts)
-            self._map2 = raw + two()
-        return self._map2
+        def two():
+            mine = [0.0] * 5
+            for (a, sq_, rushed), o in c['opts'].items():
+                if o[0] > 0 and o[2] > mine[a]:
+                    mine[a] = o[2]
+            first = second = 0.0
+            for v in mine:
+                if v > first:
+                    first, second = v, first
+                elif v > second:
+                    second = v
+            return (first, second)
+        if c['raw'] is None:
+            c['raw'] = two()
+        if not answered:
+            return c['raw']
+        if c['ans'] is None:
+            self.map_answers(c['opts'])
+            c['ans'] = two()
+        return c['ans']
 
     def map_shot(self):
         """The best shot that can go up now, as the reading has it."""
@@ -1302,7 +1335,9 @@ class Read:
         the second way, per phase and side to act (the weights file's calibration_map). None: no line (the reading as
         it was)."""
         s = self.s
-        if self.cfg.get('map') is not True or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
+        # (the quick look that orders the list, k = 0, keeps its own reading: engine.js quickLeaf)
+        on = self.cfg.get('map')                   # True: both sides; 'offence': only where the decision searched is the offence's
+        if not (on is True or (on == 'offence' and MAP_ME[0] == 'O')) or self.k <= 0 or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
             return None
         w = learned_weights()
         if not w or not w.get('calibration_map'):
@@ -1316,8 +1351,9 @@ class Read:
         shot = self.map_shot()
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + shot
-        two, k = self.map_two(), row['w']
-        line = k[0] + (k[1] * shot + k[2] * two[2] + k[3] * two[3])      # the ways the defence's answers leave
+        # the two ways as the board stands, or as the defence's answers leave them: whichever form the line was fitted on
+        two, k = self.map_two(w['calibration_map'].get('form') == 'answered'), row['w']
+        line = k[0] + (k[1] * shot + k[2] * two[0] + k[3] * two[1])
         sn = (self.shot_now() or 0.0) if self.o_to_act else 0.0       # the offence to act can simply shoot
         return banked + max(sn, line)
 
@@ -2341,6 +2377,9 @@ def _exact_one(s, d):
     free, fixed = defender_map(s, d, exact=True)
     return frozenset([s.x[d]] + [q for q, n in free.items() if n <= 1] +
                      [q for q, arr in fixed.items() if min(arr.values()) <= 1])
+
+
+MAP_ME = [None]            # step 18s, stop two: the side whose decision the search in hand is (search.Searcher sets it)
 
 
 def pass_by_rules(rules):

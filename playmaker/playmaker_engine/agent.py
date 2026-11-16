@@ -455,6 +455,17 @@ def coverage(s, answers=None, only=None):
 _LANE_FILE = CONFIG.get('eval', {}).get('lane') is True      # eval.lane as ai_profiles.json has it
 
 
+_MAP_FILE = CONFIG.get('eval', {}).get('map', False)        # eval.map as ai_profiles.json has it: False, True or 'offence'
+
+
+def set_map(how=None):
+    """Step 18s, stop two: eval.map for this process: 'off', 'offence' (the offence's decisions read the coverage map),
+    'both', or None for the file's own setting. The JavaScript search follows it request by request (_lane_req)."""
+    CONFIG['eval']['map'] = {'off': False, '0': False, 'offence': 'offence', '1': 'offence', 'on': 'offence', 'both': True}.get(str(how).lower(), _MAP_FILE) \
+        if how is not None else _MAP_FILE
+    return CONFIG['eval']['map']
+
+
 def set_lane(on):
     """Step 18q: eval.lane for this process: on, or back to the file's own setting. The JavaScript search follows it
     request by request (_lane_req)."""
@@ -464,6 +475,9 @@ def set_lane(on):
 
 def _lane_req(req):
     req['lane'] = CONFIG['eval'].get('lane') is True
+    m = CONFIG['eval'].get('map')                                   # step 18s, stop two: True, 'offence' or off
+    req['map'] = m if m is True or m == 'offence' else False
+    req['pass_rules'] = CONFIG['eval'].get('pass_rules', True) is not False
     return req
 
 

@@ -364,3 +364,6 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .covbox { font-size: 13px; line-height: 1.4; }
 .covbox .covpick { margin: 6px 0; display: flex; flex-wrap: wrap; gap: 4px; }
 .covbox #covNote { color: #5a5852; }
+
+.covbox .covscores { margin: 6px 0; padding-top: 6px; border-top: 1px dashed #c9c4b6; }
+.covbox .covscores .covverdict { font-weight: 600; margin-top: 3px; }
