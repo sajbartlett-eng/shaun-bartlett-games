@@ -124,7 +124,7 @@
       <p class="note">The player who starts a remote game picks a seat too; the code appears at the top of the table.</p>
     </section>
   </section>
-  <p class="note small startlinks"><button type="button" class="linkbtn" id="playersBtn2">Players and records</button> · <button type="button" class="linkbtn" id="rulesBtn">Rules, step by step</button></p>
+  <p class="note small startlinks"><button type="button" class="linkbtn" id="playersBtn2">Players and records</button> · <button type="button" class="linkbtn" id="rulesBtn">Rules, step by step</button> · <button type="button" class="linkbtn" id="tipsBtn">Tips in play</button></p>
   <p class="note small">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
 </main>
 <div id="course" class="hidden"></div>
@@ -148,6 +148,7 @@
     </aside>
     <main id="tableMain">
       <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
+      <section id="tipBox" class="tipbox hidden" aria-label="Tip"></section>
       <section id="playBar" class="playbar hidden" aria-label="Your move"></section>
       <div id="coachLine" class="coachline"></div>
       <section id="compare" class="compare hidden" aria-label="Card and matchup"></section>
@@ -188,6 +189,7 @@
 <script src="app.js"></script>
 <script src="advice.js"></script>
 <script src="report.js"></script>
+<script src="tips.js"></script>
 <script src="play.js"></script>
 </body>
 </html>

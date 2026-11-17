@@ -426,3 +426,7 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .startlinks { margin-top: 16px; }
 .start .paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
 
+/* ---- step 19, stage 5: tips in the first game ---- */
+.tipbox { width: 100%; max-width: 900px; margin-top: 8px; background: #fff7d6; border-radius: 10px; padding: 6px 10px; box-shadow: var(--shadow); }
+.tipbox .buttons { margin-top: 2px; }
+.tipbox button.small { min-height: 44px; }

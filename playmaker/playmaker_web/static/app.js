@@ -123,7 +123,9 @@ function initPaths(showKind) {
   const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Play the computer: your first game teaches you as you go.", { speak: false, live: false });
   $('startCoach').append(greet);
   if ($('rulesBtn')) $('rulesBtn').onclick = () => startCourse(showKind);      // step 19: the old course, from help
-
+  const tipsWord = () => { if ($('tipsBtn')) $('tipsBtn').textContent = PMTips.on() ? 'Tips in play: on' : 'Tips in play: off'; };
+  if ($('tipsBtn')) $('tipsBtn').onclick = () => { if (PMTips.on()) { try { localStorage.setItem('pm_tips', '0'); } catch (e) { /* ignore */ } } else PMTips.reset(); tipsWord(); };
+  tipsWord();
   for (const id of ['kind', 'format', 'perSide', 'age', 'standard', 'roster', 'teamA', 'teamB', 'aiLevel', 'aiSeat', 'level', 'mode', 'aiO', 'aiX', 'scenario'])
     if ($(id)) $(id).addEventListener('change', setupSummary);
   document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
@@ -157,6 +159,7 @@ function defaultsFor(which) {
   if (OPTS) { set('teamA', OPTS.first_game[0]); set('teamB', OPTS.first_game[1]); }
   set('level', 'scout');                                                          // the Scout level: the call, then the report
   if (which === 'computer') { set('aiLevel', 'rookie'); set('aiSeat', 'O'); }    // the Rookie computer; you attack first
+  if (which === 'computer' && PMTips.firstGame()) set('level', 'learn');         // stage 5: the first game is gentle: Learn level
   if (which === 'friend') set('mode', 'hotseat');                                 // one screen
   if (which === 'watch') { set('aiO', 'allstar'); set('aiX', 'allstar'); set('level', 'pro'); }   // both All-Star; no scouting calls to make
   for (const id of ['format', 'roster', 'age', 'standard']) if ($(id)) $(id).dispatchEvent(new Event('change'));
@@ -169,6 +172,10 @@ function setupSummary() {
   const match = $('kind').value === 'full' ? ($('format').value === 'digital' ? `A match of ${$('perSide').value} possessions each` : 'A tabletop match, one possession each') : 'One possession';
   const level = { learn: 'Learn level: the full scout report first.', scout: 'Scout level: make your call, then see the report.', pro: 'Pro level: the cards only.' }[$('level').value] || '';
   const std = `${txt('age').split(' (')[0]} ${STD_NAME[$('standard').value] || ''}`.trim();
+  if (path === 'computer' && PMTips.firstGame() && $('level').value === 'learn' && $('aiLevel').value === 'rookie') {
+    box.textContent = `Your first game: ${match.toLowerCase()} against the Rookie computer, at the Learn level, with a tip at each new idea as you play. Next game moves up to the Scout level, where you make your own scouting call.`;
+    return;
+  }
   box.textContent = path === 'computer' ? `${match}, ${std}, ${teams}, against the ${LV[$('aiLevel').value]} computer. You attack ${$('aiSeat').value === 'O' ? 'first' : 'second'}. ${level}`
     : path === 'friend' ? `${match}, ${std}, ${teams}, ${$('mode').value === 'remote' ? 'in two browsers, joined by a code' : 'on this screen'}. ${level}`
     : path === 'watch' ? `${match}, ${std}, ${teams}: the ${LV[$('aiO').value] || 'All-Star'} computer against the ${LV[$('aiX').value] || 'All-Star'} computer. Play, pause or step through it, and download each possession's report.`
@@ -481,6 +488,7 @@ async function create() {
       G.token = (await api('/api/join', { code: r.code, seat })).token;
     }
     localStorage.setItem('pm_game', JSON.stringify(G));
+    PMTips.played();                     // the next game is not the first one
     enterTable();
   } catch (e) { alert(e.message); }
 }
@@ -555,6 +563,7 @@ function render() {
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
   playFocus();
+  PMTips.check();                         // step 19, stage 5: one tip at the moment it first matters
   $('phoneTimer').innerHTML = ''; if (s.timer && s.timer.mode !== 'idle' && s.timer.side) $('phoneTimer').append(timerEl());
   timerRecv();
   const k = sel.kind || (pend ? 'pend' : null);
