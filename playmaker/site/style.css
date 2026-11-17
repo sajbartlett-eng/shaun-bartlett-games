@@ -477,3 +477,9 @@ h2.h3 { font-size: 17px; margin: 6px 0 4px; }
   button.small, .meta button { min-height: 44px; }
   .startlinks .linkbtn { min-height: 44px; padding: 8px 4px; }
 }
+
+/* ---- step 20: the overloaded defender on the coverage map ---- */
+.covmap .ovmove { stroke: #7a1c14; stroke-width: 1.5; stroke-dasharray: 2 3; opacity: 0.6; pointer-events: none; }
+.covmap .ovline { stroke: #7a1010; stroke-width: 2.5; stroke-dasharray: 6 4; opacity: .8; pointer-events: none; }
+.covmap .ovring { fill: none; stroke: #7a1010; stroke-width: 3; pointer-events: none; }
+.covmap .ovmark { font-size: 20px; font-weight: 700; fill: #7a1010; pointer-events: none; }

@@ -832,6 +832,10 @@ function showCov() { try { return localStorage.getItem('pm_covmap') === '1'; } c
 let covMap = null, covFor = 'all', covAsk = '', covNote = '';
 const COV_SHOT = { layup: 'a layup', dunk: 'a dunk', post: 'a post shot', mid: 'a mid-range shot', floater: 'a floater', long: 'a long two', three: 'a three' };
 function covLine(r) {
+  if (covAfter() && covMap && covMap.all_after) {
+    const who = r.cover < 0 ? 'Nobody covers it after the defence\'s answer.' : `X${r.cover + 1} covers it after the defence's answer${r.next >= 0 ? `, then X${r.next + 1}` : ''}.`;
+    return `${r.sq}: after the defence's best answer, O${r.o + 1} can get ${COV_SHOT[r.shot] || r.shot} here next phase, worth ${Math.round(r.worth)}. ${who}`;
+  }
   const who = r.cover < 0 ? 'Nobody can get there to contest it.' : `X${r.cover + 1} covers it${r.next >= 0 ? `, then X${r.next + 1}` : ', and nobody is behind him'}.`;
   const how = r.reach < 1 ? ` The pass gets there ${Math.round(r.reach * 20)} times in 20.` : '';
   return `${r.sq}: O${r.o + 1} can get ${COV_SHOT[r.shot] || r.shot} here next phase${r.rushed ? ', off balance' : ''}, worth ${Math.round(r.worth)} (open ${Math.round(r.value)}).${how} ${who}`;
@@ -845,17 +849,38 @@ async function fetchCov() {
   try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}` + (n ? `&n=${n}` : '')); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
   catch (e) { covMap = null; }
 }
+// step 20 (D-203): by default the map shows what stays open after the defence's best answer; a switch shows "now"
+function covAfter() { try { return localStorage.getItem('pm_covwhen') !== 'now'; } catch (e) { return true; } }
 function drawCov(c) {
   if (!showCov() || !covMap || !covMap.all || covMap.phase !== st.phase || covMap.possession !== st.possession) return;
-  const rows = covFor === 'all' ? covMap.all : (covMap.attackers[covFor] || []);
+  const after = covAfter() && covMap.all_after;
+  const rows = covFor === 'all' ? (after ? covMap.all_after : covMap.all) : ((after ? covMap.attackers_after : covMap.attackers)[covFor] || []);
   const g = svg('g', { class: 'covmap' });
-  for (const r of rows) {
+  // squares under a piece last: the piece takes the tap there, so the open squares come first (step 20)
+  const taken = new Set([...st.o, ...st.x].map(p => `${p.x},${p.y}`));
+  const order = rows.slice().sort((a, b) => taken.has(`${a.x},${a.y}`) - taken.has(`${b.x},${b.y}`));
+  for (const r of order) {
     const a = Math.max(0, Math.min(0.72, (r.worth - 6) / 40));
     if (a <= 0) continue;
     const cell = svg('rect', { class: 'covsq', x: px(r.x) + 1, y: py(r.y) + 1, width: S - 2, height: S - 2, fill: `rgba(196,38,30,${a.toFixed(2)})`, tabindex: -1 });
     const t = svg('title', {}); t.textContent = covLine(r); cell.append(t);
     cell.addEventListener('click', () => { covNote = covLine(r); const w = $('covNote'); if (w) w.textContent = covNote; });
     g.append(cell);
+  }
+  // each overloaded defender: a mark on him, and a dashed line to each of the two threats he alone covers
+  // (after the answer he stands where the answer puts him: drawn there, with a faint line from where he is now)
+  for (const v of (covMap.overloads || [])) {
+    const x = st.x[v.x]; if (!x) continue;
+    const at = after && covMap.placed && covMap.placed[v.x] ? PM.sqXY(covMap.placed[v.x]) : [x.x, x.y];
+    const cx = px(at[0]) + S / 2, cy = py(at[1]) + S / 2;
+    if (at[0] !== x.x || at[1] !== x.y) g.append(svg('line', { class: 'ovmove', x1: px(x.x) + S / 2, y1: py(x.y) + S / 2, x2: cx, y2: cy }));
+    for (const th of v.threats) {
+      const q = PM.sqXY(th.sq);
+      g.append(svg('line', { class: 'ovline', x1: cx, y1: cy, x2: px(q[0]) + S / 2, y2: py(q[1]) + S / 2 }));
+    }
+    g.append(svg('circle', { class: 'ovring', cx, cy, r: 22 }));
+    const tx = svg('text', { class: 'ovmark', x: cx + 18, y: cy - 14 }); tx.textContent = '!'; g.append(tx);
+    const tt = svg('title', {}); tt.textContent = v.line; g.append(tt);
   }
   c.append(g);
 }
@@ -884,8 +909,10 @@ function covPanel() {
   if (!live) { scoreLines(); $('sideButtons').append(box); return; }
   const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` That is ${Math.round(covMap.change)} more than at the start of the last phase: the defence got weaker.` :
     covMap.change < -0.5 ? ` That is ${Math.round(-covMap.change)} less than at the start of the last phase: the defence got stronger.` : ' About the same as at the start of the last phase.';
-  const strong = covMap.strength == null ? '' : ` The offence's best look by next phase: ${Math.round(covMap.strength)}, by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
+  const strong = covMap.lasting == null ? '' : ` The lasting gap, what the offence can still force after the defence's best answer: ${Math.round(covMap.lasting)}.`;
   box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + strong + change }));
+  box.append(el('button', { class: 'small', id: 'covWhen', 'aria-pressed': covAfter() ? 'true' : 'false', text: covAfter() ? "Showing: after the defence's answer" : 'Showing: now, before it answers',
+    onclick: () => { try { localStorage.setItem('pm_covwhen', covAfter() ? 'now' : 'after'); } catch (e) { /* ignore */ } render(); } }));
   scoreLines();
   const pick = el('div', { class: 'covpick' });
   for (const k of ['all', 0, 1, 2, 3, 4]) {
@@ -895,8 +922,10 @@ function covPanel() {
   box.append(pick);
   const pc = covFor !== 'all' && covMap.passes ? covMap.passes[covFor] : null;
   const passWords = pc == null ? '' : pc >= 1 ? ` A pass straight to O${covFor + 1} can't be intercepted.` : ` A pass straight to O${covFor + 1} arrives ${Math.round(pc * 20)} times in 20.`;
-  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there next phase. Tap a square for who gets what, and who covers it.' + passWords }),
-    el('div', { class: 'covlegend', id: 'covLegend' }, [el('span', { class: 'sw lo' }), ' a little', el('span', { class: 'sw mid' }), ' more', el('span', { class: 'sw hi' }), ' the most for the offence. The shot-zone colours are off while the map shows.']));
+  const shade = covAfter() ? "Darker red: more the offence can still force there next phase, after the defence's best answer." : 'Darker red: more for the offence there next phase, before the defence answers.';
+  box.append(el('div', { id: 'covNote', text: covNote || shade + ' Tap a square for who gets what, and who covers it.' + passWords }),
+    el('div', { class: 'covlegend', id: 'covLegend' }, [el('span', { class: 'sw lo' }), ' a little', el('span', { class: 'sw mid' }), ' more', el('span', { class: 'sw hi' }), ' the most for the offence. The shot-zone colours are off while the map shows.',
+      (covMap.overloads || []).length ? el('span', { class: 'ovkey', text: ' A ringed defender with "!" is overloaded: the only cover for two attackers. Whichever he takes, the other is open.' }) : null]));
   $('sideButtons').append(box);
 }
 
