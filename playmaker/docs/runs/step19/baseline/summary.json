@@ -1,0 +1,547 @@
+{
+ "laptop_01_start": {
+  "note": "First screen: the four ways in",
+  "axe": [],
+  "words": 170,
+  "under14": 11,
+  "targets": 5,
+  "height": 900,
+  "hscroll": false
+ },
+ "laptop_02_path_learn": {
+  "note": "Learn the rules: the guided course, first card",
+  "axe": [],
+  "words": 417,
+  "under14": 27,
+  "targets": 18,
+  "height": 900,
+  "hscroll": false
+ },
+ "laptop_03_path_computer": {
+  "note": "Play the computer: set-up",
+  "axe": [],
+  "words": 484,
+  "under14": 4,
+  "targets": 28,
+  "height": 1887,
+  "hscroll": false
+ },
+ "laptop_04_path_friend": {
+  "note": "Play a friend: set-up",
+  "axe": [],
+  "words": 457,
+  "under14": 6,
+  "targets": 29,
+  "height": 1908,
+  "hscroll": false
+ },
+ "laptop_05_path_scenario": {
+  "note": "Scenario cards: set-up",
+  "axe": [],
+  "words": 436,
+  "under14": 5,
+  "targets": 20,
+  "height": 1358,
+  "hscroll": false
+ },
+ "laptop_06_course_later": {
+  "note": "The guided course, a few cards in",
+  "axe": [],
+  "words": 485,
+  "under14": 22,
+  "targets": 18,
+  "height": 900,
+  "hscroll": false
+ },
+ "laptop_07_players": {
+  "note": "Players, records and the trainer",
+  "axe": [],
+  "words": 528,
+  "under14": 4,
+  "targets": 34,
+  "height": 1887,
+  "hscroll": false
+ },
+ "laptop_08_levels": {
+  "note": "Levels and rosters, in short",
+  "axe": [],
+  "words": 921,
+  "under14": 3,
+  "targets": 31,
+  "height": 1908,
+  "hscroll": false
+ },
+ "laptop_9_roster_build": {
+  "note": "Team builder (rules on)",
+  "axe": [],
+  "words": 3269,
+  "under14": 5,
+  "targets": 42,
+  "height": 2555,
+  "hscroll": false
+ },
+ "laptop_10_roster_random": {
+  "note": "Random deal",
+  "axe": [],
+  "words": 461,
+  "under14": 5,
+  "targets": 33,
+  "height": 2117,
+  "hscroll": false
+ },
+ "laptop_11_roster_draft": {
+  "note": "Draft set-up",
+  "axe": [],
+  "words": 455,
+  "under14": 5,
+  "targets": 29,
+  "height": 1991,
+  "hscroll": false
+ },
+ "laptop_12_draft_board": {
+  "note": "The draft board",
+  "axe": [],
+  "words": 509,
+  "under14": 43,
+  "targets": 60,
+  "height": 2403,
+  "hscroll": false
+ },
+ "laptop_13_table_start": {
+  "note": "The table at tip-off (hot seat)",
+  "axe": [],
+  "words": 488,
+  "under14": 73,
+  "targets": 16,
+  "height": 1047,
+  "hscroll": false
+ },
+ "laptop_14_piece_selected": {
+  "note": "A piece selected: its actions",
+  "axe": [],
+  "words": 573,
+  "under14": 71,
+  "targets": 22,
+  "height": 1299,
+  "hscroll": false
+ },
+ "laptop_15_pass_choice": {
+  "note": "Choosing a pass: the pass chips",
+  "axe": [],
+  "words": 679,
+  "under14": 64,
+  "targets": 30,
+  "height": 1653,
+  "hscroll": false
+ },
+ "laptop_16a_digital_table": {
+  "note": "A digital match, coverage hidden",
+  "axe": [],
+  "words": 558,
+  "under14": 87,
+  "targets": 18,
+  "height": 1100,
+  "hscroll": false
+ },
+ "laptop_16_coverage": {
+  "note": "Coverage: shown",
+  "axe": [],
+  "words": 558,
+  "under14": 87,
+  "targets": 18,
+  "height": 1100,
+  "hscroll": false
+ },
+ "laptop_18_contest": {
+  "note": "The defence decides on a contest",
+  "axe": [],
+  "words": 562,
+  "under14": 61,
+  "targets": 22,
+  "height": 1070,
+  "hscroll": false
+ },
+ "laptop_19_step_bar": {
+  "note": "The computer's turn, one action at a time",
+  "axe": [],
+  "words": 576,
+  "under14": 69,
+  "targets": 12,
+  "height": 1480,
+  "hscroll": false
+ },
+ "laptop_20_phase_diagram": {
+  "note": "After a few steps (phase diagram if a phase ended)",
+  "axe": [],
+  "words": 608,
+  "under14": 68,
+  "targets": 12,
+  "height": 1679,
+  "hscroll": false
+ },
+ "laptop_21_end_dialog": {
+  "note": "End of the scenario: the end dialog and feedback",
+  "axe": [],
+  "words": 812,
+  "under14": 63,
+  "targets": 28,
+  "height": 1873,
+  "hscroll": false
+ },
+ "laptop_22_after_end": {
+  "note": "After closing the end dialog: the review of the possession",
+  "axe": [],
+  "words": 732,
+  "under14": 56,
+  "targets": 22,
+  "height": 1873,
+  "hscroll": false
+ },
+ "laptop_23_scout_lock": {
+  "note": "Scout level: the pick lock before tip-off",
+  "axe": [],
+  "words": 922,
+  "under14": 66,
+  "targets": 18,
+  "height": 1047,
+  "hscroll": false
+ },
+ "laptop_24_scout_report": {
+  "note": "The scout report, all sections open",
+  "axe": [],
+  "words": 889,
+  "under14": 45,
+  "targets": 18,
+  "height": 1056,
+  "hscroll": false
+ },
+ "laptop_25_place": {
+  "note": "Against the computer: placing your side (Learn level)",
+  "axe": [],
+  "words": 723,
+  "under14": 63,
+  "targets": 25,
+  "height": 1192,
+  "hscroll": false
+ },
+ "laptop_26_scenario_card": {
+  "note": "A scenario card in play",
+  "axe": [],
+  "words": 589,
+  "under14": 65,
+  "targets": 16,
+  "height": 1289,
+  "hscroll": false
+ },
+ "phone_01_start": {
+  "note": "First screen: the four ways in",
+  "axe": [],
+  "words": 170,
+  "under14": 11,
+  "targets": 1,
+  "height": 1438,
+  "hscroll": false
+ },
+ "phone_02_path_learn": {
+  "note": "Learn the rules: the guided course, first card",
+  "axe": [],
+  "words": 417,
+  "under14": 27,
+  "targets": 11,
+  "height": 1438,
+  "hscroll": false
+ },
+ "phone_03_path_computer": {
+  "note": "Play the computer: set-up",
+  "axe": [],
+  "words": 484,
+  "under14": 4,
+  "targets": 7,
+  "height": 3171,
+  "hscroll": false
+ },
+ "phone_04_path_friend": {
+  "note": "Play a friend: set-up",
+  "axe": [],
+  "words": 457,
+  "under14": 4,
+  "targets": 7,
+  "height": 3210,
+  "hscroll": false
+ },
+ "phone_05_path_scenario": {
+  "note": "Scenario cards: set-up",
+  "axe": [],
+  "words": 436,
+  "under14": 5,
+  "targets": 5,
+  "height": 2378,
+  "hscroll": false
+ },
+ "phone_06_course_later": {
+  "note": "The guided course, a few cards in",
+  "axe": [],
+  "words": 485,
+  "under14": 22,
+  "targets": 11,
+  "height": 1438,
+  "hscroll": false
+ },
+ "phone_07_players": {
+  "note": "Players, records and the trainer",
+  "axe": [],
+  "words": 528,
+  "under14": 4,
+  "targets": 8,
+  "height": 3171,
+  "hscroll": false
+ },
+ "phone_08_levels": {
+  "note": "Levels and rosters, in short",
+  "axe": [],
+  "words": 921,
+  "under14": 2,
+  "targets": 8,
+  "height": 3210,
+  "hscroll": false
+ },
+ "phone_9_roster_build": {
+  "note": "Team builder (rules on)",
+  "axe": [],
+  "words": 3269,
+  "under14": 4,
+  "targets": 8,
+  "height": 4653,
+  "hscroll": false
+ },
+ "phone_10_roster_random": {
+  "note": "Random deal",
+  "axe": [],
+  "words": 461,
+  "under14": 4,
+  "targets": 7,
+  "height": 3425,
+  "hscroll": false
+ },
+ "phone_11_roster_draft": {
+  "note": "Draft set-up",
+  "axe": [],
+  "words": 455,
+  "under14": 4,
+  "targets": 8,
+  "height": 3340,
+  "hscroll": false
+ },
+ "phone_12_draft_board": {
+  "note": "The draft board",
+  "axe": [],
+  "words": 509,
+  "under14": 1,
+  "targets": 8,
+  "height": 3915,
+  "hscroll": false
+ },
+ "phone_13_table_start": {
+  "note": "The table at tip-off (hot seat)",
+  "axe": [],
+  "words": 171,
+  "under14": 72,
+  "targets": 11,
+  "height": 1428,
+  "hscroll": false
+ },
+ "phone_14_piece_selected": {
+  "note": "A piece selected: its actions",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 243,
+  "under14": 70,
+  "targets": 11,
+  "height": 1725,
+  "hscroll": false
+ },
+ "phone_15_pass_choice": {
+  "note": "Choosing a pass: the pass chips",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 349,
+  "under14": 58,
+  "targets": 15,
+  "height": 2182,
+  "hscroll": false
+ },
+ "phone_16a_digital_table": {
+  "note": "A digital match, coverage hidden",
+  "axe": [],
+  "words": 221,
+  "under14": 87,
+  "targets": 11,
+  "height": 1581,
+  "hscroll": false
+ },
+ "phone_16_coverage": {
+  "note": "Coverage: shown",
+  "axe": [],
+  "words": 221,
+  "under14": 87,
+  "targets": 11,
+  "height": 1535,
+  "hscroll": false
+ },
+ "phone_17_tab_off": {
+  "note": "Phone tab: off",
+  "axe": [],
+  "words": 171,
+  "under14": 72,
+  "targets": 11,
+  "height": 1428,
+  "hscroll": false
+ },
+ "phone_17_tab_def": {
+  "note": "Phone tab: def",
+  "axe": [],
+  "words": 171,
+  "under14": 70,
+  "targets": 11,
+  "height": 1428,
+  "hscroll": false
+ },
+ "phone_17_tab_cards": {
+  "note": "Phone tab: cards",
+  "axe": [],
+  "words": 432,
+  "under14": 36,
+  "targets": 21,
+  "height": 1880,
+  "hscroll": false
+ },
+ "phone_17_tab_log": {
+  "note": "Phone tab: log",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 146,
+  "under14": 24,
+  "targets": 11,
+  "height": 1256,
+  "hscroll": false
+ },
+ "phone_18_contest": {
+  "note": "The defence decides on a contest",
+  "axe": [],
+  "words": 213,
+  "under14": 50,
+  "targets": 11,
+  "height": 1127,
+  "hscroll": false
+ },
+ "phone_19_step_bar": {
+  "note": "The computer's turn, one action at a time",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 199,
+  "under14": 68,
+  "targets": 11,
+  "height": 1297,
+  "hscroll": false
+ },
+ "phone_20_phase_diagram": {
+  "note": "After a few steps (phase diagram if a phase ended)",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 229,
+  "under14": 65,
+  "targets": 11,
+  "height": 1498,
+  "hscroll": false
+ },
+ "phone_21_end_dialog": {
+  "note": "End of the scenario: the end dialog and feedback",
+  "axe": [],
+  "words": 433,
+  "under14": 54,
+  "targets": 21,
+  "height": 1961,
+  "hscroll": false
+ },
+ "phone_23_scout_lock": {
+  "note": "Scout level: the pick lock before tip-off",
+  "axe": [],
+  "words": 571,
+  "under14": 64,
+  "targets": 13,
+  "height": 1191,
+  "hscroll": false
+ },
+ "phone_24_scout_report": {
+  "note": "The scout report, all sections open",
+  "axe": [],
+  "words": 553,
+  "under14": 29,
+  "targets": 11,
+  "height": 1406,
+  "hscroll": false
+ },
+ "phone_25_place": {
+  "note": "Against the computer: placing your side (Learn level)",
+  "axe": [],
+  "words": 387,
+  "under14": 50,
+  "targets": 6,
+  "height": 1510,
+  "hscroll": false
+ },
+ "phone_26_scenario_card": {
+  "note": "A scenario card in play",
+  "axe": [
+   "heading-order"
+  ],
+  "words": 240,
+  "under14": 56,
+  "targets": 11,
+  "height": 1827,
+  "hscroll": false
+ },
+ "zoom200_start": {
+  "note": "Start screen at 200% zoom (720 px)",
+  "axe": [],
+  "words": 170,
+  "under14": 11,
+  "targets": 1,
+  "height": 970,
+  "hscroll": false
+ },
+ "zoom200_table": {
+  "note": "Table at 200% zoom (720 px)",
+  "axe": [],
+  "words": 171,
+  "under14": 72,
+  "targets": 11,
+  "height": 1447,
+  "hscroll": false
+ },
+ "dark_request_table": {
+  "note": "The table when the device asks for dark mode",
+  "axe": [],
+  "words": 488,
+  "under14": 73,
+  "targets": 16,
+  "height": 1047,
+  "hscroll": false
+ },
+ "forced_colours_table": {
+  "note": "The table in forced colours (Windows high contrast)",
+  "axe": [
+   "color-contrast"
+  ],
+  "words": 488,
+  "under14": 73,
+  "targets": 16,
+  "height": 1047,
+  "hscroll": false
+ }
+}
