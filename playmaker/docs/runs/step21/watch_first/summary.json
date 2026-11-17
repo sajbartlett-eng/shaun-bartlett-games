@@ -1,0 +1,90 @@
+{
+ "code": "9C6339",
+ "level": "allstar",
+ "map": true,
+ "possessions": [
+  {
+   "possession": 1,
+   "score": 21,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 10,
+   "defence_turns": 10,
+   "rotations": 0
+  },
+  {
+   "possession": 2,
+   "score": 18,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "defence_turns": 2,
+   "rotations": 0
+  },
+  {
+   "possession": 3,
+   "score": 24,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 11,
+   "defence_turns": 11,
+   "rotations": 0
+  },
+  {
+   "possession": 4,
+   "score": 26,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 16,
+   "defence_turns": 16,
+   "rotations": 0
+  },
+  {
+   "possession": 5,
+   "score": 3,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 16,
+   "defence_turns": 16,
+   "rotations": 0
+  },
+  {
+   "possession": 6,
+   "score": 17,
+   "verdict": "Good: the defence broke and the shot was taken.",
+   "checks": [],
+   "turns": 16,
+   "defence_turns": 16,
+   "rotations": 0
+  },
+  {
+   "possession": 7,
+   "score": 14,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 19,
+   "defence_turns": 19,
+   "rotations": 0
+  },
+  {
+   "possession": 8,
+   "score": 18,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "defence_turns": 2,
+   "rotations": 0
+  }
+ ],
+ "rotations": [],
+ "play_s": [
+  11.1,
+  72.5,
+  112.5,
+  115.1,
+  97.7,
+  130.2,
+  13.0
+ ],
+ "seconds": 632.6
+}

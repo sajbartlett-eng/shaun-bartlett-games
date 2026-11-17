@@ -1,9 +1,9 @@
 {
- "positions": 40,
- "with_a_pass_in_the_air": 0,
- "equal": 40,
+ "positions": 60,
+ "with_a_pass_in_the_air": 2,
+ "equal": 60,
  "different": [],
- "seconds": 36.2,
- "js_ms": 21.8,
- "py_ms": 416.0
+ "seconds": 47.4,
+ "js_ms": 19.4,
+ "py_ms": 364.9
 }

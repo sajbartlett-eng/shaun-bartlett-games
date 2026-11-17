@@ -1,0 +1,25 @@
+Possession 2: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O4's post shot on G2, worth 20: X4 covers it.
+  Defence: set up to hold the lasting gap to 20.
+Phase 1
+  Turn 1
+    Offence: O5 moved to N3 (lasting gap from 20 to 26), then O2 moved to E9 (lasting gap at 26). The lasting gap rose from 20 to 26.
+    Defence: X1 sprinted to I10 (lasting gap at 26), then X2 moved to F9, facing north-west (lasting gap at 26). The lasting gap held at 26.
+  Turn 2
+    Offence: O1 quick-stepped to K9 (lasting gap at 26), then the offence hesitated (lasting gap at 26). The lasting gap stayed at 26.
+    Defence: X5 moved to M2, facing north (lasting gap at 26), then X3 moved to O5, facing south (lasting gap at 26). The lasting gap held at 26.
+  Turn 3
+    Offence: O1 moved to N9 (lasting gap at 26), then O1 shot a three.
+    Defence: The defence ended its turn. The possession ended.
+  The coach on phase 1
+    Offence: Turn 3: the shot went up with the defence not broken.
+    Offence: Best turn: turn 1, O5 moved to N3 (lasting gap from 20 to 26), then O2 moved to E9 (lasting gap at 26): from 20 to 26.
+    Defence: Turn 3: the shot went up against them.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O1's three from N9. Open, it was worth 27; the contest took 0 off, leaving 27.
+  Scored 27 (Great).
+  The shot taken was the best one the measure saw all possession.
+  Offence: Keep: phase 1, turn 1: the lasting gap rose from 20 to 26.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

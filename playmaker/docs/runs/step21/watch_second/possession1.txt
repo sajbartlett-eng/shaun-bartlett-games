@@ -1,0 +1,76 @@
+Possession 1: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O3's layup on K4, worth 20: X1 covers it.
+  Defence: set up to hold the lasting gap to 20.
+Phase 1
+  Turn 1
+    Offence: O2 moved to B7 (lasting gap at 20), then O4 moved to A4 (lasting gap from 20 to 21). The lasting gap rose from 20 to 21. X3 is the only cover for O3's three on L10 and O5's three on O8: whichever he takes, the other is open (worth 21).
+    Defence: X2 quick-stepped to E8 (lasting gap at 21), then X3 moved to Q7, facing north (lasting gap from 21 to 20). That took the lasting gap from 21 down to 20.
+  Turn 2
+    Offence: O1 moved to I10 (lasting gap from 20 to 21), then O1 passed to O2 (lasting gap at 21). The lasting gap rose from 20 to 21.
+    Defence: X2 moved to E8, facing north (lasting gap at 21), then X1 moved to J7, facing north-west (lasting gap at 21). The lasting gap held at 21.
+  Turn 3
+    Offence: O3 moved to O6 (lasting gap at 21), then the offence hesitated (lasting gap at 21). The lasting gap stayed at 21.
+    Defence: X4 moved to B4, facing north (lasting gap at 21), then X1 quick-stepped to H9. The phase ended: the next starts with the lasting gap at 21.
+  The coach on phase 1
+    Offence: The lasting gap went from 20 to 21 this phase: the defence got weaker.
+    Offence: Best turn: turn 1, O2 moved to B7 (lasting gap at 20), then O4 moved to A4 (lasting gap from 20 to 21): from 20 to 21.
+    Defence: Best answer: turn 1, X2 quick-stepped to E8 (lasting gap at 21), then X3 moved to Q7, facing north (lasting gap from 21 to 20): from 21 down to 20.
+    Next phase, after the defence's best answer, look for O2's three on A2, worth 21: X4 covers it. X1 is the only cover for O2's layup on G2 and O3's layup on K3: whichever he takes, the other is open (worth 16).
+Phase 2
+  Turn 1
+    Offence: O2 moved to A7 (lasting gap from 21 to 24), then O1 moved to K10 (lasting gap at 24). The lasting gap rose from 21 to 24. X2 is the only cover for O3's three on L10 and O5's mid-range shot on L5: whichever he takes, the other is open (worth 7).
+    Defence: X1 quick-stepped to J7 (lasting gap from 24 to 21), then X4 quick-stepped to A5 (lasting gap at 21). That took the lasting gap from 24 down to 21. Rotation: X4 took O2; X1 picked up O3.
+  Turn 2
+    Offence: O3 moved to Q4 (lasting gap from 21 to 32), then O2 quick-stepped to B7 (lasting gap from 32 to 36). The lasting gap rose from 21 to 36. X1 is the only cover for O2's layup on G2 and O3's layup on J4: whichever he takes, the other is open (worth 36).
+    Defence: X2 moved to G6, facing north (lasting gap from 36 to 21), then X5 moved to P3, facing north (lasting gap at 21). That took the lasting gap from 36 down to 21. Switch: X1 took O2 from X4.
+  Turn 3
+    Offence: O4 set a screen (lasting gap at 21). The lasting gap stayed at 21.
+    Defence: X1 moved to G7, facing east (lasting gap at 21), then X4 moved to A6, facing east. The phase ended: the next starts with the lasting gap at 20.
+  The coach on phase 2
+    Offence: The lasting gap went from 21 to 20 this phase: the defence got stronger.
+    Offence: Best turn: turn 2, O3 moved to Q4 (lasting gap from 21 to 32), then O2 quick-stepped to B7 (lasting gap from 32 to 36): from 21 to 36.
+    Defence: Best answer: turn 2, X2 moved to G6, facing north (lasting gap from 36 to 21), then X5 moved to P3, facing north (lasting gap at 21): from 36 down to 21.
+    Next phase, after the defence's best answer, look for O2's layup on H2, worth 20: X4 covers it.
+Phase 3
+  Turn 1
+    Offence: O2 took on X4 off the dribble (X4 stopped the dribble) (lasting gap at 20). The lasting gap stayed at 20.
+    Defence: X2 quick-stepped to F6 (lasting gap from 20 to 18), then the defence ended its turn (lasting gap at 18). That took the lasting gap from 20 down to 18.
+  Turn 2
+    Offence: O4 moved to B6 (lasting gap from 18 to 21), then the offence hesitated (lasting gap at 21). The lasting gap rose from 18 to 21. X5 is the only cover for O3's floater on N2 and O5's three on Q2: whichever he takes, the other is open (worth 5).
+    Defence: X4 moved to A7, facing south (lasting gap at 21), then X2 moved to H6, facing north (lasting gap from 21 to 20). That took the lasting gap from 21 down to 20. Switch: X1 took O3 from X5.
+  Turn 3
+    Offence: O1 moved to M9 (lasting gap at 20), then O3 moved to N4 (lasting gap at 20). The lasting gap stayed at 20.
+    Defence: X1 quick-stepped to E5 (lasting gap at 20), then X3 moved to Q7, facing north-east (lasting gap from 20 to 21). The answer let the lasting gap rise from 20 to 21. Switch: X1 took O2 from X4.
+  Turn 4
+    Offence: O2 passed to O1 (lasting gap at 21). The lasting gap stayed at 21.
+    Defence: X1 moved to G7, facing north-east. The phase ended: the next starts with the lasting gap at 20.
+  The coach on phase 3
+    Offence: The lasting gap held at 20 this phase.
+    Offence: Best turn: turn 2, O4 moved to B6 (lasting gap from 18 to 21), then the offence hesitated (lasting gap at 21): from 18 to 21.
+    Defence: Best answer: turn 1, X2 quick-stepped to F6 (lasting gap from 20 to 18), then the defence ended its turn (lasting gap at 18): from 20 down to 18.
+    Defence: Turn 3: the answer let the lasting gap rise from 20 to 21.
+    Next phase, after the defence's best answer, look for O3's layup on I3, worth 20: X1 covers it. X1 is the only cover for O3's three on K10 and O2's three on F10: whichever he takes, the other is open (worth 14).
+Phase 4
+  Turn 1
+    Offence: O5 moved to Q6 (lasting gap at 20), then O5 set a screen (lasting gap at 20). The lasting gap stayed at 20.
+    Defence: X3 moved to P7, facing north (lasting gap at 20), then the defence paused (lasting gap at 20). The lasting gap held at 20.
+  Turn 2
+    Offence: O1 moved to O9 (lasting gap at 20), then O3 moved to N5 (lasting gap at 20). The lasting gap stayed at 20.
+    Defence: X1 quick-stepped to H7 (lasting gap at 20), then the defence ended its turn (lasting gap at 20). The lasting gap held at 20. Switch: X1 took O2 from X4; X1 took O5 from X5.
+  Turn 3
+    Offence: O1 shot a three.
+    Defence: The defence ended its turn. The possession ended.
+  The coach on phase 4
+    Offence: Turn 3: the shot went up with the defence not broken.
+    Defence: Turn 3: the shot went up against them.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O1's three from O9. Open, it was worth 21; the contest took 0 off, leaving 21.
+  Scored 21 (Good).
+  The shot taken was the best one the measure saw all possession.
+  The lasting gap at the start of each phase: 20, 21, 20, 20.
+  Offence: Keep: phase 2, turn 2: the lasting gap rose from 21 to 36.
+  Defence: Keep: phase 2, turn 2: the answer took the lasting gap from 36 down to 21.
+  Defence: Change: phase 3, turn 3: the answer let the lasting gap rise from 20 to 21.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

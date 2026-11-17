@@ -240,7 +240,8 @@ def turn_lines(game, t):
                  f'the answer let the lasting gap rise from {v1} to {v2}' if v2 > v1 else f'the lasting gap held at {v1}')
     elif c2 and c2.get('last') and not (c1 and c1.get('last')):
         d_eff = 'the last phase begins: only a shot counts now'
-    rot = rotation_words(c1, c2) if dfn and not ended and s2.stage != 'over' else None
+    movers = {x[1].piece for x in dfn if x[1].kind in ('move', 'qs', 'sprint')}
+    rot = rotation_words(c1, c2, movers) if dfn and not ended and s2.stage != 'over' else None
     defence = f'Defence: {d_words}.' + (f' {_cap(d_eff)}.' if d_eff else '') + (f' {rot}' if rot else '') + ''.join(f' {p}.' for p in d_pts)
     return dict(phase=t['phase'], turn=t['turn'], offence=offence, defence=defence,
                 offence_actions=[str(x[1]) for x in off], defence_actions=[str(x[1]) for x in dfn],
@@ -254,7 +255,7 @@ def turn_lines(game, t):
                 actions=dict(offence=o_each, defence=d_each))
 
 
-def rotation_words(c1, c2):
+def rotation_words(c1, c2, movers=None):
     """Step 21 (D-207): a switch the defence's answer made, read off the map: an attacker whose best look was covered by
     one defender before the answer and by another after it. A rotation when the first picked up someone else ("Rotation:
     X2 took O3; X1 picked up O2."); a switch otherwise ("Switch: X2 took O3 from X1."). None: no switch."""
@@ -264,7 +265,7 @@ def rotation_words(c1, c2):
     took = []
     for a in range(min(len(a1), len(a2))):
         d, e = a1[a], a2[a]
-        if d >= 0 and e >= 0 and d != e:
+        if d >= 0 and e >= 0 and d != e and (movers is None or e in movers):   # only a defender who moved takes a man
             took.append((a, d, e))
     for a, d, e in took:
         picked = [b for b, d2, e2 in took if e2 == d and b != a]

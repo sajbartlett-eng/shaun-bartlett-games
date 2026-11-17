@@ -113,6 +113,7 @@ def test_a_switch_is_named_when_the_answer_makes_one():
     assert rotation_words(before, after) == 'Rotation: X1 took O2; X2 picked up O3.'
     assert rotation_words(before, dict(covers_now=[0, 1, 2, 3, 4])) is None
     assert rotation_words(before, dict(covers_now=[0, 1, 1, 3, 4])) == 'Switch: X2 took O3 from X3.'   # no pick-up
+    assert rotation_words(before, dict(covers_now=[0, 1, 1, 3, 4]), movers={3}) is None        # X2 didn't move: no switch
 
 
 # ---- part 4: a pass in the air -----------------------------------------------------------------------------------------

@@ -1,0 +1,189 @@
+{
+ "code": "983FC4",
+ "level": "allstar",
+ "map": true,
+ "possessions": [
+  {
+   "possession": 1,
+   "score": 16,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 12,
+   "defence_turns": 12,
+   "rotations": 3
+  },
+  {
+   "possession": 2,
+   "score": 27,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 3,
+   "defence_turns": 3,
+   "rotations": 0
+  },
+  {
+   "possession": 3,
+   "score": 9,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 18,
+   "defence_turns": 18,
+   "rotations": 3
+  },
+  {
+   "possession": 4,
+   "score": 15,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 22,
+   "defence_turns": 22,
+   "rotations": 5
+  },
+  {
+   "possession": 5,
+   "score": 22,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 10,
+   "defence_turns": 10,
+   "rotations": 0
+  },
+  {
+   "possession": 6,
+   "score": 24,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 4,
+   "defence_turns": 4,
+   "rotations": 0
+  },
+  {
+   "possession": 7,
+   "score": 27,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 3,
+   "defence_turns": 3,
+   "rotations": 0
+  },
+  {
+   "possession": 8,
+   "score": 26,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 15,
+   "defence_turns": 15,
+   "rotations": 3
+  }
+ ],
+ "rotations": [
+  {
+   "phase": 2,
+   "turn": 1,
+   "line": "Switch: X2 took O2 from X3.",
+   "defence": "Defence: X2 moved to H10, facing north (lasting gap from 21 to 20), then X3 moved to M9, facing north (lasting gap from 20 to 18). That took the lasting gap from 21 down to 18. Switch: X2 took O2 from X3.",
+   "possession": 1
+  },
+  {
+   "phase": 2,
+   "turn": 2,
+   "line": "Switch: X4 took O1 from X1; X4 took O3 from X1.",
+   "defence": "Defence: X4 moved to E3, facing north (lasting gap from 24 to 18), then X4 quick-stepped to E4 (lasting gap from 18 to 20). That took the lasting gap from 24 down to 20. Switch: X4 took O1 from X1; X4 took O3 from X1.",
+   "possession": 1
+  },
+  {
+   "phase": 3,
+   "turn": 1,
+   "line": "Switch: X1 took O5 from X5.",
+   "defence": "Defence: X2 quick-stepped to I9 (lasting gap at 22), then X1 moved to I7, facing east (lasting gap from 22 to 20). That took the lasting gap from 22 down to 20. Switch: X1 took O5 from X5.",
+   "possession": 1
+  },
+  {
+   "phase": 2,
+   "turn": 2,
+   "line": "Switch: X1 took O2 from X2.",
+   "defence": "Defence: X1 moved to N7, facing north (lasting gap from 24 to 20), then X3 moved to L7, facing north (lasting gap at 20). That took the lasting gap from 24 down to 20. Switch: X1 took O2 from X2.",
+   "possession": 3
+  },
+  {
+   "phase": 3,
+   "turn": 3,
+   "line": "Switch: X4 took O1 from X1; X4 took O5 from X5.",
+   "defence": "Defence: X1 moved to N5, facing north (lasting gap at 27), then X4 quick-stepped to H6 (lasting gap from 27 to 24). That took the lasting gap from 27 down to 24. Switch: X4 took O1 from X1; X4 took O5 from X5.",
+   "possession": 3
+  },
+  {
+   "phase": 5,
+   "turn": 3,
+   "line": "Switch: X5 took O1 from X1.",
+   "defence": "Defence: X5 moved to I3, facing north (lasting gap at 24), then X5 went for the steal (fouled on the steal) (lasting gap at 24). The lasting gap held at 24. Switch: X5 took O1 from X1. Foul on the steal: +5 to the offence.",
+   "possession": 3
+  },
+  {
+   "phase": 1,
+   "turn": 1,
+   "line": "Switch: X1 took O2 from X2; X1 took O3 from X3.",
+   "defence": "Defence: X3 moved to M8, facing north-west (lasting gap at 26), then X1 moved to I8, facing north-east (lasting gap from 26 to 20). That took the lasting gap from 26 down to 20. Switch: X1 took O2 from X2; X1 took O3 from X3.",
+   "possession": 4
+  },
+  {
+   "phase": 1,
+   "turn": 2,
+   "line": "Switch: X2 took O1 from X1; X2 took O2 from X1.",
+   "defence": "Defence: X3 quick-stepped to L9 (lasting gap at 26), then X2 moved to F7, facing north (lasting gap from 26 to 20). That took the lasting gap from 26 down to 20. Switch: X2 took O1 from X1; X2 took O2 from X1.",
+   "possession": 4
+  },
+  {
+   "phase": 3,
+   "turn": 1,
+   "line": "Switch: X1 took O2 from X4; X1 took O4 from X4.",
+   "defence": "Defence: X1 moved to F5, facing west (lasting gap at 20), then the defence ended its turn (lasting gap at 20). The lasting gap held at 20. Switch: X1 took O2 from X4; X1 took O4 from X4.",
+   "possession": 4
+  },
+  {
+   "phase": 3,
+   "turn": 2,
+   "line": "Switch: X2 took O3 from X3.",
+   "defence": "Defence: X2 moved to G7, facing south-east (lasting gap from 26 to 21), then the defence ended its turn (lasting gap at 21). That took the lasting gap from 26 down to 21. Switch: X2 took O3 from X3.",
+   "possession": 4
+  },
+  {
+   "phase": 5,
+   "turn": 1,
+   "line": "Switch: X1 took O1 from X5; X1 took O3 from X5.",
+   "defence": "Defence: X1 moved to H4, facing east (lasting gap at 26), then X3 quick-stepped to M7 (lasting gap at 26). The lasting gap held at 26. Switch: X1 took O1 from X5; X1 took O3 from X5.",
+   "possession": 4
+  },
+  {
+   "phase": 1,
+   "turn": 1,
+   "line": "Switch: X3 took O3 from X1.",
+   "defence": "Defence: X3 moved to M8, facing south (lasting gap from 26 to 20), then the defence ended its turn (lasting gap at 20). That took the lasting gap from 26 down to 20. Switch: X3 took O3 from X1.",
+   "possession": 8
+  },
+  {
+   "phase": 3,
+   "turn": 1,
+   "line": "Switch: X1 took O3 from X5.",
+   "defence": "Defence: X1 moved to L5, facing north (lasting gap at 20), then the defence ended its turn (lasting gap at 20). The lasting gap held at 20. Switch: X1 took O3 from X5.",
+   "possession": 8
+  },
+  {
+   "phase": 4,
+   "turn": 1,
+   "line": "Switch: X1 took O2 from X4.",
+   "defence": "Defence: X1 moved to K4, facing south (lasting gap at 26), then X4 quick-stepped to B3 (lasting gap at 26). The lasting gap held at 26. Switch: X1 took O2 from X4.",
+   "possession": 8
+  }
+ ],
+ "play_s": [
+  23.7,
+  108.6,
+  142.9,
+  68.1,
+  23.7,
+  21.1,
+  105.2
+ ],
+ "seconds": 585.2
+}
