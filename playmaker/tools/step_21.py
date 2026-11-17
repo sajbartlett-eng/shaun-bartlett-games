@@ -248,7 +248,8 @@ def cmd_watch(tag='watch', level='allstar', poss='8'):
         res = dict(code=g.code, level=level, map=AG.CONFIG['eval']['map'], possessions=summary, rotations=rotations, play_s=play_s,
                    seconds=round(time.time() - t0, 1))
         json.dump(res, open(os.path.join(out_dir, 'summary.json'), 'w'), indent=1)
-        print(json.dumps(dict(code=g.code, seconds=res['seconds'], rotations=len(rotations), defence_turns=sum(x['defence_turns'] for x in summary))))
+        print(json.dumps(dict(code=g.code, seconds=res['seconds'], rotations=sum(1 for x in rotations if x['line'].startswith('Rotation')),
+                              switches=sum(1 for x in rotations if x['line'].startswith('Switch')), defence_turns=sum(x['defence_turns'] for x in summary))))
     finally:
         stop_coverage_engine()
 

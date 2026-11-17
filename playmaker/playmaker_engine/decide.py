@@ -2567,7 +2567,9 @@ def _lane_p(s, i, c, reach=None):
     if reach is None:
         reach = bool(CONFIG['eval'].get('reach'))
     rl = pass_by_rules(s.ctx.rules)                      # by the rules the chance also turns on bodies, screens, broken zones
-    key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
+    # step 21: keyed on the context itself (kept alive while cached), not its id: a freed context's id can come back
+    # for a new one, and the new board then read the old board's chance (seen in step 21's tests)
+    key = (s.ctx, s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
            s.o if reach or rl else None, s.screens if reach or rl else None, _off_balance_key(s),
            (i, s.cnt, s.beaten) if rl else None)
     hit = _LP.get(key)
@@ -2608,20 +2610,22 @@ def cover_groups(looks, most=3):
 
     def value_of(A, ds):
         best = float('inf')
+        pick = [None]
         k = len(ds)
         took = [-1] * k
 
         def go(i):
             nonlocal best
             if i == k:
-                left = float('-inf')
+                left, open_ = float('-inf'), -1
                 for u in range(len(A)):
                     if u in took:
                         continue
                     if all(v < 0 or B.cheb(A[u]['c'], A[v]['c']) >= 3 for v in took) and A[u]['wd'] > left:
-                        left = A[u]['wd']
+                        left, open_ = A[u]['wd'], u
                 if left < best - 1e-9:
                     best = left
+                    pick[0] = (list(took), open_)
                 return
             took[i] = -1
             go(i + 1)
@@ -2632,7 +2636,7 @@ def cover_groups(looks, most=3):
                 go(i + 1)
                 took[i] = -1
         go(0)
-        return best
+        return best, pick[0]
     out, named = [], []
     for k in range(1, most + 1):
         for ds in itertools.combinations(range(5), k):
@@ -2647,13 +2651,16 @@ def cover_groups(looks, most=3):
             if len(by) <= k:
                 continue
             A = sorted(by.values(), key=lambda u: (-u['wd'], u['a']))
-            val = value_of(A, list(ds))
+            val, pick = value_of(A, list(ds))
             if not val > 0 or val == float('inf'):
                 continue
             if any((h[0] & gm) == h[0] and h[1] >= val - 1e-9 for h in named):
                 continue
             named.append((gm, val))
-            out.append(dict(d=ds[0], ds=list(ds), value=val, threats=[dict(a=u['a'], c=u['c'], t=u['t'], worth=u['wd'], now=u['now']) for u in A],
+            # the looks in the order the words need them: those the best assignment takes, then the one it leaves open
+            order = [u for u in pick[0] if u >= 0] + ([pick[1]] if pick[1] >= 0 else [])
+            order += [u for u in range(len(A)) if u not in order]
+            out.append(dict(d=ds[0], ds=list(ds), value=val, threats=[dict(a=A[u]['a'], c=A[u]['c'], t=A[u]['t'], worth=A[u]['wd'], now=A[u]['now']) for u in order],
                             near_key=all(5 <= u['c'][0] <= 11 and 1 <= u['c'][1] <= 7 for u in A)))
     return out
 
@@ -2849,7 +2856,7 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left, i=None):
 def _pass_prob(s, i):
     """P(a pass from the carrier to attacker i now arrives): 0 if not legal; else 1 - the best Intercept chance
     over the defence's legal intercepts once it is in the air (the rules' own options)."""
-    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s),
+    key = (s.ctx, s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s),   # (step 21: the context, not its id)
            s.beaten if pass_by_rules(s.ctx.rules) else None)
     if key in _PP:
         return _PP[key]

@@ -256,7 +256,8 @@ def turn_lines(game, t):
 
 def rotation_words(c1, c2):
     """Step 21 (D-207): a switch the defence's answer made, read off the map: an attacker whose best look was covered by
-    one defender before the answer and by another after it, while the first picked up someone else. None: no switch."""
+    one defender before the answer and by another after it. A rotation when the first picked up someone else ("Rotation:
+    X2 took O3; X1 picked up O2."); a switch otherwise ("Switch: X2 took O3 from X1."). None: no switch."""
     if not c1 or not c2:
         return None
     a1, a2 = c1.get('covers_now') or [], c2.get('covers_now') or []
@@ -270,6 +271,8 @@ def rotation_words(c1, c2):
         if picked:
             b = picked[0]
             return f'Rotation: X{e + 1} took O{a + 1}; X{d + 1} picked up O{b + 1}.'
+    if took:                                    # a switch with no pick-up: name it (at most two)
+        return 'Switch: ' + '; '.join(f'X{e + 1} took O{a + 1} from X{d + 1}' for a, d, e in took[:2]) + '.'
     return None
 
 

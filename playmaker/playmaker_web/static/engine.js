@@ -4893,7 +4893,10 @@ const PMEngine = (() => {
         if (!(g.value > 0) || !isFinite(g.value)) continue;
         if (named.some(h => (h.gm & gm) === h.gm && h.value >= g.value - 1e-9)) continue;   // a smaller group says it already
         named.push({ gm, value: g.value });
-        out.push({ d: ds[0], ds, value: g.value, threats: A.map(u => ({ a: u.a, c: u.c, t: u.t, worth: u.wd, now: u.now })),
+        // the looks in the order the words need them: those the best assignment takes, then the one it leaves open
+        const order = g.pick.took.filter(u => u >= 0).concat(g.pick.open >= 0 ? [g.pick.open] : []);
+        for (let u = 0; u < A.length; u++) if (!order.includes(u)) order.push(u);
+        out.push({ d: ds[0], ds, value: g.value, threats: order.map(u => A[u]).map(u => ({ a: u.a, c: u.c, t: u.t, worth: u.wd, now: u.now })),
           near_key: A.every(u => nearKey(u.c)) });
       }
     }
