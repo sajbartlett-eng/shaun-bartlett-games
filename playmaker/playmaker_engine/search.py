@@ -167,6 +167,17 @@ def candidate_actions(s, read=None, per_player=3):
             for (q, arrow, used) in targets.get(a.piece, []):
                 if a.dest == q and (a.kind != 'move' or a.arrow == arrow):
                     add(a)
+        # step 21 (D-207, engine.js candidateActions): the map's own best answer is always among the moves tried, each
+        # movement as the rules allow it; it matches all five defenders against every look, so nobody is tied to a man
+        from . import decide as _dmap
+        on = read.cfg.get('map')
+        if (on is True or (on == 'offence' and _dmap.MAP_ME[0] == 'O')) and s.ctx.rules.digital and s.stage == 'play' and not s.pending:
+            for d, q, ar in read.map_answer():
+                for a in moves:
+                    if a.piece != d or a.dest != q:
+                        continue
+                    if (a.kind == 'move') if ar < 0 else (a.kind != 'move' and apply(s, a).arrows[d] == ar):
+                        add(a)
         # every defender keeps at least one movement: the one nearest the offence's best look (ordering only)
         spots = [lk.c for lks in read.looks.values() for lk in lks[:1]] or [s.o[s.ball]]
         for j in range(5):

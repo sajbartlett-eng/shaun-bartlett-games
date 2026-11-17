@@ -1,0 +1,163 @@
+{
+ "B1": {
+  "side": "X",
+  "lines": {
+   "the computer's choice": {
+    "mean": 25.9,
+    "low": 23.5,
+    "high": 28.3,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "X1 chases the driver": {
+    "mean": 26.2,
+    "low": 25.6,
+    "high": 26.9,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "X1 recovers to the open look the help left (O5 and O3)": {
+    "mean": 25.2,
+    "low": 23.8,
+    "high": 26.7,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "X1 takes the passing lane to O2 (what Shaun saw)": {
+    "mean": 22.9,
+    "low": 19.7,
+    "high": 26.0,
+    "ends": {
+     "shot": 16
+    }
+   }
+  },
+  "best_by_play": "X1 takes the passing lane to O2 (what Shaun saw)",
+  "the_choice_in_words": [
+   "X1 Move to I7 facing E"
+  ],
+  "the_choice_against_the_best": {
+   "diff": 3.0,
+   "low": -1.1,
+   "high": 7.1
+  },
+  "turns": {
+   "the computer's choice": [
+    "X1 Move to I7 facing E"
+   ],
+   "X1 chases the driver": [
+    "X1 Move to I5 facing S"
+   ],
+   "X1 recovers to the open look the help left (O5 and O3)": [
+    "X1 Move to K6 facing S"
+   ],
+   "X1 takes the passing lane to O2 (what Shaun saw)": [
+    "X1 Move to F8 facing E"
+   ]
+  }
+ },
+ "B2": {
+  "side": "O",
+  "lines": {
+   "the computer's choice": {
+    "mean": 27.0,
+    "low": 27.0,
+    "high": 27.0,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "attack the overload at once: O2 sprints to H7, O4 passes to O2": {
+    "mean": 34.0,
+    "low": 34.0,
+    "high": 34.0,
+    "ends": {
+     "shot": 16
+    }
+   }
+  },
+  "best_by_play": "attack the overload at once: O2 sprints to H7, O4 passes to O2",
+  "the_choice_in_words": [
+   "O4 Quick Step to A6"
+  ],
+  "the_choice_against_the_best": {
+   "diff": -7.0,
+   "low": -7.0,
+   "high": -7.0
+  },
+  "turns": {
+   "the computer's choice": [
+    "O4 Quick Step to A6"
+   ],
+   "attack the overload at once: O2 sprints to H7, O4 passes to O2": [
+    "O2 Sprint to H7",
+    "O4 Pass to O2"
+   ]
+  }
+ },
+ "B3": {
+  "side": "X",
+  "lines": {
+   "X1 chases to the hole himself": {
+    "mean": 30.0,
+    "low": 30.0,
+    "high": 30.0,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "nobody switches: X1 back onto O1, X2 stays on O2": {
+    "mean": 30.0,
+    "low": 30.0,
+    "high": 30.0,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "the computer's choice": {
+    "mean": 25.6,
+    "low": 23.6,
+    "high": 27.7,
+    "ends": {
+     "shot": 16
+    }
+   },
+   "the rotation: X2 sprints to the hole (H4), X1 to the lane to O2 (G9)": {
+    "mean": 33.0,
+    "low": 33.0,
+    "high": 33.0,
+    "ends": {
+     "shot": 16
+    }
+   }
+  },
+  "best_by_play": "the computer's choice",
+  "the_choice_in_words": [
+   "X Pause"
+  ],
+  "the_choice_against_the_best": {
+   "diff": 0.0,
+   "low": 0.0,
+   "high": 0.0
+  },
+  "turns": {
+   "the computer's choice": [
+    "X Pause"
+   ],
+   "the rotation: X2 sprints to the hole (H4), X1 to the lane to O2 (G9)": [
+    "X2 Sprint to H4",
+    "X1 Move to G9 facing SW"
+   ],
+   "X1 chases to the hole himself": [
+    "X1 Sprint to H6"
+   ],
+   "nobody switches: X1 back onto O1, X2 stays on O2": [
+    "X1 Move to I10 facing S"
+   ]
+  }
+ },
+ "seconds": 4556.6
+}

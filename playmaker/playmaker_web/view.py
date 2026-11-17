@@ -384,7 +384,7 @@ def coverage_json(game, token, n=None):
         c = game.coverage_after(int(n))
         scores = None
     else:
-        c = game.coverage_snapshot()
+        c = game.coverage_live()                   # step 21: the board as it stands after the last action
         scores = game.phase_scores()               # stop two: the phase lines and the possession's line
     if not c:
         return dict(scores=scores) if scores else {}
@@ -417,7 +417,20 @@ def coverage_json(game, token, n=None):
                 answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
                 strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers,
                 lasting=c.get('lasting'), before=c.get('before'), overloads=c.get('overloads') or [], all_after=all_after, attackers_after=layers_after,
-                placed=(c.get('after') or {}).get('x'))
+                placed=(c.get('after') or {}).get('x'), switches=_switches(c), when=c.get('when') or 'at the start of this phase')
+
+
+def _switches(c):
+    """Step 21 (D-207): the switches the defence's best answer makes, read off the map: an attacker whose best look is
+    covered by one defender now and by another after the answer. [{x: the defender who takes him, o, was}]."""
+    def cover_of(squares):
+        out = []
+        for sq in squares or []:
+            v = max(sq.values(), key=lambda r: r['worth'], default=None)
+            out.append(v['cover'] if v is not None and v['worth'] > 0 else -1)
+        return out
+    now, after = cover_of(c.get('squares')), cover_of(c.get('squares_after'))
+    return [dict(x=e, o=a, was=d) for a, (d, e) in enumerate(zip(now, after)) if d >= 0 and e >= 0 and d != e]
 
 
 def state_json(game, token):

@@ -167,8 +167,9 @@ def test_check_1_the_clear_lane_is_a_large_weakness_and_the_defences_best_answer
 
 
 @needs_node
-@pytest.mark.xfail(reason='Shaun, 17 Nov: the map is on; judged by his playtest (D-203). The lasting gap gives the defence a fresh phase to answer, so where a helper stands now '
-                          'counts for little: helping off the non-shooter reads 22, off the sharpshooter 21, staying home 24', strict=False)
+@pytest.mark.xfail(reason='Shaun, 17 Nov: the map is on; judged by his playtest (D-203). Step 21 reads the defence with what it has left '
+                          '(check 6 holds again), but this board is a phase start: the defence has all its tokens, so a helper '
+                          'recovers whichever man he helped off', strict=False)
 def test_checks_2_and_3_leaving_the_non_shooter_costs_less_than_leaving_the_sharpshooter(cov):
     s = board()
     cards = s.ctx.off
@@ -220,8 +221,6 @@ def test_check_5_at_a_phases_start_the_reaction_gets_a_fresh_defender_square(cov
 
 
 @needs_node
-@pytest.mark.xfail(reason='Shaun, 17 Nov: the map is on; judged by his playtest (D-203). The lasting gap is read as a fresh phase finds it, so the one token the board leaves the '
-                          'defence becomes a full phase of movement and the helper gets round the body: 24 either way', strict=False)
 def test_check_6_a_body_on_the_helpers_way_leaves_more(cov):
     """The defence with one token has one answer. With O4 standing on the helper's way that answer is gone and more is
     left. The Screen action itself stops no helper on this board (it bars only a diagonal step): in the report."""
@@ -236,13 +235,15 @@ def test_check_6_a_body_on_the_helpers_way_leaves_more(cov):
 
 @needs_node
 def test_the_answers_stay_inside_the_defences_tokens(cov):
-    """Re-recorded in step 20 (D-204, like for like): the answer is the one a fresh phase allows (its full tokens, each
-    defender at most one movement), whatever the defence has already spent, so a phase ending can't move the number."""
-    full = cov(board())
+    """Step 21 (D-206) puts back what step 18s first asked: the answer stays inside the tokens the defence has left this
+    phase (step 20 had read every position as a fresh phase). With none left there is no answer, and what the offence
+    can get is what it gets."""
     for tok in (0, 1, 2):
         c = cov(board(tok_x=tok))
-        assert c['lasting'] == full['lasting'] and c['answers'] == full['answers']
-        assert len(c['answers']) <= 5 and c['after']['tokens_left'] == 6 - len(c['answers'])
+        assert len(c['answers']) <= tok and c['after']['tokens_left'] == tok - len(c['answers'])
+    spent = cov(board(tok_x=0))
+    assert 'no token left' in spent['words'] and spent['left_worth'] == spent['best']['worth']
+    assert spent['lasting'] >= cov(board())['lasting']               # a spent defence leaves at least as much open
 
 
 @needs_node

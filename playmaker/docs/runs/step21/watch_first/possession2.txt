@@ -1,0 +1,24 @@
+Possession 2: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O4's post shot on G2, worth 20: X4 covers it.
+  Defence: set up to hold the lasting gap to 21. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).
+Phase 1
+  Turn 1
+    Offence: O2 moved to E10 (lasting gap from 21 to 20), then O3 moved to N9 (lasting gap from 20 to 24). The lasting gap rose from 21 to 24. X4 is the only cover for O4's three on A2 and O1's floater on E2: whichever he takes, the other is open (worth 20).
+    Defence: X1 moved to N3, facing north (lasting gap from 24 to 22), then the defence paused (lasting gap at 22). That took the lasting gap from 24 down to 22.
+  Turn 2
+    Offence: O1 moved to I10 (lasting gap from 22 to 20), then O1 shot a three.
+    Defence: X2 quick-stepped to E9, then X2 moved to H9, facing north. The possession ended.
+  The coach on phase 1
+    Offence: Turn 2: the shot went up with the defence not broken.
+    Offence: Best turn: turn 1, O2 moved to E10 (lasting gap from 21 to 20), then O3 moved to N9 (lasting gap from 20 to 24): from 21 to 24.
+    Defence: Turn 2: the shot went up against them.
+    Defence: Best answer: turn 1, X1 moved to N3, facing north (lasting gap from 24 to 22), then the defence paused (lasting gap at 22): from 24 down to 22.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O1's three from I10. Open, it was worth 27; the contest took 9 off, leaving 18.
+  Scored 18 (Okay).
+  The shot taken was the best one the measure saw all possession.
+  Offence: Keep: phase 1, turn 1: the lasting gap rose from 21 to 24.
+  Defence: Keep: phase 1, turn 1: the answer took the lasting gap from 24 down to 22.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

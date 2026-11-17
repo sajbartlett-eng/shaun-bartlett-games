@@ -1,0 +1,24 @@
+Possession 7: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O2's three on A5, worth 24: X2 covers it.
+  Defence: set up to hold the lasting gap to 32. X1 is the only cover for O2's three on D9 and O3's long two on L9: whichever he takes, the other is open (worth 16).
+Phase 1
+  Turn 1
+    Offence: O5 moved to C8 (lasting gap at 32), then O1 passed to O2 (lasting gap at 32). The lasting gap stayed at 32.
+    Defence: X4 moved to C5, facing south-west (lasting gap from 32 to 26), then X2 moved to D9, facing east (lasting gap from 26 to 30). That took the lasting gap from 32 down to 30. Switch: X4 took O5 from X2.
+  Turn 2
+    Offence: O2 moved to B7 (lasting gap at 30), then O2 shot a three.
+    Defence: X1 moved to L13, facing north, then X4 quick-stepped to C6. The possession ended.
+  The coach on phase 1
+    Offence: Turn 2: the shot went up with the defence broken.
+    Defence: Turn 2: the shot went up against them with the defence broken.
+    Defence: Best answer: turn 1, X4 moved to C5, facing south-west (lasting gap from 32 to 26), then X2 moved to D9, facing east (lasting gap from 26 to 30): from 32 down to 30.
+The coach on the possession
+  Good: the defence broke and the shot was taken.
+  The shot: O2's three from B7. Open, it was worth 33; the contest took 3 off, leaving 30.
+  Scored 30 (Excellent).
+  The shot taken was the best one the measure saw all possession.
+  Offence: Keep: the shot went up when the defence was broken.
+  Defence: Keep: phase 1, turn 1: the answer took the lasting gap from 32 down to 30.
+  Defence: Change: the defence was broken in phase 1, and the shot went up.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

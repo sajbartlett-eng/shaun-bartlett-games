@@ -1,0 +1,51 @@
+Possession 8: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O5's post shot on G3, worth 26: X3 covers it.
+  Defence: set up to hold the lasting gap to 26.
+Phase 1
+  Turn 1
+    Offence: O5 moved to J4 (lasting gap at 26), then O3 moved to M10 (lasting gap at 26). The lasting gap stayed at 26.
+    Defence: X1 moved to H13, facing east (lasting gap at 26), then X4 quick-stepped to K8 (lasting gap from 26 to 20). That took the lasting gap from 26 down to 20.
+  Turn 2
+    Offence: O1 passed to O3 (lasting gap from 20 to 26). The lasting gap rose from 20 to 26.
+    Defence: X5 moved to J5, facing north (lasting gap at 26), then X3 moved to G2, facing west (lasting gap at 26). The lasting gap held at 26. Rotation: X2 took O2; X3 picked up O5.
+  Turn 3
+    Offence: O4 moved to K9 (lasting gap at 26), then O4 set a screen (lasting gap at 26). The lasting gap stayed at 26.
+    Defence: X4 moved to K5, facing north (lasting gap at 26), then X1 quick-stepped to I12. The phase ended: the next starts with the lasting gap at 15.
+  The coach on phase 1
+    Offence: The lasting gap went from 26 to 15 this phase: the defence got stronger.
+    Offence: Best turn: turn 2, O1 passed to O3 (lasting gap from 20 to 26): from 20 to 26.
+    Defence: Best answer: turn 1, X1 moved to H13, facing east (lasting gap at 26), then X4 quick-stepped to K8 (lasting gap from 26 to 20): from 26 down to 20.
+    Next phase, after the defence's best answer, look for O1's three on L10, worth 15: X4 covers it.
+Phase 2
+  Turn 1
+    Offence: O3 moved to M9 (lasting gap from 15 to 24), then O3 passed to O4 (lasting gap from 24 to 26). The lasting gap rose from 15 to 26.
+    Defence: X4 quick-stepped to L6 (lasting gap at 26), then X4 moved to L9, facing north (lasting gap at 26). The lasting gap held at 26.
+  Turn 2
+    Offence: O5 moved to J3 (lasting gap at 26), then O4 passed to O5 (lasting gap at 26). The lasting gap stayed at 26.
+    Defence: The defence paused (lasting gap at 26). The lasting gap held at 26.
+  Turn 3
+    Offence: O1 moved to F14 (lasting gap at 26), then O2 moved to A1 (lasting gap at 26). The lasting gap stayed at 26.
+    Defence: X3 moved to I2, facing north-west (lasting gap at 26), then X5 moved to I5, facing north-east. The phase ended: the next starts with the lasting gap at 26. Three seconds: O5 was in the key when two phases in a row ended.
+  The coach on phase 2
+    Offence: The lasting gap went from 15 to 26 this phase: the defence got weaker.
+    Offence: Best turn: turn 1, O3 moved to M9 (lasting gap from 15 to 24), then O3 passed to O4 (lasting gap from 24 to 26): from 15 to 26.
+    Defence: No answer moved the lasting gap this phase.
+    Next phase, after the defence's best answer, look for O5's post shot on G2, worth 26: X3 covers it. X2 is the only cover for O1's three on B7 and O2's long two on C2: whichever he takes, the other is open (worth 14).
+Phase 3
+  Turn 1
+    Offence: O5 moved to K4 (lasting gap at 26), then O5 shot a post shot.
+    Defence: X1 moved to I12, facing north, then X3 moved to J3, facing north. The possession ended.
+  The coach on phase 3
+    Offence: Turn 1: the shot went up with the defence not broken.
+    Defence: Turn 1: the shot went up against them.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O5's post shot from K4. Open, it was worth 36; the contest took 10 off, leaving 26.
+  Scored 21 (Good): turnovers -5. Three seconds: O5 was in the key when two phases in a row ended (phase 2, turn 3).
+  The shot taken was the best one the measure saw all possession.
+  The lasting gap at the start of each phase: 26, 15, 26.
+  Offence: Keep: phase 2, turn 1: the lasting gap rose from 15 to 26.
+  Offence: Change: phase one only got you into position. Set up with a plan to weaken the defence from the start.
+  Defence: Keep: phase 1, turn 1: the answer took the lasting gap from 26 down to 20.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

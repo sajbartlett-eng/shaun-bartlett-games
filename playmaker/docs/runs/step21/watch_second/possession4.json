@@ -1,0 +1,1551 @@
+{
+ "possession": 4,
+ "teams": [
+  "Five Out",
+  "High-Low"
+ ],
+ "code": "7462D3",
+ "turns": [
+  {
+   "phase": 1,
+   "turn": 1,
+   "offence": "Offence: O3 set a screen (lasting gap at 26). The lasting gap stayed at 26.",
+   "defence": "Defence: The defence paused (lasting gap at 26). The lasting gap held at 26.",
+   "offence_actions": [
+    "O3 Screen, T S"
+   ],
+   "defence_actions": [
+    "X Pause"
+   ],
+   "numbers": {
+    "before": 26,
+    "after_offence": 26,
+    "after_defence": 26,
+    "maps": {
+     "before": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       2,
+       3,
+       2
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X3 to L5, X4 to D3, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X3 covers it. X3 is the only cover for O1's three on J10 and O5's floater on M6: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 2
+      },
+      "overloads": [
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on M6: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "M6",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 2,
+        "to": "L5",
+        "arrow": 5,
+        "turn": false
+       },
+       {
+        "x": 3,
+        "to": "D3",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     },
+     "after_offence": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     },
+     "after_defence": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     }
+    }
+   },
+   "start": {
+    "o": [
+     {
+      "sq": "I11",
+      "ball": true,
+      "screen": null
+     },
+     {
+      "sq": "C9",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "O9",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "A3",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "Q3",
+      "ball": false,
+      "screen": null
+     }
+    ],
+    "x": [
+     {
+      "sq": "D2",
+      "arrow": 6
+     },
+     {
+      "sq": "D8",
+      "arrow": 7
+     },
+     {
+      "sq": "O8",
+      "arrow": 0
+     },
+     {
+      "sq": "B4",
+      "arrow": 5
+     },
+     {
+      "sq": "P2",
+      "arrow": 1
+     }
+    ]
+   },
+   "shot": null,
+   "shot_break": null,
+   "rose": 0,
+   "answered": 0,
+   "rotation": null,
+   "events": {
+    "rolls": [],
+    "points": []
+   },
+   "words": {
+    "offence": "O3 set a screen (lasting gap at 26)",
+    "defence": "The defence paused (lasting gap at 26)"
+   },
+   "actions": {
+    "offence": [
+     {
+      "text": "O3 set a screen",
+      "before": 26,
+      "after": 26
+     }
+    ],
+    "defence": [
+     {
+      "text": "the defence paused",
+      "before": 26,
+      "after": 26
+     }
+    ]
+   }
+  },
+  {
+   "phase": 1,
+   "turn": 2,
+   "offence": "Offence: O2 set a screen (lasting gap at 26). The lasting gap stayed at 26.",
+   "defence": "Defence: X2 challenged the screen (the challenge beat the screen) (lasting gap at 26). The lasting gap held at 26.",
+   "offence_actions": [
+    "O2 Screen, T SE"
+   ],
+   "defence_actions": [
+    "X2 Challenge screen of O2"
+   ],
+   "numbers": {
+    "before": 26,
+    "after_offence": 26,
+    "after_defence": 26,
+    "maps": {
+     "before": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     },
+     "after_offence": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     },
+     "after_defence": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     }
+    }
+   },
+   "start": {
+    "o": [
+     {
+      "sq": "I11",
+      "ball": true,
+      "screen": null
+     },
+     {
+      "sq": "C9",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "O9",
+      "ball": false,
+      "screen": {
+       "dir": 4,
+       "t": "O8"
+      }
+     },
+     {
+      "sq": "A3",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "Q3",
+      "ball": false,
+      "screen": null
+     }
+    ],
+    "x": [
+     {
+      "sq": "D2",
+      "arrow": 6
+     },
+     {
+      "sq": "D8",
+      "arrow": 7
+     },
+     {
+      "sq": "O8",
+      "arrow": 0
+     },
+     {
+      "sq": "B4",
+      "arrow": 5
+     },
+     {
+      "sq": "P2",
+      "arrow": 1
+     }
+    ]
+   },
+   "shot": null,
+   "shot_break": null,
+   "rose": 0,
+   "answered": 0,
+   "rotation": null,
+   "events": {
+    "rolls": [
+     "the challenge beat the screen"
+    ],
+    "points": []
+   },
+   "words": {
+    "offence": "O2 set a screen (lasting gap at 26)",
+    "defence": "X2 challenged the screen (the challenge beat the screen) (lasting gap at 26)"
+   },
+   "actions": {
+    "offence": [
+     {
+      "text": "O2 set a screen",
+      "before": 26,
+      "after": 26
+     }
+    ],
+    "defence": [
+     {
+      "text": "X2 challenged the screen",
+      "before": 26,
+      "after": 26
+     }
+    ]
+   }
+  },
+  {
+   "phase": 1,
+   "turn": 3,
+   "offence": "Offence: O1 moved to I10 (lasting gap at 26), then O1 shot a three.",
+   "defence": "Defence: X2 quick-stepped to E9, then X2 moved to H9, facing north. The possession ended.",
+   "offence_actions": [
+    "O1 Move to I10",
+    "O1 Shot (three)"
+   ],
+   "defence_actions": [
+    "X2 Quick Step to E9",
+    "X2 Move to H9 facing N"
+   ],
+   "numbers": {
+    "before": 26,
+    "after_offence": null,
+    "after_defence": null,
+    "maps": {
+     "before": {
+      "L": 26,
+      "last": false,
+      "strength": 26,
+      "before": 38,
+      "broken": false,
+      "covers_now": [
+       -1,
+       0,
+       2,
+       0,
+       -1
+      ],
+      "covers_after": [
+       1,
+       3,
+       4,
+       3,
+       3
+      ],
+      "shot_now": null,
+      "carry_on": 27.04,
+      "words": "The defence's best answer: X4 to F4, X3 to L8, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X4 covers it. X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21). X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18). X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+      "left": {
+       "o": 4,
+       "sq": "K3",
+       "shot": "post",
+       "worth": 26,
+       "cover": 3
+      },
+      "overloads": [
+       {
+        "x": 1,
+        "xs": [
+         1
+        ],
+        "value": 21,
+        "line": "X2 is the only cover for O1's three on E10 and O2's three on A7: whichever he takes, the other is open (worth 21).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "E10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 1,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         },
+         {
+          "o": 3,
+          "sq": "A7",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       },
+       {
+        "x": 2,
+        "xs": [
+         2
+        ],
+        "value": 18,
+        "line": "X3 is the only cover for O1's three on J10 and O5's floater on L5: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 0,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 27
+         },
+         {
+          "o": 4,
+          "sq": "L5",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 2,
+          "sq": "J10",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 1,
+          "sq": "J9",
+          "shot": "long",
+          "worth": 14
+         }
+        ]
+       },
+       {
+        "x": 4,
+        "xs": [
+         4
+        ],
+        "value": 18,
+        "line": "X5 is the only cover for O3's three on Q4 and O5's floater on M2: whichever he takes, the other is open (worth 18).",
+        "threats": [
+         {
+          "o": 2,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 24
+         },
+         {
+          "o": 4,
+          "sq": "M2",
+          "shot": "floater",
+          "worth": 18
+         },
+         {
+          "o": 0,
+          "sq": "Q4",
+          "shot": "three",
+          "worth": 21
+         }
+        ]
+       }
+      ],
+      "answers": [
+       {
+        "x": 3,
+        "to": "F4",
+        "arrow": 2,
+        "turn": false
+       },
+       {
+        "x": 2,
+        "to": "L8",
+        "arrow": -1,
+        "turn": false
+       },
+       {
+        "x": 0,
+        "to": "G2",
+        "arrow": -1,
+        "turn": false
+       }
+      ]
+     },
+     "after_offence": null,
+     "after_defence": null
+    }
+   },
+   "start": {
+    "o": [
+     {
+      "sq": "I11",
+      "ball": true,
+      "screen": null
+     },
+     {
+      "sq": "C9",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "O9",
+      "ball": false,
+      "screen": {
+       "dir": 4,
+       "t": "O8"
+      }
+     },
+     {
+      "sq": "A3",
+      "ball": false,
+      "screen": null
+     },
+     {
+      "sq": "Q3",
+      "ball": false,
+      "screen": null
+     }
+    ],
+    "x": [
+     {
+      "sq": "D2",
+      "arrow": 6
+     },
+     {
+      "sq": "D8",
+      "arrow": 7
+     },
+     {
+      "sq": "O8",
+      "arrow": 0
+     },
+     {
+      "sq": "B4",
+      "arrow": 5
+     },
+     {
+      "sq": "P2",
+      "arrow": 1
+     }
+    ]
+   },
+   "shot": {
+    "o": 0,
+    "kind": "shot",
+    "shot": "three"
+   },
+   "shot_break": {
+    "shot": {
+     "o": 0,
+     "sq": "I10",
+     "worth": 18,
+     "kind": "three",
+     "open": false
+    },
+    "carry_on": 27.04,
+    "broken": false
+   },
+   "rose": null,
+   "answered": null,
+   "rotation": null,
+   "events": {
+    "rolls": [],
+    "points": []
+   },
+   "words": {
+    "offence": "O1 moved to I10 (lasting gap at 26), then O1 shot a three",
+    "defence": "X2 quick-stepped to E9, then X2 moved to H9, facing north"
+   },
+   "actions": {
+    "offence": [
+     {
+      "text": "O1 moved to I10",
+      "before": 26,
+      "after": 26
+     },
+     {
+      "text": "O1 shot a three",
+      "before": null,
+      "after": null
+     }
+    ],
+    "defence": [
+     {
+      "text": "X2 quick-stepped to E9",
+      "before": null,
+      "after": null
+     },
+     {
+      "text": "X2 moved to H9, facing north",
+      "before": null,
+      "after": null
+     }
+    ]
+   }
+  }
+ ],
+ "phases": [
+  {
+   "phase": 1,
+   "start": 26,
+   "end": null,
+   "offence": [
+    "Turn 3: the shot went up with the defence not broken."
+   ],
+   "defence": [
+    "Turn 3: the shot went up against them."
+   ],
+   "next": null
+  }
+ ],
+ "over": true,
+ "setup": {
+  "start": {
+   "o": [
+    {
+     "sq": "I11",
+     "ball": true,
+     "screen": null
+    },
+    {
+     "sq": "C9",
+     "ball": false,
+     "screen": null
+    },
+    {
+     "sq": "O9",
+     "ball": false,
+     "screen": null
+    },
+    {
+     "sq": "A3",
+     "ball": false,
+     "screen": null
+    },
+    {
+     "sq": "Q3",
+     "ball": false,
+     "screen": null
+    }
+   ],
+   "x": [
+    {
+     "sq": "D2",
+     "arrow": 6
+    },
+    {
+     "sq": "D8",
+     "arrow": 7
+    },
+    {
+     "sq": "O8",
+     "arrow": 0
+    },
+    {
+     "sq": "B4",
+     "arrow": 5
+    },
+    {
+     "sq": "P2",
+     "arrow": 1
+    }
+   ]
+  },
+  "offence": "Offence: set up so that, after the defence's best answer, the best it can still force next phase is O5's post shot on K3, worth 26: X3 covers it.",
+  "defence": "Defence: set up to hold the lasting gap to 26. X3 is the only cover for O1's three on J10 and O5's floater on M6: whichever he takes, the other is open (worth 18).",
+  "numbers": {
+   "L": 26,
+   "last": false,
+   "strength": 26,
+   "before": 38,
+   "broken": false,
+   "covers_now": [
+    -1,
+    0,
+    2,
+    0,
+    -1
+   ],
+   "covers_after": [
+    1,
+    3,
+    2,
+    3,
+    2
+   ],
+   "shot_now": null,
+   "carry_on": 27.04,
+   "words": "The defence's best answer: X3 to L5, X4 to D3, X1 to G2. That leaves a post shot for O5 on K3, worth 26: X3 covers it. X3 is the only cover for O1's three on J10 and O5's floater on M6: whichever he takes, the other is open (worth 18).",
+   "left": {
+    "o": 4,
+    "sq": "K3",
+    "shot": "post",
+    "worth": 26,
+    "cover": 2
+   },
+   "overloads": [
+    {
+     "x": 2,
+     "xs": [
+      2
+     ],
+     "value": 18,
+     "line": "X3 is the only cover for O1's three on J10 and O5's floater on M6: whichever he takes, the other is open (worth 18).",
+     "threats": [
+      {
+       "o": 0,
+       "sq": "J10",
+       "shot": "three",
+       "worth": 27
+      },
+      {
+       "o": 4,
+       "sq": "M6",
+       "shot": "floater",
+       "worth": 18
+      },
+      {
+       "o": 2,
+       "sq": "J10",
+       "shot": "three",
+       "worth": 24
+      },
+      {
+       "o": 1,
+       "sq": "J9",
+       "shot": "long",
+       "worth": 14
+      }
+     ]
+    }
+   ],
+   "answers": [
+    {
+     "x": 2,
+     "to": "L5",
+     "arrow": 5,
+     "turn": false
+    },
+    {
+     "x": 3,
+     "to": "D3",
+     "arrow": -1,
+     "turn": false
+    },
+    {
+     "x": 0,
+     "to": "G2",
+     "arrow": -1,
+     "turn": false
+    }
+   ]
+  }
+ },
+ "switches": {
+  "eval": {
+   "map": true,
+   "lane": false,
+   "pass_rules": true,
+   "leaf_mode": "relative",
+   "reach": true
+  },
+  "computer": {
+   "O": "allstar",
+   "X": "allstar"
+  },
+  "rules": {
+   "turnover_play_on": "play_on",
+   "pass_resolution": "defence_turn",
+   "sprint_orth_base": 3,
+   "sprint_diag_base": 2,
+   "natural_rolls": false,
+   "floor_declared_shot": true,
+   "reaction_may_decline": true,
+   "defence_empty_ends_phase": true,
+   "wait_chain_block": true,
+   "screen_geometry": "from_t_or_corner",
+   "screen_rule": "hold_until_move",
+   "arrow_line_strict": true,
+   "drive_rule": "zone",
+   "intercept_return": true,
+   "intercept_rule": "move_then_intercept",
+   "turnover_cost": "minus5_lose_phase",
+   "move_either_order": true,
+   "contest_choice": "player",
+   "on_line_tolerance": 0,
+   "lane_jump_keeps_facing": true,
+   "receiver_denial": true,
+   "receiver_denial_tol": 0.5,
+   "qs_up_to": true,
+   "sprint_needs_qs": true,
+   "qs_once_per_player": true,
+   "arrow_mode": "single",
+   "contest_geometry": "current",
+   "carrier_can_screen": false,
+   "late_closeout": false,
+   "challenge_who": "on_t",
+   "locked_can_dribble": false,
+   "dribble_win_lasts": "phase",
+   "inbounder_pass_only": true,
+   "floor_contest_zero": true,
+   "forfeit_when_stuck": true,
+   "three_only_ft_on_twos": false,
+   "coach_bonus_on_forced": true,
+   "arrow_line_adjacent_at": "start",
+   "diag_move_straight": true,
+   "inbound_tie": "offence",
+   "forced_shot_choice": "player",
+   "inbound_resolves": "after_defence_turn",
+   "and_one": true,
+   "digital": true,
+   "steal_lock": true,
+   "reach_angle_fouls": true,
+   "quarter_possessions": 18,
+   "bonus_from": 5,
+   "contest_action": true,
+   "turnover_floor": true,
+   "control": "app",
+   "zone": "on",
+   "three_seconds": "app",
+   "soft_contest": "app",
+   "fiba_steal_foul": "app",
+   "off_balance": "app",
+   "points_play_on": "app",
+   "no_rim_shot": "app",
+   "position_contest": "app",
+   "closely_guarded": "app",
+   "fiba_fouled_shot": "app",
+   "steal_foul_always_plus5": true
+  }
+ },
+ "summary": {
+  "shot": "The shot: O1's three from I10. Open, it was worth 27; the contest took 9 off, leaving 18.",
+  "score": "Scored 18 (Okay).",
+  "best": "The shot taken was the best one the measure saw all possession.",
+  "trend": null,
+  "verdict": "Weak: the defence was never broken.",
+  "offence": {
+   "keep": null,
+   "change": null
+  },
+  "defence": {
+   "keep": null,
+   "change": null
+  },
+  "numbers": {
+   "total": 18,
+   "band": "Okay",
+   "shot_value": 18,
+   "free_throws": 0,
+   "bonus": 0,
+   "turnover_points": 0,
+   "trend": [
+    26
+   ],
+   "best": null,
+   "events": []
+  }
+ },
+ "checks": []
+}

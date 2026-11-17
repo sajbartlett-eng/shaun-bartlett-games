@@ -1,14 +1,14 @@
 """Step 19, stage 3: the play turn by turn, the coach's assessment of each phase and of the whole possession, and the
-report to download. Step 20 (Shaun, 17 Nov 2026): the ruler fixed.
+report to download. Step 20 (Shaun, 17 Nov 2026): the ruler fixed. Step 21 (D-206): the turn's numbers are read as the
+computer reads them, with what each side has left this phase; phase starts (and the setup) are read like for like,
+where both sides really are fresh, and a turn that ends a phase isn't put on the defence.
 
 A turn is the offence's turn and the defence's answer (the feed's own turn numbers). Every number is the lasting gap
-(D-204): what the offence can still force after the defence's best answer, read like for like (engine.js covFresh):
-from the position as a fresh phase would find it, with the offence's full turn to come, whatever either side has
-already spent. So spending actions can't lower it and a phase ending can't move it by itself. A turn's change is read
-three times: before it, after the offence's turn, after the defence's answer. The offence is credited with the first
-change, the defence with the second. Every roll and its result, and every plus or minus 5, is named in the line it
-belongs to. Overloads are named only as the map defines them (a defender the only cover for threats from two
-attackers). Before a line is printed it is checked against the numbers; a claim they can't support is rewritten as
+(D-204): what the offence can still force after the defence's best answer. A turn's change is read three times: before
+it, after the offence's turn, after the defence's answer. The offence is credited with the first change, the defence
+with the second, and a switch in the defence's answer is named ("Rotation: X2 took O3; X1 picked up O2."). Every roll
+and its result, and every plus or minus 5, is named in the line it belongs to. Overloads are named only as the map
+defines them. Before a line is printed it is checked against the numbers; a claim they can't support is rewritten as
 what happened. Read-only: nothing here decides a rule or changes the computer."""
 import re
 
@@ -28,23 +28,31 @@ def _small(c):
     last = c.get('clock') is not None and c['clock'] <= RC.PHASE_SECONDS
     # the last phase has no next phase: the lasting gap isn't defined there, only a shot counts (so a phase ending into
     # it can't read as the defence taking the number to 0)
+    def cover_of(squares):                 # each attacker's best square, and who covers it there
+        out = []
+        for sq in squares or []:
+            v = max(sq.values(), key=lambda r: r['worth'], default=None)
+            out.append(v['cover'] if v is not None and v['worth'] > 0 else -1)
+        return out
     return dict(L=None if last else c.get('lasting'), last=last, strength=c.get('strength'), before=c.get('before'), broken=c.get('broken'),
+                covers_now=cover_of(c.get('squares')), covers_after=cover_of(c.get('squares_after')),
                 shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), words=c.get('words'),
                 left=dict(o=left['o'], sq=left['sq'], shot=left['shot'], worth=left['worth'], cover=left['cover']) if left else None,
-                overloads=[dict(x=v['x'], value=v['value'], line=v['line'], threats=v['threats']) for v in c.get('overloads') or []],
+                overloads=[dict(x=v['x'], xs=v.get('xs', [v['x']]), value=v['value'], line=v['line'], threats=v['threats']) for v in c.get('overloads') or []],
                 answers=c.get('answers'))
 
 
-def coverage_at(game, s):
-    """The coverage map of a position, kept for the game (read once). None where it can't be read (a shot in the air,
-    the possession over, no fast engine)."""
+def coverage_at(game, s, fresh=False):
+    """The coverage map of a position, kept for the game (read once). Step 21 (D-206): read with what each side has
+    left this phase, as the computer reads it; fresh: the like-for-like read, for phase starts. None where it can't be
+    read (a shot in the air, the possession over, no fast engine)."""
     if s is None or s.stage != 'play' or AG.JS.get('coverage') is None:
         return None
     memo = game.__dict__.setdefault('_covmemo', {})
-    k = s.encode()
+    k = (s.encode(), fresh)
     if k not in memo:
         try:
-            memo[k] = _small(AG.coverage(s))
+            memo[k] = _small(AG.coverage(s, fresh=fresh))
         except Exception:                  # the report must never stop a game
             memo[k] = None
     return memo[k]
@@ -164,17 +172,26 @@ def turns(game, possession):
     return out
 
 
-def _side_words(steps):
-    words, pts, rolls = [], [], []
+def _side_words(steps, game=None):
+    """A side's actions in words, each with its roll's result and (step 21, part 5) its own change in the lasting gap,
+    read after that one action, so the turn's two actions are credited apart: "O1 moved to H10 (lasting gap from 18 to 22)".
+    -> (words, plus or minus 5s, rolls, [per action: dict(text, before, after)])."""
+    words, pts, rolls, each = [], [], [], []
     for b, a, n, e in steps:
         w = act_words(a)
         rw = roll_words(a, e)
         if rw:
             w += f' ({rw})'
             rolls.append(rw)
+        vb = vn = None
+        if game is not None and n.stage == 'play' and n.phase == b.phase:
+            vb, vn = _L(coverage_at(game, b)), _L(coverage_at(game, n))
+            if vb is not None and vn is not None:
+                w += f' (lasting gap from {vb} to {vn})' if vn != vb else f' (lasting gap at {vb})'
+        each.append(dict(text=act_words(a), before=vb, after=vn))
         words.append(w)
         pts += points_words(e)
-    return _cap(_series(words)), pts, rolls
+    return _cap(_series(words)), pts, rolls, each
 
 
 def _new_overload(c0, c1):
@@ -197,8 +214,8 @@ def turn_lines(game, t):
     c0, c1, c2 = coverage_at(game, s0), coverage_at(game, s1), coverage_at(game, s2)
     v0, v1, v2 = _L(c0), _L(c1), _L(c2)
     shot = next((x for x in off if x[1].kind in ('shot', 'forced_shot')), None)
-    o_words, o_pts, o_rolls = _side_words(off) if off else ('No action', [], [])
-    d_words, d_pts, d_rolls = _side_words(dfn) if dfn else ('No answer', [], [])
+    o_words, o_pts, o_rolls, o_each = _side_words(off, game) if off else ('No action', [], [], [])
+    d_words, d_pts, d_rolls, d_each = _side_words(dfn, game) if dfn else ('No answer', [], [], [])
     # the offence: credited with the change its own turn made
     o_eff = None
     if shot is None and v0 is not None and v1 is not None:
@@ -210,22 +227,54 @@ def turn_lines(game, t):
     offence = f'Offence: {o_words}.' + (f' {_cap(o_eff)}' + ('' if o_eff.endswith('.') else '.') if o_eff else '') + ''.join(f' {p}.' for p in o_pts)
     # the defence: credited with the change its answer made
     d_eff = None
+    ended = s2.stage == 'play' and s2.phase != s1.phase      # the defence's turn ended the phase
     if s2.stage == 'over':
         d_eff = 'the possession ended'
+    elif ended:
+        # step 21: the next phase starts with both sides fresh, so the number there is read fresh, and the change
+        # isn't put on the defence: the phase ended
+        v2 = _L(coverage_at(game, s2, fresh=True))
+        d_eff = (f'the phase ended: the next starts with the lasting gap at {v2}' if v2 is not None else None)
     elif v1 is not None and v2 is not None:
         d_eff = (f'that took the lasting gap from {v1} down to {v2}' if v2 < v1 else
                  f'the answer let the lasting gap rise from {v1} to {v2}' if v2 > v1 else f'the lasting gap held at {v1}')
     elif c2 and c2.get('last') and not (c1 and c1.get('last')):
         d_eff = 'the last phase begins: only a shot counts now'
-    defence = f'Defence: {d_words}.' + (f' {_cap(d_eff)}.' if d_eff else '') + ''.join(f' {p}.' for p in d_pts)
+    movers = {x[1].piece for x in dfn if x[1].kind in ('move', 'qs', 'sprint')}
+    rot = rotation_words(c1, c2, movers) if dfn and not ended and s2.stage != 'over' else None
+    defence = f'Defence: {d_words}.' + (f' {_cap(d_eff)}.' if d_eff else '') + (f' {rot}' if rot else '') + ''.join(f' {p}.' for p in d_pts)
     return dict(phase=t['phase'], turn=t['turn'], offence=offence, defence=defence,
                 offence_actions=[str(x[1]) for x in off], defence_actions=[str(x[1]) for x in dfn],
                 numbers=dict(before=v0, after_offence=v1, after_defence=v2, maps=dict(before=c0, after_offence=c1, after_defence=c2)),
                 start=_start(s0), shot=dict(o=shot[1].piece, kind=shot[1].kind, shot=shot[1].shot) if shot else None,
                 shot_break=break_at(game, shot[0]) if shot else None,
                 rose=(v1 - v0) if (v0 is not None and v1 is not None and shot is None) else None,
-                answered=(v1 - v2) if (v1 is not None and v2 is not None and s2.stage != 'over') else None,
-                events=dict(rolls=o_rolls + d_rolls, points=o_pts + d_pts), words=dict(offence=o_words, defence=d_words))
+                answered=(v1 - v2) if (v1 is not None and v2 is not None and s2.stage != 'over' and not ended) else None,
+                rotation=rot,
+                events=dict(rolls=o_rolls + d_rolls, points=o_pts + d_pts), words=dict(offence=o_words, defence=d_words),
+                actions=dict(offence=o_each, defence=d_each))
+
+
+def rotation_words(c1, c2, movers=None):
+    """Step 21 (D-207): a switch the defence's answer made, read off the map: an attacker whose best look was covered by
+    one defender before the answer and by another after it. A rotation when the first picked up someone else ("Rotation:
+    X2 took O3; X1 picked up O2."); a switch otherwise ("Switch: X2 took O3 from X1."). None: no switch."""
+    if not c1 or not c2:
+        return None
+    a1, a2 = c1.get('covers_now') or [], c2.get('covers_now') or []
+    took = []
+    for a in range(min(len(a1), len(a2))):
+        d, e = a1[a], a2[a]
+        if d >= 0 and e >= 0 and d != e and (movers is None or e in movers):   # only a defender who moved takes a man
+            took.append((a, d, e))
+    for a, d, e in took:
+        picked = [b for b, d2, e2 in took if e2 == d and b != a]
+        if picked:
+            b = picked[0]
+            return f'Rotation: X{e + 1} took O{a + 1}; X{d + 1} picked up O{b + 1}.'
+    if took:                                    # a switch with no pick-up: name it (at most two)
+        return 'Switch: ' + '; '.join(f'X{e + 1} took O{a + 1} from X{d + 1}' for a, d, e in took[:2]) + '.'
+    return None
 
 
 def _start(s):
@@ -322,8 +371,8 @@ def build(game, possession, upto_phase=None):
     for ph in sorted({ln['phase'] for ln in lines}):
         if not (ph + 1 in starts or over):
             continue
-        nm = coverage_at(game, starts.get(ph + 1)) if ph + 1 in starts else None
-        pa = phase_assessment(game, ph, lines, coverage_at(game, starts.get(ph)), nm, broken_seen.get(ph))
+        nm = coverage_at(game, starts.get(ph + 1), fresh=True) if ph + 1 in starts else None      # phase starts: like for like
+        pa = phase_assessment(game, ph, lines, coverage_at(game, starts.get(ph), fresh=True), nm, broken_seen.get(ph))
         if pa:
             phases.append(pa)
     out = dict(possession=possession, teams=list(game.teams), code=game.code, turns=lines, phases=phases, over=over,
@@ -357,7 +406,7 @@ def consistency(rep):
 def setup_lines(game, s):
     """The setup as its own step: the board at tip-off and one line on what each side's setup was planning, read off
     the map after the defence's best answer (the same number as everything else)."""
-    c = coverage_at(game, s)
+    c = coverage_at(game, s, fresh=True)
     out = dict(start=_start(s), offence=None, defence=None)
     if not c:
         return out

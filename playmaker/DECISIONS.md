@@ -1180,6 +1180,44 @@ Nothing else is added to either side's logic (D-156). · Source: Shaun, 17 Nov 2
 data suggests failures), and I test it to see if it plays more like real basketball." · Source: Shaun, 17 Nov 2026 ·
 **Ruled.**
 
+**D-206. Every move serves the lasting gap; the map reads each side as it really is.** Shaun: "Take the data and use it
+to fix the errors in the application and logical use of the zone of influence map for both offence and defence.
+Everything has a purpose to meet those goals." And: "I've noticed a few unusual things that don't happen in regular
+basketball. An example is a beaten defender. Let's say X1 is beaten by a drive to the basket by O1 and a screen set by
+O5. Other defenders help and cover O1, but X1 does not chase the driver, and it does not move logically to cover an
+offensive threat left open. Instead, I witnessed it stay in no-mans land and settle for defending a passing lane to an
+already closely defended O2 while the offence has a 3 on 2 advantage in and near the keyway." And: "So some logic is
+having it take the local coverage it can reach this turn as opposed to assuming the offence won't shoot yet and
+recovering the overall defensive coverage for future phases." Ruled on step 20's decision 1: the computer reads the
+defence with what it actually has left this phase (its tokens and movement, who is locked or rushed, who has already
+moved); a spent or beaten defender can't recover inside the phase, and the map says so. The reports keep the
+like-for-like read for phase starts only, where both sides really are fresh. Overloads count numbers: a group of
+defenders who are the only cover for more attackers than there are defenders (one on two, two on three, three on four),
+worth the best look the defence's best assignment leaves. A pass in the air is read with the ball where it is and the
+catch by the rules' own chance. No rule tells a defender to chase or recover (D-156): recovery must fall out of a
+reading that counts what is left open. Read in step 21 as: the defence as it really is, the offence still with its full
+turn to come (D-204's like for like, which the ruling leaves standing for the offence): with its tokens spent the offence
+still moves first next phase, before the defence can answer again (step 21's B2 showed the map losing every look that
+needs a pass next phase when the offence's spent tokens were read too). Shaun to confirm (STEP21_REPORT, decision 1).
+· Source: Shaun, 17 Nov 2026 · **Ruled.**
+
+**D-207. Rotation falls out of the map; no defender is tied to his man.** Shaun: "It should also be able to consider
+defensive rotation. Though it needs to come logically from the way it reads zone maps and future phases. When one
+defender is beaten, does the way the defenders read the map lead to defenders considering switching primary assignments
+to more quickly cover the created holes in the zone maps. For example, the defender left in the open is 2 phases away
+from reaching the defender in the gap, but X2 can get there now, while X1 is able to at least cover the passing lane to
+O2 until the next phase. Defensive communication becomes organic." Defenders cover looks, not players: the defence's
+answer matches all five defenders against every look, and the search always tries that answer's moves, so a switch is
+simply the answer that leaves the least. · Source: Shaun, 17 Nov 2026 · **Ruled.**
+
+**D-208. Variety at All-Star's setup.** Ruled on step 20's decision 2: the setup chooses among the placements within the
+level's variety margin (All-Star: 2 points) each possession, as its turns already do. · Source: Shaun, 17 Nov 2026 ·
+**Ruled.**
+
+**D-209. The Screen rule stays as it is for now.** Ruled on step 20's decision 3: rerun S3 once by forced lines after the
+map reads the defence as it really is. If the screen pays, the rule was right; if not, it is reported with the evidence
+and Shaun decides. · Source: Shaun, 17 Nov 2026 · **Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
