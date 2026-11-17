@@ -363,8 +363,8 @@ class Game:
         # step 18q (D-196, stage 1): the way to the rim in the computer's reading (eval.lane: built, off). ?lane=1 turns it
         # on for the games played from here on (the app plays one game at a time); any other game sets it back
         _AG.set_lane(self.match_format == 'digital' and lane in ('on', '1', 1, True))
-        # step 18s, stop two: ?map=1 has the computer's offence play from the coverage map for a game (eval.map 'offence'; off by
-        # default: exam position 15 fails with it on), ?map=both its defence too (not proven: the report)
+        # step 20 (D-203): the computer plays from the lasting gap, both sides, by default (eval.map true). ?map=0 turns it
+        # off for a game, ?map=1 the offence's decisions only
         _AG.set_map(map_read if self.match_format == "digital" else None)
         # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
         # between the same pairing (the client stores it with the pairing and passes it in)
@@ -383,6 +383,7 @@ class Game:
         if custom and not scenario:
             roster, lineups = self._redirect_custom(custom)
         self.seed = int(seed if seed is not None else random.randrange(10 ** 6))
+        self.seeded = seed is not None          # step 20: a set seed makes every possession's dice reproducible
         self.levels = self._build_levels(age, standard, roster, lineups, deal, random_for, coherent, draft, ai)
         for t in self.teams:
             if t not in TEAMS:
@@ -452,7 +453,11 @@ class Game:
         from playmaker_engine.agent import Agent, LEVELS
         if kind not in LEVELS:
             raise GameError('computer level: rookie, starter or allstar')
-        return Agent(side, kind, seed=self.seed, scouting=getattr(self, 'scouting', None))
+        # step 20: the computer's own variety (its noise and tie-breaks) gets a fresh stream each possession. It was
+        # seeded with the game's seed every possession, so the same teams in the same seats played the same possession
+        # again whenever the dice fell the same (game 4E81CC, possessions 4 and 6)
+        n = getattr(self, 'possession', 1)
+        return Agent(side, kind, seed=self.seed if n == 1 else self.seed * 1009 + n, scouting=getattr(self, 'scouting', None))
 
     # ---- setup ----
     def _redirect_custom(self, custom):
@@ -1507,6 +1512,9 @@ class Game:
         if not self.feed or self.feed[-1]['possession'] != self.possession:
             entry['before'] = board_json(before, self.slots)     # the first of a possession: where it all stood
         self.feed.append(entry)
+        # step 20: the feed entry of this trail step (its rolls and its plus or minus 5), for the report's lines
+        tl = self.__dict__.get('_trails', {}).get(self.possession, [])
+        self.__dict__.setdefault('_trail_entries', {})[(self.possession, len(tl) - 1)] = entry
         if node.stage == 'over':
             self._end_possession()
         self._timer_decision()
@@ -1611,6 +1619,9 @@ class Game:
             if not (self.full and self.possession < self.n_poss and self.state.stage == 'over'):
                 raise GameError('no next possession')
             self.possession += 1
+            # step 20: each possession gets its own dice: from the seed and the possession's number when a seed was set
+            # (the same game replays), fresh otherwise
+            self.rng = random.Random(f'{self.seed}|possession {self.possession}') if self.seeded else random.Random()
             self._set_ai()
             self.state = self._possession_state()
             self.undo, self.rolls = [], []

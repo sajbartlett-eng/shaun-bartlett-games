@@ -1,0 +1,366 @@
+{
+ "the cards": {
+  "O1 (Defensive Point Guard)": {
+   "open_three": 21,
+   "best_open_shot_at_the_rim": 34
+  },
+  "O2 (Sharpshooter Shooting Guard)": {
+   "open_three": 27,
+   "best_open_shot_at_the_rim": 34
+  },
+  "O3 (Bucket Getter Shooting Guard)": {
+   "open_three": 27,
+   "best_open_shot_at_the_rim": 38
+  },
+  "O4 (Post Scorer Power Forward)": {
+   "open_three": 21,
+   "best_open_shot_at_the_rim": 38
+  },
+  "O5 (Post Scorer Centre)": {
+   "open_three": 18,
+   "best_open_shot_at_the_rim": 38
+  }
+ },
+ "check 1": {
+  "his_game": {
+   "best": {
+    "o": 0,
+    "sq": "I3",
+    "shot": "layup",
+    "value": 34,
+    "reach": 1,
+    "weakness": 34,
+    "worth": 34,
+    "cover": -1,
+    "next": -1,
+    "rushed": false
+   },
+   "words": "The defence's best answer: X3 to K4, X4 to F4, X5 to M2. That leaves a post shot for O4 on G3, worth 24: X4 covers it. X3 is the only cover for O3's three on Q7 and O5's three on Q4: whichever he takes, the other is open (worth 18)."
+  },
+  "the_maps_own_answers": [
+   {
+    "x": 2,
+    "to": "K4",
+    "arrow": 5,
+    "turn": false
+   },
+   {
+    "x": 3,
+    "to": "F4",
+    "arrow": 2,
+    "turn": false
+   },
+   {
+    "x": 4,
+    "to": "M2",
+    "arrow": -1,
+    "turn": false
+   }
+  ],
+  "after_them": {
+   "x": [
+    "J10",
+    "D8",
+    "K4",
+    "F4",
+    "M2"
+   ],
+   "best_left": {
+    "o": 3,
+    "sq": "G3",
+    "shot": "post",
+    "value": 38,
+    "reach": 1,
+    "weakness": 24,
+    "worth": 24,
+    "cover": 3,
+    "next": 2,
+    "rushed": false
+   },
+   "worth": 24
+  },
+  "the_same_placement_read_from_the_start": {
+   "best": {
+    "o": 3,
+    "sq": "G3",
+    "shot": "post",
+    "value": 38,
+    "reach": 1,
+    "weakness": 24,
+    "worth": 24,
+    "cover": 3,
+    "next": 2,
+    "rushed": false
+   },
+   "worth": 20
+  },
+  "falls_out": true
+ },
+ "check 2": {
+  "non_shooter": "O5 (Post Scorer Centre)",
+  "his_open_three": 18,
+  "his_best_open_shot_at_the_rim": 38,
+  "his_defender_on_him": {
+   "the_offences_best": 24,
+   "his_man_where_he_stands": {
+    "value": 18,
+    "reach": 1,
+    "weakness": 6,
+    "worth": 6,
+    "influence": 12,
+    "cover": 4,
+    "next": 2,
+    "shot": "three",
+    "rushed": false
+   },
+   "his_mans_best": {
+    "value": 38,
+    "reach": 1,
+    "weakness": 34,
+    "worth": 34,
+    "influence": 4,
+    "cover": 2,
+    "next": -1,
+    "shot": "post",
+    "rushed": false
+   }
+  },
+  "his_defender_in_the_lane": {
+   "the_offences_best": 22,
+   "best": {
+    "o": 4,
+    "sq": "K3",
+    "shot": "post",
+    "value": 38,
+    "reach": 1,
+    "weakness": 24,
+    "worth": 24,
+    "cover": 4,
+    "next": 2,
+    "rushed": false
+   },
+   "his_man_where_he_stands": {
+    "value": 18,
+    "reach": 1,
+    "weakness": 9,
+    "worth": 9,
+    "influence": 9,
+    "cover": 2,
+    "next": -1,
+    "shot": "three",
+    "rushed": false
+   },
+   "his_mans_best": {
+    "value": 38,
+    "reach": 1,
+    "weakness": 24,
+    "worth": 24,
+    "influence": 14,
+    "cover": 4,
+    "next": 2,
+    "shot": "post",
+    "rushed": false
+   }
+  },
+  "what_leaving_him_gives_his_shot_where_he_stands": 3,
+  "falls_out": false
+ },
+ "check 3": {
+  "sharpshooter": "O2 (Sharpshooter Shooting Guard)",
+  "his_open_three": 27,
+  "his_best_open_shot_at_the_rim": 34,
+  "his_defender_on_him": {
+   "the_offences_best": 24,
+   "his_man_where_he_stands": {
+    "value": 27,
+    "reach": 1,
+    "weakness": 12,
+    "worth": 12,
+    "influence": 15,
+    "cover": 1,
+    "next": 3,
+    "shot": "three",
+    "rushed": false
+   },
+   "his_mans_best": {
+    "value": 34,
+    "reach": 1,
+    "weakness": 30,
+    "worth": 30,
+    "influence": 4,
+    "cover": 0,
+    "next": 3,
+    "shot": "layup",
+    "rushed": false
+   }
+  },
+  "his_defender_in_the_lane": {
+   "the_offences_best": 18,
+   "best": {
+    "o": 3,
+    "sq": "G3",
+    "shot": "post",
+    "value": 38,
+    "reach": 1,
+    "weakness": 28,
+    "worth": 28,
+    "cover": 1,
+    "next": 3,
+    "rushed": false
+   },
+   "his_man_where_he_stands": {
+    "value": 27,
+    "reach": 1,
+    "weakness": 15,
+    "worth": 15,
+    "influence": 12,
+    "cover": 3,
+    "next": -1,
+    "shot": "three",
+    "rushed": false
+   },
+   "his_mans_best": {
+    "value": 34,
+    "reach": 1,
+    "weakness": 22,
+    "worth": 22,
+    "influence": 12,
+    "cover": 1,
+    "next": 0,
+    "shot": "layup",
+    "rushed": false
+   }
+  },
+  "what_leaving_him_gives_his_shot_where_he_stands": 3,
+  "falls_out": false
+ },
+ "check 4": {
+  "x1s_arrow_and_the_ball_handlers_way": {
+   "on him (NW, his game)": {
+    "squares_the_ball_handler_reaches": 116,
+    "his_best": {
+     "value": 34,
+     "reach": 1,
+     "weakness": 34,
+     "worth": 34,
+     "influence": 0,
+     "cover": -1,
+     "next": -1,
+     "shot": "layup",
+     "rushed": false
+    },
+    "squares_worth_30_or_more": 10
+   },
+   "across his way to the rim (W)": {
+    "squares_the_ball_handler_reaches": 98,
+    "his_best": {
+     "value": 30,
+     "reach": 1,
+     "weakness": 30,
+     "worth": 30,
+     "influence": 0,
+     "cover": -1,
+     "next": -1,
+     "shot": "layup",
+     "rushed": true
+    },
+    "squares_worth_30_or_more": 5
+   },
+   "away from everything (E)": {
+    "squares_the_ball_handler_reaches": 118,
+    "his_best": {
+     "value": 34,
+     "reach": 1,
+     "weakness": 34,
+     "worth": 34,
+     "influence": 0,
+     "cover": -1,
+     "next": -1,
+     "shot": "layup",
+     "rushed": false
+    },
+    "squares_worth_30_or_more": 10
+   }
+  },
+  "x2s_arrow_and_the_chance_a_pass_reaches_his_man_where_he_stands": {
+   "NW (his game)": 0.3,
+   "N": 0.3,
+   "E": 1.0,
+   "S": 1.0
+  },
+  "x2_in_front_of_a_three_going_up_now_with_no_token_left": {
+   "arrow on him": 12.0,
+   "arrow off him": 21.0
+  },
+  "falls_out": true
+ },
+ "check 5": {
+  "shooter": "O2 (Sharpshooter Shooting Guard) with the ball on C9, his open three 27",
+  "the_three_going_up_now": {
+   "in front": {
+    "defender_on": "C8",
+    "with_the_reaction": 12,
+    "no_token_left": 12.0
+   },
+   "beside": {
+    "defender_on": "D9",
+    "with_the_reaction": 12,
+    "no_token_left": 21.0
+   },
+   "behind": {
+    "defender_on": "C10",
+    "with_the_reaction": 12,
+    "no_token_left": 24.0
+   }
+  },
+  "falls_out": true
+ },
+ "check 6": {
+  "the_defence_with_one_token": {
+   "left": 24,
+   "answers": [
+    "X3 to K4",
+    "X4 to F4",
+    "X5 to M2"
+   ]
+  },
+  "the_screen_action_that_leaves_most": {
+   "screen": "O2 Screen, T N",
+   "left": 24,
+   "answers": [
+    "X3 to K4",
+    "X4 to F4",
+    "X5 to M2"
+   ]
+  },
+  "a_body_on_the_helpers_way": {
+   "O4 off his way (C5)": {
+    "left": 24,
+    "answers": [
+     "X4 to F4",
+     "X5 to M2"
+    ]
+   },
+   "O4 on his way (C4)": {
+    "left": 24,
+    "answers": [
+     "X1 to F6",
+     "X5 to M2",
+     "X4 to E1"
+    ]
+   }
+  },
+  "falls_out": false,
+  "falls_out_for_a_body_on_his_way": false,
+  "note": "The Screen action bars only a diagonal step past its T square; on this board the helpers travel straight, and no Screen in the 16 placements tried next to X4 and X5 stops one. A body on the helper's way does."
+ },
+ "which fall out": {
+  "check 1": true,
+  "check 2": false,
+  "check 3": false,
+  "check 4": true,
+  "check 5": true,
+  "check 6": false
+ }
+}
+DONE

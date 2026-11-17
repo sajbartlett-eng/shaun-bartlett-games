@@ -1,12 +1,17 @@
-"""Step 19, stage 3 (Shaun, 17 Nov 2026): the play turn by turn, the coach's assessment of each phase and of the
-whole possession, and the report to download.
+"""Step 19, stage 3: the play turn by turn, the coach's assessment of each phase and of the whole possession, and the
+report to download. Step 20 (Shaun, 17 Nov 2026): the ruler fixed.
 
-A turn is the offence's turn and the defence's answer (the feed's own turn numbers). For each turn: the board before
-it, its actions with their marks, and one line for each team, built from the coverage map at three moments: before
-the offence's turn, after it, and after the defence's answer. The measure is the one D-201 rules on: the most the
-offence can force by the start of the next phase, the defence's best answers counted ("their best look"); and who
-covers whom. Where the map can't be read (a shot in the air, the possession over) a line says what happened, not why.
-Read-only: nothing here decides a rule or changes the computer."""
+A turn is the offence's turn and the defence's answer (the feed's own turn numbers). Every number is the lasting gap
+(D-204): what the offence can still force after the defence's best answer, read like for like (engine.js covFresh):
+from the position as a fresh phase would find it, with the offence's full turn to come, whatever either side has
+already spent. So spending actions can't lower it and a phase ending can't move it by itself. A turn's change is read
+three times: before it, after the offence's turn, after the defence's answer. The offence is credited with the first
+change, the defence with the second. Every roll and its result, and every plus or minus 5, is named in the line it
+belongs to. Overloads are named only as the map defines them (a defender the only cover for threats from two
+attackers). Before a line is printed it is checked against the numbers; a claim they can't support is rewritten as
+what happened. Read-only: nothing here decides a rule or changes the computer."""
+import re
+
 from playmaker_engine import agent as AG
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
@@ -16,19 +21,23 @@ DIRW = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'wes
 
 
 def _small(c):
-    """What the report keeps of a coverage map: the measures and who covers whom (not every square)."""
+    """What the report keeps of a coverage map: the lasting gap, what it leaves, the overloads and the answer."""
     if not c:
         return None
-    best = c.get('best')
-    return dict(strength=c.get('strength'), worth=c.get('worth'), fragility=c.get('fragility'), broken=c.get('broken'),
+    left = c.get('left')
+    last = c.get('clock') is not None and c['clock'] <= RC.PHASE_SECONDS
+    # the last phase has no next phase: the lasting gap isn't defined there, only a shot counts (so a phase ending into
+    # it can't read as the defence taking the number to 0)
+    return dict(L=None if last else c.get('lasting'), last=last, strength=c.get('strength'), before=c.get('before'), broken=c.get('broken'),
                 shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), words=c.get('words'),
-                best=dict(o=best['o'] if 'o' in best else best.get('a'), sq=best.get('sq'), shot=best.get('shot'), worth=best.get('worth'),
-                          cover=best.get('cover'), next=best.get('next')) if best else None,
-                covers=[list(d['attackers']) for d in c.get('covers', [])], answers=c.get('answers'))
+                left=dict(o=left['o'], sq=left['sq'], shot=left['shot'], worth=left['worth'], cover=left['cover']) if left else None,
+                overloads=[dict(x=v['x'], value=v['value'], line=v['line'], threats=v['threats']) for v in c.get('overloads') or []],
+                answers=c.get('answers'))
 
 
 def coverage_at(game, s):
-    """The coverage map of a position, kept for the game (read once). None where it can't be read."""
+    """The coverage map of a position, kept for the game (read once). None where it can't be read (a shot in the air,
+    the possession over, no fast engine)."""
     if s is None or s.stage != 'play' or AG.JS.get('coverage') is None:
         return None
     memo = game.__dict__.setdefault('_covmemo', {})
@@ -39,6 +48,10 @@ def coverage_at(game, s):
         except Exception:                  # the report must never stop a game
             memo[k] = None
     return memo[k]
+
+
+def _L(c):
+    return round(c['L']) if c and c.get('L') is not None else None
 
 
 def break_at(game, s):
@@ -80,8 +93,49 @@ def act_words(a):
     }.get(k, lambda: str(a))()
 
 
+def roll_words(a, entry):
+    """What the dice decided, from the feed entry's own rolls: the dribble beat him, the steal won the ball, the pass
+    was intercepted, the screen held. None: no roll."""
+    rolls = (entry or {}).get('rolls') or []
+    if not rolls:
+        return None
+    picked = [str(r.get('picked', '')) for r in rolls]
+    last = picked[-1]
+    foul = any('foul' in p and 'no foul' not in p for p in picked)
+    if a.kind == 'dribble':
+        return f'the dribble beat X{a.target + 1}' if last == 'success' else f'X{a.target + 1} stopped the dribble'
+    if a.kind == 'intercept':
+        return 'the pass got through' if last == 'success' else 'the pass was intercepted'
+    if a.kind == 'steal':
+        if foul:
+            return 'fouled on the steal'
+        return 'the steal won the ball' if last == 'stolen' else 'the steal missed'
+    if a.kind == 'challenge':
+        return 'the screen held' if last == 'success' else 'the challenge beat the screen'
+    if a.kind == 'contest':
+        return 'fouled on the contest' if foul else None
+    return None
+
+
+_PM5 = re.compile(r'[−+-]5\b')
+
+
+def points_words(entry):
+    """Every plus or minus 5 the action brought (a turnover, a foul), in the feed's own words (its first sentence)."""
+    out = []
+    for o in (entry or {}).get('outcomes') or []:
+        t = o.get('text', '')
+        if o.get('tone') in ('bad_O', 'good_O') and _PM5.search(t):
+            out.append(t.split('. ')[0].rstrip('.'))
+    return out
+
+
 def _cap(t):
     return t[:1].upper() + t[1:] if t else t
+
+
+def _low(t):
+    return t[:1].lower() + t[1:] if t and not t[:2].isupper() else t
 
 
 def _series(words):
@@ -91,24 +145,45 @@ def _series(words):
     return ', '.join(words[:-1]) + ', then ' + words[-1]
 
 
-def _names(xs):
-    xs = [f'O{a + 1}' for a in xs]
-    return ' and '.join(xs) if len(xs) <= 2 else ', '.join(xs[:-1]) + ' and ' + xs[-1]
-
-
-def _look(v):
-    return round(v) if v is not None else None
+def _steps(game, possession):
+    """The possession's steps with their feed entries: (before, action, after, turn, entry)."""
+    tl = game.__dict__.get('_trails', {}).get(possession, [])
+    ent = game.__dict__.get('_trail_entries', {})
+    return [(b, a, n, t, ent.get((possession, i))) for i, (b, a, n, t) in enumerate(tl)]
 
 
 def turns(game, possession):
-    steps = [st for st in game.__dict__.get('_trails', {}).get(possession, []) if st[1] is not None and st[1].kind != 'target']
     out = []
-    for b, a, n, turn in steps:
+    for b, a, n, turn, e in _steps(game, possession):
+        if a is None or a.kind == 'target':
+            continue
         key = (b.phase, turn)
         if not out or out[-1]['key'] != key:
             out.append(dict(key=key, phase=b.phase, turn=turn, steps=[]))
-        out[-1]['steps'].append((b, a, n))
+        out[-1]['steps'].append((b, a, n, e))
     return out
+
+
+def _side_words(steps):
+    words, pts, rolls = [], [], []
+    for b, a, n, e in steps:
+        w = act_words(a)
+        rw = roll_words(a, e)
+        if rw:
+            w += f' ({rw})'
+            rolls.append(rw)
+        words.append(w)
+        pts += points_words(e)
+    return _cap(_series(words)), pts, rolls
+
+
+def _new_overload(c0, c1):
+    """An overload the turn made: a defender the only cover for two attackers after it who wasn't before."""
+    had = {v['x'] for v in (c0 or {}).get('overloads') or []}
+    for v in (c1 or {}).get('overloads') or []:
+        if v['x'] not in had:
+            return v
+    return None
 
 
 def turn_lines(game, t):
@@ -120,40 +195,37 @@ def turn_lines(game, t):
     s1 = off[-1][2] if off else s0
     s2 = steps[-1][2]
     c0, c1, c2 = coverage_at(game, s0), coverage_at(game, s1), coverage_at(game, s2)
-    v0, v1, v2 = (_look(c['strength']) if c else None for c in (c0, c1, c2))
-    # the offence
+    v0, v1, v2 = _L(c0), _L(c1), _L(c2)
     shot = next((x for x in off if x[1].kind in ('shot', 'forced_shot')), None)
-    o_words = _cap(_series([act_words(a) for _, a, _ in off])) if off else 'No action'
+    o_words, o_pts, o_rolls = _side_words(off) if off else ('No action', [], [])
+    d_words, d_pts, d_rolls = _side_words(dfn) if dfn else ('No answer', [], [])
+    # the offence: credited with the change its own turn made
     o_eff = None
     if shot is None and v0 is not None and v1 is not None:
-        o_eff = (f'their best look by next phase rose from {v0} to {v1}' if v1 > v0 else
-                 f'their best look by next phase fell from {v0} to {v1}' if v1 < v0 else f'their best look stayed at {v0}')
-        for d in range(5):
-            was, now = c0['covers'][d], c1['covers'][d]
-            if len(now) >= 2 and len(now) > len(was):
-                o_eff += f'; X{d + 1} now has {_names(now)} to cover'
-                break
-    offence = f'Offence: {o_words}.' if not o_eff else f'Offence: {o_words}: {o_eff}.'
-    # the defence's answer
-    d_words = _cap(_series([act_words(a) for _, a, _ in dfn])) if dfn else 'No answer'
+        o_eff = (f'the lasting gap rose from {v0} to {v1}' if v1 > v0 else
+                 f'the lasting gap fell from {v0} to {v1}' if v1 < v0 else f'the lasting gap stayed at {v0}')
+        ov = _new_overload(c0, c1)
+        if ov and v1 > v0:
+            o_eff += f'. {ov["line"]}'
+    offence = f'Offence: {o_words}.' + (f' {_cap(o_eff)}' + ('' if o_eff.endswith('.') else '.') if o_eff else '') + ''.join(f' {p}.' for p in o_pts)
+    # the defence: credited with the change its answer made
     d_eff = None
     if s2.stage == 'over':
         d_eff = 'the possession ended'
     elif v1 is not None and v2 is not None:
-        new_phase = s2.phase != s1.phase
-        d_eff = (f'that took their best look from {v1} back to {v2}' if v2 < v1 else
-                 f'their best look still rose from {v1} to {v2}' if v2 > v1 else f'their best look held at {v1}')
-        if new_phase:
-            d_eff += ' as the phase ended'
-    defence = f'Defence: {d_words}.' if not d_eff else f'Defence: {d_words}: {d_eff}.'
-    shot_break = break_at(game, shot[0]) if shot else None
-    return dict(phase=t['phase'], turn=t['turn'], offence=offence, defence=defence, shot_break=shot_break,
-                offence_actions=[str(a) for _, a, _ in off], defence_actions=[str(a) for _, a, _ in dfn],
-                numbers=dict(before=v0, after_offence=v1, after_defence=v2,
-                             maps=dict(before=c0, after_offence=c1, after_defence=c2)),
+        d_eff = (f'that took the lasting gap from {v1} down to {v2}' if v2 < v1 else
+                 f'the answer let the lasting gap rise from {v1} to {v2}' if v2 > v1 else f'the lasting gap held at {v1}')
+    elif c2 and c2.get('last') and not (c1 and c1.get('last')):
+        d_eff = 'the last phase begins: only a shot counts now'
+    defence = f'Defence: {d_words}.' + (f' {_cap(d_eff)}.' if d_eff else '') + ''.join(f' {p}.' for p in d_pts)
+    return dict(phase=t['phase'], turn=t['turn'], offence=offence, defence=defence,
+                offence_actions=[str(x[1]) for x in off], defence_actions=[str(x[1]) for x in dfn],
+                numbers=dict(before=v0, after_offence=v1, after_defence=v2, maps=dict(before=c0, after_offence=c1, after_defence=c2)),
                 start=_start(s0), shot=dict(o=shot[1].piece, kind=shot[1].kind, shot=shot[1].shot) if shot else None,
+                shot_break=break_at(game, shot[0]) if shot else None,
                 rose=(v1 - v0) if (v0 is not None and v1 is not None and shot is None) else None,
-                answered=(v1 - v2) if (v1 is not None and v2 is not None and s2.stage != 'over') else None)
+                answered=(v1 - v2) if (v1 is not None and v2 is not None and s2.stage != 'over') else None,
+                events=dict(rolls=o_rolls + d_rolls, points=o_pts + d_pts), words=dict(offence=o_words, defence=d_words))
 
 
 def _start(s):
@@ -167,46 +239,63 @@ def _shot_words(sn):
     return f"O{sn['o'] + 1}'s {SHOT.get(sn.get('kind'), 'shot')} on {sn['sq']}, worth {round(sn['worth'])}"
 
 
-def phase_assessment(game, phase, lines, next_map, broke):
-    """Two or three lines a side for one finished phase, leading into the next."""
+def _left_words(c, lead):
+    """What the defence's best answer leaves, from the map (the same number as the lasting gap's open part)."""
+    lf = c.get('left') if c else None
+    if not lf or round(lf['worth']) <= 0:
+        return None
+    cov = f"X{lf['cover'] + 1} covers it" if lf.get('cover') is not None and lf['cover'] >= 0 else 'nobody covers it'
+    return f"{lead}O{lf['o'] + 1}'s {SHOT.get(lf['shot'], lf['shot'])} on {lf['sq']}, worth {round(lf['worth'])}: {cov}."
+
+
+def phase_assessment(game, phase, lines, start_map, next_map, broke):
+    """A few lines a side for one finished phase, leading into the next. Phase start against next phase start. Checked:
+    a phase is called weaker (or stronger) only when one of its turns made it so; otherwise the line says only what the
+    number did."""
     mine = [ln for ln in lines if ln['phase'] == phase]
     if not mine:
         return None
-    start = mine[0]['numbers']['before']
-    end = _look(next_map['strength']) if next_map else None
+    start = _L(start_map) if start_map else mine[0]['numbers']['before']
+    end = _L(next_map)
     off, dfn = [], []
-    if start is not None and end is not None:
-        off.append(f'Their best look went from {start} to {end} this phase: the defence got {"weaker" if end > start else "stronger" if end < start else "no weaker"}.')
-    took = any(ln['shot'] for ln in mine)
-    for ln in mine:
-        if ln['shot']:
-            br = ln.get('shot_break')
-            off.append(f"Turn {ln['turn']}: the shot went up" + (' with the defence broken.' if br and br.get('broken') else ' with the defence not broken.' if br else '.'))
-            dfn.append(f"Turn {ln['turn']}: the shot went up against them" + (' with the defence broken.' if br and br.get('broken') else '.'))
     rises = [ln for ln in mine if ln['rose'] is not None and ln['rose'] > 0]
+    falls = [ln for ln in mine if ln['rose'] is not None and ln['rose'] < 0]
+    answers = [ln for ln in mine if ln['answered'] is not None and ln['answered'] > 0]
+    let_up = [ln for ln in mine if ln['answered'] is not None and ln['answered'] < 0]
+    took = [ln for ln in mine if ln['shot']]
+    if start is not None and end is not None:
+        if end > start and (rises or let_up):
+            off.append(f'The lasting gap went from {start} to {end} this phase: the defence got weaker.')
+        elif end < start and (answers or falls):
+            off.append(f'The lasting gap went from {start} to {end} this phase: the defence got stronger.')
+        elif end == start:
+            off.append(f'The lasting gap held at {start} this phase.')
+        else:                                          # the check: no turn did it, so say what the number did, not why
+            off.append(f'The lasting gap went from {start} to {end} over the phase.')
+    for ln in took:
+        br = ln.get('shot_break')
+        off.append(f"Turn {ln['turn']}: the shot went up" + (' with the defence broken.' if br and br.get('broken') else ' with the defence not broken.' if br else '.'))
+        dfn.append(f"Turn {ln['turn']}: the shot went up against them" + (' with the defence broken.' if br and br.get('broken') else '.'))
     if rises:
         b = max(rises, key=lambda ln: ln['rose'])
-        off.append(f"Best turn: turn {b['turn']}, {b['offence'][len('Offence: '):].split(':')[0].rstrip('.')}.")
+        off.append(f"Best turn: turn {b['turn']}, {_low(b['words']['offence'])}: from {b['numbers']['before']} to {b['numbers']['after_offence']}.")
     if broke and not took:
         off.append(f'Missed: the defence was broken ({_shot_words(broke)}) and the shot was not taken.')
     elif not rises and not took:
-        off.append('No turn raised their best look this phase.')
-    answers = [ln for ln in mine if ln['answered'] is not None and ln['answered'] > 0]
+        off.append('No turn raised the lasting gap this phase.')
     if answers:
         b = max(answers, key=lambda ln: ln['answered'])
-        dfn.append(f"Best answer: turn {b['turn']}, {b['defence'][len('Defence: '):].split(':')[0].rstrip('.')}.")
-    elif not took:
-        dfn.append('No answer brought their best look down this phase.')
-    if next_map and next_map.get('best'):
-        bst = next_map['best']
-        if bst.get('cover') is not None and bst['cover'] < 0:
-            dfn.append(f"Left open: O{bst['o'] + 1} can get a {SHOT.get(bst['shot'], bst['shot'])} on {bst['sq']} next phase, with nobody to cover it.")
+        dfn.append(f"Best answer: turn {b['turn']}, {_low(b['words']['defence'])}: from {b['numbers']['after_offence']} down to {b['numbers']['after_defence']}.")
+    for ln in let_up[:1]:
+        dfn.append(f"Turn {ln['turn']}: the answer let the lasting gap rise from {ln['numbers']['after_offence']} to {ln['numbers']['after_defence']}.")
+    if not answers and not let_up and not took:
+        dfn.append('No answer moved the lasting gap this phase.')
     nxt = None
-    if next_map and next_map.get('best'):
-        bst = next_map['best']
-        cov = f"X{bst['cover'] + 1} covers it" if bst.get('cover') is not None and bst['cover'] >= 0 else 'nobody covers it'
-        nxt = f"Next phase, look for O{bst['o'] + 1}'s {SHOT.get(bst['shot'], bst['shot'])} on {bst['sq']}, worth {round(bst['worth'])}: {cov}."
-    return dict(phase=phase, start=start, end=end, offence=off[:3], defence=dfn[:3], next=nxt)
+    if next_map:
+        nxt = _left_words(next_map, 'Next phase, after the defence\'s best answer, look for ')
+        for ov in (next_map.get('overloads') or [])[:1]:
+            nxt = (nxt + ' ' if nxt else '') + ov['line']
+    return dict(phase=phase, start=start, end=end, offence=off[:4], defence=dfn[:3], next=nxt)
 
 
 def build(game, possession, upto_phase=None):
@@ -215,52 +304,66 @@ def build(game, possession, upto_phase=None):
     keep and one to change for each side."""
     ts = turns(game, possession)
     lines = [turn_lines(game, t) for t in ts if upto_phase is None or t['phase'] <= upto_phase]
-    steps = [st for st in game.__dict__.get('_trails', {}).get(possession, []) if st[1] is not None]
+    steps = [st for st in _steps(game, possession) if st[1] is not None]
     over = bool(steps) and steps[-1][2].stage == 'over'
-    # each phase's first position, and whether the defence was broken at any point with the shot not taken
-    starts = {}
-    for b, a, n, turn in steps:
+    starts = {}                                       # each phase's first position
+    for b, a, n, turn, e in steps:
         if b.stage == 'play' and b.phase not in starts:
             starts[b.phase] = b
         if n.stage == 'play' and n.phase not in starts:
             starts[n.phase] = n
-    phases = []
     broken_seen = {}
     for ln in lines:
         for k in ('before', 'after_offence'):
             m = ln['numbers']['maps'][k]
             if m and m.get('broken') and m.get('shot_now') and ln['phase'] not in broken_seen:
                 broken_seen[ln['phase']] = m['shot_now']
+    phases = []
     for ph in sorted({ln['phase'] for ln in lines}):
-        finished = ph + 1 in starts or over
-        if not finished:
+        if not (ph + 1 in starts or over):
             continue
         nm = coverage_at(game, starts.get(ph + 1)) if ph + 1 in starts else None
-        pa = phase_assessment(game, ph, lines, nm, broken_seen.get(ph))
+        pa = phase_assessment(game, ph, lines, coverage_at(game, starts.get(ph)), nm, broken_seen.get(ph))
         if pa:
             phases.append(pa)
     out = dict(possession=possession, teams=list(game.teams), code=game.code, turns=lines, phases=phases, over=over,
                setup=setup_lines(game, steps[0][0]) if steps else None, switches=switches(game))
     if over and upto_phase is None:
         out['summary'] = summary(game, possession, steps, lines, phases, broken_seen)
+    out['checks'] = consistency(out)
     return out
+
+
+def consistency(rep):
+    """The report checked against its own numbers (step 20): what failed, if anything. The builders above already
+    rewrite a claim the numbers can't support; this is the record that they did, for the tests."""
+    bad = []
+    for p in rep['phases']:
+        for x in p['offence']:
+            if 'got weaker' in x and not any(ln['phase'] == p['phase'] and ((ln['rose'] or 0) > 0 or (ln['answered'] or 0) < 0) for ln in rep['turns']):
+                bad.append(f"phase {p['phase']}: weaker with no turn that weakened it")
+            if 'No turn raised' in x and p['start'] is not None and p['end'] is not None and p['end'] > p['start'] and 'got weaker' in ' '.join(p['offence']):
+                bad.append(f"phase {p['phase']}: weaker beside no turn raised it")
+    sm = rep.get('summary')
+    if sm:
+        if sm['verdict'].startswith('Good') and not any(ln.get('shot_break') and ln['shot_break'].get('broken') for ln in rep['turns']):
+            bad.append('Good with no break')
+        best = sm['numbers'].get('best')
+        if sm['best'] and 'best one the measure saw' in sm['best'] and best and sm['numbers']['shot_value'] < round(best['worth']):
+            bad.append('best shot claim')
+    return bad
 
 
 def setup_lines(game, s):
     """The setup as its own step: the board at tip-off and one line on what each side's setup was planning, read off
-    the map: the offence's best option by the next phase, and how far the defence holds it (their best look once the
-    defence answers)."""
+    the map after the defence's best answer (the same number as everything else)."""
     c = coverage_at(game, s)
     out = dict(start=_start(s), offence=None, defence=None)
     if not c:
         return out
-    b = c.get('best')
-    if b:
-        cov = f"X{b['cover'] + 1} covers it" if b.get('cover') is not None and b['cover'] >= 0 else 'nobody covers it'
-        out['offence'] = f"Offence: set up so that, by the next phase, O{b['o'] + 1} can get a {SHOT.get(b['shot'], b['shot'])} on {b['sq']}, worth {round(b['worth'])}; {cov}."
-    else:
-        out['offence'] = 'Offence: no shot can be reached by the next phase from this setup.'
-    out['defence'] = f"Defence: set up to hold their best look by the next phase to {round(c['strength'])}, once it answers."
+    lw = _left_words(c, "Offence: set up so that, after the defence's best answer, the best it can still force next phase is ")
+    out['offence'] = lw or "Offence: after the defence's best answer, nothing can be forced next phase from this setup."
+    out['defence'] = f"Defence: set up to hold the lasting gap to {_L(c)}." + (' ' + c['overloads'][0]['line'] if c.get('overloads') else '')
     out['numbers'] = c
     return out
 
@@ -282,8 +385,7 @@ def summary(game, possession, steps, lines, phases, broken_seen):
     from playmaker_engine.scoring import score, shot_rating
     final = steps[-1][2]
     sc = score(final)
-    shot = next(((b, a) for b, a, n, t in reversed(steps) if a.kind in ('shot', 'forced_shot')), None)
-    shot_line = None
+    shot = next(((b, a) for b, a, n, t, e in reversed(steps) if a.kind in ('shot', 'forced_shot')), None)
     if shot:
         b, a = shot
         pts = RC.ZONE_POINTS.get(B.zone(b.o[a.piece]), 2)
@@ -293,6 +395,7 @@ def summary(game, possession, steps, lines, phases, broken_seen):
                      f"the contest took {open_v - sc.shot_value} off, leaving {sc.shot_value}.")
     else:
         shot_line = 'No shot went up.'
+    events = [f"{p} (phase {ln['phase']}, turn {ln['turn']})" for ln in lines for p in ln['events']['points']]
     extras = []
     if sc.free_throws:
         extras.append(f'free throws {sc.free_throws}')
@@ -300,28 +403,29 @@ def summary(game, possession, steps, lines, phases, broken_seen):
         extras.append(f'fouls +{sc.bonus}')
     if sc.turnovers:
         extras.append(f'turnovers {sc.turnover_points}')
-    score_line = f"Scored {sc.total} ({sc.band})" + (f": {', '.join(extras)}." if extras else '.')
-    # the best shot that could have gone up, and when (the map's shot now, every turn)
+    score_line = f"Scored {sc.total} ({sc.band})" + (f": {', '.join(extras)}." if extras else '.') + (f" {'; '.join(events)}." if events else '')
+    # the best shot that could have gone up, and when (the map's shot now, every turn), against the shot taken
     best = None
     for ln in lines:
         for k in ('before', 'after_offence'):
             m = ln['numbers']['maps'][k]
             if m and m.get('shot_now') and (best is None or m['shot_now']['worth'] > best[0]['worth']):
                 best = (m['shot_now'], ln['phase'], ln['turn'])
-    best_line = None
     if shot and (best is None or sc.shot_value >= round(best[0]['worth'])):
-        best_line = 'The shot taken was the best one on offer all possession.'
+        best_line = 'The shot taken was the best one the measure saw all possession.'
     elif best:
         sn, ph, tn = best
         best_line = f"The best shot on offer: {_shot_words(sn)}, in phase {ph}, turn {tn}."
+    else:
+        best_line = None
     trend = [p['start'] for p in phases if p['start'] is not None]
     if phases and phases[-1]['end'] is not None:
         trend.append(phases[-1]['end'])
-    trend_line = ('Their best look, phase by phase: ' + ', '.join(str(v) for v in trend) + '.') if len(trend) > 1 else None
+    trend_line = ('The lasting gap at the start of each phase: ' + ', '.join(str(v) for v in trend) + '.') if len(trend) > 1 else None
     shot_ln = next((ln for ln in lines if ln['shot']), None)
     took_broken = bool(shot_ln and shot_ln.get('shot_break') and shot_ln['shot_break'].get('broken'))
     missed = [ph for ph in sorted(broken_seen) if not (shot is not None and shot[0].phase == ph)]
-    if took_broken:
+    if took_broken:                                   # the check: "broke" only with a break the measure saw
         verdict = 'Good: the defence broke and the shot was taken.'
     elif missed:
         verdict = f'Wasted: the defence was broken in phase {missed[0]} and the shot was not taken.'
@@ -332,7 +436,7 @@ def summary(game, possession, steps, lines, phases, broken_seen):
     off_keep = off_change = dfn_keep = dfn_change = None
     up = max(rises, key=lambda ln: ln['rose'], default=None)
     if up and up['rose'] > 0:
-        off_keep = f"Keep: phase {up['phase']}, turn {up['turn']}: their best look rose from {up['numbers']['before']} to {up['numbers']['after_offence']}."
+        off_keep = f"Keep: phase {up['phase']}, turn {up['turn']}: the lasting gap rose from {up['numbers']['before']} to {up['numbers']['after_offence']}."
     elif took_broken:
         off_keep = 'Keep: the shot went up when the defence was broken.'
     if missed:
@@ -342,16 +446,16 @@ def summary(game, possession, steps, lines, phases, broken_seen):
     else:
         down = min(rises, key=lambda ln: ln['rose'], default=None)
         if down and down['rose'] < 0:
-            off_change = f"Change: phase {down['phase']}, turn {down['turn']} let their best look fall from {down['numbers']['before']} to {down['numbers']['after_offence']}."
+            off_change = f"Change: phase {down['phase']}, turn {down['turn']} let the lasting gap fall from {down['numbers']['before']} to {down['numbers']['after_offence']}."
     good = max(answers, key=lambda ln: ln['answered'], default=None)
     if good and good['answered'] > 0:
-        dfn_keep = f"Keep: phase {good['phase']}, turn {good['turn']}: the answer took their best look from {good['numbers']['after_offence']} back to {good['numbers']['after_defence']}."
+        dfn_keep = f"Keep: phase {good['phase']}, turn {good['turn']}: the answer took the lasting gap from {good['numbers']['after_offence']} down to {good['numbers']['after_defence']}."
     bad = min(answers, key=lambda ln: ln['answered'], default=None)
     if took_broken:
         dfn_change = f'Change: the defence was broken in phase {shot[0].phase}, and the shot went up.'
     elif bad and bad['answered'] < 0:
-        dfn_change = f"Change: phase {bad['phase']}, turn {bad['turn']}: their best look still rose from {bad['numbers']['after_offence']} to {bad['numbers']['after_defence']}."
+        dfn_change = f"Change: phase {bad['phase']}, turn {bad['turn']}: the answer let the lasting gap rise from {bad['numbers']['after_offence']} to {bad['numbers']['after_defence']}."
     return dict(shot=shot_line, score=score_line, best=best_line, trend=trend_line, verdict=verdict,
                 offence=dict(keep=off_keep, change=off_change), defence=dict(keep=dfn_keep, change=dfn_change),
                 numbers=dict(total=sc.total, band=sc.band, shot_value=sc.shot_value, free_throws=sc.free_throws, bonus=sc.bonus,
-                             turnover_points=sc.turnover_points, trend=trend, best=best[0] if best else None))
+                             turnover_points=sc.turnover_points, trend=trend, best=best[0] if best else None, events=events))

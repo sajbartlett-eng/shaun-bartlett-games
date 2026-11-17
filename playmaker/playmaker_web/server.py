@@ -70,8 +70,10 @@ _COVERAGE_ENGINE = []
 
 def coverage_engine():
     """Step 19, stage 6: the server shows what the link version shows, the coverage view included. The coverage map
-    lives in the fast engine (engine.js); the server runs it in Node for the coach's view and the reports only. The
-    computer's play is untouched: its search stays where it was."""
+    lives in the fast engine (engine.js); the server runs it in Node. Step 20 (D-203): with the map on for both sides the
+    computer's search reads the lasting gap at every line's end, which the Python engine reads at about 480 ms a
+    position against 24 in JavaScript, so the server's computer plays on the fast engine too, as the link version does
+    (the two engines agree: tests/test_equivalence and the lasting-gap equality test)."""
     import shutil
     from playmaker_engine import agent as AG
     if _COVERAGE_ENGINE or AG.JS.get('coverage') is not None or not shutil.which('node'):
@@ -79,10 +81,13 @@ def coverage_engine():
     from playmaker_engine.jsbridge import NodeEngine
     eng, lock = NodeEngine(), threading.Lock()
 
-    def cov(text):
-        with lock:                               # one request at a time down the one pipe
-            return eng.call('coverageJSON', text)
-    AG.JS['coverage'] = cov
+    def via(fn):
+        def call(text):
+            with lock:                           # one request at a time down the one pipe
+                return eng.call(fn, text)
+        return call
+    AG.JS['coverage'] = via('coverageJSON')
+    AG.JS['search'], AG.JS['goals'], AG.JS['reads'] = via('searchJSON'), via('goalsJSON'), via('readsJSON')
     _COVERAGE_ENGINE.append(eng)
     return True
 
@@ -91,7 +96,7 @@ def stop_coverage_engine():
     from playmaker_engine import agent as AG
     while _COVERAGE_ENGINE:
         _COVERAGE_ENGINE.pop().close()            # close() puts every agent.JS entry back to None
-    AG.JS['coverage'] = None
+    AG.JS['coverage'] = AG.JS['search'] = AG.JS['goals'] = AG.JS['reads'] = None
 
 
 def serve(port=8765, host='0.0.0.0', coverage=True):

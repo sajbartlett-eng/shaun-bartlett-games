@@ -1,0 +1,139 @@
+{
+ "code": "8A7DDF",
+ "seed": 192610,
+ "seeded": false,
+ "level": "allstar",
+ "map": true,
+ "possessions": [
+  {
+   "possession": 1,
+   "score": 33,
+   "verdict": "Good: the defence broke and the shot was taken.",
+   "checks": [],
+   "turns": 3,
+   "rolls": [],
+   "report_s": 0.2
+  },
+  {
+   "possession": 2,
+   "score": 23,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 17,
+   "rolls": [
+    [
+     "Dribble 14 v Agility 4 (O5 v X5)",
+     20,
+     "failure"
+    ],
+    [
+     "Dribble 14 v Agility 4 (O5 v X5)",
+     17,
+     "failure"
+    ],
+    [
+     "Steal foul 7 (X3)",
+     17,
+     "no foul"
+    ],
+    [
+     "Dribble 12 v Steal 3 (O5 v X3)",
+     7,
+     "kept"
+    ],
+    [
+     "Steal foul 7 (X3)",
+     9,
+     "no foul"
+    ],
+    [
+     "Dribble 12 v Steal 1 (O5 v X3)",
+     18,
+     "stolen"
+    ]
+   ],
+   "report_s": 0.9
+  },
+  {
+   "possession": 3,
+   "score": 21,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 9,
+   "rolls": [
+    [
+     "Dribble 15 v Agility 5 (O3 v X3)",
+     13,
+     "failure"
+    ]
+   ],
+   "report_s": 0.4
+  },
+  {
+   "possession": 4,
+   "score": 33,
+   "verdict": "Good: the defence broke and the shot was taken.",
+   "checks": [],
+   "turns": 6,
+   "rolls": [
+    [
+     "Pass 16 v Intercept 6 (O2 to O5, X2)",
+     11,
+     "failure"
+    ],
+    [
+     "Pass 16 v Intercept 6 (O2 to O5, X2)",
+     3,
+     "success"
+    ]
+   ],
+   "report_s": 0.3
+  },
+  {
+   "possession": 5,
+   "score": 26,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 3,
+   "rolls": [],
+   "report_s": 0.1
+  },
+  {
+   "possession": 6,
+   "score": 24,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "rolls": [],
+   "report_s": 0.0
+  },
+  {
+   "possession": 7,
+   "score": 27,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 5,
+   "rolls": [],
+   "report_s": 0.2
+  },
+  {
+   "possession": 8,
+   "score": 24,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "rolls": [],
+   "report_s": 0.0
+  }
+ ],
+ "play_s": [
+  105.8,
+  48.5,
+  38.8,
+  15.7,
+  15.7,
+  28.7,
+  15.5
+ ],
+ "seconds": 289.4
+}

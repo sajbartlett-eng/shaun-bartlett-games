@@ -2910,21 +2910,24 @@ const PMEngine = (() => {
       for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && lk.base > now) now = lk.base;
       return Math.max(sn || 0.0, now);
     }
-    _mapLeaf() {                                   // null: no fitted line for this phase and side (the reading as it was)
+    // step 20 (Shaun, 17 Nov 2026): the lasting gap, read like for like (lastingOf); only the number is kept with the
+    // reading, or a long search holds thousands of maps
+    mapLasting() {
+      if (this._lg === undefined) { const g = lastingOf(this.s); this._lg = g ? g.L : null; }
+      return this._lg;
+    }
+    // The reading from the map, both sides (step 20): what is banked, plus the larger of the best shot that can go up
+    // now and the lasting gap: what the offence can still force after the defence's best answer. Used directly: it is
+    // already in points, as a shot's value is. The offence plays to make it larger, the defence to keep it small.
+    _mapLeaf() {
       const s = this.s;
-      if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play' || s.pending || !D.learned.calibration_map) return null;
-      const phase = Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1));
-      const row = D.learned.calibration_map.maps[String(phase) + (this.o_to_act ? 'O' : 'X')];
-      if (!row) return null;
+      if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play' || s.pending) return null;
       let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
       const shot = this.mapShot();
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + shot;
-      // the two ways as the board stands, or as the defence's answers leave them: whichever form the line was fitted on
-      const two = this.mapTwo(D.learned.calibration_map.form === 'answered'), w = row.w;
-      const line = w[0] + (w[1] * shot + w[2] * two[0] + w[3] * two[1]);
-      const sn = this.o_to_act ? (this.shotNow() || 0.0) : 0.0;     // the offence to act can simply shoot
-      return banked + Math.max(sn, line);
+      const L = this.mapLasting();
+      return banked + Math.max(shot, L === null ? 0 : L);
     }
     _leafCalc() {
       const ml = this._mapLeaf();
@@ -4736,6 +4739,166 @@ const PMEngine = (() => {
     }
     return steps;
   }
+  // ---- step 20 (Shaun, 17 Nov 2026): the lasting gap -------------------------------------------------------------------
+  // "The offence attempts to produce lasting gaps in the defence's coverage such that no defender can cover a valuable
+  // scoring square, or one defender has to cover multiple squares accessible to multiple offensive players. Conversely,
+  // the defence is trying to limit those scenarios as much as possible, and if it has to allow such squares and scenarios
+  // to exist, it will aim to leave the lowest possible value ones."
+  //
+  // Like for like: the map is always read from the position as a fresh phase would find it (resolve.new_phase, with
+  // no clock taken off): the offence's full turn to come and the defence's movement fresh, whatever either has spent.
+  // Spending actions can't lower it, and a phase ending can't move it. A pass in the air is read as caught.
+  function covFresh(s) {
+    const t = s.pending ? W_(s, { ball: s.pending[1], pending: null, approach: -1 }) : s;
+    return W_(t, { screens: [], beaten: [], tok_o: 6, tok_x: 6, moved_o: 0, moved_x: 0, qs_o: 0, qs_x: 0, lock_o: 0, lock_x: 0, rush_o: 0, rush_x: 0,
+      cnt: ZERO, turn_n: 0, side: 'O', stage: 'play', approach: -1, prev_wait: '', final: false, turn_lead: -1, turn_x: [], turn_moved: 0, react_moved: 0 });
+  }
+  // The defence's best answer, by search over its real options: each defender makes at most one movement (a Move with
+  // any arrow, turning on the spot included; a Quick Step or Sprint with the arrow it leaves him), within its tokens. A
+  // beam of the best LG_BEAM answers so far is carried one defender deeper at a time; each is widened by the LG_WIDE
+  // movements that leave the offence's best LG_HEAD threats the smallest. Answers are ranked by the lasting gap, then
+  // by the threats left, the largest first. The best answer seen at any depth (none at all included) is the answer.
+  const LG_BEAM = 3, LG_WIDE = 3, LG_HEAD = 6;
+  function lgRoot(m) {
+    const s = m.s, taken = new Set();
+    for (let k = 0; k < 5; k++) { taken.add(s.o[k]); taken.add(s.x[k]); }
+    const o = [];
+    for (const src of m.options) if (src.r > 0) o.push({ src, r: src.r, vals: src.vals.slice(), e: src.e, w: src.w, t: src.t, cover: src.cover, next: src.next });
+    return { moves: [], moved: [false, false, false, false, false], taken, tok: s.tok_x, o };
+  }
+  const lgBefore = (x, y) => y.e - x.e || x.src.a - y.src.a || x.src.c - y.src.c || (x.src.rushed ? 1 : 0) - (y.src.rushed ? 1 : 0);
+  function lgHead(st) {
+    const head = [];
+    for (const x of st.o) {
+      if (!(x.r > 0)) continue;
+      let k = head.length;
+      while (k > 0 && lgBefore(x, head[k - 1]) < 0) k--;
+      if (k < LG_HEAD) { head.splice(k, 0, x); if (head.length > LG_HEAD) head.pop(); }
+    }
+    return head;
+  }
+  function lgChild(m, st, d, q, a, cm) {
+    const r = m.r, soft = m.s.ctx.soft, o = [];
+    for (const x of st.o) {
+      const y = { src: x.src, r: x.r, vals: x.vals.slice(), e: x.e, w: x.w, t: x.t, cover: x.cover, next: x.next };
+      if (x.src.c === q) { y.r = 0; y.e = -Infinity; o.push(y); continue; }
+      const mask = cm[BI[x.src.c]];
+      y.vals[d] = mask ? r._valsCalc(x.src.lk, d, mask, 0, x.src.fl, soft ? mask : 0, 0) : null;
+      const cv = covValue({ open: x.src.open, vals: y.vals }, -1, null);
+      y.w = cv[0]; y.t = cv[1]; y.cover = cv[2]; y.next = cv[3];
+      y.e = y.r > 0 ? y.r * y.w - (1 - y.r) * TURNOVER_COST : -Infinity;
+      o.push(y);
+    }
+    const taken = new Set(st.taken); taken.add(q);
+    const moved = st.moved.slice(); moved[d] = true;
+    return { moves: st.moves.concat([[d, q, a]]), moved, taken, tok: st.tok - 1, o };
+  }
+  // Overloads: in an answer, a defender is the only cover (nobody else takes anything off them) for threats from two
+  // attackers on squares no one square is next to both of (three or more apart: a Contest is from next to the shooter),
+  // so he can't take both. Whichever he takes, the other stays open: the overload is worth the smaller of the two, each
+  // read without him. The pair that leaves the offence the most is the one named.
+  const LG_PAIR = 12;
+  function lgOverloads(st) {
+    const by = [[], [], [], [], []];
+    for (const x of st.o) {
+      if (!(x.r > 0) || x.cover < 0 || x.next >= 0 || !(x.e > 0)) continue;
+      const wd = x.r * covValue({ open: x.src.open, vals: x.vals }, x.cover, null)[0] - (1 - x.r) * TURNOVER_COST;
+      by[x.cover].push({ wd, x });
+    }
+    const out = [];
+    for (let d = 0; d < 5; d++) {
+      const list = by[d].sort((u, v) => v.wd - u.wd || lgBefore(u.x, v.x)).slice(0, LG_PAIR);
+      let pair = null;
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        const u = list[i], v = list[j];
+        if (u.x.src.a === v.x.src.a || cheb(u.x.src.c, v.x.src.c) < 3) continue;
+        const val = Math.min(u.wd, v.wd);
+        if (pair === null || val > pair.value + 1e-9) pair = { value: val, u, v };
+      }
+      if (pair) out.push({ d, value: pair.value, threats: [pair.u, pair.v].map(z => ({ a: z.x.src.a, c: z.x.src.c, t: z.x.t, worth: z.wd, now: z.x.e })) });
+    }
+    return out;
+  }
+  function lgScore(st) {
+    const head = lgHead(st), worths = head.map(x => x.e);
+    const ov = lgOverloads(st);
+    let L = worths.length ? worths[0] : 0;
+    for (const v of ov) if (v.value > L) L = v.value;
+    return { L, worths, ov };
+  }
+  function lgBetter(a, b) {                             // is answer a (its score) better for the defence than b?
+    if (a.sc.L < b.sc.L - 1e-9) return true;
+    if (a.sc.L > b.sc.L + 1e-9) return false;
+    if (covLess(a.sc.worths, b.sc.worths)) return true;
+    if (covLess(b.sc.worths, a.sc.worths)) return false;
+    if (a.moves.length !== b.moves.length) return a.moves.length < b.moves.length;
+    for (let k = 0; k < a.moves.length; k++) for (let j = 0; j < 3; j++) if (a.moves[k][j] !== b.moves[k][j]) return a.moves[k][j] < b.moves[k][j];
+    return false;
+  }
+  function lasting(m) {
+    const s = m.s, r = m.r, soft = s.ctx.soft;
+    const root = lgRoot(m); root.sc = lgScore(root);
+    let best = root, frontier = [root];
+    for (let depth = 0; depth < 5 && frontier.length; depth++) {
+      const nexts = [];
+      for (const st of frontier) {
+        if (st.tok <= 0) continue;
+        const head = lgHead(st), cur = head.map(x => x.e);
+        if (!head.length || !(head[0].e > 0)) continue;
+        const cands = [], seen = new Set();
+        const offer = (d, q, a, cm) => {
+          const key = (d * 4096 + q) * 9 + (a + 1);
+          if (seen.has(key)) return;
+          seen.add(key);
+          const after = [];
+          let touched = false;
+          for (const x of head) {
+            let e;
+            if (x.src.c === q) e = -Infinity;
+            else {
+              const mask = cm[BI[x.src.c]];
+              const vals = mask ? r._valsCalc(x.src.lk, d, mask, 0, x.src.fl, soft ? mask : 0, 0) : null;
+              e = x.r * covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] - (1 - x.r) * TURNOVER_COST;
+            }
+            if (e < x.e - 1e-9) touched = true;
+            after.push(e);
+          }
+          if (!touched) return;
+          after.sort((u, v) => v - u);
+          if (covLess(after, cur)) cands.push({ d, q, a, cm, after });
+        };
+        for (let d = 0; d < 5; d++) {
+          if (st.moved[d] || !ONB[s.x[d]]) continue;
+          const cp = caps(s, 'X', d);
+          if (!cp[0] && cp[1] <= 0) continue;
+          const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), fr = defenderReachExact(s, d);
+          if (cp[0]) offer(d, s.x[d], -1, anyArrowMask(s.x[d], qs, mode));       // a Move on the spot: a new arrow
+          for (const [q, n] of fr[0]) if (n === 1 && !st.taken.has(q)) offer(d, q, -1, anyArrowMask(q, qs, mode));
+          for (const [q, arrs] of fr[1]) if (!st.taken.has(q)) for (const [a, n] of arrs) if (n === 1) offer(d, q, a, cmapCached(q, a, qs, true, 1, mode).masks[2]);
+        }
+        cands.sort((u, v) => (covLess(u.after, v.after) ? -1 : covLess(v.after, u.after) ? 1 : (u.d - v.d || u.q - v.q || u.a - v.a)));
+        for (const c of cands.slice(0, LG_WIDE)) {
+          const ch = lgChild(m, st, c.d, c.q, c.a, c.cm);
+          ch.sc = lgScore(ch);
+          nexts.push(ch);
+        }
+      }
+      if (!nexts.length) break;
+      nexts.sort((u, v) => (lgBetter(u, v) ? -1 : lgBetter(v, u) ? 1 : 0));
+      frontier = nexts.slice(0, LG_BEAM);
+      if (lgBetter(frontier[0], best)) best = frontier[0];
+    }
+    return best;
+  }
+  // the lasting gap of a position, read like for like (covFresh): -> { L, before, best, ov, moves } (numbers only)
+  function lastingOf(s, r0) {
+    if (s.stage !== 'play' || s.clock <= 2) return null;
+    const f = covFresh(s);
+    const m = covBuild(f, true, r0 && r0.s === f ? r0 : null);
+    const best = lasting(m);
+    const before = m.sorted.length ? m.sorted[0].e : 0;
+    return { L: best.sc.L, before, ov: best.sc.ov.length, moves: best.moves.length, m, best };
+  }
   const COV_MOVES = new Set(['move', 'qs', 'sprint']);
   // the defence's answers: one movement action at a time while it has tokens, each the action that leaves the offence
   // the least (the best few by a quick look are then built in full, and the best of those is taken)
@@ -4824,74 +4987,62 @@ const PMEngine = (() => {
     opts = opts || {};
     if (opts.only === 'parts') return { parts: mapParts(s0) };                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
-    const s = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
+    if (opts.only === 'lasting') { const g = lastingOf(s0); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves } : null; }
+    // step 20: the map is read like for like (covFresh): the offence's full turn to come, the defence's movement fresh
+    const s = covFresh(s0);
     const m0 = covBuild(s);
-    const ans = covAnswers(m0, opts.answers);
-    const left = ans.m.sorted.length ? ans.m.sorted[0] : null;
-    // every square, for each attacker: his best option there (the map the coach sees: the defence as it stands)
-    const squares = [0, 1, 2, 3, 4].map(() => ({}));
-    for (const o of m0.sorted) {
-      const k = sqName(o.c), cur = squares[o.a][k];
-      if (!cur || o.e > cur.worth) squares[o.a][k] = { value: o.v, reach: +o.r.toFixed(3), weakness: +o.w.toFixed(2), worth: +o.e.toFixed(2), influence: +(o.v - o.w).toFixed(2),
-        cover: o.cover, next: o.next, shot: o.lk.types[o.t], rushed: !!o.rushed };
-    }
-    // who covers what: one defender covers many squares, and several attackers at once
+    const best = lasting(m0);
+    const sq = list => {                               // every square, for each attacker: his best option there
+      const out = [0, 1, 2, 3, 4].map(() => ({}));
+      for (const x of list) {
+        if (!(x.r > 0)) continue;
+        const o = x.src || x, k = sqName(o.c), cur = out[o.a][k];
+        if (!cur || x.e > cur.worth) out[o.a][k] = { value: o.v, reach: +x.r.toFixed(3), weakness: +x.w.toFixed(2), worth: +x.e.toFixed(2), influence: +(o.v - x.w).toFixed(2),
+          cover: x.cover, next: x.next, shot: o.lk.types[x.t], rushed: !!o.rushed };
+      }
+      return out;
+    };
+    const squares = sq(m0.sorted), squaresAfter = sq(best.o);
+    // who covers what, after the answer: one defender covers many squares, and several attackers at once
     const covers = [0, 1, 2, 3, 4].map(() => ({ squares: 0, attackers: [] }));
-    for (let a = 0; a < 5; a++) for (const k of Object.keys(squares[a])) {
-      const d = squares[a][k].cover;
+    for (let a = 0; a < 5; a++) for (const k of Object.keys(squaresAfter[a])) {
+      const d = squaresAfter[a][k].cover;
       if (d >= 0) { covers[d].squares++; if (!covers[d].attackers.includes(a)) covers[d].attackers.push(a); }
     }
+    const opt = x => { const o = x.src; return { o: o.a, sq: sqName(o.c), shot: o.lk.types[x.t], value: o.v, reach: +x.r.toFixed(3), weakness: +x.w.toFixed(2), worth: +x.e.toFixed(2), cover: x.cover, next: x.next, rushed: !!o.rushed }; };
+    const head = lgHead(best), left = head.length ? head[0] : null;
     const top = m0.sorted.length ? m0.sorted[0] : null;
-    let dribble = null;
-    if (!opts.noDribble && top !== null && s.tok_o > 0) {
-      // the Dribble: a defender next to the ball handler only stays in the race if he wins the roll
-      const so = W_(s, { side: 'O', turn_n: 0, stage: 'play' });
-      for (const act of legalActions(so)) {
-        if (act.kind !== 'dribble') continue;
-        const node = apply(so, act);
-        if (!isChance(node)) continue;
-        let ev = 0, p = 0, won = null;
-        for (const out of node.outcomes) {
-          const sub = W_(out[2], { side: s.side, turn_n: s.turn_n });
-          const c2 = coverage(sub, { noDribble: true, answers: opts.answers });
-          ev += out[0] * c2.left_worth;
-          if (out[1] === 'success') { p = out[0]; won = c2; }
-        }
-        if (dribble === null || ev > dribble.worth) dribble = { target: act.target, chance: +p.toFixed(3), worth: +ev.toFixed(2), if_won: won ? won.left_worth : null, best_if_won: won ? won.left : null };
-      }
-    }
-    const leftWorth = left ? left.e : (m0.now ? m0.now.e : 0);
+    const name = o => `O${o + 1}`;
+    const overloads = best.sc.ov.map(v => {
+      const th = v.threats.map(z => ({ o: z.a, sq: sqName(z.c), shot: m0.options.find(o => o.a === z.a && o.c === z.c).lk.types[z.t], worth: +z.worth.toFixed(2) }));
+      const two = th.slice(0, 2).map(z => `${name(z.o)}'s ${COV_SHOT[z.shot].replace(/^an? /, '')} on ${z.sq}`).join(' and ');
+      return { x: v.d, value: +v.value.toFixed(2), threats: th,
+        line: `X${v.d + 1} is the only cover for ${two}: whichever he takes, the other is open (worth ${Math.round(v.value)}).` };
+    });
     const words = [];
-    const name = o => `O${o.a + 1}`;
-    if (top === null) words.push(s.clock <= 2 ? 'The last phase: only a shot now counts.' : 'Nothing can be reached next phase.');
+    if (!top) words.push(s0.clock <= 2 ? 'The last phase: only a shot now counts.' : 'Nothing can be reached next phase.');
     else {
-      const help = top.cover < 0 ? 'Nobody can get there to contest it.' : `X${top.cover + 1} covers it${top.next >= 0 ? `, then X${top.next + 1}` : ', and nobody is behind him'}.`;
-      words.push(`${name(top)} can get ${COV_SHOT[top.lk.types[top.t]]} on ${sqName(top.c)} next phase, worth ${top.e.toFixed(0)}. ${help}`);
-      if (ans.answers.length) {
-        const steps = ans.answers.map(q => `X${q.x + 1} to ${sqName(q.to)}`).join(', ');
-        words.push(left ? `The defence's best answer: ${steps}. That leaves ${COV_SHOT[left.lk.types[left.t]]} for ${name(left)} on ${sqName(left.c)}, worth ${left.e.toFixed(0)}.` : `The defence's best answer: ${steps}. That leaves nothing.`);
-      } else words.push(s.tok_x <= 0 ? 'The defence has no token left this phase to answer it.' : 'No step by the defence makes it smaller.');
-      if (dribble !== null && dribble.worth > leftWorth + 0.5) words.push(`A Dribble at X${dribble.target + 1} wins ${Math.round(dribble.chance * 20)} times in 20 and is worth ${dribble.worth.toFixed(0)}.`);
+      if (best.moves.length) words.push(`The defence's best answer: ${best.moves.map(([d, q]) => q === s.x[d] ? `X${d + 1} turns on ${sqName(q)}` : `X${d + 1} to ${sqName(q)}`).join(', ')}.`);
+      else words.push(s.tok_x <= 0 ? 'The defence has no movement left to answer with.' : 'No movement by the defence makes it smaller.');
+      if (left && left.e > 0) words.push(`That leaves ${COV_SHOT[left.src.lk.types[left.t]]} for ${name(left.src.a)} on ${sqName(left.src.c)}, worth ${Math.round(left.e)}: ${left.cover < 0 ? 'nobody covers it' : `X${left.cover + 1} covers it`}.`);
+      for (const v of overloads) words.push(v.line);
     }
-    // strength: the most the offence can force by the start of the next phase, the defence's best answers counted
-    // (lower is a stronger defence). fragility: the separate attackers who hold a way worth at least that before the
-    // defence answers: each is one more thing it had to deal with, or is what it could not. broken: covBreak.
-    const strength = Math.max(leftWorth, dribble ? dribble.worth : -Infinity);
-    const mine = [-Infinity, -Infinity, -Infinity, -Infinity, -Infinity];
-    for (const o of m0.sorted) if (o.e > mine[o.a]) mine[o.a] = o.e;
-    const ways = [];
-    for (let a = 0; a < 5; a++) if (left && mine[a] > 0 && mine[a] >= left.e - 1e-9) ways.push(a);
-    const brk = covBreak(s, m0.r);
+    const brk = covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (brk.broken) words.push(`The defence is broken now: O${brk.shot.o + 1} has a shot on ${brk.shot.sq} worth ${brk.shot.worth.toFixed(0)}, more than playing on (${brk.carry_on.toFixed(0)}).`);
-    return { phase: s.phase, clock: s.clock, squares, covers, top: m0.sorted.slice(0, 8).map(covOption),
-      strength: +strength.toFixed(2), fragility: ways.length, ways, shot_now: brk.shot, carry_on: brk.carry_on, broken: brk.broken,
-      best: top ? covOption(top) : null, answers: ans.answers.map(q => ({ x: q.x, kind: q.kind, to: sqName(q.to), arrow: q.arrow, leaves: +q.leaves.toFixed(2) })),
-      left: left ? covOption(left) : null, left_worth: +leftWorth.toFixed(2), dribble,
-      after: { x: ans.m.s.x.map(q => sqName(q)), arrows: Array.from(ans.m.s.arrows), tokens_left: ans.m.s.tok_x },
-      // the chance a pass straight to each teammate where he stands arrives, by the rules (null: the ball handler, or no pass)
-      passes: [0, 1, 2, 3, 4].map(a => (a === s.ball || !ONB[s.o[a]] || s.tok_o <= 0 || !isLegal(W_(s, { side: 'O', stage: 'play', turn_n: 0, pending: null }), A('pass', 'O', s.ball, -1, -1, a)) ? null : +passChanceExact(s, a).toFixed(3))),
+    const L = best.sc.L;
+    // where the defence stands after its best answer (its tokens as a fresh phase gives them: covFresh)
+    const px = Array.from(s.x), pa = Array.from(s.arrows);
+    for (const [d, q, a] of best.moves) { px[d] = q; if (a >= 0) pa[d] = a; }
+    const after = { x: px.map(q => sqName(q)), arrows: pa, tokens_left: s.tok_x - best.moves.length };
+    return { phase: s0.phase, clock: s0.clock, squares, squares_after: squaresAfter, after, covers, top: m0.sorted.slice(0, 8).map(covOption),
+      strength: +L.toFixed(2), lasting: +L.toFixed(2), before: top ? +top.e.toFixed(2) : 0, fragility: overloads.length, overloads,
+      shot_now: brk.shot, carry_on: brk.carry_on, broken: brk.broken,
+      best: top ? covOption(top) : null, answers: best.moves.map(([d, q, a]) => ({ x: d, to: sqName(q), arrow: a, turn: q === s.x[d] })),
+      left: left ? opt(left) : null, left_worth: left ? +left.e.toFixed(2) : 0, dribble: null,
       now: m0.now ? { o: m0.now.a, sq: sqName(m0.now.c), worth: +m0.now.e.toFixed(2), route: m0.now.route } : null,
-      worth: +Math.max(leftWorth, dribble ? dribble.worth : -Infinity, m0.now ? m0.now.e : -Infinity).toFixed(2), words: words.join(' ') };
+      // the chance a pass straight to each teammate where he stands arrives, by the rules (null: the ball handler, or no pass)
+      passes: [0, 1, 2, 3, 4].map(a => (a === s.ball || !ONB[s.o[a]] || !isLegal(W_(s, { side: 'O', stage: 'play', turn_n: 0, pending: null }), A('pass', 'O', s.ball, -1, -1, a)) ? null : +passChanceExact(s, a).toFixed(3))),
+      worth: +L.toFixed(2), words: words.join(' ') };
   }
   function coverageJSON(text) {
     const req = JSON.parse(text);

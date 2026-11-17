@@ -1,0 +1,159 @@
+{
+ "closeout, shooter cannot move": {
+  "what": "O4 (three 11) has the ball at A3 and can't move again. X3 is at F4, a Quick Step and a Move away.",
+  "side": "X",
+  "lines": {
+   "your order: X3 Quick Steps to E4 and keeps the Move; X2 moves to B6": {
+    "mean": 33.0,
+    "low": 33.0,
+    "high": 33.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "the computer's own pick": {
+    "mean": 24.0,
+    "low": 24.0,
+    "high": 24.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X3 Moves to C4 and keeps the Quick Step; X2 moves to B6": {
+    "mean": 33.0,
+    "low": 33.0,
+    "high": 33.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X3 Quick Steps to E4, and the computer chooses the rest": {
+    "mean": 33.0,
+    "low": 33.0,
+    "high": 33.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "the defence Pauses": {
+    "mean": 26.2,
+    "low": 23.4,
+    "high": 29.1,
+    "ends": {
+     "shot": 8
+    }
+   }
+  },
+  "the_computer_picks": "the computer's own pick",
+  "its_pick_in_words": [
+   "X4 Move to O6 facing N",
+   "X3 Move to C4 facing S"
+  ],
+  "it_reads": 21,
+  "best_by_play": "the computer's own pick",
+  "the_pick_against_the_best": {
+   "diff": 0.0,
+   "low": 0.0,
+   "high": 0.0
+  }
+ },
+ "closeout, step 2": {
+  "what": "After X3's Quick Step to E4, the offence has moved O2 to B8.",
+  "side": "X",
+  "lines": {
+   "the computer's own pick": {
+    "mean": 22.4,
+    "low": 20.2,
+    "high": 24.5,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X3 Moves next to him, then tries a Steal": {
+    "mean": 23.4,
+    "low": 21.2,
+    "high": 25.6,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X3 Moves next to him and stops": {
+    "mean": 24.0,
+    "low": 24.0,
+    "high": 24.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "the defence Pauses": {
+    "mean": 24.0,
+    "low": 24.0,
+    "high": 24.0,
+    "ends": {
+     "shot": 8
+    }
+   }
+  },
+  "the_computer_picks": "the computer's own pick",
+  "its_pick_in_words": [
+   "X3 Move to B4 facing S",
+   "X3 Steal"
+  ],
+  "it_reads": 23.8,
+  "best_by_play": "the computer's own pick",
+  "the_pick_against_the_best": {
+   "diff": 0.0,
+   "low": 0.0,
+   "high": 0.0
+  }
+ },
+ "game EB3F5B, the pass in the air": {
+  "what": "Your playtest: the pass to O4 in the corner is in the air. X4 is at F4.",
+  "side": "X",
+  "lines": {
+   "the computer's own pick": {
+    "mean": 28.0,
+    "low": 28.0,
+    "high": 28.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X4 Moves to C4, facing him": {
+    "mean": 28.0,
+    "low": 28.0,
+    "high": 28.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "X4 Quick Steps to E4": {
+    "mean": 27.0,
+    "low": 27.0,
+    "high": 27.0,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "the defence Pauses (the log)": {
+    "mean": 24.0,
+    "low": 24.0,
+    "high": 24.0,
+    "ends": {
+     "shot": 8
+    }
+   }
+  },
+  "the_computer_picks": "the computer's own pick",
+  "its_pick_in_words": [
+   "X5 Move to M3 facing N"
+  ],
+  "it_reads": 21,
+  "best_by_play": "the defence Pauses (the log)",
+  "the_pick_against_the_best": {
+   "diff": 4.0,
+   "low": 4.0,
+   "high": 4.0
+  }
+ }
+}

@@ -1158,6 +1158,28 @@ by that measure, not by a defender's square at a phase's start. · Source: Shaun
 list of engine words a player never reads (`playmaker_engine/plain.py`): it was an engine word then; it is the
 designer's own name for the map now. · Source: Shaun, 16 Nov 2026 · **Ruled; built in step 18s, stop two.**
 
+**D-203. The heat map is fixed first and turned on for both sides, no matter what.** Shaun: "We fix the heat map first
+and turn it on for both offense and defence, no matter what. It needs to account for the offence and defence's ability
+to move and rotate arrows where applicable. It needs to map out gaps in the defence's coverage and when only one
+defender can defend potential threats from multiple offensive players, it rates that highly." The map is on by default
+for both sides at the end of step 20, whatever its checks say. Exam position 15, and any other check the map fails,
+becomes an expected failure with the reason "Shaun, 17 Nov: the map is on; judged by his playtest". Every failure is
+reported plainly. The speed budget stays waived (D-200); no rule or card value changes (D-190). · Source: Shaun, 17 Nov
+2026 · **Ruled; built in step 20.**
+
+**D-204. Each side's logic is the lasting gap.** Shaun: "Once we fix the whole phase assessment and logic of the heat map
+the logic for each team falls out fidelity wise. Something like, the offence attempts to produce lasting gaps in the
+defence's coverage such that no defender can cover a valuable scoring square, or one defender has to cover multiple
+squares accessible to multiple offensive players. Conversely, the defence is trying to limit those scenarios as much as
+possible, and if it has to allow such squares and scenarios to exist, it will aim to leave the lowest possible value
+ones." The lasting gap is what the offence can still force after the defence's best answer: the best open threat, or the
+threat an overloaded defender must leave, whichever is higher. It is the defence's strength (D-201): lower is stronger.
+Nothing else is added to either side's logic (D-156). · Source: Shaun, 17 Nov 2026 · **Ruled; built in step 20.**
+
+**D-205. Shaun's playtest is the gate, not the data.** Shaun: "Once we fix that system, we turn it on (I don't care if the
+data suggests failures), and I test it to see if it plays more like real basketball." · Source: Shaun, 17 Nov 2026 ·
+**Ruled.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

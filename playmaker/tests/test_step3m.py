@@ -502,6 +502,7 @@ EXAM_OPEN = {
     2: 'step 3n: a speed problem: it passes at fixed depth 4 (docs/runs/3n/3n_exam_fixed4.json) and fails within the Python budget',
     14: 'step 3n: on the rebuilt phase table one first action reaches 80% (at fixed depth 4, 100%): the noise and the '
         'variety margin are smaller than the value gaps (docs/reports/STEP3N_REPORT.md, exam B)',
+    15: 'Shaun, 17 Nov: the map is on; judged by his playtest (D-203)',
 }
 
 
