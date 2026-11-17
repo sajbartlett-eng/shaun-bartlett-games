@@ -105,7 +105,8 @@ async function keyboardOrder(page, n) {
     await step(S('13_table_start'), 'The table at tip-off (hot seat)', async () => { await page.goto(`${base}/?code=${g.code}&token=${g.token}`); await page.waitForTimeout(1200); await shot(page, S('13_table_start'), 'The table at tip-off (hot seat)'); });
     await step(S('14_piece_selected'), 'A piece selected: its actions', async () => { await page.click('g.piece[aria-label^="O1,"]'); await page.waitForTimeout(500); await shot(page, S('14_piece_selected'), 'A piece selected: its actions'); });
     await step(S('15_pass_choice'), 'Choosing a pass: the pass chips', async () => {
-      const pb = await page.$('#kindButtons button:has-text("Pass")'); if (!pb) throw new Error('no Pass button'); await pb.click(); await page.waitForTimeout(500); await shot(page, S('15_pass_choice'), 'Choosing a pass: the pass chips'); });
+      const pb = await page.$('#kindButtons button:has-text("Pass")') || await page.$('#enderList button[data-act="Pass to O2"]');   // step 19: the pass is in the actions list
+      if (!pb) throw new Error('no Pass button'); await pb.click(); await page.waitForTimeout(500); await shot(page, S('15_pass_choice'), 'Choosing a pass: the pass chips'); });
     await step(S('16_coverage'), 'Coverage: shown', async () => { const gc = await post('/api/new', { mode: 'hotseat', match_format: 'digital', teams: ['Five Out', 'High-Low'], seed: 3, level: 'pro', full: true, per_side: 4 }); await post('/api/place', { code: gc.code, token: gc.token, preview: true }); await page.goto(`${base}/?code=${gc.code}&token=${gc.token}`); await page.waitForTimeout(1200); await shot(page, S('16a_digital_table'), 'A digital match, coverage hidden'); await page.click('#covToggle', { timeout: 8000 }); await page.waitForTimeout(2500); await shot(page, S('16_coverage'), 'Coverage: shown'); });
     if (tag === 'phone') {
       for (const t of ['off', 'def', 'cards', 'log']) {
