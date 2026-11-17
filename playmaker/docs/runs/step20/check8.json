@@ -1,0 +1,98 @@
+{
+ "Shaun's board, the offence's first turn": {
+  "side": "O",
+  "strength_at_the_start": 24,
+  "lines": {
+   "the computer's pick": {
+    "turn": [
+     "O1 Pass to O3"
+    ],
+    "reads": 22,
+    "strength_left": 24,
+    "mean": 24.5,
+    "low": 22.8,
+    "high": 26.2,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "its last choice": {
+    "turn": [
+     "O3 Sprint to L6",
+     "O2 Move to D9"
+    ],
+    "reads": 18,
+    "strength_left": null,
+    "mean": 24.9,
+    "low": 24.2,
+    "high": 25.6,
+    "ends": {
+     "shot": 8
+    },
+    "the_pick_less_this": {
+     "diff": -0.4,
+     "low": -2.3,
+     "high": 1.5
+    }
+   }
+  }
+ },
+ "Shaun's board, the defence's first turn": {
+  "side": "X",
+  "strength_at_the_start": 24,
+  "lines": {
+   "the computer's pick": {
+    "turn": [
+     "X4 Move to B3 facing N",
+     "X1 Move to K10 facing E"
+    ],
+    "reads": 24,
+    "strength_left": 24,
+    "mean": 26.5,
+    "low": 25.5,
+    "high": 27.5,
+    "ends": {
+     "shot": 8
+    }
+   },
+   "the turn that leaves the defence weakest": {
+    "turn": [
+     "X1 Quick Step to L8",
+     "X4 Move to B3 facing N"
+    ],
+    "reads": 26,
+    "strength_left": 26,
+    "mean": 29.0,
+    "low": 28.3,
+    "high": 29.7,
+    "ends": {
+     "shot": 8
+    },
+    "the_pick_less_this": {
+     "diff": -2.5,
+     "low": -3.5,
+     "high": -1.5
+    }
+   },
+   "its last choice": {
+    "turn": [
+     "X4 Move to C3 facing N",
+     "X Pause"
+    ],
+    "reads": 34,
+    "strength_left": null,
+    "mean": 24.0,
+    "low": 24.0,
+    "high": 24.0,
+    "ends": {
+     "shot": 8
+    },
+    "the_pick_less_this": {
+     "diff": 2.5,
+     "low": 1.5,
+     "high": 3.5
+    }
+   }
+  }
+ }
+}
