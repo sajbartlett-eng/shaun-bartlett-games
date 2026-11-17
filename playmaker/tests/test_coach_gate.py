@@ -17,7 +17,7 @@ const base = process.argv[2];
   for (const level of ['learn', 'pro', 'scout']) {
     const p = await b.newPage({ viewport: { width: 1380, height: 1000 } });
     await p.goto(base + '/'); await p.waitForTimeout(400);
-    await p.click('button.path[data-path=computer]'); await p.waitForTimeout(200);
+    await p.click('button.path[data-path=computer]'); await p.waitForTimeout(200); await p.click('#advanced summary'); await p.waitForTimeout(150);   /* step 19: the options sit under Advanced settings */
     await p.selectOption('#kind', 'single'); await p.selectOption('#level', level);
     await p.evaluate(() => { document.getElementById('seed').value = '11'; });
     await p.click('#create'); await p.waitForTimeout(1200);

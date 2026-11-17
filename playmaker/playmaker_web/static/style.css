@@ -415,3 +415,14 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .phaseassess h4, .possassess h4 { margin: 6px 0 2px; font-size: 15px; }
 .phaseassess ul, .possassess ul { margin: 2px 0; padding-left: 20px; }
 .nextline { font-weight: 600; }
+
+/* ---- step 19, stage 4: the home screen ---- */
+.setupsummary { font-size: 16px; margin: 4px 0 10px; }
+#frontRows:empty { display: none; }
+#frontRows { margin: 6px 0; }
+.advanced { margin-top: 14px; border-top: 1.5px dashed var(--line); padding-top: 8px; }
+.advanced > summary { cursor: pointer; font-family: var(--marker); font-size: 18px; min-height: 44px; display: flex; align-items: center; }
+.joinbox { margin-top: 14px; border-top: 1.5px dashed var(--line); padding-top: 6px; }
+.startlinks { margin-top: 16px; }
+.start .paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+

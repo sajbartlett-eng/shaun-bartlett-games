@@ -17,14 +17,18 @@
   <div id="startCoach"></div>
   <div id="resumeRow"></div>
   <nav class="paths" aria-label="How do you want to play?">
-    <button class="path" data-path="learn"><span class="path-title">Learn the rules</span><span class="path-sub">A guided course with Coach Vision: ten minutes, with the whiteboard.</span></button>
-    <button class="path" data-path="computer"><span class="path-title">Play the computer</span><span class="path-sub">Two possessions, sides swap. Rookie to practise your reads, All-Star for the full test.</span></button>
-    <button class="path" data-path="friend"><span class="path-title">Play a friend</span><span class="path-sub">Across one screen, or two browsers with a code.</span></button>
-    <button class="path" data-path="scenario"><span class="path-title">Scenario cards</span><span class="path-sub">Sixteen set pieces: one possession each, with a goal to hit.</span></button>
+    <button class="path" data-path="computer"><span class="path-title">Play the computer</span><span class="path-sub">A match against the computer, ready in one tap.</span></button>
+    <button class="path" data-path="friend"><span class="path-title">Play a friend</span><span class="path-sub">On this screen, or two browsers with a code.</span></button>
+    <button class="path" data-path="watch"><span class="path-title">Watch the computer</span><span class="path-sub">See both sides set up and play, and keep the reports.</span></button>
+    <button class="path" data-path="scenario"><span class="path-title">Scenario cards</span><span class="path-sub">Set pieces: one possession, one goal.</span></button>
   </nav>
-  <div class="startgrid">
-    <section id="setup" class="setup hidden" aria-live="polite">
-      <h2 id="setupTitle">Set up the game</h2>
+  <section id="setup" class="setup hidden" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Set up the game</h2>
+    <p id="setupSummary" class="setupsummary" role="status"></p>
+    <div id="frontRows"></div>
+    <button id="create" class="primary big">Start</button>
+    <details id="advanced" class="advanced">
+      <summary>Advanced settings</summary>
       <label>Play <select id="kind">
         <option value="full">A match: sides swap every possession</option>
         <option value="scenario">Scenario card</option>
@@ -96,8 +100,6 @@
         <option value="pro">Pro: cards only</option>
       </select></label>
       <p class="note" id="levelNote"></p>
-      <details class="more">
-        <summary>More options: the decision timer, the dice seed, the computer by side</summary>
         <fieldset><legend>Decision timer (optional)</legend>
           <label>Seconds per decision <select id="timerA"><option value="">Off</option><option value="60">60</option><option value="45">45</option><option value="30">30</option></select></label>
           <p class="note">Each full period without an action costs the acting side 1 token. Selecting an action gives 15 seconds to finish it. Hot-seat: a Ready screen at each handover.</p>
@@ -113,22 +115,16 @@
           <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
           <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
         </fieldset>
-      </details>
-      <button id="create" class="primary big">Start</button>
-    </section>
-    <section id="playersBox">
-      <h2>Players</h2>
-      <p class="note">Profiles, results, head to head and the trainer live in this browser. Export them to keep a copy or move them to another device.</p>
-      <button type="button" id="playersBtn2">Open players and records</button>
-    </section>
-    <section id="joinBox">
-      <h2>Join a remote game</h2>
+    </details>
+    <section id="joinBox" class="joinbox hidden">
+      <h3>Join a game with a code</h3>
       <label>Code <input id="joinCode" maxlength="6" placeholder="ABC123"></label>
       <label>Seat <select id="joinSeat"><option value="O">Offence</option><option value="X">Defence</option></select></label>
       <button id="join">Join</button>
       <p class="note">The player who starts a remote game picks a seat too; the code appears at the top of the table.</p>
     </section>
-  </div>
+  </section>
+  <p class="note small startlinks"><button type="button" class="linkbtn" id="playersBtn2">Players and records</button> · <button type="button" class="linkbtn" id="rulesBtn">Rules, step by step</button></p>
   <p class="note small">The rules engine decides every rule. This page only shows the table and sends the action you choose.</p>
 </main>
 <div id="course" class="hidden"></div>

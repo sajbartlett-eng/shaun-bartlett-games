@@ -83,7 +83,7 @@ async function scan(page) {
   await ph.evaluate(() => document.querySelectorAll('#modal details').forEach(d => { d.open = true; }));
   out['scout report'] = await scan(ph);
   await ph.goto(base + '/'); await ph.waitForTimeout(500);
-  await ph.click('button.path[data-path=friend]'); await ph.waitForTimeout(300);
+  await ph.click('button.path[data-path=friend]'); await ph.waitForTimeout(300); await ph.click('#advanced summary'); await ph.waitForTimeout(150);   /* step 19: the options sit under Advanced settings */
   await ph.selectOption('#age', 'junior'); await ph.selectOption('#roster', 'free'); await ph.waitForTimeout(600);
   out['team builder'] = await scan(ph);
   console.log(JSON.stringify(out));

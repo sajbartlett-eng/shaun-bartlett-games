@@ -456,7 +456,7 @@ const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'Content-
   // the new-game screen with the two dials
   let p = await page();
   await p.goto(base + '/'); await p.waitForTimeout(600);
-  await p.click('button.path[data-path=computer]'); await p.waitForTimeout(300);
+  await p.click('button.path[data-path=computer]'); await p.waitForTimeout(300); await p.click('#advanced summary'); await p.waitForTimeout(150);   /* step 19: the options sit under Advanced settings */
   await p.selectOption('#age', 'junior'); await p.selectOption('#standard', 'semi_pro'); await p.waitForTimeout(200);
   res.ageNote = await p.textContent('#ageNote'); res.standardNote = await p.textContent('#standardNote');
   res.aiLabel = await p.textContent('#aiRow label');

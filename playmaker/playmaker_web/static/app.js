@@ -120,8 +120,12 @@ async function initStart() {
 // ---------------------------------------------------------------- the paths: learn, the computer, a friend, a card
 let path = null;
 function initPaths(showKind) {
-  const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Take the course and I'll walk you through the whiteboard, the rules and how to read a matchup. Otherwise pick a game.", { speak: false, live: false });
+  const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Play the computer: your first game teaches you as you go.", { speak: false, live: false });
   $('startCoach').append(greet);
+  if ($('rulesBtn')) $('rulesBtn').onclick = () => startCourse(showKind);      // step 19: the old course, from help
+
+  for (const id of ['kind', 'format', 'perSide', 'age', 'standard', 'roster', 'teamA', 'teamB', 'aiLevel', 'aiSeat', 'level', 'mode', 'aiO', 'aiX', 'scenario'])
+    if ($(id)) $(id).addEventListener('change', setupSummary);
   document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
   let done = false, saved = null; try { done = localStorage.getItem('pm_course_done') === '1'; saved = JSON.parse(localStorage.getItem('pm_game') || 'null'); } catch (e) { /* ignore */ }
   if (saved && saved.code) $('resumeRow').append(el('button', { text: `Resume the last game (${saved.code})`, onclick: async () => {
@@ -133,12 +137,52 @@ if ($('rollFirst')) $('rollFirst').addEventListener('click', () => {
   let a, b; do { a = 1 + Math.floor(Math.random() * 20); b = 1 + Math.floor(Math.random() * 20); } while (a === b);
   $('rollResult').textContent = `Rolled ${a} and ${b}: the ${a > b ? 'first' : 'second'} roller attacks first and is player A, on the offence tracker.`;
 });
+// step 19, stage 4: each choice starts from good defaults with one Start button; the rest sits under Advanced settings.
+// The rows a choice needs up front move above the fold, and go back to their place under it for the other choices.
+const FRONT = { computer: [], friend: ['modeRow'], watch: [], scenario: ['scenarioRow', 'scenarioText'] };
+const HOME = {};
+function frontRows(which) {
+  for (const id of Object.values(FRONT).flat()) {
+    const n = $(id); if (!n) continue;
+    if (!HOME[id]) { HOME[id] = document.createComment(id); n.parentNode.insertBefore(HOME[id], n); }
+    HOME[id].parentNode.insertBefore(n, HOME[id].nextSibling);
+  }
+  for (const id of FRONT[which] || []) if ($(id)) $('frontRows').append($(id));
+}
+function defaultsFor(which) {
+  const set = (id, v) => { if ($(id) && $(id).querySelector(`option[value="${v}"]`)) $(id).value = v; };
+  if (which === 'scenario') { set('kind', 'scenario'); set('aiLevel', 'rookie'); return; }
+  set('kind', 'full'); set('format', 'digital'); set('perSide', '4');            // a digital match, four possessions each
+  set('age', 'senior'); set('standard', 'pro'); set('roster', 'prescribed');      // senior pro, the prescribed teams
+  if (OPTS) { set('teamA', OPTS.first_game[0]); set('teamB', OPTS.first_game[1]); }
+  set('level', 'scout');                                                          // the Scout level: the call, then the report
+  if (which === 'computer') { set('aiLevel', 'rookie'); set('aiSeat', 'O'); }    // the Rookie computer; you attack first
+  if (which === 'friend') set('mode', 'hotseat');                                 // one screen
+  if (which === 'watch') { set('aiO', 'allstar'); set('aiX', 'allstar'); set('level', 'pro'); }   // both All-Star; no scouting calls to make
+  for (const id of ['format', 'roster', 'age', 'standard']) if ($(id)) $(id).dispatchEvent(new Event('change'));
+}
+function setupSummary() {
+  const box = $('setupSummary'); if (!box || !path) return;
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', '': 'no' };
+  const txt = sel => { const o = $(sel) && $(sel).selectedOptions[0]; return o ? o.textContent : ''; };
+  const teams = $('roster').value === 'prescribed' ? `${$('teamA').value} v ${$('teamB').value}` : txt('roster').toLowerCase();
+  const match = $('kind').value === 'full' ? ($('format').value === 'digital' ? `A match of ${$('perSide').value} possessions each` : 'A tabletop match, one possession each') : 'One possession';
+  const level = { learn: 'Learn level: the full scout report first.', scout: 'Scout level: make your call, then see the report.', pro: 'Pro level: the cards only.' }[$('level').value] || '';
+  const std = `${txt('age').split(' (')[0]} ${STD_NAME[$('standard').value] || ''}`.trim();
+  box.textContent = path === 'computer' ? `${match}, ${std}, ${teams}, against the ${LV[$('aiLevel').value]} computer. You attack ${$('aiSeat').value === 'O' ? 'first' : 'second'}. ${level}`
+    : path === 'friend' ? `${match}, ${std}, ${teams}, ${$('mode').value === 'remote' ? 'in two browsers, joined by a code' : 'on this screen'}. ${level}`
+    : path === 'watch' ? `${match}, ${std}, ${teams}: the ${LV[$('aiO').value] || 'All-Star'} computer against the ${LV[$('aiX').value] || 'All-Star'} computer. Play, pause or step through it, and download each possession's report.`
+    : `${$('aiLevel').value ? `The ${LV[$('aiLevel').value]} computer defends; you attack.` : 'Two players: one attacks, one defends.'} Hit the card's goal in one possession.`;
+}
 function choosePath(which, showKind, quiet) {
   path = which;
   document.querySelectorAll('button.path').forEach(b => b.setAttribute('aria-pressed', b.dataset.path === which ? 'true' : 'false'));
   if (which === 'learn') { startCourse(showKind); return; }
   $('setup').classList.remove('hidden');
-  const scenario = which === 'scenario', computer = which === 'computer';
+  const scenario = which === 'scenario', computer = which === 'computer', watch = which === 'watch';
+  frontRows(which);
+  defaultsFor(which);
+  $('joinBox').classList.toggle('hidden', which !== 'friend');
   $('kind').value = scenario ? 'scenario' : 'full';
   $('aiRow').classList.toggle('hidden', !computer && !scenario);
   $('aiSeatRow').classList.toggle('hidden', !computer);
@@ -158,9 +202,11 @@ function choosePath(which, showKind, quiet) {
   } catch (e) { /* private mode */ }
   if (scenario && !$('aiLevel').querySelector('option[value=""]')) $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild);
   if (!scenario) { const none = $('aiLevel').querySelector('option[value=""]'); if (none) none.remove(); }
-  $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
+  $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : watch ? 'Watch the computer' : 'Pick a scenario card';
+  $('modeRow').classList.toggle('hidden', which !== 'friend');
   showKind();
-  if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = $('setup').querySelector('select'); if (f) f.focus({ preventScroll: true }); }
+  setupSummary();
+  if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = scenario ? $('scenario') : $('create'); if (f) f.focus({ preventScroll: true }); }
 }
 function startCourse(showKind) {
   const box = $('course'); box.classList.remove('hidden');
@@ -368,6 +414,9 @@ async function create() {
     body.ai = { [me === 'O' ? 'B' : 'A']: $('aiLevel').value };
   } else if (path === 'scenario' && $('aiLevel').value) {
     body.ai = { X: $('aiLevel').value };               // on a card the human attacks; the computer defends
+  } else if (path === 'watch') {
+    body.ai = { O: $('aiO').value || 'allstar', X: $('aiX').value || 'allstar' };     // step 19, stage 6: both sides
+    body.place = true;                                 // the computer sets up both sides: shown as its own step
   }
   if ($('seed').value) body.seed = Number($('seed').value);
   try { localStorage.setItem('pm_setup', JSON.stringify({ aiLevel: $('aiLevel').value, aiSeat: $('aiSeat').value, level: $('level').value })); } catch (e) { /* ignore */ }
