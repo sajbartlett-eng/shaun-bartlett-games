@@ -43,7 +43,7 @@
   {
    "turn": "A move and a pass (O2 moves, then O1 passes to him)",
    "taps": 6,
-   "seconds": 4.3,
+   "seconds": 4.2,
    "scrolls": 2,
    "played": true,
    "detail": [
@@ -93,9 +93,9 @@
       109,
       44
      ],
-     "dist": 362,
+     "dist": 350,
      "scrolled": true,
-     "seconds": 1.68
+     "seconds": 1.67
     },
     {
      "sel": "#enderList button[data-act=\"Pass to O2\"]",
@@ -103,9 +103,9 @@
       109,
       44
      ],
-     "dist": 7,
+     "dist": 3,
      "scrolled": false,
-     "seconds": 0.23
+     "seconds": 0.21
     }
    ]
   },
@@ -132,9 +132,9 @@
       187,
       44
      ],
-     "dist": 222,
+     "dist": 279,
      "scrolled": true,
-     "seconds": 1.59
+     "seconds": 1.63
     },
     {
      "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
@@ -142,16 +142,16 @@
       187,
       44
      ],
-     "dist": 7,
+     "dist": 3,
      "scrolled": false,
-     "seconds": 0.23
+     "seconds": 0.21
     }
    ]
   },
   {
    "turn": "A shot (O1, who has stepped into the three-point zone)",
    "taps": 3,
-   "seconds": 2.2,
+   "seconds": 2.1,
    "scrolls": 1,
    "played": true,
    "detail": [
@@ -171,7 +171,7 @@
       110,
       44
      ],
-     "dist": 313,
+     "dist": 307,
      "scrolled": true,
      "seconds": 1.65
     },
@@ -181,9 +181,9 @@
       110,
       44
      ],
-     "dist": 31,
+     "dist": 27,
      "scrolled": false,
-     "seconds": 0.31
+     "seconds": 0.3
     }
    ]
   },
@@ -270,8 +270,8 @@
   {
    "turn": "A move and a pass (O2 moves, then O1 passes to him)",
    "taps": 6,
-   "seconds": 4.5,
-   "scrolls": 2,
+   "seconds": 3.7,
+   "scrolls": 1,
    "played": true,
    "detail": [
     {
@@ -310,9 +310,9 @@
       21,
       20
      ],
-     "dist": 170,
-     "scrolled": true,
-     "seconds": 1.69
+     "dist": 255,
+     "scrolled": false,
+     "seconds": 0.77
     },
     {
      "sel": "#enderList button[data-act=\"Pass to O2\"]",
@@ -320,9 +320,9 @@
       109,
       44
      ],
-     "dist": 105,
+     "dist": 225,
      "scrolled": true,
-     "seconds": 1.46
+     "seconds": 1.59
     },
     {
      "sel": "#enderList button[data-act=\"Pass to O2\"]",
@@ -330,7 +330,7 @@
       109,
       44
      ],
-     "dist": 189,
+     "dist": 193,
      "scrolled": false,
      "seconds": 0.56
     }
@@ -339,7 +339,7 @@
   {
    "turn": "A screen (O4, the T to the north)",
    "taps": 3,
-   "seconds": 2.4,
+   "seconds": 2.3,
    "scrolls": 1,
    "played": true,
    "detail": [
@@ -359,9 +359,9 @@
       187,
       44
      ],
-     "dist": 265,
+     "dist": 171,
      "scrolled": true,
-     "seconds": 1.62
+     "seconds": 1.54
     },
     {
      "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
@@ -369,7 +369,7 @@
       187,
       44
      ],
-     "dist": 212,
+     "dist": 216,
      "scrolled": false,
      "seconds": 0.58
     }
@@ -378,7 +378,7 @@
   {
    "turn": "A shot (O1, who has stepped into the three-point zone)",
    "taps": 3,
-   "seconds": 2.3,
+   "seconds": 2.2,
    "scrolls": 1,
    "played": true,
    "detail": [
@@ -398,9 +398,9 @@
       110,
       44
      ],
-     "dist": 142,
+     "dist": 89,
      "scrolled": true,
-     "seconds": 1.51
+     "seconds": 1.44
     },
     {
      "sel": "#enderList button[data-act=\"Shot: three\"]",
@@ -408,9 +408,9 @@
       110,
       44
      ],
-     "dist": 185,
+     "dist": 231,
      "scrolled": false,
-     "seconds": 0.56
+     "seconds": 0.6
     }
    ]
   },

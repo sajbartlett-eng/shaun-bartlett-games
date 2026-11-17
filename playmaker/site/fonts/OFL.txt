@@ -1,0 +1,4 @@
+Kalam (https://fonts.google.com/specimen/Kalam), by the Indian Type Foundry.
+Licensed under the SIL Open Font License, Version 1.1: https://openfontlicense.org
+The two files here are the Latin subsets (400 and 700) as Google Fonts serves them, kept with the app so the
+handwriting headings work offline (step 19).

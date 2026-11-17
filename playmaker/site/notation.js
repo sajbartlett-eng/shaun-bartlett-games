@@ -63,7 +63,7 @@ window.PMNotation = (function () {
     for (let y = 1; y <= 14; y++) {
       for (let x = 0; x < 17; x++) {
         const z = zones[y - 1][x];
-        g.append(svg('rect', { class: 'cell', x: px(x), y: py(y), width: S, height: S, fill: WASH[z], stroke: 'rgba(60,55,45,0.18)', 'stroke-width': 0.8 }));
+        g.append(svg('rect', { class: 'cell', x: px(x), y: py(y), width: S, height: S, fill: opts.nowash ? BOARD : WASH[z], stroke: 'rgba(60,55,45,0.18)', 'stroke-width': 0.8 }));
         if (ZLBL[z] && !opts.plain) g.append(svg('text', { class: 'zonelbl', x: px(x) + 2.5, y: py(y) + 10 }, ZLBL[z]));
       }
     }

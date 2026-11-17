@@ -1,0 +1,10917 @@
+{
+ "laptop_01_start": {
+  "note": "First screen: the four ways in",
+  "file": "screens/laptop_01_start.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "16": 93,
+   "17": 21,
+   "20": 62,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 3,
+  "wordsOnScreen": 100,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_02_path_learn": {
+  "note": "Learn the rules: the guided course, first card",
+  "file": "screens/laptop_02_path_learn.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 305,
+   "12": 5,
+   "13": 192,
+   "14": 205,
+   "15": 30,
+   "16": 407,
+   "17": 21,
+   "20": 62,
+   "24": 17,
+   "30": 9
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "1"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "2"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "3"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "4"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "5"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "1"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "2"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "3"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 67,
+    "h": 40,
+    "name": "Back"
+   },
+   {
+    "w": 140,
+    "h": 40,
+    "name": "Next"
+   },
+   {
+    "w": 142,
+    "h": 40,
+    "name": "Skip the course"
+   }
+  ],
+  "smallTargetCount": 16,
+  "wordsOnScreen": 347,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_03_path_computer": {
+  "note": "Play the computer: set-up",
+  "file": "screens/laptop_03_path_computer.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1338,
+   "16": 413,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 17,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 637,
+    "h": 35,
+    "name": "Rookie: makes beginner mistakes you can learn to s"
+   },
+   {
+    "w": 296,
+    "h": 35,
+    "name": "offence (the computer defends first)defence (the c"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 26,
+  "wordsOnScreen": 148,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_04_path_friend": {
+  "note": "Play a friend: set-up",
+  "file": "screens/laptop_04_path_friend.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1390,
+   "16": 328,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 239,
+    "h": 36,
+    "name": "Roll the d20 for who attacks first"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "joinCode"
+   },
+   {
+    "w": 98,
+    "h": 35,
+    "name": "OffenceDefence"
+   },
+   {
+    "w": 62,
+    "h": 40,
+    "name": "Join"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 30,
+  "wordsOnScreen": 173,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 978
+ },
+ "laptop_05_path_scenario": {
+  "note": "Scenario cards: set-up",
+  "file": "screens/laptop_05_path_scenario.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 910,
+   "16": 240,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 20,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 405,
+    "h": 35,
+    "name": "1. Baseline Box (INBOUNDS, clock 8)2. Baseline Sta"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 637,
+    "h": 35,
+    "name": "nobody: two playersRookie: makes beginner mistakes"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 17,
+  "wordsOnScreen": 257,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_05b_path_watch": {
+  "note": "Watch the computer: set-up",
+  "file": "screens/laptop_05b_path_watch.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1461,
+   "16": 416,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 18,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 93,
+    "h": 33,
+    "name": "batchN"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 25,
+  "wordsOnScreen": 136,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_06_course_later": {
+  "note": "The guided course, a few cards in",
+  "file": "screens/laptop_06_course_later.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 308,
+   "12": 5,
+   "13": 192,
+   "14": 205,
+   "15": 30,
+   "16": 758,
+   "17": 21,
+   "20": 62,
+   "24": 23,
+   "30": 9
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "1"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "2"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "3"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "4"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "5"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "1"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "2"
+   },
+   {
+    "w": 36,
+    "h": 36,
+    "name": "3"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 36,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 67,
+    "h": 40,
+    "name": "Back"
+   },
+   {
+    "w": 140,
+    "h": 40,
+    "name": "Next"
+   },
+   {
+    "w": 142,
+    "h": 40,
+    "name": "Skip the course"
+   }
+  ],
+  "smallTargetCount": 16,
+  "wordsOnScreen": 415,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_07_players": {
+  "note": "Players, records and the trainer",
+  "file": "screens/laptop_07_players.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1567,
+   "16": 413,
+   "17": 50,
+   "18": 22,
+   "20": 62,
+   "21": 36,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 637,
+    "h": 35,
+    "name": "Rookie: makes beginner mistakes you can learn to s"
+   },
+   {
+    "w": 296,
+    "h": 35,
+    "name": "offence (the computer defends first)defence (the c"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   },
+   {
+    "w": 246,
+    "h": 40,
+    "name": "Practise for the tabletop game"
+   },
+   {
+    "w": 112,
+    "h": 40,
+    "name": "New player"
+   },
+   {
+    "w": 137,
+    "h": 40,
+    "name": "Export records"
+   },
+   {
+    "w": 253,
+    "h": 21,
+    "name": "Records file to import"
+   },
+   {
+    "w": 248,
+    "h": 40,
+    "name": "Import (replace these records)"
+   },
+   {
+    "w": 72,
+    "h": 40,
+    "name": "Close"
+   }
+  ],
+  "smallTargetCount": 32,
+  "wordsOnScreen": 192,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "laptop_08_levels": {
+  "note": "Levels and rosters, in short",
+  "file": "screens/laptop_08_levels.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 3756,
+   "16": 328,
+   "17": 99,
+   "18": 22,
+   "20": 62,
+   "21": 31,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 166,
+    "h": 35,
+    "name": "Pace and SpaceIron WallTwin TowersRun and GunBall "
+   },
+   {
+    "w": 239,
+    "h": 36,
+    "name": "Roll the d20 for who attacks first"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "joinCode"
+   },
+   {
+    "w": 98,
+    "h": 35,
+    "name": "OffenceDefence"
+   },
+   {
+    "w": 62,
+    "h": 40,
+    "name": "Join"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   },
+   {
+    "w": 241,
+    "h": 19,
+    "name": "The full playing levels sheet (PDF)"
+   },
+   {
+    "w": 72,
+    "h": 40,
+    "name": "Close"
+   }
+  ],
+  "smallTargetCount": 32,
+  "wordsOnScreen": 1021,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2343
+ },
+ "laptop_9_roster_build": {
+  "note": "Team builder (rules on)",
+  "file": "screens/laptop_9_roster_build.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1756,
+   "16": 336,
+   "17": 62,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "handicap"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "bName0"
+   },
+   {
+    "w": 255,
+    "h": 35,
+    "name": "Start from a prescribed team…Pace and SpaceIron Wa"
+   },
+   {
+    "w": 377,
+    "h": 35,
+    "name": "Attacking Point Guard (A)Attacking Point Guard (B)"
+   },
+   {
+    "w": 372,
+    "h": 35,
+    "name": "Two-Way Shooting Guard (A)Two-Way Shooting Guard ("
+   },
+   {
+    "w": 380,
+    "h": 35,
+    "name": "Two-Way Small Forward (A)Two-Way Small Forward (B)"
+   },
+   {
+    "w": 373,
+    "h": 35,
+    "name": "Defensive Power Forward (A)Defensive Power Forward"
+   },
+   {
+    "w": 377,
+    "h": 35,
+    "name": "Rim Protector Centre (A)Rim Protector Centre (B)Ri"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "bName1"
+   },
+   {
+    "w": 255,
+    "h": 35,
+    "name": "Start from a prescribed team…Pace and SpaceIron Wa"
+   },
+   {
+    "w": 377,
+    "h": 35,
+    "name": "Attacking Point Guard (A)Attacking Point Guard (B)"
+   },
+   {
+    "w": 372,
+    "h": 35,
+    "name": "Two-Way Shooting Guard (A)Two-Way Shooting Guard ("
+   },
+   {
+    "w": 380,
+    "h": 35,
+    "name": "Two-Way Small Forward (A)Two-Way Small Forward (B)"
+   },
+   {
+    "w": 373,
+    "h": 35,
+    "name": "Defensive Power Forward (A)Defensive Power Forward"
+   },
+   {
+    "w": 377,
+    "h": 35,
+    "name": "Rim Protector Centre (A)Rim Protector Centre (B)Ri"
+   },
+   {
+    "w": 239,
+    "h": 36,
+    "name": "Roll the d20 for who attacks first"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "joinCode"
+   },
+   {
+    "w": 98,
+    "h": 35,
+    "name": "OffenceDefence"
+   },
+   {
+    "w": 62,
+    "h": 40,
+    "name": "Join"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 43,
+  "wordsOnScreen": 3370,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2946
+ },
+ "laptop_10_roster_random": {
+  "note": "Random deal",
+  "file": "screens/laptop_10_roster_random.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1455,
+   "16": 320,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 167,
+    "h": 35,
+    "name": "both teamsyour team onlythe opponent only"
+   },
+   {
+    "w": 588,
+    "h": 35,
+    "name": "Coherent: every team has a creator, two shooters, "
+   },
+   {
+    "w": 64,
+    "h": 40,
+    "name": "Deal"
+   },
+   {
+    "w": 129,
+    "h": 40,
+    "name": "Challenge me"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "dealCode"
+   },
+   {
+    "w": 170,
+    "h": 40,
+    "name": "Deal from this code"
+   },
+   {
+    "w": 239,
+    "h": 36,
+    "name": "Roll the d20 for who attacks first"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "joinCode"
+   },
+   {
+    "w": 98,
+    "h": 35,
+    "name": "OffenceDefence"
+   },
+   {
+    "w": 62,
+    "h": 40,
+    "name": "Join"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 34,
+  "wordsOnScreen": 559,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2552
+ },
+ "laptop_11_roster_draft": {
+  "note": "Draft set-up",
+  "file": "screens/laptop_11_roster_draft.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1555,
+   "16": 314,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "handicap"
+   },
+   {
+    "w": 130,
+    "h": 40,
+    "name": "Start the draft"
+   },
+   {
+    "w": 239,
+    "h": 36,
+    "name": "Roll the d20 for who attacks first"
+   },
+   {
+    "w": 442,
+    "h": 35,
+    "name": "Learn: the full scout report before tip-off\n      "
+   },
+   {
+    "w": 60,
+    "h": 35,
+    "name": "Off604530"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "timerSound"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "seed"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 92,
+    "h": 35,
+    "name": "NoRookieStarterAll-Star"
+   },
+   {
+    "w": 258,
+    "h": 33,
+    "name": "joinCode"
+   },
+   {
+    "w": 98,
+    "h": 35,
+    "name": "OffenceDefence"
+   },
+   {
+    "w": 62,
+    "h": 40,
+    "name": "Join"
+   },
+   {
+    "w": 117,
+    "h": 18,
+    "name": "Players and records"
+   },
+   {
+    "w": 112,
+    "h": 18,
+    "name": "Rules, step by step"
+   },
+   {
+    "w": 89,
+    "h": 18,
+    "name": "Tips in play: on"
+   }
+  ],
+  "smallTargetCount": 30,
+  "wordsOnScreen": 552,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2402
+ },
+ "laptop_12_draft_board": {
+  "note": "The draft board",
+  "file": "screens/laptop_12_draft_board.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 3551,
+   "15": 3685,
+   "16": 368,
+   "17": 64,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 292,
+    "h": 35,
+    "name": "Hot-seat: two players, this screen\n        Remote:"
+   },
+   {
+    "w": 98,
+    "h": 42,
+    "name": "Start"
+   },
+   {
+    "w": 313,
+    "h": 35,
+    "name": "A match: sides swap every possession\n        Scena"
+   },
+   {
+    "w": 420,
+    "h": 35,
+    "name": "Digital: several possessions each, a turnover scor"
+   },
+   {
+    "w": 54,
+    "h": 35,
+    "name": "4812"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 130,
+    "h": 35,
+    "name": "No profileNew player…"
+   },
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 206,
+    "h": 35,
+    "name": "SeniorElite youth (U18 to U20)Junior (U14 to U16)"
+   },
+   {
+    "w": 104,
+    "h": 35,
+    "name": "ProSemi-proAmateur"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 229,
+    "h": 35,
+    "name": "Prescribed teams\n          Build your teams (rules"
+   },
+   {
+    "w": 13,
+    "h": 13,
+    "name": "handicap"
+   },
+   {
+    "w": 130,
+    "h": 40,
+    "name": "Start the draft"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Attacking Point Guard (A) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Attacking Point Guard (A) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Attacking Point Guard (B) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Attacking Point Guard (B) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Attacking Point Guard (C) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Attacking Point Guard (C) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Combo Guard (A) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Combo Guard (A) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Combo Guard (B) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Combo Guard (B) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Combo Guard (C) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Combo Guard (C) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Defensive Point Guard (A) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Defensive Point Guard (A) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Defensive Point Guard (B) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Defensive Point Guard (B) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Defensive Point Guard (C) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Defensive Point Guard (C) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Scoring Point Guard (A) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Scoring Point Guard (A) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Scoring Point Guard (B) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Scoring Point Guard (B) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Scoring Point Guard (C) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Scoring Point Guard (C) in slot 2, playing the 2"
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Pass-First Point Guard (A) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Pass-First Point Guard (A) in slot 2, playing the "
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Pass-First Point Guard (B) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Pass-First Point Guard (B) in slot 2, playing the "
+   },
+   {
+    "w": 59,
+    "h": 36,
+    "name": "Pass-First Point Guard (C) in slot 1"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Pass-First Point Guard (C) in slot 2, playing the "
+   },
+   {
+    "w": 153,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (A) in slot 1, playing the "
+   },
+   {
+    "w": 62,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (A) in slot 2"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (A) in slot 3, playing the "
+   },
+   {
+    "w": 153,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (B) in slot 1, playing the "
+   },
+   {
+    "w": 62,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (B) in slot 2"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (B) in slot 3, playing the "
+   },
+   {
+    "w": 153,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (C) in slot 1, playing the "
+   },
+   {
+    "w": 62,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (C) in slot 2"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Two-Way Shooting Guard (C) in slot 3, playing the "
+   },
+   {
+    "w": 153,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (A) in slot 1, playing "
+   },
+   {
+    "w": 62,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (A) in slot 2"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (A) in slot 3, playing "
+   },
+   {
+    "w": 153,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (B) in slot 1, playing "
+   },
+   {
+    "w": 62,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (B) in slot 2"
+   },
+   {
+    "w": 159,
+    "h": 36,
+    "name": "Three-and-D Shooting Guard (B) in slot 3, playing "
+   }
+  ],
+  "smallTargetCount": 60,
+  "wordsOnScreen": 606,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2814
+ },
+ "laptop_13_table_start": {
+  "note": "The table at tip-off (hot seat)",
+  "file": "screens/laptop_13_table_start.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 1686,
+   "15": 807,
+   "16": 61,
+   "17": 12,
+   "21": 37,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 570,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1481
+ },
+ "laptop_14_piece_selected": {
+  "note": "A piece selected: its actions",
+  "file": "screens/laptop_14_piece_selected.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 2296,
+   "15": 1199,
+   "16": 70,
+   "17": 67,
+   "21": 37,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I14 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to L11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to F11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K9 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G9 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J13"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H13"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K12"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K10"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J9"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H9"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G10"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G12"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to M11"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to E11"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to L14"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to L8"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to F8"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to F14"
+   },
+   {
+    "w": 108,
+    "h": 40,
+    "name": "Close card"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 46,
+  "wordsOnScreen": 784,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1862
+ },
+ "laptop_15_pass_choice": {
+  "note": "Choosing a pass: the pass chips",
+  "file": "screens/laptop_15_pass_choice.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 2245,
+   "15": 1112,
+   "16": 42,
+   "17": 67,
+   "21": 37,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to I14 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to L11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to F11 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K9 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G9 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G13 (also Sprint)"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J13"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H13"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K12"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to K10"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to J9"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to H9"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G10"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Move to G12"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to M11"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to E11"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to L14"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to L8"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to F8"
+   },
+   {
+    "w": 34,
+    "h": 34,
+    "name": "Sprint to F14"
+   },
+   {
+    "w": 40,
+    "h": 40,
+    "name": "Pass to O2"
+   },
+   {
+    "w": 108,
+    "h": 40,
+    "name": "Close card"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 47,
+  "wordsOnScreen": 755,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1859
+ },
+ "laptop_16a_digital_table": {
+  "note": "A digital match, coverage hidden",
+  "file": "screens/laptop_16a_digital_table.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 43,
+   "13": 5131,
+   "14": 1845,
+   "15": 829,
+   "16": 61,
+   "17": 12,
+   "21": 37,
+   "22": 19,
+   "26": 18
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 141,
+    "h": 36,
+    "name": "Coverage: hidden"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   },
+   {
+    "w": 676,
+    "h": 41,
+    "name": "[human] Offence placed: I11 C9 O9 A3 Q3[human] Def"
+   }
+  ],
+  "smallTargetCount": 17,
+  "wordsOnScreen": 640,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1543
+ },
+ "laptop_16_coverage": {
+  "note": "Coverage: shown",
+  "file": "screens/laptop_16_coverage.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 43,
+   "13": 5495,
+   "14": 1950,
+   "15": 829,
+   "16": 61,
+   "17": 12,
+   "21": 37,
+   "22": 19,
+   "26": 18
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 140,
+    "h": 36,
+    "name": "Coverage: shown"
+   },
+   {
+    "w": 69,
+    "h": 36,
+    "name": "All five"
+   },
+   {
+    "w": 40,
+    "h": 36,
+    "name": "O1"
+   },
+   {
+    "w": 43,
+    "h": 36,
+    "name": "O2"
+   },
+   {
+    "w": 43,
+    "h": 36,
+    "name": "O3"
+   },
+   {
+    "w": 44,
+    "h": 36,
+    "name": "O4"
+   },
+   {
+    "w": 43,
+    "h": 36,
+    "name": "O5"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   },
+   {
+    "w": 676,
+    "h": 41,
+    "name": "[human] Offence placed: I11 C9 O9 A3 Q3[human] Def"
+   }
+  ],
+  "smallTargetCount": 23,
+  "wordsOnScreen": 738,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1543
+ },
+ "laptop_18_contest": {
+  "note": "The defence decides on a contest",
+  "file": "screens/laptop_18_contest.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 16,
+   "12": 47,
+   "13": 1477,
+   "14": 1747,
+   "15": 1770,
+   "16": 5,
+   "17": 39,
+   "19": 9,
+   "21": 52,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   },
+   {
+    "w": 177,
+    "h": 40,
+    "name": "Download the report"
+   },
+   {
+    "w": 221,
+    "h": 40,
+    "name": "Download the data (JSON)"
+   },
+   {
+    "w": 179,
+    "h": 40,
+    "name": "The story of the play"
+   },
+   {
+    "w": 72,
+    "h": 40,
+    "name": "Close"
+   },
+   {
+    "w": 108,
+    "h": 40,
+    "name": "New game"
+   },
+   {
+    "w": 175,
+    "h": 40,
+    "name": "Show the full review"
+   },
+   {
+    "w": 139,
+    "h": 40,
+    "name": "Send feedback"
+   },
+   {
+    "w": 129,
+    "h": 40,
+    "name": "Download log"
+   },
+   {
+    "w": 95,
+    "h": 40,
+    "name": "Copy log"
+   }
+  ],
+  "smallTargetCount": 23,
+  "wordsOnScreen": 690,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1542
+ },
+ "laptop_19_step_bar": {
+  "note": "The computer's turn, one action at a time",
+  "file": "screens/laptop_19_step_bar.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 4,
+   "12": 35,
+   "13": 1491,
+   "14": 1808,
+   "15": 1075,
+   "16": 20,
+   "17": 50,
+   "21": 37,
+   "22": 15,
+   "26": 4
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 56,
+    "h": 36,
+    "name": "Slow"
+   },
+   {
+    "w": 72,
+    "h": 36,
+    "name": "Normal"
+   },
+   {
+    "w": 52,
+    "h": 36,
+    "name": "Fast"
+   },
+   {
+    "w": 140,
+    "h": 36,
+    "name": "Coverage: shown"
+   },
+   {
+    "w": 135,
+    "h": 36,
+    "name": "The report so far"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Defensive Point Guard (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Defensive Small Forward (B)QS 1, in words; pres"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X4 Stretch Power Forward (B)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Rim Protector Centre (B)QS 0, in words; press f"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 650,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1638
+ },
+ "laptop_20_phase_diagram": {
+  "note": "After a few steps (phase diagram if a phase ended)",
+  "file": "screens/laptop_20_phase_diagram.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 5,
+   "12": 35,
+   "13": 1563,
+   "14": 1806,
+   "15": 1147,
+   "16": 20,
+   "17": 76,
+   "21": 37,
+   "22": 15,
+   "26": 4
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "T",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 56,
+    "h": 36,
+    "name": "Slow"
+   },
+   {
+    "w": 72,
+    "h": 36,
+    "name": "Normal"
+   },
+   {
+    "w": 52,
+    "h": 36,
+    "name": "Fast"
+   },
+   {
+    "w": 140,
+    "h": 36,
+    "name": "Coverage: shown"
+   },
+   {
+    "w": 135,
+    "h": 36,
+    "name": "The report so far"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Defensive Point Guard (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Defensive Small Forward (B)QS 1, in words; pres"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X4 Stretch Power Forward (B)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Rim Protector Centre (B)QS 0, in words; press f"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 680,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1826
+ },
+ "laptop_21_end_dialog": {
+  "note": "End of the scenario: the end dialog and feedback",
+  "file": "screens/laptop_21_end_dialog.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 4,
+   "10": 4,
+   "12": 79,
+   "13": 1864,
+   "14": 1880,
+   "15": 2394,
+   "16": 20,
+   "17": 144,
+   "19": 18,
+   "21": 58,
+   "22": 15,
+   "26": 4
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "T",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 56,
+    "h": 36,
+    "name": "Slow"
+   },
+   {
+    "w": 72,
+    "h": 36,
+    "name": "Normal"
+   },
+   {
+    "w": 52,
+    "h": 36,
+    "name": "Fast"
+   },
+   {
+    "w": 140,
+    "h": 36,
+    "name": "Coverage: shown"
+   },
+   {
+    "w": 135,
+    "h": 36,
+    "name": "The report so far"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Defensive Point Guard (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Defensive Small Forward (B)QS 1, in words; pres"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X4 Stretch Power Forward (B)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Rim Protector Centre (B)QS 0, in words; press f"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "1"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 42,
+    "h": 48,
+    "name": "1"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "1"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 42,
+    "h": 48,
+    "name": "1"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 42,
+    "h": 44,
+    "name": "1"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 42,
+    "h": 48,
+    "name": "1"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "2"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "3"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "4"
+   },
+   {
+    "w": 48,
+    "h": 42,
+    "name": "5"
+   },
+   {
+    "w": 96,
+    "h": 40,
+    "name": "Continue"
+   },
+   {
+    "w": 210,
+    "h": 40,
+    "name": "Save the turns as images"
+   },
+   {
+    "w": 144,
+    "h": 40,
+    "name": "The story so far"
+   }
+  ],
+  "smallTargetCount": 53,
+  "wordsOnScreen": 1115,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2112
+ },
+ "dialogFocusKeptInside": true,
+ "escapeClosesDialog": false,
+ "laptop_22_after_end": {
+  "note": "After closing the end dialog: the review of the possession",
+  "file": "screens/laptop_22_after_end.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 4,
+   "10": 4,
+   "12": 47,
+   "13": 1669,
+   "14": 1880,
+   "15": 2557,
+   "16": 5,
+   "17": 106,
+   "19": 14,
+   "21": 52,
+   "22": 15,
+   "26": 4
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "T",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 56,
+    "h": 36,
+    "name": "Slow"
+   },
+   {
+    "w": 72,
+    "h": 36,
+    "name": "Normal"
+   },
+   {
+    "w": 52,
+    "h": 36,
+    "name": "Fast"
+   },
+   {
+    "w": 140,
+    "h": 36,
+    "name": "Coverage: shown"
+   },
+   {
+    "w": 135,
+    "h": 36,
+    "name": "The report so far"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Defensive Point Guard (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Defensive Small Forward (B)QS 1, in words; pres"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X4 Stretch Power Forward (B)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Rim Protector Centre (B)QS 0, in words; press f"
+   },
+   {
+    "w": 177,
+    "h": 40,
+    "name": "Download the report"
+   },
+   {
+    "w": 221,
+    "h": 40,
+    "name": "Download the data (JSON)"
+   },
+   {
+    "w": 179,
+    "h": 40,
+    "name": "The story of the play"
+   },
+   {
+    "w": 72,
+    "h": 40,
+    "name": "Close"
+   },
+   {
+    "w": 108,
+    "h": 40,
+    "name": "New game"
+   },
+   {
+    "w": 175,
+    "h": 40,
+    "name": "Show the full review"
+   },
+   {
+    "w": 139,
+    "h": 40,
+    "name": "Send feedback"
+   },
+   {
+    "w": 129,
+    "h": 40,
+    "name": "Download log"
+   },
+   {
+    "w": 95,
+    "h": 40,
+    "name": "Copy log"
+   }
+  ],
+  "smallTargetCount": 29,
+  "wordsOnScreen": 900,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 2112
+ },
+ "laptop_23_scout_lock": {
+  "note": "Scout level: the pick lock before tip-off",
+  "file": "screens/laptop_23_scout_lock.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 2796,
+   "15": 1388,
+   "16": 19,
+   "17": 70,
+   "21": 80,
+   "22": 27,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (A)QS 2, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Post Scorer Centre (C)QS 0, in words; press for"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Scoring Point Guard (C)QS 1, in words; press fo"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Scoring Small Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (B)QS 0, in words; press for"
+   },
+   {
+    "w": 43,
+    "h": 40,
+    "name": "O1O2O3O4O5"
+   },
+   {
+    "w": 41,
+    "h": 40,
+    "name": "X1X2X3X4X5"
+   },
+   {
+    "w": 120,
+    "h": 40,
+    "name": "Lock my call"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 894,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1459
+ },
+ "laptop_24_scout_report": {
+  "note": "The scout report, all sections open",
+  "file": "screens/laptop_24_scout_report.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 3440,
+   "15": 1095,
+   "16": 61,
+   "17": 36,
+   "21": 58,
+   "22": 27,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 106,
+    "h": 36,
+    "name": "Scout report"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (A)QS 2, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Post Scorer Centre (C)QS 0, in words; press for"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Scoring Point Guard (C)QS 1, in words; press fo"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Scoring Small Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (B)QS 0, in words; press for"
+   },
+   {
+    "w": 78,
+    "h": 40,
+    "name": "Tip off"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 963,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1459
+ },
+ "laptop_25_place": {
+  "note": "Against the computer: placing your side (Learn level)",
+  "file": "screens/laptop_25_place.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 50,
+   "13": 5131,
+   "14": 3478,
+   "15": 1795,
+   "16": 99,
+   "17": 60,
+   "21": 63,
+   "22": 19,
+   "26": 18
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 106,
+    "h": 36,
+    "name": "Scout report"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 92,
+    "h": 40,
+    "name": "O1 on I11"
+   },
+   {
+    "w": 99,
+    "h": 40,
+    "name": "O2 on C9"
+   },
+   {
+    "w": 100,
+    "h": 40,
+    "name": "O3 on O9"
+   },
+   {
+    "w": 99,
+    "h": 40,
+    "name": "O4 on A3"
+   },
+   {
+    "w": 100,
+    "h": 40,
+    "name": "O5 on Q3"
+   },
+   {
+    "w": 81,
+    "h": 40,
+    "name": "O1 (I11)"
+   },
+   {
+    "w": 218,
+    "h": 40,
+    "name": "Confirm the offence setup"
+   },
+   {
+    "w": 225,
+    "h": 40,
+    "name": "Accept the proposed setup"
+   },
+   {
+    "w": 180,
+    "h": 40,
+    "name": "Repeat my last setup"
+   },
+   {
+    "w": 109,
+    "h": 40,
+    "name": "Start again"
+   },
+   {
+    "w": 280,
+    "h": 40,
+    "name": "Use the standard setup for my side"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   },
+   {
+    "w": 78,
+    "h": 40,
+    "name": "Tip off"
+   }
+  ],
+  "smallTargetCount": 22,
+  "wordsOnScreen": 848,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1543
+ },
+ "laptop_26_scenario_card": {
+  "note": "A scenario card in play",
+  "file": "screens/laptop_26_scenario_card.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 8,
+   "12": 35,
+   "13": 1545,
+   "14": 1621,
+   "15": 1186,
+   "16": 61,
+   "17": 48,
+   "21": 37,
+   "22": 15,
+   "26": 25
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (A)QS 2, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Post Scorer Centre (C)QS 0, in words; press for"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Pass-First Point Guard (B)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X4 Stretch Power Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Rim Protector Centre (C)QS 0, in words; press f"
+   }
+  ],
+  "smallTargetCount": 14,
+  "wordsOnScreen": 645,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1489
+ },
+ "keyboard_start": [
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play the computerA match against the computer, ready in one ",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play a friendOn this screen, or two browsers with a code.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Watch the computerSee both sides set up and play, and keep t",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Scenario cardsSet pieces: one possession, one goal.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "playersBtn2",
+   "name": "Players and records",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "rulesBtn",
+   "name": "Rules, step by step",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "tipsBtn",
+   "name": "Tips in play: on",
+   "visibleFocus": true
+  },
+  {
+   "tag": "body",
+   "id": null,
+   "name": "Skip to the actions\n\n\n  Playmaker the coach's clipboard\n  Co",
+   "visibleFocus": false
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play the computerA match against the computer, ready in one ",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play a friendOn this screen, or two browsers with a code.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Watch the computerSee both sides set up and play, and keep t",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Scenario cardsSet pieces: one possession, one goal.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "playersBtn2",
+   "name": "Players and records",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "rulesBtn",
+   "name": "Rules, step by step",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "tipsBtn",
+   "name": "Tips in play: on",
+   "visibleFocus": true
+  },
+  {
+   "tag": "body",
+   "id": null,
+   "name": "Skip to the actions\n\n\n  Playmaker the coach's clipboard\n  Co",
+   "visibleFocus": false
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play the computerA match against the computer, ready in one ",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play a friendOn this screen, or two browsers with a code.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Watch the computerSee both sides set up and play, and keep t",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Scenario cardsSet pieces: one possession, one goal.",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "playersBtn2",
+   "name": "Players and records",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "rulesBtn",
+   "name": "Rules, step by step",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "tipsBtn",
+   "name": "Tips in play: on",
+   "visibleFocus": true
+  },
+  {
+   "tag": "body",
+   "id": null,
+   "name": "Skip to the actions\n\n\n  Playmaker the coach's clipboard\n  Co",
+   "visibleFocus": false
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play the computerA match against the computer, ready in one ",
+   "visibleFocus": true
+  }
+ ],
+ "keyboard_table": [
+  {
+   "tag": "a",
+   "id": null,
+   "name": "Skip to the actions",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play story",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O1 Pass-First Point Guard (C)QS 1, in words; press for the r",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O2 Sharpshooter Shooting Guard (A)QS 1, in words; press for ",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O3 Two-Way Small Forward (B)QS 1, in words; press for the ra",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O4 Stretch Power Forward (A)QS 1, in words; press for the ra",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O5 Stretch Centre (C)QS 0, in words; press for the ratings",
+   "visibleFocus": true
+  },
+  {
+   "tag": "summary",
+   "id": null,
+   "name": "Rule reminders",
+   "visibleFocus": true
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "O1, number 1, Pass-First Point Guard, on I11 (plain wood), h",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 (three-poin",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "O3, number 3, Two-Way Small Forward, on O9 (three-point zone",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "O4, number 4, Stretch Power Forward, on A3 (three-point zone",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "O5, number 5, Stretch Centre, on Q3 (three-point zone), 21 l",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "X1, number 1, Combo Guard, on I10 (three-point zone), arrow ",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "X2, number 2, Playmaker Shooting Guard, on D8 (long-two zone",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "X3, number 3, Stretch Small Forward, on N8 (long-two zone), ",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "X4, number 4, All-Rounder Power Forward, on G4 (rim zone), a",
+   "visibleFocus": false
+  },
+  {
+   "tag": "g",
+   "id": null,
+   "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range zone), ar",
+   "visibleFocus": false
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Hesitate (ends turn)",
+   "visibleFocus": true
+  },
+  {
+   "tag": "summary",
+   "id": null,
+   "name": "Board settings",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Defender reach: shown",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Shot zones: colours only",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "numbersToggle",
+   "name": "Show the numbers: off",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "confirmToggle",
+   "name": "Confirm each action: on",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": "ringsToggle",
+   "name": "Distance rings: shown",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "X1 Combo Guard (A)QS 2, in words; press for the ratings",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "X2 Playmaker Shooting Guard (C)QS 1, in words; press for the",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "X3 Stretch Small Forward (C)QS 0, in words; press for the ra",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "X4 All-Rounder Power Forward (B)QS 1, in words; press for th",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "X5 Post Scorer Centre (A)QS 0, in words; press for the ratin",
+   "visibleFocus": true
+  },
+  {
+   "tag": "summary",
+   "id": null,
+   "name": "Rule reminders",
+   "visibleFocus": true
+  },
+  {
+   "tag": "ol",
+   "id": "log",
+   "name": "",
+   "visibleFocus": true
+  },
+  {
+   "tag": "body",
+   "id": null,
+   "name": "Skip to the actions\n\n\n  Playmaker the coach's clipboard\n  Co",
+   "visibleFocus": false
+  },
+  {
+   "tag": "a",
+   "id": null,
+   "name": "Skip to the actions",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "Play story",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O1 Pass-First Point Guard (C)QS 1, in words; press for the r",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O2 Sharpshooter Shooting Guard (A)QS 1, in words; press for ",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O3 Two-Way Small Forward (B)QS 1, in words; press for the ra",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O4 Stretch Power Forward (A)QS 1, in words; press for the ra",
+   "visibleFocus": true
+  },
+  {
+   "tag": "button",
+   "id": null,
+   "name": "O5 Stretch Centre (C)QS 0, in words; press for the ratings",
+   "visibleFocus": true
+  }
+ ],
+ "piece_labels": [
+  "O1, number 1, Pass-First Point Guard, on I11 (plain wood), has the ball, 60 legal actions",
+  "O2, number 2, Sharpshooter Shooting Guard, on C9 (three-point zone), 61 legal actions",
+  "O3, number 3, Two-Way Small Forward, on O9 (three-point zone), 61 legal actions",
+  "O4, number 4, Stretch Power Forward, on A3 (three-point zone), 41 legal actions",
+  "O5, number 5, Stretch Centre, on Q3 (three-point zone), 21 legal actions",
+  "X1, number 1, Combo Guard, on I10 (three-point zone), arrow pointing north",
+  "X2, number 2, Playmaker Shooting Guard, on D8 (long-two zone), arrow pointing north-east",
+  "X3, number 3, Stretch Small Forward, on N8 (long-two zone), arrow pointing north-west",
+  "X4, number 4, All-Rounder Power Forward, on G4 (rim zone), arrow pointing north",
+  "X5, number 5, Post Scorer Centre, on N4 (mid-range zone), arrow pointing north"
+ ],
+ "phone_01_start": {
+  "note": "First screen: the four ways in",
+  "file": "screens/phone_01_start.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 93,
+   "17": 21,
+   "20": 62,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [],
+  "smallTargetCount": 0,
+  "wordsOnScreen": 100,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 906
+ },
+ "phone_02_path_learn": {
+  "note": "Learn the rules: the guided course, first card",
+  "file": "screens/phone_02_path_learn.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 305,
+   "12": 5,
+   "13": 192,
+   "14": 205,
+   "15": 432,
+   "16": 5,
+   "17": 21,
+   "20": 62,
+   "24": 17,
+   "30": 9
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 16,
+    "h": 16,
+    "name": "1"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "2"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "3"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "4"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "5"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "1"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "2"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "3"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "5"
+   }
+  ],
+  "smallTargetCount": 10,
+  "wordsOnScreen": 347,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 906
+ },
+ "phone_03_path_computer": {
+  "note": "Play the computer: set-up",
+  "file": "screens/phone_03_path_computer.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1431,
+   "16": 320,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 17,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 6,
+  "wordsOnScreen": 148,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 1278
+ },
+ "phone_04_path_friend": {
+  "note": "Play a friend: set-up",
+  "file": "screens/phone_04_path_friend.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1483,
+   "16": 235,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 6,
+  "wordsOnScreen": 173,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 1611
+ },
+ "phone_05_path_scenario": {
+  "note": "Scenario cards: set-up",
+  "file": "screens/phone_05_path_scenario.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1003,
+   "16": 147,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 20,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 4,
+  "wordsOnScreen": 257,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 1390
+ },
+ "phone_05b_path_watch": {
+  "note": "Watch the computer: set-up",
+  "file": "screens/phone_05b_path_watch.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1554,
+   "16": 323,
+   "17": 21,
+   "18": 22,
+   "20": 62,
+   "21": 18,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 6,
+  "wordsOnScreen": 136,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 1255
+ },
+ "phone_06_course_later": {
+  "note": "The guided course, a few cards in",
+  "file": "screens/phone_06_course_later.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 308,
+   "12": 5,
+   "13": 192,
+   "14": 205,
+   "15": 783,
+   "16": 5,
+   "17": 21,
+   "20": 62,
+   "24": 23,
+   "30": 9
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "rim",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "L2",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   },
+   {
+    "size": 10,
+    "text": "mid",
+    "where": "course"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 16,
+    "h": 16,
+    "name": "1"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "2"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "3"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "4"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "5"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "1"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "2"
+   },
+   {
+    "w": 16,
+    "h": 16,
+    "name": "3"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 16,
+    "h": 18,
+    "name": "5"
+   }
+  ],
+  "smallTargetCount": 10,
+  "wordsOnScreen": 415,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 906
+ },
+ "phone_07_players": {
+  "note": "Players, records and the trainer",
+  "file": "screens/phone_07_players.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 1660,
+   "16": 320,
+   "17": 50,
+   "18": 22,
+   "20": 62,
+   "21": 36,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   },
+   {
+    "w": 253,
+    "h": 21,
+    "name": "Records file to import"
+   }
+  ],
+  "smallTargetCount": 7,
+  "wordsOnScreen": 192,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 1278
+ },
+ "phone_08_levels": {
+  "note": "Levels and rosters, in short",
+  "file": "screens/phone_08_levels.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 3849,
+   "16": 235,
+   "17": 99,
+   "18": 22,
+   "20": 62,
+   "21": 31,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   },
+   {
+    "w": 241,
+    "h": 19,
+    "name": "The full playing levels sheet (PDF)"
+   }
+  ],
+  "smallTargetCount": 7,
+  "wordsOnScreen": 1021,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 4054
+ },
+ "phone_9_roster_build": {
+  "note": "Team builder (rules on)",
+  "file": "screens/phone_9_roster_build.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1849,
+   "16": 243,
+   "17": 62,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "handicap"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 7,
+  "wordsOnScreen": 3370,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 5520
+ },
+ "phone_10_roster_random": {
+  "note": "Random deal",
+  "file": "screens/phone_10_roster_random.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1548,
+   "16": 227,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 6,
+  "wordsOnScreen": 559,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 4268
+ },
+ "phone_11_roster_draft": {
+  "note": "Draft set-up",
+  "file": "screens/phone_11_roster_draft.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 227,
+   "15": 1648,
+   "16": 221,
+   "17": 44,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "handicap"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 7,
+  "wordsOnScreen": 552,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 4183
+ },
+ "phone_12_draft_board": {
+  "note": "The draft board",
+  "file": "screens/phone_12_draft_board.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 3551,
+   "15": 3778,
+   "16": 275,
+   "17": 64,
+   "18": 22,
+   "20": 62,
+   "21": 13,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [
+   {
+    "w": 222,
+    "h": 22,
+    "name": "Players, records and the trainer"
+   },
+   {
+    "w": 215,
+    "h": 19,
+    "name": "The playing levels sheet (PDF)"
+   },
+   {
+    "w": 191,
+    "h": 22,
+    "name": "Levels and rosters, in short"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "handicap"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcA"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "hcB"
+   },
+   {
+    "w": 13,
+    "h": 44,
+    "name": "timerSound"
+   }
+  ],
+  "smallTargetCount": 7,
+  "wordsOnScreen": 606,
+  "docWidth": 320,
+  "viewport": 320,
+  "horizontalScroll": false,
+  "pageHeight": 4759
+ },
+ "phone_13_table_start": {
+  "note": "The table at tip-off (hot seat)",
+  "file": "screens/phone_13_table_start.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 214,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 123,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 852
+ },
+ "phone_14_piece_selected": {
+  "note": "A piece selected: its actions",
+  "file": "screens/phone_14_piece_selected.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 825,
+   "15": 663,
+   "16": 70,
+   "17": 55,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I14 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to L11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to F11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K9 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G9 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J13"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H13"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K12"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K10"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J9"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H9"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G10"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G12"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to M11"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to E11"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to L14"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to L8"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to F8"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to F14"
+   }
+  ],
+  "smallTargetCount": 42,
+  "wordsOnScreen": 350,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 2354
+ },
+ "phone_15_pass_choice": {
+  "note": "Choosing a pass: the pass chips",
+  "file": "screens/phone_15_pass_choice.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 773,
+   "15": 411,
+   "16": 42,
+   "17": 55,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to I14 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to L11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H11 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to F11 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K9 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H10 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G9 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H12 (also Quick Step, Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G13 (also Sprint)"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J13"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H13"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K12"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to K10"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to J9"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to H9"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G10"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Move to G12"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to M11"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to E11"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to L14"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to L8"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to F8"
+   },
+   {
+    "w": 14,
+    "h": 14,
+    "name": "Sprint to F14"
+   },
+   {
+    "w": 17,
+    "h": 17,
+    "name": "Pass to O2"
+   }
+  ],
+  "smallTargetCount": 43,
+  "wordsOnScreen": 310,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1835
+ },
+ "phone_16a_digital_table": {
+  "note": "A digital match, coverage hidden",
+  "file": "screens/phone_16a_digital_table.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 43,
+   "13": 123,
+   "14": 230,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 18,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 172,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 960
+ },
+ "phone_16_coverage": {
+  "note": "Coverage: shown",
+  "file": "screens/phone_16_coverage.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 43,
+   "13": 487,
+   "14": 335,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 18,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 270,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1246
+ },
+ "phone_17_tab_off": {
+  "note": "Phone tab: off",
+  "file": "screens/phone_17_tab_off.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 827,
+   "14": 354,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 157,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1178
+ },
+ "phone_17_tab_def": {
+  "note": "Phone tab: def",
+  "file": "screens/phone_17_tab_def.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 722,
+   "14": 351,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 157,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1178
+ },
+ "phone_17_tab_cards": {
+  "note": "Phone tab: cards",
+  "file": "screens/phone_17_tab_cards.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 1454,
+   "15": 820,
+   "16": 29,
+   "18": 19,
+   "20": 5,
+   "21": 37
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "O2 Sharpshooter Shooting Guard (A)QS 1, in words; "
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "X2 Playmaker Shooting Guard (C)QS 1, in words; pre"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "X4 All-Rounder Power Forward (B)QS 1, in words; pr"
+   },
+   {
+    "w": 311,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 21,
+  "wordsOnScreen": 484,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 2212
+ },
+ "phone_17_tab_log": {
+  "note": "Phone tab: log",
+  "file": "screens/phone_17_tab_log.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 241,
+   "15": 160,
+   "16": 29,
+   "17": 12,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 132,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 993
+ },
+ "phone_18_contest": {
+  "note": "The defence decides on a contest",
+  "file": "screens/phone_18_contest.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 16,
+   "12": 47,
+   "13": 58,
+   "14": 135,
+   "15": 1133,
+   "16": 5,
+   "17": 27,
+   "18": 19,
+   "19": 9,
+   "20": 5,
+   "21": 38
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on J10 (thre"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 230,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 726
+ },
+ "phone_19_step_bar": {
+  "note": "The computer's turn, one action at a time",
+  "file": "screens/phone_19_step_bar.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 4,
+   "12": 35,
+   "13": 119,
+   "14": 182,
+   "15": 346,
+   "16": 20,
+   "17": 38,
+   "18": 15,
+   "20": 4,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on B8 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Defensive Point Guard, on I10 (three"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X2, number 2, Bucket Getter Shooting Guard, on D9 "
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X3, number 3, Defensive Small Forward, on N9 (thre"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X4, number 4, Stretch Power Forward, on B3 (long-t"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X5, number 5, Rim Protector Centre, on P3 (long-tw"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 184,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1146
+ },
+ "phone_20_phase_diagram": {
+  "note": "After a few steps (phase diagram if a phase ended)",
+  "file": "screens/phone_20_phase_diagram.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 1,
+   "10": 5,
+   "12": 35,
+   "13": 173,
+   "14": 187,
+   "15": 413,
+   "16": 20,
+   "17": 64,
+   "18": 15,
+   "20": 4,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "T",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 21,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on B8 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Defensive Point Guard, on I10 (three"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X2, number 2, Bucket Getter Shooting Guard, on D9 "
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X3, number 3, Defensive Small Forward, on N9 (thre"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X4, number 4, Stretch Power Forward, on B3 (long-t"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X5, number 5, Rim Protector Centre, on P3 (long-tw"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 213,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1349
+ },
+ "phone_21_end_dialog": {
+  "note": "End of the scenario: the end dialog and feedback",
+  "file": "screens/phone_21_end_dialog.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "9": 4,
+   "10": 4,
+   "12": 79,
+   "13": 458,
+   "14": 181,
+   "15": 1742,
+   "16": 20,
+   "17": 132,
+   "18": 15,
+   "19": 18,
+   "20": 4,
+   "21": 44
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "T",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   },
+   {
+    "size": 9,
+    "text": "M",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 21,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on B8 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Defensive Point Guard, on I8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Bucket Getter Shooting Guard, on F8 "
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X3, number 3, Defensive Small Forward, on N9 (thre"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X4, number 4, Stretch Power Forward, on B3 (long-t"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X5, number 5, Rim Protector Centre, on P3 (long-tw"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "1"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "5"
+   },
+   {
+    "w": 18,
+    "h": 20,
+    "name": "1"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "5"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "1"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "5"
+   },
+   {
+    "w": 18,
+    "h": 20,
+    "name": "1"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "5"
+   },
+   {
+    "w": 18,
+    "h": 19,
+    "name": "1"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "5"
+   },
+   {
+    "w": 18,
+    "h": 20,
+    "name": "1"
+   },
+   {
+    "w": 18,
+    "h": 18,
+    "name": "2"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "3"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "4"
+   },
+   {
+    "w": 20,
+    "h": 18,
+    "name": "5"
+   }
+  ],
+  "smallTargetCount": 41,
+  "wordsOnScreen": 634,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1723
+ },
+ "phone_23_scout_lock": {
+  "note": "Scout level: the pick lock before tip-off",
+  "file": "screens/phone_23_scout_lock.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 1334,
+   "15": 632,
+   "16": 19,
+   "17": 58,
+   "18": 27,
+   "20": 5,
+   "21": 66
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Point Forward Small Forward, on O9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, All-Rounder Power Forward, on A3 (th"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Post Scorer Centre, on Q3 (three-poi"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Scoring Point Guard, on I10 (three-p"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Two-Way Shooting Guard, on D8 (long-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Scoring Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, Post Scorer Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   },
+   {
+    "w": 43,
+    "h": 44,
+    "name": "O1O2O3O4O5"
+   },
+   {
+    "w": 41,
+    "h": 44,
+    "name": "X1X2X3X4X5"
+   }
+  ],
+  "smallTargetCount": 13,
+  "wordsOnScreen": 436,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 726
+ },
+ "phone_24_scout_report": {
+  "note": "The scout report, all sections open",
+  "file": "screens/phone_24_scout_report.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 1966,
+   "15": 420,
+   "16": 29,
+   "17": 24,
+   "18": 27,
+   "20": 5,
+   "21": 44
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Point Forward Small Forward, on O9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, All-Rounder Power Forward, on A3 (th"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Post Scorer Centre, on Q3 (three-poi"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X1, number 1, Scoring Point Guard, on I10 (three-p"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X2, number 2, Two-Way Shooting Guard, on D8 (long-"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X3, number 3, Scoring Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X4, number 4, Post Scorer Power Forward, on G4 (ri"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 505,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 880
+ },
+ "phone_25_place": {
+  "note": "Against the computer: placing your side (Learn level)",
+  "file": "screens/phone_25_place.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 33,
+   "12": 50,
+   "13": 147,
+   "14": 1860,
+   "15": 1114,
+   "16": 99,
+   "17": 48,
+   "18": 19,
+   "20": 18,
+   "21": 49
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, Pass-First Point Guard, on I11, has the ball. "
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, Sharpshooter Shooting Guard, on C9. Select to "
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, Two-Way Small Forward, on O9. Select to move."
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, Stretch Power Forward, on A3. Select to move."
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, Stretch Centre, on Q3. Select to move."
+   }
+  ],
+  "smallTargetCount": 6,
+  "wordsOnScreen": 409,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1364
+ },
+ "phone_26_scenario_card": {
+  "note": "A scenario card in play",
+  "file": "screens/phone_26_scenario_card.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 8,
+   "12": 35,
+   "13": 58,
+   "14": 192,
+   "15": 523,
+   "16": 29,
+   "17": 36,
+   "18": 15,
+   "20": 25,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "1",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O1, number 1, Pass-First Point Guard, on O11 (plai"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O3, number 3, Point Forward Small Forward, on R9 ("
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O4, number 4, All-Rounder Power Forward, on K10 (t"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "O5, number 5, Post Scorer Centre, on J6 (mid-range"
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X1, number 1, Pass-First Point Guard, on O10 (plai"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X2, number 2, Three-and-D Shooting Guard, on E7 (l"
+   },
+   {
+    "w": 23,
+    "h": 20,
+    "name": "X3, number 3, Stretch Small Forward, on Q9 (plain "
+   },
+   {
+    "w": 20,
+    "h": 20,
+    "name": "X4, number 4, Stretch Power Forward, on K9 (long-t"
+   },
+   {
+    "w": 20,
+    "h": 23,
+    "name": "X5, number 5, Rim Protector Centre, on J5 (mid-ran"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 192,
+  "docWidth": 353,
+  "viewport": 353,
+  "horizontalScroll": false,
+  "pageHeight": 1228
+ },
+ "zoom200_start": {
+  "note": "Start screen at 200% zoom (720 px)",
+  "file": "screens/zoom200_start.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "13": 156,
+   "14": 193,
+   "15": 93,
+   "17": 21,
+   "20": 62,
+   "30": 9
+  },
+  "under12px": [],
+  "under44px_targets": [],
+  "smallTargetCount": 0,
+  "wordsOnScreen": 100,
+  "docWidth": 720,
+  "viewport": 720,
+  "horizontalScroll": false,
+  "pageHeight": 900
+ },
+ "zoom200_table": {
+  "note": "Table at 200% zoom (720 px)",
+  "file": "screens/zoom200_table.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 58,
+   "14": 214,
+   "15": 160,
+   "16": 29,
+   "18": 19,
+   "20": 5,
+   "21": 23
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "O1, number 1, Pass-First Point Guard, on I11 (plai"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "O2, number 2, Sharpshooter Shooting Guard, on C9 ("
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "O3, number 3, Two-Way Small Forward, on O9 (three-"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "O4, number 4, Stretch Power Forward, on A3 (three-"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "O5, number 5, Stretch Centre, on Q3 (three-point z"
+   },
+   {
+    "w": 42,
+    "h": 47,
+    "name": "X1, number 1, Combo Guard, on I10 (three-point zon"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "X2, number 2, Playmaker Shooting Guard, on D8 (lon"
+   },
+   {
+    "w": 42,
+    "h": 42,
+    "name": "X3, number 3, Stretch Small Forward, on N8 (long-t"
+   },
+   {
+    "w": 42,
+    "h": 47,
+    "name": "X4, number 4, All-Rounder Power Forward, on G4 (ri"
+   },
+   {
+    "w": 42,
+    "h": 47,
+    "name": "X5, number 5, Post Scorer Centre, on N4 (mid-range"
+   }
+  ],
+  "smallTargetCount": 11,
+  "wordsOnScreen": 123,
+  "docWidth": 720,
+  "viewport": 720,
+  "horizontalScroll": false,
+  "pageHeight": 1086
+ },
+ "dark_request_table": {
+  "note": "The table when the device asks for dark mode",
+  "file": "screens/dark_request_table.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 1686,
+   "15": 807,
+   "16": 61,
+   "17": 12,
+   "21": 37,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 570,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1481
+ },
+ "forced_colours_table": {
+  "note": "The table in forced colours (Windows high contrast)",
+  "file": "screens/forced_colours_table.png",
+  "axe": [],
+  "textSizes_px_by_characters": {
+   "10": 12,
+   "12": 35,
+   "13": 1469,
+   "14": 1686,
+   "15": 807,
+   "16": 61,
+   "17": 12,
+   "21": 37,
+   "22": 19,
+   "26": 5
+  },
+  "under12px": [
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "2",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "3",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "4",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   },
+   {
+    "size": 10,
+    "text": "5",
+    "where": "court"
+   }
+  ],
+  "under44px_targets": [
+   {
+    "w": 165,
+    "h": 44,
+    "name": "Skip to the actions"
+   },
+   {
+    "w": 89,
+    "h": 36,
+    "name": "Play story"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O1 Pass-First Point Guard (C)QS 1, in words; press"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O3 Two-Way Small Forward (B)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O4 Stretch Power Forward (A)QS 1, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "O5 Stretch Centre (C)QS 0, in words; press for the"
+   },
+   {
+    "w": 173,
+    "h": 40,
+    "name": "Hesitate (ends turn)"
+   },
+   {
+    "w": 178,
+    "h": 36,
+    "name": "Defender reach: shown"
+   },
+   {
+    "w": 187,
+    "h": 36,
+    "name": "Shot zones: colours only"
+   },
+   {
+    "w": 174,
+    "h": 36,
+    "name": "Show the numbers: off"
+   },
+   {
+    "w": 183,
+    "h": 36,
+    "name": "Confirm each action: on"
+   },
+   {
+    "w": 170,
+    "h": 36,
+    "name": "Distance rings: shown"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X1 Combo Guard (A)QS 2, in words; press for the ra"
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X3 Stretch Small Forward (C)QS 0, in words; press "
+   },
+   {
+    "w": 252,
+    "h": 22,
+    "name": "X5 Post Scorer Centre (A)QS 0, in words; press for"
+   }
+  ],
+  "smallTargetCount": 15,
+  "wordsOnScreen": 570,
+  "docWidth": 1440,
+  "viewport": 1440,
+  "horizontalScroll": false,
+  "pageHeight": 1481
+ }
+}
