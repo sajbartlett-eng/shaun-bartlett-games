@@ -1,0 +1,172 @@
+{
+ "lane open: the offence as it chooses": {
+  "mean": 23.6,
+  "low": 21.1,
+  "high": 26.0,
+  "ends": {
+   "three": 11,
+   "post": 3,
+   "layup": 1,
+   "floater": 1
+  },
+  "first_action": [
+   [
+    "O2 move E10",
+    10
+   ],
+   [
+    "O1 move K10",
+    6
+   ]
+  ],
+  "points": [
+   27,
+   24,
+   24,
+   30,
+   24,
+   24,
+   8,
+   24,
+   27,
+   24,
+   18,
+   24,
+   27,
+   27,
+   21,
+   24
+  ],
+  "passes_a_possession": 2.38,
+  "turnovers_a_possession": 0.12
+ },
+ "help in the lane: the offence as it chooses": {
+  "mean": 22.1,
+  "low": 19.4,
+  "high": 24.7,
+  "ends": {
+   "layup": 1,
+   "three": 14,
+   "post": 1
+  },
+  "first_action": [
+   [
+    "O2 move E9",
+    10
+   ],
+   [
+    "O1 move H10",
+    4
+   ],
+   [
+    "O3 move Q7",
+    2
+   ]
+  ],
+  "points": [
+   16,
+   27,
+   27,
+   18,
+   21,
+   27,
+   19,
+   27,
+   21,
+   34,
+   21,
+   19,
+   16,
+   17,
+   27,
+   16
+  ],
+  "passes_a_possession": 3.81,
+  "turnovers_a_possession": 0.38
+ },
+ "Shaun's board from the start: his game": {
+  "mean": 23.7,
+  "low": 22.0,
+  "high": 25.4,
+  "ends": {
+   "post": 1,
+   "three": 10,
+   "layup": 3,
+   "floater": 2
+  },
+  "first_action": [
+   [
+    "O4 move A2",
+    15
+   ],
+   [
+    "O1 pass",
+    1
+   ]
+  ],
+  "points": [
+   30,
+   27,
+   26,
+   21,
+   26,
+   19,
+   21,
+   26,
+   21,
+   24,
+   16,
+   24,
+   24,
+   26,
+   24,
+   24
+  ],
+  "passes_a_possession": 2.12,
+  "turnovers_a_possession": 0.12
+ },
+ "Shaun's board from the start: X4 and X5 in the lane": {
+  "mean": 22.4,
+  "low": 17.8,
+  "high": 26.9,
+  "ends": {
+   "three": 14,
+   "post": 1,
+   "floater": 1
+  },
+  "first_action": [
+   [
+    "O1 move G10",
+    10
+   ],
+   [
+    "O1 move H10",
+    3
+   ],
+   [
+    "O1 move I10",
+    2
+   ]
+  ],
+  "points": [
+   27,
+   27,
+   27,
+   21,
+   27,
+   -2,
+   27,
+   27,
+   7,
+   27,
+   8,
+   27,
+   27,
+   27,
+   27,
+   27
+  ],
+  "passes_a_possession": 2.94,
+  "turnovers_a_possession": 0.56
+ }
+}

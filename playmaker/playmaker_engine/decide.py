@@ -29,6 +29,7 @@ from . import board as B
 from . import geometry as G
 from . import rules_config as RC
 from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points
+from .actions import lane_meet
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INF = 99
@@ -308,6 +309,49 @@ def ahead_row(rules, c, frm, arrow, qs, can_move, qs_left, budget, mode=0):
 
 
 @lru_cache(maxsize=None)
+def _shot_paths(start, qs, rules, no_rim):
+    """Step 18s (the coverage map): every movement path from start that ends where a shot may go up, all on the board:
+    (path, rushed), rushed for a Quick Step or a Sprint, not for a Move."""
+    out = []
+
+    def ok(p):
+        c = p[-1]
+        return all(B.on_board(q) for q in p) and B.zone(c) in RC.ZONE_POINTS and not (no_rim and c == RC.RIM)
+    for p in B.move_paths(start, rules):
+        if ok(p):
+            out.append((tuple(p), False))
+    for p in B.qs_paths(start, qs, rules):
+        if ok(p):
+            out.append((tuple(p), True))
+    for _, p in B.sprint_paths(start, qs, rules):
+        if ok(p):
+            out.append((tuple(p), True))
+    return tuple(out)
+
+
+def cov_pass(s, i, q):
+    """Step 18s (engine.js covPass): the chance a pass to attacker i on q arrives, by the rules (0: denied)."""
+    rules = s.ctx.rules
+    a = s.o[s.ball]
+    for xp in s.x:
+        if B.adjacent(xp, q) and B.on_segment(xp, a, q, 0.5):
+            return 0.0
+    if s.tok_x <= 0 or s.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:
+        return 1.0
+    passer = rolled(s, 'O', s.ball, 'pass')
+    occ = set(s.x)
+    occ.update(z for k, z in enumerate(s.o) if k != i)
+    occ.add(q)
+    worst = 0.0
+    for d, xp in enumerate(s.x):
+        can_move, qs_left = _caps(s, 'X', d)
+        pi = icpt_pi(s, a, q, d, xp, s.arrows[d], can_move, qs_left, occ, passer, i)
+        if pi > worst:
+            worst = pi
+    return 1.0 - worst
+
+
+@lru_cache(maxsize=None)
 def _lane_paths(start, qs, rules):
     """Every movement path from start that ends on a paint square, all on the board: (path, rushed), rushed for a
     Quick Step or a Sprint (the shot after it is off balance, D-151 and D-185), not for a Move."""
@@ -484,6 +528,7 @@ class Read:
         self._adv = None
         self._ahead = False                # step 18q: lane_ahead(), once
         self._lane = False                 # step 18q: _lane_data(), once
+        self._map2 = None                  # step 18s, stop two: map_two(), once
         self._drib = None                  # step 18q: _dribble_ok(), once
 
     # -- contest maps
@@ -545,6 +590,7 @@ class Read:
         d_stand = control and (self.s.rushed('X', d) if dflags is None else dflags[0])
         d_moved = control and (self.s.moved('X', d) if dflags is None else dflags[1])
         position = RC.position_contest(rules)
+        plus5 = RC.app_rule(rules, 'points_play_on') and not self.s.ctx.hold_for_one
         for t in look.types:
             r = card.shot(t)
             # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
@@ -575,6 +621,8 @@ class Read:
                         ft = foul_on_shot_points(card, t, pts, rules, r, v, r - con)[0]   # D-174
                     else:
                         ft = foul_on_shot_points(card, t, pts, rules, r if (cut and look.rushed) else None)[0]
+                    if plus5:
+                        ft += RC.STEAL_FOUL_BONUS          # D-198: a shooting foul is +5 and its free throws (step 18s)
                     pf = float(p_fouls(p_foul(self.dcards[d].r['foul_contest'], rules), 2 if two else 1))
                     v = pf * ft + (1 - pf) * v
                 if best is None or v < best:
@@ -833,7 +881,7 @@ class Read:
                 else:
                     p_new = None
                     if lk.route in ('catch', 'cut') and moved:
-                        p_new = _lane_p_moved(s, lk.c, j, q, a, can_move, qs_left)
+                        p_new = _lane_p_moved(s, lk.c, j, q, a, can_move, qs_left, i)
                     row = cm.get(lk.c)
                     v = lk.swapped(j, self._vals(lk, j, row, dflags=dflags) if row is not None else None, p_new)
                 if v > best:
@@ -1074,9 +1122,247 @@ class Read:
                 return lk.base
         return None
 
+    # ---- step 18s, stop two (eval.map, off until its checks pass): the search reads the coverage map ----
+    def map_options(self):
+        """The coverage map in its lean form (engine.js covBuild, lean): for every attacker and every square he could
+        shoot from next phase, the chance he has the ball where he needs it when the phase starts (reach) and what the
+        defence leaves of the shot, each defender given the reaction's two actions from where he stands (weakness).
+        {(attacker, square, rushed): [reach, weakness, worth, the look, each type's open value, each defender's
+        contest of it]}; empty in the last phase."""
+        s, rules = self.s, self.rules
+        out = {}
+        if s.clock <= RC.PHASE_SECONDS:
+            return out
+        from .actions import movement_dests, can_move_kind, capture_lines, capture_ok
+        no_rim = RC.rim_shot_barred(rules)
+        xat = {s.x[j]: j for j in range(5) if B.on_board(s.x[j])}
+        # the board as the next phase finds it if nobody moves again (resolve.new_phase): the defence's movement fresh,
+        # no zone broken, no screen standing
+        from .state import ZERO_COUNTS
+        s_next = s.with_(screens=(), tok_x=RC.TOKENS_PER_PHASE, moved_x=0, qs_x=0, lock_x=0, rush_x=0, beaten=(), cnt=ZERO_COUNTS)
+        mode = 0 if rules.zone == 'off' else 1
+        cms = [(_cmap_cached(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, True, 1, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
+        off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
+        for a in range(5):
+            home = s.o[a]
+            if not B.on_board(home):
+                continue
+            starts = []                            # where he can have the ball when the next phase starts, and the chance
+            if a == s.ball:
+                one = {home: 0}
+                if s.tok_o > 0:
+                    for kind in ('move', 'qs', 'sprint'):
+                        if can_move_kind(s, 'O', a, kind):
+                            for q in movement_dests(s, 'O', a, kind, rules):
+                                one.setdefault(q, 1)
+                for q in list(one) + (two_actions(s, a, one) if s.tok_o > 0 else []):
+                    starts.append((q, 1.0))
+            elif s.tok_o > 0 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
+                for q, n in attacker_reach(s, a).items():
+                    if n > 1 or n + 1 > s.tok_o:
+                        continue
+                    p = cov_pass(s, a, q)
+                    if p > 0:
+                        starts.append((q, p))
+            mates = {s.o[k] for k in range(5) if k != a}
+            lines = capture_lines(s_next, a) if rules.zone != 'off' else []
+            card, qs = s.ctx.off[a], s.ctx.off[a].qs
+            best = {}
+            for q0, pr in starts:
+                if q0 in mates or (q0 != home and q0 in xat):
+                    continue
+                if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
+                    best[q0, False] = pr           # a set shot from where the phase finds him
+                for p, rushed in _shot_paths(q0, qs, rules, no_rim):
+                    c = p[-1]
+                    if best.get((c, rushed), 0.0) >= pr:
+                        continue
+                    if any(q in mates or q in xat for q in p):
+                        continue
+                    if lines and not capture_ok(q0, p, lines):
+                        continue
+                    best[c, rushed] = pr
+            for (c, rushed), pr in best.items():
+                z = B.zone(c)
+                lk = Look(a, c, 'later', 1.0, False)
+                lk.types = RC.ZONE_SHOTS[z]
+                lk.rushed = rushed
+                pts = RC.ZONE_POINTS[z]
+                vals = [None] * 5
+                for d in range(5):
+                    row = cms[d].get(c) if cms[d] is not None else None
+                    vals[d] = (self._vals2(lk, d, row) or None) if row is not None else None
+                opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
+                top = self._map_weak(lk, opens, vals)
+                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals]
+        return out
+
+    @staticmethod
+    def _map_weak(lk, opens, vals, d=-1, mine=None):
+        """What the defence leaves of a look: its best type, each against the best Contest of every defender (defender
+        d's taken from `mine`)."""
+        top = -1.0
+        for n, ty in enumerate(lk.types):
+            v = opens[n]
+            for j in range(5):
+                vd = mine if j == d else vals[j]
+                if vd and ty in vd and vd[ty] < opens[n] and vd[ty] < v:
+                    v = vd[ty]
+            if v > top:
+                top = v
+        return top
+
+    def map_answers(self, opts):
+        """engine.js covLeanAnswers: the defence's answers in a fast form. While it has tokens, one defender makes the
+        one movement this phase that takes something off the offence's best option and leaves its best six the
+        smallest, the largest first; he then contests everything from where he now stands. Each defender moves once.
+        Changes opts in place; -> the number of answers."""
+        s, rules = self.s, self.rules
+        if s.tok_x <= 0:
+            return 0
+        K = 6
+        taken = set(s.o) | set(s.x)
+        moved = [False] * 5
+        tok, steps = s.tok_x, 0
+        mode = 0 if rules.zone == 'off' else 1
+
+        def less(x, y):
+            for u, v in zip(x, y):
+                if u < v - 1e-9:
+                    return True
+                if u > v + 1e-9:
+                    return False
+            return False
+        while tok > 0:
+            head = sorted((key for key, o in opts.items() if o[0] > 0), key=lambda key: (-opts[key][2], key))[:K]
+            if not head or opts[head[0]][2] <= 0:
+                break
+            cur = [opts[key][2] for key in head]
+            c0 = head[0][1]
+            best = None
+            for d in range(5):
+                if moved[d] or not B.on_board(s.x[d]):
+                    continue
+                can_move, qs_left = _caps(s, 'X', d)
+                if not can_move and qs_left <= 0:
+                    continue
+                qs = s.ctx.dfn[d].qs
+                free, fixed = defender_map(s, d, exact=True)
+                cands = [(q, -1) for q, n in free.items() if n == 1]
+                cands += [(q, a) for q, arrs in fixed.items() for a, n in arrs.items() if n == 1]
+                for q, a in cands:
+                    if q in taken:
+                        continue
+                    cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
+                    if cm.get(c0) is None:
+                        continue
+                    after = []
+                    for n, key in enumerate(head):
+                        pr, _, e0, lk, opens, vals = opts[key]
+                        if key[1] == q:
+                            e = float('-inf')
+                        else:
+                            row = cm.get(key[1])
+                            mine = (self._vals2(lk, d, row) or None) if row is not None else None
+                            e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * 5
+                        if n == 0 and not e < e0 - 1e-9:
+                            after = None
+                            break
+                        after.append(e)
+                    if after is None:
+                        continue
+                    after.sort(reverse=True)
+                    if best is None or less(after, best[0]) or (not less(best[0], after) and (d, q, a) < best[1:]):
+                        best = (after, d, q, a)
+            if best is None or not less(best[0], cur):
+                break
+            _, d, q, a = best
+            qs = s.ctx.dfn[d].qs
+            cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
+            moved[d] = True
+            tok -= 1
+            steps += 1
+            taken.add(q)
+            for key, o in opts.items():
+                if key[1] == q:
+                    o[0], o[2] = 0.0, float('-inf')
+                    continue
+                row = cm.get(key[1])
+                o[5][d] = (self._vals2(o[3], d, row) or None) if row is not None else None
+                o[1] = self._map_weak(o[3], o[4], o[5])
+                o[2] = o[0] * o[1] - (1 - o[0]) * 5 if o[0] > 0 else float('-inf')
+        return steps
+
+    def map_two(self, answered=False):
+        """The map's two numbers for the search: the best any attacker can have at the start of the next phase and the
+        best a second, separate attacker can have; as the board stands, or after the defence's answers (map_answers)."""
+        if self._map2 is None:
+            self._map2 = dict(opts=self.map_options(), raw=None, ans=None)
+        c = self._map2
+
+        def two():
+            mine = [0.0] * 5
+            for (a, sq_, rushed), o in c['opts'].items():
+                if o[0] > 0 and o[2] > mine[a]:
+                    mine[a] = o[2]
+            first = second = 0.0
+            for v in mine:
+                if v > first:
+                    first, second = v, first
+                elif v > second:
+                    second = v
+            return (first, second)
+        if c['raw'] is None:
+            c['raw'] = two()
+        if not answered:
+            return c['raw']
+        if c['ans'] is None:
+            self.map_answers(c['opts'])
+            c['ans'] = two()
+        return c['ans']
+
+    def map_shot(self):
+        """The best shot that can go up now, as the reading has it."""
+        now = 0.0
+        for i in self.att_o:
+            for lk in self.looks[i]:
+                if lk.now and lk.base > now:
+                    now = lk.base
+        return max(self.shot_now() or 0.0, now)
+
+    def _map_leaf(self):
+        """The reading from the coverage map: what is left to earn = a fitted line over the shot now, the best way and
+        the second way, per phase and side to act (the weights file's calibration_map). None: no line (the reading as
+        it was)."""
+        s = self.s
+        # (the quick look that orders the list, k = 0, keeps its own reading: engine.js quickLeaf)
+        on = self.cfg.get('map')                   # True: both sides; 'offence': only where the decision searched is the offence's
+        if not (on is True or (on == 'offence' and MAP_ME[0] == 'O')) or self.k <= 0 or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
+            return None
+        w = learned_weights()
+        if not w or not w.get('calibration_map'):
+            return None
+        phase = min(6, max(1, (12 - s.clock) // 2 + 1))
+        row = w['calibration_map']['maps'].get(f"{phase}{'O' if self.o_to_act else 'X'}")
+        if not row:
+            return None
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
+        banked += foul_externality(s)
+        shot = self.map_shot()
+        if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
+            return banked + shot
+        # the two ways as the board stands, or as the defence's answers leave them: whichever form the line was fitted on
+        two, k = self.map_two(w['calibration_map'].get('form') == 'answered'), row['w']
+        line = k[0] + (k[1] * shot + k[2] * two[0] + k[3] * two[1])
+        sn = (self.shot_now() or 0.0) if self.o_to_act else 0.0       # the offence to act can simply shoot
+        return banked + max(sn, line)
+
     def leaf(self):
         """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
         eval.calibrated on (step 17D), that reading passed through the map fitted to what positions went on to earn."""
+        ml = self._map_leaf()
+        if ml is not None:
+            return ml
         v, s = self._hand_leaf(), self.s
         top = None
         if self.cfg.get('settle_shots') is True:
@@ -2074,8 +2360,10 @@ def _lane_p(s, i, c, reach=None):
     Move or Quick Step. reach (step 12, eval.reach): who can step onto it from the reach map's exact movement."""
     if reach is None:
         reach = bool(CONFIG['eval'].get('reach'))
+    rl = pass_by_rules(s.ctx.rules)                      # by the rules the chance also turns on bodies, screens, broken zones
     key = (id(s.ctx), s.o[s.ball], s.ball, c, s.x, s.arrows, s.moved_x, s.qs_x, s.lock_x, s.tok_x, s.cnt[6], reach,
-           s.o if reach else None, s.screens if reach else None, _off_balance_key(s))
+           s.o if reach or rl else None, s.screens if reach or rl else None, _off_balance_key(s),
+           (i, s.cnt, s.beaten) if rl else None)
     hit = _LP.get(key)
     if hit is None:
         if len(_LP) > 300000:
@@ -2091,6 +2379,77 @@ def _exact_one(s, d):
                      [q for q, arr in fixed.items() if min(arr.values()) <= 1])
 
 
+MAP_ME = [None]            # step 18s, stop two: the side whose decision the search in hand is (search.Searcher sets it)
+
+
+def pass_by_rules(rules):
+    """Step 18s, stop two (D-199): is the reading's pass chance the rules' own? It is wherever the Intercept is the
+    current rule ('move_then_intercept') and eval.pass_rules is not switched off."""
+    return rules.intercept_rule == 'move_then_intercept' and CONFIG['eval'].get('pass_rules', True) is not False
+
+
+def icpt_pi(s, pa, pc, j, p, arrow, can_move, qs_left, occ, passer, recv=-1):
+    """Step 18s, stop two: the best chance defender j, on p with this arrow and with can_move / qs_left left to him,
+    takes a pass from pa to pc, by the rules' own Intercept: through his square (not next to the passer), or one
+    straight Move, Quick Step or Sprint along one of his arrow lines to the square where it meets the pass (not next
+    to the passer, the way clear), and then the Intercept, rolled as he then stands. 0.0: by the rules he can't."""
+    rules = s.ctx.rules
+    if s.tok_x <= 0 or s.count('X', 'intercept') >= RC.LIMITS['X']['intercept']:
+        return 0.0
+    base = s.ctx.dfn[j].r['intercept']
+    cut = RC.off_balance_cut(rules)
+    best = None
+    if B.cheb(p, pa) != 1 and B.on_segment(p, pa, pc, rules.on_line_tolerance):
+        best = base - cut if cut and s.rushed('X', j) else base
+    if s.tok_x >= 2 and (can_move or qs_left > 0) and (best is None or best < base):
+        broken = rules.zone != 'off' and any(b[1] == j for b in s.beaten)
+        qs = s.ctx.dfn[j].qs
+        for d in G.lines(rules, G.stance(rules, arrow, broken)):
+            n = lane_meet(p, d, pa, pc)
+            if not n:
+                continue
+            step = B.DIRS[d]
+            path = [(p[0] + step[0] * k, p[1] + step[1] * k) for k in range(1, n + 1)]
+            q = path[-1]
+            if B.cheb(q, pa) == 1 or any(not B.on_board(z) or z in occ for z in path):
+                continue
+            ok = True
+            for scr in s.screens:
+                if scr[0] == recv and pc != s.o[recv]:
+                    continue                                 # the receiver has moved to catch it: his screen is gone
+                tsq = B.add(s.o[scr[0]], B.DIRS[scr[1]])
+                if scr[3] >> j & 1:
+                    if q == tsq:
+                        ok = False
+                        break
+                    continue
+                prev = p
+                for z in path:
+                    if B.diag_step_banned(prev, z, tsq, rules):
+                        ok = False
+                        break
+                    prev = z
+                if not ok:
+                    break
+            if not ok:
+                continue
+            orth = d % 2 == 0
+            if can_move and n <= (RC.MOVE_STRAIGHT if orth else RC.MOVE_DIAGONAL):
+                roll = base                                  # a Move: he is set when he gets there
+            elif qs_left > 0 and qs > 0 and (n <= qs if rules.qs_up_to else n == qs):
+                roll = base - cut                            # a Quick Step or a Sprint: off balance (D-185)
+            elif (can_move and qs_left > 0 and (qs > 0 or not rules.sprint_needs_qs)
+                  and n <= (rules.sprint_orth_base if orth else rules.sprint_diag_base) + qs):
+                roll = base - cut
+            else:
+                continue
+            if best is None or roll > best:
+                best = roll
+    if best is None:
+        return 0.0
+    return 1 - float(p_success(passer - best, rules))
+
+
 def _lane_p_calc(s, i, c, reach=False):
     rules = s.ctx.rules
     a = s.o[s.ball]
@@ -2100,6 +2459,18 @@ def _lane_p_calc(s, i, c, reach=False):
         den = lane_squares(a, c, float(rules.receiver_denial_tol))
         if any(xp in den and B.adjacent(xp, c) for xp in s.x):
             return 0.0
+    if pass_by_rules(rules):                             # step 18s, stop two: who can take it is the rules' own answer
+        passer = rolled(s, 'O', s.ball, 'pass')
+        occ = set(s.x)
+        occ.update(q for k, q in enumerate(s.o) if k != i)
+        occ.add(c)
+        worst = 0.0
+        for d, xp in enumerate(s.x):
+            can_move, qs_left = _caps(s, 'X', d)
+            pi = icpt_pi(s, a, c, d, xp, s.arrows[d], can_move, qs_left, occ, passer, i)
+            if pi > worst:
+                worst = pi
+        return 1.0 - worst
     lane = lane_squares(a, c, 0.5)
     if not lane:
         return 1.0
@@ -2116,7 +2487,7 @@ def _lane_p_calc(s, i, c, reach=False):
     return 1.0 - worst
 
 
-def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
+def _lane_p_moved(s, c, j, q, a, can_move, qs_left, i=None):
     """Step 18e: _lane_p's geometry with defender j at q facing a, with can_move / qs_left left to him (the open
     list's re-read of a moved defender)."""
     rules = s.ctx.rules
@@ -2128,6 +2499,21 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
         at = q if d == j else xp
         if at in lane and B.adjacent(at, c):
             return 0.0
+    if pass_by_rules(rules):                             # step 18s, stop two
+        passer = rolled(s, 'O', s.ball, 'pass')
+        occ = set(s.x[:j] + (q,) + s.x[j + 1:])
+        occ.update(z for k, z in enumerate(s.o) if k != i)
+        occ.add(c)
+        worst = 0.0
+        for d, xp in enumerate(s.x):
+            if d == j:
+                pi = icpt_pi(s, pa, c, d, q, a, can_move, qs_left, occ, passer, -1 if i is None else i)
+            else:
+                cm, ql = _caps(s, 'X', d)
+                pi = icpt_pi(s, pa, c, d, xp, s.arrows[d], cm, ql, occ, passer, -1 if i is None else i)
+            if pi > worst:
+                worst = pi
+        return 1.0 - worst
     if not lane:
         return 1.0
     passer = rolled(s, 'O', s.ball, 'pass')              # D-185: off balance, each player as he stands now
@@ -2149,10 +2535,11 @@ def _lane_p_moved(s, c, j, q, a, can_move, qs_left):
 def _pass_prob(s, i):
     """P(a pass from the carrier to attacker i now arrives): 0 if not legal; else 1 - the best Intercept chance
     over the defence's legal intercepts once it is in the air (the rules' own options)."""
-    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s))
+    key = (id(s.ctx), s.o, s.x, s.arrows, s.ball, i, s.cnt, s.tok_x, s.moved_x, s.qs_x, s.lock_x, s.screens, _off_balance_key(s),
+           s.beaten if pass_by_rules(s.ctx.rules) else None)
     if key in _PP:
         return _PP[key]
-    from .actions import Action, legal_actions
+    from .actions import Action, legal_actions, mti_approach
     from .resolve import apply, ChanceNode
     st = s.with_(side='O', stage='play', turn_n=0, tok_o=max(1, s.tok_o), pending=None)
     a = Action('pass', 'O', s.ball, target=i)
@@ -2163,10 +2550,16 @@ def _pass_prob(s, i):
             nxt = apply(st, a)
             worst = 0.0
             if not isinstance(nxt, ChanceNode) and nxt.stage == 'play' and nxt.side == 'X' and nxt.pending:
+                jump = pass_by_rules(s.ctx.rules)        # step 18s, stop two: one movement and then the Intercept counts too
                 for b in legal_actions(nxt):
                     if b.kind == 'intercept':
                         worst = max(worst, 1 - float(p_success(rolled(nxt, 'O', s.ball, 'pass') - rolled(nxt, 'X', b.piece, 'intercept'),
                                                                s.ctx.rules)))
+                    elif jump and b.kind in ('move', 'qs', 'sprint') and mti_approach(nxt, b):
+                        af = apply(nxt, b)
+                        if not isinstance(af, ChanceNode) and af.pending:
+                            worst = max(worst, 1 - float(p_success(rolled(af, 'O', s.ball, 'pass') - rolled(af, 'X', b.piece, 'intercept'),
+                                                                   s.ctx.rules)))
             p = 1.0 - worst
     except Exception:
         p = 0.0

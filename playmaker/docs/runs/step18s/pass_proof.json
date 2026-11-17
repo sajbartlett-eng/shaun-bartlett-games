@@ -1,0 +1,11 @@
+{
+ "passes": 6002,
+ "the_new_reading_equal_to_the_rules": 6002,
+ "the_old_reading_equal_to_the_rules": 2910,
+ "kinds": {
+  "cant_be_intercepted": 4352,
+  "through_or_jump": 1650
+ },
+ "different": [],
+ "seconds": 39.2
+}

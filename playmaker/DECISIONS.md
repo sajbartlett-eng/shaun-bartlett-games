@@ -1112,6 +1112,52 @@ banked, which can be below 0; the counts of three seconds and closely guarded st
 possession's first phase "where he started the phase" is where he stood when the defence's turn began. D-179's and
 D-181's free throws in the penalty are replaced. · Source: Shaun, 16 Nov 2026 · **Ruled; built in step 18r.**
 
+**D-199. The coverage map is the computer's reading for both sides.** Shaun's design (the blueprint,
+`docs/reference/COVERAGE_MAP_BLUEPRINT.md`): "The defensive coverage map is the gold here. Where the zone of
+influence lies, what it protects, and what weakens it. Regular snapshots reveal how it is weakening and where you
+can attack it." "The goal of the offence becomes gaining the best possible shots (open layups are always high for
+most players) by finding efficient strategies to weaken the defence's zone of influence and attack or pass the ball
+to the zones that remain weak at the start of the next phase. So every phase looks to maximise the weakening of
+defensive influence first and attack the created weakness such that the next phase begins with the defence in a
+weaker position than the last. Exploiting matchup advantages and offball movement achieves that, with offball
+movement and screens designed to weaken defensive influence for the ball-handler to attack the rim or pass, or
+shoot with the defence in a weaker position this phase and next phase." "Conversely, the defence is trying to
+maintain the strength of their zone of influence or improve it for the next phase. If we look at zone of influence
+as the protection of high value areas and facilitation of low value areas something interesting may fall out. Rank
+each of the court zones by value, with the short range green area highest, then three pointers, then mid-range and
+long range 2 pointers last and have the zones of influence protect shot in those areas maximally and preferentially
+and denying driving lanes through the middle may fall out." "We've already established that no decision making
+involves a single attacker and a single defender. Defenders are covering multiple weaknesses at once. And attackers
+need to understand who helps their defender when they gain a positional or trait-based advantage." **The one
+refinement agreed:** a square's value is not ranked by hand; it comes from the cards of the attacker who could shoot
+there. **Agreed with Shaun before the build (16 Nov, "Go"):** (1) "a defence can't cover two at once" is worked out
+from the rules (what is left after the defence spends the tokens it has), not fitted; (2) the fitted map is kept out
+of the coverage map's path, and anything fitted is fitted on forced lines; (3) two stops: first the map, the coach
+view and design checks 1 to 6, in the fast engine, so Shaun can judge the map by eye before anything uses it; then
+the search and setup read it, checks 7 to 9, and the port to the other engine; (4) the 18o closeout position is
+replayed under D-198 before it is a check, and check 8 is pinned to named positions. · Source: Shaun, 16 Nov 2026 ·
+**Ruled; stop one built in step 18s.**
+
+**D-200. The speed budget is waived until the computer is smart enough.** "Speed budget be damned. I'll address
+speed if it works." And: "I honestly don't care about speed yet. It is not a working app. It won't be for a while. We
+need to find the right way to make it smart enough and then worry about speed at the end." Build it right first.
+Speed is still reported, for the record; correctness is not traded for it and the timing test does not block the
+work (it is not loosened either). Speed comes back once the map is proven. · Source: Shaun, 16 Nov 2026 · **Ruled.**
+
+**D-201. Position at a phase's start: the rules stay as they are.** No new modifier, and no limit on the reaction.
+"Positioning barely matters at the start of a phase. Correct. What matters is how you influenced the zones of
+influence on the previous phase to gain advantages and impact the zone of influence on the next phase. The offence
+always gets to move first, so the example is weak. If you didn't take advantage of the play in the previous phase
+then you have to start fresh but hopefully in a better position. You were either trying to get a shot or trying to
+improve your situation for the next phase, or both." A defender recovering during the shot is the offence stagnating
+and indecisive, and the defence holding its shape. The strength measure (the addendum,
+`docs/reference/COVERAGE_MAP_BLUEPRINT_ADDENDUM_STRENGTH.md`) is what captures it: design checks 3 and 5 are judged
+by that measure, not by a defender's square at a phase's start. · Source: Shaun, 16 Nov 2026 · **Ruled.**
+
+**D-202. The button reads "Coverage: shown / hidden".** It is Shaun's word (D-199). "coverage" comes off step 3n's
+list of engine words a player never reads (`playmaker_engine/plain.py`): it was an engine word then; it is the
+designer's own name for the map now. · Source: Shaun, 16 Nov 2026 · **Ruled; built in step 18s, stop two.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

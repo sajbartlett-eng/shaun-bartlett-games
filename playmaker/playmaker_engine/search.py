@@ -694,6 +694,8 @@ class Searcher:
 
     def __init__(self, me, profile, evaluate, deadline, rng=None):
         self.me = me
+        from . import decide as _D
+        _D.MAP_ME[0] = me                  # step 18s, stop two: eval.map 'offence' reads the map for the offence's decisions only
         self.p = profile
         self.evaluate = evaluate
         self.deadline = deadline
@@ -1148,10 +1150,12 @@ class Searcher:
         from . import decide as _decide
         prev = _decide.LEVEL[0]
         _decide.LEVEL[0] = self.p.get('level')
+        _decide.MAP_ME[0] = self.me          # step 18s, stop two: eval.map 'offence', likewise for the search's length
         try:
             return self._root(s, max_depth, min_depth)
         finally:
             _decide.LEVEL[0] = prev
+            _decide.MAP_ME[0] = None
 
     def _root(self, s, max_depth, min_depth=1):
         """Iterative deepening. Returns (scored turns [(value, turn)], depth reached, the principal turn)."""

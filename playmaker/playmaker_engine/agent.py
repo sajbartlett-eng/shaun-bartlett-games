@@ -26,7 +26,7 @@ LEVELS = ('rookie', 'starter', 'allstar')
 SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
 # step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
 # PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
-JS = {'search': None, 'goals': None, 'reads': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
+JS = {'search': None, 'goals': None, 'reads': None, 'coverage': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
 # step 3n Part B: the exam's fixed-depth run (the design verdict): every level searches exactly this depth, no time limit
 FIXED = {'depth': None}
 
@@ -437,7 +437,33 @@ def _better(a, b, sign):
     return False
 
 
+def coverage(s, answers=None, only=None):
+    """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
+    engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
+    who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
+    computer's play yet: it is shown to the coach and checked (stop one)."""
+    if JS.get('coverage') is None or not jsbridge.ported(s.ctx.rules) or s.stage != 'play':
+        return None
+    req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx))
+    if answers is not None:
+        req['options'] = dict(answers=answers)
+    if only is not None:                      # stop two: only='break': the shot that can go up now against playing on
+        req['options'] = dict(only=only)
+    return json.loads(JS['coverage'](json.dumps(req)))
+
+
 _LANE_FILE = CONFIG.get('eval', {}).get('lane') is True      # eval.lane as ai_profiles.json has it
+
+
+_MAP_FILE = CONFIG.get('eval', {}).get('map', False)        # eval.map as ai_profiles.json has it: False, True or 'offence'
+
+
+def set_map(how=None):
+    """Step 18s, stop two: eval.map for this process: 'off', 'offence' (the offence's decisions read the coverage map),
+    'both', or None for the file's own setting. The JavaScript search follows it request by request (_lane_req)."""
+    CONFIG['eval']['map'] = {'off': False, '0': False, 'offence': 'offence', '1': 'offence', 'on': 'offence', 'both': True}.get(str(how).lower(), _MAP_FILE) \
+        if how is not None else _MAP_FILE
+    return CONFIG['eval']['map']
 
 
 def set_lane(on):
@@ -449,6 +475,9 @@ def set_lane(on):
 
 def _lane_req(req):
     req['lane'] = CONFIG['eval'].get('lane') is True
+    m = CONFIG['eval'].get('map')                                   # step 18s, stop two: True, 'offence' or off
+    req['map'] = m if m is True or m == 'offence' else False
+    req['pass_rules'] = CONFIG['eval'].get('pass_rules', True) is not False
     return req
 
 

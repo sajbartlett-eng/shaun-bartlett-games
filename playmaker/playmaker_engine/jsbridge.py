@@ -81,12 +81,13 @@ class NodeEngine:
         AG.JS['search'] = lambda t: self.call('searchJSON', t)
         AG.JS['goals'] = lambda t: self.call('goalsJSON', t)
         AG.JS['reads'] = lambda t: self.call('readsJSON', t)
+        AG.JS['coverage'] = lambda t: self.call('coverageJSON', t)      # step 18s (D-199): the coverage map
         return self
 
     @staticmethod
     def uninstall():
         from . import agent as AG
-        AG.JS['search'] = AG.JS['goals'] = AG.JS['reads'] = None
+        AG.JS['search'] = AG.JS['goals'] = AG.JS['reads'] = AG.JS['coverage'] = None
 
     def close(self):
         self.uninstall()

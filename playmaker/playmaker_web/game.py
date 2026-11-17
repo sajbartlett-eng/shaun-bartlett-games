@@ -319,7 +319,7 @@ class Game:
                  standard='pro', roster='prescribed', lineups=None, deal=None, random_for='both', coherent=False,
                  draft=None, match_format='tabletop', per_side=8, scouting=None, quarter=None, control=None, zone=None,
                  three=None, guarded=None, fouledshot=None, softcontest=None, stealfoul=None, offbalance=None, positioncontest=None,
-                 setup=None, lane=None):
+                 setup=None, lane=None, map_read=None):
         self.code = (code or secrets.token_hex(3)).upper()
         self.now = clock or time.time
         self.timer = self._timer_settings(timer)
@@ -363,6 +363,9 @@ class Game:
         # step 18q (D-196, stage 1): the way to the rim in the computer's reading (eval.lane: built, off). ?lane=1 turns it
         # on for the games played from here on (the app plays one game at a time); any other game sets it back
         _AG.set_lane(self.match_format == 'digital' and lane in ('on', '1', 1, True))
+        # step 18s, stop two: ?map=1 has the computer's offence play from the coverage map for a game (eval.map 'offence'; off by
+        # default: exam position 15 fails with it on), ?map=both its defence too (not proven: the report)
+        _AG.set_map(map_read if self.match_format == "digital" else None)
         # step 3n F3 (digital): team fouls across a running quarter of 18 possessions per side, carried across matches
         # between the same pairing (the client stores it with the pairing and passes it in)
         q = quarter if isinstance(quarter, dict) else {}
@@ -660,6 +663,163 @@ class Game:
         n = (self.rules or RC.DEFAULT_RULES).quarter_possessions
         return self.quarter['fouls'][dfn], max(1, n - self.quarter['poss'][att])
 
+    def coverage_snapshot(self):
+        """Step 18s (D-199): the coverage map as the coach sees it, kept for each phase of the possession from the first
+        time it is asked for in that phase (the app asks as the phase starts). None where the fast engine isn't there,
+        the format isn't the app's, or the possession isn't in play. Each snapshot carries the change in what the
+        offence can get since the phase before."""
+        s = self.state
+        if self.match_format != 'digital' or s is None or self.placing or s.stage not in ('play', 'reaction', 'contest'):
+            return None
+        snaps = self.__dict__.setdefault('_coverage', {})
+        key = (self.possession, s.phase)
+        if key not in snaps:
+            from playmaker_engine import agent as _AG
+            try:
+                at = None                       # stop two: the phase's own first position, when this possession's steps hold it
+                tr = self.__dict__.get('_trail')
+                if tr and tr['possession'] == self.possession:
+                    at = next((n for b, a, n in tr['steps'] if n.phase == s.phase and b.phase != n.phase and n.stage == 'play'), None)
+                    if at is None and s.phase == 1:
+                        at = next((b for b, a, n in tr['steps'] if b.stage == 'play' and b.phase == 1), None)
+                if at is None:
+                    at = s.with_(stage='play', shot=None) if s.stage != 'play' else s
+                c = _AG.coverage(at)
+            except Exception:               # the view must never stop a game
+                c = None
+            if c is None:
+                return None
+            prev = snaps.get((self.possession, s.phase - 1))
+            c['change'] = round(c['worth'] - prev['worth'], 1) if prev else None
+            c['possession'] = self.possession
+            for k in [k for k in snaps if k[0] != self.possession]:
+                del snaps[k]
+            snaps[key] = c
+        return snaps[key]
+
+    # ---- step 18s, stop two: the phase scores (the addendum on the defence's strength, D-201) ----
+    def _trail_add(self, before, a, node):
+        """Every step of the possession in play: the position before, the action, the position after."""
+        t = self.__dict__.setdefault('_trail', dict(possession=None, steps=[]))
+        if t['possession'] != self.possession:
+            t['possession'], t['steps'] = self.possession, []
+        t['steps'].append((before, a, node))
+
+    _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
+
+    def phase_scores(self):
+        """One plain line for every finished phase of the possession, and one for the possession once it is over. A
+        phase weakened the defence when the most the offence can force by the next phase's start went up (the coverage
+        map's strength at the start of each phase); the defence was broken when the ball handler had a shot worth more
+        than playing on (the phase table). Good: the defence broke and the shot was taken. Wasted: a break was there
+        and wasn't taken. Weak: it held and never broke. None where there is nothing to score yet."""
+        t = self.__dict__.get('_trail')
+        if self.match_format != 'digital' or not t or not t['steps']:
+            return None
+        from playmaker_engine import agent as _AG
+        if _AG.JS.get('coverage') is None:
+            return None
+        steps = t['steps']
+        first = next((b for b, a, n in steps if b.stage == 'play'), None)
+        if first is None:
+            return None
+        memo = self.__dict__.setdefault('_scores', dict(possession=None, maps={}, breaks={}))
+        if memo['possession'] != t['possession']:
+            memo.update(possession=t['possession'], maps={}, breaks={})
+        starts = {first.phase: first}
+        for b, a, n in steps:
+            if n.phase != b.phase and n.stage == 'play':
+                starts[n.phase] = n
+
+        def at_start(ph):
+            if ph not in memo['maps']:
+                try:
+                    memo['maps'][ph] = _AG.coverage(starts[ph])
+                except Exception:               # the view must never stop a game
+                    memo['maps'][ph] = None
+            return memo['maps'][ph]
+
+        def break_at(k):
+            if k not in memo['breaks']:
+                try:
+                    memo['breaks'][k] = _AG.coverage(steps[k][0], only='break')
+                except Exception:
+                    memo['breaks'][k] = None
+            return memo['breaks'][k]
+
+        def shot_words(r):
+            sh = r['shot']
+            name = self._SHOT_WORDS.get(sh.get('kind'), 'shot')
+            return f"O{sh['o'] + 1} {{}} {'an open' if sh.get('open') else 'a'} {name} on {sh['sq']}, worth {round(sh['worth'])}"
+
+        over = steps[-1][2].stage == 'over'
+        lines, missed_any, took_break, weakened_all, weak_first = [], False, False, True, False
+        for ph in sorted(starts):
+            mine = [k for k, (b, a, n) in enumerate(steps) if b.phase == ph and b.stage in ('play', 'reaction', 'contest')]
+            ended_here = over and mine and mine[-1] == len(steps) - 1
+            if ph + 1 not in starts and not ended_here:
+                break                                # the phase in play: nothing to say yet
+            c0 = at_start(ph)
+            if c0 is None:
+                continue
+            offence = [k for k in mine if steps[k][1] is not None and steps[k][1].side == 'O' and steps[k][0].stage == 'play'
+                       and steps[k][0].side == 'O' and not steps[k][0].pending]
+            shot_k = next((k for k in offence if steps[k][1].kind == 'shot'), None)
+            s0 = round(c0['strength'])
+            text, weakened = None, False
+            if shot_k is not None:
+                r = break_at(shot_k)
+                if r and r.get('shot'):
+                    if r['broken']:
+                        took_break = True
+                        text = f"The defence was broken and the shot went up: {shot_words(r).format('took')}."
+                    else:
+                        text = (f"The shot went up with the defence not broken: {shot_words(r).format('took')}, "
+                                f"against {round(r['carry_on'])} for playing on.")
+                else:
+                    text = 'The shot went up.'
+            else:
+                miss = None
+                for k in offence:
+                    r = break_at(k)
+                    if r and r.get('broken'):
+                        miss = r
+                        break
+                c1 = at_start(ph + 1) if ph + 1 in starts else None
+                if miss is not None:
+                    missed_any = True
+                    text = f"The defence was broken: {shot_words(miss).format('had')}, and it wasn't taken."
+                elif c1 is not None:
+                    s1 = round(c1['strength'])
+                    weakened = s1 > s0
+                    text = (f'Defence weakened from {s0} to {s1} this phase.' if s1 > s0 else
+                            f'Defence strengthened from {s0} to {s1} this phase.' if s1 < s0 else f'Defence held at {s0}.')
+                else:
+                    text = 'The possession ended without a shot.'
+                if not weakened:
+                    weakened_all = False
+                    if ph == 1 and miss is None:
+                        weak_first = True
+                        text += ' Phase one only got you into position: the setup had no plan to weaken the defence.'
+            lines.append(dict(phase=ph, text=text, strength=c0['strength'], fragility=c0.get('fragility')))
+        verdict = None
+        if over:
+            verdict = (('A good possession: the defence was weakened each phase until it broke, and the shot was taken.' if weakened_all and len(lines) > 1
+                        else 'A good possession: the defence broke and the shot was taken.') if took_break else
+                       "A wasted possession: a break was there and it wasn't taken." if missed_any else
+                       'A weak possession: the defence held and never broke.')
+            seen = self.__dict__.setdefault('_first_phases', {})
+            seen[t['possession']] = dict(attacker='A' if t['possession'] % 2 == 1 else 'B', weak=weak_first)
+        note = None
+        for who in ('A', 'B'):
+            mine = [v for v in self.__dict__.get('_first_phases', {}).values() if v['attacker'] == who]
+            weak = sum(1 for v in mine if v['weak'])
+            if len(mine) >= 3 and 2 * weak > len(mine):
+                team = self.teams[0 if who == 'A' else 1] if len(self.teams) > 1 else f'Player {who}'
+                note = ((note + ' ') if note else '') + (f'{team} has had a weak first phase in {weak} of its {len(mine)} possessions on offence: '
+                                                         f'its setup needs more thought.')
+        return dict(possession=t['possession'], over=over, lines=lines, verdict=verdict, setup_note=note)
+
     def quarter_words(self):
         if self.match_format != 'digital':
             return None
@@ -888,6 +1048,7 @@ class Game:
         if isinstance(node, ChanceNode):
             node, rolls = resolve_chance(node, self.rng)
         self.state = node
+        self._trail_add(before, None, node)
         self.undo, self.undo_votes = [], set()
         if node.phase != before.phase:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
@@ -1279,6 +1440,7 @@ class Game:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.turn_no = 0
         self.state = node
+        self._trail_add(before, a, node)
         self.rolls = rolls
         self.undo_votes = set()
         self.version += 1
@@ -1360,6 +1522,8 @@ class Game:
             elif self.seat_of(token) is None:
                 raise GameError('unknown player token')
             st, rs, slots, turn_no = self.undo.pop()
+            if self.__dict__.get('_trail') and self._trail['steps']:
+                self._trail['steps'].pop()
             if self.feed:
                 self.feed.pop()
             self.turn_no = turn_no

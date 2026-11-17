@@ -137,3 +137,13 @@ layers above use it. Nothing above is switched on over a read that fails its che
   result. Never self-play averages alone.
 - Both engines equal. The speed budget holds.
 - Shaun's playtest is part of the proof.
+
+## 7. The coverage map (D-199, step 18s)
+
+Shaun's design of 16 November makes one object of section 2's measures: the coverage map. For every attacker and
+square it holds value (from his card), reach, influence and weakness, who covers and who is next, and a snapshot each
+phase. The constant goals are read off it: "protect the middle" is the weakness of the squares by the rim, "limit
+passing options" is the reach and weakness of each teammate's squares, "no look above what the possession is worth" is
+the largest weakness left after the defence's best answers. Stop one (step 18s) builds it and shows it to the coach.
+Stop two has the search and the setup read it, in place of the lane measure of iteration 1 and the passing measure of
+iteration 2. The order in section 5 stands from iteration 3 on.

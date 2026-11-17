@@ -359,6 +359,30 @@ def board_json(s, slots=None):
                 influence=influence(s) if s.stage != 'over' else None)
 
 
+def coverage_json(game, token):
+    """Step 18s (D-199): the coach's coverage view for the phase in play: each square's best option for the offence
+    (who, the shot, what it is worth, who covers it and who is next), the same for each attacker alone, the defence's
+    best answers, and one line of words. {} when there is none."""
+    c = game.coverage_snapshot()
+    scores = game.phase_scores()               # stop two: the phase lines and the possession's line
+    if not c:
+        return dict(scores=scores) if scores else {}
+    layers, best = [], {}
+    for a, sq in enumerate(c['squares']):
+        rows = []
+        for name, v in sq.items():
+            q = B.parse_sq(name)
+            row = dict(sq=name, x=q[0], y=q[1], o=a, worth=v['worth'], value=v['value'], reach=v['reach'], weakness=v['weakness'], shot=v['shot'],
+                       cover=v['cover'], next=v['next'], rushed=v['rushed'])
+            rows.append(row)
+            if name not in best or v['worth'] > best[name]['worth']:
+                best[name] = row
+        layers.append(sorted(rows, key=lambda r: r['sq']))
+    return dict(possession=c['possession'], phase=c['phase'], words=c['words'], change=c.get('change'), worth=c['worth'], best=c['best'], left=c['left'],
+                answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
+                strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers)
+
+
 def state_json(game, token):
     game.timer_tick()                    # apply any forfeit that fell due before reading the state
     s = game.state

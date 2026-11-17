@@ -357,3 +357,13 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 /* step 18g (D-167, under test): a defender whose zone of influence a Dribble has broken */
 .piece.zone-broken .xarms { opacity: 0.45; stroke-dasharray: 3 3; }
 .zonerule { border-left: 3px solid #783c00; }
+
+/* step 18s (D-199): the coach's coverage view */
+.covmap .covsq { cursor: pointer; }
+.covmap .covsq:hover { stroke: #7a1410; stroke-width: 1.5; }
+.covbox { font-size: 13px; line-height: 1.4; }
+.covbox .covpick { margin: 6px 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.covbox #covNote { color: #5a5852; }
+
+.covbox .covscores { margin: 6px 0; padding-top: 6px; border-top: 1px dashed #c9c4b6; }
+.covbox .covscores .covverdict { font-weight: 600; margin-top: 3px; }

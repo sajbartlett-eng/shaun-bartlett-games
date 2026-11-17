@@ -7,7 +7,9 @@ Actions are sentences about the play, with the player numbers and squares the bo
 from . import board as B
 
 # Interface words the engine uses inside but a player never reads (tests/test_step3n.py greps every screen for these)
-BANNED = ('turn group', 'credit', 'residual', 'threat', 'coverage', 'hinge', 'dilemma', 'capacity', 'drain', 'value lost',
+# D-202 (Shaun, 16 Nov 2026): 'coverage' came off this list. It was an engine word in step 3n; it is now Shaun's own
+# name for the map the coach reads (D-199), and the button says "Coverage: shown / hidden".
+BANNED = ('turn group', 'credit', 'residual', 'threat', 'hinge', 'dilemma', 'capacity', 'drain', 'value lost',
           'leaf', 'depth', 'principal variation', 'glicko', 'volatility', '±',
           'pick-off', 'picked off', 'clean miss')          # D-85: say intercepted, stolen, a Steal that misses without a foul
 BANNED_RE = (r'(?i)\bon time\b',                         # D-88: no growth tag names
