@@ -4772,6 +4772,16 @@ const PMEngine = (() => {
     return W_(t, { screens: [], beaten: [], tok_o: 6, tok_x: 6, moved_o: 0, moved_x: 0, qs_o: 0, qs_x: 0, lock_o: 0, lock_x: 0, rush_o: 0, rush_x: 0,
       cnt: ZERO, turn_n: 0, side: 'O', stage: 'play', approach: -1, prev_wait: '', final: false, turn_lead: -1, turn_x: [], turn_moved: 0, react_moved: 0 });
   }
+  // Step 21 (D-206): the defence read as it really is, the offence fresh. The defence keeps what it has left this
+  // phase (tokens, who has moved, quick-stepped, is locked or rushed, a zone a Dribble broke); the offence gets its
+  // full turn to come, whatever it has spent (D-204's like for like, which Shaun's ruling leaves standing for the
+  // offence): with its tokens spent it still moves first next phase, before the defence can answer again, so the looks
+  // that need a pass next phase stay on the map.
+  function covOffFresh(s) {
+    const cnt = Array.from(s.cnt); for (let k = 0; k < 6; k++) cnt[k] = 0;
+    return W_(s, { tok_o: 6, moved_o: 0, qs_o: 0, lock_o: 0, rush_o: 0, cnt, turn_n: 0, side: 'O', stage: 'play', approach: -1, prev_wait: '',
+      final: false, turn_lead: -1, turn_x: [], turn_moved: 0, react_moved: 0 });
+  }
   // The defence's best answer, by search over its real options: each defender makes at most one movement (a Move with
   // any arrow, turning on the spot included; a Quick Step or Sprint with the arrow it leaves him), within its tokens. A
   // beam of the best LG_BEAM answers so far is carried one defender deeper at a time; each is widened by the LG_WIDE
@@ -4985,7 +4995,8 @@ const PMEngine = (() => {
       const L = p * (gc ? gc.L : 0) + (1 - p) * ((gl ? gl.L : 0) - TURNOVER_COST);
       return { L, before: gc ? gc.before : 0, ov: gc ? gc.ov : 0, moves: gc ? gc.moves : 0, m: gc ? gc.m : null, best: gc ? gc.best : null, catch: p };
     }
-    const m = covBuild(s, true, r0 && r0.s === s ? r0 : null);
+    const f = covOffFresh(s);
+    const m = covBuild(f, true, null);
     const best = lasting(m);
     return { L: best.sc.L, before: m.sorted.length ? m.sorted[0].e : 0, ov: best.sc.ov.length, moves: best.moves.length, m, best };
   }
@@ -5081,7 +5092,7 @@ const PMEngine = (() => {
     // step 21 (D-206): the map is read with what each side has left this phase; opts.fresh: step 20's like-for-like
     // read (covFresh), for the reports' phase starts. A pass in the air is shown caught; its number is by the catch's chance
     const caught = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
-    const s = opts.fresh ? covFresh(s0) : caught;
+    const s = opts.fresh ? covFresh(s0) : covOffFresh(caught);
     const m0 = covBuild(s);
     const best = lasting(m0);
     const sq = list => {                               // every square, for each attacker: his best option there

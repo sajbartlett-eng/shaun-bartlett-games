@@ -58,22 +58,38 @@ def test_a_spent_defence_cant_answer_and_the_fresh_read_is_for_phase_starts():
 
 # ---- part 2: numbers, not just pairs -----------------------------------------------------------------------------------
 
+def test_a_group_of_defenders_can_be_the_only_cover_for_more_attackers_than_there_are_of_them():
+    """Shaun's 3 on 2 near the key: X4 and X5 (3 and 4) the only cover for O1, O5 and O3, three apart from each other.
+    Whichever two they take, the third is open; the defence takes the two biggest, so the group is worth the third."""
+    look = lambda a, c, wd, mask: dict(a=a, c=B.parse_sq(c), t=0, wd=wd, now=wd - 10, mask=mask, order=(0, a))
+    both = 1 << 3 | 1 << 4
+    g = D.cover_groups([look(0, 'I4', 30, both), look(4, 'L4', 26, both), look(2, 'F4', 22, both)])
+    two = [v for v in g if v['ds'] == [3, 4]]
+    assert two and two[0]['value'] == 22 and {t['a'] for t in two[0]['threats']} == {0, 2, 4} and two[0]['near_key']
+    assert not [v for v in g if len(v['ds']) == 1]                    # neither alone is the only cover for anyone
+    # one on two is the smallest case, and three on four follows from the same rule
+    one = D.cover_groups([look(0, 'C9', 27, 1 << 2), look(1, 'Q7', 18, 1 << 2)])
+    assert one[0]['ds'] == [2] and one[0]['value'] == 18
+    three = 1 << 1 | 1 << 3 | 1 << 4
+    g3 = D.cover_groups([look(0, 'A3', 30, three), look(1, 'E7', 28, three), look(2, 'I3', 26, three), look(3, 'N4', 24, three)])
+    assert [v for v in g3 if v['ds'] == [1, 3, 4]][0]['value'] == 24
+    # two attackers within two squares of each other: one defender next to both takes both, so nothing is left
+    assert D.cover_groups([look(0, 'I4', 30, 1), look(1, 'J5', 26, 1)]) == []
+
+
 @needs_node
-def test_a_group_of_defenders_can_be_the_only_cover_for_more_attackers_than_there_are_of_them(cov):
+def test_overloads_on_the_board_follow_the_rule_and_explain_the_gap(cov):
     import step_21 as T
-    c = cov(T.b1())
-    groups = [v for v in c['overloads'] if len(v['xs']) >= 2]
-    assert groups                                                     # B1: two on three (and three on more) near the play
-    for v in c['overloads']:
-        assert len({t['o'] for t in v['threats']}) > len(v['xs'])       # more attackers than defenders
-        assert 0 < v['value'] <= max(t['worth'] for t in v['threats']) + 1e-9
-        assert v['line'] in c['words']
-    for v in groups:
-        k = len(v['xs'])
-        assert re.match(r'X\d( and X\d|, X\d)+ (and X\d )?are the only cover for O\d', v['line']), v['line']
-        assert f"whichever {['', 'one', 'two', 'three'][k]} they take" in v['line']
-        assert v['value'] >= c['left_worth'] - 0.01                     # a group is named when it explains the gap
-    assert c['lasting'] == pytest.approx(max([c['left_worth']] + [v['value'] for v in c['overloads']]), abs=0.01)
+    import step_18d as T18
+    for s in (T.b1(), T.b2(), T18.closeout_board()):
+        c = cov(s)
+        for v in c['overloads']:
+            assert len({t['o'] for t in v['threats']}) > len(v['xs'])
+            assert 0 < v['value'] <= max(t['worth'] for t in v['threats']) + 1e-9
+            assert v['line'] in c['words']
+            if len(v['xs']) >= 2:
+                assert v['value'] >= c['left_worth'] - 0.01 and ' are the only cover for ' in v['line']
+        assert c['lasting'] == pytest.approx(max([c['left_worth']] + [v['value'] for v in c['overloads']]), abs=0.01)
 
 
 # ---- part 3: rotation falls out of the map -----------------------------------------------------------------------------

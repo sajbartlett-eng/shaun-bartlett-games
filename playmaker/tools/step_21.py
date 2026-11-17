@@ -212,5 +212,46 @@ def cmd_s3(copies='16'):
     S.cmd_s3('s3', copies, 'map')
 
 
+def cmd_watch(tag='watch', level='allstar', poss='8'):
+    """Watch the computer: Five Out v High-Low (games 4E81CC and 799D78's teams), All-Star on both sides, the map on;
+    every possession's report written out, and the rotations it named counted. -> docs/runs/step21/<tag>/"""
+    import step_20 as T20
+    from playmaker_engine import agent as AG
+    from playmaker_web.api import Manager, handle
+    from playmaker_web import report as R
+    from playmaker_web.server import coverage_engine, stop_coverage_engine
+    out_dir = os.path.join(RUN, tag)
+    os.makedirs(out_dir, exist_ok=True)
+    assert coverage_engine()
+    t0 = time.time()
+    try:
+        m = Manager()
+        st, r = handle(m, 'POST', '/api/new', body=dict(mode='hotseat', match_format='digital', teams=['Five Out', 'High-Low'], level='pro', full=True,
+                                                         per_side=int(poss) // 2, ai=dict(O=level, X=level)))
+        g, tok = m.get(r['code']), r['token']
+        summary, rotations, play_s = [], [], []
+        for p in range(1, int(poss) + 1):
+            if p > 1:
+                a = time.time()
+                handle(m, 'POST', '/api/next', body=dict(code=g.code, token=tok))
+                play_s.append(round(time.time() - a, 1))
+            rep = R.build(g, p)
+            lines = T20.report_text(rep)
+            open(os.path.join(out_dir, f'possession{p}.txt'), 'w').write('\n'.join(lines) + '\n')
+            json.dump(rep, open(os.path.join(out_dir, f'possession{p}.json'), 'w'), indent=1, default=str)
+            rot = [dict(phase=t['phase'], turn=t['turn'], line=t['rotation'], defence=t['defence']) for t in rep['turns'] if t.get('rotation')]
+            rotations += [dict(rr, possession=p) for rr in rot]
+            defence_turns = sum(1 for t in rep['turns'] if t['defence_actions'])
+            summary.append(dict(possession=p, score=rep['summary']['numbers']['total'], verdict=rep['summary']['verdict'], checks=rep['checks'],
+                                turns=len(rep['turns']), defence_turns=defence_turns, rotations=len(rot)))
+            print(p, summary[-1], flush=True)
+        res = dict(code=g.code, level=level, map=AG.CONFIG['eval']['map'], possessions=summary, rotations=rotations, play_s=play_s,
+                   seconds=round(time.time() - t0, 1))
+        json.dump(res, open(os.path.join(out_dir, 'summary.json'), 'w'), indent=1)
+        print(json.dumps(dict(code=g.code, seconds=res['seconds'], rotations=len(rotations), defence_turns=sum(x['defence_turns'] for x in summary))))
+    finally:
+        stop_coverage_engine()
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])

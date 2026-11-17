@@ -1371,59 +1371,8 @@ class Read:
                         top, tt = o, n
                 looks.append(dict(x=x, mask=mask, wd=x['r'] * top - (1 - x['r']) * 5, tt=tt))
 
-            def group_value(A, ds):
-                best = [float('inf')]
-                k = len(ds)
-                took = [-1] * k
-
-                def go(i):
-                    if i == k:
-                        left = float('-inf')
-                        for u in range(len(A)):
-                            if u in took:
-                                continue
-                            if all(v < 0 or B.cheb(A[u]['c'], A[v]['c']) >= 3 for v in took) and A[u]['wd'] > left:
-                                left = A[u]['wd']
-                        if left < best[0] - 1e-9:
-                            best[0] = left
-                        return
-                    took[i] = -1
-                    go(i + 1)
-                    for u in range(len(A)):
-                        if u in took or not (A[u]['mask'] >> ds[i] & 1):
-                            continue
-                        took[i] = u
-                        go(i + 1)
-                        took[i] = -1
-                go(0)
-                return best[0]
-            import itertools
-            out, named = [], []
-            for k in (1, 2, 3):
-                for ds in itertools.combinations(range(5), k):
-                    gm = sum(1 << d for d in ds)
-                    by = {}
-                    for z in looks:
-                        if (z['mask'] & ~gm) or not (z['mask'] & gm):
-                            continue
-                        a = z['x']['key'][0]
-                        cur = by.get(a)
-                        if (cur is None or z['wd'] > cur['wd'] + 1e-9 or
-                                (abs(z['wd'] - cur['wd']) <= 1e-9 and (-z['x']['e'], z['x']['key']) < (-cur['x']['e'], cur['x']['key']))):
-                            by[a] = z
-                    if len(by) <= k:
-                        continue
-                    A = sorted((dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'])
-                                for z in by.values()), key=lambda u: (-u['wd'], u['a']))
-                    val = group_value(A, list(ds))
-                    if not val > 0 or val == float('inf'):
-                        continue
-                    if any((h[0] & gm) == h[0] and h[1] >= val - 1e-9 for h in named):
-                        continue
-                    named.append((gm, val))
-                    out.append(dict(d=ds[0], ds=list(ds), value=val, threats=[dict(a=u['a'], c=u['c'], t=u['t'], worth=u['wd'], now=u['now']) for u in A],
-                                    near_key=all(5 <= u['c'][0] <= 11 and 1 <= u['c'][1] <= 7 for u in A)))
-            return out
+            return cover_groups([dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
+                                      order=(-z['x']['e'], z['x']['key'])) for z in looks])
 
         def score(st):
             head = head_of(st)
@@ -2647,6 +2596,75 @@ def cov_fresh(s):
                    final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
 
 
+def cover_groups(looks, most=3):
+    """Step 21 (engine.js lgOverloads, D-206: count numbers, not just pairs). looks: [dict(a, c, t, wd, now, mask, order)]
+    (the attacker, his square, the shot, its worth read without the defenders in mask, its worth now, the defenders who
+    take anything off it, a tie order). A group of one, two or three defenders is the only cover for the looks whose mask
+    lies inside it; each attacker brings his best such look. With more attackers than defenders, the defence's best
+    assignment gives each defender one attacker he can take (or none); an attacker is open if no taken attacker stands
+    within two squares of him. The group is worth the best look the best assignment leaves open. A group is named only
+    if no smaller group inside it is already worth as much. -> [dict(d, ds, value, threats, near_key)]"""
+    import itertools
+
+    def value_of(A, ds):
+        best = float('inf')
+        k = len(ds)
+        took = [-1] * k
+
+        def go(i):
+            nonlocal best
+            if i == k:
+                left = float('-inf')
+                for u in range(len(A)):
+                    if u in took:
+                        continue
+                    if all(v < 0 or B.cheb(A[u]['c'], A[v]['c']) >= 3 for v in took) and A[u]['wd'] > left:
+                        left = A[u]['wd']
+                if left < best - 1e-9:
+                    best = left
+                return
+            took[i] = -1
+            go(i + 1)
+            for u in range(len(A)):
+                if u in took or not (A[u]['mask'] >> ds[i] & 1):
+                    continue
+                took[i] = u
+                go(i + 1)
+                took[i] = -1
+        go(0)
+        return best
+    out, named = [], []
+    for k in range(1, most + 1):
+        for ds in itertools.combinations(range(5), k):
+            gm = sum(1 << d for d in ds)
+            by = {}
+            for z in looks:
+                if (z['mask'] & ~gm) or not (z['mask'] & gm):
+                    continue
+                cur = by.get(z['a'])
+                if cur is None or z['wd'] > cur['wd'] + 1e-9 or (abs(z['wd'] - cur['wd']) <= 1e-9 and z['order'] < cur['order']):
+                    by[z['a']] = z
+            if len(by) <= k:
+                continue
+            A = sorted(by.values(), key=lambda u: (-u['wd'], u['a']))
+            val = value_of(A, list(ds))
+            if not val > 0 or val == float('inf'):
+                continue
+            if any((h[0] & gm) == h[0] and h[1] >= val - 1e-9 for h in named):
+                continue
+            named.append((gm, val))
+            out.append(dict(d=ds[0], ds=list(ds), value=val, threats=[dict(a=u['a'], c=u['c'], t=u['t'], worth=u['wd'], now=u['now']) for u in A],
+                            near_key=all(5 <= u['c'][0] <= 11 and 1 <= u['c'][1] <= 7 for u in A)))
+    return out
+
+
+def cov_off_fresh(s):
+    """Step 21 (engine.js covOffFresh, D-206): the defence as it really is this phase, the offence fresh (its full turn
+    to come, whatever it has spent): spent, it still moves first next phase, before the defence can answer again."""
+    return s.with_(tok_o=RC.TOKENS_PER_PHASE, moved_o=0, qs_o=0, lock_o=0, rush_o=0, cnt=(0,) * 6 + tuple(s.cnt[6:]), turn_n=0, side='O',
+                   stage='play', approach=-1, prev_wait='', final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
+
+
 def lasting_of(s, cfg=None, fresh=False, r0=None):
     """engine.js lastingOf (step 21, D-206): the lasting gap of a position, read with what each side really has left
     this phase (its tokens and movement, who is locked or rushed, who has moved); fresh: step 20's like-for-like read
@@ -2668,7 +2686,7 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
         return dict(L=L, before=gc['before'] if gc else 0.0, ov=gc['ov'] if gc else 0, moves=gc['moves'] if gc else 0,
                     best=gc['best'] if gc else None, catch=p)
     else:
-        r = r0 if r0 is not None and r0.s is s else Read(s, cfg=cfg)
+        r = Read(cov_off_fresh(s), cfg=cfg)
     opts = r.map_options()
     best = r.lasting(opts)
     before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)

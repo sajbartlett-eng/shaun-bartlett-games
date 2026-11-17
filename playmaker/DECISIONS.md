@@ -1195,7 +1195,11 @@ like-for-like read for phase starts only, where both sides really are fresh. Ove
 defenders who are the only cover for more attackers than there are defenders (one on two, two on three, three on four),
 worth the best look the defence's best assignment leaves. A pass in the air is read with the ball where it is and the
 catch by the rules' own chance. No rule tells a defender to chase or recover (D-156): recovery must fall out of a
-reading that counts what is left open. · Source: Shaun, 17 Nov 2026 · **Ruled.**
+reading that counts what is left open. Read in step 21 as: the defence as it really is, the offence still with its full
+turn to come (D-204's like for like, which the ruling leaves standing for the offence): with its tokens spent the offence
+still moves first next phase, before the defence can answer again (step 21's B2 showed the map losing every look that
+needs a pass next phase when the offence's spent tokens were read too). Shaun to confirm (STEP21_REPORT, decision 1).
+· Source: Shaun, 17 Nov 2026 · **Ruled.**
 
 **D-207. Rotation falls out of the map; no defender is tied to his man.** Shaun: "It should also be able to consider
 defensive rotation. Though it needs to come logically from the way it reads zone maps and future phases. When one
