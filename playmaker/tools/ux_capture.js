@@ -77,24 +77,28 @@ async function keyboardOrder(page, n) {
     page.on('pageerror', e => console.error('pageerror', tag, e.message));
     const S = s => `${tag}_${s}`;
     const home = async () => { await page.goto(base + '/'); await page.waitForTimeout(700); };
+    // step 19: the options sit under Advanced settings on the new home screen; the course moved to a link
+    const adv = async () => { const s = await page.$('#advanced summary'); if (s && !(await page.evaluate(() => document.getElementById('advanced').open))) { await s.click(); await page.waitForTimeout(250); } };
+    const pathBtn = async p => { if (p === 'learn' && !(await page.$('button.path[data-path=learn]'))) return page.click('#rulesBtn'); return page.click(`button.path[data-path=${p}]`); };
 
     await step(S('01_start'), 'First screen: the four ways in', async () => { await home(); await shot(page, S('01_start'), 'First screen: the four ways in'); });
     for (const [i, p, note] of [[2, 'learn', 'Learn the rules: the guided course, first card'], [3, 'computer', 'Play the computer: set-up'], [4, 'friend', 'Play a friend: set-up'], [5, 'scenario', 'Scenario cards: set-up']]) {
       const nm = S(`0${i}_path_${p}`);
-      await step(nm, note, async () => { await home(); await page.click(`button.path[data-path=${p}]`); await page.waitForTimeout(800); await shot(page, nm, note); });
+      await step(nm, note, async () => { await home(); await pathBtn(p); await page.waitForTimeout(800); await shot(page, nm, note); });
     }
+    await step(S('05b_path_watch'), 'Watch the computer: set-up', async () => { await home(); if (!(await page.$('button.path[data-path=watch]'))) throw new Error('no such choice yet'); await page.click('button.path[data-path=watch]'); await page.waitForTimeout(600); await shot(page, S('05b_path_watch'), 'Watch the computer: set-up'); });
     await step(S('06_course_later'), 'The guided course, a few cards in', async () => {
-      await home(); await page.click('button.path[data-path=learn]'); await page.waitForTimeout(800);
+      await home(); await pathBtn('learn'); await page.waitForTimeout(800);
       for (let i = 0; i < 4; i++) { const nb = await page.$('#course button.primary'); if (!nb) break; await nb.click(); await page.waitForTimeout(500); }
       await shot(page, S('06_course_later'), 'The guided course, a few cards in');
     });
-    await step(S('07_players'), 'Players, records and the trainer', async () => { await home(); await page.click('button.path[data-path=computer]'); await page.waitForTimeout(400); await page.click('#playersBtn'); await page.waitForTimeout(700); await shot(page, S('07_players'), 'Players, records and the trainer'); });
-    await step(S('08_levels'), 'Levels and rosters, in short', async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await page.click('#levelsPage'); await page.waitForTimeout(700); await shot(page, S('08_levels'), 'Levels and rosters, in short'); });
+    await step(S('07_players'), 'Players, records and the trainer', async () => { await home(); await page.click('button.path[data-path=computer]'); await page.waitForTimeout(400); await page.click('#playersBtn2'); await page.waitForTimeout(700); await shot(page, S('07_players'), 'Players, records and the trainer'); });
+    await step(S('08_levels'), 'Levels and rosters, in short', async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await adv(); await page.click('#levelsPage'); await page.waitForTimeout(700); await shot(page, S('08_levels'), 'Levels and rosters, in short'); });
     for (const [i, r, note] of [[9, 'build', 'Team builder (rules on)'], [10, 'random', 'Random deal'], [11, 'draft', 'Draft set-up']]) {
       const nm = S(`${i}_roster_${r}`);
-      await step(nm, note, async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await page.selectOption('#roster', r); await page.waitForTimeout(700); await shot(page, nm, note); });
+      await step(nm, note, async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await adv(); await page.selectOption('#roster', r); await page.waitForTimeout(700); await shot(page, nm, note); });
     }
-    await step(S('12_draft_board'), 'The draft board', async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await page.selectOption('#roster', 'draft'); await page.waitForTimeout(400); await page.click('#draftBtn'); await page.waitForTimeout(900); await shot(page, S('12_draft_board'), 'The draft board'); });
+    await step(S('12_draft_board'), 'The draft board', async () => { await home(); await page.click('button.path[data-path=friend]'); await page.waitForTimeout(400); await adv(); await page.selectOption('#roster', 'draft'); await page.waitForTimeout(400); await page.click('#draftBtn'); await page.waitForTimeout(900); await shot(page, S('12_draft_board'), 'The draft board'); });
 
     // In play: hot-seat game against a friend, digital match
     const g = await post('/api/new', { mode: 'hotseat', teams: ['Five Out', 'High-Low'], seed: 1, level: 'pro' });

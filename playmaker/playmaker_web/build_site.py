@@ -34,7 +34,7 @@ def bundle():
     return dict(version=1, files=files, engine_js=engine_js)
 
 
-JS_FILES = ['speedtest.js', 'notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js', 'advice.js', 'report.js', 'tips.js', 'play.js']       # in load order; index.html names them in this order
+JS_FILES = ['speedtest.js', 'notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js', 'advice.js', 'report.js', 'tips.js', 'watch.js', 'play.js']       # in load order; index.html names them in this order
 
 
 def speedtest_positions():

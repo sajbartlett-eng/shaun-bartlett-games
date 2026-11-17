@@ -375,12 +375,17 @@ def board_json(s, slots=None):
                 influence=influence(s) if s.stage != 'over' else None)
 
 
-def coverage_json(game, token):
+def coverage_json(game, token, n=None):
     """Step 18s (D-199): the coach's coverage view for the phase in play: each square's best option for the offence
     (who, the shot, what it is worth, who covers it and who is next), the same for each attacker alone, the defence's
-    best answers, and one line of words. {} when there is none."""
-    c = game.coverage_snapshot()
-    scores = game.phase_scores()               # stop two: the phase lines and the possession's line
+    best answers, and one line of words. {} when there is none. Step 19: n, a feed entry: the map of the board just
+    after that action (for watching the computer step by step, when the game itself has moved on)."""
+    if n is not None:
+        c = game.coverage_after(int(n))
+        scores = None
+    else:
+        c = game.coverage_snapshot()
+        scores = game.phase_scores()               # stop two: the phase lines and the possession's line
     if not c:
         return dict(scores=scores) if scores else {}
     layers, best = [], {}

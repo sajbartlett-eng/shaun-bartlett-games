@@ -115,6 +115,13 @@
           <label>Computer plays offence <select id="aiO"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
           <label>Computer plays defence <select id="aiX"><option value="">No</option><option value="rookie">Rookie</option><option value="starter">Starter</option><option value="allstar">All-Star</option></select></label>
         </fieldset>
+      <div id="batchRow" class="hidden">
+        <fieldset><legend>Play many without showing them</legend>
+          <label>Possessions (1 to 50) <input id="batchN" type="number" min="1" max="50" placeholder="none"></label>
+          <p class="note">Start then plays them all at once, with the computer's own settings, and downloads every report in one file and one data file. The report says which settings were on.</p>
+          <div id="batchOut"></div>
+        </fieldset>
+      </div>
     </details>
     <section id="joinBox" class="joinbox hidden">
       <h3>Join a game with a code</h3>
@@ -148,6 +155,7 @@
     </aside>
     <main id="tableMain">
       <div class="clipboard"><svg id="court" role="group" aria-label="Court"></svg></div>
+      <section id="watchBar" class="watchbar hidden" aria-label="Watching the computer"></section>
       <section id="tipBox" class="tipbox hidden" aria-label="Tip"></section>
       <section id="playBar" class="playbar hidden" aria-label="Your move"></section>
       <div id="coachLine" class="coachline"></div>
@@ -190,6 +198,7 @@
 <script src="advice.js"></script>
 <script src="report.js"></script>
 <script src="tips.js"></script>
+<script src="watch.js"></script>
 <script src="play.js"></script>
 </body>
 </html>

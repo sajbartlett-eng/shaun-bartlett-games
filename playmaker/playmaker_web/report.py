@@ -239,10 +239,43 @@ def build(game, possession, upto_phase=None):
         pa = phase_assessment(game, ph, lines, nm, broken_seen.get(ph))
         if pa:
             phases.append(pa)
-    out = dict(possession=possession, teams=list(game.teams), code=game.code, turns=lines, phases=phases, over=over)
+    out = dict(possession=possession, teams=list(game.teams), code=game.code, turns=lines, phases=phases, over=over,
+               setup=setup_lines(game, steps[0][0]) if steps else None, switches=switches(game))
     if over and upto_phase is None:
         out['summary'] = summary(game, possession, steps, lines, phases, broken_seen)
     return out
+
+
+def setup_lines(game, s):
+    """The setup as its own step: the board at tip-off and one line on what each side's setup was planning, read off
+    the map: the offence's best option by the next phase, and how far the defence holds it (their best look once the
+    defence answers)."""
+    c = coverage_at(game, s)
+    out = dict(start=_start(s), offence=None, defence=None)
+    if not c:
+        return out
+    b = c.get('best')
+    if b:
+        cov = f"X{b['cover'] + 1} covers it" if b.get('cover') is not None and b['cover'] >= 0 else 'nobody covers it'
+        out['offence'] = f"Offence: set up so that, by the next phase, O{b['o'] + 1} can get a {SHOT.get(b['shot'], b['shot'])} on {b['sq']}, worth {round(b['worth'])}; {cov}."
+    else:
+        out['offence'] = 'Offence: no shot can be reached by the next phase from this setup.'
+    out['defence'] = f"Defence: set up to hold their best look by the next phase to {round(c['strength'])}, once it answers."
+    out['numbers'] = c
+    return out
+
+
+def switches(game):
+    """What the computer played with: the reading's switches (ai_profiles.json eval) and the game's rule settings, so
+    a report can be audited against the settings it came from. Nothing here is changed by the report."""
+    import dataclasses
+    from playmaker_engine.decide import CONFIG
+    ev = CONFIG.get('eval', {})
+    rules = game.state.ctx.rules
+    r = {f.name: getattr(rules, f.name) for f in dataclasses.fields(rules)} if dataclasses.is_dataclass(rules) else {}
+    return dict(eval={k: ev.get(k) for k in ('map', 'lane', 'pass_rules', 'leaf_mode', 'reach') if k in ev},
+                computer=dict(getattr(game, 'ai', {}) or {}),
+                rules={k: v for k, v in r.items() if isinstance(v, (bool, int, str, float)) or v is None})
 
 
 def summary(game, possession, steps, lines, phases, broken_seen):

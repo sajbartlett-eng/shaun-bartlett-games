@@ -16,12 +16,12 @@ window.PMReport = (function () {
     const p = story.phases.find(x => x.possession === possession && x.phase === phase);
     return p ? p.entries.filter(e => e.turn === turn) : [];
   }
-  function turnDiagram(story, rep, t) {
+  function turnDiagram(story, rep, t, zones) {
     const entries = entriesOf(story, rep.possession, t.phase, t.turn);
-    return PM.phaseDiagram(st.zones, t.start, entries, { title: `Turn ${t.turn}`, subtitle: `Phase ${t.phase}`, arrowMode: story.arrow_mode });
+    return PM.phaseDiagram(zones || st.zones, t.start, entries, { title: `Turn ${t.turn}`, subtitle: `Phase ${t.phase}`, arrowMode: story.arrow_mode });
   }
-  function turnBlock(story, rep, t) {
-    const dia = turnDiagram(story, rep, t);
+  function turnBlock(story, rep, t, zones) {
+    const dia = turnDiagram(story, rep, t, zones);
     return { dia, el: el('section', { class: 'turnblock' }, [el('h3', { text: `Phase ${t.phase}, turn ${t.turn}` }), el('div', { class: 'diagrambox' }, [dia]),
       el('p', { class: 'tline off', text: t.offence }), el('p', { class: 'tline def', text: t.defence })]) };
   }
@@ -65,10 +65,19 @@ window.PMReport = (function () {
   }
   function stamp() { return new Date().toISOString().slice(0, 10); }
   function fileName(possession, ext) { return `playmaker_${G.code}_possession${possession}_${stamp()}.${ext}`; }
+  function page(body, title) {
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title><style>${cssText()}
+body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; } .reportdoc { max-width: 860px; margin: 20px auto; padding: 0 16px; }
+.turnblock, .phaseassess, .possassess { break-inside: avoid; page-break-inside: avoid; margin: 14px 0; }
+@media print { body { background: #fff; } .reportdoc { margin: 0; } }
+</style></head><body>${body.outerHTML}</body></html>`;
+  }
   async function build(possession) {
     const { rep, story } = await load(possession);
     const body = el('main', { class: 'reportdoc' }, [el('h1', { text: `Playmaker: ${rep.teams[0]} v ${rep.teams[1]}` }),
       el('p', { class: 'note', text: `Game ${rep.code} · possession ${possession} · ${stamp()}. One diagram a turn: the offence's turn and the defence's answer, numbered in order. Black: offence. Red: defence.` })]);
+    if (rep.setup && rep.setup.offence) body.append(el('h2', { text: 'The setup' }), el('p', { class: 'tline off', text: rep.setup.offence }), el('p', { class: 'tline def', text: rep.setup.defence }));
     const phases = [...new Set(rep.turns.map(t => t.phase))];
     for (const ph of phases) {
       body.append(el('h2', { text: `Phase ${ph}` }));
@@ -76,6 +85,7 @@ window.PMReport = (function () {
       const pb = phaseBlock(rep.phases.find(p => p.phase === ph)); if (pb) body.append(pb);
     }
     const sb = summaryBlock(rep.summary); if (sb) body.append(sb);
+    if (rep.switches) body.append(el('p', { class: 'note small', text: `Played with: ${JSON.stringify(rep.switches.eval)}; computer ${JSON.stringify(rep.switches.computer)}.` }));
     return { rep, story, body };
   }
   async function download(possession, kind) {
@@ -87,12 +97,7 @@ window.PMReport = (function () {
           story: story.phases.filter(p => p.possession === possession), scores: story.scores };
         blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
       } else {
-        const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Playmaker report: game ${rep.code}, possession ${possession}</title><style>${cssText()}
-body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; } .reportdoc { max-width: 860px; margin: 20px auto; padding: 0 16px; }
-.turnblock, .phaseassess, .possassess { break-inside: avoid; page-break-inside: avoid; margin: 14px 0; }
-@media print { body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; } .reportdoc { margin: 0; } h2 { break-before: auto; } }
-</style></head><body>${body.outerHTML}</body></html>`;
+        const html = page(body, `Playmaker report: game ${rep.code}, possession ${possession}`);
         blob = new Blob([html], { type: 'text/html' });
       }
       const a = el('a', { href: URL.createObjectURL(blob), download: fileName(possession, kind === 'json' ? 'json' : 'html') });
@@ -100,5 +105,5 @@ body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Robo
       announce(kind === 'json' ? 'The data file is downloading.' : 'The report is downloading.');
     } catch (e) { alert(e.message); }
   }
-  return { phaseView, endBlock, download, build, summaryBlock, phaseBlock, turnBlock, load };
+  return { phaseView, endBlock, download, build, summaryBlock, phaseBlock, turnBlock, load, page };
 })();

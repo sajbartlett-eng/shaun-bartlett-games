@@ -708,6 +708,23 @@ class Game:
         t['steps'].append((before, a, node))
         self.__dict__.setdefault('_trails', {}).setdefault(self.possession, []).append((before, a, node, turn))
 
+    def coverage_after(self, n):
+        """Step 19: the coverage map of the board just after feed entry n (the state the step-through shows), or None
+        where it can't be read (a shot in the air, the possession over, no fast engine)."""
+        s = self.__dict__.get('_feedstate', {}).get(n)
+        if self.match_format != 'digital' or s is None or s.stage != 'play':
+            return None
+        from playmaker_engine import agent as _AG
+        try:
+            c = _AG.coverage(s)
+        except Exception:                   # the view must never stop a game
+            return None
+        if c is not None:
+            c['possession'] = next((e['possession'] for e in self.feed if e['n'] == n), self.possession)
+            c['change'] = None
+            c['n'] = n
+        return c
+
     _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
 
     def phase_scores(self):
@@ -1476,6 +1493,10 @@ class Game:
                      outcomes=consequences(before, node, a) + fouled_shot_dice(node, self.rng), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
                      turn=turn, mark=mark, board=board_json(node, self.slots))
+        fs = self.__dict__.setdefault('_feedstate', {})      # step 19: the board after each entry, for the map while watching
+        fs[entry['n']] = node
+        for k in [k for k in fs if k < entry['n'] - 400]:
+            del fs[k]
         # the read the board offered before this action (the best ▲ look): kept aside, never in a play payload
         # (neutrality: the page judges nothing during play); the story releases it once the possession is over
         if a.kind != 'target':

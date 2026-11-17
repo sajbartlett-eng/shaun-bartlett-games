@@ -430,3 +430,8 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .tipbox { width: 100%; max-width: 900px; margin-top: 8px; background: #fff7d6; border-radius: 10px; padding: 6px 10px; box-shadow: var(--shadow); }
 .tipbox .buttons { margin-top: 2px; }
 .tipbox button.small { min-height: 44px; }
+
+/* ---- step 19, stage 6: watching the computer ---- */
+.watchbar { width: 100%; max-width: 900px; margin-top: 8px; background: var(--sheet); border-radius: 10px; padding: 6px 12px; box-shadow: var(--shadow); border-left: 6px solid var(--navy); }
+.watchbar .watchline { margin: 2px 0 4px; font-weight: 600; }
+.watchbar button { min-height: 44px; }

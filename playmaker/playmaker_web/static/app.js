@@ -190,6 +190,7 @@ function choosePath(which, showKind, quiet) {
   frontRows(which);
   defaultsFor(which);
   $('joinBox').classList.toggle('hidden', which !== 'friend');
+  $('batchRow').classList.toggle('hidden', which !== 'watch');
   $('kind').value = scenario ? 'scenario' : 'full';
   $('aiRow').classList.toggle('hidden', !computer && !scenario);
   $('aiSeatRow').classList.toggle('hidden', !computer);
@@ -462,6 +463,7 @@ async function create() {
       body.draft = draftId;
     }
   }
+  if (path === 'watch' && Number($('batchN').value) > 0) { await PMWatch.batch(Number($('batchN').value), body); return; }   // step 19: the batch
   const humans = matchPlayers(body);
   if (body.match_format === 'digital') {          // step 3n F3: the pairing's running quarter carries into this match
     try { const pr = await PMRecords.pairing(PMRecords.pairingId(humans.players)); if (pr && pr.quarter) body.quarter = pr.quarter; } catch (e) { /* no records */ }
@@ -563,7 +565,8 @@ function render() {
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
   playFocus();
-  PMTips.check();                         // step 19, stage 5: one tip at the moment it first matters
+  PMTips.check();
+  PMWatch.bar();                         // step 19, stage 5: one tip at the moment it first matters
   $('phoneTimer').innerHTML = ''; if (s.timer && s.timer.mode !== 'idle' && s.timer.side) $('phoneTimer').append(timerEl());
   timerRecv();
   const k = sel.kind || (pend ? 'pend' : null);
@@ -831,11 +834,12 @@ function covLine(r) {
   return `${r.sq}: O${r.o + 1} can get ${COV_SHOT[r.shot] || r.shot} here next phase${r.rushed ? ', off balance' : ''}, worth ${Math.round(r.worth)} (open ${Math.round(r.value)}).${how} ${who}`;
 }
 async function fetchCov() {
-  if (!showCov() || !st || !G || replay) return;
-  const key = `${G.code}:${st.possession}:${st.phase}:${st.stage === 'over' ? 'over' : 'play'}`;
+  if (!showCov() || !st || !G || (replay && !PMWatch.on())) return;
+  const n = replay ? replay.entries[replay.k].n : null;          // step 19: watching: the map of the board on show
+  const key = `${G.code}:${st.possession}:${st.phase}:${st.stage === 'over' ? 'over' : 'play'}:${n}`;
   if (covAsk === key) return;
   covAsk = key;
-  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}`); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
+  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}` + (n ? `&n=${n}` : '')); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
   catch (e) { covMap = null; }
 }
 function drawCov(c) {
@@ -853,6 +857,10 @@ function drawCov(c) {
   c.append(g);
 }
 function covPanel() {
+  if (OPTS && OPTS.coverage === false) {           // step 19, stage 6: hidden where the map can't run, and said so
+    $('sideButtons').append(el('span', { class: 'note', id: 'covNone', text: 'The coverage view needs Node on the server.' }));
+    return;
+  }
   $('sideButtons').append(el('button', { class: 'small', id: 'covToggle', 'aria-pressed': showCov() ? 'true' : 'false', text: showCov() ? 'Coverage: shown' : 'Coverage: hidden',
     onclick: () => { try { localStorage.setItem('pm_covmap', showCov() ? '0' : '1'); } catch (e) { /* ignore */ } covAsk = ''; render(); } }));
   if (!showCov()) return;
@@ -1218,6 +1226,7 @@ function endModal() {
   }
   announce(`Possession over: ${r.total}, ${r.band}.`);
   modal(kids, () => {});
+  PMWatch.onEnd();
 }
 
 function renderScenario() {
@@ -1623,6 +1632,7 @@ function showFeedIfNew() {
   sel = { side: null, i: null, kind: null, dest: null };
   st = frameState(replay.live, fresh[0]);
   render();
+  if (PMWatch.on()) PMWatch.maybeSetup(fresh[0].possession);   // step 19: the setup, as its own step
   return true;
 }
 function replayPrev() {
@@ -1650,6 +1660,7 @@ function renderStep() {
     el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn })].filter(Boolean));   // no call, no referee line (and never a "null")
   announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
   $('stepOk').focus();
+  PMWatch.onStep();                        // step 19, stage 6: watching, the OK is pressed at the chosen speed
 }
 // where the acting piece came from: a dashed ring and a dashed line to where it is now
 function drawGhost(c) {
@@ -1993,6 +2004,7 @@ async function showPhaseDiagram(due) {
         el('button', { text: 'Save the turns as images', onclick: async () => { for (const [k, b] of tv.blocks.entries()) await saveDiagram(b.dia, `${st.code}_possession${due.possession}_phase${due.phase}_turn${k + 1}.png`); } }),
         el('button', { text: 'The story so far', onclick: () => { done(); closeModal(); showStory(); } })])];
     modal(kids, () => { done(); render(); });
+    PMWatch.onModal(() => { done(); closeModal(); render(); });
     announce(`Phase ${due.phase} over. ` + tv.rep.turns.filter(t => t.phase === due.phase).map(t => `${t.offence} ${t.defence}`).join(' '));
     const b = $('phaseContinue'); if (b) b.focus();
     return;
