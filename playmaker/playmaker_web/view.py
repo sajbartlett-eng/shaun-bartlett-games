@@ -388,6 +388,20 @@ def coverage_json(game, token, n=None):
         scores = game.phase_scores()               # stop two: the phase lines and the possession's line
     if not c:
         return dict(scores=scores) if scores else {}
+    def flat(key):
+        layers, best = [], {}
+        for a, sq in enumerate(c.get(key) or []):
+            rows = []
+            for name, v in sq.items():
+                q = B.parse_sq(name)
+                row = dict(sq=name, x=q[0], y=q[1], o=a, worth=v['worth'], value=v['value'], reach=v['reach'], weakness=v['weakness'], shot=v['shot'],
+                           cover=v['cover'], next=v['next'], rushed=v['rushed'])
+                rows.append(row)
+                if name not in best or v['worth'] > best[name]['worth']:
+                    best[name] = row
+            layers.append(sorted(rows, key=lambda r: r['sq']))
+        return sorted(best.values(), key=lambda r: r['sq']), layers
+    all_after, layers_after = flat('squares_after')         # step 20: what stays open after the defence's best answer
     layers, best = [], {}
     for a, sq in enumerate(c['squares']):
         rows = []
@@ -401,7 +415,9 @@ def coverage_json(game, token, n=None):
         layers.append(sorted(rows, key=lambda r: r['sq']))
     return dict(possession=c['possession'], phase=c['phase'], words=c['words'], change=c.get('change'), worth=c['worth'], best=c['best'], left=c['left'],
                 answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
-                strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers)
+                strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers,
+                lasting=c.get('lasting'), before=c.get('before'), overloads=c.get('overloads') or [], all_after=all_after, attackers_after=layers_after,
+                placed=(c.get('after') or {}).get('x'))
 
 
 def state_json(game, token):

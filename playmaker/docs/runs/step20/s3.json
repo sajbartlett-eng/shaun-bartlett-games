@@ -1,0 +1,83 @@
+{
+ "the_offences_own_first_turn": [
+  "O3 Move to N7",
+  "O1 Move to H10"
+ ],
+ "it_reads": 22,
+ "does_it_screen": false,
+ "the_defences_pick_after_the_screen": [
+  "X3 Move to M10 facing S",
+  "X1 Move to I8 facing W"
+ ],
+ "strength": {
+  "at_the_start": {
+   "shot": 6,
+   "way": 34,
+   "second": 34,
+   "way_answered": 26,
+   "second_answered": 24
+  },
+  "after_the_screen": {
+   "shot": 0,
+   "way": 34,
+   "second": 34,
+   "way_answered": 26,
+   "second_answered": 24
+  }
+ },
+ "lines": {
+  "S3 start: the offence as it chooses": {
+   "mean": 26.1,
+   "low": 23.7,
+   "high": 28.6,
+   "ends": {
+    "shot": 8
+   }
+  },
+  "S3 start: the screen set on the on-ball defender (the T on his square)": {
+   "mean": 24.0,
+   "low": 24.0,
+   "high": 24.0,
+   "ends": {
+    "shot": 8
+   }
+  },
+  "S3 start: the screen set behind him (the T on his way back)": {
+   "mean": 26.4,
+   "low": 22.7,
+   "high": 30.0,
+   "ends": {
+    "shot": 8
+   }
+  },
+  "S3 after the screen: the defence's own pick": {
+   "mean": 24.0,
+   "low": 24.0,
+   "high": 24.0,
+   "ends": {
+    "shot": 8
+   }
+  },
+  "S3 after the screen: X1 challenges the screen": {
+   "mean": 28.8,
+   "low": 23.9,
+   "high": 33.6,
+   "ends": {
+    "shot": 8
+   }
+  },
+  "S3 after the screen: the defence pauses": {
+   "mean": 28.6,
+   "low": 25.1,
+   "high": 32.2,
+   "ends": {
+    "shot": 8
+   }
+  }
+ },
+ "the_screen_less_its_own_choice": {
+  "diff": -2.1,
+  "low": -4.6,
+  "high": 0.3
+ }
+}

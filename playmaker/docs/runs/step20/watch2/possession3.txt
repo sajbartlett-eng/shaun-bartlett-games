@@ -1,0 +1,24 @@
+Possession 3: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O2's three on A4, worth 18: X1 covers it.
+  Defence: set up to hold the lasting gap to 18. X5 is the only cover for O3's three on Q4 and O5's mid-range shot on M2: whichever he takes, the other is open (worth 18).
+Phase 1
+  Turn 1
+    Offence: O2 moved to B7, then O1 passed to O2. The lasting gap rose from 18 to 20.
+    Defence: X2 moved to E8, facing south-west, then X1 moved to H8, facing south. That took the lasting gap from 20 down to 18.
+  Turn 2
+    Offence: O2 shot a three.
+    Defence: X3 moved to O8, facing north-east, then X4 moved to C6, facing west. The possession ended.
+  The coach on phase 1
+    Offence: Turn 2: the shot went up with the defence not broken.
+    Offence: Best turn: turn 1, O2 moved to B7, then O1 passed to O2: from 18 to 20.
+    Defence: Turn 2: the shot went up against them.
+    Defence: Best answer: turn 1, X2 moved to E8, facing south-west, then X1 moved to H8, facing south: from 20 down to 18.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O2's three from B7. Open, it was worth 33; the contest took 12 off, leaving 21.
+  Scored 21 (Good).
+  The shot taken was the best one the measure saw all possession.
+  Offence: Keep: phase 1, turn 1: the lasting gap rose from 18 to 20.
+  Defence: Keep: phase 1, turn 1: the answer took the lasting gap from 20 down to 18.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

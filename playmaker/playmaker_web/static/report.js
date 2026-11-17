@@ -4,7 +4,7 @@
 //   what each team did. At the end of each phase the coach's assessment for both teams, leading into the next. At the
 //   end of the possession the whole possession's, with the shot-quality breakdown. Download it as a report (one HTML
 //   file that prints cleanly; print to PDF from the browser) and as a data file (JSON) with every number behind it.
-//   Every line comes from the server (report.py): the coverage map and the strength measure, never a guess.
+//   Every line comes from the server (report.py): the coverage map and the lasting gap (step 20), never a guess.
 'use strict';
 window.PMReport = (function () {
   async function load(possession, phase) {
@@ -85,7 +85,10 @@ body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Robo
       const pb = phaseBlock(rep.phases.find(p => p.phase === ph)); if (pb) body.append(pb);
     }
     const sb = summaryBlock(rep.summary); if (sb) body.append(sb);
-    if (rep.switches) body.append(el('p', { class: 'note small', text: `Played with: ${JSON.stringify(rep.switches.eval)}; computer ${JSON.stringify(rep.switches.computer)}.` }));
+    if (rep.switches) {
+      const m = rep.switches.eval.map, mw = m === true ? 'the heat map on for both sides' : m === 'offence' ? "the heat map on for the offence's decisions only" : 'the heat map off';
+      body.append(el('p', { class: 'note small', text: `Played with: ${mw}; ${JSON.stringify(rep.switches.eval)}; computer ${JSON.stringify(rep.switches.computer)}.` }));
+    }
     return { rep, story, body };
   }
   async function download(possession, kind) {

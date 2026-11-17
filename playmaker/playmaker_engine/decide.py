@@ -528,7 +528,8 @@ class Read:
         self._adv = None
         self._ahead = False                # step 18q: lane_ahead(), once
         self._lane = False                 # step 18q: _lane_data(), once
-        self._map2 = None                  # step 18s, stop two: map_two(), once
+        self._map2 = None                # step 18s, stop two: map_two(), once
+        self._lg = None                  # step 20: map_lasting(), once
         self._drib = None                  # step 18q: _dribble_ok(), once
 
     # -- contest maps
@@ -1293,6 +1294,212 @@ class Read:
                 o[2] = o[0] * o[1] - (1 - o[0]) * 5 if o[0] > 0 else float('-inf')
         return steps
 
+    # ---- step 20 (Shaun, 17 Nov 2026): the lasting gap (engine.js lasting, lastingOf) ----
+    @staticmethod
+    def _map_cov(lk, opens, vals, d=-1, mine=None):
+        """engine.js covValue: (what the defence leaves of a look, its best type's index, the defender who takes most off
+        it, the next one), defender d's contest taken from `mine` (None: read without him)."""
+        top, tt, cov, nxt, ob, cb, nb = -1.0, 0, -1, -1, -1.0, -1, -1
+        for n, ty in enumerate(lk.types):
+            v, d1, v2, d2 = opens[n], -1, opens[n], -1
+            for j in range(5):
+                vd = mine if j == d else vals[j]
+                if not vd or ty not in vd or not vd[ty] < opens[n]:
+                    continue
+                x = vd[ty]
+                if x < v:
+                    v2, d2, v, d1 = v, d1, x, j
+                elif x < v2:
+                    v2, d2 = x, j
+            if v > top:
+                top, tt, cov, nxt = v, n, d1, d2
+            if opens[n] > ob:
+                ob, cb, nb = opens[n], d1, d2
+        if cov < 0 and top < ob:
+            cov, nxt = cb, nb
+        return top, tt, cov, nxt
+
+    def lasting(self, opts):
+        """engine.js lasting: the defence's best answer by a beam search over its real options (each defender at most one
+        movement: a Move with any arrow, turning on the spot included; a Quick Step or Sprint with the arrow it leaves
+        him), ranked by the lasting gap and then the threats left, the largest first. -> the best answer's state:
+        {moves, L, worths, ov, o}."""
+        import functools
+        s, rules = self.s, self.rules
+        BEAM, WIDE, HEAD = 3, 3, 6
+        mode = 0 if rules.zone == 'off' else 1
+        inf = float('-inf')
+
+        def less(x, y):
+            for k in range(max(len(x), len(y))):
+                u = x[k] if k < len(x) else inf
+                v = y[k] if k < len(y) else inf
+                if u < v - 1e-9:
+                    return True
+                if u > v + 1e-9:
+                    return False
+            return False
+        root_o = []
+        for key in sorted(opts):
+            o = opts[key]
+            if not o[0] > 0:
+                continue
+            top, tt, cov, nxt = self._map_cov(o[3], o[4], o[5])
+            root_o.append(dict(key=key, src=o, r=o[0], vals=list(o[5]), e=o[2], w=top, t=tt, cover=cov, next=nxt))
+
+        def head_of(st):
+            return sorted((x for x in st['o'] if x['r'] > 0), key=lambda x: (-x['e'], x['key']))[:HEAD]
+
+        def overloads(st):
+            by = [[] for _ in range(5)]
+            for x in st['o']:
+                if not x['r'] > 0 or x['cover'] < 0 or x['next'] >= 0 or not x['e'] > 0:
+                    continue
+                lk, opens = x['src'][3], x['src'][4]
+                wd = x['r'] * self._map_cov(lk, opens, x['vals'], x['cover'], None)[0] - (1 - x['r']) * 5
+                by[x['cover']].append((wd, x))
+            out = []
+            for d in range(5):
+                lst = sorted(by[d], key=lambda z: (-z[0], -z[1]['e'], z[1]['key']))[:12]
+                pair = None
+                for i in range(len(lst)):
+                    for j in range(i + 1, len(lst)):
+                        u, v = lst[i], lst[j]
+                        if u[1]['key'][0] == v[1]['key'][0] or B.cheb(u[1]['key'][1], v[1]['key'][1]) < 3:
+                            continue
+                        val = min(u[0], v[0])
+                        if pair is None or val > pair[0] + 1e-9:
+                            pair = (val, u, v)
+                if pair:
+                    out.append(dict(d=d, value=pair[0], threats=[dict(a=z[1]['key'][0], c=z[1]['key'][1], t=z[1]['t'], worth=z[0], now=z[1]['e'])
+                                                                 for z in (pair[1], pair[2])]))
+            return out
+
+        def score(st):
+            head = head_of(st)
+            worths = [x['e'] for x in head]
+            ov = overloads(st)
+            L = worths[0] if worths else 0.0
+            for v in ov:
+                if v['value'] > L:
+                    L = v['value']
+            st['L'], st['worths'], st['ov'] = L, worths, ov
+
+        def better(a, b):
+            if a['L'] < b['L'] - 1e-9:
+                return True
+            if a['L'] > b['L'] + 1e-9:
+                return False
+            if less(a['worths'], b['worths']):
+                return True
+            if less(b['worths'], a['worths']):
+                return False
+            if len(a['moves']) != len(b['moves']):
+                return len(a['moves']) < len(b['moves'])
+            for ma, mb in zip(a['moves'], b['moves']):
+                if ma != mb:
+                    return ma < mb
+            return False
+        cmp = lambda u, v: -1 if better(u, v) else 1 if better(v, u) else 0
+        taken = set(s.o) | set(s.x)
+        root = dict(moves=[], moved=[False] * 5, taken=taken, tok=s.tok_x, o=root_o)
+        score(root)
+        best, frontier = root, [root]
+        for _depth in range(5):
+            if not frontier:
+                break
+            nexts = []
+            for st in frontier:
+                if st['tok'] <= 0:
+                    continue
+                head = head_of(st)
+                cur = [x['e'] for x in head]
+                if not head or not head[0]['e'] > 0:
+                    continue
+                cands, seen = [], set()
+
+                def offer(d, q, a, cm):
+                    if (d, q, a) in seen:
+                        return
+                    seen.add((d, q, a))
+                    after, touched = [], False
+                    for x in head:
+                        if x['key'][1] == q:
+                            e = inf
+                        else:
+                            row = cm.get(x['key'][1])
+                            mine = (self._vals2(x['src'][3], d, row) or None) if row is not None else None
+                            e = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * 5
+                        if e < x['e'] - 1e-9:
+                            touched = True
+                        after.append(e)
+                    if not touched:
+                        return
+                    after.sort(reverse=True)
+                    if less(after, cur):
+                        cands.append(dict(d=d, q=q, a=a, cm=cm, after=after))
+                for d in range(5):
+                    if st['moved'][d] or not B.on_board(s.x[d]):
+                        continue
+                    can_move, qs_left = _caps(s, 'X', d)
+                    if not can_move and qs_left <= 0:
+                        continue
+                    qs = s.ctx.dfn[d].qs
+                    free, fixed = defender_map(s, d, exact=True)
+                    if can_move:                       # a Move on the spot: a new arrow
+                        offer(d, s.x[d], -1, _any_arrow_cmap(rules, s.x[d], qs, mode))
+                    for q, n in free.items():
+                        if n == 1 and q not in st['taken']:
+                            offer(d, q, -1, _any_arrow_cmap(rules, q, qs, mode))
+                    for q, arrs in fixed.items():
+                        if q in st['taken']:
+                            continue
+                        for a, n in arrs.items():
+                            if n == 1:
+                                offer(d, q, a, _cmap_cached(rules, q, a, qs, True, 1, mode))
+
+                def ccmp(u, v):
+                    if less(u['after'], v['after']):
+                        return -1
+                    if less(v['after'], u['after']):
+                        return 1
+                    return -1 if (u['d'], u['q'], u['a']) < (v['d'], v['q'], v['a']) else 1 if (u['d'], u['q'], u['a']) > (v['d'], v['q'], v['a']) else 0
+                cands.sort(key=functools.cmp_to_key(ccmp))
+                for c in cands[:WIDE]:
+                    d, q, a, cm = c['d'], c['q'], c['a'], c['cm']
+                    o2 = []
+                    for x in st['o']:
+                        y = dict(x)
+                        y['vals'] = list(x['vals'])
+                        if x['key'][1] == q:
+                            y['r'], y['e'] = 0.0, inf
+                            o2.append(y)
+                            continue
+                        row = cm.get(x['key'][1])
+                        y['vals'][d] = (self._vals2(x['src'][3], d, row) or None) if row is not None else None
+                        y['w'], y['t'], y['cover'], y['next'] = self._map_cov(x['src'][3], x['src'][4], y['vals'])
+                        y['e'] = y['r'] * y['w'] - (1 - y['r']) * 5 if y['r'] > 0 else inf
+                        o2.append(y)
+                    moved = list(st['moved'])
+                    moved[d] = True
+                    ch = dict(moves=st['moves'] + [(d, q, a)], moved=moved, taken=st['taken'] | {q}, tok=st['tok'] - 1, o=o2)
+                    score(ch)
+                    nexts.append(ch)
+            if not nexts:
+                break
+            nexts.sort(key=functools.cmp_to_key(cmp))
+            frontier = nexts[:BEAM]
+            if better(frontier[0], best):
+                best = frontier[0]
+        return best
+
+    def map_lasting(self):
+        """The lasting gap of this reading's position, read like for like (lasting_of); only the number is kept."""
+        if self._lg is None:
+            g = lasting_of(self.s, self.cfg)
+            self._lg = (g['L'] if g else None,)
+        return self._lg[0]
+
     def map_two(self, answered=False):
         """The map's two numbers for the search: the best any attacker can have at the start of the next phase and the
         best a second, separate attacker can have; as the board stands, or after the defence's answers (map_answers)."""
@@ -1331,31 +1538,21 @@ class Read:
         return max(self.shot_now() or 0.0, now)
 
     def _map_leaf(self):
-        """The reading from the coverage map: what is left to earn = a fitted line over the shot now, the best way and
-        the second way, per phase and side to act (the weights file's calibration_map). None: no line (the reading as
-        it was)."""
+        """Step 20 (Shaun, 17 Nov 2026), both sides: the reading from the map is what is banked, plus the larger of the best
+        shot that can go up now and the lasting gap: what the offence can still force after the defence's best answer,
+        read like for like. Used directly: it is in points, as a shot's value is. None: the map is off."""
         s = self.s
         # (the quick look that orders the list, k = 0, keeps its own reading: engine.js quickLeaf)
         on = self.cfg.get('map')                   # True: both sides; 'offence': only where the decision searched is the offence's
         if not (on is True or (on == 'offence' and MAP_ME[0] == 'O')) or self.k <= 0 or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
-            return None
-        w = learned_weights()
-        if not w or not w.get('calibration_map'):
-            return None
-        phase = min(6, max(1, (12 - s.clock) // 2 + 1))
-        row = w['calibration_map']['maps'].get(f"{phase}{'O' if self.o_to_act else 'X'}")
-        if not row:
             return None
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
         shot = self.map_shot()
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + shot
-        # the two ways as the board stands, or as the defence's answers leave them: whichever form the line was fitted on
-        two, k = self.map_two(w['calibration_map'].get('form') == 'answered'), row['w']
-        line = k[0] + (k[1] * shot + k[2] * two[0] + k[3] * two[1])
-        sn = (self.shot_now() or 0.0) if self.o_to_act else 0.0       # the offence to act can simply shoot
-        return banked + max(sn, line)
+        L = self.map_lasting()
+        return banked + max(shot, L if L is not None else 0.0)
 
     def leaf(self):
         """The position's value at the search's horizon: today's hand-combined reading (_hand_leaf), or, with
@@ -2377,6 +2574,30 @@ def _exact_one(s, d):
     free, fixed = defender_map(s, d, exact=True)
     return frozenset([s.x[d]] + [q for q, n in free.items() if n <= 1] +
                      [q for q, arr in fixed.items() if min(arr.values()) <= 1])
+
+
+def cov_fresh(s):
+    """Step 20 (engine.js covFresh): the position as a fresh phase would find it (resolve.new_phase, no clock taken off):
+    the offence's full turn to come and the defence's movement fresh. A pass in the air is read as caught."""
+    from .state import ZERO_COUNTS
+    if s.pending:
+        s = s.with_(ball=s.pending[1], pending=None, approach=-1)
+    return s.with_(screens=(), beaten=(), tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0, qs_o=0, qs_x=0,
+                   lock_o=0, lock_x=0, rush_o=0, rush_x=0, cnt=ZERO_COUNTS, turn_n=0, side='O', stage='play', approach=-1, prev_wait='',
+                   final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
+
+
+def lasting_of(s, cfg=None):
+    """Step 20 (engine.js lastingOf): the lasting gap of a position, read like for like. None in the last phase, or with
+    a shot in the air. -> {L, before, ov, moves, best}."""
+    if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS:
+        return None
+    f = cov_fresh(s)
+    r = Read(f, cfg=cfg)
+    opts = r.map_options()
+    best = r.lasting(opts)
+    before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)
+    return dict(L=best['L'], before=before, ov=len(best['ov']), moves=len(best['moves']), best=best)
 
 
 MAP_ME = [None]            # step 18s, stop two: the side whose decision the search in hand is (search.Searcher sets it)

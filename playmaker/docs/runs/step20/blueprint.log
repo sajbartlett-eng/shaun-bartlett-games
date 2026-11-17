@@ -1,0 +1,91 @@
+== closeout
+[tally] part 3: the closeout positions, the computer's own pick (closeout) (3 positions, {'pass_rules': True, 'map': True}): 0.01 core-hours; total 22.92
+[tally] part 3: the closeout positions replayed under D-198 (closeout) (13 lines on 3 positions, 8 each, {'O': {'pass_rules': True, 'map': True}, 'X': {'pass_rules': True, 'map': True}}): 2.265 core-hours; total 25.18
+closeout, shooter cannot move | picks: the computer's own pick | best by play: the computer's own pick {'diff': 0.0, 'low': 0.0, 'high': 0.0}
+      your order: X3 Quick Steps to E4 and keeps the Move; X2 moves to B6 (33.0, 33.0, 33.0, {'shot': 8})
+      the computer's own pick (24.0, 24.0, 24.0, {'shot': 8})
+      X3 Moves to C4 and keeps the Quick Step; X2 moves to B6 (33.0, 33.0, 33.0, {'shot': 8})
+      X3 Quick Steps to E4, and the computer chooses the rest (33.0, 33.0, 33.0, {'shot': 8})
+      the defence Pauses (26.2, 23.4, 29.1, {'shot': 8})
+closeout, step 2 | picks: the computer's own pick | best by play: the computer's own pick {'diff': 0.0, 'low': 0.0, 'high': 0.0}
+      the computer's own pick (22.4, 20.2, 24.5, {'shot': 8})
+      X3 Moves next to him, then tries a Steal (23.4, 21.2, 25.6, {'shot': 8})
+      X3 Moves next to him and stops (24.0, 24.0, 24.0, {'shot': 8})
+      the defence Pauses (24.0, 24.0, 24.0, {'shot': 8})
+game EB3F5B, the pass in the air | picks: the computer's own pick | best by play: the defence Pauses (the log) {'diff': 4.0, 'low': 4.0, 'high': 4.0}
+      the computer's own pick (28.0, 28.0, 28.0, {'shot': 8})
+      X4 Moves to C4, facing him (28.0, 28.0, 28.0, {'shot': 8})
+      X4 Quick Steps to E4 (27.0, 27.0, 27.0, {'shot': 8})
+      the defence Pauses (the log) (24.0, 24.0, 24.0, {'shot': 8})
+== seconds closeout 2235.8
+== check7
+[tally] part 3: check 7 by forced lines, the map read (check7) (6 positions, 8 each, {'O': {'pass_rules': True, 'map': True}, 'X': {'pass_rules': True, 'map': True}}): 3.284 core-hours; total 28.47
+lane open: the offence as it chooses                 28.2 (22.8 to 33.7) {'post': 1, 'three': 4, 'layup': 3} | without the map 24.5 | first: [['O2 move D9', 8]]
+lane open: made to sprint into the lane              24.0 (24.0 to 24.0) {'three': 8} | without the map 27.8 | first: [['O1 pass', 8]]
+help in the lane: the offence as it chooses          19.6 (14.8 to 24.5) {'three': 8} | without the map 19.6 | first: [['O3 qs N9', 8]]
+help in the lane: made to sprint into the lane       22.5 (18.2 to 26.8) {'layup': 1, 'three': 7} | without the map 22.0 | first: [['O5 move O2', 8]]
+Shaun's board from the start: his game               26.8 (23.9 to 29.6) {'post': 4, 'three': 4} | without the map 24.8 | first: [['O1 pass', 6], ['O3 sprint L6', 2]]
+Shaun's board from the start: X4 and X5 in the lane  21.4 (20.6 to 22.1) {'three': 8} | without the map 20.7 | first: [['O3 sprint M9', 8]]
+== seconds check7 3155.7
+== check8
+[tally] part 3: check 8, the turns weighed (check8) (1 positions, {'pass_rules': True, 'map': True}): 0.003 core-hours; total 28.47
+[tally] part 3: check 8, the turns weighed, the defence (check8) (1 positions, {'pass_rules': True, 'map': True}): 0.003 core-hours; total 28.47
+[tally] part 3: check 8 and S2 by forced lines (check8) (5 lines on 2 positions, 8 each, {'O': {'pass_rules': True, 'map': True}, 'X': {'pass_rules': True, 'map': True}}): 3.201 core-hours; total 31.67
+Shaun's board, the offence's first turn      the computer's pick                        reads    22 leaves 24 played (24.5, 22.8, 26.2) ['O1 Pass to O3']
+Shaun's board, the offence's first turn      its last choice                            reads    18 leaves None played (24.9, 24.2, 25.6) ['O3 Sprint to L6', 'O2 Move to D9']
+Shaun's board, the defence's first turn      the computer's pick                        reads    24 leaves 24 played (26.5, 25.5, 27.5) ['X4 Move to B3 facing N', 'X1 Move to K10 facing E']
+Shaun's board, the defence's first turn      the turn that leaves the defence weakest   reads    26 leaves 26 played (29.0, 28.3, 29.7) ['X1 Quick Step to L8', 'X4 Move to B3 facing N']
+Shaun's board, the defence's first turn      its last choice                            reads    34 leaves None played (24.0, 24.0, 24.0) ['X4 Move to C3 facing N', 'X Pause']
+== seconds check8 3394.3
+== s3
+[tally] part 3: S3, the offence's own pick (s3) (1 positions, {'pass_rules': True, 'map': True}): 0.003 core-hours; total 31.68
+[tally] part 3: S3, the defence's own pick after the screen (s3) (1 positions, {'pass_rules': True, 'map': True}): 0.003 core-hours; total 31.68
+[tally] part 3: S3 by forced lines (s3) (6 lines on 2 positions, 8 each, {'O': {'pass_rules': True, 'map': True}, 'X': {'pass_rules': True, 'map': True}}): 5.98 core-hours; total 37.66
+S3 start | the offence as it chooses (26.1, 23.7, 28.6, {'shot': 8})
+S3 start | the screen set on the on-ball defender (the T on his square) (24.0, 24.0, 24.0, {'shot': 8})
+S3 start | the screen set behind him (the T on his way back) (26.4, 22.7, 30.0, {'shot': 8})
+S3 after the screen | the defence's own pick (24.0, 24.0, 24.0, {'shot': 8})
+S3 after the screen | X1 challenges the screen (28.8, 23.9, 33.6, {'shot': 8})
+S3 after the screen | the defence pauses (28.6, 25.1, 32.2, {'shot': 8})
+{
+ "the_offences_own_first_turn": [
+  "O3 Move to N7",
+  "O1 Move to H10"
+ ],
+ "it_reads": 22,
+ "does_it_screen": false,
+ "the_defences_pick_after_the_screen": [
+  "X3 Move to M10 facing S",
+  "X1 Move to I8 facing W"
+ ],
+ "strength": {
+  "at_the_start": {
+   "shot": 6,
+   "way": 34,
+   "second": 34,
+   "way_answered": 26,
+   "second_answered": 24
+  },
+  "after_the_screen": {
+   "shot": 0,
+   "way": 34,
+   "second": 34,
+   "way_answered": 26,
+   "second_answered": 24
+  }
+ },
+ "the_screen_less_its_own_choice": {
+  "diff": -2.1,
+  "low": -4.6,
+  "high": 0.3
+ }
+}
+== seconds s3 8177.9
+== s4
+[tally] part 3: S4, one core: the setups searched for 4 deals (s4): 0.007 core-hours; total 37.67
+[tally] part 3: S4 by play (12 setups, 4 each, the map read) (s4): 3.513 core-hours; total 41.18
+the setup as it was {'points': 25.9, 'low': 23.4, 'high': 28.5, 'possessions': 16, 'strength_at_the_start': 23.5, 'weak_first_phases': '6 of 7'}
+the setup judged by the map, both sides {'points': 29.5, 'low': 26.9, 'high': 32.1, 'possessions': 16, 'strength_at_the_start': 20.5, 'weak_first_phases': '8 of 8'}
+the map's offence against the old way of setting the defence {'points': 25.9, 'low': 23.4, 'high': 28.5, 'possessions': 16, 'strength_at_the_start': 24.0, 'weak_first_phases': '7 of 7'}
+== seconds s4 4133.5
+DONE

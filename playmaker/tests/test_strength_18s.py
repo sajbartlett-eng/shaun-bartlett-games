@@ -184,16 +184,14 @@ def cov():
 def test_strength_fragility_and_broken_are_read_off_the_map(cov):
     his = cov(board())
     helped = cov(board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N']))
-    # strength: the most the offence can force by the next phase's start, the defence's best answers counted
-    assert his['strength'] == max(his['left_worth'], his['dribble']['worth'] if his['dribble'] else 0)
-    assert helped['strength'] < his['strength']                  # help in the lane is the stronger defence (lower)
-    # fragility: the separate attackers who hold a way worth at least what is left
-    assert his['fragility'] == len(his['ways']) and 1 <= helped['fragility'] <= his['fragility'] <= 5
+    # strength (re-recorded in step 20, D-204): the lasting gap, the best open threat after the defence's best answer
+    # or the threat an overloaded defender leaves, whichever is higher
     for c in (his, helped):
-        best = {}
-        for a, squares in enumerate(c['squares']):
-            best[a] = max((v['worth'] for v in squares.values()), default=-99)
-        assert c['ways'] == [a for a in range(5) if best[a] > 0 and best[a] >= c['left']['worth'] - 1e-6]
+        assert c['strength'] == c['lasting'] == pytest.approx(max([c['left_worth']] + [v['value'] for v in c['overloads']]), abs=0.01)
+    assert helped['strength'] < his['strength']                  # help in the lane is the stronger defence (lower)
+    # fragility (re-recorded in step 20): the overloaded defenders, each the only cover for two attackers' threats
+    for c in (his, helped):
+        assert c['fragility'] == len(c['overloads']) <= 5
     # broken: a shot now worth more than playing on (the phase table); the point guard on plain wood has no shot
     assert his['shot_now'] is None and his['broken'] is False and 24 < his['carry_on'] < 30
 
@@ -253,18 +251,15 @@ def map_on():
     D.CONFIG['eval']['map'] = keep
 
 
-def test_the_map_reading_is_a_fitted_line_and_the_switch_says_whether_it_is_played_from(map_on):
-    w = D.learned_weights()['calibration_map']
-    assert w['form'] in ('standing', 'answered') and len(w['maps']) >= 6
-    for key, row in w['maps'].items():
-        assert key[0] in '123456' and key[1] in 'OX' and len(row['w']) == 4 and min(row['w'][1:]) >= 0     # fitted, never below 0
+def test_the_map_reading_is_the_lasting_gap_and_the_switch_says_whether_it_is_played_from(map_on):
+    """Re-recorded in step 20 (D-203, D-204; Shaun, 17 Nov 2026): the reading from the map is no longer step 18s's
+    fitted line (calibration_map, still in the weights file, no longer read) but the lasting gap, used directly:
+    what has been banked plus the larger of the shot now and what the offence can still force after the defence's
+    best answer."""
     s = board()
     r = D.Read(s)
-    row = w['maps']['1O']['w']
-    two = r.map_two(w['form'] == 'answered')
-    line = row[0] + (row[1] * r.map_shot() + row[2] * two[0] + row[3] * two[1])
     with_map = r.leaf()
-    assert with_map == pytest.approx(max(r.shot_now() or 0.0, line) + D.foul_externality(s))
+    assert with_map == pytest.approx(D.foul_externality(s) + max(r.map_shot(), r.map_lasting()))
     D.CONFIG['eval']['map'] = False
     assert D.Read(s).leaf() != pytest.approx(with_map)           # with the switch off: the reading as it was
     assert D.Read(s, k=0, looks_per=3)._map_leaf() is None       # the quick look that orders the list keeps its own reading
@@ -312,13 +307,13 @@ def test_both_engines_agree_on_the_maps_numbers(cov):
         E._ZONE.clear(), E._ZONE.update(keep[0]), E._FIBA.clear(), E._FIBA.update(keep[1]), E._CONTROL.update(keep[2])
 
 
-def test_the_map_is_played_from_only_where_asked_and_only_by_the_offence_then():
-    """The default (eval.map off): on the same dice the offence scores 2.1 more a possession playing from the map (0.4
-    to 3.8), but exam position 15 (goal consistency) fails with it on, so it isn't the default (D-196). ?map=1 turns it
-    on for the offence's decisions in a game; ?map=both for the defence's too (nothing shown for the defence)."""
+def test_the_map_is_on_for_both_sides_and_a_game_can_ask_otherwise():
+    """Re-recorded in step 20 (D-203, Shaun, 17 Nov 2026): the map is on for both sides by default, whatever the checks
+    say (exam position 15 fails with it on: an expected failure). Step 18s measured the offence 2.1 better a
+    possession playing from it (0.4 to 3.8). ?map=1 has only the offence's decisions read it; ?map=0 turns it off."""
     from playmaker_web.game import Game
     cfg = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))['eval']
-    assert cfg['map'] is False and cfg['pass_rules'] is True
+    assert cfg['map'] is True and cfg['pass_rules'] is True
     proof = json.load(open(os.path.join(ROOT, 'docs', 'runs', 'step18s', 'check7_paired.json')))
     assert proof['the_offence_on_the_map_less_off_it']['low'] > 0 and proof['the_defence_on_the_map_less_off_it']['high'] > 0
     keep, me = D.CONFIG['eval'].get('map'), D.MAP_ME[0]
@@ -337,8 +332,8 @@ def test_the_map_is_played_from_only_where_asked_and_only_by_the_offence_then():
         Game(match_format='digital', map_read='both', **kw)      # ?map=both
         assert D.CONFIG['eval']['map'] is True
         Game(match_format='digital', **kw)                       # the next game: the file's own setting
-        assert D.CONFIG['eval']['map'] is False
-        Game(map_read='offence', **kw)                           # nothing for the table
-        assert D.CONFIG['eval']['map'] is False
+        assert D.CONFIG['eval']['map'] is True
+        Game(map_read='offence', **kw)                           # the table: the file's setting, but the map reads only
+        assert D.CONFIG['eval']['map'] is True                   # under the app's rules (Read._map_leaf: digital only)
     finally:
         D.CONFIG['eval']['map'], D.MAP_ME[0] = keep, me

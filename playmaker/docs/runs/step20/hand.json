@@ -1,0 +1,281 @@
+[
+ {
+  "board": "Shaun, 15 Nov",
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "ball": "O1",
+  "x": [
+   "J10",
+   "D8",
+   "O8",
+   "B4",
+   "P2"
+  ],
+  "arrows": [
+   "NW",
+   "NW",
+   "N",
+   "SW",
+   "NE"
+  ],
+  "side": "O",
+  "tok_x": 6,
+  "before": 34,
+  "lasting": 24,
+  "answers": [
+   {
+    "x": 2,
+    "to": "K4",
+    "arrow": 5,
+    "turn": false
+   },
+   {
+    "x": 3,
+    "to": "F4",
+    "arrow": 2,
+    "turn": false
+   },
+   {
+    "x": 4,
+    "to": "M2",
+    "arrow": -1,
+    "turn": false
+   }
+  ],
+  "left": {
+   "o": 3,
+   "sq": "G3",
+   "shot": "post",
+   "value": 38,
+   "reach": 1,
+   "weakness": 24,
+   "worth": 24,
+   "cover": 3,
+   "next": 2,
+   "rushed": false
+  },
+  "overloads": [
+   {
+    "x": 2,
+    "value": 18,
+    "line": "X3 is the only cover for O3's three on Q7 and O5's three on Q4: whichever he takes, the other is open (worth 18).",
+    "threats": [
+     {
+      "o": 2,
+      "sq": "Q7",
+      "shot": "three",
+      "worth": 27
+     },
+     {
+      "o": 4,
+      "sq": "Q4",
+      "shot": "three",
+      "worth": 18
+     }
+    ]
+   }
+  ],
+  "words": "The defence's best answer: X3 to K4, X4 to F4, X5 to M2. That leaves a post shot for O4 on G3, worth 24: X4 covers it. X3 is the only cover for O3's three on Q7 and O5's three on Q4: whichever he takes, the other is open (worth 18).",
+  "seconds": 0.25,
+  "darkest_after": {
+   "sq": "G3",
+   "worth": 24,
+   "o": 3
+  }
+ },
+ {
+  "board": "the screen board",
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "J10"
+  ],
+  "ball": "O1",
+  "x": [
+   "I10",
+   "D8",
+   "O8",
+   "B4",
+   "K9"
+  ],
+  "arrows": [
+   "N",
+   "NW",
+   "N",
+   "SW",
+   "N"
+  ],
+  "side": "O",
+  "tok_x": 6,
+  "before": 34,
+  "lasting": 26,
+  "answers": [
+   {
+    "x": 0,
+    "to": "I5",
+    "arrow": 4,
+    "turn": false
+   },
+   {
+    "x": 3,
+    "to": "E4",
+    "arrow": -1,
+    "turn": false
+   },
+   {
+    "x": 2,
+    "to": "K4",
+    "arrow": 5,
+    "turn": false
+   }
+  ],
+  "left": {
+   "o": 4,
+   "sq": "J4",
+   "shot": "post",
+   "value": 38,
+   "reach": 1,
+   "weakness": 26,
+   "worth": 26,
+   "cover": 3,
+   "next": 0,
+   "rushed": false
+  },
+  "overloads": [],
+  "words": "The defence's best answer: X1 to I5, X4 to E4, X3 to K4. That leaves a post shot for O5 on J4, worth 26: X4 covers it.",
+  "seconds": 0.07,
+  "darkest_after": {
+   "sq": "J4",
+   "worth": 26,
+   "o": 4
+  }
+ },
+ {
+  "board": "the closeout board",
+  "o": [
+   "I11",
+   "B7",
+   "P7",
+   "A3",
+   "Q3"
+  ],
+  "ball": "O4",
+  "x": [
+   "I10",
+   "C8",
+   "F4",
+   "O7",
+   "P3"
+  ],
+  "arrows": [
+   "N",
+   "W",
+   "W",
+   "E",
+   "E"
+  ],
+  "side": "X",
+  "tok_x": 6,
+  "before": 24,
+  "lasting": 24,
+  "answers": [
+   {
+    "x": 2,
+    "to": "D5",
+    "arrow": -1,
+    "turn": false
+   },
+   {
+    "x": 0,
+    "to": "I6",
+    "arrow": 4,
+    "turn": false
+   }
+  ],
+  "left": {
+   "o": 1,
+   "sq": "G2",
+   "shot": "layup",
+   "value": 36,
+   "reach": 1,
+   "weakness": 20,
+   "worth": 20,
+   "cover": 0,
+   "next": 2,
+   "rushed": false
+  },
+  "overloads": [
+   {
+    "x": 0,
+    "value": 21,
+    "line": "X1 is the only cover for O3's layup on J4 and O1's three on J10: whichever he takes, the other is open (worth 21).",
+    "threats": [
+     {
+      "o": 2,
+      "sq": "J4",
+      "shot": "layup",
+      "worth": 36
+     },
+     {
+      "o": 0,
+      "sq": "J10",
+      "shot": "three",
+      "worth": 21
+     }
+    ]
+   },
+   {
+    "x": 2,
+    "value": 24,
+    "line": "X3 is the only cover for O4's three on A2 and O2's floater on D2: whichever he takes, the other is open (worth 24).",
+    "threats": [
+     {
+      "o": 3,
+      "sq": "A2",
+      "shot": "three",
+      "worth": 27
+     },
+     {
+      "o": 1,
+      "sq": "D2",
+      "shot": "floater",
+      "worth": 24
+     }
+    ]
+   },
+   {
+    "x": 4,
+    "value": 20,
+    "line": "X5 is the only cover for O5's three on Q2 and O3's floater on N2: whichever he takes, the other is open (worth 20).",
+    "threats": [
+     {
+      "o": 4,
+      "sq": "Q2",
+      "shot": "three",
+      "worth": 21
+     },
+     {
+      "o": 2,
+      "sq": "N2",
+      "shot": "floater",
+      "worth": 20
+     }
+    ]
+   }
+  ],
+  "words": "The defence's best answer: X3 to D5, X1 to I6. That leaves a layup for O2 on G2, worth 20: X1 covers it. X1 is the only cover for O3's layup on J4 and O1's three on J10: whichever he takes, the other is open (worth 21). X3 is the only cover for O4's three on A2 and O2's floater on D2: whichever he takes, the other is open (worth 24). X5 is the only cover for O5's three on Q2 and O3's floater on N2: whichever he takes, the other is open (worth 20).",
+  "seconds": 0.1,
+  "darkest_after": {
+   "sq": "G2",
+   "worth": 20,
+   "o": 1
+  }
+ }
+]

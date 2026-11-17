@@ -1,0 +1,492 @@
+{
+ "lane open: the offence as it chooses": {
+  "the old pass chance": {
+   "mean": 27.3,
+   "low": 25.0,
+   "high": 29.7,
+   "ends": {
+    "layup": 9,
+    "three": 5,
+    "floater": 2
+   },
+   "first_action": [
+    [
+     "O2 screen",
+     11
+    ],
+    [
+     "O1 move K10",
+     5
+    ]
+   ],
+   "points": [
+    38,
+    24,
+    32,
+    24,
+    28,
+    22,
+    25,
+    24,
+    28,
+    32,
+    28,
+    22,
+    34,
+    22,
+    30,
+    24
+   ],
+   "passes_a_possession": 1.25,
+   "turnovers_a_possession": 0.12
+  },
+  "the rules' own": {
+   "mean": 24.5,
+   "low": 22.5,
+   "high": 26.5,
+   "ends": {
+    "post": 6,
+    "three": 5,
+    "floater": 3,
+    "layup": 2
+   },
+   "first_action": [
+    [
+     "O2 move E10",
+     10
+    ],
+    [
+     "O1 move K10",
+     6
+    ]
+   ],
+   "points": [
+    20,
+    28,
+    24,
+    28,
+    26,
+    22,
+    24,
+    22,
+    26,
+    26,
+    27,
+    26,
+    30,
+    14,
+    21,
+    28
+   ],
+   "passes_a_possession": 2.81,
+   "turnovers_a_possession": 0.19
+  }
+ },
+ "lane open: made to sprint into the lane": {
+  "the old pass chance": {
+   "mean": 27.1,
+   "low": 25.2,
+   "high": 29.1,
+   "ends": {
+    "layup": 8,
+    "three": 8
+   },
+   "first_action": [
+    [
+     "O1 pass",
+     16
+    ]
+   ],
+   "points": [
+    22,
+    24,
+    27,
+    24,
+    24,
+    34,
+    34,
+    32,
+    24,
+    22,
+    32,
+    28,
+    27,
+    27,
+    27,
+    26
+   ],
+   "passes_a_possession": 1.56,
+   "turnovers_a_possession": 0.0
+  },
+  "the rules' own": {
+   "mean": 27.8,
+   "low": 25.5,
+   "high": 30.1,
+   "ends": {
+    "three": 4,
+    "layup": 12
+   },
+   "first_action": [
+    [
+     "O1 pass",
+     16
+    ]
+   ],
+   "points": [
+    24,
+    32,
+    30,
+    24,
+    32,
+    24,
+    20,
+    22,
+    24,
+    30,
+    30,
+    29,
+    34,
+    36,
+    30,
+    24
+   ],
+   "passes_a_possession": 2.0,
+   "turnovers_a_possession": 0.06
+  }
+ },
+ "help in the lane: the offence as it chooses": {
+  "the old pass chance": {
+   "mean": 19.9,
+   "low": 16.4,
+   "high": 23.3,
+   "ends": {
+    "three": 16
+   },
+   "first_action": [
+    [
+     "O1 move K10",
+     14
+    ],
+    [
+     "O2 screen",
+     2
+    ]
+   ],
+   "points": [
+    2,
+    24,
+    21,
+    11,
+    24,
+    22,
+    11,
+    16,
+    22,
+    21,
+    27,
+    27,
+    27,
+    24,
+    15,
+    24
+   ],
+   "passes_a_possession": 4.19,
+   "turnovers_a_possession": 0.62
+  },
+  "the rules' own": {
+   "mean": 19.6,
+   "low": 16.7,
+   "high": 22.4,
+   "ends": {
+    "three": 13,
+    "floater": 1,
+    "layup": 1,
+    "post": 1
+   },
+   "first_action": [
+    [
+     "O2 move E9",
+     10
+    ],
+    [
+     "O1 move H10",
+     4
+    ],
+    [
+     "O3 move Q7",
+     2
+    ]
+   ],
+   "points": [
+    17,
+    21,
+    27,
+    6,
+    27,
+    15,
+    17,
+    27,
+    21,
+    19,
+    27,
+    19,
+    13,
+    22,
+    18,
+    17
+   ],
+   "passes_a_possession": 4.5,
+   "turnovers_a_possession": 0.81
+  }
+ },
+ "help in the lane: made to sprint into the lane": {
+  "the old pass chance": {
+   "mean": 24.8,
+   "low": 22.7,
+   "high": 26.8,
+   "ends": {
+    "three": 10,
+    "layup": 5,
+    "post": 1
+   },
+   "first_action": [
+    [
+     "O1 pass",
+     16
+    ]
+   ],
+   "points": [
+    24,
+    27,
+    27,
+    21,
+    32,
+    27,
+    27,
+    16,
+    22,
+    24,
+    27,
+    24,
+    21,
+    32,
+    21,
+    24
+   ],
+   "passes_a_possession": 3.25,
+   "turnovers_a_possession": 0.06
+  },
+  "the rules' own": {
+   "mean": 22.0,
+   "low": 19.4,
+   "high": 24.6,
+   "ends": {
+    "three": 11,
+    "layup": 5
+   },
+   "first_action": [
+    [
+     "O1 pass",
+     15
+    ],
+    [
+     "O5 move Q2",
+     1
+    ]
+   ],
+   "points": [
+    12,
+    27,
+    21,
+    14,
+    27,
+    20,
+    21,
+    19,
+    23,
+    24,
+    22,
+    21,
+    27,
+    21,
+    19,
+    34
+   ],
+   "passes_a_possession": 3.75,
+   "turnovers_a_possession": 0.69
+  }
+ },
+ "Shaun's board from the start: his game": {
+  "the old pass chance": {
+   "mean": 26.5,
+   "low": 24.6,
+   "high": 28.4,
+   "ends": {
+    "layup": 8,
+    "post": 2,
+    "three": 5,
+    "floater": 1
+   },
+   "first_action": [
+    [
+     "O1 move G10",
+     9
+    ],
+    [
+     "O2 screen",
+     3
+    ],
+    [
+     "O1 qs I10",
+     3
+    ]
+   ],
+   "points": [
+    22,
+    28,
+    30,
+    18,
+    24,
+    25,
+    24,
+    27,
+    28,
+    24,
+    28,
+    27,
+    36,
+    26,
+    30,
+    27
+   ],
+   "passes_a_possession": 1.62,
+   "turnovers_a_possession": 0.06
+  },
+  "the rules' own": {
+   "mean": 24.8,
+   "low": 22.3,
+   "high": 27.3,
+   "ends": {
+    "layup": 5,
+    "three": 6,
+    "post": 5
+   },
+   "first_action": [
+    [
+     "O4 move A2",
+     15
+    ],
+    [
+     "O1 pass",
+     1
+    ]
+   ],
+   "points": [
+    21,
+    38,
+    24,
+    19,
+    28,
+    21,
+    16,
+    28,
+    27,
+    28,
+    22,
+    24,
+    28,
+    28,
+    21,
+    24
+   ],
+   "passes_a_possession": 2.69,
+   "turnovers_a_possession": 0.31
+  }
+ },
+ "Shaun's board from the start: X4 and X5 in the lane": {
+  "the old pass chance": {
+   "mean": 21.4,
+   "low": 19.3,
+   "high": 23.6,
+   "ends": {
+    "three": 14,
+    "layup": 2
+   },
+   "first_action": [
+    [
+     "O1 move G10",
+     14
+    ],
+    [
+     "O1 sprint H10",
+     2
+    ]
+   ],
+   "points": [
+    22,
+    27,
+    22,
+    27,
+    24,
+    22,
+    17,
+    22,
+    22,
+    24,
+    16,
+    22,
+    17,
+    11,
+    27,
+    21
+   ],
+   "passes_a_possession": 3.88,
+   "turnovers_a_possession": 0.69
+  },
+  "the rules' own": {
+   "mean": 20.7,
+   "low": 18.3,
+   "high": 23.0,
+   "ends": {
+    "three": 11,
+    "post": 1,
+    "floater": 1,
+    "layup": 3
+   },
+   "first_action": [
+    [
+     "O1 move G10",
+     10
+    ],
+    [
+     "O1 move H10",
+     3
+    ],
+    [
+     "O1 move I10",
+     2
+    ]
+   ],
+   "points": [
+    21,
+    21,
+    27,
+    16,
+    24,
+    12,
+    19,
+    22,
+    23,
+    28,
+    17,
+    13,
+    24,
+    19,
+    27,
+    18
+   ],
+   "passes_a_possession": 4.12,
+   "turnovers_a_possession": 0.69
+  }
+ }
+}

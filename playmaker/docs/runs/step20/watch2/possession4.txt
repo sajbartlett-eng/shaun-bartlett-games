@@ -1,0 +1,78 @@
+Possession 4: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O2's three on A4, worth 18: X1 covers it.
+  Defence: set up to hold the lasting gap to 21. X1 is the only cover for O2's long two on J9 and O3's floater on L4: whichever he takes, the other is open (worth 20).
+Phase 1
+  Turn 1
+    Offence: O1 moved to I10, then O3 moved to M9. The lasting gap rose from 21 to 26. X2 is the only cover for O1's three on D9 and O2's three on A7: whichever he takes, the other is open (worth 21).
+    Defence: X1 quick-stepped to K9, then X3 moved to O5, facing south. That took the lasting gap from 26 down to 20.
+  Turn 2
+    Offence: O5 moved to Q4, then O1 passed to O5. The lasting gap rose from 20 to 26.
+    Defence: The defence paused. The lasting gap held at 26.
+  Turn 3
+    Offence: O2 moved to D9, then the offence ended its turn. The lasting gap stayed at 26.
+    Defence: X2 moved to D8, facing north, then X5 moved to P3, facing north. That took the lasting gap from 26 down to 18.
+  Turn 4
+    Offence: O5 passed to O1. The lasting gap rose from 18 to 26. X1 is the only cover for O1's three on J10 and O3's three on M9: whichever he takes, the other is open (worth 24).
+    Defence: X1 moved to J8, facing north-east. That took the lasting gap from 26 down to 21.
+  The coach on phase 1
+    Offence: The lasting gap held at 21 this phase.
+    Offence: Best turn: turn 4, O5 passed to O1: from 18 to 26.
+    Defence: Best answer: turn 3, X2 moved to D8, facing north, then X5 moved to P3, facing north: from 26 down to 18.
+    Next phase, after the defence's best answer, look for O4's post shot on G2, worth 20: X3 covers it. X4 is the only cover for O2's floater on D2 and O1's three on A2: whichever he takes, the other is open (worth 21).
+Phase 2
+  Turn 1
+    Offence: O1 moved to J10, then O5 moved to N4. The lasting gap rose from 21 to 26.
+    Defence: X1 quick-stepped to I8, then X2 moved to D8, facing north-east. That took the lasting gap from 26 down to 21.
+  Turn 2
+    Offence: O2 moved to E9, then O1 passed to O2. The lasting gap rose from 21 to 26. X2 is the only cover for O1's three on E10 and O3's three on H10: whichever he takes, the other is open (worth 24).
+    Defence: X3 quick-stepped to N5, then the defence paused. The lasting gap held at 26.
+  Turn 3
+    Offence: O3 moved to M10, then O2 quick-stepped to E10. The lasting gap stayed at 26.
+    Defence: X3 moved to L7, facing west, then X4 moved to E4, facing west. That took the lasting gap from 26 down to 16.
+  The coach on phase 2
+    Offence: The lasting gap went from 21 to 16 this phase: the defence got stronger.
+    Offence: Best turn: turn 1, O1 moved to J10, then O5 moved to N4: from 21 to 26.
+    Defence: Best answer: turn 3, X3 moved to L7, facing west, then X4 moved to E4, facing west: from 26 down to 16.
+    Next phase, after the defence's best answer, look for O2's layup on G4, worth 16: X3 covers it. X4 is the only cover for O2's three on A4 and O4's mid-range shot on D2: whichever he takes, the other is open (worth 5).
+Phase 3
+  Turn 1
+    Offence: O5 moved to K4, then O2 passed to O4. The lasting gap rose from 16 to 26. X1 is the only cover for O1's three on J10 and O5's long two on N7: whichever he takes, the other is open (worth 14).
+    Defence: X4 moved to B4, facing east, then X2 moved to C8, facing north. That took the lasting gap from 26 down to 20.
+  Turn 2
+    Offence: O4 moved to A5, then O1 moved to G10. The lasting gap rose from 20 to 32. X1 is the only cover for O1's three on L10 and O2's three on I10: whichever he takes, the other is open (worth 21).
+    Defence: X3 moved to J5, facing south-east, then X1 moved to G9, facing west. That took the lasting gap from 32 down to 26.
+  Turn 3
+    Offence: O2 sprinted to H7, then O1 quick-stepped to E10. The lasting gap rose from 26 to 34. X3 is the only cover for O5's post shot on K2 and O2's layup on H2: whichever he takes, the other is open (worth 34).
+    Defence: X3 quick-stepped to I4, then X1 quick-stepped to G8. That took the lasting gap from 34 down to 26.
+  The coach on phase 3
+    Offence: The lasting gap went from 16 to 26 this phase: the defence got weaker.
+    Offence: Best turn: turn 2, O4 moved to A5, then O1 moved to G10: from 20 to 32.
+    Defence: Best answer: turn 3, X3 quick-stepped to I4, then X1 quick-stepped to G8: from 34 down to 26.
+    Next phase, after the defence's best answer, look for O5's post shot on G2, worth 26: X3 covers it. X2 is the only cover for O1's three on E10 and O2's three on H10: whichever he takes, the other is open (worth 21).
+Phase 4
+  Turn 1
+    Offence: O4 passed to O3. The lasting gap stayed at 26.
+    Defence: X1 moved to I10, facing east, then X4 moved to D5, facing north-west. The lasting gap held at 26.
+  Turn 2
+    Offence: O3 passed to O5. The lasting gap stayed at 26.
+    Defence: The defence paused. The lasting gap held at 26.
+  Turn 3
+    Offence: O1 set a screen. The lasting gap stayed at 26.
+    Defence: X2 moved to C8, facing north-east, then the defence ended its turn. The lasting gap held at 26.
+  Turn 4
+    Offence: O5 shot a post shot.
+    Defence: X3 moved to J3, facing north, then the defence ended its turn. The possession ended.
+  The coach on phase 4
+    Offence: Turn 4: the shot went up with the defence not broken.
+    Defence: Turn 4: the shot went up against them.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O5's post shot from K4. Open, it was worth 36; the contest took 10 off, leaving 26.
+  Scored 26 (Great).
+  The shot taken was the best one the measure saw all possession.
+  The lasting gap at the start of each phase: 21, 21, 16, 26.
+  Offence: Keep: phase 3, turn 2: the lasting gap rose from 20 to 32.
+  Offence: Change: phase one only got you into position. Set up with a plan to weaken the defence from the start.
+  Defence: Keep: phase 2, turn 3: the answer took the lasting gap from 26 down to 16.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

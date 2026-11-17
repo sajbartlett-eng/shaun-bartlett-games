@@ -1,0 +1,36 @@
+Possession 7: Five Out v High-Low
+The setup
+  Offence: set up so that, after the defence's best answer, the best it can still force next phase is O2's three on A4, worth 18: X1 covers it.
+  Defence: set up to hold the lasting gap to 18.
+Phase 1
+  Turn 1
+    Offence: O2 moved to B7, then O1 passed to O2. The lasting gap rose from 18 to 21. X3 is the only cover for O3's three on L10 and O5's three on P8: whichever he takes, the other is open (worth 21).
+    Defence: X2 moved to E8, facing south-west, then X1 moved to H8, facing south. That took the lasting gap from 21 down to 18.
+  Turn 2
+    Offence: O3 moved to Q7, then O2 quick-stepped to B8. The lasting gap rose from 18 to 24. X1 is the only cover for O2's layup on G2 and O3's three on Q7: whichever he takes, the other is open (worth 24).
+    Defence: X1 quick-stepped to J10, then X4 quick-stepped to C5. That took the lasting gap from 24 down to 18.
+  Turn 3
+    Offence: O5 moved to Q5, then O2 passed to O4. The lasting gap rose from 18 to 21. X3 is the only cover for O3's three on P8 and O1's three on L10: whichever he takes, the other is open (worth 21).
+    Defence: X3 moved to N6, facing south, then X4 moved to C7, facing south. That took the lasting gap from 21 down to 18.
+  The coach on phase 1
+    Offence: The lasting gap held at 18 this phase.
+    Offence: Best turn: turn 2, O3 moved to Q7, then O2 quick-stepped to B8: from 18 to 24.
+    Defence: Best answer: turn 2, X1 quick-stepped to J10, then X4 quick-stepped to C5: from 24 down to 18.
+    Next phase, after the defence's best answer, look for O2's three on A2, worth 18: X1 covers it. X3 is the only cover for O5's three on P7 and O3's three on M9: whichever he takes, the other is open (worth 7).
+Phase 2
+  Turn 1
+    Offence: O4 shot a three.
+    Defence: X4 quick-stepped to D6, then X4 moved to B4, facing south. The possession ended.
+  The coach on phase 2
+    Offence: Turn 1: the shot went up with the defence not broken.
+    Defence: Turn 1: the shot went up against them.
+The coach on the possession
+  Weak: the defence was never broken.
+  The shot: O4's three from A3. Open, it was worth 27; the contest took 12 off, leaving 15.
+  Scored 15 (Okay).
+  The best shot on offer: O2's three on B7, worth 21, in phase 1, turn 2.
+  The lasting gap at the start of each phase: 18, 18.
+  Offence: Keep: phase 1, turn 2: the lasting gap rose from 18 to 24.
+  Offence: Change: phase one only got you into position. Set up with a plan to weaken the defence from the start.
+  Defence: Keep: phase 1, turn 2: the answer took the lasting gap from 24 down to 18.
+Played with: the heat map on for both sides; computer {'O': 'allstar', 'X': 'allstar'}

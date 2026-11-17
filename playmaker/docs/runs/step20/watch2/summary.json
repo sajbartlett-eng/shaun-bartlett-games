@@ -1,0 +1,91 @@
+{
+ "code": "799D78",
+ "seed": 542477,
+ "seeded": false,
+ "level": "allstar",
+ "map": true,
+ "possessions": [
+  {
+   "possession": 1,
+   "score": 21,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "rolls": [],
+   "report_s": 0.1
+  },
+  {
+   "possession": 2,
+   "score": 24,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 11,
+   "rolls": [],
+   "report_s": 0.5
+  },
+  {
+   "possession": 3,
+   "score": 21,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "rolls": [],
+   "report_s": 0.1
+  },
+  {
+   "possession": 4,
+   "score": 26,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 14,
+   "rolls": [],
+   "report_s": 0.5
+  },
+  {
+   "possession": 5,
+   "score": 21,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 2,
+   "rolls": [],
+   "report_s": 0.0
+  },
+  {
+   "possession": 6,
+   "score": 18,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 5,
+   "rolls": [],
+   "report_s": 0.2
+  },
+  {
+   "possession": 7,
+   "score": 15,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 4,
+   "rolls": [],
+   "report_s": 0.2
+  },
+  {
+   "possession": 8,
+   "score": 27,
+   "verdict": "Weak: the defence was never broken.",
+   "checks": [],
+   "turns": 13,
+   "rolls": [],
+   "report_s": 0.3
+  }
+ ],
+ "play_s": [
+  71.9,
+  10.8,
+  89.3,
+  10.3,
+  35.9,
+  28.7,
+  87.3
+ ],
+ "seconds": 350.1
+}
