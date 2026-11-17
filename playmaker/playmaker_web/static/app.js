@@ -425,7 +425,7 @@ async function create() {
   }
   try {
     const r = await api('/api/new', body);
-    G = { code: r.code, token: r.token };
+    G = { code: r.code, token: r.token, players: humans.players };
     try { G.rec = await startRecord(r.code, body, humans.players); } catch (e) { G.rec = null; }
     if (mode === 'remote') {
       const seat = await askSeat(r.code);
@@ -531,6 +531,8 @@ function levelBits(c) {
   return out;
 }
 function cardEl(c, side, label, extra) {
+  if (!PMAdvice.numbersOn()) return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [
+    el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), ...levelBits(c)]), PMAdvice.cardWords(c), extra || null]);
   const head = el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` })]);
   const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
     el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
@@ -566,23 +568,24 @@ function cardSummary(c) {
 function renderCards(id, pieces, side) {
   const box = $(id); box.innerHTML = '';
   box.append(el('div', { class: 'key' }, [el('span', { class: 'H', text: '▲ above average' }), ' ', el('span', { text: 'plain = average' }), ' ', el('span', { class: 'L', text: '▼ below average' })]));
-  const open = openCards();
+  const open = openCards(), nums = PMAdvice.numbersOn();
   for (const p of pieces) {
-    const c = p.card, key = side + p.i, isOpen = open.has(key);
+    const c = p.card, key = side + p.i, isOpen = nums ? open.has(key) : pinnedCards.has(key);   // step 19: words first, ratings on a tap
     const head = el('button', { class: 'head', type: 'button', 'aria-expanded': isOpen ? 'true' : 'false',
-      onclick: () => { if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
+      onclick: () => { if (!nums) { if (pinnedCards.has(key)) pinnedCards.delete(key); else pinnedCards.add(key); render(); return; }
+        if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
       [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` }),
-        el('span', { class: 'sr-only', text: isOpen ? ', full card; press to fold' : ', one line; press to open the card' })]);
+        el('span', { class: 'sr-only', text: isOpen ? ', the ratings; press to fold them' : ', in words; press for the ratings' })]);
     const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
       el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
         ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
       el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
         'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
     const note = side === 'O' && st.inbound_note && p.i === st.inbounder ? el('div', { class: 'inbnote', text: st.inbound_note }) : null;
-    const folded = pinnedCards.has('-' + key) || !isOpen;           // '-' + key: folded by hand although it matters now
+    const folded = nums ? (pinnedCards.has('-' + key) || !isOpen) : !isOpen;           // '-' + key: folded by hand although it matters now
     const grow = c.coach_growth && !folded ? el('div', { class: 'grownote' }, [PMCoach.line('coach', c.coach_growth, { compact: true, speak: false, live: false })]) : null;
     box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}${folded ? ' collapsed' : ''}` },
-      [head, folded ? cardSummary(c) : null, ...groups, grow, note]));
+      [head, folded ? (nums ? cardSummary(c) : PMAdvice.cardWords(c)) : null, !nums && !folded ? PMAdvice.cardWords(c) : null, ...groups, grow, note]));
   }
 }
 
@@ -1016,12 +1019,13 @@ function renderActions() {
   if (s.stage === 'contest' || s.stage === 'forced') {
     $('selected').textContent = s.stage === 'contest' ? 'The defence chooses the contest:' : 'The offence chooses the forced shot:';
     for (const a of myActs()) {
-      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: a.option || (a.kind === 'forced_shot' ? `Forced shot: ${a.shot}` : a.text), onclick: () => submit(a) });
-      $('targetButtons').append(el('div', { class: 'opt' }, [b, a.kind === 'forced_shot' ? chips(a) : null]));
+      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: PMAdvice.numbersOn() ? (a.option || (a.kind === 'forced_shot' ? `Forced shot: ${a.shot}` : a.text)) : PMAdvice.choiceLabel(a), onclick: () => submit(a) });
+      $('targetButtons').append(el('div', { class: 'opt' }, [b, a.kind === 'forced_shot' ? chips(a) : null, a.advice && a.advice.why ? el('span', { class: 'advwhy', text: a.advice.why }) : null]));
     }
     return;
   }
-  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a))) {
+  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a)
+      && !(playActive() && sel.side === a.side && ['hesitate', 'pause'].includes(a.kind)))) {      // step 19: in the selected player's list instead
     const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}`
       : a.kind === 'end_turn' && s.stage === 'reaction' ? 'End without a Contest: the shot goes up uncontested.' : KIND_NAME[a.kind];
     $('sideButtons').append(actionButton(a, label));
@@ -1036,6 +1040,8 @@ function addUndo() {
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
     onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
+  $('sideButtons').append(el('button', { class: 'small', id: 'numbersToggle', 'aria-pressed': PMAdvice.numbersOn() ? 'true' : 'false', text: PMAdvice.numbersOn() ? 'Show the numbers: on' : 'Show the numbers: off',
+    onclick: () => { PMAdvice.setNumbers(!PMAdvice.numbersOn()); render(); } }));
   $('sideButtons').append(el('button', { class: 'small', id: 'confirmToggle', 'aria-pressed': confirmOn() ? 'true' : 'false', text: confirmOn() ? 'Confirm each action: on' : 'Confirm each action: off',
     onclick: () => { try { localStorage.setItem('pm_confirm', confirmOn() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
@@ -1074,7 +1080,8 @@ async function submit(a, opts) {
 function confirmRoll(a) {
   return new Promise(res => {
     modal([el('h2', { text: a.text }), PMCoach.line('ref', a.roll.length > 1 ? 'This one goes to the dice, twice.' : 'This one goes to the dice.', { compact: true, speak: false, live: false }),
-      el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text.replace(/^(Offence|Defence) rolls: /, '')]))),
+      PMAdvice.brief(a),
+      PMAdvice.numbersOn() ? el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text.replace(/^(Offence|Defence) rolls: /, '')]))) : null,
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
       el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
@@ -1618,7 +1625,7 @@ function actedPieces() {
 
 // ---------------------------------------------------------------- scouting: arrange, never judge
 function chips(a) {
-  if (!a.chips || !a.chips.length) return null;
+  if (!a.chips || !a.chips.length || !PMAdvice.numbersOn()) return null;        // step 19: behind "Show the numbers"
   return el('div', { class: 'chips' }, a.chips.map(c => el('span', { class: 'vchip', text: c })));
 }
 
@@ -1635,9 +1642,11 @@ function renderCompare() {
   const how = opp ? (side === 'O' ? (st.x[opps[k]].arrow !== undefined && opps.length && isArrowOn(st.x[opps[k]], mine) ? 'arrow on this player' : 'nearest defender')
                                   : (isArrowOn(mine, opp) ? 'arrow on this player' : 'nearest attacker')) : '';
   box.classList.remove('hidden');
-  box.append(el('div', { class: 'cmp-head' }, [el('h3', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
+  const words = side === 'O' ? PMAdvice.matchup(i) : (opp ? PMAdvice.matchup(opps[k]).map(x => x.replace(/^Hunt: /, 'Protect: ').replace(/ Get (O\d) the ball\.$/, ' Keep an arrow on $1.')) : []);
+  box.append(el('div', { class: 'cmp-head' }, [el('h2', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
     opps.length > 1 ? el('button', { text: `Next matchup (${k + 1} of ${opps.length})`, onclick: () => { compare.k = (k + 1) % opps.length; renderCompare(); } }) : null,
     el('button', { text: 'Close card', onclick: () => { compare = null; renderCompare(); } })]),
+    words.length ? el('ul', { class: 'cmpwords' }, words.map(w => el('li', { text: w }))) : el('p', { class: 'note', text: opp ? 'No clear edge either way on the cards.' : '' }),
     el('div', { class: 'cmp-cards' }, [cardEl(mine.card, side, `${side}${i + 1}`), opp ? cardEl(opp.card, oppSide, `${oppSide}${opps[k] + 1}`) : null]));
 }
 function isArrowOn(x, o) { const d = [o.x - x.x, o.y - x.y]; return Math.max(Math.abs(d[0]), Math.abs(d[1])) === 1 && DIRS[x.arrow][0] === d[0] && DIRS[x.arrow][1] === d[1]; }
@@ -1855,6 +1864,13 @@ function renderCoachLine() {
             : `You are off O${e.o + 1}: one straight movement along your arrow onto the lane picks the pass off; otherwise close out before the catch.`);
       }
     }
+  }
+  if (!PMAdvice.numbersOn()) {                  // step 19: advantages first; the sums behind "Show the numbers"
+    const lines = PMAdvice.coach(side, pick ? pick.i : null);
+    const key2 = `${s.possession}:${s.phase}:${side}:${s.turn}:${pick ? pick.i : ''}`;
+    if (lines.length) box.append(PMCoach.line('coach', lines.join('\n'), { compact: true, live: coachSaid !== key2 }));
+    coachSaid = key2;
+    return;
   }
   if (text) { /* the selection read stands */ } else if (best && best.edge > 0) {
     const carrier = (s.o.find(p => p.ball) || {}).i === best.o;

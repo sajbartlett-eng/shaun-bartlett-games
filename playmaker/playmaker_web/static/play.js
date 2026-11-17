@@ -80,9 +80,11 @@ window.PM_GHOST = () => pend && pend.move ? { sq: sqName(pend.dest[0], pend.dest
 function playSelect(side, i) {
   const again = sel.side === side && sel.i === i;
   const now = performance.now();
-  if (again) {                                   // the second tap on the selected player: his actions
+  if (again) {                                   // the second tap on the selected player: his actions' targets
     if (pend) { pend = null; }
-    listOpen = !listOpen && enderActs(side, i).length > 0;
+    const dbl = tapAt.key === side + i && now - tapAt.t < 450;      // a double-tap always opens; a later tap toggles
+    tapAt = { key: side + i, t: now };
+    listOpen = (dbl ? true : !listOpen) && enderActs(side, i).length > 0;
     focusWant = listOpen ? 'list' : `piece:${side}${i + 1}`;
     announce(listOpen ? `${side}${i + 1}'s actions: ${enderActs(side, i).map(actLabel).join(', ')}. Choose one, or tap its target on the board.` : `${side}${i + 1}'s actions closed.`);
     render(); return;
@@ -166,11 +168,11 @@ function playEscape() {
 }
 
 // ---- the board ---------------------------------------------------------------------------------------------------
-function hit(x, y, fn, r) { hits.push({ x: px(x) + S / 2, y: py(y) + S / 2, fn, r: r || S * 0.62 }); }
+function hit(x, y, fn, r) { hits.push({ x: px(x) + S / 2, y: py(y) + S / 2, fn, r: r || S * 1.2 }); }      // a finger's reach: about 44 px on a phone
 function playDraw(c) {
   hits = [];
   if (!playActive()) return;
-  for (const p of (st.side_to_act === 'X' ? st.x : st.o)) if (pieceActs(st.side_to_act, p.i).length) hit(p.x, p.y, () => playSelect(st.side_to_act, p.i), S * 0.72);
+  for (const p of (st.side_to_act === 'X' ? st.x : st.o)) if (pieceActs(st.side_to_act, p.i).length) hit(p.x, p.y, () => playSelect(st.side_to_act, p.i));
   if (sel.side == null || sel.side !== st.side_to_act) return;
   const p = selPiece();
   const squares = moveSquares(sel.side, sel.i);
@@ -206,7 +208,7 @@ function playDraw(c) {
         : svg('rect', { class: 'target ender-target', x: px(t[0]) + 3, y: py(t[1]) + 3, width: S - 6, height: S - 6, rx: 5, tabindex: -1, role: 'button', 'aria-label': actLabel(a) });
       r.addEventListener('click', e => { e.stopPropagation(); chooseAct(a); });
       c.append(r);
-      hit(t[0], t[1], () => chooseAct(a), S * 0.72);
+      hit(t[0], t[1], () => chooseAct(a));
     }
   }
   if (pend && pend.act) drawActLine(c, pend.act);

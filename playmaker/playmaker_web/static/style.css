@@ -208,7 +208,7 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
 
 /* the card panel and matchup, the scout report, the custom team builder */
 .compare { width: 100%; max-width: 900px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--hi); border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); }
-.cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .cmp-head h3 { margin: 0; flex: 1 1 100%; }
+.cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .cmp-head h2 { margin: 0; flex: 1 1 100%; font-size: 18px; }
 .cmp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
 .chips { margin: 2px 0 4px 4px; } .vchip { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 9px; border: 1.5px solid var(--ink); border-radius: 12px; background: #fff; font-size: 13px; }
 .opt { margin: 4px 0; } .opt.inline { display: inline-block; margin-right: 8px; }
@@ -392,3 +392,17 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .enderrow button.ender { min-height: 44px; text-align: left; }
 @media (prefers-reduced-motion: reduce) { .ghostpiece, .pendline { transition: none; } }
 .enderlist .listhead { margin: 2px 0; font-size: 14px; color: var(--muted); }
+
+/* ---- step 19, stage 2: advantages first, numbers on tap (advice.js) ---- */
+.advbrief { display: inline-flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; font-size: 14px; }
+.advchance { font-size: 15px; color: var(--hi); }
+.advwhy { color: #3b3a36; }
+.advnums { color: var(--muted); font-size: 13px; }
+.advdetail { margin: 4px 0; }
+.cardwords { font-size: 14px; line-height: 1.35; margin-top: 2px; }
+.cardwords .tagline { color: var(--muted); }
+.cardwords .wlist { display: flex; flex-wrap: wrap; gap: 3px 6px; margin-top: 2px; }
+.cardwords .wplus { background: var(--bandH); color: #1a5a27; padding: 0 5px; border-radius: 3px; }
+.cardwords .wminus { background: var(--bandL); color: #8c2022; padding: 0 5px; border-radius: 3px; }
+.cmpwords { margin: 4px 0 6px; padding-left: 20px; font-size: 15px; }
+.coachline .bubble p { white-space: pre-line; }

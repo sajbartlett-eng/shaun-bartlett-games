@@ -8,6 +8,7 @@ from playmaker_engine.scenarios import SCENARIOS, situation_words
 from playmaker_engine.scoring import score, choose_contest, shot_points, foul_on_shot_points, band, contest_options
 
 from .game import action_to_json, chance_preview, FEEDBACK_QUESTIONS, _score_json
+from . import advice as _ADV
 
 MARK = {'H': '▲', 'A': '', 'L': '▼'}
 LABELS = {
@@ -39,7 +40,7 @@ def card_json(card, side):
     return dict(key=card.key, role=card.role, tier=card.tier, tagline=card.tagline, qs=card.qs,
                 ratings=[r(n) for n in names], groups=groups,
                 label=LV.card_label(card), age=getattr(card, 'age', 'senior'), slot=getattr(card, 'slot', card.num),
-                printed=card.num, flex=LV.flex_words(card),
+                printed=card.num, flex=LV.flex_words(card), words=_ADV.card_words(card, side),    # step 19: the card in words
                 coach_growth=LV.growth_line(grow))         # D-88: Coach Vision's line; no tag names on the card
 
 
@@ -288,8 +289,23 @@ def legal_json(s, acts):
             d['chips'] = shot_chips(s, a.piece, a.shot)
         if a.kind == 'shot':
             d['chips'] = shot_chips(s, a.piece, a.shot)
+        if a.kind not in ('move', 'qs', 'sprint'):
+            try:                                   # step 19, stage 2: the chance and the why, in advantage words
+                adv = _ADV.action_advice(s, a, d.get('threats'))
+            except Exception:                      # the words must never stop a game
+                adv = None
+            if adv:
+                d['advice'] = adv
         out.append(d)
     return out
+
+
+def _advice_lines(s):
+    """Step 19: each attacker's matchup in advantage words (advice.matchup_lines), or [] when there is no board."""
+    try:
+        return _ADV.matchup_lines(s, matchups(s))
+    except Exception:
+        return []
 
 
 def screen_blocked_json(s):
@@ -458,7 +474,7 @@ def state_json(game, token):
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
-                level=game.level, scout=scout_json(game, seat), matchups=matchups(s), denied=denied_json(s),
+                level=game.level, scout=scout_json(game, seat), matchups=matchups(s), advice=_advice_lines(s), denied=denied_json(s),
                 screen_blocked=screen_blocked_json(s),
                 custom=game.custom or None, experimental=game.experimental, levels=levels_json(game, seat),
                 bands=[dict(name=n, low=lo) for n, lo in RC.BANDS], screen_rule=ctx.rules.screen_rule,
