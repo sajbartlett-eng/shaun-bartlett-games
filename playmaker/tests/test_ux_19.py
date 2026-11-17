@@ -316,3 +316,91 @@ def test_the_report_is_turn_by_turn_and_true_to_the_coverage_map():
     finally:
         stop_coverage_engine()
     assert AG.JS.get('coverage') is None
+
+
+# ---- stages 3 to 7 in a browser: the home screen, watching, the report download, the batch ------------------------
+
+NODE_WATCH = r"""
+const { chromium, devices } = require('playwright');
+const [base] = process.argv.slice(2);
+(async () => {
+  const out = { errors: [] };
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => out.errors.push(e.message));
+  await page.goto(base + '/'); await page.waitForTimeout(700);
+  // the home screen: four choices, one Start, the rest folded
+  out.paths = await page.locator('button.path').evaluateAll(xs => xs.map(x => x.dataset.path));
+  await page.click('button.path[data-path=computer]'); await page.waitForTimeout(300);
+  out.setupWords = await page.evaluate(() => document.getElementById('setup').innerText.split(/\s+/).filter(Boolean).length);
+  out.advancedClosed = await page.evaluate(() => !document.getElementById('advanced').open);
+  out.skipHidden = await page.evaluate(() => document.querySelector('a.skip').hidden);
+  // watch the computer: the setup step, play and pause, next turn, the end, the downloads
+  await page.click('button.path[data-path=watch]'); await page.click('#advanced summary');
+  await page.selectOption('#aiO', 'rookie'); await page.selectOption('#aiX', 'rookie');
+  await page.click('#create');
+  await page.waitForSelector('#setupGo', { timeout: 200000 });
+  out.setupLines = await page.locator('#modalBox .tline').allInnerTexts();
+  await page.click('#setupGo'); await page.waitForTimeout(300);
+  await page.click('#watchPlay'); await page.waitForTimeout(300);
+  out.paused = await page.locator('#watchBar .watchline').innerText();
+  const a = await page.locator('#stepBar .step-count').innerText();
+  await page.click('#watchTurn'); await page.waitForTimeout(600);
+  out.turnStep = [a, await page.locator('#stepBar .step-count').innerText()];
+  await page.click('#watchBar button:has-text("Fast")'); await page.click('#watchPlay');
+  await page.waitForSelector('#nextPoss', { timeout: 200000 });
+  await page.click('#watchStay');                       // pause at the end to download
+  await page.waitForSelector('#dlReport', { timeout: 60000 });
+  const [d1] = await Promise.all([page.waitForEvent('download'), page.click('#dlReport')]);
+  const [d2] = await Promise.all([page.waitForEvent('download'), page.click('#dlData')]);
+  out.names = [d1.suggestedFilename(), d2.suggestedFilename()];
+  const fs = require('fs');
+  const p1 = await d1.path(), p2 = await d2.path();
+  const html = fs.readFileSync(p1, 'utf8'), data = JSON.parse(fs.readFileSync(p2, 'utf8'));
+  out.htmlTurns = (html.match(/class="turnblock"/g) || []).length;
+  out.htmlHasAssessment = html.includes('The coach on the possession');
+  out.dataTurns = data.report.turns.length; out.dataHasNumbers = !!data.report.turns[0].numbers;
+  out.dataSwitches = data.report.switches && data.report.switches.computer;
+  // Escape closes the end screen, and it stays closed until asked for
+  await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+  out.endClosed = await page.evaluate(() => document.getElementById('modal').classList.contains('hidden'));
+  out.showResult = await page.locator('#showResult').count();
+  // the batch: one possession unseen, the reports and the data file
+  await page.goto(base + '/'); await page.waitForTimeout(600);
+  await page.click('button.path[data-path=watch]'); await page.click('#advanced summary');
+  await page.selectOption('#aiO', 'rookie'); await page.selectOption('#aiX', 'rookie'); await page.fill('#batchN', '1');
+  const dls = []; page.on('download', d => dls.push(d.suggestedFilename()));
+  await page.click('#create');
+  await page.waitForFunction(() => /Done:/.test((document.getElementById('batchOut') || {}).innerText || ''), null, { timeout: 300000 });
+  await page.waitForTimeout(800);
+  out.batch = dls;
+  console.log(JSON.stringify(out));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });
+"""
+
+
+@needs_node
+def test_home_screen_watching_the_computer_the_report_and_the_batch(tmp_path):
+    from playmaker_web.server import start_background, stop_coverage_engine
+    srv, base = start_background(coverage=True)
+    try:
+        (tmp_path / 'watch.js').write_text(NODE_WATCH)
+        r = subprocess.run(['node', str(tmp_path / 'watch.js'), base], capture_output=True, text=True, timeout=900,
+                           env=dict(os.environ, NODE_PATH=subprocess.run(['npm', 'root', '-g'], capture_output=True, text=True).stdout.strip()))
+        assert r.returncode == 0, r.stderr[-1500:]
+        out = json.loads(r.stdout.strip().splitlines()[-1])
+    finally:
+        srv.shutdown()
+        stop_coverage_engine()
+    assert not out['errors'], out['errors']
+    assert out['paths'] == ['computer', 'friend', 'watch', 'scenario']
+    assert out['setupWords'] <= 120 and out['advancedClosed'] and out['skipHidden']
+    assert len(out['setupLines']) == 2 and out['setupLines'][0].startswith('Offence: ') and out['setupLines'][1].startswith('Defence: ')
+    assert 'Paused' in out['paused'] and out['turnStep'][0] != out['turnStep'][1]
+    assert re.fullmatch(r'playmaker_[A-Z0-9]+_possession1_\d{4}-\d\d-\d\d\.html', out['names'][0])
+    assert out['names'][1].endswith('.json') and out['htmlTurns'] >= 1 and out['htmlHasAssessment']
+    assert out['dataTurns'] >= 1 and out['dataHasNumbers'] and out['dataSwitches'] == {'O': 'rookie', 'X': 'rookie'}
+    assert out['endClosed'] and out['showResult'] == 1
+    assert any(n.endswith('.html') for n in out['batch']) and any(n.endswith('.json') for n in out['batch'])

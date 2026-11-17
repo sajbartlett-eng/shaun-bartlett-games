@@ -51,11 +51,17 @@ window.PMWatch = (function () {
     bar();
   }
   // ---- a phase's turn-by-turn view and the end of a possession: continue on their own while playing -----------
-  function onModal(cont) { if (on()) later(() => { if (!$('modal').classList.contains('hidden')) cont(); }, 4); }
+  // while a dialog covers the bar, a pause button sits inside it
+  function stayButton() {
+    const box = $('modalBox'); if (!box || !playing || box.querySelector('#watchStay')) return;
+    box.append(el('p', {}, [el('button', { id: 'watchStay', text: 'Pause here', onclick: e => { playing = false; clear(); e.currentTarget.remove(); bar(); announce('Paused.'); } })]));
+  }
+  function onModal(cont) { if (!on()) return; ready(); stayButton(); later(() => { if (!$('modal').classList.contains('hidden')) cont(); }, 4); }
   function onEnd() {
     if (!on()) return;
     bar();
     const nxt = $('nextPoss'); if (!nxt) return;
+    ready(); stayButton();
     later(() => { const b = $('nextPoss'); if (b && !$('modal').classList.contains('hidden')) b.click(); }, 6);
   }
   // ---- the setup, as its own step, once a possession ----------------------------------------------------------
