@@ -1,0 +1,477 @@
+{
+ "version": "before",
+ "laptop": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 3,
+   "seconds": 2.8,
+   "scrolls": 1,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      40
+     ],
+     "dist": 509,
+     "scrolled": false,
+     "seconds": 0.77
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to O10\"]",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 530,
+     "scrolled": true,
+     "seconds": 1.79
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 6,
+   "seconds": 6.5,
+   "scrolls": 3,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      40
+     ],
+     "dist": 249,
+     "scrolled": false,
+     "seconds": 0.63
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to C10\"]",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 290,
+     "scrolled": true,
+     "seconds": 1.67
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 247,
+     "scrolled": true,
+     "seconds": 1.6
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Pass( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      148,
+      40
+     ],
+     "dist": 448,
+     "scrolled": false,
+     "seconds": 0.74
+    },
+    {
+     "sel": "#court [aria-label=\"pass to O2\"]",
+     "size": [
+      45,
+      45
+     ],
+     "dist": 273,
+     "scrolled": true,
+     "seconds": 1.62
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 3,
+   "seconds": 1.2,
+   "scrolls": 0,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Screen( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      164,
+      40
+     ],
+     "dist": 4,
+     "scrolled": false,
+     "seconds": 0.22
+    },
+    {
+     "sel": "#court [aria-label=\"T to the N\"]",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 496,
+     "scrolled": false,
+     "seconds": 0.78
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 3,
+   "seconds": 1.3,
+   "scrolls": 0,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Shot( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      147,
+      40
+     ],
+     "dist": 391,
+     "scrolled": false,
+     "seconds": 0.71
+    },
+    {
+     "sel": "#targetButtons button:has-text(\"Shoot: three\")",
+     "size": [
+      201,
+      40
+     ],
+     "dist": 55,
+     "scrolled": false,
+     "seconds": 0.39
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 4,
+   "seconds": 4.1,
+   "scrolls": 2,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      56,
+      48
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      40
+     ],
+     "dist": 255,
+     "scrolled": false,
+     "seconds": 0.63
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to D9\"]",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 284,
+     "scrolled": true,
+     "seconds": 1.67
+    },
+    {
+     "sel": "#targetButtons button:text-matches(\"^face N$\")",
+     "size": [
+      79,
+      40
+     ],
+     "dist": 197,
+     "scrolled": true,
+     "seconds": 1.59
+    }
+   ]
+  }
+ ],
+ "phone": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 3,
+   "seconds": 1.3,
+   "scrolls": 0,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      44
+     ],
+     "dist": 165,
+     "scrolled": false,
+     "seconds": 0.54
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to O10\"]",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 74,
+     "scrolled": false,
+     "seconds": 0.58
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 6,
+   "seconds": 4.5,
+   "scrolls": 1,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      44
+     ],
+     "dist": 208,
+     "scrolled": false,
+     "seconds": 0.58
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to C10\"]",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 147,
+     "scrolled": false,
+     "seconds": 0.7
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 110,
+     "scrolled": true,
+     "seconds": 1.6
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Pass( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      148,
+      44
+     ],
+     "dist": 302,
+     "scrolled": false,
+     "seconds": 0.65
+    },
+    {
+     "sel": "#court [aria-label=\"pass to O2\"]",
+     "size": [
+      19,
+      19
+     ],
+     "dist": 271,
+     "scrolled": false,
+     "seconds": 0.79
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 3,
+   "seconds": 1.5,
+   "scrolls": 0,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Screen( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      164,
+      44
+     ],
+     "dist": 261,
+     "scrolled": false,
+     "seconds": 0.62
+    },
+    {
+     "sel": "#court [aria-label=\"T to the N\"]",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 150,
+     "scrolled": false,
+     "seconds": 0.71
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 3,
+   "seconds": 2,
+   "scrolls": 1,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Shot( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      147,
+      44
+     ],
+     "dist": 135,
+     "scrolled": false,
+     "seconds": 0.5
+    },
+    {
+     "sel": "#targetButtons button:has-text(\"Shoot: three\")",
+     "size": [
+      201,
+      44
+     ],
+     "dist": 27,
+     "scrolled": true,
+     "seconds": 1.3
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 4,
+   "seconds": 1.9,
+   "scrolls": 0,
+   "done": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      24,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#kindButtons button:text-matches(\"^Move( \\\\(ends turn\\\\))?$\")",
+     "size": [
+      71,
+      44
+     ],
+     "dist": 154,
+     "scrolled": false,
+     "seconds": 0.53
+    },
+    {
+     "sel": "#court rect.target[aria-label=\"Move to D9\"]",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 69,
+     "scrolled": false,
+     "seconds": 0.56
+    },
+    {
+     "sel": "#targetButtons button:text-matches(\"^face N$\")",
+     "size": [
+      79,
+      44
+     ],
+     "dist": 306,
+     "scrolled": false,
+     "seconds": 0.65
+    }
+   ]
+  }
+ ]
+}

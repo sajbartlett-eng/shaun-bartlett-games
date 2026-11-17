@@ -1,0 +1,337 @@
+{
+ "version": "after_quick",
+ "laptop": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 2,
+   "seconds": 0.6,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"O10\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 40,
+     "scrolled": false,
+     "seconds": 0.36
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 4,
+   "seconds": 3.8,
+   "scrolls": 2,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"C10\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 40,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 247,
+     "scrolled": true,
+     "seconds": 1.6
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 362,
+     "scrolled": true,
+     "seconds": 1.68
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 2,
+   "seconds": 1.8,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 222,
+     "scrolled": true,
+     "seconds": 1.59
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 2,
+   "seconds": 1.8,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 313,
+     "scrolled": true,
+     "seconds": 1.65
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 2,
+   "seconds": 0.9,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      56,
+      48
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "drag #court [data-sq=\"D9\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 41,
+     "scrolled": false,
+     "seconds": 0.66
+    }
+   ]
+  }
+ ],
+ "phone": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 2,
+   "seconds": 0.6,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"O10\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.36
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 4,
+   "seconds": 3.7,
+   "scrolls": 2,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"C10\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 170,
+     "scrolled": true,
+     "seconds": 1.69
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 105,
+     "scrolled": true,
+     "seconds": 1.46
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 2,
+   "seconds": 1.8,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 265,
+     "scrolled": true,
+     "seconds": 1.62
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 2,
+   "seconds": 1.7,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 142,
+     "scrolled": true,
+     "seconds": 1.51
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 2,
+   "seconds": 0.9,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      24,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "drag #court [data-sq=\"D9\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.66
+    }
+   ]
+  }
+ ]
+}

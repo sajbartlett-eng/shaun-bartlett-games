@@ -505,9 +505,10 @@ function render() {
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
+  playFocus();
   $('phoneTimer').innerHTML = ''; if (s.timer && s.timer.mode !== 'idle' && s.timer.side) $('phoneTimer').append(timerEl());
   timerRecv();
-  const k = sel.kind || null;
+  const k = sel.kind || (pend ? 'pend' : null);
   if (s.timer && s.can_act && k !== lastSelKind && !busy) timerEvent(k ? 'select' : 'cancel');
   lastSelKind = k;
   $('actionsPanel').classList.toggle('hidden', !!replay);
@@ -680,7 +681,7 @@ function renderCourt() {
   }
   for (const p of s.o) drawO(c, p);
   for (const p of s.x) drawX(c, p);
-  drawTargets(c);
+  if (playActive()) playDraw(c); else drawTargets(c);
 }
 
 // The marks of the turn in play: the acting side's actions so far in its current turn. During the step-through
@@ -892,6 +893,8 @@ function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.p
 
 let compare = null;     // {side, i, k}: the card panel and which matchup is showing
 function selectPiece(side, i) {
+  if (playActive() && side === st.side_to_act) return playSelect(side, i);      // step 19: the tap flow (play.js)
+  playReset();
   sel = { side, i, kind: null, dest: null };
   compare = { side, i, k: 0 };
   const kinds = [...new Set(pieceActs(side, i).map(a => a.kind))];
@@ -952,8 +955,10 @@ function renderActions() {
   const s = st;
   if (s.placing) return renderPlacement();
   $('selected').textContent = ''; $('kindButtons').innerHTML = ''; $('targetButtons').innerHTML = ''; $('sideButtons').innerHTML = '';
+  renderPlayBar();
   if (!s.can_act) { $('selected').textContent = s.stage === 'over' ? '' : 'Not your move.'; addUndo(); return; }
-  if (sel.side != null) {
+  if (playActive()) { /* step 19: the bar under the board holds the selected player's moves and actions (play.js) */ }
+  else if (sel.side != null) {
     const acts = pieceActs(sel.side, sel.i);
     const p = (sel.side === 'O' ? s.o : s.x)[sel.i];
     $('selected').textContent = `${sel.side}${sel.i + 1} (${p.card.role}) on ${p.sq}` + (acts.length ? '' : ': no legal action for this player now');
@@ -1007,7 +1012,7 @@ function renderActions() {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, a.option || 'Contest'), chips(a)]));
       } else for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, KIND_NAME[a.kind]), chips(a)]));
     }
-  } else $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
+  } else if (!playActive()) $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
   if (s.stage === 'contest' || s.stage === 'forced') {
     $('selected').textContent = s.stage === 'contest' ? 'The defence chooses the contest:' : 'The offence chooses the forced shot:';
     for (const a of myActs()) {
@@ -1031,6 +1036,8 @@ function addUndo() {
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
     onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
+  $('sideButtons').append(el('button', { class: 'small', id: 'confirmToggle', 'aria-pressed': confirmOn() ? 'true' : 'false', text: confirmOn() ? 'Confirm each action: on' : 'Confirm each action: off',
+    onclick: () => { try { localStorage.setItem('pm_confirm', confirmOn() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
   $('sideButtons').append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
     text: ringsShown() ? 'Distance rings: shown' : 'Distance rings: hidden',
     onclick: () => { try { localStorage.setItem('pm_rings', ringsShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
@@ -1044,17 +1051,17 @@ async function undo() {
   catch (e) { $('error').textContent = e.message; }
 }
 
-async function submit(a) {
+async function submit(a, opts) {
   if (busy) return;                      // a second tap while the first action is in flight is ignored, not sent stale
   $('error').textContent = '';
-  if (a.roll && a.roll.length) {
+  if (a.roll && a.roll.length && !(opts && opts.confirmed)) {     // step 19: a confirmed action has shown its dice already
     const ok = await confirmRoll(a);
     if (!ok) return;
   }
   busy = true;
   try {
     const r = await api('/api/act', { code: G.code, token: G.token, action: a });
-    sel = { side: null, i: null, kind: null, dest: null };
+    sel = { side: null, i: null, kind: null, dest: null }; playReset();
     lastOther = [];
     if (r.rolls && r.rolls.length) await showRolls(r.rolls);
     st = r.state; render();
@@ -1215,6 +1222,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'Escape') {
     if (open) { if (modalCancel) { const c = modalCancel; closeModal(); c(); } return; }
+    if (typeof playEscape === 'function' && playEscape()) return;
     sel = { side: null }; if (st) render();
   }
 });
@@ -1474,6 +1482,10 @@ function renderPhoneLists() {
   const pieces = (side === 'O' ? st.o : st.x).filter(p => mine.some(a => a.side === side && a.piece === p.i));
   if (sel.side == null) {
     box.append(el('div', { class: 'note', text: 'Pick a player:' }), ...pieces.map(p => el('button', { text: `${side}${p.i + 1} on ${p.sq}`, onclick: () => selectPiece(side, p.i) })));
+  } else if (playActive() && sel.side === st.side_to_act && !pend) {
+    const sq = [...moveSquares(sel.side, sel.i).values()];
+    if (sq.length) box.append(el('div', { class: 'note', text: 'Or pick the square here:' }),
+      ...sq.map(m => el('button', { text: sqName(m.dest[0], m.dest[1]) + (m.primary !== 'move' ? ` (${KIND_NAME[m.primary]})` : ''), onclick: () => { cursor = m.dest.slice(); placeGhost(m.dest); } })));
   } else if (sel.kind && ['move', 'qs', 'sprint'].includes(sel.kind) && !sel.dest) {
     const acts = pieceActs(sel.side, sel.i).filter(a => a.kind === sel.kind);
     const seen = new Set();

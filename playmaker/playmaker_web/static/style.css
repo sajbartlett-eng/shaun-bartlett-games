@@ -367,3 +367,28 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 
 .covbox .covscores { margin: 6px 0; padding-top: 6px; border-top: 1px dashed #c9c4b6; }
 .covbox .covscores .covverdict { font-weight: 600; margin-top: 3px; }
+
+/* ---- step 19, stage 1: tap a player, tap a square, confirm (play.js) ---- */
+#court { touch-action: manipulation; -webkit-user-select: none; user-select: none; }      /* no page zoom on a double-tap */
+.target.mv-move { stroke-dasharray: none; }
+.target.mv-qs { stroke-dasharray: 7 4; }
+.target.mv-sprint { stroke-dasharray: 2 4; stroke-width: 3.5; fill: rgba(255,255,255,.3); }
+.target.ender-target { stroke: var(--red); }
+.target.ender-target.ring-target { stroke: var(--red); }
+.ghostpiece { opacity: .72; cursor: grab; touch-action: none; }
+.ghostpiece:focus { outline: none; }
+.ghostpiece:focus-visible .halo, .ghostpiece .halo { stroke: var(--hi); stroke-width: 3; stroke-dasharray: 4 3; fill: rgba(255,255,255,.6); }
+.allowdir { stroke: var(--red); stroke-width: 2; stroke-linecap: round; opacity: .35; }
+.pendline { stroke: var(--hi); stroke-width: 3; fill: none; opacity: .75; pointer-events: none; }
+.kcursor { fill: none; stroke: var(--hi); stroke-width: 4.5; stroke-dasharray: 3 3; }
+.kcursor:focus { outline: none; stroke-width: 5.5; }
+.piece:focus-visible .halo { stroke-width: 5; }
+.playbar { width: 100%; max-width: 900px; margin-top: 8px; background: var(--sheet); border-radius: 10px; padding: 8px 12px; box-shadow: var(--shadow); border-left: 6px solid var(--hi); }
+.playbar .playline { margin: 0 0 4px; font-weight: 600; font-size: 16px; }
+.playbar .note { margin: 4px 0 0; font-size: 14px; }
+.playbar .playbtns button { min-height: 44px; }
+.enderlist { display: grid; gap: 4px; margin-top: 6px; }
+.enderrow { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+.enderrow button.ender { min-height: 44px; text-align: left; }
+@media (prefers-reduced-motion: reduce) { .ghostpiece, .pendline { transition: none; } }
+.enderlist .listhead { margin: 2px 0; font-size: 14px; color: var(--muted); }
