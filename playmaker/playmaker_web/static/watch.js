@@ -11,7 +11,10 @@
 //   defaults and the report says which switches were on.
 'use strict';
 window.PMWatch = (function () {
-  let playing = true, speed = 'normal', timer = null;
+  // playing from the start when the game was begun from "Watch the computer"; any other game the computer plays on
+  // both sides (a link, a scenario) gets the same controls, paused, so it steps as before
+  let playing = null, speed = 'normal', timer = null;
+  function ready() { if (playing === null) playing = !!(G && G.watch); }
   const DELAY = { slow: 2600, normal: 1300, fast: 450 };
   const setupShown = {};
   function live() { return replay ? replay.live : st; }
@@ -21,6 +24,7 @@ window.PMWatch = (function () {
   // ---- the bar under the board --------------------------------------------------------------------------------
   function bar() {
     const box = $('watchBar'); if (!box) return;
+    ready();
     box.innerHTML = '';
     if (!on()) { box.classList.add('hidden'); return; }
     box.classList.remove('hidden');
@@ -36,7 +40,7 @@ window.PMWatch = (function () {
         s && s.possession ? el('button', { class: 'small', text: 'The report so far', onclick: () => showStory() }) : null]));
   }
   // ---- stepping: the step bar's OK, pressed for you at the chosen speed ----------------------------------------
-  function onStep() { bar(); if (!on() || !replay) return; if (!$('modal').classList.contains('hidden')) return; later(() => { if (replay && $('modal').classList.contains('hidden')) stepOn(); }); }
+  function onStep() { ready(); bar(); if (!on() || !replay) return; if (!$('modal').classList.contains('hidden')) return; later(() => { if (replay && $('modal').classList.contains('hidden')) stepOn(); }); }
   function kick() { if (!on()) return; if (replay) onStep(); }
   function nextTurn() {
     if (!replay) return;
@@ -57,6 +61,7 @@ window.PMWatch = (function () {
   // ---- the setup, as its own step, once a possession ----------------------------------------------------------
   async function maybeSetup(possession) {
     if (!on() || setupShown[possession]) return false;
+    const s = live(); if (!s || !s.full || s.scenario) return false;     // a scenario card sets its own board: no setup to show
     setupShown[possession] = true;
     let rep = null; try { rep = await api(`/api/report?code=${G.code}&possession=${possession}`); } catch (e) { return false; }
     if (!rep || !rep.setup) return false;

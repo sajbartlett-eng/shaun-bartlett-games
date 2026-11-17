@@ -4,13 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Playmaker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<a class="skip" href="#actionsPanel">Skip to the actions</a>
+<a class="skip" href="#actionsPanel" hidden>Skip to the actions</a>
 <div id="announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 <main id="start" class="panel start">
   <h1>Playmaker <span class="sub">the coach's clipboard</span></h1>
@@ -183,8 +180,8 @@
     </aside>
   </div>
   <section class="lower tab-log" aria-label="Rolls and log">
-    <div class="rolls"><h3>Last roll</h3><div id="rolls"></div></div>
-    <div class="log"><h3 id="logHead">Log</h3><ol id="log" tabindex="0" aria-labelledby="logHead"></ol></div>
+    <div class="rolls"><h2 class="h3">Last roll</h2><div id="rolls"></div></div>
+    <div class="log"><h2 class="h3" id="logHead">Log</h2><ol id="log" tabindex="0" aria-labelledby="logHead"></ol></div>
   </section>
 </div>
 

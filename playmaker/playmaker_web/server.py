@@ -23,7 +23,8 @@ from urllib.parse import urlparse, parse_qs
 from .api import Manager, handle
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
-TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.png': 'image/png'}
+TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.png': 'image/png',
+         '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8'}
 
 
 def make_handler(manager):

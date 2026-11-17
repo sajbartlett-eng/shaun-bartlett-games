@@ -483,7 +483,7 @@ async function create() {
   }
   try {
     const r = await api('/api/new', body);
-    G = { code: r.code, token: r.token, players: humans.players };
+    G = { code: r.code, token: r.token, players: humans.players, watch: path === 'watch' || null };
     try { G.rec = await startRecord(r.code, body, humans.players); } catch (e) { G.rec = null; }
     if (mode === 'remote') {
       const seat = await askSeat(r.code);
@@ -515,6 +515,7 @@ async function join() {
 
 function enterTable() {
   $('start').classList.add('hidden'); $('table').classList.remove('hidden');
+  const sk = document.querySelector('a.skip'); if (sk) sk.hidden = false;       // step 19: only where there are actions
   refresh(); pollTimer = setInterval(() => { if (!busy) refresh(true); }, 1500);
 }
 
@@ -564,6 +565,7 @@ function render() {
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
+  document.body.classList.toggle('choosing', !!(playActive() && sel.side != null));   // step 19: the board stays in view on a phone
   playFocus();
   PMTips.check();
   PMWatch.bar();                         // step 19, stage 5: one tip at the moment it first matters
@@ -580,7 +582,7 @@ function render() {
   if (diagramDue()) return;             // a phase just ended: its diagram, then Continue
   if (readyIfDue()) return;
   if (s.stage === 'target' && s.can_act) targetModal();
-  else if (s.stage === 'over') endModal();
+  else if (s.stage === 'over' && endClosed !== `${s.code}:${s.possession}`) endModal();
 }
 
 // Step 3l: what the level changes on a card: 'U16 · TIER A' / 'U20 · TIER A' and a flex slot (D-88: growth shows only in the
@@ -725,7 +727,8 @@ function zonesShown() {
 function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
-  PM.court(c, s.zones, { axes: true, plain: !zonesShown(), rings: ringsShown() });
+  const covOn = showCov() && covMap && covMap.all && covMap.phase === s.phase;      // step 19: no zone colours under the map
+  PM.court(c, s.zones, { axes: true, plain: !zonesShown() || covOn, rings: ringsShown(), nowash: covOn });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   drawInfluence(c);
@@ -879,9 +882,9 @@ function covPanel() {
     box.append(list);
   };
   if (!live) { scoreLines(); $('sideButtons').append(box); return; }
-  const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` The defence is weaker than at the start of the last phase (by ${Math.round(covMap.change)}).` :
-    covMap.change < -0.5 ? ` The defence is stronger than at the start of the last phase (by ${Math.round(-covMap.change)}).` : ' About as strong as at the start of the last phase.';
-  const strong = covMap.strength == null ? '' : ` The most the offence can force by next phase: ${Math.round(covMap.strength)} (lower is a stronger defence), by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
+  const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` That is ${Math.round(covMap.change)} more than at the start of the last phase: the defence got weaker.` :
+    covMap.change < -0.5 ? ` That is ${Math.round(-covMap.change)} less than at the start of the last phase: the defence got stronger.` : ' About the same as at the start of the last phase.';
+  const strong = covMap.strength == null ? '' : ` The offence's best look by next phase: ${Math.round(covMap.strength)}, by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
   box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + strong + change }));
   scoreLines();
   const pick = el('div', { class: 'covpick' });
@@ -892,7 +895,8 @@ function covPanel() {
   box.append(pick);
   const pc = covFor !== 'all' && covMap.passes ? covMap.passes[covFor] : null;
   const passWords = pc == null ? '' : pc >= 1 ? ` A pass straight to O${covFor + 1} can't be intercepted.` : ` A pass straight to O${covFor + 1} arrives ${Math.round(pc * 20)} times in 20.`;
-  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there. Tap a square for who gets what, and who covers it.' + passWords }));
+  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there next phase. Tap a square for who gets what, and who covers it.' + passWords }),
+    el('div', { class: 'covlegend', id: 'covLegend' }, [el('span', { class: 'sw lo' }), ' a little', el('span', { class: 'sw mid' }), ' more', el('span', { class: 'sw hi' }), ' the most for the offence. The shot-zone colours are off while the map shows.']));
   $('sideButtons').append(box);
 }
 
@@ -1102,18 +1106,24 @@ function renderActions() {
 function addUndo() {
   const s = st;
   if (s.match_format === 'digital') covPanel();
-  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
+  // step 19, stage 7: the switches that change how the board looks fold under one heading (the coverage view stays out)
+  const opts = el('details', { class: 'boardopts', id: 'boardOpts' }, [el('summary', { text: 'Board settings' })]);
+  let pref = null; try { pref = localStorage.getItem('pm_boardopts'); } catch (e) { /* ignore */ }
+  opts.open = pref === null ? !isPhone() : pref === '1';                 // open on a laptop, folded on a phone, unless chosen
+  opts.addEventListener('toggle', () => { try { localStorage.setItem('pm_boardopts', opts.open ? '1' : '0'); } catch (e) { /* ignore */ } });
+  opts.append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
+  opts.append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
     onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', id: 'numbersToggle', 'aria-pressed': PMAdvice.numbersOn() ? 'true' : 'false', text: PMAdvice.numbersOn() ? 'Show the numbers: on' : 'Show the numbers: off',
+  opts.append(el('button', { class: 'small', id: 'numbersToggle', 'aria-pressed': PMAdvice.numbersOn() ? 'true' : 'false', text: PMAdvice.numbersOn() ? 'Show the numbers: on' : 'Show the numbers: off',
     onclick: () => { PMAdvice.setNumbers(!PMAdvice.numbersOn()); render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', id: 'confirmToggle', 'aria-pressed': confirmOn() ? 'true' : 'false', text: confirmOn() ? 'Confirm each action: on' : 'Confirm each action: off',
+  opts.append(el('button', { class: 'small', id: 'confirmToggle', 'aria-pressed': confirmOn() ? 'true' : 'false', text: confirmOn() ? 'Confirm each action: on' : 'Confirm each action: off',
     onclick: () => { try { localStorage.setItem('pm_confirm', confirmOn() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
+  opts.append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
     text: ringsShown() ? 'Distance rings: shown' : 'Distance rings: hidden',
     onclick: () => { try { localStorage.setItem('pm_rings', ringsShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  if (s.stage === 'over') return;
+  $('sideButtons').append(opts);
+  if (s.stage === 'over') { if (endClosed) $('sideButtons').append(el('button', { class: 'primary', id: 'showResult', text: 'Show the result', onclick: () => { endClosed = null; render(); } })); return; }
   if (s.mode === 'hotseat' && s.can_undo) $('sideButtons').append(el('button', { text: 'Undo (only before a roll)', onclick: undo }));
   if (s.mode === 'remote' && s.can_undo) $('sideButtons').append(el('button', { text: s.undo_votes.length ? `Undo requested by ${s.undo_votes.join(', ')}: agree` : 'Request undo (both must agree)', onclick: undo }));
 }
@@ -1176,8 +1186,10 @@ function targetModal() {
     ...acts.map(a => el('button', { class: 'primary', text: `O${a.target + 1} ${st.o[a.target].card.role}`, onclick: () => { closeModal(); submit(a); } }))]);
 }
 
+let endClosed = null;                 // step 19: the possession whose end screen the player closed (Escape or Close)
 function endModal() {
   if (!$('modal').classList.contains('hidden')) return;
+  endClosed = null;
   const r = st.result, s = st;
   const rows = [['Shot value', r.shot_value], ['Free throws (or and-one)', r.free_throws], ['Foul bonus', r.bonus],
     ['Turnovers', `${r.turnovers} (${r.turnover_points})`], ["Coach's Call bonus", r.coach_bonus]];
@@ -1200,7 +1212,7 @@ function endModal() {
   const nav = el('div', { class: 'buttons' }, [
     s.full && s.possession < (s.n_poss || 2) ? el('button', { class: 'primary', id: 'nextPoss', text: `Start possession ${s.possession + 1} of ${s.n_poss || 2} (sides swap)`, onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; phasesInit = false; render(); } }) : null,
     el('button', { class: s.full && s.possession < (s.n_poss || 2) ? '' : 'primary', text: 'The story of the play', onclick: () => { closeModal(); showStory(); } }),
-    el('button', { text: 'Close', onclick: closeModal }),
+    el('button', { text: 'Close', onclick: () => { endClosed = `${s.code}:${s.possession}`; closeModal(); render(); } }),
     el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } })]);
   kids.push(nav);
   kids.splice(2, 0, el('div', { id: 'trainerBox' }, trainerBoxKids(s.possession)));
@@ -1225,7 +1237,7 @@ function endModal() {
       el('button', { text: 'Download log', onclick: downloadLog }), el('button', { text: 'Copy log', onclick: copyLog })]));
   }
   announce(`Possession over: ${r.total}, ${r.band}.`);
-  modal(kids, () => {});
+  modal(kids, () => { endClosed = `${s.code}:${s.possession}`; render(); });
   PMWatch.onEnd();
 }
 
@@ -1233,7 +1245,7 @@ function renderScenario() {
   const box = $('scenarioCard'), sc = st.scenario;
   if (!sc) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML = '';
-  box.append(el('h3', { text: `${sc.n}. ${sc.title} · ${sc.kind} · clock ${sc.clock}` }), el('p', { text: sc.text }),
+  box.append(el('h2', { class: 'h3', text: `${sc.n}. ${sc.title} · ${sc.kind} · clock ${sc.clock}` }), el('p', { text: sc.text }),
     ...(sc.situation ? [el('p', { class: 'situation', text: sc.situation })] : []),      // step 18i (D-175): the foul situation the card sets
     el('p', { text: `Goal: ${sc.goal}` }), el('ul', {}, sc.rules.map(r => el('li', { text: r }))),
     el('p', { class: 'note', text: `O: ${sc.off} · X: ${sc.dfn}` + (st.target === 'secret' ? " · Coach's Call target: secret" : '') }));
@@ -1557,7 +1569,7 @@ function renderPhoneLists() {
   const side = st.side === 'O' || st.stage === 'target' || st.stage === 'pick' || st.stage === 'forced' ? 'O' : 'X';
   const pieces = (side === 'O' ? st.o : st.x).filter(p => mine.some(a => a.side === side && a.piece === p.i));
   if (sel.side == null) {
-    box.append(el('div', { class: 'note', text: 'Pick a player:' }), ...pieces.map(p => el('button', { text: `${side}${p.i + 1} on ${p.sq}`, onclick: () => selectPiece(side, p.i) })));
+    box.append(el('details', { class: 'picklist' }, [el('summary', { text: 'Or pick a player from a list' }), ...pieces.map(p => el('button', { text: `${side}${p.i + 1} on ${p.sq}`, onclick: () => selectPiece(side, p.i) }))]));
   } else if (playActive() && sel.side === st.side_to_act && !pend) {
     const sq = [...moveSquares(sel.side, sel.i).values()];
     if (sq.length) box.append(el('div', { class: 'note', text: 'Or pick the square here:' }),
@@ -1568,16 +1580,19 @@ function renderPhoneLists() {
     box.append(el('div', { class: 'note', text: 'Or pick the square here:' }));
     for (const a of acts) { const k = a.dest.join(); if (seen.has(k)) continue; seen.add(k); box.append(el('button', { text: sqName(a.dest[0], a.dest[1]), onclick: () => chooseDest(a.dest) })); }
   }
-  box.append(el('button', { text: 'Clear selection', onclick: () => { sel = { side: null }; render(); } }));
+  if (sel.side != null) box.append(el('button', { text: 'Clear selection', onclick: () => { sel = { side: null }; render(); } }));
 }
 
 // Phone tabs
 function initTabs() {
+  // step 19, stage 7: on a phone the side panels are drawers: closed at first, a tab opens one, the same tab closes it
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
-    document.body.dataset.tab = b.dataset.tab;
+    const open = !(document.body.dataset.tab === b.dataset.tab && isPhone());
+    document.querySelectorAll('.tabs button').forEach(x => { const on = open && x === b; x.classList.toggle('active', on); x.setAttribute('aria-expanded', on ? 'true' : 'false'); });
+    document.body.dataset.tab = open ? b.dataset.tab : 'none';
   }));
-  document.body.dataset.tab = 'off';
+  document.body.dataset.tab = isPhone() ? 'none' : 'off';
+  if (isPhone()) document.querySelectorAll('.tabs button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-expanded', 'false'); });
 }
 initTabs();
 
@@ -1685,7 +1700,7 @@ function renderRecent() {
   const shown = replay ? replay.entries.slice(0, replay.k) : lastOther;     // never the actions still to come
   if (!shown.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
-  box.append(el('h3', { text: `${replay ? 'So far' : 'Last turn'}: ${sideName(shown[0].side)}${shown[0].actor === 'ai' ? ' (computer)' : ''}` }), ...shown.map(feedEntry));
+  box.append(el('h2', { class: 'h3', text: `${replay ? 'So far' : 'Last turn'}: ${sideName(shown[0].side)}${shown[0].actor === 'ai' ? ' (computer)' : ''}` }), ...shown.map(feedEntry));
 }
 function actedPieces() {
   const out = new Set();

@@ -1,3 +1,6 @@
+/* step 19: the handwriting font ships with the app (SIL Open Font License, fonts/OFL.txt), so it works offline */
+@font-face { font-family: 'Kalam'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/kalam-400.woff2) format('woff2'); }
+@font-face { font-family: 'Kalam'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/kalam-700.woff2) format('woff2'); }
 /* Playmaker: the coach's clipboard. A paper desk, clipboard sheets, a whiteboard court with Xs and Os in
    marker. Body text is a plain sans for reading; the marker hand is for headings, numbers and the board. */
 :root {
@@ -435,3 +438,38 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .watchbar { width: 100%; max-width: 900px; margin-top: 8px; background: var(--sheet); border-radius: 10px; padding: 6px 12px; box-shadow: var(--shadow); border-left: 6px solid var(--navy); }
 .watchbar .watchline { margin: 2px 0 4px; font-weight: 600; }
 .watchbar button { min-height: 44px; }
+
+/* ---- step 19, stage 7: legibility and access ---- */
+/* reading text at least 14 px; dense card rows and labels at least 12 px */
+.card { font-size: 14px; } .card .head { font-size: 15px; }
+.grp th { font-size: 12px; } .grp td { font-size: 13px; }
+.card .cardsum { font-size: 14px; } .key { font-size: 14px; }
+.tracker { font-size: 14px; } .chip { font-size: 13px; }
+.clock .lbl { font-size: 12px; } .meta { font-size: 14px; }
+.log ol { font-size: 14px; } .rolls div { font-size: 14px; } .roller { font-size: 12.5px; } .inbnote { font-size: 13px; }
+.vchip { font-size: 14px; } button.small { font-size: 14px; min-height: 36px; }
+.phasewords { font-size: 15px; } .playbar .note { font-size: 14px; }
+.zonelbl { font-size: 10px; } .axis { font-size: 12.5px; } .zonenum { font-size: 10px; } .xnum { font-size: 12px; }
+h2.h3 { font-size: 17px; margin: 6px 0 4px; }
+/* the top bar: the title wraps instead of being clipped */
+.topbar { flex-wrap: wrap; row-gap: 4px; } .topbar .title { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }
+/* the board settings and the list of players fold away */
+.boardopts { width: 100%; margin-top: 4px; } .boardopts > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+.picklist > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+/* the coverage map's legend */
+.covlegend { margin-top: 4px; font-size: 14px; } .covlegend .sw { display: inline-block; width: 16px; height: 12px; margin: 0 3px 0 8px; border: 1px solid #999; vertical-align: middle; }
+.covlegend .sw.lo { background: rgba(196,38,30,.18); } .covlegend .sw.mid { background: rgba(196,38,30,.42); } .covlegend .sw.hi { background: rgba(196,38,30,.72); }
+@media (forced-colors: active) { .clock .lbl, .meta, .topbar { color: CanvasText; } .playbar, .watchbar { border-left-color: CanvasText; } }
+@media (max-width: 820px) {
+  /* the table at tip-off in about one phone screen: a compact top bar and summary; the board stays in view while choosing */
+  .topbar { padding: 4px 8px; gap: 2px 12px; } .topbar .title { font-size: 18px; flex-basis: 100%; }
+  .clock { min-width: 0; } .big { font-size: 20px; } .meta { font-size: 13px; }
+  .meta > div { display: inline; margin-right: 8px; } .meta button { min-height: 40px; }
+  .summary { padding: 6px 10px; font-size: 14px; }
+  body.choosing .clipboard { position: sticky; top: 0; z-index: 6; }
+  .playbar, .tipbox, .watchbar { margin-top: 6px; }
+}
+@media (max-width: 820px) {
+  .topbar .clock { flex-direction: row; align-items: baseline; gap: 5px; }
+  .topbar .strip { flex-basis: 100%; }
+}

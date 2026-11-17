@@ -77,6 +77,10 @@ def page(inline=False):
     if not inline:
         return html.replace(tags, '<script src="pyodide-adapter.js"></script>\n' + tags)
     data = json.dumps(dict(bundle(), speedtest=speedtest_positions())).replace('</', '<\\/')
+    import base64                          # step 19: the font inside the one file, so it needs nothing from the internet
+    for w in ('400', '700'):
+        with open(os.path.join(STATIC, 'fonts', f'kalam-{w}.woff2'), 'rb') as ff:
+            css = css.replace(f'url(fonts/kalam-{w}.woff2)', 'url(data:font/woff2;base64,' + base64.b64encode(ff.read()).decode() + ')')
     html = html.replace('<link rel="stylesheet" href="style.css">', f'<style>\n{css}\n</style>')
     scripts = ''.join(f'<script>\n{open(os.path.join(STATIC, f)).read()}\n</script>\n' for f in JS_FILES)
     return html.replace(tags, f'<script>window.PM_BUNDLE = {data};</script>\n<script>\n{adapter}\n</script>\n{scripts}')
@@ -91,6 +95,10 @@ def build(out_site=None, out_dist=None):
         f.write(page())
     for name in JS_FILES + ['style.css', 'pyodide-adapter.js']:
         with open(os.path.join(STATIC, name)) as src, open(os.path.join(out_site, name), 'w') as dst:
+            dst.write(src.read())
+    os.makedirs(os.path.join(out_site, 'fonts'), exist_ok=True)         # step 19: the handwriting font, self-hosted
+    for name in os.listdir(os.path.join(STATIC, 'fonts')):
+        with open(os.path.join(STATIC, 'fonts', name), 'rb') as src, open(os.path.join(out_site, 'fonts', name), 'wb') as dst:
             dst.write(src.read())
     os.makedirs(os.path.join(out_site, 'docs'), exist_ok=True)          # step 3l: the playing levels sheet
     for name in os.listdir(os.path.join(STATIC, 'docs')):

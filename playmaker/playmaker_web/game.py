@@ -812,8 +812,10 @@ class Game:
                 elif c1 is not None:
                     s1 = round(c1['strength'])
                     weakened = s1 > s0
-                    text = (f'Defence weakened from {s0} to {s1} this phase.' if s1 > s0 else
-                            f'Defence strengthened from {s0} to {s1} this phase.' if s1 < s0 else f'Defence held at {s0}.')
+                    # step 19 (Shaun): the number always means the same thing: what the offence can get
+                    text = (f"The offence's best look rose from {s0} to {s1}: the defence got weaker." if s1 > s0 else
+                            f"The offence's best look fell from {s0} to {s1}: the defence got stronger." if s1 < s0 else
+                            f"The offence's best look held at {s0}: the defence held.")
                 else:
                     text = 'The possession ended without a shot.'
                 if not weakened:
