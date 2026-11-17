@@ -1245,7 +1245,7 @@ function renderScenario() {
   const box = $('scenarioCard'), sc = st.scenario;
   if (!sc) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden'); box.innerHTML = '';
-  box.append(el('h2', { class: 'h3', text: `${sc.n}. ${sc.title} · ${sc.kind} · clock ${sc.clock}` }), el('p', { text: sc.text }),
+  box.append(el('h3', { text: `${sc.n}. ${sc.title} · ${sc.kind} · clock ${sc.clock}` }), el('p', { text: sc.text }),
     ...(sc.situation ? [el('p', { class: 'situation', text: sc.situation })] : []),      // step 18i (D-175): the foul situation the card sets
     el('p', { text: `Goal: ${sc.goal}` }), el('ul', {}, sc.rules.map(r => el('li', { text: r }))),
     el('p', { class: 'note', text: `O: ${sc.off} · X: ${sc.dfn}` + (st.target === 'secret' ? " · Coach's Call target: secret" : '') }));
@@ -1700,7 +1700,7 @@ function renderRecent() {
   const shown = replay ? replay.entries.slice(0, replay.k) : lastOther;     // never the actions still to come
   if (!shown.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
-  box.append(el('h2', { class: 'h3', text: `${replay ? 'So far' : 'Last turn'}: ${sideName(shown[0].side)}${shown[0].actor === 'ai' ? ' (computer)' : ''}` }), ...shown.map(feedEntry));
+  box.append(el('h3', { text: `${replay ? 'So far' : 'Last turn'}: ${sideName(shown[0].side)}${shown[0].actor === 'ai' ? ' (computer)' : ''}` }), ...shown.map(feedEntry));
 }
 function actedPieces() {
   const out = new Set();
@@ -1729,7 +1729,7 @@ function renderCompare() {
                                   : (isArrowOn(mine, opp) ? 'arrow on this player' : 'nearest attacker')) : '';
   box.classList.remove('hidden');
   const words = side === 'O' ? PMAdvice.matchup(i) : (opp ? PMAdvice.matchup(opps[k]).map(x => x.replace(/^Hunt: /, 'Protect: ').replace(/ Get (O\d) the ball\.$/, ' Keep an arrow on $1.')) : []);
-  box.append(el('div', { class: 'cmp-head' }, [el('h2', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
+  box.append(el('div', { class: 'cmp-head' }, [el('h3', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
     opps.length > 1 ? el('button', { text: `Next matchup (${k + 1} of ${opps.length})`, onclick: () => { compare.k = (k + 1) % opps.length; renderCompare(); } }) : null,
     el('button', { text: 'Close card', onclick: () => { compare = null; renderCompare(); } })]),
     words.length ? el('ul', { class: 'cmpwords' }, words.map(w => el('li', { text: w }))) : el('p', { class: 'note', text: opp ? 'No clear edge either way on the cards.' : '' }),

@@ -56,49 +56,28 @@ window.PMAdvice = (function () {
   function matchup(i) {
     const m = (st.advice || [])[i]; if (!m) return [];
     const out = [];
-    for (const h of m.hunt) out.push(`Hunt: ${h} Get O${m.o + 1} the ball.`);
+    for (const h of m.hunt) out.push(`Hunt: ${h} Get O${m.attacker + 1} the ball.`);
     for (const g of m.guard) out.push(`Defence edge: ${g}`);
     if (m.help) out.push(`Help: ${m.help}`);
     return out;
   }
-  // Coach Vision: the clearest advantage on the board for the side to act, in words (Learn level)
+  // Coach Vision (Learn level): the clearest advantage on the board, read for both sides in the same form, whoever
+  // is to act. A selected player: his own matchup, both ways round.
   function coach(side, selected) {
     const ms = st.advice || []; if (!ms.length) return [];
+    let pool = ms;
     if (selected != null) {
-      const i = side === 'O' ? selected : ms.findIndex(m => m.x === selected);
-      if (i >= 0) {
-        const lines = side === 'O' ? matchup(i) : matchupFor(i);
-        if (lines.length) return lines;
-        const m = ms[i];
-        return [m.x == null ? `Nobody is on O${i + 1} right now.` : `O${i + 1} against X${m.x + 1}: no clear edge either way on the cards.`];
-      }
+      const i = side === 'O' ? selected : ms.findIndex(m => m.defender === selected);
+      if (i >= 0) pool = [ms[i]];
     }
-    const out = [];
-    if (side === 'O') {
-      const carrier = (st.o.find(p => p.ball) || {}).i;
-      const order = ms.slice().sort((a, b) => (b.hunt.length - a.hunt.length) || ((b.o === carrier) - (a.o === carrier)));
-      const top = order.find(m => m.hunt.length);
-      if (top) out.push(`Hunt: ${top.hunt[0]} Get O${top.o + 1} the ball.`);
-      const g = ms.find(m => m.guard.length);
-      if (g) out.push(`Watch out: ${g.guard[0]}`);
-      if (!out.length) out.push('No clear edge on the cards. Move the defence first: a cut or a screen that makes a defender choose.');
-    } else {
-      const top = ms.find(m => m.hunt.length);
-      if (top) out.push(`Protect: ${top.hunt[0]} Keep an arrow on O${top.o + 1} before he catches it.`);
-      const help = ms.find(m => m.help);
-      if (help) out.push(`Help: ${help.help}`);
-      const g = ms.find(m => m.guard.length);
-      if (g) out.push(`Your edge: ${g.guard[0]}`);
-      if (!out.length) out.push('No clear edge on the cards. Keep the shape: every lane answered, every arrow on a man.');
-    }
-    return out;
-  }
-  function matchupFor(i) {
-    const m = st.advice[i]; const out = [];
-    for (const h of m.hunt) out.push(`Protect: ${h} Keep an arrow on O${m.o + 1}.`);
-    for (const g of m.guard) out.push(`Your edge: ${g}`);
-    if (m.help) out.push(`Help: ${m.help}`);
-    return out;
+    const carrier = (st.o.find(p => p.ball) || {}).i;
+    const top = pool.slice().sort((a, b) => (b.hunt.length - a.hunt.length) || ((b.attacker === carrier) - (a.attacker === carrier))).find(m => m.hunt.length);
+    const edge = pool.find(m => m.guard.length), help = pool.find(m => m.help);
+    const off = top ? `Offence read: ${top.hunt[0]} Get O${top.attacker + 1} the ball.`
+      : edge ? `Offence read: ${edge.guard[0]} Keep the ball away from that matchup.` : 'Offence read: no clear edge on the cards. Move the defence first: a cut or a screen that makes a defender choose.';
+    const def = top ? `Defence read: keep an arrow on O${top.attacker + 1} before he catches it.` + (help ? ` ${help.help}` : '')
+      : edge ? `Defence read: ${edge.guard[0]}` + (help ? ` ${help.help}` : '') : 'Defence read: no clear edge on the cards. Keep the shape: every lane answered, every arrow on a man.';
+    return [off, def];
   }
   // a contest or forced-shot choice in words
   function choiceLabel(a) {

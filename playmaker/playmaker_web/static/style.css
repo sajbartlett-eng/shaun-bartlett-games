@@ -211,7 +211,7 @@ button.choice { text-align: left; } button.choice.clean { border-left: 6px solid
 
 /* the card panel and matchup, the scout report, the custom team builder */
 .compare { width: 100%; max-width: 900px; margin-top: 10px; background: var(--sheet); border: 2px solid var(--hi); border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); }
-.cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .cmp-head h2 { margin: 0; flex: 1 1 100%; font-size: 18px; }
+.cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .cmp-head h3 { margin: 0; flex: 1 1 100%; }
 .cmp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
 .chips { margin: 2px 0 4px 4px; } .vchip { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 9px; border: 1.5px solid var(--ink); border-radius: 12px; background: #fff; font-size: 13px; }
 .opt { margin: 4px 0; } .opt.inline { display: inline-block; margin-right: 8px; }

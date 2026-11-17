@@ -183,7 +183,7 @@ def matchup_lines(s, matchups):
     for i in range(5):
         js = matchups['O'][i] if matchups and matchups.get('O') else []
         if not js:
-            out.append(dict(o=i, x=None, hunt=[], guard=[], help=None))
+            out.append(dict(attacker=i, defender=None, hunt=[], guard=[], help=None))
             continue
         j = js[0]
         hunt, guard = [], []
@@ -200,5 +200,5 @@ def matchup_lines(s, matchups):
                 if SC._has(X[j], pid, 'strength', 'def'):
                     guard.append(f"X{j + 1} {clause(pid, 'strength')}, and O{i + 1} {clause(pair['off'], 'weakness')}.")
         help_ = f"O{i + 1} {clause('three', 'weakness')}: X{j + 1} can help off him." if SC._has(O[i], 'three', 'weakness', 'off') else None
-        out.append(dict(o=i, x=j, hunt=hunt[:2], guard=guard[:2], help=help_))
+        out.append(dict(attacker=i, defender=j, hunt=hunt[:2], guard=guard[:2], help=help_))
     return out
