@@ -265,3 +265,54 @@ def test_tap_confirm_double_tap_hold_drag_keyboard_and_the_numbers_switch(tmp_pa
     # the numbers: off by default, on brings the "x v y" lines back
     assert not re.search(r'\d+.? v [A-Z]', out['numbersOff']) and '%' in out['numbersOff']
     assert re.search(r'Pass \d+.? v Intercept', out['numbersOn'])
+
+
+# ---- stage 3: turn by turn, the assessments, the report ---------------------------------------------------------
+
+needs_node = pytest.mark.skipif(not __import__('shutil').which('node'), reason='needs Node for the coverage map')
+
+
+@needs_node
+def test_the_report_is_turn_by_turn_and_true_to_the_coverage_map():
+    """A computer-against-computer possession on the server (the coverage map in Node): every turn has a line for
+    each team; every number in a line is the map's own measure at that moment; the possession's assessment has the
+    shot breakdown, the verdict and a keep or change for the sides; plain words throughout."""
+    from playmaker_engine import agent as AG
+    from playmaker_engine.plain import check
+    from playmaker_web.api import Manager, handle
+    from playmaker_web import report as R
+    from playmaker_web.server import coverage_engine, stop_coverage_engine
+    assert coverage_engine()
+    try:
+        m = Manager()
+        code, g = None, None
+        for seed in (11, 5):
+            st, r = handle(m, 'POST', '/api/new', body=dict(mode='hotseat', match_format='digital', teams=['Five Out', 'High-Low'], seed=seed,
+                                                             level='pro', full=True, per_side=4, ai=dict(O='rookie', X='rookie')))
+            g = m.get(r['code'])
+            if g.state.stage == 'over':
+                break
+        st, rep = handle(m, 'GET', '/api/report', query=dict(code=g.code, possession='1'))
+        assert st == 200 and rep['over'] and rep['turns']
+        steps = [x for x in g._trails[1] if x[1] is not None]
+        for t in rep['turns']:
+            assert t['offence'].startswith('Offence: ') and t['defence'].startswith('Defence: ')
+            first = next(b for b, a, n, tn in steps if b.phase == t['phase'] and tn == t['turn'])
+            c = AG.coverage(first) if first.stage == 'play' else None
+            if c is not None:
+                assert t['numbers']['before'] == round(c['strength'])          # the line's number is the map's
+                if t['numbers']['before'] is not None and str(t['numbers']['before']) in t['offence']:
+                    assert f"from {t['numbers']['before']}" in t['offence'] or f"at {t['numbers']['before']}" in t['offence']
+        sm = rep['summary']
+        assert sm['verdict'].split(':')[0] in ('Good', 'Weak', 'Wasted') and sm['score'].startswith('Scored ')
+        assert sm['shot'] and (sm['best'] or sm['shot'] == 'No shot went up.')
+        texts = [t['offence'] for t in rep['turns']] + [t['defence'] for t in rep['turns']]
+        for p in rep['phases']:
+            texts += p['offence'] + p['defence'] + ([p['next']] if p['next'] else [])
+        texts += [x for x in (sm['shot'], sm['score'], sm['best'], sm['trend'], sm['verdict']) if x]
+        texts += [x for side in ('offence', 'defence') for x in sm[side].values() if x]
+        for x in texts:
+            assert not check(x), x
+    finally:
+        stop_coverage_engine()
+    assert AG.JS.get('coverage') is None

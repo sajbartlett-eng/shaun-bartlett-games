@@ -64,16 +64,48 @@ def make_handler(manager):
     return Handler
 
 
-def serve(port=8765, host='0.0.0.0'):
+_COVERAGE_ENGINE = []
+
+
+def coverage_engine():
+    """Step 19, stage 6: the server shows what the link version shows, the coverage view included. The coverage map
+    lives in the fast engine (engine.js); the server runs it in Node for the coach's view and the reports only. The
+    computer's play is untouched: its search stays where it was."""
+    import shutil
+    from playmaker_engine import agent as AG
+    if _COVERAGE_ENGINE or AG.JS.get('coverage') is not None or not shutil.which('node'):
+        return bool(_COVERAGE_ENGINE) or AG.JS.get('coverage') is not None
+    from playmaker_engine.jsbridge import NodeEngine
+    eng, lock = NodeEngine(), threading.Lock()
+
+    def cov(text):
+        with lock:                               # one request at a time down the one pipe
+            return eng.call('coverageJSON', text)
+    AG.JS['coverage'] = cov
+    _COVERAGE_ENGINE.append(eng)
+    return True
+
+
+def stop_coverage_engine():
+    from playmaker_engine import agent as AG
+    while _COVERAGE_ENGINE:
+        _COVERAGE_ENGINE.pop().close()            # close() puts every agent.JS entry back to None
+    AG.JS['coverage'] = None
+
+
+def serve(port=8765, host='0.0.0.0', coverage=True):
+    if coverage:
+        coverage_engine()
     manager = Manager()
     httpd = ThreadingHTTPServer((host, port), make_handler(manager))
     httpd.manager = manager
     return httpd
 
 
-def start_background(port=0, host='127.0.0.1'):
-    """For tests: start on a free port in a thread; returns (server, base_url)."""
-    httpd = serve(port, host)
+def start_background(port=0, host='127.0.0.1', coverage=False):
+    """For tests: start on a free port in a thread; returns (server, base_url). coverage: also run the coverage map
+    (the fast engine in Node), as the real server does; stop it with stop_coverage_engine()."""
+    httpd = serve(port, host, coverage)
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
     return httpd, f'http://{host}:{httpd.server_address[1]}'

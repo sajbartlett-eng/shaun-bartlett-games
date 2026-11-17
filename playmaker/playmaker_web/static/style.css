@@ -406,3 +406,12 @@ ul.profiles { list-style: none; padding: 0; } ul.profiles li { padding: 4px 0; b
 .cardwords .wminus { background: var(--bandL); color: #8c2022; padding: 0 5px; border-radius: 3px; }
 .cmpwords { margin: 4px 0 6px; padding-left: 20px; font-size: 15px; }
 .coachline .bubble p { white-space: pre-line; }
+
+/* ---- step 19, stage 3: turn by turn, the coach's assessments, the report (report.js) ---- */
+.turnblock { margin: 10px 0 14px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+.turnblock h3 { margin: 4px 0; }
+.tline { margin: 4px 0; font-size: 15px; } .tline.off { border-left: 4px solid var(--ink); padding-left: 8px; } .tline.def { border-left: 4px solid var(--red); padding-left: 8px; }
+.phaseassess, .possassess { background: #fff7d6; border-radius: 8px; padding: 6px 12px; margin: 10px 0; }
+.phaseassess h4, .possassess h4 { margin: 6px 0 2px; font-size: 15px; }
+.phaseassess ul, .possassess ul { margin: 2px 0; padding-left: 20px; }
+.nextline { font-weight: 600; }

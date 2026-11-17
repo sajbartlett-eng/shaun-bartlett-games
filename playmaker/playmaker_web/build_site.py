@@ -16,7 +16,7 @@ ENGINE_FILES = ['__init__.py', 'rules_config.py', 'board.py', 'cards.py', 'state
                 'decide.py', 'reach.py', 'search.py', 'goals.py', 'agent.py', 'labels.py', 'trainer.py', 'glicko2.py', 'jsbridge.py', 'plain.py', 'register.py']
 DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json', 'levels_data.py', 'teamtools.py',
               'ai_profiles.json', 'vcoarse.json']
-WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py', 'advice.py']
+WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py', 'advice.py', 'report.py']
 
 
 def bundle():
@@ -34,7 +34,7 @@ def bundle():
     return dict(version=1, files=files, engine_js=engine_js)
 
 
-JS_FILES = ['speedtest.js', 'notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js', 'advice.js', 'play.js']       # in load order; index.html names them in this order
+JS_FILES = ['speedtest.js', 'notation.js', 'coach.js', 'records.js', 'trainer.js', 'app.js', 'advice.js', 'report.js', 'play.js']       # in load order; index.html names them in this order
 
 
 def speedtest_positions():

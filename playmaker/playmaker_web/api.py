@@ -180,6 +180,11 @@ def handle(manager, method, path, query=None, body=None):
                 return 200, manager.get(q.get('code')).read_log()
             if path == '/api/story':
                 return 200, manager.get(q.get('code')).story()
+            if path == '/api/report':          # step 19, stage 3: the possession turn by turn, and the coach's assessments
+                from .report import build
+                g = manager.get(q.get('code'))
+                ph = q.get('phase')
+                return 200, build(g, int(q.get('possession') or g.possession), int(ph) if ph else None)
             if path == '/api/options':
                 return 200, options(manager)
             return 404, dict(error='not found')

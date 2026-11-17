@@ -1138,6 +1138,8 @@ function endModal() {
     el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } })]);
   kids.push(nav);
   kids.splice(2, 0, el('div', { id: 'trainerBox' }, trainerBoxKids(s.possession)));
+  kids.splice(1, 0, el('div', { id: 'assessBox' }));          // step 19, stage 3: the coach's assessment of the possession leads
+  PMReport.endBlock(s.possession).then(b => { const box = $('assessBox'); if (b && box) box.append(b); });
   if (s.match && G.rec) kids.splice(3, 0, el('div', { id: 'ratingBox' }, ratingKids()));
   if (s.feedback_due) {
     const rv = el('details', { class: 'endsec' }, [el('summary', { text: 'Review: your plan against the board' }), el('section', { id: 'reviewBox', class: 'review' }, [
@@ -1921,6 +1923,22 @@ function phaseWords(p) {
   return out;
 }
 async function showPhaseDiagram(due) {
+  // step 19, stage 3: the phase turn by turn, with a line for each team and the coach's assessment (report.js)
+  let tv = null; try { tv = await PMReport.phaseView(due); } catch (e) { tv = null; }
+  if (tv) {
+    const done = () => { lastShown[due.possession] = due.phase; diagramOpen = false; };
+    const kids = [el('h2', { text: `Phase ${due.phase}, turn by turn` }),
+      el('p', { class: 'note small', text: 'Each turn is the offence\'s turn and the defence\'s answer. Black: offence. Red: defence.' }),
+      ...tv.blocks.map(b => b.el), tv.assess,
+      el('div', { class: 'buttons' }, [
+        el('button', { class: 'primary', id: 'phaseContinue', text: 'Continue', onclick: () => { done(); closeModal(); render(); } }),
+        el('button', { text: 'Save the turns as images', onclick: async () => { for (const [k, b] of tv.blocks.entries()) await saveDiagram(b.dia, `${st.code}_possession${due.possession}_phase${due.phase}_turn${k + 1}.png`); } }),
+        el('button', { text: 'The story so far', onclick: () => { done(); closeModal(); showStory(); } })])];
+    modal(kids, () => { done(); render(); });
+    announce(`Phase ${due.phase} over. ` + tv.rep.turns.filter(t => t.phase === due.phase).map(t => `${t.offence} ${t.defence}`).join(' '));
+    const b = $('phaseContinue'); if (b) b.focus();
+    return;
+  }
   const story = await api(`/api/story?code=${G.code}`);
   const p = story.phases.find(x => x.possession === due.possession && x.phase === due.phase);
   if (!p || !p.start) { diagramOpen = false; lastShown[due.possession] = due.phase; render(); return; }
@@ -1946,6 +1964,29 @@ async function saveDiagram(dia, name) {
 }
 async function showStory() {
   let story; try { story = await api(`/api/story?code=${G.code}`); } catch (e) { alert(e.message); return; }
+  // step 19, stage 3: turn by turn, with the coach's assessments, for every possession so far
+  try {
+    const kids = [el('h2', { text: 'The story of the play' }), el('p', { class: 'note', text: `${story.teams[0]} v ${story.teams[1]}. One diagram a turn: the offence's turn and the defence's answer.` })];
+    let any = false;
+    for (const poss of story.possessions) {
+      const { rep } = await PMReport.load(poss);
+      if (!rep.turns.length) continue;
+      any = true;
+      kids.push(el('h2', { text: `Possession ${poss}` }));
+      for (const ph of [...new Set(rep.turns.map(t => t.phase))]) {
+        for (const t of rep.turns.filter(x => x.phase === ph)) kids.push(PMReport.turnBlock(story, rep, t).el);
+        const pb = PMReport.phaseBlock(rep.phases.find(p => p.phase === ph)); if (pb) kids.push(pb);
+      }
+      const sb = PMReport.summaryBlock(rep.summary); if (sb) kids.push(sb);
+      if (rep.over) kids.push(el('div', { class: 'buttons' }, [el('button', { text: `Download possession ${poss}'s report`, onclick: () => PMReport.download(poss, 'html') }),
+        el('button', { text: 'Its data (JSON)', onclick: () => PMReport.download(poss, 'json') })]));
+    }
+    if (any) {
+      kids.push(el('div', { class: 'buttons' }, [el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); render(); } })]));
+      modal(kids, () => render());
+      return;
+    }
+  } catch (e) { /* fall back to the phase diagrams */ }
   const kids = [el('h2', { text: 'The story of the play' }),
     el('p', { class: 'note', text: `${story.teams[0]} v ${story.teams[1]}. One diagram a phase (two seconds of play); each action carries its turn number.` })];
   const dias = [];

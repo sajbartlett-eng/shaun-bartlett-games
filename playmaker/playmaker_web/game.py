@@ -698,12 +698,15 @@ class Game:
         return snaps[key]
 
     # ---- step 18s, stop two: the phase scores (the addendum on the defence's strength, D-201) ----
-    def _trail_add(self, before, a, node):
-        """Every step of the possession in play: the position before, the action, the position after."""
+    def _trail_add(self, before, a, node, turn=None):
+        """Every step of the possession in play: the position before, the action, the position after. Step 19 keeps
+        every possession's steps, with the turn each belongs to (an offence turn and the defence's answer), for the
+        turn-by-turn report (report.py)."""
         t = self.__dict__.setdefault('_trail', dict(possession=None, steps=[]))
         if t['possession'] != self.possession:
             t['possession'], t['steps'] = self.possession, []
         t['steps'].append((before, a, node))
+        self.__dict__.setdefault('_trails', {}).setdefault(self.possession, []).append((before, a, node, turn))
 
     _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
 
@@ -1048,7 +1051,7 @@ class Game:
         if isinstance(node, ChanceNode):
             node, rolls = resolve_chance(node, self.rng)
         self.state = node
-        self._trail_add(before, None, node)
+        self._trail_add(before, None, node, self.turn_no)
         self.undo, self.undo_votes = [], set()
         if node.phase != before.phase:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
@@ -1440,7 +1443,7 @@ class Game:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.turn_no = 0
         self.state = node
-        self._trail_add(before, a, node)
+        self._trail_add(before, a, node, turn)
         self.rolls = rolls
         self.undo_votes = set()
         self.version += 1
@@ -1524,6 +1527,9 @@ class Game:
             st, rs, slots, turn_no = self.undo.pop()
             if self.__dict__.get('_trail') and self._trail['steps']:
                 self._trail['steps'].pop()
+            tr = self.__dict__.get('_trails', {}).get(self.possession)
+            if tr:
+                tr.pop()
             if self.feed:
                 self.feed.pop()
             self.turn_no = turn_no
