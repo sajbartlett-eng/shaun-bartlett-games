@@ -120,8 +120,14 @@ async function initStart() {
 // ---------------------------------------------------------------- the paths: learn, the computer, a friend, a card
 let path = null;
 function initPaths(showKind) {
-  const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Take the course and I'll walk you through the whiteboard, the rules and how to read a matchup. Otherwise pick a game.", { speak: false, live: false });
+  const greet = PMCoach.line('coach', "Welcome to the clipboard. New here? Play the computer: your first game teaches you as you go.", { speak: false, live: false });
   $('startCoach').append(greet);
+  if ($('rulesBtn')) $('rulesBtn').onclick = () => startCourse(showKind);      // step 19: the old course, from help
+  const tipsWord = () => { if ($('tipsBtn')) $('tipsBtn').textContent = PMTips.on() ? 'Tips in play: on' : 'Tips in play: off'; };
+  if ($('tipsBtn')) $('tipsBtn').onclick = () => { if (PMTips.on()) { try { localStorage.setItem('pm_tips', '0'); } catch (e) { /* ignore */ } } else PMTips.reset(); tipsWord(); };
+  tipsWord();
+  for (const id of ['kind', 'format', 'perSide', 'age', 'standard', 'roster', 'teamA', 'teamB', 'aiLevel', 'aiSeat', 'level', 'mode', 'aiO', 'aiX', 'scenario'])
+    if ($(id)) $(id).addEventListener('change', setupSummary);
   document.querySelectorAll('button.path').forEach(b => b.addEventListener('click', () => choosePath(b.dataset.path, showKind)));
   let done = false, saved = null; try { done = localStorage.getItem('pm_course_done') === '1'; saved = JSON.parse(localStorage.getItem('pm_game') || 'null'); } catch (e) { /* ignore */ }
   if (saved && saved.code) $('resumeRow').append(el('button', { text: `Resume the last game (${saved.code})`, onclick: async () => {
@@ -133,12 +139,58 @@ if ($('rollFirst')) $('rollFirst').addEventListener('click', () => {
   let a, b; do { a = 1 + Math.floor(Math.random() * 20); b = 1 + Math.floor(Math.random() * 20); } while (a === b);
   $('rollResult').textContent = `Rolled ${a} and ${b}: the ${a > b ? 'first' : 'second'} roller attacks first and is player A, on the offence tracker.`;
 });
+// step 19, stage 4: each choice starts from good defaults with one Start button; the rest sits under Advanced settings.
+// The rows a choice needs up front move above the fold, and go back to their place under it for the other choices.
+const FRONT = { computer: [], friend: ['modeRow'], watch: [], scenario: ['scenarioRow', 'scenarioText'] };
+const HOME = {};
+function frontRows(which) {
+  for (const id of Object.values(FRONT).flat()) {
+    const n = $(id); if (!n) continue;
+    if (!HOME[id]) { HOME[id] = document.createComment(id); n.parentNode.insertBefore(HOME[id], n); }
+    HOME[id].parentNode.insertBefore(n, HOME[id].nextSibling);
+  }
+  for (const id of FRONT[which] || []) if ($(id)) $('frontRows').append($(id));
+}
+function defaultsFor(which) {
+  const set = (id, v) => { if ($(id) && $(id).querySelector(`option[value="${v}"]`)) $(id).value = v; };
+  if (which === 'scenario') { set('kind', 'scenario'); set('aiLevel', 'rookie'); return; }
+  set('kind', 'full'); set('format', 'digital'); set('perSide', '4');            // a digital match, four possessions each
+  set('age', 'senior'); set('standard', 'pro'); set('roster', 'prescribed');      // senior pro, the prescribed teams
+  if (OPTS) { set('teamA', OPTS.first_game[0]); set('teamB', OPTS.first_game[1]); }
+  set('level', 'scout');                                                          // the Scout level: the call, then the report
+  if (which === 'computer') { set('aiLevel', 'rookie'); set('aiSeat', 'O'); }    // the Rookie computer; you attack first
+  if (which === 'computer' && PMTips.firstGame()) set('level', 'learn');         // stage 5: the first game is gentle: Learn level
+  if (which === 'friend') set('mode', 'hotseat');                                 // one screen
+  if (which === 'watch') { set('aiO', 'allstar'); set('aiX', 'allstar'); set('level', 'pro'); }   // both All-Star; no scouting calls to make
+  for (const id of ['format', 'roster', 'age', 'standard']) if ($(id)) $(id).dispatchEvent(new Event('change'));
+}
+function setupSummary() {
+  const box = $('setupSummary'); if (!box || !path) return;
+  const LV = { rookie: 'Rookie', starter: 'Starter', allstar: 'All-Star', '': 'no' };
+  const txt = sel => { const o = $(sel) && $(sel).selectedOptions[0]; return o ? o.textContent : ''; };
+  const teams = $('roster').value === 'prescribed' ? `${$('teamA').value} v ${$('teamB').value}` : txt('roster').toLowerCase();
+  const match = $('kind').value === 'full' ? ($('format').value === 'digital' ? `A match of ${$('perSide').value} possessions each` : 'A tabletop match, one possession each') : 'One possession';
+  const level = { learn: 'Learn level: the full scout report first.', scout: 'Scout level: make your call, then see the report.', pro: 'Pro level: the cards only.' }[$('level').value] || '';
+  const std = `${txt('age').split(' (')[0]} ${STD_NAME[$('standard').value] || ''}`.trim();
+  if (path === 'computer' && PMTips.firstGame() && $('level').value === 'learn' && $('aiLevel').value === 'rookie') {
+    box.textContent = `Your first game: ${match.toLowerCase()} against the Rookie computer, at the Learn level, with a tip at each new idea as you play. Next game moves up to the Scout level, where you make your own scouting call.`;
+    return;
+  }
+  box.textContent = path === 'computer' ? `${match}, ${std}, ${teams}, against the ${LV[$('aiLevel').value]} computer. You attack ${$('aiSeat').value === 'O' ? 'first' : 'second'}. ${level}`
+    : path === 'friend' ? `${match}, ${std}, ${teams}, ${$('mode').value === 'remote' ? 'in two browsers, joined by a code' : 'on this screen'}. ${level}`
+    : path === 'watch' ? `${match}, ${std}, ${teams}: the ${LV[$('aiO').value] || 'All-Star'} computer against the ${LV[$('aiX').value] || 'All-Star'} computer. Play, pause or step through it, and download each possession's report.`
+    : `${$('aiLevel').value ? `The ${LV[$('aiLevel').value]} computer defends; you attack.` : 'Two players: one attacks, one defends.'} Hit the card's goal in one possession.`;
+}
 function choosePath(which, showKind, quiet) {
   path = which;
   document.querySelectorAll('button.path').forEach(b => b.setAttribute('aria-pressed', b.dataset.path === which ? 'true' : 'false'));
   if (which === 'learn') { startCourse(showKind); return; }
   $('setup').classList.remove('hidden');
-  const scenario = which === 'scenario', computer = which === 'computer';
+  const scenario = which === 'scenario', computer = which === 'computer', watch = which === 'watch';
+  frontRows(which);
+  defaultsFor(which);
+  $('joinBox').classList.toggle('hidden', which !== 'friend');
+  $('batchRow').classList.toggle('hidden', which !== 'watch');
   $('kind').value = scenario ? 'scenario' : 'full';
   $('aiRow').classList.toggle('hidden', !computer && !scenario);
   $('aiSeatRow').classList.toggle('hidden', !computer);
@@ -158,9 +210,11 @@ function choosePath(which, showKind, quiet) {
   } catch (e) { /* private mode */ }
   if (scenario && !$('aiLevel').querySelector('option[value=""]')) $('aiLevel').insertBefore(el('option', { value: '', text: 'nobody: two players' }), $('aiLevel').firstChild);
   if (!scenario) { const none = $('aiLevel').querySelector('option[value=""]'); if (none) none.remove(); }
-  $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : 'Pick a scenario card';
+  $('setupTitle').textContent = which === 'computer' ? 'Play the computer' : which === 'friend' ? 'Play a friend' : watch ? 'Watch the computer' : 'Pick a scenario card';
+  $('modeRow').classList.toggle('hidden', which !== 'friend');
   showKind();
-  if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = $('setup').querySelector('select'); if (f) f.focus({ preventScroll: true }); }
+  setupSummary();
+  if (!quiet) { $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' }); const f = scenario ? $('scenario') : $('create'); if (f) f.focus({ preventScroll: true }); }
 }
 function startCourse(showKind) {
   const box = $('course'); box.classList.remove('hidden');
@@ -368,6 +422,9 @@ async function create() {
     body.ai = { [me === 'O' ? 'B' : 'A']: $('aiLevel').value };
   } else if (path === 'scenario' && $('aiLevel').value) {
     body.ai = { X: $('aiLevel').value };               // on a card the human attacks; the computer defends
+  } else if (path === 'watch') {
+    body.ai = { O: $('aiO').value || 'allstar', X: $('aiX').value || 'allstar' };     // step 19, stage 6: both sides
+    body.place = true;                                 // the computer sets up both sides: shown as its own step
   }
   if ($('seed').value) body.seed = Number($('seed').value);
   try { localStorage.setItem('pm_setup', JSON.stringify({ aiLevel: $('aiLevel').value, aiSeat: $('aiSeat').value, level: $('level').value })); } catch (e) { /* ignore */ }
@@ -406,6 +463,7 @@ async function create() {
       body.draft = draftId;
     }
   }
+  if (path === 'watch' && Number($('batchN').value) > 0) { await PMWatch.batch(Number($('batchN').value), body); return; }   // step 19: the batch
   const humans = matchPlayers(body);
   if (body.match_format === 'digital') {          // step 3n F3: the pairing's running quarter carries into this match
     try { const pr = await PMRecords.pairing(PMRecords.pairingId(humans.players)); if (pr && pr.quarter) body.quarter = pr.quarter; } catch (e) { /* no records */ }
@@ -425,13 +483,14 @@ async function create() {
   }
   try {
     const r = await api('/api/new', body);
-    G = { code: r.code, token: r.token };
+    G = { code: r.code, token: r.token, players: humans.players, watch: path === 'watch' || null };
     try { G.rec = await startRecord(r.code, body, humans.players); } catch (e) { G.rec = null; }
     if (mode === 'remote') {
       const seat = await askSeat(r.code);
       G.token = (await api('/api/join', { code: r.code, seat })).token;
     }
     localStorage.setItem('pm_game', JSON.stringify(G));
+    PMTips.played();                     // the next game is not the first one
     enterTable();
   } catch (e) { alert(e.message); }
 }
@@ -456,6 +515,7 @@ async function join() {
 
 function enterTable() {
   $('start').classList.add('hidden'); $('table').classList.remove('hidden');
+  const sk = document.querySelector('a.skip'); if (sk) sk.hidden = false;       // step 19: only where there are actions
   refresh(); pollTimer = setInterval(() => { if (!busy) refresh(true); }, 1500);
 }
 
@@ -505,9 +565,13 @@ function render() {
   renderCards('offCards', s.o, 'O'); renderCards('defCards', s.x, 'X');
   renderTracker('offTracker', 'O'); renderTracker('defTracker', 'X');
   renderCourt(); renderActions(); renderScenario(); renderRolls(); renderLog(); renderPhoneLists(); renderRecent(); renderCompare();
+  document.body.classList.toggle('choosing', !!(playActive() && sel.side != null));   // step 19: the board stays in view on a phone
+  playFocus();
+  PMTips.check();
+  PMWatch.bar();                         // step 19, stage 5: one tip at the moment it first matters
   $('phoneTimer').innerHTML = ''; if (s.timer && s.timer.mode !== 'idle' && s.timer.side) $('phoneTimer').append(timerEl());
   timerRecv();
-  const k = sel.kind || null;
+  const k = sel.kind || (pend ? 'pend' : null);
   if (s.timer && s.can_act && k !== lastSelKind && !busy) timerEvent(k ? 'select' : 'cancel');
   lastSelKind = k;
   $('actionsPanel').classList.toggle('hidden', !!replay);
@@ -518,7 +582,7 @@ function render() {
   if (diagramDue()) return;             // a phase just ended: its diagram, then Continue
   if (readyIfDue()) return;
   if (s.stage === 'target' && s.can_act) targetModal();
-  else if (s.stage === 'over') endModal();
+  else if (s.stage === 'over' && endClosed !== `${s.code}:${s.possession}`) endModal();
 }
 
 // Step 3l: what the level changes on a card: 'U16 · TIER A' / 'U20 · TIER A' and a flex slot (D-88: growth shows only in the
@@ -530,6 +594,8 @@ function levelBits(c) {
   return out;
 }
 function cardEl(c, side, label, extra) {
+  if (!PMAdvice.numbersOn()) return el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}` }, [
+    el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), ...levelBits(c)]), PMAdvice.cardWords(c), extra || null]);
   const head = el('div', { class: 'head' }, [el('span', { text: `${label} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` })]);
   const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
     el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
@@ -565,23 +631,24 @@ function cardSummary(c) {
 function renderCards(id, pieces, side) {
   const box = $(id); box.innerHTML = '';
   box.append(el('div', { class: 'key' }, [el('span', { class: 'H', text: '▲ above average' }), ' ', el('span', { text: 'plain = average' }), ' ', el('span', { class: 'L', text: '▼ below average' })]));
-  const open = openCards();
+  const open = openCards(), nums = PMAdvice.numbersOn();
   for (const p of pieces) {
-    const c = p.card, key = side + p.i, isOpen = open.has(key);
+    const c = p.card, key = side + p.i, isOpen = nums ? open.has(key) : pinnedCards.has(key);   // step 19: words first, ratings on a tap
     const head = el('button', { class: 'head', type: 'button', 'aria-expanded': isOpen ? 'true' : 'false',
-      onclick: () => { if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
+      onclick: () => { if (!nums) { if (pinnedCards.has(key)) pinnedCards.delete(key); else pinnedCards.add(key); render(); return; }
+        if (pinnedCards.has(key)) pinnedCards.delete(key); else if (isOpen) pinnedCards.add('-' + key); else pinnedCards.add(key); if (pinnedCards.has('-' + key) && !isOpen) pinnedCards.delete('-' + key); render(); } },
       [el('span', { text: `${side}${p.i + 1} ${c.role} (${c.tier})` }), ...levelBits(c), el('span', { text: `QS ${c.qs}` }),
-        el('span', { class: 'sr-only', text: isOpen ? ', full card; press to fold' : ', one line; press to open the card' })]);
+        el('span', { class: 'sr-only', text: isOpen ? ', the ratings; press to fold them' : ', in words; press for the ratings' })]);
     const groups = c.groups.map(g => el('table', { class: 'grp', 'aria-label': g.name }, [
       el('tr', {}, [el('th', { class: 'gname', text: g.name === 'Actions' ? 'Act' : g.name === 'Shots' ? 'Shot' : 'Con' }),
         ...g.ratings.map(r => el('th', { text: SHORT[r.name] || r.name, title: r.name }))]),
       el('tr', {}, [el('td'), ...g.ratings.map(r => el('td', { class: 'r ' + r.band, text: `${r.value}${r.mark}`,
         'aria-label': `${r.name} ${r.value} ${r.band === 'H' ? 'above average' : r.band === 'L' ? 'below average' : 'average'}` }))])]));
     const note = side === 'O' && st.inbound_note && p.i === st.inbounder ? el('div', { class: 'inbnote', text: st.inbound_note }) : null;
-    const folded = pinnedCards.has('-' + key) || !isOpen;           // '-' + key: folded by hand although it matters now
+    const folded = nums ? (pinnedCards.has('-' + key) || !isOpen) : !isOpen;           // '-' + key: folded by hand although it matters now
     const grow = c.coach_growth && !folded ? el('div', { class: 'grownote' }, [PMCoach.line('coach', c.coach_growth, { compact: true, speak: false, live: false })]) : null;
     box.append(el('div', { class: `card ${side === 'O' ? 'offence' : 'defence'}${sel.side === side && sel.i === p.i ? ' focus' : ''}${folded ? ' collapsed' : ''}` },
-      [head, folded ? cardSummary(c) : null, ...groups, grow, note]));
+      [head, folded ? (nums ? cardSummary(c) : PMAdvice.cardWords(c)) : null, !nums && !folded ? PMAdvice.cardWords(c) : null, ...groups, grow, note]));
   }
 }
 
@@ -660,7 +727,8 @@ function zonesShown() {
 function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
-  PM.court(c, s.zones, { axes: true, plain: !zonesShown(), rings: ringsShown() });
+  const covOn = showCov() && covMap && covMap.all && covMap.phase === s.phase;      // step 19: no zone colours under the map
+  PM.court(c, s.zones, { axes: true, plain: !zonesShown() || covOn, rings: ringsShown(), nowash: covOn });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   drawInfluence(c);
@@ -680,7 +748,7 @@ function renderCourt() {
   }
   for (const p of s.o) drawO(c, p);
   for (const p of s.x) drawX(c, p);
-  drawTargets(c);
+  if (playActive()) playDraw(c); else drawTargets(c);
 }
 
 // The marks of the turn in play: the acting side's actions so far in its current turn. During the step-through
@@ -769,11 +837,12 @@ function covLine(r) {
   return `${r.sq}: O${r.o + 1} can get ${COV_SHOT[r.shot] || r.shot} here next phase${r.rushed ? ', off balance' : ''}, worth ${Math.round(r.worth)} (open ${Math.round(r.value)}).${how} ${who}`;
 }
 async function fetchCov() {
-  if (!showCov() || !st || !G || replay) return;
-  const key = `${G.code}:${st.possession}:${st.phase}:${st.stage === 'over' ? 'over' : 'play'}`;
+  if (!showCov() || !st || !G || (replay && !PMWatch.on())) return;
+  const n = replay ? replay.entries[replay.k].n : null;          // step 19: watching: the map of the board on show
+  const key = `${G.code}:${st.possession}:${st.phase}:${st.stage === 'over' ? 'over' : 'play'}:${n}`;
   if (covAsk === key) return;
   covAsk = key;
-  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}`); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
+  try { const c = await api(`/api/covmap?code=${G.code}&token=${G.token}` + (n ? `&n=${n}` : '')); covMap = c && (c.words || c.scores) ? c : null; covNote = ''; render(); }
   catch (e) { covMap = null; }
 }
 function drawCov(c) {
@@ -791,6 +860,10 @@ function drawCov(c) {
   c.append(g);
 }
 function covPanel() {
+  if (OPTS && OPTS.coverage === false) {           // step 19, stage 6: hidden where the map can't run, and said so
+    $('sideButtons').append(el('span', { class: 'note', id: 'covNone', text: 'The coverage view needs Node on the server.' }));
+    return;
+  }
   $('sideButtons').append(el('button', { class: 'small', id: 'covToggle', 'aria-pressed': showCov() ? 'true' : 'false', text: showCov() ? 'Coverage: shown' : 'Coverage: hidden',
     onclick: () => { try { localStorage.setItem('pm_covmap', showCov() ? '0' : '1'); } catch (e) { /* ignore */ } covAsk = ''; render(); } }));
   if (!showCov()) return;
@@ -809,9 +882,9 @@ function covPanel() {
     box.append(list);
   };
   if (!live) { scoreLines(); $('sideButtons').append(box); return; }
-  const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` The defence is weaker than at the start of the last phase (by ${Math.round(covMap.change)}).` :
-    covMap.change < -0.5 ? ` The defence is stronger than at the start of the last phase (by ${Math.round(-covMap.change)}).` : ' About as strong as at the start of the last phase.';
-  const strong = covMap.strength == null ? '' : ` The most the offence can force by next phase: ${Math.round(covMap.strength)} (lower is a stronger defence), by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
+  const change = covMap.change == null ? '' : covMap.change > 0.5 ? ` That is ${Math.round(covMap.change)} more than at the start of the last phase: the defence got weaker.` :
+    covMap.change < -0.5 ? ` That is ${Math.round(-covMap.change)} less than at the start of the last phase: the defence got stronger.` : ' About the same as at the start of the last phase.';
+  const strong = covMap.strength == null ? '' : ` The offence's best look by next phase: ${Math.round(covMap.strength)}, by ${covMap.fragility} ${covMap.fragility === 1 ? 'way' : 'separate ways'}.`;
   box.append(el('div', { id: 'covWords', text: 'Coverage at the start of this phase. ' + covMap.words + strong + change }));
   scoreLines();
   const pick = el('div', { class: 'covpick' });
@@ -822,7 +895,8 @@ function covPanel() {
   box.append(pick);
   const pc = covFor !== 'all' && covMap.passes ? covMap.passes[covFor] : null;
   const passWords = pc == null ? '' : pc >= 1 ? ` A pass straight to O${covFor + 1} can't be intercepted.` : ` A pass straight to O${covFor + 1} arrives ${Math.round(pc * 20)} times in 20.`;
-  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there. Tap a square for who gets what, and who covers it.' + passWords }));
+  box.append(el('div', { id: 'covNote', text: covNote || 'Darker red: more for the offence there next phase. Tap a square for who gets what, and who covers it.' + passWords }),
+    el('div', { class: 'covlegend', id: 'covLegend' }, [el('span', { class: 'sw lo' }), ' a little', el('span', { class: 'sw mid' }), ' more', el('span', { class: 'sw hi' }), ' the most for the offence. The shot-zone colours are off while the map shows.']));
   $('sideButtons').append(box);
 }
 
@@ -892,6 +966,8 @@ function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.p
 
 let compare = null;     // {side, i, k}: the card panel and which matchup is showing
 function selectPiece(side, i) {
+  if (playActive() && side === st.side_to_act) return playSelect(side, i);      // step 19: the tap flow (play.js)
+  playReset();
   sel = { side, i, kind: null, dest: null };
   compare = { side, i, k: 0 };
   const kinds = [...new Set(pieceActs(side, i).map(a => a.kind))];
@@ -952,8 +1028,10 @@ function renderActions() {
   const s = st;
   if (s.placing) return renderPlacement();
   $('selected').textContent = ''; $('kindButtons').innerHTML = ''; $('targetButtons').innerHTML = ''; $('sideButtons').innerHTML = '';
+  renderPlayBar();
   if (!s.can_act) { $('selected').textContent = s.stage === 'over' ? '' : 'Not your move.'; addUndo(); return; }
-  if (sel.side != null) {
+  if (playActive()) { /* step 19: the bar under the board holds the selected player's moves and actions (play.js) */ }
+  else if (sel.side != null) {
     const acts = pieceActs(sel.side, sel.i);
     const p = (sel.side === 'O' ? s.o : s.x)[sel.i];
     $('selected').textContent = `${sel.side}${sel.i + 1} (${p.card.role}) on ${p.sq}` + (acts.length ? '' : ': no legal action for this player now');
@@ -1007,16 +1085,17 @@ function renderActions() {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, a.option || 'Contest'), chips(a)]));
       } else for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, KIND_NAME[a.kind]), chips(a)]));
     }
-  } else $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
+  } else if (!playActive()) $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
   if (s.stage === 'contest' || s.stage === 'forced') {
     $('selected').textContent = s.stage === 'contest' ? 'The defence chooses the contest:' : 'The offence chooses the forced shot:';
     for (const a of myActs()) {
-      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: a.option || (a.kind === 'forced_shot' ? `Forced shot: ${a.shot}` : a.text), onclick: () => submit(a) });
-      $('targetButtons').append(el('div', { class: 'opt' }, [b, a.kind === 'forced_shot' ? chips(a) : null]));
+      const b = el('button', { class: 'choice ' + (a.kind === 'contest' ? (a.piece < 0 ? 'none' : a.clean ? 'clean' : 'foul') : ''), text: PMAdvice.numbersOn() ? (a.option || (a.kind === 'forced_shot' ? `Forced shot: ${a.shot}` : a.text)) : PMAdvice.choiceLabel(a), onclick: () => submit(a) });
+      $('targetButtons').append(el('div', { class: 'opt' }, [b, a.kind === 'forced_shot' ? chips(a) : null, a.advice && a.advice.why ? el('span', { class: 'advwhy', text: a.advice.why }) : null]));
     }
     return;
   }
-  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a))) {
+  for (const a of myActs().filter(a => SIDE_KINDS.includes(a.kind) && a.kind !== 'target' && !reactionContest(a)
+      && !(playActive() && sel.side === a.side && ['hesitate', 'pause'].includes(a.kind)))) {      // step 19: in the selected player's list instead
     const label = a.kind === 'pick' ? `Give the ball to O${a.target + 1}`
       : a.kind === 'end_turn' && s.stage === 'reaction' ? 'End without a Contest: the shot goes up uncontested.' : KIND_NAME[a.kind];
     $('sideButtons').append(actionButton(a, label));
@@ -1027,14 +1106,24 @@ function renderActions() {
 function addUndo() {
   const s = st;
   if (s.match_format === 'digital') covPanel();
-  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
+  // step 19, stage 7: the switches that change how the board looks fold under one heading (the coverage view stays out)
+  const opts = el('details', { class: 'boardopts', id: 'boardOpts' }, [el('summary', { text: 'Board settings' })]);
+  let pref = null; try { pref = localStorage.getItem('pm_boardopts'); } catch (e) { /* ignore */ }
+  opts.open = pref === null ? !isPhone() : pref === '1';                 // open on a laptop, folded on a phone, unless chosen
+  opts.addEventListener('toggle', () => { try { localStorage.setItem('pm_boardopts', opts.open ? '1' : '0'); } catch (e) { /* ignore */ } });
+  opts.append(el('button', { class: 'small', 'aria-pressed': showReach() ? 'true' : 'false', text: showReach() ? 'Defender reach: shown' : 'Defender reach: hidden',
     onclick: () => { try { localStorage.setItem('pm_reach', showReach() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
+  opts.append(el('button', { class: 'small', 'aria-pressed': zonesShown() ? 'true' : 'false', text: zonesShown() ? 'Shot zones: labelled' : 'Shot zones: colours only',
     onclick: () => { try { localStorage.setItem('pm_zones', zonesShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  $('sideButtons').append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
+  opts.append(el('button', { class: 'small', id: 'numbersToggle', 'aria-pressed': PMAdvice.numbersOn() ? 'true' : 'false', text: PMAdvice.numbersOn() ? 'Show the numbers: on' : 'Show the numbers: off',
+    onclick: () => { PMAdvice.setNumbers(!PMAdvice.numbersOn()); render(); } }));
+  opts.append(el('button', { class: 'small', id: 'confirmToggle', 'aria-pressed': confirmOn() ? 'true' : 'false', text: confirmOn() ? 'Confirm each action: on' : 'Confirm each action: off',
+    onclick: () => { try { localStorage.setItem('pm_confirm', confirmOn() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
+  opts.append(el('button', { class: 'small', id: 'ringsToggle', 'aria-pressed': ringsShown() ? 'true' : 'false',
     text: ringsShown() ? 'Distance rings: shown' : 'Distance rings: hidden',
     onclick: () => { try { localStorage.setItem('pm_rings', ringsShown() ? '0' : '1'); } catch (e) { /* ignore */ } render(); } }));
-  if (s.stage === 'over') return;
+  $('sideButtons').append(opts);
+  if (s.stage === 'over') { if (endClosed) $('sideButtons').append(el('button', { class: 'primary', id: 'showResult', text: 'Show the result', onclick: () => { endClosed = null; render(); } })); return; }
   if (s.mode === 'hotseat' && s.can_undo) $('sideButtons').append(el('button', { text: 'Undo (only before a roll)', onclick: undo }));
   if (s.mode === 'remote' && s.can_undo) $('sideButtons').append(el('button', { text: s.undo_votes.length ? `Undo requested by ${s.undo_votes.join(', ')}: agree` : 'Request undo (both must agree)', onclick: undo }));
 }
@@ -1044,17 +1133,17 @@ async function undo() {
   catch (e) { $('error').textContent = e.message; }
 }
 
-async function submit(a) {
+async function submit(a, opts) {
   if (busy) return;                      // a second tap while the first action is in flight is ignored, not sent stale
   $('error').textContent = '';
-  if (a.roll && a.roll.length) {
+  if (a.roll && a.roll.length && !(opts && opts.confirmed)) {     // step 19: a confirmed action has shown its dice already
     const ok = await confirmRoll(a);
     if (!ok) return;
   }
   busy = true;
   try {
     const r = await api('/api/act', { code: G.code, token: G.token, action: a });
-    sel = { side: null, i: null, kind: null, dest: null };
+    sel = { side: null, i: null, kind: null, dest: null }; playReset();
     lastOther = [];
     if (r.rolls && r.rolls.length) await showRolls(r.rolls);
     st = r.state; render();
@@ -1067,7 +1156,8 @@ async function submit(a) {
 function confirmRoll(a) {
   return new Promise(res => {
     modal([el('h2', { text: a.text }), PMCoach.line('ref', a.roll.length > 1 ? 'This one goes to the dice, twice.' : 'This one goes to the dice.', { compact: true, speak: false, live: false }),
-      el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text.replace(/^(Offence|Defence) rolls: /, '')]))),
+      PMAdvice.brief(a),
+      PMAdvice.numbersOn() ? el('ul', {}, a.roll.map(t => el('li', {}, [rollerChip(t.roller), ' ' + t.text.replace(/^(Offence|Defence) rolls: /, '')]))) : null,
       el('button', { class: 'primary', text: 'Roll', onclick: () => { closeModal(); res(true); } }),
       el('button', { text: 'Cancel', onclick: () => { closeModal(); res(false); } })], () => res(false));
   });
@@ -1096,8 +1186,10 @@ function targetModal() {
     ...acts.map(a => el('button', { class: 'primary', text: `O${a.target + 1} ${st.o[a.target].card.role}`, onclick: () => { closeModal(); submit(a); } }))]);
 }
 
+let endClosed = null;                 // step 19: the possession whose end screen the player closed (Escape or Close)
 function endModal() {
   if (!$('modal').classList.contains('hidden')) return;
+  endClosed = null;
   const r = st.result, s = st;
   const rows = [['Shot value', r.shot_value], ['Free throws (or and-one)', r.free_throws], ['Foul bonus', r.bonus],
     ['Turnovers', `${r.turnovers} (${r.turnover_points})`], ["Coach's Call bonus", r.coach_bonus]];
@@ -1120,10 +1212,12 @@ function endModal() {
   const nav = el('div', { class: 'buttons' }, [
     s.full && s.possession < (s.n_poss || 2) ? el('button', { class: 'primary', id: 'nextPoss', text: `Start possession ${s.possession + 1} of ${s.n_poss || 2} (sides swap)`, onclick: async () => { closeModal(); const q = await api('/api/next', { code: G.code, token: G.token }); st = q.state; phasesInit = false; render(); } }) : null,
     el('button', { class: s.full && s.possession < (s.n_poss || 2) ? '' : 'primary', text: 'The story of the play', onclick: () => { closeModal(); showStory(); } }),
-    el('button', { text: 'Close', onclick: closeModal }),
+    el('button', { text: 'Close', onclick: () => { endClosed = `${s.code}:${s.possession}`; closeModal(); render(); } }),
     el('button', { text: 'New game', onclick: () => { location.href = location.pathname; } })]);
   kids.push(nav);
   kids.splice(2, 0, el('div', { id: 'trainerBox' }, trainerBoxKids(s.possession)));
+  kids.splice(1, 0, el('div', { id: 'assessBox' }));          // step 19, stage 3: the coach's assessment of the possession leads
+  PMReport.endBlock(s.possession).then(b => { const box = $('assessBox'); if (b && box) box.append(b); });
   if (s.match && G.rec) kids.splice(3, 0, el('div', { id: 'ratingBox' }, ratingKids()));
   if (s.feedback_due) {
     const rv = el('details', { class: 'endsec' }, [el('summary', { text: 'Review: your plan against the board' }), el('section', { id: 'reviewBox', class: 'review' }, [
@@ -1143,7 +1237,8 @@ function endModal() {
       el('button', { text: 'Download log', onclick: downloadLog }), el('button', { text: 'Copy log', onclick: copyLog })]));
   }
   announce(`Possession over: ${r.total}, ${r.band}.`);
-  modal(kids, () => {});
+  modal(kids, () => { endClosed = `${s.code}:${s.possession}`; render(); });
+  PMWatch.onEnd();
 }
 
 function renderScenario() {
@@ -1215,6 +1310,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'Escape') {
     if (open) { if (modalCancel) { const c = modalCancel; closeModal(); c(); } return; }
+    if (typeof playEscape === 'function' && playEscape()) return;
     sel = { side: null }; if (st) render();
   }
 });
@@ -1473,23 +1569,30 @@ function renderPhoneLists() {
   const side = st.side === 'O' || st.stage === 'target' || st.stage === 'pick' || st.stage === 'forced' ? 'O' : 'X';
   const pieces = (side === 'O' ? st.o : st.x).filter(p => mine.some(a => a.side === side && a.piece === p.i));
   if (sel.side == null) {
-    box.append(el('div', { class: 'note', text: 'Pick a player:' }), ...pieces.map(p => el('button', { text: `${side}${p.i + 1} on ${p.sq}`, onclick: () => selectPiece(side, p.i) })));
+    box.append(el('details', { class: 'picklist' }, [el('summary', { text: 'Or pick a player from a list' }), ...pieces.map(p => el('button', { text: `${side}${p.i + 1} on ${p.sq}`, onclick: () => selectPiece(side, p.i) }))]));
+  } else if (playActive() && sel.side === st.side_to_act && !pend) {
+    const sq = [...moveSquares(sel.side, sel.i).values()];
+    if (sq.length) box.append(el('div', { class: 'note', text: 'Or pick the square here:' }),
+      ...sq.map(m => el('button', { text: sqName(m.dest[0], m.dest[1]) + (m.primary !== 'move' ? ` (${KIND_NAME[m.primary]})` : ''), onclick: () => { cursor = m.dest.slice(); placeGhost(m.dest); } })));
   } else if (sel.kind && ['move', 'qs', 'sprint'].includes(sel.kind) && !sel.dest) {
     const acts = pieceActs(sel.side, sel.i).filter(a => a.kind === sel.kind);
     const seen = new Set();
     box.append(el('div', { class: 'note', text: 'Or pick the square here:' }));
     for (const a of acts) { const k = a.dest.join(); if (seen.has(k)) continue; seen.add(k); box.append(el('button', { text: sqName(a.dest[0], a.dest[1]), onclick: () => chooseDest(a.dest) })); }
   }
-  box.append(el('button', { text: 'Clear selection', onclick: () => { sel = { side: null }; render(); } }));
+  if (sel.side != null) box.append(el('button', { text: 'Clear selection', onclick: () => { sel = { side: null }; render(); } }));
 }
 
 // Phone tabs
 function initTabs() {
+  // step 19, stage 7: on a phone the side panels are drawers: closed at first, a tab opens one, the same tab closes it
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
-    document.body.dataset.tab = b.dataset.tab;
+    const open = !(document.body.dataset.tab === b.dataset.tab && isPhone());
+    document.querySelectorAll('.tabs button').forEach(x => { const on = open && x === b; x.classList.toggle('active', on); x.setAttribute('aria-expanded', on ? 'true' : 'false'); });
+    document.body.dataset.tab = open ? b.dataset.tab : 'none';
   }));
-  document.body.dataset.tab = 'off';
+  document.body.dataset.tab = isPhone() ? 'none' : 'off';
+  if (isPhone()) document.querySelectorAll('.tabs button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-expanded', 'false'); });
 }
 initTabs();
 
@@ -1544,6 +1647,7 @@ function showFeedIfNew() {
   sel = { side: null, i: null, kind: null, dest: null };
   st = frameState(replay.live, fresh[0]);
   render();
+  if (PMWatch.on()) PMWatch.maybeSetup(fresh[0].possession);   // step 19: the setup, as its own step
   return true;
 }
 function replayPrev() {
@@ -1571,6 +1675,7 @@ function renderStep() {
     el('button', { class: 'primary', id: 'stepOk', text: label, onclick: stepOn })].filter(Boolean));   // no call, no referee line (and never a "null")
   announce(`${sideName(e.side)}: ${e.text}. ` + e.rolls.map(r => `Rolled ${r.face}: ${r.picked}.`).join(' ') + ' ' + e.outcomes.map(o => o.text).join(' '));
   $('stepOk').focus();
+  PMWatch.onStep();                        // step 19, stage 6: watching, the OK is pressed at the chosen speed
 }
 // where the acting piece came from: a dashed ring and a dashed line to where it is now
 function drawGhost(c) {
@@ -1606,7 +1711,7 @@ function actedPieces() {
 
 // ---------------------------------------------------------------- scouting: arrange, never judge
 function chips(a) {
-  if (!a.chips || !a.chips.length) return null;
+  if (!a.chips || !a.chips.length || !PMAdvice.numbersOn()) return null;        // step 19: behind "Show the numbers"
   return el('div', { class: 'chips' }, a.chips.map(c => el('span', { class: 'vchip', text: c })));
 }
 
@@ -1623,9 +1728,11 @@ function renderCompare() {
   const how = opp ? (side === 'O' ? (st.x[opps[k]].arrow !== undefined && opps.length && isArrowOn(st.x[opps[k]], mine) ? 'arrow on this player' : 'nearest defender')
                                   : (isArrowOn(mine, opp) ? 'arrow on this player' : 'nearest attacker')) : '';
   box.classList.remove('hidden');
+  const words = side === 'O' ? PMAdvice.matchup(i) : (opp ? PMAdvice.matchup(opps[k]).map(x => x.replace(/^Hunt: /, 'Protect: ').replace(/ Get (O\d) the ball\.$/, ' Keep an arrow on $1.')) : []);
   box.append(el('div', { class: 'cmp-head' }, [el('h3', { text: `${side}${i + 1} on ${mine.sq}` + (opp ? `  ·  matchup: ${oppSide}${opps[k] + 1} on ${opp.sq} (${how})` : '') }),
     opps.length > 1 ? el('button', { text: `Next matchup (${k + 1} of ${opps.length})`, onclick: () => { compare.k = (k + 1) % opps.length; renderCompare(); } }) : null,
     el('button', { text: 'Close card', onclick: () => { compare = null; renderCompare(); } })]),
+    words.length ? el('ul', { class: 'cmpwords' }, words.map(w => el('li', { text: w }))) : el('p', { class: 'note', text: opp ? 'No clear edge either way on the cards.' : '' }),
     el('div', { class: 'cmp-cards' }, [cardEl(mine.card, side, `${side}${i + 1}`), opp ? cardEl(opp.card, oppSide, `${oppSide}${opps[k] + 1}`) : null]));
 }
 function isArrowOn(x, o) { const d = [o.x - x.x, o.y - x.y]; return Math.max(Math.abs(d[0]), Math.abs(d[1])) === 1 && DIRS[x.arrow][0] === d[0] && DIRS[x.arrow][1] === d[1]; }
@@ -1844,6 +1951,13 @@ function renderCoachLine() {
       }
     }
   }
+  if (!PMAdvice.numbersOn()) {                  // step 19: advantages first; the sums behind "Show the numbers"
+    const lines = PMAdvice.coach(side, pick ? pick.i : null);
+    const key2 = `${s.possession}:${s.phase}:${side}:${s.turn}:${pick ? pick.i : ''}`;
+    if (lines.length) box.append(PMCoach.line('coach', lines.join('\n'), { compact: true, live: coachSaid !== key2 }));
+    coachSaid = key2;
+    return;
+  }
   if (text) { /* the selection read stands */ } else if (best && best.edge > 0) {
     const carrier = (s.o.find(p => p.ball) || {}).i === best.o;
     text = `The mismatch on the board: ${show(best)}. `
@@ -1893,6 +2007,23 @@ function phaseWords(p) {
   return out;
 }
 async function showPhaseDiagram(due) {
+  // step 19, stage 3: the phase turn by turn, with a line for each team and the coach's assessment (report.js)
+  let tv = null; try { tv = await PMReport.phaseView(due); } catch (e) { tv = null; }
+  if (tv) {
+    const done = () => { lastShown[due.possession] = due.phase; diagramOpen = false; };
+    const kids = [el('h2', { text: `Phase ${due.phase}, turn by turn` }),
+      el('p', { class: 'note small', text: 'Each turn is the offence\'s turn and the defence\'s answer. Black: offence. Red: defence.' }),
+      ...tv.blocks.map(b => b.el), tv.assess,
+      el('div', { class: 'buttons' }, [
+        el('button', { class: 'primary', id: 'phaseContinue', text: 'Continue', onclick: () => { done(); closeModal(); render(); } }),
+        el('button', { text: 'Save the turns as images', onclick: async () => { for (const [k, b] of tv.blocks.entries()) await saveDiagram(b.dia, `${st.code}_possession${due.possession}_phase${due.phase}_turn${k + 1}.png`); } }),
+        el('button', { text: 'The story so far', onclick: () => { done(); closeModal(); showStory(); } })])];
+    modal(kids, () => { done(); render(); });
+    PMWatch.onModal(() => { done(); closeModal(); render(); });
+    announce(`Phase ${due.phase} over. ` + tv.rep.turns.filter(t => t.phase === due.phase).map(t => `${t.offence} ${t.defence}`).join(' '));
+    const b = $('phaseContinue'); if (b) b.focus();
+    return;
+  }
   const story = await api(`/api/story?code=${G.code}`);
   const p = story.phases.find(x => x.possession === due.possession && x.phase === due.phase);
   if (!p || !p.start) { diagramOpen = false; lastShown[due.possession] = due.phase; render(); return; }
@@ -1918,6 +2049,29 @@ async function saveDiagram(dia, name) {
 }
 async function showStory() {
   let story; try { story = await api(`/api/story?code=${G.code}`); } catch (e) { alert(e.message); return; }
+  // step 19, stage 3: turn by turn, with the coach's assessments, for every possession so far
+  try {
+    const kids = [el('h2', { text: 'The story of the play' }), el('p', { class: 'note', text: `${story.teams[0]} v ${story.teams[1]}. One diagram a turn: the offence's turn and the defence's answer.` })];
+    let any = false;
+    for (const poss of story.possessions) {
+      const { rep } = await PMReport.load(poss);
+      if (!rep.turns.length) continue;
+      any = true;
+      kids.push(el('h2', { text: `Possession ${poss}` }));
+      for (const ph of [...new Set(rep.turns.map(t => t.phase))]) {
+        for (const t of rep.turns.filter(x => x.phase === ph)) kids.push(PMReport.turnBlock(story, rep, t).el);
+        const pb = PMReport.phaseBlock(rep.phases.find(p => p.phase === ph)); if (pb) kids.push(pb);
+      }
+      const sb = PMReport.summaryBlock(rep.summary); if (sb) kids.push(sb);
+      if (rep.over) kids.push(el('div', { class: 'buttons' }, [el('button', { text: `Download possession ${poss}'s report`, onclick: () => PMReport.download(poss, 'html') }),
+        el('button', { text: 'Its data (JSON)', onclick: () => PMReport.download(poss, 'json') })]));
+    }
+    if (any) {
+      kids.push(el('div', { class: 'buttons' }, [el('button', { class: 'primary', text: 'Close', onclick: () => { closeModal(); render(); } })]));
+      modal(kids, () => render());
+      return;
+    }
+  } catch (e) { /* fall back to the phase diagrams */ }
   const kids = [el('h2', { text: 'The story of the play' }),
     el('p', { class: 'note', text: `${story.teams[0]} v ${story.teams[1]}. One diagram a phase (two seconds of play); each action carries its turn number.` })];
   const dias = [];

@@ -153,7 +153,8 @@ def levels_info():
 
 
 def options(manager):
-    return dict(static=manager.static,
+    from playmaker_engine import agent as _AG
+    return dict(static=manager.static, coverage=_AG.JS.get('coverage') is not None,      # step 19: the coverage view can run here
                 teams=[dict(name=n, tagline=TEAM_TAGLINES[n], cards=[c.key for c in TEAMS[n]]) for n in PRESCRIBED],
                 cards=[dict(key=c.key, role=c.role, tier=c.tier, position=position(c), num=c.num) for c in CARDS.values()],
                 first_game=list(FIRST_GAME), levels=levels_info(), trainer=trainer_info(),
@@ -175,11 +176,16 @@ def handle(manager, method, path, query=None, body=None):
                 return 200, (legal_json(g.state, g.legal()) if g.can_act(q.get('token')) else [])
             if path == '/api/covmap':            # step 18s (D-199): the coach's coverage view, asked for only when it is shown
                 from .view import coverage_json
-                return 200, coverage_json(manager.get(q.get('code')), q.get('token'))
+                return 200, coverage_json(manager.get(q.get('code')), q.get('token'), q.get('n'))
             if path == '/api/log':
                 return 200, manager.get(q.get('code')).read_log()
             if path == '/api/story':
                 return 200, manager.get(q.get('code')).story()
+            if path == '/api/report':          # step 19, stage 3: the possession turn by turn, and the coach's assessments
+                from .report import build
+                g = manager.get(q.get('code'))
+                ph = q.get('phase')
+                return 200, build(g, int(q.get('possession') or g.possession), int(ph) if ph else None)
             if path == '/api/options':
                 return 200, options(manager)
             return 404, dict(error='not found')

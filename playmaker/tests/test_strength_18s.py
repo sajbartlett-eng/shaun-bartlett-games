@@ -229,7 +229,7 @@ def test_every_finished_phase_gets_a_line_and_the_possession_gets_one(cov):
     assert sc['over'] and sc['possession'] == 1 and sc['lines']
     assert [ln['phase'] for ln in sc['lines']] == list(range(1, len(sc['lines']) + 1))
     for ln in sc['lines']:
-        assert ln['text'].startswith(('Defence weakened from', 'Defence strengthened from', 'Defence held at', 'The defence was broken', 'The shot went up',
+        assert ln['text'].startswith(("The offence's best look rose from", "The offence's best look fell from", "The offence's best look held at", 'The defence was broken', 'The shot went up',   # step 19: Shaun's wording
                                       'The possession ended without a shot')), ln
         assert plain.check(ln['text']) == []
     assert sc['verdict'].startswith(('A good possession', 'A weak possession', 'A wasted possession')) and plain.check(sc['verdict']) == []

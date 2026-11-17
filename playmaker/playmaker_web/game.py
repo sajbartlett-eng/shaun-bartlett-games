@@ -698,12 +698,32 @@ class Game:
         return snaps[key]
 
     # ---- step 18s, stop two: the phase scores (the addendum on the defence's strength, D-201) ----
-    def _trail_add(self, before, a, node):
-        """Every step of the possession in play: the position before, the action, the position after."""
+    def _trail_add(self, before, a, node, turn=None):
+        """Every step of the possession in play: the position before, the action, the position after. Step 19 keeps
+        every possession's steps, with the turn each belongs to (an offence turn and the defence's answer), for the
+        turn-by-turn report (report.py)."""
         t = self.__dict__.setdefault('_trail', dict(possession=None, steps=[]))
         if t['possession'] != self.possession:
             t['possession'], t['steps'] = self.possession, []
         t['steps'].append((before, a, node))
+        self.__dict__.setdefault('_trails', {}).setdefault(self.possession, []).append((before, a, node, turn))
+
+    def coverage_after(self, n):
+        """Step 19: the coverage map of the board just after feed entry n (the state the step-through shows), or None
+        where it can't be read (a shot in the air, the possession over, no fast engine)."""
+        s = self.__dict__.get('_feedstate', {}).get(n)
+        if self.match_format != 'digital' or s is None or s.stage != 'play':
+            return None
+        from playmaker_engine import agent as _AG
+        try:
+            c = _AG.coverage(s)
+        except Exception:                   # the view must never stop a game
+            return None
+        if c is not None:
+            c['possession'] = next((e['possession'] for e in self.feed if e['n'] == n), self.possession)
+            c['change'] = None
+            c['n'] = n
+        return c
 
     _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
 
@@ -792,8 +812,10 @@ class Game:
                 elif c1 is not None:
                     s1 = round(c1['strength'])
                     weakened = s1 > s0
-                    text = (f'Defence weakened from {s0} to {s1} this phase.' if s1 > s0 else
-                            f'Defence strengthened from {s0} to {s1} this phase.' if s1 < s0 else f'Defence held at {s0}.')
+                    # step 19 (Shaun): the number always means the same thing: what the offence can get
+                    text = (f"The offence's best look rose from {s0} to {s1}: the defence got weaker." if s1 > s0 else
+                            f"The offence's best look fell from {s0} to {s1}: the defence got stronger." if s1 < s0 else
+                            f"The offence's best look held at {s0}: the defence held.")
                 else:
                     text = 'The possession ended without a shot.'
                 if not weakened:
@@ -1048,7 +1070,7 @@ class Game:
         if isinstance(node, ChanceNode):
             node, rolls = resolve_chance(node, self.rng)
         self.state = node
-        self._trail_add(before, None, node)
+        self._trail_add(before, None, node, self.turn_no)
         self.undo, self.undo_votes = [], set()
         if node.phase != before.phase:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
@@ -1440,7 +1462,7 @@ class Game:
             self.slots = {'O': {i: [] for i in range(5)}, 'X': {i: [] for i in range(5)}}
             self.turn_no = 0
         self.state = node
-        self._trail_add(before, a, node)
+        self._trail_add(before, a, node, turn)
         self.rolls = rolls
         self.undo_votes = set()
         self.version += 1
@@ -1473,6 +1495,10 @@ class Game:
                      outcomes=consequences(before, node, a) + fouled_shot_dice(node, self.rng), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
                      turn=turn, mark=mark, board=board_json(node, self.slots))
+        fs = self.__dict__.setdefault('_feedstate', {})      # step 19: the board after each entry, for the map while watching
+        fs[entry['n']] = node
+        for k in [k for k in fs if k < entry['n'] - 400]:
+            del fs[k]
         # the read the board offered before this action (the best ▲ look): kept aside, never in a play payload
         # (neutrality: the page judges nothing during play); the story releases it once the possession is over
         if a.kind != 'target':
@@ -1524,6 +1550,9 @@ class Game:
             st, rs, slots, turn_no = self.undo.pop()
             if self.__dict__.get('_trail') and self._trail['steps']:
                 self._trail['steps'].pop()
+            tr = self.__dict__.get('_trails', {}).get(self.possession)
+            if tr:
+                tr.pop()
             if self.feed:
                 self.feed.pop()
             self.turn_no = turn_no

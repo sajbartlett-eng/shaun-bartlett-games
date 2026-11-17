@@ -1,0 +1,477 @@
+{
+ "version": "after",
+ "laptop": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 3,
+   "seconds": 0.8,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"O10\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 40,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      51,
+      51
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 6,
+   "seconds": 4.2,
+   "scrolls": 2,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"C10\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 40,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      51,
+      51
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 247,
+     "scrolled": true,
+     "seconds": 1.6
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 350,
+     "scrolled": true,
+     "seconds": 1.67
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 3,
+     "scrolled": false,
+     "seconds": 0.21
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 3,
+   "seconds": 2,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      47,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 279,
+     "scrolled": true,
+     "seconds": 1.63
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 3,
+     "scrolled": false,
+     "seconds": 0.21
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 3,
+   "seconds": 2.1,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      48,
+      47
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 307,
+     "scrolled": true,
+     "seconds": 1.65
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 27,
+     "scrolled": false,
+     "seconds": 0.3
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 4,
+   "seconds": 3.3,
+   "scrolls": 2,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      56,
+      48
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"D9\"].target",
+     "size": [
+      37,
+      37
+     ],
+     "dist": 41,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#rotCcw",
+     "size": [
+      108,
+      44
+     ],
+     "dist": 64,
+     "scrolled": true,
+     "seconds": 1.39
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      70,
+      70
+     ],
+     "dist": 52,
+     "scrolled": true,
+     "seconds": 1.32
+    }
+   ]
+  }
+ ],
+ "phone": [
+  {
+   "turn": "A move (O3 to the first square he can Move to)",
+   "taps": 3,
+   "seconds": 0.8,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O3,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"O10\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      22,
+      22
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    }
+   ]
+  },
+  {
+   "turn": "A move and a pass (O2 moves, then O1 passes to him)",
+   "taps": 6,
+   "seconds": 3.7,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O2,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"C10\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      22,
+      22
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 255,
+     "scrolled": false,
+     "seconds": 0.77
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 225,
+     "scrolled": true,
+     "seconds": 1.59
+    },
+    {
+     "sel": "#enderList button[data-act=\"Pass to O2\"]",
+     "size": [
+      109,
+      44
+     ],
+     "dist": 193,
+     "scrolled": false,
+     "seconds": 0.56
+    }
+   ]
+  },
+  {
+   "turn": "A screen (O4, the T to the north)",
+   "taps": 3,
+   "seconds": 2.3,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O4,\"]",
+     "size": [
+      20,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 171,
+     "scrolled": true,
+     "seconds": 1.54
+    },
+    {
+     "sel": "#enderList button[data-act=\"Screen, T to the north\"]",
+     "size": [
+      187,
+      44
+     ],
+     "dist": 216,
+     "scrolled": false,
+     "seconds": 0.58
+    }
+   ]
+  },
+  {
+   "turn": "A shot (O1, who has stepped into the three-point zone)",
+   "taps": 3,
+   "seconds": 2.2,
+   "scrolls": 1,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"O1,\"]",
+     "size": [
+      21,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 89,
+     "scrolled": true,
+     "seconds": 1.44
+    },
+    {
+     "sel": "#enderList button[data-act=\"Shot: three\"]",
+     "size": [
+      110,
+      44
+     ],
+     "dist": 231,
+     "scrolled": false,
+     "seconds": 0.6
+    }
+   ]
+  },
+  {
+   "turn": "A defender's move with a new arrow (X2)",
+   "taps": 4,
+   "seconds": 1.9,
+   "scrolls": 0,
+   "played": true,
+   "detail": [
+    {
+     "sel": "g.piece[aria-label^=\"X2,\"]",
+     "size": [
+      24,
+      20
+     ],
+     "dist": 0,
+     "scrolled": false,
+     "seconds": 0.2
+    },
+    {
+     "sel": "#court [data-sq=\"D9\"].target",
+     "size": [
+      16,
+      16
+     ],
+     "dist": 17,
+     "scrolled": false,
+     "seconds": 0.36
+    },
+    {
+     "sel": "#rotCcw",
+     "size": [
+      108,
+      44
+     ],
+     "dist": 256,
+     "scrolled": false,
+     "seconds": 0.62
+    },
+    {
+     "sel": "#ghostPiece",
+     "size": [
+      30,
+      30
+     ],
+     "dist": 256,
+     "scrolled": false,
+     "seconds": 0.69
+    }
+   ]
+  }
+ ]
+}
