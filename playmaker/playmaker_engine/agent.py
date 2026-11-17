@@ -437,7 +437,7 @@ def _better(a, b, sign):
     return False
 
 
-def coverage(s, answers=None, only=None):
+def coverage(s, answers=None, only=None, fresh=False):
     """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
     engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
     who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
@@ -449,6 +449,8 @@ def coverage(s, answers=None, only=None):
         req['options'] = dict(answers=answers)
     if only is not None:                      # stop two: only='break': the shot that can go up now against playing on
         req['options'] = dict(only=only)
+    if fresh:                                 # step 21: step 20's like-for-like read (a fresh phase), for the reports' phase starts
+        req.setdefault('options', {})['fresh'] = True
     return json.loads(JS['coverage'](json.dumps(req)))
 
 
@@ -702,7 +704,7 @@ def _o_value(make, o_sq, ball, rng, budget_end):
     return Read(s).leaf(), xs, arrows
 
 
-def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
+def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None, seen=None):
     """The defence's placement by best cover: start from each defender on the empty square next to an attacker that
     is nearest the rim (step 3k's legal man-to-man start), then improve one defender at a time over the empty squares
     near the attackers and every arrow, minimising the offence's position value. Returns (squares, arrows)."""
@@ -724,6 +726,8 @@ def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
     if time.time() > budget_end:                        # step 18p: out of time before the first reading
         return xs, arrows
     cur = v(xs, arrows)
+    if seen is not None:                                # step 21: every placement read, for the variety margin
+        seen.append((cur, list(xs), list(arrows)))
     occ_o = set(o_sq)
     cands = sorted({(x, y) for (ox, oy) in o_sq for x in range(ox - 3, ox + 4) for y in range(oy - 3, oy + 4)
                     if B.on_board((x, y)) and (x, y) not in occ_o})
@@ -743,6 +747,8 @@ def _defence_reply(make, o_sq, ball, rng, budget_end, rounds=3, perm=None):
                     xq = xs[:j] + [q] + xs[j + 1:]
                     ar = arrows[:j] + [a] + arrows[j + 1:]
                     val = v(xq, ar)
+                    if seen is not None:
+                        seen.append((val, list(xq), list(ar)))
                     if val < cur - 1e-9:
                         xs, arrows, cur, improved = xq, ar, val, True
         if not improved:
@@ -792,6 +798,7 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
         top.append((v, sq, ball))
     top.sort(key=lambda r: -r[0])
     best_v, best_sq, best_ball = top[0]
+    answered = list(top)                                # every placement read against the defence's best reply
     while time.time() < t_end:
         i = rng.randrange(5)
         q = (best_sq[i][0] + rng.randint(-2, 2), best_sq[i][1] + rng.randint(-2, 2))
@@ -799,9 +806,14 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
         if not _legal_o(sq, best_ball):
             continue
         v, _, _ = _o_value(make, sq, best_ball, rng, t_end)
+        answered.append((v, sq, best_ball))
         if v > best_v + 1e-9:
             best_v, best_sq = v, sq
-    near_best = [r for r in scored if r[0] >= best_v - p['variety_margin']]
+    # step 21 (D-208, Shaun, 17 Nov 2026): the setup chooses among the placements within the level's variety margin of
+    # the best, each possession, as its turns already do (All-Star: 2 points; Rookie: none)
+    near_best = [r for r in answered if r[0] >= best_v - p['variety_margin'] - 1e-9]
+    if p['variety_margin'] > 0 and len(near_best) > 1:
+        _, best_sq, best_ball = rng.choice(near_best)
     text = (f'Placed for the best value against the defence\'s best reply ({best_v:.1f}): {len(scored)} placements '
             f'screened, the best {len(top)} against the defence\'s best cover, then refined one player at a time.')
     return dict(squares=best_sq, ball=best_ball, value=round(best_v, 2), text=text, candidates=len(scored),
@@ -815,7 +827,14 @@ def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, l
     rng = random.Random(seed)
     t_end = time.time() + (budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value'])
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
-    xs, arrows = _defence_reply(make, list(o_sq), ball, rng, t_end, rounds=3)
+    seen = []
+    xs, arrows = _defence_reply(make, list(o_sq), ball, rng, t_end, rounds=3, seen=seen)
+    # step 21 (D-208): among the placements within the level's variety margin of the best cover, one at random
+    if seen and p['variety_margin'] > 0:
+        low = min(v for v, _, _ in seen)
+        near = [(xq, ar) for v, xq, ar in seen if v <= low + p['variety_margin'] + 1e-9]
+        if len(near) > 1:
+            xs, arrows = rng.choice(near)
     s = make(list(o_sq), ball, xs, arrows)
     r = Read(s)
     perm = []

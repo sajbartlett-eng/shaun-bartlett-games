@@ -479,6 +479,7 @@ h2.h3 { font-size: 17px; margin: 6px 0 4px; }
 }
 
 /* ---- step 20: the overloaded defender on the coverage map ---- */
+.covmap .swmark { font-size: 16px; font-weight: 700; fill: #12407a; pointer-events: none; }
 .covmap .ovmove { stroke: #7a1c14; stroke-width: 1.5; stroke-dasharray: 2 3; opacity: 0.6; pointer-events: none; }
 .covmap .ovline { stroke: #7a1010; stroke-width: 2.5; stroke-dasharray: 6 4; opacity: .8; pointer-events: none; }
 .covmap .ovring { fill: none; stroke: #7a1010; stroke-width: 3; pointer-events: none; }

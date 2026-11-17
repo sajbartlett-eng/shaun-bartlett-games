@@ -81,13 +81,19 @@ def test_the_shading_after_the_answer_agrees_with_the_words(cov):
 def test_an_overload_is_one_defender_the_only_cover_for_two_attackers(cov):
     c = cov(boards()[2][1])                                          # the closeout board names three
     assert c['overloads']
+    # re-recorded in step 21 (D-206): overloads count numbers (a group of one, two or three defenders, the only cover for
+    # more attackers than there are of them), worth the best look the defence's best assignment leaves open
     for v in c['overloads']:
-        a, b = v['threats'][:2]
-        assert a['o'] != b['o']                                      # two attackers
-        assert B.cheb(B.parse_sq(a['sq']), B.parse_sq(b['sq'])) >= 3   # no one square next to both: he can't take both
-        assert v['value'] == pytest.approx(min(a['worth'], b['worth']), abs=0.01)   # what's left once he takes the bigger
-        assert re.fullmatch(rf"X{v['x'] + 1} is the only cover for O\d's .+ on [A-Q]\d+ and O\d's .+ on [A-Q]\d+: whichever he takes, "
-                            r"the other is open \(worth \d+\)\.", v['line']), v['line']
+        attackers = {t['o'] for t in v['threats']}
+        assert len(attackers) > len(v['xs'])
+        assert 0 < v['value'] <= max(t['worth'] for t in v['threats']) + 1e-9
+        if len(v['xs']) == 1 and len(attackers) == 2:                # one on two: what's left once he takes the bigger
+            a, b = v['threats'][:2]
+            assert B.cheb(B.parse_sq(a['sq']), B.parse_sq(b['sq'])) >= 3
+            assert v['value'] == pytest.approx(min(a['worth'], b['worth']), abs=0.01)
+        if len(v['xs']) == 1:
+            assert re.fullmatch(rf"X{v['x'] + 1} is the only cover for O\d's .+ on [A-Q]\d+ and O\d's .+ on [A-Q]\d+: whichever he takes, "
+                                r"the other is open \(worth \d+\)\.", v['line']), v['line']
         assert v['line'] in c['words']
 
 
@@ -100,13 +106,14 @@ def test_the_answer_turns_arrows_and_moves_within_one_movement(cov):
 
 
 def test_the_measure_is_like_for_like():
-    """Spending actions can't lower it and a phase ending can't move it by itself: the same squares and arrows read the
-    same whatever either side has spent, in any phase but the last."""
+    """Re-recorded in step 21 (D-206): the like-for-like read is now the reports' read of a phase start (fresh=True);
+    the computer reads each side as it really is (tests/test_map_logic_21.py). Like for like, the same squares and
+    arrows read the same whatever either side has spent, in any phase but the last."""
     s = boards()[0][1]
-    L = D.lasting_of(s)['L']
+    L = D.lasting_of(s, fresh=True)['L']
     for kw in (dict(tok_o=1, moved_o=3, qs_o=1), dict(tok_x=0, moved_x=31), dict(phase=s.phase + 1, clock=s.clock - 4)):
-        assert D.lasting_of(s.with_(**kw))['L'] == pytest.approx(L), kw
-    assert D.lasting_of(s.with_(clock=2)) is None                     # the last phase has no next phase
+        assert D.lasting_of(s.with_(**kw), fresh=True)['L'] == pytest.approx(L), kw
+    assert D.lasting_of(s.with_(clock=2), fresh=True) is None         # the last phase has no next phase
 
 
 @needs_node

@@ -2913,17 +2913,25 @@ const PMEngine = (() => {
     // step 20 (Shaun, 17 Nov 2026): the lasting gap, read like for like (lastingOf); only the number is kept with the
     // reading, or a long search holds thousands of maps
     mapLasting() {
-      if (this._lg === undefined) { const g = lastingOf(this.s); this._lg = g ? g.L : null; }
+      if (this._lg === undefined) { const g = lastingOf(this.s, this); this._lg = g ? g.L : null; this._lgMoves = g && g.best ? g.best.moves : null; }
       return this._lg;
+    }
+    mapAnswer() {                                  // step 21: the moves of the defence's best answer (the search tries them)
+      this.mapLasting();
+      return this._lgMoves || [];
     }
     // The reading from the map, both sides (step 20): what is banked, plus the larger of the best shot that can go up
     // now and the lasting gap: what the offence can still force after the defence's best answer. Used directly: it is
     // already in points, as a shot's value is. The offence plays to make it larger, the defence to keep it small.
     _mapLeaf() {
       const s = this.s;
-      if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play' || s.pending) return null;
+      if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play') return null;
       let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
+      if (s.pending) {                             // step 21: a pass in the air, by the rules' chance of the catch
+        const L = this.mapLasting();
+        return L === null ? null : banked + L;
+      }
       const shot = this.mapShot();
       if (!this.o_to_act && s.tok_o <= 0 && s.clock <= 2) return banked + shot;
       const L = this.mapLasting();
@@ -3336,6 +3344,17 @@ const PMEngine = (() => {
       for (const j of read.att_x) for (const r of cv.R[j].slice(1, perPlayer + 1)) targets[j].push(r[0]);
       for (const a of moves) {
         for (const [q, arrow] of targets[a.piece]) if (a.dest === q && (a.kind !== 'move' || a.arrow === arrow)) add(a);
+      }
+      // step 21 (D-207): the map's own best answer is always among the moves tried: each of its movements as the rules
+      // allow it (a Move to its square, every arrow; a Quick Step or Sprint to its square with its arrow). The answer
+      // matches all five defenders against every look on the board, so no defender is tied to a man and a switch is
+      // simply the answer that leaves the least
+      if (mapOn() && s.ctx.digital && s.stage === 'play' && !s.pending) {
+        // (a Quick Step or Sprint is matched by the arrow it really leaves him, as the rules apply it)
+        for (const [d, q, ar] of read.mapAnswer()) for (const a of moves) {
+          if (a.piece !== d || a.dest !== q) continue;
+          if (ar < 0 ? a.kind === 'move' : a.kind !== 'move' && apply(s, a).arrows[d] === ar) add(a);
+        }
       }
       const spots = [];
       for (const i of read.att_o) for (const lk of read.looks[i].slice(0, 1)) spots.push(lk.c);
@@ -4793,35 +4812,88 @@ const PMEngine = (() => {
     const moved = st.moved.slice(); moved[d] = true;
     return { moves: st.moves.concat([[d, q, a]]), moved, taken, tok: st.tok - 1, o };
   }
-  // Overloads: in an answer, a defender is the only cover (nobody else takes anything off them) for threats from two
-  // attackers on squares no one square is next to both of (three or more apart: a Contest is from next to the shooter),
-  // so he can't take both. Whichever he takes, the other stays open: the overload is worth the smaller of the two, each
-  // read without him. The pair that leaves the offence the most is the one named.
-  const LG_PAIR = 12;
-  function lgOverloads(st) {
-    const by = [[], [], [], [], []];
-    for (const x of st.o) {
-      if (!(x.r > 0) || x.cover < 0 || x.next >= 0 || !(x.e > 0)) continue;
-      const wd = x.r * covValue({ open: x.src.open, vals: x.vals }, x.cover, null)[0] - (1 - x.r) * TURNOVER_COST;
-      by[x.cover].push({ wd, x });
-    }
-    const out = [];
+  // Overloads (step 21, Shaun, 17 Nov 2026: count numbers, not just pairs): a group of defenders (one, two or three)
+  // who are the only cover for looks from more attackers than there are defenders. Each attacker brings his best
+  // look of those only the group covers (worth read without the group). The defence's best assignment gives each
+  // defender of the group one attacker he can take, or none; an attacker is left open if no taken attacker stands
+  // within two squares of him (a Contest is from next to the shooter, so one defender can't be on both). The group is
+  // worth the best look left open by the defence's best assignment, found by trying every assignment. One on two is
+  // step 20's overload; two on three and three on four follow from the same rule. A group is named only if no
+  // smaller group inside it is already worth as much.
+  const LG_GROUP = 3;
+  const nearKey = c => SX[c] >= 5 && SX[c] <= 11 && SY[c] >= 1 && SY[c] <= 7;
+  function lgCovMask(x) {                              // the defenders who take anything off this look
+    let m = 0;
     for (let d = 0; d < 5; d++) {
-      const list = by[d].sort((u, v) => v.wd - u.wd || lgBefore(u.x, v.x)).slice(0, LG_PAIR);
-      let pair = null;
-      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
-        const u = list[i], v = list[j];
-        if (u.x.src.a === v.x.src.a || cheb(u.x.src.c, v.x.src.c) < 3) continue;
-        const val = Math.min(u.wd, v.wd);
-        if (pair === null || val > pair.value + 1e-9) pair = { value: val, u, v };
+      const v = x.vals[d]; if (!v) continue;
+      for (let t = 0; t < x.src.open.length; t++) if (v[t] < x.src.open[t]) { m |= 1 << d; break; }
+    }
+    return m;
+  }
+  function lgGroupValue(A, ds) {                       // the best look the defence's best assignment leaves open
+    let best = Infinity, pick = null;
+    const k = ds.length, took = new Array(k).fill(-1);
+    const go = i => {
+      if (i === k) {
+        let left = -Infinity, open = -1;
+        for (let u = 0; u < A.length; u++) {
+          if (took.includes(u)) continue;
+          let far = true;
+          for (const v of took) if (v >= 0 && cheb(A[u].c, A[v].c) < 3) { far = false; break; }
+          if (far && A[u].wd > left) { left = A[u].wd; open = u; }
+        }
+        if (left < best - 1e-9) { best = left; pick = { took: took.slice(), open }; }
+        return;
       }
-      if (pair) out.push({ d, value: pair.value, threats: [pair.u, pair.v].map(z => ({ a: z.x.src.a, c: z.x.src.c, t: z.x.t, worth: z.wd, now: z.x.e })) });
+      took[i] = -1; go(i + 1);
+      for (let u = 0; u < A.length; u++) {
+        if (took.includes(u) || !(A[u].mask >> ds[i] & 1)) continue;
+        took[i] = u; go(i + 1); took[i] = -1;
+      }
+    };
+    go(0);
+    return { value: best, pick };
+  }
+  function lgOverloads(st) {
+    const looks = [];
+    for (const x of st.o) {
+      if (!(x.r > 0) || !(x.e > 0)) continue;
+      const mask = lgCovMask(x); if (!mask) continue;
+      let top = -Infinity, tt = 0;
+      for (let t = 0; t < x.src.open.length; t++) if (x.src.open[t] > top) { top = x.src.open[t]; tt = t; }
+      looks.push({ x, mask, wd: x.r * top - (1 - x.r) * TURNOVER_COST, tt });
+    }
+    const out = [], named = [];
+    for (let k = 1; k <= LG_GROUP; k++) {
+      const groups = [];
+      const pickG = (from, ds) => { if (ds.length === k) { groups.push(ds.slice()); return; } for (let d = from; d < 5; d++) { ds.push(d); pickG(d + 1, ds); ds.pop(); } };
+      pickG(0, []);
+      for (const ds of groups) {
+        let gm = 0; for (const d of ds) gm |= 1 << d;
+        const by = new Map();                         // each attacker's best look that only the group covers
+        for (const z of looks) {
+          if ((z.mask & ~gm) || !(z.mask & gm)) continue;
+          const a = z.x.src.a, cur = by.get(a);
+          if (!cur || z.wd > cur.wd + 1e-9 || (Math.abs(z.wd - cur.wd) <= 1e-9 && lgBefore(z.x, cur.x) < 0)) by.set(a, z);
+        }
+        if (by.size <= k) continue;
+        const A = [...by.values()].map(z => ({ a: z.x.src.a, c: z.x.src.c, t: z.tt, wd: z.wd, now: z.x.e, mask: z.mask }))
+          .sort((u, v) => v.wd - u.wd || u.a - v.a);
+        const g = lgGroupValue(A, ds);
+        if (!(g.value > 0) || !isFinite(g.value)) continue;
+        if (named.some(h => (h.gm & gm) === h.gm && h.value >= g.value - 1e-9)) continue;   // a smaller group says it already
+        named.push({ gm, value: g.value });
+        out.push({ d: ds[0], ds, value: g.value, threats: A.map(u => ({ a: u.a, c: u.c, t: u.t, worth: u.wd, now: u.now })),
+          near_key: A.every(u => nearKey(u.c)) });
+      }
     }
     return out;
   }
   function lgScore(st) {
     const head = lgHead(st), worths = head.map(x => x.e);
-    const ov = lgOverloads(st);
+    // (a group of two or three is named only when it is worth at least the best open look: it then explains the gap)
+    const open0 = worths.length ? worths[0] : 0;
+    const ov = lgOverloads(st).filter(v => v.ds.length === 1 || v.value >= open0 - 1e-9);
     let L = worths.length ? worths[0] : 0;
     for (const v of ov) if (v.value > L) L = v.value;
     return { L, worths, ov };
@@ -4890,14 +4962,32 @@ const PMEngine = (() => {
     }
     return best;
   }
-  // the lasting gap of a position, read like for like (covFresh): -> { L, before, best, ov, moves } (numbers only)
-  function lastingOf(s, r0) {
+  // The lasting gap of a position -> { L, before, best, ov, moves, m } (numbers only). Step 21 (Shaun, 17 Nov 2026,
+  // D-206): read with what each side really has left this phase: its tokens and movement, who is locked or rushed, who
+  // has already moved. A spent or beaten defender can't recover inside the phase, and the map says so. fresh: step 20's
+  // like-for-like read (covFresh), kept for the reports' phase starts, where both sides really are fresh.
+  // A pass in the air (step 21, part 4): the ball where it is; the catch by the rules' own chance (covPass, the
+  // defence's interceptions from where it stands now). Caught: the receiver's lasting gap. Intercepted (D-198): -5,
+  // the phase ends and the next starts with the ball back with the passer, read fresh.
+  function lastingOf(s, r0, fresh) {
     if (s.stage !== 'play' || s.clock <= 2) return null;
-    const f = covFresh(s);
-    const m = covBuild(f, true, r0 && r0.s === f ? r0 : null);
+    if (fresh) {
+      const f = covFresh(s);
+      const m = covBuild(f, true, r0 && r0.s === f ? r0 : null);
+      const best = lasting(m);
+      return { L: best.sc.L, before: m.sorted.length ? m.sorted[0].e : 0, ov: best.sc.ov.length, moves: best.moves.length, m, best };
+    }
+    if (s.pending) {
+      const recv = s.pending[1], base = W_(s, { pending: null, approach: -1 });
+      const p = covPass(base, recv, s.o[recv]);
+      const gc = lastingOf(W_(base, { ball: recv }), null, false);
+      const gl = s.clock - 2 > 2 ? lastingOf(base, null, true) : null;
+      const L = p * (gc ? gc.L : 0) + (1 - p) * ((gl ? gl.L : 0) - TURNOVER_COST);
+      return { L, before: gc ? gc.before : 0, ov: gc ? gc.ov : 0, moves: gc ? gc.moves : 0, m: gc ? gc.m : null, best: gc ? gc.best : null, catch: p };
+    }
+    const m = covBuild(s, true, r0 && r0.s === s ? r0 : null);
     const best = lasting(m);
-    const before = m.sorted.length ? m.sorted[0].e : 0;
-    return { L: best.sc.L, before, ov: best.sc.ov.length, moves: best.moves.length, m, best };
+    return { L: best.sc.L, before: m.sorted.length ? m.sorted[0].e : 0, ov: best.sc.ov.length, moves: best.moves.length, m, best };
   }
   const COV_MOVES = new Set(['move', 'qs', 'sprint']);
   // the defence's answers: one movement action at a time while it has tokens, each the action that leaves the offence
@@ -4987,9 +5077,11 @@ const PMEngine = (() => {
     opts = opts || {};
     if (opts.only === 'parts') return { parts: mapParts(s0) };                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
-    if (opts.only === 'lasting') { const g = lastingOf(s0); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves } : null; }
-    // step 20: the map is read like for like (covFresh): the offence's full turn to come, the defence's movement fresh
-    const s = covFresh(s0);
+    if (opts.only === 'lasting') { const g = lastingOf(s0, null, !!opts.fresh); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves } : null; }
+    // step 21 (D-206): the map is read with what each side has left this phase; opts.fresh: step 20's like-for-like
+    // read (covFresh), for the reports' phase starts. A pass in the air is shown caught; its number is by the catch's chance
+    const caught = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
+    const s = opts.fresh ? covFresh(s0) : caught;
     const m0 = covBuild(s);
     const best = lasting(m0);
     const sq = list => {                               // every square, for each attacker: his best option there
@@ -5013,28 +5105,37 @@ const PMEngine = (() => {
     const head = lgHead(best), left = head.length ? head[0] : null;
     const top = m0.sorted.length ? m0.sorted[0] : null;
     const name = o => `O${o + 1}`;
+    const NUM = ['', 'one', 'two', 'three', 'four'];
     const overloads = best.sc.ov.map(v => {
       const th = v.threats.map(z => ({ o: z.a, sq: sqName(z.c), shot: m0.options.find(o => o.a === z.a && o.c === z.c).lk.types[z.t], worth: +z.worth.toFixed(2) }));
-      const two = th.slice(0, 2).map(z => `${name(z.o)}'s ${COV_SHOT[z.shot].replace(/^an? /, '')} on ${z.sq}`).join(' and ');
-      return { x: v.d, value: +v.value.toFixed(2), threats: th,
-        line: `X${v.d + 1} is the only cover for ${two}: whichever he takes, the other is open (worth ${Math.round(v.value)}).` };
+      const and = xs => xs.length <= 2 ? xs.join(' and ') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+      let line;
+      if (v.ds.length === 1) {
+        const two = th.slice(0, 2).map(z => `${name(z.o)}'s ${COV_SHOT[z.shot].replace(/^an? /, '')} on ${z.sq}`).join(' and ');
+        line = `X${v.d + 1} is the only cover for ${two}: whichever he takes, the other is open (worth ${Math.round(v.value)}).`;
+      } else {
+        const k = v.ds.length, rest = th.length - k;
+        line = `${and(v.ds.map(d => `X${d + 1}`))} are the only cover for ${and(th.map(z => name(z.o)))}${v.near_key ? ' near the key' : ''}: ` +
+          `whichever ${NUM[k]} they take, ${rest === 1 ? (th.length === 3 ? 'the third' : 'the other') : 'another'} is open (worth ${Math.round(v.value)}).`;
+      }
+      return { x: v.d, xs: v.ds, value: +v.value.toFixed(2), threats: th, line };
     });
     const words = [];
     if (!top) words.push(s0.clock <= 2 ? 'The last phase: only a shot now counts.' : 'Nothing can be reached next phase.');
     else {
       if (best.moves.length) words.push(`The defence's best answer: ${best.moves.map(([d, q]) => q === s.x[d] ? `X${d + 1} turns on ${sqName(q)}` : `X${d + 1} to ${sqName(q)}`).join(', ')}.`);
-      else words.push(s.tok_x <= 0 ? 'The defence has no movement left to answer with.' : 'No movement by the defence makes it smaller.');
+      else words.push(s.tok_x <= 0 ? 'The defence has no token left this phase to answer with.' : 'No movement by the defence makes it smaller.');
       if (left && left.e > 0) words.push(`That leaves ${COV_SHOT[left.src.lk.types[left.t]]} for ${name(left.src.a)} on ${sqName(left.src.c)}, worth ${Math.round(left.e)}: ${left.cover < 0 ? 'nobody covers it' : `X${left.cover + 1} covers it`}.`);
       for (const v of overloads) words.push(v.line);
     }
     const brk = covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (brk.broken) words.push(`The defence is broken now: O${brk.shot.o + 1} has a shot on ${brk.shot.sq} worth ${brk.shot.worth.toFixed(0)}, more than playing on (${brk.carry_on.toFixed(0)}).`);
-    const L = best.sc.L;
-    // where the defence stands after its best answer (its tokens as a fresh phase gives them: covFresh)
+    const L = s0.pending && !opts.fresh ? (lastingOf(s0) || { L: best.sc.L }).L : best.sc.L;
+    // where the defence stands after its best answer
     const px = Array.from(s.x), pa = Array.from(s.arrows);
     for (const [d, q, a] of best.moves) { px[d] = q; if (a >= 0) pa[d] = a; }
     const after = { x: px.map(q => sqName(q)), arrows: pa, tokens_left: s.tok_x - best.moves.length };
-    return { phase: s0.phase, clock: s0.clock, squares, squares_after: squaresAfter, after, covers, top: m0.sorted.slice(0, 8).map(covOption),
+    return { phase: s0.phase, clock: s0.clock, fresh: !!opts.fresh, squares, squares_after: squaresAfter, after, covers, top: m0.sorted.slice(0, 8).map(covOption),
       strength: +L.toFixed(2), lasting: +L.toFixed(2), before: top ? +top.e.toFixed(2) : 0, fragility: overloads.length, overloads,
       shot_now: brk.shot, carry_on: brk.carry_on, broken: brk.broken,
       best: top ? covOption(top) : null, answers: best.moves.map(([d, q, a]) => ({ x: d, to: sqName(q), arrow: a, turn: q === s.x[d] })),

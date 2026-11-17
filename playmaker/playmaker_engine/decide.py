@@ -1351,34 +1351,85 @@ class Read:
             return sorted((x for x in st['o'] if x['r'] > 0), key=lambda x: (-x['e'], x['key']))[:HEAD]
 
         def overloads(st):
-            by = [[] for _ in range(5)]
+            """engine.js lgOverloads (step 21): groups of one, two or three defenders who are the only cover for looks
+            from more attackers than there are defenders; worth the best look the defence's best assignment leaves."""
+            looks = []
             for x in st['o']:
-                if not x['r'] > 0 or x['cover'] < 0 or x['next'] >= 0 or not x['e'] > 0:
+                if not x['r'] > 0 or not x['e'] > 0:
                     continue
                 lk, opens = x['src'][3], x['src'][4]
-                wd = x['r'] * self._map_cov(lk, opens, x['vals'], x['cover'], None)[0] - (1 - x['r']) * 5
-                by[x['cover']].append((wd, x))
-            out = []
-            for d in range(5):
-                lst = sorted(by[d], key=lambda z: (-z[0], -z[1]['e'], z[1]['key']))[:12]
-                pair = None
-                for i in range(len(lst)):
-                    for j in range(i + 1, len(lst)):
-                        u, v = lst[i], lst[j]
-                        if u[1]['key'][0] == v[1]['key'][0] or B.cheb(u[1]['key'][1], v[1]['key'][1]) < 3:
+                mask = 0
+                for d in range(5):
+                    vd = x['vals'][d]
+                    if vd and any(ty in vd and vd[ty] < opens[n] for n, ty in enumerate(lk.types)):
+                        mask |= 1 << d
+                if not mask:
+                    continue
+                top, tt = float('-inf'), 0
+                for n, o in enumerate(opens):
+                    if o > top:
+                        top, tt = o, n
+                looks.append(dict(x=x, mask=mask, wd=x['r'] * top - (1 - x['r']) * 5, tt=tt))
+
+            def group_value(A, ds):
+                best = [float('inf')]
+                k = len(ds)
+                took = [-1] * k
+
+                def go(i):
+                    if i == k:
+                        left = float('-inf')
+                        for u in range(len(A)):
+                            if u in took:
+                                continue
+                            if all(v < 0 or B.cheb(A[u]['c'], A[v]['c']) >= 3 for v in took) and A[u]['wd'] > left:
+                                left = A[u]['wd']
+                        if left < best[0] - 1e-9:
+                            best[0] = left
+                        return
+                    took[i] = -1
+                    go(i + 1)
+                    for u in range(len(A)):
+                        if u in took or not (A[u]['mask'] >> ds[i] & 1):
                             continue
-                        val = min(u[0], v[0])
-                        if pair is None or val > pair[0] + 1e-9:
-                            pair = (val, u, v)
-                if pair:
-                    out.append(dict(d=d, value=pair[0], threats=[dict(a=z[1]['key'][0], c=z[1]['key'][1], t=z[1]['t'], worth=z[0], now=z[1]['e'])
-                                                                 for z in (pair[1], pair[2])]))
+                        took[i] = u
+                        go(i + 1)
+                        took[i] = -1
+                go(0)
+                return best[0]
+            import itertools
+            out, named = [], []
+            for k in (1, 2, 3):
+                for ds in itertools.combinations(range(5), k):
+                    gm = sum(1 << d for d in ds)
+                    by = {}
+                    for z in looks:
+                        if (z['mask'] & ~gm) or not (z['mask'] & gm):
+                            continue
+                        a = z['x']['key'][0]
+                        cur = by.get(a)
+                        if (cur is None or z['wd'] > cur['wd'] + 1e-9 or
+                                (abs(z['wd'] - cur['wd']) <= 1e-9 and (-z['x']['e'], z['x']['key']) < (-cur['x']['e'], cur['x']['key']))):
+                            by[a] = z
+                    if len(by) <= k:
+                        continue
+                    A = sorted((dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'])
+                                for z in by.values()), key=lambda u: (-u['wd'], u['a']))
+                    val = group_value(A, list(ds))
+                    if not val > 0 or val == float('inf'):
+                        continue
+                    if any((h[0] & gm) == h[0] and h[1] >= val - 1e-9 for h in named):
+                        continue
+                    named.append((gm, val))
+                    out.append(dict(d=ds[0], ds=list(ds), value=val, threats=[dict(a=u['a'], c=u['c'], t=u['t'], worth=u['wd'], now=u['now']) for u in A],
+                                    near_key=all(5 <= u['c'][0] <= 11 and 1 <= u['c'][1] <= 7 for u in A)))
             return out
 
         def score(st):
             head = head_of(st)
             worths = [x['e'] for x in head]
-            ov = overloads(st)
+            open0 = worths[0] if worths else 0.0
+            ov = [v for v in overloads(st) if len(v['ds']) == 1 or v['value'] >= open0 - 1e-9]
             L = worths[0] if worths else 0.0
             for v in ov:
                 if v['value'] > L:
@@ -1494,11 +1545,17 @@ class Read:
         return best
 
     def map_lasting(self):
-        """The lasting gap of this reading's position, read like for like (lasting_of); only the number is kept."""
+        """The lasting gap of this reading's position, read with what each side has left this phase (lasting_of, step 21);
+        only the number and the answer's moves are kept."""
         if self._lg is None:
-            g = lasting_of(self.s, self.cfg)
-            self._lg = (g['L'] if g else None,)
+            g = lasting_of(self.s, self.cfg, r0=self)
+            self._lg = (g['L'] if g else None, list(g['best']['moves']) if g and g.get('best') else [])
         return self._lg[0]
+
+    def map_answer(self):
+        """Step 21: the moves of the defence's best answer, [(defender, square, arrow or -1)] (the search tries them)."""
+        self.map_lasting()
+        return self._lg[1]
 
     def map_two(self, answered=False):
         """The map's two numbers for the search: the best any attacker can have at the start of the next phase and the
@@ -1544,10 +1601,13 @@ class Read:
         s = self.s
         # (the quick look that orders the list, k = 0, keeps its own reading: engine.js quickLeaf)
         on = self.cfg.get('map')                   # True: both sides; 'offence': only where the decision searched is the offence's
-        if not (on is True or (on == 'offence' and MAP_ME[0] == 'O')) or self.k <= 0 or not s.ctx.rules.digital or s.stage != 'play' or s.pending:
+        if not (on is True or (on == 'offence' and MAP_ME[0] == 'O')) or self.k <= 0 or not s.ctx.rules.digital or s.stage != 'play':
             return None
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
+        if s.pending:                              # step 21: a pass in the air, by the rules' chance of the catch
+            L = self.map_lasting()
+            return None if L is None else banked + L
         shot = self.map_shot()
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + shot
@@ -2587,13 +2647,28 @@ def cov_fresh(s):
                    final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
 
 
-def lasting_of(s, cfg=None):
-    """Step 20 (engine.js lastingOf): the lasting gap of a position, read like for like. None in the last phase, or with
-    a shot in the air. -> {L, before, ov, moves, best}."""
+def lasting_of(s, cfg=None, fresh=False, r0=None):
+    """engine.js lastingOf (step 21, D-206): the lasting gap of a position, read with what each side really has left
+    this phase (its tokens and movement, who is locked or rushed, who has moved); fresh: step 20's like-for-like read
+    (cov_fresh), for the reports' phase starts. A pass in the air: the catch by the rules' own chance (cov_pass);
+    caught, the receiver's lasting gap; intercepted (D-198), -5 and the next phase read fresh with the ball back with
+    the passer. None in the last phase. -> {L, before, ov, moves, best}."""
     if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS:
         return None
-    f = cov_fresh(s)
-    r = Read(f, cfg=cfg)
+    if fresh:
+        f = cov_fresh(s)
+        r = Read(f, cfg=cfg)
+    elif s.pending:
+        recv = s.pending[1]
+        base = s.with_(pending=None, approach=-1)
+        p = cov_pass(base, recv, base.o[recv])
+        gc = lasting_of(base.with_(ball=recv), cfg)
+        gl = lasting_of(base, cfg, fresh=True) if s.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS else None
+        L = p * (gc['L'] if gc else 0.0) + (1 - p) * ((gl['L'] if gl else 0.0) - 5)
+        return dict(L=L, before=gc['before'] if gc else 0.0, ov=gc['ov'] if gc else 0, moves=gc['moves'] if gc else 0,
+                    best=gc['best'] if gc else None, catch=p)
+    else:
+        r = r0 if r0 is not None and r0.s is s else Read(s, cfg=cfg)
     opts = r.map_options()
     best = r.lasting(opts)
     before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)

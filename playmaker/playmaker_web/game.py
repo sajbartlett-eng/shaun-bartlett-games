@@ -702,6 +702,49 @@ class Game:
             snaps[key] = c
         return snaps[key]
 
+    def coverage_live(self):
+        """Step 21 (Shaun, 17 Nov 2026: "the current heat map needs considering up to date for every team's action,
+        whether that is action 1, action 2, hesitate, pause or end turn"): the map of the board as it stands after the
+        last action by either side, roll results included, read with what each side has left this phase, as the
+        computer reads it. A shot in the air: the board just before it. The phase-start map (coverage_snapshot) stays
+        for the phase lines and the change since the last phase. None where there is no map."""
+        snap = self.coverage_snapshot()
+        if snap is None:
+            return None
+        s = self.state
+        at = s if s.stage == 'play' else None
+        tr = self.__dict__.get('_trails', {}).get(self.possession, [])
+        if at is None:
+            at = next((n for b, a, n, t in reversed(tr) if n.stage == 'play'), None) or next((b for b, a, n, t in reversed(tr) if b.stage == 'play'), None)
+        if at is None:
+            return snap
+        memo = self.__dict__.setdefault('_covlive', {})
+        k = at.encode()
+        if k not in memo:
+            from playmaker_engine import agent as _AG
+            try:
+                c = _AG.coverage(at)
+            except Exception:                   # the view must never stop a game
+                c = None
+            if c is None:
+                return snap
+            c['change'] = snap.get('change')
+            c['possession'] = self.possession
+            c['when'] = self._cov_when(at, tr)
+            if len(memo) > 200:
+                memo.clear()
+            memo[k] = c
+        return memo[k]
+
+    def _cov_when(self, at, steps):
+        """When a map is from, in words: "after O1 passed to O2, before the defence answers"."""
+        from .report import act_words
+        last = next(((b, a, n) for b, a, n, t in reversed(steps) if n is at or n.encode() == at.encode()), None)
+        if last is None or last[1] is None or last[0].phase != at.phase or last[1].kind in ('target', 'pick'):
+            return 'at the start of this phase'
+        nxt = 'before the defence answers' if at.side == 'X' else 'with the offence to act'
+        return f'after {act_words(last[1])}, {nxt}'
+
     # ---- step 18s, stop two: the phase scores (the addendum on the defence's strength, D-201) ----
     def _trail_add(self, before, a, node, turn=None):
         """Every step of the possession in play: the position before, the action, the position after. Step 19 keeps
@@ -728,6 +771,8 @@ class Game:
             c['possession'] = next((e['possession'] for e in self.feed if e['n'] == n), self.possession)
             c['change'] = None
             c['n'] = n
+            steps = self.__dict__.get('_trails', {}).get(c['possession'], [])
+            c['when'] = self._cov_when(s, steps)
         return c
 
     _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
