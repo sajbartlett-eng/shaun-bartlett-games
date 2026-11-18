@@ -1157,23 +1157,27 @@ class Read:
                             for q in movement_dests(s, 'O', a, kind, rules):
                                 one.setdefault(q, 1)
                 for q in list(one) + (two_actions(s, a, one) if s.tok_o > 0 else []):
-                    starts.append((q, 1.0))
+                    starts.append((q, 1.0, False))
             elif s.tok_o > 0 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
+                # step 22 (engine.js covBuild, D-210): a receiver two movements away (his cut) catches and shoots there
                 for q, n in attacker_reach(s, a).items():
-                    if n > 1 or n + 1 > s.tok_o:
+                    if n > 2 or n + 1 > s.tok_o:
                         continue
                     p = cov_pass(s, a, q)
                     if p > 0:
-                        starts.append((q, p))
+                        starts.append((q, p, n == 2))
             mates = {s.o[k] for k in range(5) if k != a}
             lines = capture_lines(s_next, a) if rules.zone != 'off' else []
             card, qs = s.ctx.off[a], s.ctx.off[a].qs
-            best = {}
-            for q0, pr in starts:
+            best, start = {}, {}
+            for q0, pr, set_only in starts:
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
                 if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
                     best[q0, False] = pr           # a set shot from where the phase finds him
+                    start[q0, False] = q0
+                if set_only:
+                    continue
                 for p, rushed in _shot_paths(q0, qs, rules, no_rim):
                     c = p[-1]
                     if best.get((c, rushed), 0.0) >= pr:
@@ -1183,6 +1187,7 @@ class Read:
                     if lines and not capture_ok(q0, p, lines):
                         continue
                     best[c, rushed] = pr
+                    start[c, rushed] = q0
             for (c, rushed), pr in best.items():
                 z = B.zone(c)
                 lk = Look(a, c, 'later', 1.0, False)
@@ -1195,7 +1200,7 @@ class Read:
                     vals[d] = (self._vals2(lk, d, row) or None) if row is not None else None
                 opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
-                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals]
+                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals, start[c, rushed]]
         return out
 
     @staticmethod
@@ -1259,7 +1264,7 @@ class Read:
                         continue
                     after = []
                     for n, key in enumerate(head):
-                        pr, _, e0, lk, opens, vals = opts[key]
+                        pr, _, e0, lk, opens, vals = opts[key][:6]
                         if key[1] == q:
                             e = float('-inf')
                         else:
@@ -1498,8 +1503,13 @@ class Read:
         only the number and the answer's moves are kept."""
         if self._lg is None:
             g = lasting_of(self.s, self.cfg, r0=self)
-            self._lg = (g['L'] if g else None, list(g['best']['moves']) if g and g.get('best') else [])
+            self._lg = (g['L'] if g else None, list(g['best']['moves']) if g and g.get('best') else [], map_threats(g))
         return self._lg[0]
+
+    def map_threats(self):
+        """Step 22: the map's threats as [(attacker, start square)] (the search's offence tries the moves that start them)."""
+        self.map_lasting()
+        return self._lg[2]
 
     def map_answer(self):
         """Step 21: the moves of the defence's best answer, [(defender, square, arrow or -1)] (the search tries them)."""
@@ -2691,13 +2701,46 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
         gl = lasting_of(base, cfg, fresh=True) if s.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS else None
         L = p * (gc['L'] if gc else 0.0) + (1 - p) * ((gl['L'] if gl else 0.0) - 5)
         return dict(L=L, before=gc['before'] if gc else 0.0, ov=gc['ov'] if gc else 0, moves=gc['moves'] if gc else 0,
-                    best=gc['best'] if gc else None, catch=p)
+                    best=gc['best'] if gc else None, opts=gc.get('opts') if gc else None, catch=p)
     else:
         r = Read(cov_off_fresh(s), cfg=cfg)
     opts = r.map_options()
     best = r.lasting(opts)
     before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)
-    return dict(L=best['L'], before=before, ov=len(best['ov']), moves=len(best['moves']), best=best)
+    three = three_seconds_owed(s) if not fresh else 0
+    return dict(L=best['L'] - 5 * three, before=before, ov=len(best['ov']), moves=len(best['moves']), best=best, opts=opts, three=three)
+
+
+def three_seconds_owed(s):
+    """Step 22 (engine.js threeSecondsOwed, D-211): the attackers in the key at the last phase end who can't leave it
+    before this phase ends with what the offence really has left: each is -5 at the phase end."""
+    from .actions import can_move_kind
+    if not RC.app_rule(s.ctx.rules, 'three_seconds') or not s.key_o:
+        return 0
+    n = 0
+    for i in range(5):
+        if not (s.key_o >> i) & 1 or not B.in_key(s.o[i]):
+            continue
+        if not (s.tok_o > 0 and any(can_move_kind(s, 'O', i, k) for k in ('move', 'qs', 'sprint'))):
+            n += 1
+    return n
+
+
+def map_threats(g):
+    """Step 22 (engine.js lgThreats, D-212): the map's own threats as the offence's first actions: [(attacker, the
+    square he must have the ball on when the next phase starts)] for the best three looks the answer leaves and each
+    overload's looks."""
+    if not g or not g.get('best') or g.get('opts') is None:
+        return []
+    best, opts = g['best'], g['opts']
+    head = sorted((x for x in best['o'] if x['r'] > 0), key=lambda x: (-x['e'], x['key']))[:3]
+    out = [(x['key'][0], x['src'][6]) for x in head]
+    for v in best['ov']:
+        for z in v['threats']:
+            o = opts.get((z['a'], z['c'], False)) or opts.get((z['a'], z['c'], True))
+            if o is not None:
+                out.append((z['a'], o[6]))
+    return out
 
 
 MAP_ME = [None]            # step 18s, stop two: the side whose decision the search in hand is (search.Searcher sets it)

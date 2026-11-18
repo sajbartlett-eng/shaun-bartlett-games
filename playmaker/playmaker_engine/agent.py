@@ -437,7 +437,7 @@ def _better(a, b, sign):
     return False
 
 
-def coverage(s, answers=None, only=None, fresh=False):
+def coverage(s, answers=None, only=None, fresh=False, evals=None):
     """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
     engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
     who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
@@ -449,6 +449,8 @@ def coverage(s, answers=None, only=None, fresh=False):
         req['options'] = dict(answers=answers)
     if only is not None:                      # stop two: only='break': the shot that can go up now against playing on
         req['options'] = dict(only=only)
+        if evals is not None:                 # step 22: how many placements the setup answer reads
+            req['options']['evals'] = evals
     if fresh:                                 # step 21: step 20's like-for-like read (a fresh phase), for the reports' phase starts
         req.setdefault('options', {})['fresh'] = True
     return json.loads(JS['coverage'](json.dumps(req)))
@@ -698,7 +700,31 @@ def _search_offence(make_names, seed, levels_key=None, budget=None, level='allst
 
 # ---- the setup as it was before step 18o (still the default: setup_search() is off) -----------------------------------
 
+def _map_setup(make, o_sq, ball, evals=240):
+    """Step 22 (D-213, Shaun, 18 Nov 2026): the defence's setup is the map's own best answer to the offence's placement:
+    all five placed together against every look, any empty square and any arrow open to each, judged by the lasting
+    gap (engine.js coverage only='setup'). -> (squares, arrows, the lasting gap it leaves) or None where the fast engine
+    isn't there."""
+    if JS.get('coverage') is None:
+        return None
+    from playmaker_web.game import man_to_man
+    xs, arrows = man_to_man(list(o_sq), ball)
+    try:
+        s = make(o_sq, ball, xs, arrows)
+        if s is None or not jsbridge.ported(s.ctx.rules) or not s.ctx.rules.digital:
+            return None
+        r = coverage(s, only='setup', evals=evals)
+    except ValueError:
+        return None
+    if not r:
+        return None
+    return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L'])
+
+
 def _o_value(make, o_sq, ball, rng, budget_end):
+    m = _map_setup(make, o_sq, ball)
+    if m is not None:                                   # step 22: judged against the defence's map setup
+        return m[2], m[0], m[1]
     xs, arrows = _defence_reply(make, o_sq, ball, rng, budget_end, rounds=1)
     s = make(o_sq, ball, xs, arrows)
     return Read(s).leaf(), xs, arrows
@@ -778,20 +804,28 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
     # screen every sampled placement against the defence's man-to-man start (cheap), then give the best few the
     # defence's best-cover reply, then refine the best one player at a time
     from playmaker_web.game import man_to_man
+    mapped = JS.get('coverage') is not None
     for sq, ball in cands:
         if not _legal_o(sq, ball):
             continue
-        xs, ar = man_to_man(list(sq), ball)
-        try:
-            v = Read(make(sq, ball, xs, ar)).leaf()
-        except ValueError:
-            continue
+        m = _map_setup(make, sq, ball, evals=40) if mapped else None   # step 22: against the defence's map setup
+        if m is not None:                                # (a short read to screen; the best few get the full one)
+            v = m[2]
+        else:
+            xs, ar = man_to_man(list(sq), ball)
+            try:
+                v = Read(make(sq, ball, xs, ar)).leaf()
+            except ValueError:
+                continue
         scored.append((v, sq, ball))
         if time.time() > t_end - 0.6 * (t_end - t0):    # step 18p: the setup keeps its time (it used to finish 4 placements whatever the clock said)
             break
     scored.sort(key=lambda r: -r[0])
     top = []
-    for v0, sq, ball in scored[:3]:
+    few = scored[:3]
+    if mapped and not any(r[1] == base for r in few):   # step 22: the table's own placement always gets the full read
+        few += [r for r in scored if r[1] == base][:1]
+    for v0, sq, ball in few:
         if top and time.time() > t_end:                 # step 18p: out of time: the placements already answered stand
             break
         v, _, _ = _o_value(make, sq, ball, rng, t_end)
@@ -828,6 +862,13 @@ def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, l
     t_end = time.time() + (budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value'])
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     seen = []
+    m = _map_setup(make, list(o_sq), ball)
+    if m is not None:                                   # step 22 (D-213): the map's own answer, all five together
+        xs, arrows = m[0], m[1]
+        perm = [min(range(5), key=lambda i: (B.cheb(xs[j], o_sq[i]), i)) for j in range(5)]
+        words = [f'X{j + 1} {"on" if B.cheb(xs[j], o_sq[perm[j]]) <= 1 else f"{B.cheb(xs[j], o_sq[perm[j]])} squares off"} O{perm[j] + 1}' for j in range(5)]
+        return dict(squares=xs, arrows=arrows, perm=perm, value=round(m[2], 2),
+                    text="Placed by the map's best answer to the offence's placement (all five together): " + '; '.join(words) + '.')
     xs, arrows = _defence_reply(make, list(o_sq), ball, rng, t_end, rounds=3, seen=seen)
     # step 21 (D-208): among the placements within the level's variety margin of the best cover, one at random
     if seen and p['variety_margin'] > 0:

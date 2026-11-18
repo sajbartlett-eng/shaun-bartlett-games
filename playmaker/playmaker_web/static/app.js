@@ -870,14 +870,22 @@ function drawCov(c) {
   }
   // each overloaded defender: a mark on him, and a dashed line to each of the two threats he alone covers
   // (after the answer he stands where the answer puts him: drawn there, with a faint line from where he is now)
+  const labelled = new Set();
   for (const v of (covMap.overloads || [])) for (const xi of (v.xs || [v.x])) {
     const x = st.x[xi]; if (!x) continue;
     const at = after && covMap.placed && covMap.placed[xi] ? PM.sqXY(covMap.placed[xi]) : [x.x, x.y];
     const cx = px(at[0]) + S / 2, cy = py(at[1]) + S / 2;
     if (at[0] !== x.x || at[1] !== x.y) g.append(svg('line', { class: 'ovmove', x1: px(x.x) + S / 2, y1: py(x.y) + S / 2, x2: cx, y2: cy }));
     for (const th of v.threats) {
-      const q = PM.sqXY(th.sq);
-      g.append(svg('line', { class: 'ovline', x1: cx, y1: cy, x2: px(q[0]) + S / 2, y2: py(q[1]) + S / 2 }));
+      const q = PM.sqXY(th.sq), qx = px(q[0]) + S / 2, qy = py(q[1]) + S / 2;
+      g.append(svg('line', { class: 'ovline', x1: cx, y1: cy, x2: qx, y2: qy }));
+      // step 22: each line ends at the look it names ("O1's layup"), never at a blank ring
+      if (!labelled.has(th.sq)) {
+        labelled.add(th.sq);
+        const lb = svg('text', { class: 'ovlabel', x: qx, y: qy - S / 2 - 3, 'text-anchor': 'middle' });
+        lb.textContent = `O${th.o + 1}'s ${(COV_SHOT[th.shot] || th.shot).replace(/^an? /, '').replace(/ shot$/, '')}`;
+        g.append(lb);
+      }
     }
     g.append(svg('circle', { class: 'ovring', cx, cy, r: 22 }));
     const tx = svg('text', { class: 'ovmark', x: cx + 18, y: cy - 14 }); tx.textContent = '!'; g.append(tx);

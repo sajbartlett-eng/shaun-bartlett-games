@@ -1291,7 +1291,8 @@ class Game:
         if not level:
             return 0.0
         b = AG.profile(level)['time_budget_s'] * AG.SCALE['value']
-        return b * (0.4 if self.match_format == 'digital' else 1.0)
+        # step 22 (D-213): the setup gets the time it needs (the map's setup reads every placement against its answer)
+        return b * (8.0 if self.match_format == 'digital' else 1.0)
 
     def place(self, token, body):
         with self.lock:

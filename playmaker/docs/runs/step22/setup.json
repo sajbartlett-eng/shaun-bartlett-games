@@ -1,0 +1,81 @@
+{
+ "the hug (each defender next to his man)": {
+  "squares": [
+   "J10",
+   "D8",
+   "O8",
+   "B4",
+   "P2"
+  ],
+  "arrows": [
+   7,
+   7,
+   0,
+   5,
+   1
+  ],
+  "lasting": 20,
+  "before": 36,
+  "play": {
+   "mean": 24.0,
+   "low": 24.0,
+   "high": 24.0,
+   "ends": {
+    "shot": 16
+   }
+  }
+ },
+ "the packed paint (X4 and X5 in the key)": {
+  "squares": [
+   "I10",
+   "D8",
+   "O8",
+   "H4",
+   "J4"
+  ],
+  "arrows": [
+   7,
+   7,
+   0,
+   5,
+   1
+  ],
+  "lasting": 18,
+  "before": 27,
+  "play": {
+   "mean": 27.0,
+   "low": 27.0,
+   "high": 27.0,
+   "ends": {
+    "shot": 16
+   }
+  }
+ },
+ "the computer's own setup (the map's answer)": {
+  "squares": [
+   "J10",
+   "D8",
+   "O8",
+   "I6",
+   "P2"
+  ],
+  "arrows": [
+   7,
+   7,
+   0,
+   0,
+   1
+  ],
+  "lasting": 18,
+  "before": 27,
+  "play": {
+   "mean": 33.0,
+   "low": 33.0,
+   "high": 33.0,
+   "ends": {
+    "shot": 16
+   }
+  }
+ },
+ "seconds": 1165.6
+}
