@@ -1269,6 +1269,70 @@ the board draws a blocked arrow dashed with a "blocked" mark. Cases these lines 
 "the screen stops the path around it", are marked for Shaun in the step 22b report. · Source: Shaun, 18 Nov 2026 ·
 **Ruled; built in step 22b.**
 
+**D-217 (addendum).** Shaun, 18 Nov 2026: the four screen cases of the step 22b report stand as read. In particular, a
+screened defender with his diagonal arrow blocked walls no drive at all, because a wall needs one arrow to catch and the
+other to bar: a screened defender can't wall the ball handler, which is what a ball screen does. · **Ruled.**
+
+**D-218. The defence's two responsibilities (Shaun's model).** Shaun: "The defender's primary responsibility is their
+assigned player. Contain their player's options within an acceptable shot quality that evolves throughout the
+possession. If your player is a poor shooter, passer, dribbler, then you care less about containing those things. Your
+secondary objective is to protect high value zones of the court with poor coverage. Regardless of whether that position
+can be reached in the next phase or actions. And it is ranked by the average shot quality of all the offensive players
+compared to the square that would be left with no zone of influence. You are therefore deciding the pull between high
+value squares with little to no zone of influence cover, and your player's immediate threat this phase. A beaten
+defender loses their defender responsibility only once another defender takes that responsibility, so what they do
+naturally is target the highest value gap in the defensive zone of influence, unless they pick up a new defensive
+responsibility on the way." "A beaten defender only stops the chase once another defender takes responsibility or
+switches responsibility for that player. At that point a defender with low to no player responsibility moves to fill
+their new role while using their arrow directions to limit passing and driving lanes as normal. So they recalculate. I
+must chase my assignment if no other defender takes the responsibility. Or if it is switched, I move to my new location
+as quickly and as effectively as possible using my arrows to influence offensive options." "The Green zone naturally has
+a very high, unguarded shot quality value, mid range lower and long range 2 lower until the 3 point line bumps value
+back up. This naturally creates the pull of these zones stronger." "My player has the ball, he's X% my responsibility vs
+ZOI gap coverage, up to 100% if a high value shot is available. A poor shooter might demand only 40% coverage at the 3
+point line vs responsibility to cover the high value green squares that aren't protected. That all governs position.
+The arrow direction then restricts offensive ball movement through passes or ballhandler movement to higher overall
+weightings between those two aspects." Built as the defence's reading of a position, in both engines, in points from
+the cards and the rules: (a) each attacker's best look as the defence stands, before it answers (value times reach by
+the rules' chances; a wall he can only pass by winning a Dribble is priced at the Dribble's chance); (b) every
+square's gap: the average of the five attackers' best open shot there, less what the best-placed defender's contest
+takes off as he stands; a square nobody influences keeps its full value, whether or not anyone can reach it this
+phase. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-219. One list, settled across the team; it replaces ranked drivers b to d.** The attackers' looks and the squares'
+gaps go into one list, largest first. The defence places all five together to leave the lowest highest item, then the
+next, and so on (compared best first: no weights, no sums, no set percentages); efficiency (the fewest actions) breaks
+any tie left; the offence reads the same list and plays to raise it. The settlement never turns on the order the
+defenders are listed in (ties go to the square, the arrow, the card, never the defender's number). Used in setup (all
+five over every square and arrow, nobody starting anywhere), in the map's own answer, in the turns the search reads as
+level, and in the coverage view. **A choice Shaun's words didn't settle, made on the checks and marked for him:** what
+leads the search's reading at the end of a line. With step 20's lasting gap leading (D-204), the defence drifted off the
+shape its own setup chose and swapped men when nothing had changed; with the list's largest item leading, it held. So
+the list leads (`eval.map_lead: "list"`; `"gap"` puts the lasting gap back). The lasting gap is still read and shown.
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b; the lead is awaiting Shaun's playtest.**
+
+**D-220. Assignments, chasing and switching.** Every defender has one assigned attacker, from setup's matchups. He keeps
+him until the reading hands that man to another defender, which it does only after the defence's own actions and only
+when it leaves strictly less uncovered; on a tie everyone keeps his man. Shaun: "There is also the disadvantages of
+switching defenders. Moving them reduces your zone of influence. So switching defenders regularly weakens the defence.
+Switching has to improve the overall defensive coverage to be worth it." A switch, like any repositioning, is judged
+after the moves it takes: the search plays the real movements (the tokens, the Move used, the rushed rolls, the arrow a
+Sprint leaves) before the list is read. Among turns that read level, the defence takes the one where each defender
+alone contains his own man best (his first responsibility: this is what makes a beaten defender chase), then the one
+with no switch, then the fewest actions. The coverage view names it: "X1 beaten: chasing O1." "Switch: X4 takes O1; X1
+picks up O5." "X2 sags off O2 to cover the squares around I4." · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-221. Arrows are settled with positions.** Each placement the settlement reads in full is read with all eight
+arrows, by the rules (the walls an arrow makes, the lanes it can jump, the contest it squares), never by a named
+direction. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-222. The map counts the reaction's own off balance.** A choice Shaun's words didn't settle, marked for him. A
+contest a defender reaches standing or by one Move finds him set; one he needs a Quick Step or a Sprint for finds him
+off balance by the rules (D-185: every roll 2 lower). The map used to read both the same, so a defender six squares
+away covered a shot as well as one beside the shooter, and the settlement packed the paint. The map now applies the
+rule, in both engines; it is no rule or card change (D-190). It moves the lasting gap's numbers too (Shaun's board:
+18 before, 24 now). · Source: step 22b, for Shaun · **Built; awaiting Shaun.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

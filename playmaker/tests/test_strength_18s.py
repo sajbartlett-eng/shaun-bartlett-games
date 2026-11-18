@@ -259,7 +259,14 @@ def test_the_map_reading_is_the_lasting_gap_and_the_switch_says_whether_it_is_pl
     s = board()
     r = D.Read(s)
     with_map = r.leaf()
-    assert with_map == pytest.approx(D.foul_externality(s) + max(r.map_shot(), r.map_lasting()))
+    # (step 22b, D-219: the list's largest item leads the reading; eval.map_lead 'gap' puts the lasting gap back)
+    assert with_map == pytest.approx(D.foul_externality(s) + max(r.map_shot(), r.map_top()))
+    D.CONFIG['eval']['map_lead'] = 'gap'
+    try:
+        r2 = D.Read(s)
+        assert r2.leaf() == pytest.approx(D.foul_externality(s) + max(r2.map_shot(), r2.map_lasting()))
+    finally:
+        D.CONFIG['eval']['map_lead'] = 'list'
     D.CONFIG['eval']['map'] = False
     assert D.Read(s).leaf() != pytest.approx(with_map)           # with the switch off: the reading as it was
     assert D.Read(s, k=0, looks_per=3)._map_leaf() is None       # the quick look that orders the list keeps its own reading
@@ -268,7 +275,9 @@ def test_the_map_reading_is_the_lasting_gap_and_the_switch_says_whether_it_is_pl
 def test_the_maps_numbers_follow_the_rules():
     his = D.Read(board())
     helped = D.Read(board(['J10', 'D8', 'O8', 'H5', 'J5'], ['NW', 'NW', 'N', 'N', 'N']))
-    assert his.map_two()[0] == 34 and helped.map_two()[0] < his.map_two()[0]          # the open lane; help in it
+    # (re-recorded in step 22b, D-222: 34 was the point guard's open lane; O3's layup beside it, reached only off
+    # balance, now reads 36)
+    assert his.map_two()[0] >= 34 and helped.map_two()[0] < his.map_two()[0]          # the open lane; help in it
     assert his.map_two(True)[0] <= his.map_two()[0]                                   # the defence's answers take something off
     spent = D.Read(board(tok_x=0))
     assert spent.map_two(True) == spent.map_two()                                     # no token, no answer

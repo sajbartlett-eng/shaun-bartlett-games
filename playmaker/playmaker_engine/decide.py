@@ -261,6 +261,52 @@ def _cmap_cached(rules, frm, arrow, qs, can_move, qs_left, mode=0):
 # the defence's tokens) and then the reaction's two actions, fresh. Bodies and arrows that bar his way count as they
 # stand. No square, distance or kind of move is named.
 
+_NOSET = (INF,) * 6
+
+
+@lru_cache(maxsize=200000)
+def _cmap2(rules, q, a, qs, mode):
+    """Step 22b (engine.js cm2Cached, D-222): the reaction's own off balance. c -> (the contest row within the reaction,
+    the row he is set for (standing, or one Move), the kinds within the reaction's two actions as bits, those of them
+    he is set for as bits). A Contest reached by a Quick Step or a Sprint finds him off balance, by the rules (D-185)."""
+    full = _cmap_cached(rules, q, a, qs, True, 1, mode)
+    setr = _cmap_cached(rules, q, a, qs, True, 0, mode)
+    out = {}
+    for c, row in full.items():
+        st = setr.get(c) or _NOSET
+        fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
+        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+        out[c] = (tuple(row), tuple(st), fm, sm)
+    return out
+
+
+@lru_cache(maxsize=None)
+def _any_arrow_cmap2(rules, q, qs, mode):
+    """engine.js anyArrow2: a defender on q whichever way he faces (he chose his arrow when a Move took him there)."""
+    acc = {}
+    for a in range(8):
+        for c, (row, st, _fm, _sm) in _cmap2(rules, q, a, qs, mode).items():
+            cur = acc.get(c)
+            if cur is None:
+                acc[c] = [list(row), list(st)]
+            else:
+                for k in range(6):
+                    if row[k] < cur[0][k]:
+                        cur[0][k] = row[k]
+                    if st[k] < cur[1][k]:
+                        cur[1][k] = st[k]
+    out = {}
+    for c, (row, st) in acc.items():
+        fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
+        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+        out[c] = (tuple(row), tuple(st), fm, sm)
+    return out
+
+
+_GAP = {}                  # step 22b: the zone gaps' table, a context at a time (engine.js gapInfo)
+_VMAP = {}                 # step 22b: the map's Contest values, a context at a time
+
+
 @lru_cache(maxsize=None)
 def _any_arrow_cmap(rules, q, qs, mode):
     """A defender standing on q at the start of a phase, whichever way he faces: c -> [fewest reaction actions for each
@@ -556,17 +602,34 @@ class Read:
             return contest_map(self.rules, {}, {frm: {a: 0}}, stance_mode(s, d))
         return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left, stance_mode(s, d))
 
-    def _vals2(self, look, d, row):
-        """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions."""
+    def _vals2(self, look, d, row, setrow=None):
+        """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions. setrow (step
+        22b, D-222): the contest row he is set for; a kind outside it is contested off balance."""
         keep, self.react_moves = self.react_moves, 2
         self._phase_away = True                    # D-151: the rushed state doesn't carry over the phase's end
         try:
-            return self._vals(look, d, row)
+            return self._vals(look, d, row, setrow=setrow)
         finally:
             self.react_moves = keep
             self._phase_away = False
 
-    def _vals(self, look, d, row, moves=None, dflags=None):
+    def _vals_map(self, look, d, pair):
+        """The map's Contest of a look by defender d (pair: _cmap2's value for the look's square)."""
+        if pair is None or not pair[2]:
+            return None
+        # (a phase away the Contest turns only on the cards, the square and the kinds he reaches: kept a context at a time)
+        ctx = self.s.ctx
+        memo = _VMAP.get(ctx)
+        if memo is None:
+            if len(_VMAP) > 8:
+                _VMAP.clear()
+            memo = _VMAP[ctx] = {}
+        key = (look.i, look.c, look.rushed, d, pair[2], pair[3])
+        if key not in memo:
+            memo[key] = self._vals2(look, d, pair[0], pair[1]) or None
+        return memo[key]
+
+    def _vals(self, look, d, row, moves=None, dflags=None, setrow=None):
         """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
         at most that many of the reaction's movements; 0 = from where he stands). dflags (step 18e, the open list's
         re-read): the defender's control state after his action (rushed where he stands, his Move used), in place of
@@ -596,7 +659,7 @@ class Read:
             r = card.shot(t)
             # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
             # movement itself; the defenders' own rushed states still don't carry over)
-            cut = RC.control_cut(rules, t) if (control or (away and look.rushed)) else 0
+            cut = RC.control_cut(rules, t) if (control or (away and look.rushed) or setrow is not None) else 0
             if cut and look.rushed:
                 r -= cut
             best = None
@@ -610,7 +673,7 @@ class Read:
                 con = self.dcards[d].con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0)
                 if rules.floor_contest_zero:
                     con = max(0, con)
-                if cut and (d_stand if n == 0 else d_moved):
+                if cut and ((d_stand if n == 0 else d_moved) if setrow is None else setrow[k] > 1):
                     con = max(0, con - cut)              # a rushed Contest: reduced; no extra foul roll (D-154)
                 if position:
                     con = max(RC.CONTEST_FLOOR, con)     # D-193
@@ -636,7 +699,7 @@ class Read:
                     # D-194: the full rating from in front with the arrow on him, on every shot; else 3 less
                     full = position and not KINDS[k][1]
                     con = self.dcards[d].con(t) - (0 if full else RC.SOFT_CONTEST) - (RC.FAR_CONTEST_PENALTY if KINDS[k][0] else 0)
-                    if cut and (d_stand if n == 0 else d_moved):
+                    if cut and ((d_stand if n == 0 else d_moved) if setrow is None else setrow[k] > 1):
                         con -= cut
                     if position:
                         con = max(RC.CONTEST_FLOOR, con)  # D-193
@@ -1142,7 +1205,8 @@ class Read:
         from .state import ZERO_COUNTS
         s_next = s.with_(screens=(), tok_x=RC.TOKENS_PER_PHASE, moved_x=0, qs_x=0, lock_x=0, rush_x=0, beaten=(), cnt=ZERO_COUNTS)
         mode = 0 if rules.zone == 'off' else 1
-        cms = [(_cmap_cached(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, True, 1, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
+        cms = [(_cmap2(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
+        self._mcms = cms
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
         for a in range(5):
             home = s.o[a]
@@ -1157,7 +1221,21 @@ class Read:
                             for q in movement_dests(s, 'O', a, kind, rules):
                                 one.setdefault(q, 1)
                 for q in list(one) + (two_actions(s, a, one) if s.tok_o > 0 else []):
-                    starts.append((q, 1.0, False, one.get(q, 2)))
+                    starts.append((q, 1.0, False, one.get(q, 2), False))
+                # step 22b (engine.js covBuild, D-218): a wall he can only pass by winning a Dribble, at its chance
+                if s.tok_o >= 2 and self._dribble_ok()[0]:
+                    for j in range(5):
+                        if not B.on_board(s.x[j]) or not B.adjacent(s.x[j], home) or any(b[1] == j for b in s.beaten):
+                            continue
+                        p = self._beat_chance(j)
+                        if not p > 0:
+                            continue
+                        sb = s.with_(beaten=tuple(s.beaten) + ((a, j),))
+                        for kind in ('move', 'qs', 'sprint'):
+                            if can_move_kind(sb, 'O', a, kind):
+                                for q in movement_dests(sb, 'O', a, kind, rules):
+                                    if q not in one:
+                                        starts.append((q, p, False, 2, True))
             elif s.tok_o > 0 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
                 # step 22 (engine.js covBuild, D-210): a receiver two movements away (his cut) catches and shoots there
                 for q, n in attacker_reach(s, a).items():
@@ -1165,18 +1243,19 @@ class Read:
                         continue
                     p = cov_pass(s, a, q)
                     if p > 0:
-                        starts.append((q, p, n == 2, n + 1))      # (n0, step 22b: his movements and the pass)
+                        starts.append((q, p, n == 2, n + 1, False))      # (n0, step 22b: his movements and the pass)
             mates = {s.o[k] for k in range(5) if k != a}
             lines = capture_lines(s_next, a) if rules.zone != 'off' else []
             card, qs = s.ctx.off[a], s.ctx.off[a].qs
-            best, start, acts = {}, {}, {}
-            for q0, pr, set_only, n0 in starts:
+            best, start, acts, drb = {}, {}, {}, {}
+            for q0, pr, set_only, n0, dr in starts:
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
                 if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
                     best[q0, False] = pr           # a set shot from where the phase finds him
                     start[q0, False] = q0
                     acts[q0, False] = n0
+                    drb[q0, False] = dr
                 if set_only:
                     continue
                 for p, rushed in _shot_paths(q0, qs, rules, no_rim):
@@ -1190,6 +1269,7 @@ class Read:
                     best[c, rushed] = pr
                     start[c, rushed] = q0
                     acts[c, rushed] = n0
+                    drb[c, rushed] = dr
             for (c, rushed), pr in best.items():
                 z = B.zone(c)
                 lk = Look(a, c, 'later', 1.0, False)
@@ -1198,11 +1278,11 @@ class Read:
                 pts = RC.ZONE_POINTS[z]
                 vals = [None] * 5
                 for d in range(5):
-                    row = cms[d].get(c) if cms[d] is not None else None
-                    vals[d] = (self._vals2(lk, d, row) or None) if row is not None else None
+                    vals[d] = self._vals_map(lk, d, cms[d].get(c)) if cms[d] is not None else None
                 opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
-                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals, start[c, rushed], acts[c, rushed]]
+                lc = 0 if drb[c, rushed] else 5     # what not getting there costs: a lost pass -5, a lost Dribble nothing
+                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc]
         return out
 
     @staticmethod
@@ -1261,8 +1341,8 @@ class Read:
                 for q, a in cands:
                     if q in taken:
                         continue
-                    cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
-                    if cm.get(c0) is None:
+                    cm = _any_arrow_cmap2(rules, q, qs, mode) if a < 0 else _cmap2(rules, q, a, qs, mode)
+                    if cm.get(c0) is None or not cm[c0][2]:
                         continue
                     after = []
                     for n, key in enumerate(head):
@@ -1270,9 +1350,8 @@ class Read:
                         if key[1] == q:
                             e = float('-inf')
                         else:
-                            row = cm.get(key[1])
-                            mine = (self._vals2(lk, d, row) or None) if row is not None else None
-                            e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * 5
+                            mine = self._vals_map(lk, d, cm.get(key[1]))
+                            e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * opts[key][8]
                         if n == 0 and not e < e0 - 1e-9:
                             after = None
                             break
@@ -1286,7 +1365,7 @@ class Read:
                 break
             _, d, q, a = best
             qs = s.ctx.dfn[d].qs
-            cm = _any_arrow_cmap(rules, q, qs, mode) if a < 0 else _cmap_cached(rules, q, a, qs, True, 1, mode)
+            cm = _any_arrow_cmap2(rules, q, qs, mode) if a < 0 else _cmap2(rules, q, a, qs, mode)
             moved[d] = True
             tok -= 1
             steps += 1
@@ -1295,10 +1374,9 @@ class Read:
                 if key[1] == q:
                     o[0], o[2] = 0.0, float('-inf')
                     continue
-                row = cm.get(key[1])
-                o[5][d] = (self._vals2(o[3], d, row) or None) if row is not None else None
+                o[5][d] = self._vals_map(o[3], d, cm.get(key[1]))
                 o[1] = self._map_weak(o[3], o[4], o[5])
-                o[2] = o[0] * o[1] - (1 - o[0]) * 5 if o[0] > 0 else float('-inf')
+                o[2] = o[0] * o[1] - (1 - o[0]) * o[8] if o[0] > 0 else float('-inf')
         return steps
 
     # ---- step 20 (Shaun, 17 Nov 2026): the lasting gap (engine.js lasting, lastingOf) ----
@@ -1346,13 +1424,7 @@ class Read:
                 if u > v + 1e-9:
                     return False
             return False
-        root_o = []
-        for key in sorted(opts):
-            o = opts[key]
-            if not o[0] > 0:
-                continue
-            top, tt, cov, nxt = self._map_cov(o[3], o[4], o[5])
-            root_o.append(dict(key=key, src=o, r=o[0], vals=list(o[5]), e=o[2], w=top, t=tt, cover=cov, next=nxt))
+        root = self._lg_root(opts)
 
         def head_of(st):
             return sorted((x for x in st['o'] if x['r'] > 0), key=lambda x: (-x['e'], x['key']))[:HEAD]
@@ -1376,33 +1448,14 @@ class Read:
                 for n, o in enumerate(opens):
                     if o > top:
                         top, tt = o, n
-                looks.append(dict(x=x, mask=mask, wd=x['r'] * top - (1 - x['r']) * 5, tt=tt))
+                looks.append(dict(x=x, mask=mask, wd=x['r'] * top - (1 - x['r']) * x['src'][8], tt=tt))
 
             return cover_groups([dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
                                       order=(-z['x']['e'], z['x']['key'])) for z in looks])
 
-        def cover_mask(x):
-            lk, opens, mask = x['src'][3], x['src'][4], 0
-            for d in range(5):
-                vd = x['vals'][d]
-                if vd and any(ty in vd and vd[ty] < opens[n] for n, ty in enumerate(lk.types)):
-                    mask |= 1 << d
-            return mask
-
-        def doubles(head):                 # engine.js lgDoubles (step 22b, D-215 d)
-            seen, n = set(), 0
-            for x in head:
-                if x['key'][0] in seen:
-                    continue
-                seen.add(x['key'][0])
-                if bin(cover_mask(x)).count('1') >= 2:
-                    n += 1
-            return n
-
         def score(st):
             head = head_of(st)
             worths = [x['e'] for x in head]
-            st['rs'], st['dbl'] = [x['r'] for x in head], doubles(head)
             open0 = worths[0] if worths else 0.0
             ov = [v for v in overloads(st) if len(v['ds']) == 1 or v['value'] >= open0 - 1e-9]
             L = worths[0] if worths else 0.0
@@ -1412,30 +1465,25 @@ class Read:
             st['L'], st['worths'], st['ov'] = L, worths, ov
 
         def better(a, b):
+            """engine.js lgBetter (step 22b, D-219): the lasting gap; then the list (what it leaves uncovered as it then
+            stands, largest first); then efficiency, the fewest actions; then the moves' own order."""
             if a['L'] < b['L'] - 1e-9:
                 return True
             if a['L'] > b['L'] + 1e-9:
                 return False
-            # step 22b (D-215): (b) the offence's chances to its best looks, (c) the defence's actions, (d) doubled cover
-            if less(a['rs'], b['rs']):
+            la, lb = self._lg_list(a), self._lg_list(b)
+            if less(la, lb):
                 return True
-            if less(b['rs'], a['rs']):
+            if less(lb, la):
                 return False
             if len(a['moves']) != len(b['moves']):
                 return len(a['moves']) < len(b['moves'])
-            if a['dbl'] != b['dbl']:
-                return a['dbl'] < b['dbl']
-            if less(a['worths'], b['worths']):
-                return True
-            if less(b['worths'], a['worths']):
-                return False
             for ma, mb in zip(a['moves'], b['moves']):
-                if ma != mb:
-                    return ma < mb
+                ka, kb = (ma[1], ma[2], s.x[ma[0]]), (mb[1], mb[2], s.x[mb[0]])
+                if ka != kb:
+                    return ka < kb
             return False
         cmp = lambda u, v: -1 if better(u, v) else 1 if better(v, u) else 0
-        taken = set(s.o) | set(s.x)
-        root = dict(moves=[], moved=[False] * 5, taken=taken, tok=s.tok_x, o=root_o)
         score(root)
         best, frontier = root, [root]
         for _depth in range(5):
@@ -1460,9 +1508,8 @@ class Read:
                         if x['key'][1] == q:
                             e = inf
                         else:
-                            row = cm.get(x['key'][1])
-                            mine = (self._vals2(x['src'][3], d, row) or None) if row is not None else None
-                            e = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * 5
+                            mine = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
+                            e = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * x['src'][8]
                         if e < x['e'] - 1e-9:
                             touched = True
                         after.append(e)
@@ -1480,42 +1527,27 @@ class Read:
                     qs = s.ctx.dfn[d].qs
                     free, fixed = defender_map(s, d, exact=True)
                     if can_move:                       # a Move on the spot: a new arrow
-                        offer(d, s.x[d], -1, _any_arrow_cmap(rules, s.x[d], qs, mode))
+                        offer(d, s.x[d], -1, _any_arrow_cmap2(rules, s.x[d], qs, mode))
                     for q, n in free.items():
                         if n == 1 and q not in st['taken']:
-                            offer(d, q, -1, _any_arrow_cmap(rules, q, qs, mode))
+                            offer(d, q, -1, _any_arrow_cmap2(rules, q, qs, mode))
                     for q, arrs in fixed.items():
                         if q in st['taken']:
                             continue
                         for a, n in arrs.items():
                             if n == 1:
-                                offer(d, q, a, _cmap_cached(rules, q, a, qs, True, 1, mode))
+                                offer(d, q, a, _cmap2(rules, q, a, qs, mode))
 
                 def ccmp(u, v):
                     if less(u['after'], v['after']):
                         return -1
                     if less(v['after'], u['after']):
                         return 1
-                    return -1 if (u['d'], u['q'], u['a']) < (v['d'], v['q'], v['a']) else 1 if (u['d'], u['q'], u['a']) > (v['d'], v['q'], v['a']) else 0
+                    ku, kv = (u['q'], u['a'], s.x[u['d']]), (v['q'], v['a'], s.x[v['d']])    # (never the defender's number, D-219)
+                    return -1 if ku < kv else 1 if ku > kv else 0
                 cands.sort(key=functools.cmp_to_key(ccmp))
                 for c in cands[:WIDE]:
-                    d, q, a, cm = c['d'], c['q'], c['a'], c['cm']
-                    o2 = []
-                    for x in st['o']:
-                        y = dict(x)
-                        y['vals'] = list(x['vals'])
-                        if x['key'][1] == q:
-                            y['r'], y['e'] = 0.0, inf
-                            o2.append(y)
-                            continue
-                        row = cm.get(x['key'][1])
-                        y['vals'][d] = (self._vals2(x['src'][3], d, row) or None) if row is not None else None
-                        y['w'], y['t'], y['cover'], y['next'] = self._map_cov(x['src'][3], x['src'][4], y['vals'])
-                        y['e'] = y['r'] * y['w'] - (1 - y['r']) * 5 if y['r'] > 0 else inf
-                        o2.append(y)
-                    moved = list(st['moved'])
-                    moved[d] = True
-                    ch = dict(moves=st['moves'] + [(d, q, a)], moved=moved, taken=st['taken'] | {q}, tok=st['tok'] - 1, o=o2)
+                    ch = self._lg_child(st, c['d'], c['q'], c['a'], c['cm'])
                     score(ch)
                     nexts.append(ch)
             if not nexts:
@@ -1524,7 +1556,293 @@ class Read:
             frontier = nexts[:BEAM]
             if better(frontier[0], best):
                 best = frontier[0]
+        best['root'] = root
         return best
+
+    # ---- step 22b, continued (D-218 to D-222, Shaun, 18 Nov 2026): the defence's two responsibilities (engine.js) ----
+    def _lg_root(self, opts):
+        """engine.js lgRoot: the map as it stands, as a state the answers and the settlement work on."""
+        s = self.s
+        o = []
+        for key in sorted(opts):
+            src = opts[key]
+            if not src[0] > 0:
+                continue
+            top, tt, cov, nxt = self._map_cov(src[3], src[4], src[5])
+            o.append(dict(key=key, src=src, r=src[0], vals=list(src[5]), e=src[2], w=top, t=tt, cover=cov, next=nxt))
+        return dict(moves=[], moved=[False] * 5, taken=set(s.o) | set(s.x), tok=s.tok_x, o=o, cms=list(self._mcms), xs=list(s.x))
+
+    def _lg_child(self, st, d, q, a, cm):
+        """engine.js lgChild: the state with defender d on q (his Contest from there cm)."""
+        inf = float('-inf')
+        o2 = []
+        for x in st['o']:
+            y = dict(x)
+            y['vals'] = list(x['vals'])
+            if x['key'][1] == q:
+                y['r'], y['e'] = 0.0, inf
+                o2.append(y)
+                continue
+            y['vals'][d] = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
+            y['w'], y['t'], y['cover'], y['next'] = self._map_cov(x['src'][3], x['src'][4], y['vals'])
+            y['e'] = y['r'] * y['w'] - (1 - y['r']) * x['src'][8] if y['r'] > 0 else inf
+            o2.append(y)
+        moved = list(st['moved'])
+        moved[d] = True
+        cms = list(st['cms'])
+        cms[d] = cm
+        xs = list(st['xs'])
+        xs[d] = q
+        return dict(moves=st['moves'] + [(d, q, a)], moved=moved, taken=st['taken'] | {q}, tok=st['tok'] - 1, o=o2, cms=cms, xs=xs)
+
+    def _gap_info(self):
+        """engine.js gapInfo: every square a shot may go up from, the average over the five attackers of his best open
+        shot there (the cards), and each attacker's look there."""
+        ctx = self.s.ctx
+        g = _GAP.get(ctx)
+        if g is None:
+            no_rim = RC.rim_shot_barred(self.rules)
+            sq = [q for q in ((x, y) for x in range(B.W) for y in range(1, B.H + 1))
+                  if B.zone(q) in RC.ZONE_POINTS and not (no_rim and q == RC.RIM)]
+            full, looks = [], []
+            for q in sq:
+                z = B.zone(q)
+                pts, types = RC.ZONE_POINTS[z], RC.ZONE_SHOTS[z]
+                row, tot = [], 0.0
+                for a in range(5):
+                    lk = Look(a, q, 'later', 1.0, False)
+                    lk.types = types
+                    lk.rushed = False
+                    row.append(lk)
+                    tot += max(pts * ctx.off[a].shot(ty) for ty in types)
+                full.append(tot / 5)
+                looks.append(row)
+            if len(_GAP) > 8:
+                _GAP.clear()
+            g = _GAP[ctx] = dict(sq=sq, full=full, looks=looks, red={}, idx={q: k for k, q in enumerate(sq)})
+        return g
+
+    def _gap_red(self, g, d, k, pair):
+        """engine.js gapRed: square k with defender d's Contest on it: the average shooter's best shot there."""
+        key = (d, k, pair[2], pair[3])
+        v = g['red'].get(key)
+        if v is None:
+            q = g['sq'][k]
+            pts = RC.ZONE_POINTS[B.zone(q)]
+            tot = 0.0
+            for a in range(5):
+                lk = g['looks'][k][a]
+                vals = self._vals2(lk, d, pair[0], pair[1]) or {}
+                card = self.s.ctx.off[a]
+                top = None
+                for ty in lk.types:
+                    o = pts * card.shot(ty)
+                    w = vals[ty] if ty in vals and vals[ty] < o else o
+                    if top is None or w > top:
+                        top = w
+                tot += top
+            v = g['red'][key] = tot / 5
+        return v
+
+    def _gap_vec(self, g, cms, xs):
+        """engine.js gapVec: every square's gap, the defence as given (each defender's Contest and square)."""
+        out = []
+        on = set(xs)
+        full = g['full']
+        for k, q in enumerate(g['sq']):
+            if q in on:
+                out.append(0.0)
+                continue
+            v = full[k]
+            for d in range(5):
+                cm = cms[d]
+                if cm is None:
+                    continue
+                pair = cm.get(q)
+                if pair is not None and pair[2]:
+                    u = self._gap_red(g, d, k, pair)
+                    if u < v:
+                        v = u
+            out.append(v)
+        return out
+
+    def _lg_list(self, st):
+        """engine.js lgList: the one list of things to cover: each attacker's best look as the defence stands and
+        every square's gap, largest first."""
+        if 'list' not in st:
+            g = self._gap_info()
+            thr = [0.0] * 5
+            for x in st['o']:
+                if x['r'] > 0 and x['e'] > thr[x['key'][0]]:
+                    thr[x['key'][0]] = x['e']
+            gv = self._gap_vec(g, st['cms'], st['xs'])
+            st['thr'], st['gaps'] = thr, gv
+            st['list'] = sorted(thr + gv, reverse=True)
+        return st['list']
+
+    def settle_moves(self, opts):
+        """engine.js settleMoves (items 3 and 4): the one or two movements of this defence turn that leave the least
+        on the list, by the quick re-read: the most valuable uncovered item is claimed first, by whoever covers it
+        best; then the next. Only the movement each defender has left, one each, within the tokens. -> [(d, q, arrow or
+        -1 for a Move)]."""
+        s, rules = self.s, self.rules
+        mode = 0 if rules.zone == 'off' else 1
+        inf = float('-inf')
+
+        def less(x, y):
+            for k in range(max(len(x), len(y))):
+                u = x[k] if k < len(x) else inf
+                v = y[k] if k < len(y) else inf
+                if u < v - 1e-9:
+                    return True
+                if u > v + 1e-9:
+                    return False
+            return False
+        out = []
+        st = self._lg_root(opts)
+        g = self._gap_info()
+        for _round in range(2):
+            if st['tok'] <= 0:
+                break
+            base = self._lg_list(st)
+            thr, gaps = st['thr'], st['gaps']
+            by_a = [[] for _ in range(5)]
+            for x in st['o']:
+                if x['r'] > 0:
+                    by_a[x['key'][0]].append(x)
+            split = {}
+
+            def split_of(d):
+                if d not in split:
+                    free, held = [], []
+                    for a in range(5):
+                        f, h = [], []
+                        for x in by_a[a]:
+                            if x['vals'][d]:
+                                ewo = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, None)[0] - (1 - x['r']) * x['src'][8]
+                                h.append((ewo, x))
+                            else:
+                                f.append(x)
+                        f.sort(key=lambda x: -x['e'])
+                        h.sort(key=lambda z: -z[0])
+                        free.append(f)
+                        held.append(h)
+                    split[d] = (free, held)
+                return split[d]
+
+            def threat(a, d, q, cm):
+                free, held = split_of(d)
+
+                def re(x):
+                    mine = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
+                    return x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * x['src'][8]
+                best = 0.0
+                for x in free[a]:
+                    if x['e'] <= best:
+                        break
+                    c = x['key'][1]
+                    if c == q:
+                        continue
+                    pair = cm.get(c)
+                    if pair is None or not pair[2]:
+                        best = x['e']
+                        break
+                    e = re(x)
+                    if e > best:
+                        best = e
+                for ewo, x in held[a]:
+                    if ewo <= best:
+                        break
+                    c = x['key'][1]
+                    if c == q:
+                        continue
+                    pair = cm.get(c)
+                    e = re(x) if (pair is not None and pair[2]) else ewo
+                    if e > best:
+                        best = e
+                return best
+
+            def qlist(d, q, cm):
+                rem, add = [], []
+                for a in range(5):
+                    t = threat(a, d, q, cm)
+                    if abs(t - thr[a]) > 1e-9:
+                        rem.append(thr[a])
+                        add.append(t)
+                old = st['cms'][d]
+                ks = set()
+                if old is not None:
+                    ks.update(g['idx'][c] for c, pair in old.items() if pair[2] and c in g['idx'])
+                ks.update(g['idx'][c] for c, pair in cm.items() if pair[2] and c in g['idx'])
+                for c in (q, st['xs'][d]):
+                    if c in g['idx']:
+                        ks.add(g['idx'][c])
+                for k in ks:
+                    sq_ = g['sq'][k]
+                    v = g['full'][k]
+                    if sq_ == q:
+                        v = 0.0
+                    else:
+                        for e in range(5):
+                            if e != d and st['xs'][e] == sq_:
+                                v = 0.0
+                                break
+                            c = cm if e == d else st['cms'][e]
+                            if c is None:
+                                continue
+                            pair = c.get(sq_)
+                            if pair is not None and pair[2]:
+                                u = self._gap_red(g, e, k, pair)
+                                if u < v:
+                                    v = u
+                    if abs(v - gaps[k]) > 1e-9:
+                        rem.append(gaps[k])
+                        add.append(v)
+                if not rem:
+                    return base
+                lst = list(base)
+                for v in rem:
+                    lst.remove(v)
+                lst.extend(add)
+                lst.sort(reverse=True)
+                return lst
+            best = None
+            for d in range(5):
+                if st['moved'][d] or not B.on_board(s.x[d]):
+                    continue
+                can_move, qs_left = _caps(s, 'X', d)
+                if not can_move and qs_left <= 0:
+                    continue
+                qs = s.ctx.dfn[d].qs
+                free, fixed = defender_map(s, d, exact=True)
+                cands = []
+                if can_move:
+                    cands.append((s.x[d], -1, _any_arrow_cmap2(rules, s.x[d], qs, mode)))
+                for q, n in free.items():
+                    if n == 1 and q not in st['taken']:
+                        cands.append((q, -1, _any_arrow_cmap2(rules, q, qs, mode)))
+                for q, arrs in fixed.items():
+                    if q in st['taken']:
+                        continue
+                    for a, n in arrs.items():
+                        if n == 1:
+                            cands.append((q, a, _cmap2(rules, q, a, qs, mode)))
+                for q, a, cm in cands:
+                    lst = qlist(d, q, cm)
+                    if lst is base or not less(lst, base):
+                        continue
+                    if best is not None:
+                        if less(best[4], lst):
+                            continue
+                        if not less(lst, best[4]):       # level: a Move first, then the lower square, arrow, starting square
+                            if not (0 if a < 0 else 1, q, a, s.x[d]) < (0 if best[2] < 0 else 1, best[1], best[2], s.x[best[0]]):
+                                continue
+                    best = (d, q, a, cm, lst)
+            if best is None:
+                break
+            out.append((best[0], best[1], best[2]))
+            st = self._lg_child(st, best[0], best[1], best[2], best[3])
+        return out
 
     def map_lasting(self):
         """The lasting gap of this reading's position, read with what each side has left this phase (lasting_of, step 21);
@@ -1534,15 +1852,39 @@ class Read:
             self._lg = (g['L'] if g else None, list(g['best']['moves']) if g and g.get('best') else [], map_threats(g))
         return self._lg[0]
 
+    def map_top(self):
+        """Step 22b (engine.js Read.mapTop): the largest item on the list as the defence stands (top_of)."""
+        if getattr(self, '_top', False) is False:
+            self._top = top_of(self.s, self.cfg)
+        return self._top
+
     def map_threats(self):
         """Step 22: the map's threats as [(attacker, start square)] (the search's offence tries the moves that start them)."""
         self.map_lasting()
         return self._lg[2]
 
     def map_answer(self):
-        """Step 21: the moves of the defence's best answer, [(defender, square, arrow or -1)] (the search tries them)."""
+        """Step 21: the moves of the defence's best answer, [(defender, square, arrow or -1)] (the search tries them).
+        Step 22b (D-219): and the settlement's own one or two movements."""
         self.map_lasting()
-        return self._lg[1]
+        if getattr(self, '_lg_all', None) is None:
+            mv = list(self._lg[1])
+            for z in self.map_settle():
+                if z not in mv:
+                    mv.append(z)
+            self._lg_all = mv
+        return self._lg_all
+
+    def map_settle(self):
+        """engine.js Read.mapSettle: the settlement's movements for this defence turn (settle_moves)."""
+        if getattr(self, '_lg_settle', None) is None:
+            s = self.s
+            if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS or s.pending:
+                self._lg_settle = []
+            else:
+                r = Read(cov_off_fresh(s), cfg=self.cfg)
+                self._lg_settle = r.settle_moves(r.map_options())
+        return self._lg_settle
 
     def map_two(self, answered=False):
         """The map's two numbers for the search: the best any attacker can have at the start of the next phase and the
@@ -1592,13 +1934,14 @@ class Read:
             return None
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
+        lead = self.cfg.get('map_lead') == 'list'   # step 22b (D-219): the list's largest item leads, or step 20's lasting gap
         if s.pending:                              # step 21: a pass in the air, by the rules' chance of the catch
-            L = self.map_lasting()
+            L = self.map_top() if lead else self.map_lasting()
             return None if L is None else banked + L
         shot = self.map_shot()
         if not self.o_to_act and s.tok_o <= 0 and s.clock <= RC.PHASE_SECONDS:
             return banked + shot
-        L = self.map_lasting()
+        L = self.map_top() if lead else self.map_lasting()
         return banked + max(shot, L if L is not None else 0.0)
 
     def leaf(self):
@@ -2729,14 +3072,35 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
         gl = lasting_of(base, cfg, fresh=True) if s.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS else None
         L = p * (gc['L'] if gc else 0.0) + (1 - p) * ((gl['L'] if gl else 0.0) - 5)
         return dict(L=L, before=gc['before'] if gc else 0.0, ov=gc['ov'] if gc else 0, moves=gc['moves'] if gc else 0,
-                    best=gc['best'] if gc else None, opts=gc.get('opts') if gc else None, catch=p)
+                    best=gc['best'] if gc else None, opts=gc.get('opts') if gc else None, catch=p, list=gc.get('list') if gc else None)
     else:
         r = Read(cov_off_fresh(s), cfg=cfg)
     opts = r.map_options()
     best = r.lasting(opts)
     before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)
     three = three_seconds_owed(s) if not fresh else 0
-    return dict(L=best['L'] - 5 * three, before=before, ov=len(best['ov']), moves=len(best['moves']), best=best, opts=opts, three=three)
+    return dict(L=best['L'] - 5 * three, before=before, ov=len(best['ov']), moves=len(best['moves']), best=best, opts=opts, three=three,
+                list=r._lg_list(best['root']))
+
+
+def top_of(s, cfg=None):
+    """engine.js topOf (step 22b, D-219): the largest item on the list of things to cover, the defence as it stands and
+    before it answers; read as the lasting gap is (each side with what it has left; a pass in the air by the catch's
+    chance; the three-second rule's -5 counted). None in the last phase."""
+    if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS:
+        return None
+
+    def read(f):
+        r = Read(f, cfg=cfg)
+        return r._lg_list(r._lg_root(r.map_options()))[0]
+    if s.pending:
+        recv = s.pending[1]
+        base = s.with_(pending=None, approach=-1)
+        p = cov_pass(base, recv, base.o[recv])
+        tc = top_of(base.with_(ball=recv), cfg)
+        tl = read(cov_fresh(base)) if s.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS else 0.0
+        return p * (tc if tc is not None else 0.0) + (1 - p) * (tl - 5)
+    return read(cov_off_fresh(s)) - 5 * three_seconds_owed(s)
 
 
 def three_seconds_owed(s):
