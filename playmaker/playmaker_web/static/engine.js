@@ -5621,9 +5621,7 @@ const PMEngine = (() => {
       for (let e = 0; e < 5; e++) if (e !== d && ONB[s.x[e]] && alone[a][e] < open[a] - 0.5) H.push(e);
       return H.length ? H : null;
     };
-    const taken = p => p.some((a, d) => ONB[s.x[d]] && helpers(d, a) !== null);
     const vec = p => p.map((a, d) => alone[a][d]).sort(DESC);
-    const far = p => p.map((a, d) => (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 99)).sort(DESC);
     const info = { open, alone, without, helpers };
     if (prev && fixed) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
     // the takeover first: the man the help has is handed over, and his defender picks up what the helpers left: one
@@ -5645,25 +5643,33 @@ const PMEngine = (() => {
         return { perm, kept: false, takeover: { x: t.d, man: t.a, helpers: t.H, picks: left }, vec: vec(perm), ...info };
       }
     }
-    let best = null;
-    for (const pass of [0, 1]) {                       // (an assignment the help has already taken over is not gone back to)
-      for (const p of PERMS) {
-        if (pass === 0 && taken(p)) continue;
-        const v = vec(p);
-        if (best !== null) {
-          if (covLess(best.v, v)) continue;
-          if (!covLess(v, best.v)) {                   // level: the fewest changes, then the defenders nearest their men
-            const cu = prev ? p.filter((a, d) => a !== prev[d]).length : 0, cb = prev ? best.p.filter((a, d) => a !== prev[d]).length : 0;
-            if (cu > cb) continue;
-            if (cu === cb) { const fu = far(p), fb = far(best.p); if (!covLess(fu, fb)) continue; }
-          }
+    // Step 22d (D-230, Shaun, 18 Nov 2026): a defender's man is named by who is nearest: the attackers in order of the
+    // best look each has open, each takes the nearest free defender who takes something off that look (a tie: the one
+    // who leaves him less, then the lower square). An attacker nobody free takes anything off gets the nearest free
+    // defender. An assignment the help has already taken over is not gone back to while another is there.
+    const named = () => {
+      const order = [0, 1, 2, 3, 4].filter(a => ONB[s.o[a]]).sort((u, v) => open[v] - open[u] || s.o[u] - s.o[v]);
+      const off = [0, 1, 2, 3, 4].filter(a => !ONB[s.o[a]]);
+      const p = [-1, -1, -1, -1, -1], free = d => p[d] < 0;
+      const dist = (d, a) => (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 99);
+      const pick = (a, ok) => {
+        let e = -1;
+        for (let d = 0; d < 5; d++) {
+          if (!free(d) || !ok(d)) continue;
+          if (e < 0 || dist(d, a) < dist(e, a) || (dist(d, a) === dist(e, a) && (alone[a][d] < alone[a][e] - 1e-9 || (Math.abs(alone[a][d] - alone[a][e]) <= 1e-9 && s.x[d] < s.x[e])))) e = d;
         }
-        best = { p, v };
-      }
-      if (best !== null) break;
-    }
-    if (prev && !covLess(best.v, vec(prev))) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
-    return { perm: best.p.slice(), kept: false, takeover: null, vec: best.v, ...info };
+        if (e >= 0) p[e] = a;
+        return e >= 0;
+      };
+      const left = [];
+      for (const a of order) if (!pick(a, d => ONB[s.x[d]] && alone[a][d] < open[a] - 0.5 && helpers(d, a) === null)) left.push(a);
+      for (const a of left.concat(off)) if (!pick(a, d => helpers(d, a) === null)) pick(a, () => true);
+      return p;
+    };
+    const near = named(), vn = vec(near);
+    // with assignments standing, a switch is called only when the named matchups cover more (D-220)
+    if (prev && !covLess(vn, vec(prev))) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
+    return { perm: near, kept: false, takeover: null, vec: vn, ...info };
   }
   // Step 22b (D-219): the largest item on the list of things to cover, the defence as it stands and before it answers
   // (the offence acts first): read as the lasting gap is (lastingOf): each side with what it has left; a pass in the
