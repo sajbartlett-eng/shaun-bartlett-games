@@ -1,0 +1,699 @@
+{
+ "the takeover (step 22b's check 8 board)": {
+  "passed": true,
+  "board": {
+   "o": [
+    "I4",
+    "B9",
+    "L5",
+    "P10",
+    "J5"
+   ],
+   "x": [
+    "I8",
+    "C8",
+    "P9",
+    "H3",
+    "J3"
+   ]
+  },
+  "before": [
+   "X1: on O1 (his best look is worth 34 open, 32 with X1 on it, 15 with X4 and X5 helping)."
+  ],
+  "the_reading_says": "X4 and X5 have O1: X1 picks up O5.",
+  "matchups": [
+   "X1 on O5",
+   "X2 on O2",
+   "X3 on O4",
+   "X4 on O3",
+   "X5 on O1"
+  ],
+  "read_again_with_nothing_changed": null,
+  "the_defences_turn": [
+   "X2 Move to B7 facing N",
+   "X1 Quick Step to K8"
+  ],
+  "x1_squares_from_the_man_he_picked_up": {
+   "before": 3,
+   "after": 3
+  },
+  "x1_moved_towards_him": false,
+  "lines_after": [
+   "X1: on O2 (his best look is worth 36 open, 33 with X1 on it, 24 with X2 helping).",
+   "Switch: X1 takes O2; X2 picks up O5."
+  ]
+ },
+ "Shaun's board": {
+  "as_it_stood": {
+   "x": [
+    "J10",
+    "D8",
+    "O8",
+    "I6",
+    "P2"
+   ],
+   "largest_item": 30,
+   "top": [
+    30,
+    27,
+    16,
+    15,
+    10,
+    0
+   ]
+  },
+  "settlement": {
+   "x": [
+    "G7",
+    "N5",
+    "H10",
+    "K7",
+    "G3"
+   ],
+   "arrows": [
+    0,
+    0,
+    3,
+    0,
+    0
+   ],
+   "largest_item": 12.4,
+   "top": [
+    12.4,
+    12,
+    12,
+    11,
+    5.2,
+    0,
+    0,
+    0
+   ],
+   "lasting_gap": 12,
+   "matchups": [
+    "X1 on O2",
+    "X2 on O5",
+    "X3 on O4",
+    "X4 on O3",
+    "X5 on O1"
+   ],
+   "lines": [
+    "X1: on O2 (his best look is worth 18 open, 12 with X1 on it), and covering the squares around A7 (worth 14 if he weren't in reach).",
+    "X2: on O5 (his best look is worth 18 open, 17 with X2 on it, 5 with X5 helping).",
+    "X3: off O4 (his best look is worth 16), and in O2's way (his best look is worth 12, 18 without X3 there).",
+    "X4: on O3 (his best look is worth 24 open, 12 with X4 on it).",
+    "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 helping)."
+   ],
+   "seconds": 11.9,
+   "steps": [
+    {
+     "x": "X1",
+     "to": "G7",
+     "arrow": 0,
+     "decided_by": "the list",
+     "pressure_pass": false
+    },
+    {
+     "x": "X4",
+     "to": "K6",
+     "arrow": 7,
+     "decided_by": "the list",
+     "pressure_pass": false
+    },
+    {
+     "x": "X5",
+     "to": "H4",
+     "arrow": 0,
+     "decided_by": "level",
+     "pressure_pass": false
+    },
+    {
+     "x": "X2",
+     "to": "N5",
+     "arrow": 0,
+     "decided_by": "level",
+     "pressure_pass": false
+    },
+    {
+     "x": "X3",
+     "to": "M10",
+     "arrow": 0,
+     "decided_by": "the list",
+     "pressure_pass": false
+    },
+    {
+     "x": "X3",
+     "to": "H10",
+     "arrow": 3,
+     "decided_by": "the list",
+     "pressure_pass": true
+    },
+    {
+     "x": "X4",
+     "to": "K7",
+     "arrow": 0,
+     "decided_by": "the quick re-read",
+     "pressure_pass": false
+    },
+    {
+     "x": "X5",
+     "to": "G3",
+     "arrow": 0,
+     "decided_by": "the lasting gap",
+     "pressure_pass": false
+    }
+   ]
+  },
+  "does_anyone_press_o1": true,
+  "defenders_beside_o1": [
+   {
+    "x": "X3",
+    "on": "H10",
+    "arrow": 3,
+    "line": "X3: off O4 (his best look is worth 16), and in O2's way (his best look is worth 12, 18 without X3 there)."
+   }
+  ],
+  "o1s_defender": {
+   "x": "X5",
+   "on": "G3",
+   "squares_from_him": 8,
+   "line": "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 helping)."
+  },
+  "placements_on_o1_read_in_full": 288,
+  "of_them_leaving_less": 0,
+  "the_nearest_miss": {
+   "x": "X3",
+   "on": "H10",
+   "arrow": 1,
+   "top": [
+    12.4,
+    12,
+    12,
+    11,
+    5.2,
+    0
+   ],
+   "settled_top": [
+    12.4,
+    12,
+    12,
+    11,
+    5.2,
+    0
+   ],
+   "first_item_that_differs": null
+  },
+  "the_steal_on_o1_by_the_cards": [
+   {
+    "x": "X1",
+    "foul_rolls": 1,
+    "ball_kept": 0.7,
+    "foul": 0.3,
+    "worth_to_the_offence": 0.45
+   },
+   {
+    "x": "X1",
+    "foul_rolls": 2,
+    "ball_kept": 0.7,
+    "foul": 0.51,
+    "worth_to_the_offence": 1.81
+   },
+   {
+    "x": "X2",
+    "foul_rolls": 1,
+    "ball_kept": 0.75,
+    "foul": 0.4,
+    "worth_to_the_offence": 1.25
+   },
+   {
+    "x": "X2",
+    "foul_rolls": 2,
+    "ball_kept": 0.75,
+    "foul": 0.64,
+    "worth_to_the_offence": 2.75
+   },
+   {
+    "x": "X3",
+    "foul_rolls": 1,
+    "ball_kept": 0.8,
+    "foul": 0.45,
+    "worth_to_the_offence": 1.7
+   },
+   {
+    "x": "X3",
+    "foul_rolls": 2,
+    "ball_kept": 0.8,
+    "foul": 0.698,
+    "worth_to_the_offence": 3.19
+   },
+   {
+    "x": "X4",
+    "foul_rolls": 1,
+    "ball_kept": 0.7,
+    "foul": 0.4,
+    "worth_to_the_offence": 1.1
+   },
+   {
+    "x": "X4",
+    "foul_rolls": 2,
+    "ball_kept": 0.7,
+    "foul": 0.64,
+    "worth_to_the_offence": 2.66
+   },
+   {
+    "x": "X5",
+    "foul_rolls": 1,
+    "ball_kept": 0.75,
+    "foul": 0.45,
+    "worth_to_the_offence": 1.56
+   },
+   {
+    "x": "X5",
+    "foul_rolls": 2,
+    "ball_kept": 0.75,
+    "foul": 0.698,
+    "worth_to_the_offence": 3.11
+   }
+  ]
+ },
+ "game 5DE415": {
+  "board": {
+   "o": [
+    "P8",
+    "L11",
+    "B3",
+    "H7",
+    "K3"
+   ],
+   "ball": "O2"
+  },
+  "settlement": {
+   "x": [
+    "I5",
+    "K10",
+    "M10",
+    "H9",
+    "N5"
+   ],
+   "arrows": [
+    0,
+    6,
+    7,
+    1,
+    0
+   ],
+   "top": [
+    21,
+    9,
+    7.8,
+    6.6,
+    4.2,
+    0,
+    0,
+    0
+   ],
+   "lasting_gap": 21,
+   "seconds": 12.9,
+   "matchups": [
+    "X1 on O2",
+    "X2 on O4",
+    "X3 on O5",
+    "X4 on O3",
+    "X5 on O1"
+   ],
+   "lines": [
+    "X1: on O2 (his best look is worth 36 open, 33 with X1 on it, 21 with X4 and X5 helping), and covering the squares around A2 (worth 4 if he weren't in reach). The two lie apart: he can't hold both for long.",
+    "X2: in O4's way (his best look is worth 8, 15 without X2 there).",
+    "X3: off O5 (his best look is worth 11), and in O2's way (his best look is worth 21, 24 without X3 there).",
+    "X4: on O3 (his best look is worth 11 open, 11 with X4 on it, 7 with X1 helping).",
+    "X5: on O1 (his best look is worth 21 open, 14 with X5 on it, 9 with X1 helping)."
+   ],
+   "steps": [
+    {
+     "x": "X1",
+     "to": "K7",
+     "arrow": 6,
+     "decided_by": "the list",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X4",
+     "to": "H4",
+     "arrow": 0,
+     "decided_by": "the lasting gap",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X5",
+     "to": "M3",
+     "arrow": 0,
+     "decided_by": "the list",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X2",
+     "to": "B7",
+     "arrow": 0,
+     "decided_by": "the list",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X3",
+     "to": "E2",
+     "arrow": 0,
+     "decided_by": "level",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X3",
+     "to": "M10",
+     "arrow": 4,
+     "decided_by": "the list",
+     "on_ball_pass": true
+    },
+    {
+     "x": "X4",
+     "to": "H8",
+     "arrow": 0,
+     "decided_by": "the quick re-read",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X5",
+     "to": "N5",
+     "arrow": 0,
+     "decided_by": "the quick re-read",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X4",
+     "to": "H9",
+     "arrow": 1,
+     "decided_by": "the list",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X2",
+     "to": "K10",
+     "arrow": 6,
+     "decided_by": "the list",
+     "on_ball_pass": true
+    },
+    {
+     "x": "X1",
+     "to": "I5",
+     "arrow": 0,
+     "decided_by": "the quick re-read",
+     "on_ball_pass": false
+    },
+    {
+     "x": "X3",
+     "to": "M10",
+     "arrow": 7,
+     "decided_by": "his own man",
+     "on_ball_pass": true
+    }
+   ]
+  },
+  "the_ball_handler": {
+   "card": "Sharpshooter Shooting Guard",
+   "three": 11,
+   "layup": 18,
+   "dribble": 15,
+   "quick_step": 1,
+   "his_defender": "X1",
+   "his_defender_on": "I5",
+   "squares_from_him": 6,
+   "defenders_beside_him": [
+    {
+     "x": "X2",
+     "on": "K10",
+     "line": "X2: in O4's way (his best look is worth 8, 15 without X2 there)."
+    },
+    {
+     "x": "X3",
+     "on": "M10",
+     "line": "X3: off O5 (his best look is worth 11), and in O2's way (his best look is worth 21, 24 without X3 there)."
+    }
+   ],
+   "guarded": false,
+   "his_looks": [
+    {
+     "sq": "E10",
+     "shot": "three",
+     "open": 33,
+     "left": 21,
+     "rushed": false,
+     "covered_by": "X4"
+    }
+   ]
+  },
+  "the_steal_on_him_by_the_cards": [
+   {
+    "x": "X1",
+    "steal": 3,
+    "steal_foul": 6,
+    "ball_kept": 0.6,
+    "worth_to_the_offence": 0.1
+   },
+   {
+    "x": "X2",
+    "steal": 2,
+    "steal_foul": 8,
+    "ball_kept": 0.65,
+    "worth_to_the_offence": 0.95
+   },
+   {
+    "x": "X3",
+    "steal": 1,
+    "steal_foul": 9,
+    "ball_kept": 0.7,
+    "worth_to_the_offence": 1.42
+   },
+   {
+    "x": "X4",
+    "steal": 3,
+    "steal_foul": 8,
+    "ball_kept": 0.6,
+    "worth_to_the_offence": 0.8
+   },
+   {
+    "x": "X5",
+    "steal": 2,
+    "steal_foul": 9,
+    "ball_kept": 0.65,
+    "worth_to_the_offence": 1.29
+   }
+  ],
+  "contests_of_a_three_by_the_cards": {
+   "X1": 5,
+   "X2": 3,
+   "X3": 3,
+   "X4": 4,
+   "X5": 4
+  },
+  "placements_beside_him_read_in_full": 256,
+  "of_them_leaving_less": 0,
+  "with_each_defender_off_the_court": [
+   {
+    "x": "X1",
+    "worse": true,
+    "top": [
+     30,
+     24,
+     20,
+     15.5
+    ]
+   },
+   {
+    "x": "X2",
+    "worse": true,
+    "top": [
+     21,
+     15,
+     9,
+     6.6
+    ]
+   },
+   {
+    "x": "X3",
+    "worse": true,
+    "top": [
+     24,
+     12,
+     7.8,
+     6.6
+    ]
+   },
+   {
+    "x": "X4",
+    "worse": true,
+    "top": [
+     24,
+     19.9,
+     12,
+     6.6
+    ]
+   },
+   {
+    "x": "X5",
+    "worse": true,
+    "top": [
+     27,
+     21,
+     7.8,
+     6.6
+    ]
+   }
+  ]
+ },
+ "the zone check": {
+  "offence": "Iron Wall",
+  "threes": [
+   {
+    "o": "O1",
+    "card": "Defensive Point Guard",
+    "three": 7,
+    "band": "below average"
+   },
+   {
+    "o": "O2",
+    "card": "Bucket Getter Shooting Guard",
+    "three": 9,
+    "band": "average"
+   },
+   {
+    "o": "O3",
+    "card": "Defensive Small Forward",
+    "three": 7,
+    "band": "below average"
+   },
+   {
+    "o": "O4",
+    "card": "Stretch Power Forward",
+    "three": 8,
+    "band": "average"
+   },
+   {
+    "o": "O5",
+    "card": "Rim Protector Centre",
+    "three": 6,
+    "band": "below average"
+   }
+  ],
+  "settlement": {
+   "x": [
+    "G7",
+    "L7",
+    "O4",
+    "H10",
+    "K3"
+   ],
+   "arrows": [
+    0,
+    7,
+    0,
+    3,
+    0
+   ],
+   "largest_item": 12,
+   "top": [
+    12,
+    12,
+    4.2,
+    3.7,
+    0.6,
+    0,
+    0,
+    0
+   ],
+   "matchups": [
+    "X1 on O2",
+    "X2 on O3",
+    "X3 on O5",
+    "X4 on O4",
+    "X5 on O1"
+   ],
+   "lines": [
+    "X1: on O2 (his best look is worth 8 open, 4 with X1 on it), and covering the squares around A2 (worth 4 if he weren't in reach). The two lie apart: he can't hold both for long.",
+    "X2: on O3 (his best look is worth 21 open, 12 with X2 on it).",
+    "X3: on O5 (his best look is worth 4 open, 3 with X3 on it, 1 with X2 and X5 helping).",
+    "X4: off O4 (his best look is worth 7), and in O2's way (his best look is worth 4, 18 without X4 there).",
+    "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 and X2 helping)."
+   ]
+  },
+  "squares_from_the_nearest_attacker": {
+   "X1": 4,
+   "X2": 3,
+   "X3": 2,
+   "X4": 1,
+   "X5": 6
+  },
+  "squares_from_his_own_man": {
+   "X1": 4,
+   "X2": 3,
+   "X3": 2,
+   "X4": 7,
+   "X5": 8
+  },
+  "defenders_in_the_key": [
+   "X5"
+  ],
+  "jobs": [
+   "both",
+   "man",
+   "man",
+   "free",
+   "man"
+  ],
+  "attackers_cross_with_the_defence_standing_still": [
+   {
+    "what": "O2 and O3 change wings",
+    "handed_on": true,
+    "says": "Switch: X2 takes O2; X1 picks up O4; X4 picks up O3.",
+    "matchups": [
+     "X1 on O4",
+     "X2 on O2",
+     "X3 on O5",
+     "X4 on O3",
+     "X5 on O1"
+    ]
+   },
+   {
+    "what": "O4 and O5 change corners",
+    "handed_on": true,
+    "says": "Switch: X4 takes O5; X3 picks up O4.",
+    "matchups": [
+     "X1 on O2",
+     "X2 on O3",
+     "X3 on O4",
+     "X4 on O5",
+     "X5 on O1"
+    ]
+   },
+   {
+    "what": "O2 cuts from the wing to the far corner side (C9 to N3)",
+    "handed_on": true,
+    "says": "Switch: X1 takes O1; X5 picks up O2.",
+    "matchups": [
+     "X1 on O1",
+     "X2 on O3",
+     "X3 on O5",
+     "X4 on O4",
+     "X5 on O2"
+    ]
+   }
+  ],
+  "the_same_against_five_out": [
+   {
+    "what": "O2 and O3 change wings",
+    "handed_on": true,
+    "says": "Switch: X4 takes O2; X1 picks up O5; X2 picks up O3."
+   },
+   {
+    "what": "O4 and O5 change corners",
+    "handed_on": true,
+    "says": "Switch: X2 takes O4; X3 picks up O5."
+   }
+  ]
+ }
+}

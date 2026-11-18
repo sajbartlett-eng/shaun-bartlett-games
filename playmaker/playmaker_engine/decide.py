@@ -304,6 +304,49 @@ def _any_arrow_cmap2(rules, q, qs, mode):
 
 
 _GAP = {}                  # step 22b: the zone gaps' table, a context at a time (engine.js gapInfo)
+_LATE_ROW = (2,) + (INF,) * 5      # step 22c: the first defender to arrive, a hand up off balance (engine.js gapLate)
+
+
+@lru_cache(maxsize=None)
+def _phase_step(rules, p, qs):
+    """engine.js phaseStep (step 22c, D-228): the squares one phase's movement reaches from p (bodies not counted)."""
+    free, fixed = geo_reach(p, 0, qs, True, 1, rules)
+    return tuple(sorted(q for q in set(free) | set(fixed) if q != p and B.on_board(q)))
+
+
+@lru_cache(maxsize=None)
+def _phase_dist(rules, start, qs):
+    """engine.js phaseDist: phases of movement from start to every square it can get to."""
+    out = {start: 0}
+    frontier, level = [start], 1
+    while frontier:
+        nxt = []
+        for p in frontier:
+            for q in _phase_step(rules, p, qs):
+                if q not in out:
+                    out[q] = level
+                    nxt.append(q)
+        frontier = nxt
+        level += 1
+    return out
+
+
+@lru_cache(maxsize=None)
+def _arrive(rules, start, qs, mode):
+    """engine.js arrivePhases: per square, the phases before a defender starting on `start` can contest a shot there
+    set (standing, or one Move), and at all (off balance: the reaction's Quick Step or Sprint). -> (set, any)."""
+    setd, anyd = {}, {}
+    for p, k in _phase_dist(rules, start, qs).items():
+        if not B.on_board(p):
+            continue
+        for c, pair in _any_arrow_cmap2(rules, p, qs, mode).items():
+            if not pair[2]:
+                continue
+            if k < anyd.get(c, INF):
+                anyd[c] = k
+            if pair[3] and k < setd.get(c, INF):
+                setd[c] = k
+    return setd, anyd
 _VMAP = {}                 # step 22b: the map's Contest values, a context at a time
 
 
@@ -1208,6 +1251,56 @@ class Read:
         cms = [(_cmap2(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
         self._mcms = cms
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
+        # ---- step 22c (engine.js covBuild, D-224): stagnation, in points by the rules ----
+        # The Steal as the defence stands (a defender next to the square with an arrow on it, or one a Move takes next
+        # to it): kept on Dribble less Steal or under, else -5; a foul is +5 (D-198). Never counted above 0.
+        from .resolve import ppo
+        from .scoring import foul_rolls
+        from .actions import stance as _stance, closely_guarded
+        steal_on = ppo(s) and s.tok_x >= 1 and s.count('X', 'steal') < RC.LIMITS['X']['steal']
+        mv1 = [None] * 5
+        if steal_on and s.tok_x >= 2:
+            for j in range(5):
+                if B.on_board(s.x[j]) and _caps(s, 'X', j)[0]:
+                    mv1[j] = defender_map(s, j, exact=True)[0]
+        sev, sat = {}, {}
+
+        def steal_ev(a, j, rolls, via_move):
+            key = (a, j, rolls, via_move)
+            if key not in sev:
+                pf = float(p_foul(s.ctx.dfn[j].r['foul_steal'], rules))
+                foul = 1 - (1 - pf) * (1 - pf) if rolls == 2 else pf
+                tk = rolled(s, 'O', a, 'dribble') - (s.ctx.dfn[j].r['steal'] if via_move else rolled(s, 'X', j, 'steal'))
+                sev[key] = 5 * foul - 5 * (1 - foul) * (1 - float(p_success(tk, rules)))
+            return sev[key]
+
+        def steal_at(a, q):
+            if not steal_on:
+                return 0.0
+            if (a, q) not in sat:
+                best_ = 0.0
+                for j in range(5):
+                    xp = s.x[j]
+                    if not B.on_board(xp):
+                        continue
+                    if B.adjacent(xp, q) and B.dir_between(xp, q) in G.lines(rules, _stance(s, j)):
+                        v = steal_ev(a, j, foul_rolls(rules, xp, q), False)
+                        if v < best_:
+                            best_ = v
+                    fr = mv1[j]
+                    if fr:
+                        for dx, dy in B.DIRS:
+                            p2 = (q[0] + dx, q[1] + dy)
+                            if fr.get(p2) == 1:
+                                v = steal_ev(a, j, foul_rolls(rules, p2, q), True)
+                                if v < best_:
+                                    best_ = v
+                sat[a, q] = best_
+            return sat[a, q]
+        # the closely guarded count (D-173): holding where he stands, closely guarded at the phase end, is one phase
+        # end nearer the -5: counted at how far along the count's three that puts him
+        guard_now = (RC.app_rule(rules, 'closely_guarded') and (s.grd & 3) != 1 and B.on_board(s.o[s.ball]) and closely_guarded(s))
+        guard_cost = -5 * min(3, ((s.grd >> 2) & 3) + 1) / 3 if guard_now else 0.0
         for a in range(5):
             home = s.o[a]
             if not B.on_board(home):
@@ -1251,26 +1344,31 @@ class Read:
             for q0, pr, set_only, n0, dr in starts:
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
-                if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
-                    best[q0, False] = pr           # a set shot from where the phase finds him
-                    start[q0, False] = q0
-                    acts[q0, False] = n0
-                    drb[q0, False] = dr
+                # step 22c: what holding the ball there costs him (0 or less); of two ways as likely, the one that costs less
+                adj = steal_at(a, q0) + (guard_cost if (a == s.ball and q0 == home and n0 == 0) else 0.0)
+                if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM):
+                    b = best.get((q0, False))
+                    if b is None or pr > b[0] or (pr == b[0] and adj > b[1]):
+                        best[q0, False] = (pr, adj)    # a set shot from where the phase finds him
+                        start[q0, False] = q0
+                        acts[q0, False] = n0
+                        drb[q0, False] = dr
                 if set_only:
                     continue
                 for p, rushed in _shot_paths(q0, qs, rules, no_rim):
                     c = p[-1]
-                    if best.get((c, rushed), 0.0) >= pr:
+                    b = best.get((c, rushed))
+                    if b is not None and (b[0] > pr or (b[0] == pr and b[1] >= adj)):
                         continue
                     if any(q in mates or q in xat for q in p):
                         continue
                     if lines and not capture_ok(q0, p, lines):
                         continue
-                    best[c, rushed] = pr
+                    best[c, rushed] = (pr, adj)
                     start[c, rushed] = q0
                     acts[c, rushed] = n0
                     drb[c, rushed] = dr
-            for (c, rushed), pr in best.items():
+            for (c, rushed), (pr, adj) in best.items():
                 z = B.zone(c)
                 lk = Look(a, c, 'later', 1.0, False)
                 lk.types = RC.ZONE_SHOTS[z]
@@ -1282,7 +1380,7 @@ class Read:
                 opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
                 lc = 0 if drb[c, rushed] else 5     # what not getting there costs: a lost pass -5, a lost Dribble nothing
-                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc]
+                out[a, c, rushed] = [pr, top, pr * (top + adj) - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc, adj]
         return out
 
     @staticmethod
@@ -1351,7 +1449,7 @@ class Read:
                             e = float('-inf')
                         else:
                             mine = self._vals_map(lk, d, cm.get(key[1]))
-                            e = pr * self._map_weak(lk, opens, vals, d, mine) - (1 - pr) * opts[key][8]
+                            e = pr * (self._map_weak(lk, opens, vals, d, mine) + opts[key][9]) - (1 - pr) * opts[key][8]
                         if n == 0 and not e < e0 - 1e-9:
                             after = None
                             break
@@ -1376,7 +1474,7 @@ class Read:
                     continue
                 o[5][d] = self._vals_map(o[3], d, cm.get(key[1]))
                 o[1] = self._map_weak(o[3], o[4], o[5])
-                o[2] = o[0] * o[1] - (1 - o[0]) * o[8] if o[0] > 0 else float('-inf')
+                o[2] = o[0] * (o[1] + o[9]) - (1 - o[0]) * o[8] if o[0] > 0 else float('-inf')
         return steps
 
     # ---- step 20 (Shaun, 17 Nov 2026): the lasting gap (engine.js lasting, lastingOf) ----
@@ -1448,7 +1546,7 @@ class Read:
                 for n, o in enumerate(opens):
                     if o > top:
                         top, tt = o, n
-                looks.append(dict(x=x, mask=mask, wd=x['r'] * top - (1 - x['r']) * x['src'][8], tt=tt))
+                looks.append(dict(x=x, mask=mask, wd=x['r'] * (top + x['src'][9]) - (1 - x['r']) * x['src'][8], tt=tt))
 
             return cover_groups([dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
                                       order=(-z['x']['e'], z['x']['key'])) for z in looks])
@@ -1509,7 +1607,7 @@ class Read:
                             e = inf
                         else:
                             mine = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
-                            e = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * x['src'][8]
+                            e = x['r'] * (self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] + x['src'][9]) - (1 - x['r']) * x['src'][8]
                         if e < x['e'] - 1e-9:
                             touched = True
                         after.append(e)
@@ -1585,7 +1683,7 @@ class Read:
                 continue
             y['vals'][d] = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
             y['w'], y['t'], y['cover'], y['next'] = self._map_cov(x['src'][3], x['src'][4], y['vals'])
-            y['e'] = y['r'] * y['w'] - (1 - y['r']) * x['src'][8] if y['r'] > 0 else inf
+            y['e'] = y['r'] * (y['w'] + x['src'][9]) - (1 - y['r']) * x['src'][8] if y['r'] > 0 else inf
             o2.append(y)
         moved = list(st['moved'])
         moved[d] = True
@@ -1595,87 +1693,125 @@ class Read:
         xs[d] = q
         return dict(moves=st['moves'] + [(d, q, a)], moved=moved, taken=st['taken'] | {q}, tok=st['tok'] - 1, o=o2, cms=cms, xs=xs)
 
+    # Step 22c (D-228, Shaun, 18 Nov 2026): zone gaps are a race (engine.js gapInfo, gapLate, gapRace, gapVec). A
+    # square is a gap only when an attacker can get there with the ball before any defender can arrive to contest it
+    # set. The phases each side needs are counted by the rules' movement, over as many phases as the race takes, up
+    # to the shot clock. Its value is that attacker's shot there at his real chance of having the ball (a pass by the
+    # rules' chance as the defence stands), less the contest of any defender who arrives in time off balance. A square
+    # every attacker loses the race to is not a gap, however valuable.
     def _gap_info(self):
-        """engine.js gapInfo: every square a shot may go up from, the average over the five attackers of his best open
-        shot there (the cards), and each attacker's look there."""
+        """engine.js gapInfo: every square a shot may go up from; each attacker's look there and its open value."""
         ctx = self.s.ctx
         g = _GAP.get(ctx)
         if g is None:
             no_rim = RC.rim_shot_barred(self.rules)
             sq = [q for q in ((x, y) for x in range(B.W) for y in range(1, B.H + 1))
                   if B.zone(q) in RC.ZONE_POINTS and not (no_rim and q == RC.RIM)]
-            full, looks = [], []
+            looks, opens = [], []
             for q in sq:
                 z = B.zone(q)
                 pts, types = RC.ZONE_POINTS[z], RC.ZONE_SHOTS[z]
-                row, tot = [], 0.0
+                row, op = [], []
                 for a in range(5):
                     lk = Look(a, q, 'later', 1.0, False)
                     lk.types = types
                     lk.rushed = False
                     row.append(lk)
-                    tot += max(pts * ctx.off[a].shot(ty) for ty in types)
-                full.append(tot / 5)
+                    op.append(max(pts * ctx.off[a].shot(ty) for ty in types))
                 looks.append(row)
+                opens.append(op)
             if len(_GAP) > 8:
                 _GAP.clear()
-            g = _GAP[ctx] = dict(sq=sq, full=full, looks=looks, red={}, idx={q: k for k, q in enumerate(sq)})
+            g = _GAP[ctx] = dict(sq=sq, looks=looks, open=opens, late={}, idx={q: k for k, q in enumerate(sq)})
         return g
 
-    def _gap_red(self, g, d, k, pair):
-        """engine.js gapRed: square k with defender d's Contest on it: the average shooter's best shot there."""
-        key = (d, k, pair[2], pair[3])
-        v = g['red'].get(key)
+    def _gap_late(self, g, k, a, d):
+        """engine.js gapLate: attacker a's shot on square k with defender d's hand up off balance."""
+        key = (k, a, d)
+        v = g['late'].get(key)
         if v is None:
-            q = g['sq'][k]
-            pts = RC.ZONE_POINTS[B.zone(q)]
-            tot = 0.0
-            for a in range(5):
-                lk = g['looks'][k][a]
-                vals = self._vals2(lk, d, pair[0], pair[1]) or {}
-                card = self.s.ctx.off[a]
-                top = None
-                for ty in lk.types:
-                    o = pts * card.shot(ty)
-                    w = vals[ty] if ty in vals and vals[ty] < o else o
-                    if top is None or w > top:
-                        top = w
-                tot += top
-            v = g['red'][key] = tot / 5
+            lk = g['looks'][k][a]
+            pts = RC.ZONE_POINTS[B.zone(g['sq'][k])]
+            vals = self._vals2(lk, d, _LATE_ROW, _NOSET) or {}
+            card = self.s.ctx.off[a]
+            v = None
+            for ty in lk.types:
+                o = pts * card.shot(ty)
+                w = vals[ty] if ty in vals and vals[ty] < o else o
+                if v is None or w > v:
+                    v = w
+            g['late'][key] = v
         return v
 
-    def _gap_vec(self, g, cms, xs):
-        """engine.js gapVec: every square's gap, the defence as given (each defender's Contest and square)."""
-        out = []
+    def _gap_race(self):
+        """engine.js gapRace: the offence's side of the race: each attacker's phases to every square, the phases the
+        shot clock leaves, the chance a pass finds him there (as the defence stands)."""
+        r = getattr(self, '_race', None)
+        if r is None:
+            s = self.s
+            r = self._race = dict(n=s.clock // RC.PHASE_SECONDS - 1, ch={},
+                                  A=[(_phase_dist(self.rules, s.o[a], s.ctx.off[a].qs) if B.on_board(s.o[a]) else None) for a in range(5)])
+        return r
+
+    def _gap_vec(self, st, d2=None, q2=None):
+        """engine.js gapVec: every square's gap, the defence as the state has it (d2 on q2 instead, where given)."""
+        s, rules = self.s, self.rules
+        g, R = self._gap_info(), self._gap_race()
+        mode = 0 if rules.zone == 'off' else 1
+        xs = [q2 if d == d2 else st['xs'][d] for d in range(5)]
+        ap = [(_arrive(rules, xs[d], s.ctx.dfn[d].qs, mode) if B.on_board(xs[d]) else None) for d in range(5)]
         on = set(xs)
-        full = g['full']
+        n, A, chs, opens = R['n'], R['A'], R['ch'], g['open']
+        out = []
         for k, q in enumerate(g['sq']):
             if q in on:
                 out.append(0.0)
                 continue
-            v = full[k]
-            for d in range(5):
-                cm = cms[d]
-                if cm is None:
+            setp = INF
+            for z in ap:
+                if z is not None:
+                    v = z[0].get(q, INF)
+                    if v < setp:
+                        setp = v
+            best = 0.0
+            for a in range(5):
+                if A[a] is None:
                     continue
-                pair = cm.get(q)
-                if pair is not None and pair[2]:
-                    u = self._gap_red(g, d, k, pair)
-                    if u < v:
-                        v = u
-            out.append(v)
+                t = A[a].get(q, INF)
+                if t < 1:
+                    t = 1                               # (on it already: he shoots as the next phase starts)
+                if t > n or setp <= t:
+                    continue                            # the clock runs out first, or a defender is set there in time
+                w = opens[k][a]
+                if not w > best:
+                    continue
+                for d in range(5):
+                    if ap[d] is not None and ap[d][1].get(q, INF) <= t:
+                        u = self._gap_late(g, k, a, d)
+                        if u < w:
+                            w = u
+                ch = 1.0
+                if a != s.ball:
+                    ch = chs.get((a, q))
+                    if ch is None:
+                        ch = chs[(a, q)] = cov_pass(s, a, q)
+                if not ch > 0:
+                    continue
+                e = ch * w - (1 - ch) * 5.0
+                if e > best:
+                    best = e
+            out.append(best)
         return out
 
     def _lg_list(self, st):
         """engine.js lgList: the one list of things to cover: each attacker's best look as the defence stands and
         every square's gap, largest first."""
         if 'list' not in st:
-            g = self._gap_info()
             thr = [0.0] * 5
             for x in st['o']:
                 if x['r'] > 0 and x['e'] > thr[x['key'][0]]:
                     thr[x['key'][0]] = x['e']
-            gv = self._gap_vec(g, st['cms'], st['xs'])
+            gv = self._gap_vec(st)
             st['thr'], st['gaps'] = thr, gv
             st['list'] = sorted(thr + gv, reverse=True)
         return st['list']
@@ -1700,7 +1836,6 @@ class Read:
             return False
         out = []
         st = self._lg_root(opts)
-        g = self._gap_info()
         for _round in range(2):
             if st['tok'] <= 0:
                 break
@@ -1719,7 +1854,7 @@ class Read:
                         f, h = [], []
                         for x in by_a[a]:
                             if x['vals'][d]:
-                                ewo = x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, None)[0] - (1 - x['r']) * x['src'][8]
+                                ewo = x['r'] * (self._map_cov(x['src'][3], x['src'][4], x['vals'], d, None)[0] + x['src'][9]) - (1 - x['r']) * x['src'][8]
                                 h.append((ewo, x))
                             else:
                                 f.append(x)
@@ -1735,7 +1870,7 @@ class Read:
 
                 def re(x):
                     mine = self._vals_map(x['src'][3], d, cm.get(x['key'][1]))
-                    return x['r'] * self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] - (1 - x['r']) * x['src'][8]
+                    return x['r'] * (self._map_cov(x['src'][3], x['src'][4], x['vals'], d, mine)[0] + x['src'][9]) - (1 - x['r']) * x['src'][8]
                 best = 0.0
                 for x in free[a]:
                     if x['e'] <= best:
@@ -1769,32 +1904,8 @@ class Read:
                     if abs(t - thr[a]) > 1e-9:
                         rem.append(thr[a])
                         add.append(t)
-                old = st['cms'][d]
-                ks = set()
-                if old is not None:
-                    ks.update(g['idx'][c] for c, pair in old.items() if pair[2] and c in g['idx'])
-                ks.update(g['idx'][c] for c, pair in cm.items() if pair[2] and c in g['idx'])
-                for c in (q, st['xs'][d]):
-                    if c in g['idx']:
-                        ks.add(g['idx'][c])
-                for k in ks:
-                    sq_ = g['sq'][k]
-                    v = g['full'][k]
-                    if sq_ == q:
-                        v = 0.0
-                    else:
-                        for e in range(5):
-                            if e != d and st['xs'][e] == sq_:
-                                v = 0.0
-                                break
-                            c = cm if e == d else st['cms'][e]
-                            if c is None:
-                                continue
-                            pair = c.get(sq_)
-                            if pair is not None and pair[2]:
-                                u = self._gap_red(g, e, k, pair)
-                                if u < v:
-                                    v = u
+                gv = self._gap_vec(st, d, q)             # the race for every square, run again with him there
+                for k, v in enumerate(gv):
                     if abs(v - gaps[k]) > 1e-9:
                         rem.append(gaps[k])
                         add.append(v)

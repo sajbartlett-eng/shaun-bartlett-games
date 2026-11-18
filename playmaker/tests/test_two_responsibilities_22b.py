@@ -19,7 +19,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node for the JavaScript engine')
 
-SETTLED_X, SETTLED_A = ['F7', 'A2', 'Q2', 'N7', 'J3'], [0, 1, 0, 0, 0]
+# Re-recorded in step 22c (D-224, D-228): the settlement was ['F7', 'A2', 'Q2', 'N7', 'J3'], arrows [0, 1, 0, 0, 0]
+# under step 22b's gaps (the average of all five whatever the reach). With gaps a race, stagnation counted and the
+# last pass around each defender's square, Shaun's board settles here.
+SETTLED_X, SETTLED_A = ['G7', 'N5', 'H10', 'K7', 'G3'], [0, 0, 3, 0, 0]
 
 
 @pytest.fixture(scope='module')
@@ -79,20 +82,25 @@ def test_a_contest_reached_by_a_quick_step_or_sprint_is_off_balance():
 
 # ---- item 1b: the zone gaps ---------------------------------------------------------------------------------------------
 
-def test_a_gap_is_the_average_shooter_there_less_the_best_contest_and_nobody_near_leaves_it_full():
+def test_a_gap_is_a_square_an_attacker_wins_the_race_to_worth_his_shot_there_by_the_cards():
+    # Re-recorded in step 22c (D-228, Shaun, 18 Nov 2026): this test read "a gap is the average shooter there less the
+    # best contest, and nobody near leaves it full". Shaun replaced that: a square is a gap only when an attacker can
+    # get there with the ball before any defender can arrive to contest it (tests/test_step22c.py has the race itself).
+    import step_22b as S
     s = board()
     r = D.Read(D.cov_off_fresh(s))
     g = r._gap_info()
     k = g['idx'][B.parse_sq('I3')]
     pts, types = RC.ZONE_POINTS[B.zone(g['sq'][k])], RC.ZONE_SHOTS[B.zone(g['sq'][k])]
-    assert g['full'][k] == pytest.approx(sum(max(pts * c.shot(t) for t in types) for c in s.ctx.off) / 5)   # the cards, nothing by hand
-    nobody = r._gap_vec(g, [None] * 5, [(-9, -9)] * 5)
-    assert nobody == pytest.approx(g['full'])                         # whether or not anyone can reach it
-    r.map_options()
-    with_x4 = r._gap_vec(g, [None, None, None, r._mcms[3], None], [(-9, -9)] * 3 + [s.x[3], (-9, -9)])
-    assert with_x4[k] < g['full'][k]                                  # X4 on I6 takes something off the lane
-    assert with_x4[g['idx'][B.parse_sq('A7')]] == pytest.approx(g['full'][g['idx'][B.parse_sq('A7')]])    # and nothing off the far wing
-    green, arc = g['full'][k], g['full'][g['idx'][B.parse_sq('A3')]]
+    assert g['open'][k] == pytest.approx([max(pts * c.shot(t) for t in types) for c in s.ctx.off])     # the cards, nothing by hand
+    st = r._lg_root(r.map_options())
+    assert max(r._gap_vec(st)) == 0                                   # as the defence stood, somebody is set on every square in time
+    far = S._board(['A1', 'B1', 'A2', 'B2', 'A3'], [0, 0, 0, 0, 0], ['I9', 'H9', 'J9', 'I10', 'I8'])   # the defence in a corner
+    r2 = D.Read(D.cov_off_fresh(far))
+    gv = r2._gap_vec(r2._lg_root(r2.map_options()))
+    k2 = max(range(len(gv)), key=lambda i: gv[i])
+    assert 0 < gv[k2] <= max(g['open'][k2]) + 1e-9                    # a square won is worth no more than the winner's own shot there
+    green, arc = max(g['open'][k]), max(g['open'][g['idx'][B.parse_sq('A3')]])
     assert green > arc                                                # the pull of the green zone falls out of the cards
 
 

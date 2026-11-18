@@ -1333,6 +1333,66 @@ away covered a shot as well as one beside the shooter, and the settlement packed
 rule, in both engines; it is no rule or card change (D-190). It moves the lasting gap's numbers too (Shaun's board:
 18 before, 24 now). · Source: step 22b, for Shaun · **Built; awaiting Shaun.**
 
+**D-223. Shaun's rulings on step 22b.** D-219 stands: the list leads the search, both sides; the lasting gap setting
+stays available but off. D-222 stands: off balance is counted in the map (a contest reached by a Quick Step or Sprint is
+rushed, by D-185). The other choices stand as read: walls count in reach, not in a square's gap; one defender per
+contest; the map's reach for "this turn"; a lost Dribble costs nothing banked; assignments are read again only after
+the defence acts. On check 1 (nobody guards the ball handler) Shaun accepts the settlement's logic on his board: "A rim
+protector closely guarding a pass first point guard at the 3 point line is very susceptible to being beaten and then
+protection for the drive is weak." · Source: Shaun, 18 Nov 2026 · **Ruled.**
+
+**D-224. Stagnation is counted in the list.** Shaun: "Other than foul risk, the biggest factor is limiting ball handler
+movement. Play stagnation. You're winding down the clock. Such that an offence with no good options that is stifled
+everywhere else and the paint is clogged by a rim protector is right." "Pressure defence restricts movement. Movement
+restricts access to clean passing lanes." Built in both engines, both sides, in points by the rules, no weights: (a)
+**the Steal** as the defence stands, on whoever holds the ball on a square: a defender next to it with an arrow on him,
+or one a Move takes next to it; kept on Dribble less Steal or under, else -5; a foul is +5 (D-198); the defence only
+tries where that favours it, so it never counts above 0. (b) **The closely guarded count** (D-173): a ball handler who
+holds where he stands, closely guarded when the phase ends, is one phase end nearer the -5: counted at how far along
+the count's three that puts him (a third, two thirds, all of it); a live dribble isn't counted, as the rule has it. (c)
+**The shot clock running down:** a square's gap, the long view, counts only while some attacker can still get there in
+the phases the clock leaves, by the rules' movement (now part of the race, D-228); as the clock runs down the court the
+offence can still use shrinks, so a position where nothing is open reads worse for the offence the later it is.
+**Marked for Shaun:** his words asked for (c) from the game's own phase values. That table (step 3n, 16 self-play
+possessions a level on a 12-second clock) rises with the phase, 24.9 at the first to 29.5 at the last, so counted as
+written a late possession would read better. I counted the clock by the rules instead. Setup also tries every defender
+on each square next to the ball handler with each of the eight arrows (the list read with bodies and walls counted, the
+best read in full), since the quick re-read can't see what pressure takes: the Steal, the count, a wall across his way.
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22c; (b)'s thirds and (c)'s source await Shaun.**
+
+**D-225. A zone never blocks a pass (a clarification of the rules as the code already has them).** A defender's wedge
+restricts the ball handler's movement only (D-170). A pass is stopped only by a Steal from the defender next to the
+passer, an Intercept by a defender jumping the lane elsewhere, or denial next to the receiver. D-167's words "cannot
+pass through your zone" mean move past, not throw through. No rule changed; the register, the help and two code comments
+now say so. · Source: Shaun, 18 Nov 2026 · **Ruled.**
+
+**D-226. Two defenders helping count as a takeover.** When teammates already cover a beaten defender's man between
+them, his man is taken. Beaten: a Dribble won against him this phase, or locked, or his man has the ball nearer the rim
+than he stands. The helpers are the teammates who take something off that man's best look; between them they must leave
+him less than the beaten defender alone would. The beaten defender then picks up what the helpers left: one of their
+own men, whichever leaves every defender covering his own man best. While the help still has his old man, the
+assignments don't go back. The coverage view names it: "X4 and X5 have O1: X1 picks up O5." Assignments are read again
+when the defence's turn is done and no pass is in the air, not after each of its actions.
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22c.**
+
+**D-227. The Watch replay shows the new lines** (each defender's job, switches, takeovers, chases, sags), the same as the
+live coverage view. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22c.**
+
+**D-228. Zone gaps are a race.** Shaun, on X3 guarding an empty wing and X5 covering three looks from nowhere: "Is one
+phase enough? A phase is only 2 seconds." A square is a gap only when an attacker can get there with the ball before
+any defender can arrive to contest it. Both sides' phases are counted by the rules (movement, the pass, the reaction),
+over as many phases as the race takes, up to the shot clock. Its value is that attacker's shot from the square at his
+real chance of winning the race, less the contest the first defender to arrive brings. A square every attacker loses
+the race to is not a gap, however valuable. This replaces D-218's "the average of all five regardless of reach". No
+fixed horizon, no hand-set weights. Built in both engines: a defender who can be set on the square (standing, or one
+Move) by the phase the attacker arrives wins the race; one who can only get a hand up off balance (the reaction's Quick
+Step or Sprint, D-222) brings that contest; the ball handler has the ball at 1, anyone else at the pass's chance by the
+rules as the defence stands, a lost pass -5 (D-198). **Marked for Shaun, choices his words didn't settle:** a tie in
+phases goes to the defender (he is set as the shot goes up); bodies and walls on the way aren't counted in the long
+race (nobody stands still for it), nor is a Dribble past a wall; the pass's chance is read as the defence stands now,
+not as it will stand when the attacker arrives; the late contest is counted from in front.
+· Source: Shaun, 18 Nov 2026 (a revision during step 22c) · **Ruled; built in step 22c.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

@@ -1,0 +1,162 @@
+{
+ "positions": 40,
+ "equal": 39,
+ "different": [
+  {
+   "js": {
+    "L": 18.63,
+    "moves": 4,
+    "list": [
+     28,
+     27,
+     24.63,
+     22,
+     15,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "settle": [
+     [
+      1,
+      "I5",
+      -1
+     ],
+     [
+      0,
+      "E6",
+      0
+     ]
+    ],
+    "top": 28
+   },
+   "py": {
+    "L": 18.62,
+    "moves": 4,
+    "list": [
+     28.0,
+     27.0,
+     24.62,
+     22.0,
+     15.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "settle": [
+     [
+      1,
+      "I5",
+      -1
+     ],
+     [
+      0,
+      "E6",
+      0
+     ]
+    ],
+    "top": 28.0
+   },
+   "state": {
+    "o": [
+     "D11",
+     "C14",
+     "F9",
+     "O13",
+     "N6"
+    ],
+    "x": [
+     "E1",
+     "J7",
+     "K12",
+     "Q9",
+     "H11"
+    ],
+    "arrows": [
+     0,
+     4,
+     0,
+     0,
+     5
+    ],
+    "ball": 2,
+    "stage": "play",
+    "side": "O",
+    "clock": 10,
+    "tok_o": 6,
+    "tok_x": 6,
+    "moved_o": 0,
+    "moved_x": 0,
+    "cnt": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "turn_n": 0,
+    "final": false,
+    "lock_o": 0,
+    "lock_x": 0,
+    "screens": [],
+    "pending": null,
+    "approach": -1,
+    "shot": null,
+    "prev_wait": "",
+    "beaten": [],
+    "fouls": 0,
+    "bonus5": 0,
+    "tos": 0,
+    "inbound": 0,
+    "target": -1,
+    "result": null,
+    "zeroed": false,
+    "phase": 2,
+    "turn_moved": 0,
+    "qs_o": 0,
+    "qs_x": 0,
+    "forced": false,
+    "react_moved": 0,
+    "turn_lead": -1,
+    "rush_o": 0,
+    "rush_x": 0,
+    "key_o": 0,
+    "grd": 1,
+    "turn_x": [],
+    "phase_x": [
+     [
+      "E1",
+      "J7",
+      "K12",
+      "Q9",
+      "H11"
+     ],
+     [
+      0,
+      4,
+      0,
+      0,
+      5
+     ]
+    ]
+   }
+  }
+ ],
+ "seconds": 28.9,
+ "js_ms": 47.1,
+ "py_ms": 621.3
+}

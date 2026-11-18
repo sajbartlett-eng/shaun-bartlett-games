@@ -177,7 +177,7 @@ def path_ok(state, side, i, path, rules, occ=None, zones=None):
     elif i == state.ball:
         if rules.zone != 'off':              # D-170: caught by one arrow, he can't cross the other arrow's line
             return capture_ok(start, path, capture_lines(state, i) if zones is None else zones)
-        if rules.drive_rule == 'zone':       # ruled: may end in an adjacent defender's zone, not pass through it
+        if rules.drive_rule == 'zone':       # ruled: may end in an adjacent defender's zone, not move through it (a pass is never blocked: D-225)
             if zones is None:
                 zones = carrier_zones(state, i)
             for q in path[:-1]:
