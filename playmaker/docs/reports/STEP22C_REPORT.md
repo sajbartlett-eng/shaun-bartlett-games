@@ -94,7 +94,7 @@ They agree on 39 of 40 random positions. The other differs only in the last prin
 
 ## Tests
 
-- Fast set: 177 tests run. All pass except the setup timing test (2.3 seconds against a 1.9 second limit), which the brief allows.
+- Fast set: 168 tests run, 167 pass. The one failure is the setup timing test (2.3 seconds against a 1.9 second limit), which the brief allows. Four older expected failures are unchanged.
 - `test_rules_current.py`, the golden tests and the engine-equality tests pass.
 - New: `tests/test_step22c.py` (11 tests: the rulings and rules text, the Steal, the count, the race, the clock, both engines, the takeover, the replay lines).
 - Re-recorded, each with a note in the test:
