@@ -58,7 +58,9 @@ def test_each_defender_has_plain_words_for_what_he_is_playing_for(js):
         assert r['line'].startswith(f"X{r['x'] + 1}: ")
         assert not any(re.search(r'\b' + re.escape(w) + r'\b', r['line'], re.I) for w in P.BANNED), r['line']
         assert '—' not in r['line']
-    assert roles[3]['gap'] and B.in_key(B.parse_sq(roles[3]['gap']['sq']))       # X4 in the lane holds a square of the key
+    # Re-recorded in step 22c (D-228): this read "X4 in the lane holds a square of the key" (roles[3]['gap'] in the key).
+    # With gaps a race, the key is no gap he alone closes (others are set there in time too): his line names his man.
+    assert roles[3]['kind'] in ('man', 'both') and roles[3]['line'].startswith('X4: on O')
 
 
 @needs_node

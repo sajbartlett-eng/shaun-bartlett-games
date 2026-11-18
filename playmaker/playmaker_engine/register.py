@@ -479,7 +479,7 @@ WORDS = {
     'arrow_line_strict': dict(sec=None, src=None, tab=NOT_IN_PLAY, dig=NOT_IN_PLAY),
     'late_closeout': dict(sec=None, src=None, tab='off (a rule test, not adopted)', dig='off (a rule test, not adopted)'),
     'zone': dict(sec=None, src=None, tab='off (the app only, D-167)',
-                 dig='on in the app since step 18p (D-167, D-196): a defender has two arrows, and can be square to the shot and wall the drive at once; the game sets it for the app'),
+                 dig='on in the app since step 18p (D-167, D-196): a defender has two arrows, and can be square to the shot and wall the drive at once; his arrows wall the ball handler\'s movement only and never block a pass (D-225); the game sets it for the app'),
     'soft_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
                          dig='next to the shooter is a soft contest, 3 lower, no action, no foul; a Contest action is a hard contest (D-177)'),
     'fiba_steal_foul': dict(sec=None, src=None, tab='+5 to the offence on every steal foul',

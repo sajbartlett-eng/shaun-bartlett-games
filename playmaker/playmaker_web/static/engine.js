@@ -4658,6 +4658,46 @@ const PMEngine = (() => {
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
     const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cm2Cached(s.x[d], s.arrows[d], ctx.dfn[d].qs, stanceMode(sN, d)) : null));
     const options = [], byKey = new Map();
+    // ---- step 22c (D-224, Shaun, 18 Nov 2026): stagnation, in points by the rules -------------------------------------
+    // The Steal, as the defence stands: whoever holds the ball on a square can be reached by a defender next to it
+    // with an arrow on him, or by one who gets next to it with a Move (facing as he likes, set when he arrives). By
+    // the rules' own chances (D-198): the ball kept on Dribble less Steal or under, else -5; a foul (one roll from in
+    // front, two from level or behind) is +5. The defence only tries where that favours it, so it never counts above 0.
+    const stealOn = ctx.ppo && s.tok_x >= 1 && count(s, 'X', 'steal') < LIMITS.X.steal;
+    const mv1 = [null, null, null, null, null], sev = new Map(), sat = new Map();
+    if (stealOn && s.tok_x >= 2) for (let j = 0; j < 5; j++) if (ONB[s.x[j]] && caps(s, 'X', j)[0]) mv1[j] = defenderReachExact(s, j)[0];
+    const stealEV = (a, j, rolls, viaMove) => {
+      const key = ((a * 5 + j) * 2 + (rolls - 1)) * 2 + (viaMove ? 1 : 0);
+      let v = sev.get(key);
+      if (v === undefined) {
+        const pf = clampT(ctx.dfn[j].r.foul_steal) / 20, foul = rolls === 2 ? 1 - (1 - pf) * (1 - pf) : pf;
+        const tk = rolled(s, 'O', a, 'dribble') - (viaMove ? ctx.dfn[j].r.steal : rolled(s, 'X', j, 'steal'));
+        v = TURNOVER_COST * foul - TURNOVER_COST * (1 - foul) * pNot(tk);
+        sev.set(key, v);
+      }
+      return v;
+    };
+    const stealAt = (a, q) => {
+      if (!stealOn) return 0;
+      const key = a * 4096 + q;
+      let best = sat.get(key);
+      if (best !== undefined) return best;
+      best = 0;
+      for (let j = 0; j < 5; j++) {
+        const xp = s.x[j];
+        if (!ONB[xp]) continue;
+        if (adjacent(xp, q) && onLine(stanceOf(s, j), dirBetween(xp, q))) { const v = stealEV(a, j, foulRolls(xp, q), false); if (v < best) best = v; }
+        const fr = mv1[j];
+        if (fr) for (let d = 0; d < 8; d++) { const p2 = q + DSTEP[d]; if (ONB[p2] && fr.get(p2) === 1) { const v = stealEV(a, j, foulRolls(p2, q), true); if (v < best) best = v; } }
+      }
+      sat.set(key, best);
+      return best;
+    };
+    // The closely guarded count (D-173): a ball handler who holds where he stands, closely guarded when the phase
+    // ends, is one phase end nearer the -5 violation: counted at how far along the count's three that puts him. A
+    // live dribble isn't counted (the rule), and moving or passing starts it again.
+    const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && q0 === s.o[a] && n0 === 0 && (s.grd & 3) !== 1 && closelyGuarded(s)
+      ? -TURNOVER_COST * Math.min(3, ((s.grd >> 2) & 3) + 1) / 3 : 0);
     const last = s.clock <= 2;                         // no phase after this one
     for (let a = 0; a < 5 && !last; a++) {
       if (!ONB[s.o[a]]) continue;
@@ -4708,17 +4748,19 @@ const PMEngine = (() => {
       for (const [q0, pr, setOnly, n0, dr] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
+        const adj = stealAt(a, q0) + guardAt(a, q0, n0);           // step 22c: what holding the ball there costs him (0 or less)
         if (lean) {
-          const put = (c, rushed) => {
+          const put = (c, rushed) => {                             // (the likeliest way there; of two as likely, the one that costs him less)
             const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
             const o = byKey.get(key);
-            if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0, dr: !!dr }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) { o.pr = pr; o.q0 = q0; o.n0 = n0; o.dr = !!dr; }
+            if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0, dr: !!dr, adj }; byKey.set(key, n); options.push(n); }
+            else if (pr > o.pr || (pr === o.pr && adj > o.adj)) { o.pr = pr; o.q0 = q0; o.n0 = n0; o.dr = !!dr; o.adj = adj; }
           };
           if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) put(q0, false);
           if (setOnly) continue;
           for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
             const c = p[p.length - 1], o = byKey.get((a * 4096 + c) * 2 + (rushed ? 1 : 0));
-            if (o && o.pr >= pr) continue;
+            if (o && (o.pr > pr || (o.pr === pr && o.adj >= adj))) continue;
             let bad = false;
             for (const q of p) if (mates.has(q) || xat.has(q)) { bad = true; break; }
             if (bad) continue;
@@ -4727,7 +4769,7 @@ const PMEngine = (() => {
           }
           continue;
         }
-        if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop, dr: !!dr });      // a set shot from where the phase finds him
+        if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop, dr: !!dr, adj });      // a set shot from where the phase finds him
         if (setOnly) continue;
         for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
           let dm = 0, bad = false;
@@ -4735,7 +4777,7 @@ const PMEngine = (() => {
           if (bad) continue;
           let zm = 0;
           for (const ln of lines) if (!captureOk(q0, p, ln[1])) zm |= 1 << ln[0];
-          add(p[p.length - 1], rushed, { q0, p, dm, zm, pr, stop, dr: !!dr });
+          add(p[p.length - 1], rushed, { q0, p, dm, zm, pr, stop, dr: !!dr, adj });
         }
       }
     }
@@ -4752,11 +4794,11 @@ const PMEngine = (() => {
       }
       let pr = 0;
       if (lean) pr = o.pr;
-      else for (const pt of o.paths) if (pt.dm === 0 && pt.zm === 0 && pt.pr > pr) { pr = pt.pr; o.dr = pt.dr; }
+      else { o.adj = 0; for (const pt of o.paths) if (pt.dm === 0 && pt.zm === 0 && (pt.pr > pr || (pt.pr === pr && pr > 0 && pt.adj > o.adj))) { pr = pt.pr; o.dr = pt.dr; o.adj = pt.adj; } }
       const cv = covValue(o, -1, null);
       o.lc = o.dr ? 0 : TURNOVER_COST;                 // what not getting there costs: a lost pass -5, a lost Dribble nothing
       o.r = pr; o.w = cv[0]; o.t = cv[1]; o.cover = cv[2]; o.next = cv[3];
-      o.e = pr > 0 ? pr * o.w - (1 - pr) * o.lc : -Infinity;
+      o.e = pr > 0 ? pr * (o.w + o.adj) - (1 - pr) * o.lc : -Infinity;
     }
     const sorted = options.filter(o => o.r > 0).sort((x, y) => (y.e - x.e) || (x.a - y.a) || (x.c - y.c) || ((x.rushed ? 1 : 0) - (y.rushed ? 1 : 0)));
     // the best shot that can go up this phase, as the reading has it
@@ -4769,16 +4811,16 @@ const PMEngine = (() => {
     if (o.c === p) return -Infinity;
     const s = m.s, bd = 1 << d, same = p === s.x[d] && arrow === s.arrows[d];
     const line = (!same && s.ctx.zone) ? [[p, arrow, (arrow + 1) % 8, 1, 1]] : null;
-    let pr = 0, lc = TURNOVER_COST;
+    let pr = 0, lc = TURNOVER_COST, adj = 0;
     for (const pt of o.paths) {
       if (pt.pr <= pr || (pt.dm & ~bd) || (same ? pt.zm : (pt.zm & ~bd)) || pt.stop === p || (pt.p.length && pt.p.includes(p))) continue;
       if (line !== null && pt.p.length && !captureOk(pt.q0, pt.p, line)) continue;
-      pr = pt.pr; lc = pt.dr ? 0 : TURNOVER_COST;
+      pr = pt.pr; lc = pt.dr ? 0 : TURNOVER_COST; adj = pt.adj;
     }
     if (pr <= 0) return -Infinity;
     const mask = cm[BI[o.c]];
     const mine = mask ? mapVals(m.r, o.lk, d, mask, o.fl) : null;
-    return pr * covValue(o, d, mine)[0] - (1 - pr) * lc;
+    return pr * (covValue(o, d, mine)[0] + adj) - (1 - pr) * lc;
   }
   // stop two, for the search: the defence's answers in a fast form. While it has tokens, one defender makes the one
   // movement this phase that takes something off the offence's best option and leaves its best six the smallest, the
@@ -4816,7 +4858,7 @@ const PMEngine = (() => {
           else {
             const mask = cm[BI[o.c]];
             const vals = mask ? mapVals(r, o.lk, d, mask, o.fl) : null;
-            e = o.r * covValue(o, d, vals)[0] - (1 - o.r) * o.lc;
+            e = o.r * (covValue(o, d, vals)[0] + o.adj) - (1 - o.r) * o.lc;
           }
           if (k === 0 && !(e < top.e - 1e-9)) return;     // an answer takes something off the best option
           after.push(e);
@@ -4844,7 +4886,7 @@ const PMEngine = (() => {
         o.vals[d] = mask ? mapVals(r, o.lk, d, mask, o.fl) : null;
         const cv = covValue(o, -1, null);
         o.w = cv[0]; o.t = cv[1]; o.cover = cv[2]; o.next = cv[3];
-        o.e = o.r > 0 ? o.r * o.w - (1 - o.r) * o.lc : -Infinity;
+        o.e = o.r > 0 ? o.r * (o.w + o.adj) - (1 - o.r) * o.lc : -Infinity;
       }
     }
     return steps;
@@ -4906,7 +4948,7 @@ const PMEngine = (() => {
       y.vals[d] = mask ? mapVals(r, x.src.lk, d, mask, x.src.fl) : null;
       const cv = covValue({ open: x.src.open, vals: y.vals }, -1, null);
       y.w = cv[0]; y.t = cv[1]; y.cover = cv[2]; y.next = cv[3];
-      y.e = y.r > 0 ? y.r * y.w - (1 - y.r) * y.src.lc : -Infinity;
+      y.e = y.r > 0 ? y.r * (y.w + y.src.adj) - (1 - y.r) * y.src.lc : -Infinity;
       o.push(y);
     }
     const taken = new Set(st.taken); taken.add(q);
@@ -4964,7 +5006,7 @@ const PMEngine = (() => {
       const mask = lgCovMask(x); if (!mask) continue;
       let top = -Infinity, tt = 0;
       for (let t = 0; t < x.src.open.length; t++) if (x.src.open[t] > top) { top = x.src.open[t]; tt = t; }
-      looks.push({ x, mask, wd: x.r * top - (1 - x.r) * x.src.lc, tt });
+      looks.push({ x, mask, wd: x.r * (top + x.src.adj) - (1 - x.r) * x.src.lc, tt });
     }
     const out = [], named = [];
     for (let k = 1; k <= LG_GROUP; k++) {
@@ -5000,62 +5042,115 @@ const PMEngine = (() => {
   // value zones of the court with poor coverage. Regardless of whether that position can be reached in the next phase
   // or actions. And it is ranked by the average shot quality of all the offensive players compared to the square that
   // would be left with no zone of influence."
-  // The zone gaps. For every square a shot may go up from: the average, over the five attackers, of his best open shot
-  // there (the cards), less what the defence's influence there takes off as it stands: the defender who would contest
-  // it best, by the rules' reaction from where he stands with the arrows he has, against the average shooter. A square
-  // nobody influences keeps its full value; a square a defender stands on is worth nothing. It counts whether or not
-  // anyone can reach the square this phase: the long view. Nothing ranks a zone by hand: the values are the cards'.
+  // The zone gaps are a race (step 22c, D-228, Shaun, 18 Nov 2026: "Is one phase enough? A phase is only 2 seconds.").
+  // A square is a gap only when an attacker can get there with the ball before any defender can arrive set to contest
+  // it. Each side's phases are counted by the rules' movement (a Move and a Quick Step, or a Sprint, a phase), over as
+  // many phases as the race takes, up to the shot clock. The attacker shoots at the start of the phase after he
+  // arrives; a defender is there in time if by then he stands where the reaction's one Move lets him contest set. If
+  // none can, the first who can still get a hand up off balance (the reaction's Quick Step or Sprint) brings that
+  // contest. The gap is worth that attacker's shot from the square at his real chance of having the ball there (a
+  // pass by the rules' chance as the defence stands), less that contest. A square every attacker loses the race to
+  // is not a gap, however valuable. This replaces step 22b's average of all five whatever the reach.
   const DESC = (u, v) => v - u;
-  function gapInfo(r) {
+  const _PS = new Map(), _PD = new Map(), _AP = new Map();
+  function phaseStep(p, qs) {                          // the squares one phase's movement reaches from p (bodies not counted)
+    const key = p * 8 + qs;
+    let hit = _PS.get(key); if (hit) return hit;
+    const fr = geoReach(p, 0, qs, true, 1), set = new Set();
+    for (const q of fr[0].keys()) if (ONB[q]) set.add(q);
+    for (const q of fr[1].keys()) if (ONB[q]) set.add(q);
+    set.delete(p);
+    hit = Int16Array.from(set); _PS.set(key, hit); return hit;
+  }
+  function phaseDist(start, qs) {                      // phases of movement from start to every square
+    const key = start * 8 + qs;
+    let hit = _PD.get(key); if (hit) return hit;
+    hit = new Int8Array(NSQ).fill(INF);
+    hit[start] = 0;
+    let frontier = [start];
+    for (let level = 1; frontier.length; level++) {
+      const next = [];
+      for (const p of frontier) for (const q of phaseStep(p, qs)) if (hit[q] === INF) { hit[q] = level; next.push(q); }
+      frontier = next;
+    }
+    _PD.set(key, hit); return hit;
+  }
+  function arrivePhases(start, qs, mode) {             // per board square: the phases before he can contest a shot there set, and at all
+    const key = ((start * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    let hit = _AP.get(key); if (hit) return hit;
+    const pd = phaseDist(start, qs), set = new Int8Array(NB).fill(INF), any = new Int8Array(NB).fill(INF);
+    for (let p = 0; p < NSQ; p++) {
+      const k = pd[p];
+      if (!ONB[p] || k >= INF) continue;
+      const cv = anyArrow2(p, qs, mode);
+      for (let b = 0; b < NB; b++) { const v = cv[b]; if (!v) continue; if (k < any[b]) any[b] = k; if ((v >> 6) && k < set[b]) set[b] = k; }
+    }
+    hit = { set, any }; _AP.set(key, hit); return hit;
+  }
+  function gapInfo(r) {                                // every square a shot may go up from; each attacker's look there and its open value
     const ctx = r.s.ctx;
     let g = ctx._gap;
     if (!g) {
       const sq = [];
       for (let q = 0; q < ONB.length; q++) if (ONB[q] && SHOOT(ZN[q]) && !(ctx.noRim && q === RIM)) sq.push(q);
-      const full = new Float64Array(sq.length), looks = [];
+      const looks = [], open = [];
       for (let k = 0; k < sq.length; k++) {
-        const q = sq[k], pts = ZONE_POINTS[ZN[q]], types = ZONE_SHOTS[ZN[q]], row = [];
-        let sum = 0;
+        const q = sq[k], pts = ZONE_POINTS[ZN[q]], types = ZONE_SHOTS[ZN[q]], row = [], op = [];
         for (let a = 0; a < 5; a++) {
           const lk = makeLook(a, q, 'later', 1.0, false); lk.types = types; lk.rushed = false; row.push(lk);
           let top = -Infinity; for (const t of types) { const v = pts * ctx.off[a].sh[t]; if (v > top) top = v; }
-          sum += top;
+          op.push(top);
         }
-        full[k] = sum / 5; looks.push(row);
+        looks.push(row); open.push(op);
       }
-      g = ctx._gap = { sq, full, looks, red: new Map(), idx: new Map(sq.map((q, k) => [q, k])), nz: new WeakMap() };
+      g = ctx._gap = { sq, looks, open, late: new Map(), idx: new Map(sq.map((q, k) => [q, k])) };
     }
     return g;
   }
-  function gapRed(r, g, d, k, mask) {                  // square k with defender d's Contest (mask) on it: the average shooter's best shot there
-    const key = (d * 512 + k) * 4096 + mask;
-    let v = g.red.get(key);
+  function gapLate(r, g, k, a, d) {                    // attacker a's shot on square k with defender d's hand up off balance
+    const key = (k * 5 + a) * 5 + d;
+    let v = g.late.get(key);
     if (v === undefined) {
-      const ctx = r.s.ctx, q = g.sq[k], pts = ZONE_POINTS[ZN[q]];
-      let sum = 0;
-      for (let a = 0; a < 5; a++) {
-        const lk = g.looks[k][a], vals = mapVals(r, lk, d, mask, undefined);
-        let top = -Infinity;
-        for (let t = 0; t < lk.types.length; t++) { const o = pts * ctx.off[a].sh[lk.types[t]], w = vals && vals[t] < o ? vals[t] : o; if (w > top) top = w; }
-        sum += top;
-      }
-      v = sum / 5; g.red.set(key, v);
+      const ctx = r.s.ctx, lk = g.looks[k][a], pts = ZONE_POINTS[ZN[g.sq[k]]], vals = mapVals(r, lk, d, 1, undefined);
+      v = -Infinity;
+      for (let t = 0; t < lk.types.length; t++) { const o = pts * ctx.off[a].sh[lk.types[t]], w = vals && vals[t] < o ? vals[t] : o; if (w > v) v = w; }
+      g.late.set(key, v);
     }
     return v;
   }
-  function gapNz(g, cm) {                              // the squares a Contest reaches
-    let z = g.nz.get(cm);
-    if (!z) { z = []; for (let k = 0; k < g.sq.length; k++) if (cm[BI[g.sq[k]]]) z.push(k); g.nz.set(cm, z); }
-    return z;
+  function gapRace(m) {                                // the offence's side of the race: each attacker's phases to every square, the phases the clock leaves
+    if (m.race) return m.race;
+    const s = m.s;
+    return m.race = { n: Math.floor(s.clock / 2) - 1, A: [0, 1, 2, 3, 4].map(a => (ONB[s.o[a]] ? phaseDist(s.o[a], s.ctx.off[a].qs) : null)), ch: new Map() };
   }
-  function gapVec(r, g, cms, xs) {                     // every square's gap, the defence as given (each defender's Contest and square)
-    const out = new Float64Array(g.sq.length);
+  function gapVec(st, d2, q2) {                        // every square's gap, the defence as the state has it (d2 on q2 instead, where given)
+    const m = st.m, r = m.r, s = m.s, g = gapInfo(r), R = gapRace(m), out = new Float64Array(g.sq.length);
+    const ap = [null, null, null, null, null], xs = st.xs;
+    for (let d = 0; d < 5; d++) { const x = d === d2 ? q2 : xs[d]; if (ONB[x]) ap[d] = arrivePhases(x, s.ctx.dfn[d].qs, stanceMode(m.sN, d)); }
     for (let k = 0; k < g.sq.length; k++) {
       const q = g.sq[k], b = BI[q];
-      if (xs[0] === q || xs[1] === q || xs[2] === q || xs[3] === q || xs[4] === q) { out[k] = 0; continue; }
-      let v = g.full[k];
-      for (let d = 0; d < 5; d++) { const cm = cms[d]; if (!cm) continue; const mk = cm[b]; if (mk) { const u = gapRed(r, g, d, k, mk); if (u < v) v = u; } }
-      out[k] = v;
+      let on = false, set = INF;
+      for (let d = 0; d < 5; d++) {
+        if ((d === d2 ? q2 : xs[d]) === q) { on = true; break; }
+        if (ap[d] && ap[d].set[b] < set) set = ap[d].set[b];
+      }
+      if (on) continue;
+      let best = 0;
+      for (let a = 0; a < 5; a++) {
+        const A = R.A[a];
+        if (!A) continue;
+        const T = A[q] < 1 ? 1 : A[q];                  // (on it already: he shoots as the next phase starts)
+        if (T > R.n || set <= T) continue;             // the clock runs out first, or a defender is set there in time
+        let w = g.open[k][a];
+        if (!(w > best)) continue;
+        for (let d = 0; d < 5; d++) if (ap[d] && ap[d].any[b] <= T) { const u = gapLate(r, g, k, a, d); if (u < w) w = u; }
+        let ch = 1;
+        if (a !== s.ball) { const key = a * 4096 + q; ch = R.ch.get(key); if (ch === undefined) { ch = covPass(s, a, q); R.ch.set(key, ch); } }
+        if (!(ch > 0)) continue;
+        const e = ch * w - (1 - ch) * TURNOVER_COST;
+        if (e > best) best = e;
+      }
+      out[k] = best;
     }
     return out;
   }
@@ -5065,9 +5160,9 @@ const PMEngine = (() => {
   // best first: no weights, no sums); the offence plays to raise it.
   function lgList(st) {
     if (st.list) return st.list;
-    const m = st.m, g = gapInfo(m.r), thr = [0, 0, 0, 0, 0];
+    const thr = [0, 0, 0, 0, 0];
     for (const x of st.o) if (x.r > 0 && x.e > thr[x.src.a]) thr[x.src.a] = x.e;
-    const gv = gapVec(m.r, g, st.cms, st.xs), out = new Float64Array(5 + gv.length);
+    const gv = gapVec(st), out = new Float64Array(5 + gv.length);
     out.set(thr, 0); out.set(gv, 5); out.sort(); out.reverse();
     st.thr = thr; st.gaps = gv;
     return st.list = out;
@@ -5107,7 +5202,7 @@ const PMEngine = (() => {
     const m = st.m, g = gapInfo(m.r), byA = [[], [], [], [], []];
     for (const x of st.o) if (x.r > 0) byA[x.src.a].push(x);
     const list = lgList(st);
-    return { st, m, g, byA, thr: st.thr, gaps: st.gaps, sorted: list, split: [null, null, null, null, null], stamp: new Int32Array(g.sq.length), tick: 0 };
+    return { st, m, g, byA, thr: st.thr, gaps: st.gaps, sorted: list, split: [null, null, null, null, null] };
   }
   function qSplit(Q, d) {
     if (Q.split[d]) return Q.split[d];
@@ -5115,7 +5210,7 @@ const PMEngine = (() => {
     for (let a = 0; a < 5; a++) {
       const f = [], h = [];
       for (const x of Q.byA[a]) {
-        if (x.vals[d]) h.push({ x, ewo: x.r * covValue({ open: x.src.open, vals: x.vals }, d, null)[0] - (1 - x.r) * x.src.lc });
+        if (x.vals[d]) h.push({ x, ewo: x.r * (covValue({ open: x.src.open, vals: x.vals }, d, null)[0] + x.src.adj) - (1 - x.r) * x.src.lc });
         else f.push(x);
       }
       f.sort((u, v) => v.e - u.e); h.sort((u, v) => v.ewo - u.ewo);
@@ -5128,7 +5223,7 @@ const PMEngine = (() => {
     const re = x => {
       const mask = cm[BI[x.src.c]];
       const vals = mask ? mapVals(r, x.src.lk, d, mask, x.src.fl) : null;
-      return x.r * covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] - (1 - x.r) * x.src.lc;
+      return x.r * (covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] + x.src.adj) - (1 - x.r) * x.src.lc;
     };
     let best = 0;
     for (const x of sp.free[a]) {
@@ -5144,29 +5239,33 @@ const PMEngine = (() => {
     }
     return best;
   }
-  function qList(Q, d, q, cm) {                        // the list with defender d on q: the items that change swapped for what they become
-    const rem = [], add = [], g = Q.g, st = Q.st, r = Q.m.r, old = st.cms[d], tick = ++Q.tick;
-    for (let a = 0; a < 5; a++) { const t = qThreat(Q, a, d, q, cm); if (Math.abs(t - Q.thr[a]) > 1e-9) { rem.push(Q.thr[a]); add.push(t); } }
-    const one = k => {
-      if (Q.stamp[k] === tick) return;
-      Q.stamp[k] = tick;
-      const sq = g.sq[k];
-      let v = g.full[k];
-      if (sq === q) v = 0;
-      else {
-        const b = BI[sq];
-        for (let e = 0; e < 5; e++) {
-          if (e !== d && st.xs[e] === sq) { v = 0; break; }
-          const c = e === d ? cm : st.cms[e]; if (!c) continue;
-          const mk = c[b]; if (mk) { const u = gapRed(r, g, e, k, mk); if (u < v) v = u; }
-        }
+  function qOwn(Q, d, q, cm) {                         // what each attacker's best look is with only defender d on him, from q (largest first)
+    const r = Q.m.r, one = [null, null, null, null, null], out = [];
+    if (!Q.byOpen) {
+      Q.byOpen = Q.byA.map(l => l.map(x => { let top = -Infinity; for (const v of x.src.open) if (v > top) top = v; return { x, e0: x.r * (top + x.src.adj) - (1 - x.r) * x.src.lc }; }).sort((u, v) => v.e0 - u.e0));
+    }
+    for (let a = 0; a < 5; a++) {
+      let best = 0;
+      for (const z of Q.byOpen[a]) {
+        if (z.e0 <= best) break;
+        const x = z.x;
+        if (x.src.c === q) continue;
+        const mask = cm[BI[x.src.c]];
+        if (!mask) { best = z.e0; break; }
+        one[d] = mapVals(r, x.src.lk, d, mask, x.src.fl);
+        const e = x.r * (covValue({ open: x.src.open, vals: one }, -1, null)[0] + x.src.adj) - (1 - x.r) * x.src.lc;
+        one[d] = null;
+        if (e > best) best = e;
       }
-      if (Math.abs(v - Q.gaps[k]) > 1e-9) { rem.push(Q.gaps[k]); add.push(v); }
-    };
-    if (old) for (const k of gapNz(g, old)) one(k);
-    for (const k of gapNz(g, cm)) one(k);
-    const kq = g.idx.get(q); if (kq !== undefined) one(kq);
-    const ko = g.idx.get(st.xs[d]); if (ko !== undefined) one(ko);
+      out.push(best);
+    }
+    return out.sort(DESC);
+  }
+  function qList(Q, d, q, cm) {                        // the list with defender d on q: the items that change swapped for what they become
+    const rem = [], add = [], st = Q.st;
+    for (let a = 0; a < 5; a++) { const t = qThreat(Q, a, d, q, cm); if (Math.abs(t - Q.thr[a]) > 1e-9) { rem.push(Q.thr[a]); add.push(t); } }
+    const gv = gapVec(st, d, q);                       // the race for every square, run again with him there
+    for (let k = 0; k < gv.length; k++) if (Math.abs(gv[k] - Q.gaps[k]) > 1e-9) { rem.push(Q.gaps[k]); add.push(gv[k]); }
     if (!rem.length) return Q.sorted;
     rem.sort(DESC); add.sort(DESC);
     const base = Q.sorted, out = new Float64Array(base.length);
@@ -5242,7 +5341,7 @@ const PMEngine = (() => {
             else {
               const mask = cm[BI[x.src.c]];
               const vals = mask ? mapVals(r, x.src.lk, d, mask, x.src.fl) : null;
-              e = x.r * covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] - (1 - x.r) * x.src.lc;
+              e = x.r * (covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] + x.src.adj) - (1 - x.r) * x.src.lc;
             }
             if (e < x.e - 1e-9) touched = true;
             after.push(e);
@@ -5311,21 +5410,27 @@ const PMEngine = (() => {
   // best look before it answers, every square's gap), largest first; the defence's actions its answer needs.
   const OFFSQ = C(-1, 1);
   function readingOf(g) {
-    if (!g || !g.best) return { L: g ? g.L : 0, list: [], n: 0 };
-    return { L: g.L, list: lgList(g.best.root), n: g.best.moves.length };
+    if (!g || !g.best) return { L: g ? g.L : 0, list: [], n: 0, m: null };
+    return { L: g.L, list: lgList(g.best.root), n: g.best.moves.length, m: g.m };
   }
-  const drvJSON = k => ({ L: +k.L.toFixed(2), n: k.n, list: Array.from(k.list, v => +v.toFixed(2)) });
+  // each defender's own cover of his own man, under the assignment the position reads (largest first): what tells two
+  // placements apart when the list and the lasting gap can't (step 22c: the first responsibility is the assigned man)
+  const rdOwn = k => (k.own !== undefined ? k.own : (k.own = k.m ? assignOf(k.m, null, false).vec : []));
+  const drvJSON = k => ({ L: +k.L.toFixed(2), n: k.n, list: Array.from(k.list, v => +v.toFixed(2)), own: rdOwn(k).map(v => +v.toFixed(2)) });
   const RD = { lead: 'gap' };                           // 'gap': the lasting gap, then the list; 'list': the list, then the lasting gap
   function rdLess(a, b) {                              // is a better for the defence than b?
     if (RD.lead === 'list') { if (covLess(a.list, b.list)) return true; if (covLess(b.list, a.list)) return false; }
     if (a.L < b.L - 1e-9) return true; if (a.L > b.L + 1e-9) return false;
     if (RD.lead !== 'list') { if (covLess(a.list, b.list)) return true; if (covLess(b.list, a.list)) return false; }
+    const oa = rdOwn(a), ob = rdOwn(b);
+    if (covLess(oa, ob)) return true; if (covLess(ob, oa)) return false;
     return a.n < b.n;
   }
   function rdWhy(a, b) {                               // what tells a from b
     const dl = covLess(a.list, b.list) || covLess(b.list, a.list), dg = Math.abs(a.L - b.L) > 1e-9;
-    if (RD.lead === 'list') return dl ? 'the list' : dg ? 'the lasting gap' : a.n !== b.n ? 'efficiency' : 'level';
-    return dg ? 'the lasting gap' : dl ? 'the list' : a.n !== b.n ? 'efficiency' : 'level';
+    const dn = covLess(rdOwn(a), rdOwn(b)) || covLess(rdOwn(b), rdOwn(a)) ? 'his own man' : a.n !== b.n ? 'efficiency' : 'level';
+    if (RD.lead === 'list') return dl ? 'the list' : dg ? 'the lasting gap' : dn;
+    return dg ? 'the lasting gap' : dl ? 'the list' : dn;
   }
   function rdBetterO(a, b) {                           // is a better for the offence than b? the mirror: it plays to raise the list
     if (a.L > b.L + 1e-9) return true; if (a.L < b.L - 1e-9) return false;
@@ -5347,7 +5452,8 @@ const PMEngine = (() => {
     const steps = [], placed = [false, false, false, false, false];
     const put = (d, q, a) => W_(s, { x: setAt(s.x, d, q), arrows: setAt(s.arrows, d, a) });
     const been = new Set(), mark = t => t.x.join(',') + '|' + t.arrows.join(',');       // (the quick re-read can't see bodies and walls: never the same shape twice)
-    const before = (u, v) => (covLess(u.list, v.list) ? -1 : covLess(v.list, u.list) ? 1 :
+    // (level on the list: the placement from which he alone would contain the attackers best: his first responsibility)
+    const before = (u, v) => (covLess(u.list, v.list) ? -1 : covLess(v.list, u.list) ? 1 : covLess(u.own, v.own) ? -1 : covLess(v.own, u.own) ? 1 :
       (u.q - v.q || (cardKey(ctx, u.d) < cardKey(ctx, v.d) ? -1 : cardKey(ctx, u.d) > cardKey(ctx, v.d) ? 1 : u.d - v.d)));
     const step = placing => {
       const m = covBuild(s, true, null), st = lgRoot(m), Q = qPrep(st), cands = [];
@@ -5356,9 +5462,9 @@ const PMEngine = (() => {
         const qs = ctx.dfn[d].qs, mode = stanceMode(m.sN, d);
         for (let q = 0; q < ONB.length; q++) {
           if (!ONB[q] || (st.taken.has(q) && q !== s.x[d])) continue;
-          const list = qList(Q, d, q, anyArrow2(q, qs, mode));
+          const cm = anyArrow2(q, qs, mode), list = qList(Q, d, q, cm);
           if (!placing && !(list !== Q.sorted && covLess(list, Q.sorted)) && q !== s.x[d]) continue;   // a move must leave less (his own square stays in, for his arrows)
-          cands.push({ d, q, list });
+          cands.push({ d, q, list, own: qOwn(Q, d, q, cm) });
         }
       }
       if (!cands.length) return false;
@@ -5403,7 +5509,51 @@ const PMEngine = (() => {
     };
     for (let k = 0; k < 5; k++) if (!step(true)) break;
     if (cur === null && used < evals) { cur = readingOf(lastingOf(s)); used++; }
-    for (let k = 0; k < 12; k++) if (!step(false)) break;
+    // (a move the quick re-read alone chose, the full reads spent, is kept only if the full reading is better for it)
+    const refine = n => {
+      for (let k = 0; k < n; k++) {
+        const s1 = s, c1 = cur, n1 = steps.length, quick = used >= evals;
+        if (!step(false)) break;
+        if (!quick) continue;
+        const rd = readingOf(lastingOf(s)); used++;
+        if (c1 === null || rdLess(rd, c1)) cur = rd; else { s = s1; cur = c1; steps.length = n1; break; }
+      }
+    };
+    refine(12);
+    // Step 22c (D-224): the last pass, read with bodies and walls counted. What a defender next to the ball handler
+    // takes (the Steal, the closely guarded count, a wall across the way he would go), and what a body or a wall does
+    // anywhere, is nothing the quick re-read can see. So every defender is tried on each square next to the ball
+    // handler and on each square next to his own, with each of the eight arrows: the list as the defence would stand
+    // is read for each, and those that leave the least are read in full. The best is kept if it leaves less. The
+    // others may then move again, and so on while anything changes.
+    const listAt = t => lgList(lgRoot(covBuild(t, true, null)));
+    for (let round = 0; round < 8 && evals > 0 && cur !== null; round++) {
+      const bh = s.o[s.ball], cands = [];
+      for (let d = 0; d < 5; d++) {
+        const sqs = new Set();
+        for (let dir = 0; dir < 8; dir++) sqs.add(bh + DSTEP[dir]);
+        for (let q = 0; q < ONB.length; q++) if (ONB[q] && cheb(q, s.x[d]) <= 1) sqs.add(q);
+        for (const q of sqs) {
+          if (!ONB[q] || (q !== s.x[d] && (s.o.includes(q) || s.x.includes(q)))) continue;
+          for (let a = 0; a < 8; a++) {
+            if (q === s.x[d] && a === s.arrows[d]) continue;
+            const list = listAt(put(d, q, a)); used++;
+            if (!covLess(cur.list, list)) cands.push({ d, q, a, list, ck: cardKey(ctx, d) });
+          }
+        }
+      }
+      cands.sort((u, v) => (covLess(u.list, v.list) ? -1 : covLess(v.list, u.list) ? 1 : u.q - v.q || u.a - v.a || (u.ck < v.ck ? -1 : u.ck > v.ck ? 1 : 0)));
+      let best = null;
+      for (const c of cands.slice(0, 16)) {
+        if (covLess(cands[0].list, c.list)) break;     // only those level with the least
+        const rd = readingOf(lastingOf(put(c.d, c.q, c.a))); used++;
+        if (rdLess(rd, cur) && (best === null || rdLess(rd, best.rd))) best = { d: c.d, q: c.q, a: c.a, rd };
+      }
+      if (best === null || been.has(mark(put(best.d, best.q, best.a)))) break;
+      steps.push({ d: best.d, to: sqName(best.q), arrow: best.a, by: rdWhy(best.rd, cur), pressure: adjacent(best.q, bh), last: true });
+      s = put(best.d, best.q, best.a); cur = best.rd; been.add(mark(s));
+      refine(6);
+    }
     const g = lastingOf(s);
     return { s, g, rd: readingOf(g), steps, evals: used };
   }
@@ -5432,31 +5582,88 @@ const PMEngine = (() => {
     for (const o of m.options) {
       if (!(o.r > 0)) continue;
       let top = -Infinity; for (const v of o.open) if (v > top) top = v;
-      const e0 = o.r * top - (1 - o.r) * o.lc;
+      const e0 = o.r * (top + o.adj) - (1 - o.r) * o.lc;
       if (e0 > open[o.a]) open[o.a] = e0;
       for (let d = 0; d < 5; d++) {
         let e = e0;
-        if (o.vals[d]) { one[d] = o.vals[d]; e = o.r * covValue({ open: o.open, vals: one }, -1, null)[0] - (1 - o.r) * o.lc; one[d] = null; }
+        if (o.vals[d]) { one[d] = o.vals[d]; e = o.r * (covValue({ open: o.open, vals: one }, -1, null)[0] + o.adj) - (1 - o.r) * o.lc; one[d] = null; }
         if (e > alone[o.a][d]) alone[o.a][d] = e;
       }
     }
+    // attacker a's best look with some defenders taken out of it (bits), the rest as they stand
+    const memo = new Map();
+    const without = (a, out) => {
+      const key = a * 32 + out;
+      let best = memo.get(key);
+      if (best !== undefined) return best;
+      best = 0;
+      const vals = [null, null, null, null, null];
+      for (const o of m.options) {
+        if (o.a !== a || !(o.r > 0)) continue;
+        for (let d = 0; d < 5; d++) vals[d] = (out >> d) & 1 ? null : o.vals[d];
+        const e = o.r * (covValue({ open: o.open, vals }, -1, null)[0] + o.adj) - (1 - o.r) * o.lc;
+        if (e > best) best = e;
+      }
+      memo.set(key, best);
+      return best;
+    };
+    // Step 22c (D-226, Shaun, 18 Nov 2026): two defenders helping count as a takeover. A beaten defender's man is
+    // taken when his teammates already cover that man between them: they leave him less than the beaten defender
+    // alone would. The helpers are the teammates who take something off that man's best look. Beaten: a Dribble won
+    // against him this phase, or locked, or his man has the ball nearer the rim than he stands (the ball has gone
+    // past him).
+    const beaten = (d, a) => s.beaten.some(b => b[1] === d) || isLocked(s, 'X', d) || (a === s.ball && ONB[s.o[a]] && DR[s.o[a]] < DR[s.x[d]]);
+    const helpers = (d, a) => {
+      if (!beaten(d, a)) return null;
+      const wo = without(a, 1 << d);
+      if (!(wo < alone[a][d] - 0.5)) return null;
+      const H = [];
+      for (let e = 0; e < 5; e++) if (e !== d && ONB[s.x[e]] && alone[a][e] < open[a] - 0.5) H.push(e);
+      return H.length ? H : null;
+    };
+    const taken = p => p.some((a, d) => ONB[s.x[d]] && helpers(d, a) !== null);
     const vec = p => p.map((a, d) => alone[a][d]).sort(DESC);
     const far = p => p.map((a, d) => (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 99)).sort(DESC);
-    let best = null;
-    for (const p of PERMS) {
-      const v = vec(p);
-      if (best !== null) {
-        if (covLess(best.v, v)) continue;
-        if (!covLess(v, best.v)) {                     // level: the fewest changes, then the defenders nearest their men
-          const cu = prev ? p.filter((a, d) => a !== prev[d]).length : 0, cb = prev ? best.p.filter((a, d) => a !== prev[d]).length : 0;
-          if (cu > cb) continue;
-          if (cu === cb) { const fu = far(p), fb = far(best.p); if (!covLess(fu, fb)) continue; }
+    const info = { open, alone, without, helpers };
+    if (prev && fixed) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
+    // the takeover first: the man the help has is handed over, and his defender picks up what the helpers left: one
+    // of the helpers' own men, whichever leaves every defender covering his own man best (a tie: the man left with
+    // the most, then the helper standing on the lower square)
+    if (prev) {
+      const due = [];
+      for (let d = 0; d < 5; d++) { if (!ONB[s.x[d]]) continue; const H = helpers(d, prev[d]); if (H) due.push({ d, a: prev[d], H }); }
+      if (due.length) {
+        due.sort((u, v) => without(v.a, 0) - without(u.a, 0) || s.x[u.d] - s.x[v.d]);
+        const t = due[0];
+        const swap = h => { const p = prev.slice(); p[t.d] = prev[h]; p[h] = t.a; return p; };
+        let e = t.H[0], ve = vec(swap(e));              // (whichever helper's man leaves each defender covering his own best)
+        for (const h of t.H.slice(1)) {
+          const vh = vec(swap(h));
+          if (covLess(vh, ve) || (!covLess(ve, vh) && (alone[prev[h]][h] > alone[prev[e]][e] + 1e-9 || (Math.abs(alone[prev[h]][h] - alone[prev[e]][e]) <= 1e-9 && s.x[h] < s.x[e])))) { e = h; ve = vh; }
         }
+        const perm = swap(e), left = prev[e];
+        return { perm, kept: false, takeover: { x: t.d, man: t.a, helpers: t.H, picks: left }, vec: vec(perm), ...info };
       }
-      best = { p, v };
     }
-    if (prev && (fixed || !covLess(best.v, vec(prev)))) return { perm: prev.slice(), open, alone, kept: true };
-    return { perm: best.p.slice(), open, alone, kept: false };
+    let best = null;
+    for (const pass of [0, 1]) {                       // (an assignment the help has already taken over is not gone back to)
+      for (const p of PERMS) {
+        if (pass === 0 && taken(p)) continue;
+        const v = vec(p);
+        if (best !== null) {
+          if (covLess(best.v, v)) continue;
+          if (!covLess(v, best.v)) {                   // level: the fewest changes, then the defenders nearest their men
+            const cu = prev ? p.filter((a, d) => a !== prev[d]).length : 0, cb = prev ? best.p.filter((a, d) => a !== prev[d]).length : 0;
+            if (cu > cb) continue;
+            if (cu === cb) { const fu = far(p), fb = far(best.p); if (!covLess(fu, fb)) continue; }
+          }
+        }
+        best = { p, v };
+      }
+      if (best !== null) break;
+    }
+    if (prev && !covLess(best.v, vec(prev))) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
+    return { perm: best.p.slice(), kept: false, takeover: null, vec: best.v, ...info };
   }
   // Step 22b (D-219): the largest item on the list of things to cover, the defence as it stands and before it answers
   // (the offence acts first): read as the lasting gap is (lastingOf): each side with what it has left; a pass in the
@@ -5615,9 +5822,9 @@ const PMEngine = (() => {
       if (!g) return null;
       const out = { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves, drivers: drvJSON(readingOf(g)) };
       if (opts.prev && g.m) {                           // who has whom after it, and how well each defender alone contains his own man (largest first)
-        const A = assignOf(g.m, opts.prev);
+        const A = assignOf(g.m, opts.prev, false);
         out.perm = A.perm; out.kept = A.perm.every((a, d) => a === opts.prev[d]);
-        out.own = A.perm.map((a, d) => +A.alone[a][d].toFixed(2)).sort(DESC);
+        out.own = A.vec.map(v => +v.toFixed(2));
       }
       out.top = topOf(s0);
       if (opts.settle) out.settle = new Read(s0).mapSettle().map(([d, q, a]) => [d, sqName(q), a]);
@@ -5698,35 +5905,51 @@ const PMEngine = (() => {
     if (s0.stage !== 'play' || s0.clock <= 2) return { roles: [], perm: prev || null, lines: [], switched: null };
     const at = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
     const m = covBuild(covOffFresh(at), true, null), A = assignOf(m, prev || null, !!fixed), perm = A.perm;
-    const g = gapInfo(m.r), st = lgRoot(m), gaps = gapVec(m.r, g, st.cms, st.xs);
+    const g = gapInfo(m.r), st = lgRoot(m), gaps = gapVec(st);
+    lgList(st);
     const name = o => `O${o + 1}`, roles = [];
+    const and = xs => (xs.length <= 2 ? xs.join(' and ') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1]);
     for (let d = 0; d < 5; d++) {
       if (!ONB[at.x[d]]) continue;
       const a = perm[d], open = A.open[a], withHim = A.alone[a][d], takes = open - withHim;
-      let gap = null, held = 0;
-      const cm = st.cms[d];
-      if (cm) for (const k of gapNz(g, cm)) {
-        const sq = g.sq[k], b = BI[sq];
-        if (gaps[k] <= 0 && at.x.includes(sq)) continue;
-        let without = g.full[k];
-        for (let e = 0; e < 5; e++) { if (e === d || !st.cms[e]) continue; const mk = st.cms[e][b]; if (mk) { const u = gapRed(m.r, g, e, k, mk); if (u < without) without = u; } }
-        if (without > gaps[k] + 0.5) { held++; if (gap === null || without > gap.without + 1e-9 || (Math.abs(without - gap.without) <= 1e-9 && sq < gap.q)) gap = { q: sq, sq: sqName(sq), without: +without.toFixed(2), now: +gaps[k].toFixed(2) }; }
+      let gap = null, held = 0, way = null;
+      const gone = gapVec(st, d, OFFSQ);              // the race with him off the court: the gaps only he is closing
+      for (let k = 0; k < gone.length; k++) {
+        const sq = g.sq[k], without = gone[k];
+        if (!(without > gaps[k] + 0.5)) continue;
+        held++;
+        if (gap === null || without > gap.without + 1e-9 || (Math.abs(without - gap.without) <= 1e-9 && sq < gap.q)) gap = { q: sq, sq: sqName(sq), without: +without.toFixed(2), now: +gaps[k].toFixed(2) };
       }
       const beaten = at.beaten.some(b => b[1] === d) || isLocked(at, 'X', d);
       const on = takes > 0.5, apart = on && gap !== null && ONB[at.o[a]] && cheb(gap.q, at.o[a]) > 3;
       const kind = beaten && (!prev || prev[d] === a) ? 'chase' : on && gap ? 'both' : on ? 'man' : gap ? 'sag' : 'free';
-      const manW = `${name(a)} (his best look is worth ${Math.round(open)} open, ${Math.round(withHim)} with X${d + 1} on it)`;
-      const gapW = gap ? `the squares around ${gap.sq} (worth ${Math.round(gap.without)} with nobody there)` : '';
+      // (the teammates who cover his man with him: whoever leaving would let that man have more)
+      const all = A.without(a, 0), mates = [];
+      if (all < withHim - 0.5) for (let e = 0; e < 5; e++) if (e !== d && ONB[at.x[e]] && A.without(a, 1 << e) > all + 1e-9) mates.push(e);
+      const manW = `${name(a)} (his best look is worth ${Math.round(open)} open, ${Math.round(withHim)} with X${d + 1} on it` +
+        (mates.length ? `, ${Math.round(all)} with ${and(mates.map(e => `X${e + 1}`))} helping` : '') + ')';
+      const gapW = gap ? `the squares around ${gap.sq} (worth ${Math.round(gap.without)} if he weren't in reach)` : '';
       let line;
       if (kind === 'chase') line = `X${d + 1} beaten: chasing ${name(a)}.`;
       else if (kind === 'both') line = `X${d + 1}: on ${manW}, and covering ${gapW}.` + (apart ? ' The two lie apart: he can\'t hold both for long.' : '');
       else if (kind === 'man') line = `X${d + 1}: on ${manW}.`;
       else if (kind === 'sag') line = `X${d + 1}: sagging off ${name(a)} (his best look is worth ${Math.round(open)}, and X${d + 1} takes nothing off it from here) to cover ${gapW}.`;
-      else line = `X${d + 1}: off ${name(a)} (his best look is worth ${Math.round(open)}), and covering no square the others don't.`;
-      roles.push({ x: d, man: a, kind, open: +open.toFixed(2), with: +withHim.toFixed(2), gap, held, apart, beaten, line, value: +Math.max(takes, gap ? gap.without - gap.now : 0).toFixed(2) });
+      else {
+        // (step 22c: a body or a wall in an attacker's way is a job too: whose best look is worth more with him off the court)
+        const off = lgRoot(covBuild(W_(m.s, { x: setAt(m.s.x, d, OFFSQ) }), true, null)); lgList(off);
+        // (of those, the one whose look would be worth most: the largest item he is keeping down)
+        for (let b = 0; b < 5; b++) if (off.thr[b] > st.thr[b] + 0.5 && (way === null || off.thr[b] > way.without + 1e-9)) way = { o: b, now: +st.thr[b].toFixed(2), without: +off.thr[b].toFixed(2) };
+        line = way && way.o === a ? `X${d + 1}: in ${name(a)}'s way (his best look is worth ${Math.round(way.now)}, ${Math.round(way.without)} without X${d + 1} there).`
+          : way ? `X${d + 1}: off ${name(a)} (his best look is worth ${Math.round(open)}), and in ${name(way.o)}'s way (his best look is worth ${Math.round(way.now)}, ${Math.round(way.without)} without X${d + 1} there).`
+          : `X${d + 1}: off ${name(a)} (his best look is worth ${Math.round(open)}), and covering no square the others don't.`;
+      }
+      roles.push({ x: d, man: a, kind, open: +open.toFixed(2), with: +withHim.toFixed(2), gap, held, apart, beaten, way, line, value: +Math.max(takes, gap ? gap.without - gap.now : 0).toFixed(2) });
     }
     let switched = null;
-    if (prev && perm.some((a, d) => a !== prev[d])) {
+    if (A.takeover) {                                  // step 22c (D-226): "X4 and X5 have O1: X1 picks up O5."
+      const t = A.takeover;
+      switched = `${and(t.helpers.map(e => `X${e + 1}`))} ${t.helpers.length > 1 ? 'have' : 'has'} ${name(t.man)}: X${t.x + 1} picks up ${name(t.picks)}.`;
+    } else if (prev && perm.some((a, d) => a !== prev[d])) {
       const ch = [0, 1, 2, 3, 4].filter(d => perm[d] !== prev[d]).sort((u, v) => A.open[perm[v]] - A.open[perm[u]] || u - v);
       switched = 'Switch: ' + ch.map((d, k) => `X${d + 1} ${k === 0 ? 'takes' : 'picks up'} ${name(perm[d])}`).join('; ') + '.';
     }
@@ -5734,7 +5957,7 @@ const PMEngine = (() => {
     if (switched) lines.push(switched);
     for (const r of roles) if (r.kind === 'chase') lines.push(r.line);
     for (const r of roles) if (r.kind === 'sag') lines.push(`X${r.x + 1} sags off ${name(r.man)} to cover the squares around ${r.gap.sq}.`);
-    return { roles, perm, lines, switched };
+    return { roles, perm, lines, switched, takeover: A.takeover };
   }
   function coverageJSON(text) {
     const req = JSON.parse(text);

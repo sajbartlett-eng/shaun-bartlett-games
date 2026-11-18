@@ -232,7 +232,9 @@ def test_check_6_a_body_on_the_helpers_way_leaves_more(cov):
     left. The Screen action itself stops no helper on this board (it bars only a diagonal step): in the report."""
     off = cov(board(o=O_[:3] + ['C5', 'Q3'], tok_x=1))
     on = cov(board(o=O_[:3] + ['C4', 'Q3'], tok_x=1))
-    assert [a['x'] for a in off['answers']] == [3] and len(on['answers']) <= 1
+    # (re-recorded in step 22c, D-228: this pinned the helper's answer, [3], with the way free. That answer and X1's
+    # both leave 30; the tie goes to the list the answer leaves, and with gaps a race X1's now leaves less)
+    assert [a['x'] for a in off['answers']] in ([3], [0]) and off['left_worth'] == 30 and len(on['answers']) <= 1
     # (re-recorded in step 22b, D-222: with the reaction's off balance counted the other answer now leaves as much, 30 and
     # 30, where it left one more; the helper's answer is still gone and no less is left)
     assert on['left_worth'] >= off['left_worth']

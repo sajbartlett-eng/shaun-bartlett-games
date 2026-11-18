@@ -270,7 +270,7 @@ class Rules:
     #   carries two equal arrows 45 degrees apart (directions a and a+1 for arrow index a), each under the normal
     #   arrow rules. A ball handler or shooter on either counts as "the arrow on him" (a Steal, a Contest); an
     #   Intercept goes along either. The wedge between them, out to the squares one movement still left to him
-    #   reaches, is his zone: an adjacent ball handler may end in it but not pass through it. A Dribble won against
+    #   reaches, is his zone: an adjacent ball handler may end in it but not move through it (it never blocks a pass: D-225). A Dribble won against
     #   him breaks it for the rest of the phase: no arrow at all (no Steal, a Contest with the wrong-angle foul roll,
     #   an Intercept only through his own square), and his movement is locked as today. 'off': today's rules.
     zone: str = 'off'

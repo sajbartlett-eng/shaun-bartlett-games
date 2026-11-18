@@ -731,42 +731,56 @@ class Game:
             c['change'] = snap.get('change')
             c['possession'] = self.possession
             c['when'] = self._cov_when(at, tr)
-            try:                                # step 22b (D-220, D-221): what each defender is playing for
+            asg = None
+            try:
                 asg = self._assign_now()
-                ro = _AG.coverage(at, only='roles', prev=asg['perm'], fixed=True) or {}
             except Exception:
-                asg, ro = None, {}
-            c['roles'] = ro.get('roles') or []
-            c['assign'] = ro.get('perm')
-            lines = ([asg['switch']] if asg and asg.get('switch') else []) + [ln for ln in (ro.get('lines') or []) if not ln.startswith('Switch:')]
-            if lines:
-                c['words'] = c['words'] + ' ' + ' '.join(lines)
+                pass
+            self._role_lines(c, at, asg and asg['perm'], asg and asg.get('switch'))
             if len(memo) > 200:
                 memo.clear()
             memo[k] = c
         return memo[k]
 
-    def _assign_now(self):
-        """Step 22b (D-220, Shaun, 18 Nov 2026): each defender's assigned attacker as the possession has gone: setup's
+    def _role_lines(self, c, at, perm, switch):
+        """Step 22b (D-220, D-221) and 22c (D-226, D-227): what each defender is playing for, on a coverage map of the
+        position `at`: his line (for a tap on him), and in the words the defence's last switch or takeover, who is
+        chasing and who is sagging. The live view and the Watch replay both use it, so they say the same."""
+        from playmaker_engine import agent as _AG
+        try:
+            ro = _AG.coverage(at, only='roles', prev=perm, fixed=True) or {}
+        except Exception:
+            ro = {}
+        c['roles'] = ro.get('roles') or []
+        c['assign'] = ro.get('perm')
+        lines = ([switch] if switch else []) + list(ro.get('lines') or [])
+        if lines:
+            c['words'] = c['words'] + ' ' + ' '.join(lines)
+
+    def _assign_chain(self, possession):
+        """Step 22b (D-220, Shaun, 18 Nov 2026): each defender's assigned attacker as a possession has gone: setup's
         matchups, kept until the reading hands a man to another defender. It is read again only after the defence's
-        own actions (a switch is the defence's call), and a switch stands only if it leaves strictly less uncovered.
-        -> dict(perm, switch: the line for a switch the defence has just made, else None)."""
+        own actions (a switch is the defence's call): a switch stands only if it leaves strictly less uncovered, and
+        (step 22c, D-226) a beaten defender's man the help already covers is taken over. -> dict(perm, switch: the
+        line for what the defence has just called, hist: [(perm, switch)] after each action of the possession)."""
         from playmaker_engine import agent as _AG
         memo = self.__dict__.setdefault('_assign', {})
-        tr = self.__dict__.get('_trails', {}).get(self.possession, [])
-        cur = memo.get(self.possession)
+        tr = self.__dict__.get('_trails', {}).get(possession, [])
+        cur = memo.get(possession)
         if cur is None:
-            pol = self.policies.get('X') if 'X' in self.ai else None
-            perm = getattr(pol, 'setup_perm', None)
-            for k in [k for k in memo if k != self.possession]:
+            perm = self.__dict__.get('_setup_perm', {}).get(possession)
+            for k in sorted(memo)[:-3]:
                 del memo[k]
-            cur = memo[self.possession] = dict(n=0, perm=list(perm) if perm else None, switch=None)
+            cur = memo[possession] = dict(n=0, perm=list(perm) if perm else None, switch=None, hist=[])
         while cur['n'] < len(tr):
             before, a, node, turn = tr[cur['n']]
             cur['n'] += 1
             if a.side == 'O':
                 cur['switch'] = None
-            if getattr(node, 'stage', None) == 'play' and (a.side == 'X' or cur['perm'] is None):
+            # (read again when the defence's turn is done and no pass is in the air: not after each of its actions,
+            # which would call a switch and call it back inside one turn)
+            done = a.side == 'X' and getattr(node, 'side', None) == 'O' and not getattr(node, 'pending', None)
+            if getattr(node, 'stage', None) == 'play' and (done or cur['perm'] is None):
                 try:
                     ro = _AG.coverage(node, only='roles', prev=cur['perm']) or {}
                 except Exception:
@@ -775,6 +789,14 @@ class Game:
                     if cur['perm'] is not None and ro.get('switched'):
                         cur['switch'] = ro['switched']
                     cur['perm'] = list(ro['perm'])
+            cur['hist'].append((list(cur['perm']) if cur['perm'] else None, cur['switch']))
+        return cur
+
+    def _assign_now(self):
+        """The assignments as the possession in play stands (_assign_chain); read from the board itself where no
+        setup gave any."""
+        from playmaker_engine import agent as _AG
+        cur = self._assign_chain(self.possession)
         if cur['perm'] is None and self.state.stage == 'play':
             try:
                 ro = _AG.coverage(self.state, only='roles') or {}
@@ -820,6 +842,17 @@ class Game:
             c['n'] = n
             steps = self.__dict__.get('_trails', {}).get(c['possession'], [])
             c['when'] = self._cov_when(s, steps)
+            # step 22c (D-227): the Watch replay shows each defender's job, the switches, pick-ups and chases, as the live view does
+            perm, switch = None, None
+            try:
+                hist = self._assign_chain(c['possession'])['hist']
+                key = s.encode()
+                at = next((i for i in range(len(steps) - 1, -1, -1) if getattr(steps[i][2], 'stage', None) == 'play' and steps[i][2].encode() == key), None)
+                if at is not None and at < len(hist):
+                    perm, switch = hist[at]
+            except Exception:
+                pass
+            self._role_lines(c, s, perm, switch)
         return c
 
     _SHOT_WORDS = dict(layup='layup', dunk='dunk', post='post shot', mid='mid-range two', floater='floater', long='long two', three='three')
@@ -1320,6 +1353,7 @@ class Game:
                     r = AG.propose_defence(self._possession_state, o_sq, ball, seed + 7, self.levels_key(), budget=budget,
                                            level=level, memory=self._setup_memory('X'), search=self.setup_search)
                     comp.setup_perm = tuple(r['perm'])
+                    self.__dict__.setdefault('_setup_perm', {})[self.possession] = tuple(r['perm'])   # step 22c: kept for the replay
                     self._log('computer', side='X', event='setup', possession=self.possession,
                               matchup=[f'X{j + 1} on O{r["perm"][j] + 1}' for j in range(5)], value=r['value'], text=r['text'])
                     self._place_side('X', r['squares'], None, r['arrows'], actor='ai')
