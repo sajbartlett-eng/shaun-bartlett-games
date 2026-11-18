@@ -170,8 +170,10 @@ def test_assignments_stand_on_a_tie_and_each_defender_has_plain_words(js):
     other = [free['perm'][1], free['perm'][0]] + free['perm'][2:]     # two men swapped: read as given, nothing called
     assert cov(st, only='roles', prev=other, fixed=True)['perm'] == other
     assert cov(st, only='lasting', prev=free['perm'])['kept'] is True
-    sharp = free['perm'].index(1)                                     # O2, the Sharpshooter
-    assert free['roles'][sharp]['kind'] in ('man', 'both')
+    # Re-recorded in step 22d (D-230, D-231): this read "the Sharpshooter's defender is on him" (his job line's kind
+    # 'man' or 'both'). Matchups are now named by the nearest defender who takes something off a look, and Shaun ruled
+    # the check is measured by position: the pass to the Sharpshooter is cut.
+    assert D.cov_pass(st, 1, st.o[1]) < 1 - 1e-9
     for r in free['roles']:
         assert r['line'].startswith(f"X{r['x'] + 1}")
         assert not any(re.search(r'\b' + re.escape(w) + r'\b', r['line'], re.I) for w in P.BANNED), r['line']

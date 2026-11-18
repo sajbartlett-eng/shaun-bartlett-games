@@ -106,11 +106,11 @@
    0
   ],
   "matchups": [
-   "X1 on O2",
+   "X1 on O1",
    "X2 on O5",
-   "X3 on O4",
+   "X3 on O2",
    "X4 on O3",
-   "X5 on O1"
+   "X5 on O4"
   ],
   "steps": [
    {
@@ -163,41 +163,53 @@
    }
   ],
   "lines": [
-   "X1: on O2 (his best look is worth 18 open, 12 with X1 on it), and covering the squares around A7 (worth 14 if he weren't in reach).",
+   "X1: on O1 (his best look is worth 34 open, 22 with X1 on it, 12 with X5 helping), and covering the squares around A7 (worth 14 if he weren't in reach). The two lie apart: he can't hold both for long.",
    "X2: on O5 (his best look is worth 18 open, 17 with X2 on it, 5 with X5 helping).",
-   "X3: off O4 (his best look is worth 16), and in O2's way (his best look is worth 12, 18 without X3 there).",
+   "X3: in O2's way (his best look is worth 12, 18 without X3 there).",
    "X4: on O3 (his best look is worth 24 open, 12 with X4 on it).",
-   "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 helping)."
+   "X5: on O4 (his best look is worth 16 open, 11 with X5 on it)."
   ],
-  "seconds": 6.3
+  "seconds": 6.1
  },
  "1 the ball handler's defender stays with him and walls his drive": {
   "passed": false,
-  "his_defender": "X5",
-  "on": "G3",
-  "squares_from_him": 8,
-  "line": "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 helping).",
+  "his_defender": "X1",
+  "on": "G7",
+  "squares_from_him": 4,
+  "line": "X1: on O1 (his best look is worth 34 open, 22 with X1 on it, 12 with X5 helping), and covering the squares around A7 (worth 14 if he weren't in reach). The two lie apart: he can't hold both for long.",
   "placements_on_him_tried": 408,
   "of_them_leaving_less": 0
  },
  "2 a poor shooter's defender sags towards the green zone": {
-  "passed": false,
+  "passed": true,
+  "measured_by": "a defender stands in the key while a poor shooter has nobody beside him",
   "poor_shooters": [
    "O1",
    "O5"
   ],
+  "left_alone": [
+   "O5"
+  ],
+  "in_the_key": [
+   {
+    "x": "X5",
+    "on": "G3"
+   }
+  ],
   "lines": [
-   "X5: on O1 (his best look is worth 34 open, 21 with X5 on it, 12 with X1 helping).",
+   "X1: on O1 (his best look is worth 34 open, 22 with X1 on it, 12 with X5 helping), and covering the squares around A7 (worth 14 if he weren't in reach). The two lie apart: he can't hold both for long.",
    "X2: on O5 (his best look is worth 18 open, 17 with X2 on it, 5 with X5 helping)."
   ]
  },
  "3 the Sharpshooter's defender stays attached": {
-  "passed": false,
+  "passed": true,
+  "measured_by": "the pass to the Sharpshooter is cut (its chance by the rules is below certain)",
+  "pass_chance": 0.5,
   "sharpshooter": "O2",
-  "his_defender": "X1",
-  "on": "G7",
-  "squares_from_him": 4,
-  "line": "X1: on O2 (his best look is worth 18 open, 12 with X1 on it), and covering the squares around A7 (worth 14 if he weren't in reach)."
+  "his_defender": "X3",
+  "on": "H10",
+  "squares_from_him": 5,
+  "line": "X3: in O2's way (his best look is worth 12, 18 without X3 there)."
  },
  "4 no two defenders fill the same gap while another is empty": {
   "passed": true,
@@ -229,11 +241,11 @@
      "X Pause"
     ],
     "matchups": [
-     "X1 on O2",
+     "X1 on O1",
      "X2 on O5",
-     "X3 on O4",
+     "X3 on O2",
      "X4 on O3",
-     "X5 on O1"
+     "X5 on O4"
     ],
     "switched": false,
     "squares": [
@@ -251,11 +263,11 @@
      "X End turn"
     ],
     "matchups": [
-     "X1 on O2",
+     "X1 on O1",
      "X2 on O5",
-     "X3 on O4",
+     "X3 on O2",
      "X4 on O3",
-     "X5 on O1"
+     "X5 on O4"
     ],
     "switched": false,
     "squares": [
@@ -273,11 +285,11 @@
      "X End turn"
     ],
     "matchups": [
-     "X1 on O2",
+     "X1 on O1",
      "X2 on O5",
-     "X3 on O4",
+     "X3 on O2",
      "X4 on O3",
-     "X5 on O1"
+     "X5 on O4"
     ],
     "switched": false,
     "squares": [
@@ -346,7 +358,7 @@
  },
  "checks 6 to 8 with the lasting gap leading the search instead (eval.map_lead: gap)": {
   "6 over a few turns with nothing changing, no defender switches back and forth": {
-   "passed": false,
+   "passed": true,
    "the_defences_turn": null,
    "turns": [
     {
@@ -355,11 +367,11 @@
       "X Pause"
      ],
      "matchups": [
-      "X1 on O2",
+      "X1 on O1",
       "X2 on O5",
-      "X3 on O4",
+      "X3 on O2",
       "X4 on O3",
-      "X5 on O1"
+      "X5 on O4"
      ],
      "switched": false,
      "squares": [
@@ -377,11 +389,11 @@
       "X End turn"
      ],
      "matchups": [
-      "X1 on O2",
+      "X1 on O1",
       "X2 on O5",
-      "X3 on O4",
+      "X3 on O2",
       "X4 on O3",
-      "X5 on O1"
+      "X5 on O4"
      ],
      "switched": false,
      "squares": [
@@ -399,13 +411,13 @@
       "X End turn"
      ],
      "matchups": [
-      "X1 on O3",
-      "X2 on O2",
-      "X3 on O4",
-      "X4 on O5",
-      "X5 on O1"
+      "X1 on O1",
+      "X2 on O5",
+      "X3 on O2",
+      "X4 on O3",
+      "X5 on O4"
      ],
-     "switched": true,
+     "switched": false,
      "squares": [
       "G7",
       "O5",

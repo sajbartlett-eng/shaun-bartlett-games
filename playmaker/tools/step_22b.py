@@ -121,11 +121,18 @@ def cmd_checks():
         threes = [c.shot('three') for c in s0.ctx.off]
         poor = [a for a in range(5) if threes[a] == min(threes)]
         sharp = max(range(5), key=lambda a: threes[a])
+        # (step 22d, D-231, Shaun, 18 Nov 2026: measured by position, not by the job lines' words)
+        from playmaker_engine import decide as D
+        keyed = [d for d in range(5) if B.in_key(B.parse_sq(z['x'][d]))]
+        left = [a for a in poor if all(B.cheb(B.parse_sq(q), B.parse_sq(SHAUN_O[a])) > 1 for q in z['x'])]
         out['2 a poor shooter\'s defender sags towards the green zone'] = dict(
-            passed=any(roles[on(a)]['kind'] in ('sag', 'both') and roles[on(a)]['gap'] and B.in_key(B.parse_sq(roles[on(a)]['gap']['sq'])) for a in poor),
-            poor_shooters=[f'O{a + 1}' for a in poor], lines=[roles[on(a)]['line'] for a in poor])
+            passed=bool(keyed) and bool(left), measured_by='a defender stands in the key while a poor shooter has nobody beside him',
+            poor_shooters=[f'O{a + 1}' for a in poor], left_alone=[f'O{a + 1}' for a in left],
+            in_the_key=[dict(x=f'X{d + 1}', on=z['x'][d]) for d in keyed], lines=[roles[on(a)]['line'] for a in poor])
         ds = on(sharp)
-        out['3 the Sharpshooter\'s defender stays attached'] = dict(passed=roles[ds]['kind'] in ('man', 'both') and dist(ds, sharp) <= 3, sharpshooter=f'O{sharp + 1}',
+        ch = D.cov_pass(st, sharp, st.o[sharp])
+        out['3 the Sharpshooter\'s defender stays attached'] = dict(passed=ch < 1 - 1e-9, measured_by='the pass to the Sharpshooter is cut (its chance by the rules is below certain)',
+                                                                  pass_chance=round(ch, 3), sharpshooter=f'O{sharp + 1}',
                                                                   his_defender=f'X{ds + 1}', on=z['x'][ds], squares_from_him=dist(ds, sharp), line=roles[ds]['line'])
         # 4. no two defenders fill the same gap while another is empty: nobody is spare, and no two hold the same square
         wo = _js(st, only='without')

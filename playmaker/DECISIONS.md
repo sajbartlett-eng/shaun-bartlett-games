@@ -1358,7 +1358,7 @@ possessions a level on a 12-second clock) rises with the phase, 24.9 at the firs
 written a late possession would read better. I counted the clock by the rules instead. Setup also tries every defender
 on each square next to the ball handler with each of the eight arrows (the list read with bodies and walls counted, the
 best read in full), since the quick re-read can't see what pressure takes: the Steal, the count, a wall across his way.
-· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22c; (b)'s thirds and (c)'s source await Shaun.**
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22c; (b) and (c) ruled to stand (D-232).**
 
 **D-225. A zone never blocks a pass (a clarification of the rules as the code already has them).** A defender's wedge
 restricts the ball handler's movement only (D-170). A pass is stopped only by a Steal from the defender next to the
@@ -1392,6 +1392,26 @@ phases goes to the defender (he is set as the shot goes up); bodies and walls on
 race (nobody stands still for it), nor is a Dribble past a wall; the pass's chance is read as the defence stands now,
 not as it will stand when the attacker arrives; the late contest is counted from in front.
 · Source: Shaun, 18 Nov 2026 (a revision during step 22c) · **Ruled; built in step 22c.**
+
+**D-229. A contest one Move away counts as set (D-222 stands).** Shaun: "Move is a controlled action. So it is set.
+The offence only has to move away to where the defender can't reach though. A lazy offence that just shoots like that
+deserves to be contested. That's why you have to create shots with advantages." No change. · Source: Shaun, 18 Nov 2026
+· **Ruled.**
+
+**D-230. A defender's man is named by who is nearest.** Shaun ruled on step 22c's choice 5: the attackers, in order of
+the best look each has open, each take the nearest free defender who takes something off that look (a tie: the one who
+leaves him less, then the lower square); an attacker nobody free takes anything off gets the nearest free defender. It
+replaces naming whoever covers his most valuable look from afar. With assignments standing, a switch is still called
+only when the named matchups cover more (D-220); the takeover (D-226) is unchanged. · Source: Shaun, 18 Nov 2026 ·
+**Ruled; built in step 22d.**
+
+**D-231. Sense checks 2 and 3 are measured by position.** Check 2: a defender stands in the key while a poor shooter has
+nobody beside him. Check 3: the pass to the Sharpshooter is cut (its chance by the rules is below certain). They replace
+the job lines' words. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22d.**
+
+**D-232. Step 22c's other choices stand as built:** the shot clock counted by the rules, not the phase-value table
+(D-224 (c)); the closely guarded count in thirds (D-224 (b)); a tie in a race goes to the defender (D-228); setup's
+longer last pass (D-200 waives speed). · Source: Shaun, 18 Nov 2026 · **Ruled.**
 
 ## 2. Engine defaults awaiting sign-off
 
