@@ -141,9 +141,13 @@ window.PMNotation = (function () {
       const d = DIRS[a], ux = d[0], uy = -d[1], len = Math.hypot(ux, uy);
       const r0 = 17, r1 = S / 2 + S / 4;
       const ax = X + ux / len * r0, ay = Y + uy / len * r0, bx = X + ux / len * r1, by = Y + uy / len * r1;
-      const grp = svg('g', { class: 'facing', filter: 'url(#hand)' });
-      grp.append(svg('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: RED, 'stroke-width': 3, 'stroke-linecap': 'round' }));
-      chevron(grp, ax, ay, bx, by, RED, 7, 3);
+      const dead = (o.blocked || []).includes(a);       // step 22b (D-217): blocked by a screen: dashed, and said so
+      const grp = svg('g', { class: dead ? 'facing blocked' : 'facing', filter: 'url(#hand)' });
+      grp.append(svg('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: RED, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-dasharray': dead ? '3 4' : '' }));
+      if (dead) {
+        const t = svg('text', { class: 'blockedmark', x: bx + ux / len * 4, y: by + uy / len * 4 + 3, 'text-anchor': 'middle', 'font-size': 8, fill: RED }, 'blocked');
+        grp.append(t);
+      } else chevron(grp, ax, ay, bx, by, RED, 7, 3);
       g.append(grp);
     }
     g.append(svg('circle', { class: 'xdisc', cx: X, cy: Y, r: 8.5, fill: '#fff', stroke: RED, 'stroke-width': 1.4 }));
