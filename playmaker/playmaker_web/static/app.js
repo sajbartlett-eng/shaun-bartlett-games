@@ -777,6 +777,7 @@ function pieceLabel(side, p) {
   if (side === 'O' && p.ball) bits.push('has the ball');
   if (side === 'O' && p.screen) bits.push(`screening, T to the ${COMPASS[p.screen.dir]}`);
   if (side === 'X') bits.push(`arrow pointing ${COMPASS[p.arrow]}`);
+  { const zl = st.influence && st.influence.zones && st.influence.zones[p.i]; if (side === 'X' && zl && zl.blocked && zl.blocked.length) bits.push(`its ${zl.blocked.map(d => COMPASS[d]).join(' and ')} arrow blocked by the screen`); }
   if (p.locked) bits.push('locked');
   const b = st.influence && st.influence.badges && st.influence.badges[side] && st.influence.badges[side][p.i];
   if (b && b.move) bits.push('Move used');
@@ -799,7 +800,7 @@ function pieceGroup(side, i, opts) {
   const g = svg('g', { class: 'piece' + (on ? ' sel' : '') + (acted ? ' acted' : '') + (opts.inert ? ' inert' : ''), tabindex: opts.inert ? -1 : 0, role: 'button',
     'aria-label': opts.label || pieceLabel(side, p), 'aria-pressed': on ? 'true' : 'false' });
   if (opts.inert) { g.removeAttribute('role'); g.removeAttribute('aria-pressed'); g.setAttribute('aria-hidden', 'true'); return g; }
-  const choose = opts.onClick || (() => selectPiece(side, i));
+  const choose = opts.onClick || (() => { roleNote(side, i); selectPiece(side, i); });
   g.addEventListener('click', choose); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
   return g;
 }
@@ -817,7 +818,7 @@ function drawX(c, p, opts) {
   const wedge = st.influence && st.influence.arrow_mode === 'wedge';
   // step 18g: under the zone of influence the arrows are the stance's lines: two, or none once a Dribble has broken it
   const zl = st.influence && st.influence.zone && st.influence.zones && st.influence.zones[p.i];
-  PM.pieceX(g, p.x, p.y, p.i + 1, zl ? zl.lines : wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow]);
+  PM.pieceX(g, p.x, p.y, p.i + 1, zl ? zl.lines : wedge ? [p.arrow, (p.arrow + 1) % 8] : [p.arrow], { blocked: zl ? zl.blocked : [] });
   if (zl && zl.broken) g.classList.add('zone-broken');
   c.append(g);
   const b = st.influence && st.influence.badges && st.influence.badges.X[p.i];
@@ -830,6 +831,14 @@ function drawX(c, p, opts) {
 // ---- step 18s (D-199): the coach's view of the defence's map: what the offence can get on each square next phase, and who covers it
 function showCov() { try { return localStorage.getItem('pm_covmap') === '1'; } catch (e) { return false; } }
 let covMap = null, covFor = 'all', covAsk = '', covNote = '';
+// step 22b (D-214): with the coverage view on, tapping a defender says what his position and arrows do, and what he allows
+function roleNote(side, i) {
+  if (side !== 'X' || !showCov() || !covMap || !covMap.roles) return;
+  const r = covMap.roles.find(z => z.x === i);
+  if (!r) return;
+  covNote = r.line;
+  const w = $('covNote'); if (w) w.textContent = covNote;
+}
 const COV_SHOT = { layup: 'a layup', dunk: 'a dunk', post: 'a post shot', mid: 'a mid-range shot', floater: 'a floater', long: 'a long two', three: 'a three' };
 function covLine(r) {
   if (covAfter() && covMap && covMap.all_after) {

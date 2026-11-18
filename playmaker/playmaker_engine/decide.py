@@ -1157,7 +1157,7 @@ class Read:
                             for q in movement_dests(s, 'O', a, kind, rules):
                                 one.setdefault(q, 1)
                 for q in list(one) + (two_actions(s, a, one) if s.tok_o > 0 else []):
-                    starts.append((q, 1.0, False))
+                    starts.append((q, 1.0, False, one.get(q, 2)))
             elif s.tok_o > 0 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
                 # step 22 (engine.js covBuild, D-210): a receiver two movements away (his cut) catches and shoots there
                 for q, n in attacker_reach(s, a).items():
@@ -1165,17 +1165,18 @@ class Read:
                         continue
                     p = cov_pass(s, a, q)
                     if p > 0:
-                        starts.append((q, p, n == 2))
+                        starts.append((q, p, n == 2, n + 1))      # (n0, step 22b: his movements and the pass)
             mates = {s.o[k] for k in range(5) if k != a}
             lines = capture_lines(s_next, a) if rules.zone != 'off' else []
             card, qs = s.ctx.off[a], s.ctx.off[a].qs
-            best, start = {}, {}
-            for q0, pr, set_only in starts:
+            best, start, acts = {}, {}, {}
+            for q0, pr, set_only, n0 in starts:
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
                 if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM) and best.get((q0, False), 0.0) < pr:
                     best[q0, False] = pr           # a set shot from where the phase finds him
                     start[q0, False] = q0
+                    acts[q0, False] = n0
                 if set_only:
                     continue
                 for p, rushed in _shot_paths(q0, qs, rules, no_rim):
@@ -1188,6 +1189,7 @@ class Read:
                         continue
                     best[c, rushed] = pr
                     start[c, rushed] = q0
+                    acts[c, rushed] = n0
             for (c, rushed), pr in best.items():
                 z = B.zone(c)
                 lk = Look(a, c, 'later', 1.0, False)
@@ -1200,7 +1202,7 @@ class Read:
                     vals[d] = (self._vals2(lk, d, row) or None) if row is not None else None
                 opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
-                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals, start[c, rushed]]
+                out[a, c, rushed] = [pr, top, pr * top - (1 - pr) * 5, lk, opens, vals, start[c, rushed], acts[c, rushed]]
         return out
 
     @staticmethod
@@ -1379,9 +1381,28 @@ class Read:
             return cover_groups([dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
                                       order=(-z['x']['e'], z['x']['key'])) for z in looks])
 
+        def cover_mask(x):
+            lk, opens, mask = x['src'][3], x['src'][4], 0
+            for d in range(5):
+                vd = x['vals'][d]
+                if vd and any(ty in vd and vd[ty] < opens[n] for n, ty in enumerate(lk.types)):
+                    mask |= 1 << d
+            return mask
+
+        def doubles(head):                 # engine.js lgDoubles (step 22b, D-215 d)
+            seen, n = set(), 0
+            for x in head:
+                if x['key'][0] in seen:
+                    continue
+                seen.add(x['key'][0])
+                if bin(cover_mask(x)).count('1') >= 2:
+                    n += 1
+            return n
+
         def score(st):
             head = head_of(st)
             worths = [x['e'] for x in head]
+            st['rs'], st['dbl'] = [x['r'] for x in head], doubles(head)
             open0 = worths[0] if worths else 0.0
             ov = [v for v in overloads(st) if len(v['ds']) == 1 or v['value'] >= open0 - 1e-9]
             L = worths[0] if worths else 0.0
@@ -1395,12 +1416,19 @@ class Read:
                 return True
             if a['L'] > b['L'] + 1e-9:
                 return False
+            # step 22b (D-215): (b) the offence's chances to its best looks, (c) the defence's actions, (d) doubled cover
+            if less(a['rs'], b['rs']):
+                return True
+            if less(b['rs'], a['rs']):
+                return False
+            if len(a['moves']) != len(b['moves']):
+                return len(a['moves']) < len(b['moves'])
+            if a['dbl'] != b['dbl']:
+                return a['dbl'] < b['dbl']
             if less(a['worths'], b['worths']):
                 return True
             if less(b['worths'], a['worths']):
                 return False
-            if len(a['moves']) != len(b['moves']):
-                return len(a['moves']) < len(b['moves'])
             for ma, mb in zip(a['moves'], b['moves']):
                 if ma != mb:
                     return ma < mb
@@ -2768,7 +2796,7 @@ def icpt_pi(s, pa, pc, j, p, arrow, can_move, qs_left, occ, passer, recv=-1):
     if s.tok_x >= 2 and (can_move or qs_left > 0) and (best is None or best < base):
         broken = rules.zone != 'off' and any(b[1] == j for b in s.beaten)
         qs = s.ctx.dfn[j].qs
-        for d in G.lines(rules, G.stance(rules, arrow, broken)):
+        for d in G.lines(rules, G.stance(rules, arrow, broken)):   # (a screen's T: the screens below stop a diagonal, step 22b)
             n = lane_meet(p, d, pa, pc)
             if not n:
                 continue

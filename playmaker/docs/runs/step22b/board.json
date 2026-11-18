@@ -1,0 +1,144 @@
+{
+ "shaun_board": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "x": [
+   "J10",
+   "D8",
+   "O8",
+   "I6",
+   "P2"
+  ],
+  "arrows": [
+   7,
+   7,
+   0,
+   0,
+   1
+  ],
+  "drivers": {
+   "L": 18,
+   "n": 1,
+   "rs": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "dbl": 1,
+   "acts": 3,
+   "worths": [
+    18,
+    18,
+    18,
+    18,
+    18,
+    18
+   ]
+  },
+  "roles": [
+   "X1: his position takes away O2's floater on F6 and O3's three on I10 (worth 16 more without him). Allows: O2's three on A4 (18).",
+   "X2: his position takes away O2's long two on D8 and O4's long two on D8 (worth 12 more without him).",
+   "X3: his position takes away O3's three on O8 and O5's mid-range on L2 (worth 12 more without him); his arrows cut the pass to O3 for his three on P7 (worth 6 more without them).",
+   "X4: his position takes away O1's layup on I4 and O2's floater on I6 (worth 18 more without him); his arrows cut the pass to O3 for his layup on J4 and the pass to O5 for his layup on K3 (worth 9 more without them).",
+   "X5: his position takes away O5's long two on P2 and O3's long two on O2 (worth 10 more without him)."
+  ]
+ },
+ "defence_setup": {
+  "x": [
+   "E7",
+   "D8",
+   "O8",
+   "I6",
+   "P2"
+  ],
+  "arrows": [
+   0,
+   7,
+   0,
+   0,
+   1
+  ],
+  "L": 18,
+  "start": 18,
+  "drivers": {
+   "L": 18,
+   "n": 0,
+   "rs": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "dbl": 1,
+   "acts": 3,
+   "worths": [
+    18,
+    18,
+    18,
+    18,
+    18,
+    18
+   ]
+  },
+  "steps": [
+   {
+    "d": 0,
+    "to": "E7",
+    "arrow": 0,
+    "by": "c",
+    "x": "X1",
+    "why": "efficiency (fewest actions)"
+   }
+  ],
+  "seconds": 1.7,
+  "roles": [
+   "X1: his position takes away O2's long two on E7 and O4's long two on E7 (worth 12 more without him); his arrows cut the pass to O2 for his three on A4 and the pass to O4 for his three on A7 (worth 12 more without them). Allows: O2's three on C9 (18).",
+   "X2: his position takes away O2's long two on D8 and O5's three on Q7 (worth 12 more without him).",
+   "X3: his position takes away O3's three on O8 and O1's three on O8 (worth 12 more without him); his arrows cut the pass to O3 for his three on P7 (worth 6 more without them).",
+   "X4: his position takes away O1's layup on I4 and O2's floater on I6 (worth 18 more without him); his arrows cut the pass to O3 for his layup on J4 and the pass to O5 for his layup on K3 (worth 9 more without them). Allows: O2's layup on G4 (18).",
+   "X5: his position takes away O5's long two on P2 and O3's long two on O2 (worth 10 more without him)."
+  ]
+ },
+ "offence_setup": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "ball": 0,
+  "value": 18.0,
+  "text": "Placed for the best value against the defence's best reply (18.0): 13 placements screened, the best 3 against the defence's best cover, then each attacker tried on every empty square, one at a time.",
+  "steps": [],
+  "seconds": 22.7
+ },
+ "first_turns": [
+  {
+   "side": "O",
+   "action": "O2 Move to A7"
+  },
+  {
+   "side": "O",
+   "action": "O4 Move to C3"
+  },
+  {
+   "side": "X",
+   "action": "X2 Move to F7 facing N"
+  },
+  {
+   "side": "X",
+   "action": "X4 Quick Step to I7"
+  }
+ ]
+}

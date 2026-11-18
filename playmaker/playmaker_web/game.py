@@ -731,6 +731,14 @@ class Game:
             c['change'] = snap.get('change')
             c['possession'] = self.possession
             c['when'] = self._cov_when(at, tr)
+            try:                                # step 22b (D-214): what each defender's position and arrows do
+                roles = _AG.coverage(at, only='roles') or []
+            except Exception:
+                roles = []
+            c['roles'] = roles
+            key = sorted((r for r in roles if r['value'] > 0), key=lambda r: (-r['value'], r['x']))[:2]
+            if key:
+                c['words'] = c['words'] + ' ' + ' '.join(r['line'] for r in key)
             if len(memo) > 200:
                 memo.clear()
             memo[k] = c

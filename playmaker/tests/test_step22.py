@@ -41,7 +41,7 @@ def test_the_defences_setup_is_never_worse_than_the_hug_and_packs_the_paint(js):
     make = lambda oo, b, x, a: T._state([B.sq(q) for q in oo], [B.sq(q) for q in x], list(a), ball=b)
     hug, ar = man_to_man(o, 0)
     before = D.lasting_of(make(o, 0, hug, ar))['L']
-    xs, arrows, L = AG._map_setup(make, o, 0)
+    xs, arrows, L = AG._map_setup(make, o, 0)[:3]
     assert L <= before + 1e-9
     assert L < before                                                  # on the table's board it finds a better one
     assert D.lasting_of(make(o, 0, xs, arrows))['L'] == pytest.approx(L)          # the engines read it the same

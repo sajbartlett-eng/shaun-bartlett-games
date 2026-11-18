@@ -145,6 +145,7 @@ class Agent:
                 srch.habit_weight = self.scouting.get('weight', 0.3)
             results, reached = srch.root(s, hi, lo)
         sign = 1 if side == 'O' else -1
+        results = _driver_order(s, side, results)       # step 22b (D-215): ties put in the order of the ranked drivers
         if CONFIG.get('search', {}).get('split_ties') is True:
             # step 18f (search.split_ties): turns that read exactly the same get one draw of the pick noise, so the
             # evidence that put them in order chooses between them, not chance
@@ -437,7 +438,7 @@ def _better(a, b, sign):
     return False
 
 
-def coverage(s, answers=None, only=None, fresh=False, evals=None):
+def coverage(s, answers=None, only=None, fresh=False, evals=None, **extra):
     """Step 18s (D-199): the coverage map of a position, from the fast engine (engine.js coverage), or None where that
     engine isn't there or doesn't play these rules. Value, reach, influence and weakness for every attacker and square,
     who covers what, the defence's best answers within its tokens, and one line of words. Read by nothing in the
@@ -451,6 +452,7 @@ def coverage(s, answers=None, only=None, fresh=False, evals=None):
         req['options'] = dict(only=only)
         if evals is not None:                 # step 22: how many placements the setup answer reads
             req['options']['evals'] = evals
+        req['options'].update(extra)          # step 22b: e.g. piece and keep for only='offsweep'
     if fresh:                                 # step 21: step 20's like-for-like read (a fresh phase), for the reports' phase starts
         req.setdefault('options', {})['fresh'] = True
     return json.loads(JS['coverage'](json.dumps(req)))
@@ -718,13 +720,68 @@ def _map_setup(make, o_sq, ball, evals=240):
         return None
     if not r:
         return None
-    return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L'])
+    return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L']), r.get('drivers')
+
+
+def _driver_order(s, side, results, limit=8):
+    """Step 22b (D-215, Shaun, 18 Nov 2026): turns the search reads exactly the same are put in the order of the ranked
+    drivers of the position each leaves, by the map: for the defence the lowest lasting gap, then the offence's lowest
+    chances to its best looks, then the fewest actions its answer needs, then the fewest attackers pulling two
+    defenders; for the offence the mirror. Only the order of tied turns changes (split_ties then lets the first of a
+    tie stand for it); with the map off, or without the fast engine, nothing changes."""
+    on = CONFIG.get('eval', {}).get('map')
+    if JS.get('coverage') is None or not s.ctx.rules.digital or not (on is True or (on == 'offence' and side == 'O')):
+        return results
+    out, k = list(results), 0
+    while k < min(len(out), limit):
+        j = k
+        while j + 1 < len(out) and abs(out[j + 1][0] - out[k][0]) < 1e-9:
+            j += 1
+        if j > k:
+            keyed = []
+            for v, t in out[k:j + 1]:
+                key = None
+                try:
+                    after = _likeliest(play_turn(s, t))
+                    if after.stage == 'play':
+                        r = coverage(after, only='lasting')
+                        if r and r.get('drivers'):
+                            d = r['drivers']
+                            key = (_okey(d['L'], d) if side == 'O' else
+                                   tuple(-x if isinstance(x, (int, float)) else tuple(-y for y in x)
+                                         for x in (d['L'], tuple(d['rs']), d['n'], d['dbl'], tuple(d['worths']))))
+                except ValueError:
+                    key = None
+                keyed.append((key, v, t))
+            readable = sorted((z for z in keyed if z[0] is not None), key=lambda z: z[0], reverse=True)
+            out[k:j + 1] = [(v, t) for _, v, t in readable] + [(v, t) for key, v, t in keyed if key is None]
+        k = j + 1
+    return out
+
+
+def _why(a, b):
+    """Which of the offence's ranked drivers tells key a from key b: 'a' to 'd', or 'looks behind'."""
+    for k, name in enumerate(('a', 'b', 'c', 'd', 'looks behind')):
+        if k >= len(a) or k >= len(b) or a[k] != b[k]:
+            return name
+    return 'looks behind'
+
+
+def _okey(v, drv=None):
+    """Step 22b (D-215): an offence placement's ranked drivers as a key to maximise: the lasting gap, then the safest
+    chances to its looks, then the fewest actions to its best look, then attackers who pull two defenders, then the
+    looks behind the gap. A plain number (no map) is its own key."""
+    if isinstance(v, tuple):
+        return v
+    if not drv:
+        return (float(v),)
+    return (float(v), tuple(drv['rs']), -drv['acts'], drv['dbl'], tuple(drv['worths']))
 
 
 def _o_value(make, o_sq, ball, rng, budget_end):
     m = _map_setup(make, o_sq, ball)
     if m is not None:                                   # step 22: judged against the defence's map setup
-        return m[2], m[0], m[1]
+        return _okey(m[2], m[3]), m[0], m[1]
     xs, arrows = _defence_reply(make, o_sq, ball, rng, budget_end, rounds=1)
     s = make(o_sq, ball, xs, arrows)
     return Read(s).leaf(), xs, arrows
@@ -810,7 +867,7 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
             continue
         m = _map_setup(make, sq, ball, evals=40) if mapped else None   # step 22: against the defence's map setup
         if m is not None:                                # (a short read to screen; the best few get the full one)
-            v = m[2]
+            v = _okey(m[2], m[3])
         else:
             xs, ar = man_to_man(list(sq), ball)
             try:
@@ -820,7 +877,7 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
         scored.append((v, sq, ball))
         if time.time() > t_end - 0.6 * (t_end - t0):    # step 18p: the setup keeps its time (it used to finish 4 placements whatever the clock said)
             break
-    scored.sort(key=lambda r: -r[0])
+    scored.sort(key=lambda r: _okey(r[0]), reverse=True)
     top = []
     few = scored[:3]
     if mapped and not any(r[1] == base for r in few):   # step 22: the table's own placement always gets the full read
@@ -830,10 +887,40 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
             break
         v, _, _ = _o_value(make, sq, ball, rng, t_end)
         top.append((v, sq, ball))
-    top.sort(key=lambda r: -r[0])
+    top.sort(key=lambda r: _okey(r[0]), reverse=True)
     best_v, best_sq, best_ball = top[0]
     answered = list(top)                                # every placement read against the defence's best reply
-    while time.time() < t_end:
+    if mapped:
+        # step 22b (D-216): all five over every square. Each attacker in turn is tried on every empty square against
+        # the defence's map setup for the best placement so far (the fast engine's sweep, ranked by the offence's
+        # drivers); the best few get the full read (the defence sets up again against them); a better one is kept.
+        # Round after round, until a round changes nothing or the time is out.
+        changed, steps = True, []
+        while changed and time.time() < t_end:
+            changed = False
+            for i in range(5):
+                if time.time() >= t_end:
+                    break
+                m = _map_setup(make, best_sq, best_ball)
+                if m is None:
+                    break
+                try:
+                    sweep = coverage(make(best_sq, best_ball, m[0], m[1]), only='offsweep', piece=i, keep=6) or []
+                except ValueError:
+                    break
+                for row in sweep:
+                    if time.time() >= t_end:
+                        break
+                    q = B.parse_sq(row['sq'])
+                    sq = best_sq[:i] + [q] + best_sq[i + 1:]
+                    if q == best_sq[i] or not _legal_o(sq, best_ball):
+                        continue
+                    v, _, _ = _o_value(make, sq, best_ball, rng, t_end)
+                    answered.append((v, sq, best_ball))
+                    if _okey(v) > _okey(best_v):
+                        steps.append(dict(o=i, to=B.sq(q), by=_why(_okey(v), _okey(best_v))))
+                        best_v, best_sq, changed = v, sq, True
+    while not mapped and time.time() < t_end:
         i = rng.randrange(5)
         q = (best_sq[i][0] + rng.randint(-2, 2), best_sq[i][1] + rng.randint(-2, 2))
         sq = best_sq[:i] + [q] + best_sq[i + 1:]
@@ -841,17 +928,19 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
             continue
         v, _, _ = _o_value(make, sq, best_ball, rng, t_end)
         answered.append((v, sq, best_ball))
-        if v > best_v + 1e-9:
+        if _okey(v) > _okey(best_v):
             best_v, best_sq = v, sq
+    best_v = _okey(best_v)[0]
     # step 21 (D-208, Shaun, 17 Nov 2026): the setup chooses among the placements within the level's variety margin of
     # the best, each possession, as its turns already do (All-Star: 2 points; Rookie: none)
-    near_best = [r for r in answered if r[0] >= best_v - p['variety_margin'] - 1e-9]
+    near_best = [r for r in answered if _okey(r[0])[0] >= best_v - p['variety_margin'] - 1e-9]
     if p['variety_margin'] > 0 and len(near_best) > 1:
         _, best_sq, best_ball = rng.choice(near_best)
     text = (f'Placed for the best value against the defence\'s best reply ({best_v:.1f}): {len(scored)} placements '
-            f'screened, the best {len(top)} against the defence\'s best cover, then refined one player at a time.')
+            f'screened, the best {len(top)} against the defence\'s best cover, then '
+            + ('each attacker tried on every empty square, one at a time.' if mapped else 'refined one player at a time.'))
     return dict(squares=best_sq, ball=best_ball, value=round(best_v, 2), text=text, candidates=len(scored),
-                within=len(near_best))
+                within=len(near_best), steps=locals().get('steps', []))
 
 
 def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar'):

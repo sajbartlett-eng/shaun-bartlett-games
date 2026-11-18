@@ -66,13 +66,15 @@ def influence(s):
     a Sprint as the lighter extension), each active screen's T and the diagonal steps it blocks, capacity
     badges (Move used, Quick Step used, locked) for every piece, and each attacker's movement reach this
     phase (shown when he is selected)."""
-    from playmaker_engine.actions import zone, stance, movement_dests, can_move_kind
+    from playmaker_engine.actions import zone, stance, movement_dests, can_move_kind, arrows_blocked
     rules = s.ctx.rules
     zones = []
     for j in range(5):
         z = zone(s, j)
         st = stance(s, j)                               # step 18g: two lines under the zone, none when it is broken
+        dead = arrows_blocked(s, j)                     # step 22b (D-217): a line a screen blocks, drawn dashed
         zones.append(dict(defender=j, lines=list(G.lines(rules, st)), broken=st >= 16,
+                          blocked=[d for d in G.lines(rules, st) if d in dead],
                           squares=[dict(sq=B.sq(q), x=q[0], y=q[1], kind=k) for q, k in sorted(z.items())]))
     screens = []
     for sc in s.screens:
@@ -413,7 +415,7 @@ def coverage_json(game, token, n=None):
             if name not in best or v['worth'] > best[name]['worth']:
                 best[name] = row
         layers.append(sorted(rows, key=lambda r: r['sq']))
-    return dict(possession=c['possession'], phase=c['phase'], words=c['words'], change=c.get('change'), worth=c['worth'], best=c['best'], left=c['left'],
+    return dict(possession=c['possession'], phase=c['phase'], words=c['words'], change=c.get('change'), roles=c.get('roles') or [], worth=c['worth'], best=c['best'], left=c['left'],
                 answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
                 strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers,
                 lasting=c.get('lasting'), before=c.get('before'), overloads=c.get('overloads') or [], all_after=all_after, attackers_after=layers_after,

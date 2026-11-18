@@ -330,7 +330,7 @@ def phase_assessment(game, phase, lines, start_map, next_map, broke):
         off.append(f"Best turn: turn {b['turn']}, {_low(b['words']['offence'])}: from {b['numbers']['before']} to {b['numbers']['after_offence']}.")
     if broke and not took:
         off.append(f'Missed: the defence was broken ({_shot_words(broke)}) and the shot was not taken.')
-    elif not rises and not took:
+    elif not rises and not let_up and not took:          # (step 22b: a defence answer that let it rise is a turn that raised it)
         off.append('No turn raised the lasting gap this phase.')
     if answers:
         b = max(answers, key=lambda ln: ln['answered'])

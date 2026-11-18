@@ -294,7 +294,10 @@ WORDS = {
     'screen_geometry': dict(
         sec='Screens', src='trackers', oq=9,
         text='The screener\'s T marks one square next to him. No defender steps diagonally from the T square or across '
-             'its corner.', tab='no diagonal from or across the T', dig='no diagonal from or across the T'),
+             'its corner. A defender standing on the T square loses his arrow that points diagonally too: it walls no '
+             'drive and jumps no passing lane until he leaves the T, wins a Challenge, the screener moves or the phase '
+             'ends. His other arrow and his contest are unchanged (D-217).',
+        tab='no diagonal from or across the T; the diagonal arrow is blocked', dig='no diagonal from or across the T; the diagonal arrow is blocked'),
     'challenge_who': dict(
         sec='Screens', src='trackers', oq=16,
         text='Challenge: only the defender on the T square may Challenge. The offence rolls Screen − Challenge or '

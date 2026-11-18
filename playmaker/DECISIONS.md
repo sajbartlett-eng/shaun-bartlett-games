@@ -1239,6 +1239,36 @@ any defender to any empty square with any arrow, the five read together, keeping
 defence, not a quick man-to-man, and the setup gets eight times the level's decision time in the digital format.
 · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22.**
 
+**D-214. Position and arrows are judged by what they do.** Shaun (playtest, 18 Nov 2026): defenders still picked odd
+spots and arrows, and the offence hesitated, drifted and set empty screens, because the map only scored the top look and
+every other choice was a tie broken by list order. For every defender the map now records what his position and arrows
+protect (the looks only he covers, the passing lanes his arrows cut, the paths his body stands on) and what they allow,
+all from the map's own values (the cards, the rules' chances), never from a named zone, spot or direction (D-156).
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-215. Ranked drivers for both sides, each deciding only when everything above it is level, no weights.** Defence: (a)
+the lowest top look (the lasting gap); (b) the offence's least likely actions: its best looks need its riskiest actions
+to reach, by the rules' own chances (a walled lane needing a dribble beats an open lane a sprint reaches every time);
+(c) efficiency: the fewest defensive actions to recover or rotate; (d) no attacker's best action pulls two defenders onto
+him. Offence, the mirror: (a) the highest top look; (b) the safest actions to reach it; (c) the fewest offensive actions
+to make it; (d) one attacker's action pulls two defenders onto him. Used in setup, in each side's search and in the
+map's reading. Shaun swapped (b) and (c) after the first build left the ball handler unguarded for efficiency's sake:
+"X1 leaving the ball handler for E7 breaks basketball fidelity (D-196: the computer is presumed wrong): an unguarded
+ball handler gets a free sprint into the paint, and the map can't yet see the collapse and kick-out that follow."
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-216. Setup searches all five players on each side together, over every square and arrow.** · Source: Shaun,
+18 Nov 2026 · **Ruled; built in step 22b.**
+
+**D-217. The screen stops the path around it, for the body and the arrows alike.** Shaun: while a defender stands on a
+screen's T square, any of his arrows pointing diagonally around the screener (the direction the screen already stops
+him stepping) projects nothing: it walls no drive and jumps no passing lane that way. His other arrow, and all other
+directions, work as normal. His contest is unchanged: he can still fully contest an immediate shot if square. The block
+ends the moment he leaves the T square, wins a Challenge, the screener moves, or the phase ends. Built in both engines;
+the board draws a blocked arrow dashed with a "blocked" mark. Cases these lines don't settle, read the way closest to
+"the screen stops the path around it", are marked for Shaun in the step 22b report. · Source: Shaun, 18 Nov 2026 ·
+**Ruled; built in step 22b.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
