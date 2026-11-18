@@ -145,6 +145,20 @@ def candidate_actions(s, read=None, per_player=3):
             mine.sort(key=lambda a: (-B.cheb(a.dest, bp), a.dest))
             for a in mine[:1]:
                 add(a)
+        # step 22 (D-212, engine.js candidateActions): the moves that start the map's own threats are always tried
+        from . import decide as _dmap
+        on = read.cfg.get('map')
+        if (on is True or (on == 'offence' and _dmap.MAP_ME[0] == 'O')) and s.ctx.rules.digital and s.stage == 'play' and not s.pending:
+            for ta, q0 in read.map_threats():
+                for a in acts:
+                    if ta == s.ball:
+                        hit = a.kind in ('move', 'qs', 'sprint') and a.piece == ta and a.dest == q0
+                    elif q0 == s.o[ta]:
+                        hit = a.kind == 'pass' and a.target == ta
+                    else:
+                        hit = a.kind in ('move', 'qs', 'sprint') and a.piece == ta and a.dest == q0
+                    if hit:
+                        add(a)
         scr = [a for a in acts if a.kind == 'screen']
         scr.sort(key=lambda a: min(B.cheb(B.add(s.o[a.piece], B.DIRS[a.target]), xp) for xp in s.x))
         for a in scr[:4]:

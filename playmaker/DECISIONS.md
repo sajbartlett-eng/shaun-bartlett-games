@@ -1218,6 +1218,27 @@ level's variety margin (All-Star: 2 points) each possession, as its turns alread
 map reads the defence as it really is. If the screen pays, the rule was right; if not, it is reported with the evidence
 and Shaun decides. · Source: Shaun, 17 Nov 2026 · **Ruled.**
 
+**D-210. The map reads the offence's whole first turn of the next phase.** Shaun: "Just ask it to fix it. Merge it. And
+let me test it." The map used to read to the next phase's start plus one movement. It now also sets up looks a receiver
+reaches with the next phase's first two actions (the move, then the catch or the next move), with the defence's answer
+between them: the drive that draws help, the kick that finds the gap, the screen that pays after the move and the pass.
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22.**
+
+**D-211. The three-second rule's -5 is counted in the map and the search.** An attacker in the key who can't move out
+this phase owes the turnover's cost, so the offence stops giving it away. · Source: Shaun, 18 Nov 2026 · **Ruled; built
+in step 22.**
+
+**D-212. The offence's search tries the moves that make the map's looks.** The computer sometimes picked a move its own
+map read as worse because the search judged the defence against offence replies that didn't include the moves that make
+the map's best looks. The offence's candidates now always include, for each of the map's top looks and overloads, the move
+or pass that makes it. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22.**
+
+**D-213. The defence's setup is the map's own best answer to the offence's placement.** It starts from the hug and moves
+any defender to any empty square with any arrow, the five read together, keeping each change that lowers the lasting gap
+(the defence's answer during the phase counted), until nothing lowers it. The offence's setup is judged against that
+defence, not a quick man-to-man, and the setup gets eight times the level's decision time in the digital format.
+· Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

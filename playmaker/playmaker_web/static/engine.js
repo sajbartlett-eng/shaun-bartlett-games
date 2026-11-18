@@ -2913,9 +2913,13 @@ const PMEngine = (() => {
     // step 20 (Shaun, 17 Nov 2026): the lasting gap, read like for like (lastingOf); only the number is kept with the
     // reading, or a long search holds thousands of maps
     mapLasting() {
-      if (this._lg === undefined) { const g = lastingOf(this.s, this); this._lg = g ? g.L : null; this._lgMoves = g && g.best ? g.best.moves : null; }
+      if (this._lg === undefined) {
+        const g = lastingOf(this.s, this);
+        this._lg = g ? g.L : null; this._lgMoves = g && g.best ? g.best.moves : null; this._lgThreats = lgThreats(g);
+      }
       return this._lg;
     }
+    mapThreats() { this.mapLasting(); return this._lgThreats || []; }
     mapAnswer() {                                  // step 21: the moves of the defence's best answer (the search tries them)
       this.mapLasting();
       return this._lgMoves || [];
@@ -3328,6 +3332,18 @@ const PMEngine = (() => {
         const mine = moves.filter(a => a.piece === i && a.kind === 'move');
         mine.sort((a, b) => (cheb(b.dest, bp) - cheb(a.dest, bp)) || (a.dest - b.dest));
         if (mine.length) add(mine[0]);
+      }
+      // step 22 (D-212): the moves that start the map's own threats are always tried, so the search sees what the
+      // map reads (step 21 saw the computer pick moves its own map read as worse: the offence's reply it was judged
+      // against missed the map's threat)
+      if (mapOn() && s.ctx.digital && s.stage === 'play' && !s.pending) {
+        for (const t of read.mapThreats()) {
+          if (t.q0 === undefined) continue;
+          for (const a of acts) {
+            if (t.a === s.ball ? (MOVEMENT.has(a.kind) && a.piece === t.a && a.dest === t.q0)
+              : t.q0 === s.o[t.a] ? (a.kind === 'pass' && a.target === t.a) : (MOVEMENT.has(a.kind) && a.piece === t.a && a.dest === t.q0)) add(a);
+          }
+        }
       }
       const scr = acts.filter(a => a.kind === 'screen');
       const sk = a => { const t = s.o[a.piece] + DSTEP[a.target]; let m = INF; for (const xp of s.x) m = Math.min(m, cheb(t, xp)); return m; };
@@ -4594,10 +4610,13 @@ const PMEngine = (() => {
         if (s.tok_o > 0) for (const kind of ['move', 'qs', 'sprint']) if (canMoveKind(s, 'O', a, kind)) for (const q of movementDests(s, 'O', a, kind).keys()) if (!one.has(q)) one.set(q, 1);
         for (const q of [...one.keys()].concat(s.tok_o > 0 ? twoActions(s, a, one) : [])) starts.push([q, 1.0]);
       } else if (s.tok_o > 0 && count(s, 'O', 'pass') < LIMITS.O.pass) {
+        // step 22 (D-210): the map reads the offence's whole first turn of the next phase. A receiver one movement
+        // away catches and has his movement to a shot; two movements away (his cut) he catches where he gets to and
+        // shoots from there: cut, pass, shot, the defence's reaction counted in the contest of it
         for (const [q, n] of attackerReach(s, a)) {
-          if (n > 1 || n + 1 > s.tok_o) continue;
+          if (n > 2 || n + 1 > s.tok_o) continue;
           const p = covPass(s, a, q);                 // the rules' own chance
-          if (p > 0) starts.push([q, p]);
+          if (p > 0) starts.push([q, p, n === 2]);
         }
       }
       const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== a) mates.add(s.o[k]);
@@ -4617,16 +4636,17 @@ const PMEngine = (() => {
         if (!o) { o = { a, c, rushed, paths: [] }; byKey.set(key, o); options.push(o); }
         o.paths.push(path);
       };
-      for (const [q0, pr] of starts) {
+      for (const [q0, pr, setOnly] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
         if (lean) {
           const put = (c, rushed) => {
             const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
             const o = byKey.get(key);
-            if (!o) { const n = { a, c, rushed, paths: null, pr }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) o.pr = pr;
+            if (!o) { const n = { a, c, rushed, paths: null, pr, q0 }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) { o.pr = pr; o.q0 = q0; }
           };
           if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) put(q0, false);
+          if (setOnly) continue;
           for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
             const c = p[p.length - 1], o = byKey.get((a * 4096 + c) * 2 + (rushed ? 1 : 0));
             if (o && o.pr >= pr) continue;
@@ -4639,6 +4659,7 @@ const PMEngine = (() => {
           continue;
         }
         if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop });      // a set shot from where the phase finds him
+        if (setOnly) continue;
         for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
           let dm = 0, bad = false;
           for (const q of p) { if (mates.has(q)) { bad = true; break; } const j = xat.get(q); if (j !== undefined) dm |= 1 << j; }
@@ -4922,6 +4943,7 @@ const PMEngine = (() => {
   }
   function lasting(m) {
     const s = m.s, r = m.r, soft = s.ctx.soft;
+    const BEAM = LG_BEAM, WIDE = LG_WIDE;
     const root = lgRoot(m); root.sc = lgScore(root);
     let best = root, frontier = [root];
     for (let depth = 0; depth < 5 && frontier.length; depth++) {
@@ -4962,7 +4984,7 @@ const PMEngine = (() => {
           for (const [q, arrs] of fr[1]) if (!st.taken.has(q)) for (const [a, n] of arrs) if (n === 1) offer(d, q, a, cmapCached(q, a, qs, true, 1, mode).masks[2]);
         }
         cands.sort((u, v) => (covLess(u.after, v.after) ? -1 : covLess(v.after, u.after) ? 1 : (u.d - v.d || u.q - v.q || u.a - v.a)));
-        for (const c of cands.slice(0, LG_WIDE)) {
+        for (const c of cands.slice(0, WIDE)) {
           const ch = lgChild(m, st, c.d, c.q, c.a, c.cm);
           ch.sc = lgScore(ch);
           nexts.push(ch);
@@ -4970,7 +4992,7 @@ const PMEngine = (() => {
       }
       if (!nexts.length) break;
       nexts.sort((u, v) => (lgBetter(u, v) ? -1 : lgBetter(v, u) ? 1 : 0));
-      frontier = nexts.slice(0, LG_BEAM);
+      frontier = nexts.slice(0, BEAM);
       if (lgBetter(frontier[0], best)) best = frontier[0];
     }
     return best;
@@ -5001,7 +5023,89 @@ const PMEngine = (() => {
     const f = covOffFresh(s);
     const m = covBuild(f, true, null);
     const best = lasting(m);
-    return { L: best.sc.L, before: m.sorted.length ? m.sorted[0].e : 0, ov: best.sc.ov.length, moves: best.moves.length, m, best };
+    // step 22 (D-211): the three-second rule's -5, for each attacker in the key at the last phase end who can't
+    // leave it before this phase ends with what the offence really has left
+    const three = threeSecondsOwed(s);
+    return { L: best.sc.L - TURNOVER_COST * three, before: m.sorted.length ? m.sorted[0].e : 0, ov: best.sc.ov.length, moves: best.moves.length, m, best, three };
+  }
+  // Step 22 (D-213, Shaun, 18 Nov 2026): the defence's setup. From the placement it is handed, any defender may go to
+  // any empty square with any arrow, one at a time, the five read together: each placement tried is judged by its
+  // own lasting gap (the defence's answer during the phase counted). Which placements are tried: the twelve that take
+  // the most off the offence's best looks where they stand, by the same quick reading the answer's search uses.
+  // The best one is kept and the next defender tried from there, until nothing lowers the gap or the reads run out.
+  const SETUP_TRY = 60;
+  function setupPlace(s0, evals) {
+    let s = covOffFresh(s0);
+    const g0 = lastingOf(s);
+    // judged by the lasting gap, then (when two leave the same gap) by the looks left behind it, best first
+    const key = g => (g ? [g.L].concat(g.best ? g.best.sc.worths : []) : [0]);
+    let K = key(g0), moves = 0, used = 0;
+    const L0 = K[0];
+    for (let step = 0; step < 15 && used < evals; step++) {
+      const m = covBuild(s, true, null), r = m.r, soft = s.ctx.soft;
+      const st = lgRoot(m), head = lgHead(st), cur = head.map(x => x.e);
+      if (!head.length || !(head[0].e > 0)) break;
+      const cands = [];
+      for (let d = 0; d < 5; d++) {
+        if (!ONB[s.x[d]]) continue;
+        const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d);
+        for (let q = 0; q < ONB.length; q++) {
+          if (!ONB[q] || (q !== s.x[d] && st.taken.has(q))) continue;
+          let best1 = null;                               // each square read with its best arrow
+          for (let a = 0; a < 8; a++) {
+            if (q === s.x[d] && a === s.arrows[d]) continue;
+            const cm = cmapCached(q, a, qs, true, 1, mode).masks[2];
+            const after = [];
+            for (const x of head) {
+              let e;
+              if (x.src.c === q) e = -Infinity;
+              else {
+                const mask = cm[BI[x.src.c]];
+                const vals = mask ? r._valsCalc(x.src.lk, d, mask, 0, x.src.fl, soft ? mask : 0, 0) : null;
+                e = x.r * covValue({ open: x.src.open, vals: x.vals }, d, vals)[0] - (1 - x.r) * TURNOVER_COST;
+              }
+              after.push(e);
+            }
+            after.sort((u, v) => v - u);
+            if (best1 === null || covLess(after, best1.after)) best1 = { d, q, a, after };
+          }
+          if (best1 !== null) cands.push(best1);
+        }
+      }
+      cands.sort((u, v) => (covLess(u.after, v.after) ? -1 : covLess(v.after, u.after) ? 1 : (u.d - v.d || u.q - v.q || u.a - v.a)));
+      let pick = null;
+      for (const c of cands.slice(0, SETUP_TRY)) {
+        if (used >= evals) break;
+        const ns = W_(s, { x: setAt(s.x, c.d, c.q), arrows: setAt(s.arrows, c.d, c.a) });
+        const g = lastingOf(ns); used++;
+        if (!g) continue;
+        const k = key(g);
+        if (covLess(k, K) && (pick === null || covLess(k, pick.k))) pick = { k, s: ns };
+      }
+      if (pick === null) break;
+      s = pick.s; K = pick.k; moves++;
+    }
+    return { s, L: K[0], L0, moves, evals: used };
+  }
+  function threeSecondsOwed(s) {
+    if (!s.ctx.three || !s.key_o) return 0;
+    let n = 0;
+    for (let i = 0; i < 5; i++) {
+      if (!((s.key_o >> i) & 1) || !INKEY[s.o[i]]) continue;
+      const out = s.tok_o > 0 && (canMoveKind(s, 'O', i, 'move') || canMoveKind(s, 'O', i, 'qs') || canMoveKind(s, 'O', i, 'sprint'));
+      if (!out) n++;
+    }
+    return n;
+  }
+  // step 22 (D-212): the map's own threats as the offence's first actions: for each of the best looks the defence's
+  // answer leaves, and each overload's looks, the action that starts it (the ball handler's movement to where he needs
+  // to be, the pass to a receiver standing where he catches, or the receiver's movement to it). [{a, q0}]
+  function lgThreats(g) {
+    if (!g || !g.best || !g.m) return [];
+    const out = [], opt = (a, c) => g.m.options.find(o => o.a === a && o.c === c && !o.rushed) || g.m.options.find(o => o.a === a && o.c === c);
+    for (const x of lgHead(g.best).slice(0, 3)) out.push({ a: x.src.a, q0: x.src.q0 });
+    for (const v of g.best.sc.ov) for (const z of v.threats) { const o = opt(z.a, z.c); if (o) out.push({ a: o.a, q0: o.q0 }); }
+    return out;
   }
   const COV_MOVES = new Set(['move', 'qs', 'sprint']);
   // the defence's answers: one movement action at a time while it has tokens, each the action that leaves the offence
@@ -5091,6 +5195,10 @@ const PMEngine = (() => {
     opts = opts || {};
     if (opts.only === 'parts') return { parts: mapParts(s0) };                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
+    if (opts.only === 'setup') {                          // step 22: the defence's setup, the map's own answer
+      const g = setupPlace(s0, opts.evals || 120);
+      return { L: +g.L.toFixed(2), start: +g.L0.toFixed(2), x: Array.from(g.s.x).map(q => sqName(q)), arrows: Array.from(g.s.arrows), moves: g.moves, evals: g.evals };
+    }
     if (opts.only === 'lasting') { const g = lastingOf(s0, null, !!opts.fresh); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves } : null; }
     // step 21 (D-206): the map is read with what each side has left this phase; opts.fresh: step 20's like-for-like
     // read (covFresh), for the reports' phase starts. A pass in the air is shown caught; its number is by the catch's chance
@@ -5144,7 +5252,7 @@ const PMEngine = (() => {
     }
     const brk = covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (brk.broken) words.push(`The defence is broken now: O${brk.shot.o + 1} has a shot on ${brk.shot.sq} worth ${brk.shot.worth.toFixed(0)}, more than playing on (${brk.carry_on.toFixed(0)}).`);
-    const L = s0.pending && !opts.fresh ? (lastingOf(s0) || { L: best.sc.L }).L : best.sc.L;
+    const L = s0.pending && !opts.fresh ? (lastingOf(s0) || { L: best.sc.L }).L : best.sc.L - (opts.fresh ? 0 : TURNOVER_COST * threeSecondsOwed(s0));
     // where the defence stands after its best answer
     const px = Array.from(s.x), pa = Array.from(s.arrows);
     for (const [d, q, a] of best.moves) { px[d] = q; if (a >= 0) pa[d] = a; }
