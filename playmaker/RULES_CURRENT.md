@@ -60,7 +60,7 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 
 - Any player except the ball carrier may Screen. (setting: carrier_can_screen)
 - A Screen is the turn's first action, or its second straight after that player's own Move, and it ends the turn. It lasts until the screener moves, a Challenge beats it, or the phase ends. (setting: screen_rule)
-- The screener's T marks one square next to him. No defender steps diagonally from the T square or across its corner. (setting: screen_geometry)
+- The screener's T marks one square next to him. No defender steps diagonally from the T square or across its corner. A defender standing on the T square loses his arrow that points diagonally too: it walls no drive and jumps no passing lane until he leaves the T, wins a Challenge, the screener moves or the phase ends. His other arrow and his contest are unchanged (D-217). (setting: screen_geometry)
 - Challenge: only the defender on the T square may Challenge. The offence rolls Screen − Challenge or under: the screen holds and the challenger is locked. Otherwise the screen is removed for everyone. (setting: challenge_who)
 
 ## Defender arrows

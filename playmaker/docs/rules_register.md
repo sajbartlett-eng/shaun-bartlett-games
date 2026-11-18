@@ -62,7 +62,7 @@ Every rule value and mechanism, marked **Shared** (both formats), **Digital only
 | reaction_may_decline | Shared | 0, 1 or 2 actions | 0, 1 or 2 actions |  |
 | defence_empty_ends_phase | Shared | defence's last token ends the phase at once | defence's last token ends the phase at once |  |
 | wait_chain_block | Shared | no wait straight after the other side's | no wait straight after the other side's |  |
-| screen_geometry | Shared | no diagonal from or across the T | no diagonal from or across the T |  |
+| screen_geometry | Shared | no diagonal from or across the T; the diagonal arrow is blocked | no diagonal from or across the T; the diagonal arrow is blocked |  |
 | screen_rule | Shared | holds until the screener moves | holds until the screener moves |  |
 | arrow_line_strict | Shared | not in play (kept so old logs replay) | not in play (kept so old logs replay) |  |
 | drive_rule | Shared | into the zone, not through | into the zone, not through |  |

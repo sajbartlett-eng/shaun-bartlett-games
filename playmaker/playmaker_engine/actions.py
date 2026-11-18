@@ -77,6 +77,31 @@ def t_square(state, screen):
     return B.add(state.o[i], B.DIRS[d])
 
 
+DIAGONALS = frozenset(d for d in range(8) if d % 2)
+
+
+def arrows_blocked(state, j, pos=None):
+    """Step 22b (D-217, Shaun, 18 Nov 2026): the arrow directions the screen blocks for defender j standing on pos
+    (his square if not given). While he stands on a screen's T square (a screen he hasn't beaten with a Challenge),
+    the screen stops him stepping diagonally from it, and an arrow pointing that way projects nothing either: it walls
+    no drive and jumps no passing lane. His contest is unchanged. The block ends when he leaves the T square, wins a
+    Challenge, the screener moves (the screen goes) or the phase ends (the screens go)."""
+    if not state.screens:
+        return frozenset()
+    p = state.x[j] if pos is None else pos
+    for scr in state.screens:
+        if not (scr[3] >> j & 1) and t_square(state, scr) == p:
+            return DIAGONALS
+    return frozenset()
+
+
+def live_lines(state, j, st=None, pos=None):
+    """Defender j's arrow lines that still project (geometry.lines less the directions a screen blocks)."""
+    ls = G.lines(state.ctx.rules, stance(state, j) if st is None else st)
+    dead = arrows_blocked(state, j, pos)
+    return tuple(d for d in ls if d not in dead) if dead else ls
+
+
 def stance(state, j, arrow=None):
     """Defender j's stance as the arrow rules read it (geometry.stance): his arrow (or the arrow given), and under
     rules.zone whether a Dribble won against him this phase has broken his zone."""
@@ -106,7 +131,8 @@ def zone(state, j):
     occ = state.occupied()
     out = {}
     st = stance(state, j)
-    for d in G.lines(rules, st):
+    live = live_lines(state, j, st)
+    for d in live:
         step = B.DIRS[d]
         q = start
         while True:
@@ -161,7 +187,7 @@ def path_ok(state, side, i, path, rules, occ=None, zones=None):
         pts = (start,) + tuple(path)
         for j, xp in enumerate(state.x):
             if B.adjacent(xp, start) and (i, j) not in state.beaten:
-                if G.path_crosses(rules, pts, xp, stance(state, j), rules.arrow_line_strict):
+                if any(B.path_crosses_ray(pts, xp, d, strict=rules.arrow_line_strict) for d in live_lines(state, j)):
                     return False
     return True
 
@@ -184,6 +210,8 @@ def capture_lines(state, i):
     for j, xp in enumerate(state.x):
         st = stance(state, j)
         if not 8 <= st < 16 or (i, j) in state.beaten:
+            continue
+        if arrows_blocked(state, j):      # step 22b (D-217): one arrow blocked: nothing to catch him and bar the other
             continue
         z = zone(free, j)
         ds = G.lines(rules, st)
@@ -455,7 +483,7 @@ def lane_jumps(state, j):
     a, b = state.o[passer], state.o[recv]
     occ = state.occupied()
     out = []
-    for d in G.lines(rules, stance(state, j)):
+    for d in live_lines(state, j):
         k = lane_crossing(p, d, a, b)
         if k is None:
             continue
@@ -517,7 +545,7 @@ def follow_jumps(state):
             if state.moved('X', j) or state.locked('X', j):
                 continue
         hit = False
-        for d in G.lines(rules, stance(state, j, arrow)):
+        for d in live_lines(state, j, stance(state, j, arrow), m.dest):
             k = lane_crossing(m.dest, d, a, b)
             if k is None:
                 continue
@@ -557,8 +585,8 @@ def mti_approach(state, a):
     if n == 0 or dx not in (-n, 0, n) or dy not in (-n, 0, n):
         return False                                  # not a straight line
     d = B.DIRS.index((dx // n, dy // n))
-    if d not in G.lines(rules, stance(state, j)):
-        return False                                  # off the arrow
+    if d not in live_lines(state, j):
+        return False                                  # off the arrow (or blocked by a screen, step 22b)
     passer, recv = state.pending
     pa, pb = state.o[passer], state.o[recv]
     if lane_meet(p, d, pa, pb) != n:
@@ -587,7 +615,7 @@ def approach_moves(state, j=None):
     for jj in (range(5) if j is None else (j,)):
         p = state.x[jj]
         qs = state.ctx.dfn[jj].qs
-        for d in G.lines(rules, stance(state, jj)):
+        for d in live_lines(state, jj):
             n = lane_meet(p, d, pa, pb)
             if not n:
                 continue

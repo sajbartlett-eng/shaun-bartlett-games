@@ -308,6 +308,15 @@ const PMEngine = (() => {
   // A defender's stance as the arrow rules read it (actions.stance, geometry.lines): without the rule, his arrow index
   // (one line); with it, 8 + the index (two lines, a and a + 1), or 16 when a Dribble won against him this phase has
   // broken his zone (no line at all).
+  // Step 22b (D-217, Shaun, 18 Nov 2026): while defender j stands on a screen's T square (a screen he hasn't beaten
+  // with a Challenge), the screen stops him stepping diagonally from it, and an arrow pointing that way projects
+  // nothing: it walls no drive and jumps no passing lane. His contest is unchanged (actions.screen_blocked).
+  function screenBlocked(s, j, p) {
+    if (!s.screens.length) return false;
+    const q = p === undefined ? s.x[j] : p;
+    for (const sc of s.screens) if (!((sc[3] >> j) & 1) && tSquare(s, sc) === q) return true;
+    return false;
+  }
   function stanceOf(s, j, arrow) {
     const a = arrow === undefined ? s.arrows[j] : arrow;
     if (!s.ctx.zone) return a;
@@ -406,6 +415,7 @@ const PMEngine = (() => {
       const st = stanceOf(s, j);
       if (st < 8 || st >= 16) continue;
       if (s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+      if (screenBlocked(s, j)) continue;              // step 22b: one arrow blocked, nothing to catch him and bar the other
       const d0 = st - 8, d1 = (st - 7) % 8;
       out.push([s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, bh, -1).length), Math.max(1, zoneRay(s, j, d1, bh, -1).length)]);
     }
@@ -528,6 +538,7 @@ const PMEngine = (() => {
     if (n === 0 || (dx !== -n && dx !== 0 && dx !== n) || (dy !== -n && dy !== 0 && dy !== n)) return false;
     const d = STEPDIR.get((dx / n) * WID + dy / n);
     if (!onLine(stanceOf(s, j), d)) return false;
+    if ((d & 1) && screenBlocked(s, j)) return false;   // step 22b: a screen-blocked arrow jumps no lane
     if (laneMeet(p, d, s.o[s.pending[0]], s.o[s.pending[1]]) !== n) return false;
     if (a.kind === 'sprint') { const keep = (s.ctx.zone && a.arrow === (d + 7) % 8) ? a.arrow : d; if (keep !== s.arrows[j]) return false; }
     else if (a.kind === 'move' && a.arrow !== s.arrows[j]) return false;
@@ -3046,6 +3057,7 @@ const PMEngine = (() => {
           const st = stanceOf(s, j);
           if (st < 8 || st >= 16 || !ONB[s.x[j]]) continue;
           if (s.beaten.some(b => b[0] === i && b[1] === j)) continue;
+          if (screenBlocked(s, j)) continue;          // step 22b (D-217)
           const d0 = st - 8, d1 = (st - 7) % 8;
           lines.push([j, [[s.x[j], d0, d1, Math.max(1, zoneRay(s, j, d0, old, -1).length), Math.max(1, zoneRay(s, j, d1, old, -1).length)]]]);
         }
@@ -4608,7 +4620,7 @@ const PMEngine = (() => {
       if (a === s.ball) {
         const one = new Map([[s.o[a], 0]]);
         if (s.tok_o > 0) for (const kind of ['move', 'qs', 'sprint']) if (canMoveKind(s, 'O', a, kind)) for (const q of movementDests(s, 'O', a, kind).keys()) if (!one.has(q)) one.set(q, 1);
-        for (const q of [...one.keys()].concat(s.tok_o > 0 ? twoActions(s, a, one) : [])) starts.push([q, 1.0]);
+        for (const q of [...one.keys()].concat(s.tok_o > 0 ? twoActions(s, a, one) : [])) starts.push([q, 1.0, false, one.has(q) ? one.get(q) : 2]);
       } else if (s.tok_o > 0 && count(s, 'O', 'pass') < LIMITS.O.pass) {
         // step 22 (D-210): the map reads the offence's whole first turn of the next phase. A receiver one movement
         // away catches and has his movement to a shot; two movements away (his cut) he catches where he gets to and
@@ -4616,7 +4628,7 @@ const PMEngine = (() => {
         for (const [q, n] of attackerReach(s, a)) {
           if (n > 2 || n + 1 > s.tok_o) continue;
           const p = covPass(s, a, q);                 // the rules' own chance
-          if (p > 0) starts.push([q, p, n === 2]);
+          if (p > 0) starts.push([q, p, n === 2, n + 1]);       // (n0, step 22b: his movements and the pass)
         }
       }
       const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== a) mates.add(s.o[k]);
@@ -4636,14 +4648,14 @@ const PMEngine = (() => {
         if (!o) { o = { a, c, rushed, paths: [] }; byKey.set(key, o); options.push(o); }
         o.paths.push(path);
       };
-      for (const [q0, pr, setOnly] of starts) {
+      for (const [q0, pr, setOnly, n0] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
         if (lean) {
           const put = (c, rushed) => {
             const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
             const o = byKey.get(key);
-            if (!o) { const n = { a, c, rushed, paths: null, pr, q0 }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) { o.pr = pr; o.q0 = q0; }
+            if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0 }; byKey.set(key, n); options.push(n); } else if (pr > o.pr) { o.pr = pr; o.q0 = q0; o.n0 = n0; }
           };
           if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) put(q0, false);
           if (setOnly) continue;
@@ -4923,6 +4935,21 @@ const PMEngine = (() => {
     }
     return out;
   }
+  // Step 22b (D-215, Shaun, 18 Nov 2026): the ranked drivers. Each decides only when everything above it is level; no
+  // weights. (a) the lasting gap; (b) the chances, by the rules, that the offence reaches its best looks (lower: its
+  // best looks need its riskiest actions); (c) efficiency: the defence's actions its answer needs (fewer holds by
+  // position and arrows); (d) how many attackers' best looks pull two or more defenders onto them (fewer: one defender
+  // contains each). (Shaun, 18 Nov 2026: (b) and (c) in this order.) Then the looks behind the gap, then the moves' order (so the same position always reads the same).
+  function lgDoubles(head) {
+    const seen = new Set(); let n = 0;
+    for (const x of head) {
+      if (seen.has(x.src.a)) continue;
+      seen.add(x.src.a);
+      let m = lgCovMask(x), k = 0; while (m) { k += m & 1; m >>= 1; }
+      if (k >= 2) n++;
+    }
+    return n;
+  }
   function lgScore(st) {
     const head = lgHead(st), worths = head.map(x => x.e);
     // (a group of two or three is named only when it is worth at least the best open look: it then explains the gap)
@@ -4930,14 +4957,17 @@ const PMEngine = (() => {
     const ov = lgOverloads(st).filter(v => v.ds.length === 1 || v.value >= open0 - 1e-9);
     let L = worths.length ? worths[0] : 0;
     for (const v of ov) if (v.value > L) L = v.value;
-    return { L, worths, ov };
+    return { L, worths, ov, rs: head.map(x => x.r), dbl: lgDoubles(head) };
   }
   function lgBetter(a, b) {                             // is answer a (its score) better for the defence than b?
     if (a.sc.L < b.sc.L - 1e-9) return true;
     if (a.sc.L > b.sc.L + 1e-9) return false;
+    if (covLess(a.sc.rs, b.sc.rs)) return true;                                           // (b)
+    if (covLess(b.sc.rs, a.sc.rs)) return false;
+    if (a.moves.length !== b.moves.length) return a.moves.length < b.moves.length;        // (c)
+    if (a.sc.dbl !== b.sc.dbl) return a.sc.dbl < b.sc.dbl;                                // (d)
     if (covLess(a.sc.worths, b.sc.worths)) return true;
     if (covLess(b.sc.worths, a.sc.worths)) return false;
-    if (a.moves.length !== b.moves.length) return a.moves.length < b.moves.length;
     for (let k = 0; k < a.moves.length; k++) for (let j = 0; j < 3; j++) if (a.moves[k][j] !== b.moves[k][j]) return a.moves[k][j] < b.moves[k][j];
     return false;
   }
@@ -5033,14 +5063,46 @@ const PMEngine = (() => {
   // own lasting gap (the defence's answer during the phase counted). Which placements are tried: the twelve that take
   // the most off the offence's best looks where they stand, by the same quick reading the answer's search uses.
   // The best one is kept and the next defender tried from there, until nothing lowers the gap or the reads run out.
+  // Step 22b (D-215): a position's drivers for either side, from its map reading (lastingOf): the lasting gap, the
+  // defence's actions its answer needs, the offence's chances to its best looks, the attackers whose best looks pull
+  // two defenders, and the offence's actions to its best look (the movements and the pass to have the ball where the
+  // phase starts it, and the movement to the shot).
+  function lgDrivers(g) {
+    if (!g) return { L: 0, n: 0, rs: [], dbl: 0, acts: 0, worths: [] };
+    if (!g.best) return { L: g.L, n: 0, rs: [], dbl: 0, acts: 0, worths: [] };
+    const head = lgHead(g.best), top = head[0];
+    const acts = top ? (top.src.n0 || 0) + (top.src.c !== top.src.q0 ? 1 : 0) : 0;
+    return { L: g.L, n: g.best.moves.length, rs: g.best.sc.rs, dbl: g.best.sc.dbl, acts, worths: g.best.sc.worths };
+  }
+  const drvJSON = k => ({ L: +k.L.toFixed(2), n: k.n, rs: k.rs.map(v => +v.toFixed(4)), dbl: k.dbl, acts: k.acts, worths: k.worths.map(v => +v.toFixed(2)) });
+  function drvLessX(a, b) {                            // is a better for the defence than b? (a) to (d), then the looks behind
+    if (a.L < b.L - 1e-9) return true; if (a.L > b.L + 1e-9) return false;
+    if (covLess(a.rs, b.rs)) return true; if (covLess(b.rs, a.rs)) return false;
+    if (a.n !== b.n) return a.n < b.n;
+    if (a.dbl !== b.dbl) return a.dbl < b.dbl;
+    return covLess(a.worths, b.worths);
+  }
+  function drvWhy(a, b) {                              // which driver tells a from b: 'a' to 'd', or 'looks behind'
+    if (Math.abs(a.L - b.L) > 1e-9) return 'a';
+    if (covLess(a.rs, b.rs) || covLess(b.rs, a.rs)) return 'b';
+    if (a.n !== b.n) return 'c';
+    if (a.dbl !== b.dbl) return 'd';
+    return 'looks behind';
+  }
+  function drvBetterO(a, b) {                          // is a better for the offence than b? the mirror
+    if (a.L > b.L + 1e-9) return true; if (a.L < b.L - 1e-9) return false;
+    if (covLess(b.rs, a.rs)) return true; if (covLess(a.rs, b.rs)) return false;
+    if (a.acts !== b.acts) return a.acts < b.acts;
+    if (a.dbl !== b.dbl) return a.dbl > b.dbl;
+    return covLess(b.worths, a.worths);
+  }
   const SETUP_TRY = 60;
   function setupPlace(s0, evals) {
     let s = covOffFresh(s0);
     const g0 = lastingOf(s);
-    // judged by the lasting gap, then (when two leave the same gap) by the looks left behind it, best first
-    const key = g => (g ? [g.L].concat(g.best ? g.best.sc.worths : []) : [0]);
-    let K = key(g0), moves = 0, used = 0;
-    const L0 = K[0];
+    // judged by the ranked drivers (D-215): the lasting gap, then the defence's actions, the offence's chances, doubled cover
+    let K = lgDrivers(g0), moves = 0, used = 0;
+    const L0 = K.L, steps = [];
     for (let step = 0; step < 15 && used < evals; step++) {
       const m = covBuild(s, true, null), r = m.r, soft = s.ctx.soft;
       const st = lgRoot(m), head = lgHead(st), cur = head.map(x => x.e);
@@ -5079,13 +5141,28 @@ const PMEngine = (() => {
         const ns = W_(s, { x: setAt(s.x, c.d, c.q), arrows: setAt(s.arrows, c.d, c.a) });
         const g = lastingOf(ns); used++;
         if (!g) continue;
-        const k = key(g);
-        if (covLess(k, K) && (pick === null || covLess(k, pick.k))) pick = { k, s: ns };
+        const k = lgDrivers(g);
+        if (drvLessX(k, K) && (pick === null || drvLessX(k, pick.k))) pick = { k, s: ns, d: c.d, q: c.q, a: c.a };
       }
       if (pick === null) break;
+      steps.push({ d: pick.d, to: sqName(pick.q), arrow: pick.a, by: drvWhy(pick.k, K) });
       s = pick.s; K = pick.k; moves++;
     }
-    return { s, L: K[0], L0, moves, evals: used };
+    return { s, L: K.L, L0, moves, evals: used, drivers: K, steps };
+  }
+  // Step 22b (D-216): the offence's setup over every square. Attacker i tried on every empty square of the court, the
+  // defence as it stands (its answer during the phase counted, as always), ranked by the offence's drivers.
+  function offSweep(s0, i, keep) {
+    const s = covOffFresh(s0), occ = new Set();
+    for (let k = 0; k < 5; k++) { occ.add(s.o[k]); occ.add(s.x[k]); }
+    const out = [];
+    for (let q = 0; q < ONB.length; q++) {
+      if (!ONB[q] || (occ.has(q) && q !== s.o[i])) continue;
+      const g = lastingOf(W_(s, { o: setAt(s.o, i, q) }));
+      if (g) out.push({ q, k: lgDrivers(g) });
+    }
+    out.sort((u, v) => (drvBetterO(u.k, v.k) ? -1 : drvBetterO(v.k, u.k) ? 1 : u.q - v.q));
+    return out.slice(0, keep || 12);
   }
   function threeSecondsOwed(s) {
     if (!s.ctx.three || !s.key_o) return 0;
@@ -5197,9 +5274,11 @@ const PMEngine = (() => {
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (opts.only === 'setup') {                          // step 22: the defence's setup, the map's own answer
       const g = setupPlace(s0, opts.evals || 120);
-      return { L: +g.L.toFixed(2), start: +g.L0.toFixed(2), x: Array.from(g.s.x).map(q => sqName(q)), arrows: Array.from(g.s.arrows), moves: g.moves, evals: g.evals };
+      return { L: +g.L.toFixed(2), start: +g.L0.toFixed(2), x: Array.from(g.s.x).map(q => sqName(q)), arrows: Array.from(g.s.arrows), moves: g.moves, evals: g.evals, drivers: drvJSON(g.drivers), steps: g.steps };
     }
-    if (opts.only === 'lasting') { const g = lastingOf(s0, null, !!opts.fresh); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves } : null; }
+    if (opts.only === 'roles') return defenderRoles(s0);
+    if (opts.only === 'offsweep') return offSweep(s0, opts.piece, opts.keep).map(r => ({ sq: sqName(r.q), drivers: drvJSON(r.k) }));
+    if (opts.only === 'lasting') { const g = lastingOf(s0, null, !!opts.fresh); return g ? { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves, drivers: drvJSON(lgDrivers(g)) } : null; }
     // step 21 (D-206): the map is read with what each side has left this phase; opts.fresh: step 20's like-for-like
     // read (covFresh), for the reports' phase starts. A pass in the air is shown caught; its number is by the catch's chance
     const caught = s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0;
@@ -5266,6 +5345,48 @@ const PMEngine = (() => {
       // the chance a pass straight to each teammate where he stands arrives, by the rules (null: the ball handler, or no pass)
       passes: [0, 1, 2, 3, 4].map(a => (a === s.ball || !ONB[s.o[a]] || !isLegal(W_(s, { side: 'O', stage: 'play', turn_n: 0, pending: null }), A('pass', 'O', s.ball, -1, -1, a)) ? null : +passChanceExact(s, a).toFixed(3))),
       worth: +L.toFixed(2), words: words.join(' ') };
+  }
+  // Step 22b (D-214, Shaun, 18 Nov 2026): what each defender's position and arrows do, read by the map itself. The map
+  // read three ways: as it stands; with his arrows taken away (his zone broken: no wall, no lane, no square contest);
+  // with him taken off the court. What his arrows protect: the looks that are worth more without them. What his body
+  // protects: the looks worth more again without him. What he allows: the best look left that he is the cover for.
+  // Values are the map's own (the cards, the rules' chances); nothing names a zone, spot or direction (D-156).
+  const OFFSQ = C(-1, 1);
+  function defenderRoles(s0) {
+    if (s0.stage !== 'play' || s0.clock <= 2) return [];
+    const base = lastingOf(s0);
+    if (!base || !base.best) return [];
+    const look = x => ({ o: x.src.a, sq: sqName(x.src.c), shot: x.src.lk.types[x.t], worth: +x.e.toFixed(2), ball: x.src.a === s0.ball });
+    const worthOf = g => { const w = new Map(); if (g && g.best) for (const x of g.best.o) if (x.r > 0) { const k = x.src.a * 4096 + x.src.c; if (!w.has(k) || x.e > w.get(k).e) w.set(k, x); } return w; };
+    const w0 = worthOf(base);
+    const gained = (wa, wb) => {                       // the looks worth more in wb than in wa (by more than half a point)
+      const out = [];
+      for (const [k, x] of wb) { const y = wa.get(k), e0 = y ? y.e : -5; if (x.e > 0 && x.e > e0 + 0.5) out.push({ x, by: x.e - Math.max(0, e0) }); }
+      out.sort((u, v) => v.by - u.by || u.x.src.a - v.x.src.a || u.x.src.c - v.x.src.c);
+      const seen = new Set(), two = [];                // one look an attacker, the two that open most
+      for (const z of out) { if (seen.has(z.x.src.a)) continue; seen.add(z.x.src.a); two.push(z); if (two.length === 2) break; }
+      return two.map(z => ({ ...look(z.x), by: +z.by.toFixed(2) }));
+    };
+    const head = lgHead(base.best), out = [];
+    for (let d = 0; d < 5; d++) {
+      if (!ONB[s0.x[d]]) continue;
+      const wA = worthOf(lastingOf(W_(s0, { beaten: s0.beaten.concat([[-1, d]]) })));
+      const wB = worthOf(lastingOf(W_(s0, { x: setAt(s0.x, d, OFFSQ) })));
+      const arrows = gained(w0, wA), body = gained(wA, wB);
+      const mine = head.find(x => x.cover === d && x.e > 0);
+      out.push({ x: d, arrows, body, allows: mine ? look(mine) : null, value: +((body.length ? body[0].by : 0) + (arrows.length ? arrows[0].by : 0)).toFixed(2) });
+    }
+    const name = o => `O${o + 1}`;
+    const what = z => `${name(z.o)}'s ${COV_SHOT[z.shot].replace(/^an? /, '').replace(/ shot$/, '')} on ${z.sq}`;
+    const how = z => (z.ball ? what(z) : `the pass to ${name(z.o)} for his ${COV_SHOT[z.shot].replace(/^an? /, '').replace(/ shot$/, '')} on ${z.sq}`);
+    for (const r of out) {
+      const parts = [];
+      if (r.body.length) parts.push(`his position takes away ${r.body.map(what).join(' and ')} (worth ${Math.round(r.body[0].by)} more without him)`);
+      if (r.arrows.length) parts.push(`his arrows cut ${r.arrows.map(how).join(' and ')} (worth ${Math.round(r.arrows[0].by)} more without them)`);
+      if (!parts.length) parts.push('nothing the map can see would open up without him');
+      r.line = `X${r.x + 1}: ${parts.join('; ')}.` + (r.allows ? ` Allows: ${what(r.allows)} (${Math.round(r.allows.worth)}).` : '');
+    }
+    return out;
   }
   function coverageJSON(text) {
     const req = JSON.parse(text);
