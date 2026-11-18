@@ -1,0 +1,472 @@
+{
+ "cards": {
+  "offence": [
+   {
+    "o": "O1",
+    "three": 7,
+    "layup": 17,
+    "dribble": 17,
+    "passing": 18
+   },
+   {
+    "o": "O2",
+    "three": 11,
+    "layup": 18,
+    "dribble": 15,
+    "passing": 14
+   },
+   {
+    "o": "O3",
+    "three": 8,
+    "layup": 18,
+    "dribble": 15,
+    "passing": 14
+   },
+   {
+    "o": "O4",
+    "three": 9,
+    "layup": 18,
+    "dribble": 14,
+    "passing": 14
+   },
+   {
+    "o": "O5",
+    "three": 7,
+    "layup": 17,
+    "dribble": 13,
+    "passing": 12
+   }
+  ]
+ },
+ "shaun_board": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "x": [
+   "J10",
+   "D8",
+   "O8",
+   "I6",
+   "P2"
+  ],
+  "arrows": [
+   7,
+   7,
+   0,
+   0,
+   1
+  ],
+  "lasting": 24,
+  "top": [
+   30,
+   27,
+   25.2,
+   25.2,
+   22.2,
+   21.2,
+   21.2,
+   21.2
+  ],
+  "lines": [
+   "X1: on O1 (his best look is worth 34 open, 32 with X1 on it), and covering the squares around K10 (worth 19 with nobody there).",
+   "X2: on O2 (his best look is worth 36 open, 34 with X2 on it), and covering the squares around A4 (worth 25 with nobody there). The two lie apart: he can't hold both for long.",
+   "X3: sagging off O3 (his best look is worth 24, and X3 takes nothing off it from here) to cover the squares around Q7 (worth 25 with nobody there).",
+   "X4: on O4 (his best look is worth 36 open, 27 with X4 on it), and covering the squares around G2 (worth 35 with nobody there). The two lie apart: he can't hold both for long.",
+   "X5: sagging off O5 (his best look is worth 18, and X5 takes nothing off it from here) to cover the squares around Q2 (worth 25 with nobody there)."
+  ]
+ },
+ "settlement": {
+  "x": [
+   "F7",
+   "A2",
+   "Q2",
+   "N7",
+   "J3"
+  ],
+  "arrows": [
+   0,
+   1,
+   0,
+   0,
+   0
+  ],
+  "lasting": 21,
+  "top": [
+   18,
+   16.2,
+   16.2,
+   16.2,
+   16.2,
+   16.2,
+   16.2,
+   16.2
+  ],
+  "matchups": [
+   "X1 on O2",
+   "X2 on O4",
+   "X3 on O5",
+   "X4 on O3",
+   "X5 on O1"
+  ],
+  "steps": [
+   {
+    "x": "X1",
+    "to": "G7",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X4",
+    "to": "M4",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X5",
+    "to": "E3",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X2",
+    "to": "J2",
+    "arrow": 0,
+    "decided_by": "level"
+   },
+   {
+    "x": "X3",
+    "to": "H3",
+    "arrow": 0,
+    "decided_by": "level"
+   },
+   {
+    "x": "X4",
+    "to": "M6",
+    "arrow": 7,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X1",
+    "to": "F7",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X5",
+    "to": "I3",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X3",
+    "to": "Q2",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X4",
+    "to": "N7",
+    "arrow": 0,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X2",
+    "to": "A2",
+    "arrow": 1,
+    "decided_by": "the list"
+   },
+   {
+    "x": "X5",
+    "to": "J3",
+    "arrow": 0,
+    "decided_by": "the list"
+   }
+  ],
+  "lines": [
+   "X1: on O2 (his best look is worth 33 open, 18 with X1 on it), and covering the squares around B8 (worth 25 with nobody there).",
+   "X2: on O4 (his best look is worth 22 open, 20 with X2 on it).",
+   "X3: sagging off O5 (his best look is worth 21, and X3 takes nothing off it from here) to cover the squares around Q3 (worth 19 with nobody there).",
+   "X4: on O3 (his best look is worth 36 open, 32 with X4 on it), and covering the squares around M9 (worth 25 with nobody there).",
+   "X5: on O1 (his best look is worth 34 open, 21 with X5 on it), and covering the squares around H2 (worth 29 with nobody there). The two lie apart: he can't hold both for long."
+  ],
+  "seconds": 3.9
+ },
+ "1 the ball handler's defender stays with him and walls his drive": {
+  "passed": false,
+  "his_defender": "X5",
+  "on": "J3",
+  "squares_from_him": 8,
+  "line": "X5: on O1 (his best look is worth 34 open, 21 with X5 on it), and covering the squares around H2 (worth 29 with nobody there). The two lie apart: he can't hold both for long.",
+  "placements_on_him_tried": 440,
+  "of_them_leaving_less": 0
+ },
+ "2 a poor shooter's defender sags towards the green zone": {
+  "passed": true,
+  "poor_shooters": [
+   "O1",
+   "O5"
+  ],
+  "lines": [
+   "X5: on O1 (his best look is worth 34 open, 21 with X5 on it), and covering the squares around H2 (worth 29 with nobody there). The two lie apart: he can't hold both for long.",
+   "X3: sagging off O5 (his best look is worth 21, and X3 takes nothing off it from here) to cover the squares around Q3 (worth 19 with nobody there)."
+  ]
+ },
+ "3 the Sharpshooter's defender stays attached": {
+  "passed": true,
+  "sharpshooter": "O2",
+  "his_defender": "X1",
+  "on": "F7",
+  "squares_from_him": 3,
+  "line": "X1: on O2 (his best look is worth 33 open, 18 with X1 on it), and covering the squares around B8 (worth 25 with nobody there)."
+ },
+ "4 no two defenders fill the same gap while another is empty": {
+  "passed": true,
+  "the_list_is_worse_without": [
+   "X1",
+   "X2",
+   "X3",
+   "X4",
+   "X5"
+  ],
+  "gap_each_holds": {
+   "X1": "B8",
+   "X3": "Q3",
+   "X4": "M9",
+   "X5": "H2"
+  }
+ },
+ "5 listing the defenders in a different order gives the same settlement": {
+  "passed": true,
+  "orders_tried": 2,
+  "same": [
+   true,
+   true
+  ]
+ },
+ "6 over a few turns with nothing changing, no defender switches back and forth": {
+  "passed": true,
+  "turns": [
+   {
+    "turn": 1,
+    "defence": [
+     "X Pause"
+    ],
+    "matchups": [
+     "X1 on O2",
+     "X2 on O4",
+     "X3 on O5",
+     "X4 on O3",
+     "X5 on O1"
+    ],
+    "switched": false,
+    "squares": [
+     "F7",
+     "A2",
+     "Q2",
+     "N7",
+     "J3"
+    ]
+   },
+   {
+    "turn": 2,
+    "defence": [
+     "X2 Move to B2 facing N",
+     "X4 Move to N7 facing NE"
+    ],
+    "matchups": [
+     "X1 on O2",
+     "X2 on O4",
+     "X3 on O5",
+     "X4 on O3",
+     "X5 on O1"
+    ],
+    "switched": false,
+    "squares": [
+     "F7",
+     "B2",
+     "Q2",
+     "N7",
+     "J3"
+    ]
+   },
+   {
+    "turn": 3,
+    "defence": [
+     "X3 Move to Q2 facing NE",
+     "X End turn"
+    ],
+    "matchups": [
+     "X1 on O2",
+     "X2 on O4",
+     "X3 on O5",
+     "X4 on O3",
+     "X5 on O1"
+    ],
+    "switched": false,
+    "squares": [
+     "F7",
+     "B2",
+     "Q2",
+     "N7",
+     "J3"
+    ]
+   }
+  ]
+ },
+ "7 a switch that costs more than it covers is not taken": {
+  "passed": true,
+  "after": "O1 Sprint to I7",
+  "the_defences_turn": [
+   "X1 Quick Step to E6"
+  ],
+  "its_value": 24,
+  "turns_that_left_less_on_the_list_but_cost_more": [],
+  "note": "the search pays for every move (the tokens, the Move used, the rushed rolls, the arrow a Sprint leaves) before the list is asked"
+ },
+ "8 X1 beaten by O1's drive: he chases, or picks up what the helper left": {
+  "passed": false,
+  "board": {
+   "o": [
+    "I4",
+    "B9",
+    "L5",
+    "P10",
+    "J5"
+   ],
+   "x": [
+    "I8",
+    "C8",
+    "P9",
+    "H3",
+    "J3"
+   ]
+  },
+  "while_x1_still_has_o1": [
+   "X1: on O1 (his best look is worth 34 open, 32 with X1 on it), and covering the squares around I10 (worth 25 with nobody there). The two lie apart: he can't hold both for long."
+  ],
+  "the_reading_would_hand_o1_to": "X1",
+  "switch_the_reading_calls": "Switch: X4 takes O3; X3 picks up O4.",
+  "the_defences_turn": [
+   "X2 Move to B7 facing N",
+   "X3 Move to P7 facing N"
+  ],
+  "x1_squares_from_o1": {
+   "before": 4,
+   "after": 4
+  },
+  "matchups_after": [
+   "X1 on O1",
+   "X2 on O2",
+   "X3 on O4",
+   "X4 on O3",
+   "X5 on O5"
+  ],
+  "switch_after": "Switch: X4 takes O3; X3 picks up O4.",
+  "lines_after": [
+   "Switch: X4 takes O3; X3 picks up O4.",
+   "X2 sags off O2 to cover the squares around A2.",
+   "X3 sags off O4 to cover the squares around P8."
+  ]
+ },
+ "checks 6 to 8 with the lasting gap leading the search instead (eval.map_lead: gap)": {
+  "6 over a few turns with nothing changing, no defender switches back and forth": {
+   "passed": false,
+   "the_defences_turn": null,
+   "turns": [
+    {
+     "turn": 1,
+     "defence": [
+      "X Pause"
+     ],
+     "matchups": [
+      "X1 on O2",
+      "X2 on O4",
+      "X3 on O5",
+      "X4 on O3",
+      "X5 on O1"
+     ],
+     "switched": false,
+     "squares": [
+      "F7",
+      "A2",
+      "Q2",
+      "N7",
+      "J3"
+     ]
+    },
+    {
+     "turn": 2,
+     "defence": [
+      "X2 Move to B2 facing N",
+      "X4 Move to L9 facing N"
+     ],
+     "matchups": [
+      "X1 on O1",
+      "X2 on O4",
+      "X3 on O5",
+      "X4 on O2",
+      "X5 on O3"
+     ],
+     "switched": true,
+     "squares": [
+      "F7",
+      "B2",
+      "Q2",
+      "L9",
+      "J3"
+     ]
+    },
+    {
+     "turn": 3,
+     "defence": [
+      "X1 Quick Step to F8",
+      "X1 Move to F8 facing NE"
+     ],
+     "matchups": [
+      "X1 on O2",
+      "X2 on O1",
+      "X3 on O5",
+      "X4 on O3",
+      "X5 on O4"
+     ],
+     "switched": true,
+     "squares": [
+      "F8",
+      "B2",
+      "Q2",
+      "L9",
+      "J3"
+     ]
+    }
+   ],
+   "switch_after": null,
+   "x1": null
+  },
+  "7 a switch that costs more than it covers is not taken": {
+   "passed": true,
+   "the_defences_turn": [
+    "X Pause"
+   ],
+   "turns": null,
+   "switch_after": null,
+   "x1": null
+  },
+  "8 X1 beaten by O1's drive: he chases, or picks up what the helper left": {
+   "passed": false,
+   "the_defences_turn": [
+    "X2 Move to B7 facing N",
+    "X3 Move to P7 facing N"
+   ],
+   "turns": null,
+   "switch_after": "Switch: X4 takes O3; X3 picks up O4.",
+   "x1": {
+    "before": 4,
+    "after": 4
+   }
+  }
+ }
+}

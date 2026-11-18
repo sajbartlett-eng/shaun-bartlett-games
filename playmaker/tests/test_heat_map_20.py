@@ -153,7 +153,14 @@ def test_the_search_reads_the_lasting_gap_at_every_lines_end_for_both_sides():
             D.MAP_ME[0] = me
             r = D.Read(s)
             banked = D.foul_externality(s)
-            assert r._map_leaf() == pytest.approx(banked + max(r.map_shot(), r.map_lasting()))
+            # (step 22b, D-219: the list's largest item leads the reading; eval.map_lead 'gap' puts the lasting gap back)
+            assert r._map_leaf() == pytest.approx(banked + max(r.map_shot(), r.map_top()))
+            D.CONFIG['eval']['map_lead'] = 'gap'
+            try:
+                r2 = D.Read(s)
+                assert r2._map_leaf() == pytest.approx(banked + max(r2.map_shot(), r2.map_lasting()))
+            finally:
+                D.CONFIG['eval']['map_lead'] = 'list'
         assert D.Read(s, k=0, looks_per=3)._map_leaf() is None       # the quick look that orders the list keeps its own
     finally:
         D.MAP_ME[0] = keep

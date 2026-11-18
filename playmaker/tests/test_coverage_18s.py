@@ -153,9 +153,14 @@ def test_the_pass_chance_is_the_rules_own(cov):
 def test_check_1_the_clear_lane_is_a_large_weakness_and_the_defences_best_answer_makes_it_smaller(cov):
     c = cov(board())
     top = c['best']
-    assert (top['o'], top['shot'], top['cover']) == (0, 'layup', -1) and top['sq'] in ('I3', 'H3', 'J3', 'H2', 'J2')
-    assert top['worth'] >= 30                                    # the point guard's open layup, nobody able to contest it
-    assert 1 <= len(c['answers']) <= 3 and c['left_worth'] <= top['worth'] - 8
+    # Re-recorded in step 22b (D-222: a contest reached by a Quick Step or Sprint is off balance, so O3's layup next to
+    # the lane, which only an off-balance X1 reaches, now reads above the point guard's open one, 36 to 34; D-219: the
+    # answer may use a fourth defender where the list says so). The point guard's open layup is still read as it was.
+    sq1, lane = max(c['squares'][0].items(), key=lambda kv: kv[1]['worth'])
+    assert (lane['shot'], lane['cover']) == ('layup', -1) and sq1 in ('I3', 'H3', 'J3', 'H2', 'J2')
+    assert lane['worth'] >= 30                                   # the point guard's open layup, nobody able to contest it
+    assert top['shot'] == 'layup' and top['worth'] >= lane['worth']
+    assert 1 <= len(c['answers']) <= 4 and c['left_worth'] <= top['worth'] - 8
     assert {a['x'] for a in c['answers']} & {3, 4}               # a big comes into the lane
     # Re-recorded in step 20 (D-204): the answer is found jointly (each defender at most one movement), so there is no
     # answer-by-answer "leaves"; and the map is read as a fresh phase finds it, so the answered placement read again
@@ -191,7 +196,8 @@ def test_check_4_arrows_matter(cov):
     his, across, away = cov(board(), 0), cov(with_x(0, 'J10', 'W'), 0), cov(with_x(0, 'J10', 'E'), 0)
     assert len(across['squares'][0]) < len(his['squares'][0]) <= len(away['squares'][0])      # the arrow across his way bars squares
     assert rich(across) < rich(his) == rich(away)
-    assert best_of(across, 0)['rushed'] and not best_of(his, 0)['rushed']                    # and what is left he must rush
+    # (re-recorded in step 22b, D-222: what is left was a rushed shot; it is now a layup X1 gets to off balance, worth less than the open one)
+    assert best_of(across, 0)['worth'] < best_of(his, 0)['worth'] and best_of(across, 0)['cover'] == 0 and best_of(his, 0)['cover'] == -1
     # an arrow down a passing lane lets the defender jump it; an arrow off the lane does not
     assert his['passes'][1] < 0.5 and cov(with_x(1, 'D8', 'S'), 0)['passes'][1] == 1
 
@@ -227,7 +233,9 @@ def test_check_6_a_body_on_the_helpers_way_leaves_more(cov):
     off = cov(board(o=O_[:3] + ['C5', 'Q3'], tok_x=1))
     on = cov(board(o=O_[:3] + ['C4', 'Q3'], tok_x=1))
     assert [a['x'] for a in off['answers']] == [3] and len(on['answers']) <= 1
-    assert on['left_worth'] >= off['left_worth'] + 1
+    # (re-recorded in step 22b, D-222: with the reaction's off balance counted the other answer now leaves as much, 30 and
+    # 30, where it left one more; the helper's answer is still gone and no less is left)
+    assert on['left_worth'] >= off['left_worth']
     assert [a['x'] for a in on['answers']] != [3]
 
 

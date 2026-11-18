@@ -145,7 +145,7 @@ class Agent:
                 srch.habit_weight = self.scouting.get('weight', 0.3)
             results, reached = srch.root(s, hi, lo)
         sign = 1 if side == 'O' else -1
-        results = _driver_order(s, side, results)       # step 22b (D-215): ties put in the order of the ranked drivers
+        results = _driver_order(s, side, results, prev=getattr(self, 'assign', None))   # step 22b (D-219): ties put in the reading's order
         if CONFIG.get('search', {}).get('split_ties') is True:
             # step 18f (search.split_ties): turns that read exactly the same get one draw of the pick noise, so the
             # evidence that put them in order chooses between them, not chance
@@ -720,15 +720,16 @@ def _map_setup(make, o_sq, ball, evals=240):
         return None
     if not r:
         return None
-    return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L']), r.get('drivers')
+    return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L']), r.get('drivers'), r.get('perm'), r.get('lines')
 
 
-def _driver_order(s, side, results, limit=8):
-    """Step 22b (D-215, Shaun, 18 Nov 2026): turns the search reads exactly the same are put in the order of the ranked
-    drivers of the position each leaves, by the map: for the defence the lowest lasting gap, then the offence's lowest
-    chances to its best looks, then the fewest actions its answer needs, then the fewest attackers pulling two
-    defenders; for the offence the mirror. Only the order of tied turns changes (split_ties then lets the first of a
-    tie stand for it); with the map off, or without the fast engine, nothing changes."""
+def _driver_order(s, side, results, limit=8, prev=None):
+    """Step 22b (D-219, Shaun, 18 Nov 2026): turns the search reads exactly the same are put in order by the reading of
+    the position each leaves: the list of things to cover as the defence then stands (each attacker's best look
+    before it answers, every square's gap), largest first. The defence takes the turn that leaves the least; on a tie
+    the one where each defender alone contains his own man best (prev: the assignments as they are), then the one that
+    keeps every defender on his man (a switch must cover more), then the one its answer needs the fewest actions after. The offence takes the turn that leaves the most. Only the order
+    of tied turns changes; with the map off, or without the fast engine, nothing changes."""
     on = CONFIG.get('eval', {}).get('map')
     if JS.get('coverage') is None or not s.ctx.rules.digital or not (on is True or (on == 'offence' and side == 'O')):
         return results
@@ -744,12 +745,13 @@ def _driver_order(s, side, results, limit=8):
                 try:
                     after = _likeliest(play_turn(s, t))
                     if after.stage == 'play':
-                        r = coverage(after, only='lasting')
+                        r = coverage(after, only='lasting', **(dict(prev=list(prev)) if prev and side == 'X' else {}))
                         if r and r.get('drivers'):
                             d = r['drivers']
-                            key = (_okey(d['L'], d) if side == 'O' else
-                                   tuple(-x if isinstance(x, (int, float)) else tuple(-y for y in x)
-                                         for x in (d['L'], tuple(d['rs']), d['n'], d['dbl'], tuple(d['worths']))))
+                            # the defence: the list; then each defender's own cover of his own man (his first
+                            # responsibility: this is what makes a beaten defender chase); then no switch; then efficiency
+                            key = ((tuple(-x for x in d['list']), tuple(-x for x in r.get('own', ())), 0 if r.get('kept', True) else -1, -d['n'])
+                                   if side == 'X' else (tuple(d['list']),))
                 except ValueError:
                     key = None
                 keyed.append((key, v, t))
@@ -760,22 +762,23 @@ def _driver_order(s, side, results, limit=8):
 
 
 def _why(a, b):
-    """Which of the offence's ranked drivers tells key a from key b: 'a' to 'd', or 'looks behind'."""
-    for k, name in enumerate(('a', 'b', 'c', 'd', 'looks behind')):
-        if k >= len(a) or k >= len(b) or a[k] != b[k]:
-            return name
-    return 'looks behind'
+    """What tells offence key a from key b: the list, or the lasting gap."""
+    return 'the list' if a[0] != b[0] else 'the lasting gap' if a[1:] != b[1:] else 'level'
 
 
 def _okey(v, drv=None):
-    """Step 22b (D-215): an offence placement's ranked drivers as a key to maximise: the lasting gap, then the safest
-    chances to its looks, then the fewest actions to its best look, then attackers who pull two defenders, then the
-    looks behind the gap. A plain number (no map) is its own key."""
+    """Step 22b (D-219): an offence placement's key to maximise, the mirror of the defence's: the list of things to
+    cover as the defence's own setup leaves it (largest first), then the lasting gap. A plain number (no map) is its own key."""
     if isinstance(v, tuple):
         return v
     if not drv:
-        return (float(v),)
-    return (float(v), tuple(drv['rs']), -drv['acts'], drv['dbl'], tuple(drv['worths']))
+        return ((float(v),), float(v))
+    return (tuple(drv['list']), float(v))
+
+
+def _onum(key):
+    """An offence key's one number, for the words and the variety margin: the largest item it leaves uncovered."""
+    return float(key[0][0]) if key[0] else float(key[1])
 
 
 def _o_value(make, o_sq, ball, rng, budget_end):
@@ -865,7 +868,7 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
     for sq, ball in cands:
         if not _legal_o(sq, ball):
             continue
-        m = _map_setup(make, sq, ball, evals=40) if mapped else None   # step 22: against the defence's map setup
+        m = _map_setup(make, sq, ball, evals=0) if mapped else None    # step 22: against the defence's map setup
         if m is not None:                                # (a short read to screen; the best few get the full one)
             v = _okey(m[2], m[3])
         else:
@@ -930,10 +933,10 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
         answered.append((v, sq, best_ball))
         if _okey(v) > _okey(best_v):
             best_v, best_sq = v, sq
-    best_v = _okey(best_v)[0]
+    best_v = _onum(_okey(best_v))
     # step 21 (D-208, Shaun, 17 Nov 2026): the setup chooses among the placements within the level's variety margin of
     # the best, each possession, as its turns already do (All-Star: 2 points; Rookie: none)
-    near_best = [r for r in answered if _okey(r[0])[0] >= best_v - p['variety_margin'] - 1e-9]
+    near_best = [r for r in answered if _onum(_okey(r[0])) >= best_v - p['variety_margin'] - 1e-9]
     if p['variety_margin'] > 0 and len(near_best) > 1:
         _, best_sq, best_ball = rng.choice(near_best)
     text = (f'Placed for the best value against the defence\'s best reply ({best_v:.1f}): {len(scored)} placements '
@@ -952,12 +955,11 @@ def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, l
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     seen = []
     m = _map_setup(make, list(o_sq), ball)
-    if m is not None:                                   # step 22 (D-213): the map's own answer, all five together
+    if m is not None:                                   # step 22b (D-219): the settlement of all five, by the two responsibilities
         xs, arrows = m[0], m[1]
-        perm = [min(range(5), key=lambda i: (B.cheb(xs[j], o_sq[i]), i)) for j in range(5)]
-        words = [f'X{j + 1} {"on" if B.cheb(xs[j], o_sq[perm[j]]) <= 1 else f"{B.cheb(xs[j], o_sq[perm[j]])} squares off"} O{perm[j] + 1}' for j in range(5)]
+        perm = list(m[4]) if m[4] else [min(range(5), key=lambda i: (B.cheb(xs[j], o_sq[i]), i)) for j in range(5)]
         return dict(squares=xs, arrows=arrows, perm=perm, value=round(m[2], 2),
-                    text="Placed by the map's best answer to the offence's placement (all five together): " + '; '.join(words) + '.')
+                    text='Placed by the two responsibilities, all five together: ' + ' '.join(m[5] or []))
     xs, arrows = _defence_reply(make, list(o_sq), ball, rng, t_end, rounds=3, seen=seen)
     # step 21 (D-208): among the placements within the level's variety margin of the best cover, one at random
     if seen and p['variety_margin'] > 0:

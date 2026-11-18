@@ -731,18 +731,57 @@ class Game:
             c['change'] = snap.get('change')
             c['possession'] = self.possession
             c['when'] = self._cov_when(at, tr)
-            try:                                # step 22b (D-214): what each defender's position and arrows do
-                roles = _AG.coverage(at, only='roles') or []
+            try:                                # step 22b (D-220, D-221): what each defender is playing for
+                asg = self._assign_now()
+                ro = _AG.coverage(at, only='roles', prev=asg['perm'], fixed=True) or {}
             except Exception:
-                roles = []
-            c['roles'] = roles
-            key = sorted((r for r in roles if r['value'] > 0), key=lambda r: (-r['value'], r['x']))[:2]
-            if key:
-                c['words'] = c['words'] + ' ' + ' '.join(r['line'] for r in key)
+                asg, ro = None, {}
+            c['roles'] = ro.get('roles') or []
+            c['assign'] = ro.get('perm')
+            lines = ([asg['switch']] if asg and asg.get('switch') else []) + [ln for ln in (ro.get('lines') or []) if not ln.startswith('Switch:')]
+            if lines:
+                c['words'] = c['words'] + ' ' + ' '.join(lines)
             if len(memo) > 200:
                 memo.clear()
             memo[k] = c
         return memo[k]
+
+    def _assign_now(self):
+        """Step 22b (D-220, Shaun, 18 Nov 2026): each defender's assigned attacker as the possession has gone: setup's
+        matchups, kept until the reading hands a man to another defender. It is read again only after the defence's
+        own actions (a switch is the defence's call), and a switch stands only if it leaves strictly less uncovered.
+        -> dict(perm, switch: the line for a switch the defence has just made, else None)."""
+        from playmaker_engine import agent as _AG
+        memo = self.__dict__.setdefault('_assign', {})
+        tr = self.__dict__.get('_trails', {}).get(self.possession, [])
+        cur = memo.get(self.possession)
+        if cur is None:
+            pol = self.policies.get('X') if 'X' in self.ai else None
+            perm = getattr(pol, 'setup_perm', None)
+            for k in [k for k in memo if k != self.possession]:
+                del memo[k]
+            cur = memo[self.possession] = dict(n=0, perm=list(perm) if perm else None, switch=None)
+        while cur['n'] < len(tr):
+            before, a, node, turn = tr[cur['n']]
+            cur['n'] += 1
+            if a.side == 'O':
+                cur['switch'] = None
+            if getattr(node, 'stage', None) == 'play' and (a.side == 'X' or cur['perm'] is None):
+                try:
+                    ro = _AG.coverage(node, only='roles', prev=cur['perm']) or {}
+                except Exception:
+                    ro = {}
+                if ro.get('perm'):
+                    if cur['perm'] is not None and ro.get('switched'):
+                        cur['switch'] = ro['switched']
+                    cur['perm'] = list(ro['perm'])
+        if cur['perm'] is None and self.state.stage == 'play':
+            try:
+                ro = _AG.coverage(self.state, only='roles') or {}
+                cur['perm'] = list(ro['perm']) if ro.get('perm') else None
+            except Exception:
+                pass
+        return cur
 
     def _cov_when(self, at, steps):
         """When a map is from, in words: "after O1 passed to O2, before the defence answers"."""
@@ -1583,6 +1622,11 @@ class Game:
             if not hasattr(pol, 'describe'):
                 pol.reset(self.seed * 7 + self.version)
             t0 = time.time()
+            if side == 'X' and hasattr(pol, 'describe'):    # step 22b (D-220): the defence knows who has whom
+                try:
+                    pol.assign = self._assign_now()['perm']
+                except Exception:
+                    pol.assign = None
             a = pol.choose(self.state)
             self._think = round(time.time() - t0, 3)
             for note in getattr(pol, 'notes', []):
