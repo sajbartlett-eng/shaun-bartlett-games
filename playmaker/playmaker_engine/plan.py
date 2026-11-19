@@ -363,7 +363,10 @@ def screen_roles(state):
               and any(k != state.ball and B.cheb(q, p) <= 3 for k, p in enumerate(state.o) if B.on_board(p))]
     s0 = state.with_(side='O', turn_n=0)
     try:
-        base = float(AG.coverage(s0, only='lasting')['L'])
+        # step 27 (audit): judged by the one list (D-219), as the search and the setups are, not by the lasting gap
+        # alone with a fixed half-point margin: a screen builds more when the list reads better with it standing
+        base_k = list_key(AG.coverage(s0, only='lasting'))
+        base = float((base_k[0] or (0,))[0])
         cov0 = AG.coverage(s0)
     except (ValueError, TypeError):
         return []
@@ -394,13 +397,16 @@ def screen_roles(state):
                         continue
                     if not r:
                         continue
-                    gain = float(r['L']) - base
-                    if gain > 0.5:
-                        row = found.setdefault((k, d), dict(o=k, x=d, sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), squares=[], state=after))
+                    kr = list_key(r)
+                    if kr > base_k:
+                        top = float((kr[0] or (0,))[0])
+                        row = found.setdefault((k, d), dict(o=k, x=d, sq=B.sq(q), value=top, gain=round(top - base, 2), key=kr, squares=[], state=after))
                         row['squares'].append(B.sq(q))
-                        if float(r['L']) > row['value'] + 1e-9:
-                            row.update(sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), state=after)
-    out = sorted(found.values(), key=lambda z: (-z['value'], z['o'], z['x']))
+                        if kr > row['key']:
+                            row.update(sq=B.sq(q), value=top, gain=round(top - base, 2), key=kr, state=after)
+    out = sorted(found.values(), key=lambda z: (z['key'], -z['o'], -z['x']), reverse=True)
+    for z in out:
+        z['list'] = list(z.pop('key')[0][:8])        # the list with the screen standing (its first items), best first
     for z in out[:3]:
         try:
             c = AG.coverage(z['state'])
@@ -790,7 +796,7 @@ def placement_checks(state, scout, plan):
     from . import scouting as SCT
     out = []
     idle = (plan or {}).get('idle') or []
-    # step 27 (item 2): the candidate squares kept as a check, never a rule: an attacker who threatens nothing (no
+    # step 27 (item 2): the candidate squares kept as a check, never a rule: an attacker with no job (no
     # look of his own, no screen, no pass, no defender drawn to him) is reported
     try:
         from . import agent as AG
@@ -806,9 +812,9 @@ def placement_checks(state, scout, plan):
             own = max((v.get('worth', 0) for v in sqs.values()), default=0)
             if own <= 0 and a not in roles and a != state.ball and a not in drawn:
                 nothing.append(a)
-        out.append(dict(check='every attacker threatens something', passed=not nothing, idle=nothing,
-                        text='Every attacker threatens something: a look of his own, a screen, a pass or a defender drawn.' if not nothing
-                        else f"{_and(f'O{a + 1}' for a in nothing).replace(' or ', ' and ')} threatens nothing from where he stands."))
+        out.append(dict(check='every attacker has a job', passed=not nothing, idle=nothing,
+                        text='Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.' if not nothing
+                        else f"{_and(f'O{a + 1}' for a in nothing).replace(' or ', ' and ')} has no job from where he stands: no look, screen or pass, and no defender drawn to him."))
     out.append(dict(check='every defender has a real job', passed=not idle,
                     text='Every defender has a real job.' if not idle else f"{_and(f'X{d + 1}' for d in idle).replace(' or ', ' and ')} left with no real job: the defence can use him on the plan's gaps."))
     for a, card in enumerate(state.ctx.off):
@@ -1108,16 +1114,27 @@ def _continuations(state, scout):
         return nxt if nxt.stage == 'play' and nxt.side == 'X' else None
     try:
         acts = legal_actions(s0)
-        for z in screen_roles(s0)[:3]:
-            q = B.parse_sq(z['sq'])
-            mv = next((a for a in acts if a.piece == z['o'] and a.kind == 'move' and a.dest == q), None)
-            st = _likeliest(apply(s0, mv)) if mv is not None and s0.o[z['o']] != q else s0
-            if st.o[z['o']] != q or st.stage != 'play':
-                continue
-            act = next((a for a in legal_actions(st) if a.kind == 'screen' and a.piece == z['o'] and a.target == B.dir_between(q, st.x[z['x']])), None)
-            nxt = run(st, act) if act is not None else None
-            if nxt is not None:
-                out.append((f"O{z['o'] + 1} screens X{z['x'] + 1} from {z['sq']}", nxt, act))
+        # the best screens by the list that the screener can set this turn: from where he stands, or after his own
+        # one Move to a square it can be set from (the rules: a Screen is the turn's first action, or its second
+        # straight after that player's own Move)
+        done = 0
+        for z in screen_roles(s0):
+            if done >= 3:
+                break
+            for name in [z['sq']] + [q for q in z['squares'] if q != z['sq']]:
+                q = B.parse_sq(name)
+                mv = None if s0.o[z['o']] == q else next((a for a in acts if a.piece == z['o'] and a.kind == 'move' and a.dest == q), None)
+                if s0.o[z['o']] != q and mv is None:
+                    continue
+                st = _likeliest(apply(s0, mv)) if mv is not None else s0
+                if st.stage != 'play' or st.o[z['o']] != q:
+                    continue
+                act = next((a for a in legal_actions(st) if a.kind == 'screen' and a.piece == z['o'] and a.target == B.dir_between(q, st.x[z['x']])), None)
+                nxt = run(st, act) if act is not None else None
+                if nxt is not None:
+                    out.append((f"O{z['o'] + 1} screens X{z['x'] + 1} from {name}", nxt, act))
+                    done += 1
+                    break
         for a in acts:
             if a.kind == 'pass' and a.piece == s0.ball:
                 nxt = run(s0, a)

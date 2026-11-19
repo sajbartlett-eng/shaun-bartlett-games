@@ -126,7 +126,7 @@ def test_no_attacker_is_forced_onto_a_square_that_lowers_the_plan(js27):
     # an attacker may stand where the scout's candidates don't list him: the sweep offers every legal square
     sc = PL.Scout(make([B.parse_sq(q) for q in B1[0]], 4, [B.parse_sq(q) for q in B1[1]], B1[2]).ctx, 'O')
     off_list = [a for a in range(5) if a != r['ball'] and r['squares'][a] not in set(sc.candidates(a))]
-    assert r['checks'] and any(c['check'] == 'every attacker threatens something' for c in r['checks'])
+    assert r['checks'] and any(c['check'] == 'every attacker has a job' for c in r['checks'])
     assert isinstance(off_list, list)
 
 
@@ -137,18 +137,20 @@ def test_a_screen_then_the_dive_reads_higher_than_its_one_turn_reading_for_both_
     from playmaker_engine import agent as AG, plan as PL
     s = state(*B1, ball=4).with_(side='O', turn_n=0)
     first = PL.list_key(AG.coverage(s, only='lasting'))
-    one_turn = AG.coverage(s)['squares'][0]
-    best0 = max(v['worth'] for v in one_turn.values())
-    rows = [(w, a, t) for w, a, t in PL._continuations(s, None) if t.kind == 'screen' and t.piece == 0]
-    assert rows, 'O1 can move and screen on this board'
-    w, after, act = rows[0]
-    # the defence's turn by its own reading (the list), then the offence's: the screener's dive reads higher
-    nxt, dn = PL._defence_turn(after)
-    two = PL.list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting'))
+    rows = [(w, a, t) for w, a, t in PL._continuations(s, None) if t.kind == 'screen']
+    assert rows, 'a screen the screener can set this turn'
+    # each screen, the defence's turn by its own reading (the list), then the offence's: the best of them, as the
+    # read-ahead itself chooses
+    read = []
+    for w, after, act in rows:
+        nxt, dn = PL._defence_turn(after)
+        read.append((PL.list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting')), nxt, act))
+    two, nxt, act = max(read, key=lambda z: z[0])
     assert two > first                                             # the offence's reading: higher read two turns on
-    sq = AG.coverage(nxt.with_(turn_n=0))['squares'][0]
+    sq = AG.coverage(nxt.with_(turn_n=0))['squares'][act.piece]
     dive = max((v['worth'] for k, v in sq.items() if B.zone(B.parse_sq(k)) == 'K'), default=0)
-    assert dive > best0                                            # it is the screener's roll to the rim that rises
+    before = max(v['worth'] for v in AG.coverage(s)['squares'][act.piece].values())
+    assert dive > before                                           # it is the screener's roll to the rim that rises
     # the defence's reading: its best answer to the screen, by the list, still leaves more than the one-turn reading
     # (it can't read the screen away), and the board read ahead (the same reading both setups use) is at least that
     h = PL.horizon_read(s, budget=60.0, depth=PL.HORIZON_TURNS)
@@ -177,3 +179,22 @@ def test_the_conditions_read_ahead_are_named(js27):
     assert set(CD.UNMEASURED).isdisjoint(CD.NAMES)
     for cid in ('20b', '9b', '11', '33', '39'):
         assert cid in CD.NAMES and cid not in CD.UNMEASURED
+
+
+# ---- the audit's stand-ins, one board each -----------------------------------------------------------------------------
+
+@needs_node
+def test_screens_are_found_by_the_list_not_the_lasting_gap_alone(js27):
+    # audit (step 27): a screen "builds more" when the one list reads better with it standing (D-219), the same
+    # reading the search and both setups use; it was the lasting gap alone, with a fixed half-point margin
+    from playmaker_engine import agent as AG, plan as PL
+    s = state(*B1, ball=4).with_(side='O', turn_n=0)
+    base = PL.list_key(AG.coverage(s, only='lasting'))
+    rows = PL.screen_roles(s)
+    assert rows
+    for z in rows:
+        assert tuple(z['list']) >= tuple(base[0][:8])            # every screen it names reads at least as well by the list
+    lists = [tuple(z['list']) for z in rows]
+    assert lists == sorted(lists, reverse=True)                  # best first, by the list
+    # a screen that raises only the lasting gap, not the list, is not named: each named one beats the board by the list
+    assert all(tuple(z['list']) > tuple(base[0][:8]) or z['value'] >= base[0][0] for z in rows)

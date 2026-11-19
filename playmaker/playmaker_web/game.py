@@ -112,7 +112,8 @@ def consequences(before, after, a):
                 out.append(('bad_O', 'The shot clock ran out: −5. The possession is over.'))
                 n -= 1
             for i in late[:n]:
-                out.append(('bad_O', f'Three seconds: O{i + 1} was in the key when two phases in a row ended. −5. Play on.'))
+                out.append(('bad_O', f'Three seconds: O{i + 1} was in the key when two phases in a row ended. −5. Play on. '
+                                     'He must get out of the key now: still in it when the next phase ends, it is called again.'))
             if n > len(late):
                 out.append(('bad_O', f'Closely guarded: O{before.ball + 1} held the ball with a defender on him when three phases in a row '
                                      'ended. −5. Play on.'))

@@ -1477,7 +1477,7 @@ Coverage on; no defender, reach, zone or arrow drawn while the offence places; a
 · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 24.**
 
 **D-240. Candidate squares stay, for now.** Shaun ruled on step 24's choice 1: keep the rule; look at it again after
-D-241 is built. · Source: Shaun, 19 Nov 2026 · **Ruled.**
+D-241 is built. · Source: Shaun, 19 Nov 2026 · **Ruled. Closed by D-259 (step 27): kept as a check, not a rule.**
 
 **D-241. A defender covers every threat he can reach in time; the exception is an overload.** Shaun: only one
 attacker can shoot, so a help defender among three bunched attackers covers all he can reach in time to contest. When
@@ -1554,6 +1554,50 @@ its real chance (-5, D-198), the pass landed at its chance against the contest t
 missing was the second half's reach: the defence counted contests it could only get to through the bunch's bodies
 (D-249), and passes only from where the ball handler stood (D-250). With both fixed, the post defence falls out of
 the rules. Nothing steers it. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 26.**
+
+**D-254. Three seconds: after a violation the count doesn't start again (the app only).** Shaun: still in the key at
+the next phase end, he commits it again; he may still catch and shoot from the key before then. Built in both engines'
+phase-end counts; `RULES_CURRENT.md`, the register, the help text and the coach tip say so. · Source: Shaun, 19 Nov
+2026 · **Ruled; built in step 27.**
+
+**D-255. The three seconds are counted by the rule, no halves.** Shaun: no cost if he can shoot or leave before the
+violation falls; the cost of the action spent leaving; the full -5 and the lost phase only when unavoidable; a big's
+post shot that goes up in time pays nothing. Built in both engines: a look held in the key costs the full -5 only
+when he was in the key at the last phase end (it falls at this one); otherwise nothing. Leaving costs the movement
+his look already spends. It replaces D-251's half. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 27.**
+
+**D-256. The closely guarded count is counted by the rule, no thirds.** The same three cases: nothing until the phase
+end where the count falls, then the full -5. It replaces step 22c's thirds. · Source: Shaun, 19 Nov 2026 · **Ruled;
+built in step 27.**
+
+**D-257. The computer sets up the way it plays.** Shaun: rank placements against the full defence; quick-rank first,
+then read enough of the best in full that the choice no longer changes. Setup ranks by the same list the in-play
+search uses (the list leads, D-219), against the full predicted defence, read to the horizon; then the plan as the
+route; then efficiency. Built: a quick search over every legal square, then the best by the quick reading and always
+the table's squares read in full (the defence's full setup, then read ahead), in the quick order, while the clock
+allows (about 110 seconds) and until the leader has held through two more. The plan line adds what it weighed instead
+and why that lost. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 27.**
+
+**D-258. As far ahead as the plan needs, both sides to the same horizon.** Shaun: "If it's clear that 1 phase
+lookahead isn't going to work, just default it to what it needs", and "I want claude code to take initiative on
+modifying lookahead phases across all aspects of the game to what is needed for success and reporting what is changed
+and why." Built (`plan.horizon_read`): turn by turn, each by the rules: the offence's turn (a screen, a pass, a
+Hesitate, a move then a Hesitate), the defence's turn as its in-play reading weighs it (the list), the phase's end and
+its counts, then the board read again by the list. It reads a turn further only while that reads better, up to three
+turns, capped by the shot clock. The offence's setup, the defence's setup and the in-play plan (once a phase) all use
+it. **Choice Shaun's words didn't settle, marked for him:** three turns as the cap (every placement compared must be
+read to the same depth; deeper adds about 8 seconds a turn). · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 27;
+the cap awaits Shaun's playtest.**
+
+**D-259. Candidate squares retired as a restriction (D-240 closed).** Shaun: any legal square is open to any attacker;
+keep the candidates as display and as a check. Built: the `must` step is gone; the sweep skips only squares another
+piece stands on and, for the ball handler, squares off plain wood (the rules don't let him start there).
+`placement_checks` reports any attacker who threatens nothing. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 27.**
+
+**D-260. Measures and concepts (standing).** Shaun: no claim that one measure covers a design concept without a test
+that fails if it doesn't; a new reading reuses the list (D-219) or says why not; before comparing two numbers, confirm
+they come from the same reading, against the same defence, to the same horizon. In `CLAUDE.md`. · Source: Shaun,
+19 Nov 2026 · **Ruled.**
 
 ## 2. Engine defaults awaiting sign-off
 
