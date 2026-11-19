@@ -4613,6 +4613,21 @@ const PMEngine = (() => {
     for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
     _CM2.set(key, hit); return hit;
   }
+  // Step 26 (D-249, Shaun, 19 Nov 2026): "in time" uses the real paths. A defender's contest a phase on from where he
+  // stands, by the movement he really has: his paths go around attackers' bodies and his teammates (a bunch can wall
+  // off a contest square simply by standing on it), through the diagonals the rules leave open, blocked only by a
+  // screen's T square. The same masks as cm2Cached (the kinds within the reaction, and those he is set for).
+  function bodyCm2(sN, d, mode) {
+    const fr = defenderReachExact(sN, d), key = mode * 2 + SOFTK;
+    if (fr._cm2 && fr._cm2k === key) return fr._cm2;
+    const full = contestMap(fr[0], fr[1], mode).masks[2];
+    const free1 = new Map(); for (const [q, n] of fr[0]) if (n <= 1) free1.set(q, n);
+    const set = contestMap(free1, new Map([[sN.x[d], new Map([[sN.arrows[d], 0]])]]), mode).masks[1];
+    const hit = new Uint16Array(NB);
+    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
+    fr._cm2 = hit; fr._cm2k = key;
+    return hit;
+  }
   function anyArrow2(q, qs, mode) {                    // whichever way he faces (he chose his arrow when a Move took him there)
     const key = ((q * 8 + qs) * 3 + mode) * 2 + SOFTK;
     let hit = _AAM2.get(key); if (hit) return hit;
@@ -4625,6 +4640,7 @@ const PMEngine = (() => {
     return r._valsCalc(lk, d, full, set, (fl || 0) | 4, soft ? full : 0, soft ? set : 0);
   }
   const TURNOVER_COST = 5;                             // D-198: a lost ball is -5
+  const THREE_ENDS = 2;                                // D-171: two phase ends in the key is the three-second violation (rules_config.THREE_SECOND_ENDS)
   function covValue(o, skip, extra) {                 // [weakness, best shot type's index, the defender who covers, the next best]
     let top = -1, tt = 0, cov = -1, nxt = -1, ob = -1, cb = -1, nb = -1;      // ob, cb, nb: his best shot open, and who takes it away
     for (let t = 0; t < o.open.length; t++) {
@@ -4656,7 +4672,8 @@ const PMEngine = (() => {
     const sN = covNext(s);
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
-    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cm2Cached(s.x[d], s.arrows[d], ctx.dfn[d].qs, stanceMode(sN, d)) : null));
+    // step 26 (D-249): along the real paths: around attackers' bodies and his teammates, blocked only by screens
+    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? bodyCm2(sN, d, stanceMode(sN, d)) : null));
     const options = [], byKey = new Map();
     // ---- step 22c (D-224, Shaun, 18 Nov 2026): stagnation, in points by the rules -------------------------------------
     // The Steal, as the defence stands: whoever holds the ball on a square can be reached by a defender next to it
@@ -4698,7 +4715,27 @@ const PMEngine = (() => {
     // live dribble isn't counted (the rule), and moving or passing starts it again.
     const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && q0 === s.o[a] && n0 === 0 && (s.grd & 3) !== 1 && closelyGuarded(s)
       ? -TURNOVER_COST * Math.min(3, ((s.grd >> 2) & 3) + 1) / 3 : 0);
+    // Step 26 (D-251): the three seconds, counted as the closely guarded count is. An attacker who has the ball in the
+    // key when the next phase starts is one phase end nearer the -5 (he must be out before the second): counted at
+    // how far along that puts him (half, or all of it if he was already in the key at the last phase end).
+    const keyAt = (a, q0) => (ctx.three && INKEY[q0] ? -TURNOVER_COST * Math.min(THREE_ENDS, ((s.key_o >> a) & 1) + 1) / THREE_ENDS : 0);
     const last = s.clock <= 2;                         // no phase after this one
+    let passerSq = null;
+    const passerSquares = () => {                      // step 26: the squares the ball handler's one movement reaches this turn
+      if (passerSq) return passerSq;
+      passerSq = [];
+      const b = s.ball, seen = new Set([s.o[b]]);
+      if (ONB[s.o[b]] && s.tok_o >= 2 && count(s, 'O', 'pass') < LIMITS.O.pass) for (const kind of ['move', 'qs', 'sprint']) if (canMoveKind(s, 'O', b, kind)) for (const q of movementDests(s, 'O', b, kind).keys()) if (!seen.has(q)) { seen.add(q); passerSq.push(q); }
+      passerSq.sort((u, v) => u - v);
+      return passerSq;
+    };
+    const pfMemo = new Map();
+    const passFrom = (pq, a, q) => {
+      const key = (pq * 4096 + q) * 5 + a;
+      let v = pfMemo.get(key);
+      if (v === undefined) { v = covPass(W_(s, { o: setAt(s.o, s.ball, pq) }), a, q); pfMemo.set(key, v); }
+      return v;
+    };
     for (let a = 0; a < 5 && !last; a++) {
       if (!ONB[s.o[a]]) continue;
       const starts = [];                               // where he can have the ball when the next phase starts, and the chance
@@ -4724,7 +4761,11 @@ const PMEngine = (() => {
         // shoots from there: cut, pass, shot, the defence's reaction counted in the contest of it
         for (const [q, n] of attackerReach(s, a)) {
           if (n > 2 || n + 1 > s.tok_o) continue;
-          const p = covPass(s, a, q);                 // the rules' own chance
+          let p = covPass(s, a, q);                   // the rules' own chance
+          // step 26 (D-250): from every square the ball handler can reach this turn. He may Move, Quick Step or
+          // Sprint and then pass in the same turn; the defence doesn't move in between, so a lane counts if the ball
+          // can get to a square that opens it. (Only where the lane from where he stands isn't already clean.)
+          if (p < 1 && n + 2 <= s.tok_o) for (const pq of passerSquares()) { if (pq === q) continue; const p2 = passFrom(pq, a, q); if (p2 > p) p = p2; if (p >= 1) break; }
           if (p > 0) starts.push([q, p, n === 2, n + 1]);       // (n0, step 22b: his movements and the pass)
         }
       }
@@ -4748,7 +4789,7 @@ const PMEngine = (() => {
       for (const [q0, pr, setOnly, n0, dr] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
-        const adj = stealAt(a, q0) + guardAt(a, q0, n0);           // step 22c: what holding the ball there costs him (0 or less)
+        const adj = stealAt(a, q0) + guardAt(a, q0, n0) + keyAt(a, q0);    // step 22c, 26: what holding the ball there costs him (0 or less)
         if (lean) {
           const put = (c, rushed) => {                             // (the likeliest way there; of two as likely, the one that costs him less)
             const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
@@ -5893,7 +5934,7 @@ const PMEngine = (() => {
         if (!(x.r > 0)) continue;
         const o = x.src || x, k = sqName(o.c), cur = out[o.a][k];
         if (!cur || x.e > cur.worth) out[o.a][k] = { value: o.v, reach: +x.r.toFixed(3), weakness: +x.w.toFixed(2), worth: +x.e.toFixed(2), influence: +(o.v - x.w).toFixed(2),
-          cover: x.cover, next: x.next, shot: o.lk.types[x.t], rushed: !!o.rushed };
+          cover: x.cover, next: x.next, shot: o.lk.types[x.t], rushed: !!o.rushed, cost: +(o.adj || 0).toFixed(2) };    // cost (step 26): what holding the ball there costs him (the Steal, the counts)
       }
       return out;
     };

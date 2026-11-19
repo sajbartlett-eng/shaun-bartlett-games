@@ -67,7 +67,8 @@ def test_each_defender_has_plain_words_for_what_he_is_playing_for(js):
 def test_the_defences_setup_tries_every_square_and_says_what_decided(js):
     s = table(['J10', 'D8', 'O8', 'I6', 'P2'], [7, 7, 0, 0, 1])
     r = AG.coverage(s, only='setup', evals=120)
-    assert all(z['by'] in ('the list', 'the lasting gap', 'efficiency', 'level', 'the quick re-read') for z in r['steps'])
+    # (re-recorded in step 26: 'his own man' is step 22c's tie-break, D-230, between placements level on the list)
+    assert all(z['by'] in ('the list', 'the lasting gap', 'efficiency', 'level', 'the quick re-read', 'his own man') for z in r['steps'])
     assert len(set(r['x'])) == 5 and sorted(r['perm']) == [0, 1, 2, 3, 4]
 
 

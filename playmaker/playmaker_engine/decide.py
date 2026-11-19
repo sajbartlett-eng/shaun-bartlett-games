@@ -280,6 +280,32 @@ def _cmap2(rules, q, a, qs, mode):
     return out
 
 
+_BODY = {}
+
+
+def _body_cmap2(s_next, d, mode):
+    """Step 26 (engine.js bodyCm2, D-249): a defender's contest a phase on along the real paths: around attackers'
+    bodies and his teammates, through the diagonals the rules leave open, blocked only by screens. The same rows as
+    _cmap2."""
+    rules = s_next.ctx.rules
+    free, fixed = defender_map(s_next, d, exact=True)
+    key = (s_next.o, s_next.x, d, s_next.arrows[d], s_next.ctx.dfn[d].qs, rules, mode, s_next.screens)
+    hit = _BODY.get(key)
+    if hit is None:
+        full = contest_map(rules, free, fixed, mode)
+        setr = contest_map(rules, {q: n for q, n in free.items() if n <= 1}, {s_next.x[d]: {s_next.arrows[d]: 0}}, mode)
+        hit = {}
+        for c, row in full.items():
+            st = setr.get(c) or _NOSET
+            fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
+            sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+            hit[c] = (tuple(row), tuple(st), fm, sm)
+        if len(_BODY) > 20000:
+            _BODY.clear()
+        _BODY[key] = hit
+    return hit
+
+
 @lru_cache(maxsize=None)
 def _any_arrow_cmap2(rules, q, qs, mode):
     """engine.js anyArrow2: a defender on q whichever way he faces (he chose his arrow when a Move took him there)."""
@@ -1248,7 +1274,7 @@ class Read:
         from .state import ZERO_COUNTS
         s_next = s.with_(screens=(), tok_x=RC.TOKENS_PER_PHASE, moved_x=0, qs_x=0, lock_x=0, rush_x=0, beaten=(), cnt=ZERO_COUNTS)
         mode = 0 if rules.zone == 'off' else 1
-        cms = [(_cmap2(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
+        cms = [(_body_cmap2(s_next, d, mode) if B.on_board(s.x[d]) else None) for d in range(5)]      # step 26 (D-249): the real paths
         self._mcms = cms
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
         # ---- step 22c (engine.js covBuild, D-224): stagnation, in points by the rules ----
@@ -1301,6 +1327,27 @@ class Read:
         # end nearer the -5: counted at how far along the count's three that puts him
         guard_now = (RC.app_rule(rules, 'closely_guarded') and (s.grd & 3) != 1 and B.on_board(s.o[s.ball]) and closely_guarded(s))
         guard_cost = -5 * min(3, ((s.grd >> 2) & 3) + 1) / 3 if guard_now else 0.0
+        three_on = RC.app_rule(rules, 'three_seconds')
+        psq, pf_memo = [], {}
+        bq = s.o[s.ball]
+        if B.on_board(bq) and s.tok_o >= 2 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
+            seen = {bq}
+            for kind in ('move', 'qs', 'sprint'):
+                if can_move_kind(s, 'O', s.ball, kind):
+                    for q in movement_dests(s, 'O', s.ball, kind, rules):
+                        if q not in seen:
+                            seen.add(q)
+                            psq.append(q)
+        psq.sort(key=lambda q: (q[0] + 2) * 64 + (q[1] + 2))        # engine.js C(x, y) order
+
+        def passer_squares():
+            return psq
+
+        def pass_from(pq, a, q):
+            k = (pq, a, q)
+            if k not in pf_memo:
+                pf_memo[k] = cov_pass(s.with_(o=tuple(pq if i == s.ball else z for i, z in enumerate(s.o))), a, q)
+            return pf_memo[k]
         for a in range(5):
             home = s.o[a]
             if not B.on_board(home):
@@ -1335,6 +1382,16 @@ class Read:
                     if n > 2 or n + 1 > s.tok_o:
                         continue
                     p = cov_pass(s, a, q)
+                    # step 26 (engine.js covBuild, D-250): from every square the ball handler can reach this turn
+                    if p < 1 and n + 2 <= s.tok_o:
+                        for pq in passer_squares():
+                            if pq == q:
+                                continue
+                            p2 = pass_from(pq, a, q)
+                            if p2 > p:
+                                p = p2
+                            if p >= 1:
+                                break
                     if p > 0:
                         starts.append((q, p, n == 2, n + 1, False))      # (n0, step 22b: his movements and the pass)
             mates = {s.o[k] for k in range(5) if k != a}
@@ -1346,6 +1403,8 @@ class Read:
                     continue
                 # step 22c: what holding the ball there costs him (0 or less); of two ways as likely, the one that costs less
                 adj = steal_at(a, q0) + (guard_cost if (a == s.ball and q0 == home and n0 == 0) else 0.0)
+                if three_on and B.in_key(q0):       # step 26 (engine.js keyAt, D-251): the three seconds, at its distance
+                    adj += -5 * min(RC.THREE_SECOND_ENDS, ((s.key_o >> a) & 1) + 1) / RC.THREE_SECOND_ENDS
                 if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM):
                     b = best.get((q0, False))
                     if b is None or pr > b[0] or (pr == b[0] and adj > b[1]):

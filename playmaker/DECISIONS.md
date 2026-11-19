@@ -1524,6 +1524,37 @@ second. Shaun: "Many games have loading screens. This one just needs its own loa
 possession is in play; once it is over, both are shown, labelled by side. In Watch, both throughout. · Source: Shaun,
 19 Nov 2026 (separate thinking, D-234) · **Ruled; built in step 25.**
 
+**D-248. No screen, no blocked diagonal.** Shaun: "There needs to be a screen to block a diagonal." Two attackers
+standing side by side don't stop a defender stepping diagonally between them; only the screen rule's T square does.
+The code already works this way: recorded, nothing changed. · Source: Shaun, 19 Nov 2026 · **Ruled.**
+
+**D-249. "In time" uses the real paths.** Wherever the map asks whether a defender can get to a contest in time, his
+paths go around attackers' bodies and his teammates, through the diagonals the rules leave open (D-248), blocked only
+by screens. A bunch can wall off a contest square simply by standing on it. Built in both engines (the map's contest
+from where each defender stands, a phase on). · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 26.**
+
+**D-250. Pass threats come from every square the ball handler can reach this turn.** He may Move, Quick Step or Sprint
+and then pass in the same turn; the defence doesn't move in between, so a lane counts if the ball can get to a square
+that opens it. Built in both engines (a receiver's chance is the best from any of those squares). · Source: Shaun,
+19 Nov 2026 · **Ruled; built in step 26.**
+
+**D-251. The three seconds are counted in the list and the map.** Shaun: count it the way step 22c counted the
+closely guarded count. An attacker with the ball in the key when the next phase starts is one phase end nearer the -5:
+half of it, or all of it if he was already in the key at the last phase end. Built in both engines. **Marked for
+Shaun:** it is counted on every look whose shot goes up from the key, including a big's post shot, though the shot goes
+up before the second phase end. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 26.**
+
+**D-252. The matchup read matches the board.** "X5 on O5" only when X5 can contest O5's look this turn; otherwise
+"X5 sags off O5" and why. Wording only. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 26.**
+
+**D-253. The defence feels the danger of the pass.** Shaun: "the defence needs a way to feel the danger of what would
+happen if the pass it is guarding gets through. Can it still completely deny or guard the pass without being left in
+a poor position if the pass gets through anyway." Both outcomes were already in each look's worth: the pass stopped at
+its real chance (-5, D-198), the pass landed at its chance against the contest the defence can still give. What was
+missing was the second half's reach: the defence counted contests it could only get to through the bunch's bodies
+(D-249), and passes only from where the ball handler stood (D-250). With both fixed, the post defence falls out of
+the rules. Nothing steers it. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 26.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

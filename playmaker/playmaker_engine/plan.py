@@ -803,9 +803,27 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
                 uniq.append(t)
         pick = uniq[min(nth, len(uniq) - 1)] if uniq else cur
     pm = pick['perm']
+    # step 26 (D-252): the read matches the board. "X5 on O5" only when X5 can contest O5's look this turn (his job
+    # line says he takes something off it); otherwise it says he sags off him, and why
+    try:
+        roles = {r['x']: r for r in (AG.coverage(make(o_sq, ball, pick['x'], pick['arrows']), only='roles', prev=list(pm), fixed=True) or {}).get('roles') or []}
+    except ValueError:
+        roles = {}
     read = []
     for d, a in enumerate(pm):
         co, cx = s0.ctx.off[a], s0.ctx.dfn[d]
+        r = roles.get(d) or {}
+        if r and r.get('kind') not in ('man', 'both', 'chase'):
+            if r.get('way') and r['way']['o'] == a:
+                why = f"he sags off him, standing in his way rather than on him (his look is worth {round(r['way']['now'])}, {round(r['way']['without'])} without him there)"
+            elif r.get('way'):
+                why = f"he sags off him to guard O{r['way']['o'] + 1}'s look (worth {round(r['way']['without'])} without him there)"
+            elif r.get('gap'):
+                why = f"he sags off him to cover the squares around {r['gap']['sq']}"
+            else:
+                why = "he sags off him: he can't reach his look this turn"
+            read.append(dict(x=d, o=a, why=why, sags=True, text=f'X{d + 1} sags off O{a + 1}{why[len("he sags off him"):]}'))
+            continue
         why = ('same position' if pos_o[a] == pos_x[d] else 'same speed' if co.qs == cx.qs else
                'the nearest defender who takes something off his look')
         read.append(dict(x=d, o=a, why=why, text=f'X{d + 1} on O{a + 1}: {why}'))
