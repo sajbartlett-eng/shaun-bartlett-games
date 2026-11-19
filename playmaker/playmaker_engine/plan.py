@@ -17,6 +17,7 @@ from .scoring import p_foul, p_fouls, foul_on_shot_points
 
 INSIDE = tuple(t for shots in RC.ZONE_SHOTS.values() for t in shots if t not in RC.JUMP_SHOTS)
 SHOT_ZONE = {t: z for z, shots in RC.ZONE_SHOTS.items() for t in shots}
+ZONES = tuple(z for z, shots in RC.ZONE_SHOTS.items() if shots)      # the zones a shot may go up from
 ZONE_NAMES = {'K': 'the green zone', 'M': 'mid-range', 'L': 'the long two', '3': 'the three-point line'}
 SHOT_WORDS = {'layup': 'layup', 'dunk': 'dunk', 'post': 'post shot', 'floater': 'floater', 'mid': 'mid-range shot',
               'long': 'long two', 'three': 'three'}
@@ -112,3 +113,636 @@ def best_contest(rows, shooter='set', where=None, defender='set'):
     pick = [r for r in rows if r['shooter'] == shooter and (where is None or r['where'] == where)
             and (r['defender'] in (None, defender))]
     return min(pick, key=lambda r: r['value']) if pick else None
+
+
+# ---- stage 1: the scout (cached a game at a time: the cards don't change) ------------------------------------------------
+
+OFF_COURT = (-1, 1)
+EVIDENCE = 2            # stage 6: sightings in a row before a prediction of the other side's choice changes (flagged for Shaun)
+
+
+def _leaves(node, pr=1.0):
+    from .resolve import ChanceNode
+    if isinstance(node, ChanceNode):
+        for z in node.outcomes:
+            yield from _leaves(z[2], pr * float(z[0]))
+    else:
+        yield pr, node
+
+
+class Scout:
+    """One team's own scout: its offence's table and its defence's table are the same public facts (the rules and all
+    ten cards), held by the side that reads them. `predict` is this side's own predictions of the other side's choices
+    (stage 6); nothing else of the other side is ever in here."""
+
+    def __init__(self, ctx, side):
+        self.ctx, self.side, self.rules = ctx, side, ctx.rules
+        self.off, self.dfn = ctx.off, ctx.dfn
+        self._shots, self._beat, self._base = {}, {}, None
+        self.predict = {}                                # {attacker: defender}: matchups seen often enough to expect (stage 6)
+        self.seen = {}                                   # {attacker: (defender, times in a row)}: what the other side has done
+
+    def observe(self, predicted, actual):
+        """Stage 6: after a possession's setup, what the other side really did against what this side predicted (both
+        public: the board). The rules' values never change; only the prediction of the other side's choice does, and
+        only on repeated evidence: the same matchup this side did not predict, EVIDENCE possessions in a row. A setup
+        has no dice in it, but a defence varies among setups it reads as level, so one sighting can be variety."""
+        for d, a in enumerate(actual):
+            if predicted is not None and predicted[d] == a and self.predict.get(a, d) == d:
+                self.seen.pop(a, None)
+                continue
+            was = self.seen.get(a)
+            n = was[1] + 1 if was and was[0] == d else 1
+            self.seen[a] = (d, n)
+            if n >= EVIDENCE:
+                self.predict[a] = d
+
+    # -- 1a: the shot review
+    def shots(self, a, d, t):
+        key = (a, d, t)
+        if key not in self._shots:
+            self._shots[key] = shot_review(self.off[a], self.dfn[d], t, self.rules, self.ctx.hold_for_one)
+        return self._shots[key]
+
+    def open_value(self, a, zone, rushed=False):
+        """Attacker a's best open shot in a zone: (value, shot type)."""
+        return max((float(self.shots(a, 0, t)[7 if (rushed and t in RC.JUMP_SHOTS) else 11 if rushed else 0]['value']), t)
+                   for t in RC.ZONE_SHOTS[zone])
+
+    def contested(self, a, d, zone, where='square', shooter='set', defender='set'):
+        """Attacker a's best shot in a zone with defender d there (the defence taking its best contest of each shot,
+        the attacker his best shot): (value, shot type)."""
+        best = None
+        for t in RC.ZONE_SHOTS[zone]:
+            r = best_contest(self.shots(a, d, t), shooter, where, defender)
+            v = float(r['value'])
+            if r.get('value_beside') is not None:
+                v = float(min(r['value_front'], r['value_beside']))
+            if best is None or v > best[0]:
+                best = (v, t)
+        return best
+
+    def floor(self):
+        """What the offence can always get: its best shot against any one defender square and set on it. A square
+        where an attacker's open shot is worth no more than this holds nobody's attention."""
+        return max(min(self.contested(a, d, z)[0] for d in range(5)) for a in range(5) for z in ZONES)
+
+    # -- 1b: the movement review
+    def beat_chance(self, a, d):
+        """The chance attacker a's Dribble beats defender d, by the rules (Dribble against Agility)."""
+        from .scoring import p_success
+        return float(p_success(self.off[a].r['dribble'] - self.dfn[d].r['agility'], self.rules))
+
+    def beat(self, base, a, d, q):
+        """Where a won Dribble is worth something: attacker a with the ball on q, defender d between him and the rim
+        with his arrow on him, the two of them alone. The coverage map is read before the Dribble and after a win:
+        how many of his squares get better, and by how much in all (how much his options grow); and his best shot
+        this phase before and after. base: any state of this game (for its context). None where no defender can
+        stand between him and the rim."""
+        key = (a, d, q)
+        if key in self._beat:
+            return self._beat[key]
+        from . import agent as AG
+        from .actions import legal_actions
+        from .resolve import apply
+        out = None
+        nb = [(q[0] + dx, q[1] + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx, dy) != (0, 0)]
+        nb = sorted((p for p in nb if B.on_board(p) and B.dist_rim(p) < B.dist_rim(q)), key=lambda p: (B.dist_rim(p), abs(p[0] - q[0]), p))
+        if nb and AG.JS.get('coverage') is not None:
+            dq = nb[0]
+            s = base.with_(o=tuple(q if k == a else OFF_COURT for k in range(5)), x=tuple(dq if k == d else OFF_COURT for k in range(5)),
+                           arrows=tuple(B.dir_between(dq, q) if k == d else 0 for k in range(5)), ball=a, side='O', turn_n=0)
+            try:
+                act = next((z for z in legal_actions(s) if z.kind == 'dribble' and z.target == d), None)
+                if act is not None:
+                    won = [(p, t) for p, t in _leaves(apply(s, act)) if t.stage == 'play' and t.beaten]
+                    cb, ca = AG.coverage(s), AG.coverage(won[0][1]) if won else None
+                    if cb and ca:
+                        sb, sa = cb['squares'][a], ca['squares'][a]
+                        w = lambda m, k: (m.get(k) or {}).get('worth', 0)
+                        up = [k for k in set(sb) | set(sa) if w(sa, k) > w(sb, k) + 0.5]
+                        out = dict(chance=round(sum(p for p, _ in won), 3), squares=len(up),
+                                   grows=round(sum(w(sa, k) - w(sb, k) for k in up), 1),
+                                   shot_before=(cb.get('now') or {}).get('worth', 0), shot_after=(ca.get('now') or {}).get('worth', 0),
+                                   defender_on=B.sq(dq))
+            except ValueError:
+                out = None
+        self._beat[key] = out
+        return out
+
+    # -- 1c: the matchup table
+    def matchup(self, a, d):
+        """Attacker a against defender d: in each zone his best open shot and what d's contest leaves of it (square,
+        from the side, from behind); and the chance his Dribble beats him."""
+        zones = {}
+        for z in ZONES:
+            o = self.open_value(a, z)
+            zones[z] = dict(open=o[0], shot=o[1], square=self.contested(a, d, z, 'square')[0],
+                            side=self.contested(a, d, z, 'side')[0], behind=self.contested(a, d, z, 'behind')[0])
+        return dict(o=a, x=d, zones=zones, beat=self.beat_chance(a, d))
+
+    def table(self):
+        return [[self.matchup(a, d) for d in range(5)] for a in range(5)]
+
+    # -- stage 2: matchups to chase and to avoid, in preference order
+    def preferences(self, bar):
+        """Every attacker against every defender in every zone, by how far the shot that defender leaves (square and
+        set on him) clears or misses the bar: best for the offence first. The offence chases from the top; the defence
+        avoids from the top. [dict(o, x, zone, shot, value, over, beat)]."""
+        rows = []
+        for a in range(5):
+            for d in range(5):
+                for z in ZONES:
+                    v, t = self.contested(a, d, z)
+                    rows.append(dict(o=a, x=d, zone=z, shot=t, value=round(v, 2), over=round(v - bar, 2), beat=self.beat_chance(a, d)))
+        rows.sort(key=lambda r: (-r['over'], -r['beat'], r['o'], r['x'], r['zone']))
+        return rows
+
+    # -- the candidate squares (stage 3b): where his card makes him a real look
+    def candidates(self, a):
+        """The squares where attacker a's open shot is worth more than the offence can always get (floor): a defender
+        has to honour him there. The rest are ruled out as shooting squares."""
+        f = self.floor()
+        out = []
+        for x in range(B.W):
+            for y in range(1, B.H + 1):
+                q = (x, y)
+                z = B.zone(q)
+                if not B.on_board(q) or z not in ZONES or q == RC.RIM:
+                    continue
+                if self.open_value(a, z)[0] > f + 1e-9:
+                    out.append(q)
+        return out
+
+
+def scout_for(ctx, side):
+    """This side's scout for the game (kept on the context's own cards: the cards don't change)."""
+    key = (tuple(id(c) for c in ctx.off), tuple(id(c) for c in ctx.dfn), ctx.rules, side)
+    hit = _SCOUTS.get(key)
+    if hit is None or hit[0] is not ctx.off:
+        if len(_SCOUTS) > 16:
+            _SCOUTS.clear()
+        hit = _SCOUTS[key] = (ctx.off, Scout(ctx, side))
+    return hit[1]
+
+
+_SCOUTS = {}
+
+
+# ---- stage 2: shot tolerance, phase by phase ------------------------------------------------------------------------------
+
+def bars(state):
+    """The acceptable-shot bar for each phase the clock leaves: what playing on is worth from that phase (the lasting
+    gap, read with the shot clock that phase would have, by the rules). In the last phase playing on is worth
+    nothing: any shot is taken. [dict(phase, clock, bar)]."""
+    from . import agent as AG
+    out, c, k = [], state.clock, 1
+    while c > 0:
+        bar = 0.0
+        if c > RC.PHASE_SECONDS and AG.JS.get('coverage') is not None:
+            try:
+                r = AG.coverage(state.with_(clock=c), only='lasting')
+                bar = float(r['L']) if r else 0.0
+            except ValueError:
+                bar = 0.0
+        out.append(dict(phase=k, clock=c, bar=round(bar, 2)))
+        c -= RC.PHASE_SECONDS
+        k += 1
+    return out
+
+
+# ---- stage 3: the offence's plan ------------------------------------------------------------------------------------------
+
+def _and(xs):
+    xs = list(xs)
+    return xs[0] if len(xs) == 1 else ', '.join(xs[:-1]) + (' or ' if len(xs) > 1 else '') + xs[-1] if xs else ''
+
+
+WHERE_WORDS = {'square': 'square in front', 'side': 'from the side', 'behind': 'from behind'}
+
+
+def acceptance(scout, a, shot_type, bar):
+    """The acceptance spec of a shot: which of the scout's cases leave it at or above the bar. Never written by hand.
+    -> dict(open, rushed_open, by: {defender: [accepted (where, defender state)]}, refused: [defenders with no accepted
+    contest], words)."""
+    rows0 = scout.shots(a, 0, shot_type)
+    val = lambda rs, sh, wh=None, df=None: min(float(r['value']) for r in rs if r['shooter'] == sh and r['where'] == (wh or 'open') and r['defender'] == df)
+    open_ok, rushed_ok = val(rows0, 'set') >= bar, val(rows0, 'rushed') >= bar
+    by, refused = {}, []
+    for d in range(5):
+        rs = scout.shots(a, d, shot_type)
+        ok = [(wh, df) for wh in ('square', 'side', 'behind') for df in ('set', 'rushed') if val(rs, 'set', wh, df) >= bar]
+        if ok:
+            by[d] = ok
+        else:
+            refused.append(d)
+    name = SHOT_WORDS[shot_type]
+    art = 'an' if name[0] in 'aeiou' else 'a'
+    parts = [f"open {'accepted' if open_ok else 'not accepted'}", f"rushed open {'accepted' if rushed_ok else 'not accepted'}"]
+    for d, ok in sorted(by.items()):
+        if len(ok) == 6:
+            parts.append(f'contested by X{d + 1} accepted')
+        else:
+            wheres = []
+            for wh in ('square', 'side', 'behind'):
+                st = [df for w2, df in ok if w2 == wh]
+                if st:
+                    wheres.append(WHERE_WORDS[wh] + ('' if len(st) == 2 else ' (only if he is rushed)' if st == ['rushed'] else ''))
+            parts.append(f"contested by X{d + 1} {' or '.join(wheres)} accepted, otherwise not")
+    if refused:
+        parts.append(f"contested by {_and(f'X{d + 1}' for d in refused)} not accepted")
+    words = f"Create {art} {name} for O{a + 1}: " + '; '.join(parts) + '.'
+    return dict(o=a, shot=shot_type, bar=round(bar, 2), open=open_ok, rushed_open=rushed_ok,
+                by={d: [list(z) for z in ok] for d, ok in by.items()}, refused=refused, words=words)
+
+
+def _look_words(lk):
+    name = SHOT_WORDS.get(lk['shot'], lk['shot'])
+    return f"O{lk['o'] + 1}'s {name} on {lk['sq']}"
+
+
+def read_plan(state, scout, perm=None):
+    """The offence's plan on a board (its own placement against the defence it predicts, or the real board in play):
+    read from the coverage map, one phase ahead (the defence's setup and its first answer). The first preference is
+    the look left after the defence's best answer, at its real chance; the backups are the next attackers' best
+    looks; the conditions are the defenders who could take it away and what holds each; the branch is what opens if
+    the condition fails (the map read again with that defender on the target). Nothing names a play."""
+    from . import agent as AG
+    if AG.JS.get('coverage') is None:
+        return None
+    try:
+        cov = AG.coverage(state)
+    except ValueError:
+        return None
+    if not cov or not cov.get('left'):
+        return None
+    tol = bars(state)
+    bar_next = tol[1]['bar'] if len(tol) > 1 else 0.0
+    left = cov['left']
+    a = left['o']
+    spec = acceptance(scout, a, left['shot'], bar_next)
+    # backups: the other attackers' best looks, best first
+    backups = []
+    for o2 in range(5):
+        if o2 == a:
+            continue
+        sqs = (cov.get('squares') or [{}] * 5)[o2] or {}
+        if not sqs:
+            continue
+        q2, lk = max(sqs.items(), key=lambda kv: (kv[1].get('worth', 0), kv[0]))
+        if lk.get('worth', 0) > 0:
+            backups.append(dict(o=o2, sq=q2, shot=lk['shot'], open=lk['value'], reach=lk['reach'], worth=lk['worth'], cover=lk.get('cover', -1)))
+    backups.sort(key=lambda z: (-z['worth'], z['o']))
+    backups = backups[:2]
+    for bk in backups:
+        bk['spec'] = acceptance(scout, bk['o'], bk['shot'], bar_next)
+    # conditions: the defender who covers the target, and what pulls him (an overload: he is the only cover of two looks)
+    conds, roles = [], [dict(o=a, role='shooter', sq=left['sq'])]
+    cover = left.get('cover', -1)
+    pull = None
+    for ov in cov.get('overloads') or []:
+        th = ov.get('threats') or []
+        if any(t['o'] == a and t['sq'] == left['sq'] for t in th) or (cover in (ov.get('xs') or []) and any(t['o'] == a for t in th)):
+            others = [t for t in th if t['o'] != a]
+            if others:
+                pull = (ov, others[0])
+                break
+    if pull:
+        ov, other = pull
+        xs = _and(f'X{d + 1}' for d in ov['xs'])
+        conds.append(dict(kind='attention', x=list(ov['xs']), o=other['o'], text=f"{xs} drawn to {_look_words(other)}"))
+        roles.append(dict(o=other['o'], role='draws ' + xs, sq=other['sq']))
+    elif cover >= 0:
+        conds.append(dict(kind='attention', x=[cover], o=a, text=f"X{cover + 1} a step late to {left['sq']}"))
+    if a != state.ball:
+        ch = (cov.get('passes') or [None] * 5)[a]
+        conds.append(dict(kind='access', x=[], o=state.ball, chance=ch,
+                          text=f"the pass from O{state.ball + 1} to O{a + 1} arrives" + (f' ({round(100 * ch)} in 100)' if ch is not None else '')))
+        roles.append(dict(o=state.ball, role='passer', sq=B.sq(state.o[state.ball])))
+    elif left.get('reach', 1) < 1:
+        conds.append(dict(kind='access', x=[], o=a, chance=left['reach'],
+                          text=f"O{a + 1} beats his man off the dribble ({round(100 * left['reach'])} in 100)"))
+    # the branch: the condition fails (the covering defender stays home on the target): what does that open?
+    branch = None
+    if cover >= 0 and B.parse_sq(left['sq']) not in state.x and B.parse_sq(left['sq']) not in state.o:
+        try:
+            home = state.with_(x=tuple(B.parse_sq(left['sq']) if k == cover else q for k, q in enumerate(state.x)))
+            c2 = AG.coverage(home)
+            if c2 and c2.get('left'):
+                b = c2['left']
+                branch = dict(o=b['o'], sq=b['sq'], shot=b['shot'], worth=b['worth'], reach=b['reach'],
+                              when=f"X{cover + 1} stays home on {left['sq']}", text=f"If X{cover + 1} stays home: {_look_words(b)}")
+        except ValueError:
+            branch = None
+    # attention, holes, access
+    held = []
+    try:
+        ro = AG.coverage(state, only='roles', **(dict(prev=list(perm), fixed=True) if perm else {}))
+    except ValueError:
+        ro = None
+    idle = []
+    for r in (ro or {}).get('roles') or []:
+        if r['kind'] in ('man', 'both', 'chase'):
+            held.append((r['x'], r['man']))
+        elif r['kind'] == 'free' and not r.get('way'):
+            idle.append(r['x'])
+    att = '; '.join(f"O{o + 1} holds X{x + 1}" for x, o in held[:3]) or 'nobody is held'
+    access = (f"the pass to O{a + 1}" if a != state.ball else f"O{a + 1}'s own step with the ball")
+    line = f"Attention: {att}. Hole: {left['sq']}, {ZONE_NAMES.get(B.zone(B.parse_sq(left['sq'])), '')}. Access: {access}."
+    name = SHOT_WORDS.get(left['shot'], left['shot'])
+    art = 'an open' if left.get('cover', -1) < 0 else 'an' if name[0] in 'aeiou' else 'a'
+    target = f"Plan: {art} {name} for O{a + 1} on {left['sq']}"
+    return dict(o=a, sq=left['sq'], shot=left['shot'], open=left['value'], reach=left['reach'], worth=left['worth'], cover=cover,
+                value=float(cov.get('lasting') or 0), bar=bar_next, bars=tol, spec=spec, backups=backups, conditions=conds, roles=roles,
+                branch=branch, line=line, target=target, idle=idle, answers=cov.get('answers') or [],
+                needs='Needs: ' + '; '.join(c['text'] for c in conds) + '.' if conds else '',
+                backup_words=('Backups: ' + '; '.join(_look_words(b) for b in backups) + '.') if backups else '')
+
+
+def plan_words(plan):
+    """The plan in plain words, a line each: the target, what it needs, the branch, the backups, and the attention,
+    holes and access line."""
+    if not plan:
+        return []
+    out = [plan['target'] + '.']
+    if plan['needs']:
+        out.append(plan['needs'])
+    if plan['branch']:
+        out.append(plan['branch']['text'] + '.')
+    if plan['backup_words']:
+        out.append(plan['backup_words'])
+    out.append(plan['line'])
+    return out
+
+
+# ---- stage 4: the offence's placement -------------------------------------------------------------------------------------
+
+def _okey(m):
+    """A placement's one measure (blueprint, stage 4): the value of its best plan at its real chance against the
+    defence it predicts (the lasting gap), then the rest of what it leaves to cover, then efficiency (the fewest
+    actions the defence's answer needs: the offence's gain comes soonest)."""
+    drv = m[3] or {}
+    return (round(float(m[2]), 6), tuple(drv.get('list') or ()), -int(drv.get('n') or 0))
+
+
+def _apply_predictions(scout, xs, arrows, perm):
+    """Stage 6: this side's own predictions of the other side's matchups, where it has seen them often enough: the
+    predicted defenders trade squares so each expected matchup stands."""
+    xs, arrows, perm = list(xs), list(arrows), list(perm)
+    for a, d in sorted((scout.predict or {}).items()):
+        if a in perm and perm[d] != a:
+            e = perm.index(a)
+            xs[d], xs[e] = xs[e], xs[d]
+            arrows[d], arrows[e] = arrows[e], arrows[d]
+            perm[d], perm[e] = perm[e], perm[d]
+    return xs, arrows, perm
+
+
+def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None):
+    """The offence sets up first (blueprint, stages 3, 3b and 4). Candidate squares for each attacker from the scout;
+    each placement is measured against the defence the offence predicts for it (the defence's own setup logic, run on
+    public information); the best is locked in and its plan read. make(o squares, ball, x squares, arrows) builds the
+    state. nth: 0 the best placement found, 1 the next best, and so on. -> dict(squares, ball, value, plan, words,
+    text, candidates, ranked, checks)."""
+    import random
+    import time
+    from . import agent as AG
+    from playmaker_web.game import TABLE_O, man_to_man
+    t0 = time.time()
+    t_end = t0 + (12.0 if budget is None else budget)
+    rng = random.Random(seed)
+    base = [B.parse_sq(q) for q in TABLE_O]
+    s0 = make(base, 0, *man_to_man(base, 0))
+    scout = scout or scout_for(s0.ctx, 'O')
+    cands = [set(scout.candidates(a)) for a in range(5)]
+    wood = {(x, y) for x in range(B.W) for y in range(2, B.H + 1) if B.on_board((x, y)) and B.zone((x, y)) == '.'}
+    seen = {}
+
+    def read(sq, ball, evals=0):
+        key = (tuple(sq), ball)
+        if key not in seen or (evals and not seen[key][2]):
+            m = AG._map_setup(make, list(sq), ball, evals=evals)
+            if m is None:
+                return None
+            seen[key] = (_okey(m), m, bool(evals))
+        return seen[key]
+
+    def ok(sq, ball):
+        return AG._legal_o(sq, ball) and all(sq[i] in cands[i] or i == ball for i in range(5))
+
+    # the start: the table's own squares, each attacker in turn tried with the ball
+    best = None
+    for b in range(5):
+        sq = list(base)
+        sq[0], sq[b] = sq[b], sq[0]
+        r = read(sq, b)
+        if r and (best is None or r[0] > best[0]):
+            best = (r[0], sq, b)
+    if best is None:
+        return None
+    key, sq, ball = best
+    steps, changed, rounds = [], True, 0
+    while changed and rounds < 3 and time.time() < t_end:
+        changed, rounds = False, rounds + 1
+        for i in range(5):
+            if time.time() >= t_end:
+                break
+            m = read(sq, ball)[1]
+            allowed = sorted(B.sq(q) for q in (wood if i == ball else cands[i]))
+            try:
+                rows = AG.coverage(make(sq, ball, m[0], m[1]), only='offsweep', piece=i, keep=4, squares=allowed, quick=True) or []
+            except ValueError:
+                rows = []
+            must = i != ball and sq[i] not in cands[i]      # ruled out as a starting square: he moves to a candidate
+            for row in rows:
+                q = B.parse_sq(row['sq'])
+                trial = sq[:i] + [q] + sq[i + 1:]
+                if q == sq[i] or not AG._legal_o(trial, ball):
+                    continue
+                r = read(trial, ball)
+                if r and (must or r[0] > key):
+                    steps.append(dict(o=i, to=row['sq'], why='a candidate square' if must and not r[0] > key else 'the plan is worth more'))
+                    key, sq, changed, must = r[0], trial, True, False
+    ranked = sorted(((k, list(p[0]), p[1]) for p, (k, m, full) in seen.items() if ok(list(p[0]), p[1])), key=lambda r: r[0], reverse=True)
+    if not ranked:
+        ranked = [(key, sq, ball)]
+    # the level's variety (D-208): among the placements within its margin of the best, by the seed
+    margin = AG.profile(level).get('variety_margin', 0)
+    near = [r for r in ranked if r[0][0] >= ranked[0][0][0] - margin - 1e-9]
+    pick = ranked[min(nth, len(ranked) - 1)] if nth else (rng.choice(near) if margin > 0 and len(near) > 1 else ranked[0])
+    key, sq, ball = pick
+    full = read(sq, ball, evals=240 if time.time() < t_end + 30 else 0) or read(sq, ball)
+    m = full[1]
+    xs, arrows, perm = _apply_predictions(scout, m[0], m[1], m[4] or list(range(5)))
+    state = make(sq, ball, xs, arrows)
+    plan = read_plan(state, scout, perm)
+    checks = placement_checks(state, scout, plan)
+    words = plan_words(plan)
+    text = ' '.join(words) if words else 'Placed on its candidate squares against the defence it predicts.'
+    return dict(squares=sq, ball=ball, value=round(float(full[0][0]), 2), plan=plan, words=words, text=text, steps=steps,
+                candidates=len(seen), within=len(near), ranked=[dict(squares=[B.sq(q) for q in r[1]], ball=r[2], value=r[0][0]) for r in ranked[:6]],
+                predicted=dict(x=[B.sq(q) for q in xs], arrows=list(arrows), perm=list(perm)), checks=checks,
+                roles=role_squares(scout, sq, ball, plan), seconds=round(time.time() - t0, 1))
+
+
+def role_squares(scout, sq, ball, plan):
+    """For the board: each attacker's candidate squares, and the squares the plan's roles need (where he stands, and
+    for the shooter where the shot goes up)."""
+    out = []
+    need = {}
+    for r in (plan or {}).get('roles') or []:
+        need.setdefault(r['o'], []).append(r['sq'])
+    for a in range(5):
+        out.append(dict(o=a, candidates=sorted(B.sq(q) for q in scout.candidates(a)), needs=sorted(set(need.get(a, []) + ([B.sq(sq[a])] if a in need else []))),
+                        role=', '.join(r['role'] for r in (plan or {}).get('roles') or [] if r['o'] == a)))
+    return out
+
+
+def placement_checks(state, scout, plan):
+    """Shaun's two expectations, as checks and never as rules: every defender is pulled to a real job; a
+    poor-shooting centre is a post or screening presence, not a body in a corner."""
+    from . import scouting as SCT
+    out = []
+    idle = (plan or {}).get('idle') or []
+    out.append(dict(check='every defender has a real job', passed=not idle,
+                    text='Every defender has a real job.' if not idle else f"{_and(f'X{d + 1}' for d in idle).replace(' or ', ' and ')} left with no real job: the defence can use him on the plan's gaps."))
+    for a, card in enumerate(state.ctx.off):
+        if SCT.position(card) != 'C':
+            continue
+        q = state.o[a]
+        corner = B.zone(q) == '3' and q[1] <= 4
+        poor = card.bands.get('shot_three') == 'L'
+        if poor:
+            out.append(dict(check='a poor-shooting centre is not a corner body', passed=not corner, o=a, sq=B.sq(q),
+                            text=f"O{a + 1} ({SCT.short_role(card)}) stands on {B.sq(q)}, {ZONE_NAMES.get(B.zone(q), 'beyond the arc')}."
+                                 + (' He is a body in the corner: his three there is the best look the map found for him.' if corner else '')))
+    return out
+
+
+# ---- stage 5: the defence's setup -----------------------------------------------------------------------------------------
+
+POS_ORDER = ('PG', 'SG', 'SF', 'PF', 'C')
+
+
+def _where_words(q):
+    z = B.zone(q)
+    return {'.': 'at the arc', '3': 'at the three-point line', 'L': 'at the long two', 'M': 'in mid-range', 'K': 'in the green zone'}.get(z, '')
+
+
+def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0, scout=None):
+    """The defence sets up (blueprint, stage 5): everything that works is kept (the settlement of all five by the
+    list), then the matchup rule: among the ways of standing that leave as much (within the level's margin), the
+    mismatch priced where it hurts, then like against like, then matching numbers. The defence's own scout names the
+    matchups it avoided. -> dict(squares, arrows, perm, value, text, read, avoided)."""
+    from . import agent as AG
+    from . import scouting as SCT
+    o_sq = list(o_sq)
+    m = AG._map_setup(make, o_sq, ball)
+    if m is None:
+        return None
+    xs, arrows, L, drv, perm, lines = list(m[0]), list(m[1]), float(m[2]), m[3] or {}, list(m[4] or range(5)), m[5]
+    s0 = make(o_sq, ball, xs, arrows)
+    scout = scout or scout_for(s0.ctx, 'X')
+    margin = AG.profile(level).get('variety_margin', 0)
+    pos_o = [POS_ORDER.index(SCT.position(c)) for c in s0.ctx.off]
+    pos_x = [POS_ORDER.index(SCT.position(c)) for c in s0.ctx.dfn]
+
+    def price(a, d):
+        b = scout.beat(s0, a, d, o_sq[a])
+        return (b['chance'] * b['grows']) if b else 0.0
+
+    def measure(xq, ar):
+        st = make(o_sq, ball, xq, ar)
+        r = AG.coverage(st, only='lasting')
+        ro = AG.coverage(st, only='roles')
+        pm = list(ro['perm']) if ro and ro.get('perm') else list(range(5))
+        top = (r['drivers']['list'] or [0])[0]
+        cost = round(sum(price(a, d) for d, a in enumerate(pm)), 3)
+        unlike = sum(abs(pos_x[d] - pos_o[a]) for d, a in enumerate(pm))
+        same = sum(1 for d, a in enumerate(pm) if d == a)
+        return dict(x=list(xq), arrows=list(ar), L=float(r['L']), top=float(top), perm=pm, key=(cost, unlike, -same), cost=cost, unlike=unlike, same=same)
+    cur = measure(xs, arrows)
+    base, tried, swaps = cur, [cur], []
+    for _ in range(4):
+        better = None
+        for i in range(5):
+            for j in range(i + 1, 5):
+                xq, ar = list(cur['x']), list(cur['arrows'])
+                xq[i], xq[j] = xq[j], xq[i]
+                ar[i], ar[j] = ar[j], ar[i]
+                try:
+                    t = measure(xq, ar)
+                except ValueError:
+                    continue
+                tried.append(t)
+                if t['L'] > base['L'] + margin + 1e-9 or t['top'] > base['top'] + margin + 1e-9:
+                    continue                             # it leaves more than the margin allows: everything that works is kept
+                if t['key'] < (better or cur)['key']:
+                    better = dict(t, swap=(i, j))
+        if better is None:
+            break
+        swaps.append(better['swap'])
+        cur = better
+    pick = cur
+    if nth:                                              # the next-best ways of standing, by the same rule
+        allowed = sorted((t for t in tried if t['L'] <= base['L'] + margin + 1e-9 and t['top'] <= base['top'] + margin + 1e-9), key=lambda t: (t['key'], t['L']))
+        uniq = []
+        for t in allowed:
+            if all(t['x'] != u['x'] for u in uniq):
+                uniq.append(t)
+        pick = uniq[min(nth, len(uniq) - 1)] if uniq else cur
+    pm = pick['perm']
+    read = []
+    for d, a in enumerate(pm):
+        co, cx = s0.ctx.off[a], s0.ctx.dfn[d]
+        why = ('same position' if pos_o[a] == pos_x[d] else 'same speed' if co.qs == cx.qs else
+               'the nearest defender who takes something off his look')
+        read.append(dict(x=d, o=a, why=why, text=f'X{d + 1} on O{a + 1}: {why}'))
+    # the matchups it avoided, from its own scout: the Dribble mismatch where it hurts, and the shot it most wants to keep its man off
+    avoided = []
+    costs = sorted(((price(ball, d), d) for d in range(5)), reverse=True)
+    if costs and costs[0][0] > 0 and pm[costs[0][1]] != ball and costs[0][0] > price(ball, pm.index(ball)) + 1e-9:
+        avoided.append(dict(x=costs[0][1], o=ball, text=f'not X{costs[0][1] + 1} on O{ball + 1} {_where_words(o_sq[ball])}'))
+    tol = bars(make(o_sq, ball, pick['x'], pick['arrows']))
+    for r in scout.preferences(tol[0]['bar']):
+        if pm[r['x']] != r['o'] and r['over'] > 0 and not any(z['x'] == r['x'] and z['o'] == r['o'] for z in avoided):
+            avoided.append(dict(x=r['x'], o=r['o'], text=f"not X{r['x'] + 1} on O{r['o'] + 1} {_where_words_zone(r['zone'])}"))
+            break
+    text = 'Matchups: ' + '; '.join(z['text'] for z in read) + '.' + (' Avoided: ' + '; '.join(z['text'] for z in avoided) + '.' if avoided else '')
+    return dict(squares=pick['x'], arrows=pick['arrows'], perm=pm, value=round(pick['L'], 2), read=read, avoided=avoided, text=text,
+                lines=list(lines or []), swaps=[list(z) for z in swaps], settled=dict(x=[B.sq(q) for q in xs], L=L),
+                rule=dict(cost=pick['cost'], unlike=pick['unlike'], same=pick['same'], before=dict(cost=base['cost'], unlike=base['unlike'], same=base['same'])))
+
+
+def _where_words_zone(z):
+    return {'3': 'at the three-point line', 'L': 'at the long two', 'M': 'in mid-range', 'K': 'in the green zone'}.get(z, '')
+
+
+# ---- stage 6: in play ------------------------------------------------------------------------------------------------------
+
+def plan_status(plan, state, scout):
+    """At a phase's start, the plan measured on the board as it really is: is the first preference still the look the
+    offence gets, has the defence taken it away, or has something worth as much or more at its real chance opened?
+    Opportunities are compared by value at their real chance of happening (the list's value times reach), never by a
+    shot's open value. -> dict(kind: 'chasing' | 'denied' | 'better', line, plan: the plan to carry on with)."""
+    now = read_plan(state, scout)
+    if not plan or not now:
+        return None
+    same = now['o'] == plan['o'] and now['shot'] == plan['shot']
+    was = f"O{plan['o'] + 1}'s {SHOT_WORDS.get(plan['shot'], plan['shot'])}"
+    new = _look_words(now)
+    if same:
+        return dict(kind='chasing', line=f"Chasing: {new}.", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
+    # what the planned look is worth now, at its real chance
+    from . import agent as AG
+    cov = AG.coverage(state)
+    mine = [lk for lk in ((cov.get('squares') or [{}] * 5)[plan['o']] or {}).values() if lk.get('shot') == plan['shot']]
+    left = max((lk.get('worth', 0) for lk in mine), default=0)
+    if left < now['bar'] - 1e-9 or left <= 0:
+        line = f"{was} is taken away: switching to {new}."
+        kind = 'denied'
+    else:
+        line = (f"A better chance: {new}, worth {round(now['worth'])} at its real chance. The planned "
+                f"{SHOT_WORDS.get(plan['shot'], plan['shot'])} is worth {round(left)}.")
+        kind = 'better'
+    return dict(kind=kind, line=line, plan=dict(now, first=plan.get('first', plan)), worth=now['worth'], planned=left)

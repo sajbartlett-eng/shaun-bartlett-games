@@ -5559,13 +5559,18 @@ const PMEngine = (() => {
   }
   // The offence's setup over every square (D-216): attacker i tried on every empty square of the court, the defence
   // as it stands (its answer during the phase counted, as always), ranked by the offence's mirror of the reading.
-  function offSweep(s0, i, keep) {
+  // Step 24: squares (the attacker's candidate squares, where given) limits where he is tried; quick reads only the
+  // list as the defence stands (no answer searched), for ranking where to look.
+  function offSweep(s0, i, keep, squares, quick) {
     const s = covOffFresh(s0), occ = new Set();
     for (let k = 0; k < 5; k++) { occ.add(s.o[k]); occ.add(s.x[k]); }
+    const only = squares ? new Set(squares.map(parseSq)) : null;
     const out = [];
     for (let q = 0; q < ONB.length; q++) {
-      if (!ONB[q] || (occ.has(q) && q !== s.o[i])) continue;
-      const g = lastingOf(W_(s, { o: setAt(s.o, i, q) }));
+      if (!ONB[q] || (occ.has(q) && q !== s.o[i]) || (only && !only.has(q))) continue;
+      const t = W_(s, { o: setAt(s.o, i, q) });
+      if (quick) { const list = lgList(lgRoot(covBuild(t, true, null))); out.push({ q, k: { L: list.length ? list[0] : 0, list, n: 0, m: null } }); continue; }
+      const g = lastingOf(t);
       if (g) out.push({ q, k: readingOf(g) });
     }
     out.sort((u, v) => (rdBetterO(u.k, v.k) ? -1 : rdBetterO(v.k, u.k) ? 1 : u.q - v.q));
@@ -5822,7 +5827,7 @@ const PMEngine = (() => {
       RD.lead = 'gap';
       return { base: drvJSON(base), rows };
     }
-    if (opts.only === 'offsweep') return offSweep(s0, opts.piece, opts.keep).map(r => ({ sq: sqName(r.q), drivers: drvJSON(r.k) }));
+    if (opts.only === 'offsweep') return offSweep(s0, opts.piece, opts.keep, opts.squares, opts.quick).map(r => ({ sq: sqName(r.q), drivers: drvJSON(r.k) }));
     if (opts.only === 'lasting') {
       const g = lastingOf(s0, null, !!opts.fresh);
       if (!g) return null;
