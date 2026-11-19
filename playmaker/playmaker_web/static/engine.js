@@ -5923,6 +5923,8 @@ const PMEngine = (() => {
         out.own = A.vec.map(v => +v.toFixed(2));
       }
       out.top = topOf(s0);
+      // step 27 (D-258): the moves of the defence's best answer by this same reading (the list), for the reading ahead
+      if (opts.answer) out.answer = (g.best && g.best.moves ? g.best.moves : []).map(([d, q, a]) => [d, sqName(q), a]);
       if (opts.settle) out.settle = new Read(s0).mapSettle().map(([d, q, a]) => [d, sqName(q), a]);
       return out;
     }

@@ -1,0 +1,93 @@
+{
+ "board": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "A3",
+   "Q3"
+  ],
+  "x": [
+   "D5",
+   "O5",
+   "L6",
+   "G7",
+   "I4"
+  ],
+  "arrows": [
+   1,
+   0,
+   0,
+   4,
+   1
+  ],
+  "ball": "O1"
+ },
+ "sharpshooter": "O2 on C9",
+ "helping_on_him": {
+  "his_best_look": {
+   "sq": "I10",
+   "worth": 21,
+   "shot": "three",
+   "chance": 1,
+   "value_open": 33,
+   "weakness": 21,
+   "cover": 3,
+   "next": 0
+  },
+  "defenders_near": []
+ },
+ "sharpshooter_best": {
+  "worth": 21,
+  "sq": "I10"
+ },
+ "most_open_other": {
+  "o": "O3",
+  "sq": "Q7",
+  "worth": 15,
+  "chance_it_goes_up": 1,
+  "value_if_it_does": 24,
+  "shot": "three"
+ },
+ "list": [
+  21,
+  15,
+  12,
+  12,
+  12,
+  0
+ ],
+ "L": 21,
+ "passes": {
+  "O1": null,
+  "O2": 1,
+  "O3": 1,
+  "O4": 1,
+  "O5": 0.6
+ },
+ "pass_cut_instead": {
+  "defender": "X2 to D9",
+  "pass_lands": 0.0,
+  "sharpshooter_best": {
+   "worth": 21,
+   "sq": "I10"
+  },
+  "left_open": {
+   "o": "O3",
+   "sq": "Q7",
+   "worth": 24,
+   "chance": 1,
+   "value": 24,
+   "shot": "three"
+  },
+  "list": [
+   24,
+   21,
+   21,
+   15,
+   12,
+   0
+  ]
+ },
+ "pass_to_him_now": 1.0
+}
