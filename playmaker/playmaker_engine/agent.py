@@ -67,6 +67,10 @@ class Agent:
         self.scouting = scouting if self.p['scout_human'] else None
         self.last = None
         self.setup_perm = None
+        # step 24: this side's own plan and scout. Nothing of the other side's is ever put here (each side thinks alone)
+        self.setup_plan = None
+        self.scout = None
+        self._plan_at = None
 
     def reset(self, seed):
         pass
@@ -145,7 +149,9 @@ class Agent:
                 srch.habit_weight = self.scouting.get('weight', 0.3)
             results, reached = srch.root(s, hi, lo)
         sign = 1 if side == 'O' else -1
-        results = _driver_order(s, side, results, prev=getattr(self, 'assign', None))   # step 22b (D-219): ties put in the reading's order
+        status = self._plan_status(s) if side == 'O' else None    # step 24: the plan measured on the board, once a phase
+        results = _driver_order(s, side, results, prev=getattr(self, 'assign', None),   # step 22b (D-219): ties put in the reading's order
+                                plan=self.setup_plan if side == 'O' else None)
         if CONFIG.get('search', {}).get('split_ties') is True:
             # step 18f (search.split_ties): turns that read exactly the same get one draw of the pick noise, so the
             # evidence that put them in order chooses between them, not chance
@@ -206,6 +212,9 @@ class Agent:
             note['goals'] = self._goal_note(s, turn)          # step 16: reading and recording only
         for g in self.commit.log[n_log:]:
             self.notes.append(dict(event='goal', **g))
+        if status:
+            note['plan'] = status['line']
+            self.notes.append(dict(event='plan', status=status['kind'], text=status['line']))
         why = steal_reason(s, turn)
         if why:
             note['reason'] = why
@@ -219,6 +228,21 @@ class Agent:
                 self.plan = list(turn[1:])
                 self.expect = zobrist(nxt)
         return a
+
+    def _plan_status(self, s):
+        """Step 24 (stage 6): at each phase's start the offence measures its plan on the board as it really is: still
+        chasing it, taken away (it moves to what the board now gives), or something worth as much at its real chance."""
+        if self.setup_plan is None or self.scout is None or s.stage != 'play' or s.pending or self._plan_at == (s.phase, s.clock):
+            return None
+        self._plan_at = (s.phase, s.clock)
+        from . import plan as PL
+        try:
+            st = PL.plan_status(self.setup_plan, s, self.scout)
+        except ValueError:
+            return None
+        if st:
+            self.setup_plan = st['plan']
+        return st
 
     def _why(self, s, turn, weighed, val):
         """Step 17 (reporting only): why this turn and not the runner-up. The three readings whose weighted parts
@@ -723,7 +747,7 @@ def _map_setup(make, o_sq, ball, evals=240):
     return [B.parse_sq(q) for q in r['x']], list(r['arrows']), float(r['L']), r.get('drivers'), r.get('perm'), r.get('lines')
 
 
-def _driver_order(s, side, results, limit=8, prev=None):
+def _driver_order(s, side, results, limit=8, prev=None, plan=None):
     """Step 22b (D-219, Shaun, 18 Nov 2026): turns the search reads exactly the same are put in order by the reading of
     the position each leaves: the list of things to cover as the defence then stands (each attacker's best look
     before it answers, every square's gap), largest first. The defence takes the turn that leaves the least; on a tie
@@ -751,7 +775,7 @@ def _driver_order(s, side, results, limit=8, prev=None):
                             # the defence: the list; then each defender's own cover of his own man (his first
                             # responsibility: this is what makes a beaten defender chase); then no switch; then efficiency
                             key = ((tuple(-x for x in d['list']), tuple(-x for x in r.get('own', ())), 0 if r.get('kept', True) else -1, -d['n'])
-                                   if side == 'X' else (tuple(d['list']),))
+                                   if side == 'X' else (tuple(d['list']), _plan_worth(after, plan)))
                 except ValueError:
                     key = None
                 keyed.append((key, v, t))
@@ -759,6 +783,19 @@ def _driver_order(s, side, results, limit=8, prev=None):
             out[k:j + 1] = [(v, t) for _, v, t in readable] + [(v, t) for key, v, t in keyed if key is None]
         k = j + 1
     return out
+
+
+def _plan_worth(after, plan):
+    """Step 24: the plan is the offence's preference only when values are level: of turns that read the same and
+    leave the same list, the one that leaves its first preference worth most at its real chance."""
+    if not plan:
+        return 0.0
+    try:
+        c = coverage(after)
+    except ValueError:
+        return 0.0
+    sqs = ((c or {}).get('squares') or [{}] * 5)[plan['o']] or {}
+    return max((lk.get('worth', 0) for lk in sqs.values() if lk.get('shot') == plan['shot']), default=0.0)
 
 
 def _why(a, b):
@@ -999,15 +1036,60 @@ def _as_it_was(fn, *args):
         CONFIG['eval']['lane'] = keep
 
 
-def propose_offence(make_names, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
-    """The offence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
+def _plan_make(make_names):
+    return lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
+
+
+def _side_scout(make_names, side, memory):
+    """This side's own scout for the game (step 24): kept in the side's own memory, never shared with the other side."""
+    from . import plan as PL
+    from playmaker_web.game import TABLE_O, TABLE_X, TABLE_ARROWS
+    if memory is not None and memory.get('scout') is not None:
+        return memory['scout']
+    try:
+        ctx = make_names(list(TABLE_O), list(TABLE_X), list(TABLE_ARROWS), 0).ctx
+    except ValueError:
+        return None
+    sc = PL.Scout(ctx, side)
+    if memory is not None:
+        memory['scout'] = sc
+    return sc
+
+
+def propose_offence(make_names, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None, nth=0):
+    """The offence's setup. Step 24 (Shaun, 19 Nov 2026): the setup plan wherever the fast engine reads the map (the
+    app's format): the scout, the candidate squares, the placement measured against the defence it predicts, and its
+    plan. Elsewhere the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
+    if JS.get('coverage') is not None and search is not True:
+        from . import plan as PL
+        r = None
+        try:
+            r = PL.place_offence(_plan_make(make_names), seed, level, budget, nth,
+                                 _side_scout(make_names, 'O', memory))
+        except ValueError:
+            r = None
+        if r:
+            if memory is not None:
+                memory['predicted'] = r['predicted']['perm']
+            return r
     if setup_search() if search is None else search:
         return _search_offence(make_names, seed, levels_key, budget, level, memory)
     return _as_it_was(_fixed_offence, make_names, seed, levels_key, budget, level)
 
 
-def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None):
-    """The defence's setup: the search of step 18o when setup.search is on (or the caller asks), else the setup as it was."""
+def propose_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, level='allstar', memory=None, search=None, nth=0):
+    """The defence's setup. Step 24: everything that works (the settlement by the list), then the matchup rule and the
+    defence's own read of its matchups. Elsewhere the search of step 18o when setup.search is on (or the caller asks),
+    else the setup as it was."""
+    if JS.get('coverage') is not None and search is not True:
+        from . import plan as PL
+        r = None
+        try:
+            r = PL.place_defence(_plan_make(make_names), o_sq, ball, seed, level, budget, nth, _side_scout(make_names, 'X', memory))
+        except ValueError:
+            r = None
+        if r:
+            return r
     if setup_search() if search is None else search:
         return _search_defence(make_names, o_sq, ball, seed, levels_key, budget, level, memory)
     return _as_it_was(_fixed_defence, make_names, o_sq, ball, seed, levels_key, budget, level)

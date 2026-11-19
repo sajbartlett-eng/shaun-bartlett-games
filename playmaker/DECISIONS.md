@@ -1413,6 +1413,69 @@ the job lines' words. · Source: Shaun, 18 Nov 2026 · **Ruled; built in step 22
 (D-224 (c)); the closely guarded count in thirds (D-224 (b)); a tie in a race goes to the defender (D-228); setup's
 longer last pass (D-200 waives speed). · Source: Shaun, 18 Nov 2026 · **Ruled.**
 
+**D-233. The setup plan: the order.** Shaun: "First comes the scout for both teams." "Once we have the location and
+matchup based scout locked for both teams, both teams can calibrate their phase by phase shot tolerance tailored to
+those matchups to determine exactly what matchups they want to chase and avoid in preference order." "The offence sets
+up first, assuming the defensive matchups that will be generated, by positioning the players in a way to create the
+advantages needed to generate the first preference shot with backup shots planned for if that fails." "Then the defence
+sets up. We keep everything that has been working for us." The design is `docs/reference/SETUP_PLAN_BLUEPRINT.md`. It
+replaces setup's old order, where the defence's logic came first and the offence was judged against a quick defence.
+· Source: Shaun, 19 Nov 2026 · **Ruled; built in step 24.**
+
+**D-234. The game, and each side thinks alone.** Shaun: "You're managing attention, then creating holes, then
+exploiting ways to access those holes. That's the game. The defence is trying to manage holes and constrain the offence
+away from accessing them when they form." "Ideally, the defence and offence computers would be separate such that they
+do not have access to each other's goals and thinking." Each side's computer uses public information (the board, the
+rules, all ten cards) and its own scout, goals, plan and predictions. Where it needs the other side's reply it runs its
+own model of that side. Built: each side's scout, plan and predictions are kept in that side's own memory; a test
+changes one side's private plan and checks the other side's choice on the same board is the same.
+· Source: Shaun, 19 Nov 2026 · **Ruled; built in step 24.**
+
+**D-235. The scout.** The shot review: every attacker, shot type and defender, in every case the contest rules tell
+apart: 14 for a jump shot, 22 for an inside shot (the blueprint's table; tested case by case against the rules). The
+movement review: Shaun: "beating a defender with a dribble is more valuable where it provides the offence with more
+passing and driving angles and space to create separation without going away from the hoop. Near the middle at the
+three point line is great for that. In the green zone is poor." Measured, not ranked by hand: the two players alone,
+the coverage map read before the Dribble and after a win; what the win is worth is how many of his squares get better
+and by how much in all. **Marked for Shaun:** I measured "how much his options grow" as that sum over squares. His
+best shot this phase is a different number and goes the other way (in the paint a win turns a contested layup into an
+open one). · Source: Shaun, 19 Nov 2026 · **Built in step 24; the measure awaits Shaun.**
+
+**D-236. Tolerance, the plan and the placement.** The bar for a phase is what playing on is worth from it: the lasting
+gap read with the shot clock that phase would have, by the rules (D-232); nothing in the last phase. The acceptance
+spec is the scout's cases at or above the bar. The plan is read from the map one phase ahead (the predicted defence and
+its first answer): the look left after the defence's best answer, the defenders who could take it away and what holds
+each, a screen on the ball handler's defender where one builds more, the branch (the map read again with the condition
+failed), the backups. The placement's one measure is that plan's value at its real chance, then the rest of the list,
+then efficiency. **Marked for Shaun, choices his words didn't settle:** (a) a candidate square is one where the
+attacker's open shot is worth more than the offence can always get against one defender set in front of it; (b) the
+plan holds one phase of conditions, measured again each phase, not a written three-phase path; (c) the variety margin
+of the level applies to the placement as before (D-208). · Source: Shaun, 19 Nov 2026 · **Built in step 24.**
+
+**D-237. The defence's matchup rule (step 23's item 1, built here because step 23 was not merged).** Everything that
+works is kept: the settlement by the list. Then, among the ways of standing that leave no more than the level's
+variety margin above it: the mismatch priced where it hurts (the chance each attacker's Dribble beats his defender
+times what a win opens on his square), then like against like (by position), then matching numbers. **Marked for
+Shaun:** I did not have step 23's prompt. The margin and the price are my reading of this step's words.
+· Source: Shaun, 19 Nov 2026 · **Built in step 24; awaits Shaun.**
+
+**D-238. In play and the scout's updates.** Shaun: "Think about if the defence does something silly and leaves an open
+pass and driving lane. The layup's value might not be better than the open three, but it is guaranteed rather than
+relying on a successful screen." Opportunities are compared by value at their real chance (the list's value times
+reach). Each phase the offence measures its plan on the real board: still chasing it, taken away, or something worth
+more. The plan only breaks ties between turns that read the same. Between possessions only a side's predictions of
+the other side's choices change: the same unpredicted matchup two possessions running. **Marked for Shaun:** two. A
+setup has no dice; one sighting can be the level's variety. · Source: Shaun, 19 Nov 2026 · **Built in step 24; the
+count awaits Shaun.**
+
+**D-239. The setup screen.** Shaun: "Also, implement in the game the UX and functionality to match. A clear button to
+have the computers manage offensive setup and one for defensive setup is a must. At the moment I don't think it manages
+offensive setup properly." "have it clear the annoying defensive zone of influence before the defence has even set up".
+Built: "Computer sets up the offence" and "Computer sets up the defence" in every mode, each placing a draft the player
+can change, and its next-best on a second press; the plan and the defence's read beside the board; role squares with
+Coverage on; no defender, reach, zone or arrow drawn while the offence places; a side's plan shown to that side only.
+· Source: Shaun, 19 Nov 2026 · **Ruled; built in step 24.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

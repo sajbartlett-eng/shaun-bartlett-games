@@ -1344,6 +1344,7 @@ class Game:
                     self._log('computer', side='O', event='setup', possession=self.possession,
                               squares=[B.sq(q) for q in r['squares']], ball=r['ball'], value=r['value'],
                               candidates=r['candidates'], within=r['within'], text=r['text'])
+                    self._keep_setup('O', r, comp, 'ai')
                     self._place_side('O', r['squares'], r['ball'], None, actor='ai')
                 else:
                     self._place_side('O', [B.parse_sq(q) for q in TABLE_O], 0, None, actor='ai')
@@ -1356,10 +1357,84 @@ class Game:
                     self.__dict__.setdefault('_setup_perm', {})[self.possession] = tuple(r['perm'])   # step 22c: kept for the replay
                     self._log('computer', side='X', event='setup', possession=self.possession,
                               matchup=[f'X{j + 1} on O{r["perm"][j] + 1}' for j in range(5)], value=r['value'], text=r['text'])
+                    self._keep_setup('X', r, comp, 'ai')
                     self._place_side('X', r['squares'], None, r['arrows'], actor='ai')
                 else:
                     xs, arrows = man_to_man(o_sq, ball)
                     self._place_side('X', xs, None, arrows, actor='ai')
+
+    def _keep_setup(self, side, r, comp=None, actor='ai'):
+        """Step 24: what a side's setup planned, kept for that side alone (each side thinks alone): the offence's plan
+        in plain words with its role squares; the defence's read of its matchups. The side's computer, if it has one,
+        carries its own plan and scout into play."""
+        mem = self._setup_memory(side)
+        info = dict(side=side, actor=actor, text=r.get('text', ''), squares=[B.sq(q) for q in r['squares']])
+        if side == 'O':
+            plan = r.get('plan')
+            info.update(ball=r.get('ball'), words=r.get('words') or [], roles=r.get('roles') or [], checks=r.get('checks') or [],
+                        spec=(plan or {}).get('spec', {}).get('words'), value=r.get('value'),
+                        numbers=None if not plan else dict(worth=plan['worth'], open=plan['open'], reach=plan['reach'], bar=plan['bar'],
+                                                           bars=plan['bars'], backups=[dict(o=b['o'], sq=b['sq'], shot=b['shot'], worth=b['worth']) for b in plan['backups']]))
+            self.__dict__.setdefault('_plans', {})[self.possession] = plan
+        else:
+            info.update(arrows=list(r.get('arrows') or []), read=[z['text'] for z in r.get('read') or []],
+                        avoided=[z['text'] for z in r.get('avoided') or []], lines=r.get('lines') or [])
+        self.__dict__.setdefault('_setup_info', {}).setdefault(self.possession, {})[side] = info
+        if comp is not None:
+            comp.scout = mem.get('scout')
+            if side == 'O':
+                comp.setup_plan = r.get('plan')
+
+    def setup_info(self, seat):
+        """What the screen may show of each side's setup thinking: a side's own plan to that side only. The computer's
+        private plan is never shown to a human playing against it. In Watch (the computer plays both) both are shown,
+        labelled by side."""
+        info = getattr(self, '_setup_info', {}).get(self.possession, {})
+        watch = set(self.ai) >= {'O', 'X'}
+        out = {}
+        for side, v in info.items():
+            if watch or (side not in self.ai and seat in ('both', side)):
+                out[side] = v
+        return out
+
+    def plan_line(self, seat):
+        """Step 24 (stage 6, shown): the line of the plan being chased this phase. The computer offence's own line in
+        Watch; for a human offence the same reading as coaching (the app can switch it off). Never the computer's line
+        to the human it is playing."""
+        if self.placing or self.state.stage != 'play':
+            return None
+        watch = set(self.ai) >= {'O', 'X'}
+        if 'O' in self.ai:
+            if not watch:
+                return None
+            rec = getattr(self, '_plan_note', None)
+            if rec and rec.get('possession') == self.possession:
+                return dict(side='O', text=rec['text'], kind=rec.get('kind'), coaching=False)
+            return None
+        if seat not in ('both', 'O'):
+            return None
+        from playmaker_engine import agent as AG, plan as PL
+        if AG.JS.get('coverage') is None or not self.state.ctx.rules.digital or self.state.pending:
+            return getattr(self, '_coach_line', None)
+        key = (self.possession, self.state.phase, self.state.clock)
+        if getattr(self, '_coach_at', None) != key:
+            self._coach_at = key
+            mem = self._setup_memory('O')
+            sc = mem.get('scout') or mem.setdefault('scout', PL.Scout(self.state.ctx, 'O'))
+            plans = self.__dict__.setdefault('_plans', {})
+            try:
+                if plans.get(self.possession) is None:
+                    plans[self.possession] = PL.read_plan(self.state, sc)
+                    p0 = plans[self.possession]
+                    self._coach_line = None if not p0 else dict(side='O', kind='chasing', coaching=True, text='Chasing: ' + p0['target'][6:] + '.')
+                else:
+                    stt = PL.plan_status(plans[self.possession], self.state, sc)
+                    if stt:
+                        plans[self.possession] = stt['plan']
+                        self._coach_line = dict(side='O', text=stt['line'], kind=stt['kind'], coaching=True)
+            except ValueError:
+                self._coach_line = None
+        return getattr(self, '_coach_line', None)
 
     def _setup_memory(self, side):
         """Step 18o: the searches this team has run so far on this side of the ball, carried to its next setup."""
@@ -1394,6 +1469,21 @@ class Game:
                 sq, ball, arrows = last
                 self._place_side(self.placing, sq, ball, arrows, actor='human')
                 self._auto_place()
+                return
+            if body.get('computer'):
+                # step 24 (Shaun, 19 Nov 2026): "Computer sets up the offence" / "Computer sets up the defence": the
+                # computer's setup for the side now placing is put on the board as a draft. The player may move any
+                # piece before confirming, or ask again for the next-best (nth).
+                if seat != 'both' and seat != self.placing:
+                    raise GameError(f'the {"offence" if self.placing == "O" else "defence"} is placing')
+                if self.placing in self.ai:
+                    raise GameError('the computer places this side')
+                nth = max(0, int(body.get('nth') or 0))
+                prop = self.proposal(self.placing, nth)
+                self.__dict__.setdefault('_drafts', {})[(self.possession, self.placing)] = dict(prop, nth=nth)
+                if prop.get('full'):
+                    self._keep_setup(self.placing, prop['full'], None, 'draft')
+                self.version += 1
                 return
             if body.get('propose'):
                 # step 3m Part A: accept the engine's proposed setup for this side
@@ -1438,22 +1528,22 @@ class Game:
             self._place_side(self.placing, squares, body.get('ball'), arrows, actor='human')
             self._auto_place()
 
-    def proposal(self, side):
-        """The engine's proposed setup for a side (step 3m B6): {squares, ball} on offence, {squares, arrows} on
-        defence. Cached per possession and side."""
-        key = (self.possession, side, tuple(map(tuple, self.placed['O'][0])) if side == 'X' else None)
+    def proposal(self, side, nth=0):
+        """The computer's setup for a side (step 24: the setup plan): {squares, ball} on offence, {squares, arrows} on
+        defence, with what it planned (full). Cached per possession, side and how far down its list (nth)."""
+        key = (self.possession, side, tuple(map(tuple, self.placed['O'][0])) if side == 'X' else None, nth)
         cache = getattr(self, '_proposals', {})
         if key not in cache:
             from playmaker_engine import agent as AG
             if side == 'O':
                 r = AG.propose_offence(self._possession_state, self.seed * 31 + self.possession, self.levels_key(),
-                                       memory=self._setup_memory('O'), search=self.setup_search)
-                cache[key] = dict(squares=r['squares'], ball=r['ball'], text=r.get('text', ''))
+                                       memory=self._setup_memory('O'), search=self.setup_search, nth=nth)
+                cache[key] = dict(squares=r['squares'], ball=r['ball'], text=r.get('text', ''), full=r if r.get('plan') is not None or r.get('words') is not None else None)
             else:
                 o_sq, ball = self.placed['O']
                 r = AG.propose_defence(self._possession_state, o_sq, ball, self.seed * 37 + self.possession, self.levels_key(),
-                                       memory=self._setup_memory('X'), search=self.setup_search)
-                cache[key] = dict(squares=r['squares'], arrows=r['arrows'], text=r.get('text', ''))
+                                       memory=self._setup_memory('X'), search=self.setup_search, nth=nth)
+                cache[key] = dict(squares=r['squares'], arrows=r['arrows'], text=r.get('text', ''), full=r if r.get('read') is not None else None)
             self._proposals = cache
         return cache[key]
 
@@ -1499,9 +1589,26 @@ class Game:
                   arrows=[B.DIR_NAMES[a] for a in arrows] if side == 'X' else None,
                   start=self.state.encode() if side == 'X' else None)
         self.version += 1
+        if side == 'X':
+            self._observe_setup()
         if self.placing is None:
             self._run_ai()
             self._timer_decision()
+
+    def _observe_setup(self):
+        """Step 24 (stage 6): the offence's own scout notes the matchups the defence really took against the ones it
+        predicted (both public: the board). Only its predictions of the other side's choices can change."""
+        mem = self._setup_memory('O')
+        sc, predicted = mem.get('scout'), mem.pop('predicted', None)
+        if sc is None:
+            return
+        try:
+            from playmaker_engine import agent as AG
+            ro = AG.coverage(self.state, only='roles') if AG.JS.get('coverage') is not None else None
+        except ValueError:
+            ro = None
+        if ro and ro.get('perm'):
+            sc.observe(predicted, list(ro['perm']))
 
     def offence_player(self):
         """Which player (A or B) is attacking this possession."""
@@ -1664,6 +1771,8 @@ class Game:
             a = pol.choose(self.state)
             self._think = round(time.time() - t0, 3)
             for note in getattr(pol, 'notes', []):
+                if note.get('event') == 'plan' and side == 'O':
+                    self._plan_note = dict(possession=self.possession, text=note.get('text'), kind=note.get('status'))
                 self._log('computer', side=side, possession=self.possession, clock=self.state.clock, **note)
             if hasattr(pol, 'notes'):
                 pol.notes.clear()

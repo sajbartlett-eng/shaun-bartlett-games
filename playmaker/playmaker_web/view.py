@@ -377,6 +377,56 @@ def board_json(s, slots=None):
                 influence=influence(s) if s.stage != 'over' else None)
 
 
+def scout_table_json(game):
+    """Step 24 (stage 1): the scout's review in plain words, with the numbers behind it. Each attacker's best shot in
+    each part of the court against each defender (open, and what that defender leaves of it square in front, from the
+    side, from behind), and the chance his Dribble beats him. The rules and the cards only."""
+    from playmaker_engine import plan as PL, scouting as SCT
+    ctx = game.state.ctx if game.state is not None else game._possession_state().ctx
+    sc = PL.Scout(ctx, 'O')
+    lines, table = [], []
+    for a, card in enumerate(ctx.off):
+        zone, (v, t) = max(((z, sc.open_value(a, z)) for z in PL.ZONES), key=lambda r: r[1][0])
+        left = sorted(((sc.contested(a, d, zone)[0], d) for d in range(5)))
+        beat = sorted(((sc.beat_chance(a, d), d) for d in range(5)), reverse=True)
+        lines.append(f"O{a + 1} ({SCT.short_role(card)}): his best open shot is a {PL.SHOT_WORDS[t]} (worth {round(v)}). "
+                     f"X{left[0][1] + 1} leaves the least of it ({round(left[0][0])}), X{left[-1][1] + 1} the most ({round(left[-1][0])}). "
+                     f"His Dribble beats X{beat[0][1] + 1} most often ({round(100 * beat[0][0])} in 100), X{beat[-1][1] + 1} least ({round(100 * beat[-1][0])} in 100).")
+        for d in range(5):
+            m = sc.matchup(a, d)
+            table.append(dict(o=a, x=d, beat=round(100 * m['beat']),
+                              zones={PL.ZONE_NAMES[z]: dict(shot=PL.SHOT_WORDS[r['shot']], open=round(r['open']), square=round(r['square']),
+                                                            side=round(r['side']), behind=round(r['behind'])) for z, r in m['zones'].items()}))
+    return dict(teams=[ctx.off_team, ctx.def_team], lines=lines, table=table, cases=dict(jump=14, inside=22),
+                note='A won Dribble is worth most where it opens the most squares: near the middle beyond the arc. In the green zone it opens little.')
+
+
+def _plan_line(game, seat):
+    try:
+        return game.plan_line(seat)
+    except Exception:                      # the line is a reading only: the game never stops for it
+        return None
+
+
+def _candidates(game, placing):
+    """Step 24: while a human places the offence, each attacker's candidate squares from his own side's scout (where
+    his card makes him a real look). The cards and the rules only: no defence is on the board yet."""
+    if not placing or placing['side'] != 'O' or not placing['mine']:
+        return None
+    try:
+        from playmaker_engine import plan as PL
+        mem = game._setup_memory('O')
+        sc = mem.get('scout')
+        if sc is None:
+            sc = mem['scout'] = PL.Scout(game._possession_state().ctx, 'O')
+        cache = mem.setdefault('candidate_squares', {})
+        if 'sq' not in cache:
+            cache['sq'] = [sorted(B.sq(q) for q in sc.candidates(a)) for a in range(5)]
+        return cache['sq']
+    except Exception:
+        return None
+
+
 def coverage_json(game, token, n=None):
     """Step 18s (D-199): the coach's coverage view for the phase in play: each square's best option for the offence
     (who, the shot, what it is worth, who covers it and who is next), the same for each attacker alone, the defence's
@@ -480,7 +530,12 @@ def state_json(game, token):
                        ball_squares=[q for q in squares if B.zone(B.parse_sq(q)) == '.' and B.parse_sq(q)[1] > 1],
                        offence=[B.sq(q) for q in o_sq] if o_sq else None,
                        ball=game.placed.get('O', (None, None))[1])
-        if getattr(game, 'setup_search', False) and placing['mine']:
+        draft = getattr(game, '_drafts', {}).get((game.possession, game.placing))
+        if draft and placing['mine']:
+            # step 24: the computer's setup for this side, asked for with its button: on the board as a draft to confirm or change
+            placing['draft'] = dict(squares=[B.sq(q) for q in draft['squares']], arrows=list(draft['arrows']) if draft.get('arrows') else None,
+                                    ball=draft.get('ball'), computer=True, nth=draft.get('nth', 0))
+        elif getattr(game, 'setup_search', False) and placing['mine']:
             # step 18o (D-195): the draft a human starts from is the engine's proposal for his cards
             prop = game.proposal(game.placing)
             placing['draft'] = dict(squares=[B.sq(q) for q in prop['squares']], arrows=list(prop['arrows']) if prop.get('arrows') else None,
@@ -508,6 +563,7 @@ def state_json(game, token):
                 legal=legal, can_undo=bool(game.undo), undo_votes=sorted(game.undo_votes),
                 feedback_questions=FEEDBACK_QUESTIONS, feedback_done=game.feedback is not None,
                 feedback_due=game.feedback_due(), placing=placing, inbound_note=inbound_note,
+                setup_info=game.setup_info(seat), plan_line=_plan_line(game, seat), candidates=_candidates(game, placing),
                 log_name=game.log_name, static=getattr(game, 'static', False),
                 feed=game.feed[-40:], feed_n=len(game.feed),
                 level=game.level, scout=scout_json(game, seat), matchups=matchups(s), advice=_advice_lines(s), denied=denied_json(s),
