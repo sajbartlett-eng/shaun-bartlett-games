@@ -1628,16 +1628,22 @@ class Read:
             st['L'], st['worths'], st['ov'] = L, worths, ov
 
         def better(a, b):
-            """engine.js lgBetter (step 22b, D-219): the lasting gap; then the list (what it leaves uncovered as it then
-            stands, largest first); then efficiency, the fewest actions; then the moves' own order."""
-            if a['L'] < b['L'] - 1e-9:
-                return True
-            if a['L'] > b['L'] + 1e-9:
-                return False
+            """engine.js lgBetter (step 22b, D-219): the list (what it leaves uncovered as it then stands, largest
+            first); then the lasting gap; then efficiency, the fewest actions; then the moves' own order. Step 28 (D-262,
+            Shaun, 19 Nov 2026): the list leads here too, as everywhere; eval.answer_lead 'gap' puts the lasting gap first."""
             la, lb = self._lg_list(a), self._lg_list(b)
+            if gap_first:
+                if a['L'] < b['L'] - 1e-9:
+                    return True
+                if a['L'] > b['L'] + 1e-9:
+                    return False
             if less(la, lb):
                 return True
             if less(lb, la):
+                return False
+            if a['L'] < b['L'] - 1e-9:
+                return True
+            if a['L'] > b['L'] + 1e-9:
                 return False
             if len(a['moves']) != len(b['moves']):
                 return len(a['moves']) < len(b['moves'])
@@ -1646,6 +1652,7 @@ class Read:
                 if ka != kb:
                     return ka < kb
             return False
+        gap_first = (self.cfg or {}).get('answer_lead') == 'gap'
         cmp = lambda u, v: -1 if better(u, v) else 1 if better(v, u) else 0
         score(root)
         best, frontier = root, [root]

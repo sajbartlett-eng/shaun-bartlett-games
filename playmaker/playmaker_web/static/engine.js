@@ -5265,12 +5265,16 @@ const PMEngine = (() => {
   }
   // Is answer a better for the defence than b? The lasting gap; then the list (what it leaves uncovered as it then
   // stands, largest first); then efficiency: the fewest actions. Then the moves' own order, so a position always reads the same.
+  // Step 28 (D-262, Shaun, 19 Nov 2026): the list leads the map's own answer too (it was the last place the lasting gap
+  // led); eval.answer_lead 'gap' puts step 20's lasting gap first again. The lasting gap is still read and shown.
+  const answerGapFirst = () => D.config.eval.answer_lead === 'gap';
   function lgBetter(a, b) {
-    if (a.sc.L < b.sc.L - 1e-9) return true;
-    if (a.sc.L > b.sc.L + 1e-9) return false;
+    const gf = answerGapFirst();
+    if (gf) { if (a.sc.L < b.sc.L - 1e-9) return true; if (a.sc.L > b.sc.L + 1e-9) return false; }
     const la = lgList(a), lb = lgList(b);
     if (covLess(la, lb)) return true;
     if (covLess(lb, la)) return false;
+    if (!gf) { if (a.sc.L < b.sc.L - 1e-9) return true; if (a.sc.L > b.sc.L + 1e-9) return false; }
     if (a.moves.length !== b.moves.length) return a.moves.length < b.moves.length;
     const x = a.m.s.x;                                 // (the moves' own order: square, arrow, where he starts; never the defender's number)
     for (let k = 0; k < a.moves.length; k++) {
@@ -5939,10 +5943,16 @@ const PMEngine = (() => {
       return { base: drvJSON(base), rows };
     }
     if (opts.only === 'offsweep') return offSweep(s0, opts.piece, opts.keep, opts.squares, opts.quick).map(r => ({ sq: sqName(r.q), drivers: drvJSON(r.k) }));
+    if (opts.only === 'lasting' && opts.answer_lead) {           // step 28: the report's check of D-262 (the answer led by the gap, as it was)
+      const keep = D.config.eval.answer_lead;
+      D.config.eval.answer_lead = opts.answer_lead;
+      try { return coverage(s0, Object.assign({}, opts, { answer_lead: undefined })); } finally { D.config.eval.answer_lead = keep; }
+    }
     if (opts.only === 'lasting') {
       const g = lastingOf(s0, null, !!opts.fresh);
       if (!g) return null;
       const out = { L: +g.L.toFixed(2), before: +g.before.toFixed(2), overloads: g.ov, moves: g.moves, drivers: drvJSON(readingOf(g)) };
+      if (g.catch !== undefined) out.catch = +g.catch.toFixed(4);       // step 28 (D-263): a pass in the air: the chance it lands, by the rules
       if (opts.prev && g.m) {                           // who has whom after it, and how well each defender alone contains his own man (largest first)
         const A = assignOf(g.m, opts.prev, false);
         out.perm = A.perm; out.kept = A.perm.every((a, d) => a === opts.prev[d]);

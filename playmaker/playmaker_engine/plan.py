@@ -629,6 +629,50 @@ def _why_lost(win, lose):
     return 'the defence answers it with fewer actions'
 
 
+JOB_SHOTS = (('post', ('post',)), ('roll', ('layup', 'dunk')), ('spacing', ('three',)))
+
+
+def _job_variants(make, read, sq, ball, t_end):
+    """Step 28 (D-265): from a placement, each attacker but the ball handler on his best square for each job he can do,
+    by the map's own looks against the quick defence (his best post shot, his best layup or dunk at the rim, his best
+    three) and the best screen he can set (screen_roles). Each is read the quick way. -> [dict(o, job, q, sq, r)]."""
+    import time
+    from . import agent as AG
+    m = read(sq, ball)
+    if not m:
+        return []
+    st = make(sq, ball, m[1][0], m[1][1]).with_(side='O', turn_n=0)
+    try:
+        cov = AG.coverage(st)
+        scr = screen_roles(st)
+    except ValueError:
+        return []
+    taken = set(sq) | set(m[1][0])
+    out = []
+    for a in range(5):
+        if a == ball:
+            continue
+        sqs = (cov.get('squares') or [{}] * 5)[a] or {}
+        picks = []
+        for job, shots in JOB_SHOTS:
+            best = max(((v.get('worth', 0), q) for q, v in sqs.items() if v.get('shot') in shots), default=None)
+            if best:
+                picks.append((job, B.parse_sq(best[1])))
+        z = next((z for z in scr if z['o'] == a), None)
+        if z:
+            picks.append(('screen', B.parse_sq(z['sq'])))
+        for job, q in picks:
+            if time.time() >= t_end:
+                return out
+            if q == sq[a] or (q in taken and q != sq[a]):
+                continue
+            trial = sq[:a] + [q] + sq[a + 1:]
+            if not AG._legal_o(trial, ball):
+                continue
+            out.append(dict(o=a, job=job, q=q, sq=trial, r=read(trial, ball)))
+    return out
+
+
 def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None, pool=None, cap=None, depth=None):
     """The offence sets up first (blueprint, stages 3, 3b and 4), the way it plays (step 27, D-257 to D-259).
     1. Quick search: from the table's squares (each attacker tried with the ball), each attacker in turn swept over
@@ -702,8 +746,13 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None,
                     if r and r[0] > key:
                         steps.append(dict(o=i, to=row['sq'], why='the list reads better', key=r[0]))
                         key, sq, changed = r[0], trial, True
+        # step 28 (D-265, Shaun, 19 Nov 2026): a wider search, no rule. From the quick leader, each attacker is also tried
+        # on his best square for each job he can do (a post shot, a roll to the rim, spacing for a three, a screen on a
+        # defender), read the same quick way; the best of them is read in full beside the leader and the table squares
+        jobs = _job_variants(make, read, sq, ball, t0 + quick_s + 25.0)
         quick = sorted(((k, list(p[0]), p[1]) for p, (k, m) in seen.items() if AG._legal_o(list(p[0]), p[1])), key=lambda r: r[0], reverse=True)
-        order = [quick[0], table[0]] + quick[1:]
+        jv = sorted((z for z in jobs if z['r']), key=lambda z: z['r'][0], reverse=True)
+        order = [quick[0], table[0]] + [(z['r'][0], z['sq'], ball) for z in jv] + quick[1:]
     else:
         order = []
         for sq, b in pool:
@@ -712,6 +761,8 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None,
                 order.append((r[0], list(sq), b))
         quick = sorted(order, key=lambda r: r[0], reverse=True)
     # the full reading: the defence it really uses, then read ahead; same reading and same horizon for every placement
+    if pool is not None:
+        jobs = []
     full, done, lead_held, last = [], set(), 0, 0.0
     for k0, sq, ball in order:
         p = (tuple(sq), ball)
@@ -744,17 +795,13 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None,
     sq, ball, m, h = pick['squares'], pick['ball'], pick['m'], pick['h']
     xs, arrows, perm = list(m[0]), list(m[1]), list(m[4] or range(5))
     state = make(sq, ball, xs, arrows)
-    plan = read_plan(state, scout, perm, deep=True)
-    plan['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
-    plan['route'] = h['path'][0]['act'] if h['path'] else None
+    plan = route_plan(state, scout, perm, h, deep=True)
     from . import conditions as CD
     plan['ahead'] = CD.ahead(h, state)
     checks = placement_checks(state, scout, plan)
     words = plan_words(plan)
-    route = 'Read ahead: ' + plan['horizon']['words'][0].lower() + plan['horizon']['words'][1:]
-    if plan['ahead']:
-        route += ' Built on the way: ' + '; '.join(f"{c['name']} ({c['why']})" for c in plan['ahead'][:3]) + '.'
-    words.append(route)
+    if plan['ahead']:          # (the route itself is the Plan line, D-264: one plan on screen)
+        words.append('Built on the way: ' + '; '.join(f"{c['name']} ({c['why']})" for c in plan['ahead'][:3]) + '.')
     alt = next((r for r in ranked if r is not pick), None)
     alternative = None
     if alt is not None:
@@ -771,6 +818,8 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None,
                 ranked=[dict(squares=[B.sq(q) for q in r['squares']], ball=r['ball'], value=(r['h']['list'] or [0])[0], list=r['h']['list'],
                              turns=r['h']['turns'], seconds=r['seconds']) for r in ranked[:6]],
                 full=len(full), quick_ranked=len(quick), alternative=alternative,
+                jobs=[dict(o=z['o'], job=z['job'], to=B.sq(z['q']), quick=list(z['r'][0][0][:5]) if z['r'] else None,
+                           full=next((list(r['h']['list']) for r in full if r['squares'] == z['sq']), None)) for z in jobs],
                 table=dict(squares=[B.sq(q) for q in table[0][1]], ball=table[0][2], list=tab['h']['list'] if tab else None,
                            turns=tab['h']['turns'] if tab else None),
                 predicted=dict(x=[B.sq(q) for q in xs], arrows=list(arrows), perm=list(perm)), checks=checks,
@@ -996,17 +1045,15 @@ def plan_status(plan, state, scout):
     if not plan:
         return None
     # a plan that needs a screen is measured with the screen still to be set (the same reading that built it)
-    now = read_plan(state, scout, deep=bool(plan.get('screens')) and not state.screens)
-    if not now:
-        return None
-    # step 27 (D-258): nothing is locked; the route is read ahead again each phase, to the setup's own horizon
+    # step 27 (D-258): nothing is locked; the route is read ahead again each phase, to the setup's own horizon. Step 28
+    # (D-264): the plan is that route's
     try:
         h = horizon_read(state, scout, budget=12.0, depth=HORIZON_TURNS)
     except ValueError:
         h = None
-    if h is not None:
-        now['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
-        now['route'] = h['path'][0]['act'] if h['path'] else None
+    now = route_plan(state, scout, None, h, deep=bool(plan.get('screens')) and not state.screens)
+    if not now:
+        return None
     same = now['o'] == plan['o'] and now['shot'] == plan['shot']
     was = f"O{plan['o'] + 1}'s {SHOT_WORDS.get(plan['shot'], plan['shot'])}"
     new = _look_words(now)
@@ -1015,8 +1062,8 @@ def plan_status(plan, state, scout):
         if now.get('screens') and not state.screens:
             z = now['screens'][0]
             how = f", off O{z['o'] + 1}'s screen on X{z['x'] + 1} (still to be set)"
-        ahead = f" {now['horizon']['words']}" if now.get('horizon') and now['horizon']['turns'] > 1 else ''
-        return dict(kind='chasing', line=f"Chasing: {new}{how}.{ahead}", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
+        steps = '; then '.join(p['offence'] for p in (now.get('horizon') or {}).get('path') or [])
+        return dict(kind='chasing', line=f"Chasing: {steps + '; then ' if steps else ''}{new}{how}.", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
     # what the planned look is worth now, at its real chance
     from . import agent as AG
     cov = AG.coverage(state)
@@ -1094,6 +1141,36 @@ def _defence_turn(state):
     if best is None:
         return _likeliest(end_turn(state.with_(side='X', tok_x=max(0, state.tok_x - 1)), 'X')), []
     return best[1], best[2]
+
+
+def _both_outcomes(after, caught):
+    """Step 28 (D-263, Shaun, 19 Nov 2026): a pass read ahead counts both outcomes, the way the map does (D-250): the
+    board if it lands (caught: the list read after the defence's turn), at the chance it lands by the rules (the map's
+    own catch chance, the defence's Intercepts counted); and the pass stopped (-5, play on: the phase ends and the next
+    begins, the ball back with the passer), at the chance it is stopped. Each item of the list is weighed by the two
+    chances, as each look's worth is (its chance of getting there, less the -5 at the chance it doesn't); no new rule."""
+    from . import agent as AG
+    from .resolve import _turnover
+    try:
+        p = (AG.coverage(after, only='lasting') or {}).get('catch')
+    except ValueError:
+        p = None
+    if p is None or p >= 1 - 1e-9:
+        return caught, p
+    stop = _turnover(after.with_(pending=None, approach=-1))
+    if stop.stage == 'play':
+        try:
+            sk = list_key(AG.coverage(stop.with_(side='O', turn_n=0), only='lasting'))
+        except ValueError:
+            sk = ((), 0.0, 0)
+    else:
+        sk = ((), 0.0, 0)
+    a, b = list(caught[0]), list(sk[0])
+    n = max(len(a), len(b))
+    a += [0.0] * (n - len(a))
+    b += [0.0] * (n - len(b))
+    items = sorted((p * u + (1 - p) * (v + RC.TURNOVER_POINTS) for u, v in zip(a, b)), reverse=True)
+    return (tuple(round(x, 6) for x in items), p * caught[1] + (1 - p) * (sk[1] + RC.TURNOVER_POINTS), caught[2]), p
 
 
 def _continuations(state, scout):
@@ -1194,19 +1271,68 @@ def horizon_read(state, scout=None, budget=None, depth=None):
                 k = list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting'))
             except ValueError:
                 continue
+            ch = None
+            if act.kind == 'pass' and after.pending:
+                k, ch = _both_outcomes(after, k)
             if step is None or k > step[0]:
-                step = (k, nxt, words, dn, act)
+                step = (k, nxt, words, dn, act, ch)
         if step is None or not step[0] > best['key']:
             break
         turns += 1
         a = step[4]
         path = path + [dict(turn=turns - 1, phase=cur.phase, offence=step[2], defence=step[3],
-                            act=[a.kind, a.piece, B.sq(a.dest) if a.dest else None, a.target], list=list(step[0][0][:5]),
+                            act=[a.kind, a.piece, B.sq(a.dest) if a.dest else None, a.target], list=list(step[0][0][:5]), catch=step[5],
                             moved=[int(w.split()[0][1:]) - 1 for w in step[3] if w.startswith('X')])]
-        best = dict(key=step[0], turns=turns, phases=step[1].phase - state.phase + 1, path=path)
+        best = dict(key=step[0], turns=turns, phases=step[1].phase - state.phase + 1, path=path, final=step[1])
         cur = step[1]
     return dict(key=best['key'], list=list(best['key'][0][:5]), L=best['key'][1], turns=best['turns'],
-                phases=best['phases'], path=best['path'], first=first)
+                phases=best['phases'], path=best['path'], first=first, final=best.get('final', s0))
+
+
+def route_plan(state, scout, perm=None, h=None, deep=True):
+    """Step 28 (D-264, Shaun, 19 Nov 2026): one plan on screen, the route the computer actually chases, read ahead. With
+    a route of one turn it is the board's own plan (read_plan). With more, the plan is read on the board the route leads
+    to (after each turn and the defence's answer, by the rules), and the route's turns come first: the target, its needs,
+    its branch, and the attention, holes and access line all follow the route."""
+    if h is None:
+        h = horizon_read(state, scout, budget=12.0, depth=HORIZON_TURNS)
+    if not h or h['turns'] <= 1 or h.get('final') is None:
+        plan = read_plan(state, scout, perm, deep=deep)
+        if plan is not None and h:
+            plan['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
+            plan['route'] = None
+        return plan
+    fin = h['final'].with_(side='O', turn_n=0)
+    plan = read_plan(fin, scout, None, deep=False) or read_plan(state, scout, perm, deep=deep)
+    if plan is None:
+        return None
+    steps = [p['offence'] for p in h['path']]
+    head = '; then '.join(steps)
+    plan['target'] = f"Plan: {head}; then {plan['target'][len('Plan: '):]}" if plan['target'].startswith('Plan: ') else f"Plan: {head}; then {plan['target']}"
+    needs = []
+    for p in h['path']:
+        kind, o, dest, tgt = p['act']
+        if kind == 'screen':
+            needs.append(f"O{o + 1}'s screen holds ({p['offence'].split(' from ')[0].split('screens ')[-1]} stays behind it)")
+        elif kind == 'pass':
+            ch = p.get('catch')
+            needs.append(f"the pass from O{o + 1} to O{tgt + 1} arrives" + (f" ({round(100 * ch)} in 100)" if ch is not None else ''))
+        elif kind in ('move', 'qs', 'sprint') and dest:
+            needs.append(f"O{o + 1} gets to {dest}")
+    rest = plan.get('needs') or ''
+    rest = rest[len('Needs: '):].rstrip('.') if rest.startswith('Needs: ') else rest.rstrip('.')
+    plan['needs'] = 'Needs: ' + '; '.join(needs + ([rest] if rest else [])) + '.'
+    roles = list(plan.get('roles') or [])
+    for p in h['path']:
+        kind, o, dest, tgt = p['act']
+        role = {'screen': 'screener', 'pass': 'passer', 'hesitate': 'ball handler'}.get(kind, 'cutter')
+        if not any(r['o'] == o and r['role'] == role for r in roles):
+            roles.append(dict(o=o, role=role, sq=dest or B.sq(state.o[o])))
+    plan['roles'] = roles
+    plan['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
+    plan['route'] = h['path'][0]['act']
+    plan['route_board'] = dict(o=[B.sq(q) for q in fin.o], x=[B.sq(q) for q in fin.x], ball=fin.ball)
+    return plan
 
 
 def horizon_words(h):

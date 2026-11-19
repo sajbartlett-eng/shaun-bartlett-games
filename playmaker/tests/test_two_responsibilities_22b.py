@@ -26,7 +26,9 @@ needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node
 # time, the settlement is the same squares with X3 facing N.
 # Re-recorded in step 26 (D-249 to D-251: the defence's reach along the real paths, passes from wherever the ball
 # handler can get to, the three seconds): the settlement was G7, N5, H10, K7, G3, all facing N.
-SETTLED_X, SETTLED_A = ['D5', 'O5', 'L6', 'G7', 'I4'], [1, 0, 0, 4, 1]
+# Re-recorded in step 28 (D-261: the contest is one of the reply's two actions, so a defender reaches a contest with one
+# movement, not two; D-262: the map's answer leads by the list). It read D5, O5, L6, G7, I4 with arrows [1, 0, 0, 4, 1].
+SETTLED_X, SETTLED_A = ['K4', 'M6', 'H10', 'D7', 'E3'], [7, 0, 3, 0, 0]
 
 
 @pytest.fixture(scope='module')
@@ -77,7 +79,10 @@ def test_a_contest_reached_by_a_quick_step_or_sprint_is_off_balance():
     rules = s.ctx.rules
     cm = D._cmap2(rules, B.parse_sq('F7'), 0, s.ctx.dfn[0].qs, 1)
     near = next(c for c, pair in sorted(cm.items()) if pair[3] and B.zone(c) in RC.ZONE_POINTS)        # set for it
-    far = next(c for c, pair in sorted(cm.items()) if pair[2] and not pair[3] and B.zone(c) == B.zone(near))   # needs the second movement
+    # Re-recorded in step 28 (D-261): one movement reaches a contest now (the Contest is the reply's other action), so
+    # "off balance" is a square he reaches only by a Quick Step or Sprint, with the same contest kinds as the set one
+    # (it read: any square that needed a second movement, whose kinds could differ)
+    far = next(c for c, pair in sorted(cm.items()) if pair[2] == cm[near][3] and not pair[3] and B.zone(c) == B.zone(near))
     lk = lambda c: r._gap_info()['looks'][r._gap_info()['idx'][c]][1]
     v_near, v_far = r._vals_map(lk(near), 0, cm[near]), r._vals_map(lk(far), 0, cm[far])
     ty = lk(near).types[0]
@@ -177,7 +182,23 @@ def test_assignments_stand_on_a_tie_and_each_defender_has_plain_words(js):
     # Re-recorded in step 22d (D-230, D-231): this read "the Sharpshooter's defender is on him" (his job line's kind
     # 'man' or 'both'). Matchups are now named by the nearest defender who takes something off a look, and Shaun ruled
     # the check is measured by position: the pass to the Sharpshooter is cut.
-    assert D.cov_pass(st, 1, st.o[1]) < 1 - 1e-9
+    # Re-recorded in step 28 (D-266, Shaun, 19 Nov 2026: test the outcome, not the action; "you don't top-lock a shooter
+    # when that frees a better one"). It read "the pass to the Sharpshooter is cut". Step 27 showed cutting it makes the
+    # defence worse (he relocates for the same shot and O3's three goes wide open). Now: the defence's choice leaves the
+    # offence the least by the list, against every way of cutting that pass with one defender (into the lane, any arrow).
+    base = tuple(cov(st, only='lasting')['drivers']['list'])
+    bq, sq_ = st.o[st.ball], st.o[1]
+    lane = [q for q in ((x, y) for x in range(B.W) for y in range(1, B.H + 1)) if B.on_board(q) and q not in st.o and q not in st.x
+            and B.cheb(q, bq) + B.cheb(q, sq_) <= B.cheb(bq, sq_) + 1]
+    cuts = []
+    for d in range(5):
+        for q in lane:
+            for ar in range(8):
+                t = st.with_(x=tuple(q if j == d else p for j, p in enumerate(st.x)), arrows=tuple(ar if j == d else a for j, a in enumerate(st.arrows)))
+                if D.cov_pass(t, 1, t.o[1]) < 0.5:
+                    cuts.append(tuple(cov(t, only='lasting')['drivers']['list']))
+    assert cuts                                                   # the pass can be cut
+    assert all(base <= c for c in cuts)                           # and every way of cutting it leaves the offence more
     for r in free['roles']:
         assert r['line'].startswith(f"X{r['x'] + 1}")
         assert not any(re.search(r'\b' + re.escape(w) + r'\b', r['line'], re.I) for w in P.BANNED), r['line']
