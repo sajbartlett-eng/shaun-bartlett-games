@@ -57,7 +57,7 @@ UNMEASURED = {
     '46b': 'baseline drive to the weak corner: read inside drive and kick (45)',
     '48': 'beat the double-team: read inside overloads (49)',
     '49c': 'flash where two areas meet: read inside flash cut (15)', '49e': 'skip over the shift: the next phase',
-    '49f': 'inbound screen: only on a scenario card', '49g': 'the inbounder as a threat: only on a scenario card',
+    '49f': 'inbound screen: only on a scenario card', '49g': 'the inbounder as a scorer once he steps in: only on a scenario card',
     '49h': 'the inbound lob: only on a scenario card',
     '50': 'force a switch: read inside the screens (20, 23)', '51': 'attack the helper: read inside drive and kick (45)',
     '56': 'don\'t clog the lanes: the search pays for every body in the way already',
