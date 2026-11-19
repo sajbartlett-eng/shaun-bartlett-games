@@ -1,0 +1,894 @@
+{
+ "the dribble beat": {
+  "attacker": "O1 (Pass-First Point Guard, Dribble 17)",
+  "defender": "X5 (Post Scorer Centre, Agility 5)",
+  "measured": "the two of them alone; the coverage map before the Dribble and after a win: how many of his squares get better, and by how much in all",
+  "where": {
+   "the top of the key (I11)": {
+    "chance": 0.6,
+    "squares": 12,
+    "grows": 108.6,
+    "shot_before": 9,
+    "shot_after": 21,
+    "defender_on": "I10"
+   },
+   "the wing (C9)": {
+    "chance": 0.6,
+    "squares": 13,
+    "grows": 129.6,
+    "shot_before": 9,
+    "shot_after": 21,
+    "defender_on": "C8"
+   },
+   "the elbow (I7)": {
+    "chance": 0.6,
+    "squares": 6,
+    "grows": 41,
+    "shot_before": 21,
+    "shot_after": 21,
+    "defender_on": "I6"
+   },
+   "the green zone (I4)": {
+    "chance": 0.6,
+    "squares": 2,
+    "grows": 19,
+    "shot_before": 18,
+    "shot_after": 34,
+    "defender_on": "I3"
+   }
+  },
+  "large_at_the_top_small_in_the_paint": true
+ },
+ "Shoot and Protect v Lockdown (Shaun's board of 19 Nov)": {
+  "offence": {
+   "cards": [
+    "O1 Pass-First Point Guard",
+    "O2 Three-and-D Shooting Guard",
+    "O3 Stretch Small Forward",
+    "O4 Stretch Power Forward",
+    "O5 Rim Protector Centre"
+   ],
+   "squares": [
+    "O9",
+    "F7",
+    "I11",
+    "A3",
+    "G4"
+   ],
+   "ball": "O3",
+   "value": 11.93,
+   "the_table_squares_for_comparison": {
+    "squares": [
+     "I11",
+     "C9",
+     "O9",
+     "A3",
+     "Q3"
+    ],
+    "value": 15.0
+   },
+   "why": [
+    {
+     "o": "O2",
+     "to": "F7",
+     "why": "the plan is worth more"
+    },
+    {
+     "o": "O5",
+     "to": "G4",
+     "why": "a candidate square"
+    }
+   ],
+   "placements_read": 25,
+   "candidate_squares": {
+    "O1": 92,
+    "O2": 138,
+    "O3": 138,
+    "O4": 138,
+    "O5": 14
+   },
+   "plan": {
+    "target": "Plan: a three for O3 on O8, off O1's screen on X3",
+    "needs": "Needs: O1's screen on X3 is set (from I10, I9, J11, J9, K10, K11 or K9); X4 a step late to C8.",
+    "branch": "If the screen fails: O3's three on C8",
+    "backups": "Backups: O2's three on I10; O1's three on O9.",
+    "line": "Attention: O3 holds X1; O1 holds X2; O2 holds X4. Hole: C8, the three-point line. Access: O3's own step with the ball.",
+    "spec": "Create a three for O3: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 accepted; contested by X5 accepted.",
+    "backup_specs": [
+     "Create a three for O2: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 accepted; contested by X5 accepted.",
+     "Create a three for O1: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X3 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X4 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X5 accepted."
+    ],
+    "worth": 11.93,
+    "open": 30,
+    "reach": 1,
+    "bar_next_phase": 11.93,
+    "bars": [
+     {
+      "phase": 1,
+      "clock": 12,
+      "bar": 11.93
+     },
+     {
+      "phase": 2,
+      "clock": 10,
+      "bar": 11.93
+     },
+     {
+      "phase": 3,
+      "clock": 8,
+      "bar": 11.93
+     },
+     {
+      "phase": 4,
+      "clock": 6,
+      "bar": 11.93
+     },
+     {
+      "phase": 5,
+      "clock": 4,
+      "bar": 11.93
+     },
+     {
+      "phase": 6,
+      "clock": 2,
+      "bar": 0.0
+     }
+    ],
+    "roles": [
+     {
+      "o": 2,
+      "role": "shooter",
+      "sq": "C8"
+     },
+     {
+      "o": 0,
+      "role": "screener",
+      "sq": "K10",
+      "squares": [
+       "I10",
+       "I9",
+       "J11",
+       "J9",
+       "K10",
+       "K11",
+       "K9"
+      ]
+     }
+    ],
+    "conditions": [
+     "O1's screen on X3 is set (from I10, I9, J11, J9, K10, K11 or K9)",
+     "X4 a step late to C8"
+    ],
+    "screens": [
+     {
+      "o": "O1",
+      "on": "X3",
+      "squares": [
+       "I10",
+       "I9",
+       "J11",
+       "J9",
+       "K10",
+       "K11",
+       "K9"
+      ],
+      "worth": 15.0,
+      "gain": 3.07
+     },
+     {
+      "o": "O2",
+      "on": "X3",
+      "squares": [
+       "J11",
+       "J9",
+       "K10",
+       "K11",
+       "K9"
+      ],
+      "worth": 15.0,
+      "gain": 3.07
+     },
+     {
+      "o": "O4",
+      "on": "X3",
+      "squares": [
+       "I10",
+       "I9",
+       "J11",
+       "J9",
+       "K10",
+       "K11",
+       "K9"
+      ],
+      "worth": 15.0,
+      "gain": 3.07
+     },
+     {
+      "o": "O5",
+      "on": "X3",
+      "squares": [
+       "I10",
+       "I9",
+       "J11",
+       "J9",
+       "K10",
+       "K11",
+       "K9"
+      ],
+      "worth": 15.0,
+      "gain": 3.07
+     }
+    ]
+   },
+   "checks": [
+    {
+     "check": "every defender has a real job",
+     "passed": true,
+     "text": "Every defender has a real job."
+    },
+    {
+     "check": "a poor-shooting centre is not a corner body",
+     "passed": true,
+     "o": 4,
+     "sq": "G4",
+     "text": "O5 (Rim Protector C) stands on G4, the green zone."
+    }
+   ],
+   "predicted_defence": {
+    "x": [
+     "H9",
+     "K7",
+     "J10",
+     "F8",
+     "I4"
+    ],
+    "arrows": [
+     6,
+     0,
+     5,
+     1,
+     0
+    ],
+    "perm": [
+     2,
+     0,
+     4,
+     1,
+     3
+    ]
+   },
+   "seconds": 48.9
+  },
+  "defence": {
+   "cards": [
+    "X1 Defensive Point Guard",
+    "X2 Three-and-D Shooting Guard",
+    "X3 Two-Way Small Forward",
+    "X4 Defensive Power Forward",
+    "X5 Playmaking Centre"
+   ],
+   "squares": [
+    "H9",
+    "K7",
+    "J10",
+    "F8",
+    "I4"
+   ],
+   "arrows": [
+    6,
+    0,
+    5,
+    1,
+    0
+   ],
+   "matchups": [
+    "X1 on O3: the nearest defender who takes something off his look",
+    "X2 on O1: same speed",
+    "X3 on O5: the nearest defender who takes something off his look",
+    "X4 on O2: the nearest defender who takes something off his look",
+    "X5 on O4: same speed"
+   ],
+   "avoided": [
+    "not X5 on O3 at the arc",
+    "not X2 on O3 in the green zone"
+   ],
+   "lines": [
+    "X1: on O3 (his best look is worth 32 open, 30 with X1 on it, 15 with X2, X4 and X5 helping), and covering the squares around A2 (worth 4 if he weren't in reach). The two lie apart: he can't hold both for long.",
+    "X2: on O1 (his best look is worth 24 open, 9 with X2 on it).",
+    "X3: off O5 (his best look is worth 7), and in O2's way (his best look is worth 12, 16 without X3 there).",
+    "X4: on O2 (his best look is worth 30 open, 12 with X4 on it).",
+    "X5: on O4 (his best look is worth 7 open, 4 with X5 on it)."
+   ],
+   "the_matchup_rule": {
+    "cost": 111.785,
+    "unlike": 8,
+    "same": 0,
+    "before": {
+     "cost": 111.785,
+     "unlike": 8,
+     "same": 0
+    }
+   },
+   "swaps": [],
+   "seconds": 21.4
+  },
+  "does_any_centre_guard_a_point_guard_at_the_arc": false,
+  "does_any_poor_shooting_centre_stand_in_a_corner": false
+ },
+ "High-Low v Run and Gun (Shaun's board of 18 Nov)": {
+  "offence": {
+   "cards": [
+    "O1 Combo Guard",
+    "O2 Playmaker Shooting Guard",
+    "O3 Stretch Small Forward",
+    "O4 All-Rounder Power Forward",
+    "O5 Post Scorer Centre"
+   ],
+   "squares": [
+    "I6",
+    "I11",
+    "O9",
+    "G3",
+    "G2"
+   ],
+   "ball": "O2",
+   "value": 14.0,
+   "the_table_squares_for_comparison": {
+    "squares": [
+     "I11",
+     "C9",
+     "O9",
+     "A3",
+     "Q3"
+    ],
+    "value": 18.0
+   },
+   "why": [
+    {
+     "o": "O1",
+     "to": "D5",
+     "why": "the plan is worth more"
+    },
+    {
+     "o": "O4",
+     "to": "G2",
+     "why": "a candidate square"
+    },
+    {
+     "o": "O4",
+     "to": "G3",
+     "why": "the plan is worth more"
+    },
+    {
+     "o": "O5",
+     "to": "G2",
+     "why": "a candidate square"
+    },
+    {
+     "o": "O1",
+     "to": "H6",
+     "why": "the plan is worth more"
+    },
+    {
+     "o": "O1",
+     "to": "I7",
+     "why": "the plan is worth more"
+    }
+   ],
+   "placements_read": 33,
+   "candidate_squares": {
+    "O1": 92,
+    "O2": 14,
+    "O3": 47,
+    "O4": 14,
+    "O5": 14
+   },
+   "plan": {
+    "target": "Plan: a three for O1 on C9, off O1's screen on X3",
+    "needs": "Needs: O1's screen on X3 is set (from G10, G11, G9, H11, H9, I10 or I9); X4 a step late to H6; the pass from O2 to O1 arrives (45 in 100).",
+    "branch": "If the screen fails: O1's floater on H6",
+    "backups": "Backups: O2's floater on M6; O3's three on Q7.",
+    "line": "Attention: O2 holds X1; O4 holds X2; O1 holds X4. Hole: H6, mid-range. Access: the pass to O1.",
+    "spec": "Create a floater for O1: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 accepted; contested by X5 accepted.",
+    "backup_specs": [
+     "Create a floater for O2: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X5 accepted.",
+     "Create a three for O3: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X3 accepted; contested by X4 from the side (only if he is rushed) or from behind accepted, otherwise not; contested by X5 accepted."
+    ],
+    "worth": 14,
+    "open": 24,
+    "reach": 1,
+    "bar_next_phase": 14.0,
+    "bars": [
+     {
+      "phase": 1,
+      "clock": 12,
+      "bar": 14.0
+     },
+     {
+      "phase": 2,
+      "clock": 10,
+      "bar": 14.0
+     },
+     {
+      "phase": 3,
+      "clock": 8,
+      "bar": 14.0
+     },
+     {
+      "phase": 4,
+      "clock": 6,
+      "bar": 14.0
+     },
+     {
+      "phase": 5,
+      "clock": 4,
+      "bar": 14.0
+     },
+     {
+      "phase": 6,
+      "clock": 2,
+      "bar": 0.0
+     }
+    ],
+    "roles": [
+     {
+      "o": 0,
+      "role": "shooter",
+      "sq": "H6"
+     },
+     {
+      "o": 1,
+      "role": "passer",
+      "sq": "I11"
+     },
+     {
+      "o": 0,
+      "role": "screener",
+      "sq": "G9",
+      "squares": [
+       "G10",
+       "G11",
+       "G9",
+       "H11",
+       "H9",
+       "I10",
+       "I9"
+      ]
+     }
+    ],
+    "conditions": [
+     "O1's screen on X3 is set (from G10, G11, G9, H11, H9, I10 or I9)",
+     "X4 a step late to H6",
+     "the pass from O2 to O1 arrives (45 in 100)"
+    ],
+    "screens": [
+     {
+      "o": "O1",
+      "on": "X3",
+      "squares": [
+       "G10",
+       "G11",
+       "G9",
+       "H11",
+       "H9",
+       "I10",
+       "I9"
+      ],
+      "worth": 18.0,
+      "gain": 4.0
+     },
+     {
+      "o": "O3",
+      "on": "X3",
+      "squares": [
+       "G10",
+       "G11",
+       "G9",
+       "H11",
+       "H9",
+       "I10",
+       "I9"
+      ],
+      "worth": 18.0,
+      "gain": 4.0
+     },
+     {
+      "o": "O4",
+      "on": "X3",
+      "squares": [
+       "G10",
+       "G11",
+       "G9",
+       "H11",
+       "H9",
+       "I10",
+       "I9"
+      ],
+      "worth": 18.0,
+      "gain": 4.0
+     },
+     {
+      "o": "O5",
+      "on": "X3",
+      "squares": [
+       "G10",
+       "G11",
+       "G9",
+       "H11",
+       "H9",
+       "I10",
+       "I9"
+      ],
+      "worth": 18.0,
+      "gain": 4.0
+     }
+    ]
+   },
+   "checks": [
+    {
+     "check": "every defender has a real job",
+     "passed": true,
+     "text": "Every defender has a real job."
+    },
+    {
+     "check": "a poor-shooting centre is not a corner body",
+     "passed": true,
+     "o": 4,
+     "sq": "G2",
+     "text": "O5 (Post Scorer C) stands on G2, the green zone."
+    }
+   ],
+   "predicted_defence": {
+    "x": [
+     "K6",
+     "L6",
+     "H10",
+     "I5",
+     "D5"
+    ],
+    "arrows": [
+     7,
+     4,
+     3,
+     7,
+     0
+    ],
+    "perm": [
+     1,
+     3,
+     2,
+     0,
+     4
+    ]
+   },
+   "seconds": 37.0
+  },
+  "defence": {
+   "cards": [
+    "X1 Attacking Point Guard",
+    "X2 Two-Way Shooting Guard",
+    "X3 Scoring Small Forward",
+    "X4 Defensive Power Forward",
+    "X5 Rim Runner Centre"
+   ],
+   "squares": [
+    "K6",
+    "L6",
+    "D5",
+    "I5",
+    "H10"
+   ],
+   "arrows": [
+    7,
+    4,
+    0,
+    7,
+    3
+   ],
+   "matchups": [
+    "X1 on O2: the nearest defender who takes something off his look",
+    "X2 on O3: the nearest defender who takes something off his look",
+    "X3 on O4: same speed",
+    "X4 on O1: the nearest defender who takes something off his look",
+    "X5 on O5: same position"
+   ],
+   "avoided": [
+    "not X5 on O2 at the arc",
+    "not X1 on O5 in the green zone"
+   ],
+   "lines": [
+    "X1: on O2 (his best look is worth 34 open, 26 with X1 on it, 12 with X2, X3, X4 and X5 helping).",
+    "X2: on O4 (his best look is worth 13 open, 12 with X2 on it, 4 with X4 and X5 helping).",
+    "X3: off O3 (his best look is worth 11), and in O1's way (his best look is worth 14, 24 without X3 there).",
+    "X4: on O1 (his best look is worth 32 open, 27 with X4 on it, 14 with X2 helping).",
+    "X5: off O5 (his best look is worth 12), and in O2's way (his best look is worth 12, 18 without X5 there)."
+   ],
+   "the_matchup_rule": {
+    "cost": 100.475,
+    "unlike": 6,
+    "same": 1,
+    "before": {
+     "cost": 104.915,
+     "unlike": 6,
+     "same": 2
+    }
+   },
+   "swaps": [
+    [
+     2,
+     4
+    ]
+   ],
+   "seconds": 24.1
+  },
+  "does_any_centre_guard_a_point_guard_at_the_arc": false,
+  "does_any_poor_shooting_centre_stand_in_a_corner": false
+ },
+ "a high screen for the ball handler (the corner player free to dive)": {
+  "board": {
+   "o": [
+    "I11",
+    "C9",
+    "Q3",
+    "A3",
+    "K12"
+   ],
+   "x": [
+    "I10",
+    "D8",
+    "P4",
+    "B4",
+    "K11"
+   ],
+   "offence": "High-Low",
+   "defence": "Run and Gun"
+  },
+  "plan": {
+   "target": "Plan: a post shot for O5 on H3, off O5's screen on X1",
+   "needs": "Needs: O5's screen on X1 is set (from H10, H9, I9, J10 or J9); X4 a step late to H3; the pass from O1 to O4 arrives.",
+   "branch": "If the screen fails: O4's post shot on H3",
+   "backups": "Backups: O1's layup on J4; O2's layup on H4.",
+   "line": "Attention: O2 holds X2; O3 holds X3; O5 holds X5. Hole: H3, the green zone. Access: the pass to O4.",
+   "spec": "Create a post shot for O4: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 from the side or from behind accepted, otherwise not; contested by X5 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not.",
+   "backup_specs": [
+    "Create a layup for O1: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X3 accepted; contested by X4 from the side (only if he is rushed) or from behind accepted, otherwise not; contested by X5 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not.",
+    "Create a layup for O2: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X3 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X4 from the side (only if he is rushed) or from behind accepted, otherwise not; contested by X5 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not."
+   ],
+   "worth": 20,
+   "open": 36,
+   "reach": 1,
+   "bar_next_phase": 21.0,
+   "bars": [
+    {
+     "phase": 1,
+     "clock": 12,
+     "bar": 21.0
+    },
+    {
+     "phase": 2,
+     "clock": 10,
+     "bar": 21.0
+    },
+    {
+     "phase": 3,
+     "clock": 8,
+     "bar": 21.0
+    },
+    {
+     "phase": 4,
+     "clock": 6,
+     "bar": 21.0
+    },
+    {
+     "phase": 5,
+     "clock": 4,
+     "bar": 21.0
+    },
+    {
+     "phase": 6,
+     "clock": 2,
+     "bar": 0.0
+    }
+   ],
+   "roles": [
+    {
+     "o": 3,
+     "role": "shooter",
+     "sq": "H3"
+    },
+    {
+     "o": 0,
+     "role": "passer",
+     "sq": "I11"
+    },
+    {
+     "o": 4,
+     "role": "screener",
+     "sq": "H9",
+     "squares": [
+      "H10",
+      "H9",
+      "I9",
+      "J10",
+      "J9"
+     ]
+    },
+    {
+     "o": 4,
+     "role": "shooter off the screen",
+     "sq": "H3"
+    }
+   ],
+   "conditions": [
+    "O5's screen on X1 is set (from H10, H9, I9, J10 or J9)",
+    "X4 a step late to H3",
+    "the pass from O1 to O4 arrives"
+   ],
+   "screens": [
+    {
+     "o": "O5",
+     "on": "X1",
+     "squares": [
+      "H10",
+      "H9",
+      "I9",
+      "J10",
+      "J9"
+     ],
+     "worth": 26.0,
+     "gain": 5.0
+    }
+   ]
+  },
+  "candidate_squares": {
+   "O1": 92,
+   "O2": 14,
+   "O3": 47,
+   "O4": 14,
+   "O5": 14
+  },
+  "the_offences_first_turn": [
+   "O1 Quick Step to I12",
+   "O5 Move to J10"
+  ],
+  "its_line": [
+   "Chasing: O4's post shot on H3."
+  ],
+  "seconds": 4.0,
+  "later_phases": "not played out: they turn on the dice. Each phase the plan is measured again on the board as it then is."
+ },
+ "a big guarded by a smaller defender": {
+  "board": {
+   "o": [
+    "I11",
+    "C9",
+    "O9",
+    "A3",
+    "K4"
+   ],
+   "x": [
+    "K3",
+    "D8",
+    "N8",
+    "B4",
+    "I9"
+   ]
+  },
+  "big": "O5 Post Scorer Centre",
+  "his_defender": "X1 Attacking Point Guard",
+  "o5_inside_against_x1": {
+   "open": 38.0,
+   "shot": "layup",
+   "square": 30.0,
+   "side": 34.0,
+   "behind": 36.0
+  },
+  "o5_inside_against_x5": {
+   "open": 38.0,
+   "shot": "layup",
+   "square": 26.0,
+   "side": 32.0,
+   "behind": 34.0
+  },
+  "plan": {
+   "target": "Plan: a post shot for O5 on H2",
+   "needs": "Needs: X4 a step late to H2; the pass from O1 to O5 arrives (100 in 100).",
+   "branch": "If X4 stays home: O5's post shot on I4",
+   "backups": "Backups: O1's layup on J4; O4's layup on H3.",
+   "line": "Attention: O5 holds X1; O2 holds X2; O3 holds X3. Hole: H2, the green zone. Access: the pass to O5.",
+   "spec": "Create a post shot for O5: open accepted; rushed open accepted; contested by X1 accepted; contested by X2 accepted; contested by X3 accepted; contested by X4 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X5 accepted.",
+   "backup_specs": [
+    "Create a layup for O1: open accepted; rushed open accepted; contested by X1 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X2 from the side or from behind accepted, otherwise not; contested by X3 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X4 from behind accepted, otherwise not; contested by X5 from the side or from behind accepted, otherwise not.",
+    "Create a layup for O4: open accepted; rushed open accepted; contested by X1 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X2 from the side or from behind accepted, otherwise not; contested by X3 square in front (only if he is rushed) or from the side or from behind accepted, otherwise not; contested by X4 from behind accepted, otherwise not; contested by X5 from the side or from behind accepted, otherwise not."
+   ],
+   "worth": 26,
+   "open": 38,
+   "reach": 1,
+   "bar_next_phase": 26.0,
+   "bars": [
+    {
+     "phase": 1,
+     "clock": 12,
+     "bar": 26.0
+    },
+    {
+     "phase": 2,
+     "clock": 10,
+     "bar": 26.0
+    },
+    {
+     "phase": 3,
+     "clock": 8,
+     "bar": 26.0
+    },
+    {
+     "phase": 4,
+     "clock": 6,
+     "bar": 26.0
+    },
+    {
+     "phase": 5,
+     "clock": 4,
+     "bar": 26.0
+    },
+    {
+     "phase": 6,
+     "clock": 2,
+     "bar": 0.0
+    }
+   ],
+   "roles": [
+    {
+     "o": 4,
+     "role": "shooter",
+     "sq": "H2"
+    },
+    {
+     "o": 0,
+     "role": "passer",
+     "sq": "I11"
+    }
+   ],
+   "conditions": [
+    "X4 a step late to H2",
+    "the pass from O1 to O5 arrives (100 in 100)"
+   ],
+   "screens": []
+  },
+  "a_seal_and_feed_appears": true
+ },
+ "the defence leaves an open lane mid-plan": {
+  "the_plan_before": "Plan: a three for O2 on A4",
+  "board": {
+   "o": [
+    "I8",
+    "C9",
+    "O9",
+    "A3",
+    "Q3"
+   ],
+   "x": [
+    "E7",
+    "D8",
+    "O8",
+    "C4",
+    "O4"
+   ]
+  },
+  "the_plan_measured_on_it": {
+   "kind": "chasing",
+   "line": "Chasing: O2's three on A6.",
+   "worth": 24,
+   "the_planned_look_is_worth": null
+  },
+  "the_offences_turn": [
+   "O2 Move to C7",
+   "O3 Sprint to L6"
+  ],
+  "takes_the_lane": false
+ },
+ "evidence": {
+  "sightings_in_a_row": 2,
+  "why": "A setup has no dice in it. A defence does vary among setups it reads as level, so one unexpected matchup can be variety. The same unexpected matchup twice running is taken as its choice."
+ }
+}

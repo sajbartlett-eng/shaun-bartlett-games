@@ -361,7 +361,71 @@ def _look_words(lk):
     return f"O{lk['o'] + 1}'s {name} on {lk['sq']}"
 
 
-def read_plan(state, scout, perm=None):
+def screen_roles(state):
+    """Stage 3b: can a screen on the ball handler's defender build something? For each defender next to the ball
+    handler, each teammate is tried on each free square next to that defender, setting the Screen the rules allow
+    there; the map is read with the screen standing. -> the screens that leave more than the board as it is, best
+    first: [dict(o, x, sq, value, gain, squares: every square that screener could set it from, left: the look it
+    frees)]. Found by reading the map, never named."""
+    from . import agent as AG
+    from .actions import legal_actions
+    from .resolve import apply, ChanceNode
+    if AG.JS.get('coverage') is None or state.stage != 'play':
+        return []
+    bh = state.o[state.ball]
+    walls = [d for d, q in enumerate(state.x) if B.on_board(q) and B.adjacent(q, bh)]
+    if not walls:
+        return []
+    s0 = state.with_(side='O', turn_n=0)
+    try:
+        base = float(AG.coverage(s0, only='lasting')['L'])
+    except (ValueError, TypeError):
+        return []
+    taken = set(state.o) | set(state.x)
+    found = {}
+    for d in walls:
+        xq = state.x[d]
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                q = (xq[0] + dx, xq[1] + dy)
+                if (dx, dy) == (0, 0) or not B.on_board(q) or q in taken:
+                    continue
+                for k in range(5):
+                    if k == state.ball:
+                        continue
+                    st = s0.with_(o=tuple(q if i == k else p for i, p in enumerate(s0.o)))
+                    try:
+                        act = next((a for a in legal_actions(st) if a.kind == 'screen' and a.piece == k and a.target == B.dir_between(q, xq)), None)
+                        if act is None:
+                            continue
+                        after = apply(st, act)
+                        if isinstance(after, ChanceNode) or after.stage != 'play':
+                            continue
+                        r = AG.coverage(after, only='lasting')
+                    except ValueError:
+                        continue
+                    if not r:
+                        continue
+                    gain = float(r['L']) - base
+                    if gain > 0.5:
+                        row = found.setdefault((k, d), dict(o=k, x=d, sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), squares=[], state=after))
+                        row['squares'].append(B.sq(q))
+                        if float(r['L']) > row['value'] + 1e-9:
+                            row.update(sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), state=after)
+    out = sorted(found.values(), key=lambda z: (-z['value'], z['o'], z['x']))
+    for z in out[:1]:
+        try:
+            c = AG.coverage(z['state'])
+            z['left'] = c.get('left') if c else None
+        except ValueError:
+            z['left'] = None
+    for z in out:
+        z.pop('state', None)
+        z['squares'] = sorted(set(z['squares']))
+    return out
+
+
+def read_plan(state, scout, perm=None, deep=False):
     """The offence's plan on a board (its own placement against the defence it predicts, or the real board in play):
     read from the coverage map, one phase ahead (the defence's setup and its first answer). The first preference is
     the look left after the defence's best answer, at its real chance; the backups are the next attackers' best
@@ -452,9 +516,35 @@ def read_plan(state, scout, perm=None):
     name = SHOT_WORDS.get(left['shot'], left['shot'])
     art = 'an open' if left.get('cover', -1) < 0 else 'an' if name[0] in 'aeiou' else 'a'
     target = f"Plan: {art} {name} for O{a + 1} on {left['sq']}"
-    return dict(o=a, sq=left['sq'], shot=left['shot'], open=left['value'], reach=left['reach'], worth=left['worth'], cover=cover,
-                value=float(cov.get('lasting') or 0), bar=bar_next, bars=tol, spec=spec, backups=backups, conditions=conds, roles=roles,
-                branch=branch, line=line, target=target, idle=idle, answers=cov.get('answers') or [],
+    # a screen on the ball handler's defender, where one builds more than the board as it is (read at setup: deep)
+    screens = screen_roles(state) if deep else []
+    first = dict(o=a, sq=left['sq'], shot=left['shot'], open=left['value'], reach=left['reach'], worth=left['worth'], cover=cover)
+    value = float(cov.get('lasting') or 0)
+    if screens and screens[0].get('left'):
+        sc0, lk = screens[0], screens[0]['left']
+        nm = SHOT_WORDS.get(lk['shot'], lk['shot'])
+        base_words = _look_words(left)
+        art2 = 'an open' if lk.get('cover', -1) < 0 else 'an' if nm[0] in 'aeiou' else 'a'
+        how = (f"after he screens X{sc0['x'] + 1} and rolls" if lk['o'] == sc0['o'] else f"off O{sc0['o'] + 1}'s screen on X{sc0['x'] + 1}")
+        target = f"Plan: {art2} {nm} for O{lk['o'] + 1} on {lk['sq']}, {how}"
+        conds = [dict(kind='access', x=[sc0['x']], o=sc0['o'], text=f"O{sc0['o'] + 1}'s screen on X{sc0['x'] + 1} is set (from {_and(sc0['squares'])})")]
+        if lk.get('cover', -1) >= 0:
+            conds.append(dict(kind='attention', x=[lk['cover']], o=lk['o'], text=f"X{lk['cover'] + 1} a step late to {lk['sq']}"))
+        if lk['o'] != state.ball:
+            conds.append(dict(kind='access', x=[], o=state.ball, text=f"the pass from O{state.ball + 1} to O{lk['o'] + 1} arrives"))
+        roles = [dict(o=sc0['o'], role='screener', sq=sc0['sq'], squares=sc0['squares'])]
+        roles.append(dict(o=lk['o'], role='shooter', sq=lk['sq']))
+        if lk['o'] != state.ball:
+            roles.append(dict(o=state.ball, role='passer', sq=B.sq(state.o[state.ball])))
+        branch = dict(o=a, sq=left['sq'], shot=left['shot'], worth=left['worth'], reach=left['reach'], when='the screen fails',
+                      text=f"If the screen fails: {base_words}")
+        first = dict(o=lk['o'], sq=lk['sq'], shot=lk['shot'], open=lk['value'], reach=lk['reach'], worth=lk['worth'], cover=lk.get('cover', -1))
+        spec = acceptance(scout, lk['o'], lk['shot'], bar_next)
+        value = float(sc0['value'])
+        access = f"O{sc0['o'] + 1}'s screen" + (f", then the pass to O{lk['o'] + 1}" if lk['o'] != state.ball else '')
+        line = f"Attention: {att}. Hole: {lk['sq']}, {ZONE_NAMES.get(B.zone(B.parse_sq(lk['sq'])), '')}. Access: {access}."
+    return dict(first, value=value, bar=bar_next, bars=tol, spec=spec, backups=backups, conditions=conds, roles=roles,
+                branch=branch, line=line, target=target, idle=idle, answers=cov.get('answers') or [], screens=screens,
                 needs='Needs: ' + '; '.join(c['text'] for c in conds) + '.' if conds else '',
                 backup_words=('Backups: ' + '; '.join(_look_words(b) for b in backups) + '.') if backups else '')
 
@@ -575,7 +665,7 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None)
     m = full[1]
     xs, arrows, perm = _apply_predictions(scout, m[0], m[1], m[4] or list(range(5)))
     state = make(sq, ball, xs, arrows)
-    plan = read_plan(state, scout, perm)
+    plan = read_plan(state, scout, perm, deep=True)
     checks = placement_checks(state, scout, plan)
     words = plan_words(plan)
     text = ' '.join(words) if words else 'Placed on its candidate squares against the defence it predicts.'
@@ -591,7 +681,7 @@ def role_squares(scout, sq, ball, plan):
     out = []
     need = {}
     for r in (plan or {}).get('roles') or []:
-        need.setdefault(r['o'], []).append(r['sq'])
+        need.setdefault(r['o'], []).extend(r.get('squares') or [r['sq']])
     for a in range(5):
         out.append(dict(o=a, candidates=sorted(B.sq(q) for q in scout.candidates(a)), needs=sorted(set(need.get(a, []) + ([B.sq(sq[a])] if a in need else []))),
                         role=', '.join(r['role'] for r in (plan or {}).get('roles') or [] if r['o'] == a)))

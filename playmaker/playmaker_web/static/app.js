@@ -552,6 +552,7 @@ function render() {
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []),
     el('button', { class: 'small', text: 'Play story', onclick: showStory }));
   renderCoachLine();
+  renderPlan();
   const sideChip = s.stage === 'over' ? '' : (s.side_to_act === 'O' ? 'OFFENCE TO ACT · ' : s.side_to_act === 'X' ? 'DEFENCE TO ACT · ' : '');
   $('summary').textContent = replay ? `${sideName(replay.entries[replay.k].side).toUpperCase()} ACTED · ${s.summary}`
     : sideChip + briefSummary(s) + (s.can_act ? '' : s.stage === 'over' ? '' : ' · waiting for the other side');
@@ -731,8 +732,11 @@ function renderCourt() {
   PM.court(c, s.zones, { axes: true, plain: !zonesShown() || covOn, rings: ringsShown(), nowash: covOn });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
-  drawInfluence(c);
-  drawCov(c);
+  // step 24 (Shaun, 19 Nov 2026): while the offence places its pieces there is no defence yet: no defender, reach,
+  // zone, arrow or coverage shading is drawn until the defence has set up
+  const offSetup = !!(s.placing && s.placing.side === 'O');
+  if (!offSetup) { drawInfluence(c); drawCov(c); }
+  if (s.placing && s.placing.mine && s.placing.side === 'O') drawRoleSquares(c);
   // arrow lines the ball carrier can't cross (the old drive rule only)
   const carrier = s.o.find(p => p.ball);
   if (sel.side === 'O' && carrier && sel.i === carrier.i) {
@@ -747,9 +751,63 @@ function renderCourt() {
     c.append(svg('line', { x1: px(a.x) + S / 2, y1: py(a.y) + S / 2, x2: px(b.x) + S / 2, y2: py(b.y) + S / 2, stroke: PM.INK, 'stroke-width': 2.6, 'stroke-dasharray': '8 6', opacity: 0.85 }));
   }
   for (const p of s.o) drawO(c, p);
-  for (const p of s.x) drawX(c, p);
+  if (!offSetup) for (const p of s.x) drawX(c, p);
   if (playActive()) playDraw(c); else drawTargets(c);
 }
+// Step 24: with Coverage on, a picked attacker's candidate squares during the offence's setup (light shading and a dot),
+// and the squares the computer's plan needs him on (a dashed frame and a cross). Never colour alone.
+function drawRoleSquares(c) {
+  if (!showCov() || !place || place.side !== 'O' || place.pick == null || !st.candidates) return;
+  const g = svg('g', { class: 'rolesquares', 'aria-hidden': 'true' });
+  for (const q of st.candidates[place.pick] || []) {
+    const [x, y] = sqXY(q);
+    g.append(svg('rect', { class: 'rolesq cand', x: px(x) + 1, y: py(y) + 1, width: S - 2, height: S - 2 }));
+    g.append(svg('circle', { class: 'rolesq dot', cx: px(x) + S / 2, cy: py(y) + S / 2, r: 2.6 }));
+  }
+  const info = st.setup_info && st.setup_info.O, role = info && (info.roles || [])[place.pick];
+  for (const q of (role && role.needs) || []) {
+    const [x, y] = sqXY(q);
+    g.append(svg('rect', { class: 'rolesq need', x: px(x) + 4, y: py(y) + 4, width: S - 8, height: S - 8, rx: 4 }));
+    g.append(svg('line', { class: 'rolesq cross', x1: px(x) + 9, y1: py(y) + 9, x2: px(x) + S - 9, y2: py(y) + S - 9 }));
+    g.append(svg('line', { class: 'rolesq cross', x1: px(x) + S - 9, y1: py(y) + 9, x2: px(x) + 9, y2: py(y) + S - 9 }));
+  }
+  c.append(g);
+}
+// Step 24: each side's own setup thinking in plain words, beside the board. A side's plan is shown to that side only;
+// in Watch both are shown, labelled by side. The numbers sit behind "Show the numbers".
+function coachPlanOn() { try { return localStorage.getItem('pm_planlines') !== '0'; } catch (e) { return true; } }
+function renderPlan() {
+  const box = $('planBox'); if (!box) return;
+  box.innerHTML = '';
+  const info = st.setup_info || {}, nums = PMAdvice.numbersOn(), line = st.plan_line;
+  const kids = [];
+  if (info.O && (info.O.words || []).length) {
+    const o = info.O;
+    kids.push(el('div', { class: 'planside off' }, [el('h3', { text: 'Offence: the plan' }),
+      el('ul', {}, o.words.map(t => el('li', { text: t }))),
+      nums && o.spec ? el('div', { class: 'nums', text: o.spec }) : null,
+      nums && o.numbers ? el('div', { class: 'nums', text: `Worth ${Math.round(o.numbers.worth)} at its real chance (open ${Math.round(o.numbers.open)}, reach ${Math.round(100 * o.numbers.reach)} in 100). The bar to shoot next phase: ${Math.round(o.numbers.bar)}.` }) : null,
+      ...((o.checks || []).filter(k => !k.passed).map(k => el('div', { class: 'nums', text: k.text })))]));
+  }
+  if (info.X && ((info.X.read || []).length || info.X.text)) {
+    const x = info.X;
+    kids.push(el('div', { class: 'planside def' }, [el('h3', { text: 'Defence: the matchups' }),
+      (x.read || []).length ? el('ul', {}, x.read.map(t => el('li', { text: t }))) : el('div', { text: x.text }),
+      (x.avoided || []).length ? el('div', { text: 'Avoided: ' + x.avoided.join('; ') + '.' }) : null]));
+  }
+  if (line && line.text && (!line.coaching || coachPlanOn())) {
+    kids.push(el('div', { class: 'chasing', text: (line.coaching ? 'Coach: ' : 'Offence: ') + line.text }));
+  }
+  if (line && line.coaching) {
+    kids.push(el('button', { class: 'small', 'aria-pressed': coachPlanOn() ? 'true' : 'false', text: coachPlanOn() ? 'Coaching lines: on' : 'Coaching lines: off',
+      onclick: () => { try { localStorage.setItem('pm_planlines', coachPlanOn() ? '0' : '1'); } catch (e) { /* no storage */ } renderPlan(); } }));
+  }
+  box.classList.toggle('hidden', !kids.length);
+  box.append(...kids.filter(Boolean));
+  if (line && line.text && line.text !== lastPlanLine && (!line.coaching || coachPlanOn())) announce(line.text);
+  lastPlanLine = line ? line.text : null;
+}
+let lastPlanLine = null;
 
 // The marks of the turn in play: the acting side's actions so far in its current turn. During the step-through
 // of the other side's turn, the actions stepped so far of that turn. They reset when the turn ends.
@@ -1558,11 +1616,40 @@ function renderPlacement() {
   const confirm = el('button', { class: 'primary', text: `Confirm the ${who.toLowerCase()} setup`, onclick: confirmPlacement });
   if (problem) confirm.setAttribute('disabled', 'disabled');
   const fast = async body => { try { const r = await api('/api/place', Object.assign({ code: G.code, token: G.token }, body)); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } };
-  $('sideButtons').append(confirm,
-    el('button', { text: 'Accept the proposed setup', onclick: () => fast({ propose: true }) }),
+  // step 24 (Shaun, 19 Nov 2026): two clear buttons, in every mode. Each puts the computer's setup for that side on the
+  // board; any piece can still be moved before confirming; pressing again asks for its next-best setup.
+  const hasAi = Object.keys(s.ai || {}).length > 0;
+  const computer = async side => {
+    const nth = (P.draft && P.draft.computer && place && place.side === side) ? (P.draft.nth || 0) + 1 : 0;
+    $('error').textContent = '';
+    $('selected').textContent = `The computer is setting up the ${side === 'O' ? 'offence' : 'defence'}. This can take up to half a minute.`;
+    announce($('selected').textContent);
+    for (const b of document.querySelectorAll('#sideButtons button')) b.setAttribute('disabled', 'disabled');
+    try {
+      const r = await api('/api/place', { code: G.code, token: G.token, computer: true, nth });
+      place = null; st = r.state; render();
+      const info = st.setup_info && st.setup_info[side];
+      announce(`The computer placed the ${side === 'O' ? 'offence' : 'defence'}${nth ? ', its next-best setup' : ''}. ${info ? (side === 'O' ? (info.words || [])[0] || '' : (info.read || []).join('. ')) : ''} Move any piece, or confirm.`);
+    } catch (e) { $('error').textContent = e.message; renderPlacement(); }
+  };
+  const again = P.draft && P.draft.computer;
+  const cbtn = side => {
+    const live = P.side === side;
+    const text = `Computer sets up the ${side === 'O' ? 'offence' : 'defence'}` + (live && again ? ' (next best)' : '');
+    const b = el('button', { class: live ? 'primary' : '', id: side === 'O' ? 'computerOffence' : 'computerDefence', text, onclick: () => computer(side) });
+    if (!live) {
+      b.setAttribute('disabled', 'disabled');
+      b.setAttribute('title', side === 'O' ? 'The offence is already placed.' : (hasAi && (s.ai || {}).X ? 'The computer sets up its own defence after you confirm.' : 'The defence sets up after the offence is confirmed.'));
+    }
+    return b;
+  };
+  $('sideButtons').append(el('div', { class: 'setupcomputer', role: 'group', 'aria-label': 'Let the computer set up a side' }, [cbtn('O'), cbtn('X')]),
+    confirm,
     el('button', { text: 'Repeat my last setup', onclick: () => fast({ repeat: true }) }),
     el('button', { text: 'Start again', onclick: () => { place = null; renderPlacement(); renderCourt(); } }),
-    el('button', { text: Object.keys(s.ai || {}).length ? 'Use the standard setup for my side' : 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } }),
+    ...(hasAi ? [] : [el('button', { text: 'Use the preview table setup (both sides)', onclick: async () => { try { const r = await api('/api/place', { code: G.code, token: G.token, preview: true }); place = null; st = r.state; render(); } catch (e) { $('error').textContent = e.message; } } })]),
+    ...(again ? [el('p', { class: 'note', text: 'The computer placed these pieces. Move any of them, press its button again for its next-best setup, or confirm.' })] : []),
+    ...(showCov() && P.side === 'O' ? [el('p', { class: 'note', text: 'Coverage is on: tap an attacker to see his candidate squares (shaded, with a dot). A dashed frame with a cross marks a square the plan needs him on.' })] : []),
     ...(problem ? [el('p', { class: 'note', role: 'status', text: problem })] : []));
 }
 async function confirmPlacement() {

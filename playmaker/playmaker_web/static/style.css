@@ -485,3 +485,20 @@ h2.h3 { font-size: 17px; margin: 6px 0 4px; }
 .covmap .ovring { fill: none; stroke: #7a1010; stroke-width: 3; pointer-events: none; }
 .covmap .ovlabel { font-size: 13px; font-weight: 700; fill: #7a1010; paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
 .covmap .ovmark { font-size: 20px; font-weight: 700; fill: #7a1010; pointer-events: none; }
+
+/* Step 24: the setup plan, beside the board (never over it) */
+.planbox { border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; background: #fffdf6; }
+.planbox h3 { margin: 0 0 4px; font-size: 1rem; }
+.planbox .planside { margin-bottom: 6px; }
+.planbox .planside.off { border-left: 5px solid #1f3a5f; padding-left: 8px; }
+.planbox .planside.def { border-left: 5px double #7a2e2e; padding-left: 8px; }
+.planbox ul { margin: 2px 0 4px 18px; padding: 0; }
+.planbox .chasing { font-weight: 600; margin: 4px 0; }
+.planbox .nums { color: #3b3a36; font-size: .92em; }
+.setupcomputer { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-bottom: 6px; }
+.setupcomputer button { font-weight: 700; min-height: 44px; }
+.rolesq { pointer-events: none; }
+.rolesq.cand { fill: rgba(31,58,95,.13); stroke: none; }
+.rolesq.dot { fill: #1f3a5f; opacity: .55; }
+.rolesq.need { fill: none; stroke: #1f3a5f; stroke-width: 3; stroke-dasharray: 5 3; }
+.rolesq.cross { stroke: #1f3a5f; stroke-width: 2.4; }
