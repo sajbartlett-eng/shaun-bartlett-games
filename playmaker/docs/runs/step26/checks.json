@@ -1,0 +1,154 @@
+{
+ "High-Low v Shoot and Protect, board 1 (hot-seat 8427AA)": {
+  "offence": {
+   "squares": [
+    "J3",
+    "H3",
+    "G4",
+    "I4",
+    "N12"
+   ],
+   "ball": "O5",
+   "in_the_key": [
+    "O1 on J3",
+    "O2 on H3",
+    "O3 on G4",
+    "O4 on I4"
+   ],
+   "plan": "Plan: a three for O1 on Q2, after he screens X1 and rolls",
+   "needs": "Needs: O1's screen on X1 is set (from J4, J5, K4, K6, L4, L5 or L6); X1 a step late to Q2; the pass from O5 to O1 arrives.",
+   "plan_worth": 6.11,
+   "table_squares_worth": 18.0,
+   "bars": [
+    17.11,
+    16.25,
+    14.91,
+    12.48,
+    8.05,
+    0
+   ],
+   "checks": [
+    "Every defender has a real job.",
+    "O5 (Post Scorer C) stands on N12, beyond the arc."
+   ],
+   "seconds": 44.6
+  },
+  "defence": {
+   "squares": [
+    "J6",
+    "K5",
+    "M6",
+    "O12",
+    "M11"
+   ],
+   "arrows": [
+    7,
+    1,
+    6,
+    5,
+    2
+   ],
+   "read": [
+    "X1 on O4: same speed",
+    "X2 on O1: the nearest defender who takes something off his look",
+    "X3 sags off O3 to guard O1's look (worth 24 without him there)",
+    "X4 sags off O2 to guard O5's look (worth 4 without him there)",
+    "X5 on O5: same position"
+   ],
+   "avoided": [
+    "not X4 on O5 at the arc",
+    "not X1 on O5 in the green zone"
+   ],
+   "watching": [],
+   "between_the_bunch_and_the_rim": [],
+   "seconds": 28.7
+  },
+  "post_defence": [
+   {
+    "big": "O4 All-Rounder Power Forward on I4",
+    "his_defender": "X1 on J6",
+    "where": "2 squares off",
+    "the_pass_to_him_lands": 0.35
+   }
+  ],
+  "placement_checks_after_the_defence_sets_up": [
+   "Every defender has a real job.",
+   "O5 (Post Scorer C) stands on N12, beyond the arc."
+  ]
+ },
+ "Twin Towers v Lockdown, board 2 (computer v computer AC7286)": {
+  "offence": {
+   "squares": [
+    "J3",
+    "C9",
+    "O9",
+    "A8",
+    "H3"
+   ],
+   "ball": "O4",
+   "in_the_key": [
+    "O1 on J3",
+    "O5 on H3"
+   ],
+   "plan": "Plan: a post shot for O5 on G2, off O1's screen on X1",
+   "needs": "Needs: O1's screen on X1 is set (from F3, F4, F5, G3, G5 or H5); X5 a step late to G2; the pass from O4 to O5 arrives.",
+   "plan_worth": 19.07,
+   "table_squares_worth": 18.0,
+   "bars": [
+    19.07,
+    19.07,
+    19.07,
+    19.07,
+    19.07,
+    0
+   ],
+   "checks": [
+    "Every defender has a real job.",
+    "O5 (Post Scorer C) stands on H3, the green zone."
+   ],
+   "seconds": 25.6
+  },
+  "defence": {
+   "squares": [
+    "G4",
+    "D7",
+    "H4",
+    "K8",
+    "E3"
+   ],
+   "arrows": [
+    5,
+    0,
+    0,
+    7,
+    0
+   ],
+   "read": [
+    "X1 on O2: the nearest defender who takes something off his look",
+    "X2 sags off O4 to guard O3's look (worth 27 without him there)",
+    "X3 on O5: the nearest defender who takes something off his look",
+    "X4 on O3: the nearest defender who takes something off his look",
+    "X5 sags off O1, standing in his way rather than on him (his look is worth 18, 26 without him there)"
+   ],
+   "avoided": [
+    "not X5 on O4 at the arc",
+    "not X2 on O5 in the green zone"
+   ],
+   "watching": [],
+   "between_the_bunch_and_the_rim": [],
+   "seconds": 9.6
+  },
+  "post_defence": [
+   {
+    "big": "O5 Post Scorer Centre on H3",
+    "his_defender": "X3 on H4",
+    "where": "beside him",
+    "the_pass_to_him_lands": 0.0
+   }
+  ],
+  "placement_checks_after_the_defence_sets_up": [
+   "Every defender has a real job.",
+   "O5 (Post Scorer C) stands on H3, the green zone."
+  ]
+ }
+}
