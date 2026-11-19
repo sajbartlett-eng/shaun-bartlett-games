@@ -1,10 +1,10 @@
 # Step 27: the computer sets up the way it plays
 
-1. **The offence now places by the same list the in-play search uses.** Placements are read against the defence's full setup and then ahead, and the table's spread squares are always read in full beside the winner. On all three boards it beats the table squares: 24 against 20, 28 against 18, and 24 against 21.
-2. **No more bunching on High-Low.** Board 1 now puts one attacker in the key, not four. Candidate squares are no longer a rule. They are kept as a check.
-3. **The computer reads as far ahead as the plan needs: up to three turns, both sides alike.** That is where screen then dive, the swing, the V-cut, the seal and Hesitate now show up. In play it re-reads every phase.
+1. **The offence now places by the same list the in-play search uses.** Placements are read against the defence's full setup and then ahead, and the table's spread squares are always read in full beside the winner. On all three boards it beats the table squares: 26 and 22 against 26 and 18, then 27.6 against 21, then 24 against 18.
+2. **High-Low no longer bunches four in the key.** Board 1 now puts two in the key, both with a job: O2 re-screens and O4 screens and dives. Candidate squares are no longer a rule. They are kept as a check.
+3. **The computer reads as far ahead as the plan needs: up to three turns, both sides alike.** That is where screen then dive, the re-screen, the swing, the V-cut, the seal and Hesitate now show up. In play it re-reads every phase. Reading a fourth turn changes no choice on any of the three boards.
 4. **Three seconds and the closely guarded count go by the rule.** There are no halves or thirds any more. After a three-second violation the count doesn't restart: still in the key at the next phase end, he is called again.
-5. **Look for:** the offence setup button takes 102 to 109 seconds and the defence's 48 to 83, both under 2 minutes. A computer turn in play took 13.5 seconds. On two boards the Post Scorer C still starts in the corner. The table squares put him there, and the check flags it.
+5. **Look for:** the offence setup button takes 85 to 111 seconds and the defence's 72 to 84, all under 2 minutes. A computer turn in play took 16.2 seconds. On two boards the Post Scorer C still starts in the corner. The table squares put him there, and the check flags it.
 
 ## 1. Changes to the printed game
 
@@ -32,61 +32,65 @@ None. The repeat three-second rule is for the app only (D-254).
 
 ## 3. The board readings
 
-These are single readings from `docs/runs/step27/checks.json`, using both buttons. **Like for like:** every worth below is the same reading. Each placement is read against the full defence the defence would set for it, then ahead to the same three-turn limit. The table squares get the same treatment.
+These are single readings from `docs/runs/step27/checks.json`, using both buttons. **Like for like:** every worth below is the same reading. Each placement is read against the full defence the defence would set for it, then ahead to the same three-turn limit. The table squares get the same treatment. Each worth is the list's first five items: the offence's best looks and gaps, largest first.
 
 **Board 1, High-Low v Shoot and Protect.**
-- **Offence:** O1 I11 (ball, passer), O2 J3, O3 D7, O4 A3, O5 Q3 (screener and shooter). One in the key.
-- **Plan:** a post shot for O5 on J4 after he screens X2 and rolls. Read ahead, it needs 2 turns: O1 swings to O2, and the board reads 24.
-- **Line:** "Attention: O5 holds X1; O2 holds X2; O1 holds X3. Hole: J4, the green zone. Access: O5's screen, then the pass to O5."
-- **Rejected:** O4 on J4 instead of A3 (two in the key). It lost because "its best look reads 21 against 24 once the full defence answers."
-- **Worth:** 24, 22, 20, 20, 15. The table squares read 20, 18, 18, 15, 9.
-- **Defence:** X1 D4, X2 G8, X3 J2, X4 M6, X5 K4. X3 and X5 stand inside, nearer the rim than the bigs, but the bigs start at A3 and Q3, so nobody stands between them and the rim. Avoided: X4 on O1 at the arc.
-- **X4 and X5 no longer press the ball far out.** The nearest defender to the ball is X2, three squares off. By the list, the offence's best looks are inside (O5's roll, the swing), so its four ways of standing all hold the top item to 24 with X4 and X5 inside.
+- **Offence:** O1 I11 (ball, passer), O2 J3 (re-screen), O3 D7 (spacing), O4 J4 (screen, then the dive), O5 Q3 (screener and shooter). Two in the key.
+- **Plan:** a post shot for O5 on G2 after he screens X5 and rolls. Read ahead, it needs 3 turns: O4 screens X5 from I3, then O2 screens X5 from I2.
+- **Line:** "Attention: O3 holds X1; O1 holds X3; O4 holds X5. Hole: G2, the green zone. Access: O5's screen, then the pass to O5."
+- **Rejected:** the table squares. They lost because "its second look reads 18 against 22 once the full defence answers."
+- **Worth:** 26, 22, 21, 18, 4.7 (a one-turn reading gave 21, 18, 18, 16, 4.7). The table squares read 26, 18, 18, 16, 15.
+- **Defence:** X1 L3, X2 E6, X3 K4, X4 M7, X5 H3.
+  - X5 on H3 stands between O4 (on J4) and the rim.
+  - Nobody stands between O5 and the rim: he starts in the corner.
+  - Avoided: X4 on O1 at the arc.
+- **X4 and X5 no longer press the ball far out.** No defender is within three squares of the ball. By the list, the offence's best looks are inside (O4's screen and dive, the re-screen, O5's roll). Three of the four ways the defence read ahead hold the top item to 26 or less only with X4 and X5 inside.
 - **Checks:**
   - every attacker has a job;
   - every defender has a real job;
   - O5 is a body in the corner (flagged).
-- **Times:** offence 102.8 s, defence 76.5 s.
+- **Times:** offence 110.5 s, defence 71.6 s.
 
 **Board 2, Twin Towers v Lockdown.**
-- **Offence:** O1 N7, O2 C9, O3 O9 (screener), O4 N10 (ball, passer), O5 I2 (shooter). One in the key.
-- **Plan:** a post shot for O5 on G2 off O3's screen on X3. Read ahead, it needs 3 turns: O4 swings to O3, then O5 moves to J3.
-- **Line:** "Attention: O5 holds X1; O1 holds X2; O3 holds X3. Hole: G2, the green zone. Access: O3's screen, then the pass to O5."
-- **Rejected:** O5 on J3 instead of I2. Its best look reads 22 against 28.
-- **Worth:** 28, 24, 22, 9, 5. The table squares read 18, 18, 16, 8.2, 6.
-- **Defence:** X1 F7, X2 N4, X3 K5, X4 L10, X5 D5. Nobody stands between O5 and the rim: he is on I2, right under it.
+- **Offence:** O1 N7, O2 C9 (screen, then the dive), O3 O9 (screener), O4 N10 (ball, passer), O5 J3 (shooter). One in the key.
+- **Plan:** a post shot for O5 on G2 off O3's screen on X4. Read ahead, it needs 3 turns: O2 screens X2 from C6, then O5 screens X4 from H3.
+- **Line:** "Attention: O4 holds X1; O2 holds X2; O3 holds X3. Hole: G2, the green zone. Access: O3's screen, then the pass to O5."
+- **Rejected:** the table squares, 21 against 27.6.
+- **Worth:** 27.6, 22, 20, 18, 9 (one turn: 18, 18, 18, 9, 5.6). The table squares read 21, 18, 18, 7.2, 6.
+- **Defence:** X1 L5, X2 D7, X3 M6, X4 I4, X5 K4.
+  - X4 stands beside O5 on the block, and X5 is next to him too.
+  - Nobody is nearer the rim than O5: he is right under it.
 - **Watching (the plans it means to deny):**
-  - O1's cut behind the help to J3;
-  - O1 attacking X2, its most foul-prone defender.
+  - O1's flash cut to H5;
+  - O1's floater over X4's contest.
 - **Check:** every attacker has a job.
-- **Times:** offence 109.3 s, defence 48.2 s.
+- **Times:** offence 85.3 s (two full reads: the leader held), defence 74.9 s.
 
 **Step 24's high-screen board.**
-- **The setup buttons** (High-Low v Run and Gun) place O1 L5, O2 M4, O3 J2, O4 I11 (ball), O5 Q3.
-- **Plan:** a post shot for O5 on G3 after he screens X3 and rolls. Read ahead, it needs 3 turns: O3 screens X3, then O1 V-cuts to N5.
-- **Rejected:** the table squares. They lost 21 against 24.
-- **Defence:** X1 K3, X2 M6, X3 J5, X4 H4, X5 F7.
-  - It kept its matchup pick, which leaves 26 at the top of the list read ahead. Another way of standing leaves 24.
-  - That is the All-Star's 2-point margin (D-208): within it, the matchup rule chooses.
-- **Times:** offence 102.4 s, defence 83.2 s.
-- **Does the corner dive appear?** On step 24's own board, yes. It is read at once: O3 from the corner to K3, worth 32, third on the list. Read ahead to four turns, nothing beats the 36 that is already on this turn, so the board pays now (`docs/runs/step27/ahead.json`). Screen then dive is read where it pays: on board 1's old setup, the screener's dive goes from 13.75 to 22 after the screen (a test).
+- **The setup buttons** (High-Low v Run and Gun) place O1 L5 (re-screen), O2 M4, O3 J2 (screen, then the dive), O4 I11 (ball), O5 Q3 (screener and shooter). One in the key.
+- **Plan:** a post shot for O5 on G3 after he screens X3 and rolls. Read ahead, it needs 3 turns: O3 screens X3 from H3, then O1 screens X2 from N5.
+- **Rejected:** O3 on O9 instead of J2. It lost 21.75 against 24.
+- **Worth:** 24, 22, 22, 22, 9 (one turn: 18, 14, 12, 11.75, 0). The table squares read 18, 16, 15, 15, 14.
+- **Defence:** X1 K3, X2 M6, X3 J5, X4 H4, X5 F7. Of its four ways read ahead, it leaves the least: 21.75 at the top of the list.
+- **Times:** offence 107.9 s and defence 84.4 s, timed on its own (`checks_high_screen_timed_alone.json`). The run beside the tests took 124.7 s, so I lowered the full-read cap to 95 s. The pick is the same either way: it came from the first full read.
+- **Does the corner dive appear?** On step 24's own board, yes. It is read at once: O3 from the corner to K3, worth 32, third on the list. Read ahead to four turns, nothing beats the 36 already on this turn, so the board pays now (`ahead.json`). On the new setup the corner player is O3 on J2, and his screen then dive is the route's first turn.
 
-**In play:** one All-Star offence turn on the high-screen board took 13.5 seconds, including the phase's read ahead (`turn.json`).
+**In play:** one All-Star offence turn on the high-screen board took 16.2 seconds, including the phase's read ahead (`turn.json`).
 
 ## 4. Lookahead, part by part
 
 | Part | Before | After | Why | Time |
 |---|---|---|---|---|
-| Offence setup ranking | One turn against the defence's quick setup. Only the pick got the full setup. | The quick best, plus the table squares, read against the full setup and then ahead up to 3 turns. All read the same number of turns ahead. | Quick and full disagreed (step 26: 24 against 6). Entry passes, screen then dive and seals need 2 or 3 turns. | 102 to 109 s |
-| Defence setup | The settlement and the matchup rule, one turn. | The same, then its last four ways of standing read ahead 3 turns. | Both sides read to the same horizon. | 48 to 83 s |
-| In-play plan (once a phase) | The one-phase map. | Plus 3 turns ahead (12 s cap). The route's first turn breaks the search's ties, after the list. | Nothing is locked: it re-reads every phase. | 13.5 s a turn |
+| Offence setup ranking | One turn against the defence's quick setup. Only the pick got the full setup. | The quick best, plus the table squares, read against the full setup and then ahead up to 3 turns. All read the same number of turns ahead. | Quick and full disagreed (step 26: 24 against 6). Entry passes, screen then dive and seals need 2 or 3 turns. | 85 to 111 s |
+| Defence setup | The settlement and the matchup rule, one turn. | The same, then its last four ways of standing read ahead 3 turns. | Both sides read to the same horizon. | 72 to 84 s |
+| In-play plan (once a phase) | The one-phase map. | Plus 3 turns ahead (12 s cap). The route's first turn breaks the search's ties, after the list. | Nothing is locked: it re-reads every phase. | 16.2 s a turn |
 | In-play search | Rookie 1 to 2 moves in 0.3 s, Starter 2 to 3 in 1 s, All-Star 4 to 6 in 2.5 s. Each ends on the list's top item. | Unchanged. | It already reads turn by turn by the rules. Changing it moves all computer play and every golden value. | as before |
 | Shot bar | Phase by phase to the end of the clock. | Unchanged. | It already reads to the horizon. | as before |
 | Screen finder | One turn, judged by the lasting gap with a 0.5 margin. | One turn, judged by the list. | D-219. | as before |
 | Conditions | One turn of the map. | Plus 8 read from the route ahead. | The two-step ones need a second turn. | inside the plan |
 | Trainer and reports | One turn of the map. | Unchanged. | They grade and show the reading the search ends on. | as before |
 
-**Why three turns:** every placement compared must be read the same number of turns ahead. A fourth turn adds about 8 seconds a placement and pushes setup past 2 minutes. A four-turn check of each board's top two placements is in `docs/runs/step27/four_turns.json` (see section 9).
+**Why three turns:** every placement compared must be read the same number of turns ahead. A fourth turn adds about 8 seconds a placement and pushes setup past 2 minutes. **The four-turn check:** each board's top two placements, read four turns ahead, keep the same order on all three boards (`four_turns.json`). Board 1's winner reads 26, 22, 21, 18, 11.2 at four turns, against 26, 18, 18, 16, 15. Board 2's reads 28, 22, 20, 18, 9, against 22, 21, 18, 18, 8.
 
 ## 5. The audit: every place the computer judges a board
 
@@ -142,8 +146,10 @@ This is the morning board's settlement as it stands. I changed nothing (`sharp.j
 ## 8. Built differently from the prompt, and why
 
 - **It reads ahead in turns, not phases.** A screen and the dive after it happen inside one phase. The phases crossed are reported too.
+- **Turn time and setup time:** the full reads stop by 95 s, so a setup ends under 2 minutes.
 - **Speed filter:** none. The sweep skips only squares another piece stands on and, for the ball handler, squares off plain wood. The rules forbid both.
-- **"Until the choice no longer changes":** the full reads go in the quick order. The table squares are always included, so a bunch that only reads well against the quick defence can't win. It stops once the leader has held through two more full reads, or at about 110 seconds. Three full reads fit on each board, and the leader never changed after its first full read.
+- **"Until the choice no longer changes":** the full reads go in the quick order. The table squares are always included, so a bunch that only reads well against the quick defence can't win. It stops once the leader has held through two more full reads, or once the full reads reach 95 seconds. Two or three full reads fit on each board, and the leader never changed after its first full read.
+- **The screens read ahead** are the best by the list that the screener can set this turn: from where he stands, or after his own one Move.
 - **The defence's turn ahead:** it is the turn its in-play search tries first: its map answer, each part of it, the settlement's moves, or holding. It is chosen by the list.
 
 ## 9. For Shaun to decide
@@ -151,14 +157,14 @@ This is the morning board's settlement as it stands. I changed nothing (`sharp.j
 1. **The map's own answer leads by the lasting gap** (both engines). D-219 says the list leads there too. Switching it changes the lasting gap everywhere. Switch it, or keep it?
 2. **The read-ahead treats a pass as landing (or not) its likeliest way.** Pricing the chance in needs a rule for combining two lists. One option is to keep the likelier outcome unless the miss costs more than the catch gains.
 3. **Should the route replace the "Plan:" line?** Today the plan is the one-turn plan and the route ahead is its own line. They can name different shooters.
-4. **The three-turn cap** (D-258). The four-turn check is below.
+4. **The three-turn cap** (D-258). Four turns changed no choice here (section 4).
 5. **The Post Scorer C in the corner** on boards 1 and 3. The table squares put him on Q3, and nothing in the list moved him. The check flags it. A rule would steer, so that is your call.
 
-**The four-turn check** (`four_turns.json`): see the note at the end of this report.
 
 ## 10. Tests
 
 - **Pass:**
+  - `test_step27`: all 9 on the final code.
   - `test_rules_current`, golden, and engine equality (`test_step3n`): 47 pass, with the same 3 expected failures. The engines agree on all 40 random boards.
   - `test_step24` (the separate-thinking test included), `test_web`, `test_map_logic_21`, `test_step22`, `test_drivers_22b`, `test_coverage_18s`, `test_step26`, `test_step22c`, `test_points_play_on_18r`, `test_fiba_18i`.
 - **New, `tests/test_step27.py`:**

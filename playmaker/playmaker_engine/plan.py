@@ -613,7 +613,7 @@ def _okey(m):
     return (tuple(drv.get('list') or ()), round(float(m[2]), 6), -int(drv.get('n') or 0))
 
 
-FULL_CAP_S = 110.0      # step 27: the whole offence setup stays under about 2 minutes on desktop (the prompt's limit)
+FULL_CAP_S = 95.0       # step 27: the full reads stop by here, so the whole offence setup stays under about 2 minutes on desktop
 HORIZON_TURNS = 3       # step 27 (D-258): every placement compared is read to the same horizon, capped by the clock
 
 

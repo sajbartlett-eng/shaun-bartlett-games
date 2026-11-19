@@ -1575,7 +1575,7 @@ then read enough of the best in full that the choice no longer changes. Setup ra
 search uses (the list leads, D-219), against the full predicted defence, read to the horizon; then the plan as the
 route; then efficiency. Built: a quick search over every legal square, then the best by the quick reading and always
 the table's squares read in full (the defence's full setup, then read ahead), in the quick order, while the clock
-allows (about 110 seconds) and until the leader has held through two more. The plan line adds what it weighed instead
+allows (the full reads stop by 95 seconds) and until the leader has held through two more. The plan line adds what it weighed instead
 and why that lost. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 27.**
 
 **D-258. As far ahead as the plan needs, both sides to the same horizon.** Shaun: "If it's clear that 1 phase
