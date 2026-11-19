@@ -22,7 +22,9 @@ needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node
 # Re-recorded in step 22c (D-224, D-228): the settlement was ['F7', 'A2', 'Q2', 'N7', 'J3'], arrows [0, 1, 0, 0, 0]
 # under step 22b's gaps (the average of all five whatever the reach). With gaps a race, stagnation counted and the
 # last pass around each defender's square, Shaun's board settles here.
-SETTLED_X, SETTLED_A = ['G7', 'N5', 'H10', 'K7', 'G3'], [0, 0, 3, 0, 0]
+# Re-recorded again in step 25 (D-241): X3's arrow on H10 was 3 (SE); with a defender covering every look he can reach in
+# time, the settlement is the same squares with X3 facing N.
+SETTLED_X, SETTLED_A = ['G7', 'N5', 'H10', 'K7', 'G3'], [0, 0, 0, 0, 0]
 
 
 @pytest.fixture(scope='module')

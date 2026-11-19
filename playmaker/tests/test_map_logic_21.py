@@ -59,22 +59,28 @@ def test_a_spent_defence_cant_answer_and_the_fresh_read_is_for_phase_starts():
 # ---- part 2: numbers, not just pairs -----------------------------------------------------------------------------------
 
 def test_a_group_of_defenders_can_be_the_only_cover_for_more_attackers_than_there_are_of_them():
-    """Shaun's 3 on 2 near the key: X4 and X5 (3 and 4) the only cover for O1, O5 and O3, three apart from each other.
-    Whichever two they take, the third is open; the defence takes the two biggest, so the group is worth the third."""
+    """Re-recorded in step 25 (D-241, Shaun, 19 Nov 2026). This read: Shaun's 3 on 2 near the key (O1 I4, O5 L4, O3 F4,
+    three apart) is an overload worth the third look, with "open" meaning no taken attacker within two squares. Shaun
+    ruled that a defender covers every look he can reach in time, because only one attacker can shoot; only looks the
+    offence creates one after another, out of his reach from beside the first, are an overload. Bunched near the key
+    is now covered; spread across the court the same numbers still overload."""
+    import step_22b as S
+    covers = D.covers_too_of(S._board())
     look = lambda a, c, wd, mask: dict(a=a, c=B.parse_sq(c), t=0, wd=wd, now=wd - 10, mask=mask, order=(0, a))
     both = 1 << 3 | 1 << 4
-    g = D.cover_groups([look(0, 'I4', 30, both), look(4, 'L4', 26, both), look(2, 'F4', 22, both)])
+    assert D.cover_groups(covers, [look(0, 'I4', 30, both), look(4, 'L4', 26, both), look(2, 'F4', 22, both)]) == []    # bunched: covered
+    g = D.cover_groups(covers, [look(0, 'A3', 30, both), look(4, 'Q3', 26, both), look(2, 'I11', 22, both)])           # spread: the third is open
     two = [v for v in g if v['ds'] == [3, 4]]
-    assert two and two[0]['value'] == 22 and {t['a'] for t in two[0]['threats']} == {0, 2, 4} and two[0]['near_key']
+    assert two and two[0]['value'] == 22 and {t['a'] for t in two[0]['threats']} == {0, 2, 4}
     assert not [v for v in g if len(v['ds']) == 1]                    # neither alone is the only cover for anyone
     # one on two is the smallest case, and three on four follows from the same rule
-    one = D.cover_groups([look(0, 'C9', 27, 1 << 2), look(1, 'Q7', 18, 1 << 2)])
+    one = D.cover_groups(covers, [look(0, 'C9', 27, 1 << 2), look(1, 'Q7', 18, 1 << 2)])
     assert one[0]['ds'] == [2] and one[0]['value'] == 18
     three = 1 << 1 | 1 << 3 | 1 << 4
-    g3 = D.cover_groups([look(0, 'A3', 30, three), look(1, 'E7', 28, three), look(2, 'I3', 26, three), look(3, 'N4', 24, three)])
+    g3 = D.cover_groups(covers, [look(0, 'A3', 30, three), look(1, 'A11', 28, three), look(2, 'Q11', 26, three), look(3, 'Q3', 24, three)])
     assert [v for v in g3 if v['ds'] == [1, 3, 4]][0]['value'] == 24
     # two attackers within two squares of each other: one defender next to both takes both, so nothing is left
-    assert D.cover_groups([look(0, 'I4', 30, 1), look(1, 'J5', 26, 1)]) == []
+    assert D.cover_groups(covers, [look(0, 'I4', 30, 1), look(1, 'J5', 26, 1)]) == []
 
 
 @needs_node
