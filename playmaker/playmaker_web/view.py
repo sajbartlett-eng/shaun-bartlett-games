@@ -112,7 +112,7 @@ def influence(s):
                 three=three, guarded=guarded, fiba=RC.app_rule(rules, 'fiba_fouled_shot'),
                 soft=RC.app_rule(rules, 'soft_contest'), steal_foul=RC.app_rule(rules, 'fiba_steal_foul'),
                 points=RC.app_rule(rules, 'points_play_on') and not s.ctx.hold_for_one, no_rim=RC.rim_shot_barred(rules),      # D-198
-                off_balance=RC.off_balance_cut(rules), position=RC.position_contest(rules))
+                off_balance=RC.off_balance_cut(rules), position=RC.position_contest(rules), contest_costs=RC.contest_costs(rules))
 
 
 def _rush_mark(s, side, i):
@@ -169,7 +169,8 @@ def position_chips(s, shooter, t):
     from playmaker_engine.scoring import contest_options
     rules, card, sp = s.ctx.rules, s.ctx.off[shooter], s.o[shooter]
     cut = RC.control_cut(rules, t)
-    hard = {o.defender: o for o in contest_options(s, shooter, t, False) if o.defender >= 0}
+    cc = RC.contest_costs(rules)                 # D-261: each line is a Contest the defender may take, not automatic
+    hard = {o.defender: o for o in contest_options(s, shooter, t, False) if o.defender >= 0 and (o.hard or not cc)}
     out = []
     for j, xp in enumerate(s.x):
         if not B.adjacent(xp, sp):
@@ -189,11 +190,11 @@ def position_chips(s, shooter, t):
         tail = f' ({", ".join(why)})' if why else ''
         if t in RC.JUMP_SHOTS:
             spot = 'square in front' if full else 'in front, arrow off him' if front else where
-            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {spot}: contest {rv(dc, "con_" + t)}{tail}, {c} off by position'
+            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {spot}: contest {rv(dc, "con_" + t)}{tail}, {c} off by position' + (' if he Contests' if cc else '')
         elif full:
-            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} in front, arrow on him: contest {rv(dc, "con_" + t)}{tail}, {c} off, no foul'
+            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} in front, arrow on him: contest {rv(dc, "con_" + t)}{tail}, {c} off, no foul' + (' if he Contests' if cc else '')
         else:
-            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {where}: contest {rv(dc, "con_" + t)}{tail}, {c} off'
+            line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {where}: contest {rv(dc, "con_" + t)}{tail}, {c} off' + (' with a normal Contest' if cc else '')
             if j in hard:
                 o = hard[j]
                 line += f'; going for the block: {o.contest} off, {"two foul rolls" if o.rolls == 2 else "one foul roll"} on Foul {rv(dc, "foul_contest")}'
@@ -270,7 +271,22 @@ def legal_json(s, acts):
             o = opts[a.piece]
             sh = s.ctx.off[s.ball]
             t = s.shot
-            if a.piece >= 0 and RC.position_contest(s.ctx.rules) and not s.forced:
+            cc = RC.contest_costs(s.ctx.rules)
+            if a.piece >= 0 and cc and not s.forced:
+                # D-261: a Contest is one of the reply's two actions: the normal Contest, or inside the hard one (the block)
+                o = next(z for z in contest_options(s, s.ball, s.shot, s.forced) if z.defender == a.piece and z.hard == (a.shot == 'hard'))
+                dc = s.ctx.dfn[a.piece]
+                dq, sq_ = s.x[a.piece], s.o[s.ball]
+                place = ('square in front' if o.category in ('hand', 'position') and o.contest >= dc.con(t) else
+                         'in front, arrow off him' if B.dist_rim(dq) < B.dist_rim(sq_) else 'beside him' if B.dist_rim(dq) == B.dist_rim(sq_) else 'behind him')
+                if o.hard:
+                    d['option'] = (f'X{a.piece + 1} contests hard (the block): {SHOT_NAME[t]} {rv(sh, "shot_" + t)} v contest {rv(dc, "con_" + t)} '
+                                   f'{place}, {o.contest} off; {"two foul rolls" if o.rolls == 2 else "one foul roll"} on Foul {rv(dc, "foul_contest")}')
+                else:
+                    d['option'] = (f'X{a.piece + 1} contests: {SHOT_NAME[t]} {rv(sh, "shot_" + t)} v contest {rv(dc, "con_" + t)} {place}, '
+                                   f'{o.contest} off, never a foul')
+                d['clean'] = bool(o.clean)
+            elif a.piece >= 0 and RC.position_contest(s.ctx.rules) and not s.forced:
                 # D-191: a Contest action is going for the block on an inside shot
                 dc = s.ctx.dfn[a.piece]
                 dq, sq_ = s.x[a.piece], s.o[s.ball]
@@ -336,6 +352,14 @@ def turn_summary(s):
         return 'Failed inbound: the offence chooses who gets the ball'
     if s.stage == 'reaction':
         left = min(2 - s.turn_n, s.tok_x)
+        if RC.contest_costs(s.ctx.rules):
+            # D-261: the reply turn, with the Contest one of its two actions
+            n = f'{left} action{"s" if left != 1 else ""}' + (' left' if s.turn_n else '')
+            how = ('A jump shot is contested by where the defender stands and where his arrow points: square in front is the '
+                   'full contest' if s.shot in RC.JUMP_SHOTS else
+                   'Inside, choose a normal Contest (never a foul) or a hard one, the block (the full contest, with the foul risk)')
+            return (f'Shot declared ({s.shot}). The defence replies: {n}. Contesting the shot is one of them, the last, by a defender '
+                    f'next to the shooter. Nothing is automatic: no Contest and the shot goes up open. {how}')
         if RC.position_contest(s.ctx.rules):
             n = f'{left} action{"s" if left != 1 else ""} left'
             if s.shot in RC.JUMP_SHOTS:

@@ -141,16 +141,20 @@ def test_a_screen_then_the_dive_reads_higher_than_its_one_turn_reading_for_both_
     assert rows, 'a screen the screener can set this turn'
     # each screen, the defence's turn by its own reading (the list), then the offence's: the best of them, as the
     # read-ahead itself chooses
+    # Re-recorded in step 28 (D-261: one movement before the Contest): the screen that reads best now frees a teammate,
+    # not the screener; it read the best screen's own screener rolling. Now: of the screens whose screener's roll to the
+    # rim rises (screen, then the dive), the best reads higher two turns on than the one-turn reading.
     read = []
     for w, after, act in rows:
         nxt, dn = PL._defence_turn(after)
-        read.append((PL.list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting')), nxt, act))
+        sq = AG.coverage(nxt.with_(turn_n=0))['squares'][act.piece]
+        dive = max((v['worth'] for k, v in sq.items() if B.zone(B.parse_sq(k)) == 'K'), default=0)
+        before = max(v['worth'] for v in AG.coverage(s)['squares'][act.piece].values())
+        if dive > before:                                          # it is the screener's roll to the rim that rises
+            read.append((PL.list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting')), nxt, act))
+    assert read, 'a screen then the dive'
     two, nxt, act = max(read, key=lambda z: z[0])
     assert two > first                                             # the offence's reading: higher read two turns on
-    sq = AG.coverage(nxt.with_(turn_n=0))['squares'][act.piece]
-    dive = max((v['worth'] for k, v in sq.items() if B.zone(B.parse_sq(k)) == 'K'), default=0)
-    before = max(v['worth'] for v in AG.coverage(s)['squares'][act.piece].values())
-    assert dive > before                                           # it is the screener's roll to the rim that rises
     # the defence's reading: its best answer to the screen, by the list, still leaves more than the one-turn reading
     # (it can't read the screen away), and the board read ahead (the same reading both setups use) is at least that
     h = PL.horizon_read(s, budget=60.0, depth=PL.HORIZON_TURNS)

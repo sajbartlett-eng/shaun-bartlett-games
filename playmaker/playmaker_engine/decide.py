@@ -271,11 +271,12 @@ def _cmap2(rules, q, a, qs, mode):
     he is set for as bits). A Contest reached by a Quick Step or a Sprint finds him off balance, by the rules (D-185)."""
     full = _cmap_cached(rules, q, a, qs, True, 1, mode)
     setr = _cmap_cached(rules, q, a, qs, True, 0, mode)
+    RN = RC.reply_moves(rules)            # D-261: the movements before the Contest in the reply turn
     out = {}
     for c, row in full.items():
         st = setr.get(c) or _NOSET
-        fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
-        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+        fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
+        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
         out[c] = (tuple(row), tuple(st), fm, sm)
     return out
 
@@ -292,13 +293,14 @@ def _body_cmap2(s_next, d, mode):
     key = (s_next.o, s_next.x, d, s_next.arrows[d], s_next.ctx.dfn[d].qs, rules, mode, s_next.screens)
     hit = _BODY.get(key)
     if hit is None:
+        RN = RC.reply_moves(rules)        # D-261
         full = contest_map(rules, free, fixed, mode)
         setr = contest_map(rules, {q: n for q, n in free.items() if n <= 1}, {s_next.x[d]: {s_next.arrows[d]: 0}}, mode)
         hit = {}
         for c, row in full.items():
             st = setr.get(c) or _NOSET
-            fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
-            sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+            fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
+            sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
             hit[c] = (tuple(row), tuple(st), fm, sm)
         if len(_BODY) > 20000:
             _BODY.clear()
@@ -322,15 +324,16 @@ def _any_arrow_cmap2(rules, q, qs, mode):
                     if st[k] < cur[1][k]:
                         cur[1][k] = st[k]
     out = {}
+    RN = RC.reply_moves(rules)            # D-261
     for c, (row, st) in acc.items():
-        fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
-        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+        fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
+        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
         out[c] = (tuple(row), tuple(st), fm, sm)
     return out
 
 
 _GAP = {}                  # step 22b: the zone gaps' table, a context at a time (engine.js gapInfo)
-_LATE_ROW = (2,) + (INF,) * 5      # step 22c: the first defender to arrive, a hand up off balance (engine.js gapLate)
+_LATE_ROW = (1,) + (INF,) * 5      # step 22c: the first defender to arrive, a hand up off balance (engine.js gapLate; one movement: inside the reply under D-261 too)
 
 
 @lru_cache(maxsize=None)
@@ -674,7 +677,7 @@ class Read:
     def _vals2(self, look, d, row, setrow=None):
         """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions. setrow (step
         22b, D-222): the contest row he is set for; a kind outside it is contested off balance."""
-        keep, self.react_moves = self.react_moves, 2
+        keep, self.react_moves = self.react_moves, RC.reply_moves(self.rules)     # D-261: one movement before the Contest
         self._phase_away = True                    # D-151: the rushed state doesn't carry over the phase's end
         try:
             return self._vals(look, d, row, setrow=setrow)
@@ -709,6 +712,8 @@ class Read:
         limit = self.react_moves if moves is None else min(moves, self.react_moves)
         soft = RC.app_rule(self.rules, 'soft_contest')
         soft_limit = max(self.react, self.react_moves, 0)
+        if RC.contest_costs(self.rules):
+            soft_limit = limit                   # D-261: the normal Contest is an action too: one movement before it
         if moves is not None:
             soft_limit = min(moves, soft_limit)
         card = self.s.ctx.off[look.i]
@@ -1623,16 +1628,22 @@ class Read:
             st['L'], st['worths'], st['ov'] = L, worths, ov
 
         def better(a, b):
-            """engine.js lgBetter (step 22b, D-219): the lasting gap; then the list (what it leaves uncovered as it then
-            stands, largest first); then efficiency, the fewest actions; then the moves' own order."""
-            if a['L'] < b['L'] - 1e-9:
-                return True
-            if a['L'] > b['L'] + 1e-9:
-                return False
+            """engine.js lgBetter (step 22b, D-219): the list (what it leaves uncovered as it then stands, largest
+            first); then the lasting gap; then efficiency, the fewest actions; then the moves' own order. Step 28 (D-262,
+            Shaun, 19 Nov 2026): the list leads here too, as everywhere; eval.answer_lead 'gap' puts the lasting gap first."""
             la, lb = self._lg_list(a), self._lg_list(b)
+            if gap_first:
+                if a['L'] < b['L'] - 1e-9:
+                    return True
+                if a['L'] > b['L'] + 1e-9:
+                    return False
             if less(la, lb):
                 return True
             if less(lb, la):
+                return False
+            if a['L'] < b['L'] - 1e-9:
+                return True
+            if a['L'] > b['L'] + 1e-9:
                 return False
             if len(a['moves']) != len(b['moves']):
                 return len(a['moves']) < len(b['moves'])
@@ -1641,6 +1652,7 @@ class Read:
                 if ka != kb:
                     return ka < kb
             return False
+        gap_first = (self.cfg or {}).get('answer_lead') == 'gap'
         cmp = lambda u, v: -1 if better(u, v) else 1 if better(v, u) else 0
         score(root)
         best, frontier = root, [root]

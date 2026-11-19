@@ -27,22 +27,17 @@ NAMES = {
     '57': 'the budget',
     # step 27 (D-258): read from the board read ahead (plan.horizon_read), turn by turn by the rules
     '20b': 'screen, then the dive', '9b': 'the off-ball seal', '11': 'the V-cut', '33': 'hesitate', '39': 'swing', '41': 'extra pass', '22': 're-screen', '17': 'relocate after passing',
+    # step 28 (D-267): read from the defender's stance (his square and arrows against his man, the ball and the rim)
+    '2': 'post entry against the front', '2b': 'the lob over the front', '3': 'post entry against the three-quarter denial',
+    '14': 'backdoor', '19c': 'dribble at to force the backdoor', '21': 'reject the screen', '24': 'curl, fade or straight cut',
+    '25': 'stagger', '26': 'screen the screener', '27': 'back screen on the roller\'s defender',
 }
 
 UNMEASURED = {
-    '2': 'fronting needs the defender in front and a swing to change the angle: two phases the one-phase map does not hold',
-    '3': 'three-quarter denial is a stance the board does not record',
     '8': 'a post-to-post cross screen: off-ball screens are read (23), but not which of two bigs it frees',
     '12': 'the L-cut: as the V-cut',
-    '14': 'backdoor: a denial stance is not recorded',
     '16': 'drift or lift on a drive: the kick-out target is read (45), not the drift that makes it',
     '19': 'clear out: read as isolation by spacing (19b)',
-    '19c': 'dribble at to force the backdoor: as backdoor',
-    '21': 'reject the screen: the defender cheating over is not recorded',
-    '24': 'curl, fade or straight cut: the defender\'s chase is not recorded',
-    '25': 'stagger: two screens in a row, beyond one screen read at a time',
-    '26': 'screen the screener: as stagger',
-    '27': 'back screen on the roller\'s defender: as stagger',
     '28': 'handoff: a short pass with a body in the way is read as a pass and a screen separately',
     '29': 'hold or pin: read inside the screens (20, 23)',
     '34': 'retreat dribble: traps are not recorded',
@@ -73,6 +68,84 @@ def _best(sqs):
         return None, None
     k, lk = max(sqs.items(), key=lambda kv: (kv[1].get('worth', 0), kv[0]))
     return k, lk
+
+
+# ---- step 28 (D-267): the defender's stance, from his square and arrows (no new rule, no new token) ----------------
+
+STANCE_WORDS = {'front': 'fronts', 'three-quarter': 'plays three-quarter on', 'deny': 'denies', 'behind': 'plays behind',
+                'beside': 'plays beside', 'off': 'sags off', 'over': 'cheats over the screen on', 'under': 'goes under the screen on'}
+
+
+def _faces(state, d, target):
+    from . import geometry as G
+    rules = state.ctx.rules
+    return G.faces(rules, G.stance(rules, state.arrows[d], any(b[1] == d for b in state.beaten)), state.x[d], target)
+
+
+def _dir_to(a, b):
+    """The one of the eight directions nearest the line from a to b (any distance)."""
+    import math
+    ang = math.atan2(b[1] - a[1], b[0] - a[0])
+    return min(range(8), key=lambda k: (abs((math.atan2(B.DIRS[k][1], B.DIRS[k][0]) - ang + math.pi) % (2 * math.pi) - math.pi), k))
+
+
+def stance(state, d, a):
+    """Defender d's stance on attacker a, read from where he stands and where his arrows point, against a, the ball and
+    the rim (plain words from the rules):
+    - off: not next to him (he sags off);
+    - front: next to him, between him and the ball (straight along the line from him to the ball), his arrow on him or
+      the ball: a pass straight to him has to go over the defender;
+    - three-quarter (a post in the paint) or deny (anyone else): next to him, on the ball's side but off that line by
+      one direction, his arrow on him or the ball: the pass from the ball handler's side is cut, the other side is not;
+    - behind: next to him, nearer the rim than he is and further from the ball, his arrow on him;
+    - beside: next to him, anything else."""
+    xd, oa = state.x[d], state.o[a]
+    if not (B.on_board(xd) and B.on_board(oa)) or not B.adjacent(xd, oa):
+        return 'off'
+    bq = state.o[state.ball]
+    if a == state.ball:
+        return 'behind' if B.dist_rim(xd) < B.dist_rim(oa) else 'beside'
+    to_ball, to_d = _dir_to(oa, bq), B.dir_between(oa, xd)
+    eyes = _faces(state, d, oa) or _faces(state, d, bq)
+    nearer_ball = B.cheb(xd, bq) < B.cheb(oa, bq)
+    if nearer_ball and eyes and to_d == to_ball:
+        return 'front'
+    if nearer_ball and eyes and (to_d - to_ball) % 8 in (1, 7):
+        return 'three-quarter' if _paint(oa) else 'deny'
+    if B.dist_rim(xd) < B.dist_rim(oa) and not nearer_ball:
+        return 'behind'
+    return 'beside'
+
+
+def screen_stance(state, d, i):
+    """Defender d against a teammate's screener i next to him (a screen i can set on him): over (cheating over the top:
+    he stands on the screener's high side, further from the rim) or under (between the screener and the rim)."""
+    xd, oi = state.x[d], state.o[i]
+    if not (B.on_board(xd) and B.on_board(oi)) or not B.adjacent(xd, oi) or i == state.ball:
+        return None
+    if B.dist_rim(xd) > B.dist_rim(oi):
+        return 'over'
+    if B.dist_rim(xd) < B.dist_rim(oi):
+        return 'under'
+    return None
+
+
+def stances(state, perm):
+    """Every defender's stance on his man (perm: defender -> attacker), and against any screener next to him whose
+    screen his man could use. -> [dict(x, o, stance, text)]."""
+    out = []
+    for d, a in enumerate(perm or []):
+        if a is None or a < 0 or not B.on_board(state.x[d]):
+            continue
+        st = stance(state, d, a)
+        out.append(dict(x=d, o=a, stance=st, text=f"X{d + 1} {STANCE_WORDS[st]} O{a + 1}"))
+        for i in range(5):
+            if i in (a, state.ball) or not B.on_board(state.o[i]) or B.cheb(state.o[i], state.o[a]) > 3:
+                continue
+            ss = screen_stance(state, d, i)
+            if ss:
+                out.append(dict(x=d, o=a, screener=i, stance=ss, text=f"X{d + 1} {STANCE_WORDS[ss]} O{i + 1} (his man O{a + 1})"))
+    return out
 
 
 def read(state, scout, cov=None, roles=None, bar=0.0):
@@ -193,6 +266,50 @@ def read(state, scout, cov=None, roles=None, bar=0.0):
         if lk2:
             add('49d', [r2['man']], [r['x'] for r in sag], lk2.get('worth', 0), k2,
                 f"O{r2['man'] + 1} is left to the area: an overload there leaves him free on {k2}")
+    # S. step 28 (D-267): the stances, and what each one gives the offence, by the same measure (worth at its real chance)
+    from . import decide as D
+    for z in stances(state, perm):
+        d, a, st = z['x'], z['o'], z['stance']
+        sqs = squares[a] or {}
+        paint = {k: v for k, v in sqs.items() if _paint(_sq(k))}
+        pk, pl = _best(paint)
+        pw = (pl or {}).get('worth', 0)
+        if st in ('front', 'three-quarter') and a != bh and pl:
+            # the entry from another angle: each teammate's pass to him, if that teammate had the ball, by the rules
+            alts = []
+            for k2 in range(5):
+                if k2 in (a, bh) or not B.on_board(state.o[k2]):
+                    continue
+                try:
+                    alts.append((D.cov_pass(state.with_(ball=k2), a, state.o[a]), k2))
+                except (ValueError, IndexError):
+                    continue
+            ch, k2 = max(alts, default=(0.0, -1))
+            if k2 >= 0 and ch > 0:
+                add('2' if st == 'front' else '3', [a, k2], [d], ch * pw, pk,
+                    f"X{d + 1} {STANCE_WORDS[st]} O{a + 1}: the entry from O{k2 + 1} lands {round(100 * ch)} in 100, to his {pl['shot']} on {pk}")
+            if st == 'front':
+                ch0 = passes[a] or 0
+                if ch0 > 0:
+                    add('2b', [a, bh], [d], ch0 * pw, pk, f"X{d + 1} fronts O{a + 1}: the pass over the top lands {round(100 * ch0)} in 100")
+        if st == 'deny' and pl:
+            add('14', [a], [d], pw, pk, f"X{d + 1} denies O{a + 1}: the backdoor cut to {pk}")
+            if B.cheb(state.o[bh], state.o[a]) <= 3:
+                add('19c', [bh, a], [d], pw, pk, f"O{bh + 1} dribbles at O{a + 1} to force X{d + 1}'s denial: the backdoor to {pk}")
+        if st in ('over', 'under') and z.get('screener') is not None:
+            i = z['screener']
+            if a == bh:
+                away = {k: v for k, v in (squares[bh] or {}).items() if B.cheb(_sq(k), state.o[i]) > B.cheb(state.o[bh], state.o[i])}
+                ak, al = _best(away)
+                if st == 'over' and al:
+                    add('21', [bh, i], [d], al.get('worth', 0), ak, f"X{d + 1} cheats over O{i + 1}'s screen: O{bh + 1} rejects it, away to {ak}")
+            else:
+                three = {k: v for k, v in sqs.items() if v.get('shot') == 'three'}
+                tk, tl = _best(three)
+                if st == 'over' and pl:
+                    add('24', [a, i], [d], pw, pk, f"X{d + 1} trails O{a + 1} over O{i + 1}'s screen: he curls to {pk}")
+                elif st == 'under' and tl:
+                    add('24', [a, i], [d], tl.get('worth', 0), tk, f"X{d + 1} goes under O{i + 1}'s screen: O{a + 1} fades to {tk}")
     # H. what the offence must manage
     held_n = (state.grd >> 2) & 3
     if (state.grd & 3) == 2 or held_n:
@@ -234,6 +351,23 @@ def words(cond):
     return f"{cond['name'].capitalize()}: {cond['why']} (worth {round(cond['worth'])})."
 
 
+def _screened(p):
+    """The defender a read-ahead screen is set on (its own words: "O4 screens X5 from I3")."""
+    w = p.get('offence') or ''
+    if ' screens X' not in w:
+        return None
+    try:
+        return int(w.split(' screens X')[1].split()[0]) - 1
+    except ValueError:
+        return None
+
+
+def _guards(state, d):
+    """The attacker defender d is nearest to (the board's own reading of who he guards, for the read-ahead's words)."""
+    xd = state.x[d]
+    return min(range(5), key=lambda a: (B.cheb(xd, state.o[a]), a)) if B.on_board(xd) else -1
+
+
 def ahead(h, state):
     """Step 27 (D-258): the conditions the board read ahead shows, each from the route itself (plan.horizon_read):
     every turn played by the rules, the defence's answer by its own reading, the list read again. A condition is named
@@ -250,8 +384,19 @@ def ahead(h, state):
         kind, o, dest, tgt = p['act']
         add = lambda cid, why: out.append(dict(id=cid, name=NAMES[cid], turn=p['turn'], o=o, why=why))
         if kind == 'screen':
-            add('22' if any(q['act'][0] == 'screen' for q in path[:k]) else '20b',
+            prev_s = [q for q in path[:k] if q['act'][0] == 'screen']
+            add('22' if any(q['act'][1] == o for q in prev_s) else '20b',
                 f"O{o + 1} screens; the next turn reads {(nxt or p)['list'][0]:g} after the defence answers")
+            if prev_s and prev_s[-1]['act'][1] != o:
+                # step 28 (D-267): two screens in a row by two screeners: a stagger; on the first screener's own defender,
+                # screening the screener; and a back screen on the roller's defender when the first screener then rolls
+                first = prev_s[-1]
+                mine = _screened(p)
+                if mine is not None and _guards(state, mine) == first['act'][1]:
+                    rolls = any(q['act'][1] == first['act'][1] and q['act'][0] in ('move', 'qs', 'sprint') for q in path[k + 1:])
+                    add('27' if rolls else '26', f"O{o + 1} screens X{mine + 1}, the defender of the screener O{first['act'][1] + 1}")
+                else:
+                    add('25', f"O{first['act'][1] + 1} then O{o + 1}: two screens in a row")
         elif kind == 'pass':
             two = k > 0 and path[k - 1]['act'][0] == 'pass'
             add('41' if two else '39', f"O{o + 1} to O{tgt + 1}; the board then reads {p['list'][0]:g}")

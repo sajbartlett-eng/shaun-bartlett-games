@@ -119,6 +119,7 @@ class ContestOption:
     ev: Fraction
     category: str = ''     # step 3h: front / side / behind (descriptive under the current geometry)
     rolls: int = 1         # step 3n F2: foul rolls (two when the contester is level with or further from the rim)
+    hard: bool = False     # D-261: an inside shot's hard Contest (the block), rather than the normal one
 
 
 def contest_options(state, shooter, shot_type, forced=False):
@@ -139,6 +140,8 @@ def contest_options(state, shooter, shot_type, forced=False):
         return max(0, v) if floor else v
 
     opts = [ContestOption(-1, 0, True, Fraction(0), val(0), ft, Fraction(val(0)))]
+    if RC.contest_costs(rules) and not forced:
+        return opts + _contest_actions(state, shooter, shot_type, val, ft, rating, pts, card)
     position = RC.position_contest(rules) and not forced
     if position and shot_type in RC.JUMP_SHOTS:
         return opts                     # D-191: a jump shot is contested by position only: there is no Contest action
@@ -178,6 +181,47 @@ def contest_options(state, shooter, shot_type, forced=False):
         ev = pf * ftj + (1 - pf) * v
         opts.append(ContestOption(j, c, clean, pf, v, ftj, ev, cat, rolls if not clean else 0))
     return opts
+
+
+def _contest_actions(state, shooter, shot_type, val, ft, rating, pts, card):
+    """D-261: the Contest actions open to the defence, one per defender next to the shooter: the normal Contest (the
+    position table, D-194: square the full rating, in front with the arrow off or beside 3 less, behind 6 less, rushed
+    2 more off, at least 1; never a foul) and, on an inside shot from a defender who isn't square, the hard Contest
+    (the block: the full rating, 3 less from behind, rushed less; one foul roll from in front with the arrow off,
+    two from the side or behind)."""
+    ctx, rules = state.ctx, state.ctx.rules
+    spos = state.o[shooter]
+    cut = RC.control_cut(rules, shot_type)
+    fiba = RC.app_rule(rules, 'fiba_fouled_shot')
+    jump = shot_type in RC.JUMP_SHOTS
+    out = []
+    for j, xp in enumerate(state.x):
+        if not B.adjacent(xp, spos):
+            continue
+        beaten = any(b[1] == j for b in state.beaten)
+        square = B.dist_rim(xp) < B.dist_rim(spos) and G.faces(rules, G.stance(rules, state.arrows[j], beaten), xp, spos)
+        rushed = bool(cut) and state.rushed('X', j)
+        c = ctx.dfn[j].con(shot_type) - (0 if square else RC.SOFT_CONTEST) - (RC.FAR_CONTEST_PENALTY if B.dist_rim(xp) > B.dist_rim(spos) else 0)
+        if rushed:
+            c -= cut
+        c = max(RC.CONTEST_FLOOR, c)
+        v = val(c)
+        out.append(ContestOption(j, c, True, Fraction(0), v, ft, Fraction(v), 'position' if jump else 'hand', 0))
+        if jump or square:
+            continue
+        eligible, foul_roll, penalty, cat = G.terms(rules, xp, G.stance(rules, state.arrows[j], beaten), spos)
+        if not eligible:
+            continue
+        h = contest_rating(ctx.dfn[j], shot_type, xp, spos, rules)
+        if rushed:
+            h = max(0, h - cut)
+        h = max(RC.CONTEST_FLOOR, h)
+        rolls = foul_rolls(rules, xp, spos)
+        pf = p_fouls(p_foul(ctx.dfn[j].r['foul_contest'], rules), rolls)
+        vh = val(h)
+        fth = foul_on_shot_points(card, shot_type, pts, rules, rating, vh, rating - h)[0] if fiba else ft
+        out.append(ContestOption(j, h, False, pf, vh, fth, pf * fth + (1 - pf) * vh, cat, rolls, True))
+    return out
 
 
 def soft_contest(state, shooter, shot_type):

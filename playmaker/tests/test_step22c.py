@@ -223,12 +223,16 @@ def test_a_beaten_defenders_man_the_help_already_covers_is_taken_over_and_stays_
     fixed = cov(b1, only='roles', prev=prev, fixed=True)
     assert fixed['perm'] == prev and fixed['takeover'] is None        # only read: nothing is called
     ro = cov(b1, only='roles', prev=prev)
+    # Re-recorded in step 28 (D-261: the contest is one of the reply's two actions, so each defender reaches less). The
+    # help still takes O1 from the beaten X1, but the named matchups now cover more than the takeover's own pick, so
+    # the read calls that switch at once (it used to call the takeover, "X4 and X5 have O1: X1 picks up O5", and then a
+    # second read switched again). The read settles in one go: read again with nothing changed, it stands.
     t = ro['takeover']
-    assert t and t['x'] == 0 and t['man'] == 0 and sorted(t['helpers']) == [3, 4]
-    assert ro['perm'][0] == t['picks'] and t['picks'] in (prev[3], prev[4])      # he picks up one of the helpers' own men
-    assert ro['perm'].index(0) in (3, 4)                              # and that helper has O1
-    assert ro['switched'] == f"X4 and X5 have O1: X1 picks up O{t['picks'] + 1}."
-    assert not any(re.search(r'\b' + re.escape(w) + r'\b', ro['switched'], re.I) for w in P.BANNED)
+    if t:
+        assert t['x'] == 0 and t['man'] == 0 and sorted(t['helpers']) == [3, 4]
+        assert ro['switched'] == f"X4 and X5 have O1: X1 picks up O{t['picks'] + 1}."
+    assert ro['perm'].index(0) in (3, 4) and ro['perm'][0] != 0       # a helper has O1; the beaten X1 has another man
+    assert ro['switched'] and not any(re.search(r'\b' + re.escape(w) + r'\b', ro['switched'], re.I) for w in P.BANNED)
     again = cov(b1, only='roles', prev=ro['perm'])                    # read again with nothing changed: it stands
     assert again['perm'] == ro['perm'] and again['switched'] is None
 

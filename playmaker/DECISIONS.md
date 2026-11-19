@@ -1599,6 +1599,61 @@ that fails if it doesn't; a new reading reuses the list (D-219) or says why not;
 they come from the same reading, against the same defence, to the same horizon. In `CLAUDE.md`. · Source: Shaun,
 19 Nov 2026 · **Ruled.**
 
+**D-261. The contest is a defence action (Shared).** Shaun, from his playtest: "The offence has the shot action as part
+of their allowance, meaning that at most they get one movement and the shot... But then the defence gets two movements
+and still contests. They get an extra action... My proposal: the contest, whether normal or hard, always counts as a
+defensive action. And you always press the button. And you get the choice when hard contest is an option." And: "The
+defensive team gets one turn of 2 actions to respond to the offences turn where they shot the ball. They could move two
+players but then nobody would contest the shot." Built: after a shot the defence has one reply turn of 2 actions shared
+by the team; the Contest is one of them for every shot; nothing is automatic (no Contest, no contest). Jump shots keep
+the position table, no foul (D-191, D-193, D-194); inside shots offer the normal Contest (the same table, never a foul) or
+the hard Contest (the block, its foul rolls as before). The map, the scout's cases, both setups, the read-ahead and the
+shot bar read one movement before the contest, from the rule (`rules.contest_costs`, `reply_moves`). At the table the
+Contest was already the reply's action (D-18); the printed wording to approve is in the step 28 report. · Source:
+Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-262. The map's own answer leads by the list.** Shaun: one reading everywhere, and "a single worst-hole number scores
+two positions alike even when one leaves several more good looks." Built in both engines: the defence's best answer
+inside the lasting reading compares the list first, then the lasting gap, then efficiency. The lasting gap is still read
+and shown; `eval.answer_lead: "gap"` puts it first again (off). · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-263. The read-ahead counts both outcomes of a pass.** Shaun: the way step 26 does in the map (D-250); options are
+compared at their real chance (his step 24 ruling). Built: a pass read ahead is the board if it lands, at the map's own
+catch chance, and the pass stopped (-5, play on, the phase ends), at the chance it is stopped; each item of the list is
+weighed by the two, as each look's worth is. No threshold. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-264. One plan on screen: the route the computer chases.** Shaun: the Plan line shows the route read ahead, not a
+one-turn plan beside a different route; the needs, branches and the attention, holes and access line follow the route.
+Built (`plan.route_plan`): the route's turns, then the plan read on the board the route leads to; in play the same, once
+a phase. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-265. The wider search: each attacker's best square for each job.** Shaun: "a wider search, no rule"; the table
+squares stay as a rival; if the corner still wins, report why by the list. Built: from the quick leader, each attacker
+is tried on his best post, roll, spacing and screen square (the map's own looks); the best of them is read in full beside
+the leader and the table squares, within the setup time. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-266. The Sharpshooter check tests the outcome.** Shaun: "it depends": you don't top-lock a shooter when that frees a
+better one. `test_two_responsibilities_22b` sense check 3 now tests that the defence's choice leaves the offence the
+least by the list against every way of cutting that pass. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-267. The defender's stance, read from squares and arrows.** Shaun: fronting, three-quarter denial, playing behind,
+cheating over a screen and going under it are where he stands and which way his arrows point, against his man, the
+ball and the basket; no new rule, no new token. Built (`conditions.stance`, `screen_stance`): front (between his man and
+the ball, on the line, arrow on him or the ball), three-quarter or deny (the ball's side, one direction off, nearer the
+ball), behind (nearer the rim, further from the ball), over or under a screener (his high side, or between the screener
+and the rim). The conditions they unlock are read with the same measure: post entries against a front or three-quarter
+(2, 3), over the top of a front (2b), backdoor (14), dribble at to force it (19c), reject the screen (21), curl or fade
+(24), and from the route ahead stagger (25), screen the screener (26) and a back screen on the roller's defender (27).
+The defence reads the same with its own model. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 28.**
+
+**D-268. Four turns ahead.** Shaun (on D-258): keep three turns; when two screens in a row are read, check whether those
+plans need a fourth turn on one board, and set it if they do, within the time guard. The check
+(`docs/runs/step28/four_turns.json`): on board 1, whose route reads O1's screen then O5's screen on the same defender
+(screen the screener), and on board 3, the top two placements swap order at four turns. So every reading ahead is now four
+turns, both sides alike, capped by the shot clock. The setup stays inside its time: the full readings stop by 95
+seconds, and the defence reads its last three ways of standing ahead (it read four). · Source: Shaun, 19 Nov 2026 ·
+**Ruled; built in step 28.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

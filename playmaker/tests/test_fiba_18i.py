@@ -175,9 +175,11 @@ def test_each_contest_carries_its_own_fouled_value():
     # step 18n: re-recorded, reason: D-189 to D-193. A jump shot has no Contest action and no shooting foul in the app
     # now (D-191), so the fouled value is shown on a layup: X1 beside O1 at the rim goes for the block
     s = board(o=['I4', 'C9', 'O9', 'A3', 'Q3'], x=['J4', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0)
+    # (re-recorded in step 28, D-261: a three has a Contest action now, the position one, which never fouls; it read: no
+    # Contest at all on a three. The block is the hard Contest.)
     assert not [c for c in contest_options(board(o=['I10', 'C9', 'O9', 'A3', 'Q3'], x=['I9', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0), 0, 'three')
-                if c.defender >= 0]                                    # a three: nobody can foul the shooter
-    opt = next(c for c in contest_options(s, 0, 'layup') if c.defender == 0)
+                if c.defender >= 0 and not c.clean]                    # a three: nobody can foul the shooter
+    opt = next(c for c in contest_options(s, 0, 'layup') if c.defender == 0 and c.hard)
     card = s.ctx.off[0]
     left = card.shot('layup') - opt.contest
     assert not opt.clean and opt.p_foul > 0

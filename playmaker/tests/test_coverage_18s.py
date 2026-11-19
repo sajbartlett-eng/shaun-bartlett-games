@@ -62,6 +62,21 @@ def best_of(c, a):
     return max(c['squares'][a].values(), key=lambda v: v['worth'])
 
 
+def contested(st, kind='three', j=1):
+    """Step 28 (D-261): the shot going up now with defender j pressing his Contest in the reply (one token), by the rules."""
+    st = st.with_(side='O', turn_n=0)
+    a = next(a for a in legal_actions(st) if a.kind == 'shot' and a.shot == kind)
+    r = apply(st, a)
+    c = next(x for x in legal_actions(r) if x.kind == 'contest' and x.piece == j and x.shot != 'hard')
+    n = apply(r, c)
+
+    def ev(n):
+        if isinstance(n, ChanceNode):
+            return sum(float(p) * ev(sub) for p, _, sub in n.outcomes)
+        return float(score(n).total)
+    return ev(n)
+
+
 def shot_now(st, kind='three'):
     """What a shot going up now is worth by the rules' own resolution: the expected score over the dice."""
     st = st.with_(side='O', turn_n=0)
@@ -167,7 +182,9 @@ def test_check_1_the_clear_lane_is_a_large_weakness_and_the_defences_best_answer
     # Re-recorded in step 27 (D-255): by the rule, the layup goes up before the three seconds can fall: no cost (it read -2.5)
     assert lane['worth'] >= 30 and lane['cost'] == 0
     assert top['shot'] == 'layup' and top['worth'] >= lane['worth']
-    assert 1 <= len(c['answers']) <= 4 and c['left_worth'] <= top['worth'] - 8
+    # (re-recorded in step 28, D-262: the map's answer is led by the list now, and its best uses all five defenders; it
+    # read at most four)
+    assert 1 <= len(c['answers']) <= 5 and c['left_worth'] <= top['worth'] - 8
     assert {a['x'] for a in c['answers']} & {3, 4}               # a big comes into the lane
     # Re-recorded in step 20 (D-204): the answer is found jointly (each defender at most one movement), so there is no
     # answer-by-answer "leaves"; and the map is read as a fresh phase finds it, so the answered placement read again
@@ -220,10 +237,16 @@ def test_checks_4_and_5_by_the_rules_a_shot_going_up_with_no_token_left():
     worth = {}
     for name, (dx, dy) in (('in front', (0, -1)), ('beside', (1, 0)), ('behind', (0, 1))):
         q = (c9[0] + dx, c9[1] + dy)
-        worth[name] = shot_now(with_x(1, B.sq(q), B.dir_between(q, c9), ball=1, tok_x=0))
+        worth[name] = contested(with_x(1, B.sq(q), B.dir_between(q, c9), ball=1, tok_x=1))
+    # Re-recorded in step 28 (D-261): the contest is an action, so a shot going up with no token left is open from
+    # anywhere (it read the hand up from each square with tok_x=0); with one token X2 presses his Contest, and the order
+    # holds by where he stands
     assert worth['in front'] + 3 < worth['beside'] < worth['behind']
     on = B.dir_between(B.parse_sq('C8'), c9)
-    assert shot_now(with_x(1, 'C8', on, ball=1, tok_x=0)) + 3 < shot_now(with_x(1, 'C8', (on + 4) % 8, ball=1, tok_x=0))
+    assert contested(with_x(1, 'C8', on, ball=1, tok_x=1)) + 3 < contested(with_x(1, 'C8', (on + 4) % 8, ball=1, tok_x=1))
+    none = {shot_now(with_x(1, B.sq((c9[0] + dx, c9[1] + dy)), B.dir_between((c9[0] + dx, c9[1] + dy), c9), ball=1, tok_x=0))
+            for dx, dy in ((0, -1), (1, 0), (0, 1))}
+    assert len(none) == 1                                             # no token: nobody can contest, the same from anywhere
 
 
 @needs_node
@@ -244,7 +267,8 @@ def test_check_6_a_body_on_the_helpers_way_leaves_more(cov):
     on = cov(board(o=O_[:3] + ['C4', 'Q3'], tok_x=1))
     # (re-recorded in step 22c, D-228: this pinned the helper's answer, [3], with the way free. That answer and X1's
     # both leave 30; the tie goes to the list the answer leaves, and with gaps a race X1's now leaves less)
-    assert [a['x'] for a in off['answers']] in ([3], [0]) and off['left_worth'] == 30 and len(on['answers']) <= 1
+    # (re-recorded in step 28, D-261: one movement before the Contest now, so the answer leaves 32 where it left 30)
+    assert [a['x'] for a in off['answers']] in ([3], [0]) and off['left_worth'] == 32 and len(on['answers']) <= 1
     # (re-recorded in step 22b, D-222: with the reaction's off balance counted the other answer now leaves as much, 30 and
     # 30, where it left one more; the helper's answer is still gone and no less is left)
     assert on['left_worth'] >= off['left_worth']
