@@ -60,7 +60,8 @@ def _engine(off, dfn, i, j, t, where, how, s_rushed, d_rushed, front=True):
         opt = SC.soft_option(st, i, t)
         assert (opt.defender == j) == (where != 'open')
         return Fraction(opt.ev), opt
-    opt = next(q for q in SC.contest_options(st, i, t) if q.defender == j)
+    # (step 28, D-261: each defender has a normal and a hard Contest; the block is the hard one)
+    opt = next(q for q in SC.contest_options(st, i, t) if q.defender == j and (q.hard or not RC.contest_costs(RULES)))
     plus5 = RC.STEAL_FOUL_BONUS if RC.app_rule(RULES, 'points_play_on') else 0
     return Fraction(opt.ev) + opt.p_foul * plus5, opt
 
@@ -105,10 +106,15 @@ def test_a_square_defender_on_an_inside_shot_never_fouls_and_a_jump_shot_has_no_
     c, f, s, h = _spot('K')
     on = next(a for a in range(8) if G.faces(RULES, G.stance(RULES, a, False), f, c))
     st = game_state('Five Out', 'High-Low', [B.sq(c)] + FAR_O, [B.sq(f)] + FAR_X, [on, 0, 0, 0, 0], ball=0, rules=RULES, check=False)
-    assert all(q.defender != 0 for q in SC.contest_options(st, 0, 'layup'))     # in front with the arrow on him: no Contest action, no foul
+    # Re-recorded in step 28 (D-261): the contest is an action now, so the square defender has a Contest to press (it
+    # read: no Contest action, the full contest automatic). It is his full rating and never a foul, and he has no block.
+    mine = [q for q in SC.contest_options(st, 0, 'layup') if q.defender == 0]
+    assert len(mine) == 1 and mine[0].clean and not mine[0].hard and mine[0].p_foul == 0
     c3, f3, _, _ = _spot('3')
     st3 = game_state('Five Out', 'High-Low', [B.sq(c3)] + FAR_O, [B.sq(f3)] + FAR_X, [0] * 5, ball=0, rules=RULES, check=False)
-    assert [q.defender for q in SC.contest_options(st3, 0, 'three')] == [-1]
+    # a jump shot: his Contest is the position table, never a foul, and there is no block (it read: no Contest at all)
+    jump = [q for q in SC.contest_options(st3, 0, 'three') if q.defender >= 0]
+    assert all(q.clean and not q.hard for q in jump)
     assert all(r['how'] in (None, 'hand') for r in PL.shot_review(TEAMS['Five Out'][0], TEAMS['High-Low'][0], 'three', RULES))
 
 

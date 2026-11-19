@@ -614,7 +614,7 @@ def _okey(m):
 
 
 FULL_CAP_S = 95.0       # step 27: the full reads stop by here, so the whole offence setup stays under about 2 minutes on desktop
-HORIZON_TURNS = 3       # step 27 (D-258): every placement compared is read to the same horizon, capped by the clock
+HORIZON_TURNS = 4       # step 27 (D-258), step 28 (D-268): every placement compared is read to the same horizon, capped by the clock
 
 
 def _why_lost(win, lose):
@@ -649,13 +649,19 @@ def _job_variants(make, read, sq, ball, t_end):
         return []
     taken = set(sq) | set(m[1][0])
     out = []
+    allsq = cov.get('squares') or [{}] * 5
     for a in range(5):
         if a == ball:
             continue
-        sqs = (cov.get('squares') or [{}] * 5)[a] or {}
+        sqs = allsq[a] or {}
         picks = []
         for job, shots in JOB_SHOTS:
+            # his own best square for the job, where the map gives him one this phase; else the best square for the job
+            # on this board (any attacker's look there), so a player far from it this phase is still tried on it
             best = max(((v.get('worth', 0), q) for q, v in sqs.items() if v.get('shot') in shots), default=None)
+            if best is None:
+                best = max(((v.get('worth', 0), q) for z in allsq for q, v in (z or {}).items() if v.get('shot') in shots
+                            and B.parse_sq(q) not in taken), default=None)
             if best:
                 picks.append((job, B.parse_sq(best[1])))
         z = next((z for z in scr if z['o'] == a), None)
@@ -768,8 +774,8 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None,
         p = (tuple(sq), ball)
         if p in done:
             continue
-        if full and pool is None and (time.time() - t0) + last > cap:
-            break
+        if len(done) >= 2 and pool is None and (time.time() - t0) + last > cap:
+            break                     # (the quick leader and the table squares are always both read in full: the rival stays)
         if pool is None and lead_held >= 2:
             break
         t1 = time.time()
@@ -956,7 +962,7 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
         for t in [pick, base] + allowed:
             if all(t['x'] != u['x'] or t['arrows'] != u['arrows'] for u in pool):
                 pool.append(t)
-        for t in pool[:4]:
+        for t in pool[:3]:                  # (three ways read ahead keeps the defence's setup inside the time guard at four turns)
             h = horizon_read(make(o_sq, ball, t['x'], t['arrows']), scout, budget=60.0, depth=HORIZON_TURNS)
             if h is not None:
                 ahead.append((h['key'], t, h))
@@ -1020,11 +1026,20 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
             watching.append(dict(id=c['id'], text=f"{c['name']}: {c['why']}"))
     except ValueError:
         watching = []
+    # step 28 (D-267): the stances the defence takes, read from its own squares and arrows
+    try:
+        from . import conditions as CD
+        stn = [z for z in CD.stances(make(o_sq, ball, pick['x'], pick['arrows']), pm) if z['stance'] not in ('beside', 'off')]
+    except ValueError:
+        stn = []
     text = 'Matchups: ' + '; '.join(z['text'] for z in read) + '.' + (' Avoided: ' + '; '.join(z['text'] for z in avoided) + '.' if avoided else '')
+    if stn:
+        text += ' Stances: ' + '; '.join(z['text'] for z in stn) + '.'
     if watching:
         text += ' Watching: ' + '; '.join(z['text'] for z in watching) + '.'
     hz = next((z[2] for z in ahead if z[1] is pick), None)
     return dict(squares=pick['x'], arrows=pick['arrows'], perm=pm, value=round(pick['L'], 2), read=read, avoided=avoided, text=text, watching=watching,
+                stances=stn,
                 ahead=[dict(x=[B.sq(q) for q in z[1]['x']], list=z[2]['list'], turns=z[2]['turns'], chosen=z[1] is pick) for z in ahead],
                 horizon=dict(turns=hz['turns'], list=hz['list'], words=horizon_words(hz)) if hz else None,
                 lines=list(lines or []), swaps=[list(z) for z in swaps], settled=dict(x=[B.sq(q) for q in xs], L=L),

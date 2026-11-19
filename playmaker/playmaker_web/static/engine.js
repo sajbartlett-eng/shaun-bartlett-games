@@ -5723,6 +5723,7 @@ const PMEngine = (() => {
     // the takeover first: the man the help has is handed over, and his defender picks up what the helpers left: one
     // of the helpers' own men, whichever leaves every defender covering his own man best (a tie: the man left with
     // the most, then the helper standing on the lower square)
+    let tk = null;
     if (prev) {
       const due = [];
       for (let d = 0; d < 5; d++) { if (!ONB[s.x[d]]) continue; const H = helpers(d, prev[d]); if (H) due.push({ d, a: prev[d], H }); }
@@ -5736,7 +5737,7 @@ const PMEngine = (() => {
           if (covLess(vh, ve) || (!covLess(ve, vh) && (alone[prev[h]][h] > alone[prev[e]][e] + 1e-9 || (Math.abs(alone[prev[h]][h] - alone[prev[e]][e]) <= 1e-9 && s.x[h] < s.x[e])))) { e = h; ve = vh; }
         }
         const perm = swap(e), left = prev[e];
-        return { perm, kept: false, takeover: { x: t.d, man: t.a, helpers: t.H, picks: left }, vec: vec(perm), ...info };
+        tk = { perm, kept: false, takeover: { x: t.d, man: t.a, helpers: t.H, picks: left }, vec: vec(perm), ...info };
       }
     }
     // Step 22d (D-230, Shaun, 18 Nov 2026): a defender's man is named by who is nearest: the attackers in order of the
@@ -5763,6 +5764,9 @@ const PMEngine = (() => {
       return p;
     };
     const near = named(), vn = vec(near);
+    // step 28: a takeover stands unless the named matchups cover more than it does, so a read settles at once (read
+    // again with nothing changed, it stands); with the contest now an action (D-261) the takeover's own pick can be beaten
+    if (tk) return covLess(vn, tk.vec) ? { perm: near, kept: false, takeover: null, vec: vn, ...info } : tk;
     // with assignments standing, a switch is called only when the named matchups cover more (D-220)
     if (prev && !covLess(vn, vec(prev))) return { perm: prev.slice(), kept: true, takeover: null, vec: vec(prev), ...info };
     return { perm: near, kept: false, takeover: null, vec: vn, ...info };

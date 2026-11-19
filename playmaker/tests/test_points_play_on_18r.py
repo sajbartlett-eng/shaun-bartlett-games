@@ -99,7 +99,9 @@ def test_a_shooting_foul_is_plus_five_and_its_free_throws():
     seen = False
     while not isinstance(node, ChanceNode) and node.stage != 'over':
         acts = legal_actions(node)
-        pick = next((a for a in acts if a.kind == 'contest'), None) or next(a for a in acts if a.kind in ('end_turn', 'pause'))
+        # (step 28, D-261: the block is the hard Contest; a normal Contest never fouls)
+        pick = (next((a for a in acts if a.kind == 'contest' and a.shot == 'hard'), None) or next((a for a in acts if a.kind == 'contest'), None)
+                or next(a for a in acts if a.kind in ('end_turn', 'pause')))
         node = apply(node, pick)
     for label, n in leaves(node):
         if n.stage == 'over' and n.result.kind == 'free_throws':
