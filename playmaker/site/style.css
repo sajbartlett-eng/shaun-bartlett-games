@@ -505,3 +505,18 @@ h2.h3 { font-size: 17px; margin: 6px 0 4px; }
 .scouttable { border-collapse: collapse; font-size: .85em; margin: 8px 0; }
 .scouttable th, .scouttable td { border: 1px solid var(--line); padding: 3px 6px; text-align: left; }
 .scouttable caption { text-align: left; margin-bottom: 4px; }
+
+/* Step 25: the loading panel and the thinking cue */
+.loadingpanel { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(520px, calc(100vw - 32px)); z-index: 60;
+  background: #fffdf6; border: 2px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+.loadingpanel.hidden, .thinking.hidden { display: none; }
+.loadtitle { font-weight: 700; margin-bottom: 8px; }
+.loadbar { height: 12px; border: 2px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+.loadfill { height: 100%; width: 0; background: repeating-linear-gradient(45deg, #1f3a5f 0 10px, #2f5687 10px 20px); transition: width .9s linear; }
+.loadhead { margin-top: 10px; font-weight: 600; }
+.loadread { margin: 4px 0 0; }
+.thinking { margin: 4px 0; font-weight: 600; }
+.thinking.off { color: #1f3a5f; } .thinking.def { color: #7a2e2e; }
+.thinking .dots::after { content: '●'; display: inline-block; animation: pmpulse 1s ease-in-out infinite; }
+@keyframes pmpulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .loadfill { transition: none; } .thinking .dots::after { animation: none; } }
