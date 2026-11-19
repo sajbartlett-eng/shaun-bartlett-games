@@ -11,7 +11,7 @@ window.PMTips = (function () {
   const hasAct = kind => (st.legal || []).some(a => a.kind === kind);
   const TIPS = [
     { id: 'setup', when: () => st && st.placing && st.placing.mine,
-      text: 'First, set up your side. Tap a player, then tap his new square, or take the proposed setup and Confirm.' },
+      text: 'First, set up your side. Tap a player, then tap his new square, or press "Computer sets up the offence" (or the defence), then Confirm.' },
     { id: 'move', when: () => mine() && st.side_to_act === 'O' && sel.side == null,
       text: 'Tap one of your players. The squares he can reach light up. Tap one, then tap it again to move him there.' },
     { id: 'arrow', when: () => mine() && sel.side != null,
