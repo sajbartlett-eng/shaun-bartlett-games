@@ -240,7 +240,8 @@ def test_the_computers_private_plan_is_never_shown_to_the_human_playing_it_and_t
         s = r['state']
         dx = s['placing']['draft']
         read = s['setup_info']['X']['read']
-        assert len(read) == 5 and all(re.match(r'X\d on O\d: ', t) for t in read)
+        # (re-recorded in step 26, D-252: a defender who can't contest his man's look this turn reads "sags off")
+        assert len(read) == 5 and all(re.match(r'X\d (on|sags off) O\d', t) for t in read)
         _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, squares=dx['squares'], arrows=dx['arrows']))
         assert r['state']['placing'] is None and r['state']['plan_line']['coaching'] is True
         # against the computer: its defence's read is its own
@@ -285,7 +286,11 @@ def test_a_defender_covers_every_look_he_can_still_contest_and_an_overload_needs
 def test_the_bar_falls_slowly_then_faster_and_is_nothing_in_the_last_phase(js25):
     import step_22b as S
     from playmaker_engine import agent as AG, decide as D
-    s = S._board(['G7', 'N5', 'H10', 'K7', 'G3'], [0, 0, 3, 0, 0])
+    # (re-recorded in step 26, D-249: with the defence's reach along the real paths the morning board's settled shape
+    # offers nothing better at a chance, so its bar is flat; this is board 1 of step 26, High-Low against Shoot and
+    # Protect as the two setup buttons left it, where the shape shows)
+    import step_21 as T
+    s = T._state(['J3', 'H3', 'G4', 'I4', 'N12'], ['J6', 'K5', 'M6', 'O12', 'M11'], [7, 1, 6, 5, 2], ball=4, off='High-Low', dfn='Shoot and Protect')
     js_b = [b['bar'] for b in AG.coverage(s, only='bars')['bars']]
     py_b = [b['bar'] for b in D.bars_of(s)]
     assert js_b == pytest.approx(py_b, abs=0.01)                 # both engines count it the same

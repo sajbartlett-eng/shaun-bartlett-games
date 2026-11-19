@@ -122,7 +122,10 @@ def test_every_square_carries_value_reach_influence_and_weakness(cov):
         for name, v in squares.items():
             assert 0 < v['reach'] <= 1 and 0 <= v['weakness'] <= v['value'], (a, name, v)
             assert v['influence'] == v['value'] - v['weakness'], (a, name, v)
-            assert abs(v['worth'] - (v['reach'] * v['weakness'] - (1 - v['reach']) * 5)) < 0.51       # a lost ball is -5 (D-198)
+            # (re-recorded in step 26, D-251: a look's worth also carries what holding the ball where he starts it costs,
+            # the Steal and the counts, now including the three seconds; the square shows it as cost, never above 0)
+            assert v['cost'] <= 0
+            assert abs(v['worth'] - (v['reach'] * (v['weakness'] + v['cost']) - (1 - v['reach']) * 5)) < 0.51       # a lost ball is -5 (D-198)
             assert (v['cover'] == -1) == (v['influence'] == 0) and (v['cover'] == -1 or v['next'] != v['cover'])
     # value comes from the cards and nothing else: an open three is 3 times the rating
     assert 'I11' not in c['squares'][0]                         # the ball handler stands on plain wood: no shot there
@@ -156,9 +159,12 @@ def test_check_1_the_clear_lane_is_a_large_weakness_and_the_defences_best_answer
     # Re-recorded in step 22b (D-222: a contest reached by a Quick Step or Sprint is off balance, so O3's layup next to
     # the lane, which only an off-balance X1 reaches, now reads above the point guard's open one, 36 to 34; D-219: the
     # answer may use a fourth defender where the list says so). The point guard's open layup is still read as it was.
-    sq1, lane = max(c['squares'][0].items(), key=lambda kv: kv[1]['worth'])
-    assert (lane['shot'], lane['cover']) == ('layup', -1) and sq1 in ('I3', 'H3', 'J3', 'H2', 'J2')
-    assert lane['worth'] >= 30                                   # the point guard's open layup, nobody able to contest it
+    # Re-recorded in step 26 (D-251): the open layup now carries half the three-second -5 for having the ball in the key
+    # at the next phase start (34 less 2.5), so a contested layup started from outside the key (32) reads a little above
+    # it. The open layup is still read as it was, nobody able to contest it.
+    sq1, lane = max(((k, v) for k, v in c['squares'][0].items() if v['cover'] == -1), key=lambda kv: kv[1]['worth'])
+    assert lane['shot'] == 'layup' and sq1 in ('I3', 'H3', 'J3', 'H2', 'J2')
+    assert lane['worth'] >= 30 and lane['cost'] == -2.5
     assert top['shot'] == 'layup' and top['worth'] >= lane['worth']
     assert 1 <= len(c['answers']) <= 4 and c['left_worth'] <= top['worth'] - 8
     assert {a['x'] for a in c['answers']} & {3, 4}               # a big comes into the lane
@@ -197,7 +203,10 @@ def test_check_4_arrows_matter(cov):
     assert len(across['squares'][0]) < len(his['squares'][0]) <= len(away['squares'][0])      # the arrow across his way bars squares
     assert rich(across) < rich(his) == rich(away)
     # (re-recorded in step 22b, D-222: what is left was a rushed shot; it is now a layup X1 gets to off balance, worth less than the open one)
-    assert best_of(across, 0)['worth'] < best_of(his, 0)['worth'] and best_of(across, 0)['cover'] == 0 and best_of(his, 0)['cover'] == -1
+    # (re-recorded in step 26, D-251: his best is now a contested layup started outside the key, so the arrow across
+    # his way is read on the open layup it takes away)
+    open_best = lambda c: max((v['worth'] for v in c['squares'][0].values() if v['cover'] == -1), default=0)
+    assert open_best(across) < open_best(his)
     # an arrow down a passing lane lets the defender jump it; an arrow off the lane does not
     assert his['passes'][1] < 0.5 and cov(with_x(1, 'D8', 'S'), 0)['passes'][1] == 1
 

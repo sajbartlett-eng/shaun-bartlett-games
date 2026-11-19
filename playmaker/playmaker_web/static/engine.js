@@ -5934,7 +5934,7 @@ const PMEngine = (() => {
         if (!(x.r > 0)) continue;
         const o = x.src || x, k = sqName(o.c), cur = out[o.a][k];
         if (!cur || x.e > cur.worth) out[o.a][k] = { value: o.v, reach: +x.r.toFixed(3), weakness: +x.w.toFixed(2), worth: +x.e.toFixed(2), influence: +(o.v - x.w).toFixed(2),
-          cover: x.cover, next: x.next, shot: o.lk.types[x.t], rushed: !!o.rushed };
+          cover: x.cover, next: x.next, shot: o.lk.types[x.t], rushed: !!o.rushed, cost: +(o.adj || 0).toFixed(2) };    // cost (step 26): what holding the ball there costs him (the Steal, the counts)
       }
       return out;
     };
