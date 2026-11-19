@@ -214,7 +214,7 @@ class Agent:
             self.notes.append(dict(event='goal', **g))
         if status:
             note['plan'] = status['line']
-            self.notes.append(dict(event='plan', kind=status['kind'], text=status['line']))
+            self.notes.append(dict(event='plan', status=status['kind'], text=status['line']))
         why = steal_reason(s, turn)
         if why:
             note['reason'] = why
@@ -1064,7 +1064,7 @@ def propose_offence(make_names, seed, levels_key=None, budget=None, level='allst
         from . import plan as PL
         r = None
         try:
-            r = PL.place_offence(_plan_make(make_names), seed, level, None if budget is None else max(budget, 8.0), nth,
+            r = PL.place_offence(_plan_make(make_names), seed, level, budget, nth,
                                  _side_scout(make_names, 'O', memory))
         except ValueError:
             r = None

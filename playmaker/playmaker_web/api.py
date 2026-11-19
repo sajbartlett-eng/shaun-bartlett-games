@@ -174,6 +174,9 @@ def handle(manager, method, path, query=None, body=None):
             if path == '/api/legal':
                 g = manager.get(q.get('code'))
                 return 200, (legal_json(g.state, g.legal()) if g.can_act(q.get('token')) else [])
+            if path == '/api/scout':             # step 24: the scout's matchup table (public facts: the rules and all ten cards)
+                from .view import scout_table_json
+                return 200, scout_table_json(manager.get(q.get('code')))
             if path == '/api/covmap':            # step 18s (D-199): the coach's coverage view, asked for only when it is shown
                 from .view import coverage_json
                 return 200, coverage_json(manager.get(q.get('code')), q.get('token'), q.get('n'))

@@ -599,7 +599,8 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None)
     from . import agent as AG
     from playmaker_web.game import TABLE_O, man_to_man
     t0 = time.time()
-    t_end = t0 + (12.0 if budget is None else budget)
+    budget = 12.0 if budget is None else max(2.0, budget)      # the level's own setup time (D-213); the button's: 12 seconds
+    t_end = t0 + budget
     rng = random.Random(seed)
     base = [B.parse_sq(q) for q in TABLE_O]
     s0 = make(base, 0, *man_to_man(base, 0))
@@ -661,7 +662,8 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None)
     near = [r for r in ranked if r[0][0] >= ranked[0][0][0] - margin - 1e-9]
     pick = ranked[min(nth, len(ranked) - 1)] if nth else (rng.choice(near) if margin > 0 and len(near) > 1 else ranked[0])
     key, sq, ball = pick
-    full = read(sq, ball, evals=240 if time.time() < t_end + 30 else 0) or read(sq, ball)
+    # the predicted defence for the placement locked in: its full setup where the time allows, else its quick one
+    full = read(sq, ball, evals=240 if budget >= 8 else 0) or read(sq, ball)
     m = full[1]
     xs, arrows, perm = _apply_predictions(scout, m[0], m[1], m[4] or list(range(5)))
     state = make(sq, ball, xs, arrows)
@@ -815,14 +817,21 @@ def plan_status(plan, state, scout):
     offence gets, has the defence taken it away, or has something worth as much or more at its real chance opened?
     Opportunities are compared by value at their real chance of happening (the list's value times reach), never by a
     shot's open value. -> dict(kind: 'chasing' | 'denied' | 'better', line, plan: the plan to carry on with)."""
-    now = read_plan(state, scout)
-    if not plan or not now:
+    if not plan:
+        return None
+    # a plan that needs a screen is measured with the screen still to be set (the same reading that built it)
+    now = read_plan(state, scout, deep=bool(plan.get('screens')) and not state.screens)
+    if not now:
         return None
     same = now['o'] == plan['o'] and now['shot'] == plan['shot']
     was = f"O{plan['o'] + 1}'s {SHOT_WORDS.get(plan['shot'], plan['shot'])}"
     new = _look_words(now)
     if same:
-        return dict(kind='chasing', line=f"Chasing: {new}.", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
+        how = ''
+        if now.get('screens') and not state.screens:
+            z = now['screens'][0]
+            how = f", off O{z['o'] + 1}'s screen on X{z['x'] + 1} (still to be set)"
+        return dict(kind='chasing', line=f"Chasing: {new}{how}.", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
     # what the planned look is worth now, at its real chance
     from . import agent as AG
     cov = AG.coverage(state)

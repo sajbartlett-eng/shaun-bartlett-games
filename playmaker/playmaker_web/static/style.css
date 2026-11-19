@@ -502,3 +502,6 @@ h2.h3 { font-size: 17px; margin: 6px 0 4px; }
 .rolesq.dot { fill: #1f3a5f; opacity: .55; }
 .rolesq.need { fill: none; stroke: #1f3a5f; stroke-width: 3; stroke-dasharray: 5 3; }
 .rolesq.cross { stroke: #1f3a5f; stroke-width: 2.4; }
+.scouttable { border-collapse: collapse; font-size: .85em; margin: 8px 0; }
+.scouttable th, .scouttable td { border: 1px solid var(--line); padding: 3px 6px; text-align: left; }
+.scouttable caption { text-align: left; margin-bottom: 4px; }

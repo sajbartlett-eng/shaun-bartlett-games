@@ -377,6 +377,30 @@ def board_json(s, slots=None):
                 influence=influence(s) if s.stage != 'over' else None)
 
 
+def scout_table_json(game):
+    """Step 24 (stage 1): the scout's review in plain words, with the numbers behind it. Each attacker's best shot in
+    each part of the court against each defender (open, and what that defender leaves of it square in front, from the
+    side, from behind), and the chance his Dribble beats him. The rules and the cards only."""
+    from playmaker_engine import plan as PL, scouting as SCT
+    ctx = game.state.ctx if game.state is not None else game._possession_state().ctx
+    sc = PL.Scout(ctx, 'O')
+    lines, table = [], []
+    for a, card in enumerate(ctx.off):
+        zone, (v, t) = max(((z, sc.open_value(a, z)) for z in PL.ZONES), key=lambda r: r[1][0])
+        left = sorted(((sc.contested(a, d, zone)[0], d) for d in range(5)))
+        beat = sorted(((sc.beat_chance(a, d), d) for d in range(5)), reverse=True)
+        lines.append(f"O{a + 1} ({SCT.short_role(card)}): his best open shot is a {PL.SHOT_WORDS[t]} (worth {round(v)}). "
+                     f"X{left[0][1] + 1} leaves the least of it ({round(left[0][0])}), X{left[-1][1] + 1} the most ({round(left[-1][0])}). "
+                     f"His Dribble beats X{beat[0][1] + 1} most often ({round(100 * beat[0][0])} in 100), X{beat[-1][1] + 1} least ({round(100 * beat[-1][0])} in 100).")
+        for d in range(5):
+            m = sc.matchup(a, d)
+            table.append(dict(o=a, x=d, beat=round(100 * m['beat']),
+                              zones={PL.ZONE_NAMES[z]: dict(shot=PL.SHOT_WORDS[r['shot']], open=round(r['open']), square=round(r['square']),
+                                                            side=round(r['side']), behind=round(r['behind'])) for z, r in m['zones'].items()}))
+    return dict(teams=[ctx.off_team, ctx.def_team], lines=lines, table=table, cases=dict(jump=14, inside=22),
+                note='A won Dribble is worth most where it opens the most squares: near the middle beyond the arc. In the green zone it opens little.')
+
+
 def _plan_line(game, seat):
     try:
         return game.plan_line(seat)

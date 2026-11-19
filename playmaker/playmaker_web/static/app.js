@@ -550,6 +550,7 @@ function render() {
     ...((s.experimental || []).length ? [el('div', { class: 'exp', text: `Experimental lineup: ${s.experimental.join(', ')}` })] : []),
     ...(s.quarter ? [el('div', { class: 'quarter', text: s.quarter.text })] : []),
     ...(s.scout && s.scout.report && s.scout.report.level !== 'pro' ? [el('button', { class: 'small', text: 'Scout report', onclick: () => showReport('Scout report') })] : []),
+    ...(s.match_format === 'digital' ? [el('button', { class: 'small', id: 'matchupScout', text: 'Matchup scout', onclick: showMatchupScout })] : []),
     el('button', { class: 'small', text: 'Play story', onclick: showStory }));
   renderCoachLine();
   renderPlan();
@@ -772,6 +773,23 @@ function drawRoleSquares(c) {
     g.append(svg('line', { class: 'rolesq cross', x1: px(x) + S - 9, y1: py(y) + 9, x2: px(x) + 9, y2: py(y) + S - 9 }));
   }
   c.append(g);
+}
+// Step 24 (stage 1): the scout's matchup review. Plain words first; the table sits behind "Show the numbers".
+async function showMatchupScout() {
+  let sc;
+  try { sc = await api(`/api/scout?code=${G.code}`); } catch (e) { $('error').textContent = e.message; return; }
+  const kids = [el('h2', { text: `Matchup scout: ${sc.teams[0]} attacking ${sc.teams[1]}` }),
+    el('ul', {}, sc.lines.map(t => el('li', { text: t }))), el('p', { class: 'note', text: sc.note })];
+  if (PMAdvice.numbersOn()) {
+    const zones = Object.keys(sc.table[0].zones);
+    const tbl = el('table', { class: 'scouttable' }, [el('caption', { text: 'Each shot open, then what the defender leaves of it: square in front / from the side / from behind. Last: how often the Dribble beats him, in 100.' }),
+      el('tr', {}, [el('th', { text: 'Matchup' }), ...zones.map(z => el('th', { text: z })), el('th', { text: 'Dribble' })]),
+      ...sc.table.map(r => el('tr', {}, [el('th', { scope: 'row', text: `O${r.o + 1} v X${r.x + 1}` }),
+        ...zones.map(z => { const c = r.zones[z]; return el('td', { text: `${c.shot}: ${c.open}, then ${c.square} / ${c.side} / ${c.behind}` }); }), el('td', { text: String(r.beat) })]))]);
+    kids.push(tbl);
+  } else kids.push(el('p', { class: 'note', text: 'Turn on "Show the numbers" for the full table (14 cases for each jump shot, 22 for each inside shot, behind it).' }));
+  kids.push(el('button', { class: 'primary', text: 'Close', onclick: closeModal }));
+  modal(kids, closeModal);
 }
 // Step 24: each side's own setup thinking in plain words, beside the board. A side's plan is shown to that side only;
 // in Watch both are shown, labelled by side. The numbers sit behind "Show the numbers".

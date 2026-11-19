@@ -1772,7 +1772,7 @@ class Game:
             self._think = round(time.time() - t0, 3)
             for note in getattr(pol, 'notes', []):
                 if note.get('event') == 'plan' and side == 'O':
-                    self._plan_note = dict(possession=self.possession, text=note.get('text'), kind=note.get('kind'))
+                    self._plan_note = dict(possession=self.possession, text=note.get('text'), kind=note.get('status'))
                 self._log('computer', side=side, possession=self.possession, clock=self.state.clock, **note)
             if hasattr(pol, 'notes'):
                 pol.notes.clear()

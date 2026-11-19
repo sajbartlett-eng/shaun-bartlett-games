@@ -110,3 +110,157 @@ def test_a_square_defender_on_an_inside_shot_never_fouls_and_a_jump_shot_has_no_
     st3 = game_state('Five Out', 'High-Low', [B.sq(c3)] + FAR_O, [B.sq(f3)] + FAR_X, [0] * 5, ball=0, rules=RULES, check=False)
     assert [q.defender for q in SC.contest_options(st3, 0, 'three')] == [-1]
     assert all(r['how'] in (None, 'hand') for r in PL.shot_review(TEAMS['Five Out'][0], TEAMS['High-Low'][0], 'three', RULES))
+
+
+# ---- the scout: movement, tolerance, the spec ---------------------------------------------------------------------------
+
+@pytest.fixture(scope='module')
+def js():
+    from playmaker_engine.jsbridge import NodeEngine
+    eng = NodeEngine().install()
+    yield eng
+    eng.close()
+
+
+def _board():
+    import step_22b as S
+    return S._board()
+
+
+@needs_node
+def test_a_won_dribble_is_worth_more_at_the_top_of_the_key_than_in_the_green_zone(js):
+    s = _board()
+    sc = PL.Scout(s.ctx, 'O')
+    top, green = sc.beat(s, 0, 4, B.parse_sq('I11')), sc.beat(s, 0, 4, B.parse_sq('I4'))
+    assert top['chance'] == green['chance'] == pytest.approx(sc.beat_chance(0, 4))      # the chance is the cards', anywhere
+    assert top['grows'] > 3 * green['grows'] and top['squares'] > green['squares']      # what it opens is the court's
+
+
+def test_the_acceptance_spec_falls_out_of_the_bar_and_the_scouts_cases():
+    s = game_state('Five Out', 'High-Low', ['I11', 'C9', 'O9', 'A3', 'Q3'], ['I10', 'D8', 'N8', 'B4', 'P4'], [0] * 5, rules=RULES, check=False)
+    sc = PL.Scout(s.ctx, 'O')
+    rows = sc.shots(1, 0, 'three')
+    open_v = float(rows[0]['value'])
+    for bar in (0, 12, 20, 26, open_v, open_v + 1):
+        spec = PL.acceptance(sc, 1, 'three', bar)
+        assert spec['open'] == (open_v >= bar)
+        for d in range(5):
+            ok = {(w, df) for w, df in map(tuple, spec['by'].get(d, []))}
+            for r in sc.shots(1, d, 'three'):
+                if r['shooter'] == 'set' and r['where'] != 'open':
+                    assert ((r['where'], r['defender']) in ok) == (float(r['value']) >= bar)
+    hard = PL.acceptance(sc, 1, 'three', open_v - 1)
+    assert hard['refused'] == [0, 1, 2, 3, 4] and hard['words'].startswith('Create a three for O2: open accepted')
+    assert 'contested by X1, X2, X3, X4 or X5 not accepted' in hard['words']             # Shaun's form
+
+
+def test_a_prediction_changes_only_on_repeated_evidence():
+    s = game_state('Five Out', 'High-Low', ['I11', 'C9', 'O9', 'A3', 'Q3'], ['I10', 'D8', 'N8', 'B4', 'P4'], [0] * 5, rules=RULES, check=False)
+    sc = PL.Scout(s.ctx, 'O')
+    predicted, seen = [0, 1, 2, 3, 4], [4, 1, 2, 3, 0]            # X5 took O1 where X1 was expected
+    sc.observe(predicted, seen)
+    assert sc.predict == {}                                       # once can be variety
+    sc.observe(predicted, seen)
+    assert sc.predict == {0: 4, 4: 0} and PL.EVIDENCE == 2        # twice running: expected from now on
+    other = PL.Scout(s.ctx, 'X')
+    assert other.predict == {} and other is not sc                # the other side's scout is its own
+
+
+# ---- each side thinks alone ---------------------------------------------------------------------------------------------
+
+@needs_node
+def test_changing_one_sides_private_goals_never_changes_the_other_sides_choice(js):
+    import step_22b as S
+    from playmaker_engine import agent as AG
+    from playmaker_engine.agent import Agent
+    monkey = AG.FIXED['depth']
+    AG.FIXED['depth'] = 1                                          # the same look-ahead every time: a choice never turns on the clock
+    try:
+        _separate(S, Agent)
+    finally:
+        AG.FIXED['depth'] = monkey
+
+
+def _separate(S, Agent):
+    s = _board()
+    sc_o = PL.Scout(s.ctx, 'O')
+    plan_a = PL.read_plan(s, sc_o)
+    plan_b = dict(plan_a, o=(plan_a['o'] + 1) % 5, shot='layup', sq='I3')
+    # the defence's choice on the same board, whatever the offence privately plans
+    picks = []
+    for plan in (plan_a, plan_b, None):
+        off = Agent('O', 'allstar', seed=3)
+        off.setup_plan, off.scout = plan, sc_o
+        off.scout.predict = {0: 4} if plan is plan_b else {}
+        dfn = Agent('X', 'allstar', seed=3)
+        picks.append(str(dfn.choose(s.with_(side='X', turn_n=0))))
+        assert dfn.setup_plan is None                             # nothing of the offence's is ever on the defence's computer
+    assert len(set(picks)) == 1
+    # the offence's choice on the same board, whatever the defence privately reads
+    picks = []
+    for perm, predict in (([0, 1, 2, 3, 4], {}), ([4, 3, 2, 1, 0], {1: 3})):
+        dfn = Agent('X', 'allstar', seed=3)
+        dfn.setup_perm, dfn.assign = tuple(perm), list(perm)
+        dfn.scout = PL.Scout(s.ctx, 'X')
+        dfn.scout.predict = dict(predict)
+        off = Agent('O', 'allstar', seed=3)
+        off.setup_plan, off.scout = plan_a, PL.Scout(s.ctx, 'O')
+        picks.append(str(off.choose(s.with_(side='O', turn_n=0))))
+    assert len(set(picks)) == 1
+    # and the setups: the defence sets up the same whatever the offence's scout has come to predict
+    make = lambda o, b, x, a: S._board([B.sq(q) for q in x], list(a), [B.sq(q) for q in o])
+    o_sq = [B.parse_sq(q) for q in S.SHAUN_O]
+    quiet, loud = PL.Scout(s.ctx, 'O'), PL.Scout(s.ctx, 'O')
+    loud.predict = {0: 4, 4: 0}
+    d1 = PL.place_defence(make, o_sq, 0, seed=1, scout=PL.Scout(s.ctx, 'X'))
+    d2 = PL.place_defence(make, o_sq, 0, seed=1, scout=PL.Scout(s.ctx, 'X'))
+    assert (d1['squares'], d1['arrows'], d1['perm']) == (d2['squares'], d2['arrows'], d2['perm'])
+    assert quiet.predict == {} and loud.predict == {0: 4, 4: 0}
+
+
+@needs_node
+def test_the_computers_private_plan_is_never_shown_to_the_human_playing_it_and_the_buttons_place_a_draft():
+    from playmaker_engine import agent as AG
+    from playmaker_engine import plain as P
+    from playmaker_web.api import Manager, handle
+    from playmaker_web.server import coverage_engine, stop_coverage_engine
+    import re
+    assert coverage_engine()
+    AG.SCALE['value'] = 1.0
+    try:
+        m = Manager()
+        _, r = handle(m, 'POST', '/api/new', body=dict(mode='hotseat', match_format='digital', teams=['Five Out', 'High-Low'], seed=5,
+                                                        level='pro', full=True, per_side=4, place=True))
+        code, tok = r['code'], r['token']
+        _, s = handle(m, 'GET', '/api/state', query=dict(code=code, token=tok))
+        assert s['placing']['side'] == 'O' and s['setup_info'] == {} and len(s['candidates']) == 5
+        _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, computer=True))
+        s = r['state']
+        d = s['placing']['draft']
+        assert s['placing']['side'] == 'O' and d['computer'] and d['nth'] == 0          # a draft on the board: nothing is confirmed
+        info = s['setup_info']['O']
+        assert info['words'][0].startswith('Plan: ') and any(w.startswith('Attention: ') for w in info['words'])
+        for w in info['words'] + [info['spec']]:
+            assert not any(re.search(r'\b' + re.escape(b) + r'\b', w, re.I) for b in P.BANNED), w
+            assert '—' not in w
+        _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, squares=d['squares'], ball=d['ball']))
+        assert r['state']['placing']['side'] == 'X'
+        _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, computer=True))
+        s = r['state']
+        dx = s['placing']['draft']
+        read = s['setup_info']['X']['read']
+        assert len(read) == 5 and all(re.match(r'X\d on O\d: ', t) for t in read)
+        _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, squares=dx['squares'], arrows=dx['arrows']))
+        assert r['state']['placing'] is None and r['state']['plan_line']['coaching'] is True
+        # against the computer: its defence's read is its own
+        _, r = handle(m, 'POST', '/api/new', body=dict(mode='hotseat', match_format='digital', teams=['Five Out', 'High-Low'], seed=5,
+                                                        level='pro', full=True, per_side=4, place=True, ai=dict(X='rookie')))
+        code, tok = r['code'], r['token']
+        _, s = handle(m, 'GET', '/api/state', query=dict(code=code, token=tok))
+        _, r = handle(m, 'POST', '/api/place', body=dict(code=code, token=tok, squares=d['squares'], ball=d['ball']))
+        s = r['state']
+        assert s['placing'] is None and 'X' not in s['setup_info']                       # the computer set up its defence: its read stays with it
+        g = m.get(code)
+        assert 'X' in g._setup_info[g.possession] and g.policies['X'].setup_plan is None
+    finally:
+        stop_coverage_engine()
