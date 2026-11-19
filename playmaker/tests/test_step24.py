@@ -154,16 +154,12 @@ def test_the_acceptance_spec_falls_out_of_the_bar_and_the_scouts_cases():
     assert 'contested by X1, X2, X3, X4 or X5 not accepted' in hard['words']             # Shaun's form
 
 
-def test_a_prediction_changes_only_on_repeated_evidence():
+def test_no_prediction_is_carried_from_one_possession_to_the_next():
+    # Step 25 (D-245): the two-possessions rule is removed. A scout holds no predictions of the other side; each
+    # possession predicts fresh from what it can see.
     s = game_state('Five Out', 'High-Low', ['I11', 'C9', 'O9', 'A3', 'Q3'], ['I10', 'D8', 'N8', 'B4', 'P4'], [0] * 5, rules=RULES, check=False)
     sc = PL.Scout(s.ctx, 'O')
-    predicted, seen = [0, 1, 2, 3, 4], [4, 1, 2, 3, 0]            # X5 took O1 where X1 was expected
-    sc.observe(predicted, seen)
-    assert sc.predict == {}                                       # once can be variety
-    sc.observe(predicted, seen)
-    assert sc.predict == {0: 4, 4: 0} and PL.EVIDENCE == 2        # twice running: expected from now on
-    other = PL.Scout(s.ctx, 'X')
-    assert other.predict == {} and other is not sc                # the other side's scout is its own
+    assert not hasattr(sc, 'predict') and not hasattr(sc, 'observe') and not hasattr(PL, 'EVIDENCE')
 
 
 # ---- each side thinks alone ---------------------------------------------------------------------------------------------
@@ -191,7 +187,6 @@ def _separate(S, Agent):
     for plan in (plan_a, plan_b, None):
         off = Agent('O', 'allstar', seed=3)
         off.setup_plan, off.scout = plan, sc_o
-        off.scout.predict = {0: 4} if plan is plan_b else {}
         dfn = Agent('X', 'allstar', seed=3)
         picks.append(str(dfn.choose(s.with_(side='X', turn_n=0))))
         assert dfn.setup_plan is None                             # nothing of the offence's is ever on the defence's computer
@@ -202,20 +197,16 @@ def _separate(S, Agent):
         dfn = Agent('X', 'allstar', seed=3)
         dfn.setup_perm, dfn.assign = tuple(perm), list(perm)
         dfn.scout = PL.Scout(s.ctx, 'X')
-        dfn.scout.predict = dict(predict)
         off = Agent('O', 'allstar', seed=3)
         off.setup_plan, off.scout = plan_a, PL.Scout(s.ctx, 'O')
         picks.append(str(off.choose(s.with_(side='O', turn_n=0))))
     assert len(set(picks)) == 1
-    # and the setups: the defence sets up the same whatever the offence's scout has come to predict
+    # and the setups: the defence sets up the same whatever the offence's private plan
     make = lambda o, b, x, a: S._board([B.sq(q) for q in x], list(a), [B.sq(q) for q in o])
     o_sq = [B.parse_sq(q) for q in S.SHAUN_O]
-    quiet, loud = PL.Scout(s.ctx, 'O'), PL.Scout(s.ctx, 'O')
-    loud.predict = {0: 4, 4: 0}
     d1 = PL.place_defence(make, o_sq, 0, seed=1, scout=PL.Scout(s.ctx, 'X'))
     d2 = PL.place_defence(make, o_sq, 0, seed=1, scout=PL.Scout(s.ctx, 'X'))
     assert (d1['squares'], d1['arrows'], d1['perm']) == (d2['squares'], d2['arrows'], d2['perm'])
-    assert quiet.predict == {} and loud.predict == {0: 4, 4: 0}
 
 
 @needs_node
@@ -264,3 +255,70 @@ def test_the_computers_private_plan_is_never_shown_to_the_human_playing_it_and_t
         assert 'X' in g._setup_info[g.possession] and g.policies['X'].setup_plan is None
     finally:
         stop_coverage_engine()
+
+
+# ---- step 25: Shaun's rulings on step 24 ------------------------------------------------------------------------------
+
+@pytest.fixture
+def js25():
+    from playmaker_engine.jsbridge import NodeEngine        # (its own engine: a test above stops the shared one)
+    eng = NodeEngine().install()
+    yield eng
+    eng.close()
+
+@needs_node
+def test_a_defender_covers_every_look_he_can_still_contest_and_an_overload_needs_looks_he_cannot(js25):
+    from playmaker_engine import decide as D
+    s = _board()
+    covers = D.covers_too_of(s)
+    near, far = B.parse_sq('H3'), B.parse_sq('Q8')
+    a1 = B.parse_sq('I3')
+    assert covers(4, a1, near)                                   # one square apart: from beside the first he still contests the second
+    assert not covers(4, a1, far)                                # across the court: he can't, so covering one leaves the other open
+    looks = lambda c2: [dict(a=0, c=a1, t=0, wd=20.0, now=20.0, mask=1 << 4, order=(0,)), dict(a=1, c=c2, t=0, wd=18.0, now=18.0, mask=1 << 4, order=(1,))]
+    assert D.cover_groups(covers, looks(near)) == []             # bunched: no overload
+    g = D.cover_groups(covers, looks(far))
+    assert g and g[0]['value'] == pytest.approx(18.0)            # spread: he takes the 20, the 18 is left
+
+
+@needs_node
+def test_the_bar_falls_slowly_then_faster_and_is_nothing_in_the_last_phase(js25):
+    import step_22b as S
+    from playmaker_engine import agent as AG, decide as D
+    s = S._board(['G7', 'N5', 'H10', 'K7', 'G3'], [0, 0, 3, 0, 0])
+    js_b = [b['bar'] for b in AG.coverage(s, only='bars')['bars']]
+    py_b = [b['bar'] for b in D.bars_of(s)]
+    assert js_b == pytest.approx(py_b, abs=0.01)                 # both engines count it the same
+    assert js_b[-1] == 0 and len(js_b) == s.clock // RC.PHASE_SECONDS
+    drops = [u - v for u, v in zip(js_b, js_b[1:])]
+    assert all(d >= -1e-9 for d in drops) and drops[0] < drops[-2] < drops[-1]     # barely drops early, faster late
+    assert js_b[-2] == pytest.approx(AG.coverage(s, only='lasting')['L'])        # one phase left: the sure look
+    flat = [b['bar'] for b in AG.coverage(_board(), only='bars')['bars']]
+    assert flat[-1] == 0 and all(b == pytest.approx(flat[0]) for b in flat[:-1])     # nothing better at a chance on this board: flat
+
+
+@needs_node
+def test_a_dribble_beat_counts_everything_the_offence_threatens_before_and_after(js25):
+    s = _board()
+    sc = PL.Scout(s.ctx, 'O')
+    top, paint = sc.beat(s, 0, 4, B.parse_sq('I11')), sc.beat(s, 0, 4, B.parse_sq('I4'))
+    for b in (top, paint):
+        assert b['grows'] == pytest.approx(b['after'] - b['before'], abs=0.2)      # the whole picture, after less before
+    assert top['squares'] > paint['squares'] and paint['shot_after'] > paint['shot_before']    # many small at the top, one large inside
+    assert top['grows'] > paint['grows'] > 0
+
+
+@needs_node
+def test_the_conditions_are_read_from_the_map_and_ruled_in_or_out_by_the_bar(js25):
+    from playmaker_engine import conditions as CD
+    import step_21 as T
+    pr = T._state(['I11', 'C9', 'Q3', 'A3', 'K12'], ['I10', 'D8', 'P4', 'B4', 'K11'], [0, 7, 1, 7, 0], off='High-Low', dfn='Run and Gun').with_(side='O', turn_n=0)
+    sc = PL.Scout(pr.ctx, 'O')
+    r = CD.read(pr, sc, bar=20.0)
+    assert r['found'] and set(c['id'] for c in r['found']) <= set(CD.NAMES)
+    for c in r['found']:
+        if c['id'] in ('54', '55', '57', '18'):
+            continue
+        assert bool(c.get('ruled_in')) == (c['worth'] > 20.0)
+    assert set(CD.UNMEASURED).isdisjoint(CD.NAMES)
+    assert any(c['id'] in ('13', '47') and 2 in c['o'] for c in r['found'])      # the corner player's cut is read

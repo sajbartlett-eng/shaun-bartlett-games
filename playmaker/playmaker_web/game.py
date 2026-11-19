@@ -1378,7 +1378,8 @@ class Game:
             self.__dict__.setdefault('_plans', {})[self.possession] = plan
         else:
             info.update(arrows=list(r.get('arrows') or []), read=[z['text'] for z in r.get('read') or []],
-                        avoided=[z['text'] for z in r.get('avoided') or []], lines=r.get('lines') or [])
+                        avoided=[z['text'] for z in r.get('avoided') or []], lines=r.get('lines') or [],
+                        watching=[z['text'] for z in r.get('watching') or []])
         self.__dict__.setdefault('_setup_info', {}).setdefault(self.possession, {})[side] = info
         if comp is not None:
             comp.scout = mem.get('scout')
@@ -1589,26 +1590,9 @@ class Game:
                   arrows=[B.DIR_NAMES[a] for a in arrows] if side == 'X' else None,
                   start=self.state.encode() if side == 'X' else None)
         self.version += 1
-        if side == 'X':
-            self._observe_setup()
         if self.placing is None:
             self._run_ai()
             self._timer_decision()
-
-    def _observe_setup(self):
-        """Step 24 (stage 6): the offence's own scout notes the matchups the defence really took against the ones it
-        predicted (both public: the board). Only its predictions of the other side's choices can change."""
-        mem = self._setup_memory('O')
-        sc, predicted = mem.get('scout'), mem.pop('predicted', None)
-        if sc is None:
-            return
-        try:
-            from playmaker_engine import agent as AG
-            ro = AG.coverage(self.state, only='roles') if AG.JS.get('coverage') is not None else None
-        except ValueError:
-            ro = None
-        if ro and ro.get('perm'):
-            sc.observe(predicted, list(ro['perm']))
 
     def offence_player(self):
         """Which player (A or B) is attacking this possession."""

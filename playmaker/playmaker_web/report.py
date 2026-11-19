@@ -347,7 +347,7 @@ def phase_assessment(game, phase, lines, start_map, next_map, broke):
     return dict(phase=phase, start=start, end=end, offence=off[:4], defence=dfn[:3], next=nxt)
 
 
-def build(game, possession, upto_phase=None):
+def build(game, possession, upto_phase=None, seat=None):
     """The report of one possession: every turn's lines, every finished phase's assessment, and (once the possession
     is over) the whole possession's: the shot taken, the best shot on offer, the trend, the verdict, and one thing to
     keep and one to change for each side."""
@@ -380,6 +380,20 @@ def build(game, possession, upto_phase=None):
     if over and upto_phase is None:
         out['summary'] = summary(game, possession, steps, lines, phases, broken_seen)
     out['checks'] = consistency(out)
+    # step 25 (D-247): each side thinks alone. While the possession is in play a human never sees the computer's setup
+    # thinking for the side it plays; once it is over, both are shown, labelled by side. In Watch (the computer plays
+    # both sides) both are shown throughout.
+    ai = set(getattr(game, 'ai', {}) or {})
+    watch = ai >= {'O', 'X'}
+    hidden = set() if (watch or over) else ai
+    if out.get('setup'):
+        for side, key in (('O', 'offence'), ('X', 'defence')):
+            if side in hidden:
+                out['setup'][key] = None
+    info = getattr(game, '_setup_info', {}).get(possession, {})
+    out['plans'] = {side: dict(side='Offence' if side == 'O' else 'Defence', words=v.get('words') or v.get('read') or [], avoided=v.get('avoided') or [],
+                               watching=v.get('watching') or [])
+                    for side, v in info.items() if side not in hidden and (watch or over or seat in ('both', side))}
     return out
 
 

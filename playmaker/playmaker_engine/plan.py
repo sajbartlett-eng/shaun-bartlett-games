@@ -118,7 +118,6 @@ def best_contest(rows, shooter='set', where=None, defender='set'):
 # ---- stage 1: the scout (cached a game at a time: the cards don't change) ------------------------------------------------
 
 OFF_COURT = (-1, 1)
-EVIDENCE = 2            # stage 6: sightings in a row before a prediction of the other side's choice changes (flagged for Shaun)
 
 
 def _leaves(node, pr=1.0):
@@ -132,30 +131,15 @@ def _leaves(node, pr=1.0):
 
 class Scout:
     """One team's own scout: its offence's table and its defence's table are the same public facts (the rules and all
-    ten cards), held by the side that reads them. `predict` is this side's own predictions of the other side's choices
-    (stage 6); nothing else of the other side is ever in here."""
+    ten cards), held by the side that reads them. Nothing of the other side's is ever in here."""
 
     def __init__(self, ctx, side):
         self.ctx, self.side, self.rules = ctx, side, ctx.rules
         self.off, self.dfn = ctx.off, ctx.dfn
         self._shots, self._beat, self._base = {}, {}, None
-        self.predict = {}                                # {attacker: defender}: matchups seen often enough to expect (stage 6)
-        self.seen = {}                                   # {attacker: (defender, times in a row)}: what the other side has done
-
-    def observe(self, predicted, actual):
-        """Stage 6: after a possession's setup, what the other side really did against what this side predicted (both
-        public: the board). The rules' values never change; only the prediction of the other side's choice does, and
-        only on repeated evidence: the same matchup this side did not predict, EVIDENCE possessions in a row. A setup
-        has no dice in it, but a defence varies among setups it reads as level, so one sighting can be variety."""
-        for d, a in enumerate(actual):
-            if predicted is not None and predicted[d] == a and self.predict.get(a, d) == d:
-                self.seen.pop(a, None)
-                continue
-            was = self.seen.get(a)
-            n = was[1] + 1 if was and was[0] == d else 1
-            self.seen[a] = (d, n)
-            if n >= EVIDENCE:
-                self.predict[a] = d
+        # Step 25 (D-245, Shaun: "If a computer gets its prediction wrong, its setup still stands. It adapts its strategy
+        # on the fly."): no prediction is carried from one possession to the next. Each possession predicts fresh from
+        # what it can see; in play the computer re-reads the actual board every phase.
 
     # -- 1a: the shot review
     def shots(self, a, d, t):
@@ -216,13 +200,17 @@ class Scout:
                 act = next((z for z in legal_actions(s) if z.kind == 'dribble' and z.target == d), None)
                 if act is not None:
                     won = [(p, t) for p, t in _leaves(apply(s, act)) if t.stage == 'play' and t.beaten]
+                    # step 25 (D-243): everything the offence threatens before the beat and after it, by the coverage
+                    # map's own measure (each square's look at its value times its reach), and the difference square
+                    # by square: many small gains at the top of the key, one large one in the paint, both counted
                     cb, ca = AG.coverage(s), AG.coverage(won[0][1]) if won else None
                     if cb and ca:
                         sb, sa = cb['squares'][a], ca['squares'][a]
                         w = lambda m, k: (m.get(k) or {}).get('worth', 0)
-                        up = [k for k in set(sb) | set(sa) if w(sa, k) > w(sb, k) + 0.5]
-                        out = dict(chance=round(sum(p for p, _ in won), 3), squares=len(up),
-                                   grows=round(sum(w(sa, k) - w(sb, k) for k in up), 1),
+                        diffs = [w(sa, k) - w(sb, k) for k in set(sb) | set(sa)]
+                        out = dict(chance=round(sum(p for p, _ in won), 3), squares=sum(1 for z in diffs if z > 0.5),
+                                   grows=round(sum(diffs), 1), biggest=round(max(diffs + [0.0]), 1),
+                                   before=round(sum(w(sb, k) for k in sb), 1), after=round(sum(w(sa, k) for k in sa), 1),
                                    shot_before=(cb.get('now') or {}).get('worth', 0), shot_after=(ca.get('now') or {}).get('worth', 0),
                                    defender_on=B.sq(dq))
             except ValueError:
@@ -292,23 +280,19 @@ _SCOUTS = {}
 # ---- stage 2: shot tolerance, phase by phase ------------------------------------------------------------------------------
 
 def bars(state):
-    """The acceptable-shot bar for each phase the clock leaves: what playing on is worth from that phase (the lasting
-    gap, read with the shot clock that phase would have, by the rules). In the last phase playing on is worth
-    nothing: any shot is taken. [dict(phase, clock, bar)]."""
+    """The acceptable-shot bar for each phase the clock leaves (step 25, D-242): the value of playing on, counted phase
+    by phase by the rules (engine.js barsOf). It barely drops early and falls faster late; in the last phase any shot
+    beats none (0). [dict(phase, clock, bar)]."""
     from . import agent as AG
-    out, c, k = [], state.clock, 1
-    while c > 0:
-        bar = 0.0
-        if c > RC.PHASE_SECONDS and AG.JS.get('coverage') is not None:
-            try:
-                r = AG.coverage(state.with_(clock=c), only='lasting')
-                bar = float(r['L']) if r else 0.0
-            except ValueError:
-                bar = 0.0
-        out.append(dict(phase=k, clock=c, bar=round(bar, 2)))
-        c -= RC.PHASE_SECONDS
-        k += 1
-    return out
+    if AG.JS.get('coverage') is not None:
+        try:
+            r = AG.coverage(state, only='bars')
+            if r and r.get('bars'):
+                return r['bars']
+        except ValueError:
+            pass
+    from .decide import bars_of
+    return bars_of(state)
 
 
 # ---- stage 3: the offence's plan ------------------------------------------------------------------------------------------
@@ -374,16 +358,20 @@ def screen_roles(state):
         return []
     bh = state.o[state.ball]
     walls = [d for d, q in enumerate(state.x) if B.on_board(q) and B.adjacent(q, bh)]
-    if not walls:
-        return []
+    # step 25: off-ball screens too (condition 23): on any defender within reach of a teammate this phase
+    others = [d for d, q in enumerate(state.x) if B.on_board(q) and d not in walls
+              and any(k != state.ball and B.cheb(q, p) <= 3 for k, p in enumerate(state.o) if B.on_board(p))]
     s0 = state.with_(side='O', turn_n=0)
     try:
         base = float(AG.coverage(s0, only='lasting')['L'])
+        cov0 = AG.coverage(s0)
     except (ValueError, TypeError):
         return []
+    paint0 = [max((v.get('worth', 0) for k, v in (sq or {}).items() if B.zone(B.parse_sq(k)) == 'K'), default=0)
+              for sq in (cov0.get('squares') or [{}] * 5)]
     taken = set(state.o) | set(state.x)
     found = {}
-    for d in walls:
+    for d in walls + others:
         xq = state.x[d]
         for dx in (-1, 0, 1):
             for dy in (-1, 0, 1):
@@ -413,10 +401,22 @@ def screen_roles(state):
                         if float(r['L']) > row['value'] + 1e-9:
                             row.update(sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), state=after)
     out = sorted(found.values(), key=lambda z: (-z['value'], z['o'], z['x']))
-    for z in out[:1]:
+    for z in out[:3]:
         try:
             c = AG.coverage(z['state'])
             z['left'] = c.get('left') if c else None
+            # who the screen frees to the rim: an attacker other than the screener whose best look in the paint rises
+            dive = None
+            for k2, sq in enumerate(c.get('squares') or []):
+                if k2 in (z['o'], state.ball) or not sq:
+                    continue
+                pk = [(v.get('worth', 0), q) for q, v in sq.items() if B.zone(B.parse_sq(q)) == 'K']
+                if pk:
+                    w, q = max(pk)
+                    if w > paint0[k2] + 0.5 and (dive is None or w > dive['worth']):
+                        dive = dict(o=k2, sq=q, worth=w, before=paint0[k2])
+            z['dive'] = dive
+            z['on_ball'] = z['x'] in walls
         except ValueError:
             z['left'] = None
     for z in out:
@@ -543,7 +543,37 @@ def read_plan(state, scout, perm=None, deep=False):
         value = float(sc0['value'])
         access = f"O{sc0['o'] + 1}'s screen" + (f", then the pass to O{lk['o'] + 1}" if lk['o'] != state.ball else '')
         line = f"Attention: {att}. Hole: {lk['sq']}, {ZONE_NAMES.get(B.zone(B.parse_sq(lk['sq'])), '')}. Access: {access}."
+    # step 25 (D-244): the conditions forming on this board (OFFENCE_CONDITIONS_19NOV.md), read from the map, ruled
+    # in or out by the bar; the plan names the ones that build its target, and a branch from another attacker's
+    from . import conditions as CD
+    try:
+        cr = CD.read(state, scout, cov=cov, roles=ro, bar=bar_next)
+    except ValueError:
+        cr = dict(found=[], ruled_in=[], ruled_out=[], unmeasured=dict(CD.UNMEASURED))
+    found = cr['found'] + CD.screens_as_conditions(screens, state)
+    for z in screens or []:
+        if z.get('dive'):
+            dv = z['dive']
+            found.append(dict(id='47', name=CD.NAMES['47'], o=[dv['o']], x=[z['x']], worth=dv['worth'], sq=dv['sq'], ruled_in=dv['worth'] > bar_next,
+                              why=f"O{dv['o'] + 1} dives to {dv['sq']} while the defence turns to O{z['o'] + 1}'s screen on X{z['x'] + 1}; his best look inside was {round(dv['before'])} before the screen"))
+    tgt_o, tgt_x = first['o'], first.get('cover', -1)
+    used = [c for c in found if c.get('ruled_in') and (tgt_o in c['o'] or (tgt_x >= 0 and tgt_x in c['x']))]
+    used.sort(key=lambda c: (tgt_o not in c['o'], -c['worth']))
+    seen_u, uniq = set(), []
+    for c in used:
+        k = (c['id'], tuple(c['o']))
+        if k not in seen_u:
+            seen_u.add(k)
+            uniq.append(c)
+    used = uniq
+    if not branch or branch.get('o') == tgt_o:
+        alt = [c for c in found if c.get('ruled_in') and tgt_o not in c['o'] and c['o']]
+        if alt:
+            c0 = max(alt, key=lambda c: c['worth'])
+            branch = dict(o=c0['o'][0], sq=c0['sq'], shot=None, worth=c0['worth'], reach=None, when='the first preference is shut',
+                          text=f"If that is shut: {c0['name']}, {c0['why']}")
     return dict(first, value=value, bar=bar_next, bars=tol, spec=spec, backups=backups, conditions=conds, roles=roles,
+                found=found, used=used[:4], ruled_out=cr['ruled_out'], unmeasured=cr['unmeasured'],
                 branch=branch, line=line, target=target, idle=idle, answers=cov.get('answers') or [], screens=screens,
                 needs='Needs: ' + '; '.join(c['text'] for c in conds) + '.' if conds else '',
                 backup_words=('Backups: ' + '; '.join(_look_words(b) for b in backups) + '.') if backups else '')
@@ -557,6 +587,8 @@ def plan_words(plan):
     out = [plan['target'] + '.']
     if plan['needs']:
         out.append(plan['needs'])
+    if plan.get('used'):
+        out.append('Built from: ' + '; '.join(f"{c['name']} ({c['why']})" for c in plan['used'][:3]) + '.')
     if plan['branch']:
         out.append(plan['branch']['text'] + '.')
     if plan['backup_words']:
@@ -573,19 +605,6 @@ def _okey(m):
     actions the defence's answer needs: the offence's gain comes soonest)."""
     drv = m[3] or {}
     return (round(float(m[2]), 6), tuple(drv.get('list') or ()), -int(drv.get('n') or 0))
-
-
-def _apply_predictions(scout, xs, arrows, perm):
-    """Stage 6: this side's own predictions of the other side's matchups, where it has seen them often enough: the
-    predicted defenders trade squares so each expected matchup stands."""
-    xs, arrows, perm = list(xs), list(arrows), list(perm)
-    for a, d in sorted((scout.predict or {}).items()):
-        if a in perm and perm[d] != a:
-            e = perm.index(a)
-            xs[d], xs[e] = xs[e], xs[d]
-            arrows[d], arrows[e] = arrows[e], arrows[d]
-            perm[d], perm[e] = perm[e], perm[d]
-    return xs, arrows, perm
 
 
 def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None):
@@ -665,7 +684,7 @@ def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None)
     # the predicted defence for the placement locked in: its full setup where the time allows, else its quick one
     full = read(sq, ball, evals=240 if budget >= 8 else 0) or read(sq, ball)
     m = full[1]
-    xs, arrows, perm = _apply_predictions(scout, m[0], m[1], m[4] or list(range(5)))
+    xs, arrows, perm = list(m[0]), list(m[1]), list(m[4] or range(5))
     state = make(sq, ball, xs, arrows)
     plan = read_plan(state, scout, perm, deep=True)
     checks = placement_checks(state, scout, plan)
@@ -800,8 +819,21 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
         if pm[r['x']] != r['o'] and r['over'] > 0 and not any(z['x'] == r['x'] and z['o'] == r['o'] for z in avoided):
             avoided.append(dict(x=r['x'], o=r['o'], text=f"not X{r['x'] + 1} on O{r['o'] + 1} {_where_words_zone(r['zone'])}"))
             break
+    # step 25 (D-244): the defence reads the offence's conditions forming on the board, with its own model (public
+    # information only: it never sees the offence's plan), and names the ones it must deny
+    watching = []
+    try:
+        from . import conditions as CD
+        st_d = make(o_sq, ball, pick['x'], pick['arrows'])
+        cr = CD.read(st_d, scout, bar=tol[1]['bar'] if len(tol) > 1 else 0.0)
+        for c in sorted((c for c in cr['found'] if c.get('ruled_in')), key=lambda c: -c['worth'])[:2]:
+            watching.append(dict(id=c['id'], text=f"{c['name']}: {c['why']}"))
+    except ValueError:
+        watching = []
     text = 'Matchups: ' + '; '.join(z['text'] for z in read) + '.' + (' Avoided: ' + '; '.join(z['text'] for z in avoided) + '.' if avoided else '')
-    return dict(squares=pick['x'], arrows=pick['arrows'], perm=pm, value=round(pick['L'], 2), read=read, avoided=avoided, text=text,
+    if watching:
+        text += ' Watching: ' + '; '.join(z['text'] for z in watching) + '.'
+    return dict(squares=pick['x'], arrows=pick['arrows'], perm=pm, value=round(pick['L'], 2), read=read, avoided=avoided, text=text, watching=watching,
                 lines=list(lines or []), swaps=[list(z) for z in swaps], settled=dict(x=[B.sq(q) for q in xs], L=L),
                 rule=dict(cost=pick['cost'], unlike=pick['unlike'], same=pick['same'], before=dict(cost=base['cost'], unlike=base['unlike'], same=base['same'])))
 

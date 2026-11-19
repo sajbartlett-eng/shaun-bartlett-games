@@ -122,9 +122,6 @@ def cmd_checks():
             the_plan_before=p0 and p0['target'], board=dict(o=[B.sq(q) for q in lane.o], x=[B.sq(q) for q in lane.x]),
             the_plan_measured_on_it=stt and dict(kind=stt['kind'], line=stt['line'], worth=stt.get('worth'), the_planned_look_is_worth=stt.get('planned')),
             the_offences_turn=turn, takes_the_lane=any(t.startswith('O1') and 'pass' not in t.lower() for t in turn))
-        # ---- how much evidence changes a prediction ----
-        out['evidence'] = dict(sightings_in_a_row=PL.EVIDENCE,
-                               why='A setup has no dice in it. A defence does vary among setups it reads as level, so one unexpected matchup can be variety. The same unexpected matchup twice running is taken as its choice.')
     finally:
         eng.close()
     json.dump(out, open(os.path.join(RUN, 'checks.json'), 'w'), indent=1, default=str)

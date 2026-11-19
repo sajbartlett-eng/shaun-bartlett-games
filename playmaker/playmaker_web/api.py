@@ -188,7 +188,7 @@ def handle(manager, method, path, query=None, body=None):
                 from .report import build
                 g = manager.get(q.get('code'))
                 ph = q.get('phase')
-                return 200, build(g, int(q.get('possession') or g.possession), int(ph) if ph else None)
+                return 200, build(g, int(q.get('possession') or g.possession), int(ph) if ph else None, g.seat_of(q.get('token')))
             if path == '/api/options':
                 return 200, options(manager)
             return 404, dict(error='not found')

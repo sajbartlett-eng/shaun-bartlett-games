@@ -1548,7 +1548,7 @@ class Read:
                         top, tt = o, n
                 looks.append(dict(x=x, mask=mask, wd=x['r'] * (top + x['src'][9]) - (1 - x['r']) * x['src'][8], tt=tt))
 
-            return cover_groups([dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
+            return cover_groups(covers_too_of(s), [dict(a=z['x']['key'][0], c=z['x']['key'][1], t=z['tt'], wd=z['wd'], now=z['x']['e'], mask=z['mask'],
                                       order=(-z['x']['e'], z['x']['key'])) for z in looks])
 
         def score(st):
@@ -3090,13 +3090,42 @@ def cov_fresh(s):
                    final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
 
 
-def cover_groups(looks, most=3):
+def covers_too_of(s):
+    """Step 25 (engine.js coversToo, D-241): does defender d, having taken the look on cv, still contest the look on cu
+    with the reaction's two actions from a square next to cv? Only one attacker can shoot: he covers every look he can
+    reach in time, unless the offence creates them one after another and he can't."""
+    rules = s.ctx.rules
+    from_next = stance_mode(s.with_(beaten=()), 0)
+    memo = {}
+
+    def covers(d, cv, cu):
+        qs, mode = s.ctx.dfn[d].qs, from_next
+        key = (d, cv, cu)
+        if key not in memo:
+            hit = False
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    p = (cv[0] + dx, cv[1] + dy)
+                    if (dx, dy) == (0, 0) or p == cu or not B.on_board(p):
+                        continue
+                    pair = _any_arrow_cmap2(rules, p, qs, mode).get(cu)
+                    if pair is not None and pair[2]:
+                        hit = True
+                        break
+                if hit:
+                    break
+            memo[key] = hit
+        return memo[key]
+    return covers
+
+
+def cover_groups(covers, looks, most=3):
     """Step 21 (engine.js lgOverloads, D-206: count numbers, not just pairs). looks: [dict(a, c, t, wd, now, mask, order)]
     (the attacker, his square, the shot, its worth read without the defenders in mask, its worth now, the defenders who
     take anything off it, a tie order). A group of one, two or three defenders is the only cover for the looks whose mask
     lies inside it; each attacker brings his best such look. With more attackers than defenders, the defence's best
-    assignment gives each defender one attacker he can take (or none); an attacker is open if no taken attacker stands
-    within two squares of him. The group is worth the best look the best assignment leaves open. A group is named only
+    assignment gives each defender one attacker he can take (or none); an attacker is open if no defender who took a
+    look can still contest his from beside the look he took (step 25, covers). The group is worth the best look the best assignment leaves open. A group is named only
     if no smaller group inside it is already worth as much. -> [dict(d, ds, value, threats, near_key)]"""
     import itertools
 
@@ -3113,7 +3142,7 @@ def cover_groups(looks, most=3):
                 for u in range(len(A)):
                     if u in took:
                         continue
-                    if all(v < 0 or B.cheb(A[u]['c'], A[v]['c']) >= 3 for v in took) and A[u]['wd'] > left:
+                    if all(v < 0 or not covers(ds[i], A[v]['c'], A[u]['c']) for i, v in enumerate(took)) and A[u]['wd'] > left:
                         left, open_ = A[u]['wd'], u
                 if left < best - 1e-9:
                     best = left
@@ -3192,6 +3221,32 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
     three = three_seconds_owed(s) if not fresh else 0
     return dict(L=best['L'] - 5 * three, before=before, ov=len(best['ov']), moves=len(best['moves']), best=best, opts=opts, three=three,
                 list=r._lg_list(best['root']))
+
+
+def bars_of(s, cfg=None):
+    """Step 25 (engine.js barsOf, D-242): the shot bar phase by phase, the value of playing on. V(0) = 0; with n phases
+    left, V(n) = the best of playing on (V(n-1)), the lasting gap, and each look at its chance: reached, its value or
+    V(n-1) if more; missed, V(n-1) less what the miss costs. -> [{phase, clock, bar}]."""
+    g = lasting_of(s, cfg)
+    n0 = s.clock // RC.PHASE_SECONDS - 1
+    V = [0.0]
+    if g and g.get('best'):
+        opts = [(x['r'], x['w'] + x['src'][9], x['src'][8]) for x in g['best']['o'] if x['r'] > 0 and x['w'] not in (float('inf'), float('-inf'))]
+        for n in range(1, n0 + 1):
+            prev = V[n - 1]
+            v = max(prev, g['L'])
+            for r, val, lc in opts:
+                e = r * max(val, prev) + (1 - r) * (prev - lc)
+                if e > v:
+                    v = e
+            V.append(v)
+    out, c, k = [], s.clock, 1
+    while c > 0:
+        n = c // RC.PHASE_SECONDS - 1
+        out.append(dict(phase=k, clock=c, bar=round(V[n], 2) if 0 < n < len(V) else 0.0))
+        c -= RC.PHASE_SECONDS
+        k += 1
+    return out
 
 
 def top_of(s, cfg=None):

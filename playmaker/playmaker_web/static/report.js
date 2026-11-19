@@ -8,7 +8,7 @@
 'use strict';
 window.PMReport = (function () {
   async function load(possession, phase) {
-    const q = `/api/report?code=${G.code}&possession=${possession}` + (phase ? `&phase=${phase}` : '');
+    const q = `/api/report?code=${G.code}&token=${G.token}&possession=${possession}` + (phase ? `&phase=${phase}` : '');
     const [rep, story] = await Promise.all([api(q), api(`/api/story?code=${G.code}`)]);
     return { rep, story };
   }
@@ -77,7 +77,8 @@ body { background: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Robo
     const { rep, story } = await load(possession);
     const body = el('main', { class: 'reportdoc' }, [el('h1', { text: `Playmaker: ${rep.teams[0]} v ${rep.teams[1]}` }),
       el('p', { class: 'note', text: `Game ${rep.code} · possession ${possession} · ${stamp()}. One diagram a turn: the offence's turn and the defence's answer, numbered in order. Black: offence. Red: defence.` })]);
-    if (rep.setup && rep.setup.offence) body.append(el('h2', { text: 'The setup' }), el('p', { class: 'tline off', text: rep.setup.offence }), el('p', { class: 'tline def', text: rep.setup.defence }));
+    if (rep.setup && (rep.setup.offence || rep.setup.defence)) body.append(el('h2', { text: 'The setup' }), rep.setup.offence ? el('p', { class: 'tline off', text: rep.setup.offence }) : '', rep.setup.defence ? el('p', { class: 'tline def', text: rep.setup.defence }) : '');
+    for (const p of Object.values(rep.plans || {})) body.append(el('h3', { text: `${p.side}: its setup plan` }), el('ul', {}, (p.words || []).concat(p.avoided.length ? ['Avoided: ' + p.avoided.join('; ') + '.'] : []).concat(p.watching.length ? ['Watching: ' + p.watching.join('; ') + '.'] : []).map(t => el('li', { text: t }))));
     const phases = [...new Set(rep.turns.map(t => t.phase))];
     for (const ph of phases) {
       body.append(el('h2', { text: `Phase ${ph}` }));

@@ -1069,8 +1069,6 @@ def propose_offence(make_names, seed, levels_key=None, budget=None, level='allst
         except ValueError:
             r = None
         if r:
-            if memory is not None:
-                memory['predicted'] = r['predicted']['perm']
             return r
     if setup_search() if search is None else search:
         return _search_offence(make_names, seed, levels_key, budget, level, memory)
