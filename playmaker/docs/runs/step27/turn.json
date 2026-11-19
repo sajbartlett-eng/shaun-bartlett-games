@@ -1,0 +1,26 @@
+{
+ "action": "O1 Quick Step to H10",
+ "seconds": 16.2,
+ "line": null,
+ "route": null,
+ "ahead": {
+  "turns": 1,
+  "phases": 1,
+  "path": [],
+  "words": "It pays on this turn.",
+  "list": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ],
+  "first": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ]
+ }
+}

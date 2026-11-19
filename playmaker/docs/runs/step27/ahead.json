@@ -1,0 +1,60 @@
+{
+ "1 turns": {
+  "list": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ],
+  "turns": 1,
+  "words": "It pays on this turn.",
+  "conditions": [],
+  "seconds": 0.6
+ },
+ "2 turns": {
+  "list": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ],
+  "turns": 1,
+  "words": "It pays on this turn.",
+  "conditions": [],
+  "seconds": 6.6
+ },
+ "3 turns": {
+  "list": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ],
+  "turns": 1,
+  "words": "It pays on this turn.",
+  "conditions": [],
+  "seconds": 6.2
+ },
+ "4 turns": {
+  "list": [
+   36,
+   34,
+   32,
+   32,
+   15
+  ],
+  "turns": 1,
+  "words": "It pays on this turn.",
+  "conditions": [],
+  "seconds": 5.4
+ },
+ "O3 (corner) looks worth 20 or more, one turn": {
+  "K3": 32,
+  "O8": 21,
+  "P8": 21
+ },
+ "screens read a turn on": []
+}

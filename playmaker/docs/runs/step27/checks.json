@@ -1,0 +1,1011 @@
+{
+ "High-Low v Shoot and Protect, board 1": {
+  "offence": {
+   "squares": [
+    "I11",
+    "J3",
+    "D7",
+    "J4",
+    "Q3"
+   ],
+   "ball": "O1",
+   "jobs": [
+    "O1 (Combo Guard) on I11: passer",
+    "O2 (Playmaker SG) on J3: re-screen",
+    "O3 (Stretch SF) on D7: spacing: his look holds a defender",
+    "O4 (All-Rounder PF) on J4: screen, then the dive",
+    "O5 (Post Scorer C) on Q3: screener, shooter"
+   ],
+   "in_the_key": 2,
+   "line": "Attention: O3 holds X1; O1 holds X3; O4 holds X5. Hole: G2, the green zone. Access: O5's screen, then the pass to O5.",
+   "alternative": "Weighed instead: O1 I11, O2 C9, O3 O9, O4 A3, O5 Q3 (ball O1). It lost because its second look reads 18 against 22 once the full defence answers.",
+   "words": [
+    "Plan: a post shot for O5 on G2, after he screens X5 and rolls.",
+    "Needs: O5's screen on X5 is set (from G2, G3, G4, H2, H4, I2, I3 or I4); X5 a step late to G2; the pass from O1 to O5 arrives.",
+    "Built from: off-ball screen (O5 screens X5 from G2, G3, G4, H2, H4, I2, I3, I4); off-ball screen (O3 screens X5 from I2, I3); off-ball screen (O4 screens X5 from G2, G3, G4, H2, H4, I2, I3).",
+    "If the screen fails: O1's layup on G3.",
+    "Backups: O3's three on C8; O4's layup on K3.",
+    "Attention: O3 holds X1; O1 holds X3; O4 holds X5. Hole: G2, the green zone. Access: O5's screen, then the pass to O5.",
+    "Read ahead: it needs 3 turns: O4 screens X5 from I3; then O2 screens X5 from I2. Built on the way: screen, then the dive (O4 screens; the next turn reads 26 after the defence answers); re-screen (O2 screens; the next turn reads 26 after the defence answers).",
+    "Weighed instead: O1 I11, O2 C9, O3 O9, O4 A3, O5 Q3 (ball O1). It lost because its second look reads 18 against 22 once the full defence answers."
+   ],
+   "read_ahead": {
+    "turns": 3,
+    "phases": 1,
+    "path": [
+     {
+      "turn": 1,
+      "phase": 1,
+      "offence": "O4 screens X5 from I3",
+      "defence": [],
+      "act": [
+       "screen",
+       3,
+       null,
+       6
+      ],
+      "list": [
+       24,
+       24,
+       22,
+       18,
+       4.71
+      ],
+      "moved": []
+     },
+     {
+      "turn": 2,
+      "phase": 1,
+      "offence": "O2 screens X5 from I2",
+      "defence": [],
+      "act": [
+       "screen",
+       1,
+       null,
+       7
+      ],
+      "list": [
+       26,
+       22,
+       21,
+       18,
+       4.71
+      ],
+      "moved": []
+     }
+    ],
+    "words": "It needs 3 turns: O4 screens X5 from I3; then O2 screens X5 from I2.",
+    "list": [
+     26,
+     22,
+     21,
+     18,
+     4.71
+    ],
+    "first": [
+     21,
+     18,
+     18,
+     16,
+     4.71
+    ]
+   },
+   "built_on_the_way": [
+    {
+     "id": "20b",
+     "name": "screen, then the dive",
+     "turn": 1,
+     "o": 3,
+     "why": "O4 screens; the next turn reads 26 after the defence answers"
+    },
+    {
+     "id": "22",
+     "name": "re-screen",
+     "turn": 2,
+     "o": 1,
+     "why": "O2 screens; the next turn reads 26 after the defence answers"
+    }
+   ],
+   "worth_against_the_full_defence": [
+    26,
+    22,
+    21,
+    18,
+    4.71
+   ],
+   "table_squares": {
+    "squares": [
+     "I11",
+     "C9",
+     "O9",
+     "A3",
+     "Q3"
+    ],
+    "ball": 0,
+    "list": [
+     26,
+     18,
+     18,
+     16,
+     15
+    ],
+    "turns": 3
+   },
+   "ranked_in_full": [
+    {
+     "squares": [
+      "I11",
+      "J3",
+      "D7",
+      "J4",
+      "Q3"
+     ],
+     "ball": 0,
+     "value": 26,
+     "list": [
+      26,
+      22,
+      21,
+      18,
+      4.71
+     ],
+     "turns": 3,
+     "seconds": 26.9
+    },
+    {
+     "squares": [
+      "I11",
+      "C9",
+      "O9",
+      "A3",
+      "Q3"
+     ],
+     "ball": 0,
+     "value": 26,
+     "list": [
+      26,
+      18,
+      18,
+      16,
+      15
+     ],
+     "turns": 3,
+     "seconds": 31.4
+    },
+    {
+     "squares": [
+      "I11",
+      "J3",
+      "D7",
+      "A3",
+      "Q3"
+     ],
+     "ball": 0,
+     "value": 24,
+     "list": [
+      24,
+      22,
+      20,
+      20,
+      15
+     ],
+     "turns": 2,
+     "seconds": 32.2
+    }
+   ],
+   "read_in_full": 3,
+   "read_quick": 21,
+   "checks": [
+    "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+    "Every defender has a real job.",
+    "O5 (Post Scorer C) stands on Q3, the three-point line. He is a body in the corner: his three there is the best look the map found for him."
+   ],
+   "seconds": 110.5
+  },
+  "defence": {
+   "squares": [
+    "L3",
+    "E6",
+    "K4",
+    "M7",
+    "H3"
+   ],
+   "arrows": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "read": [
+    "X1 sags off O2 to guard O1's look (worth 21 without him there)",
+    "X2 on O1: the nearest defender who takes something off his look",
+    "X3 on O3: same position",
+    "X4 sags off O5 to guard O1's look (worth 27 without him there)",
+    "X5 on O4: the nearest defender who takes something off his look"
+   ],
+   "avoided": [
+    "not X4 on O1 at the arc",
+    "not X1 on O5 in the green zone"
+   ],
+   "watching": [],
+   "read_ahead": {
+    "turns": 3,
+    "list": [
+     26,
+     22,
+     20,
+     15.19,
+     9
+    ],
+    "words": "It needs 3 turns: O2 screens X5 from I2; then O4 screens X5 from I3."
+   },
+   "ways_read_ahead": [
+    {
+     "x": [
+      "L3",
+      "E6",
+      "K4",
+      "M7",
+      "H3"
+     ],
+     "list": [
+      26,
+      22,
+      20,
+      15.19,
+      9
+     ],
+     "turns": 3,
+     "chosen": true
+    },
+    {
+     "x": [
+      "K4",
+      "L3",
+      "E6",
+      "M7",
+      "H3"
+     ],
+     "list": [
+      26,
+      22,
+      21,
+      18,
+      4.71
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "M7",
+      "E6",
+      "L3",
+      "K4",
+      "H3"
+     ],
+     "list": [
+      24,
+      24,
+      22,
+      22,
+      6.9
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "M7",
+      "E6",
+      "K4",
+      "L3",
+      "H3"
+     ],
+     "list": [
+      26,
+      22,
+      20,
+      15.19,
+      11.1
+     ],
+     "turns": 3,
+     "chosen": false
+    }
+   ],
+   "bigs": [
+    {
+     "big": "O4 (All-Rounder PF) on J4",
+     "between_him_and_the_rim": [
+      "X5 on H3"
+     ]
+    },
+    {
+     "big": "O5 (Post Scorer C) on Q3",
+     "between_him_and_the_rim": "nobody"
+    }
+   ],
+   "near_the_ball": [],
+   "seconds": 71.6
+  },
+  "placement_checks_after_the_defence_sets_up": [
+   "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+   "Every defender has a real job.",
+   "O5 (Post Scorer C) stands on Q3, the three-point line. He is a body in the corner: his three there is the best look the map found for him."
+  ]
+ },
+ "Twin Towers v Lockdown, board 2": {
+  "offence": {
+   "squares": [
+    "N7",
+    "C9",
+    "O9",
+    "N10",
+    "J3"
+   ],
+   "ball": "O4",
+   "jobs": [
+    "O1 (Scoring PG) on N7: spacing: his look holds a defender",
+    "O2 (Two-Way SG) on C9: screen, then the dive",
+    "O3 (Scoring SF) on O9: screener",
+    "O4 (Post Scorer PF) on N10: passer",
+    "O5 (Post Scorer C) on J3: shooter"
+   ],
+   "in_the_key": 1,
+   "line": "Attention: O4 holds X1; O2 holds X2; O3 holds X3. Hole: G2, the green zone. Access: O3's screen, then the pass to O5.",
+   "alternative": "Weighed instead: O1 A3, O2 C9, O3 O9, O4 I11, O5 Q3 (ball O4). It lost because its best look reads 21 against 27.57 once the full defence answers.",
+   "words": [
+    "Plan: a post shot for O5 on G2, off O3's screen on X4.",
+    "Needs: O3's screen on X4 is set (from H3, H4, H5, I3, I5, J4 or J5); X4 a step late to G2; the pass from O4 to O5 arrives.",
+    "Built from: cut behind help (O5 dives to J3 while the defence turns to O3's screen on X4; his best look inside was 3 before the screen); off-ball screen (O5 screens X4 from H3, H4, H5, I3, I5, J4, J5); off-ball screen (O3 screens X4 from H3, H4, H5, I3, I5, J4, J5).",
+    "If the screen fails: O1's floater on G7.",
+    "Backups: O2's three on H10; O3's three on O8.",
+    "Attention: O4 holds X1; O2 holds X2; O3 holds X3. Hole: G2, the green zone. Access: O3's screen, then the pass to O5.",
+    "Read ahead: it needs 3 turns: O2 screens X2 from C6; then O5 screens X4 from H3 (X5 to J4, X2 to D6). Built on the way: screen, then the dive (O2 screens; the next turn reads 27.57 after the defence answers); re-screen (O5 screens; the next turn reads 27.57 after the defence answers).",
+    "Weighed instead: O1 A3, O2 C9, O3 O9, O4 I11, O5 Q3 (ball O4). It lost because its best look reads 21 against 27.57 once the full defence answers."
+   ],
+   "read_ahead": {
+    "turns": 3,
+    "phases": 1,
+    "path": [
+     {
+      "turn": 1,
+      "phase": 1,
+      "offence": "O2 screens X2 from C6",
+      "defence": [],
+      "act": [
+       "screen",
+       1,
+       null,
+       1
+      ],
+      "list": [
+       27,
+       18,
+       18,
+       9,
+       5.57
+      ],
+      "moved": []
+     },
+     {
+      "turn": 2,
+      "phase": 1,
+      "offence": "O5 screens X4 from H3",
+      "defence": [
+       "X5 to J4",
+       "X2 to D6"
+      ],
+      "act": [
+       "screen",
+       4,
+       null,
+       1
+      ],
+      "list": [
+       27.57,
+       22,
+       20,
+       18,
+       9
+      ],
+      "moved": [
+       4,
+       1
+      ]
+     }
+    ],
+    "words": "It needs 3 turns: O2 screens X2 from C6; then O5 screens X4 from H3 (X5 to J4, X2 to D6).",
+    "list": [
+     27.57,
+     22,
+     20,
+     18,
+     9
+    ],
+    "first": [
+     18,
+     18,
+     18,
+     9,
+     5.57
+    ]
+   },
+   "built_on_the_way": [
+    {
+     "id": "20b",
+     "name": "screen, then the dive",
+     "turn": 1,
+     "o": 1,
+     "why": "O2 screens; the next turn reads 27.57 after the defence answers"
+    },
+    {
+     "id": "22",
+     "name": "re-screen",
+     "turn": 2,
+     "o": 4,
+     "why": "O5 screens; the next turn reads 27.57 after the defence answers"
+    }
+   ],
+   "worth_against_the_full_defence": [
+    27.57,
+    22,
+    20,
+    18,
+    9
+   ],
+   "table_squares": {
+    "squares": [
+     "A3",
+     "C9",
+     "O9",
+     "I11",
+     "Q3"
+    ],
+    "ball": 3,
+    "list": [
+     21,
+     18,
+     18,
+     7.22,
+     6
+    ],
+    "turns": 3
+   },
+   "ranked_in_full": [
+    {
+     "squares": [
+      "N7",
+      "C9",
+      "O9",
+      "N10",
+      "J3"
+     ],
+     "ball": 3,
+     "value": 27.57,
+     "list": [
+      27.57,
+      22,
+      20,
+      18,
+      9
+     ],
+     "turns": 3,
+     "seconds": 24.8
+    },
+    {
+     "squares": [
+      "A3",
+      "C9",
+      "O9",
+      "I11",
+      "Q3"
+     ],
+     "ball": 3,
+     "value": 21,
+     "list": [
+      21,
+      18,
+      18,
+      7.22,
+      6
+     ],
+     "turns": 3,
+     "seconds": 41.4
+    }
+   ],
+   "read_in_full": 2,
+   "read_quick": 25,
+   "checks": [
+    "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+    "Every defender has a real job.",
+    "O5 (Post Scorer C) stands on J3, the green zone."
+   ],
+   "seconds": 85.3
+  },
+  "defence": {
+   "squares": [
+    "L5",
+    "D7",
+    "M6",
+    "I4",
+    "K4"
+   ],
+   "arrows": [
+    6,
+    1,
+    6,
+    2,
+    2
+   ],
+   "read": [
+    "X1 on O1: same position",
+    "X2 on O2: same position",
+    "X3 on O3: same position",
+    "X4 sags off O4 to guard O5's look (worth 32 without him there)",
+    "X5 on O5: same position"
+   ],
+   "avoided": [
+    "not X5 on O4 at the arc",
+    "not X2 on O5 in the green zone"
+   ],
+   "watching": [
+    "flash cut: O1 flashes to H5",
+    "shoot over a weak contest: O1's floater on H5 over X4's contest"
+   ],
+   "read_ahead": {
+    "turns": 3,
+    "list": [
+     28,
+     22,
+     18,
+     18,
+     9
+    ],
+    "words": "It needs 3 turns: O4 passes to O2; then O5 screens X4 from H3."
+   },
+   "ways_read_ahead": [
+    {
+     "x": [
+      "L5",
+      "D7",
+      "M6",
+      "I4",
+      "K4"
+     ],
+     "list": [
+      28,
+      22,
+      18,
+      18,
+      9
+     ],
+     "turns": 3,
+     "chosen": true
+    },
+    {
+     "x": [
+      "K4",
+      "D7",
+      "M6",
+      "I4",
+      "L5"
+     ],
+     "list": [
+      27.57,
+      22,
+      20,
+      18,
+      9
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "I4",
+      "D7",
+      "M6",
+      "K4",
+      "L5"
+     ],
+     "list": [
+      28,
+      21.93,
+      18,
+      18,
+      9
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "I4",
+      "D7",
+      "M6",
+      "L5",
+      "K4"
+     ],
+     "list": [
+      28,
+      24,
+      22,
+      18,
+      9
+     ],
+     "turns": 3,
+     "chosen": false
+    }
+   ],
+   "bigs": [
+    {
+     "big": "O4 (Post Scorer PF) on N10",
+     "between_him_and_the_rim": "nobody"
+    },
+    {
+     "big": "O5 (Post Scorer C) on J3",
+     "between_him_and_the_rim": "nobody"
+    }
+   ],
+   "near_the_ball": [],
+   "seconds": 74.9
+  },
+  "placement_checks_after_the_defence_sets_up": [
+   "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+   "Every defender has a real job.",
+   "O5 (Post Scorer C) stands on J3, the green zone."
+  ]
+ },
+ "High-Low v Run and Gun, step 24's high-screen board (its teams)": {
+  "offence": {
+   "squares": [
+    "L5",
+    "M4",
+    "J2",
+    "I11",
+    "Q3"
+   ],
+   "ball": "O4",
+   "jobs": [
+    "O1 (Combo Guard) on L5: re-screen",
+    "O2 (Playmaker SG) on M4: spacing: his look holds a defender",
+    "O3 (Stretch SF) on J2: screen, then the dive",
+    "O4 (All-Rounder PF) on I11: passer",
+    "O5 (Post Scorer C) on Q3: screener, shooter"
+   ],
+   "in_the_key": 1,
+   "line": "Attention: O4 holds X1; O2 holds X2; O3 holds X3. Hole: G3, the green zone. Access: O5's screen, then the pass to O5.",
+   "alternative": "Weighed instead: O1 L5, O2 M4, O3 O9, O4 I11, O5 Q3 (ball O4). It lost because its best look reads 21.75 against 24 once the full defence answers.",
+   "words": [
+    "Plan: a post shot for O5 on G3, after he screens X3 and rolls.",
+    "Needs: O5's screen on X3 is set (from G3, G4, G5, H3, H5, I3, I4 or I5); X4 a step late to G3; the pass from O4 to O5 arrives.",
+    "Built from: off-ball screen (O5 screens X3 from G3, G4, G5, H3, H5, I3, I4, I5); off-ball screen (O3 screens X4 from J3, J4, K2, K4, L2, L3, L4); off-ball screen (O1 screens X4 from J3, J4, K2, K4, L3, L4).",
+    "If the screen fails: O1's floater on M2.",
+    "Backups: O2's floater on I7; O4's three on K10.",
+    "Attention: O4 holds X1; O2 holds X2; O3 holds X3. Hole: G3, the green zone. Access: O5's screen, then the pass to O5.",
+    "Read ahead: it needs 3 turns: O3 screens X3 from H3 (X4 to I5, X1 to J2, X5 to F10, X3 to D4); then O1 screens X2 from N5 (X1 to M2, X4 to K3). Built on the way: screen, then the dive (O3 screens; the next turn reads 24 after the defence answers); re-screen (O1 screens; the next turn reads 24 after the defence answers).",
+    "Weighed instead: O1 L5, O2 M4, O3 O9, O4 I11, O5 Q3 (ball O4). It lost because its best look reads 21.75 against 24 once the full defence answers."
+   ],
+   "read_ahead": {
+    "turns": 3,
+    "phases": 1,
+    "path": [
+     {
+      "turn": 1,
+      "phase": 1,
+      "offence": "O3 screens X3 from H3",
+      "defence": [
+       "X4 to I5",
+       "X1 to J2",
+       "X5 to F10",
+       "X3 to D4"
+      ],
+      "act": [
+       "screen",
+       2,
+       null,
+       0
+      ],
+      "list": [
+       22,
+       20,
+       18,
+       18,
+       17.57
+      ],
+      "moved": [
+       3,
+       0,
+       4,
+       2
+      ]
+     },
+     {
+      "turn": 2,
+      "phase": 1,
+      "offence": "O1 screens X2 from N5",
+      "defence": [
+       "X1 to M2",
+       "X4 to K3"
+      ],
+      "act": [
+       "screen",
+       0,
+       null,
+       7
+      ],
+      "list": [
+       24,
+       22,
+       22,
+       22,
+       9
+      ],
+      "moved": [
+       0,
+       3
+      ]
+     }
+    ],
+    "words": "It needs 3 turns: O3 screens X3 from H3 (X4 to I5, X1 to J2, X5 to F10, X3 to D4); then O1 screens X2 from N5 (X1 to M2, X4 to K3).",
+    "list": [
+     24,
+     22,
+     22,
+     22,
+     9
+    ],
+    "first": [
+     18,
+     14,
+     12,
+     11.75,
+     0
+    ]
+   },
+   "built_on_the_way": [
+    {
+     "id": "20b",
+     "name": "screen, then the dive",
+     "turn": 1,
+     "o": 2,
+     "why": "O3 screens; the next turn reads 24 after the defence answers"
+    },
+    {
+     "id": "22",
+     "name": "re-screen",
+     "turn": 2,
+     "o": 0,
+     "why": "O1 screens; the next turn reads 24 after the defence answers"
+    }
+   ],
+   "worth_against_the_full_defence": [
+    24,
+    22,
+    22,
+    22,
+    9
+   ],
+   "table_squares": {
+    "squares": [
+     "A3",
+     "C9",
+     "O9",
+     "I11",
+     "Q3"
+    ],
+    "ball": 3,
+    "list": [
+     18,
+     16,
+     15,
+     15,
+     14
+    ],
+    "turns": 3
+   },
+   "ranked_in_full": [
+    {
+     "squares": [
+      "L5",
+      "M4",
+      "J2",
+      "I11",
+      "Q3"
+     ],
+     "ball": 3,
+     "value": 24,
+     "list": [
+      24,
+      22,
+      22,
+      22,
+      9
+     ],
+     "turns": 3,
+     "seconds": 42.8
+    },
+    {
+     "squares": [
+      "L5",
+      "M4",
+      "O9",
+      "I11",
+      "Q3"
+     ],
+     "ball": 3,
+     "value": 21.75,
+     "list": [
+      21.75,
+      20,
+      18,
+      16,
+      12
+     ],
+     "turns": 3,
+     "seconds": 32.5
+    },
+    {
+     "squares": [
+      "A3",
+      "C9",
+      "O9",
+      "I11",
+      "Q3"
+     ],
+     "ball": 3,
+     "value": 18,
+     "list": [
+      18,
+      16,
+      15,
+      15,
+      14
+     ],
+     "turns": 3,
+     "seconds": 26.5
+    }
+   ],
+   "read_in_full": 3,
+   "read_quick": 17,
+   "checks": [
+    "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+    "Every defender has a real job.",
+    "O5 (Post Scorer C) stands on Q3, the three-point line. He is a body in the corner: his three there is the best look the map found for him."
+   ],
+   "seconds": 124.7
+  },
+  "defence": {
+   "squares": [
+    "K3",
+    "M6",
+    "J5",
+    "H4",
+    "F7"
+   ],
+   "arrows": [
+    0,
+    0,
+    6,
+    0,
+    2
+   ],
+   "read": [
+    "X1 on O3: the nearest defender who takes something off his look",
+    "X2 on O2: same position",
+    "X3 on O1: the nearest defender who takes something off his look",
+    "X4 on O4: same position",
+    "X5 sags off O5 to guard O1's look (worth 27 without him there)"
+   ],
+   "avoided": [
+    "not X5 on O4 at the arc",
+    "not X1 on O5 in the green zone"
+   ],
+   "watching": [],
+   "read_ahead": {
+    "turns": 2,
+    "list": [
+     21.75,
+     18,
+     16,
+     15.75,
+     12
+    ],
+    "words": "It needs 2 turns: O2 screens X2 from N5 (X1 to M1, X4 to K4)."
+   },
+   "ways_read_ahead": [
+    {
+     "x": [
+      "K3",
+      "M6",
+      "J5",
+      "H4",
+      "F7"
+     ],
+     "list": [
+      21.75,
+      18,
+      16,
+      15.75,
+      12
+     ],
+     "turns": 2,
+     "chosen": true
+    },
+    {
+     "x": [
+      "J5",
+      "M6",
+      "H4",
+      "K3",
+      "F7"
+     ],
+     "list": [
+      24,
+      22,
+      22,
+      22,
+      9
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "H4",
+      "K3",
+      "J5",
+      "M6",
+      "F7"
+     ],
+     "list": [
+      27.75,
+      26,
+      24,
+      24,
+      22
+     ],
+     "turns": 3,
+     "chosen": false
+    },
+    {
+     "x": [
+      "K3",
+      "J5",
+      "M6",
+      "H4",
+      "F7"
+     ],
+     "list": [
+      26,
+      24,
+      24,
+      23.57,
+      10
+     ],
+     "turns": 3,
+     "chosen": false
+    }
+   ],
+   "bigs": [
+    {
+     "big": "O4 (All-Rounder PF) on I11",
+     "between_him_and_the_rim": "nobody"
+    },
+    {
+     "big": "O5 (Post Scorer C) on Q3",
+     "between_him_and_the_rim": "nobody"
+    }
+   ],
+   "near_the_ball": [],
+   "seconds": 105.9
+  },
+  "placement_checks_after_the_defence_sets_up": [
+   "Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.",
+   "Every defender has a real job.",
+   "O5 (Post Scorer C) stands on Q3, the three-point line. He is a body in the corner: his three there is the best look the map found for him."
+  ]
+ }
+}

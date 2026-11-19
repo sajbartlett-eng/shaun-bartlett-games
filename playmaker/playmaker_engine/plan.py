@@ -363,7 +363,10 @@ def screen_roles(state):
               and any(k != state.ball and B.cheb(q, p) <= 3 for k, p in enumerate(state.o) if B.on_board(p))]
     s0 = state.with_(side='O', turn_n=0)
     try:
-        base = float(AG.coverage(s0, only='lasting')['L'])
+        # step 27 (audit): judged by the one list (D-219), as the search and the setups are, not by the lasting gap
+        # alone with a fixed half-point margin: a screen builds more when the list reads better with it standing
+        base_k = list_key(AG.coverage(s0, only='lasting'))
+        base = float((base_k[0] or (0,))[0])
         cov0 = AG.coverage(s0)
     except (ValueError, TypeError):
         return []
@@ -394,13 +397,16 @@ def screen_roles(state):
                         continue
                     if not r:
                         continue
-                    gain = float(r['L']) - base
-                    if gain > 0.5:
-                        row = found.setdefault((k, d), dict(o=k, x=d, sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), squares=[], state=after))
+                    kr = list_key(r)
+                    if kr > base_k:
+                        top = float((kr[0] or (0,))[0])
+                        row = found.setdefault((k, d), dict(o=k, x=d, sq=B.sq(q), value=top, gain=round(top - base, 2), key=kr, squares=[], state=after))
                         row['squares'].append(B.sq(q))
-                        if float(r['L']) > row['value'] + 1e-9:
-                            row.update(sq=B.sq(q), value=float(r['L']), gain=round(gain, 2), state=after)
-    out = sorted(found.values(), key=lambda z: (-z['value'], z['o'], z['x']))
+                        if kr > row['key']:
+                            row.update(sq=B.sq(q), value=top, gain=round(top - base, 2), key=kr, state=after)
+    out = sorted(found.values(), key=lambda z: (z['key'], -z['o'], -z['x']), reverse=True)
+    for z in out:
+        z['list'] = list(z.pop('key')[0][:8])        # the list with the screen standing (its first items), best first
     for z in out[:3]:
         try:
             c = AG.coverage(z['state'])
@@ -600,98 +606,173 @@ def plan_words(plan):
 # ---- stage 4: the offence's placement -------------------------------------------------------------------------------------
 
 def _okey(m):
-    """A placement's one measure (blueprint, stage 4): the value of its best plan at its real chance against the
-    defence it predicts (the lasting gap), then the rest of what it leaves to cover, then efficiency (the fewest
-    actions the defence's answer needs: the offence's gain comes soonest)."""
+    """A placement's quick measure (step 27, D-257): the list leads, as in play (D-219): the list of things to cover
+    against the defence it predicts, largest first; then the lasting gap; then efficiency (the fewest actions the
+    defence's answer needs). The same order as list_key; used to rank which placements get the full reading."""
     drv = m[3] or {}
-    return (round(float(m[2]), 6), tuple(drv.get('list') or ()), -int(drv.get('n') or 0))
+    return (tuple(drv.get('list') or ()), round(float(m[2]), 6), -int(drv.get('n') or 0))
 
 
-def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None):
-    """The offence sets up first (blueprint, stages 3, 3b and 4). Candidate squares for each attacker from the scout;
-    each placement is measured against the defence the offence predicts for it (the defence's own setup logic, run on
-    public information); the best is locked in and its plan read. make(o squares, ball, x squares, arrows) builds the
-    state. nth: 0 the best placement found, 1 the next best, and so on. -> dict(squares, ball, value, plan, words,
-    text, candidates, ranked, checks)."""
+FULL_CAP_S = 95.0       # step 27: the full reads stop by here, so the whole offence setup stays under about 2 minutes on desktop
+HORIZON_TURNS = 3       # step 27 (D-258): every placement compared is read to the same horizon, capped by the clock
+
+
+def _why_lost(win, lose):
+    """What tells the winner from the alternative, by the one list (item by item, best first)."""
+    a, b = list(win['key'][0]), list(lose['key'][0])
+    for k in range(min(len(a), len(b))):
+        if abs(a[k] - b[k]) > 1e-9:
+            nth = ('its best look', 'its second look', 'its third look', 'its fourth look', 'its fifth look')[k] if k < 5 else 'a gap further down its list'
+            return f"{nth} reads {b[k]:g} against {a[k]:g} once the full defence answers"
+    if abs(win['key'][1] - lose['key'][1]) > 1e-9:
+        return f"the gap that lasts reads {lose['key'][1]:g} against {win['key'][1]:g}"
+    return 'the defence answers it with fewer actions'
+
+
+def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None, pool=None, cap=None, depth=None):
+    """The offence sets up first (blueprint, stages 3, 3b and 4), the way it plays (step 27, D-257 to D-259).
+    1. Quick search: from the table's squares (each attacker tried with the ball), each attacker in turn swept over
+       every legal square (D-240 retired as a restriction: no candidate squares, nothing forced), kept when the list
+       reads better against the defence's quick setup.
+    2. Full reading: placements in the quick order, and always the table's squares, each against the defence's full
+       setup (the setup it really uses), then read ahead to the same horizon (horizon_read). The best by the list wins.
+       It reads on while the clock allows (FULL_CAP_S) and stops once the leader has held through two full readings
+       after it took the lead, so the choice no longer changes; every pair compared is the same reading.
+    pool: placements to read in full instead of searching [(squares, ball)] (for the checks). nth: the next best.
+    make(o squares, ball, x squares, arrows) builds the state.
+    -> dict(squares, ball, value, plan, words, text, candidates, ranked, full, alternative, checks, seconds)."""
     import random
     import time
     from . import agent as AG
     from playmaker_web.game import TABLE_O, man_to_man
     t0 = time.time()
-    budget = 12.0 if budget is None else max(2.0, budget)      # the level's own setup time (D-213); the button's: 12 seconds
-    t_end = t0 + budget
+    cap = FULL_CAP_S if cap is None else cap
+    depth = HORIZON_TURNS if depth is None else depth
+    quick_s = 12.0 if budget is None else max(2.0, min(budget, 12.0))      # the quick search's own time
     rng = random.Random(seed)
     base = [B.parse_sq(q) for q in TABLE_O]
     s0 = make(base, 0, *man_to_man(base, 0))
     scout = scout or scout_for(s0.ctx, 'O')
-    cands = [set(scout.candidates(a)) for a in range(5)]
-    wood = {(x, y) for x in range(B.W) for y in range(2, B.H + 1) if B.on_board((x, y)) and B.zone((x, y)) == '.'}
     seen = {}
+    wood = sorted(B.sq((x, y)) for x in range(B.W) for y in range(2, B.H + 1) if B.on_board((x, y)) and B.zone((x, y)) == '.')
 
-    def read(sq, ball, evals=0):
+    def read(sq, ball):
         key = (tuple(sq), ball)
-        if key not in seen or (evals and not seen[key][2]):
-            m = AG._map_setup(make, list(sq), ball, evals=evals)
+        if key not in seen:
+            m = AG._map_setup(make, list(sq), ball, evals=0)
             if m is None:
                 return None
-            seen[key] = (_okey(m), m, bool(evals))
+            seen[key] = (_okey(m), m)
         return seen[key]
 
-    def ok(sq, ball):
-        return AG._legal_o(sq, ball) and all(sq[i] in cands[i] or i == ball for i in range(5))
-
-    # the start: the table's own squares, each attacker in turn tried with the ball
-    best = None
+    # the table's squares, each attacker in turn tried with the ball (the ball handler must stand on plain wood)
+    table = []
     for b in range(5):
         sq = list(base)
         sq[0], sq[b] = sq[b], sq[0]
-        r = read(sq, b)
-        if r and (best is None or r[0] > best[0]):
-            best = (r[0], sq, b)
-    if best is None:
+        if AG._legal_o(sq, b):
+            r = read(sq, b)
+            if r:
+                table.append((r[0], sq, b))
+    if not table:
         return None
-    key, sq, ball = best
-    steps, changed, rounds = [], True, 0
-    while changed and rounds < 3 and time.time() < t_end:
-        changed, rounds = False, rounds + 1
-        for i in range(5):
-            if time.time() >= t_end:
-                break
-            m = read(sq, ball)[1]
-            allowed = sorted(B.sq(q) for q in (wood if i == ball else cands[i]))
-            try:
-                rows = AG.coverage(make(sq, ball, m[0], m[1]), only='offsweep', piece=i, keep=4, squares=allowed, quick=True) or []
-            except ValueError:
-                rows = []
-            must = i != ball and sq[i] not in cands[i]      # ruled out as a starting square: he moves to a candidate
-            for row in rows:
-                q = B.parse_sq(row['sq'])
-                trial = sq[:i] + [q] + sq[i + 1:]
-                if q == sq[i] or not AG._legal_o(trial, ball):
-                    continue
-                r = read(trial, ball)
-                if r and (must or r[0] > key):
-                    steps.append(dict(o=i, to=row['sq'], why='a candidate square' if must and not r[0] > key else 'the plan is worth more'))
-                    key, sq, changed, must = r[0], trial, True, False
-    ranked = sorted(((k, list(p[0]), p[1]) for p, (k, m, full) in seen.items() if ok(list(p[0]), p[1])), key=lambda r: r[0], reverse=True)
-    if not ranked:
-        ranked = [(key, sq, ball)]
-    # the level's variety (D-208): among the placements within its margin of the best, by the seed
+    table.sort(key=lambda r: r[0], reverse=True)
+    steps = []
+    if pool is None:
+        key, sq, ball = table[0]
+        changed, rounds = True, 0
+        while changed and rounds < 3 and time.time() < t0 + quick_s:
+            changed, rounds = False, rounds + 1
+            for i in range(5):
+                if time.time() >= t0 + quick_s:
+                    break
+                m = read(sq, ball)[1]
+                try:       # every legal square (the sweep skips only squares taken by another piece, and for the ball
+                    # handler squares off plain wood, which the rules don't allow him to start on)
+                    rows = AG.coverage(make(sq, ball, m[0], m[1]), only='offsweep', piece=i, keep=4, quick=True,
+                                       **(dict(squares=wood) if i == ball else {})) or []
+                except ValueError:
+                    rows = []
+                for row in rows:
+                    q = B.parse_sq(row['sq'])
+                    trial = sq[:i] + [q] + sq[i + 1:]
+                    if q == sq[i] or not AG._legal_o(trial, ball):
+                        continue
+                    r = read(trial, ball)
+                    if r and r[0] > key:
+                        steps.append(dict(o=i, to=row['sq'], why='the list reads better', key=r[0]))
+                        key, sq, changed = r[0], trial, True
+        quick = sorted(((k, list(p[0]), p[1]) for p, (k, m) in seen.items() if AG._legal_o(list(p[0]), p[1])), key=lambda r: r[0], reverse=True)
+        order = [quick[0], table[0]] + quick[1:]
+    else:
+        order = []
+        for sq, b in pool:
+            r = read(list(sq), b)
+            if r:
+                order.append((r[0], list(sq), b))
+        quick = sorted(order, key=lambda r: r[0], reverse=True)
+    # the full reading: the defence it really uses, then read ahead; same reading and same horizon for every placement
+    full, done, lead_held, last = [], set(), 0, 0.0
+    for k0, sq, ball in order:
+        p = (tuple(sq), ball)
+        if p in done:
+            continue
+        if full and pool is None and (time.time() - t0) + last > cap:
+            break
+        if pool is None and lead_held >= 2:
+            break
+        t1 = time.time()
+        m = AG._map_setup(make, list(sq), ball, evals=240)
+        if m is None:
+            continue
+        st = make(list(sq), ball, m[0], m[1])
+        h = horizon_read(st, scout, budget=60.0, depth=depth)
+        if h is None:
+            continue
+        done.add(p)
+        row = dict(squares=list(sq), ball=ball, m=m, h=h, key=h['key'], quick=k0, seconds=round(time.time() - t1, 1))
+        prev = max(full, key=lambda r: r['key']) if full else None
+        full.append(row)
+        lead_held = 0 if prev is None or row['key'] > prev['key'] else lead_held + 1
+        last = time.time() - t1
+    if not full:
+        return None
+    ranked = sorted(full, key=lambda r: r['key'], reverse=True)
     margin = AG.profile(level).get('variety_margin', 0)
-    near = [r for r in ranked if r[0][0] >= ranked[0][0][0] - margin - 1e-9]
+    near = [r for r in ranked if (r['key'][0][:1] or (0,))[0] >= (ranked[0]['key'][0][:1] or (0,))[0] - margin - 1e-9]
     pick = ranked[min(nth, len(ranked) - 1)] if nth else (rng.choice(near) if margin > 0 and len(near) > 1 else ranked[0])
-    key, sq, ball = pick
-    # the predicted defence for the placement locked in: its full setup where the time allows, else its quick one
-    full = read(sq, ball, evals=240 if budget >= 8 else 0) or read(sq, ball)
-    m = full[1]
+    sq, ball, m, h = pick['squares'], pick['ball'], pick['m'], pick['h']
     xs, arrows, perm = list(m[0]), list(m[1]), list(m[4] or range(5))
     state = make(sq, ball, xs, arrows)
     plan = read_plan(state, scout, perm, deep=True)
+    plan['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
+    plan['route'] = h['path'][0]['act'] if h['path'] else None
+    from . import conditions as CD
+    plan['ahead'] = CD.ahead(h, state)
     checks = placement_checks(state, scout, plan)
     words = plan_words(plan)
-    text = ' '.join(words) if words else 'Placed on its candidate squares against the defence it predicts.'
-    return dict(squares=sq, ball=ball, value=round(float(full[0][0]), 2), plan=plan, words=words, text=text, steps=steps,
-                candidates=len(seen), within=len(near), ranked=[dict(squares=[B.sq(q) for q in r[1]], ball=r[2], value=r[0][0]) for r in ranked[:6]],
+    route = 'Read ahead: ' + plan['horizon']['words'][0].lower() + plan['horizon']['words'][1:]
+    if plan['ahead']:
+        route += ' Built on the way: ' + '; '.join(f"{c['name']} ({c['why']})" for c in plan['ahead'][:3]) + '.'
+    words.append(route)
+    alt = next((r for r in ranked if r is not pick), None)
+    alternative = None
+    if alt is not None:
+        alternative = dict(squares=[B.sq(q) for q in alt['squares']], ball=alt['ball'], list=alt['h']['list'],
+                           text=f"Weighed instead: {', '.join(f'O{i + 1} {B.sq(q)}' for i, q in enumerate(alt['squares']))} "
+                                f"(ball O{alt['ball'] + 1}). It lost because {_why_lost(pick, alt)}.")
+    if alternative:
+        words.append(alternative['text'])
+    text = ' '.join(words) if words else 'Placed where the list reads best against the defence it predicts.'
+    tab = next((r for r in full if (tuple(r['squares']), r['ball']) == (tuple(table[0][1]), table[0][2])), None)
+    top = (pick['h']['list'] or [0])[0]
+    return dict(squares=sq, ball=ball, value=round(float(top), 2), plan=plan, words=words, text=text, steps=steps,
+                candidates=len(seen), within=len(near), list=pick['h']['list'], horizon=plan['horizon'],
+                ranked=[dict(squares=[B.sq(q) for q in r['squares']], ball=r['ball'], value=(r['h']['list'] or [0])[0], list=r['h']['list'],
+                             turns=r['h']['turns'], seconds=r['seconds']) for r in ranked[:6]],
+                full=len(full), quick_ranked=len(quick), alternative=alternative,
+                table=dict(squares=[B.sq(q) for q in table[0][1]], ball=table[0][2], list=tab['h']['list'] if tab else None,
+                           turns=tab['h']['turns'] if tab else None),
                 predicted=dict(x=[B.sq(q) for q in xs], arrows=list(arrows), perm=list(perm)), checks=checks,
                 roles=role_squares(scout, sq, ball, plan), seconds=round(time.time() - t0, 1))
 
@@ -715,6 +796,25 @@ def placement_checks(state, scout, plan):
     from . import scouting as SCT
     out = []
     idle = (plan or {}).get('idle') or []
+    # step 27 (item 2): the candidate squares kept as a check, never a rule: an attacker with no job (no
+    # look of his own, no screen, no pass, no defender drawn to him) is reported
+    try:
+        from . import agent as AG
+        cov = AG.coverage(state)
+    except ValueError:
+        cov = None
+    if cov:
+        roles = {r['o'] for r in (plan or {}).get('roles') or []}
+        drawn = {a for c in (cov.get('covers') or []) for a in (c.get('attackers') or c.get('o') or []) if isinstance(a, int)} if isinstance(cov.get('covers'), list) else set()
+        nothing = []
+        for a in range(5):
+            sqs = (cov.get('squares') or [{}] * 5)[a] or {}
+            own = max((v.get('worth', 0) for v in sqs.values()), default=0)
+            if own <= 0 and a not in roles and a != state.ball and a not in drawn:
+                nothing.append(a)
+        out.append(dict(check='every attacker has a job', passed=not nothing, idle=nothing,
+                        text='Every attacker has a job: a look of his own, a screen, a pass or a defender drawn to him.' if not nothing
+                        else f"{_and(f'O{a + 1}' for a in nothing).replace(' or ', ' and ')} has no job from where he stands: no look, screen or pass, and no defender drawn to him."))
     out.append(dict(check='every defender has a real job', passed=not idle,
                     text='Every defender has a real job.' if not idle else f"{_and(f'X{d + 1}' for d in idle).replace(' or ', ' and ')} left with no real job: the defence can use him on the plan's gaps."))
     for a, card in enumerate(state.ctx.off):
@@ -795,6 +895,29 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
         swaps.append(better['swap'])
         cur = better
     pick = cur
+    # step 27 (D-258): the same horizon as the offence's (neutrality). The ways of standing still in the running (the
+    # settlement, the matchup rule's pick, the next ones the rule allowed) are read ahead to the same depth; the
+    # matchup rule's pick stands while it leaves no more by the list read ahead than the level's margin allows
+    ahead = []
+    if not nth:
+        import time as _t
+        t_h = _t.time()
+        allowed = sorted((t for t in tried if t['L'] <= base['L'] + margin + 1e-9 and t['top'] <= base['top'] + margin + 1e-9), key=lambda t: (t['key'], t['L']))
+        pool = []
+        for t in [pick, base] + allowed:
+            if all(t['x'] != u['x'] or t['arrows'] != u['arrows'] for u in pool):
+                pool.append(t)
+        for t in pool[:4]:
+            h = horizon_read(make(o_sq, ball, t['x'], t['arrows']), scout, budget=60.0, depth=HORIZON_TURNS)
+            if h is not None:
+                ahead.append((h['key'], t, h))
+        if ahead:
+            low = min(ahead, key=lambda z: z[0])
+            mine = next((z for z in ahead if z[1] is pick), None)
+            top = lambda z: (z[0][0][:1] or (0,))[0]
+            if mine is None or (mine[0] > low[0] if margin <= 0 else top(mine) > top(low) + margin + 1e-9):
+                pick = low[1]
+        ahead_s = round(_t.time() - t_h, 1)
     if nth:                                              # the next-best ways of standing, by the same rule
         allowed = sorted((t for t in tried if t['L'] <= base['L'] + margin + 1e-9 and t['top'] <= base['top'] + margin + 1e-9), key=lambda t: (t['key'], t['L']))
         uniq = []
@@ -851,7 +974,10 @@ def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0,
     text = 'Matchups: ' + '; '.join(z['text'] for z in read) + '.' + (' Avoided: ' + '; '.join(z['text'] for z in avoided) + '.' if avoided else '')
     if watching:
         text += ' Watching: ' + '; '.join(z['text'] for z in watching) + '.'
+    hz = next((z[2] for z in ahead if z[1] is pick), None)
     return dict(squares=pick['x'], arrows=pick['arrows'], perm=pm, value=round(pick['L'], 2), read=read, avoided=avoided, text=text, watching=watching,
+                ahead=[dict(x=[B.sq(q) for q in z[1]['x']], list=z[2]['list'], turns=z[2]['turns'], chosen=z[1] is pick) for z in ahead],
+                horizon=dict(turns=hz['turns'], list=hz['list'], words=horizon_words(hz)) if hz else None,
                 lines=list(lines or []), swaps=[list(z) for z in swaps], settled=dict(x=[B.sq(q) for q in xs], L=L),
                 rule=dict(cost=pick['cost'], unlike=pick['unlike'], same=pick['same'], before=dict(cost=base['cost'], unlike=base['unlike'], same=base['same'])))
 
@@ -873,6 +999,14 @@ def plan_status(plan, state, scout):
     now = read_plan(state, scout, deep=bool(plan.get('screens')) and not state.screens)
     if not now:
         return None
+    # step 27 (D-258): nothing is locked; the route is read ahead again each phase, to the setup's own horizon
+    try:
+        h = horizon_read(state, scout, budget=12.0, depth=HORIZON_TURNS)
+    except ValueError:
+        h = None
+    if h is not None:
+        now['horizon'] = dict(turns=h['turns'], phases=h['phases'], path=h['path'], words=horizon_words(h), list=h['list'], first=list(h['first'][0][:5]))
+        now['route'] = h['path'][0]['act'] if h['path'] else None
     same = now['o'] == plan['o'] and now['shot'] == plan['shot']
     was = f"O{plan['o'] + 1}'s {SHOT_WORDS.get(plan['shot'], plan['shot'])}"
     new = _look_words(now)
@@ -881,7 +1015,8 @@ def plan_status(plan, state, scout):
         if now.get('screens') and not state.screens:
             z = now['screens'][0]
             how = f", off O{z['o'] + 1}'s screen on X{z['x'] + 1} (still to be set)"
-        return dict(kind='chasing', line=f"Chasing: {new}{how}.", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
+        ahead = f" {now['horizon']['words']}" if now.get('horizon') and now['horizon']['turns'] > 1 else ''
+        return dict(kind='chasing', line=f"Chasing: {new}{how}.{ahead}", plan=dict(now, first=plan.get('first', plan)), worth=now['worth'])
     # what the planned look is worth now, at its real chance
     from . import agent as AG
     cov = AG.coverage(state)
@@ -895,3 +1030,188 @@ def plan_status(plan, state, scout):
                 f"{SHOT_WORDS.get(plan['shot'], plan['shot'])} is worth {round(left)}.")
         kind = 'better'
     return dict(kind=kind, line=line, plan=dict(now, first=plan.get('first', plan)), worth=now['worth'], planned=left)
+
+
+# ---- step 27 (D-258): reading as far ahead as the plan needs ------------------------------------------------------------
+
+def list_key(r):
+    """The one measure play and setup share (D-219, D-257): the list of things to cover, largest first (compared item
+    by item, the offence wanting it higher), then the lasting gap, then efficiency (fewer of the defence's actions)."""
+    if not r:
+        return ((), 0.0, 0)
+    d = r.get('drivers') or {}
+    return (tuple(d.get('list') or ()), float(r.get('L') or 0), -int(d.get('n') or 0))
+
+
+def _defence_turn(state):
+    """The defence's turn as the in-play computer weighs it (D-219, _driver_order): the turns its search tries from
+    the map (the lasting reading's own best answer, each first part of it, the settlement's movements) and holding,
+    each played by the rules and ended by them (the phase too, if that was the last token; a pass in the air lands
+    the likeliest way). It takes the one that leaves the offence the least by the list, then the lasting gap, then
+    the fewest actions. -> (state, [words])."""
+    from . import agent as AG
+    from .resolve import end_turn
+    from .goals import _likeliest
+    if state.stage != 'play':
+        return state, []
+    view = state.with_(ball=state.pending[1], pending=None, approach=-1) if state.pending else state
+    try:
+        r = AG.coverage(view, only='lasting', answer=True, settle=True)
+    except ValueError:
+        r = None
+    ans = [tuple(z) for z in (r or {}).get('answer') or []]
+    cands = [()] + [tuple(ans[:k]) for k in range(1, len(ans) + 1)]
+    st_moves = tuple(tuple(z) for z in (r or {}).get('settle') or [])
+    if st_moves and st_moves not in cands:
+        cands.append(st_moves)
+    best = None
+    for mv in cands[:6]:
+        xs, arrows, done, n = list(state.x), list(state.arrows), [], 0
+        for d, q, a in mv:
+            if n >= state.tok_x:
+                break
+            q = B.parse_sq(q)
+            if q != xs[d]:
+                done.append(f"X{d + 1} to {B.sq(q)}")
+            elif a is not None and a >= 0 and a != arrows[d]:
+                done.append(f"X{d + 1} turns")
+            xs[d] = q
+            if a is not None and a >= 0:
+                arrows[d] = a
+            n += 1
+        st = state.with_(x=tuple(xs), arrows=tuple(arrows), side='X', tok_x=max(0, state.tok_x - max(1, n)))
+        nxt = _likeliest(end_turn(st, 'X'))
+        if nxt.stage != 'play':
+            k = ((), 0.0, 0)                              # the possession over (a turnover or the clock): nothing left to the offence
+        else:
+            try:
+                k = list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting'))
+            except ValueError:
+                continue
+        key = (k[0], k[1], n)                               # the defence wants the least: the list, then the gap, then actions
+        if best is None or key < best[0]:
+            best = (key, nxt, done, k)
+    if best is None:
+        return _likeliest(end_turn(state.with_(side='X', tok_x=max(0, state.tok_x - 1)), 'X')), []
+    return best[1], best[2]
+
+
+def _continuations(state, scout):
+    """The offence's turns worth reading a turn further on, each by the rules and ending its turn as the rules say
+    (a Screen, a Pass, a Hesitate): every screen that builds more on this board (screen_roles: on or off the ball,
+    the screener's own Move first where he needs one); each pass the ball handler can make (the ball swung); the
+    ball handler's Hesitate; and each teammate's one Move to where his best look starts, then the ball handler's
+    Hesitate (a seal, a V-cut, a cut that needs the defender to answer first). -> [(words, state after its turn)]."""
+    from . import agent as AG
+    from .actions import legal_actions
+    from .resolve import apply
+    from .goals import _likeliest
+    out = []
+    s0 = state.with_(side='O', turn_n=0)
+
+    def run(st, act):
+        nxt = _likeliest(apply(st, act))
+        return nxt if nxt.stage == 'play' and nxt.side == 'X' else None
+    try:
+        acts = legal_actions(s0)
+        # the best screens by the list that the screener can set this turn: from where he stands, or after his own
+        # one Move to a square it can be set from (the rules: a Screen is the turn's first action, or its second
+        # straight after that player's own Move)
+        done = 0
+        for z in screen_roles(s0):
+            if done >= 3:
+                break
+            for name in [z['sq']] + [q for q in z['squares'] if q != z['sq']]:
+                q = B.parse_sq(name)
+                mv = None if s0.o[z['o']] == q else next((a for a in acts if a.piece == z['o'] and a.kind == 'move' and a.dest == q), None)
+                if s0.o[z['o']] != q and mv is None:
+                    continue
+                st = _likeliest(apply(s0, mv)) if mv is not None else s0
+                if st.stage != 'play' or st.o[z['o']] != q:
+                    continue
+                act = next((a for a in legal_actions(st) if a.kind == 'screen' and a.piece == z['o'] and a.target == B.dir_between(q, st.x[z['x']])), None)
+                nxt = run(st, act) if act is not None else None
+                if nxt is not None:
+                    out.append((f"O{z['o'] + 1} screens X{z['x'] + 1} from {name}", nxt, act))
+                    done += 1
+                    break
+        for a in acts:
+            if a.kind == 'pass' and a.piece == s0.ball:
+                nxt = run(s0, a)
+                if nxt is not None and (nxt.ball != s0.ball or nxt.pending):
+                    out.append((f"O{s0.ball + 1} passes to O{a.target + 1}" if isinstance(a.target, int) else f"O{s0.ball + 1} passes", nxt, a))
+        hes = next((a for a in acts if a.kind == 'hesitate'), None)
+        if hes is not None:
+            nxt = run(s0, hes)
+            if nxt is not None:
+                out.append((f"O{s0.ball + 1} hesitates", nxt, hes))
+            cov = AG.coverage(s0)
+            for k in range(5):
+                if k == s0.ball:
+                    continue
+                sqs = (cov.get('squares') or [{}] * 5)[k] or {}
+                moves = {B.sq(x.dest): x for x in acts if x.piece == k and x.kind == 'move' and x.dest}
+                cands = sorted(((v.get('worth', 0), q) for q, v in sqs.items() if q in moves), reverse=True)
+                if not cands:
+                    continue
+                st = _likeliest(apply(s0, moves[cands[0][1]]))
+                h2 = next((a for a in legal_actions(st) if a.kind == 'hesitate'), None) if st.stage == 'play' else None
+                nxt = run(st, h2) if h2 is not None else None
+                if nxt is not None:
+                    out.append((f"O{k + 1} moves to {cands[0][1]}, O{s0.ball + 1} hesitates", nxt, moves[cands[0][1]]))
+    except ValueError:
+        pass
+    return out
+
+
+def horizon_read(state, scout=None, budget=None, depth=None):
+    """Step 27 (D-258): the board read as far ahead as its best plan needs, capped by the shot clock. Turn by turn:
+    the offence's best turn that ends as the rules say (a screen, a pass, a Hesitate, a move then a Hesitate), the
+    defence's best answer by its own map, the turn's end and the phase's end by the rules (their counts included),
+    then the board read again by the one list. It reads a turn further only while that reads better for the offence
+    than stopping, so a look that pays at once reads in one turn and a screen then a dive in two. Both sides use this
+    same reading (the defence's setup compares its candidates with it). -> dict(key, list, L, turns, phases, path,
+    first: the one-turn key)."""
+    import time
+    from . import agent as AG
+    t_end = time.time() + (budget if budget is not None else 30.0)
+    s0 = state.with_(side='O', turn_n=0)
+    try:
+        first = list_key(AG.coverage(s0, only='lasting'))
+    except ValueError:
+        return None
+    best = dict(key=first, turns=1, phases=1, path=[])
+    cur, turns, path = s0, 1, []
+    while time.time() < t_end and (depth is None or turns < depth):
+        step = None
+        for words, after, act in _continuations(cur, scout):
+            if time.time() >= t_end:
+                break
+            nxt, dn = _defence_turn(after)
+            if nxt.stage != 'play' or nxt.side != 'O':
+                continue
+            try:
+                k = list_key(AG.coverage(nxt.with_(turn_n=0), only='lasting'))
+            except ValueError:
+                continue
+            if step is None or k > step[0]:
+                step = (k, nxt, words, dn, act)
+        if step is None or not step[0] > best['key']:
+            break
+        turns += 1
+        a = step[4]
+        path = path + [dict(turn=turns - 1, phase=cur.phase, offence=step[2], defence=step[3],
+                            act=[a.kind, a.piece, B.sq(a.dest) if a.dest else None, a.target], list=list(step[0][0][:5]),
+                            moved=[int(w.split()[0][1:]) - 1 for w in step[3] if w.startswith('X')])]
+        best = dict(key=step[0], turns=turns, phases=step[1].phase - state.phase + 1, path=path)
+        cur = step[1]
+    return dict(key=best['key'], list=list(best['key'][0][:5]), L=best['key'][1], turns=best['turns'],
+                phases=best['phases'], path=best['path'], first=first)
+
+
+def horizon_words(h):
+    if not h or h['turns'] <= 1:
+        return 'It pays on this turn.'
+    steps = '; then '.join(f"{p['offence']}" + (f" ({', '.join(p['defence'])})" if p['defence'] else '') for p in h['path'])
+    ph = f", across {h['phases']} phases" if h['phases'] > 1 else ''
+    return f"It needs {h['turns']} turns{ph}: {steps}."

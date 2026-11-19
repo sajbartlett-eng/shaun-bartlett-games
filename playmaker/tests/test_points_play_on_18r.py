@@ -113,7 +113,10 @@ def test_three_seconds_and_closely_guarded_are_minus_five_and_play_goes_on():
     one = end_phase(s)
     assert one.tos == 0 and one.key_o & 1
     two = end_phase(one)
-    assert two.stage == 'play' and two.tos == 1 and two.phase == s.phase + 2 and not two.key_o & 1
+    # Re-recorded in step 27 (D-254, the app only): after the violation his count doesn't start again (it read cleared):
+    # still in the key at the next phase end, he commits it again
+    assert two.stage == 'play' and two.tos == 1 and two.phase == s.phase + 2 and two.key_o & 1
+    assert end_phase(two).tos == 2
     old = end_phase(end_phase(board(OLD, o=['I4'] + O_[1:], x=['I12'] + X_[1:], arrows=['S'] + A_[1:])))
     assert old.stage == 'over'
     g = board()                                                                  # X1 next to him with an arrow on him

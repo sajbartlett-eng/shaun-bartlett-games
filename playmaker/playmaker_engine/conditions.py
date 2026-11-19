@@ -25,34 +25,30 @@ NAMES = {
     '49d': 'overload an area (area-weighted defence)', '52': 'attack a foul-prone defender',
     '53': 'attack a tired or locked defender', '54': 'the closely guarded count', '55': 'three seconds',
     '57': 'the budget',
+    # step 27 (D-258): read from the board read ahead (plan.horizon_read), turn by turn by the rules
+    '20b': 'screen, then the dive', '9b': 'the off-ball seal', '11': 'the V-cut', '33': 'hesitate', '39': 'swing', '41': 'extra pass', '22': 're-screen', '17': 'relocate after passing',
 }
 
 UNMEASURED = {
     '2': 'fronting needs the defender in front and a swing to change the angle: two phases the one-phase map does not hold',
     '3': 'three-quarter denial is a stance the board does not record',
     '8': 'a post-to-post cross screen: off-ball screens are read (23), but not which of two bigs it frees',
-    '9b': 'the off-ball seal: the screen rule blocks the arrow, but the map does not yet test a seal on a passing lane',
-    '11': 'the V-cut is two movements read as one: the map reads where he ends, not the defender worn out on the way',
     '12': 'the L-cut: as the V-cut',
     '14': 'backdoor: a denial stance is not recorded',
     '16': 'drift or lift on a drive: the kick-out target is read (45), not the drift that makes it',
-    '17': 'relocate after passing: the next phase, beyond the one-phase reading',
     '19': 'clear out: read as isolation by spacing (19b)',
     '19c': 'dribble at to force the backdoor: as backdoor',
     '21': 'reject the screen: the defender cheating over is not recorded',
-    '22': 're-screen: the next phase',
     '24': 'curl, fade or straight cut: the defender\'s chase is not recorded',
     '25': 'stagger: two screens in a row, beyond one screen read at a time',
     '26': 'screen the screener: as stagger',
     '27': 'back screen on the roller\'s defender: as stagger',
     '28': 'handoff: a short pass with a body in the way is read as a pass and a screen separately',
     '29': 'hold or pin: read inside the screens (20, 23)',
-    '33': 'hesitate: freezing the defence is not in the map',
     '34': 'retreat dribble: traps are not recorded',
     '35': 'probe: the next phase',
     '38': 'create separation: read inside "outrun him" (31)',
-    '39': 'swing: the next phase', '40': 'skip: read inside the pass chances (10)', '41': 'extra pass: the next phase',
-    '42': 'entry angle: read inside the pass chances (10)', '43': 'pocket pass or lob: read inside the screens (20)',
+    '40': 'skip: read inside the pass chances (10)', '42': 'entry angle: read inside the pass chances (10)', '43': 'pocket pass or lob: read inside the screens (20)',
     '44': 'hit ahead: transition is not in the half-court game',
     '46b': 'baseline drive to the weak corner: read inside drive and kick (45)',
     '48': 'beat the double-team: read inside overloads (49)',
@@ -236,3 +232,41 @@ def screens_as_conditions(screens, state):
 
 def words(cond):
     return f"{cond['name'].capitalize()}: {cond['why']} (worth {round(cond['worth'])})."
+
+
+def ahead(h, state):
+    """Step 27 (D-258): the conditions the board read ahead shows, each from the route itself (plan.horizon_read):
+    every turn played by the rules, the defence's answer by its own reading, the list read again. A condition is named
+    only where its turn raises what the offence threatens (the list's largest item) above the turn before it.
+    -> [dict(id, name, turn, why)]."""
+    out = []
+    if not h or not h.get('path'):
+        return out
+    prev = list(h['first'][0][:5]) if isinstance(h.get('first'), tuple) else list(h.get('first') or [0])
+    path = h['path']
+    for k, p in enumerate(path):
+        nxt = path[k + 1] if k + 1 < len(path) else None
+        rise = (p['list'] or [0])[0] > (prev or [0])[0] + 1e-9 or (nxt is not None and (nxt['list'] or [0])[0] > (p['list'] or [0])[0] + 1e-9)
+        kind, o, dest, tgt = p['act']
+        add = lambda cid, why: out.append(dict(id=cid, name=NAMES[cid], turn=p['turn'], o=o, why=why))
+        if kind == 'screen':
+            add('22' if any(q['act'][0] == 'screen' for q in path[:k]) else '20b',
+                f"O{o + 1} screens; the next turn reads {(nxt or p)['list'][0]:g} after the defence answers")
+        elif kind == 'pass':
+            two = k > 0 and path[k - 1]['act'][0] == 'pass'
+            add('41' if two else '39', f"O{o + 1} to O{tgt + 1}; the board then reads {p['list'][0]:g}")
+            if nxt is not None and nxt['act'][1] == o and nxt['act'][0] in ('move', 'qs', 'sprint'):
+                add('17', f"O{o + 1} moves on after his pass")
+        elif kind == 'hesitate':
+            add('33', f"the defence answers the Hesitate and the board reads {p['list'][0]:g}")
+        elif kind in ('move', 'qs', 'sprint') and dest:
+            q = B.parse_sq(dest)
+            beside = [d for d, x in enumerate(state.x) if B.on_board(x) and B.adjacent(x, q)]
+            if nxt is not None and nxt['act'][0] == 'pass' and nxt['act'][3] == o and beside:
+                add('9b', f"O{o + 1} steps beside X{beside[0] + 1} on {dest}, then the pass comes to him")
+            elif p.get('moved'):
+                add('11', f"O{o + 1} moves to {dest} and X{p['moved'][0] + 1} answers; the next turn reads {(nxt or p)['list'][0]:g}")
+        prev = p['list']
+        if not rise:
+            out.pop() if out and out[-1]['turn'] == p['turn'] else None
+    return out

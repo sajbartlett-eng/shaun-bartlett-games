@@ -164,7 +164,8 @@ def test_check_1_the_clear_lane_is_a_large_weakness_and_the_defences_best_answer
     # it. The open layup is still read as it was, nobody able to contest it.
     sq1, lane = max(((k, v) for k, v in c['squares'][0].items() if v['cover'] == -1), key=lambda kv: kv[1]['worth'])
     assert lane['shot'] == 'layup' and sq1 in ('I3', 'H3', 'J3', 'H2', 'J2')
-    assert lane['worth'] >= 30 and lane['cost'] == -2.5
+    # Re-recorded in step 27 (D-255): by the rule, the layup goes up before the three seconds can fall: no cost (it read -2.5)
+    assert lane['worth'] >= 30 and lane['cost'] == 0
     assert top['shot'] == 'layup' and top['worth'] >= lane['worth']
     assert 1 <= len(c['answers']) <= 4 and c['left_worth'] <= top['worth'] - 8
     assert {a['x'] for a in c['answers']} & {3, 4}               # a big comes into the lane

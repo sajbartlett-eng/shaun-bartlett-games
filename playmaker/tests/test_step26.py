@@ -73,8 +73,11 @@ def test_both_outcomes_of_a_pass_are_counted():
 def test_the_three_seconds_are_counted_at_their_distance():
     # item 4: having the ball in the key when the next phase starts is half the -5; already in the key at the last
     # phase end, all of it. Outside the key, nothing.
+    # Re-recorded in step 27 (D-255, the prompt's item 5: by the rule, no halves): having the ball in the key at the
+    # next phase start costs nothing (his shot goes up before the violation can fall); already in the key at the last
+    # phase end, he can't avoid it at this one: all of the -5. Outside the key, nothing, as before.
     s = state(['N12', 'F8', 'O9', 'A9', 'Q12'], ['M11', 'B13', 'O8', 'B8', 'P11'], [5, 0, 0, 0, 0])
-    for bit, cost in ((0, -2.5), (1, -5.0)):
+    for bit, cost in ((0, 0.0), (1, -5.0)):
         t = s.with_(key_o=bit << 1)
         ks = [o for (a, c, r), o in opts(t).items() if a == 1 and B.in_key(o[6])]
         out = [o for (a, c, r), o in opts(t).items() if a == 1 and not B.in_key(o[6])]

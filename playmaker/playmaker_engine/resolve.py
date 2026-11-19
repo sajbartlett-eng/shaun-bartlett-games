@@ -295,7 +295,7 @@ def phase_counts(s):
     """Step 18i (D-171 to D-173): the counts taken at a phase end. An attacker in the key at two phase ends in a row,
     or a ball handler holding the ball closely guarded at three in a row, is a violation: the possession is over, a
     turnover. Otherwise the state with its counts moved on. D-198 (points_play_on): a violation is -5 and play goes
-    on; the count that caught him starts again."""
+    on; the closely guarded count that caught him starts again, the three seconds' doesn't (D-254): he must get out."""
     rules = s.ctx.rules
     if RC.app_rule(rules, 'three_seconds'):
         k = 0
@@ -304,8 +304,9 @@ def phase_counts(s):
                 if s.key_o >> i & 1:
                     if not ppo(s):
                         return _violation(s, 'three_seconds', i)
-                    s = s.with_(tos=s.tos + 1)           # D-198: -5 and play goes on; his count starts again
-                    continue
+                    # D-198: -5 and play goes on. Step 26 (D-254, Shaun, 19 Nov 2026; the app only): his count doesn't
+                    # start again: still in the key at the next phase end, he commits it again
+                    s = s.with_(tos=s.tos + 1)
                 k |= 1 << i
         if k != s.key_o:
             s = s.with_(key_o=k)

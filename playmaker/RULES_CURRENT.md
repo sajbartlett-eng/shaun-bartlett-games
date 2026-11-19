@@ -139,8 +139,8 @@ In the app: outside the penalty: a team foul, the defender is locked, play on, n
 Why: fIBA Article 41, ruled for the app (D-179, D-181, D-182).
 
 **Three seconds.** At the table: no such rule.  
-In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders have no such rule.  
-Why: fIBA Article 26, ruled for the app (D-171, D-172).
+In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. After it he must get out of the key at once: still in it when the next phase ends, he commits it again. He may still catch and shoot from the key before then. Defenders have no such rule.  
+Why: fIBA Article 26, ruled for the app (D-171, D-172, D-254).
 
 **Closely guarded.** At the table: no such rule.  
 In the app: a ball handler is closely guarded when a defender is next to him with an arrow on him. If he has held the ball since he caught it and is closely guarded when three phases in a row end, it is a violation: a turnover. Moving with the ball or a Dribble starts his dribble, and a dribble is never counted. After that, two whole phases without an action from him and he has picked the ball up: he may only pass or shoot, and the count runs. The count starts again when nobody closely guards him at a phase end.  

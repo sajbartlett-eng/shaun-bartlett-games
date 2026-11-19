@@ -775,7 +775,7 @@ def _driver_order(s, side, results, limit=8, prev=None, plan=None):
                             # the defence: the list; then each defender's own cover of his own man (his first
                             # responsibility: this is what makes a beaten defender chase); then no switch; then efficiency
                             key = ((tuple(-x for x in d['list']), tuple(-x for x in r.get('own', ())), 0 if r.get('kept', True) else -1, -d['n'])
-                                   if side == 'X' else (tuple(d['list']), _plan_worth(after, plan)))
+                                   if side == 'X' else (tuple(d['list']), _plan_worth(after, plan, t)))
                 except ValueError:
                     key = None
                 keyed.append((key, v, t))
@@ -785,17 +785,21 @@ def _driver_order(s, side, results, limit=8, prev=None, plan=None):
     return out
 
 
-def _plan_worth(after, plan):
+def _plan_worth(after, plan, turn=()):
     """Step 24: the plan is the offence's preference only when values are level: of turns that read the same and
-    leave the same list, the one that leaves its first preference worth most at its real chance."""
+    leave the same list, the one that takes the route read ahead (step 27, D-258: the first turn of the plan's
+    horizon, read again each phase), then the one that leaves its first preference worth most at its real chance."""
     if not plan:
-        return 0.0
+        return (0, 0.0)
+    rt = plan.get('route')
+    on = 1 if rt and any(a.kind == rt[0] and a.piece == rt[1] and (rt[2] is None or (a.dest and B.sq(a.dest) == rt[2])) and a.target == rt[3]
+                         for a in turn) else 0
     try:
         c = coverage(after)
     except ValueError:
-        return 0.0
+        return (on, 0.0)
     sqs = ((c or {}).get('squares') or [{}] * 5)[plan['o']] or {}
-    return max((lk.get('worth', 0) for lk in sqs.values() if lk.get('shot') == plan['shot']), default=0.0)
+    return (on, max((lk.get('worth', 0) for lk in sqs.values() if lk.get('shot') == plan['shot']), default=0.0))
 
 
 def _why(a, b):
