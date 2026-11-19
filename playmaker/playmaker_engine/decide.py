@@ -1327,6 +1327,26 @@ class Read:
         # end nearer the -5: counted at how far along the count's three that puts him
         guard_now = (RC.app_rule(rules, 'closely_guarded') and (s.grd & 3) != 1 and B.on_board(s.o[s.ball]) and closely_guarded(s))
         guard_cost = -5 * min(3, ((s.grd >> 2) & 3) + 1) / 3 if guard_now else 0.0
+        psq, pf_memo = [], {}
+        bq = s.o[s.ball]
+        if B.on_board(bq) and s.tok_o >= 2 and s.count('O', 'pass') < RC.LIMITS['O']['pass']:
+            seen = {bq}
+            for kind in ('move', 'qs', 'sprint'):
+                if can_move_kind(s, 'O', s.ball, kind):
+                    for q in movement_dests(s, 'O', s.ball, kind, rules):
+                        if q not in seen:
+                            seen.add(q)
+                            psq.append(q)
+        psq.sort(key=lambda q: (q[0] + 2) * 64 + (q[1] + 2))        # engine.js C(x, y) order
+
+        def passer_squares():
+            return psq
+
+        def pass_from(pq, a, q):
+            k = (pq, a, q)
+            if k not in pf_memo:
+                pf_memo[k] = cov_pass(s.with_(o=tuple(pq if i == s.ball else z for i, z in enumerate(s.o))), a, q)
+            return pf_memo[k]
         for a in range(5):
             home = s.o[a]
             if not B.on_board(home):
@@ -1361,6 +1381,16 @@ class Read:
                     if n > 2 or n + 1 > s.tok_o:
                         continue
                     p = cov_pass(s, a, q)
+                    # step 26 (engine.js covBuild, D-250): from every square the ball handler can reach this turn
+                    if p < 1 and n + 2 <= s.tok_o:
+                        for pq in passer_squares():
+                            if pq == q:
+                                continue
+                            p2 = pass_from(pq, a, q)
+                            if p2 > p:
+                                p = p2
+                            if p >= 1:
+                                break
                     if p > 0:
                         starts.append((q, p, n == 2, n + 1, False))      # (n0, step 22b: his movements and the pass)
             mates = {s.o[k] for k in range(5) if k != a}

@@ -4715,6 +4715,22 @@ const PMEngine = (() => {
     const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && q0 === s.o[a] && n0 === 0 && (s.grd & 3) !== 1 && closelyGuarded(s)
       ? -TURNOVER_COST * Math.min(3, ((s.grd >> 2) & 3) + 1) / 3 : 0);
     const last = s.clock <= 2;                         // no phase after this one
+    let passerSq = null;
+    const passerSquares = () => {                      // step 26: the squares the ball handler's one movement reaches this turn
+      if (passerSq) return passerSq;
+      passerSq = [];
+      const b = s.ball, seen = new Set([s.o[b]]);
+      if (ONB[s.o[b]] && s.tok_o >= 2 && count(s, 'O', 'pass') < LIMITS.O.pass) for (const kind of ['move', 'qs', 'sprint']) if (canMoveKind(s, 'O', b, kind)) for (const q of movementDests(s, 'O', b, kind).keys()) if (!seen.has(q)) { seen.add(q); passerSq.push(q); }
+      passerSq.sort((u, v) => u - v);
+      return passerSq;
+    };
+    const pfMemo = new Map();
+    const passFrom = (pq, a, q) => {
+      const key = (pq * 4096 + q) * 5 + a;
+      let v = pfMemo.get(key);
+      if (v === undefined) { v = covPass(W_(s, { o: setAt(s.o, s.ball, pq) }), a, q); pfMemo.set(key, v); }
+      return v;
+    };
     for (let a = 0; a < 5 && !last; a++) {
       if (!ONB[s.o[a]]) continue;
       const starts = [];                               // where he can have the ball when the next phase starts, and the chance
@@ -4740,7 +4756,11 @@ const PMEngine = (() => {
         // shoots from there: cut, pass, shot, the defence's reaction counted in the contest of it
         for (const [q, n] of attackerReach(s, a)) {
           if (n > 2 || n + 1 > s.tok_o) continue;
-          const p = covPass(s, a, q);                 // the rules' own chance
+          let p = covPass(s, a, q);                   // the rules' own chance
+          // step 26 (D-250): from every square the ball handler can reach this turn. He may Move, Quick Step or
+          // Sprint and then pass in the same turn; the defence doesn't move in between, so a lane counts if the ball
+          // can get to a square that opens it. (Only where the lane from where he stands isn't already clean.)
+          if (p < 1 && n + 2 <= s.tok_o) for (const pq of passerSquares()) { if (pq === q) continue; const p2 = passFrom(pq, a, q); if (p2 > p) p = p2; if (p >= 1) break; }
           if (p > 0) starts.push([q, p, n === 2, n + 1]);       // (n0, step 22b: his movements and the pass)
         }
       }
