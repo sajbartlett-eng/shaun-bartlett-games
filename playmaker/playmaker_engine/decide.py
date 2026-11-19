@@ -1326,7 +1326,8 @@ class Read:
         # the closely guarded count (D-173): holding where he stands, closely guarded at the phase end, is one phase
         # end nearer the -5: counted at how far along the count's three that puts him
         guard_now = (RC.app_rule(rules, 'closely_guarded') and (s.grd & 3) != 1 and B.on_board(s.o[s.ball]) and closely_guarded(s))
-        guard_cost = -5 * min(3, ((s.grd >> 2) & 3) + 1) / 3 if guard_now else 0.0
+        # step 27 (engine.js guardAt, D-256): the full -5 only when the count falls at this phase end, else nothing
+        guard_cost = -5.0 if guard_now and ((s.grd >> 2) & 3) + 1 >= RC.GUARDED_ENDS else 0.0
         three_on = RC.app_rule(rules, 'three_seconds')
         psq, pf_memo = [], {}
         bq = s.o[s.ball]
@@ -1403,8 +1404,8 @@ class Read:
                     continue
                 # step 22c: what holding the ball there costs him (0 or less); of two ways as likely, the one that costs less
                 adj = steal_at(a, q0) + (guard_cost if (a == s.ball and q0 == home and n0 == 0) else 0.0)
-                if three_on and B.in_key(q0):       # step 26 (engine.js keyAt, D-251): the three seconds, at its distance
-                    adj += -5 * min(RC.THREE_SECOND_ENDS, ((s.key_o >> a) & 1) + 1) / RC.THREE_SECOND_ENDS
+                if three_on and B.in_key(q0) and (s.key_o >> a) & 1:     # step 27 (engine.js keyAt, D-255): by the rule
+                    adj += -5.0
                 if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM):
                     b = best.get((q0, False))
                     if b is None or pr > b[0] or (pr == b[0] and adj > b[1]):

@@ -490,7 +490,7 @@ WORDS = {
                                'intercepted pass the passer keeps the ball and the defender goes back to where he began the phase (D-198)'),
     'no_rim_shot': dict(sec=None, src=None, tab='a shot may go up from the rim\'s own square',
                         dig='no shot from the rim\'s own square: the offence picks a side to put the ball up (D-198)'),
-    'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover, −5, play on (D-172, D-198)'),
+    'three_seconds': dict(sec=None, src=None, tab='none', dig='in the key when two phases in a row end: a turnover, −5, play on (D-172, D-198); still in it at the next phase end, again (D-254)'),
     'closely_guarded': dict(sec=None, src=None, tab='none',
                             dig='holding the ball closely guarded when three phases in a row end: a turnover, −5, play on (D-173, D-198)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
@@ -543,8 +543,9 @@ SPLITS = [
      'quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app '
      'plays 2 team fouls each with 8 possessions left.', 'FIBA Article 41, ruled for the app (D-179, D-181, D-182).'),
     ('Three seconds', 'No such rule.', 'Time is counted in phase ends. An attacker in the key (columns G to K, from '
-     'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. Defenders '
-     'have no such rule.', 'FIBA Article 26, ruled for the app (D-171, D-172).'),
+     'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. After it he '
+     'must get out of the key at once: still in it when the next phase ends, he commits it again. He may still catch '
+     'and shoot from the key before then. Defenders have no such rule.', 'FIBA Article 26, ruled for the app (D-171, D-172, D-254).'),
     ('Closely guarded', 'No such rule.', 'A ball handler is closely guarded when a defender is next to him with an '
      'arrow on him. If he has held the ball since he caught it and is closely guarded when three phases in a row end, '
      'it is a violation: a turnover. Moving with the ball or a Dribble starts his dribble, and a dribble is never '

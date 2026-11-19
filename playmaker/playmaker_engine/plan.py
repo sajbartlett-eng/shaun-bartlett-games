@@ -895,3 +895,118 @@ def plan_status(plan, state, scout):
                 f"{SHOT_WORDS.get(plan['shot'], plan['shot'])} is worth {round(left)}.")
         kind = 'better'
     return dict(kind=kind, line=line, plan=dict(now, first=plan.get('first', plan)), worth=now['worth'], planned=left)
+
+
+# ---- step 27 (D-258): reading as far ahead as the plan needs ------------------------------------------------------------
+
+def list_key(r):
+    """The one measure play and setup share (D-219, D-257): the list of things to cover, largest first (compared item
+    by item, the offence wanting it higher), then the lasting gap, then efficiency (fewer of the defence's actions)."""
+    if not r:
+        return ((), 0.0, 0)
+    d = r.get('drivers') or {}
+    return (tuple(d.get('list') or ()), float(r.get('L') or 0), -int(d.get('n') or 0))
+
+
+def _answer(state):
+    """The defence's best answer on this board, by the map (its own reading): applied to the board as moves."""
+    from . import agent as AG
+    try:
+        c = AG.coverage(state)
+    except ValueError:
+        return state, []
+    xs, arrows, done = list(state.x), list(state.arrows), []
+    taken = set(state.o) | set(state.x)
+    for a in (c or {}).get('answers') or []:
+        d, q = a['x'], B.parse_sq(a['to'])
+        if q in taken and q != xs[d]:
+            continue
+        taken.discard(xs[d])
+        taken.add(q)
+        xs[d] = q
+        if a.get('arrow', -1) is not None and a.get('arrow', -1) >= 0:
+            arrows[d] = a['arrow']
+        done.append(f"X{d + 1} to {a['to']}")
+    return state.with_(x=tuple(xs), arrows=tuple(arrows)), done
+
+
+def _continuations(state, scout):
+    """The offence's first actions worth reading a phase on: every screen that builds more on this board (on or off
+    the ball: screen_roles), and each attacker's one movement to where his best look starts (the map's own squares).
+    By the rules: each is a legal action applied to the board. -> [(words, state after)]."""
+    from . import agent as AG
+    from .actions import legal_actions
+    from .resolve import apply
+    from .goals import _likeliest
+    out = []
+    s0 = state.with_(side='O', turn_n=0)
+    try:
+        for z in screen_roles(s0)[:3]:
+            st = s0.with_(o=tuple(B.parse_sq(z['sq']) if i == z['o'] else p for i, p in enumerate(s0.o)))
+            act = next((a for a in legal_actions(st) if a.kind == 'screen' and a.piece == z['o'] and a.target == B.dir_between(B.parse_sq(z['sq']), st.x[z['x']])), None)
+            if act is not None:
+                nxt = _likeliest(apply(st, act))
+                if nxt.stage == 'play':
+                    out.append((f"O{z['o'] + 1} screens X{z['x'] + 1} from {z['sq']}", nxt))
+        cov = AG.coverage(s0)
+    except ValueError:
+        return out
+    acts = legal_actions(s0)
+    for a in range(5):
+        sqs = (cov.get('squares') or [{}] * 5)[a] or {}
+        moves = {B.sq(x.dest): x for x in acts if x.piece == a and x.side == 'O' and x.kind in ('move', 'qs', 'sprint') and x.dest}
+        cands = sorted(((v.get('worth', 0), k) for k, v in sqs.items() if k in moves), reverse=True)
+        if cands:
+            w, k = cands[0]
+            nxt = _likeliest(apply(s0, moves[k]))
+            if nxt.stage == 'play':
+                out.append((f"O{a + 1} moves to {k}", nxt))
+    return out
+
+
+def horizon_read(state, scout=None, budget=None):
+    """Step 27 (D-258): the board read as far ahead as its best plan needs, capped by the clock. Phase by phase: the
+    offence's best continuation (a screen, a cut or a move to a look, by the rules), the defence's best answer (the
+    map's own), the phase end by the rules (its counts included), then the board read again. It goes a phase further
+    only while that reads better for the offence than stopping, so a plan that pays at once reads in one phase and a
+    screen then a dive in two. -> dict(key, list, L, phases, path: [words], first: the one-phase reading)."""
+    import time
+    from . import agent as AG
+    from .resolve import end_phase
+    t_end = time.time() + (budget if budget is not None else 30.0)
+    try:
+        first = AG.coverage(state, only='lasting')
+    except ValueError:
+        return None
+    best = dict(key=list_key(first), r=first, phases=1, path=[])
+    cur, phases, path = state, 1, []
+    while cur.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS and time.time() < t_end:
+        step = None
+        for words, after in _continuations(cur, scout):
+            if time.time() >= t_end:
+                break
+            answered, dn = _answer(after)
+            nxt = end_phase(answered.with_(pending=None))
+            if nxt.stage != 'play':
+                continue
+            try:
+                r = AG.coverage(nxt, only='lasting')
+            except ValueError:
+                continue
+            k = list_key(r)
+            if step is None or k > step[0]:
+                step = (k, r, nxt, words, dn)
+        if step is None or not step[0] > best['key']:
+            break
+        phases += 1
+        path = path + [dict(phase=phases - 1, offence=step[3], defence=step[4])]
+        best = dict(key=step[0], r=step[1], phases=phases, path=path)
+        cur = step[2]
+    return dict(key=best['key'], list=list(best['key'][0]), L=best['key'][1], phases=best['phases'], path=best['path'], first=list_key(first))
+
+
+def horizon_words(h):
+    if not h or h['phases'] <= 1:
+        return 'It pays this phase.'
+    steps = '; then '.join(f"{p['offence']}" + (f" ({', '.join(p['defence'])})" if p['defence'] else '') for p in h['path'])
+    return f"It needs {h['phases']} phases: {steps}."

@@ -861,8 +861,7 @@ const PMEngine = (() => {
         if (!INKEY[s.o[i]]) continue;
         if ((s.key_o >> i) & 1) {
           if (!ctx.ppo) return violation(s, 'three_seconds', i);
-          s = W_(s, { tos: s.tos + 1 });                 // D-198: -5 and play goes on; his count starts again
-          continue;
+          s = W_(s, { tos: s.tos + 1 });                 // D-198: -5 and play goes on; D-254 (app only): the count doesn't start again
         }
         k |= 1 << i;
       }
@@ -4640,7 +4639,7 @@ const PMEngine = (() => {
     return r._valsCalc(lk, d, full, set, (fl || 0) | 4, soft ? full : 0, soft ? set : 0);
   }
   const TURNOVER_COST = 5;                             // D-198: a lost ball is -5
-  const THREE_ENDS = 2;                                // D-171: two phase ends in the key is the three-second violation (rules_config.THREE_SECOND_ENDS)
+  const GUARDED_ENDS = 3;                              // D-171: three phase ends closely guarded is the violation (rules_config.GUARDED_ENDS)
   function covValue(o, skip, extra) {                 // [weakness, best shot type's index, the defender who covers, the next best]
     let top = -1, tt = 0, cov = -1, nxt = -1, ob = -1, cb = -1, nb = -1;      // ob, cb, nb: his best shot open, and who takes it away
     for (let t = 0; t < o.open.length; t++) {
@@ -4713,12 +4712,17 @@ const PMEngine = (() => {
     // The closely guarded count (D-173): a ball handler who holds where he stands, closely guarded when the phase
     // ends, is one phase end nearer the -5 violation: counted at how far along the count's three that puts him. A
     // live dribble isn't counted (the rule), and moving or passing starts it again.
+    // Step 27 (D-256): counted by the rule, not in thirds. He shoots, passes or gets free at the next phase's start, so
+    // the count costs nothing unless it falls at this phase end (held already at its last but one): then the full -5.
     const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && q0 === s.o[a] && n0 === 0 && (s.grd & 3) !== 1 && closelyGuarded(s)
-      ? -TURNOVER_COST * Math.min(3, ((s.grd >> 2) & 3) + 1) / 3 : 0);
+      && ((s.grd >> 2) & 3) + 1 >= GUARDED_ENDS ? -TURNOVER_COST : 0);
     // Step 26 (D-251): the three seconds, counted as the closely guarded count is. An attacker who has the ball in the
     // key when the next phase starts is one phase end nearer the -5 (he must be out before the second): counted at
     // how far along that puts him (half, or all of it if he was already in the key at the last phase end).
-    const keyAt = (a, q0) => (ctx.three && INKEY[q0] ? -TURNOVER_COST * Math.min(THREE_ENDS, ((s.key_o >> a) & 1) + 1) / THREE_ENDS : 0);
+    // Step 27 (D-255): by the rule, no halves. A shot that goes up at the next phase's start beats the violation, so
+    // having the ball in the key then costs nothing, unless he was already in the key at the last phase end: then he
+    // can't avoid it at this one (the full -5). Leaving costs the movement his look already spends.
+    const keyAt = (a, q0) => (ctx.three && INKEY[q0] && ((s.key_o >> a) & 1) ? -TURNOVER_COST : 0);
     const last = s.clock <= 2;                         // no phase after this one
     let passerSq = null;
     const passerSquares = () => {                      // step 26: the squares the ball handler's one movement reaches this turn
