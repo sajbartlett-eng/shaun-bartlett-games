@@ -117,7 +117,9 @@ def test_contest_foul_rolls_follow_the_same_angle_and_the_minus_three_is_unchang
     # foul rolls are shown on a layup. Shooter O1 on I4; X1 on I3 (closer, arrow off him), on J4 (level), on I5 (behind)
     def opt(xsq, arrow):
         s = _state(['I4', 'C9', 'O9', 'E4', 'M4'], [xsq, 'D8', 'N8', 'F4', 'L4'], [arrow, 0, 0, 0, 0])
-        o = [o for o in contest_options(s, 0, 'layup') if o.defender == 0][0]
+        # Re-recorded in step 28 (D-261): each defender has a normal and a hard Contest now; the foul rolls are the hard
+        # one's (the block). It read the defender's first option, which was the block
+        o = [o for o in contest_options(s, 0, 'layup') if o.defender == 0 and o.hard][0]
         return o, s
     closer, s = opt('I3', B.DIR_NAMES.index('E'))
     level, _ = opt('J4', B.DIR_NAMES.index('E'))
@@ -151,7 +153,8 @@ def test_a_shooting_foul_counts_toward_the_team_total():
     # step 18n: re-recorded, reason: D-191 (no shooting foul on a jump shot in the app): the foul is on a layup
     s = _state(['I4', 'C9', 'O9', 'E4', 'M4'], ['J4', 'D8', 'N8', 'F4', 'L4'], [B.DIR_NAMES.index('W'), 0, 0, 0, 0])
     s = s.with_(stage='contest', side='X', shot='layup')
-    fouled = force(apply(s, Action('contest', 'X', 0)), 'foul')
+    # Re-recorded in step 28 (D-261): the foul comes from the hard Contest (the block); a normal Contest never fouls
+    fouled = force(apply(s, Action('contest', 'X', 0, shot='hard')), 'foul')
     assert fouled.result.kind == 'free_throws' and fouled.fouls == 1
 
 

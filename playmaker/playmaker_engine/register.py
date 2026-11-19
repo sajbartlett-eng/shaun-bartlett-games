@@ -90,6 +90,9 @@ ENTRIES = [
      'ending there. There is no penalty for team fouls. The table keeps its own rules.'),
     ('no_rim_shot', SPLIT, dict(rules='no_rim_shot'), 'A shot from the rim\'s own square.',
      'In the app there is none: the offence must pick a side to put the ball up (D-198). The table allows it.'),
+    ('contest_costs', SPLIT, dict(rules='contest_costs'), 'The contest is one of the reply turn\'s two actions.',
+     'Shared in substance (D-261): at the table the Contest is already the reply\'s action (D-18). The setting turns off the '
+     'app\'s free hand-up of D-177 and D-191, so the app now plays it too.'),
     ('position_contest', SPLIT, dict(rules='position_contest'), 'How a shot is contested: by position, and the block inside.',
      'The app contests every shot by position (a square defender takes his full rating off), has no Contest on a jump shot and keeps the block for inside shots; a contest always takes at least 1 off (D-191, D-193, D-194).'),
     ('off_balance', SPLIT, dict(rules='off_balance'), 'What being rushed, or locked, costs on every roll.',
@@ -376,16 +379,19 @@ WORDS = {
     # ---- shooting
     'reaction_kinds': dict(
         sec='Shooting', src='trackers', oq=6,
-        text='Declare a Shot (the ball carrier, never from plain wood). The defence takes one last turn to react, '
-             'with a Move or a Steal.', tab='Move, Quick Step, Sprint or Steal', dig='Move, Quick Step, Sprint or Steal'),
+        text='Declare a Shot (the ball carrier, never from plain wood). The defence replies with one last turn of 2 actions, '
+             'shared by the whole team: Move, Quick Step, Sprint, Steal or the Contest.', tab='Move, Quick Step, Sprint, Steal or Contest',
+        dig='Move, Quick Step, Sprint, Steal or Contest'),
     'reaction_may_decline': dict(
         sec='Shooting', src=None, oq=6, q='How many actions may the reaction take, and which?',
         text='The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest.',
         tab='0, 1 or 2 actions', dig='0, 1 or 2 actions'),
     'contest_action': dict(
         sec='Shooting', src=None, q='How does a defender contest a declared shot?',
-        text='Contest is an action: the reaction\'s last, one a phase, by one defender next to the shooter at that moment, '
-             'using a token. A Steal ends the reaction, so it can\'t also Contest. No Contest: the contest is 0.',
+        text='Contest is an action, for every shot: one of the reply\'s 2 actions and its last, one a phase, by one defender '
+             'next to the shooter at that moment, using a token. Nothing is automatic: no Contest, no contest, and the shot is '
+             'open. So the most the defence can do is one movement and the Contest, as the offence gets one movement and the '
+             'shot (D-261). A Steal ends the reply, so it can\'t also Contest.',
         tab='an action, the last of the reaction', dig='an action, the last of the reaction'),
     'contest_choice': dict(
         sec='Shooting', src='rulebook', oq=12,
@@ -495,6 +501,8 @@ WORDS = {
                             dig='holding the ball closely guarded when three phases in a row end: a turnover, −5, play on (D-173, D-198)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
+    'contest_costs': dict(sec=None, src=None, tab='the Contest is the reply\'s action already (D-18)',
+                          dig='every contest is a Contest action, one of the reply\'s two; no free hand-up; inside, a normal or a hard Contest (D-261)'),
     'position_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
                              dig='every shot is contested by position: square in front the full rating, 3 less otherwise, 6 less from behind; no Contest on a jump shot; inside, the block is a Contest; at least 1 off (D-191, D-193, D-194)'),
     'off_balance': dict(sec=None, src=None, tab='none',
@@ -528,16 +536,15 @@ SPLITS = [
      'Intercept and Challenge. A locked player can\'t Move, so he stays rushed until the phase ends.',
      'Ruled for the app (D-185). It reverses the "no drive rule" line of D-151.'),
     ('Contests: position, and the block', 'One Contest: the defender\'s contest rating, with a foul roll if his arrow is off the '
-     'shooter.', 'A defender next to the shooter contests with no action: his full rating when he is square (in front, his '
-     "arrow on the shooter), 3 less when he isn't, 6 less from behind. Jump shots: that is all, with no foul. "
-     "Inside shots: when he isn't square he may go for the block and risk the foul. The table for every shot, by "
-     'where he stands when the reaction ends: in front with his arrow on the shooter, the full contest rating; in '
-     'front with his arrow off him, or beside him, the rating less 3; behind him (further from the rim), the '
-     'rating less 6; rushed, 2 more off wherever he is; and always at least 1. On a jump shot (mid-range, long '
-     'two, three) there is no Contest action and no shooting foul. On an inside shot (layup, dunk, post, floater) '
-     "a defender who isn't square may go for the block, a Contest action at the full rating: one foul roll from in "
-     "front with the arrow off him, two from the side or behind. Only the defence's best contest counts.",
-     'Ruled for the app (D-191, D-193, D-194). There it replaces the soft and hard contest of D-177.'),
+     'shooter.', 'Every contest is a Contest action, one of the reply\'s two actions: nothing is automatic, and a shot nobody '
+     'contests is open (D-261). The defender must be next to the shooter when he contests. Its rating, by where he stands: in '
+     'front with his arrow on the shooter, the full contest rating; in front with his arrow off him, or beside him, 3 less; '
+     'behind him (further from the rim), 6 less; rushed, 2 more off wherever he is; and always at least 1. On a jump shot '
+     '(mid-range, long two, three) that is the Contest, with no shooting foul. On an inside shot (layup, dunk, post, floater) '
+     'he chooses: the normal Contest (the same, never a foul), or the hard Contest, the block: the full rating (3 less from '
+     'behind), with one foul roll from in front with the arrow off him, two from the side or behind.',
+     'Ruled for the app (D-191, D-193, D-194). D-261 (Shaun, 19 Nov 2026) made it an action: "the contest, whether normal '
+     'or hard, always counts as a defensive action."'),
     ('The steal foul', '+5 to the offence; the second of the possession also gives free throws and ends it.',
      'Outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the '
      'quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app '

@@ -25,6 +25,8 @@ const FOULED_RULE = 'A fouled shot is still a shot: it scores as contested, plus
 const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a soft contest with no action, his contest rating less 3, and it never fouls. A Contest action is a hard contest at the full rating: no foul roll from in front with the arrow on him, one with the arrow off him, two from the side or behind. From behind, either is 3 lower again. Only the defence's best contest counts.";
 // Step 18n (D-191, D-193): jump shots are contested by position only
 const POSITION_RULE = "A defender next to the shooter contests with no action: his full rating when he is square (in front, his arrow on the shooter), 3 less when he isn't, 6 less from behind. Jump shots: that is all, with no foul. Inside shots: when he isn't square he may go for the block and risk the foul.";
+// D-261 (Shaun, 19 Nov 2026): the contest is one of the reply turn's two actions
+const CONTEST_RULE = "The defence replies to a shot with one turn of 2 actions, shared by the team. Contesting is one of them, so the most it can do is one movement and the Contest. Nothing is automatic: press Contest with a defender next to the shooter, or the shot goes up open. His contest: the full rating square in front (his arrow on the shooter), 3 less otherwise, 6 less from behind, 2 less rushed, at least 1. Jump shots: no foul. Inside: a normal Contest (never a foul) or a hard one, the block, at the full rating with the foul risk.";
 // D-198 (Shaun, 16 Nov 2026): fouls and turnovers in points, play on
 const POINTS_RULE = 'Fouls and turnovers are points, and play goes on. A foul: +5 to the offence (a shooting foul: +5 and its free throws). A steal, an intercepted pass, three seconds, closely guarded and the shot clock: −5 each. After a turnover the phase ends and the next one begins, the ball where it was. After an intercepted pass the defender goes back to where he began the phase.';
 const NO_RIM_RULE = 'No shot from the square under the rim: pick a side to put the ball up.';
@@ -777,7 +779,7 @@ function renderTracker(id, side) {
     s.influence && s.influence.three ? el('div', { class: 'waits controlrule fibarule', text: s.influence.points ? THREE_RULE_198 : THREE_RULE }) : null,
     s.influence && s.influence.guarded ? el('div', { class: 'waits controlrule fibarule', text: s.influence.points ? GUARDED_RULE_198 : GUARDED_RULE }) : null,
     s.influence && s.influence.fiba ? el('div', { class: 'waits controlrule fibarule', text: FOULED_RULE }) : null,
-    s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: s.influence.position ? POSITION_RULE : SOFT_RULE }) : null,
+    s.influence && s.influence.soft ? el('div', { class: 'waits controlrule fibarule', text: s.influence.contest_costs ? CONTEST_RULE : s.influence.position ? POSITION_RULE : SOFT_RULE }) : null,
     s.influence && s.influence.steal_foul && !s.influence.points ? el('div', { class: 'waits controlrule fibarule', text: STEAL_FOUL_RULE }) : null,
     el('div', { class: 'waits stealrule', text: s.influence && s.influence.points ? 'Stolen (in play or on a shot): −5; the ball stays with you, a stolen shot is cancelled, and the next phase begins.' : 'Stolen (in play or on a shot): −5 and lose 2 seconds; the ball stays with you, and a stolen shot is cancelled. On the last phase, the possession scores 0, or the total banked so far if that is lower.' }),
     side === 'O' ? el('div', { class: 'waits screenrule', text: s.screen_rule === 'two_turns'

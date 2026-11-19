@@ -226,7 +226,7 @@ def resolve_shot(s, forced=False):
         s = s.with_(shot=t, forced=True)
     if rules.contest_action and not forced:
         # D-18: the reaction ended without a Contest (a Contest resolves the shot itself): a contest of 0
-        if RC.app_rule(rules, 'soft_contest'):
+        if RC.app_rule(rules, 'soft_contest') and not RC.contest_costs(rules):
             # D-177: no Contest action: the best soft contest (a defender next to the shooter, a hand up) counts
             return contest_outcome(s.with_(forced=False, pending=None), soft_option(s, shooter, s.shot), False)
         return contest_outcome(s.with_(forced=False, pending=None), contest_options(s, shooter, s.shot, False)[0], False)
@@ -249,7 +249,8 @@ def contest_outcome(s, opt, forced):
     rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
     made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0,
                                soft=opt.category in AUTO_CONTESTS))
-    if opt.defender >= 0 and opt.category not in AUTO_CONTESTS and not forced and RC.app_rule(s.ctx.rules, 'soft_contest'):
+    if (opt.defender >= 0 and opt.category not in AUTO_CONTESTS and not forced and RC.app_rule(s.ctx.rules, 'soft_contest')
+            and not RC.contest_costs(s.ctx.rules)):        # D-261: only the Contest taken counts, nothing automatic
         # D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
         j2, c2 = soft_contest(s, shooter, t)
         if c2 > opt.contest:
@@ -468,9 +469,10 @@ def apply(state, action, check=False):
             return s.with_(stage='contest', side='X', forced=True)
         return contest_outcome(s, choose_contest(s, s.ball, a.shot, True), True)
     if k == 'contest':
-        opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced)}
+        hard = a.shot == 'hard'                   # D-261: an inside shot's hard Contest (the block)
+        opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced) if getattr(o, 'hard', False) == hard}
         if a.piece not in opts:
-            raise ValueError(f'X{a.piece + 1} cannot contest this shot')
+            raise ValueError(f'X{a.piece + 1} cannot contest this shot' + (' hard' if hard else ''))
         if s.stage == 'reaction':                 # D-18: a Contest is the reaction's last action and uses a token
             s = _spend(s, side).with_(turn_n=s.turn_n + 1)
         return contest_outcome(s, opts[a.piece], s.forced)

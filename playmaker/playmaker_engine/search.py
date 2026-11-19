@@ -881,7 +881,7 @@ class Searcher:
         acts = legal_actions(s)
         if s.stage == 'reaction':
             sp = s.o[s.ball]
-            if RC.position_contest(s.ctx.rules) and (s.turn_n == 0 or self.twice):
+            if RC.position_contest(s.ctx.rules) and not RC.contest_costs(s.ctx.rules) and (s.turn_n == 0 or self.twice):
                 # D-191: position decides the contest. Only a movement that ends next to the shooter is played, and a
                 # Move only with its arrow on him (in front that is the automatic full contest inside, and it is what
                 # a Steal needs; on a jump shot the arrow changes nothing). A level with closeout_twice (the All-Star)

@@ -23,7 +23,7 @@ window.PMTips = (function () {
     { id: 'shot', when: () => mine() && sel.side === 'O' && enderActs(sel.side, sel.i).some(a => a.kind === 'shot'),
       text: 'A shot is never rolled. It is worth its points times the shooter\'s rating less the contest. Thirty or more is an Excellent look.' },
     { id: 'contest', when: () => st && st.can_act && ['reaction', 'contest'].includes(st.stage),
-      text: 'The shot is up. A defender next to the shooter contests it: fully when square in front of him, less from the side, less again from behind.' },
+      text: 'The shot is up. The defence replies with 2 actions, and contesting is one of them: press Contest with a defender next to the shooter, or it goes up open. Square in front is the full contest; less from the side, less again from behind. Inside, the hard Contest (the block) risks a foul.' },
     { id: 'screen', when: () => mine() && sel.side === 'O' && enderActs(sel.side, sel.i).some(a => a.kind === 'screen'),
       text: 'A screen puts a T on a square beside the screener. No defender steps across its corner, and only the one standing on the T can challenge it.' },
     { id: 'phase', when: () => st && st.phase >= 2 && !st.placing,
