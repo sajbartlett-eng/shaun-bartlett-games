@@ -200,7 +200,12 @@ def consequences(before, after, a):
                    else 'came on a Quick Step')
             out.append(('info', f"X{a.piece + 1} {why}, so he's off balance: his Challenge was {cut} lower."))
     if a.kind == 'shot':
-        if RC.position_contest(after.ctx.rules):
+        if RC.contest_costs(after.ctx.rules):
+            # D-261: the reply turn, the Contest one of its two actions
+            out.append(('info', f'Shot declared ({a.shot}). The defence replies: 2 actions. Contesting the shot is one of them. '
+                                + ('Nobody contests and it goes up open.' if a.shot in RC.JUMP_SHOTS else
+                                   'Inside, a normal Contest or a hard one (the block, with the foul risk). Nobody contests and it goes up open.')))
+        elif RC.position_contest(after.ctx.rules):
             # D-191: position decides a jump shot's contest; an inside shot has the automatic contest and the block
             if a.shot in RC.JUMP_SHOTS:
                 out.append(('info', f'Shot declared ({a.shot}). The defence reacts: up to 2 actions. A defender next to the '
