@@ -53,7 +53,7 @@ class Action(NamedTuple):
         if k == 'target':
             return f"Coach's Call target O{self.target + 1}"
         if k == 'contest':
-            return f'{who} contests' if self.piece >= 0 else "X: don't contest"
+            return (f'{who} contests hard (the block)' if self.shot == 'hard' else f'{who} contests') if self.piece >= 0 else "X: don't contest"
         if k == 'forced_shot':
             return f'{who} forced shot ({self.shot})'
         if k == 'pick':
@@ -819,7 +819,7 @@ def legal_actions(state):
         return [Action('target', 'O', target=i) for i in range(5)]
     if s.stage == 'contest':
         from .scoring import contest_options
-        return [Action('contest', 'X', o.defender) for o in contest_options(s, s.ball, s.shot, s.forced)]
+        return [Action('contest', 'X', o.defender, shot='hard' if o.hard else '') for o in contest_options(s, s.ball, s.shot, s.forced)]
     if s.stage == 'forced':
         return [Action('forced_shot', 'O', s.ball, shot=t) for t in RC.ZONE_SHOTS[B.zone(s.o[s.ball])]]
     if s.stage == 'pick':
@@ -831,7 +831,7 @@ def legal_actions(state):
         if rules.contest_action and s.tok_x > 0:
             # D-18: a Contest by a defender next to the shooter now, the reaction's last action (a token)
             from .scoring import contest_options
-            acts = [Action('contest', 'X', o.defender) for o in contest_options(s, s.ball, s.shot, False)
+            acts = [Action('contest', 'X', o.defender, shot='hard' if o.hard else '') for o in contest_options(s, s.ball, s.shot, False)
                     if o.defender >= 0] + acts
         if s.turn_n >= 1 or rules.reaction_may_decline or not acts:
             acts.append(Action('end_turn', 'X'))

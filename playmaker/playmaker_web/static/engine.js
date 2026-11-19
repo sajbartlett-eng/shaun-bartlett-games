@@ -120,7 +120,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app', points_play_on: 'app', no_rim_shot: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app', points_play_on: 'app', no_rim_shot: 'app', contest_costs: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -144,7 +144,8 @@ const PMEngine = (() => {
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
       soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
-      pos: appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),                // step 18n (D-191, D-193): jump shots are contested by position only
+      pos: appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),
+      cc: appRule(c.rules, 'contest_costs') && appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),    // D-261: the contest is one of the reply's two actions                // step 18n (D-191, D-193): jump shots are contested by position only
       offCut: appRule(c.rules, 'off_balance') ? controlSize(c.rules) : 0,                          // step 18l (D-185): off balance, the reduction on every rolled rating
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       ppoRule: appRule(c.rules, 'points_play_on'), ppo: appRule(c.rules, 'points_play_on') && !c.hold_for_one, noRim: appRule(c.rules, 'no_rim_shot'),                   // D-198: fouls and turnovers in points, play on; no shot from the rim's own square
@@ -284,7 +285,7 @@ const PMEngine = (() => {
     if (k === 'challenge') return `${who} Challenge screen of O${a.target + 1}`;
     if (k === 'steal') return `${who} Steal`;
     if (k === 'target') return `Coach's Call target O${a.target + 1}`;
-    if (k === 'contest') return a.piece >= 0 ? `${who} contests` : "X: don't contest";
+    if (k === 'contest') return a.piece >= 0 ? (a.shot === 'hard' ? `${who} contests hard (the block)` : `${who} contests`) : "X: don't contest";
     if (k === 'forced_shot') return `${who} forced shot (${a.shot})`;
     if (k === 'pick') return `Failed inbound: ball to O${a.target + 1}`;
     if (k === 'end_turn') return `${who} End turn`;
@@ -611,7 +612,7 @@ const PMEngine = (() => {
   function legalActions(s) {
     if (s.stage === 'over') return [];
     if (s.stage === 'target') return [0, 1, 2, 3, 4].map(i => A('target', 'O', -1, -1, -1, i));
-    if (s.stage === 'contest') return contestOptions(s, s.ball, s.shot, s.forced).map(o => A('contest', 'X', o.defender));
+    if (s.stage === 'contest') return contestOptions(s, s.ball, s.shot, s.forced).map(o => A('contest', 'X', o.defender, -1, -1, -1, o.hard ? 'hard' : ''));
     if (s.stage === 'forced') return ZONE_SHOTS[ZN[s.o[s.ball]]].map(t => A('forced_shot', 'O', s.ball, -1, -1, -1, t));
     if (s.stage === 'pick') return inboundTieCandidates(s).map(i => A('pick', 'O', -1, -1, -1, i));
     const side = s.side;
@@ -619,7 +620,7 @@ const PMEngine = (() => {
     if (s.stage === 'reaction') {
       acts = defenceActions(s, REACTION);
       if (s.tok_x > 0) {                                  // D-18: a Contest by a defender next to the shooter, the last action
-        for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender));
+        for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender, -1, -1, -1, o.hard ? 'hard' : ''));
       }
       acts.push(A('end_turn', 'X'));
     } else if (side === 'O') {
@@ -661,7 +662,7 @@ const PMEngine = (() => {
     if (why === 'shot') acts = s.side === 'O' ? offenceActions(s, true) : null;
     else if (s.stage === 'reaction') {
       acts = defenceActions(s, FORCE_DEF).filter(a => a.kind === 'steal');           // the reaction's kinds: movement and Steal
-      if (s.tok_x > 0) for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender));
+      if (s.tok_x > 0) for (const o of contestOptions(s, s.ball, s.shot, false)) if (o.defender >= 0) acts.push(A('contest', 'X', o.defender, -1, -1, -1, o.hard ? 'hard' : ''));
       acts.push(A('end_turn', 'X'));
     } else if (s.side === 'X' && s.pending) {
       acts = [];
@@ -730,12 +731,35 @@ const PMEngine = (() => {
     if (c <= 0) return opts[0];
     return { defender: j, contest: c, clean: true, k: 0, rolls: 0, value: Math.max(0, shotPoints(s.o[shooter]) * (shotRating(s, shooter, t) - c)), ft: opts[0].ft, soft: true };
   }
+  // scoring._contest_actions (D-261): one normal Contest per defender next to the shooter (the position table, never a
+  // foul) and, on an inside shot from one who isn't square, the hard Contest (the block, with its foul rolls)
+  function contestActions(s, shooter, t, val, ft, rating, pts, card) {
+    const ctx = s.ctx, spos = s.o[shooter], cut = controlOn(ctx) ? controlCut(ctx, t) : 0, jump = JUMP[t] === true, out = [];
+    for (let j = 0; j < 5; j++) {
+      const xp = s.x[j];
+      if (!adjacent(xp, spos)) continue;
+      const square = DR[xp] < DR[spos] && onLine(stanceOf(s, j), dirBetween(xp, spos)), rushed = cut && rushedX(s, j);
+      let c = ctx.dfn[j].cn[t] - (square ? 0 : 3) - (DR[xp] > DR[spos] ? 3 : 0);
+      if (rushed) c -= cut;
+      if (c < 1) c = 1;
+      out.push({ defender: j, contest: c, clean: true, k: 0, rolls: 0, value: val(c), ft, hard: false });
+      if (jump || square) continue;
+      let h = ctx.dfn[j].cn[t] - (DR[xp] > DR[spos] ? 3 : 0);
+      h = Math.max(0, h);
+      if (rushed) h = Math.max(0, h - cut);
+      if (h < 1) h = 1;
+      out.push({ defender: j, contest: h, clean: false, k: clampT(ctx.dfn[j].r.foul_contest), rolls: foulRolls(xp, spos), value: val(h),
+        ft: ctx.fiba ? footPoints(card, t, pts, rating, true, val(h), rating - h)[0] : ft, hard: true });
+    }
+    return out;
+  }
   function contestOptions(s, shooter, t, forced) {
     const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
     const ft = footPoints(card, t, pts, rating, ctx.fiba)[0];
     const cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
     const val = c => Math.max(0, pts * (rating - c));
     const opts = [{ defender: -1, contest: 0, clean: true, k: 0, rolls: 0, value: val(0), ft }];
+    if (ctx.cc && !forced) return opts.concat(contestActions(s, shooter, t, val, ft, rating, pts, card));     // D-261
     const pos = ctx.pos && !forced;
     if (pos && JUMP[t] === true) return opts;             // D-191: a jump shot is contested by position only: no Contest action
     for (let j = 0; j < 5; j++) {
@@ -822,14 +846,14 @@ const PMEngine = (() => {
       if (types.length > 1) return W_(s, { stage: 'forced', side: 'O', shot: null, forced: true, turn_n: 0, pending: null });
       s = W_(s, { shot: types[0], forced: true });
     }
-    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), s.ctx.soft ? softOption(s, s.ball, s.shot) : contestOptions(s, s.ball, s.shot, false)[0], false);   // D-18; D-177: no Contest action, the best soft contest counts
+    if (!forced) return contestOutcome(W_(s, { forced: false, pending: null }), s.ctx.soft && !s.ctx.cc ? softOption(s, s.ball, s.shot) : contestOptions(s, s.ball, s.shot, false)[0], false);   // D-261: no Contest, no contest   // D-18; D-177: no Contest action, the best soft contest counts
     return W_(s, { stage: 'contest', side: 'X', turn_n: 0, forced, pending: null });
   }
   function contestOutcome(s, opt, forced) {
     const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos);
     const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
     let made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0, false, 0, '', -1, !!opt.soft));
-    if (opt.defender >= 0 && !opt.soft && !forced && s.ctx.soft) {
+    if (opt.defender >= 0 && !opt.soft && !forced && s.ctx.soft && !s.ctx.cc) {      // (D-261: only the Contest taken counts)
       // D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
       const [j2, c2] = softContest(s, shooter, t);
       if (c2 > opt.contest) made = terminal(s, Result('shot', shooter, t, pts, rating, c2, j2, Math.max(0, pts * (rating - c2)), 0, false, 0, '', -1, true));
@@ -950,7 +974,8 @@ const PMEngine = (() => {
     if (k === 'pick') return W_(s, { ball: a.target, stage: 'play', grd: 0 });
     if (k === 'forced_shot') return W_(s, { shot: a.shot, stage: 'contest', side: 'X', forced: true });
     if (k === 'contest') {
-      const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece);
+      const hard = a.shot === 'hard';                    // D-261: an inside shot's hard Contest (the block)
+      const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece && !!o.hard === hard);
       if (!opt) throw new Error(`X${a.piece + 1} cannot contest this shot`);
       if (s.stage === 'reaction') s = W_(spend(s, side), { turn_n: s.turn_n + 1 });   // D-18: the reaction's last action, a token
       return contestOutcome(s, opt, s.forced);
@@ -1457,7 +1482,7 @@ const PMEngine = (() => {
   const KPEN = [false, false, false, true, true, true], KFOUL = [false, true, true, false, true, true], KTWO = [false, false, true, false, true, false];
   let SOFTK = 0;                                         // D-177 (rules.soft_contest), set by each Read from its position's rules
   function kindOf(q, c, pen, foul) {
-    if (!foul && SOFTK && DR[q] >= DR[c]) foul = true;   // a hard contest from the side or behind rolls for a foul
+    if (!foul && (SOFTK & 1) && DR[q] >= DR[c]) foul = true;   // a hard contest from the side or behind rolls for a foul
     if (pen) return foul ? 4 : 3;
     if (!foul) return 0;
     return DR[q] >= DR[c] ? 2 : 1;
@@ -1476,8 +1501,9 @@ const PMEngine = (() => {
     };
     for (const [q, n] of free) put(q, -1, n, true);
     for (const [q, arrs] of fixed) for (const [a, n] of arrs) put(q, a, n, false);
-    // the kinds he reaches within 0, 1 or 2 reaction actions, per square (bit k = KINDS[k])
-    out.masks = [0, 1, 2].map(react => {
+    // the kinds he reaches within 0, 1 or 2 reaction actions, per square (bit k = KINDS[k]). D-261: the reply turn's
+    // reach before the contest (masks[2]) is one movement when the Contest is itself one of its two actions
+    out.masks = [0, 1, (SOFTK & 2) ? 1 : 2].map(react => {
       const m = new Uint8Array(NB);
       for (let b = 0; b < NB; b++) { let v = 0; for (let k = 0; k < 6; k++) if (out[b * 6 + k] <= react) v |= 1 << k; m[b] = v; }
       return m;
@@ -1486,7 +1512,7 @@ const PMEngine = (() => {
   }
   const _CM = new Map();
   function cmapCached(frm, arrow, qs, canMove, qsLeft, mode = 0) {
-    const key = ((((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode) * 2 + SOFTK;
+    const key = ((((((frm * 8 + arrow) * 8 + qs) * 2 + (canMove ? 1 : 0)) * 3) + qsLeft) * 3 + mode) * 4 + SOFTK;
     let hit = _CM.get(key); if (hit) return hit;
     const [free, fixed] = geoReach(frm, arrow, qs, canMove, qsLeft);
     hit = contestMap(free, fixed, mode); _CM.set(key, hit); return hit;
@@ -1498,7 +1524,7 @@ const PMEngine = (() => {
   const INF_V = Infinity;
   const _AAM = new Map();
   function anyArrowMask(q, qs, mode) {                 // a defender on q at a phase's start, whichever way he faces
-    const key = ((q * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    const key = ((q * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _AAM.get(key); if (hit) return hit;
     hit = new Uint8Array(NB);
     for (let a = 0; a < 8; a++) { const m = cmapCached(q, a, qs, true, 1, mode).masks[2]; for (let b = 0; b < NB; b++) hit[b] |= m[b]; }
@@ -1968,7 +1994,7 @@ const PMEngine = (() => {
   class Read {
     constructor(s, opts = {}) {
       this.s = s;
-      SOFTK = s.ctx.soft ? 1 : 0;
+      SOFTK = (s.ctx.soft ? 1 : 0) | (s.ctx.cc ? 2 : 0);      // bit 1: D-261, the reply's reach before the contest is one movement
       this.exact = !!opts.exact;
       this.cfg = D.config.eval;
       this.k = opts.k != null ? opts.k : this.cfg.responses_per_defender;
@@ -2022,7 +2048,7 @@ const PMEngine = (() => {
         if (!cm) return null;
         const b = BI[lk.c], s = this.s, control = controlOn(ctx);
         const hard = this.react_moves < 0 ? 0 : cm.masks[moves === undefined ? this.react_moves : Math.min(moves, this.react_moves)][b];
-        const sl = Math.min(2, Math.max(this.react, this.react_moves, 0));
+        const sl = ctx.cc ? Math.max(this.react_moves, 0) : Math.min(2, Math.max(this.react, this.react_moves, 0));      // D-261: the normal Contest is an action too
         const smask = cm.masks[moves === undefined ? sl : Math.min(moves, sl)][b];
         if (!hard && !smask) return null;
         const st0 = cm.masks[0][b];
@@ -2844,7 +2870,7 @@ const PMEngine = (() => {
             }
             // (a speed-up that changes no result: where he can't contest the look, swapped() is the look's best
             // without him, kept on the look)
-            if (s.ctx.soft ? !cm.masks[Math.min(2, Math.max(this.react, rm, 0))][BI[lk.c]] : (rm < 0 || !cm.masks[rm][BI[lk.c]])) {      // D-177: a soft contest reaches a movement further
+            if (s.ctx.soft && !s.ctx.cc ? !cm.masks[Math.min(2, Math.max(this.react, rm, 0))][BI[lk.c]] : (rm < 0 || !cm.masks[rm][BI[lk.c]])) {      // D-177: a soft contest reaches a movement further
               let bx = lk.bx;
               if (bx === undefined) {
                 bx = lk.bx = new Float64Array(5);
@@ -3937,7 +3963,7 @@ const PMEngine = (() => {
         // D-191 (search.Searcher.settled): position decides the contest, so both of the reaction's actions may be
         // movements; only one that ends next to the shooter is played, a Move only with its arrow on him
         // a level with closeout_twice (the All-Star) plays a second such movement; the others stop at one, as before
-        if (s.ctx.pos && (s.turn_n === 0 || this.twice)) acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))));
+        if (s.ctx.pos && !s.ctx.cc && (s.turn_n === 0 || this.twice)) acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || (adjacent(a.dest, sp) && (a.kind !== 'move' || a.arrow === dirBetween(a.dest, sp))));
         else if (s.turn_n >= 1) acts = forcingActions(s, 'stage');
         else acts = legalActions(s).filter(a => !MOVEMENT.has(a.kind) || adjacent(a.dest, sp));
       } else acts = legalActions(s);
@@ -4605,7 +4631,7 @@ const PMEngine = (() => {
   // 5), and those of them he is set for (bits 6 to 11).
   const _CM2 = new Map(), _AAM2 = new Map();
   function cm2Cached(q, a, qs, mode) {
-    const key = (((q * 8 + a) * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    const key = (((q * 8 + a) * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _CM2.get(key); if (hit) return hit;
     const full = cmapCached(q, a, qs, true, 1, mode).masks[2], set = cmapCached(q, a, qs, true, 0, mode).masks[1];
     hit = new Uint16Array(NB);
@@ -4617,7 +4643,7 @@ const PMEngine = (() => {
   // off a contest square simply by standing on it), through the diagonals the rules leave open, blocked only by a
   // screen's T square. The same masks as cm2Cached (the kinds within the reaction, and those he is set for).
   function bodyCm2(sN, d, mode) {
-    const fr = defenderReachExact(sN, d), key = mode * 2 + SOFTK;
+    const fr = defenderReachExact(sN, d), key = mode * 4 + SOFTK;
     if (fr._cm2 && fr._cm2k === key) return fr._cm2;
     const full = contestMap(fr[0], fr[1], mode).masks[2];
     const free1 = new Map(); for (const [q, n] of fr[0]) if (n <= 1) free1.set(q, n);
@@ -4628,7 +4654,7 @@ const PMEngine = (() => {
     return hit;
   }
   function anyArrow2(q, qs, mode) {                    // whichever way he faces (he chose his arrow when a Move took him there)
-    const key = ((q * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    const key = ((q * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _AAM2.get(key); if (hit) return hit;
     hit = new Uint16Array(NB);
     for (let a = 0; a < 8; a++) { const m = cm2Cached(q, a, qs, mode); for (let b = 0; b < NB; b++) hit[b] |= m[b]; }
@@ -5137,7 +5163,7 @@ const PMEngine = (() => {
     _PD.set(key, hit); return hit;
   }
   function arrivePhases(start, qs, mode) {             // per board square: the phases before he can contest a shot there set, and at all
-    const key = ((start * 8 + qs) * 3 + mode) * 2 + SOFTK;
+    const key = ((start * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _AP.get(key); if (hit) return hit;
     const pd = phaseDist(start, qs), set = new Int8Array(NB).fill(INF), any = new Int8Array(NB).fill(INF);
     for (let p = 0; p < NSQ; p++) {

@@ -314,6 +314,12 @@ class Rules:
     #   the arrow off, two from the side or behind). Only the best contest counts. D-193: a contesting defender always
     #   takes at least 1 off the shot, after every modifier.
     position_contest: str = 'app'
+    # D-261 (Shaun, 19 Nov 2026), on top of position_contest: the contest is a defence action. After a shot the defence
+    #   has one reply turn of 2 actions, shared by the team, and the Contest is one of them for every shot. Nothing is
+    #   automatic: no Contest, no contest. Jump shots: the Contest is the position table (no foul). Inside shots: a
+    #   normal Contest (the same table, never a foul) or a hard Contest (the block: the full rating, with its foul
+    #   rolls). So the most the defence can do is one movement and the Contest, as the offence's one movement and the shot.
+    contest_costs: str = 'app'
     closely_guarded: str = 'app'
     fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
@@ -383,6 +389,17 @@ CONTEST_FLOOR = 1                            # D-193: a contesting defender alwa
 def position_contest(rules):
     """D-191 and D-193 in play: the app's format with the soft contest rule on (the automatic contest is built on it)."""
     return app_rule(rules, 'position_contest') and app_rule(rules, 'soft_contest')
+
+
+def contest_costs(rules):
+    """D-261 in play: the contest is one of the reply turn's two actions, for every shot (built on position_contest)."""
+    return app_rule(rules, 'contest_costs') and position_contest(rules)
+
+
+def reply_moves(rules):
+    """The movements a defender has before his contest in the reply turn: one under D-261 (the Contest is the other
+    action), two before it (the hand up needed no action)."""
+    return 1 if contest_costs(rules) else 2
 
 
 def control_size(rules):
