@@ -280,6 +280,32 @@ def _cmap2(rules, q, a, qs, mode):
     return out
 
 
+_BODY = {}
+
+
+def _body_cmap2(s_next, d, mode):
+    """Step 26 (engine.js bodyCm2, D-249): a defender's contest a phase on along the real paths: around attackers'
+    bodies and his teammates, through the diagonals the rules leave open, blocked only by screens. The same rows as
+    _cmap2."""
+    rules = s_next.ctx.rules
+    free, fixed = defender_map(s_next, d, exact=True)
+    key = (s_next.o, s_next.x, d, s_next.arrows[d], s_next.ctx.dfn[d].qs, rules, mode, s_next.screens)
+    hit = _BODY.get(key)
+    if hit is None:
+        full = contest_map(rules, free, fixed, mode)
+        setr = contest_map(rules, {q: n for q, n in free.items() if n <= 1}, {s_next.x[d]: {s_next.arrows[d]: 0}}, mode)
+        hit = {}
+        for c, row in full.items():
+            st = setr.get(c) or _NOSET
+            fm = sum(1 << k for k, n in enumerate(row) if n <= 2)
+            sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= 2)
+            hit[c] = (tuple(row), tuple(st), fm, sm)
+        if len(_BODY) > 20000:
+            _BODY.clear()
+        _BODY[key] = hit
+    return hit
+
+
 @lru_cache(maxsize=None)
 def _any_arrow_cmap2(rules, q, qs, mode):
     """engine.js anyArrow2: a defender on q whichever way he faces (he chose his arrow when a Move took him there)."""
@@ -1248,7 +1274,7 @@ class Read:
         from .state import ZERO_COUNTS
         s_next = s.with_(screens=(), tok_x=RC.TOKENS_PER_PHASE, moved_x=0, qs_x=0, lock_x=0, rush_x=0, beaten=(), cnt=ZERO_COUNTS)
         mode = 0 if rules.zone == 'off' else 1
-        cms = [(_cmap2(rules, s.x[d], s.arrows[d], s.ctx.dfn[d].qs, mode) if B.on_board(s.x[d]) else None) for d in range(5)]
+        cms = [(_body_cmap2(s_next, d, mode) if B.on_board(s.x[d]) else None) for d in range(5)]      # step 26 (D-249): the real paths
         self._mcms = cms
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
         # ---- step 22c (engine.js covBuild, D-224): stagnation, in points by the rules ----

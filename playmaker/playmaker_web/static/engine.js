@@ -4613,6 +4613,21 @@ const PMEngine = (() => {
     for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
     _CM2.set(key, hit); return hit;
   }
+  // Step 26 (D-249, Shaun, 19 Nov 2026): "in time" uses the real paths. A defender's contest a phase on from where he
+  // stands, by the movement he really has: his paths go around attackers' bodies and his teammates (a bunch can wall
+  // off a contest square simply by standing on it), through the diagonals the rules leave open, blocked only by a
+  // screen's T square. The same masks as cm2Cached (the kinds within the reaction, and those he is set for).
+  function bodyCm2(sN, d, mode) {
+    const fr = defenderReachExact(sN, d), key = mode * 2 + SOFTK;
+    if (fr._cm2 && fr._cm2k === key) return fr._cm2;
+    const full = contestMap(fr[0], fr[1], mode).masks[2];
+    const free1 = new Map(); for (const [q, n] of fr[0]) if (n <= 1) free1.set(q, n);
+    const set = contestMap(free1, new Map([[sN.x[d], new Map([[sN.arrows[d], 0]])]]), mode).masks[1];
+    const hit = new Uint16Array(NB);
+    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
+    fr._cm2 = hit; fr._cm2k = key;
+    return hit;
+  }
   function anyArrow2(q, qs, mode) {                    // whichever way he faces (he chose his arrow when a Move took him there)
     const key = ((q * 8 + qs) * 3 + mode) * 2 + SOFTK;
     let hit = _AAM2.get(key); if (hit) return hit;
@@ -4656,7 +4671,8 @@ const PMEngine = (() => {
     const sN = covNext(s);
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
     // each defender's Contest a phase on from where he stands: the reaction's two actions, his movement fresh
-    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? cm2Cached(s.x[d], s.arrows[d], ctx.dfn[d].qs, stanceMode(sN, d)) : null));
+    // step 26 (D-249): along the real paths: around attackers' bodies and his teammates, blocked only by screens
+    const cms = [0, 1, 2, 3, 4].map(d => (ONB[s.x[d]] ? bodyCm2(sN, d, stanceMode(sN, d)) : null));
     const options = [], byKey = new Map();
     // ---- step 22c (D-224, Shaun, 18 Nov 2026): stagnation, in points by the rules -------------------------------------
     // The Steal, as the defence stands: whoever holds the ball on a square can be reached by a defender next to it
