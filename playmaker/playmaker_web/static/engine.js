@@ -4975,7 +4975,23 @@ const PMEngine = (() => {
     }
     return m;
   }
-  function lgGroupValue(A, ds) {                       // the best look the defence's best assignment leaves open
+  // Step 25 (D-241, Shaun, 19 Nov 2026): a defender covers every look he can reach in time to contest, because only one
+  // attacker can shoot. The exception is an overload: the offence creates the looks one after another (an action, the
+  // defence's reaction, the next action), so covering the first leaves the second open. A look stays covered when the
+  // defender who took another can still contest it, with the reaction's two actions, from a square next to the look
+  // he took. It replaces "within two squares".
+  const _CT = new Map();
+  function coversToo(m, d, cv, cu) {
+    const qs = m.s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), key = ((cv * NSQ + cu) * 8 + qs) * 3 + mode;
+    let hit = _CT.get(key);
+    if (hit === undefined) {
+      hit = false;
+      for (let dir = 0; dir < 8 && !hit; dir++) { const p = cv + DSTEP[dir]; if (ONB[p] && p !== cu && anyArrow2(p, qs, mode)[BI[cu]]) hit = true; }
+      _CT.set(key, hit);
+    }
+    return hit;
+  }
+  function lgGroupValue(A, ds, m) {                    // the best look the defence's best assignment leaves open
     let best = Infinity, pick = null;
     const k = ds.length, took = new Array(k).fill(-1);
     const go = i => {
@@ -4984,7 +5000,7 @@ const PMEngine = (() => {
         for (let u = 0; u < A.length; u++) {
           if (took.includes(u)) continue;
           let far = true;
-          for (const v of took) if (v >= 0 && cheb(A[u].c, A[v].c) < 3) { far = false; break; }
+          for (let i = 0; i < k; i++) { const v = took[i]; if (v >= 0 && coversToo(m, ds[i], A[v].c, A[u].c)) { far = false; break; } }
           if (far && A[u].wd > left) { left = A[u].wd; open = u; }
         }
         if (left < best - 1e-9) { best = left; pick = { took: took.slice(), open }; }
@@ -5024,7 +5040,7 @@ const PMEngine = (() => {
         if (by.size <= k) continue;
         const A = [...by.values()].map(z => ({ a: z.x.src.a, c: z.x.src.c, t: z.tt, wd: z.wd, now: z.x.e, mask: z.mask }))
           .sort((u, v) => v.wd - u.wd || u.a - v.a);
-        const g = lgGroupValue(A, ds);
+        const g = lgGroupValue(A, ds, st.m);
         if (!(g.value > 0) || !isFinite(g.value)) continue;
         if (named.some(h => (h.gm & gm) === h.gm && h.value >= g.value - 1e-9)) continue;   // a smaller group says it already
         named.push({ gm, value: g.value });
@@ -5679,6 +5695,29 @@ const PMEngine = (() => {
   // Step 22b (D-219): the largest item on the list of things to cover, the defence as it stands and before it answers
   // (the offence acts first): read as the lasting gap is (lastingOf): each side with what it has left; a pass in the
   // air by the catch's chance; the three-second rule's -5 counted. null in the last phase.
+  // Step 25 (D-242, Shaun, 19 Nov 2026): the shot bar is the value of playing on, counted phase by phase. With no phase
+  // left any shot beats none (0). With n phases left the offence can take any look the map gives it: reached (its
+  // chance by the rules) it is worth its value, or playing on if that is more; missed, playing on from one phase fewer,
+  // less what the miss costs (a lost pass -5, a lost Dribble nothing). Fewer phases, fewer chances to improve: the bar
+  // barely drops early and faster late. No curve is set by hand. -> [{phase, clock, bar}] from this phase on.
+  function barsOf(s) {
+    const g = lastingOf(s);
+    const out = [];
+    const n0 = Math.floor(s.clock / 2) - 1;
+    const V = [0];
+    if (g && g.best) {
+      const opts = [];
+      for (const x of g.best.o) if (x.r > 0 && isFinite(x.w)) opts.push([x.r, x.w + x.src.adj, x.src.lc]);
+      for (let n = 1; n <= n0; n++) {
+        const prev = V[n - 1];
+        let v = Math.max(prev, g.L);
+        for (const [r, val, lc] of opts) { const e = r * Math.max(val, prev) + (1 - r) * (prev - lc); if (e > v) v = e; }
+        V.push(v);
+      }
+    }
+    for (let k = 0, c = s.clock; c > 0; k++, c -= 2) { const n = Math.floor(c / 2) - 1; out.push({ phase: k + 1, clock: c, bar: n > 0 && V[n] !== undefined ? +V[n].toFixed(2) : 0 }); }
+    return out;
+  }
   function topOf(s) {
     if (s.stage !== 'play' || s.clock <= 2) return null;
     const read = f => lgList(lgRoot(covBuild(f, true, null)))[0];
@@ -5797,7 +5836,8 @@ const PMEngine = (() => {
   }
   function coverage(s0, opts) {
     opts = opts || {};
-    if (opts.only === 'parts') return { parts: mapParts(s0) };                  // the search's three numbers (Read.mapShot, Read.mapTwo)
+    if (opts.only === 'parts') return { parts: mapParts(s0) };
+    if (opts.only === 'bars') return { bars: barsOf(s0) };                       // step 25: the shot bar, phase by phase                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (opts.only === 'setup') {                          // the defence's setup: the settlement of all five (D-219)
       RD.lead = opts.lead === 'gap' ? 'gap' : 'list';

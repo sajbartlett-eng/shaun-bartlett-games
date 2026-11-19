@@ -63,7 +63,78 @@ const svg = (tag, attrs = {}) => {
 const sqName = (x, y) => (x === -1 ? '@' : x === 17 ? 'R' : COLS[x]) + y;
 const px = PM.px, py = PM.py;
 
+// Step 25 (Shaun, 19 Nov 2026: "Many games have loading screens. This one just needs its own loading screen."): any
+// request that keeps the player waiting more than about a second shows that the computer is working. A setup gets a
+// panel with a moving progress bar and something to read (this matchup's scouting notes, or a coaching tip); a turn
+// in play gets a small "thinking" cue by the side that is thinking. Announced to screen readers; the motion follows
+// prefers-reduced-motion.
+const SLOW_MS = 900;
+let scoutNotes = null;
+async function loadScoutNotes() {
+  if (scoutNotes || !G || !G.code || !st || st.match_format !== 'digital') return;
+  try { const r = await api0(`/api/scout?code=${G.code}`); scoutNotes = (r.lines || []).slice(); } catch (e) { scoutNotes = []; }
+}
+function waitKind(path, body) {
+  if (!body) return null;
+  if (path === '/api/place' && (body.computer || !(body.squares))) return 'setup';
+  if (path === '/api/new') return 'setup';
+  if (path === '/api/place' || path === '/api/act') return 'turn';
+  return null;
+}
+function thinkingSide(kind, body) {
+  if (kind === 'setup') {
+    if (body && body.computer && st && st.placing) return st.placing.side;
+    return st && st.placing ? st.placing.side : null;
+  }
+  const ai = Object.keys((st && st.ai) || {});
+  return ai.length === 1 ? ai[0] : null;
+}
+function showWait(kind, side) {
+  const who = side === 'O' ? 'offence' : side === 'X' ? 'defence' : 'computer';
+  if (kind === 'turn') {
+    let cue = $('thinkingCue');
+    if (!cue) { cue = el('div', { id: 'thinkingCue', class: 'thinking', role: 'status' }); const sum = $('summary'); if (sum && sum.parentNode) sum.parentNode.insertBefore(cue, sum.nextSibling); else document.body.append(cue); }
+    cue.className = 'thinking ' + (side === 'X' ? 'def' : 'off');
+    cue.innerHTML = '';
+    cue.append(el('span', { class: 'dots', 'aria-hidden': 'true' }), el('span', { text: ` The ${who} is thinking…` }));
+    cue.classList.remove('hidden');
+    return () => cue.classList.add('hidden');
+  }
+  let panel = $('loadingPanel');
+  if (!panel) { panel = el('div', { id: 'loadingPanel', class: 'loadingpanel', role: 'status', 'aria-live': 'polite' }); document.body.append(panel); }
+  panel.innerHTML = '';
+  const title = el('div', { class: 'loadtitle', text: side ? `The computer is setting up the ${who}.` : 'Setting up the game.' });
+  const fill = el('div', { class: 'loadfill' });
+  const bar = el('div', { class: 'loadbar', role: 'progressbar', 'aria-label': 'Setting up', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0' }, [fill]);
+  const read = el('p', { class: 'loadread' });
+  const secs = el('div', { class: 'note loadsecs' });
+  panel.append(title, bar, secs, el('div', { class: 'loadhead', text: 'While you wait' }), read);
+  panel.classList.remove('hidden');
+  announce(title.textContent);
+  const pool = () => (scoutNotes && scoutNotes.length ? scoutNotes : ((window.PMTips && PMTips.TIPS) || []).map(t => t.text).filter(Boolean));
+  let k = 0;
+  const nextRead = () => { const p = pool(); if (p.length) read.textContent = p[k++ % p.length]; };
+  nextRead();
+  const t0 = Date.now(), expect = 30;          // a setup reads for up to about half a minute: the bar approaches the end and never stops moving
+  const tick = setInterval(() => {
+    const t = (Date.now() - t0) / 1000, pct = Math.min(97, Math.round(100 * (1 - Math.exp(-t / (expect / 2.5)))));
+    fill.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct));
+    secs.textContent = `${Math.round(t)} seconds`;
+    if (Math.round(t) % 8 === 0) nextRead();
+    if (Math.round(t) % 10 === 0 && t > 1) announce(`Still setting up: ${pct} percent.`);
+  }, 1000);
+  return () => { clearInterval(tick); fill.style.width = '100%'; bar.setAttribute('aria-valuenow', '100'); panel.classList.add('hidden'); announce('Ready.'); };
+}
 async function api(path, body) {
+  const kind = waitKind(path, body);
+  if (!kind) return api0(path, body);
+  if (kind === 'setup') loadScoutNotes();
+  let stop = null;
+  const timer = setTimeout(() => { stop = showWait(kind, thinkingSide(kind, body)); }, SLOW_MS);
+  try { return await api0(path, body); }
+  finally { clearTimeout(timer); if (stop) stop(); }
+}
+async function api0(path, body) {
   if (window.PM_BACKEND) return window.PM_BACKEND(path, body);      // the in-browser (Pyodide) build
   const opt = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
   const r = await fetch(path, opt);
@@ -811,7 +882,8 @@ function renderPlan() {
     const x = info.X;
     kids.push(el('div', { class: 'planside def' }, [el('h3', { text: 'Defence: the matchups' }),
       (x.read || []).length ? el('ul', {}, x.read.map(t => el('li', { text: t }))) : el('div', { text: x.text }),
-      (x.avoided || []).length ? el('div', { text: 'Avoided: ' + x.avoided.join('; ') + '.' }) : null]));
+      (x.avoided || []).length ? el('div', { text: 'Avoided: ' + x.avoided.join('; ') + '.' }) : null,
+      (x.watching || []).length ? el('div', { text: 'Watching: ' + x.watching.join('; ') + '.' }) : null]));
   }
   if (line && line.text && (!line.coaching || coachPlanOn())) {
     kids.push(el('div', { class: 'chasing', text: (line.coaching ? 'Coach: ' : 'Offence: ') + line.text }));

@@ -1457,7 +1457,7 @@ works is kept: the settlement by the list. Then, among the ways of standing that
 variety margin above it: the mismatch priced where it hurts (the chance each attacker's Dribble beats his defender
 times what a win opens on his square), then like against like (by position), then matching numbers. **Marked for
 Shaun:** I did not have step 23's prompt. The margin and the price are my reading of this step's words.
-· Source: Shaun, 19 Nov 2026 · **Built in step 24; awaits Shaun.**
+· Source: Shaun, 19 Nov 2026 · **Built in step 24; stands (D-246).**
 
 **D-238. In play and the scout's updates.** Shaun: "Think about if the defence does something silly and leaves an open
 pass and driving lane. The layup's value might not be better than the open three, but it is guaranteed rather than
@@ -1466,7 +1466,7 @@ reach). Each phase the offence measures its plan on the real board: still chasin
 more. The plan only breaks ties between turns that read the same. Between possessions only a side's predictions of
 the other side's choices change: the same unpredicted matchup two possessions running. **Marked for Shaun:** two. A
 setup has no dice; one sighting can be the level's variety. · Source: Shaun, 19 Nov 2026 · **Built in step 24; the
-count awaits Shaun.**
+prediction rule removed by D-245.**
 
 **D-239. The setup screen.** Shaun: "Also, implement in the game the UX and functionality to match. A clear button to
 have the computers manage offensive setup and one for defensive setup is a must. At the moment I don't think it manages
@@ -1475,6 +1475,54 @@ Built: "Computer sets up the offence" and "Computer sets up the defence" in ever
 can change, and its next-best on a second press; the plan and the defence's read beside the board; role squares with
 Coverage on; no defender, reach, zone or arrow drawn while the offence places; a side's plan shown to that side only.
 · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 24.**
+
+**D-240. Candidate squares stay, for now.** Shaun ruled on step 24's choice 1: keep the rule; look at it again after
+D-241 is built. · Source: Shaun, 19 Nov 2026 · **Ruled.**
+
+**D-241. A defender covers every threat he can reach in time; the exception is an overload.** Shaun: only one
+attacker can shoot, so a help defender among three bunched attackers covers all he can reach in time to contest. When
+the offence can create the items one after another (an action, the defence's reaction, the next action: drive at him,
+then pass to the man he left), covering the first leaves the second open: then he covers only one. Built in both
+engines: a look stays covered when the defender who took another can still contest it, with the reaction's two
+actions, from a square next to the look he took. It replaces "an attacker is open if no taken attacker stands within
+two squares of him". · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 25.**
+
+**D-242. The shot bar falls with the clock.** Shaun: it should barely drop in the first phases, then faster and
+faster, until any shot beats no shot in the last two seconds. Built in both engines: the bar is the value of playing
+on. With no phase left it is 0. With n phases left the offence can take any look the map gives it: reached (its chance
+by the rules), its value or playing on if that is more; missed, playing on from one phase fewer, less what the miss
+costs (a lost pass -5, a lost Dribble nothing). No curve is set by hand. Where the board offers nothing better at a
+chance than the sure look, the bar is flat until the last phase. · Source: Shaun, 19 Nov 2026 · **Ruled; built in
+step 25.**
+
+**D-243. How a dribble beat is measured.** Shaun: everything the offence threatens before the beat, then after it,
+and the difference. At the top of the key many options improve a little; in the paint one option improves a lot.
+Built: every square's look by the coverage map (value times reach), before and after a won Dribble, summed; the
+difference is the beat's worth, with the largest single gain kept beside it. · Source: Shaun, 19 Nov 2026 · **Ruled;
+built in step 25.**
+
+**D-244. The offence's conditions.** The full list is `docs/reference/OFFENCE_CONDITIONS_19NOV.md`, Shaun's additions
+included. The plan's scenarios and branches are built from the conditions forming on the board, each read from the map
+and ruled in or out by the bar, the time and the tokens; the defence reads the same conditions on the same public
+board with its own model and names the ones it must deny. Nothing on the list is a play to run (D-156). **Marked for
+Shaun:** 29 of the conditions are read from the map in step 25 (`playmaker_engine/conditions.py`, NAMES); the others
+are listed there with the reason each isn't read yet (UNMEASURED), most because they need two phases or a stance the
+board doesn't record. · Source: Shaun, 19 Nov 2026 · **Ruled; built in part in step 25.**
+
+**D-245. No rule to change a prediction.** Shaun: "If a computer gets its prediction wrong, its setup still stands.
+It adapts its strategy on the fly. It should have the tools to do that." A setup is a prediction, and it stands for the
+possession. In play the computer re-reads the actual board every phase, re-measures its conditions, and moves to a
+branch or takes what's open. Each possession it predicts fresh from what it can see. The two-possessions rule (D-238)
+is removed. · Source: Shaun, 19 Nov 2026 · **Ruled; built in step 25.**
+
+**D-246. Step 24's other choices.** The matchup rule stands as built: the dribble mismatch priced where it hurts, then
+like against like, then matching numbers (D-237). Speed is not a problem: a loading screen shows any wait over about a
+second. Shaun: "Many games have loading screens. This one just needs its own loading screen." · Source: Shaun, 19 Nov
+2026 · **Ruled; built in step 25.**
+
+**D-247. Play story keeps each side's plan private.** A human never sees the other side's plan or goals while the
+possession is in play; once it is over, both are shown, labelled by side. In Watch, both throughout. · Source: Shaun,
+19 Nov 2026 (separate thinking, D-234) · **Ruled; built in step 25.**
 
 ## 2. Engine defaults awaiting sign-off
 
