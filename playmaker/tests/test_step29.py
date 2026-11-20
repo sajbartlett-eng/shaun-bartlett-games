@@ -129,9 +129,13 @@ def test_a_successful_block_is_a_turnover():
     r = apply(s, act(s, 'shot'))
     node = apply(r, next(a for a in legal_actions(r) if a.kind == 'contest' and a.piece == 4 and a.shot == 'hard'))
     blocked = next(sub for _, l, sub in node.outcomes if l == 'blocked')                 # square: no foul roll first
-    assert blocked.stage == 'play' and blocked.side == 'O' and blocked.tos == r.tos + 1    # -5, play on
+    # Re-recorded in step 30 under D-276 (the current rule): the ball no longer stays where he shot. The new phase opens
+    # on the blocker's reset (the defence's choice), with the shooter forced 3 back from the basket. The reset's own
+    # cases are in tests/test_step30.py.
+    assert blocked.stage == 'reset' and blocked.side == 'X' and blocked.tos == r.tos + 1   # -5, play on, the reset first
     assert blocked.phase == r.phase + 1 and blocked.clock == r.clock - RC.PHASE_SECONDS   # the phase is lost
-    assert blocked.ball == s.ball and blocked.o == s.o                                    # the ball with the shooter, as after a Steal
+    o = list(s.o); o[s.ball] = B.pushed(s.o[s.ball], (set(s.o) | set(s.x)) - {s.o[s.ball]})
+    assert blocked.ball == s.ball and blocked.o == tuple(o) and blocked.reset == 4         # the shooter forced back
 
 
 # ---- fakes (D-272) -----------------------------------------------------------------------------------------------------

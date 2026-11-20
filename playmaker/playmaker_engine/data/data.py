@@ -184,7 +184,7 @@ OFF = ['dribble', 'pass', 'screen', 'shot_layup', 'shot_dunk', 'shot_post', 'sho
 DEF = ['agility', 'intercept', 'challenge', 'steal', 'foul_steal', 'con_layup', 'con_dunk', 'con_post', 'con_floater', 'con_mid', 'con_long', 'con_three', 'foul_contest']
 # D-269, D-270 (Shaun, 20 Nov 2026): Block and Foul (Block), from docs/reference/step29/BLOCK_RATINGS.csv (his ratings
 # PDF's 75 cards, read in card order; PG-5 Slasher A corrected to 6 and 9). Each app type -> the PDF type it is, then
-# (block, foul_block) for tiers A, B, C. The two app-only types (D-184) have no PDF type: see BLOCK_STAND_IN.
+# (block, foul_block) for tiers A, B, C. The two app-only types (D-184) have no PDF type: Shaun rated them (D-277).
 BLOCK_TYPE = {
  'apg': 'PG-5', 'cg': 'PG-4', 'dpg': 'PG-3', 'ppg': 'PG-1', 'spg': 'PG-2', 'bgs': 'SG-5', 'pms': 'SG-4', 'shs': 'SG-1', 'tnd': 'SG-3', 'tw': 'SG-2', 'dfsf': 'SF-5', 'pfsf': 'SF-4', 'scsf': 'SF-1', 'stsf': 'SF-3', 'twsf': 'SF-2', 'arpf': 'PF-4', 'dpf': 'PF-3', 'pnp': 'PF-5', 'pspf': 'PF-1', 'stpf': 'PF-2', 'pmc': 'C-4', 'psc': 'C-1', 'rpc': 'C-2', 'rrc': 'C-5', 'stc': 'C-3'}
 BLOCK_RATINGS = {
@@ -214,10 +214,13 @@ BLOCK_RATINGS = {
  'C-4': {'A': (8, 8), 'B': (7, 9), 'C': (6, 10)},
  'C-5': {'A': (9, 5), 'B': (8, 6), 'C': (7, 7)},
 }
-# No PDF type for the Slashing Wing or the Switch Centre (D-184, the app only): for Shaun to choose (step 29 report).
-# Until he does they play the nearest type's values: the Slashing Wing the Scoring SF (SF-1), the Switch Centre the
-# Rim Runner Centre (C-5, its own tagline: 'Rim runner').
-BLOCK_STAND_IN = {'slsf': 'SF-1', 'swc': 'C-5'}
+# D-277 (Shaun, 20 Nov 2026): the two app-only types (D-184). The Switch Centre plays the Defensive PF's values (PF-3:
+# "It's a defensive job"); the Slashing Wing has his own: the Two-Way SF's block (his athleticism) with the Bucket
+# Getter's foul control (his indiscipline): "Higher chance of foul while also higher chance of a successful block".
+BLOCK_RATINGS['APP-SW'] = {'A': (9, 11), 'B': (8, 12), 'C': (7, 12)}
+BLOCK_RATINGS['APP-SC'] = dict(BLOCK_RATINGS['PF-3'])
+BLOCK_TYPE.update({'slsf': 'APP-SW', 'swc': 'APP-SC'})
+BLOCK_STAND_IN = {}
 def block_of(key):
     t = key[:-1]
     return BLOCK_RATINGS[BLOCK_TYPE.get(t) or BLOCK_STAND_IN[t]][key[-1]]

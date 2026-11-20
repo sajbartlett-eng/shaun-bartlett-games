@@ -1729,6 +1729,45 @@ penalty); "any turnover in the app" ending the possession at 0 (now only a turno
 has banked); the split table's turnover cost and shot-clock expiry likewise. The list is in the step 29 report. · Source:
 Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
 
+**D-276. After a successful block (Split, the app).** Shaun: "But you lose a phase. And the defence is fully reset."
+And: "the shooter is just forced back 3 rows or 3 columns or 3 diagonals away from the basket from where they shot
+limited by the court boundaries and any other players in the way such that they end up as near as possible. The defender
+can reposition anywhere within a 3 square radius of his current position." Built (`rules.block`, replacing D-271's "the
+ball stays with the shooter where he stands"): still a turnover, −5, the phase ends and the same possession goes on with
+a new phase and every count reset (D-198); in the last phase the possession ends on what it has banked. The shooter moves
+along the one row, column or diagonal that points most directly away from the basket (the largest step toward "away",
+a diagonal step counted at its true length), up to 3 squares, stopping on the last open square before a player or the
+court's edge; if the first square is taken he stays. A tie between a line and a diagonal takes the diagonal: on this
+board's whole-square grid no tie can occur (checked on every square). He starts the new phase as if he had just caught
+the ball: dribble alive, closely guarded count from nothing (flagged for Shaun). Then the defence, seeing where he ended,
+moves the blocker to any open square within 3 (counted as the game counts squares for movement and reach: across, down
+or diagonally, each 1) or keeps him, and sets his arrow. Everyone else stays. The computer picks the square by the list,
+reading ahead: at its own turn every square and arrow within 3; inside its look-ahead, staying and the square the map's
+settlement for the new phase sends him to (or the open square within 3 nearest it), as every Move is read there. ·
+Source: Shaun, 20 Nov 2026 · **Ruled; built in step 30.**
+
+**D-277. Block ratings for the two app-only cards (card change, D-190).** Shaun: the Switch Centre takes the Defensive
+PF's (PF-3) values, Block / Foul (Block) A 10 / 5, B 9 / 6, C 8 / 7: "It's a defensive job." The Slashing Wing: Block
+9 / 8 / 7, Foul (Block) 11 / 12 / 12: "Slashing wing is built but probably indisciplined on defence. Higher chance of foul
+while also higher chance of a successful block due to his athleticism." Replaces D-269's stand-ins. In
+`BLOCK_RATINGS.csv` (rows APP-SW and APP-SC, with the note) and the cards. · Source: Shaun, 20 Nov 2026 · **Ruled; built
+in step 30.**
+
+**D-278. A Steal in reply to a shot fake is an ordinary Steal on the ball handler.** Step 29's reading. · Source: Shaun,
+20 Nov: agreed · **Ruled; built in step 29.**
+
+**D-279. A pass fake met by a Challenge or a Pause is revealed at that moment.** Step 29's reading. · Source: Shaun, 20
+Nov: agreed · **Ruled; built in step 29.**
+
+**D-280. The Foul (Block) display bands use the Foul (contest) cut-offs.** Step 29's reading. · Source: Shaun, 20 Nov:
+agreed · **Ruled; built in step 29.**
+
+**D-281. A forced buzzer shot from an open deep square is a three at that square's number.** Step 29's reading. ·
+Source: Shaun, 20 Nov: agreed · **Ruled; built in step 29.**
+
+**D-282. The pivot is one per pick-up.** Step 29's reading. · Source: Shaun, 20 Nov: agreed · **Ruled; built in step
+29.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

@@ -1,0 +1,58 @@
+{
+ "offence": {
+  "squares": [
+   "O9",
+   "C9",
+   "G12",
+   "A2",
+   "Q3"
+  ],
+  "ball": "O3",
+  "seconds": 149.4,
+  "line": "Attention: O3 holds X1; O2 holds X2; O4 holds X4. Hole: I7, mid-range. Access: the pass to O1.",
+  "one_reading": {
+   "turns": 2,
+   "route": "It needs 2 turns: O3 fakes a pass to O1 (X3 Move to N9 facing N).",
+   "fakes": 1,
+   "blocks": 0
+  }
+ },
+ "defence": {
+  "squares": [
+   "I5",
+   "G8",
+   "M8",
+   "D10",
+   "D4"
+  ],
+  "arrows": [
+   0,
+   4,
+   0,
+   0,
+   0
+  ],
+  "seconds": 87.3,
+  "read": [
+   "X1 on O3: the nearest defender who takes something off his look",
+   "X2 on O2: same position",
+   "X3 on O1: same speed",
+   "X4 sags off O5 to guard O2's look (worth 27 without him there)",
+   "X5 on O4: the nearest defender who takes something off his look"
+  ]
+ },
+ "best_shooter": {
+  "shooter": "O1 (Sharpshooter SG, three 11) on O9",
+  "his_defender": "X3 on M8, 2 squares off",
+  "nearest": "X3, 2 squares off",
+  "squares_off": 2,
+  "stance": "off"
+ },
+ "step29": {
+  "shooter": "O1 (Sharpshooter SG, three 11) on O9",
+  "his_defender": "X5 on A5, 14 squares off",
+  "nearest": "X2, 1 squares off",
+  "squares_off": 14,
+  "stance": "off"
+ }
+}

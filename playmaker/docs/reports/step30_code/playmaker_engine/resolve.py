@@ -1,0 +1,839 @@
+"""apply(): the rules in motion. Randomness is never hidden: rolls come back as ChanceNodes."""
+from dataclasses import dataclass, replace
+from fractions import Fraction
+
+from . import board as B
+from . import geometry as _G
+from . import rules_config as RC
+from .actions import Action, intercept_status, is_approach, inbound_held, closely_guarded, MOVEMENT, TOKEN_FREE
+from .scoring import (shot_zone, p_success, rolled, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
+                      shot_rating, soft_contest, soft_option)
+from .state import CI, ZERO_COUNTS, Result, count_key, pack_guard
+
+
+@dataclass(frozen=True)
+class ChanceNode:
+    """outcomes: tuple of (probability, label, GameState or ChanceNode). Probabilities sum to 1.
+    roller: the side rolling the d20 ('O' for opposed rolls, 'X' for the defender's foul rolls)."""
+    outcomes: tuple
+    what: str = ''
+    roller: str = ''
+
+    def flatten(self, prefix=''):
+        out = []
+        for p, label, node in self.outcomes:
+            lab = f'{prefix}{label}'
+            if isinstance(node, ChanceNode):
+                for q, l2, s in node.flatten(lab + '/'):
+                    out.append((p * q, l2, s))
+            else:
+                out.append((p, lab, node))
+        return out
+
+    def total(self):
+        return sum(p for p, _, _ in self.flatten())
+
+
+def chance(what, outcomes, roller=''):
+    """Build a node, dropping impossible branches; a sure thing collapses to its state."""
+    outs = tuple((Fraction(p), l, s) for p, l, s in outcomes if p > 0)
+    if len(outs) == 1:
+        return outs[0][2]
+    return ChanceNode(outs, what, roller)
+
+
+def cmap(node, fn):
+    """Apply fn to every state leaf of a node (fn may itself return a ChanceNode)."""
+    if isinstance(node, ChanceNode):
+        return ChanceNode(tuple((p, l, cmap(s, fn)) for p, l, s in node.outcomes), node.what, node.roller)
+    return fn(node)
+
+
+def sample(node, rng):
+    """Pick one outcome. Returns (state, label)."""
+    labels = []
+    while isinstance(node, ChanceNode):
+        r = Fraction(rng.random())
+        acc = Fraction(0)
+        pick = node.outcomes[-1]
+        for o in node.outcomes:
+            acc += o[0]
+            if r < acc:
+                pick = o
+                break
+        labels.append(pick[1])
+        node = pick[2]
+    return node, '/'.join(labels)
+
+
+def force(node, *labels):
+    """Follow named outcomes (for tests and replays)."""
+    for lab in labels:
+        if not isinstance(node, ChanceNode):
+            break
+        for p, l, s in node.outcomes:
+            if l == lab:
+                node = s
+                break
+        else:
+            raise KeyError(f'no outcome {lab!r} in {[l for _, l, _ in node.outcomes]}')
+    return node
+
+
+# ---- small state edits ---------------------------------------------------------
+
+def _inc(s, side, kind):
+    c = list(s.cnt)
+    c[CI[count_key(side, kind)]] += 1
+    return s.with_(cnt=tuple(c))
+
+
+def _spend(s, side):
+    return s.with_(tok_o=s.tok_o - 1) if side == 'O' else s.with_(tok_x=s.tok_x - 1)
+
+
+def _lock(s, side, i):
+    return s.with_(lock_o=s.lock_o | 1 << i) if side == 'O' else s.with_(lock_x=s.lock_x | 1 << i)
+
+
+def _terminal(s, result, zeroed=False, units=1):
+    """The possession is over. zeroed: a turnover that scores it 0 (units: the -5s that turnover added to s.tos);
+    D-82 records what was banked before it, so it scores 0 or that, whichever is lower."""
+    if zeroed and not s.zeroed:
+        banked = RC.STEAL_FOUL_BONUS * s.bonus5 + RC.TURNOVER_POINTS * (s.tos - units)
+        result = replace(result, floor=min(0, banked))
+    return s.with_(stage='over', side='-', result=result, zeroed=s.zeroed or zeroed, pending=None, shot=None)
+
+
+def rules_ij(state):
+    """The OQ-72 interception ruling is in force (a defence movement keeps the pass in the air)."""
+    return state.ctx.rules.intercept_rule == 'ring_jump'
+
+
+def ppo(s):
+    """D-198 (rules.points_play_on) is in force for this possession."""
+    return RC.app_rule(s.ctx.rules, 'points_play_on') and not s.ctx.hold_for_one
+
+
+def play_on(s):
+    """D-198: after a turnover (its -5 already banked) the phase ends there and the next begins, the ball where it
+    was; the counts of three seconds and closely guarded start again. With no phase left the possession is over on
+    what it has banked."""
+    s = s.with_(pending=None, approach=-1, shot=None, stage='play')
+    if s.inbound:
+        return end_phase(s)
+    clock = s.clock - RC.PHASE_SECONDS
+    if clock <= 0:
+        return _terminal(s.with_(clock=0), Result('turnover_end'))
+    return new_phase(s.with_(key_o=0, grd=0), clock)
+
+
+def _turnover(s):
+    """A turnover that plays on (OQ-1), or ends the possession."""
+    s = s.with_(tos=s.tos + 1)
+    if ppo(s):
+        return play_on(s)
+    if s.ctx.hold_for_one or s.ctx.rules.digital:
+        return _terminal(s, Result('turnover_end'), zeroed=True)
+    if s.ctx.rules.turnover_play_on == 'end':
+        return _terminal(s, Result('turnover_end'))
+    return s
+
+
+def block_reset(s, shooter, blocker):
+    """D-276 (Shaun, 20 Nov 2026): a successful block. A turnover (D-198: -5, the phase ends, the same possession goes
+    on with a new phase, every count reset; in the last phase the possession ends on what it has banked). The shooter
+    is forced 3 squares straight back from the basket (board.pushed), and starts the new phase as if he had just caught
+    the ball; then the defence resets the blocker to any open square within 3, any arrow (stage 'reset')."""
+    s = s.with_(pending=None, shot=None)
+    if not ppo(s):
+        return _turnover(s)
+    s = s.with_(tos=s.tos + 1, approach=-1, stage='play')
+    clock = s.clock - RC.PHASE_SECONDS
+    if clock <= 0:
+        return _terminal(s.with_(clock=0), Result('turnover_end'))
+    occ = (set(s.o) | set(s.x)) - {s.o[shooter]}
+    o = list(s.o)
+    o[shooter] = B.pushed(s.o[shooter], occ)
+    s = new_phase(s.with_(o=tuple(o), key_o=0, grd=0), clock)
+    return s.with_(stage='reset', side='X', reset=blocker)
+
+
+def unmask(s):
+    """D-272: the fake is shown. The declared shot or pass never happened: its count goes back and the phase's one
+    Hesitate or fake is used instead; a fake after movement has picked the ball up (D-173: pass or shoot only); a fake
+    isn't a move or a dribble, so it doesn't make him active. The defence's actions stand as taken."""
+    kind = 'shot' if s.fake == 1 else 'pass'
+    cnt = list(s.cnt)
+    cnt[CI[kind]] = max(0, cnt[CI[kind]] - 1)
+    cnt[CI['hesitate']] += 1
+    g = s.grd
+    if RC.app_rule(s.ctx.rules, 'closely_guarded') and g & 3 == 1:
+        g = (g & ~3) | 2
+    return s.with_(cnt=tuple(cnt), grd=g, fake=0, decl=0, stage='play', shot=None, pending=None, approach=-1,
+                   react_moved=0, final=s.final or s.tok_o <= 0)
+
+
+def reveal(s):
+    """D-272: the defence's reply to a fake was its turn: show the fake and give the offence its next turn (the phase
+    ends there if the fake was the offence's last action)."""
+    shot = s.fake == 1
+    s = unmask(s)
+    if shot:
+        s = _age_screens(s)
+    s = s.with_(prev_wait='', approach=-1)
+    if s.final or s.tok_o <= 0:
+        return end_phase(s)
+    return s.with_(side='O', turn_n=0, turn_lead=-1, turn_x=())
+
+
+def fake_block(s, j):
+    """D-271, D-272: X(j+1) went for the block on a shot fake: locked for the phase, and the block's foul rolls (Foul
+    (Block); none square, one in front with the arrow off, two from the side or behind). No shot went up, so a foul is
+    an ordinary foul (D-198: +5, play on, a team foul counted, no free throws). Then the fake is shown."""
+    from .scoring import block_terms, foul_rolls
+    locked = _lock(s, 'X', j)
+    xp, spos = s.x[j], s.o[s.ball]
+    square = any(o.defender == j and o.category == 'square' for o in contest_options(s, s.ball, s.shot, False)
+                 if getattr(o, 'block', 0))
+    rolls, _ = block_terms(square, B.dist_rim(xp) > B.dist_rim(spos))
+    if rolls is None:
+        rolls = foul_rolls(s.ctx.rules, xp, spos)
+    if not rolls:
+        return reveal(locked)
+    fr = s.ctx.dfn[j].r['foul_block']
+    fouled = locked.with_(fouls=locked.fouls + 1, bonus5=locked.bonus5 + (1 if ppo(s) else 0))
+    one = p_foul(fr, s.ctx.rules)
+    lab = f'Block foul {fr} (X{j + 1}, going for the block on a fake'
+    if rolls == 2:
+        second = chance(lab + ', second roll)', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', reveal(locked))], 'X')
+        return chance(lab + '; two foul rolls)', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', second)], 'X')
+    return chance(lab + ')', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', reveal(locked))], 'X')
+
+
+LOSE_PHASE = ('minus5_lose_phase', 'lose_phase')
+COST_UNITS = {'minus5_lose_phase': 1, 'minus5': 1, 'minus10': 2, 'lose_phase': 0, 'end_possession': 1}
+
+
+def pickoff(s):
+    """What a successful Intercept or Steal costs (turnover_cost). s: the state after it, the ball already
+    with the passer or carrier. Returns the state play goes on from, or a terminal state. The -5s are banked
+    in s.tos (one per -5)."""
+    cost = s.ctx.rules.turnover_cost
+    if cost == 'legacy' or ppo(s):
+        return _turnover(s)
+    s = s.with_(tos=s.tos + COST_UNITS[cost])
+    units = COST_UNITS[cost]
+    if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital format: every turnover ends the possession at 0
+        return _terminal(s, Result('turnover_end'), zeroed=True, units=units)
+    if cost == 'end_possession':
+        return _terminal(s, Result('turnover_end'))
+    if cost in LOSE_PHASE:
+        if s.clock <= RC.PHASE_SECONDS:             # the final phase: the possession ends and scores 0
+            return _terminal(s, Result('turnover_end'), zeroed=True, units=units)
+        s = s.with_(clock=s.clock - RC.PHASE_SECONDS)   # the phase goes on, tokens and actions as they were
+    return s
+
+
+def pickoff_value(pre, keep, tol=1.0, relative=False):
+    """What a pick-off (a successful Intercept or Steal) is worth to the offence, for the computer's pricing.
+    pre: the offence to act, before the pass. keep: what the ball carrier has where he is (his best look,
+    relative to what is banked): with play-on, the ball stays with him. Under turnover_cost: -5 (x tol, the
+    level's pass_risk_tolerance) and, with the clock cost, two seconds gone; in the final phase the whole
+    possession is gone (0). relative: the value less what pre has banked."""
+    banked = RC.STEAL_FOUL_BONUS * pre.bonus5 + RC.TURNOVER_POINTS * pre.tos
+    rules = pre.ctx.rules
+    cost = rules.turnover_cost
+    zero = float(min(0, banked)) if rules.turnover_floor else 0.0     # D-82: 0, or what is banked if that is lower
+    if ppo(pre):                                        # D-198: -5, and the next phase with the ball where it was
+        v = banked + RC.TURNOVER_POINTS * tol + (keep if pre.clock > RC.PHASE_SECONDS else 0.0)
+    elif pre.ctx.hold_for_one:
+        v = zero
+    elif rules.intercept_rule == 'ring_jump' or cost in ('legacy', 'end_possession'):
+        v = banked + RC.TURNOVER_POINTS * tol           # the possession ends (or, legacy, valued as if it did)
+    elif cost in LOSE_PHASE and pre.clock <= RC.PHASE_SECONDS:
+        v = zero                                        # the final phase: the possession scores 0 (D-82: or less)
+    else:
+        v = banked + RC.TURNOVER_POINTS * COST_UNITS[cost] * tol + keep
+    return v - banked if relative else v
+
+
+def new_phase(s, clock):
+    if s.ctx.rules.screen_rule == 'hold_until_move':
+        s = s.with_(screens=())                  # OQ-29: a screen ends with the phase
+    if RC.app_rule(s.ctx.rules, 'points_play_on'):
+        s = s.with_(phase_x=(s.x, s.arrows))     # D-198: an interceptor goes back to where the phase began for him
+    return s.with_(clock=clock, turn_lead=-1, turn_x=(), tok_o=RC.TOKENS_PER_PHASE, tok_x=RC.TOKENS_PER_PHASE, moved_o=0, moved_x=0,
+                   cnt=ZERO_COUNTS, turn_n=0, final=False, lock_o=0, lock_x=0, approach=-1, prev_wait='',
+                   beaten=(), side='O', phase=s.phase + 1, pending=None, turn_moved=0, qs_o=0, qs_x=0, react_moved=0,
+                   rush_o=0, rush_x=0)
+
+
+def complete_pass(s):
+    passer, recv = s.pending
+    s = s.with_(ball=recv, pending=None, approach=-1, grd=0)     # D-173: a catch starts the new holder's count
+    if s.inbound and passer == s.ctx.inbounder:
+        # The ball is in: reset to a new phase with the card's clock.
+        s = new_phase(s.with_(inbound=0), s.ctx.card_clock)
+    return s
+
+
+def resolve_shot(s, forced=False):
+    """The declared (or forced) shot reaches its contest. With contest_choice='player' this returns the
+    decision node (the defence chooses who contests); otherwise the automatic contest is resolved."""
+    if s.fake == 1 and not forced:
+        return reveal(s)                     # D-272: the reply is done: it was a fake
+    shooter = s.ball
+    spos = s.o[shooter]
+    rules = s.ctx.rules
+    if forced:
+        if not B.on_board(spos) or shot_zone(s.ctx, spos) == '.':
+            return _terminal(s, Result('forced', shooter, '', 0))
+        types = RC.ZONE_SHOTS[shot_zone(s.ctx, spos)]      # D-274: a deep three where his team's level allows it
+        if rules.forced_shot_choice == 'player' and len(types) > 1:
+            return s.with_(stage='forced', side='O', shot=None, forced=True, turn_n=0, pending=None)
+        if rules.forced_shot_choice == 'player':
+            t = types[0]
+        else:
+            t = max(types, key=lambda t: (choose_contest(s, shooter, t, True).ev, -types.index(t)))
+        s = s.with_(shot=t, forced=True)
+    if rules.contest_action and not forced:
+        # D-18: the reaction ended without a Contest (a Contest resolves the shot itself): a contest of 0
+        if RC.app_rule(rules, 'soft_contest') and not RC.contest_costs(rules):
+            # D-177: no Contest action: the best soft contest (a defender next to the shooter, a hand up) counts
+            return contest_outcome(s.with_(forced=False, pending=None), soft_option(s, shooter, s.shot), False)
+        return contest_outcome(s.with_(forced=False, pending=None), contest_options(s, shooter, s.shot, False)[0], False)
+    if rules.contest_choice == 'player':
+        return s.with_(stage='contest', side='X', turn_n=0, forced=forced, pending=None)
+    return contest_outcome(s, choose_contest(s, shooter, s.shot, forced), forced)
+
+
+AUTO_CONTESTS = ('soft', 'position', 'full')      # contests that take no action (D-177; D-191): Result.soft marks them
+
+
+def contest_outcome(s, opt, forced):
+    """The result of one contest option: a terminal state, or a foul roll (arrow off the shooter)."""
+    shooter = s.ball
+    spos = s.o[shooter]
+    card = s.ctx.off[shooter]
+    t = s.shot
+    pts = shot_points(spos, s.ctx)
+    kind = 'forced' if forced else 'shot'
+    rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
+    made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0,
+                               soft=opt.category in AUTO_CONTESTS))
+    if (opt.defender >= 0 and opt.category not in AUTO_CONTESTS and not forced and RC.app_rule(s.ctx.rules, 'soft_contest')
+            and not RC.contest_costs(s.ctx.rules)):        # D-261: only the Contest taken counts, nothing automatic
+        # D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
+        j2, c2 = soft_contest(s, shooter, t)
+        if c2 > opt.contest:
+            v2 = pts * (rating - c2)
+            if s.ctx.rules.floor_declared_shot:
+                v2 = max(0, v2)
+            made = _terminal(s, Result(kind, shooter, t, pts, rating, c2, j2, v2, 0, soft=True))
+    if getattr(opt, 'block', 0):
+        # D-271: the block. With no foul, the Block roll: a block is a turnover (D-198: -5, the phase lost, the same
+        # possession, the ball with the shooter where he stands, as after a won Steal); a miss, the shot against his contest
+        blocked = block_reset(s, shooter, opt.defender)
+        bk = opt.block
+        made = chance(f'Block {bk} (X{opt.defender + 1}, going for the block)',
+                      [(opt.p_block, 'blocked', blocked), (1 - opt.p_block, 'not blocked', made)], 'X')
+    if opt.clean or opt.p_foul == 0:
+        return made
+    _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating, opt.value, rating - opt.contest)
+    fs = s.with_(fouls=s.fouls + 1)
+    if ppo(s):
+        fs = fs.with_(bonus5=fs.bonus5 + 1)             # D-198: a shooting foul is +5 and its free throws
+    fouled = _terminal(fs, Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
+    fr = s.ctx.dfn[opt.defender].r['foul_block' if getattr(opt, 'block', 0) else 'foul_contest']
+    why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
+    if getattr(opt, 'block', 0):
+        why = f'going for the block from {"behind" if opt.category == "behind" else "the side or in front, arrow off"}'
+    one = p_foul(fr, s.ctx.rules)
+    if getattr(opt, 'rolls', 1) == 2:
+        # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
+        lab = 'Block foul' if getattr(opt, 'block', 0) else 'Contest foul'
+        second = chance(f'{lab} {fr}, second roll (X{opt.defender + 1}, reaching from the side or behind)',
+                        [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
+        return chance(f'{lab} {fr} (X{opt.defender + 1}, {why}; reaching from the side or behind: two foul rolls)',
+                      [(one, 'foul', fouled), (1 - one, 'no foul', second)], 'X')
+    lab = 'Block foul' if getattr(opt, 'block', 0) else 'Contest foul'
+    return chance(f'{lab} {fr} (X{opt.defender + 1}, {why})',
+                  [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
+
+
+def settle(node):
+    """Resolve contest and forced-shot decisions the automatic way (defence's minimum, offence's best type).
+    For analysis code written before those became player decisions; play itself never needs it."""
+    if isinstance(node, ChanceNode):
+        return ChanceNode(tuple((p, l, settle(sub)) for p, l, sub in node.outcomes), node.what, node.roller)
+    if node.stage == 'contest':
+        return settle(contest_outcome(node, choose_contest(node, node.ball, node.shot, node.forced), node.forced))
+    if node.stage == 'forced':
+        types = RC.ZONE_SHOTS[shot_zone(node.ctx, node.o[node.ball])]
+        t = max(types, key=lambda t: (choose_contest(node, node.ball, t, True).ev, -types.index(t)))
+        return settle(apply(node, Action('forced_shot', 'O', node.ball, shot=t)))
+    return node
+
+
+def phase_counts(s):
+    """Step 18i (D-171 to D-173): the counts taken at a phase end. An attacker in the key at two phase ends in a row,
+    or a ball handler holding the ball closely guarded at three in a row, is a violation: the possession is over, a
+    turnover. Otherwise the state with its counts moved on. D-198 (points_play_on): a violation is -5 and play goes
+    on; the closely guarded count that caught him starts again, the three seconds' doesn't (D-254): he must get out."""
+    rules = s.ctx.rules
+    if RC.app_rule(rules, 'three_seconds'):
+        k = 0
+        for i, q in enumerate(s.o):
+            if B.in_key(q):
+                if s.key_o >> i & 1:
+                    if not ppo(s):
+                        return _violation(s, 'three_seconds', i)
+                    # D-198: -5 and play goes on. Step 26 (D-254, Shaun, 19 Nov 2026; the app only): his count doesn't
+                    # start again: still in the key at the next phase end, he commits it again
+                    s = s.with_(tos=s.tos + 1)
+                k |= 1 << i
+        if k != s.key_o:
+            s = s.with_(key_o=k)
+    if RC.app_rule(rules, 'closely_guarded'):
+        ball, held, idle, acted = s.guard()
+        if ball == 1:
+            # a live dribble is never counted; two full phases with no action by him and he has picked the ball up
+            idle = 0 if acted else idle + 1
+            held = 0
+            if idle >= RC.PICKUP_IDLE_PHASES:
+                ball, idle = 2, 0
+        elif closely_guarded(s):
+            held += 1
+            if held >= RC.GUARDED_ENDS:
+                if not ppo(s):
+                    return _violation(s, 'closely_guarded', s.ball)
+                s = s.with_(tos=s.tos + 1)               # D-198: -5 and play goes on; the count starts again
+                held = 0
+        else:
+            held = 0                         # nobody closely guards him at a phase end: the count starts again
+        g = pack_guard(ball, held, idle, 0) | (s.grd & 128 if ball == 2 else 0)     # D-273: one pivot a pick-up
+        if g != s.grd:
+            s = s.with_(grd=g)
+    return s
+
+
+def _violation(s, what, i):
+    return _terminal(s.with_(tos=s.tos + 1), Result('turnover_end', violation=what, violator=i),
+                     zeroed=s.ctx.hold_for_one or s.ctx.rules.digital)
+
+
+def end_phase(s):
+    if s.stage == 'over':
+        return s
+    if s.pending:
+        phase = s.phase
+        s = complete_pass(s)
+        if s.phase != phase:              # an inbound pass landed: that already started a new phase
+            return s
+    if s.inbound:
+        if s.inbound < RC.INBOUND_PHASES:
+            return new_phase(s, s.clock).with_(inbound=s.inbound + 1)
+        # Not in after two phases: turnover, -5, play on; ball to the player furthest from the rim.
+        s = s.with_(tos=s.tos + 1)
+        if s.ctx.hold_for_one:
+            return _terminal(s, Result('turnover_end'), zeroed=True)
+        ib = s.ctx.inbounder
+        cands = [i for i in range(5) if i != ib and B.on_board(s.o[i])]
+        far = max(B.dist_rim(s.o[i]) for i in cands)
+        tied = [i for i in cands if B.dist_rim(s.o[i]) == far]
+        s = new_phase(s.with_(inbound=0), s.ctx.card_clock)
+        if len(tied) > 1 and s.ctx.rules.inbound_tie == 'offence':
+            return s.with_(stage='pick')                 # the offence picks who gets the ball
+        return s.with_(ball=tied[0], grd=0)
+    s = phase_counts(s)                    # step 18i: three seconds and closely guarded are counted at a phase end
+    if s.stage == 'over':
+        return s
+    clock = s.clock - RC.PHASE_SECONDS
+    if clock <= 0:
+        s = s.with_(clock=0, tos=s.tos + 1, phase=s.phase)
+        if ppo(s):                                         # D-198: the shot clock: -5, and nothing is left to play
+            return _terminal(s, Result('turnover_end', violation='shot_clock'))
+        if s.ctx.hold_for_one or s.ctx.rules.digital:      # digital: shot-clock expiry is a turnover, scores 0
+            return _terminal(s, Result('turnover_end'), zeroed=True)
+        return resolve_shot(s, forced=True)
+    return new_phase(s, clock)
+
+
+def _age_screens(s):
+    if s.ctx.rules.screen_rule == 'hold_until_move':
+        return s                             # OQ-29: a screen holds until the screener moves
+    keep = tuple((i, d, False, m) for i, d, f, m in s.screens if f)
+    return s.with_(screens=keep)
+
+
+def end_turn(s, side, kind=''):
+    if s.stage == 'over':
+        return s
+    if s.stage == 'reaction':
+        return resolve_shot(s)
+    if side == 'O':
+        s = _age_screens(s)
+        s = s.with_(side='X', turn_n=0, prev_wait='H' if kind == 'hesitate' else '', final=s.tok_o == 0, turn_moved=0,
+                    turn_lead=-1, turn_x=(s.x, s.arrows) if s.ctx.rules.intercept_return else ())
+        if s.tok_x <= 0:
+            return end_phase(s)
+        return s
+    phase = s.phase
+    if s.pending and s.fake == 2:
+        s = unmask(s)                        # D-272: the reply is done: it was a pass fake, the ball never left him
+    if s.pending:
+        s = complete_pass(s)
+        if s.phase != phase:
+            return s
+    s = s.with_(prev_wait='P' if kind == 'pause' else '', approach=-1)
+    if s.final:
+        return end_phase(s)
+    return s.with_(side='O', turn_n=0, turn_lead=-1, turn_x=())
+
+
+def _after(prev, s, side, kind):
+    """Turn and phase bookkeeping after an action's effect."""
+    if s.stage == 'over' or s.phase != prev.phase:
+        return s
+    if kind == 'end_turn':
+        return end_turn(s, side, kind)
+    if kind == 'forfeit':
+        if side == 'X':
+            if s.stage == 'reaction':
+                return resolve_shot(s)
+            return end_phase(s)
+        return end_turn(s, side, kind)
+    s = s.with_(turn_n=s.turn_n + 1)
+    if s.stage == 'reaction':
+        if kind in RC.TURN_ENDERS or s.turn_n >= RC.MAX_ACTIONS_PER_TURN or s.tok_x <= 0:
+            return resolve_shot(s)
+        return s
+    if side == 'X' and s.tok_x <= 0 and s.ctx.rules.defence_empty_ends_phase:
+        return end_phase(s)
+    if kind in RC.TURN_ENDERS or s.turn_n >= RC.MAX_ACTIONS_PER_TURN or s.tokens(side) <= 0:
+        return end_turn(s, side, kind)
+    return s
+
+
+def null_step(state):
+    """Step 18e (search.open_list): the turn as one action of the defence leaves it (the token spent, a pass in the
+    air landed, whose action it is, the phase), with every piece where it stands: apply's own steps for a movement,
+    without the movement. The position the open list's cheap re-reads are made from."""
+    from .actions import inbound_held
+    s = _spend(state, 'X')
+    if s.pending and not inbound_held(state):
+        phase = s.phase
+        s = complete_pass(s)
+        if s.phase != phase:
+            return s
+    return _after(state, s, 'X', 'move')
+
+
+# ---- the main entry point --------------------------------------------------------
+
+def apply(state, action, check=False):
+    """Apply an action. Returns a new GameState, or a ChanceNode listing every outcome."""
+    if check:
+        from .actions import legal_actions
+        if action not in legal_actions(state):
+            from .actions import why_illegal
+            why = why_illegal(state, action)
+            raise ValueError(f'illegal action {action}' + (f' ({why})' if why else '') + f' in {state.encode()}')
+    s = state
+    a = action
+    side = a.side
+    k = a.kind
+
+    if k == 'target':
+        return s.with_(target=a.target, stage='play')
+    if k == 'pick':
+        return s.with_(ball=a.target, stage='play', grd=0)
+    if k == 'forced_shot':
+        s = s.with_(shot=a.shot, stage='play')
+        if s.ctx.rules.contest_choice == 'player':
+            return s.with_(stage='contest', side='X', forced=True)
+        return contest_outcome(s, choose_contest(s, s.ball, a.shot, True), True)
+    if k == 'reset':
+        # D-276: the blocker's reset, then the new phase begins (the offence to act)
+        x, ar = list(s.x), list(s.arrows)
+        x[a.piece], ar[a.piece] = a.dest, a.arrow
+        s = s.with_(x=tuple(x), arrows=tuple(ar), stage='play', side='O', reset=-1)
+        if RC.app_rule(s.ctx.rules, 'points_play_on'):
+            s = s.with_(phase_x=(s.x, s.arrows))
+        return s
+    if k == 'contest':
+        hard = a.shot == 'hard'                   # D-261: an inside shot's hard Contest (the block)
+        opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced) if getattr(o, 'hard', False) == hard}
+        if a.piece not in opts:
+            raise ValueError(f'X{a.piece + 1} cannot contest this shot' + (' hard' if hard else ''))
+        if s.stage == 'reaction':                 # D-18: a Contest is the reaction's last action and uses a token
+            s = _spend(s, side).with_(turn_n=s.turn_n + 1)
+        if s.fake == 1:
+            # D-272: a fake: an honest Contest does nothing; going for the block locks him and risks an ordinary foul
+            return fake_block(s, a.piece) if hard else reveal(s)
+        return contest_outcome(s, opts[a.piece], s.forced)
+
+    if k not in TOKEN_FREE:
+        s = _spend(s, side)
+    if k == 'forfeit':
+        s = s.with_(tok_o=0) if side == 'O' else s.with_(tok_x=0)
+    if k == 'end_turn' or k == 'forfeit':
+        return _after(state, s, side, k)
+
+    if side == 'X' and s.pending and s.fake == 2:
+        # D-272: a pass fake. Going for the ball is the gamble: an Intercept or a Steal locks him (a lane jump's step
+        # stands), then the reply is over and the fake is shown. A movement keeps the 'pass' in the air, as for a real
+        # one; any other action shows it first (nothing lands: the ball never left).
+        if k in ('intercept', 'steal'):
+            if k == 'intercept' and a.dest is not None:
+                x = list(s.x)
+                x[a.piece] = a.dest
+                s = s.with_(x=tuple(x))
+                if a.target == 0:
+                    s = s.with_(moved_x=s.moved_x | 1 << a.piece)
+                else:
+                    s = _inc(s, 'X', 'qs').with_(qs_x=s.qs_x | 1 << a.piece)
+                if RC.control_size(s.ctx.rules):
+                    s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * a.piece)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * a.piece))
+            s = _inc(s, 'X', k)
+            return reveal(_lock(s, 'X', a.piece))
+        answering = k in MOVEMENT and (is_approach(state, a) or rules_ij(state))
+        if not answering:
+            s = unmask(s).with_(side='X')
+    # A pending pass lands at the start of the defence's turn unless this action answers it.
+    if side == 'X' and s.pending and not inbound_held(state):
+        answering = k == 'intercept' or (k in MOVEMENT and (is_approach(state, a) or rules_ij(state)))
+        if not answering:
+            phase = s.phase
+            s = complete_pass(s)
+            if s.phase != phase:          # an inbound pass landed: new phase, offence to act
+                return s
+
+    if k in MOVEMENT:
+        if side == 'O':
+            o = list(s.o)
+            o[a.piece] = a.dest
+            s = s.with_(o=tuple(o))
+            if a.piece == s.ball and RC.app_rule(s.ctx.rules, 'closely_guarded'):
+                if state.picked_up():
+                    s = s.with_(grd=s.grd | 128)             # D-273: his pivot: still picked up, his count runs on
+                else:
+                    s = s.with_(grd=pack_guard(1, 0, 0, 1))  # D-173: he moves with the ball: a live dribble
+            if s.is_screening(a.piece):          # OQ-29: the screener's movement ends his screen
+                s = s.with_(screens=tuple(x for x in s.screens if x[0] != a.piece))
+            if (k == 'move' and state.turn_n == 0 and state.side == 'O' and state.stage == 'play'
+                    and s.ctx.rules.screen_rule == 'hold_until_move'):
+                s = s.with_(turn_lead=a.piece)   # he may Screen as the turn's second action
+        else:
+            x = list(s.x)
+            x[a.piece] = a.dest
+            arr = list(s.arrows)
+            if k == 'move':
+                arr[a.piece] = a.arrow
+            elif k == 'sprint':
+                start = state.x[a.piece]
+                dx, dy = a.dest[0] - start[0], a.dest[1] - start[1]
+                n = max(abs(dx), abs(dy))
+                run = B.DIRS.index((dx // n, dy // n))
+                # wedge (step 3h): the run direction is one edge; a.arrow = run - 1 puts the other edge
+                # anticlockwise, otherwise it goes clockwise (arrow index = run)
+                arr[a.piece] = a.arrow if (_G.two(s.ctx.rules) and a.arrow == (run - 1) % 8) else run
+            s = s.with_(x=tuple(x), arrows=tuple(arr))
+            if state.stage == 'reaction' and a.dest != state.x[a.piece]:
+                s = s.with_(react_moved=s.react_moved | 1 << a.piece)     # late_closeout test: moved to contest
+            if k in MOVEMENT and is_approach(state, a):
+                s = s.with_(approach=a.piece)
+            if state.pending:
+                s = s.with_(turn_moved=s.turn_moved | 1 << a.piece)
+        if k in ('move', 'sprint'):
+            s = s.with_(moved_o=s.moved_o | 1 << a.piece) if side == 'O' else s.with_(moved_x=s.moved_x | 1 << a.piece)
+        if k in ('qs', 'sprint'):
+            s = _inc(s, side, 'qs')
+            s = s.with_(qs_o=s.qs_o | 1 << a.piece) if side == 'O' else s.with_(qs_x=s.qs_x | 1 << a.piece)
+        if RC.control_size(s.ctx.rules):
+            # D-151: a Quick Step or a Sprint leaves him rushed; a Move restores control
+            sh = 2 * a.piece
+            code = 0 if k == 'move' else (RC.RUSH_SPRINT if k == 'sprint' else RC.RUSH_QS)
+            if side == 'O':
+                s = s.with_(rush_o=(s.rush_o & ~(3 << sh)) | (code << sh))
+            else:
+                s = s.with_(rush_x=(s.rush_x & ~(3 << sh)) | (code << sh))
+        return _after(state, s, side, k)
+
+    s = _inc(s, side, k)
+    rules = s.ctx.rules
+    O, X = s.ctx.off, s.ctx.dfn
+
+    if k == 'pass':
+        s = s.with_(pending=(a.piece, a.target), approach=-1)
+        if RC.fakes_rule(rules):
+            from .actions import fake_open
+            s = s.with_(decl=1 if fake_open(state) else 0, fake=2 if a.arrow == 1 else 0)     # D-272
+        if rules.pass_resolution == 'immediate':
+            if not any(intercept_status(s, j) == 'direct' for j in range(5)):
+                phase = s.phase
+                s = complete_pass(s)
+                if s.phase != phase:
+                    return s
+        return _after(state, s, side, k)
+
+    if k == 'screen':
+        s = s.with_(screens=tuple(sorted(s.screens + ((a.piece, a.target, True, 0),))))
+        return _after(state, s, side, k)
+
+    if k == 'hesitate' or k == 'pause':
+        return _after(state, s, side, k)
+
+    if k == 'shot':
+        s = s.with_(stage='reaction', shot=a.shot, side='X', turn_n=0)
+        if RC.fakes_rule(rules):
+            from .actions import fake_open
+            s = s.with_(decl=1 if fake_open(state) else 0, fake=1 if a.arrow == 1 else 0)     # D-272
+        if s.tok_x <= 0:
+            return resolve_shot(s)
+        return s
+
+    if k == 'dribble':
+        if RC.app_rule(rules, 'closely_guarded'):
+            s = s.with_(grd=pack_guard(1, 0, 0, 1))          # D-173: a Dribble keeps him active
+        rd, ra = rolled(s, 'O', s.ball, 'dribble'), rolled(s, 'X', a.target, 'agility')      # D-185: off balance
+        p = p_success(rd - ra, rules)
+        win = _lock(s, 'X', a.target).with_(beaten=tuple(sorted(set(s.beaten) | {(s.ball, a.target)})))
+        lose = _lock(s, 'O', s.ball)
+        return chance(f'Dribble {rd} v Agility {ra} (O{s.ball + 1} v X{a.target + 1})', [
+            (p, 'success', _after(state, win, side, k)),
+            (1 - p, 'failure', _after(state, lose, side, k))], 'O')
+
+    if k == 'intercept' and rules.intercept_rule == 'ring_jump':
+        # OQ-72 ruling: a lane jump moves him straight along his arrow to the crossing square (facing kept),
+        # spending the Move or Quick Step it uses; through his square, he stays put
+        passer, recv = s.pending
+        j = a.piece
+        if a.dest is not None:
+            x = list(s.x)
+            x[j] = a.dest
+            s = s.with_(x=tuple(x))
+            if a.target == 0:
+                s = s.with_(moved_x=s.moved_x | 1 << j)
+            else:
+                cnt = list(s.cnt)
+                cnt[CI['x_qs']] += 1
+                s = s.with_(qs_x=s.qs_x | 1 << j, cnt=tuple(cnt))
+            if RC.control_size(rules):                       # D-151: the jump into the lane counts as his movement
+                s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * j)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * j))
+        rp, ri = rolled(s, 'O', passer, 'pass'), rolled(s, 'X', j, 'intercept')              # D-185: off balance
+        p = p_success(rp - ri, rules)
+        ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j))      # missed: out of position, Move used
+        ok_node = ok if ok.phase != s.phase else _after(state, ok, side, k)
+        won = s.with_(pending=None, approach=-1, tos=s.tos + 1)
+        lost_node = (_terminal(won, Result('turnover_end'), zeroed=True) if s.ctx.hold_for_one or rules.digital
+                     else _terminal(won, Result('turnover_end')))   # the possession ends at -5
+        return chance(f'Pass {rp} v Intercept {ri} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
+            (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
+
+    if k == 'intercept':
+        passer, recv = s.pending
+        j = a.piece
+        mti = rules.intercept_rule == 'move_then_intercept'
+        rp, ri = rolled(s, 'O', passer, 'pass'), rolled(s, 'X', j, 'intercept')              # D-185: off balance
+        p = p_success(rp - ri, rules)
+        ok = complete_pass(s.with_(moved_x=s.moved_x | 1 << j) if mti else s)   # missed: on the line, Move used
+        if ok.phase != s.phase:
+            ok_node = ok                                   # inbound pass landed: new phase
+        else:
+            ok_node = _after(state, ok, side, k)
+        back = s
+        if ppo(s) and (state.phase_x or state.turn_x):     # D-198: back to the square and arrow he began the phase on
+            sx, sa = state.phase_x or state.turn_x         # (the possession's first phase: where he stood when his turn began)
+            back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
+        elif s.ctx.rules.intercept_return and state.turn_x:  # ruled: a successful interceptor goes back to where he
+            sx, sa = state.turn_x                          # stood at the start of the defence's turn (Move still used)
+            back = s.with_(x=s.x[:j] + (sx[j],) + s.x[j + 1:], arrows=s.arrows[:j] + (sa[j],) + s.arrows[j + 1:])
+        if mti:
+            lost = pickoff(back.with_(pending=None, approach=-1, moved_x=back.moved_x | 1 << j))   # ball with the passer
+        else:
+            lost = _turnover(back.with_(pending=None, approach=-1))   # ball stays with the passer
+        lost_node = lost if lost.stage == 'over' else _after(state, lost, side, k)
+        return chance(f'Pass {rp} v Intercept {ri} (O{passer + 1} to O{recv + 1}, X{j + 1})', [
+            (p, 'success', ok_node), (1 - p, 'failure', lost_node)], 'O')
+
+    if k == 'challenge':
+        scr = s.screen_of(a.target)
+        rs_, rc_ = rolled(s, 'O', a.target, 'screen'), rolled(s, 'X', a.piece, 'challenge')    # D-185: off balance
+        p = p_success(rs_ - rc_, rules)
+        holds = _lock(s, 'X', a.piece)
+        if rules.screen_rule == 'hold_until_move':   # OQ-29: a Challenge that wins removes the screen for everyone
+            fails = s.with_(screens=tuple(x for x in s.screens if x[0] != a.target))
+        else:
+            fails = s.with_(screens=tuple((i, d, f, m | (1 << a.piece) if i == a.target else m) for i, d, f, m in s.screens))
+        return chance(f'Screen {rs_} v Challenge {rc_} (O{a.target + 1}, X{a.piece + 1})', [
+            (p, 'success', _after(state, holds, side, k)),
+            (1 - p, 'failure', _after(state, fails, side, k))], 'O')
+
+    if k == 'steal' and s.stage == 'reaction' and s.fake == 1:
+        # D-272: a shot fake: the reply is the same, but no shot went up: it is a Steal on a ball handler (D-198)
+        s = unmask(s)
+        state = state.with_(stage='play')
+    if k == 'steal':
+        carrier = s.ball
+        pf = p_foul(X[a.piece].r['foul_steal'], rules)
+        rd, rk = rolled(s, 'O', carrier, 'dribble'), rolled(s, 'X', a.piece, 'steal')         # D-185: off balance
+        pk = p_success(rd - rk, rules)
+        fs = s.with_(fouls=s.fouls + 1)                  # a team foul in the app, a shooting foul included
+        fiba_sf = RC.app_rule(rules, 'fiba_steal_foul')  # D-179, D-181: no +5 on a steal foul in the app
+        d198 = ppo(s)
+        if d198:
+            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-198: every foul is +5, a foul on a shooter included
+        elif rules.steal_foul_always_plus5 and s.stage != 'reaction' and not fiba_sf:
+            fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
+        legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
+        if s.stage == 'reaction':
+            pts = shot_points(s.o[carrier], s.ctx)
+            card = O[carrier]
+            rating = shot_rating(s, carrier, s.shot)     # D-151
+            fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules, rating)
+            foul_node = _terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0,
+                                              fpts, and1))
+            if legacy or (rules.digital and not d198):
+                stolen_node = _terminal(s.with_(tos=s.tos + 1), Result('steal', carrier, s.shot, pts),
+                                        zeroed=s.ctx.hold_for_one or rules.digital)
+            else:
+                # ruled: a stolen shot is cancelled (it doesn't use the phase's shot) and play goes on
+                cnt = list(s.cnt)
+                cnt[CI['shot']] = max(0, cnt[CI['shot']] - 1)
+                st = pickoff(s.with_(stage='play', shot=None, cnt=tuple(cnt)))
+                stolen_node = st if st.stage == 'over' else _after(state.with_(stage='play'), st, side, k)
+        else:
+            # the bonus: tabletop, the second steal foul of the possession; digital (step 3n F3), the bonus_from-th
+            # team foul of the quarter (the defence's fouls before this possession travel in the context)
+            in_bonus = (s.ctx.team_fouls + fs.fouls >= rules.bonus_from) if rules.digital else fs.fouls >= 2
+            if d198:
+                # D-198: +5 (banked above), the defender locked as D-179 has it, and play goes on; no penalty
+                foul_node = _after(state, _lock(fs, 'X', a.piece), side, k)
+            elif in_bonus:
+                # D-181 (Shaun, 14 Nov 2026): in the app no foul carries +5; the penalty is two free throws, nothing more
+                foul_node = _terminal(fs, Result('free_throws', carrier, '', 2, 0, 0, a.piece, 0,
+                                                 free_throws(O[carrier], 2)))
+            elif fiba_sf:
+                # D-179: a team foul, the defender locked, play on
+                foul_node = _after(state, _lock(fs, 'X', a.piece), side, k)
+            else:
+                foul_node = _after(state, fs if rules.steal_foul_always_plus5 else fs.with_(bonus5=fs.bonus5 + 1), side, k)
+            st = _turnover(s) if legacy else pickoff(s)
+            stolen_node = st if st.stage == 'over' else _after(state, st, side, k)
+        # step 3n F1: a failed Steal (no foul, the ball kept) locks the defender, as a failed Challenge does
+        kept_node = _after(state, _lock(s, 'X', a.piece) if rules.steal_lock else s, side, k)
+        inner = chance(f'Dribble {rd} v Steal {rk} (O{carrier + 1} v X{a.piece + 1})',
+                       [(pk, 'kept', kept_node), (1 - pk, 'stolen', stolen_node)], 'O')
+        from .scoring import foul_rolls
+        if foul_rolls(rules, s.x[a.piece], s.o[carrier]) == 2:
+            # step 3n F2: reaching level with the ball carrier or from behind: two foul rolls, either fouls
+            second = chance(f'Steal foul {X[a.piece].r["foul_steal"]}, second roll (X{a.piece + 1}, reaching from the side or behind)',
+                            [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)], 'X')
+            return chance(f'Steal foul {X[a.piece].r["foul_steal"]} (X{a.piece + 1}; reaching from the side or behind: two foul rolls)',
+                          [(pf, 'foul', foul_node), (1 - pf, 'no foul', second)], 'X')
+        return chance(f'Steal foul {X[a.piece].r["foul_steal"]} (X{a.piece + 1})',
+                      [(pf, 'foul', foul_node), (1 - pf, 'no foul', inner)], 'X')
+
+    raise ValueError(f'unknown action {a}')

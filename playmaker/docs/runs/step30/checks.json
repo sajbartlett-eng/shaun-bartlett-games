@@ -1,0 +1,173 @@
+{
+ "High-Low v Shoot and Protect, board 1": {
+  "offence": {
+   "squares": [
+    "N6",
+    "N7",
+    "O9",
+    "I11",
+    "K3"
+   ],
+   "ball": "O4",
+   "line": "Attention: O3 holds X1; O5 holds X2. Hole: Q8, . Access: the pass to O1.",
+   "seconds": 151.0,
+   "one_reading": {
+    "turns": 3,
+    "route": "It needs 3 turns: O5 screens X1 from I2 (X2 to J2, X3 to M9, X1 to G4); then O4 fakes a pass to O5 (X1 Move to I6 facing N, X1 Intercept).",
+    "fakes": 1,
+    "blocks": 0
+   }
+  },
+  "defence": {
+   "squares": [
+    "N4",
+    "L8",
+    "F9",
+    "I3",
+    "J4"
+   ],
+   "arrows": [
+    0,
+    0,
+    2,
+    0,
+    1
+   ],
+   "seconds": 201.7,
+   "read": [
+    "X1 on O2: same speed",
+    "X2 on O4: same speed",
+    "X3 sags off O3 to guard O1's look (worth 27 without him there)",
+    "X4 on O1: the nearest defender who takes something off his look"
+   ]
+  },
+  "best_shooter_now": {
+   "shooter": "O1 (Combo Guard, three 9) on N6",
+   "his_defender": "X4 on I3, 5 squares off",
+   "nearest": "X1, 2 squares off",
+   "squares_off": 5,
+   "stance": "off"
+  },
+  "best_shooter_step29": {
+   "shooter": "O1 (Combo Guard, three 9) on N6",
+   "his_defender": "X4 on I3, 5 squares off",
+   "nearest": "X1, 2 squares off",
+   "squares_off": 5,
+   "stance": "off"
+  }
+ },
+ "Twin Towers v Lockdown, board 2": {
+  "offence": {
+   "squares": [
+    "A3",
+    "C9",
+    "O9",
+    "I11",
+    "Q3"
+   ],
+   "ball": "O4",
+   "line": "Attention: O5 holds X1; O4 holds X2; O1 holds X3. Hole: J11, . Access: the pass to O3.",
+   "seconds": 155.0,
+   "one_reading": {
+    "turns": 3,
+    "route": "It needs 3 turns: O2 screens X3 from D8 (X3 to D6, X1 to G2, X4 to F9); then O4 fakes a pass to O5 (X2 Move to N6 facing S, X2 Intercept).",
+    "fakes": 1,
+    "blocks": 0
+   }
+  },
+  "defence": {
+   "squares": [
+    "I4",
+    "D7",
+    "N9",
+    "I9",
+    "N5"
+   ],
+   "arrows": [
+    6,
+    0,
+    4,
+    5,
+    4
+   ],
+   "seconds": 144.0,
+   "read": [
+    "X1 on O1: same position",
+    "X2 sags off O2 to cover the squares around B12",
+    "X3 sags off O3 to cover the squares around P12",
+    "X4 sags off O4 to guard O2's look (worth 24 without him there)"
+   ]
+  },
+  "best_shooter_now": {
+   "shooter": "O2 (Two-Way SG, three 9) on C9",
+   "his_defender": "X2 on D7, 2 squares off",
+   "nearest": "X2, 2 squares off",
+   "squares_off": 2,
+   "stance": "off"
+  },
+  "best_shooter_step29": {
+   "shooter": "O2 (Two-Way SG, three 9) on J4",
+   "his_defender": "X1 on I5, 1 squares off",
+   "nearest": "X1, 1 squares off",
+   "squares_off": 1,
+   "stance": "beside"
+  }
+ },
+ "High-Low v Run and Gun, board 3": {
+  "offence": {
+   "squares": [
+    "C9",
+    "I11",
+    "O9",
+    "A3",
+    "Q3"
+   ],
+   "ball": "O2",
+   "line": "Attention: O3 holds X1; O4 holds X2; O2 holds X4. Hole: A10, . Access: the pass to O1.",
+   "seconds": 140.4,
+   "one_reading": {
+    "turns": 2,
+    "route": "It needs 2 turns: O2 fakes a pass to O4 (X1 Move to D6 facing NE, X1 Intercept).",
+    "fakes": 1,
+    "blocks": 0
+   }
+  },
+  "defence": {
+   "squares": [
+    "A6",
+    "F7",
+    "P6",
+    "J4",
+    "L10"
+   ],
+   "arrows": [
+    1,
+    2,
+    4,
+    1,
+    4
+   ],
+   "seconds": 131.8,
+   "read": [
+    "X1 sags off O4 to guard O1's look (worth 27 without him there)",
+    "X2 on O2: same position",
+    "X3 on O5: the nearest defender who takes something off his look",
+    "X4 on O1: the nearest defender who takes something off his look"
+   ]
+  },
+  "best_shooter_now": {
+   "shooter": "O1 (Combo Guard, three 9) on C9",
+   "his_defender": "X4 on J4, 7 squares off",
+   "nearest": "X1, 3 squares off",
+   "squares_off": 7,
+   "stance": "off"
+  },
+  "best_shooter_step29": {
+   "shooter": "O1 (Combo Guard, three 9) on N7",
+   "his_defender": "X2 on O7, 1 squares off",
+   "nearest": "X2, 1 squares off",
+   "squares_off": 1,
+   "stance": "beside"
+  }
+ }
+}

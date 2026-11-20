@@ -1,0 +1,72 @@
+{
+ "off a Sprint (rushed: no fake)": {
+  "fake_open_at_the_shot": false,
+  "defender": "X5 (Rim Protector Centre) square on H3",
+  "block_chance": 45,
+  "block_roll": 9,
+  "foul_risk": 0,
+  "contest_if_he_misses": 11,
+  "honest_contest": 11,
+  "what_follows_a_block": {
+   "shooter_forced_back_to": "E7",
+   "resets_read": {
+    "X5 resets to H3 facing N": {
+     "list": [
+      27.38,
+      18.93,
+      16,
+      15.57
+     ],
+     "L": 18.93
+    }
+   },
+   "computer_reset": "X5 resets to H6 facing N",
+   "seconds": 4.5,
+   "line": "Blocked by X5. O1 is forced back to E7; X5 resets to H6."
+  },
+  "computer_reply": "X5 contests",
+  "seconds": 37.4,
+  "mix": null,
+  "step29": "X5 contests"
+ },
+ "in control (a fake is open)": {
+  "fake_open_at_the_shot": true,
+  "defender": "X5 (Rim Protector Centre) square on H3",
+  "block_chance": 45,
+  "block_roll": 9,
+  "foul_risk": 0,
+  "contest_if_he_misses": 11,
+  "honest_contest": 11,
+  "what_follows_a_block": {
+   "shooter_forced_back_to": "E7",
+   "resets_read": {
+    "X5 resets to H3 facing N": {
+     "list": [
+      27.38,
+      18.93,
+      16,
+      15.57
+     ],
+     "L": 18.93
+    }
+   },
+   "computer_reset": "X5 resets to H6 facing N",
+   "seconds": 4.5,
+   "line": "Blocked by X5. O1 is forced back to E7; X5 resets to H6."
+  },
+  "computer_reply": "X5 contests",
+  "seconds": 39.4,
+  "mix": {
+   "event": "mix",
+   "by": "X",
+   "fake_chance": 0.0,
+   "replies": {
+    "['X5 contests']": 1.0
+   },
+   "turn": [
+    "X5 contests"
+   ]
+  },
+  "step29": "X5 contests"
+ }
+}

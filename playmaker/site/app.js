@@ -36,7 +36,7 @@ const STEAL_FOUL_RULE = 'A steal foul before the 5th team foul: a team foul, the
 const ZONE_RULE = "Zone of influence: each defender carries two arrows. A ball handler or shooter on either is covered (a Steal, a clean Contest), and a pass can be Intercepted along either. A ball handler who touches the square an arrow points at is caught: he may step onto the other arrow's line but not cross it, until he wins a Dribble. The zone reaches as far as the movement the defender has left. A Dribble won against him breaks it.";
 const OFF_BALANCE_RULE = n => `Rushed: after a Quick Step or Sprint, or while locked, every roll you make is ${n} worse (not fouls) until you Move.`;
 const CONTROL_RULE = n => `Your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is ${n} lower. A Move puts you back in control.`;
-const KIND_NAME = { contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
+const KIND_NAME = { reset: 'Reset after the block', contest: 'Contest', forced_shot: 'Forced shot', move: 'Move', qs: 'Quick Step', sprint: 'Sprint', pass: 'Pass', screen: 'Screen', dribble: 'Dribble',
   shot: 'Shot', intercept: 'Intercept', challenge: 'Challenge Screen', steal: 'Steal', hesitate: 'Hesitate', pause: 'Pause',
   end_turn: 'End turn', forfeit: 'Forfeit tokens', target: 'Target', pick: 'Give the ball' };
 
@@ -1202,7 +1202,7 @@ function drawTargets(c) {
     r.addEventListener('click', fn); r.addEventListener('keydown', e => { if (e.key === 'Enter') fn(); });
     c.append(r);
   };
-  if (['move', 'qs', 'sprint'].includes(sel.kind)) {
+  if (['move', 'qs', 'sprint', 'reset'].includes(sel.kind)) {
     const seen = new Set();
     for (const a of acts) {
       const k = a.dest.join(','); if (seen.has(k)) continue; seen.add(k);
@@ -1257,7 +1257,7 @@ function renderActions() {
     }
     if (sel.kind) {
       const ka = acts.filter(a => a.kind === sel.kind), tb = $('targetButtons');
-      if (['move', 'qs', 'sprint'].includes(sel.kind)) {
+      if (['move', 'qs', 'sprint', 'reset'].includes(sel.kind)) {
         if (sel.dest) {
           tb.append(el('span', { text: `Arrow at ${sqName(sel.dest[0], sel.dest[1])}: ` }));
           for (const a of ka.filter(a => a.dest[0] === sel.dest[0] && a.dest[1] === sel.dest[1])) tb.append(actionButton(a, `face ${DIRN[a.arrow]}`));
@@ -1846,7 +1846,7 @@ function renderPhoneLists() {
     const sq = [...moveSquares(sel.side, sel.i).values()];
     if (sq.length) box.append(el('div', { class: 'note', text: 'Or pick the square here:' }),
       ...sq.map(m => el('button', { text: sqName(m.dest[0], m.dest[1]) + (m.primary !== 'move' ? ` (${KIND_NAME[m.primary]})` : ''), onclick: () => { cursor = m.dest.slice(); placeGhost(m.dest); } })));
-  } else if (sel.kind && ['move', 'qs', 'sprint'].includes(sel.kind) && !sel.dest) {
+  } else if (sel.kind && ['move', 'qs', 'sprint', 'reset'].includes(sel.kind) && !sel.dest) {
     const acts = pieceActs(sel.side, sel.i).filter(a => a.kind === sel.kind);
     const seen = new Set();
     box.append(el('div', { class: 'note', text: 'Or pick the square here:' }));

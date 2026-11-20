@@ -140,6 +140,25 @@ def _turnover(s):
     return s
 
 
+def block_reset(s, shooter, blocker):
+    """D-276 (Shaun, 20 Nov 2026): a successful block. A turnover (D-198: -5, the phase ends, the same possession goes
+    on with a new phase, every count reset; in the last phase the possession ends on what it has banked). The shooter
+    is forced 3 squares straight back from the basket (board.pushed), and starts the new phase as if he had just caught
+    the ball; then the defence resets the blocker to any open square within 3, any arrow (stage 'reset')."""
+    s = s.with_(pending=None, shot=None)
+    if not ppo(s):
+        return _turnover(s)
+    s = s.with_(tos=s.tos + 1, approach=-1, stage='play')
+    clock = s.clock - RC.PHASE_SECONDS
+    if clock <= 0:
+        return _terminal(s.with_(clock=0), Result('turnover_end'))
+    occ = (set(s.o) | set(s.x)) - {s.o[shooter]}
+    o = list(s.o)
+    o[shooter] = B.pushed(s.o[shooter], occ)
+    s = new_phase(s.with_(o=tuple(o), key_o=0, grd=0), clock)
+    return s.with_(stage='reset', side='X', reset=blocker)
+
+
 def unmask(s):
     """D-272: the fake is shown. The declared shot or pass never happened: its count goes back and the phase's one
     Hesitate or fake is used instead; a fake after movement has picked the ball up (D-173: pass or shoot only); a fake
@@ -315,7 +334,7 @@ def contest_outcome(s, opt, forced):
     if getattr(opt, 'block', 0):
         # D-271: the block. With no foul, the Block roll: a block is a turnover (D-198: -5, the phase lost, the same
         # possession, the ball with the shooter where he stands, as after a won Steal); a miss, the shot against his contest
-        blocked = _turnover(s.with_(pending=None, shot=None))
+        blocked = block_reset(s, shooter, opt.defender)
         bk = opt.block
         made = chance(f'Block {bk} (X{opt.defender + 1}, going for the block)',
                       [(opt.p_block, 'blocked', blocked), (1 - opt.p_block, 'not blocked', made)], 'X')
@@ -535,6 +554,14 @@ def apply(state, action, check=False):
         if s.ctx.rules.contest_choice == 'player':
             return s.with_(stage='contest', side='X', forced=True)
         return contest_outcome(s, choose_contest(s, s.ball, a.shot, True), True)
+    if k == 'reset':
+        # D-276: the blocker's reset, then the new phase begins (the offence to act)
+        x, ar = list(s.x), list(s.arrows)
+        x[a.piece], ar[a.piece] = a.dest, a.arrow
+        s = s.with_(x=tuple(x), arrows=tuple(ar), stage='play', side='O', reset=-1)
+        if RC.app_rule(s.ctx.rules, 'points_play_on'):
+            s = s.with_(phase_x=(s.x, s.arrows))
+        return s
     if k == 'contest':
         hard = a.shot == 'hard'                   # D-261: an inside shot's hard Contest (the block)
         opts = {o.defender: o for o in contest_options(s, s.ball, s.shot, s.forced) if getattr(o, 'hard', False) == hard}

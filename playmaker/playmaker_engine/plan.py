@@ -1282,9 +1282,111 @@ def _continuations(state, scout):
     return out
 
 
+FAKE_LEVEL = 'allstar'          # whose search the defence's reply to a fake is read by in the read ahead (the setup's own level)
+
+
+def _leaves(node):
+    from .resolve import ChanceNode
+    if isinstance(node, ChanceNode):
+        return [(float(p) * q, t) for p, _, sub in node.outcomes for q, t in _leaves(sub)]
+    return [(1.0, node)]
+
+
+def _key_of(st, s0):
+    """Step 30: the list on a board the offence is to play, with what the possession banked on the way there (a
+    turnover -5, a foul +5) added to every item, as _both_outcomes does for a pass stopped."""
+    from . import agent as AG
+    banked = RC.TURNOVER_POINTS * (st.tos - s0.tos) + 5 * (st.bonus5 - s0.bonus5)
+    if st.stage != 'play':
+        return ((), float(banked), 0)
+    try:
+        k = list_key(AG.coverage(st.with_(side='O', turn_n=0), only='lasting'))
+    except ValueError:
+        return ((), float(banked), 0)
+    return (tuple(round(v + banked, 6) for v in k[0]), k[1] + banked, k[2])
+
+
+def _weigh(keys):
+    """Step 30: [(chance, key)] -> one key, each item of the list weighed by the chances (as each look's worth is)."""
+    n = max((len(k[0]) for _, k in keys), default=0)
+    items, L = [0.0] * n, 0.0
+    for p, k in keys:
+        a = list(k[0]) + [0.0] * (n - len(k[0]))
+        items = [u + p * v for u, v in zip(items, a)]
+        L += p * k[1]
+    top = max(keys, key=lambda r: r[0])[1]
+    return (tuple(round(x, 6) for x in sorted(items, reverse=True)), L, top[2])
+
+
+def _fake_continuations(state):
+    """Step 30 (item 3; D-272 read in full): each fake open to the ball handler (a shot fake for each shot he has, a
+    pass fake to each teammate he can pass to), read the way the search reads it in play. The defence replies by its
+    own model: the mix its search finds at the declaration (agent._mix_cols, mix_game), from the public board only
+    (it never reads the hidden choice). Each reply it mixes over is played by the rules in the fake world (its moves
+    stand, a contest does nothing, a block locks him and rolls for a foul, an Intercept or Steal locks him), the fake
+    is shown, and the list is read again on the offence's next turn: each reply weighed at its chance in the mix, each
+    roll at its chance. -> [(words, the likeliest next board, the defence's words, act, key)]."""
+    from . import agent as AG
+    from .actions import legal_actions, fake_open
+    from .resolve import apply, ChanceNode
+    from .search import is_fake, mix_game, actor
+    s0 = state.with_(side='O', turn_n=0)
+    if not fake_open(s0):
+        return []
+    out = []
+    ag = AG.Agent('X', FAKE_LEVEL, seed=0)
+    for a in legal_actions(s0):
+        if not is_fake(a):
+            continue
+        after = apply(s0, a)
+        if isinstance(after, ChanceNode):
+            continue
+        try:
+            cols, turns = ag._mix_cols(after, ag._budget_share())
+        except ValueError:
+            continue
+        if not cols:
+            continue
+        _, _, q = mix_game(cols)
+        keys, best = [], None
+        for j, w in sorted(q.items()):
+            if w <= 0.0:
+                continue
+            cur = [(1.0, after)]
+            for x in turns[j]:
+                nxt = []
+                for pr, st in cur:
+                    if st.stage == 'over' or actor(st) != 'X':
+                        nxt.append((pr, st))
+                        continue
+                    nxt += [(pr * pp, t2) for pp, t2 in _leaves(apply(st, x))]
+                cur = nxt
+            # a reply of one action leaves the defence's turn to end there (the reply is its whole turn), as the
+            # rules end it: then the fake is shown and the offence plays
+            done = []
+            for pr, st in cur:
+                if st.stage != 'over' and actor(st) == 'X':
+                    end = next((e for e in legal_actions(st) if e.kind == 'end_turn'), None)
+                    if end is not None:
+                        done += [(pr * pp, t2) for pp, t2 in _leaves(apply(st, end))]
+                        continue
+                done.append((pr, st))
+            cur = done
+            for pr, st in cur:
+                keys.append((w * pr, _key_of(st, s0)))
+                if st.stage == 'play' and st.side == 'O' and (best is None or w * pr > best[0]):
+                    best = (w * pr, st, [str(x) for x in turns[j]])
+        if not keys or best is None:
+            continue
+        what = f"O{s0.ball + 1} fakes the {a.shot}" if a.kind == 'shot' else f"O{s0.ball + 1} fakes a pass to O{a.target + 1}"
+        out.append((what, best[1], best[2], a, _weigh(keys)))
+    return out
+
+
 def horizon_read(state, scout=None, budget=None, depth=None):
     """Step 27 (D-258): the board read as far ahead as its best plan needs, capped by the shot clock. Turn by turn:
-    the offence's best turn that ends as the rules say (a screen, a pass, a Hesitate, a move then a Hesitate), the
+    the offence's best turn that ends as the rules say (a screen, a pass, a Hesitate, a move then a Hesitate, and from
+    step 30 a shot or pass fake, the defence's reply read by its own mix: _fake_continuations), the
     defence's best answer by its own map, the turn's end and the phase's end by the rules (their counts included),
     then the board read again by the one list. It reads a turn further only while that reads better for the offence
     than stopping, so a look that pays at once reads in one turn and a screen then a dive in two. Both sides use this
@@ -1317,13 +1419,17 @@ def horizon_read(state, scout=None, budget=None, depth=None):
                 k, ch = _both_outcomes(after, k)
             if step is None or k > step[0]:
                 step = (k, nxt, words, dn, act, ch)
+        for words, nxt, dn, act, k in (_fake_continuations(cur) if time.time() < t_end else []):
+            if nxt.stage == 'play' and nxt.side == 'O' and (step is None or k > step[0]):
+                step = (k, nxt, words, dn, act, None)
         if step is None or not step[0] > best['key']:
             break
         turns += 1
         a = step[4]
         path = path + [dict(turn=turns - 1, phase=cur.phase, offence=step[2], defence=step[3],
                             act=[a.kind, a.piece, B.sq(a.dest) if a.dest else None, a.target], list=list(step[0][0][:5]), catch=step[5],
-                            moved=[int(w.split()[0][1:]) - 1 for w in step[3] if w.startswith('X')])]
+                            fake=bool(a.kind in ('shot', 'pass') and a.arrow == 1),
+                            moved=[int(w.split()[0][1:]) - 1 for w in step[3] if w[:1] == 'X' and w[1:2].isdigit()])]
         best = dict(key=step[0], turns=turns, phases=step[1].phase - state.phase + 1, path=path, final=step[1])
         cur = step[1]
     return dict(key=best['key'], list=list(best['key'][0][:5]), L=best['key'][1], turns=best['turns'],
@@ -1353,7 +1459,9 @@ def route_plan(state, scout, perm=None, h=None, deep=True):
     needs = []
     for p in h['path']:
         kind, o, dest, tgt = p['act']
-        if kind == 'screen':
+        if p.get('fake'):
+            needs.append(f"the fake draws the defence's reply ({', '.join(p['defence']) or 'it holds'})")
+        elif kind == 'screen':
             needs.append(f"O{o + 1}'s screen holds ({p['offence'].split(' from ')[0].split('screens ')[-1]} stays behind it)")
         elif kind == 'pass':
             ch = p.get('catch')
@@ -1366,7 +1474,7 @@ def route_plan(state, scout, perm=None, h=None, deep=True):
     roles = list(plan.get('roles') or [])
     for p in h['path']:
         kind, o, dest, tgt = p['act']
-        role = {'screen': 'screener', 'pass': 'passer', 'hesitate': 'ball handler'}.get(kind, 'cutter')
+        role = 'ball handler' if p.get('fake') else {'screen': 'screener', 'pass': 'passer', 'hesitate': 'ball handler'}.get(kind, 'cutter')
         if not any(r['o'] == o and r['role'] == role for r in roles):
             roles.append(dict(o=o, role=role, sq=dest or B.sq(state.o[o])))
     plan['roles'] = roles
