@@ -97,10 +97,10 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 ## Scoring
 
 - A successful Intercept or Steal at the table: −5 and the shot clock loses a phase; play on. A stolen shot is cancelled. In the last phase the possession scores 0 (or less: see the turnover floor). The app differs (see Split by format). (setting: turnover_cost)
-- At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). †
+- At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app every foul is +5 to the offence and play goes on, and team fouls carry no penalty: a steal foul is +5, a team foul counted, the defender locked, no free throws (D-198, D-179; see Split by format). A steal foul on a shooter is a shooting foul: at the table free throws only; in the app +5 and its free throws (D-198). †
 - Free throws from a steal foul score 2 × the ball carrier's free-throw rating. †
 - On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. †
-- A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. † (setting: turnover_floor)
+- A turnover that ends the possession at 0 (the last phase at the table, Hold for One) scores 0 or the total banked before it, whichever is lower. In the app a turnover is −5 and play goes on; only a turnover in the last phase ends the possession, on what it has banked (D-198). † (setting: turnover_floor)
 - A foul on a shot (once it is declared, or forced): free throws or the open shot, whichever is higher. The possession ends. (setting: and_one)
 - Free throws score 2 × the shooter's free-throw rating, or 3 × on a three.
 - Scenario cards: a look of 30 or more (Excellent) beats the card. Coach's Call: if the secret target takes the shot, add the bonus for the look: Poor +0, Okay +2, Good +5, Great +8, Excellent +10. †
@@ -131,12 +131,28 @@ In the app: rushed: after a Quick Step or Sprint, or while locked, every roll yo
 Why: ruled for the app (D-185). It reverses the "no drive rule" line of D-151.
 
 **Contests: position, and the block.** At the table: one Contest: the defender's contest rating, with a foul roll if his arrow is off the shooter.  
-In the app: every contest is a Contest action, one of the reply's two actions: nothing is automatic, and a shot nobody contests is open (D-261). The defender must be next to the shooter when he contests. Its rating, by where he stands: in front with his arrow on the shooter, the full contest rating; in front with his arrow off him, or beside him, 3 less; behind him (further from the rim), 6 less; rushed, 2 more off wherever he is; and always at least 1. On a jump shot (mid-range, long two, three) that is the Contest, with no shooting foul. On an inside shot (layup, dunk, post, floater) he chooses: the normal Contest (the same, never a foul), or the hard Contest, the block: the full rating (3 less from behind), with one foul roll from in front with the arrow off him, two from the side or behind.  
+In the app: every contest is a Contest action, one of the reply's two actions: nothing is automatic, and a shot nobody contests is open (D-261). The defender must be next to the shooter when he contests. Its rating, by where he stands: in front with his arrow on the shooter, the full contest rating; in front with his arrow off him, or beside him, 3 less; behind him (further from the rim), 6 less; rushed, 2 more off wherever he is; and always at least 1. On a jump shot (mid-range, long two, three) that is the Contest, with no shooting foul. On every shot the Contest is this honest contest, never a foul; the block is its own action in its place (see The block, D-271).  
 Why: ruled for the app (D-191, D-193, D-194). D-261 (Shaun, 19 Nov 2026) made it an action: "the contest, whether normal or hard, always counts as a defensive action."
 
 **The steal foul.** At the table: +5 to the offence; the second of the possession also gives free throws and ends it.  
-In the app: outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app plays 2 team fouls each with 8 possessions left.  
-Why: fIBA Article 41, ruled for the app (D-179, D-181, D-182).
+In the app: every steal foul is +5 to the offence and play goes on (D-198): a team foul counted, the defender locked, no free throws. Team fouls carry no penalty.  
+Why: fIBA Article 41 for the lock (D-179); D-198 (Shaun) made every foul +5 and play on, with no penalty, in place of D-181 and D-182.
+
+**The block (D-271).** At the table: no block: the Contest (Shaun's rulings are for the app while the table is on hold, D-146).  
+In the app: a defender next to the shooter may go for the block instead of contesting, on any shot, threes included. It is one of the reply's two actions, and one defender per shot: a contest or a block, never both. Fouls first, on his Foul (Block): no roll from in front with his arrow on the shooter, one from in front with it off, two from the side or behind; a foul is a shooting foul (+5 and free throws). No foul: roll his Block or under, 3 less from beside or with the arrow off, 6 less from behind, 2 less if he is rushed, never below 1. A block is a turnover: −5, the phase ends, the same possession goes on, the ball with the shooter where he stands. A miss: the shot goes up against his full contest rating, 3 less from behind, 2 less if he arrived rushed. Against a fake he is locked for the phase and rolls the same foul rolls; a foul there is an ordinary foul: +5, play on, no free throws.  
+Why: shaun, 20 Nov 2026: "bring back the block attempt... Deny the shot entirely." Ratings from his ratings sheet (D-269).
+
+**Shot and pass fakes (D-272).** At the table: none.  
+In the app: the ball handler declares a shot or a pass (to whom) and privately chooses real or fake. The defence replies as it would to the real thing: that reply is its turn. Then it is shown. A fake is an action that ends the offence's turn; the offence gets one Hesitate or fake each phase, shared. No fake when rushed. A fake isn't a move or a dribble: it doesn't keep him active when closely guarded, and after he has moved with the ball it picks the ball up (pass or shoot only); from a standstill his dribble stays alive. On a shot fake the defence's movements stand, an honest contest does nothing, and going for the block locks him and risks an ordinary foul. On a pass fake an Intercept or a Steal locks him; holding the lane costs nothing.  
+Why: shaun, 20 Nov 2026: "They've wasted 2 actions... Suddenly being tighter on potential shooters is the only way to contest a fake."
+
+**The pivot (D-273).** At the table: none.  
+In the app: after he picks the ball up, the ball handler may take one Quick Step (one square, one of the side's Quick Steps). He still may only pass or shoot, and he is rushed. No Quick Step on his card, no pivot: his post move is his version.  
+Why: shaun, 20 Nov 2026: "Maybe limited to a quickstep? Slow centers don't have one."
+
+**Deep range (D-274).** At the table: none: no shot past the three-point band.  
+In the app: a three from past the band is 1 off for each square past it in that column, never below 1 (A8 1 off out to A12 5 off; the top rows past the arc 1 and 2 off). Rows open by the team's playing level: Senior Pro to 5 off, Semi-pro to 2 off, Amateur and Youth to 1 off, Junior none. Each shooter uses his own team's rows; a team with no playing level plays Senior Pro. Rows 13 and 14 are never a shot.  
+Why: shaun, 20 Nov 2026: "Juniors shouldn't be shooting out there. Pros do."
 
 **Three seconds.** At the table: no such rule.  
 In the app: time is counted in phase ends. An attacker in the key (columns G to K, from the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. After it he must get out of the key at once: still in it when the next phase ends, he commits it again. He may still catch and shoot from the key before then. Defenders have no such rule.  
@@ -151,16 +167,16 @@ In the app: the shot still counts as a shot, at its contested rating. Free throw
 Why: fIBA Articles 34 and 38, ruled for the app (D-174).
 
 **Turnover cost.** At the table: −5 and the shot clock loses a phase; play on.  
-In the app: the possession ends and scores 0.  
-Why: a digital match has several possessions a side, so the next possession is the cost.
+In the app: −5, the phase ends there and the next begins, the same possession going on; a turnover in the last phase ends the possession on what it has banked (D-198).  
+Why: d-198 (Shaun): the turnover costs the phase and its 5 points, not the whole possession.
 
 **Shot-clock expiry.** At the table: a turnover, −5, then a forced shot from where the pieces stand.  
-In the app: a turnover: the possession scores 0.  
+In the app: a turnover, −5: the possession is over on what it has banked (D-198).  
 Why: as in basketball: no shot before the clock runs out is a turnover.
 
 **Steal-foul bonus.** At the table: every steal foul +5; the second of the possession also gives free throws and ends it.  
-In the app: no foul gives +5; from the 5th team foul of the quarter a steal foul gives two free throws and ends the possession.  
-Why: one possession is the whole tabletop game; the app keeps fouls across a quarter.
+In the app: no penalty: every steal foul is +5, a team foul counted, the defender locked, play on, no free throws (D-198).  
+Why: one possession is the whole tabletop game; in the app every foul is +5 and play goes on (D-198).
 
 **Junior growth.** At the table: none: the junior cards play as printed.  
 In the app: dealt at random when a junior roster is made; the cards show the ratings, Coach Vision names the two players it changes.  
@@ -196,10 +212,10 @@ Rules the engine plays that no line of the rulebook or the trackers states. Shau
 16. The reaction may be 0, 1 or 2 actions from the tokens left: Move, Quick Step, Sprint, Steal or Contest. See D-18. (setting: reaction_may_decline)
 17. Contest is an action, for every shot: one of the reply's 2 actions and its last, one a phase, by one defender next to the shooter at that moment, using a token. Nothing is automatic: no Contest, no contest, and the shot is open. So the most the defence can do is one movement and the Contest, as the offence gets one movement and the shot (D-261). A Steal ends the reply, so it can't also Contest. See D-18. (setting: contest_action)
 18. The −3 never takes a contest below 0. See D-15. (setting: floor_contest_zero)
-19. At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the app). See D-89.
+19. At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it also gives free throws and the possession ends: at the table the bonus is the second steal foul of the possession. In the app every foul is +5 to the offence and play goes on, and team fouls carry no penalty: a steal foul is +5, a team foul counted, the defender locked, no free throws (D-198, D-179; see Split by format). A steal foul on a shooter is a shooting foul: at the table free throws only; in the app +5 and its free throws (D-198). See D-89.
 20. Free throws from a steal foul score 2 × the ball carrier's free-throw rating. See D-30.
 21. On Two or Three, a fouled three with 30 or more in foul points counts as an Excellent three. See D-36.
-22. A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the app) scores 0 or the total banked before it, whichever is lower. See D-82. (setting: turnover_floor)
+22. A turnover that ends the possession at 0 (the last phase at the table, Hold for One) scores 0 or the total banked before it, whichever is lower. In the app a turnover is −5 and play goes on; only a turnover in the last phase ends the possession, on what it has banked (D-198). See D-82. (setting: turnover_floor)
 23. Need a Three: only a three scores; a fouled two's free throws score 0 too. See D-16. (setting: three_only_ft_on_twos)
 24. The Coach's Call bonus uses the look's band (the shot value, or the free throws if fouled), and counts on a forced shot by the target too. See D-17. (setting: coach_bonus_on_forced)
 

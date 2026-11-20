@@ -35,13 +35,13 @@ class Action(NamedTuple):
         if k == 'sprint':
             return f'{who} Sprint to {B.sq(self.dest)}' + (f' facing {B.DIR_NAMES[self.arrow]}' if self.arrow >= 0 else '')
         if k == 'pass':
-            return f'{who} Pass to O{self.target + 1}'
+            return f'{who} Pass fake to O{self.target + 1}' if self.arrow == 1 else f'{who} Pass to O{self.target + 1}'
         if k == 'screen':
             return f'{who} Screen, T {B.DIR_NAMES[self.target]}'
         if k == 'dribble':
             return f'{who} Dribble vs X{self.target + 1}'
         if k == 'shot':
-            return f'{who} Shot ({self.shot})'
+            return f'{who} Shot fake ({self.shot})' if self.arrow == 1 else f'{who} Shot ({self.shot})'
         if k == 'intercept':
             if self.dest is not None:
                 return f"{who} Intercept, jumping the lane to {B.sq(self.dest)} ({'Move' if self.target == 0 else 'Quick Step'})"
@@ -53,7 +53,7 @@ class Action(NamedTuple):
         if k == 'target':
             return f"Coach's Call target O{self.target + 1}"
         if k == 'contest':
-            return (f'{who} contests hard (the block)' if self.shot == 'hard' else f'{who} contests') if self.piece >= 0 else "X: don't contest"
+            return (f'{who} goes for the block' if self.shot == 'hard' else f'{who} contests') if self.piece >= 0 else "X: don't contest"
         if k == 'forced_shot':
             return f'{who} forced shot ({self.shot})'
         if k == 'pick':
@@ -266,6 +266,13 @@ def capture_ok(start, path, caps):
     return True
 
 
+def pivot_len(state, side, i, qs):
+    """D-273: a Quick Step's length: his card's; the pivot after a pick-up is one square."""
+    if side == 'O' and i == state.ball and state.picked_up() and RC.app_rule(state.ctx.rules, 'closely_guarded'):
+        return min(qs, 1)
+    return qs
+
+
 def movement_dests(state, side, i, kind, rules):
     """dest -> run direction (Sprint) or None, for one movement kind."""
     card = (state.ctx.off if side == 'O' else state.ctx.dfn)[i]
@@ -273,7 +280,7 @@ def movement_dests(state, side, i, kind, rules):
     if kind == 'move':
         paths = [(None, p) for p in B.move_paths(start, rules)]
     elif kind == 'qs':
-        paths = [(None, p) for p in B.qs_paths(start, card.qs, rules)]
+        paths = [(None, p) for p in B.qs_paths(start, pivot_len(state, side, i, card.qs), rules)]
     else:
         paths = B.sprint_paths(start, card.qs, rules)
     out = {}
@@ -327,7 +334,9 @@ def can_move_kind(state, side, i, kind):
         return False
     if side == 'O':
         if i == state.ball and state.picked_up() and RC.app_rule(rules, 'closely_guarded'):
-            return False                    # D-173: he has picked the ball up: he may only pass or shoot
+            if not (kind == 'qs' and RC.pivot_open(state, i)):
+                return False                # D-173: he has picked the ball up: he may only pass or shoot
+            # D-273: his pivot, one Quick Step since the pick-up; then pass or shoot only
         if state.is_screening(i) and rules.screen_rule == 'two_turns':
             return False                    # the old rule: the screener can't move while his screen stands
         if i == state.ctx.inbounder and state.inbound:      # inbounder can't move until the ball is in
@@ -731,6 +740,14 @@ def completed_view(state):
 
 # ---- legal actions --------------------------------------------------------------
 
+def fake_open(s):
+    """D-272: may the ball handler fake now? The rule is on; the phase's one Hesitate or fake is unused; he is in control
+    (not rushed); the ball is in (no inbound) and the offence is on the move. All of it public: the defence knows it."""
+    rules = s.ctx.rules
+    return (RC.fakes_rule(rules) and s.stage == 'play' and s.side == 'O' and not s.pending and not s.inbound
+            and s.tok_o > 0 and s.count('O', 'hesitate') < RC.LIMITS['O']['hesitate'] and not s.rushed('O', s.ball))
+
+
 def _offence_actions(s, rules):
     acts = []
     ctx = s.ctx
@@ -747,7 +764,8 @@ def _offence_actions(s, rules):
                 acts.append(Action('pass', 'O', carrier, target=r))
     pass_only = inbounder_has_it and rules.inbounder_pass_only
     # Shot
-    z = B.zone(cpos)
+    from .scoring import shot_zone
+    z = shot_zone(ctx, cpos)                         # D-274: a deep square his team's level opens is a three
     if (not pass_only and B.on_board(cpos) and z != '.' and s.count('O', 'shot') < RC.LIMITS['O']['shot']
             and not (ctx.hold_for_one and s.clock > RC.PHASE_SECONDS)
             and not (cpos == RC.RIM and RC.rim_shot_barred(rules))):       # D-198: no shot from the rim's own square
@@ -777,6 +795,9 @@ def _offence_actions(s, rules):
     # Hesitate
     if s.count('O', 'hesitate') < RC.LIMITS['O']['hesitate'] and not (rules.wait_chain_block and s.prev_wait == 'P'):
         acts.append(Action('hesitate', 'O'))
+    if fake_open(s):
+        # D-272: each shot and pass he may make, faked (arrow 1 marks the fake: the declaration the defence sees is the same)
+        acts += [a._replace(arrow=1) for a in list(acts) if a.kind in ('shot', 'pass') and a.piece == carrier]
     acts += movement_actions(s, 'O', rules)
     return acts
 
@@ -821,7 +842,8 @@ def legal_actions(state):
         from .scoring import contest_options
         return [Action('contest', 'X', o.defender, shot='hard' if o.hard else '') for o in contest_options(s, s.ball, s.shot, s.forced)]
     if s.stage == 'forced':
-        return [Action('forced_shot', 'O', s.ball, shot=t) for t in RC.ZONE_SHOTS[B.zone(s.o[s.ball])]]
+        from .scoring import shot_zone
+        return [Action('forced_shot', 'O', s.ball, shot=t) for t in RC.ZONE_SHOTS[shot_zone(s.ctx, s.o[s.ball])]]
     if s.stage == 'pick':
         return [Action('pick', 'O', target=i) for i in inbound_tie_candidates(s)]
     side = s.side

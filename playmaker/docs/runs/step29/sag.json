@@ -1,0 +1,2103 @@
+{
+ "board": {
+  "o": [
+   "I11",
+   "C9",
+   "O9",
+   "E4",
+   "M4"
+  ],
+  "x": [
+   "I8",
+   "D8",
+   "N8",
+   "F4",
+   "L4"
+  ]
+ },
+ "shot": "O1 Shot (three)",
+ "seconds": 20.1,
+ "fake_chance": 1.0,
+ "value": 27.0,
+ "replies": [
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X1 goes for the block"
+   ],
+   "real": 19.75,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 1.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X1 goes for the block"
+   ],
+   "real": 19.75,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 19.75,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing N",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to I10 facing NW",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X1 contests"
+   ],
+   "real": 18,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing N",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to H10 facing NE",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing W",
+    "X1 goes for the block"
+   ],
+   "real": 19,
+   "fake": 27,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Move to J10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 19.75,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 23.7,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 goes for the block"
+   ],
+   "real": 24.15,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X1 goes for the block"
+   ],
+   "real": 23.7,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X1 contests"
+   ],
+   "real": 24,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 goes for the block"
+   ],
+   "real": 24.15,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 contests"
+   ],
+   "real": 24,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to I10 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing N"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing NE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing E"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing SE"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing S"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing SW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing W"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to J10 facing NW"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing N"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing NE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing E"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing SE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing S"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Quick Step to I10",
+    "X1 Move to K10 facing SW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X1 goes for the block"
+   ],
+   "real": 24.15,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X1 contests"
+   ],
+   "real": 24,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X End turn"
+   ],
+   "real": 30,
+   "fake": 30,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing N"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing E"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing SE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing S"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing SW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing W"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D8 facing NW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing N"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing NE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing E"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing SE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing S"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing SW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing W"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D9 facing NW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing N"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing NE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing E"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing SE"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing S"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10",
+    "X2 Move to D10 facing SW"
+   ],
+   "real": 30,
+   "fake": 33,
+   "defence_mix": 0.0
+  },
+  {
+   "turn": [
+    "X1 Sprint to I10 facing NW",
+    "X1 contests"
+   ],
+   "real": 24,
+   "fake": 30,
+   "defence_mix": 0.0
+  }
+ ]
+}

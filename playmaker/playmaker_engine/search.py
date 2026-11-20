@@ -75,7 +75,7 @@ def zobrist(s):
     rest = (s.stage, s.side, s.clock, s.tok_o, s.tok_x, s.moved_o, s.moved_x, s.cnt, s.turn_n, s.final, s.lock_o,
             s.lock_x, s.screens, s.pending, s.shot, s.prev_wait, s.beaten, s.fouls, s.bonus5, s.tos, s.qs_o, s.qs_x,
             s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.phase_x, s.react_moved, s.forced, s.result,
-            s.rush_o, s.rush_x, s.key_o, s.grd)
+            s.rush_o, s.rush_x, s.key_o, s.grd, s.decl, s.fake)
     return h ^ (hash(rest) & 0xFFFFFFFFFFFFFFFF)
 
 
@@ -105,12 +105,73 @@ def _wait(acts):
     return None
 
 
+def is_fake(a):
+    """D-272: a shot fake or a pass fake (arrow 1 marks it on the offence's Shot and Pass)."""
+    return a.kind in ('shot', 'pass') and a.arrow == 1 and a.side == 'O'
+
+
+def fake_world(s):
+    """D-272: is this a declaration that could have been a fake, with the defence to reply? (public: s.decl)"""
+    return bool(s.decl) and actor(s) == 'X' and (s.stage == 'reaction' or bool(s.pending))
+
+
+def worlds(s):
+    """D-272: the declaration both ways, built from what the defence can see (never from s.fake): (real, fake)."""
+    return s.with_(fake=0), s.with_(fake=1 if s.stage == 'reaction' else 2)
+
+
+def mix_game(cols):
+    """D-272: the mixed choice at a declaration (game theory, no weights). cols: per defence reply, (its value if the
+    declaration is real, its value if it is a fake), the offence's view. The offence fakes with chance p, so a reply is
+    worth (1 - p) * real + p * fake; the defence takes the reply that leaves least; the offence takes the p that leaves
+    it most (the earliest p of equal worth). The defence's mix q makes the offence indifferent there: two replies whose
+    worth moves opposite ways as p grows, weighed so their sum doesn't move; at p = 0 or 1, the one best reply.
+    -> (value, p, {reply index: chance})."""
+    n = len(cols)
+    cands = [0.0, 1.0]
+    for i in range(n):
+        ai, bi = cols[i]
+        for j in range(i + 1, n):
+            aj, bj = cols[j]
+            den = (bi - ai) - (bj - aj)
+            if den != 0.0:
+                p = (aj - ai) / den
+                if 0.0 < p < 1.0:
+                    cands.append(p)
+    cands.sort()
+
+    def g(p):
+        return min((1.0 - p) * a + p * b for a, b in cols)
+    best_p, best_v = 0.0, g(0.0)
+    for p in cands:
+        v = g(p)
+        if v > best_v + 1e-12:
+            best_p, best_v = p, v
+    act = [k for k, (a, b) in enumerate(cols) if (1.0 - best_p) * a + best_p * b <= best_v + 1e-9]
+    neg = [k for k in act if cols[k][1] - cols[k][0] <= 0.0]
+    pos = [k for k in act if cols[k][1] - cols[k][0] >= 0.0]
+    if best_p <= 0.0:
+        q = {(neg or act)[0]: 1.0}
+    elif best_p >= 1.0:
+        q = {(pos or act)[0]: 1.0}
+    else:
+        j1 = next((k for k in neg if cols[k][1] - cols[k][0] < 0.0), None)
+        j2 = next((k for k in pos if cols[k][1] - cols[k][0] > 0.0), None)
+        if j1 is None or j2 is None:
+            q = {act[0]: 1.0}
+        else:
+            s1, s2 = cols[j1][1] - cols[j1][0], cols[j2][1] - cols[j2][0]
+            w = s2 / (s2 - s1)
+            q = {j1: w, j2: 1.0 - w}
+    return best_v, best_p, q
+
+
 def candidate_actions(s, read=None, per_player=3):
     """The legal actions worth trying as the next action, from geometry: every shot, pass, dribble, steal, intercept
     and challenge; movement to the squares that matter (each attacker's best looks, the carrier's drives, each
     defender's top responses and the best cover); a few screens; one wait. Every one is legal (taken from
     legal_actions)."""
-    acts = legal_actions(s)
+    acts = [a for a in legal_actions(s) if not is_fake(a)]   # D-272: a fake is read as the mix at the declaration
     side = actor(s)
     if s.stage in ('contest', 'forced', 'target', 'pick') or len(acts) <= 12:
         return acts
@@ -769,6 +830,7 @@ class Searcher:
         self.split = CONFIG.get('search', {}).get('split_ties') is True      # step 18f (search.split_ties)
         self.spread = {}                              # a reply node's values, best first
         self.width = open_width(profile)              # step 18f: how many turns this level reads in full
+        self.mix_cols = None                          # D-272: at a declaration root, each reply's (real, fake) values
         self.fcache = {}
         self.t0 = time.time()
 
@@ -991,6 +1053,8 @@ class Searcher:
         s = node
         if s.stage == 'over':
             return terminal_value(s)
+        if depth >= 1 and fake_world(s):
+            return self.mixed(s, depth)              # D-272: the hidden choice, read as the mixed game
         if depth <= 0:
             if self.settle_shots and s.stage != 'play':
                 return self.leaf(s)                      # step 18b: the declared shot is settled by the rules
@@ -1061,6 +1125,43 @@ class Searcher:
             flag = 1 if v >= b0 else -1 if v <= a0 else 0
         self.tt[key] = (v, flag, best[1])
         return v
+
+    def mixed(self, s, depth):
+        """D-272: a declaration that could be a fake, the defence to reply. Each reply the defence would try (from what
+        it can see) is played against the real declaration and against the fake; the value is the mixed game's
+        (mix_game). Never read from s.fake: both worlds are built from the public state."""
+        sr, sf = worlds(s)
+        key = (zobrist(sr), depth, 'mix')
+        hit = self.tt.get(key)
+        if hit is not None:
+            return hit[0]
+        ts = self.turns_of(sr)
+        if not ts:
+            return self.leaf(sr)
+        self.nodes += 1
+        cols = [c for c, _ in self.reply_cols(sr, sf, ts, depth)]
+        v = mix_game(cols)[0]
+        self.tt[key] = (v, 0, ts[0][1])
+        return v
+
+    def reply_cols(self, sr, sf, ts, depth):
+        """D-272: each whole reply of the defence (both its actions), valued against the real declaration and the fake:
+        [((real, fake), turn)]. A reply that leaves the defence still to act is carried on through its own next actions,
+        so the offence's real-or-fake stays one choice made before the reply (never chosen again halfway through it)."""
+        out = []
+        for _, t in ts:
+            a, b = self.play_t(sr, t), self.play_t(sf, t)
+            if not isinstance(a, ChanceNode) and fake_world(a):
+                more = self.turns_of(a)
+                if more:
+                    for _, t2 in more:
+                        a2, b2 = self.play_t(a, t2), self.play_t(b, t2)
+                        out.append(((self.value(a2, self._child_depth(a, a2, depth), VMIN, VMAX),
+                                     self.value(b2, self._child_depth(b, b2, depth), VMIN, VMAX)), tuple(t) + tuple(t2)))
+                    continue
+            out.append(((self.value(a, self._child_depth(sr, a, depth), VMIN, VMAX),
+                         self.value(b, self._child_depth(sf, b, depth), VMIN, VMAX)), tuple(t)))
+        return out
 
     def chance(self, node, depth, alpha, beta):
         """Star2 (Ballard): bounds from the values already searched and [VMIN, VMAX] for the rest; a probing pass
@@ -1184,6 +1285,8 @@ class Searcher:
 
     def _root(self, s, max_depth, min_depth=1):
         """Iterative deepening. Returns (scored turns [(value, turn)], depth reached, the principal turn)."""
+        if fake_world(s):
+            return self._root_mix(s, max_depth)
         side = actor(s)
         budget = self.deadline - time.time()
         root_read = Read(s, exact=budget >= 0.8)            # the rules' exact reach when the budget allows
@@ -1242,6 +1345,30 @@ class Searcher:
         if self.split:
             results = self.split_ties(s, results, side)
         return results, reached
+
+    def _root_mix(self, s, max_depth):
+        """D-272: the defence's reply to a declaration that could be a fake. Each reply is read against both worlds,
+        deepening while time allows (a depth counts only when complete); self.mix_cols holds (real, fake) per reply in
+        the order returned. Each reply's value is its worth at the offence's equilibrium mix; the reply itself is
+        drawn from the defence's mix by the caller (agent), by the seed."""
+        sr, sf = worlds(s)
+        budget = self.deadline - time.time()
+        root_read = Read(sr, exact=budget >= 0.8)
+        ts = turns(sr, self.p['beam'], read=root_read, evaluate=self.quick, deadline=None,
+                   expand=None if budget >= 0.8 else 2, second=2 if budget >= 0.8 else 1, mode=self.open, whole=self.whole, width=self.width)
+        done, reached = None, 0
+        for depth in range(1, max(1, max_depth) + 1):
+            try:
+                cols = self.reply_cols(sr, sf, ts, depth)
+            except Timeout:
+                if done is None:
+                    done = [((-q, -q), tuple(t)) for q, t in ts]     # nothing complete: the ordering values (the offence's view)
+                break
+            done, reached = cols, depth
+        _, p, _ = mix_game([c for c, _ in done])
+        res = [((1.0 - p) * a + p * b, t) for (a, b), t in done]
+        self.mix_cols = list(done)
+        return res, reached
 
     def split_ties(self, s, results, side):
         """Step 18f (search.split_ties): turns that read exactly the same are separated by evidence the search already

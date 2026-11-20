@@ -28,9 +28,9 @@ ENTRIES = [
      'leads after equal possessions (DECISIONS.md D-19, built in step 6); team fouls carry on as in the quarter.'),
     ('Steal-foul bonus', SPLIT, dict(how='bonus'), 'When a steal foul also gives free throws.',
      'Tabletop: every steal foul is +5 (D-89), and the second steal foul of the possession also gives free throws and '
-     'ends it (one possession is the whole game). Digital (step 3n F3; D-179, D-181): no foul gives +5; team fouls run '
-     'across a quarter, and from the 5th a steal foul gives two free throws and ends the possession. A steal foul on a '
-     'shooter is a shooting foul in both formats: free throws only (a team foul in the app).'),
+     'ends it (one possession is the whole game). Digital (D-198): every steal foul is +5, a team foul counted, the '
+     'defender locked, play on; team fouls carry no penalty and give no free throws. A steal foul on a shooter is a '
+     'shooting foul: free throws only at the table; +5 and its free throws in the app.'),
     ('Junior growth', SPLIT_APPROVED, dict(how='growth'), 'Growth at Junior (D-88).',
      'Tabletop: none, the junior cards play as printed. Digital: dealt at random when a junior roster is made, shown '
      'only in the ratings and in a Coach Vision line. At the table it needed markers and a term players found '
@@ -51,7 +51,7 @@ ENTRIES = [
     ('Far-contest -3', SHARED, dict(const=('FAR_CONTEST_PENALTY',)), 'Contester further from the rim than the shooter.', ''),
     ('Turnover points (-5)', SHARED, dict(const=('TURNOVER_POINTS',)), 'The value of a turnover where one is scored.',
      'The number is shared; when it applies is the turnover-cost split above.'),
-    ('Steal foul +5', TABLETOP, dict(const=('STEAL_FOUL_BONUS',)), 'Every steal foul at the table (D-89). In the app no foul gives +5 (D-181).', ''),
+    ('Steal foul +5', TABLETOP, dict(const=('STEAL_FOUL_BONUS',)), 'Every steal foul at the table (D-89). In the app every foul is +5 and play goes on (D-198).', ''),
     ('Steal-foul free throws', SHARED, dict(how='steal_ft'), 'Whose rating a steal foul\'s free throws use (D-30).', ''),
     ('Fouled three on Two or Three', SHARED, dict(how='fouled_three'), 'A fouled three on the Two or Three card (D-36).', ''),
     ('Free-throw multipliers (x2, x3)', SHARED, dict(const=('FT_MULT_TWO', 'FT_MULT_THREE')), '', ''),
@@ -90,6 +90,15 @@ ENTRIES = [
      'ending there. There is no penalty for team fouls. The table keeps its own rules.'),
     ('no_rim_shot', SPLIT, dict(rules='no_rim_shot'), 'A shot from the rim\'s own square.',
      'In the app there is none: the offence must pick a side to put the ball up (D-198). The table allows it.'),
+    ('block', SPLIT, dict(rules='block'), 'The block, in place of the hard Contest.',
+     'The app plays the block on any shot (D-271): fouls first on Foul (Block), then the Block roll is a turnover, '
+     'else the shot against his contest. The table is on hold (D-146).'),
+    ('fakes', SPLIT, dict(rules='fakes'), 'Shot and pass fakes, hidden until the defence replies.',
+     'The app plays them (D-272), sharing the phase\'s Hesitate. The table is on hold (D-146).'),
+    ('pivot', SPLIT, dict(rules='pivot'), 'One Quick Step after a pick-up.',
+     'The app plays it (D-273). The table has no pick-up rule.'),
+    ('deep_range', SPLIT, dict(rules='deep_range'), 'Threes from past the band, by playing level.',
+     'The app plays it (D-274). The table is on hold (D-146).'),
     ('contest_costs', SPLIT, dict(rules='contest_costs'), 'The contest is one of the reply turn\'s two actions.',
      'Shared in substance (D-261): at the table the Contest is already the reply\'s action (D-18). The setting turns off the '
      'app\'s free hand-up of D-177 and D-191, so the app now plays it too.'),
@@ -419,12 +428,12 @@ WORDS = {
         sec='Scoring', src=None, q='What does a steal foul give in the bonus?',
         text='At the table every foul on a Steal is +5 to the offence, and the +5 stays in the score. In the bonus it '
              'also gives free throws and the possession ends: at the table the bonus is the second steal foul of the '
-             'possession. In the app no foul gives +5: a steal foul is a team foul, team fouls are counted across a '
-             'quarter, and from the 5th a steal foul gives two free throws and the possession ends (see Split by '
-             'format). A steal foul on a shooter is a shooting foul: free throws only (it counts as a team foul in the '
-             'app).',
-        tab='+5 every time; the 2nd also free throws, over', dig='no +5; from the 5th team foul two free throws, over'),
-    'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='none (D-181)'),
+             'possession. In the app every foul is +5 to the offence and play goes on, and team fouls carry no penalty: '
+             'a steal foul is +5, a team foul counted, the defender locked, no free throws (D-198, D-179; see Split by '
+             'format). A steal foul on a shooter is a shooting foul: at the table free throws only; in the app +5 and its '
+             'free throws (D-198).',
+        tab='+5 every time; the 2nd also free throws, over', dig='+5, the defender locked, play on; no free throws, no penalty (D-198)'),
+    'Steal foul +5': dict(sec=None, src='rulebook', tab='+5', dig='+5, play on (D-198)'),
     'steal_foul_always_plus5': dict(sec=None, src=None, tab='every steal foul +5', dig='every steal foul +5'),
     'Steal-foul free throws': dict(
         sec='Scoring', src=None, q='Whose free-throw rating do a steal foul\'s free throws use?',
@@ -436,9 +445,10 @@ WORDS = {
         tab='counts as an Excellent three', dig='counts as an Excellent three'),
     'turnover_floor': dict(
         sec='Scoring', src=None, q='Can a turnover that ends the possession at 0 help the offence?',
-        text='A turnover that ends the possession at 0 (the last phase at the table, Hold for One, any turnover in the '
-             'app) scores 0 or the total banked before it, whichever is lower.', tab='0 or the banked total if lower',
-        dig='0 or the banked total if lower'),
+        text='A turnover that ends the possession at 0 (the last phase at the table, Hold for One) scores 0 or the total '
+             'banked before it, whichever is lower. In the app a turnover is −5 and play goes on; only a turnover in the '
+             'last phase ends the possession, on what it has banked (D-198).', tab='0 or the banked total if lower',
+        dig='the last phase only: the possession ends on what it has banked (D-198)'),
     'and_one': dict(
         sec='Scoring', src='rulebook', oq=34,
         text='A foul on a shot (once it is declared, or forced): free throws or the open shot, whichever is higher. '
@@ -501,6 +511,13 @@ WORDS = {
                             dig='holding the ball closely guarded when three phases in a row end: a turnover, −5, play on (D-173, D-198)'),
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
+    'block': dict(sec=None, src=None, tab='none (on hold, D-146)',
+                  dig='a defender next to the shooter goes for the block on any shot: fouls first (Foul (Block)), then the Block roll, a turnover; a miss is his full contest (D-271)'),
+    'fakes': dict(sec=None, src=None, tab='none (on hold, D-146)',
+                  dig='a shot or pass fake, hidden until the defence replies; one Hesitate or fake a phase; never when rushed (D-272)'),
+    'pivot': dict(sec=None, src=None, tab='none', dig='one Quick Step after a pick-up; still pass or shoot only (D-273)'),
+    'deep_range': dict(sec=None, src=None, tab='none (on hold, D-146)',
+                       dig='a three past the band is 1 off a square; rows open by playing level: Pro 5, Semi-pro 2, Amateur and Youth 1, Junior none (D-274)'),
     'contest_costs': dict(sec=None, src=None, tab='the Contest is the reply\'s action already (D-18)',
                           dig='every contest is a Contest action, one of the reply\'s two; no free hand-up; inside, a normal or a hard Contest (D-261)'),
     'position_contest': dict(sec=None, src=None, tab='none: a shot is contested only by a Contest',
@@ -540,15 +557,42 @@ SPLITS = [
      'contests is open (D-261). The defender must be next to the shooter when he contests. Its rating, by where he stands: in '
      'front with his arrow on the shooter, the full contest rating; in front with his arrow off him, or beside him, 3 less; '
      'behind him (further from the rim), 6 less; rushed, 2 more off wherever he is; and always at least 1. On a jump shot '
-     '(mid-range, long two, three) that is the Contest, with no shooting foul. On an inside shot (layup, dunk, post, floater) '
-     'he chooses: the normal Contest (the same, never a foul), or the hard Contest, the block: the full rating (3 less from '
-     'behind), with one foul roll from in front with the arrow off him, two from the side or behind.',
+     '(mid-range, long two, three) that is the Contest, with no shooting foul. On every shot the Contest is this honest '
+     'contest, never a foul; the block is its own action in its place (see The block, D-271).',
      'Ruled for the app (D-191, D-193, D-194). D-261 (Shaun, 19 Nov 2026) made it an action: "the contest, whether normal '
      'or hard, always counts as a defensive action."'),
     ('The steal foul', '+5 to the offence; the second of the possession also gives free throws and ends it.',
-     'Outside the penalty: a team foul, the defender is locked, play on, no +5. From the 5th team foul of the '
-     'quarter: two free throws, nothing more, and the possession ends. When nothing sets a foul situation the app '
-     'plays 2 team fouls each with 8 possessions left.', 'FIBA Article 41, ruled for the app (D-179, D-181, D-182).'),
+     'Every steal foul is +5 to the offence and play goes on (D-198): a team foul counted, the defender locked, no free '
+     'throws. Team fouls carry no penalty.', 'FIBA Article 41 for the lock (D-179); D-198 (Shaun) made every foul +5 and '
+     'play on, with no penalty, in place of D-181 and D-182.'),
+    ('The block (D-271)', 'No block: the Contest (Shaun\'s rulings are for the app while the table is on hold, D-146).',
+     'A defender next to the shooter may go for the block instead of contesting, on any shot, threes included. It is '
+     'one of the reply\'s two actions, and one defender per shot: a contest or a block, never both. Fouls first, on his '
+     'Foul (Block): no roll from in front with his arrow on the shooter, one from in front with it off, two from the side '
+     'or behind; a foul is a shooting foul (+5 and free throws). No foul: roll his Block or under, 3 less from beside or '
+     'with the arrow off, 6 less from behind, 2 less if he is rushed, never below 1. A block is a turnover: −5, the phase '
+     'ends, the same possession goes on, the ball with the shooter where he stands. A miss: the shot goes up against his '
+     'full contest rating, 3 less from behind, 2 less if he arrived rushed. Against a fake he is locked for the phase and '
+     'rolls the same foul rolls; a foul there is an ordinary foul: +5, play on, no free throws.',
+     'Shaun, 20 Nov 2026: "bring back the block attempt... Deny the shot entirely." Ratings from his ratings sheet (D-269).'),
+    ('Shot and pass fakes (D-272)', 'None.', 'The ball handler declares a shot or a pass (to whom) and privately chooses '
+     'real or fake. The defence replies as it would to the real thing: that reply is its turn. Then it is shown. A fake '
+     'is an action that ends the offence\'s turn; the offence gets one Hesitate or fake each phase, shared. No fake when '
+     'rushed. A fake isn\'t a move or a dribble: it doesn\'t keep him active when closely guarded, and after he has '
+     'moved with the ball it picks the ball up (pass or shoot only); from a standstill his dribble stays alive. On a shot '
+     'fake the defence\'s movements stand, an honest contest does nothing, and going for the block locks him and risks an '
+     'ordinary foul. On a pass fake an Intercept or a Steal locks him; holding the lane costs nothing.',
+     'Shaun, 20 Nov 2026: "They\'ve wasted 2 actions... Suddenly being tighter on potential shooters is the only way to '
+     'contest a fake."'),
+    ('The pivot (D-273)', 'None.', 'After he picks the ball up, the ball handler may take one Quick Step (one square, '
+     'one of the side\'s Quick Steps). He still may only pass or shoot, and he is rushed. No Quick Step on his card, no '
+     'pivot: his post move is his version.', 'Shaun, 20 Nov 2026: "Maybe limited to a quickstep? Slow centers don\'t '
+     'have one."'),
+    ('Deep range (D-274)', 'None: no shot past the three-point band.', 'A three from past the band is 1 off for each '
+     'square past it in that column, never below 1 (A8 1 off out to A12 5 off; the top rows past the arc 1 and 2 off). '
+     'Rows open by the team\'s playing level: Senior Pro to 5 off, Semi-pro to 2 off, Amateur and Youth to 1 off, Junior '
+     'none. Each shooter uses his own team\'s rows; a team with no playing level plays Senior Pro. Rows 13 and 14 are '
+     'never a shot.', 'Shaun, 20 Nov 2026: "Juniors shouldn\'t be shooting out there. Pros do."'),
     ('Three seconds', 'No such rule.', 'Time is counted in phase ends. An attacker in the key (columns G to K, from '
      'the baseline to the free-throw line) when two phases in a row end commits a violation: a turnover. After it he '
      'must get out of the key at once: still in it when the next phase ends, he commits it again. He may still catch '
@@ -563,13 +607,14 @@ SPLITS = [
      'higher.', 'The shot still counts as a shot, at its contested rating. Free throws follow: 1 if it went in, 2 or 3 '
      '(its points) if it missed, each at the shooter\'s free-throw rating. The score is what that is worth on average, '
      'to the nearest point.', 'FIBA Articles 34 and 38, ruled for the app (D-174).'),
-    ('Turnover cost', '−5 and the shot clock loses a phase; play on.', 'The possession ends and scores 0.',
-     'A digital match has several possessions a side, so the next possession is the cost.'),
-    ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover: the '
-     'possession scores 0.', 'As in basketball: no shot before the clock runs out is a turnover.'),
+    ('Turnover cost', '−5 and the shot clock loses a phase; play on.', '−5, the phase ends there and the next begins, '
+     'the same possession going on; a turnover in the last phase ends the possession on what it has banked (D-198).',
+     'D-198 (Shaun): the turnover costs the phase and its 5 points, not the whole possession.'),
+    ('Shot-clock expiry', 'A turnover, −5, then a forced shot from where the pieces stand.', 'A turnover, −5: the '
+     'possession is over on what it has banked (D-198).', 'As in basketball: no shot before the clock runs out is a turnover.'),
     ('Steal-foul bonus', 'Every steal foul +5; the second of the possession also gives free throws and ends it.',
-     'No foul gives +5; from the 5th team foul of the quarter a steal foul gives two free throws and ends the possession.',
-     'One possession is the whole tabletop game; the app keeps fouls across a quarter.'),
+     'No penalty: every steal foul is +5, a team foul counted, the defender locked, play on, no free throws (D-198).',
+     'One possession is the whole tabletop game; in the app every foul is +5 and play goes on (D-198).'),
     ('Junior growth', 'None: the junior cards play as printed.', 'Dealt at random when a junior roster is made; the '
      'cards show the ratings, Coach Vision names the two players it changes.', 'At the table it needed markers and a '
      'term players found unclear; the app can apply it unseen. Approved (D-88).'),

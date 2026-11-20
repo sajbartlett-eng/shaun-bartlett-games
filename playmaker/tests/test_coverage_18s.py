@@ -135,15 +135,21 @@ def test_every_square_carries_value_reach_influence_and_weakness(cov):
     cards = s.ctx.off
     for a, squares in enumerate(c['squares']):
         for name, v in squares.items():
-            assert 0 < v['reach'] <= 1 and 0 <= v['weakness'] <= v['value'], (a, name, v)
+            # re-recorded in step 29 (Shaun, 20 Nov: no floor): where a block is likely, what's left of the look can be
+            # below nothing, down to the turnover's -5 (it read: never below 0)
+            assert 0 < v['reach'] <= 1 and RC.TURNOVER_POINTS <= v['weakness'] <= v['value'], (a, name, v)
             assert v['influence'] == v['value'] - v['weakness'], (a, name, v)
             # (re-recorded in step 26, D-251: a look's worth also carries what holding the ball where he starts it costs,
             # the Steal and the counts, now including the three seconds; the square shows it as cost, never above 0)
             assert v['cost'] <= 0
-            assert abs(v['worth'] - (v['reach'] * (v['weakness'] + v['cost']) - (1 - v['reach']) * 5)) < 0.51       # a lost ball is -5 (D-198)
+            # a lost ball is -5 (D-198); a Dribble that fails loses nothing (re-recorded in step 29: the deep threes, D-274,
+            # put looks he reaches by a Dribble on this board, so a look may cost 0 where it didn't get there)
+            assert min(abs(v['worth'] - (v['reach'] * (v['weakness'] + v['cost']) - (1 - v['reach']) * lc)) for lc in (5, 0)) < 0.51
             assert (v['cover'] == -1) == (v['influence'] == 0) and (v['cover'] == -1 or v['next'] != v['cover'])
     # value comes from the cards and nothing else: an open three is 3 times the rating
-    assert 'I11' not in c['squares'][0]                         # the ball handler stands on plain wood: no shot there
+    # re-recorded in step 29 (D-274): I11 is one square past the arc, a deep three at Senior Pro, 1 off (it read: plain
+    # wood, no shot there)
+    assert 'I11' in c['squares'][0] and c['squares'][0]['I11']['value'] <= 3 * (cards[0].shot('three') - 1) + 1e-9
     for a in range(1, 5):
         v = c['squares'][a][O_[a]]
         assert v['shot'] == 'three' and v['value'] == 3 * cards[a].shot('three') and not v['rushed']

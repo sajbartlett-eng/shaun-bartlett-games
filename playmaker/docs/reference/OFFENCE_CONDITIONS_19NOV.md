@@ -49,7 +49,7 @@ Each item is a way to create an advantage under the rules. It is written as some
 
 30. **Beat him off the dribble:** Dribble against Agility, into a lane or space.
 31. **Outrun him:** reach a square his defender can't get to set before the shot.
-32. **Attack the closeout:** a rushed defender is easier to drive past or shoot over.
+32. **Attack the closeout:** a rushed defender is easier to drive past or shoot over. *(Step 29: now read, through the rushed closeout: a defender who closed out with a Quick Step or Sprint is off balance, D-185.)*
 33. **Hesitate:** freeze the defence so it commits first.
 34. **Retreat dribble:** against a trap or hedge, back out for space and a passing angle.
 35. **Probe:** move the ball to shift the defence, then pass to what it opens.
@@ -104,6 +104,14 @@ The game has no "zone" setting. A defence is more zone-like when its defenders' 
 55. **Three seconds:** move out of the key before two phase ends.
 56. **Don't clog the lanes:** off-ball movement must not block the main action's drive or passing lanes.
 57. **The budget:** one Move per player per phase; two Quick Steps per side; two passes, two screens, two dribbles, one Hesitate and one shot per phase.
+
+## Proposed additions (step 29, for Shaun to approve; read in the app, the defence reading the same with its own model)
+
+58. **Shot fake against a closeout:** the ball handler is in control with the phase's fake unused, and his defender can only reach him with a Quick Step or Sprint: a fake leaves him off balance for the real shot or the drive. *Defence:* stand close enough to contest with a Move, or concede the shot rather than chase a fake.
+59. **Pass fake against a likely Intercept:** a pass a defender can intercept, faked: going for the ball locks him for the phase. *Defence:* hold the lane by position (it costs nothing) unless the steal is worth the lock.
+60. **Pivot after the fake:** after a fake that picks the ball up (or any pick-up), the one-square pivot to a better look. *Defence:* take away the pivot square, not just the shot.
+61. **Deep three dragging a defender out:** a good shooter past the arc, where his playing level opens it, pulls his defender out with him and opens the floor behind. *Defence:* price the deep shot by its own number (1 off a square) before following him out.
+62. **Draw the foul on a fake:** a shot fake against a defender next to him who must reach to block: the foul is +5 and play goes on, and he is locked. *Defence:* contest honestly; block only square, with the arrow on him (no foul roll).
 
 ## Ruling out what isn't credible (from the scout and the rules)
 

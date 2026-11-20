@@ -28,7 +28,10 @@ needs_node = pytest.mark.skipif(shutil.which('node') is None, reason='needs Node
 # handler can get to, the three seconds): the settlement was G7, N5, H10, K7, G3, all facing N.
 # Re-recorded in step 28 (D-261: the contest is one of the reply's two actions, so a defender reaches a contest with one
 # movement, not two; D-262: the map's answer leads by the list). It read D5, O5, L6, G7, I4 with arrows [1, 0, 0, 4, 1].
-SETTLED_X, SETTLED_A = ['K4', 'M6', 'H10', 'D7', 'E3'], [7, 0, 3, 0, 0]
+# Re-recorded in step 29 (D-271 the block on every shot, priced in the race; D-274 the deep threes open at Senior Pro).
+# It read K4, M6, H10, D7, E3 with arrows [7, 0, 3, 0, 0]: a defender now steps up to the man past the arc (I10) and the
+# rim is held square (I6).
+SETTLED_X, SETTLED_A = ['I6', 'I10', 'P6', 'D7', 'E2'], [0, 0, 2, 2, 0]
 
 
 @pytest.fixture(scope='module')
@@ -86,7 +89,17 @@ def test_a_contest_reached_by_a_quick_step_or_sprint_is_off_balance():
     lk = lambda c: r._gap_info()['looks'][r._gap_info()['idx'][c]][1]
     v_near, v_far = r._vals_map(lk(near), 0, cm[near]), r._vals_map(lk(far), 0, cm[far])
     ty = lk(near).types[0]
-    assert v_far[ty] - v_near[ty] == pytest.approx(RC.ZONE_POINTS[B.zone(near)] * RC.control_cut(rules, ty))   # every roll 2 lower
+    # Re-recorded in step 29 (D-271): the defender's best reply may be his block, whose roll and contest are both 2 lower
+    # off balance, so the off-balance look is worth more by at least the contest's 2 (it read: exactly the contest's 2).
+    # The honest contest alone, the block switched off, still differs by exactly that.
+    assert v_far[ty] - v_near[ty] >= RC.ZONE_POINTS[B.zone(near)] * RC.control_cut(rules, ty) - 1e-9
+    import step_22b as S
+    from playmaker_engine.scenarios import game_state
+    sb = s.with_(ctx=type(s.ctx)(s.ctx.off, s.ctx.dfn, RC.with_rules(digital=True, zone='on', block='off')))
+    rb = D.Read(D.cov_off_fresh(sb))
+    lkb = lambda c: rb._gap_info()['looks'][rb._gap_info()['idx'][c]][1]
+    wn, wf = rb._vals_map(lkb(near), 0, cm[near]), rb._vals_map(lkb(far), 0, cm[far])
+    assert wf[ty] - wn[ty] == pytest.approx(RC.ZONE_POINTS[B.zone(near)] * RC.control_cut(rules, ty))   # every roll 2 lower
 
 
 # ---- item 1b: the zone gaps ---------------------------------------------------------------------------------------------

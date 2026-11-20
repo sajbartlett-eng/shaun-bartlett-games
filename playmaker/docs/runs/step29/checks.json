@@ -1,0 +1,191 @@
+{
+ "High-Low v Shoot and Protect, board 1": {
+  "offence": {
+   "squares": [
+    "N6",
+    "N7",
+    "O9",
+    "I11",
+    "K3"
+   ],
+   "ball": "O4",
+   "line": "Attention: O4 holds X1; O5 holds X2; O3 holds X3. Hole: H2, the green zone. Access: the pass to O5.",
+   "seconds": 95.7
+  },
+  "defence": {
+   "squares": [
+    "N4",
+    "L8",
+    "F9",
+    "I3",
+    "J4"
+   ],
+   "arrows": [
+    0,
+    0,
+    2,
+    0,
+    1
+   ],
+   "seconds": 90.3,
+   "read": [
+    "X1 on O2: same speed",
+    "X2 on O4: same speed",
+    "X3 sags off O3 to guard O1's look (worth 27 without him there)",
+    "X4 on O1: the nearest defender who takes something off his look"
+   ],
+   "stances": []
+  },
+  "best_shooter_now": {
+   "shooter": "O1 (Combo Guard, three 9) on N6",
+   "his_defender": "X4 on I3, 5 squares off",
+   "nearest": "X1, 2 squares off",
+   "squares_off": 5,
+   "stance": "off"
+  },
+  "best_shooter_step28": {
+   "shooter": "O1 (Combo Guard, three 9) on J3",
+   "his_defender": "X5 on I5",
+   "nearest": "X5, 2 squares off",
+   "stance": "off"
+  },
+  "bigs": [
+   {
+    "big": "O4 (All-Rounder PF) on I11",
+    "between_him_and_the_rim": "nobody"
+   },
+   {
+    "big": "O5 (Post Scorer C) on K3",
+    "between_him_and_the_rim": [
+     "X4 on I3"
+    ]
+   }
+  ]
+ },
+ "Twin Towers v Lockdown, board 2": {
+  "offence": {
+   "squares": [
+    "J3",
+    "J4",
+    "E3",
+    "I11",
+    "Q3"
+   ],
+   "ball": "O4",
+   "line": "Attention: O1 holds X1; O5 holds X2; O3 holds X3. Hole: Q5, the three-point line. Access: the pass to O2.",
+   "seconds": 102.5
+  },
+  "defence": {
+   "squares": [
+    "I5",
+    "K9",
+    "I2",
+    "D5",
+    "K4"
+   ],
+   "arrows": [
+    0,
+    1,
+    0,
+    6,
+    6
+   ],
+   "seconds": 90.9,
+   "read": [
+    "X1 on O2: the nearest defender who takes something off his look",
+    "X2 sags off O4 to guard O2's look (worth 27 without him there)",
+    "X3 on O3: same position",
+    "X4 sags off O1 to guard O3's look (worth 27 without him there)"
+   ],
+   "stances": []
+  },
+  "best_shooter_now": {
+   "shooter": "O2 (Two-Way SG, three 9) on J4",
+   "his_defender": "X1 on I5, 1 squares off",
+   "nearest": "X1, 1 squares off",
+   "squares_off": 1,
+   "stance": "beside"
+  },
+  "best_shooter_step28": {
+   "shooter": "O2 (Two-Way SG, three 9) on J4",
+   "his_defender": "X5 on I7",
+   "nearest": "X4, 2 squares off",
+   "stance": "off"
+  },
+  "bigs": [
+   {
+    "big": "O4 (Post Scorer PF) on I11",
+    "between_him_and_the_rim": [
+     "X2 on K9"
+    ]
+   },
+   {
+    "big": "O5 (Post Scorer C) on Q3",
+    "between_him_and_the_rim": "nobody"
+   }
+  ]
+ },
+ "High-Low v Run and Gun, board 3": {
+  "offence": {
+   "squares": [
+    "N7",
+    "J11",
+    "I9",
+    "H3",
+    "Q3"
+   ],
+   "ball": "O2",
+   "line": "Attention: O2 holds X1; O5 holds X2; O4 holds X3. Hole: L11, . Access: O1's own step with the ball.",
+   "seconds": 106.6
+  },
+  "defence": {
+   "squares": [
+    "H8",
+    "O7",
+    "A6",
+    "G4",
+    "L2"
+   ],
+   "arrows": [
+    0,
+    7,
+    0,
+    2,
+    0
+   ],
+   "seconds": 82.9,
+   "read": [
+    "X1 on O3: the nearest defender who takes something off his look",
+    "X2 sags off O1, standing in his way rather than on him (his look is worth 21, 27 without him there)",
+    "X3 sags off O5 to guard O4's look (worth 21 without him there)",
+    "X4 on O2: same speed"
+   ],
+   "stances": [
+    "X1 plays behind O3"
+   ]
+  },
+  "best_shooter_now": {
+   "shooter": "O1 (Combo Guard, three 9) on N7",
+   "his_defender": "X2 on O7, 1 squares off",
+   "nearest": "X2, 1 squares off",
+   "squares_off": 1,
+   "stance": "beside"
+  },
+  "best_shooter_step28": {
+   "shooter": "O1 (Combo Guard, three 9) on Q3",
+   "his_defender": "X3 on M3",
+   "nearest": "X3, 4 squares off",
+   "stance": "off"
+  },
+  "bigs": [
+   {
+    "big": "O4 (All-Rounder PF) on H3",
+    "between_him_and_the_rim": "nobody"
+   },
+   {
+    "big": "O5 (Post Scorer C) on Q3",
+    "between_him_and_the_rim": "nobody"
+   }
+  ]
+ }
+}

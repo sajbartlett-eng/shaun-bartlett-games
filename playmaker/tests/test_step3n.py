@@ -379,7 +379,12 @@ def test_shared_mechanisms_roll_the_same_dice_in_both_formats():
         c = s.ctx
         other = Context(c.off, c.dfn, RC.with_rules(digital=not c.rules.digital))
         t = s.with_(ctx=other)
-        la, lb = legal_actions(s), legal_actions(t)
+        # Step 29 (re-recorded): the shot and pass fakes (D-272) and the deep threes (D-274) are app rules (Split), so the
+        # comparison leaves them out; every shared action still has the same odds in both formats
+        # (and the pivot, D-273, rides on the app's closely guarded rule: a picked-up ball handler's movement is app-only)
+        app_only = lambda a: ((a.kind in ('shot', 'pass') and a.arrow == 1) or (a.kind == 'shot' and B.zone(s.o[a.piece]) == '.')
+                              or (s.picked_up() and a.piece == s.ball and a.side == 'O' and a.kind in ('move', 'qs', 'sprint')))
+        la, lb = [a for a in legal_actions(s) if not app_only(a)], [a for a in legal_actions(t) if not app_only(a)]
         assert la == lb
         for a in la:
             if a.kind in ('move', 'qs', 'sprint'):

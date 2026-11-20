@@ -45,6 +45,10 @@ class Card:
         names = OFF + DEF
         self.r = {n: v for n, (v, _) in zip(names, vals)}
         self.bands = {n: b for n, (_, b) in zip(names, vals)}
+        # D-269 (step 29): Block and Foul (Block) from Shaun's ratings, by type and tier (data.block_of)
+        blk, fb = DATA.block_of(key)
+        self.r['block'], self.r['foul_block'] = blk, fb
+        self.bands['block'], self.bands['foul_block'] = DATA.band('block', blk), DATA.band('foul_block', fb)
 
     def shot(self, t):
         return self.r['shot_' + t]

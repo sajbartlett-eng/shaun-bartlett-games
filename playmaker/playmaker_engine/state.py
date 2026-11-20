@@ -107,7 +107,10 @@ class GameState:
     key_o: int = 0            # D-172 (rules.three_seconds): bitmask, attackers who were in the key at the last phase end
     grd: int = 0              # D-173 (rules.closely_guarded): the ball handler's count, packed (see guard()): his ball
                               # (0 held since the catch, 1 dribbling, 2 picked up), phase ends in a row closely guarded
-                              # while holding, idle phases in a row while dribbling, and whether he has acted this phase
+                              # while holding, idle phases in a row while dribbling, and whether he has acted this phase;
+                              # D-273: bit 7, he has taken his pivot Quick Step since he picked the ball up
+    decl: int = 0             # D-272: public: 1 while the declared shot or pass could have been a fake (the defence knows this)
+    fake: int = 0             # D-272: hidden from the defence until its reply is done: 1 a shot fake, 2 a pass fake, 0 real
 
     # ---- helpers ----
     def count(self, side, kind):
@@ -124,6 +127,10 @@ class GameState:
 
     def picked_up(self):
         return self.grd & 3 == 2
+
+    def pivoted(self):
+        """D-273: the ball handler has taken his pivot Quick Step since he picked the ball up."""
+        return self.grd >> 7 & 1 == 1
 
     def tokens(self, side):
         return self.tok_o if side == 'O' else self.tok_x
@@ -207,6 +214,8 @@ class GameState:
             parts.append(f'g{self.key_o:02x}{self.grd:02x}')
         if self.turn_lead >= 0:
             parts.append(f'g{self.turn_lead + 1}')
+        if self.decl or self.fake:
+            parts.append(f'k{self.decl}{self.fake}')
         return '|'.join(parts)
 
     def board(self):

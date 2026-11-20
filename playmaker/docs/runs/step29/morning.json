@@ -1,0 +1,60 @@
+{
+ "defence": {
+  "x": [
+   "I6",
+   "I10",
+   "P6",
+   "D7",
+   "E2"
+  ],
+  "arrows": [
+   0,
+   0,
+   2,
+   2,
+   0
+  ],
+  "seconds": 12.5
+ },
+ "list": [
+  21,
+  18,
+  16,
+  16,
+  15,
+  0
+ ],
+ "sharpshooter": "O2 on C9",
+ "his_defender": "X4 on D7, 2 squares off",
+ "stances": [
+  "X1 sags off O1",
+  "X2 sags off O5",
+  "X3 sags off O3",
+  "X4 sags off O2",
+  "X5 sags off O4"
+ ],
+ "step28_defence": {
+  "x": [
+   "K4",
+   "M6",
+   "H10",
+   "D7",
+   "E3"
+  ],
+  "arrows": [
+   7,
+   0,
+   3,
+   0,
+   0
+  ],
+  "seconds": 11.2,
+  "lines": [
+   "X1: on O1 (his best look is worth 34 open, 21 with X1 on it, 18 with X2, X4 and X5 helping).",
+   "X2: on O5 (his best look is worth 34 open, 32 with X2 on it, 18 with X1 helping).",
+   "X3: off O3 (his best look is worth 24), and in O2's way (his best look is worth 21, 30 without X3 there).",
+   "X4: on O2 (his best look is worth 36 open, 32 with X4 on it, 21 with X1 and X5 helping).",
+   "X5: on O4 (his best look is worth 32 open, 27 with X5 on it, 15 with X4 helping)."
+  ]
+ }
+}

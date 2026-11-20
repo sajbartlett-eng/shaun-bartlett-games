@@ -182,14 +182,53 @@ CARDS = CARDS + APP_CARDS
 
 OFF = ['dribble', 'pass', 'screen', 'shot_layup', 'shot_dunk', 'shot_post', 'shot_floater', 'shot_mid', 'shot_long', 'shot_three', 'free_throw']
 DEF = ['agility', 'intercept', 'challenge', 'steal', 'foul_steal', 'con_layup', 'con_dunk', 'con_post', 'con_floater', 'con_mid', 'con_long', 'con_three', 'foul_contest']
+# D-269, D-270 (Shaun, 20 Nov 2026): Block and Foul (Block), from docs/reference/step29/BLOCK_RATINGS.csv (his ratings
+# PDF's 75 cards, read in card order; PG-5 Slasher A corrected to 6 and 9). Each app type -> the PDF type it is, then
+# (block, foul_block) for tiers A, B, C. The two app-only types (D-184) have no PDF type: see BLOCK_STAND_IN.
+BLOCK_TYPE = {
+ 'apg': 'PG-5', 'cg': 'PG-4', 'dpg': 'PG-3', 'ppg': 'PG-1', 'spg': 'PG-2', 'bgs': 'SG-5', 'pms': 'SG-4', 'shs': 'SG-1', 'tnd': 'SG-3', 'tw': 'SG-2', 'dfsf': 'SF-5', 'pfsf': 'SF-4', 'scsf': 'SF-1', 'stsf': 'SF-3', 'twsf': 'SF-2', 'arpf': 'PF-4', 'dpf': 'PF-3', 'pnp': 'PF-5', 'pspf': 'PF-1', 'stpf': 'PF-2', 'pmc': 'C-4', 'psc': 'C-1', 'rpc': 'C-2', 'rrc': 'C-5', 'stc': 'C-3'}
+BLOCK_RATINGS = {
+ 'PG-1': {'A': (5, 9), 'B': (4, 10), 'C': (4, 11)},
+ 'PG-2': {'A': (5, 9), 'B': (4, 10), 'C': (4, 11)},
+ 'PG-3': {'A': (7, 7), 'B': (6, 8), 'C': (5, 9)},
+ 'PG-4': {'A': (6, 10), 'B': (5, 11), 'C': (4, 12)},
+ 'PG-5': {'A': (6, 9), 'B': (5, 10), 'C': (4, 11)},
+ 'SG-1': {'A': (6, 9), 'B': (5, 10), 'C': (4, 11)},
+ 'SG-2': {'A': (8, 7), 'B': (7, 8), 'C': (6, 9)},
+ 'SG-3': {'A': (7, 7), 'B': (6, 8), 'C': (5, 9)},
+ 'SG-4': {'A': (6, 10), 'B': (5, 11), 'C': (4, 12)},
+ 'SG-5': {'A': (6, 11), 'B': (5, 12), 'C': (4, 12)},
+ 'SF-1': {'A': (7, 9), 'B': (6, 10), 'C': (5, 11)},
+ 'SF-2': {'A': (9, 8), 'B': (8, 9), 'C': (7, 10)},
+ 'SF-3': {'A': (7, 9), 'B': (6, 10), 'C': (5, 11)},
+ 'SF-4': {'A': (8, 10), 'B': (7, 11), 'C': (6, 12)},
+ 'SF-5': {'A': (10, 6), 'B': (9, 7), 'C': (8, 8)},
+ 'PF-1': {'A': (9, 8), 'B': (8, 9), 'C': (7, 10)},
+ 'PF-2': {'A': (7, 9), 'B': (6, 10), 'C': (5, 11)},
+ 'PF-3': {'A': (10, 5), 'B': (9, 6), 'C': (8, 7)},
+ 'PF-4': {'A': (8, 7), 'B': (7, 8), 'C': (6, 9)},
+ 'PF-5': {'A': (7, 9), 'B': (6, 10), 'C': (5, 11)},
+ 'C-1': {'A': (9, 6), 'B': (8, 7), 'C': (7, 8)},
+ 'C-2': {'A': (10, 4), 'B': (9, 5), 'C': (8, 6)},
+ 'C-3': {'A': (7, 7), 'B': (6, 8), 'C': (5, 9)},
+ 'C-4': {'A': (8, 8), 'B': (7, 9), 'C': (6, 10)},
+ 'C-5': {'A': (9, 5), 'B': (8, 6), 'C': (7, 7)},
+}
+# No PDF type for the Slashing Wing or the Switch Centre (D-184, the app only): for Shaun to choose (step 29 report).
+# Until he does they play the nearest type's values: the Slashing Wing the Scoring SF (SF-1), the Switch Centre the
+# Rim Runner Centre (C-5, its own tagline: 'Rim runner').
+BLOCK_STAND_IN = {'slsf': 'SF-1', 'swc': 'C-5'}
+def block_of(key):
+    t = key[:-1]
+    return BLOCK_RATINGS[BLOCK_TYPE.get(t) or BLOCK_STAND_IN[t]][key[-1]]
 def parse(s): return [(int(t[:-1]), t[-1]) for t in s.replace('|', ' ').split()]
 
 # Ceiling: 19 on every rating except Pass (20 allowed: a pass only rolls when an intercept contests it, so it is never a sure thing).
 # RANGE TABLE (locked 2 Nov 2026; jump shots and the open layup rescaled by D-184, 14 Nov 2026; every contest back on its first range by D-189 and D-194;
 # the three jump-shot ratings corrected by D-186, same ranges). Each entry: (lowest average, lowest above average); below the first is below average.
 # Every card colour is generated from this table. Layup ratings: 17->16 for the weakest finishers so finishing matters at the rim; top stays 19 (95%), no one is a sure thing.
-RANGES = {'dribble': (14, 17), 'pass': (14, 17), 'screen': (14, 17), 'shot_layup': (18, 19), 'shot_dunk': (16, 18), 'shot_post': (12, 15), 'shot_floater': (10, 13), 'shot_mid': (9, 11), 'shot_long': (8, 10), 'shot_three': (8, 10), 'free_throw': (14, 17), 'agility': (6, 8), 'intercept': (6, 8), 'challenge': (6, 8), 'steal': (2, 4), 'con_layup': (7, 10), 'con_dunk': (7, 11), 'con_post': (4, 6), 'con_floater': (4, 7), 'con_mid': (4, 7), 'con_long': (4, 7), 'con_three': (4, 6)}
-FOUL_RANGES = {'foul_steal': (6, 8), 'foul_contest': (7, 9)}  # lower is better: (highest above average, highest average)
+RANGES = {'dribble': (14, 17), 'pass': (14, 17), 'screen': (14, 17), 'shot_layup': (18, 19), 'shot_dunk': (16, 18), 'shot_post': (12, 15), 'shot_floater': (10, 13), 'shot_mid': (9, 11), 'shot_long': (8, 10), 'shot_three': (8, 10), 'free_throw': (14, 17), 'agility': (6, 8), 'intercept': (6, 8), 'challenge': (6, 8), 'steal': (2, 4), 'con_layup': (7, 10), 'con_dunk': (7, 11), 'con_post': (4, 6), 'con_floater': (4, 7), 'con_mid': (4, 7), 'con_long': (4, 7), 'con_three': (4, 6), 'block': (6, 8)}
+FOUL_RANGES = {'foul_steal': (6, 8), 'foul_contest': (7, 9), 'foul_block': (7, 9)}  # lower is better: (highest above average, highest average)
 def band(name, v):
     if name in FOUL_RANGES:
         h, a = FOUL_RANGES[name]; return 'H' if v <= h else ('A' if v <= a else 'L')

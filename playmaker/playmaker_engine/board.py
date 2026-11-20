@@ -71,6 +71,26 @@ def zone(p):
     return ZONE.get(p, '.')
 
 
+# D-274 (step 29): deep range. Past the three-point band, a square is as many off a three as it is squares past the
+# band's last square in its column (Shaun's prototype board: A8 to A12 are 1 to 5 off, the top two rows past the arc
+# 1 and 2). His board has no numbers past row 12: rows 13 and 14 are never a shot.
+DEEP_LAST_ROW = 12
+_BAND_TOP = {}
+for (_x, _y), _z in ZONE.items():
+    if _z == '3':
+        _BAND_TOP[_x] = max(_BAND_TOP.get(_x, 0), _y)
+
+
+def deep(p):
+    """D-274: how many squares past the three-point band p stands (1 to 5), or 0 if it isn't a deep square."""
+    if not on_board(p) or zone(p) != '.':
+        return 0
+    top = _BAND_TOP.get(p[0])
+    if top is None or p[1] <= top or p[1] > DEEP_LAST_ROW:
+        return 0
+    return p[1] - top
+
+
 def cheb(a, b):
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 

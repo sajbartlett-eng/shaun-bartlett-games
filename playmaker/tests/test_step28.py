@@ -93,15 +93,14 @@ def test_the_contest_costs_an_action_jump_and_inside_normal_and_hard(jump):
     cons = [a for a in legal_actions(r) if a.kind == 'contest']
     assert cons and all(a.piece >= 0 for a in cons)
     hard = [a for a in cons if a.shot == 'hard']
-    assert (not hard) if jump else hard                          # the block only inside
+    # re-recorded in step 29 (D-271): the block is open on every shot, threes too (it read: the block only inside)
+    assert hard
     normal = [a for a in cons if a.shot != 'hard']
     for a in normal + hard:
         after = apply(r, a)
-        node = after if getattr(after, 'stage', None) else after.outcomes[-1][2]
-        if hasattr(after, 'outcomes'):                           # a hard Contest's foul roll: the no-foul branch
-            node = [o for o in after.outcomes if o[1] == 'no foul'][-1][2]
-            while hasattr(node, 'outcomes'):
-                node = [o for o in node.outcomes if o[1] == 'no foul'][-1][2]
+        node = after
+        while hasattr(node, 'outcomes'):                         # the block's foul rolls, then its roll: the shot goes up
+            node = [o for o in node.outcomes if o[1] in ('no foul', 'not blocked')][-1][2]
         assert node.stage == 'over' and node.result.contester == a.piece
         assert node.tok_x == r.tok_x - 1                          # it took a token: one of the reply's actions
     # nobody presses Contest: the shot goes up open

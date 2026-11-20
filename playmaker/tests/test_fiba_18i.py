@@ -126,7 +126,10 @@ def test_two_idle_phases_after_dribbling_and_he_has_picked_the_ball_up():
     c = end_phase(b)                                                   # two: he has picked the ball up
     assert c.picked_up() and c.stage == 'play'
     kinds = {x.kind for x in legal_actions(c) if x.piece == 0}
-    assert not kinds & {'move', 'qs', 'sprint', 'dribble'}             # he may only pass or shoot
+    # re-recorded in step 29 (D-273): he may only pass or shoot, but for his one pivot Quick Step, one square (it read: no
+    # Quick Step either)
+    assert not kinds & {'move', 'sprint', 'dribble'}
+    assert all(B.cheb(x.dest, c.o[0]) == 1 for x in legal_actions(c) if x.piece == 0 and x.kind == 'qs')
     assert 'pass' in kinds
     d = end_phase(end_phase(c))                                        # and the closely guarded count runs
     assert d.guard()[1] == 2
@@ -177,8 +180,10 @@ def test_each_contest_carries_its_own_fouled_value():
     s = board(o=['I4', 'C9', 'O9', 'A3', 'Q3'], x=['J4', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0)
     # (re-recorded in step 28, D-261: a three has a Contest action now, the position one, which never fouls; it read: no
     # Contest at all on a three. The block is the hard Contest.)
+    # (re-recorded in step 29, D-271: the block is open on a three too, with its own foul rolls; the honest Contest still
+    # never fouls. It read: nobody can foul the shooter on a three.)
     assert not [c for c in contest_options(board(o=['I10', 'C9', 'O9', 'A3', 'Q3'], x=['I9', 'D8', 'N8', 'G4', 'N4'], arrows=AWAY, ball=0), 0, 'three')
-                if c.defender >= 0 and not c.clean]                    # a three: nobody can foul the shooter
+                if c.defender >= 0 and not c.clean and not c.hard]     # a three: no honest Contest fouls the shooter
     opt = next(c for c in contest_options(s, 0, 'layup') if c.defender == 0 and c.hard)
     card = s.ctx.off[0]
     left = card.shot('layup') - opt.contest

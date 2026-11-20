@@ -26,7 +26,7 @@ const SOFT_RULE = "Soft and hard contest: a defender next to the shooter gives a
 // Step 18n (D-191, D-193): jump shots are contested by position only
 const POSITION_RULE = "A defender next to the shooter contests with no action: his full rating when he is square (in front, his arrow on the shooter), 3 less when he isn't, 6 less from behind. Jump shots: that is all, with no foul. Inside shots: when he isn't square he may go for the block and risk the foul.";
 // D-261 (Shaun, 19 Nov 2026): the contest is one of the reply turn's two actions
-const CONTEST_RULE = "The defence replies to a shot with one turn of 2 actions, shared by the team. Contesting is one of them, so the most it can do is one movement and the Contest. Nothing is automatic: press Contest with a defender next to the shooter, or the shot goes up open. His contest: the full rating square in front (his arrow on the shooter), 3 less otherwise, 6 less from behind, 2 less rushed, at least 1. Jump shots: no foul. Inside: a normal Contest (never a foul) or a hard one, the block, at the full rating with the foul risk.";
+const CONTEST_RULE = "The defence replies to a shot with one turn of 2 actions, shared by the team. Contesting is one of them, so the most it can do is one movement and the Contest. Nothing is automatic: press Contest with a defender next to the shooter, or the shot goes up open. His contest: the full rating square in front (his arrow on the shooter), 3 less otherwise, 6 less from behind, 2 less rushed, at least 1. The Contest is never a foul. Or Block (D-271), on any shot: fouls first on his Foul (Block), none square in front with his arrow on the shooter; then his Block roll (3 less from the side, 6 less from behind, 2 less rushed): a block is a turnover, a miss is his full contest. The shot may be a fake: then the reply was the defence's turn, and a block attempt locks him.";
 // D-198 (Shaun, 16 Nov 2026): fouls and turnovers in points, play on
 const POINTS_RULE = 'Fouls and turnovers are points, and play goes on. A foul: +5 to the offence (a shooting foul: +5 and its free throws). A steal, an intercepted pass, three seconds, closely guarded and the shot clock: −5 each. After a turnover the phase ends and the next one begins, the ball where it was. After an intercepted pass the defender goes back to where he began the phase.';
 const NO_RIM_RULE = 'No shot from the square under the rim: pick a side to put the ball up.';
@@ -760,11 +760,13 @@ function renderTracker(id, side) {
   box.append(tb);
   const used = s.limits[side].filter(l => l.used > 0);
   if (used.length) {
-    const lim = el('div', { class: 'limits' }, used.map(l => el('span', { class: l.used >= l.limit ? 'full' : '', text: `${KIND_NAME[l.kind] || l.kind} ${l.used}/${l.limit}` })));
+    const name = k => (k === 'hesitate' && st.fake && st.fake.rule ? 'Hesitate or fake' : KIND_NAME[k] || k);      // D-272: one shared token
+    const lim = el('div', { class: 'limits' }, used.map(l => el('span', { class: l.used >= l.limit ? 'full' : '', text: `${name(l.kind)} ${l.used}/${l.limit}` })));
     box.append(el('div', { text: 'Per-phase limits used' }), lim);
   } else box.append(el('div', { class: 'note', text: 'No per-phase limits used yet (Move: once per player).' }));
   const wk = side === 'X' ? 'pause' : 'hesitate', w = s.limits[side].find(l => l.kind === wk);
-  if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
+  if (w && side === 'O' && st.fake && st.fake.rule) box.append(el('div', { class: 'waits', text: `Hesitate or fake: ${Math.max(0, w.limit - w.used)} left` }));
+  else if (w) box.append(el('div', { class: 'waits', text: `${KIND_NAME[wk]}: ${w.limit} a phase (${w.used >= w.limit ? 'used' : 'not used yet'})` }));
   const rules = el('details', { class: 'rulesbox' }, [el('summary', { text: 'Rule reminders' }),
     el('div', { class: 'waits interceptrule' }, [
       el('div', { text: 'Through you: a pass through your square can be challenged, whatever your facing.' }),
@@ -803,7 +805,7 @@ function renderCourt() {
   const s = st, c = $('court');
   c.innerHTML = '';
   const covOn = showCov() && covMap && covMap.all && covMap.phase === s.phase;      // step 19: no zone colours under the map
-  PM.court(c, s.zones, { axes: true, plain: !zonesShown() || covOn, rings: ringsShown(), nowash: covOn });
+  PM.court(c, s.zones, { axes: true, plain: !zonesShown() || covOn, rings: ringsShown(), nowash: covOn, deep: s.deep || {}, deepNums: PMAdvice.numbersOn() });
   c.setAttribute('role', 'group');
   c.setAttribute('aria-label', `Court, 17 columns A to Q by 14 rows, rim at I2. ${s.summary}`);
   // step 24 (Shaun, 19 Nov 2026): while the offence places its pieces there is no defence yet: no defender, reach,
@@ -921,7 +923,8 @@ function turnMarks() {
 }
 
 function pieceLabel(side, p) {
-  const z = st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';
+  const dq = (st.deep || {})[p.sq];
+  const z = dq ? `deep three: ${dq} off` : st.zones[p.y - 1] ? ZONE_WORD[st.zones[p.y - 1][p.x]] : 'off the court';     // D-274
   const bits = [`${side}${p.i + 1}, number ${p.i + 1}, ${p.card.role}, on ${p.sq} (${z})`];
   if (p.card && p.card.flex) bits.push(p.card.flex);
   if (side === 'O' && p.ball) bits.push('has the ball');
@@ -1166,7 +1169,10 @@ function drawInfluence(c) {
 }
 
 // ---------------------------------------------------------------- selection and actions
-function myActs() { return st.legal || []; }
+// D-272: a fake is chosen privately after Shoot or Pass, never listed as its own action
+const isFakeAct = a => a.arrow === 1 && (a.kind === 'shot' || a.kind === 'pass') && a.side === 'O';
+function myActs() { return (st.legal || []).filter(a => !isFakeAct(a)); }
+const fakeTwin = a => (st.legal || []).find(b => isFakeAct(b) && b.kind === a.kind && b.piece === a.piece && b.target === a.target && b.shot === a.shot);
 // a Contest in the reaction to a declared shot is a defender's action (D-18); the forced-shot contest stays a side choice
 const reactionContest = a => a.kind === 'contest' && st.stage === 'reaction';
 function pieceActs(side, i) { return myActs().filter(a => a.side === side && a.piece === i && (!SIDE_KINDS.includes(a.kind) || reactionContest(a))); }
@@ -1289,7 +1295,8 @@ function renderActions() {
       } else if (sel.kind === 'challenge') {
         for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, `Challenge O${a.target + 1}'s screen`), chips(a)]));
       } else if (sel.kind === 'contest') {
-        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, a.option || 'Contest'), chips(a)]));
+        // D-271: two buttons, Contest and Block; with Show the numbers on, each says its chance and the block its foul risk
+        for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, PMAdvice.numbersOn() && a.option ? a.option : (a.shot === 'hard' ? 'Block' : 'Contest')), chips(a)]));
       } else for (const a of ka) tb.append(el('div', { class: 'opt' }, [actionButton(a, KIND_NAME[a.kind]), chips(a)]));
     }
   } else if (!playActive()) $('selected').textContent = 'Select one of your players (click or Tab + Enter).';
@@ -1340,9 +1347,37 @@ async function undo() {
   catch (e) { $('error').textContent = e.message; }
 }
 
+// D-272: Real or Fake, chosen in private. A fake is greyed out, with the reason, when it isn't open
+function chooseFake(a) {
+  return new Promise(res => {
+    const twin = fakeTwin(a), why = (st.fake && st.fake.why) || 'not open now';
+    const what = a.kind === 'shot' ? `Shoot (${a.shot})` : `Pass to O${a.target + 1}`;
+    const real = el('button', { text: `Real: ${what}`, onclick: () => { closeModal(); res(a); } });
+    const fake = el('button', twin ? { text: `Fake: ${what}`, onclick: () => { closeModal(); res(twin); } }
+                                   : { text: `Fake: not available (${why})`, disabled: 'disabled', 'aria-disabled': 'true' });
+    modal([el('h2', { text: 'Real or fake?' }),
+      el('p', { text: 'Chosen in private: the defence replies as if it is real, then it is shown. A fake ends your turn and uses the phase\'s Hesitate or fake.' }),
+      el('div', { class: 'opt' }, [real, fake]),
+      el('button', { class: 'small', text: 'Back', onclick: () => { closeModal(); res(null); } })]);
+    setTimeout(() => real.focus(), 0);
+  });
+}
+function handOver() {
+  return new Promise(res => {
+    modal([el('h2', { text: 'Pass to the defence' }),
+      el('p', { text: 'Offence: hand the screen over now. Defence: the shot or pass is declared; reply as if it is real.' }),
+      el('button', { text: 'Defence is ready', onclick: () => { closeModal(); res(); } })]);
+  });
+}
 async function submit(a, opts) {
   if (busy) return;                      // a second tap while the first action is in flight is ignored, not sent stale
   $('error').textContent = '';
+  if ((a.kind === 'shot' || a.kind === 'pass') && a.side === 'O' && !isFakeAct(a) && st.fake && st.fake.rule) {
+    const pick = await chooseFake(a);
+    if (!pick) return;
+    a = pick;
+  }
+  const declared = (a.kind === 'shot' || a.kind === 'pass') && a.side === 'O';
   if (a.roll && a.roll.length && !(opts && opts.confirmed)) {     // step 19: a confirmed action has shown its dice already
     const ok = await confirmRoll(a);
     if (!ok) return;
@@ -1354,7 +1389,8 @@ async function submit(a, opts) {
     lastOther = [];
     if (r.rolls && r.rolls.length) await showRolls(r.rolls);
     st = r.state; render();
-    announce(`${a.text}. ${st.summary}`);
+    announce(`${isFakeAct(a) ? a.text.replace(' fake', '') : a.text}. ${st.summary}`);     // D-272: never say it aloud either
+    if (declared && st.mode === 'hotseat' && !(st.ai || []).includes('X') && st.stage !== 'over') await handOver();
     if ($('modal').classList.contains('hidden')) $('actionsPanel').focus();   // keyboard users continue from the actions
   } catch (e) { $('error').textContent = e.message; }
   busy = false;
