@@ -13,7 +13,7 @@
 //
 // Everything here reads the engine's legal actions (state.legal); nothing decides a rule.
 'use strict';
-const MOVES = ['move', 'qs', 'sprint'];
+const MOVES = ['move', 'qs', 'sprint', 'reset'];      // D-276: the blocker's reset is picked like a Move: a square, then an arrow
 const MOVE_ORDER = { move: 0, qs: 1, sprint: 2 };
 const MOVE_WORD = { move: 'a Move', qs: 'a Quick Step', sprint: 'a Sprint' };
 const SHOT_WORD = { layup: 'layup', dunk: 'dunk', post: 'post shot', floater: 'floater', mid: 'mid-range', long: 'long two', three: 'three' };
