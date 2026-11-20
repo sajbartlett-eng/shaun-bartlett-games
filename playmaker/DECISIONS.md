@@ -1654,6 +1654,81 @@ turns, both sides alike, capped by the shot clock. The setup stays inside its ti
 seconds, and the defence reads its last three ways of standing ahead (it read four). · Source: Shaun, 19 Nov 2026 ·
 **Ruled; built in step 28.**
 
+**D-269. Block and Foul (Block) on every card.** Shaun: use `BLOCK_RATINGS.csv` (his ratings PDF's 75 cards, 25 types
+by tiers A, B and C, read in card order and checked against the PDF's own summaries), not the PDF's text, whose four
+columns run across pages. Built: each app type takes its PDF type's three values by tier (`data.BLOCK_TYPE`,
+`BLOCK_RATINGS`); the mapping is in the step 29 report. Bands: Block 8 to 10 above average, 6 and 7 average, 4 and 5 below
+(the PDF's own rolls); Foul (Block) 7 or less above average, 8 and 9 average, 10 or more below (lower is better). The
+same values at every age: the junior cards' contests and contest fouls are the pro cards' (checked), and the youth
+modifier doesn't touch them. The PDF's red Block label says 25 to 30%, but a rating of 4 on a d20 is 20%: the numbers are
+used, the label noted for Shaun. The two app-only types (D-184) have no PDF type: the Slashing Wing plays the Scoring SF's
+values (SF-1) and the Switch Centre the Rim Runner's (C-5, its own tagline) until Shaun chooses (options in the step 29
+report). · Source: Shaun, 20 Nov 2026 · **Ruled; built in step 29 (card change, D-190).**
+
+**D-270. PG-5 Slasher, tier A: Block 6, Foul (Block) 9.** Shaun: the printed card's Block 9 and Foul (Block) 4 is a
+typo; it broke the PDF's own point guard ranges and his tiers B and C. `BLOCK_RATINGS.csv` carries the correction. ·
+Source: Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
+
+**D-271. One honest contest, and the block as its own skill (Split, the app).** Shaun: "on defence we probably need to
+just have one type of contest. The honest type. Hand up, feet trying to be set, putting off the shot without fouling.
+And then bring back the block attempt... You are trying to get your hand on the ball. Deny the shot entirely." Built
+(`rules.block`): the honest Contest is today's normal contest, unchanged, on every shot. The block replaces the hard
+Contest: one of the reply's two actions, one defender per shot (a contest or a block), on any shot by a defender next to
+the shooter ("Neutrality demands that a block attempt can be attempted on a three pointer"). Fouls first on his Foul
+(Block): none square (in front, his arrow on the shooter), one in front with the arrow off, two from the side or behind;
+a foul is a shooting foul (+5 and free throws). No foul: his Block or under, less 3 from beside or with the arrow off, 6
+from behind, 2 if rushed, never below 1. A block is a turnover ("Treated as any other turnover. -5 on the possession
+score, lose an entire phase, keep going from the same possession, new phase, all action counts reset."): as after a won
+Steal, the ball stays with the shooter where he stands and every piece where it is. A miss: the shot against his full
+contest rating, 3 less from behind, 2 worse if he arrived rushed ("Keep it consistent"). No reduction by shot type.
+Against a fake he is locked for the phase and rolls the same foul rolls; a foul there is an ordinary foul (+5, play on, a
+team foul counted, no free throws). And (Shaun, 20 Nov, on the build): no floor on a look where a block is possible:
+a block is a turnover (−5), so a shot into a likely block really is worth less than nothing, and the computer must see it
+to avoid it; the old floor stays only where nothing below 0 can happen. · Source: Shaun, 20 Nov 2026 · **Ruled; built
+in step 29.**
+
+**D-272. Shot fakes and pass fakes, and the mixed choice (Split, the app).** Shaun: "What if the defence sees 'shot',
+reacts, and then realises it was a fake. They've wasted 2 actions, they've used their move and the offence can take the
+drive, or sidestep for an open shot... This could also be applied to pass fakes, which would make attempting intercepts
+more risky." And: "All other actions have a limit per phase... One per phase may be right." And: "fakes are only
+available when not rushed. The offence must be in control." And: "a shot or pass fake after movement means the ball is
+picked up." Built (`rules.fakes`): the ball handler declares a shot or a pass and privately chooses real or fake; the
+defence replies as to the real thing, and that reply is its turn; then the offence. One Hesitate or fake a phase,
+shared (a count only: the Hesitate and Pause wait rule is unchanged). Never when rushed. A fake isn't a move or a dribble:
+it doesn't make him active (D-173); after he has moved with the ball it picks the ball up; from a standstill his dribble
+stays alive. On a shot fake the defence's movements stand, an honest contest does nothing, a block locks him (D-271). The
+pass fake fits the pass rules as they stand (traced: an Intercept, a Steal on the receiver, a movement that keeps the
+pass in the air, any other action that would land it): an Intercept or a Steal against it locks him; holding the lane
+costs nothing. The defence's computer never reads the hidden choice: it replies from the public state, both worlds
+built from it. Each side mixes by game theory, from the values at stake and with no weights: at each declaration the
+replies are read against the real declaration and the fake; the offence fakes as often as leaves it the most against the
+defence's best reply, and the defence mixes its replies so that neither real nor fake gains more (`search.mix_game`);
+each draw is by the seed. · Source: Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
+
+**D-273. The pivot after a pick-up (Split, the app).** Shaun: "if we have to account for the pivot foot and even the two
+steps for a layup... Maybe limited to a quickstep? Slow centers don't have one, but they have the post move, which is
+basically their version." And (20 Nov): after the pivot Quick Step he may still only pass or shoot; he isn't forced to do
+it in the same turn. Built (`rules.pivot`): one Quick Step (one square, one of the side's Quick Steps) after he picks the
+ball up, once a pick-up; then pass or shoot only; rushed by the existing rule. No Quick Step on his card, no pivot. ·
+Source: Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
+
+**D-274. Deep range (Split, the app).** Shaun: "Expand the three point range for pro... A great shooter can then still be
+a deadly threat from further out and drag the defence out with him." "Juniors shouldn't be shooting out there. Pros
+do." "why not just take away the furthest rows as an option to shoot?" Built (`rules.deep_range`): a three from past the
+band is 1 off its rating for each square past the band's last square in its column, never below 1; mapped from his
+prototype board square for square (A8 to A12 1 to 5 off; the top two rows past the arc 1 and 2 off; rows 13 and 14 have no
+numbers and are never a shot). Rows open by the players' playing level, never the computer's: Senior Pro every row,
+Semi-pro to 2 off, Amateur and Youth to 1 off, Junior none. Each shooter uses his own team's rows; a team with no playing
+level plays Senior Pro. Closed squares look like the no-shot squares ("Not hatched, just left coloured as per the no
+shot zones"). · Source: Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
+
+**D-275. The rules text follows D-198 as built.** Shaun (20 Nov): a foul on a fake block is like a steal foul under D-198
+as built: +5, play on, a team foul counted, no free throws; there is no team-foul penalty in the app. Corrected in the
+register and `RULES_CURRENT.md`: the steal foul's "no +5" and free throws from the 5th team foul (now +5, play on, no
+penalty); "any turnover in the app" ending the possession at 0 (now only a turnover in the last phase ends it, on what it
+has banked); the split table's turnover cost and shot-clock expiry likewise. The list is in the step 29 report. · Source:
+Shaun, 20 Nov 2026 · **Ruled; built in step 29.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

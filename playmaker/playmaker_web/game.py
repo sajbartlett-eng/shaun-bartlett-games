@@ -12,6 +12,7 @@ from fractions import Fraction
 from playmaker_engine import board as B
 from playmaker_engine import rules_config as RC
 from playmaker_engine.actions import Action, legal_actions, intercept_status
+from playmaker_engine.search import is_fake
 from playmaker_engine.cards import TEAMS, FIRST_GAME, TEAM_TAGLINES, CARDS as CARDS_ALL
 
 
@@ -93,11 +94,33 @@ def chance_preview(state, a):
     return out
 
 
+def fake_reveal_lines(before, after, a):
+    """D-272: the reply is done and the fake is shown: what the defence's reply cost it, in plain words."""
+    if not before.fake or getattr(after, 'fake', 0) or (getattr(after, 'decl', 0) and after.stage != 'over'):
+        return []
+    what = 'shot fake' if before.fake == 1 else 'pass fake'
+    locked = [j for j in range(5) if after.lock_x >> j & 1 and not before.lock_x >> j & 1]
+    fouled = after.fouls > before.fouls
+    bits = []
+    for j in locked:
+        how = ('went for the block' if before.fake == 1 and a.kind == 'contest' else
+               'went for the ball' if a.kind in ('intercept', 'steal') else 'went for it')
+        bits.append(f'X{j + 1} {how}' + (f', fouled O{before.ball + 1} (+5, no free throws, play on)' if fouled else '')
+                    + ', and is locked for the rest of the phase')
+    tail = ('. ' + '; '.join(bits) + '.') if bits else '. The defence\'s reply stands as it was taken: the offence goes next.'
+    return [('good_O' if bits else 'info', f'It was a fake: the offence\'s {what}{tail}')]
+
+
 def consequences(before, after, a):
     """What an action changed, in plain words (from the state difference, so it is always true)."""
     out = []
     d198 = RC.app_rule(after.ctx.rules, 'points_play_on') and not after.ctx.hold_for_one
-    if d198 and after.tos > before.tos:
+    out += fake_reveal_lines(before, after, a)
+    if d198 and after.tos > before.tos and a.kind == 'contest' and a.shot == 'hard':
+        # D-271: a block is a turnover (as after a won Steal, the ball stays with the shooter where he stands)
+        rest = ' No phase is left: the possession is over.' if after.stage == 'over' else ' The phase ends; the next one begins.'
+        out.append(('bad_O', f'Blocked by X{a.piece + 1}: a turnover, −5. The ball stays with O{before.ball + 1} where he stands.{rest}'))
+    elif d198 and after.tos > before.tos:
         # D-198: every turnover is -5; the phase ends there and the next begins (or nothing is left to play)
         rest = ' No phase is left: the possession is over.' if after.stage == 'over' else ' The phase ends; the next one begins.'
         if a.kind == 'intercept':
@@ -202,9 +225,9 @@ def consequences(before, after, a):
     if a.kind == 'shot':
         if RC.contest_costs(after.ctx.rules):
             # D-261: the reply turn, the Contest one of its two actions
-            out.append(('info', f'Shot declared ({a.shot}). The defence replies: 2 actions. Contesting the shot is one of them. '
-                                + ('Nobody contests and it goes up open.' if a.shot in RC.JUMP_SHOTS else
-                                   'Inside, a normal Contest or a hard one (the block, with the foul risk). Nobody contests and it goes up open.')))
+            out.append(('info', f'Shot declared ({a.shot}). The defence replies: 2 actions. Contesting or blocking is one of them. '
+                                + ('Nobody contests and it goes up open.' if not RC.block_rule(after.ctx.rules) else
+                                   'Contest (never a foul) or Block (a turnover if it works, with the foul risk). Nobody contests and it goes up open.')))
         elif RC.position_contest(after.ctx.rules):
             # D-191: position decides a jump shot's contest; an inside shot has the automatic contest and the block
             if a.shot in RC.JUMP_SHOTS:
@@ -662,7 +685,19 @@ class Game:
         s = game_state(off, dfn, list(o_sq), list(x_sq), list(arrows), ball=ball, rules=self.rules,
                        team_fouls=tf, quarter_left=left)
         s.ctx.levels_key = self.levels_key()        # step 3n C: the phase table of this age and standard
+        s.ctx.deep_rows = self.deep_rows_for_offence()    # D-274: each shooter uses his own team's deep rows
         return s
+
+    def deep_rows_for_offence(self):
+        """D-274: the deep rows the team on offence this possession may shoot from, by its own playing level (age and
+        standard; a handicap game gives each team its own standard). A prescribed team plays Senior Pro rows unless the
+        age dial sets an age (prescribed teams carry the pro standard, levels.py)."""
+        lv = self.levels or {}
+        age = lv.get('age', 'senior')
+        std = lv.get('standard', 'pro')
+        if isinstance(std, dict):
+            std = std.get('A' if self.possession % 2 == 1 else 'B', 'pro')
+        return RC.deep_rows_for(age, std or 'pro')
 
     def quarter_context(self):
         """(the defence's team fouls before this possession, the defence's possessions left in the quarter including
@@ -1695,10 +1730,12 @@ class Game:
         self.rolls = rolls
         self.undo_votes = set()
         self.version += 1
-        rec = dict(actor=actor, action=action_to_json(a),
+        shown = a._replace(arrow=-1) if is_fake(a) else a        # D-272: hidden until the defence has replied
+        pub = node.with_(fake=0) if getattr(node, 'fake', 0) else node
+        rec = dict(actor=actor, action=action_to_json(shown),
                    legal=[str(x) for x in legal] if a.kind != 'target' else [f'O{i + 1}' for i in range(5)],
                    seconds=round(now - self.last_decision, 2), clock=before.clock, phase=before.phase,
-                   possession=self.possession, after=node.encode())
+                   possession=self.possession, after=pub.encode())
         if actor == 'ai' and getattr(self, '_think', None) is not None:
             rec['think_s'] = self._think
             self._think = None
@@ -1720,6 +1757,13 @@ class Game:
         text = rec['action']['text']
         from .view import board_json
         from playmaker_engine.review import best_look
+        if is_fake(a):
+            self._hidden = dict(n=len(self.feed) + 1, text=str(a))     # shown once the defence has replied
+        elif getattr(self, '_hidden', None) and before.fake and not getattr(node, 'fake', 0):
+            for e in self.feed:
+                if e['n'] == self._hidden['n']:
+                    e['text'], e['fake'] = self._hidden['text'], 'O'        # Watch and the story: shown after the reply, by side
+            self._hidden = None
         entry = dict(n=len(self.feed) + 1, actor=actor, side=a.side, kind=a.kind, text=text, rolls=rolls,
                      outcomes=consequences(before, node, a) + fouled_shot_dice(node, self.rng), possession=self.possession,
                      clock=before.clock, phase=before.phase, version=self.version,
@@ -1761,6 +1805,9 @@ class Game:
             a = pol.choose(self.state)
             self._think = round(time.time() - t0, 3)
             for note in getattr(pol, 'notes', []):
+                if note.get('event') == 'mix' and side == 'O':
+                    self.__dict__.setdefault('_mix_notes', []).append(dict(possession=self.possession, **note))
+                    continue                 # D-272: the offence's mix is kept until the possession is over (hidden means hidden)
                 if note.get('event') == 'plan' and side == 'O':
                     self._plan_note = dict(possession=self.possession, text=note.get('text'), kind=note.get('status'))
                 self._log('computer', side=side, possession=self.possession, clock=self.state.clock, **note)

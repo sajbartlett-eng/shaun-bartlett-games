@@ -31,7 +31,11 @@ NAMES = {
     '2': 'post entry against the front', '2b': 'the lob over the front', '3': 'post entry against the three-quarter denial',
     '14': 'backdoor', '19c': 'dribble at to force the backdoor', '21': 'reject the screen', '24': 'curl, fade or straight cut',
     '25': 'stagger', '26': 'screen the screener', '27': 'back screen on the roller\'s defender',
+    # step 29 (D-271 to D-274): proposed additions for Shaun, read with the same measure (the map's own looks)
+    '58': 'shot fake against a closeout', '59': 'pass fake against a likely Intercept', '60': 'pivot after the fake',
+    '61': 'deep three dragging a defender out', '62': 'draw the foul on a fake',
 }
+PROPOSED = ('58', '59', '60', '61', '62')          # step 29: proposed for Shaun, not yet in his list
 
 UNMEASURED = {
     '8': 'a post-to-post cross screen: off-ball screens are read (23), but not which of two bigs it frees',
@@ -231,6 +235,43 @@ def read(state, scout, cov=None, roles=None, bar=0.0):
                 f"O{bh + 1} beats X{d_bh + 1} off the dribble {round(100 * b['chance'])} in 100; it opens {b['squares']} squares")
         if state.rushed('X', d_bh):
             add('32', [bh], [d_bh], b['chance'] * max(0.0, b['biggest']) if b else 0, B.sq(state.o[bh]), f"X{d_bh + 1} is closing out off balance")
+    # step 29 (D-272 to D-274, proposed): the fake, the pivot and deep range, from the same looks
+    try:
+        from .actions import fake_open
+        from .scoring import p_fouls, p_foul, foul_rolls
+        can_fake = fake_open(state.with_(side='O', turn_n=0)) if state.side == 'O' else False
+        mine = squares[bh] or {}
+        here = mine.get(B.sq(state.o[bh])) or {}
+        if can_fake and d_bh >= 0 and here.get('worth', 0) > 0 and not B.adjacent(state.x[d_bh], state.o[bh]) \
+                and B.cheb(state.x[d_bh], state.o[bh]) <= 1 + ctx.dfn[d_bh].qs:
+            add('58', [bh], [d_bh], here['worth'], B.sq(state.o[bh]),
+                f"O{bh + 1} can fake the shot: X{d_bh + 1} must close out with a Quick Step or Sprint and would arrive off balance")
+        if can_fake:
+            for a in range(5):
+                ch = passes[a]
+                if a != bh and ch is not None and 0 < ch < 1:
+                    k2, lk2 = _best(squares[a] or {})
+                    if lk2:
+                        add('59', [bh, a], [], lk2.get('worth', 0) * (1 - ch), k2,
+                            f"a pass fake to O{a + 1}: a defender who goes for the ball is locked for the phase")
+        if (state.picked_up() or (can_fake and state.guard()[0] == 1)) and RC.pivot_rule(ctx.rules) and ctx.off[bh].qs > 0:
+            near = {k: v for k, v in mine.items() if B.cheb(_sq(k), state.o[bh]) == 1}
+            k3, lk3 = _best(near)
+            if lk3 and lk3.get('worth', 0) > 0:
+                add('60', [bh], [d_bh] if d_bh >= 0 else [], lk3['worth'], k3, f"O{bh + 1} pivots to {k3} after the pick-up")
+        n_open = RC.deep_open(ctx)
+        for a in range(5):
+            for k4, v4 in (squares[a] or {}).items():
+                dq = B.deep(_sq(k4))
+                if dq and dq <= n_open and v4.get('worth', 0) > 0 and v4.get('cover', -1) >= 0:
+                    add('61', [a], [v4['cover']], v4['worth'], k4, f"O{a + 1}'s deep three on {k4} ({dq} off) pulls X{v4['cover'] + 1} out to cover it")
+        if can_fake and d_bh >= 0 and B.adjacent(state.x[d_bh], state.o[bh]):
+            fb = ctx.dfn[d_bh].r.get('foul_block', 0)
+            pf = float(p_fouls(p_foul(fb, ctx.rules), foul_rolls(ctx.rules, state.x[d_bh], state.o[bh])))
+            add('62', [bh], [d_bh], pf * RC.STEAL_FOUL_BONUS, B.sq(state.o[bh]),
+                f"a shot fake: if X{d_bh + 1} goes for the block he fouls {round(100 * pf)} in 100 (+5, play on) and is locked")
+    except Exception:
+        pass
     # F. the help chain: overloads the offence creates one after another (step 25, D-241)
     for ov in cov.get('overloads') or []:
         th = ov.get('threats') or []

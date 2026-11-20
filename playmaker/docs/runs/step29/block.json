@@ -1,0 +1,34 @@
+{
+ "off a Sprint (rushed: no fake)": {
+  "fake_open_at_the_shot": false,
+  "defender": "X5 (Rim Protector Centre) square on H3",
+  "block_chance": 45,
+  "block_roll": 9,
+  "foul_risk": 0,
+  "contest_if_he_misses": 11,
+  "computer_reply": "X5 contests",
+  "seconds": 4.7,
+  "mix": null
+ },
+ "in control (a fake is open)": {
+  "fake_open_at_the_shot": true,
+  "defender": "X5 (Rim Protector Centre) square on H3",
+  "block_chance": 45,
+  "block_roll": 9,
+  "foul_risk": 0,
+  "contest_if_he_misses": 11,
+  "computer_reply": "X5 contests",
+  "seconds": 4.0,
+  "mix": {
+   "event": "mix",
+   "by": "X",
+   "fake_chance": 0.0,
+   "replies": {
+    "['X5 contests']": 1.0
+   },
+   "turn": [
+    "X5 contests"
+   ]
+  }
+ }
+}

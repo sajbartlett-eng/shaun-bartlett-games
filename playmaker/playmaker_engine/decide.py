@@ -28,7 +28,7 @@ from functools import lru_cache
 from . import board as B
 from . import geometry as G
 from . import rules_config as RC
-from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points
+from .scoring import p_success, rolled, p_foul, p_fouls, foul_on_shot_points, shot_zone, card_shot, zone_at
 from .actions import lane_meet
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -100,6 +100,9 @@ def _caps(s, side, i):
     qs_left = RC.LIMITS[side]['qs'] - s.count(side, 'qs')
     if rules.qs_once_per_player:
         qs_left = 0 if s.quick_stepped(side, i) else min(qs_left, 1)
+    if side == 'O' and i == s.ball and s.picked_up() and RC.app_rule(rules, 'closely_guarded'):
+        # D-173: picked up, he only passes or shoots; D-273: but for his one pivot Quick Step
+        return False, (min(qs_left, 1) if RC.pivot_open(s, i) else 0)
     return can_move, qs_left
 
 
@@ -158,6 +161,8 @@ def attacker_reach(s, i, exact=False):
     if not B.on_board(s.o[i]) or s.tok_o <= 0:
         return out
     card = s.ctx.off[i]
+    from .actions import pivot_len
+    pick = pivot_len(s, 'O', i, 2) == 1          # D-173, D-273: picked up: his one pivot step, then pass or shoot
     if exact:
         from .actions import movement_dests, can_move_kind
         rules = s.ctx.rules
@@ -165,13 +170,13 @@ def attacker_reach(s, i, exact=False):
             if can_move_kind(s, 'O', i, kind):
                 for q in movement_dests(s, 'O', i, kind, rules):
                     out.setdefault(q, 1)
-        if s.tok_o >= 2:
+        if s.tok_o >= 2 and not pick:
             for q in [q for q, n in out.items() if n == 1]:
                 for q2 in _geo_paths('qs' if can_move else 'move', q, card.qs, rules):
                     if q2 not in out and q2 not in s.x and q2 not in s.o:
                         out[q2] = 2
         return out
-    free, fixed = geo_reach(s.o[i], 0, card.qs, can_move, qs_left, s.ctx.rules)
+    free, fixed = geo_reach(s.o[i], 0, pivot_len(s, 'O', i, card.qs), can_move, qs_left, s.ctx.rules)
     for q, n in free.items():
         out.setdefault(q, n)
     for q, arrs in fixed.items():
@@ -427,14 +432,14 @@ def ahead_row(rules, c, frm, arrow, qs, can_move, qs_left, budget, mode=0):
 
 
 @lru_cache(maxsize=None)
-def _shot_paths(start, qs, rules, no_rim):
+def _shot_paths(start, qs, rules, no_rim, deep=0):
     """Step 18s (the coverage map): every movement path from start that ends where a shot may go up, all on the board:
     (path, rushed), rushed for a Quick Step or a Sprint, not for a Move."""
     out = []
 
     def ok(p):
         c = p[-1]
-        return all(B.on_board(q) for q in p) and B.zone(c) in RC.ZONE_POINTS and not (no_rim and c == RC.RIM)
+        return all(B.on_board(q) for q in p) and zone_at(c, deep) in RC.ZONE_POINTS and not (no_rim and c == RC.RIM)
     for p in B.move_paths(start, rules):
         if ok(p):
             out.append((tuple(p), False))
@@ -717,7 +722,7 @@ class Read:
         if moves is not None:
             soft_limit = min(moves, soft_limit)
         card = self.s.ctx.off[look.i]
-        pts = RC.ZONE_POINTS[B.zone(look.c)]
+        pts = RC.ZONE_POINTS[shot_zone(self.s.ctx, look.c)]
         rules = self.rules
         away = getattr(self, '_phase_away', False)
         control = RC.control_size(rules) > 0 and not away
@@ -729,8 +734,9 @@ class Read:
         d_moved = control and (self.s.moved('X', d) if dflags is None else dflags[1])
         position = RC.position_contest(rules)
         plus5 = RC.app_rule(rules, 'points_play_on') and not self.s.ctx.hold_for_one
+        block = RC.block_rule(rules)
         for t in look.types:
-            r = card.shot(t)
+            r = card_shot(self.s.ctx, card, t, look.c)     # D-274: a deep three is 1 off a square past the band
             # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
             # movement itself; the defenders' own rushed states still don't carry over)
             cut = RC.control_cut(rules, t) if (control or (away and look.rushed) or setrow is not None) else 0
@@ -739,7 +745,16 @@ class Read:
             best = None
             jump = position and t in RC.JUMP_SHOTS      # D-191: a jump shot has no Contest action: position only (below)
             for k, n in enumerate(row):
-                if n > limit or jump:
+                if n > limit:
+                    continue
+                if block:
+                    # D-271: the block, from every kind he reaches, on every shot (scoring.block_option, as the reading takes it)
+                    rushed_k = bool(cut) and ((d_stand if n == 0 else d_moved) if setrow is None else setrow[k] > 1)
+                    v = self._block_value(card, d, t, k, pts, r, cut if rushed_k else 0, plus5, (cut and look.rushed))
+                    if best is None or v < best:
+                        best = v
+                    continue
+                if jump:
                     continue
                 pen, foul, two = KINDS[k]
                 if position and not foul:
@@ -785,6 +800,35 @@ class Read:
             if best is not None:
                 out[t] = best
         return out or None
+
+    def _block_value(self, card, d, t, k, pts, r, dcut, plus5, shooter_cut):
+        """D-271, as the map reads it: defender d's block of this shot from contest kind k (KINDS: behind, foul, two):
+        fouls first on his Foul (Block) (square none, in front with the arrow off one, beside or behind two), then his
+        Block (less 3, or 6 from behind, less the rushed cut dcut, at least 1) is a turnover at -5 (the lost pass's price
+        in a look), else the shot against his full contest (3 less from behind, dcut, at least 1)."""
+        rules = self.rules
+        pen, foul, two = KINDS[k]
+        foul = foul or pen                               # from behind always two foul rolls
+        dc = self.dcards[d]
+        con = max(RC.CONTEST_FLOOR, dc.con(t) - (RC.FAR_CONTEST_PENALTY if pen else 0) - dcut)
+        b = max(RC.CONTEST_FLOOR, dc.r['block'] - (RC.BLOCK_BEHIND if pen else (RC.BLOCK_SIDE if foul else 0)) - dcut)
+        v = pts * (r - con)
+        if rules.floor_declared_shot:
+            v = max(0, v)
+        pb = float(p_success(b, rules))
+        vs, v = v, pb * RC.TURNOVER_POINTS + (1 - pb) * v
+        if foul:
+            if RC.app_rule(rules, 'fiba_fouled_shot'):
+                ft = foul_on_shot_points(card, t, pts, rules, r, vs, r - con)[0]
+            else:
+                ft = foul_on_shot_points(card, t, pts, rules, r if shooter_cut else None)[0]
+            if plus5:
+                ft += RC.STEAL_FOUL_BONUS
+            pf = float(p_fouls(p_foul(dc.r['foul_block'], rules), 2 if (two or pen) else 1))
+            v = pf * ft + (1 - pf) * v
+        # Shaun (20 Nov): no floor. A block is a turnover (-5), so a shot into a likely block is worth less than nothing,
+        # and the reading must see it to avoid it (the shot's own floor, OQ-5, still applies to the shot itself above)
+        return v
 
     def _value(self, look, swap=None):
         """The look's value, the defence contesting with its best defender (swap: {d: replacement vals})."""
@@ -837,7 +881,7 @@ class Read:
             reach = {q: n for q, n in attacker_reach(s, i).items() if n <= 1}
         no_rim = RC.rim_shot_barred(rules)
         for c, n in reach.items():
-            z = B.zone(c)
+            z = shot_zone(s.ctx, c)                              # D-274: a deep square his team's level opens is a three
             if z not in SHOOT or (no_rim and c == RC.RIM):       # D-198: no shot from the rim's own square
                 continue
             # B0/B2: count the offence's actions. The ball handler can move then shoot in one turn; a receiver catches
@@ -867,9 +911,9 @@ class Read:
                 # a Quick Step or Sprint; if he must move first he is rushed when his Move is already used
                 lk.rushed = s.rushed('O', i) if n == 0 else s.moved('O', i)
             if lk.rushed:
-                lk.open = {t: pts * (card.shot(t) - RC.control_cut(rules, t)) for t in lk.types}
+                lk.open = {t: pts * (card_shot(s.ctx, card, t, c) - RC.control_cut(rules, t)) for t in lk.types}
             else:
-                lk.open = {t: pts * card.shot(t) for t in lk.types}
+                lk.open = {t: pts * card_shot(s.ctx, card, t, c) for t in lk.types}
             lk.vals = {}
             for d in self.att_x:
                 dj = getattr(self, '_dj', None)             # step 18f: a moved defender's control state, given
@@ -1408,10 +1452,12 @@ class Read:
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
                 # step 22c: what holding the ball there costs him (0 or less); of two ways as likely, the one that costs less
-                adj = steal_at(a, q0) + (guard_cost if (a == s.ball and q0 == home and n0 == 0) else 0.0)
+                # D-273: a pivot after the pick-up doesn't stop the closely guarded count: it runs on at his pivot square
+                adj = steal_at(a, q0) + (guard_cost if (a == s.ball and ((q0 == home and n0 == 0) or (s.picked_up() and n0 == 1)))
+                                         else 0.0)
                 if three_on and B.in_key(q0) and (s.key_o >> a) & 1:     # step 27 (engine.js keyAt, D-255): by the rule
                     adj += -5.0
-                if B.zone(q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM):
+                if shot_zone(s.ctx, q0) in RC.ZONE_POINTS and not (no_rim and q0 == RC.RIM):
                     b = best.get((q0, False))
                     if b is None or pr > b[0] or (pr == b[0] and adj > b[1]):
                         best[q0, False] = (pr, adj)    # a set shot from where the phase finds him
@@ -1420,7 +1466,7 @@ class Read:
                         drb[q0, False] = dr
                 if set_only:
                     continue
-                for p, rushed in _shot_paths(q0, qs, rules, no_rim):
+                for p, rushed in _shot_paths(q0, qs, rules, no_rim, RC.deep_open(s.ctx)):
                     c = p[-1]
                     b = best.get((c, rushed))
                     if b is not None and (b[0] > pr or (b[0] == pr and b[1] >= adj)):
@@ -1434,7 +1480,7 @@ class Read:
                     acts[c, rushed] = n0
                     drb[c, rushed] = dr
             for (c, rushed), (pr, adj) in best.items():
-                z = B.zone(c)
+                z = shot_zone(s.ctx, c)
                 lk = Look(a, c, 'later', 1.0, False)
                 lk.types = RC.ZONE_SHOTS[z]
                 lk.rushed = rushed
@@ -1442,7 +1488,7 @@ class Read:
                 vals = [None] * 5
                 for d in range(5):
                     vals[d] = self._vals_map(lk, d, cms[d].get(c)) if cms[d] is not None else None
-                opens = [pts * (card.shot(ty) - (off if rushed else 0)) for ty in lk.types]
+                opens = [pts * (card_shot(s.ctx, card, ty, c) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
                 lc = 0 if drb[c, rushed] else 5     # what not getting there costs: a lost pass -5, a lost Dribble nothing
                 out[a, c, rushed] = [pr, top, pr * (top + adj) - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc, adj]
@@ -1778,10 +1824,10 @@ class Read:
         if g is None:
             no_rim = RC.rim_shot_barred(self.rules)
             sq = [q for q in ((x, y) for x in range(B.W) for y in range(1, B.H + 1))
-                  if B.zone(q) in RC.ZONE_POINTS and not (no_rim and q == RC.RIM)]
+                  if shot_zone(ctx, q) in RC.ZONE_POINTS and not (no_rim and q == RC.RIM)]
             looks, opens = [], []
             for q in sq:
-                z = B.zone(q)
+                z = shot_zone(ctx, q)
                 pts, types = RC.ZONE_POINTS[z], RC.ZONE_SHOTS[z]
                 row, op = [], []
                 for a in range(5):
@@ -1789,7 +1835,7 @@ class Read:
                     lk.types = types
                     lk.rushed = False
                     row.append(lk)
-                    op.append(max(pts * ctx.off[a].shot(ty) for ty in types))
+                    op.append(max(pts * card_shot(ctx, ctx.off[a], ty, q) for ty in types))
                 looks.append(row)
                 opens.append(op)
             if len(_GAP) > 8:
@@ -1803,12 +1849,12 @@ class Read:
         v = g['late'].get(key)
         if v is None:
             lk = g['looks'][k][a]
-            pts = RC.ZONE_POINTS[B.zone(g['sq'][k])]
+            pts = RC.ZONE_POINTS[shot_zone(self.s.ctx, g['sq'][k])]
             vals = self._vals2(lk, d, _LATE_ROW, _NOSET) or {}
             card = self.s.ctx.off[a]
             v = None
             for ty in lk.types:
-                o = pts * card.shot(ty)
+                o = pts * card_shot(self.s.ctx, card, ty, g['sq'][k])
                 w = vals[ty] if ty in vals and vals[ty] < o else o
                 if v is None or w > v:
                     v = w

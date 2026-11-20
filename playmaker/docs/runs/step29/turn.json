@@ -1,0 +1,73 @@
+{
+ "action": "O1 Quick Step to H10",
+ "seconds": 20.9,
+ "notes": [
+  {
+   "event": "decision",
+   "level": "allstar",
+   "depth": 1,
+   "partial": 0,
+   "stable": {
+    "extensions": 0,
+    "cap_hits": 0,
+    "kept": 0
+   },
+   "trace": [
+    [
+     1,
+     [
+      "O1 Quick Step to H10",
+      "O Hesitate"
+     ],
+     36
+    ]
+   ],
+   "depth_seconds": [
+    [
+     1,
+     3.928
+    ]
+   ],
+   "engine": "js",
+   "pv": [
+    [
+     "O1 Quick Step to H10",
+     "O Hesitate"
+    ]
+   ],
+   "leaves": 1627,
+   "nodes": 0,
+   "seconds": 20.876,
+   "value": 36.35,
+   "turn": [
+    "O1 Quick Step to H10",
+    "O Hesitate"
+   ],
+   "goal": "move X5 out of the lane to O2",
+   "alternatives": [
+    {
+     "turn": [
+      "O1 Quick Step to H10",
+      "O Hesitate"
+     ],
+     "value": 36.35
+    },
+    {
+     "turn": [
+      "O1 Quick Step to H10",
+      "O1 Move to H7"
+     ],
+     "value": 36.35
+    },
+    {
+     "turn": [
+      "O1 Quick Step to H10",
+      "O2 Move to A11"
+     ],
+     "value": 36.35
+    }
+   ],
+   "plan": "Chasing: O5's post shot on I3, off O5's screen on X1 (still to be set)."
+  }
+ ]
+}

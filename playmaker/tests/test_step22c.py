@@ -90,7 +90,9 @@ def test_the_closely_guarded_count_is_counted_at_its_distance_from_the_violation
         assert t.picked_up()
         _, opts = opts_of(t)
         mine = [o for k, o in opts.items() if k[0] == 0]
-        assert mine and all(o[6] == t.o[0] and o[7] == 0 for o in mine)
+        # re-recorded in step 29 (D-273): picked up, he may still take his one pivot Quick Step, so the phase can find him
+        # on his square or one square away (it read: only on his square); the count runs on either way
+        assert mine and all((o[6] == t.o[0] and o[7] == 0) or (B.cheb(o[6], t.o[0]) == 1 and o[7] == 1) for o in mine)
         # Re-recorded in step 27 (D-256, the prompt's item 6: by the rule, no thirds): nothing until the phase end
         # where the count falls, then all of the -5 (it read a third, two thirds, all of it)
         assert all(o[9] == pytest.approx(-5 if held + 1 >= RC.GUARDED_ENDS else 0) for o in mine)

@@ -1,0 +1,28 @@
+{
+ "Senior Pro": {
+  "shooter": "O1 (Sharpshooter SG, three 11) on B10, 2 square past the arc",
+  "defence": [
+   "M9",
+   "E11",
+   "B6",
+   "I5",
+   "N4"
+  ],
+  "nearest": "X2 on E11, 3 squares off",
+  "can_shoot_there": true,
+  "seconds": 92.8
+ },
+ "Junior": {
+  "shooter": "O1 (Sharpshooter SG, three 11) on B10, 2 square past the arc",
+  "defence": [
+   "K3",
+   "N5",
+   "E6",
+   "I9",
+   "D2"
+  ],
+  "nearest": "X3 on E6, 4 squares off",
+  "can_shoot_there": false,
+  "seconds": 113.5
+ }
+}
