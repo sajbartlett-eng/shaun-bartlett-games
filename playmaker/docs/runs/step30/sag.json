@@ -1,0 +1,35 @@
+{
+ "offence": [
+  "I11",
+  "C9",
+  "O9",
+  "E4",
+  "M4"
+ ],
+ "defence": [
+  "I5",
+  "G9",
+  "N5",
+  "B8",
+  "M10"
+ ],
+ "arrows": [
+  6,
+  3,
+  0,
+  2,
+  0
+ ],
+ "seconds": 163.7,
+ "his_defender": "X3 on N5, 6 squares off",
+ "squares_off": 6,
+ "stance": "off",
+ "read": [
+  "X1 on O5: the nearest defender who takes something off his look",
+  "X2 sags off O2 to guard O1's look (worth 33 without him there)",
+  "X3 on O1: same speed",
+  "X4 sags off O4 to guard O1's look (worth 30 without him there)",
+  "X5 sags off O3 to guard O1's look (worth 30 without him there)"
+ ],
+ "step29_sag_board_defender": "X1 on I8, 3 squares off (set by hand)"
+}

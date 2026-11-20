@@ -1361,6 +1361,17 @@ def _fake_continuations(state):
                         continue
                     nxt += [(pr * pp, t2) for pp, t2 in _leaves(apply(st, x))]
                 cur = nxt
+            # a reply of one action leaves the defence's turn to end there (the reply is its whole turn), as the
+            # rules end it: then the fake is shown and the offence plays
+            done = []
+            for pr, st in cur:
+                if st.stage != 'over' and actor(st) == 'X':
+                    end = next((e for e in legal_actions(st) if e.kind == 'end_turn'), None)
+                    if end is not None:
+                        done += [(pr * pp, t2) for pp, t2 in _leaves(apply(st, end))]
+                        continue
+                done.append((pr, st))
+            cur = done
             for pr, st in cur:
                 keys.append((w * pr, _key_of(st, s0)))
                 if st.stage == 'play' and st.side == 'O' and (best is None or w * pr > best[0]):

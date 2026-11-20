@@ -1742,7 +1742,9 @@ board's whole-square grid no tie can occur (checked on every square). He starts 
 the ball: dribble alive, closely guarded count from nothing (flagged for Shaun). Then the defence, seeing where he ended,
 moves the blocker to any open square within 3 (counted as the game counts squares for movement and reach: across, down
 or diagonally, each 1) or keeps him, and sets his arrow. Everyone else stays. The computer picks the square by the list,
-reading ahead. · Source: Shaun, 20 Nov 2026 · **Ruled; built in step 30.**
+reading ahead: at its own turn every square and arrow within 3; inside its look-ahead, staying and the square the map's
+settlement for the new phase sends him to (or the open square within 3 nearest it), as every Move is read there. ·
+Source: Shaun, 20 Nov 2026 · **Ruled; built in step 30.**
 
 **D-277. Block ratings for the two app-only cards (card change, D-190).** Shaun: the Switch Centre takes the Defensive
 PF's (PF-3) values, Block / Foul (Block) A 10 / 5, B 9 / 6, C 8 / 7: "It's a defensive job." The Slashing Wing: Block

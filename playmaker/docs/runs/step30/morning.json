@@ -1,0 +1,53 @@
+{
+ "defence": {
+  "x": [
+   "I6",
+   "I10",
+   "P6",
+   "D7",
+   "E2"
+  ],
+  "arrows": [
+   0,
+   0,
+   2,
+   2,
+   0
+  ],
+  "seconds": 14.3
+ },
+ "list": [
+  21,
+  18,
+  16,
+  16,
+  15,
+  0
+ ],
+ "sharpshooter": "O2 on C9",
+ "his_defender": "X4 on D7, 2 squares off",
+ "stances": [
+  "X1 sags off O1",
+  "X2 sags off O5",
+  "X3 sags off O3",
+  "X4 sags off O2",
+  "X5 sags off O4"
+ ],
+ "step28_defence": {
+  "x": [
+   "I6",
+   "I10",
+   "P6",
+   "D7",
+   "E2"
+  ],
+  "arrows": [
+   0,
+   0,
+   2,
+   2,
+   0
+  ],
+  "seconds": 12.5
+ }
+}
