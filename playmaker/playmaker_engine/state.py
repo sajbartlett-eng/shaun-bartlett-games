@@ -111,6 +111,7 @@ class GameState:
                               # D-273: bit 7, he has taken his pivot Quick Step since he picked the ball up
     decl: int = 0             # D-272: public: 1 while the declared shot or pass could have been a fake (the defence knows this)
     fake: int = 0             # D-272: hidden from the defence until its reply is done: 1 a shot fake, 2 a pass fake, 0 real
+    reset: int = -1           # D-276: after a block, the blocker who resets (the defence's choice, stage 'reset')
 
     # ---- helpers ----
     def count(self, side, kind):
@@ -216,6 +217,8 @@ class GameState:
             parts.append(f'g{self.turn_lead + 1}')
         if self.decl or self.fake:
             parts.append(f'k{self.decl}{self.fake}')
+        if self.reset >= 0:
+            parts.append(f'r{self.reset + 1}')
         return '|'.join(parts)
 
     def board(self):

@@ -81,6 +81,37 @@ for (_x, _y), _z in ZONE.items():
         _BAND_TOP[_x] = max(_BAND_TOP.get(_x, 0), _y)
 
 
+def push_dir(c):
+    """D-276: the row, column or diagonal that points most directly away from the basket from c (an index into DIRS),
+    or None on the rim's own square. A tie between a straight line and a diagonal would take the diagonal; on this
+    board none happens (the ratio it needs is irrational)."""
+    vx, vy = c[0] - RIM[0], c[1] - RIM[1]
+    if vx == 0 and vy == 0:
+        return None
+    best, key = None, None
+    for i, (dx, dy) in enumerate(DIRS):
+        k = (dx * vx + dy * vy) / (2 ** 0.5 if dx and dy else 1.0)
+        if key is None or k > key + 1e-12 or (abs(k - key) <= 1e-12 and dx and dy):
+            best, key = i, k
+    return best
+
+
+def pushed(c, occupied):
+    """D-276: where a blocked shooter on c ends up: 3 squares back along push_dir, stopping on the last open square
+    before a player or the court's edge (he stays put if the first is blocked)."""
+    d = push_dir(c)
+    if d is None:
+        return c
+    dx, dy = DIRS[d]
+    q = c
+    for _ in range(3):
+        nxt = (q[0] + dx, q[1] + dy)
+        if not on_board(nxt) or nxt in occupied:
+            break
+        q = nxt
+    return q
+
+
 def deep(p):
     """D-274: how many squares past the three-point band p stands (1 to 5), or 0 if it isn't a deep square."""
     if not on_board(p) or zone(p) != '.':

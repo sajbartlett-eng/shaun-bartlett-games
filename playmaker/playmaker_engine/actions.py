@@ -6,8 +6,8 @@ from . import geometry as G
 from . import rules_config as RC
 
 ORDER = ['target', 'pick', 'forced_shot', 'contest', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
-         'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint']
-TOKEN_FREE = {'target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot'}
+         'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint', 'reset']
+TOKEN_FREE = {'target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot', 'reset'}
 MOVEMENT = {'move', 'qs', 'sprint'}
 
 
@@ -56,6 +56,8 @@ class Action(NamedTuple):
             return (f'{who} goes for the block' if self.shot == 'hard' else f'{who} contests') if self.piece >= 0 else "X: don't contest"
         if k == 'forced_shot':
             return f'{who} forced shot ({self.shot})'
+        if k == 'reset':
+            return f'{who} resets to {B.sq(self.dest)} facing {B.DIR_NAMES[self.arrow]}'
         if k == 'pick':
             return f'Failed inbound: ball to O{self.target + 1}'
         if k == 'end_turn':
@@ -740,6 +742,20 @@ def completed_view(state):
 
 # ---- legal actions --------------------------------------------------------------
 
+def reset_actions(s):
+    """D-276: the blocker's reset: any open square within 3 of where he stands (his own included), any arrow."""
+    j = s.reset
+    xp = s.x[j]
+    occ = set(s.o) | {q for k, q in enumerate(s.x) if k != j}
+    out = []
+    for dx in range(-RC.BLOCK_RESET, RC.BLOCK_RESET + 1):
+        for dy in range(-RC.BLOCK_RESET, RC.BLOCK_RESET + 1):
+            q = (xp[0] + dx, xp[1] + dy)
+            if B.on_board(q) and q not in occ:
+                out += [Action('reset', 'X', j, q, a) for a in range(8)]
+    return out
+
+
 def fake_open(s):
     """D-272: may the ball handler fake now? The rule is on; the phase's one Hesitate or fake is unused; he is in control
     (not rushed); the ball is in (no inbound) and the offence is on the move. All of it public: the defence knows it."""
@@ -836,6 +852,8 @@ def legal_actions(state):
     rules = s.ctx.rules
     if s.stage == 'over':
         return []
+    if s.stage == 'reset':
+        return reset_actions(s)
     if s.stage == 'target':
         return [Action('target', 'O', target=i) for i in range(5)]
     if s.stage == 'contest':
