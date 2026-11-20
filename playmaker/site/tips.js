@@ -24,6 +24,8 @@ window.PMTips = (function () {
       text: 'A shot is never rolled. It is worth its points times the shooter\'s rating less the contest. Thirty or more is an Excellent look.' },
     { id: 'contest', when: () => st && st.can_act && ['reaction', 'contest'].includes(st.stage),
       text: 'The shot is up, or is it? The defence replies with 2 actions, and contesting or blocking is one of them: press Contest (never a foul) or Block (a turnover if it works, with the foul risk) with a defender next to the shooter, or it goes up open. If it was a fake, that reply was your turn, and going for the block locks him.' },
+    { id: 'reset', when: () => st && st.can_act && st.stage === 'reset',
+      text: 'Blocked! The shooter has been forced 3 squares back from the basket. Now reset your blocker: any open square within 3 of where he stands, and his arrow. Then a new phase begins with the offence.' },
     { id: 'fake', when: () => st && st.can_act && st.stage === 'play' && st.side === 'O' && st.fake && st.fake.open,
       text: 'After Shoot or Pass you choose Real or Fake in private. A fake ends your turn and uses the phase\'s Hesitate or fake: the defence replies as if it were real, and then it is shown. Not when he is rushed.' },
     { id: 'screen', when: () => mine() && sel.side === 'O' && enderActs(sel.side, sel.i).some(a => a.kind === 'screen'),
