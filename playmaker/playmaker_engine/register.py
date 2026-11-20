@@ -512,7 +512,7 @@ WORDS = {
     'fiba_fouled_shot': dict(sec=None, src=None, tab='the free throws, or the open shot if that is higher',
                              dig='the contested shot plus the free throws that follow, on average (D-174)'),
     'block': dict(sec=None, src=None, tab='none (on hold, D-146)',
-                  dig='a defender next to the shooter goes for the block on any shot: fouls first (Foul (Block)), then the Block roll, a turnover; a miss is his full contest (D-271)'),
+                  dig='a defender next to the shooter goes for the block on any shot: fouls first (Foul (Block)), then the Block roll, a turnover; a miss is his full contest (D-271); after a block the shooter is forced 3 back from the basket and the blocker resets within 3 (D-276)'),
     'fakes': dict(sec=None, src=None, tab='none (on hold, D-146)',
                   dig='a shot or pass fake, hidden until the defence replies; one Hesitate or fake a phase; never when rushed (D-272)'),
     'pivot': dict(sec=None, src=None, tab='none', dig='one Quick Step after a pick-up; still pass or shoot only (D-273)'),
@@ -571,7 +571,11 @@ SPLITS = [
      'Foul (Block): no roll from in front with his arrow on the shooter, one from in front with it off, two from the side '
      'or behind; a foul is a shooting foul (+5 and free throws). No foul: roll his Block or under, 3 less from beside or '
      'with the arrow off, 6 less from behind, 2 less if he is rushed, never below 1. A block is a turnover: −5, the phase '
-     'ends, the same possession goes on, the ball with the shooter where he stands. A miss: the shot goes up against his '
+     'ends, the same possession goes on with a new phase (D-276): the shooter is forced 3 squares straight back from the '
+     'basket (along the row, column or diagonal that points most directly away from it; stopped short by a player or '
+     'the court\'s edge) and starts the phase as if he had just caught the ball; then the blocker may reset to any open '
+     'square within 3 and set his arrow; everyone else stays. In the last phase the possession ends on what it has '
+     'banked. A miss: the shot goes up against his '
      'full contest rating, 3 less from behind, 2 less if he arrived rushed. Against a fake he is locked for the phase and '
      'rolls the same foul rolls; a foul there is an ordinary foul: +5, play on, no free throws.',
      'Shaun, 20 Nov 2026: "bring back the block attempt... Deny the shot entirely." Ratings from his ratings sheet (D-269).'),

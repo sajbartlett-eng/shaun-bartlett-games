@@ -438,8 +438,12 @@ def ahead(h, state):
                     add('27' if rolls else '26', f"O{o + 1} screens X{mine + 1}, the defender of the screener O{first['act'][1] + 1}")
                 else:
                     add('25', f"O{first['act'][1] + 1} then O{o + 1}: two screens in a row")
+        elif p.get('fake'):
+            # step 30: the fake read ahead in the route itself (the defence's reply by its own mix, then the list again)
+            add('58' if kind == 'shot' else '59', f"O{o + 1} fakes; the defence replies ({', '.join(p.get('defence') or []) or 'it holds'}) "
+                f"and the board then reads {p['list'][0]:g}")
         elif kind == 'pass':
-            two = k > 0 and path[k - 1]['act'][0] == 'pass'
+            two = k > 0 and path[k - 1]['act'][0] == 'pass' and not path[k - 1].get('fake')
             add('41' if two else '39', f"O{o + 1} to O{tgt + 1}; the board then reads {p['list'][0]:g}")
             if nxt is not None and nxt['act'][1] == o and nxt['act'][0] in ('move', 'qs', 'sprint'):
                 add('17', f"O{o + 1} moves on after his pass")
@@ -448,7 +452,7 @@ def ahead(h, state):
         elif kind in ('move', 'qs', 'sprint') and dest:
             q = B.parse_sq(dest)
             beside = [d for d, x in enumerate(state.x) if B.on_board(x) and B.adjacent(x, q)]
-            if nxt is not None and nxt['act'][0] == 'pass' and nxt['act'][3] == o and beside:
+            if nxt is not None and nxt['act'][0] == 'pass' and not nxt.get('fake') and nxt['act'][3] == o and beside:
                 add('9b', f"O{o + 1} steps beside X{beside[0] + 1} on {dest}, then the pass comes to him")
             elif p.get('moved'):
                 add('11', f"O{o + 1} moves to {dest} and X{p['moved'][0] + 1} answers; the next turn reads {(nxt or p)['list'][0]:g}")

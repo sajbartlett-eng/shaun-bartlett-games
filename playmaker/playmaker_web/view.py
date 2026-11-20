@@ -390,6 +390,9 @@ def turn_summary(s):
         return "Coach's Call: the offence writes its secret target (defence, look away)"
     if s.stage == 'pick':
         return 'Failed inbound: the offence chooses who gets the ball'
+    if s.stage == 'reset':
+        return (f'Blocked: O{s.ball + 1} is forced back to {B.sq(s.o[s.ball])}. X{s.reset + 1} resets: any open square within 3 '
+                f'of where he stands, and his arrow. Then the new phase begins.')
     if s.stage == 'reaction':
         left = min(2 - s.turn_n, s.tok_x)
         if RC.contest_costs(s.ctx.rules):

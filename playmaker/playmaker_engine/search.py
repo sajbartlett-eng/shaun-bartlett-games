@@ -75,7 +75,7 @@ def zobrist(s):
     rest = (s.stage, s.side, s.clock, s.tok_o, s.tok_x, s.moved_o, s.moved_x, s.cnt, s.turn_n, s.final, s.lock_o,
             s.lock_x, s.screens, s.pending, s.shot, s.prev_wait, s.beaten, s.fouls, s.bonus5, s.tos, s.qs_o, s.qs_x,
             s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.phase_x, s.react_moved, s.forced, s.result,
-            s.rush_o, s.rush_x, s.key_o, s.grd, s.decl, s.fake)
+            s.rush_o, s.rush_x, s.key_o, s.grd, s.decl, s.fake, s.reset)
     return h ^ (hash(rest) & 0xFFFFFFFFFFFFFFFF)
 
 
@@ -85,7 +85,7 @@ def actor(s):
     """'O' or 'X': the side making the next decision."""
     if s.stage in ('target', 'pick', 'forced'):
         return 'O'
-    if s.stage in ('reaction', 'contest'):
+    if s.stage in ('reaction', 'contest', 'reset'):
         return 'X'
     return s.side
 
@@ -166,6 +166,43 @@ def mix_game(cols):
     return best_v, best_p, q
 
 
+def reset_candidates(s):
+    """D-276: the blocker's resets the search reads, at every depth (as every Move is read only to the squares that
+    matter): staying as he is, and where the map's own settlement for the new phase sends him (Read.map_settle, the
+    movements the defence makes from the map in play), or the open square within 3 nearest it. The player may choose
+    any square within 3. Step 30: reading every one of the 300 or so (each a fresh map read of a new board) took minutes
+    a block."""
+    from .actions import reset_actions
+    j = s.reset
+    acts = reset_actions(s)
+    stay = next(a for a in acts if a.dest == s.x[j] and a.arrow == s.arrows[j])
+    out = [stay]
+    try:
+        mv = [z for z in Read(s.with_(stage='play', side='X', reset=-1)).map_settle() if z[0] == j]
+    except ValueError:
+        mv = []
+    for _, q, ar in mv[:1]:
+        ar = s.arrows[j] if ar is None or ar < 0 else ar
+        dests = [a.dest for a in acts if a.arrow == ar]
+        if not dests:
+            continue
+        to = min(dests, key=lambda d: (B.cheb(d, q), max(abs(d[0] - q[0]), 0) + abs(d[1] - q[1]), d))
+        a = next(a for a in acts if a.dest == to and a.arrow == ar)
+        if a != stay:
+            out.append(a)
+    return out
+
+
+def reset_choice(s, value):
+    """D-276: the reset that leaves the offence least by `value` (the earliest of equal worth)."""
+    best = None
+    for a in reset_candidates(s):
+        v = value(apply(s, a))
+        if best is None or v < best[0] - 1e-12:
+            best = (v, a)
+    return best[1]
+
+
 def candidate_actions(s, read=None, per_player=3):
     """The legal actions worth trying as the next action, from geometry: every shot, pass, dribble, steal, intercept
     and challenge; movement to the squares that matter (each attacker's best looks, the carrier's drives, each
@@ -173,6 +210,8 @@ def candidate_actions(s, read=None, per_player=3):
     legal_actions)."""
     acts = [a for a in legal_actions(s) if not is_fake(a)]   # D-272: a fake is read as the mix at the declaration
     side = actor(s)
+    if s.stage == 'reset':
+        return reset_candidates(s)          # D-276: as every Move is read, to the squares that matter (step 30)
     if s.stage in ('contest', 'forced', 'target', 'pick') or len(acts) <= 12:
         return acts
     keep, seen = [], set()
@@ -971,6 +1010,8 @@ class Searcher:
             return terminal_value(n)
         if n.stage == 'play':
             return self.leaf(n)
+        if n.stage == 'reset':                       # D-276: the blocker's reset, read as at the horizon
+            return self.leaf(apply(n, reset_choice(n, self.quick)))
         return self.settled(n)
 
     def phi(self, s):
@@ -1055,6 +1096,8 @@ class Searcher:
             return terminal_value(s)
         if depth >= 1 and fake_world(s):
             return self.mixed(s, depth)              # D-272: the hidden choice, read as the mixed game
+        if depth <= 0 and s.stage == 'reset':
+            return self.leaf(apply(s, reset_choice(s, self.quick)))     # D-276: past the block, the defence's reset
         if depth <= 0:
             if self.settle_shots and s.stage != 'play':
                 return self.leaf(s)                      # step 18b: the declared shot is settled by the rules

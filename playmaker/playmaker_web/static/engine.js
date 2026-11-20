@@ -193,7 +193,7 @@ const PMEngine = (() => {
   const LIMITS = { O: { qs: 2, pass: 2, screen: 2, dribble: 2, hesitate: 1, shot: 1 }, X: { qs: 2, intercept: 2, challenge: 2, steal: 2, pause: 1, contest: 1 } };
   const TURN_ENDERS = new Set(['pass', 'screen', 'dribble', 'hesitate', 'shot', 'intercept', 'challenge', 'steal', 'pause', 'contest']);
   const MOVEMENT = new Set(['move', 'qs', 'sprint']);
-  const TOKEN_FREE = new Set(['target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot']);
+  const TOKEN_FREE = new Set(['target', 'pick', 'end_turn', 'forfeit', 'contest', 'forced_shot', 'reset']);
   const count = (s, side, kind) => s.cnt[cidx(side, kind)];
   const tokens = (s, side) => (side === 'O' ? s.tok_o : s.tok_x);
   const isLocked = (s, side, i) => (((side === 'O' ? s.lock_o : s.lock_x) >> i) & 1) === 1;
@@ -247,6 +247,7 @@ const PMEngine = (() => {
       this.grd = s.grd || 0;                             // D-173: the ball handler's count, packed as GameState.grd
       this.decl = s.decl || 0;                           // D-272: public: the declaration could have been a fake
       this.fake = s.fake || 0;                           // D-272: hidden from the defence: 1 shot fake, 2 pass fake
+      this.reset = s.reset === undefined ? -1 : s.reset; // D-276: the blocker who resets after a block
       this._occ = s._occ || null;
       this._dre = null;                                  // step 13: this state's exact reach, per defender
     }
@@ -266,7 +267,7 @@ const PMEngine = (() => {
       fouls: js.fouls, bonus5: js.bonus5, tos: js.tos, inbound: js.inbound, target: js.target, result: js.result || null,
       zeroed: js.zeroed, phase: js.phase, turn_moved: js.turn_moved, qs_o: js.qs_o, qs_x: js.qs_x, forced: js.forced,
       react_moved: js.react_moved, turn_lead: js.turn_lead, rush_o: js.rush_o || 0, rush_x: js.rush_x || 0,
-      key_o: js.key_o || 0, grd: js.grd || 0, decl: js.decl || 0, fake: js.fake || 0,
+      key_o: js.key_o || 0, grd: js.grd || 0, decl: js.decl || 0, fake: js.fake || 0, reset: js.reset === undefined ? -1 : js.reset,
       turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null,
       phase_x: js.phase_x && js.phase_x.length ? [js.phase_x[0].map(sq), js.phase_x[1].slice()] : null };
     return new St(s);
@@ -280,13 +281,13 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, decl: s.decl, fake: s.fake, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
+      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, decl: s.decl, fake: s.fake, reset: s.reset, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
       phase_x: s.phase_x ? [s.phase_x[0].map(sq), s.phase_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
   const ORDER = ['target', 'pick', 'forced_shot', 'contest', 'end_turn', 'forfeit', 'shot', 'pass', 'dribble', 'screen', 'hesitate',
-    'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint'];
+    'intercept', 'steal', 'challenge', 'pause', 'move', 'qs', 'sprint', 'reset'];
   const OIDX = Object.fromEntries(ORDER.map((k, i) => [k, i]));
   function A(kind, side, piece = -1, dest = -1, arrow = -1, target = -1, shot = '') {
     const id = ((((((OIDX[kind] * 2 + (side === 'O' ? 0 : 1)) * 8 + piece + 1) * 4097 + dest + 1) * 16 + arrow + 1) * 16 + target + 1) * 8)
@@ -309,6 +310,7 @@ const PMEngine = (() => {
     if (k === 'target') return `Coach's Call target O${a.target + 1}`;
     if (k === 'contest') return a.piece >= 0 ? (a.shot === 'hard' ? `${who} goes for the block` : `${who} contests`) : "X: don't contest";
     if (k === 'forced_shot') return `${who} forced shot (${a.shot})`;
+    if (k === 'reset') return `${who} resets to ${sqName(a.dest)} facing ${DIR_NAMES[a.arrow]}`;
     if (k === 'pick') return `Failed inbound: ball to O${a.target + 1}`;
     if (k === 'end_turn') return `${who} End turn`;
     if (k === 'forfeit') return `${who} Forfeit tokens (no legal action)`;
@@ -642,8 +644,53 @@ const PMEngine = (() => {
     return acts;
   }
   const REACTION = new Set(['move', 'qs', 'sprint', 'steal']);
+  // actions.reset_actions (D-276): the blocker's reset, any open square within 3 (his own included), any arrow
+  function resetActions(s) {
+    const j = s.reset, xp = s.x[j], out = [];
+    for (let dx = -3; dx <= 3; dx++) for (let dy = -3; dy <= 3; dy++) {
+      const x = SX[xp] + dx, y = SY[xp] + dy;
+      if (x < 0 || x >= W || y < 1 || y > H) continue;
+      const q = C(x, y);
+      if (s.o.includes(q) || s.x.some((p, k) => k !== j && p === q)) continue;
+      for (let a = 0; a < 8; a++) out.push(A('reset', 'X', j, q, a));
+    }
+    return out;
+  }
+  // board.push_dir, pushed (D-276): 3 squares straight away from the basket, stopped by a player or the court's edge
+  function pushDir(c) {
+    const vx = SX[c] - RIMX, vy = SY[c] - RIMY;
+    if (vx === 0 && vy === 0) return -1;
+    let best = -1, key = null;
+    for (let i = 0; i < 8; i++) {
+      const k = (DX[i] * vx + DY[i] * vy) / (DX[i] && DY[i] ? Math.SQRT2 : 1.0);
+      if (key === null || k > key + 1e-12 || (Math.abs(k - key) <= 1e-12 && DX[i] && DY[i])) { best = i; key = k; }
+    }
+    return best;
+  }
+  function pushed(s, shooter) {
+    const c = s.o[shooter], d = pushDir(c);
+    if (d < 0) return c;
+    let q = c;
+    for (let n = 0; n < 3; n++) {
+      const nxt = q + DSTEP[d];
+      if (!ONB[nxt] || s.o.some((p, k) => k !== shooter && p === nxt) || s.x.includes(nxt)) break;
+      q = nxt;
+    }
+    return q;
+  }
+  // resolve.block_reset (D-276): -5, a new phase, the shooter pushed and as if he had just caught it, the blocker to reset
+  function blockReset(s, shooter, blocker) {
+    s = W_(s, { pending: null, shot: null });
+    if (!s.ctx.ppo) return pickoff(s);
+    s = W_(s, { tos: s.tos + 1, approach: -1, stage: 'play' });
+    const clock = s.clock - 2;
+    if (clock <= 0) return terminal(W_(s, { clock: 0 }), Result('turnover_end'));
+    s = newPhase(W_(s, { o: setAt(s.o, shooter, pushed(s, shooter)), key_o: 0, grd: 0 }), clock);
+    return W_(s, { stage: 'reset', side: 'X', reset: blocker });
+  }
   function legalActions(s) {
     if (s.stage === 'over') return [];
+    if (s.stage === 'reset') return resetActions(s);
     if (s.stage === 'target') return [0, 1, 2, 3, 4].map(i => A('target', 'O', -1, -1, -1, i));
     if (s.stage === 'contest') return contestOptions(s, s.ball, s.shot, s.forced).map(o => A('contest', 'X', o.defender, -1, -1, -1, o.hard ? 'hard' : ''));
     if (s.stage === 'forced') return ZONE_SHOTS[szone(s.ctx, s.o[s.ball])].map(t => A('forced_shot', 'O', s.ball, -1, -1, -1, t));
@@ -944,8 +991,7 @@ const PMEngine = (() => {
     }
     if (opt.block) {
       // resolve.contest_outcome (D-271): with no foul the Block roll: a block is a turnover (resolve._turnover); a miss, the shot
-      let b = W_(s, { pending: null, shot: null, tos: s.tos + 1 });
-      b = s.ctx.ppo ? playOn(b) : terminal(b, Result('turnover_end'), s.ctx.hold_for_one || s.ctx.digital);
+      const b = blockReset(s, shooter, opt.defender);
       made = chance([[pS(opt.block), 'blocked', b], [pNot(opt.block), 'not blocked', made]]);
     }
     if (opt.clean || opt.k === 0) return made;
@@ -1064,6 +1110,11 @@ const PMEngine = (() => {
     if (k === 'target') return W_(s, { target: a.target, stage: 'play' });
     if (k === 'pick') return W_(s, { ball: a.target, stage: 'play', grd: 0 });
     if (k === 'forced_shot') return W_(s, { shot: a.shot, stage: 'contest', side: 'X', forced: true });
+    if (k === 'reset') {                                 // resolve.apply 'reset' (D-276): then the new phase begins
+      s = W_(s, { x: setAt(s.x, a.piece, a.dest), arrows: setAt(s.arrows, a.piece, a.arrow), stage: 'play', side: 'O', reset: -1 });
+      if (s.ctx.ppoRule) s = W_(s, { phase_x: [s.x, s.arrows] });
+      return s;
+    }
     if (k === 'contest') {
       const hard = a.shot === 'hard';                    // D-261: an inside shot's hard Contest (the block)
       const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece && !!o.hard === hard);
@@ -3462,13 +3513,13 @@ const PMEngine = (() => {
     mix(s.turn_lead);
     if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
     if (s.phase_x) { for (const q of s.phase_x[0]) mix(q); for (const q of s.phase_x[1]) mix(q); }
-    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd); mix(s.decl); mix(s.fake);
+    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd); mix(s.decl); mix(s.fake); mix(s.reset + 1);
     if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
     h1 ^= a; h2 ^= b;
     return (h1 >>> 0) * 65536 + ((h2 >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
   }
   const ttKey = (z, depth) => z * 16 + depth;          // a Map key: equal keys mean equal (state, depth)
-  const actor = s => (s.stage === 'target' || s.stage === 'pick' || s.stage === 'forced') ? 'O' : (s.stage === 'reaction' || s.stage === 'contest') ? 'X' : s.side;
+  const actor = s => (s.stage === 'target' || s.stage === 'pick' || s.stage === 'forced') ? 'O' : (s.stage === 'reaction' || s.stage === 'contest' || s.stage === 'reset') ? 'X' : s.side;
   const terminalValue = s => scoreTotal(s) + foulExternality(s);
   const TIMEOUT = { timeout: true };
   const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
@@ -3508,7 +3559,33 @@ const PMEngine = (() => {
     }
     return [bestV, bestP, q];
   }
+  // search.reset_candidates, reset_choice (D-276): each open square within 3, arrow toward the shooter, or staying as he is
+  function resetCandidates(s) {       // staying, and where the map's settlement sends him (or the open square within 3 nearest it)
+    const j = s.reset, acts = resetActions(s);
+    const stay = acts.find(a => a.dest === s.x[j] && a.arrow === s.arrows[j]);
+    const out = [stay];
+    const mv = new Read(W_(s, { stage: 'play', side: 'X', reset: -1 })).mapSettle().filter(z => z[0] === j).slice(0, 1);
+    for (const [, q, a0] of mv) {
+      const ar = (a0 === null || a0 === undefined || a0 < 0) ? s.arrows[j] : a0;
+      let to = null, tk = null;
+      for (const a of acts) {
+        if (a.arrow !== ar) continue;
+        const d = a.dest, k = [cheb(d, q), Math.abs(SX[d] - SX[q]) + Math.abs(SY[d] - SY[q]), SX[d], SY[d]];
+        if (tk === null || k[0] < tk[0] || (k[0] === tk[0] && (k[1] < tk[1] || (k[1] === tk[1] && (k[2] < tk[2] || (k[2] === tk[2] && k[3] < tk[3])))))) { to = d; tk = k; }
+      }
+      if (to === null) continue;
+      const a = acts.find(x => x.dest === to && x.arrow === ar);
+      if (a !== stay) out.push(a);
+    }
+    return out;
+  }
+  function resetChoice(s, value) {
+    let best = null;
+    for (const a of resetCandidates(s)) { const v = value(apply(s, a)); if (best === null || v < best[0] - 1e-12) best = [v, a]; }
+    return best[1];
+  }
   function candidateActions(s, read, perPlayer = 3) {
+    if (s.stage === 'reset') return resetCandidates(s);                       // D-276: to the squares that matter (step 30)
     const acts = legalActions(s).filter(a => !isFake(a)), side = actor(s);      // D-272: a fake is read as the mix at the declaration
     if (s.stage === 'contest' || s.stage === 'forced' || s.stage === 'target' || s.stage === 'pick' || acts.length <= 12) return acts;
     const keep = [], seen = new Set();
@@ -4118,6 +4195,7 @@ const PMEngine = (() => {
       if (isChance(n)) { let t = 0; for (const o of n.outcomes) t += o[0] * this.settleNode(o[2]); return t; }
       if (n.stage === 'over') return terminalValue(n);
       if (n.stage === 'play') return this.leaf(n);
+      if (n.stage === 'reset') return this.leaf(apply(n, resetChoice(n, m => this.quick(m))));   // D-276: as at the horizon
       return this.settled(n);
     }
     phi(s, z) {
@@ -4182,6 +4260,7 @@ const PMEngine = (() => {
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
       if (depth >= 1 && fakeWorld(s)) return this.mixed(s, depth);           // D-272: the hidden choice, read as the mixed game
+      if (depth <= 0 && s.stage === 'reset') return this.leaf(apply(s, resetChoice(s, n => this.quick(n))));   // D-276
       if (depth <= 0) {
         if (this.settleShots && s.stage !== 'play') return this.leaf(s);      // step 18b: the declared shot is settled by the rules
         if (this.quiet || this.playOn) {

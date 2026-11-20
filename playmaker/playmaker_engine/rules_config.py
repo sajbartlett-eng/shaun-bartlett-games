@@ -462,6 +462,7 @@ def deep_open(ctx):
     return DEEP_ROWS[('senior', 'pro')]
 
 
+BLOCK_RESET = 3        # D-276: the blocker may reset to any open square within 3 (the game's square count, Chebyshev)
 BLOCK_SIDE = 3          # D-271: the block from beside, or in front with the arrow off: 3 less (the contest table's step)
 BLOCK_BEHIND = 6        # D-271: the block from behind: 6 less
 

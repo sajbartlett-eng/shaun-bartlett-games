@@ -114,12 +114,22 @@ def fake_reveal_lines(before, after, a):
 def consequences(before, after, a):
     """What an action changed, in plain words (from the state difference, so it is always true)."""
     out = []
+    if a.kind == 'reset':
+        # D-276, Shaun's line: "Blocked by X5. O4 is forced back to F7; X5 resets to H5."
+        return [('info', f'Blocked by X{a.piece + 1}. O{before.ball + 1} is forced back to {B.sq(before.o[before.ball])}; '
+                         f'X{a.piece + 1} resets to {B.sq(a.dest)}.'),
+                ('info', f'The new phase begins: O{after.ball + 1} has the ball as if he had just caught it.')]
     d198 = RC.app_rule(after.ctx.rules, 'points_play_on') and not after.ctx.hold_for_one
     out += fake_reveal_lines(before, after, a)
     if d198 and after.tos > before.tos and a.kind == 'contest' and a.shot == 'hard':
         # D-271: a block is a turnover (as after a won Steal, the ball stays with the shooter where he stands)
         rest = ' No phase is left: the possession is over.' if after.stage == 'over' else ' The phase ends; the next one begins.'
-        out.append(('bad_O', f'Blocked by X{a.piece + 1}: a turnover, −5. The ball stays with O{before.ball + 1} where he stands.{rest}'))
+        if getattr(after, 'stage', '') == 'reset':
+            # D-276: the shooter forced 3 back from the basket; the blocker resets next (the defence's choice)
+            out.append(('bad_O', f'Blocked by X{a.piece + 1}: a turnover, −5. O{before.ball + 1} is forced back to '
+                                 f'{B.sq(after.o[before.ball])}; X{a.piece + 1} resets next (any square within 3).{rest}'))
+        else:
+            out.append(('bad_O', f'Blocked by X{a.piece + 1}: a turnover, −5. The ball stays with O{before.ball + 1} where he stands.{rest}'))
     elif d198 and after.tos > before.tos:
         # D-198: every turnover is -5; the phase ends there and the next begins (or nothing is left to play)
         rest = ' No phase is left: the possession is over.' if after.stage == 'over' else ' The phase ends; the next one begins.'

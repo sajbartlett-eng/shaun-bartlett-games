@@ -46,7 +46,7 @@ def state_json(s):
                 approach=s.approach, shot=s.shot, prev_wait=s.prev_wait, beaten=[list(t) for t in s.beaten],
                 fouls=s.fouls, bonus5=s.bonus5, tos=s.tos, inbound=s.inbound, target=s.target, result=res,
                 zeroed=s.zeroed, phase=s.phase, turn_moved=s.turn_moved, qs_o=s.qs_o, qs_x=s.qs_x, forced=s.forced,
-                react_moved=s.react_moved, turn_lead=s.turn_lead, rush_o=s.rush_o, rush_x=s.rush_x, key_o=s.key_o, grd=s.grd, decl=s.decl, fake=s.fake,
+                react_moved=s.react_moved, turn_lead=s.turn_lead, rush_o=s.rush_o, rush_x=s.rush_x, key_o=s.key_o, grd=s.grd, decl=s.decl, fake=s.fake, reset=s.reset,
                 turn_x=[[sq(p) for p in s.turn_x[0]], list(s.turn_x[1])] if s.turn_x else [],
                 phase_x=[[sq(p) for p in s.phase_x[0]], list(s.phase_x[1])] if s.phase_x else [])
 
