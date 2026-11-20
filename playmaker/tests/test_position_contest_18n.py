@@ -16,6 +16,9 @@ from playmaker_engine.resolve import apply, ChanceNode
 from playmaker_engine.scenarios import game_state
 from playmaker_engine.scoring import auto_contest, contest_options, score
 
+# Re-recorded in step 29 under the current rules: D-261 (step 28) made every contest an action, the Contest pressed by a
+# defender next to the shooter, and D-271 (step 29) made the block its own action. The position table (D-191, D-193,
+# D-194) is still what the honest Contest takes off; it is no longer automatic. (Missed in step 28's run.)
 ON = RC.with_rules(digital=True)
 OFF = RC.with_rules(digital=True, position_contest='off')
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +40,13 @@ def no_action(s, shot):
 
 
 def blocks(s, shot):
-    return [a for a in legal_actions(declared(s, shot)) if a.kind == 'contest']
+    return [a for a in legal_actions(declared(s, shot)) if a.kind == 'contest' and a.shot == 'hard']
+
+
+def contested(s, shot, piece=0):
+    """The defence presses the honest Contest with X(piece+1)."""
+    r = declared(s, shot)
+    return apply(r, next(a for a in legal_actions(r) if a.kind == 'contest' and a.piece == piece and a.shot != 'hard'))
 
 
 def test_the_rule_is_the_apps_and_needs_the_soft_contest():
@@ -54,19 +63,20 @@ def test_a_jump_shot_is_contested_by_position_only():
                             ('J10', 'W', con - 3), ('J10', 'N', con - 3),   # beside him: 3 less, whatever the arrow
                             ('I11', 'S', max(1, con - 6))):            # behind: 6 less, and never under 1 (D-193)
         s = board('I10', x1, arrow)
-        assert auto_contest(s, 0, 'three') == (0, want, 'position'), (x1, arrow)
-        assert not blocks(s, 'three')                                  # no Contest action on a jump shot
-        end = no_action(s, 'three')
-        assert not isinstance(end, ChanceNode)                         # and never a foul roll
+        assert auto_contest(s, 0, 'three') == (0, want, 'position'), (x1, arrow)     # the table his Contest takes off
+        assert [a.piece for a in blocks(s, 'three')] == [0]            # (step 29: the block is open on a three too)
+        assert no_action(s, 'three').result.contest == 0               # (step 28: nobody presses Contest: open)
+        end = contested(s, 'three')
+        assert not isinstance(end, ChanceNode)                         # and the Contest is never a foul roll
         assert end.result.contest == want and end.result.contester == 0 and end.result.kind == 'shot'
         assert end.result.shot_value == 3 * (s.ctx.off[0].shot('three') - want)
 
 
 def test_a_jump_shots_contest_names_position_in_plain_words():
-    assert 'X1 was square in front of O1, so the three was contested (25% off)' in score(no_action(board('I10', 'I9', 'N'), 'three')).detail
-    assert 'X1 was in front of O1 with his arrow off him, so the three was contested (10% off)' in score(no_action(board('I10', 'I9', 'E'), 'three')).detail
-    assert 'X1 was beside O1, so the three was contested (10% off)' in score(no_action(board('I10', 'J10', 'W'), 'three')).detail
-    assert 'X1 was behind O1, so the three was contested (5% off)' in score(no_action(board('I10', 'I11', 'S'), 'three')).detail
+    assert 'X1 was square in front of O1, so the three was contested (25% off)' in score(contested(board('I10', 'I9', 'N'), 'three')).detail
+    assert 'X1 was in front of O1 with his arrow off him, so the three was contested (10% off)' in score(contested(board('I10', 'I9', 'E'), 'three')).detail
+    assert 'X1 was beside O1, so the three was contested (10% off)' in score(contested(board('I10', 'J10', 'W'), 'three')).detail
+    assert 'X1 was behind O1, so the three was contested (5% off)' in score(contested(board('I10', 'I11', 'S'), 'three')).detail
 
 
 def test_a_rushed_defender_contests_a_jump_shot_two_lower():
@@ -82,7 +92,9 @@ def test_only_the_best_contest_counts_on_a_jump_shot():
     s = board('I10', 'I11', 'S', x4='I9')                              # X1 behind (1 off), X4 square (his full rating)
     j, c, kind = auto_contest(s, 0, 'three')
     assert (j, c) == (3, s.ctx.dfn[3].con('three')) and c > 1
-    assert no_action(s, 'three').result.contester == 3
+    # (step 28, 29: one defender per shot, the one who presses; his Contest ends the reply, so never two)
+    assert contested(s, 'three', 3).result.contester == 3 and contested(s, 'three', 3).result.contest == c
+    assert contested(s, 'three', 0).result.contester == 0
 
 
 def test_one_table_sets_every_shot_by_position():
@@ -101,9 +113,10 @@ def test_inside_from_in_front_with_the_arrow_on_him_the_full_contest_is_automati
     s = board('I4', 'I3', 'N')
     con = s.ctx.dfn[0].con('layup')
     assert auto_contest(s, 0, 'layup') == (0, con, 'full')
-    assert not blocks(s, 'layup')                                      # no choice where it cost nothing
-    end = no_action(s, 'layup')
+    end = contested(s, 'layup')                                        # (step 28: pressed, the full contest, no foul)
     assert not isinstance(end, ChanceNode) and end.result.contest == con
+    blk = apply(declared(s, 'layup'), blocks(s, 'layup')[0])          # (step 29: the block square: no foul roll first)
+    assert isinstance(blk, ChanceNode) and blk.what.startswith('Block ') and 'foul' not in blk.what
     assert 'went straight up in front of O1 with his arrow on him' in score(end).detail and 'no foul' in score(end).detail
 
 
@@ -115,9 +128,9 @@ def test_inside_the_hand_up_is_automatic_and_the_block_risks_the_foul():
         con = s.ctx.dfn[0].con('layup')
         hand = max(1, con - 3 - (3 if behind else 0))
         assert auto_contest(s, 0, 'layup') == (0, hand, 'soft'), x1
-        assert no_action(s, 'layup').result.contest == hand
+        assert contested(s, 'layup').result.contest == hand            # (step 28: pressed; never a foul)
         assert [a.piece for a in blocks(s, 'layup')] == [0]
-        opt = next(o for o in contest_options(s, 0, 'layup') if o.defender == 0)
+        opt = next(o for o in contest_options(s, 0, 'layup') if o.defender == 0 and o.hard)
         assert opt.contest == con - (3 if behind else 0) and not opt.clean and opt.rolls == rolls and opt.p_foul > 0
         node = apply(declared(s, 'layup'), blocks(s, 'layup')[0])
         assert isinstance(node, ChanceNode)                            # going for the block rolls for the foul
@@ -135,7 +148,7 @@ def test_a_contesting_defender_always_takes_at_least_one_off():
 def test_with_the_rule_off_the_soft_and_hard_contest_are_as_before():
     s = board('I10', 'I9', 'N', rules=OFF)
     assert auto_contest(s, 0, 'three') == (0, 2, 'soft')               # a three's hand up: 5 less 3 (D-177)
-    assert [a.piece for a in blocks(s, 'three')] == [0]                # and the Contest action is there
+    assert [a.piece for a in legal_actions(declared(s, 'three')) if a.kind == 'contest'] == [0]   # and the Contest action is there
 
 
 def test_every_contest_rating_is_shauns_original():

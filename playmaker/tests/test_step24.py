@@ -72,6 +72,9 @@ def test_the_scouts_case_table_is_14_cases_a_jump_shot_and_22_an_inside_shot():
     for t in PL.INSIDE:
         assert len(PL.cases_for(t)) * 2 == 22
     assert set(PL.INSIDE) == {'layup', 'dunk', 'post', 'floater'} and set(PL.SHOT_ZONE) == set(PL.INSIDE) | set(RC.JUMP_SHOTS)
+    # step 29 (D-271): under the block, every shot has the same 13 cases (the block from every position, square too): 26
+    for t in PL.SHOT_ZONE:
+        assert len(PL.cases_for(t, RULES)) * 2 == 26
 
 
 @pytest.mark.parametrize('off,dfn', [('Five Out', 'High-Low'), ('Shoot and Protect', 'Lockdown'), ('High-Low', 'Run and Gun')])
@@ -82,7 +85,8 @@ def test_every_case_in_the_table_matches_the_contest_rules(off, dfn):
     for i, j in itertools.product(range(5), range(5)):
         for t in PL.SHOT_ZONE:
             rows = PL.shot_review(ocards[i], dcards[j], t, RULES)
-            assert len(rows) == (14 if t in RC.JUMP_SHOTS else 22)
+            # re-recorded in step 29 (D-271): the block on every shot and from every position: 26 cases (it read 14 or 22)
+            assert len(rows) == 26
             for r in rows:
                 s_r, d_r = r['shooter'] == 'rushed', r['defender'] == 'rushed'
                 if r['where'] == 'side' and r['how'] == 'block':
@@ -94,11 +98,11 @@ def test_every_case_in_the_table_matches_the_contest_rules(off, dfn):
                     v, opt = _engine(off, dfn, i, j, t, r['where'], r['how'], s_r, d_r)
                     assert v == r['value'], (i, j, t, r)
                     if r['how'] == 'block':
-                        assert opt.rolls == 2
+                        assert opt.rolls == (0 if r['where'] == 'square' else 2)    # D-271: square, no foul roll
                     if r['where'] != 'open':
                         assert opt.contest == r['contest'] >= 1          # D-193: every contest takes at least 1
                 seen += 1
-    assert seen == 25 * (3 * 14 + 4 * 22)
+    assert seen == 25 * 7 * 26
 
 
 def test_a_square_defender_on_an_inside_shot_never_fouls_and_a_jump_shot_has_no_block():
@@ -109,13 +113,17 @@ def test_a_square_defender_on_an_inside_shot_never_fouls_and_a_jump_shot_has_no_
     # Re-recorded in step 28 (D-261): the contest is an action now, so the square defender has a Contest to press (it
     # read: no Contest action, the full contest automatic). It is his full rating and never a foul, and he has no block.
     mine = [q for q in SC.contest_options(st, 0, 'layup') if q.defender == 0]
-    assert len(mine) == 1 and mine[0].clean and not mine[0].hard and mine[0].p_foul == 0
+    # re-recorded in step 29 (D-271): he may also go for the block, and square with his arrow on the shooter it rolls no
+    # foul (it read: one option, no block)
+    assert len(mine) == 2 and all(q.clean and q.p_foul == 0 for q in mine)
+    assert [q.hard for q in mine] == [False, True] and mine[1].block == st.ctx.dfn[0].r['block']
     c3, f3, _, _ = _spot('3')
     st3 = game_state('Five Out', 'High-Low', [B.sq(c3)] + FAR_O, [B.sq(f3)] + FAR_X, [0] * 5, ball=0, rules=RULES, check=False)
-    # a jump shot: his Contest is the position table, never a foul, and there is no block (it read: no Contest at all)
+    # a jump shot: his Contest is the position table, never a foul. Re-recorded in step 29 (D-271): the block is open on a
+    # three too ("Neutrality demands that a block attempt can be attempted on a three pointer"); it read: no block
     jump = [q for q in SC.contest_options(st3, 0, 'three') if q.defender >= 0]
-    assert all(q.clean and not q.hard for q in jump)
-    assert all(r['how'] in (None, 'hand') for r in PL.shot_review(TEAMS['Five Out'][0], TEAMS['High-Low'][0], 'three', RULES))
+    assert all(q.clean for q in jump if not q.hard) and any(q.hard for q in jump)
+    assert any(r['how'] == 'block' for r in PL.shot_review(TEAMS['Five Out'][0], TEAMS['High-Low'][0], 'three', RULES))
 
 
 # ---- the scout: movement, tolerance, the spec ---------------------------------------------------------------------------
@@ -152,9 +160,15 @@ def test_the_acceptance_spec_falls_out_of_the_bar_and_the_scouts_cases():
         assert spec['open'] == (open_v >= bar)
         for d in range(5):
             ok = {(w, df) for w, df in map(tuple, spec['by'].get(d, []))}
+            # re-recorded in step 29 (D-271): a case now has two rows, his Contest and his Block; it is accepted when the
+            # defence's better of the two still leaves the shot at the bar (it read: one row a case)
+            least = {}
             for r in sc.shots(1, d, 'three'):
                 if r['shooter'] == 'set' and r['where'] != 'open':
-                    assert ((r['where'], r['defender']) in ok) == (float(r['value']) >= bar)
+                    k = (r['where'], r['defender'])
+                    least[k] = min(least.get(k, float('inf')), float(r['value']))
+            for k, v in least.items():
+                assert (k in ok) == (v >= bar)
     hard = PL.acceptance(sc, 1, 'three', open_v - 1)
     assert hard['refused'] == [0, 1, 2, 3, 4] and hard['words'].startswith('Create a three for O2: open accepted')
     assert 'contested by X1, X2, X3, X4 or X5 not accepted' in hard['words']             # Shaun's form

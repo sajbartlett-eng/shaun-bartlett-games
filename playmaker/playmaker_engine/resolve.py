@@ -6,7 +6,7 @@ from . import board as B
 from . import geometry as _G
 from . import rules_config as RC
 from .actions import Action, intercept_status, is_approach, inbound_held, closely_guarded, MOVEMENT, TOKEN_FREE
-from .scoring import (p_success, rolled, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
+from .scoring import (shot_zone, p_success, rolled, p_foul, choose_contest, shot_points, free_throws, contest_options, foul_on_shot_points,
                       shot_rating, soft_contest, soft_option)
 from .state import CI, ZERO_COUNTS, Result, count_key, pack_guard
 
@@ -140,6 +140,58 @@ def _turnover(s):
     return s
 
 
+def unmask(s):
+    """D-272: the fake is shown. The declared shot or pass never happened: its count goes back and the phase's one
+    Hesitate or fake is used instead; a fake after movement has picked the ball up (D-173: pass or shoot only); a fake
+    isn't a move or a dribble, so it doesn't make him active. The defence's actions stand as taken."""
+    kind = 'shot' if s.fake == 1 else 'pass'
+    cnt = list(s.cnt)
+    cnt[CI[kind]] = max(0, cnt[CI[kind]] - 1)
+    cnt[CI['hesitate']] += 1
+    g = s.grd
+    if RC.app_rule(s.ctx.rules, 'closely_guarded') and g & 3 == 1:
+        g = (g & ~3) | 2
+    return s.with_(cnt=tuple(cnt), grd=g, fake=0, decl=0, stage='play', shot=None, pending=None, approach=-1,
+                   react_moved=0, final=s.final or s.tok_o <= 0)
+
+
+def reveal(s):
+    """D-272: the defence's reply to a fake was its turn: show the fake and give the offence its next turn (the phase
+    ends there if the fake was the offence's last action)."""
+    shot = s.fake == 1
+    s = unmask(s)
+    if shot:
+        s = _age_screens(s)
+    s = s.with_(prev_wait='', approach=-1)
+    if s.final or s.tok_o <= 0:
+        return end_phase(s)
+    return s.with_(side='O', turn_n=0, turn_lead=-1, turn_x=())
+
+
+def fake_block(s, j):
+    """D-271, D-272: X(j+1) went for the block on a shot fake: locked for the phase, and the block's foul rolls (Foul
+    (Block); none square, one in front with the arrow off, two from the side or behind). No shot went up, so a foul is
+    an ordinary foul (D-198: +5, play on, a team foul counted, no free throws). Then the fake is shown."""
+    from .scoring import block_terms, foul_rolls
+    locked = _lock(s, 'X', j)
+    xp, spos = s.x[j], s.o[s.ball]
+    square = any(o.defender == j and o.category == 'square' for o in contest_options(s, s.ball, s.shot, False)
+                 if getattr(o, 'block', 0))
+    rolls, _ = block_terms(square, B.dist_rim(xp) > B.dist_rim(spos))
+    if rolls is None:
+        rolls = foul_rolls(s.ctx.rules, xp, spos)
+    if not rolls:
+        return reveal(locked)
+    fr = s.ctx.dfn[j].r['foul_block']
+    fouled = locked.with_(fouls=locked.fouls + 1, bonus5=locked.bonus5 + (1 if ppo(s) else 0))
+    one = p_foul(fr, s.ctx.rules)
+    lab = f'Block foul {fr} (X{j + 1}, going for the block on a fake'
+    if rolls == 2:
+        second = chance(lab + ', second roll)', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', reveal(locked))], 'X')
+        return chance(lab + '; two foul rolls)', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', second)], 'X')
+    return chance(lab + ')', [(one, 'foul', reveal(fouled)), (1 - one, 'no foul', reveal(locked))], 'X')
+
+
 LOSE_PHASE = ('minus5_lose_phase', 'lose_phase')
 COST_UNITS = {'minus5_lose_phase': 1, 'minus5': 1, 'minus10': 2, 'lose_phase': 0, 'end_possession': 1}
 
@@ -210,13 +262,15 @@ def complete_pass(s):
 def resolve_shot(s, forced=False):
     """The declared (or forced) shot reaches its contest. With contest_choice='player' this returns the
     decision node (the defence chooses who contests); otherwise the automatic contest is resolved."""
+    if s.fake == 1 and not forced:
+        return reveal(s)                     # D-272: the reply is done: it was a fake
     shooter = s.ball
     spos = s.o[shooter]
     rules = s.ctx.rules
     if forced:
-        if not B.on_board(spos) or B.zone(spos) == '.':
+        if not B.on_board(spos) or shot_zone(s.ctx, spos) == '.':
             return _terminal(s, Result('forced', shooter, '', 0))
-        types = RC.ZONE_SHOTS[B.zone(spos)]
+        types = RC.ZONE_SHOTS[shot_zone(s.ctx, spos)]      # D-274: a deep three where his team's level allows it
         if rules.forced_shot_choice == 'player' and len(types) > 1:
             return s.with_(stage='forced', side='O', shot=None, forced=True, turn_n=0, pending=None)
         if rules.forced_shot_choice == 'player':
@@ -244,7 +298,7 @@ def contest_outcome(s, opt, forced):
     spos = s.o[shooter]
     card = s.ctx.off[shooter]
     t = s.shot
-    pts = shot_points(spos)
+    pts = shot_points(spos, s.ctx)
     kind = 'forced' if forced else 'shot'
     rating = shot_rating(s, shooter, t)              # D-151: reduced when the shooter is rushed
     made = _terminal(s, Result(kind, shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0,
@@ -258,6 +312,13 @@ def contest_outcome(s, opt, forced):
             if s.ctx.rules.floor_declared_shot:
                 v2 = max(0, v2)
             made = _terminal(s, Result(kind, shooter, t, pts, rating, c2, j2, v2, 0, soft=True))
+    if getattr(opt, 'block', 0):
+        # D-271: the block. With no foul, the Block roll: a block is a turnover (D-198: -5, the phase lost, the same
+        # possession, the ball with the shooter where he stands, as after a won Steal); a miss, the shot against his contest
+        blocked = _turnover(s.with_(pending=None, shot=None))
+        bk = opt.block
+        made = chance(f'Block {bk} (X{opt.defender + 1}, going for the block)',
+                      [(opt.p_block, 'blocked', blocked), (1 - opt.p_block, 'not blocked', made)], 'X')
     if opt.clean or opt.p_foul == 0:
         return made
     _, and1 = foul_on_shot_points(card, t, pts, s.ctx.rules, rating, opt.value, rating - opt.contest)
@@ -265,16 +326,20 @@ def contest_outcome(s, opt, forced):
     if ppo(s):
         fs = fs.with_(bonus5=fs.bonus5 + 1)             # D-198: a shooting foul is +5 and its free throws
     fouled = _terminal(fs, Result('free_throws', shooter, t, pts, rating, opt.contest, opt.defender, 0, opt.ft, and1))
-    fr = s.ctx.dfn[opt.defender].r['foul_contest']
+    fr = s.ctx.dfn[opt.defender].r['foul_block' if getattr(opt, 'block', 0) else 'foul_contest']
     why = 'arrow off the shooter' if s.ctx.rules.contest_geometry == 'current' else f'{opt.category} contest'
+    if getattr(opt, 'block', 0):
+        why = f'going for the block from {"behind" if opt.category == "behind" else "the side or in front, arrow off"}'
     one = p_foul(fr, s.ctx.rules)
     if getattr(opt, 'rolls', 1) == 2:
         # step 3n F2: contesting from the side or behind (level with the shooter or further from the rim): two rolls
-        second = chance(f'Contest foul {fr}, second roll (X{opt.defender + 1}, reaching from the side or behind)',
+        lab = 'Block foul' if getattr(opt, 'block', 0) else 'Contest foul'
+        second = chance(f'{lab} {fr}, second roll (X{opt.defender + 1}, reaching from the side or behind)',
                         [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
-        return chance(f'Contest foul {fr} (X{opt.defender + 1}, {why}; reaching from the side or behind: two foul rolls)',
+        return chance(f'{lab} {fr} (X{opt.defender + 1}, {why}; reaching from the side or behind: two foul rolls)',
                       [(one, 'foul', fouled), (1 - one, 'no foul', second)], 'X')
-    return chance(f'Contest foul {fr} (X{opt.defender + 1}, {why})',
+    lab = 'Block foul' if getattr(opt, 'block', 0) else 'Contest foul'
+    return chance(f'{lab} {fr} (X{opt.defender + 1}, {why})',
                   [(one, 'foul', fouled), (1 - one, 'no foul', made)], 'X')
 
 
@@ -286,7 +351,7 @@ def settle(node):
     if node.stage == 'contest':
         return settle(contest_outcome(node, choose_contest(node, node.ball, node.shot, node.forced), node.forced))
     if node.stage == 'forced':
-        types = RC.ZONE_SHOTS[B.zone(node.o[node.ball])]
+        types = RC.ZONE_SHOTS[shot_zone(node.ctx, node.o[node.ball])]
         t = max(types, key=lambda t: (choose_contest(node, node.ball, t, True).ev, -types.index(t)))
         return settle(apply(node, Action('forced_shot', 'O', node.ball, shot=t)))
     return node
@@ -328,7 +393,7 @@ def phase_counts(s):
                 held = 0
         else:
             held = 0                         # nobody closely guards him at a phase end: the count starts again
-        g = pack_guard(ball, held, idle, 0)
+        g = pack_guard(ball, held, idle, 0) | (s.grd & 128 if ball == 2 else 0)     # D-273: one pivot a pick-up
         if g != s.grd:
             s = s.with_(grd=g)
     return s
@@ -396,6 +461,8 @@ def end_turn(s, side, kind=''):
             return end_phase(s)
         return s
     phase = s.phase
+    if s.pending and s.fake == 2:
+        s = unmask(s)                        # D-272: the reply is done: it was a pass fake, the ball never left him
     if s.pending:
         s = complete_pass(s)
         if s.phase != phase:
@@ -475,6 +542,9 @@ def apply(state, action, check=False):
             raise ValueError(f'X{a.piece + 1} cannot contest this shot' + (' hard' if hard else ''))
         if s.stage == 'reaction':                 # D-18: a Contest is the reaction's last action and uses a token
             s = _spend(s, side).with_(turn_n=s.turn_n + 1)
+        if s.fake == 1:
+            # D-272: a fake: an honest Contest does nothing; going for the block locks him and risks an ordinary foul
+            return fake_block(s, a.piece) if hard else reveal(s)
         return contest_outcome(s, opts[a.piece], s.forced)
 
     if k not in TOKEN_FREE:
@@ -484,6 +554,26 @@ def apply(state, action, check=False):
     if k == 'end_turn' or k == 'forfeit':
         return _after(state, s, side, k)
 
+    if side == 'X' and s.pending and s.fake == 2:
+        # D-272: a pass fake. Going for the ball is the gamble: an Intercept or a Steal locks him (a lane jump's step
+        # stands), then the reply is over and the fake is shown. A movement keeps the 'pass' in the air, as for a real
+        # one; any other action shows it first (nothing lands: the ball never left).
+        if k in ('intercept', 'steal'):
+            if k == 'intercept' and a.dest is not None:
+                x = list(s.x)
+                x[a.piece] = a.dest
+                s = s.with_(x=tuple(x))
+                if a.target == 0:
+                    s = s.with_(moved_x=s.moved_x | 1 << a.piece)
+                else:
+                    s = _inc(s, 'X', 'qs').with_(qs_x=s.qs_x | 1 << a.piece)
+                if RC.control_size(s.ctx.rules):
+                    s = s.with_(rush_x=(s.rush_x & ~(3 << 2 * a.piece)) | ((0 if a.target == 0 else RC.RUSH_QS) << 2 * a.piece))
+            s = _inc(s, 'X', k)
+            return reveal(_lock(s, 'X', a.piece))
+        answering = k in MOVEMENT and (is_approach(state, a) or rules_ij(state))
+        if not answering:
+            s = unmask(s).with_(side='X')
     # A pending pass lands at the start of the defence's turn unless this action answers it.
     if side == 'X' and s.pending and not inbound_held(state):
         answering = k == 'intercept' or (k in MOVEMENT and (is_approach(state, a) or rules_ij(state)))
@@ -499,7 +589,10 @@ def apply(state, action, check=False):
             o[a.piece] = a.dest
             s = s.with_(o=tuple(o))
             if a.piece == s.ball and RC.app_rule(s.ctx.rules, 'closely_guarded'):
-                s = s.with_(grd=pack_guard(1, 0, 0, 1))      # D-173: he moves with the ball: a live dribble
+                if state.picked_up():
+                    s = s.with_(grd=s.grd | 128)             # D-273: his pivot: still picked up, his count runs on
+                else:
+                    s = s.with_(grd=pack_guard(1, 0, 0, 1))  # D-173: he moves with the ball: a live dribble
             if s.is_screening(a.piece):          # OQ-29: the screener's movement ends his screen
                 s = s.with_(screens=tuple(x for x in s.screens if x[0] != a.piece))
             if (k == 'move' and state.turn_n == 0 and state.side == 'O' and state.stage == 'play'
@@ -547,6 +640,9 @@ def apply(state, action, check=False):
 
     if k == 'pass':
         s = s.with_(pending=(a.piece, a.target), approach=-1)
+        if RC.fakes_rule(rules):
+            from .actions import fake_open
+            s = s.with_(decl=1 if fake_open(state) else 0, fake=2 if a.arrow == 1 else 0)     # D-272
         if rules.pass_resolution == 'immediate':
             if not any(intercept_status(s, j) == 'direct' for j in range(5)):
                 phase = s.phase
@@ -564,6 +660,9 @@ def apply(state, action, check=False):
 
     if k == 'shot':
         s = s.with_(stage='reaction', shot=a.shot, side='X', turn_n=0)
+        if RC.fakes_rule(rules):
+            from .actions import fake_open
+            s = s.with_(decl=1 if fake_open(state) else 0, fake=1 if a.arrow == 1 else 0)     # D-272
         if s.tok_x <= 0:
             return resolve_shot(s)
         return s
@@ -645,6 +744,10 @@ def apply(state, action, check=False):
             (p, 'success', _after(state, holds, side, k)),
             (1 - p, 'failure', _after(state, fails, side, k))], 'O')
 
+    if k == 'steal' and s.stage == 'reaction' and s.fake == 1:
+        # D-272: a shot fake: the reply is the same, but no shot went up: it is a Steal on a ball handler (D-198)
+        s = unmask(s)
+        state = state.with_(stage='play')
     if k == 'steal':
         carrier = s.ball
         pf = p_foul(X[a.piece].r['foul_steal'], rules)
@@ -659,7 +762,7 @@ def apply(state, action, check=False):
             fs = fs.with_(bonus5=fs.bonus5 + 1)          # D-89: every steal foul is +5, in the bonus too; a steal foul on
         legacy = rules.turnover_cost == 'legacy'         # a shooter is a shooting foul: free throws only (step 7)
         if s.stage == 'reaction':
-            pts = shot_points(s.o[carrier])
+            pts = shot_points(s.o[carrier], s.ctx)
             card = O[carrier]
             rating = shot_rating(s, carrier, s.shot)     # D-151
             fpts, and1 = foul_on_shot_points(card, s.shot, pts, rules, rating)

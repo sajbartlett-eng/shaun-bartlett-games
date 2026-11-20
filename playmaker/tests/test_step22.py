@@ -76,5 +76,6 @@ def test_the_offences_search_tries_the_moves_that_make_the_maps_looks():
             if ta == s.ball or q0 != s.o[ta]:
                 return a.kind in ('move', 'qs', 'sprint') and a.piece == ta and a.dest == q0
             return a.kind == 'pass' and a.target == ta
-        legal = [str(a) for a in legal_actions(s) if hit(a)]
+        # (re-recorded in step 29, D-272: a pass fake isn't tried as a move of its own; it is read as the mix at the pass)
+        legal = [str(a) for a in legal_actions(s) if hit(a) and not (a.kind == 'pass' and a.arrow == 1)]
         assert not legal or set(legal) <= cands, (ta, B.sq(q0))

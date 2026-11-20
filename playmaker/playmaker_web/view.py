@@ -17,7 +17,7 @@ LABELS = {
     'free_throw': 'FT', 'agility': 'Agility', 'intercept': 'Intercept', 'challenge': 'Challenge', 'steal': 'Steal',
     'foul_steal': 'Foul (steal)', 'con_layup': 'v Layup', 'con_dunk': 'v Dunk', 'con_post': 'v Post',
     'con_floater': 'v Floater', 'con_mid': 'v Mid', 'con_long': 'v Long 2', 'con_three': 'v Three',
-    'foul_contest': 'Foul (contest)',
+    'foul_contest': 'Foul (contest)', 'block': 'Block', 'foul_block': 'Foul (Block)',
 }
 CHANCE_KINDS = {'dribble', 'intercept', 'challenge', 'steal', 'contest', 'forced_shot'}
 # Printed-card order: actions first, then shot zones (ratings keep their ▲ / ▼ marks)
@@ -25,7 +25,8 @@ GROUPS = {
     'O': [('Actions', ['dribble', 'pass', 'screen']),
           ('Shots', ['shot_layup', 'shot_dunk', 'shot_post', 'shot_mid', 'shot_floater', 'shot_long', 'shot_three', 'free_throw'])],
     'X': [('Actions', ['agility', 'intercept', 'challenge', 'steal', 'foul_steal']),
-          ('Contests', ['con_layup', 'con_dunk', 'con_post', 'con_mid', 'con_floater', 'con_long', 'con_three', 'foul_contest'])],
+          ('Contests', ['con_layup', 'con_dunk', 'con_post', 'con_mid', 'con_floater', 'con_long', 'con_three', 'foul_contest']),
+          ('Block', ['block', 'foul_block'])],            # D-269: Shaun's Block and Foul (Block)
 }
 
 
@@ -35,10 +36,11 @@ def card_json(card, side):
     groups = [dict(name='Actions', ratings=[dict(name='Quick Step', value=card.qs, band='A', mark='')]
                    + [r(n) for n in GROUPS[side][0][1]]),
               dict(name=GROUPS[side][1][0], ratings=[r(n) for n in GROUPS[side][1][1]])]
+    groups += [dict(name=g, ratings=[r(n) for n in ns]) for g, ns in GROUPS[side][2:]]     # D-269: Block and Foul (Block)
     from playmaker_engine import levels as LV
     grow = getattr(card, 'growth', None)
     return dict(key=card.key, role=card.role, tier=card.tier, tagline=card.tagline, qs=card.qs,
-                ratings=[r(n) for n in names], groups=groups,
+                ratings=[r(n) for n in names] + ([r('block'), r('foul_block')] if side == 'X' else []), groups=groups,
                 label=LV.card_label(card), age=getattr(card, 'age', 'senior'), slot=getattr(card, 'slot', card.num),
                 printed=card.num, flex=LV.flex_words(card), words=_ADV.card_words(card, side),    # step 19: the card in words
                 coach_growth=LV.growth_line(grow))         # D-88: Coach Vision's line; no tag names on the card
@@ -46,6 +48,29 @@ def card_json(card, side):
 
 def zones():
     return [[B.zone((x, y)) for x in range(B.W)] for y in range(1, B.H + 1)]
+
+
+def fake_info(s):
+    """D-272: whether the offence may fake now, and if not, why, in plain words (public: the defence knows it too)."""
+    if s is None or not RC.fakes_rule(s.ctx.rules):
+        return dict(rule=False)
+    from playmaker_engine.actions import fake_open
+    if fake_open(s):
+        return dict(rule=True, open=True, why='')
+    why = ('he is rushed: a fake needs him in control' if s.rushed('O', s.ball) else
+           'the phase\'s Hesitate or fake is used' if s.count('O', 'hesitate') >= RC.LIMITS['O']['hesitate'] else
+           'not now')
+    return dict(rule=True, open=False, why=why)
+
+
+def deep_squares(s):
+    """D-274: the deep squares for this possession's offence: {square: squares past the band} for the open ones; the
+    closed ones look like the no-shot squares (Shaun: "Not hatched, just left coloured as per the no shot zones")."""
+    if s is None:
+        return {}
+    n = RC.deep_open(s.ctx)
+    return {B.sq((x, y)): B.deep((x, y)) for x in range(B.W) for y in range(1, B.H + 1)
+            if 0 < B.deep((x, y)) <= n}
 
 
 def arrow_lines(s):
@@ -143,7 +168,10 @@ def shot_chips(s, shooter, t):
     sp = s.o[shooter]
     out = []
     if RC.position_contest(s.ctx.rules):
-        return position_chips(s, shooter, t)
+        from playmaker_engine.scoring import deep_cut
+        k = deep_cut(s.ctx, sp) if t == 'three' else 0
+        deep = [f'Deep three: {k} off (his three {card.shot("three")} plays as {max(1, card.shot("three") - k)} from here)'] if k else []
+        return deep + position_chips(s, shooter, t)       # D-274: the deep square's number first
     for j, xp in enumerate(s.x):
         if B.adjacent(xp, sp):
             eligible, foul_roll, penalty, cat = G.terms(s.ctx.rules, xp, s.arrows[j], sp)
@@ -195,9 +223,13 @@ def position_chips(s, shooter, t):
             line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} in front, arrow on him: contest {rv(dc, "con_" + t)}{tail}, {c} off, no foul' + (' if he Contests' if cc else '')
         else:
             line = f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v X{j + 1} {where}: contest {rv(dc, "con_" + t)}{tail}, {c} off' + (' with a normal Contest' if cc else '')
-            if j in hard:
+            if j in hard and not getattr(hard[j], 'block', 0):
                 o = hard[j]
                 line += f'; going for the block: {o.contest} off, {"two foul rolls" if o.rolls == 2 else "one foul roll"} on Foul {rv(dc, "foul_contest")}'
+        if j in hard and getattr(hard[j], 'block', 0):
+            o = hard[j]                    # D-271: the block, on every shot: its chance and its foul risk
+            line += (f'; or Block: {o.block} in 20 to block it ({o.block * 5}%), foul risk {round(float(o.p_foul) * 100)}% '
+                     f'on Foul (Block) {rv(dc, "foul_block")}; a miss leaves {o.contest} off')
         out.append(line)
     if not out:
         out.append(f'{SHOT_NAME[t]} {rv(card, "shot_" + t)} v no defender next to the shooter now')
@@ -279,7 +311,15 @@ def legal_json(s, acts):
                 dq, sq_ = s.x[a.piece], s.o[s.ball]
                 place = ('square in front' if o.category in ('hand', 'position') and o.contest >= dc.con(t) else
                          'in front, arrow off him' if B.dist_rim(dq) < B.dist_rim(sq_) else 'beside him' if B.dist_rim(dq) == B.dist_rim(sq_) else 'behind him')
-                if o.hard:
+                if o.hard and getattr(o, 'block', 0):
+                    # D-271: the block: fouls first, then the Block roll (a turnover), else the shot against his contest
+                    rolls = {0: 'no foul roll (square, arrow on him)', 1: 'one foul roll', 2: 'two foul rolls'}[o.rolls]
+                    d['option'] = (f'X{a.piece + 1} goes for the block {place}: Block {o.block} in 20 ({o.block * 5}%) after {rolls} on '
+                                   f'Foul (Block) {rv(dc, "foul_block")} (foul risk {round(float(o.p_foul) * 100)}%); if he misses, '
+                                   f'{SHOT_NAME[t]} {rv(sh, "shot_" + t)} v contest {o.contest}')
+                    d['chance'] = round(float((1 - o.p_foul) * o.p_block) * 100)
+                    d['foul_risk'] = round(float(o.p_foul) * 100)
+                elif o.hard:
                     d['option'] = (f'X{a.piece + 1} contests hard (the block): {SHOT_NAME[t]} {rv(sh, "shot_" + t)} v contest {rv(dc, "con_" + t)} '
                                    f'{place}, {o.contest} off; {"two foul rolls" if o.rolls == 2 else "one foul roll"} on Foul {rv(dc, "foul_contest")}')
                 else:
@@ -358,8 +398,11 @@ def turn_summary(s):
             how = ('A jump shot is contested by where the defender stands and where his arrow points: square in front is the '
                    'full contest' if s.shot in RC.JUMP_SHOTS else
                    'Inside, choose a normal Contest (never a foul) or a hard one, the block (the full contest, with the foul risk)')
-            return (f'Shot declared ({s.shot}). The defence replies: {n}. Contesting the shot is one of them, the last, by a defender '
-                    f'next to the shooter. Nothing is automatic: no Contest and the shot goes up open. {how}')
+            if RC.block_rule(s.ctx.rules):
+                how = ('Contest: where he stands decides it, never a foul. Block: fouls first, then his Block roll; a block is a '
+                       'turnover, a miss is his full contest')
+            return (f'Shot declared ({s.shot}). The defence replies: {n}. Contesting or blocking is one of them, the last, by a '
+                    f'defender next to the shooter. Nothing is automatic: no Contest and the shot goes up open. {how}')
         if RC.position_contest(s.ctx.rules):
             n = f'{left} action{"s" if left != 1 else ""} left'
             if s.shot in RC.JUMP_SHOTS:
@@ -421,7 +464,28 @@ def scout_table_json(game):
             table.append(dict(o=a, x=d, beat=round(100 * m['beat']),
                               zones={PL.ZONE_NAMES[z]: dict(shot=PL.SHOT_WORDS[r['shot']], open=round(r['open']), square=round(r['square']),
                                                             side=round(r['side']), behind=round(r['behind'])) for z, r in m['zones'].items()}))
-    return dict(teams=[ctx.off_team, ctx.def_team], lines=lines, table=table, cases=dict(jump=14, inside=22),
+    # step 29 (D-269 to D-274): each defender's Block and Foul (Block); who can pivot (a Quick Step on his card); how far
+    # out the offence may shoot a three at its playing level; who can fake (the ball handler, when in control)
+    if RC.block_rule(ctx.rules):
+        for d, dc in enumerate(ctx.dfn):
+            lines.append(f"X{d + 1} ({SCT.short_role(dc)}): Block {dc.r['block']} ({dc.r['block'] * 5}% square in front, "
+                         f"{max(1, dc.r['block'] - RC.BLOCK_SIDE) * 5}% from the side, {max(1, dc.r['block'] - RC.BLOCK_BEHIND) * 5}% from "
+                         f"behind), Foul (Block) {dc.r['foul_block']} (no foul roll square in front).")
+    if RC.pivot_rule(ctx.rules):
+        piv = [f'O{a + 1}' for a, c in enumerate(ctx.off) if c.qs > 0]
+        stuck = [f'O{a + 1}' for a, c in enumerate(ctx.off) if c.qs == 0]
+        if not stuck:
+            lines.append('After a pick-up, every attacker can pivot (a one-square Quick Step).')
+        else:
+            lines.append(f"After a pick-up, {', '.join(piv) or 'nobody'} can pivot (a one-square Quick Step); "
+                         f"{', '.join(stuck)} {'has' if len(stuck) == 1 else 'have'} no Quick Step, so no pivot.")
+    if RC.deep_range_rule(ctx.rules):
+        n = RC.deep_open(ctx)
+        lines.append(f'Deep threes: up to {n} square{"s" if n != 1 else ""} past the arc ({n} off at the furthest).' if n else
+                     'Deep threes: none at this playing level.')
+    if RC.fakes_rule(ctx.rules):
+        lines.append('Fakes: the ball handler may fake a shot or a pass once a phase (shared with Hesitate) when he is in control.')
+    return dict(teams=[ctx.off_team, ctx.def_team], lines=lines, table=table, cases=dict(jump=14, inside=22) if not RC.block_rule(ctx.rules) else dict(every_shot=26),
                 note='A won Dribble is worth most where it opens the most squares: near the middle beyond the arc. In the green zone it opens little.')
 
 
@@ -579,7 +643,7 @@ def state_json(game, token):
                 clock=s.clock, phase=s.phase, stage=s.stage, side=s.side, turn_n=s.turn_n, final=s.final, turn=game.turn_no,
                 tokens=dict(O=s.tok_o, X=s.tok_x), limits=limits, inbound=s.inbound, inbounder=ctx.inbounder,
                 pending=list(s.pending) if s.pending else None, shot=s.shot,
-                o=pieces_o, x=pieces_x, zones=zones(),
+                o=pieces_o, x=pieces_x, zones=zones(), deep=deep_squares(s), fake=fake_info(s),
                 arrow_lines=arrow_lines(s) if B.on_board(s.o[s.ball]) and ctx.rules.drive_rule == 'arrow_line' else [],
                 bonus=RC.STEAL_FOUL_BONUS * s.bonus5, turnovers=s.tos, fouls=s.fouls,
                 target=(s.target if show_target else ('secret' if s.target >= 0 else None)),

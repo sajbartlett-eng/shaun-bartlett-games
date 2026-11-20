@@ -63,8 +63,11 @@ window.PMNotation = (function () {
     for (let y = 1; y <= 14; y++) {
       for (let x = 0; x < 17; x++) {
         const z = zones[y - 1][x];
-        g.append(svg('rect', { class: 'cell', x: px(x), y: py(y), width: S, height: S, fill: opts.nowash ? BOARD : WASH[z], stroke: 'rgba(60,55,45,0.18)', 'stroke-width': 0.8 }));
-        if (ZLBL[z] && !opts.plain) g.append(svg('text', { class: 'zonelbl', x: px(x) + 2.5, y: py(y) + 10 }, ZLBL[z]));
+        // D-274: an open deep square is a three (its number with Show the numbers on); a closed one stays plain wood
+        const dn = opts.deep ? opts.deep[COLS[x] + y] : 0, zz = dn ? '3' : z;
+        g.append(svg('rect', { class: 'cell' + (dn ? ' deep' : ''), x: px(x), y: py(y), width: S, height: S, fill: opts.nowash ? BOARD : WASH[zz], 'fill-opacity': dn ? 0.55 : 1, stroke: 'rgba(60,55,45,0.18)', 'stroke-width': 0.8 }));
+        if (dn && opts.deepNums) g.append(svg('text', { class: 'zonelbl deepnum', x: px(x) + 2.5, y: py(y) + 10 }, `−${dn}`));
+        else if (ZLBL[z] && !opts.plain) g.append(svg('text', { class: 'zonelbl', x: px(x) + 2.5, y: py(y) + 10 }, ZLBL[z]));
       }
     }
     root.append(g);

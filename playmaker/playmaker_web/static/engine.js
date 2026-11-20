@@ -8,7 +8,8 @@ const PMEngine = (() => {
   // A square is an integer: (x + 20) * 64 + (y + 20), so comparing codes compares (x, y) as Python compares tuples.
   const W = 17, H = 14, RIMX = 8, RIMY = 2, OFF = 20, WID = 64, NSQ = WID * WID;
   const SX = new Int8Array(NSQ), SY = new Int8Array(NSQ), ONB = new Uint8Array(NSQ), DR = new Int8Array(NSQ);
-  const ZN = new Uint8Array(NSQ);            // 0 '.', 1 K, 2 M, 3 L, 4 '3'
+  const ZN = new Uint8Array(NSQ);
+  const DEEP = new Uint8Array(NSQ);           // D-274: squares past the three-point band (board.deep)            // 0 '.', 1 K, 2 M, 3 L, 4 '3'
   const ZCH = ['.', 'K', 'M', 'L', '3'];
   const C = (x, y) => (x + OFF) * WID + (y + OFF);
   for (let c = 0; c < NSQ; c++) {
@@ -95,6 +96,10 @@ const PMEngine = (() => {
     'defence_tokens', 'offence_to_act', 'defenders_moved', 'attackers_moved'];
   function init(data) {
     for (const [k, v] of Object.entries(data.zones)) ZN[parseSq(k)] = ZCH.indexOf(v);
+    // board.deep (D-274): squares past the three-point band in each column, rows up to 12
+    const top = {};
+    for (let c = 0; c < NSQ; c++) if (ONB[c] && ZN[c] === 4) top[SX[c]] = Math.max(top[SX[c]] || 0, SY[c]);
+    for (let c = 0; c < NSQ; c++) { DEEP[c] = 0; if (ONB[c] && ZN[c] === 0 && top[SX[c]] && SY[c] > top[SX[c]] && SY[c] <= 12) DEEP[c] = SY[c] - top[SX[c]]; }
     D.config = data.config; D.vcoarse = data.vcoarse || {}; D.ready = true;
     D.learned = data.learned || null;
     if (D.learned && JSON.stringify(D.learned.features) !== JSON.stringify(FEATURE_NAMES)) throw new Error('learned_weights.json names other readings than this engine makes');
@@ -120,7 +125,7 @@ const PMEngine = (() => {
   // rules_config.control_size: 'app' (the default) is size 2 in the app's format and off at the table
   const controlSize = r => { const c = r && r.control !== undefined ? String(r.control) : 'app'; return c === 'app' ? (r && r.digital ? CONTROL_APP : 0) : CONTROL[c]; };
   // step 18i (rules_config.app_rule): 'app' is on in the app's format and off at the table; 'on'; 'off'
-  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app', points_play_on: 'app', no_rim_shot: 'app', contest_costs: 'app' };     // the defaults: on in the app
+  const APP_RULES = { three_seconds: 'app', closely_guarded: 'app', fiba_fouled_shot: 'app', soft_contest: 'app', fiba_steal_foul: 'app', off_balance: 'app', position_contest: 'app', points_play_on: 'app', no_rim_shot: 'app', contest_costs: 'app', block: 'app', fakes: 'app', pivot: 'app', deep_range: 'app' };     // the defaults: on in the app
   const appRule = (r, name) => { const v = r && r[name] !== undefined ? r[name] : APP_RULES[name]; return v === 'app' ? !!(r && r.digital) : v === 'on'; };
   function checkRules(r) {
     if (r.control !== undefined && r.control !== 'app' && !(String(r.control) in CONTROL)) throw new Error(`rule control=${r.control} is not ported`);
@@ -135,6 +140,17 @@ const PMEngine = (() => {
     for (const t of SHOT_TYPES.slice(1)) { sh[t] = r['shot_' + t]; cn[t] = r['con_' + t]; }
     return { qs: c.qs, r, sh, cn, b: c.bands || {} };     // b (step 16): the card's bands (H, A, L) per rating
   }
+  // rules_config.deep_rows_for (D-274): Senior Pro 5, Semi-pro 2, Amateur 1, Youth 1, Junior 0; no level: Senior Pro
+  const deepRowsFor = table => {
+    const [age, std] = String(table || 'senior/pro').split('/');
+    if (age === 'youth') return 1;
+    if (age === 'junior') return 0;
+    return ({ pro: 5, semi_pro: 2, amateur: 1 })[std] !== undefined ? ({ pro: 5, semi_pro: 2, amateur: 1 })[std] : 5;
+  };
+  // scoring.shot_zone, deep_cut, card_shot (D-274): a deep square this offence may shoot from is a three, 1 off a square
+  const szone = (ctx, c) => (ZN[c] === 0 && DEEP[c] && DEEP[c] <= ctx.deep ? 4 : ZN[c]);
+  const deepCut = (ctx, c) => (ZN[c] === 0 && DEEP[c] && DEEP[c] <= ctx.deep ? DEEP[c] : 0);
+  const cardShot = (ctx, card, t, c) => { const r = card.sh[t]; if (t !== 'three') return r; const k = deepCut(ctx, c); return k ? Math.max(1, r - k) : r; };
   let _CTXN = 0;
   function makeCtx(c) {
     checkRules(c.rules || {});
@@ -146,6 +162,10 @@ const PMEngine = (() => {
       soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
       pos: appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),
       cc: appRule(c.rules, 'contest_costs') && appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),    // D-261: the contest is one of the reply's two actions                // step 18n (D-191, D-193): jump shots are contested by position only
+      deep: appRule(c.rules, 'deep_range') ? (c.deep_rows !== undefined && c.deep_rows !== null ? c.deep_rows : deepRowsFor(c.table)) : 0,   // D-274: the deep rows open to this offence
+      fakes: appRule(c.rules, 'fakes') && appRule(c.rules, 'block') && appRule(c.rules, 'contest_costs') && appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),   // D-272
+      pivot: appRule(c.rules, 'pivot') && appRule(c.rules, 'closely_guarded'),     // D-273: the pivot Quick Step after a pick-up
+      block: appRule(c.rules, 'block') && appRule(c.rules, 'contest_costs') && appRule(c.rules, 'position_contest') && appRule(c.rules, 'soft_contest'),   // D-271: the block replaces the hard Contest
       offCut: appRule(c.rules, 'off_balance') ? controlSize(c.rules) : 0,                          // step 18l (D-185): off balance, the reduction on every rolled rating
       three: appRule(c.rules, 'three_seconds'), guarded: appRule(c.rules, 'closely_guarded'), fiba: appRule(c.rules, 'fiba_fouled_shot'),   // step 18i (D-172 to D-174)
       ppoRule: appRule(c.rules, 'points_play_on'), ppo: appRule(c.rules, 'points_play_on') && !c.hold_for_one, noRim: appRule(c.rules, 'no_rim_shot'),                   // D-198: fouls and turnovers in points, play on; no shot from the rim's own square
@@ -164,7 +184,7 @@ const PMEngine = (() => {
     const v = (side === 'O' ? s.ctx.off : s.ctx.dfn)[i].r[name];
     return s.ctx.offCut > 0 && (side === 'O' ? rushedO(s, i) : rushedX(s, i)) ? v - s.ctx.offCut : v;
   };
-  const shotRating = (s, shooter, t) => s.ctx.off[shooter].sh[t] - (controlOn(s.ctx) && rushedO(s, shooter) ? controlCut(s.ctx, t) : 0);
+ const shotRating = (s, shooter, t) => cardShot(s.ctx, s.ctx.off[shooter], t, s.o[shooter]) - (controlOn(s.ctx) && rushedO(s, shooter) ? controlCut(s.ctx, t) : 0);
 
   // ---- state --------------------------------------------------------------------------------------------------------
   // cnt indices: o_qs pass screen dribble hesitate shot x_qs intercept challenge steal pause
@@ -225,6 +245,8 @@ const PMEngine = (() => {
       this.rush_x = s.rush_x || 0;
       this.key_o = s.key_o || 0;                         // D-172: attackers in the key at the last phase end
       this.grd = s.grd || 0;                             // D-173: the ball handler's count, packed as GameState.grd
+      this.decl = s.decl || 0;                           // D-272: public: the declaration could have been a fake
+      this.fake = s.fake || 0;                           // D-272: hidden from the defence: 1 shot fake, 2 pass fake
       this._occ = s._occ || null;
       this._dre = null;                                  // step 13: this state's exact reach, per defender
     }
@@ -244,7 +266,7 @@ const PMEngine = (() => {
       fouls: js.fouls, bonus5: js.bonus5, tos: js.tos, inbound: js.inbound, target: js.target, result: js.result || null,
       zeroed: js.zeroed, phase: js.phase, turn_moved: js.turn_moved, qs_o: js.qs_o, qs_x: js.qs_x, forced: js.forced,
       react_moved: js.react_moved, turn_lead: js.turn_lead, rush_o: js.rush_o || 0, rush_x: js.rush_x || 0,
-      key_o: js.key_o || 0, grd: js.grd || 0,
+      key_o: js.key_o || 0, grd: js.grd || 0, decl: js.decl || 0, fake: js.fake || 0,
       turn_x: js.turn_x && js.turn_x.length ? [js.turn_x[0].map(sq), js.turn_x[1].slice()] : null,
       phase_x: js.phase_x && js.phase_x.length ? [js.phase_x[0].map(sq), js.phase_x[1].slice()] : null };
     return new St(s);
@@ -258,7 +280,7 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
+      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, decl: s.decl, fake: s.fake, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
       phase_x: s.phase_x ? [s.phase_x[0].map(sq), s.phase_x[1].slice()] : null };
   }
 
@@ -277,15 +299,15 @@ const PMEngine = (() => {
     if (k === 'move') return `${who} Move to ${sqName(a.dest)}` + (a.arrow >= 0 ? ` facing ${DIR_NAMES[a.arrow]}` : '');
     if (k === 'qs') return `${who} Quick Step to ${sqName(a.dest)}`;
     if (k === 'sprint') return `${who} Sprint to ${sqName(a.dest)}` + (a.arrow >= 0 ? ` facing ${DIR_NAMES[a.arrow]}` : '');
-    if (k === 'pass') return `${who} Pass to O${a.target + 1}`;
+    if (k === 'pass') return a.arrow === 1 ? `${who} Pass fake to O${a.target + 1}` : `${who} Pass to O${a.target + 1}`;
     if (k === 'screen') return `${who} Screen, T ${DIR_NAMES[a.target]}`;
     if (k === 'dribble') return `${who} Dribble vs X${a.target + 1}`;
-    if (k === 'shot') return `${who} Shot (${a.shot})`;
+    if (k === 'shot') return a.arrow === 1 ? `${who} Shot fake (${a.shot})` : `${who} Shot (${a.shot})`;
     if (k === 'intercept') return `${who} Intercept`;
     if (k === 'challenge') return `${who} Challenge screen of O${a.target + 1}`;
     if (k === 'steal') return `${who} Steal`;
     if (k === 'target') return `Coach's Call target O${a.target + 1}`;
-    if (k === 'contest') return a.piece >= 0 ? (a.shot === 'hard' ? `${who} contests hard (the block)` : `${who} contests`) : "X: don't contest";
+    if (k === 'contest') return a.piece >= 0 ? (a.shot === 'hard' ? `${who} goes for the block` : `${who} contests`) : "X: don't contest";
     if (k === 'forced_shot') return `${who} forced shot (${a.shot})`;
     if (k === 'pick') return `Failed inbound: ball to O${a.target + 1}`;
     if (k === 'end_turn') return `${who} End turn`;
@@ -294,10 +316,12 @@ const PMEngine = (() => {
   }
   const tSquare = (s, scr) => s.o[scr[0]] + DSTEP[scr[1]];
 
+  // rules_config.pivot_open (D-273): picked up, and no pivot Quick Step since
+  const pivotOpen = (s, i) => s.ctx.pivot && i === s.ball && (s.grd & 3) === 2 && ((s.grd >> 7) & 1) === 0;
   function canMoveKind(s, side, i, kind) {
     if (tokens(s, side) <= 0) return false;
     if (side === 'O' && i === s.ctx.inbounder && s.inbound) return false;
-    if (side === 'O' && s.ctx.guarded && i === s.ball && (s.grd & 3) === 2) return false;     // D-173: picked up: pass or shoot only
+    if (side === 'O' && s.ctx.guarded && i === s.ball && (s.grd & 3) === 2 && !(kind === 'qs' && pivotOpen(s, i))) return false;     // D-173: picked up: pass or shoot only; D-273: but for his pivot
     if (kind === 'move' || kind === 'sprint') { if (hasMoved(s, side, i) || isLocked(s, side, i)) return false; }
     if (kind === 'qs' || kind === 'sprint') {
       if (count(s, side, 'qs') >= LIMITS[side].qs) return false;
@@ -468,12 +492,14 @@ const PMEngine = (() => {
     }
     return true;
   }
+  // actions.pivot_len (D-273): the pivot after a pick-up is a one-square Quick Step
+  const pivotLen = (s, side, i, qs) => (side === 'O' && i === s.ball && s.ctx.guarded && (s.grd & 3) === 2 ? Math.min(qs, 1) : qs);
   function movementDests(s, side, i, kind) {
     const card = (side === 'O' ? s.ctx.off : s.ctx.dfn)[i];
     const start = side === 'O' ? s.o[i] : s.x[i];
     let paths;
     if (kind === 'move') paths = movePaths(start).map(p => [-1, p]);
-    else if (kind === 'qs') paths = qsPaths(start, card.qs).map(p => [-1, p]);
+    else if (kind === 'qs') paths = qsPaths(start, pivotLen(s, side, i, card.qs)).map(p => [-1, p]);
     else paths = sprintPaths(start, card.qs);
     const out = new Map();
     const zs = side === 'O' && i === s.ball ? (s.ctx.zone ? captureLines(s, i) : carrierZones(s, i)) : null;
@@ -555,7 +581,7 @@ const PMEngine = (() => {
     const carrier = s.ball, cpos = s.o[carrier];
     const inbounderHasIt = s.inbound && carrier === ctx.inbounder;
     if (shotsOnly) {
-      const z0 = ZN[cpos];
+      const z0 = szone(ctx, cpos);
       if (!inbounderHasIt && ONB[cpos] && z0 !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2)) {
         for (const t of ZONE_SHOTS[z0]) acts.push(A('shot', 'O', carrier, -1, -1, -1, t));
       }
@@ -565,7 +591,7 @@ const PMEngine = (() => {
       for (let r = 0; r < 5; r++) if (r !== carrier && denier(s, carrier, r) < 0) acts.push(A('pass', 'O', carrier, -1, -1, r));
     }
     const passOnly = !!inbounderHasIt;
-    const z = ZN[cpos];
+    const z = szone(ctx, cpos);                          // D-274: a deep square his team's level opens is a three
     if (!passOnly && ONB[cpos] && z !== 0 && count(s, 'O', 'shot') < LIMITS.O.shot && !(ctx.hold_for_one && s.clock > 2) && !(cpos === RIM && ctx.noRim)) {      // D-198: no shot from the rim's own square
       for (const t of ZONE_SHOTS[z]) acts.push(A('shot', 'O', carrier, -1, -1, -1, t));
     }
@@ -583,9 +609,16 @@ const PMEngine = (() => {
       }
     }
     if (count(s, 'O', 'hesitate') < LIMITS.O.hesitate && s.prev_wait !== 'P') acts.push(A('hesitate', 'O'));
+    if (fakeOpen(s)) {                                  // actions.fake_open (D-272): each shot and pass, faked (arrow 1)
+      const tw = acts.filter(a => (a.kind === 'shot' || a.kind === 'pass') && a.piece === carrier).map(a => A(a.kind, 'O', a.piece, a.dest, 1, a.target, a.shot));
+      for (const a of tw) acts.push(a);
+    }
     for (const a of movementActions(s, 'O')) acts.push(a);
     return acts;
   }
+  // actions.fake_open (D-272): the phase's Hesitate or fake unused, in control, the ball in, the offence on the move
+  const fakeOpen = s => s.ctx.fakes && s.stage === 'play' && s.side === 'O' && !s.pending && !s.inbound && s.tok_o > 0 &&
+    count(s, 'O', 'hesitate') < LIMITS.O.hesitate && !rushedO(s, s.ball);
   function defenceActions(s, kinds) {
     const acts = [];
     if (s.tok_x <= 0) return acts;
@@ -613,7 +646,7 @@ const PMEngine = (() => {
     if (s.stage === 'over') return [];
     if (s.stage === 'target') return [0, 1, 2, 3, 4].map(i => A('target', 'O', -1, -1, -1, i));
     if (s.stage === 'contest') return contestOptions(s, s.ball, s.shot, s.forced).map(o => A('contest', 'X', o.defender, -1, -1, -1, o.hard ? 'hard' : ''));
-    if (s.stage === 'forced') return ZONE_SHOTS[ZN[s.o[s.ball]]].map(t => A('forced_shot', 'O', s.ball, -1, -1, -1, t));
+    if (s.stage === 'forced') return ZONE_SHOTS[szone(s.ctx, s.o[s.ball])].map(t => A('forced_shot', 'O', s.ball, -1, -1, -1, t));
     if (s.stage === 'pick') return inboundTieCandidates(s).map(i => A('pick', 'O', -1, -1, -1, i));
     const side = s.side;
     let acts = [];
@@ -687,7 +720,7 @@ const PMEngine = (() => {
   const pNot = t => (20 - clampT(t)) / 20;                // 1 - that, exactly as Fraction arithmetic gives it
   const foulRolls = (dpos, target) => (DR[dpos] < DR[target] ? 1 : 2);
   const pFouls = (k, rolls) => { k = clampT(k); return rolls === 1 ? k / 20 : (400 - (20 - k) * (20 - k)) / 400; };
-  const shotPoints = pos => ZONE_POINTS[ZN[pos]];
+  const shotPoints = (pos, ctx) => ZONE_POINTS[ctx ? szone(ctx, pos) : ZN[pos]];
   const freeThrows = (card, points) => (points === 3 ? 3 : 2) * card.r.free_throw;
   // scoring.foul_on_shot_points: [points, and_one]; rating: reduced (D-151). Under rules.fiba_fouled_shot (fiba, D-174)
   // the shot's value as contested (shotValue; left: the rating the Contest leaves it) plus the free throws the rules
@@ -729,7 +762,7 @@ const PMEngine = (() => {
   function softOption(s, shooter, t) {
     const opts = contestOptions(s, shooter, t, false), [j, c] = softContest(s, shooter, t);
     if (c <= 0) return opts[0];
-    return { defender: j, contest: c, clean: true, k: 0, rolls: 0, value: Math.max(0, shotPoints(s.o[shooter]) * (shotRating(s, shooter, t) - c)), ft: opts[0].ft, soft: true };
+    return { defender: j, contest: c, clean: true, k: 0, rolls: 0, value: Math.max(0, shotPoints(s.o[shooter], s.ctx) * (shotRating(s, shooter, t) - c)), ft: opts[0].ft, soft: true };
   }
   // scoring._contest_actions (D-261): one normal Contest per defender next to the shooter (the position table, never a
   // foul) and, on an inside shot from one who isn't square, the hard Contest (the block, with its foul rolls)
@@ -743,6 +776,7 @@ const PMEngine = (() => {
       if (rushed) c -= cut;
       if (c < 1) c = 1;
       out.push({ defender: j, contest: c, clean: true, k: 0, rolls: 0, value: val(c), ft, hard: false });
+      if (ctx.block) { out.push(blockOption(s, j, shooter, t, val, ft, rating, pts, card, rushed, square, cut)); continue; }
       if (jump || square) continue;
       let h = ctx.dfn[j].cn[t] - (DR[xp] > DR[spos] ? 3 : 0);
       h = Math.max(0, h);
@@ -753,8 +787,33 @@ const PMEngine = (() => {
     }
     return out;
   }
+  // decide.Read._block_value (D-271), as the map reads it: fouls first on Foul (Block), then the Block at -5, else the shot
+  function blockValue(ctx, card, dc, ty, k, pts, r, dcut, shooterCut) {
+    const pen = KPEN[k], foul = KFOUL[k] || pen, two = KTWO[k] || pen;
+    let con = dc.cn[ty] - (pen ? 3 : 0) - dcut; if (con < 1) con = 1;
+    let b = dc.r.block - (pen ? 6 : foul ? 3 : 0) - dcut; if (b < 1) b = 1;
+    const vs = Math.max(0, pts * (r - con)), pb = pS(b);
+    let v = pb * -5 + (1 - pb) * vs;
+    if (foul) {
+      const ft = ctx.fiba ? footPoints(card, ty, pts, r, true, vs, r - con)[0] : footPoints(card, ty, pts, shooterCut ? r : undefined)[0];
+      const pf = pFouls(dc.r.foul_block, two ? 2 : 1);
+      v = pf * (ft + (ctx.ppo ? 5 : 0)) + (1 - pf) * v;
+    }
+    return v;                                          // decide._block_value: no floor (Shaun, 20 Nov): a likely block is worth less than nothing
+  }
+  // scoring.block_option (D-271): fouls first on his Foul (Block) (square none, in front arrow off one, beside two, behind
+  // two); then his Block, less 3 (beside or arrow off) or 6 (behind), less the rushed cut, at least 1: a turnover; a miss
+  // leaves the shot against his full contest (3 less from behind, the rushed cut, at least 1)
+  function blockOption(s, j, shooter, t, val, ft, rating, pts, card, rushed, square, cut) {
+    const ctx = s.ctx, xp = s.x[j], spos = s.o[shooter], behind = DR[xp] > DR[spos], dc = ctx.dfn[j];
+    const rolls = square ? 0 : behind ? 2 : foulRolls(xp, spos), step = square ? 0 : behind ? 6 : 3;
+    let b = dc.r.block - step - (rushed ? cut : 0); if (b < 1) b = 1;
+    let h = dc.cn[t] - (behind ? 3 : 0) - (rushed ? cut : 0); if (h < 1) h = 1;
+    return { defender: j, contest: h, clean: rolls === 0, k: rolls ? clampT(dc.r.foul_block) : 0, rolls, value: val(h),
+      ft: ctx.fiba ? footPoints(card, t, pts, rating, true, val(h), rating - h)[0] : ft, hard: true, block: b, cat: square ? 'square' : behind ? 'behind' : 'side' };
+  }
   function contestOptions(s, shooter, t, forced) {
-    const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos), rating = shotRating(s, shooter, t);
+    const ctx = s.ctx, spos = s.o[shooter], card = ctx.off[shooter], pts = shotPoints(spos, ctx), rating = shotRating(s, shooter, t);
     const ft = footPoints(card, t, pts, rating, ctx.fiba)[0];
     const cut = controlOn(ctx) ? controlCut(ctx, t) : 0;
     const val = c => Math.max(0, pts * (rating - c));
@@ -826,6 +885,30 @@ const PMEngine = (() => {
     if (s.clock <= 2) return terminal(s, Result('turnover_end'), true);
     return W_(s, { clock: s.clock - 2 });
   }
+  // resolve.unmask, reveal, fake_block (D-272)
+  function unmask(s) {
+    const cnt = Array.from(s.cnt), kind = s.fake === 1 ? 5 : 1;
+    cnt[kind] = Math.max(0, cnt[kind] - 1); cnt[4] += 1;            // the shot or pass never happened; the Hesitate or fake is used
+    let g = s.grd;
+    if (s.ctx.guarded && (g & 3) === 1) g = (g & ~3) | 2;            // a fake after movement picks the ball up
+    return W_(s, { cnt, grd: g, fake: 0, decl: 0, stage: 'play', shot: null, pending: null, approach: -1, react_moved: 0, final: s.final || s.tok_o <= 0 });
+  }
+  function reveal(s) {
+    s = W_(unmask(s), { prev_wait: '', approach: -1 });
+    if (s.final || s.tok_o <= 0) return endPhase(s);
+    return W_(s, { side: 'O', turn_n: 0, turn_lead: -1, turn_x: null });
+  }
+  function fakeBlock(s, j, opt) {
+    const locked = lock(s, 'X', j);
+    if (!opt.rolls) return reveal(locked);
+    const k = clampT(s.ctx.dfn[j].r.foul_block), one = k / 20, no = (20 - k) / 20;
+    const fouled = W_(locked, { fouls: locked.fouls + 1, bonus5: locked.bonus5 + (s.ctx.ppo ? 1 : 0) });
+    if (opt.rolls === 2) {
+      const second = chance([[one, 'foul', reveal(fouled)], [no, 'no foul', reveal(locked)]]);
+      return chance([[one, 'foul', reveal(fouled)], [no, 'no foul', second]]);
+    }
+    return chance([[one, 'foul', reveal(fouled)], [no, 'no foul', reveal(locked)]]);
+  }
   function newPhase(s, clock) {
     if (s.ctx.ppoRule) s = W_(s, { phase_x: [s.x, s.arrows] });      // D-198: where an interceptor goes back to
     return W_(s, { screens: [], clock, turn_lead: -1, turn_x: null, tok_o: 6, tok_x: 6, moved_o: 0, moved_x: 0, cnt: ZERO, turn_n: 0,
@@ -839,10 +922,11 @@ const PMEngine = (() => {
     return s;
   }
   function resolveShot(s, forced = false) {
+    if (s.fake === 1 && !forced) return reveal(s);       // D-272: the reply is done: it was a fake
     const spos = s.o[s.ball];
     if (forced) {
-      if (!ONB[spos] || ZN[spos] === 0) return terminal(s, Result('forced', s.ball, '', 0));
-      const types = ZONE_SHOTS[ZN[spos]];
+      if (!ONB[spos] || szone(s.ctx, spos) === 0) return terminal(s, Result('forced', s.ball, '', 0));
+      const types = ZONE_SHOTS[szone(s.ctx, spos)];
       if (types.length > 1) return W_(s, { stage: 'forced', side: 'O', shot: null, forced: true, turn_n: 0, pending: null });
       s = W_(s, { shot: types[0], forced: true });
     }
@@ -850,13 +934,19 @@ const PMEngine = (() => {
     return W_(s, { stage: 'contest', side: 'X', turn_n: 0, forced, pending: null });
   }
   function contestOutcome(s, opt, forced) {
-    const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos);
+    const shooter = s.ball, spos = s.o[shooter], card = s.ctx.off[shooter], t = s.shot, pts = shotPoints(spos, s.ctx);
     const rating = shotRating(s, shooter, t);            // D-151: reduced when the shooter is rushed
     let made = terminal(s, Result(forced ? 'forced' : 'shot', shooter, t, pts, rating, opt.contest, opt.defender, opt.value, 0, false, 0, '', -1, !!opt.soft));
     if (opt.defender >= 0 && !opt.soft && !forced && s.ctx.soft && !s.ctx.cc) {      // (D-261: only the Contest taken counts)
       // D-177: only one contest counts, the defence's best: a teammate's soft contest may beat this hard one
       const [j2, c2] = softContest(s, shooter, t);
       if (c2 > opt.contest) made = terminal(s, Result('shot', shooter, t, pts, rating, c2, j2, Math.max(0, pts * (rating - c2)), 0, false, 0, '', -1, true));
+    }
+    if (opt.block) {
+      // resolve.contest_outcome (D-271): with no foul the Block roll: a block is a turnover (resolve._turnover); a miss, the shot
+      let b = W_(s, { pending: null, shot: null, tos: s.tos + 1 });
+      b = s.ctx.ppo ? playOn(b) : terminal(b, Result('turnover_end'), s.ctx.hold_for_one || s.ctx.digital);
+      made = chance([[pS(opt.block), 'blocked', b], [pNot(opt.block), 'not blocked', made]]);
     }
     if (opt.clean || opt.k === 0) return made;
     const and1 = footPoints(card, t, pts, rating, s.ctx.fiba, opt.value, rating - opt.contest)[1];
@@ -905,7 +995,7 @@ const PMEngine = (() => {
           s = W_(s, { tos: s.tos + 1 }); held = 0;       // D-198: -5 and play goes on; the count starts again
         }
       } else held = 0;
-      const g = ball | (held << 2) | (idle << 4);
+      const g = ball | (held << 2) | (idle << 4) | (ball === 2 ? (s.grd & 128) : 0);     // D-273: one pivot a pick-up
       if (g !== s.grd) s = W_(s, { grd: g });
     }
     return s;
@@ -946,6 +1036,7 @@ const PMEngine = (() => {
       return s;
     }
     const ph = s.phase;
+    if (s.pending && s.fake === 2) s = unmask(s);        // D-272: it was a pass fake: the ball never left him
     if (s.pending) { s = completePass(s); if (s.phase !== ph) return s; }
     s = W_(s, { prev_wait: kind === 'pause' ? 'P' : '', approach: -1 });
     if (s.final) return endPhase(s);
@@ -978,11 +1069,18 @@ const PMEngine = (() => {
       const opt = contestOptions(s, s.ball, s.shot, s.forced).find(o => o.defender === a.piece && !!o.hard === hard);
       if (!opt) throw new Error(`X${a.piece + 1} cannot contest this shot`);
       if (s.stage === 'reaction') s = W_(spend(s, side), { turn_n: s.turn_n + 1 });   // D-18: the reaction's last action, a token
+      if (s.fake === 1) return hard ? fakeBlock(s, a.piece, opt) : reveal(s);       // D-272: a fake: the block locks; the honest Contest does nothing
       return contestOutcome(s, opt, s.forced);
     }
     if (!TOKEN_FREE.has(k)) s = spend(s, side);
     if (k === 'forfeit') s = side === 'O' ? W_(s, { tok_o: 0 }) : W_(s, { tok_x: 0 });
     if (k === 'end_turn' || k === 'forfeit') return after(state, s, side, k);
+    if (side === 'X' && s.pending && s.fake === 2) {
+      // resolve.apply (D-272): a pass fake: an Intercept or a Steal locks him and the reply is over; a movement keeps it
+      // in the air; any other action shows it first
+      if (k === 'intercept' || k === 'steal') return reveal(lock(inc(s, 'X', k), 'X', a.piece));
+      if (!(MOVEMENT.has(k) && mtiApproach(state, a))) s = W_(unmask(s), { side: 'X' });
+    }
     if (side === 'X' && s.pending && !isInboundPass(state)) {
       const answering = k === 'intercept' || (MOVEMENT.has(k) && mtiApproach(state, a));
       if (!answering) { const ph = s.phase; s = completePass(s); if (s.phase !== ph) return s; }
@@ -990,7 +1088,7 @@ const PMEngine = (() => {
     if (MOVEMENT.has(k)) {
       if (side === 'O') {
         s = W_(s, { o: setAt(s.o, a.piece, a.dest) });
-        if (s.ctx.guarded && a.piece === s.ball) s = W_(s, { grd: 65 });     // D-173: he moves with the ball: a live dribble (ball 1, acted)
+        if (s.ctx.guarded && a.piece === s.ball) s = W_(s, { grd: (state.grd & 3) === 2 ? (s.grd | 128) : 65 });     // D-173: a live dribble (ball 1, acted); D-273: his pivot keeps the ball picked up
         if (screenOf(s, a.piece)) s = W_(s, { screens: s.screens.filter(x => x[0] !== a.piece) });
         if (k === 'move' && state.turn_n === 0 && state.side === 'O' && state.stage === 'play') s = W_(s, { turn_lead: a.piece });
       } else {
@@ -1020,7 +1118,8 @@ const PMEngine = (() => {
     }
     s = inc(s, side, k);
     const O = s.ctx.off, X = s.ctx.dfn;
-    if (k === 'pass') return after(state, W_(s, { pending: [a.piece, a.target], approach: -1 }), side, k);
+    if (k === 'pass') return after(state, W_(s, { pending: [a.piece, a.target], approach: -1 },
+      s.ctx.fakes ? { decl: fakeOpen(state) ? 1 : 0, fake: a.arrow === 1 ? 2 : 0 } : {}), side, k);
     if (k === 'screen') {
       const scr = s.screens.concat([[a.piece, a.target, true, 0]]);
       scr.sort((p, q) => p[0] - q[0] || p[1] - q[1] || (p[2] === q[2] ? 0 : p[2] ? 1 : -1) || p[3] - q[3]);
@@ -1029,6 +1128,7 @@ const PMEngine = (() => {
     if (k === 'hesitate' || k === 'pause') return after(state, s, side, k);
     if (k === 'shot') {
       s = W_(s, { stage: 'reaction', shot: a.shot, side: 'X', turn_n: 0 });
+      if (s.ctx.fakes) s = W_(s, { decl: fakeOpen(state) ? 1 : 0, fake: a.arrow === 1 ? 1 : 0 });      // D-272
       if (s.tok_x <= 0) return resolveShot(s);
       return s;
     }
@@ -1062,6 +1162,7 @@ const PMEngine = (() => {
       const fails = W_(s, { screens: s.screens.filter(x => x[0] !== a.target) });
       return chance([[pS(t), 'success', after(state, holds, side, k)], [pNot(t), 'failure', after(state, fails, side, k)]]);
     }
+    if (k === 'steal' && s.stage === 'reaction' && s.fake === 1) { s = unmask(s); state = W_(state, { stage: 'play' }); }   // D-272: no shot went up: a Steal on a ball handler
     if (k === 'steal') {
       const carrier = s.ball, fk = X[a.piece].r.foul_steal, tk = rolled(s, 'O', carrier, 'dribble') - rolled(s, 'X', a.piece, 'steal');
       // D-89: every steal foul is +5; on a shooter it is a shooting foul, free throws only (step 7)
@@ -1070,7 +1171,7 @@ const PMEngine = (() => {
       let fs = W_(s, { fouls: s.fouls + 1, bonus5: s.bonus5 + (d198 ? 1 : (s.stage === 'reaction' || fibaSf) ? 0 : 1) });
       let foulNode, stolenNode;
       if (s.stage === 'reaction') {
-        const pts = shotPoints(s.o[carrier]), card = O[carrier];
+        const pts = shotPoints(s.o[carrier], s.ctx), card = O[carrier];
         const rating = shotRating(s, carrier, s.shot);   // D-151
         const [fpts, and1] = footPoints(card, s.shot, pts, rating, s.ctx.fiba);
         foulNode = terminal(fs, Result('free_throws', carrier, s.shot, pts, rating, 0, a.piece, 0, fpts, and1));
@@ -1146,6 +1247,7 @@ const PMEngine = (() => {
     if (side === 'O' && i === s.ctx.inbounder && s.inbound) return [false, 0];
     let qsLeft = LIMITS[side].qs - count(s, side, 'qs');
     qsLeft = quickStepped(s, side, i) ? 0 : Math.min(qsLeft, 1);
+    if (side === 'O' && i === s.ball && s.ctx.guarded && (s.grd & 3) === 2) return [false, pivotOpen(s, i) ? Math.min(qsLeft, 1) : 0];   // D-173, D-273
     return [canMove, qsLeft];
   }
   // Step 13 (a speed-up that changes no result): a defender's exact reach depends only on his own square, arrow and
@@ -1293,7 +1395,7 @@ const PMEngine = (() => {
     const out = new Map([[s.o[i], 0]]);
     const [canMove, qsLeft] = caps(s, 'O', i);
     if (!ONB[s.o[i]] || s.tok_o <= 0) return out;
-    const [free, fixed] = geoReach(s.o[i], 0, s.ctx.off[i].qs, canMove, qsLeft);
+    const [free, fixed] = geoReach(s.o[i], 0, pivotLen(s, 'O', i, s.ctx.off[i].qs), canMove, qsLeft);
     for (const [q, n] of free) if (!out.has(q)) out.set(q, n);
     for (const [q, arrs] of fixed) {
       let n = INF; for (const v of arrs.values()) if (v < n) n = v;
@@ -1320,7 +1422,7 @@ const PMEngine = (() => {
       if (!canMoveKind(s, 'O', i, kind)) continue;
       for (const q of movementDests(s, 'O', i, kind).keys()) if (!out.has(q)) out.set(q, 1);
     }
-    if (s.tok_o >= 2) {
+    if (s.tok_o >= 2 && pivotLen(s, 'O', i, 2) !== 1) {          // D-273: after his pivot he only passes or shoots
       const ones = [...out].filter(([, n]) => n === 1).map(([q]) => q);
       for (const q of ones) for (const q2 of geoDests(canMove ? 'qs' : 'move', q, card.qs)) {
         if (!out.has(q2) && !s.x.includes(q2) && !s.o.includes(q2)) out.set(q2, 2);
@@ -2080,18 +2182,25 @@ const PMEngine = (() => {
       return hit;
     }
     _valsCalc(lk, d, mask, m0, flags, smask, st0) {         // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
-      const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[ZN[lk.c]], dc = this.dcards[d];
+      const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[szone(ctx, lk.c)], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
       const control = flags !== undefined;
       let any = false;
       for (let t = 0; t < lk.types.length; t++) {
         const ty = lk.types[t];
-        let r = card.sh[ty];
+        let r = cardShot(ctx, card, ty, lk.c);           // D-274: a deep three is 1 off a square past the band
         const cut = control ? controlCut(ctx, ty) : 0, shooterCut = cut > 0 && (flags & 1) === 1;
         if (shooterCut) r -= cut;
         let best = null;
         const pos = ctx.pos, jump = pos && JUMP[ty] === true;    // D-191: a jump shot has no Contest action: position only (below)
         for (let k = 0; k < 6; k++) {
+          if (ctx.block && ((mask >> k) & 1)) {
+            // decide.Read._block_value (D-271): the block, from every kind he reaches, on every shot
+            const rk = cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4));
+            const v = blockValue(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut);
+            if (best === null || v < best) best = v;
+            continue;
+          }
           if (jump || !((mask >> k) & 1)) continue;
           const foul = KFOUL[k], two = KTWO[k];
           if (pos && !foul) continue;                            // D-191: in front with the arrow on him: automatic (below)
@@ -2243,12 +2352,12 @@ const PMEngine = (() => {
         reach = new Map();
         if (ONB[s.o[i]] && s.tok_o > 0) {
           const [canMove, qsLeft] = caps(s, 'O', i);
-          const lst = reachList(s.o[i], s.ctx.off[i].qs, canMove, qsLeft);
+          const lst = reachList(s.o[i], pivotLen(s, 'O', i, s.ctx.off[i].qs), canMove, qsLeft);
           for (let n = 0; n < lst.length; n += 2) { const q = lst[n]; if (lst[n + 1] === 0 || !occAt(s, q)) reach.set(q, lst[n + 1]); }
         } else reach.set(s.o[i], 0);
       }
       const build = (c, n) => {
-        const z = ZN[c];
+        const z = szone(s.ctx, c);
         if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return null;
         let lk;
         if (i === s.ball) {
@@ -2265,7 +2374,7 @@ const PMEngine = (() => {
         lk.types = ZONE_SHOTS[z];
         const pts = ZONE_POINTS[z];
         if (controlOn(s.ctx)) lk.rushed = n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i);      // D-151 (decide.Read._looks)
-        lk.open = lk.rushed ? lk.types.map(t => pts * (card.sh[t] - controlCut(s.ctx, t))) : lk.types.map(t => pts * card.sh[t]);
+        lk.open = lk.rushed ? lk.types.map(t => pts * (cardShot(s.ctx, card, t, c) - controlCut(s.ctx, t))) : lk.types.map(t => pts * cardShot(s.ctx, card, t, c));
         lk.vals = [null, null, null, null, null];
         for (const d of this.att_x) { const v = this._vals(lk, d, cm[d], undefined, d === dj ? dfl : undefined); if (v) lk.vals[d] = v; }
         finishLook(lk);
@@ -2279,7 +2388,7 @@ const PMEngine = (() => {
         const scratch = { i, c: 0, rushed: false, types: null };
         const cs = [], ns = [], bs = [];
         const pre = (c, n) => {
-          const z = ZN[c];
+          const z = szone(s.ctx, c);
           if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return;
           let p;
           if (onBall) p = (n === 0 && shotOk && leftNow >= 1) || (n === 1 && shotOk && leftNow >= 2 && s.tok_o >= 2) ? 1.0 : laterP;
@@ -2292,7 +2401,7 @@ const PMEngine = (() => {
           const rushed = ctl ? (n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i)) : false;
           scratch.c = c; scratch.rushed = rushed; scratch.types = types;
           let best = 0.0, first = true, v0 = 0, v1 = 0, v2 = 0;
-          for (let t = 0; t < nt; t++) { const v = rushed ? pts * (card.sh[types[t]] - controlCut(s.ctx, types[t])) : pts * card.sh[types[t]]; if (t === 0) v0 = v; else if (t === 1) v1 = v; else v2 = v; }
+          for (let t = 0; t < nt; t++) { const v = rushed ? pts * (cardShot(s.ctx, card, types[t], c) - controlCut(s.ctx, types[t])) : pts * cardShot(s.ctx, card, types[t], c); if (t === 0) v0 = v; else if (t === 1) v1 = v; else v2 = v; }
           for (const d of this.att_x) {
             const vals = this._vals(scratch, d, cm[d], undefined, d === dj ? dfl : undefined);
             if (!vals) continue;
@@ -2309,7 +2418,7 @@ const PMEngine = (() => {
           if (SPEED.two_bound && bs.length >= L) floor = bs.slice().sort((a, b) => b - a)[L - 1];
           const most = new Map();
           const keep = c => {
-            const z = ZN[c];
+            const z = szone(s.ctx, c);
             if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
             let m = most.get(z);
             if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
@@ -2332,7 +2441,7 @@ const PMEngine = (() => {
         if (SPEED.two_bound && out.length >= this.L) { const bs = out.map(l => l.base).sort((a, b) => b - a); floor = bs[this.L - 1]; }
         const most = new Map();
         const keep = c => {
-          const z = ZN[c];
+          const z = szone(s.ctx, c);
           if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
           let m = most.get(z);
           if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
@@ -3353,7 +3462,7 @@ const PMEngine = (() => {
     mix(s.turn_lead);
     if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
     if (s.phase_x) { for (const q of s.phase_x[0]) mix(q); for (const q of s.phase_x[1]) mix(q); }
-    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd);
+    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd); mix(s.decl); mix(s.fake);
     if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
     h1 ^= a; h2 ^= b;
     return (h1 >>> 0) * 65536 + ((h2 >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
@@ -3370,8 +3479,37 @@ const PMEngine = (() => {
     return null;
   }
   const FIRSTS = new Set(['shot', 'pass', 'dribble', 'steal', 'intercept', 'challenge', 'forced_shot', 'contest']);
+  // search.is_fake, fake_world, worlds, mix_game (D-272)
+  const isFake = a => (a.kind === 'shot' || a.kind === 'pass') && a.arrow === 1 && a.side === 'O';
+  const fakeWorld = s => !!s.decl && actor(s) === 'X' && (s.stage === 'reaction' || !!s.pending);
+  const worlds = s => [W_(s, { fake: 0 }), W_(s, { fake: s.stage === 'reaction' ? 1 : 2 })];
+  function mixGame(cols) {
+    const n = cols.length, cands = [0.0, 1.0];
+    for (let i = 0; i < n; i++) {
+      const ai = cols[i][0], bi = cols[i][1];
+      for (let j = i + 1; j < n; j++) {
+        const aj = cols[j][0], bj = cols[j][1], den = (bi - ai) - (bj - aj);
+        if (den !== 0) { const p = (aj - ai) / den; if (p > 0 && p < 1) cands.push(p); }
+      }
+    }
+    cands.sort((x, y) => x - y);
+    const g = p => { let m = Infinity; for (const [a, b] of cols) { const v = (1.0 - p) * a + p * b; if (v < m) m = v; } return m; };
+    let bestP = 0.0, bestV = g(0.0);
+    for (const p of cands) { const v = g(p); if (v > bestV + 1e-12) { bestP = p; bestV = v; } }
+    const act = []; cols.forEach(([a, b], k) => { if ((1.0 - bestP) * a + bestP * b <= bestV + 1e-9) act.push(k); });
+    const neg = act.filter(k => cols[k][1] - cols[k][0] <= 0), pos = act.filter(k => cols[k][1] - cols[k][0] >= 0);
+    let q;
+    if (bestP <= 0) q = [[(neg.length ? neg : act)[0], 1.0]];
+    else if (bestP >= 1) q = [[(pos.length ? pos : act)[0], 1.0]];
+    else {
+      const j1 = neg.find(k => cols[k][1] - cols[k][0] < 0), j2 = pos.find(k => cols[k][1] - cols[k][0] > 0);
+      if (j1 === undefined || j2 === undefined) q = [[act[0], 1.0]];
+      else { const s1 = cols[j1][1] - cols[j1][0], s2 = cols[j2][1] - cols[j2][0], w = s2 / (s2 - s1); q = [[j1, w], [j2, 1.0 - w]]; }
+    }
+    return [bestV, bestP, q];
+  }
   function candidateActions(s, read, perPlayer = 3) {
-    const acts = legalActions(s), side = actor(s);
+    const acts = legalActions(s).filter(a => !isFake(a)), side = actor(s);      // D-272: a fake is read as the mix at the declaration
     if (s.stage === 'contest' || s.stage === 'forced' || s.stage === 'target' || s.stage === 'pick' || acts.length <= 12) return acts;
     const keep = [], seen = new Set();
     const add = a => { if (!seen.has(a.id)) { seen.add(a.id); keep.push(a); } };
@@ -4043,6 +4181,7 @@ const PMEngine = (() => {
       if (isChance(node)) return this.chance(node, depth, alpha, beta);
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
+      if (depth >= 1 && fakeWorld(s)) return this.mixed(s, depth);           // D-272: the hidden choice, read as the mixed game
       if (depth <= 0) {
         if (this.settleShots && s.stage !== 'play') return this.leaf(s);      // step 18b: the declared shot is settled by the rules
         if (this.quiet || this.playOn) {
@@ -4154,6 +4293,56 @@ const PMEngine = (() => {
       if (this.settleShots && node.stage !== 'play') return this.settled(node);   // step 18b: ordered by its settled value
       return readOf(node).quickLeaf();
     }
+    mixed(s, depth) {                            // search.Searcher.mixed (D-272): never read from the hidden choice
+      const [sr, sf] = worlds(s);
+      const key = ttKey(zobrist(sr), depth) + ':mix';
+      const hit = this.tt.get(key);
+      if (hit !== undefined) return hit[0];
+      const ts = this.turnsOf(sr);
+      if (!ts.length) return this.leaf(sr);
+      this.nodes++;
+      const cols = this.replyCols(sr, sf, ts, depth).map(c => c[0]);
+      const v = mixGame(cols)[0];
+      this.tt.set(key, [v, 0, ts[0][1]]);
+      return v;
+    }
+    replyCols(sr, sf, ts, depth) {               // search.Searcher.reply_cols (D-272): whole replies, one real-or-fake choice
+      const out = [];
+      for (const [, t] of ts) {
+        const a = this.playT(sr, t), b = this.playT(sf, t);
+        if (!isChance(a) && fakeWorld(a)) {
+          const more = this.turnsOf(a);
+          if (more.length) {
+            for (const [, t2] of more) {
+              const a2 = this.playT(a, t2), b2 = this.playT(b, t2);
+              out.push([[this.value(a2, this.childDepth(a, a2, depth), VMIN, VMAX), this.value(b2, this.childDepth(b, b2, depth), VMIN, VMAX)], t.concat(t2)]);
+            }
+            continue;
+          }
+        }
+        out.push([[this.value(a, this.childDepth(sr, a, depth), VMIN, VMAX), this.value(b, this.childDepth(sf, b, depth), VMIN, VMAX)], t]);
+      }
+      return out;
+    }
+    _rootMix(s, maxDepth) {                      // search.Searcher._root_mix (D-272)
+      const [sr, sf] = worlds(s);
+      const budget = this.deadline - now();
+      const rootRead = new Read(sr, { exact: budget >= 0.8 });
+      const ts = turns(sr, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
+      let done = null, reached = 0;
+      for (let depth = 1; depth <= Math.max(1, maxDepth); depth++) {
+        let cols;
+        try { cols = this.replyCols(sr, sf, ts, depth); } catch (e) {
+          if (e !== TIMEOUT) throw e;
+          if (done === null) done = ts.map(([q, t]) => [[-q, -q], t]);
+          break;
+        }
+        done = cols; reached = depth;
+      }
+      const p = mixGame(done.map(c => c[0]))[1];
+      this.mixCols = done.map(c => c[0].slice());
+      return [done.map(([[a, b], t]) => [(1.0 - p) * a + p * b, t]), reached];
+    }
     turnsOf(s, z) {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
@@ -4193,6 +4382,7 @@ const PMEngine = (() => {
       try { return this._root(s, maxDepth); } finally { setLevel(prev); MAP_ME = null; if (D.config.eval.map === 'offence') { READS = new Map(); READS_OLD = new Map(); } }
     }
     _root(s, maxDepth) {
+      if (fakeWorld(s)) return this._rootMix(s, maxDepth);
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
@@ -4379,6 +4569,7 @@ const PMEngine = (() => {
     return { results: results.map(([v, t]) => [v, t.map(actionJSON)]), reached, leaves: srch.leaves, nodes: srch.nodes,
       partial: srch.partial, seconds: now() - t0, pv, same_top: srch.sameTop == null ? null : srch.sameTop,
       stable: srch.stable, extensions: srch.extensions, cap_hits: srch.capHits, kept: srch.kept, depth_seconds: srch.depthSeconds,
+      mix: srch.mixCols || null,                         // D-272: at a declaration, each reply's (real, fake) values, in the results' order
       trace: srch.trace.map(([d, t, v]) => [d, t.map(actionJSON), v]) };
   }
 
@@ -4588,10 +4779,10 @@ const PMEngine = (() => {
   // bars his new arrow's foot only: next phase's exact bars need next phase's board; (3) the defence's answers are
   // chosen one action at a time, each the one that leaves the least, not by trying every set of actions.
   const _SHP = new Map();
-  function shotPaths(start, qs, noRim) {               // every movement path from start that ends where a shot may go up: [path, rushed]
-    const key = (start * 8 + qs) * 2 + (noRim ? 1 : 0); let hit = _SHP.get(key); if (hit) return hit;
+  function shotPaths(start, qs, noRim, deep = 0) {     // every movement path from start that ends where a shot may go up: [path, rushed]
+    const key = ((start * 8 + qs) * 2 + (noRim ? 1 : 0)) * 8 + deep; let hit = _SHP.get(key); if (hit) return hit;
     hit = [];
-    const ok = p => { const c = p[p.length - 1]; return p.every(q => ONB[q]) && SHOOT(ZN[c]) && !(noRim && c === RIM); };
+    const ok = p => { const c = p[p.length - 1]; return p.every(q => ONB[q]) && SHOOT(ZN[c] === 0 && DEEP[c] && DEEP[c] <= deep ? 4 : ZN[c]) && !(noRim && c === RIM); };
     for (const p of movePaths(start)) if (ok(p)) hit.push([p, false]);
     for (const p of qsPaths(start, qs)) if (ok(p)) hit.push([p, true]);
     for (const [, p] of sprintPaths(start, qs)) if (ok(p)) hit.push([p, true]);
@@ -4740,7 +4931,7 @@ const PMEngine = (() => {
     // live dribble isn't counted (the rule), and moving or passing starts it again.
     // Step 27 (D-256): counted by the rule, not in thirds. He shoots, passes or gets free at the next phase's start, so
     // the count costs nothing unless it falls at this phase end (held already at its last but one): then the full -5.
-    const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && q0 === s.o[a] && n0 === 0 && (s.grd & 3) !== 1 && closelyGuarded(s)
+    const guardAt = (a, q0, n0) => (ctx.guarded && a === s.ball && ((q0 === s.o[a] && n0 === 0) || ((s.grd & 3) === 2 && n0 === 1)) && (s.grd & 3) !== 1 && closelyGuarded(s)     // D-273: the count runs on after his pivot
       && ((s.grd >> 2) & 3) + 1 >= GUARDED_ENDS ? -TURNOVER_COST : 0);
     // Step 26 (D-251): the three seconds, counted as the closely guarded count is. An attacker who has the ball in the
     // key when the next phase starts is one phase end nearer the -5 (he must be out before the second): counted at
@@ -4827,9 +5018,9 @@ const PMEngine = (() => {
             if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0, dr: !!dr, adj }; byKey.set(key, n); options.push(n); }
             else if (pr > o.pr || (pr === o.pr && adj > o.adj)) { o.pr = pr; o.q0 = q0; o.n0 = n0; o.dr = !!dr; o.adj = adj; }
           };
-          if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) put(q0, false);
+          if (SHOOT(szone(ctx, q0)) && !(noRim && q0 === RIM)) put(q0, false);
           if (setOnly) continue;
-          for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
+          for (const [p, rushed] of shotPaths(q0, qs, noRim, ctx.deep)) {
             const c = p[p.length - 1], o = byKey.get((a * 4096 + c) * 2 + (rushed ? 1 : 0));
             if (o && (o.pr > pr || (o.pr === pr && o.adj >= adj))) continue;
             let bad = false;
@@ -4840,9 +5031,9 @@ const PMEngine = (() => {
           }
           continue;
         }
-        if (SHOOT(ZN[q0]) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop, dr: !!dr, adj });      // a set shot from where the phase finds him
+        if (SHOOT(szone(ctx, q0)) && !(noRim && q0 === RIM)) add(q0, false, { q0, p: COV_NONE, dm: 0, zm: 0, pr, stop, dr: !!dr, adj });      // a set shot from where the phase finds him
         if (setOnly) continue;
-        for (const [p, rushed] of shotPaths(q0, qs, noRim)) {
+        for (const [p, rushed] of shotPaths(q0, qs, noRim, ctx.deep)) {
           let dm = 0, bad = false;
           for (const q of p) { if (mates.has(q)) { bad = true; break; } const j = xat.get(q); if (j !== undefined) dm |= 1 << j; }
           if (bad) continue;
@@ -4853,10 +5044,10 @@ const PMEngine = (() => {
       }
     }
     for (const o of options) {
-      const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ZONE_POINTS[ZN[o.c]];
-      lk.types = ZONE_SHOTS[ZN[o.c]]; lk.rushed = o.rushed;
+      const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ZONE_POINTS[szone(ctx, o.c)];
+      lk.types = ZONE_SHOTS[szone(ctx, o.c)]; lk.rushed = o.rushed;
       o.lk = lk; o.fl = (o.rushed && off > 0) ? 1 : undefined;
-      o.open = lk.types.map(t => pts * (card.sh[t] - (o.rushed ? off : 0)));
+      o.open = lk.types.map(t => pts * (cardShot(ctx, card, t, o.c) - (o.rushed ? off : 0)));
       o.v = Math.max(...o.open);                       // value: his best shot there with nobody on it, as he would take it
       o.vals = [null, null, null, null, null];
       for (let d = 0; d < 5; d++) {
@@ -5179,13 +5370,13 @@ const PMEngine = (() => {
     let g = ctx._gap;
     if (!g) {
       const sq = [];
-      for (let q = 0; q < ONB.length; q++) if (ONB[q] && SHOOT(ZN[q]) && !(ctx.noRim && q === RIM)) sq.push(q);
+      for (let q = 0; q < ONB.length; q++) if (ONB[q] && SHOOT(szone(ctx, q)) && !(ctx.noRim && q === RIM)) sq.push(q);
       const looks = [], open = [];
       for (let k = 0; k < sq.length; k++) {
-        const q = sq[k], pts = ZONE_POINTS[ZN[q]], types = ZONE_SHOTS[ZN[q]], row = [], op = [];
+        const q = sq[k], pts = ZONE_POINTS[szone(ctx, q)], types = ZONE_SHOTS[szone(ctx, q)], row = [], op = [];
         for (let a = 0; a < 5; a++) {
           const lk = makeLook(a, q, 'later', 1.0, false); lk.types = types; lk.rushed = false; row.push(lk);
-          let top = -Infinity; for (const t of types) { const v = pts * ctx.off[a].sh[t]; if (v > top) top = v; }
+          let top = -Infinity; for (const t of types) { const v = pts * cardShot(ctx, ctx.off[a], t, q); if (v > top) top = v; }
           op.push(top);
         }
         looks.push(row); open.push(op);
@@ -5198,9 +5389,9 @@ const PMEngine = (() => {
     const key = (k * 5 + a) * 5 + d;
     let v = g.late.get(key);
     if (v === undefined) {
-      const ctx = r.s.ctx, lk = g.looks[k][a], pts = ZONE_POINTS[ZN[g.sq[k]]], vals = mapVals(r, lk, d, 1, undefined);
+      const ctx = r.s.ctx, lk = g.looks[k][a], pts = ZONE_POINTS[szone(ctx, g.sq[k])], vals = mapVals(r, lk, d, 1, undefined);
       v = -Infinity;
-      for (let t = 0; t < lk.types.length; t++) { const o = pts * ctx.off[a].sh[lk.types[t]], w = vals && vals[t] < o ? vals[t] : o; if (w > v) v = w; }
+      for (let t = 0; t < lk.types.length; t++) { const o = pts * cardShot(ctx, ctx.off[a], lk.types[t], g.sq[k]), w = vals && vals[t] < o ? vals[t] : o; if (w > v) v = w; }
       g.late.set(key, v);
     }
     return v;

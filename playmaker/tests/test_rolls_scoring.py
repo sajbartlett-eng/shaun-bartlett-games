@@ -251,7 +251,9 @@ def test_declared_negative_shot_floors_at_zero():
         sq = lambda names: tuple(B.parse_sq(n) for n in names)
         s = GameState(ctx=ctx, o=sq(['I4', 'A14', 'C14', 'Q3', 'E14']), x=sq(['I3', 'P3', 'M14', 'K14', 'O14']),
                       arrows=(B.DIR_NAMES.index('N'),) * 5, ball=0, clock=RC.START_CLOCK, rush_o=RC.RUSH_QS)
-        return settle(apply(apply(s, Action('shot', 'O', 0, shot='post')), Action('end_turn', 'X')))
+        # Re-recorded in step 29: D-261 (step 28) made every contest a Contest action, so the square Rim Protector now
+        # presses it (it read: end the reply, the automatic contest); missed in step 28's run, found in step 29's
+        return settle(apply(apply(s, Action('shot', 'O', 0, shot='post')), Action('contest', 'X', 0)))
 
     assert (end(True).result.rating, end(True).result.contest) == (6, 8)
     assert end(True).result.shot_value == 0 and score(end(True)).total == 0

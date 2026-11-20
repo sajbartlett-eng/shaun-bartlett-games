@@ -30,7 +30,8 @@ def ctx_json(ctx, table=None):
                 card_clock=ctx.card_clock, inbounder=ctx.inbounder, coach_call=ctx.coach_call, three_only=ctx.three_only,
                 two_or_three=ctx.two_or_three, hold_for_one=ctx.hold_for_one, team_fouls=ctx.team_fouls,
                 quarter_left=ctx.quarter_left,
-                table=table or '/'.join(getattr(ctx, 'levels_key', None) or ('senior', 'pro')))
+                table=table or '/'.join(getattr(ctx, 'levels_key', None) or ('senior', 'pro')),
+                deep_rows=getattr(ctx, 'deep_rows', None))         # D-274: the offence's own team's deep rows
 
 
 def state_json(s):
@@ -45,7 +46,7 @@ def state_json(s):
                 approach=s.approach, shot=s.shot, prev_wait=s.prev_wait, beaten=[list(t) for t in s.beaten],
                 fouls=s.fouls, bonus5=s.bonus5, tos=s.tos, inbound=s.inbound, target=s.target, result=res,
                 zeroed=s.zeroed, phase=s.phase, turn_moved=s.turn_moved, qs_o=s.qs_o, qs_x=s.qs_x, forced=s.forced,
-                react_moved=s.react_moved, turn_lead=s.turn_lead, rush_o=s.rush_o, rush_x=s.rush_x, key_o=s.key_o, grd=s.grd,
+                react_moved=s.react_moved, turn_lead=s.turn_lead, rush_o=s.rush_o, rush_x=s.rush_x, key_o=s.key_o, grd=s.grd, decl=s.decl, fake=s.fake,
                 turn_x=[[sq(p) for p in s.turn_x[0]], list(s.turn_x[1])] if s.turn_x else [],
                 phase_x=[[sq(p) for p in s.phase_x[0]], list(s.phase_x[1])] if s.phase_x else [])
 

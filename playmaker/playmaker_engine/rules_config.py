@@ -320,6 +320,20 @@ class Rules:
     #   normal Contest (the same table, never a foul) or a hard Contest (the block: the full rating, with its foul
     #   rolls). So the most the defence can do is one movement and the Contest, as the offence's one movement and the shot.
     contest_costs: str = 'app'
+    # Step 29 (Shaun, 20 Nov 2026), app rules (Split):
+    # D-271 the block replaces the hard Contest: a defender next to the shooter may go for the block on any shot (one of
+    #   the reply's two actions, one defender per shot). Fouls first on his Foul (Block) (none square, one in front with
+    #   the arrow off, two from the side or behind); then his Block, less 3 from beside or arrow off, 6 from behind, 2
+    #   rushed, at least 1: a block is a turnover; a miss leaves the shot against his full contest, 3 less from behind,
+    #   rushed less, at least 1.
+    block: str = 'app'
+    # D-272 the shot fake and the pass fake: the ball handler's action, hidden until the defence has replied; one of
+    #   Hesitate, a shot fake or a pass fake a phase; never when rushed; a fake after movement picks the ball up.
+    fakes: str = 'app'
+    # D-273 the pivot: after a pick-up the ball handler may take one Quick Step (he then still only passes or shoots).
+    pivot: str = 'app'
+    # D-274 deep range: a three from past the band is 1 off a square, never below 1; the rows open by playing level.
+    deep_range: str = 'app'
     closely_guarded: str = 'app'
     fiba_fouled_shot: str = 'app'
     # D-89: every steal foul is +5 to the offence; in the bonus it also gives free throws and the possession ends.
@@ -394,6 +408,62 @@ def position_contest(rules):
 def contest_costs(rules):
     """D-261 in play: the contest is one of the reply turn's two actions, for every shot (built on position_contest)."""
     return app_rule(rules, 'contest_costs') and position_contest(rules)
+
+
+def block_rule(rules):
+    """D-271 in play: the block replaces the hard Contest (built on contest_costs)."""
+    return app_rule(rules, 'block') and contest_costs(rules)
+
+
+def fakes_rule(rules):
+    """D-272 in play: the shot fake and the pass fake (built on the block, which a fake answers)."""
+    return app_rule(rules, 'fakes') and block_rule(rules)
+
+
+def pivot_rule(rules):
+    """D-273 in play: the pivot Quick Step after a pick-up (built on the closely guarded rule, which picks the ball up)."""
+    return app_rule(rules, 'pivot') and app_rule(rules, 'closely_guarded')
+
+
+def pivot_open(state, i):
+    """D-273: may ball handler i take his pivot Quick Step now? He has picked the ball up and hasn't pivoted since.
+    (His card's Quick Step and the side's Quick Steps are the movement rules' own checks.)"""
+    return pivot_rule(state.ctx.rules) and i == state.ball and state.picked_up() and not state.pivoted()
+
+
+def deep_range_rule(rules):
+    """D-274 in play: deep threes by playing level."""
+    return app_rule(rules, 'deep_range')
+
+
+# D-274: the deep rows a playing level opens (Shaun's table): Senior Pro every row (to 5 off), Semi-pro to 2 off,
+# Amateur and Youth to 1 off, Junior none. A team with no playing level (a prescribed team) plays Senior Pro.
+DEEP_ROWS = {('senior', 'pro'): 5, ('senior', 'semi_pro'): 2, ('senior', 'amateur'): 1, 'youth': 1, 'junior': 0}
+
+
+def deep_rows_for(age, standard):
+    """D-274: how far past the band a team of this playing level may shoot a three (in squares)."""
+    if age in ('youth', 'junior'):
+        return DEEP_ROWS[age]
+    return DEEP_ROWS.get(('senior', standard or 'pro'), DEEP_ROWS[('senior', 'pro')])
+
+
+def deep_open(ctx):
+    """D-274: the deep rows open to this possession's offence: 0 with the rule off; its own team's level (ctx.deep_rows,
+    set by the game), else the game's level (ctx.levels_key), else Senior Pro."""
+    if not deep_range_rule(ctx.rules):
+        return 0
+    n = getattr(ctx, 'deep_rows', None)
+    if n is not None:
+        return n
+    lv = getattr(ctx, 'levels_key', None)
+    if lv:
+        return deep_rows_for(lv[0], lv[1] if isinstance(lv[1], str) else 'pro')
+    return DEEP_ROWS[('senior', 'pro')]
+
+
+BLOCK_SIDE = 3          # D-271: the block from beside, or in front with the arrow off: 3 less (the contest table's step)
+BLOCK_BEHIND = 6        # D-271: the block from behind: 6 less
 
 
 def reply_moves(rules):

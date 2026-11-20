@@ -20,7 +20,7 @@ from .actions import Action, legal_actions
 from .decide import Read, CONFIG
 from .goals import Commitment, goals_in, _likeliest
 from .resolve import apply, ChanceNode
-from .search import Searcher, play_turn, actor, zobrist, terminal_value
+from .search import Searcher, play_turn, actor, zobrist, terminal_value, fake_world, mix_game, is_fake
 
 LEVELS = ('rookie', 'starter', 'allstar')
 SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
@@ -115,6 +115,8 @@ class Agent:
 
     def choose(self, s):
         side = actor(s)
+        if side == 'X' and s.decl:
+            s = s.with_(fake=0)          # D-272: the defence never reads the hidden choice: it sees the public state only
         # a planned second action, if the position is the one the plan expected
         if self.plan and self.expect == zobrist(s):
             a = self.plan.pop(0)
@@ -125,11 +127,13 @@ class Agent:
                     self.expect = zobrist(nxt) if not isinstance(nxt, ChanceNode) else None
                     if self.expect is None:
                         self.plan = []
-                return a
+                return self._maybe_fake(s, a)
         self.plan, self.expect = [], None
         acts = legal_actions(s)
         if len(acts) == 1:
             return acts[0]
+        if side == 'X' and fake_world(s):
+            return self._reply_mix(s)
         if s.stage in ('contest', 'forced', 'target', 'pick'):
             return self._small(s, acts)
         t0 = time.time()
@@ -227,7 +231,73 @@ class Agent:
             if not isinstance(nxt, ChanceNode) and nxt.stage != 'over':
                 self.plan = list(turn[1:])
                 self.expect = zobrist(nxt)
+        return self._maybe_fake(s, a)
+
+    # -- D-272: the mixed choice, both sides, by the seed --------------------------------------------------------------
+    def _mix_cols(self, s, budget):
+        """The defence's replies to declaration s (the defence to reply, read from the public state), each valued against
+        the real declaration and the fake by this side's own search: ([(real, fake)], [turn])."""
+        s = s.with_(fake=0)
+        lo, hi = self.p['depth']
+        if FIXED['depth']:
+            hi = FIXED['depth']
+        if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
+            req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=self.p, budget=budget,
+                       max_depth=hi, stale=None)
+            out = json.loads(JS['search'](json.dumps(_lane_req(req))))
+            turns = [tuple(jsbridge.action_from(a) for a in t) for _, t in out['results']]
+            return [tuple(c) for c in out.get('mix') or []], turns
+        srch = Searcher(self.side, self.p, self._evaluate(s), time.time() + budget if budget is not None else float('inf'), self.rng)
+        srch.root(s, hi, lo)
+        cols = srch.mix_cols or []
+        return [c for c, _ in cols], [t for _, t in cols]
+
+    def _budget_share(self):
+        b = self.p['time_budget_s'] * SCALE['value']
+        return None if FIXED['depth'] else b
+
+    def _reply_mix(self, s):
+        """D-272: the defence replies to a shot or pass that may be a fake: its mix over replies (mix_game), drawn by the
+        seed; it never reads whether it is a fake."""
+        cols, turns = self._mix_cols(s, self._budget_share())
+        if not cols:
+            return legal_actions(s)[0]
+        v, p, q = mix_game(cols)
+        u, acc, k = self.rng.random(), 0.0, min(q)
+        for j in sorted(q):
+            acc += q[j]
+            if u < acc:
+                k = j
+                break
+        turn = turns[k]
+        self.notes.append(dict(event='mix', by='X', fake_chance=round(p, 3), replies={str(list(map(str, turns[j]))): round(w, 3) for j, w in q.items()},
+                               turn=[str(a) for a in turn]))
+        a = turn[0]
+        if len(turn) > 1:
+            nxt = apply(s, a)
+            if not isinstance(nxt, ChanceNode) and nxt.stage != 'over':
+                self.plan = list(turn[1:])
+                self.expect = zobrist(nxt)
         return a
+
+    def _maybe_fake(self, s, a):
+        """D-272: the offence's declaration: real or fake, at the mix its own reading of the defence's replies gives
+        (mix_game), drawn by the seed. Only where a fake is open (the phase's Hesitate or fake unused, in control)."""
+        if actor(s) != 'O' or a.kind not in ('shot', 'pass') or is_fake(a):
+            return a
+        f = a._replace(arrow=1)
+        if f not in legal_actions(s):
+            return a
+        nxt = apply(s, a)
+        if isinstance(nxt, ChanceNode) or not fake_world(nxt):
+            return a
+        b = self._budget_share()
+        cols, _ = self._mix_cols(nxt, None if b is None else 0.35 * b)
+        if not cols:
+            return a
+        v, p, q = mix_game(cols)
+        self.notes.append(dict(event='mix', by='O', action=str(a), fake_chance=round(p, 3)))
+        return f if p > 0.0 and self.rng.random() < p else a
 
     def _plan_status(self, s):
         """Step 24 (stage 6): at each phase's start the offence measures its plan on the board as it really is: still

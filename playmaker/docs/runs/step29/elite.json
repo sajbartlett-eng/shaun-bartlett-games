@@ -1,0 +1,45 @@
+{
+ "offence": {
+  "squares": [
+   "O9",
+   "C9",
+   "I11",
+   "A3",
+   "Q3"
+  ],
+  "ball": "O3",
+  "seconds": 85.9,
+  "line": "Attention: O4 holds X1. Hole: C11, . Access: the pass to O2."
+ },
+ "defence": {
+  "squares": [
+   "K3",
+   "P8",
+   "E9",
+   "K9",
+   "A5"
+  ],
+  "arrows": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "seconds": 77.0,
+  "read": [
+   "X1 on O4: the nearest defender who takes something off his look",
+   "X2 on O5: same speed",
+   "X3 sags off O2, standing in his way rather than on him (his look is worth 21, 30 without him there)",
+   "X4 sags off O3 to guard O1's look (worth 33 without him there)",
+   "X5 sags off O1 to guard O2's look (worth 30 without him there)"
+  ]
+ },
+ "best_shooter": {
+  "shooter": "O1 (Sharpshooter SG, three 11) on O9",
+  "his_defender": "X5 on A5, 14 squares off",
+  "nearest": "X2, 1 squares off",
+  "squares_off": 14,
+  "stance": "off"
+ }
+}

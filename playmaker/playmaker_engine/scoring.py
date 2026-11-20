@@ -53,8 +53,42 @@ def band(score):
     return 'Poor'
 
 
-def shot_points(pos):
-    return RC.ZONE_POINTS.get(B.zone(pos), 0)
+def shot_points(pos, ctx=None):
+    return RC.ZONE_POINTS.get(shot_zone(ctx, pos) if ctx is not None else B.zone(pos), 0)
+
+
+def zone_at(p, deep_open):
+    """The zone a shot from p is taken in when deep_open rows past the band are open (D-274)."""
+    z = B.zone(p)
+    if z == '.' and deep_open:
+        d = B.deep(p)
+        if d and d <= deep_open:
+            return '3'
+    return z
+
+
+def shot_zone(ctx, p):
+    """The zone a shot from p is taken in: the board's, or the three-point zone on a deep square this possession's
+    offence may shoot from (D-274)."""
+    return zone_at(p, RC.deep_open(ctx)) if ctx is not None else B.zone(p)
+
+
+def deep_cut(ctx, p):
+    """D-274: what a three from p loses: 1 a square past the band (0 inside it, or with the square closed)."""
+    if ctx is None or B.zone(p) != '.':
+        return 0
+    d = B.deep(p)
+    return d if d and d <= RC.deep_open(ctx) else 0
+
+
+def card_shot(ctx, card, t, p):
+    """The card's rating for shot t from p: a deep three is 1 off a square past the band, never below 1 (D-274)."""
+    r = card.shot(t)
+    if t == 'three':
+        cut = deep_cut(ctx, p)
+        if cut:
+            r = max(1, r - cut)
+    return r
 
 
 def free_throws(card, points):
@@ -64,7 +98,7 @@ def free_throws(card, points):
 
 def shot_rating(state, shooter, shot_type):
     """The shooter's rating for this shot: the card's, less the control rule's reduction when he is rushed (D-151)."""
-    r = state.ctx.off[shooter].shot(shot_type)
+    r = card_shot(state.ctx, state.ctx.off[shooter], shot_type, state.o[shooter])      # D-274: a deep three
     rules = state.ctx.rules
     if RC.control_size(rules) and state.rushed('O', shooter):
         r -= RC.control_cut(rules, shot_type)
@@ -119,7 +153,9 @@ class ContestOption:
     ev: Fraction
     category: str = ''     # step 3h: front / side / behind (descriptive under the current geometry)
     rolls: int = 1         # step 3n F2: foul rolls (two when the contester is level with or further from the rim)
-    hard: bool = False     # D-261: an inside shot's hard Contest (the block), rather than the normal one
+    hard: bool = False     # D-261: an inside shot's hard Contest (the block), rather than the normal one; D-271: the block
+    block: int = 0         # D-271: the Block roll (at or under it, after the foul rolls: a block, a turnover); 0 = no block roll
+    p_block: Fraction = Fraction(0)   # D-271: P(the block), given no foul
 
 
 def contest_options(state, shooter, shot_type, forced=False):
@@ -127,7 +163,7 @@ def contest_options(state, shooter, shot_type, forced=False):
     ctx, rules = state.ctx, state.ctx.rules
     spos = state.o[shooter]
     card = ctx.off[shooter]
-    pts = shot_points(spos)
+    pts = shot_points(spos, ctx)
     rating = shot_rating(state, shooter, shot_type)
     ft, _ = foul_on_shot_points(card, shot_type, pts, rules, rating)
     floor = forced or rules.floor_declared_shot
@@ -207,6 +243,9 @@ def _contest_actions(state, shooter, shot_type, val, ft, rating, pts, card):
         c = max(RC.CONTEST_FLOOR, c)
         v = val(c)
         out.append(ContestOption(j, c, True, Fraction(0), v, ft, Fraction(v), 'position' if jump else 'hand', 0))
+        if RC.block_rule(rules):
+            out.append(block_option(state, j, shooter, shot_type, val, ft, rating, pts, card, rushed, square, cut))
+            continue
         if jump or square:
             continue
         eligible, foul_roll, penalty, cat = G.terms(rules, xp, G.stance(rules, state.arrows[j], beaten), spos)
@@ -222,6 +261,37 @@ def _contest_actions(state, shooter, shot_type, val, ft, rating, pts, card):
         fth = foul_on_shot_points(card, shot_type, pts, rules, rating, vh, rating - h)[0] if fiba else ft
         out.append(ContestOption(j, h, False, pf, vh, fth, pf * fth + (1 - pf) * vh, cat, rolls, True))
     return out
+
+
+def block_terms(square, behind):
+    """D-271: (foul rolls, Block reduction) for a block from here: square (in front, his arrow on the shooter) no foul
+    roll and the full Block; in front with the arrow off one roll, beside two, each 3 less; behind two rolls, 6 less."""
+    if square:
+        return 0, 0
+    return (2, RC.BLOCK_BEHIND) if behind else (None, RC.BLOCK_SIDE)
+
+
+def block_option(state, j, shooter, shot_type, val, ft, rating, pts, card, rushed, square, cut):
+    """D-271: defender j's block of this shot. Fouls first (Foul (Block), the block's geometry); with no foul, the
+    Block roll (his Block less the position step and the rushed cut, at least 1) is a turnover; a miss leaves the shot
+    against his full contest (3 less from behind, the rushed cut, at least 1). ev: the turnover counted at its -5."""
+    ctx, rules = state.ctx, state.ctx.rules
+    xp, spos = state.x[j], state.o[shooter]
+    behind = B.dist_rim(xp) > B.dist_rim(spos)
+    rolls, step = block_terms(square, behind)
+    if rolls is None:
+        rolls = foul_rolls(rules, xp, spos)
+    b = ctx.dfn[j].r['block'] - step - (cut if rushed else 0)
+    b = max(RC.CONTEST_FLOOR, b)
+    h = ctx.dfn[j].con(shot_type) - (RC.FAR_CONTEST_PENALTY if behind else 0) - (cut if rushed else 0)
+    h = max(RC.CONTEST_FLOOR, h)
+    pf = p_fouls(p_foul(ctx.dfn[j].r['foul_block'], rules), rolls) if rolls else Fraction(0)
+    pb = p_success(b, rules)
+    vh = val(h)
+    fth = foul_on_shot_points(card, shot_type, pts, rules, rating, vh, rating - h)[0] if RC.app_rule(rules, 'fiba_fouled_shot') else ft
+    ev = pf * fth + (1 - pf) * (pb * RC.TURNOVER_POINTS + (1 - pb) * vh)
+    cat = 'square' if square else ('behind' if behind else 'side')
+    return ContestOption(j, h, rolls == 0, pf, vh, fth, ev, cat, rolls, True, b, pb)
 
 
 def soft_contest(state, shooter, shot_type):
@@ -274,7 +344,7 @@ def soft_option(state, shooter, shot_type):
     j, c, kind = auto_contest(state, shooter, shot_type)
     if c <= 0:
         return opts[0]
-    pts = shot_points(state.o[shooter])
+    pts = shot_points(state.o[shooter], state.ctx)
     v = pts * (shot_rating(state, shooter, shot_type) - c)
     if state.ctx.rules.floor_declared_shot:
         v = max(0, v)
@@ -375,7 +445,17 @@ def score(state):
                         detail += f'. {x} was {where}, so the {name} was contested ({5 * r.contest}% off)'
                     else:
                         place = 'from in front' if front else 'from the side' if level else 'from behind'
-                        if not r.soft:
+                        # D-261, D-271: a pressed Contest takes the position table; a missed block, his full contest
+                        on = G.faces(rules, G.stance(rules, state.arrows[r.contester], any(b[1] == r.contester for b in state.beaten)), dq, sq_)
+                        table = max(RC.CONTEST_FLOOR, state.ctx.dfn[r.contester].con(r.shot_type) - (0 if front and on else RC.SOFT_CONTEST)
+                                    - (RC.FAR_CONTEST_PENALTY if not front and not level else 0)
+                                    - (RC.control_cut(rules, r.shot_type) if state.rushed('X', r.contester) else 0))
+                        honest = RC.contest_costs(rules) and r.contest == table
+                        if honest and front and on:
+                            detail += f'. {x} went straight up in front of {o} with his arrow on him: {r.contest} off, and no foul'
+                        elif honest:
+                            detail += f". {x}'s Contest {place}, a hand up: {r.contest} off, never a foul"
+                        elif not r.soft:
                             detail += f'. {x} went for the block {place}: {r.contest} off'
                         elif auto_contest(state, r.shooter, r.shot_type) == (r.contester, r.contest, 'full'):
                             detail += f'. {x} went straight up in front of {o} with his arrow on him: {r.contest} off, and no foul'

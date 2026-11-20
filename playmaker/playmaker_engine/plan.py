@@ -32,10 +32,27 @@ INSIDE_CASES = (('open', None, None), ('square', 'hand', False), ('square', 'han
                 ('behind', 'hand', False), ('behind', 'block', False), ('behind', 'hand', True), ('behind', 'block', True))
 
 
-def cases_for(shot_type):
+# D-271 (step 29): the block replaces the hard Contest, on every shot and from every position, the square one too.
+BLOCK_CASES = (('open', None, None), ('square', 'hand', False), ('square', 'hand', True), ('square', 'block', False),
+               ('square', 'block', True), ('side', 'hand', False), ('side', 'block', False), ('side', 'hand', True),
+               ('side', 'block', True), ('behind', 'hand', False), ('behind', 'block', False), ('behind', 'hand', True),
+               ('behind', 'block', True))
+
+
+def cases_for(shot_type, rules=None):
     """The defender cases the rules tell apart for this shot: 7 for a jump shot, 11 for an inside shot. Each is taken
-    for both shooter states (set, rushed): 14 and 22."""
+    for both shooter states (set, rushed): 14 and 22. Under the block (D-271): 13 for every shot, 26 with both states."""
+    if rules is not None and RC.block_rule(rules):
+        return BLOCK_CASES
     return JUMP_CASES if shot_type in RC.JUMP_SHOTS else INSIDE_CASES
+
+
+def block_left(dcard, where, d_rushed, rules, shot_type):
+    """D-271: the Block roll in this case: his Block, less 3 from the side, 6 from behind, the rushed cut, at least 1."""
+    b = dcard.r['block'] - {'square': 0, 'side': RC.BLOCK_SIDE, 'behind': RC.BLOCK_BEHIND}[where]
+    if d_rushed:
+        b -= RC.control_cut(rules, shot_type)
+    return max(RC.CONTEST_FLOOR, b)
 
 
 def _plus5(rules, hold_for_one=False):
@@ -79,13 +96,22 @@ def case_value(ocard, dcard, shot_type, where, how, s_rushed, d_rushed, rules, f
         v = max(0, v)
     if how == 'hand':
         return dict(value=Fraction(v), left=rating - c, contest=c, foul=Fraction(0), rolls=0)
+    block = RC.block_rule(rules)
     rolls = (1 if (where == 'side' and front) else 2) if rules.reach_angle_fouls else 1
-    pf = Fraction(p_fouls(p_foul(dcard.r['foul_contest'], rules), rolls))
+    if block and where == 'square':
+        rolls = 0                                        # D-271: square, his arrow on the shooter: no foul roll
+    pf = Fraction(p_fouls(p_foul(dcard.r['foul_block' if block else 'foul_contest'], rules), rolls)) if rolls else Fraction(0)
     if RC.app_rule(rules, 'fiba_fouled_shot'):
         ft = foul_on_shot_points(ocard, shot_type, pts, rules, rating, v, rating - c)[0]
     else:
         ft = foul_on_shot_points(ocard, shot_type, pts, rules, rating if s_rushed else None)[0]
     ft += _plus5(rules, hold_for_one)                    # D-198: a shooting foul is +5 and its free throws
+    if block:
+        # D-271: with no foul, the Block roll (a turnover at -5), else the shot against the contest
+        b = block_left(dcard, where, d_rushed, rules, shot_type)
+        pb = Fraction(min(max(b, 0), RC.DIE), RC.DIE)
+        return dict(value=pf * ft + (1 - pf) * (pb * RC.TURNOVER_POINTS + (1 - pb) * v), left=rating - c, contest=c,
+                    foul=pf, rolls=rolls, block=b, p_block=pb)
     return dict(value=pf * ft + (1 - pf) * v, left=rating - c, contest=c, foul=pf, rolls=rolls)
 
 
@@ -96,7 +122,7 @@ def shot_review(ocard, dcard, shot_type, rules, hold_for_one=False):
     and beside (two), with both kept (value_front, value_beside)."""
     rows = []
     for s_rushed in (False, True):
-        for where, how, d_rushed in cases_for(shot_type):
+        for where, how, d_rushed in cases_for(shot_type, rules):
             r = case_value(ocard, dcard, shot_type, where, how, s_rushed, bool(d_rushed), rules, True, hold_for_one)
             row = dict(shooter='rushed' if s_rushed else 'set', where=where, how=how,
                        defender=None if where == 'open' else ('rushed' if d_rushed else 'set'), **r)
