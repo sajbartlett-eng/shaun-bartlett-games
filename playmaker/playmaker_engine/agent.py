@@ -23,7 +23,16 @@ from .resolve import apply, ChanceNode
 from .search import Searcher, play_turn, actor, zobrist, terminal_value, fake_world, mix_game, is_fake
 
 LEVELS = ('rookie', 'starter', 'allstar')
-SCALE = {'value': 1.0}           # tests shrink the time budgets; the browser build can scale them
+SCALE = {'value': 1.0}           # (the older setups' clocks, kept only for the tests that still read them)
+
+
+# The table format's older setups (not the app's) still read a clock; their old values, kept out of the level profiles
+LEGACY_SETUP_SECONDS = {'rookie': 0.3, 'starter': 1.0, 'allstar': 2.5}
+
+
+def look_ahead(profile):
+    """D-293: how many turns ahead a level looks (ai_profiles.json look_ahead). Fixed: never a clock."""
+    return int(profile.get('look_ahead') or 1)
 # step 3n Part A: the search core in JavaScript (playmaker_web/static/engine.js). The browser worker sets JS['search'] to
 # PMEngine.searchJSON (JSON text in and out); tests may set it to a Node-backed call. None: the Python search.
 JS = {'search': None, 'goals': None, 'reads': None, 'coverage': None}      # step 18o: 'reads', the quick reading of setup placements (readsJSON)
@@ -142,13 +151,12 @@ class Agent:
         if s.stage in ('contest', 'forced', 'target', 'pick'):
             return self._small(s, acts)
         t0 = time.time()
-        budget = self.p['time_budget_s'] * SCALE['value']
-        lo, hi = self.p['depth']
+        # Step 31 (D-293, Shaun, 25 Nov 2026): a level is how far ahead it looks, a fixed number of turns. Never a clock:
+        # the same board gives the same decision on every device.
+        budget = None
+        lo = hi = look_ahead(self.p)
         if FIXED['depth']:
             lo = hi = FIXED['depth']
-            budget = None
-            if FIXED.get('deadline') is not None:      # step 12: a tool's cap on a fixed look-ahead (the deepest that finishes)
-                budget = max(5.0, FIXED['deadline'] - time.time())
         if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
             results, reached, srch = self._js_search(s, budget, hi)
         else:
@@ -243,9 +251,10 @@ class Agent:
         """The defence's replies to declaration s (the defence to reply, read from the public state), each valued against
         the real declaration and the fake by this side's own search: ([(real, fake)], [turn])."""
         s = s.with_(fake=0)
-        lo, hi = self.p['depth']
+        lo = hi = look_ahead(self.p)
         if FIXED['depth']:
             hi = FIXED['depth']
+        budget = None                              # D-293: no clock in the fake's mixes either
         if JS['search'] is not None and jsbridge.ported(s.ctx.rules):
             req = dict(state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), profile=self.p, budget=budget,
                        max_depth=hi, stale=None)
@@ -258,8 +267,7 @@ class Agent:
         return [c for c, _ in cols], [t for _, t in cols]
 
     def _budget_share(self):
-        b = self.p['time_budget_s'] * SCALE['value']
-        return None if FIXED['depth'] else b
+        return None                                # D-293: no clock
 
     def _reply_mix(self, s):
         """D-272: the defence replies to a shot or pass that may be a fake: its mix over replies (mix_game), drawn by the
@@ -696,7 +704,7 @@ def _search_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, 
     p = profile(level)
     rng = random.Random(seed)
     t0 = time.time()
-    total = budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value']
+    total = budget if budget is not None else max(0.2, LEGACY_SETUP_SECONDS[level]) * SCALE['value']
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     o_sq = list(o_sq)
     mem = memory if memory is not None else {}
@@ -742,7 +750,7 @@ def _search_offence(make_names, seed, levels_key=None, budget=None, level='allst
     p = profile(level)
     rng = random.Random(seed)
     t0 = time.time()
-    total = budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value']
+    total = budget if budget is not None else max(0.2, LEGACY_SETUP_SECONDS[level]) * SCALE['value']
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     mem = memory if memory is not None else {}
     chains = mem.get('O')
@@ -967,7 +975,7 @@ def _fixed_offence(make_names, seed, levels_key=None, budget=None, level='allsta
     p = profile(level)
     rng = random.Random(seed)
     t0 = time.time()
-    t_end = t0 + (budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value'])
+    t_end = t0 + (budget if budget is not None else max(0.2, LEGACY_SETUP_SECONDS[level]) * SCALE['value'])
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     from playmaker_web.game import TABLE_O
     base = [B.parse_sq(q) for q in TABLE_O]
@@ -1069,7 +1077,7 @@ def _fixed_defence(make_names, o_sq, ball, seed, levels_key=None, budget=None, l
     offence's position value). Returns dict(squares, arrows, perm, text, value)."""
     p = profile(level)
     rng = random.Random(seed)
-    t_end = time.time() + (budget if budget is not None else max(0.2, p['time_budget_s']) * SCALE['value'])
+    t_end = time.time() + (budget if budget is not None else max(0.2, LEGACY_SETUP_SECONDS[level]) * SCALE['value'])
     make = lambda o, b, x, a: make_names([B.sq(q) for q in o], [B.sq(q) for q in x], list(a), b)
     seen = []
     m = _map_setup(make, list(o_sq), ball)

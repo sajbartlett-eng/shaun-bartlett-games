@@ -623,8 +623,8 @@ def computer_facts(records):
             continue
         who = 'offence' if side == 'O' else 'defence'
         out.append(f"The computer {who} played at {d['level'].replace('allstar', 'All-Star').title() if d['level'] != 'allstar' else 'All-Star'} level "
-                   f"(search to {d['profile']['depth'][1]} turns, {d['profile']['beam']} turns kept per turn, "
-                   f"{d['profile']['time_budget_s']} s a decision).")
+                   f"(it looks {d['profile'].get('look_ahead', 1)} turn{'s' if d['profile'].get('look_ahead', 1) != 1 else ''} ahead, "
+                   f"{d['profile']['beam']} turns kept per turn; no clock).")
         if d.get('scouting'):
             out.append(d['scouting'])
         for r in records:

@@ -1494,13 +1494,12 @@ class Game:
         return self.setup_memory.setdefault((team, side), {})
 
     def _setup_budget(self, level):
-        """Setup thinking time: instant-feeling in the digital format (a fraction of the level's decision budget)."""
+        """Step 31 (D-293): no clock. The app's setups (plan.place_offence, place_defence) think until their reading is
+        complete; only the table format's older setups (agent._fixed_offence, _search_offence) still read this number."""
         from playmaker_engine import agent as AG
         if not level:
             return 0.0
-        b = AG.profile(level)['time_budget_s'] * AG.SCALE['value']
-        # step 22 (D-213): the setup gets the time it needs (the map's setup reads every placement against its answer)
-        return b * (8.0 if self.match_format == 'digital' else 1.0)
+        return AG.LEGACY_SETUP_SECONDS[level] * AG.SCALE['value']
 
     def place(self, token, body):
         with self.lock:

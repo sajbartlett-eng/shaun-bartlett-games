@@ -2261,10 +2261,13 @@ const PMEngine = (() => {
           if (ctx.block && ((mask >> k) & 1)) {
             // decide.Read._block_value (D-271): the block, from every kind he reaches, on every shot
             const rk = cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4));
-            if (split) { const ln = blockLine(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut); split.push(t, ln[0], ln[1]); any = true; continue; }
-            const v = blockValue(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut);
-            if (best === null || v < best) best = v;
-            continue;
+            if (split) {                                 // step 31: the block as a line; the plain Contest stays his other answer (below)
+              const ln = blockLine(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut); split.push(t, ln[0], ln[1]); any = true;
+            } else {
+              const v = blockValue(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut);
+              if (best === null || v < best) best = v;
+              continue;
+            }
           }
           if (jump || !((mask >> k) & 1)) continue;
           const foul = KFOUL[k], two = KTWO[k];
@@ -2912,6 +2915,7 @@ const PMEngine = (() => {
       // attacker are that read's looks, its threats are these, and with k = 0 the cover leaves every threat.
       if (this._quick !== undefined) return this._quick;
       const s = this.s;
+      if (valueLead()) { const ml = this._mapLeaf(); if (ml !== null) return (this._quick = ml); }   // step 31: the lists are ordered and cut by the value itself
       if (!s.pending) return (this._quick = this._quickCont(this._contOf(null)));
       let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
@@ -3523,29 +3527,26 @@ const PMEngine = (() => {
   const ZB = new Int32Array(2 * 5); for (let n = 0; n < ZB.length; n++) ZB[n] = rnd32();
   const STAGES = { target: 1, play: 2, reaction: 3, over: 4, contest: 5, forced: 6, pick: 7 };
   const RKINDS = { shot: 1, free_throws: 2, steal: 3, turnover_end: 4, forced: 5 };
+  // Step 31 (step 30b's finding, Shaun, 25 Nov 2026): the board's hash is built from the state itself, every field,
+  // and from the game it belongs to (the context's id: its cards and rules), never from a hand-picked list. The old
+  // list had left out two fields (turn_moved, zeroed), and a reading kept under it could in principle pass from one
+  // game to another. The fields are read off the state (the engine's own scratch, underscore names, left out).
+  let ZKEYS = null;
   function zobrist(s) {
-    let h1 = ZB[s.ball * 2], h2 = ZB[s.ball * 2 + 1];
-    for (let i = 0; i < 5; i++) { const k = (i * NSQ + s.o[i]) * 2; h1 ^= ZP[k]; h2 ^= ZP[k + 1]; }
-    for (let i = 0; i < 5; i++) {
-      const k = ((5 + i) * NSQ + s.x[i]) * 2, ka = (i * 8 + s.arrows[i]) * 2;
-      h1 ^= ZP[k] ^ ZA[ka]; h2 ^= ZP[k + 1] ^ ZA[ka + 1];
-    }
     let a = 0x811C9DC5 | 0, b = 0x2545F491 | 0;
     const mix = v => { a = Math.imul(a ^ v, 0x01000193); b = Math.imul((b ^ v) + 0x7F4A7C15, 0x85EBCA6B); b ^= b >>> 13; };
-    mix(STAGES[s.stage] || 0); mix(s.side === 'O' ? 1 : s.side === 'X' ? 2 : 3); mix(s.clock); mix(s.tok_o); mix(s.tok_x);
-    mix(s.moved_o); mix(s.moved_x); for (const c of s.cnt) mix(c); mix(s.turn_n); mix(s.final ? 1 : 0); mix(s.lock_o); mix(s.lock_x);
-    mix(100 + s.screens.length); for (const sc of s.screens) { mix(sc[0]); mix(sc[1]); mix(sc[2] ? 1 : 0); mix(sc[3]); }
-    if (s.pending) { mix(s.pending[0]); mix(s.pending[1]); } else mix(-1);
-    mix(SHOT_TYPES.indexOf(s.shot || '')); mix(s.prev_wait === 'H' ? 1 : s.prev_wait === 'P' ? 2 : 0);
-    mix(200 + s.beaten.length); for (const bt of s.beaten) { mix(bt[0]); mix(bt[1]); }
-    mix(s.fouls); mix(s.bonus5); mix(s.tos); mix(s.qs_o); mix(s.qs_x); mix(s.phase); mix(s.inbound); mix(s.target); mix(s.approach);
-    mix(s.turn_lead);
-    if (s.turn_x) { for (const q of s.turn_x[0]) mix(q); for (const q of s.turn_x[1]) mix(q); } else mix(-7);
-    if (s.phase_x) { for (const q of s.phase_x[0]) mix(q); for (const q of s.phase_x[1]) mix(q); }
-    mix(s.react_moved); mix(s.forced ? 1 : 0); mix(s.rush_o); mix(s.rush_x); mix(s.key_o); mix(s.grd); mix(s.decl); mix(s.fake); mix(s.reset + 1);
-    if (s.result) { const r = s.result; mix(RKINDS[r.kind] || 9); mix(r.shooter); mix(SHOT_TYPES.indexOf(r.shot_type || '')); mix(r.points); mix(r.rating); mix(r.contest); mix(r.contester); mix(r.shot_value); mix(r.free_throws); mix(r.and_one ? 1 : 0); } else mix(-3);
-    h1 ^= a; h2 ^= b;
-    return (h1 >>> 0) * 65536 + ((h2 >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
+    const put = v => {
+      if (v === null || v === undefined) mix(-1);
+      else if (typeof v === 'number') { mix(v | 0); if (v !== (v | 0)) mix(Math.round(v * 65536) | 0); }
+      else if (typeof v === 'boolean') mix(v ? 3 : 5);
+      else if (typeof v === 'string') { mix(1000 + v.length); for (let i = 0; i < v.length; i++) mix(v.charCodeAt(i)); }
+      else if (Array.isArray(v) || ArrayBuffer.isView(v)) { mix(2000 + v.length); for (let i = 0; i < v.length; i++) put(v[i]); }
+      else { const ks = Object.keys(v); mix(3000 + ks.length); for (const k of ks) { put(k); put(v[k]); } }
+    };
+    if (ZKEYS === null) ZKEYS = Object.keys(s).filter(k => k !== 'ctx' && k.charCodeAt(0) !== 95);
+    mix(s.ctx ? s.ctx.id | 0 : 0);
+    for (let i = 0; i < ZKEYS.length; i++) put(s[ZKEYS[i]]);
+    return (a >>> 0) * 65536 + ((b >>> 0) & 0xFFFF);          // 48 bits: ttKey stays an exact integer
   }
   const ttKey = (z, depth) => z * 16 + depth;          // a Map key: equal keys mean equal (state, depth)
   const actor = s => (s.stage === 'target' || s.stage === 'pick' || s.stage === 'forced') ? 'O' : (s.stage === 'reaction' || s.stage === 'contest' || s.stage === 'reset') ? 'X' : s.side;
@@ -4546,7 +4547,7 @@ const PMEngine = (() => {
         results = results.map(r => [r[0] - p0, r[1]]);
         this.trace = this.trace.map(r => [r[0], r[1], r[2] - p0]);
       }
-      results.sort(byBest);
+      results.sort((x, y) => (Math.abs(x[0] - y[0]) > 1e-9 ? byBest(x, y) : tieCmp(x[1], y[1])));   // step 31: level turns in one order, both engines
       if (this.split) results = this.splitTies(s, results, side);
       return [results, reached];
     }
@@ -4612,6 +4613,20 @@ const PMEngine = (() => {
       return [res, d];
     }
   }
+  // Step 31 (D-299): the two engines break exact ties the same way. Turns that read the same come out in one order in
+  // both: the fewer actions first (no action without a purpose), then by the action itself (the shot before the pass,
+  // the pass before a movement; then the player, the square by column and row, the arrow, the target, the shot).
+  const TIE_KINDS = ['shot', 'forced_shot', 'pass', 'dribble', 'screen', 'move', 'qs', 'sprint', 'hesitate', 'contest', 'steal', 'intercept', 'challenge', 'pause', 'target', 'pick', 'reset', 'end_turn', 'forfeit'];
+  const TIE_RANK = Object.fromEntries(TIE_KINDS.map((k, i) => [k, i]));
+  function tieCmp(t, u) {
+    if (t.length !== u.length) return t.length - u.length;
+    for (let i = 0; i < t.length; i++) {
+      const a = t[i], b = u[i];
+      const d = ((TIE_RANK[a.kind] === undefined ? 99 : TIE_RANK[a.kind]) - (TIE_RANK[b.kind] === undefined ? 99 : TIE_RANK[b.kind])) || (a.piece - b.piece) || (a.dest - b.dest) || (a.arrow - b.arrow) || (a.target - b.target) || (SHOT_TYPES.indexOf(a.shot || '') - SHOT_TYPES.indexOf(b.shot || ''));
+      if (d) return d;
+    }
+    return 0;
+  }
   const FORCING = new Set(['shot', 'contest', 'steal', 'end_turn', 'intercept', 'pause', 'hesitate']);
   const SHOT_ONLY = new Set(['shot']);
   const phaseOf = s => String(Math.min(6, Math.max(1, Math.floor((12 - s.clock) / 2) + 1)));
@@ -4658,7 +4673,7 @@ const PMEngine = (() => {
     let stale = null;
     if (req.stale) stale = me === 'O' ? [req.stale[0].map(parseSq), req.stale[1].slice()] : [req.stale[0].map(parseSq)];
     const t0 = now();
-    const deadline = req.budget == null ? Infinity : t0 + req.budget;
+    const deadline = Infinity;                           // step 31 (D-293): no clock. A level is how far ahead it looks (max_depth)
     READS = new Map(); READS_OLD = new Map();
     MAP_ME = me;                                         // step 18s, stop two: eval.map 'offence' reads the map for the offence's decisions only
     const srch = new Searcher(me, prof, makeEvaluate(prof, me, stale), deadline);
@@ -6143,16 +6158,17 @@ const PMEngine = (() => {
     }
     return read(covOffFresh(s)) - TURNOVER_COST * threeSecondsOwed(s);
   }
-  function threeSecondsOwed(s) {
+  function threeSecondsStuck(s) {                       // the attackers threeSecondsOwed counts, as a bitmask
     if (!s.ctx.three || !s.key_o) return 0;
-    let n = 0;
+    let m = 0;
     for (let i = 0; i < 5; i++) {
       if (!((s.key_o >> i) & 1) || !INKEY[s.o[i]]) continue;
       const out = s.tok_o > 0 && (canMoveKind(s, 'O', i, 'move') || canMoveKind(s, 'O', i, 'qs') || canMoveKind(s, 'O', i, 'sprint'));
-      if (!out) n++;
+      if (!out) m |= 1 << i;
     }
-    return n;
+    return m;
   }
+  function threeSecondsOwed(s) { let m = threeSecondsStuck(s), n = 0; while (m) { n += m & 1; m >>= 1; } return n; }
   // ---- Step 31 (D-284, Shaun, 25 Nov 2026): the possession's value ------------------------------------------------------
   // "Take every look the offence can get, best first. Each has a chance of being open in time. The offence takes the
   // best one that opens. Take off the risks, add the fouls drawn, and read ahead over the phases left." One number,
@@ -6224,12 +6240,17 @@ const PMEngine = (() => {
   const SHOT_CLOCK_OUT = -TURNOVER_COST;               // D-198: the shot clock runs out: -5, nothing left to play
   const PVS = { offers: 0, runs: 0, reads: 0, looks: 0, steps: 0 };
   let BOUND_LOOKS = 2;
+  let PV_BRUTE = false;                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
   function possRead(m, s0) {                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
     const owed = threeSecondsLeave(s0 || s), left = 6 - owed.next, keyMask = owed.mask, r = m.r, soft = s.ctx.soft;
     const L = []; for (const o of m.options) if (o.r > 0) L.push(o);
     const n = L.length, K = k + 1;
+    // (the three seconds are counted once: a man who can't get out is charged his -5 by possParts, so his own look in
+    // the key doesn't carry it again. Scale audit, row 11.)
+    const stuck = s0 ? threeSecondsStuck(s0) : 0, adjv = new Float64Array(n);
+    for (let i = 0; i < n; i++) adjv[i] = L[i].adj + (((stuck >> L[i].a) & 1) && INKEY[L[i].q0] ? TURNOVER_COST : 0);
     pvRoom(n * (K + 1));
     const W = PV.W, tmp = PV.tmp, Vit = PV.V;           // Vit: each step's worths as the defence now stands (rows 1 to K)
     // each look's contests, a defender at a time: {cv: the Contest's value by shot type, bl: the blocks as lines}
@@ -6260,7 +6281,7 @@ const PMEngine = (() => {
         if (bl) for (let j = 0; j < bl.length; j += 3) { const v = bl[j + 1] + bl[j + 2] * B; if (v < tmp[bl[j]]) tmp[bl[j]] = v; }
       }
       let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
-      return tp + L[i].adj;
+      return tp + adjv[i];
     };
     // U(k + 1), the bar worked up from the shot clock running out; at step i a blocked shot leads to U(i - 2) (the
     // phase of the shot is lost; with none after it the possession ends on what it has)
@@ -6340,7 +6361,7 @@ const PMEngine = (() => {
         let thr = -Infinity;
         for (let e = 0; e < 5; e++) { const x = e === d ? nv : row[e], bl = x && x.bl; if (!bl) continue; for (let z = 0; z < bl.length; z += 3) if (bl[z + 2] > 0) { const h = (tmp[bl[z]] - bl[z + 1]) / bl[z + 2]; if (h > thr) thr = h; } }
         let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
-        affW[na] = L[j].c === q ? -Infinity : tp + L[j].adj; affT[na] = L[j].c === q ? -Infinity : thr; affV[na] = nv; aff[na++] = j;
+        affW[na] = L[j].c === q ? -Infinity : tp + adjv[j]; affT[na] = L[j].c === q ? -Infinity : thr; affV[na] = nv; aff[na++] = j;
       }
       let U = SHOT_CLOCK_OUT; histC[0] = U;
       for (let i = 1; i <= K; i++) {
@@ -6369,6 +6390,7 @@ const PMEngine = (() => {
       // beat its own bound. (A cut that can't change the answer; it replaces reading every movement in full.)
       const cands = [], bm0 = topCount(vec, U);
       const offer = (d, q, a, cm) => {
+        if (PV_BRUTE) { cands.push({ d, q, a, cm, ua: -Infinity, ma: 0 }); return; }
         // A movement can only lower the value by lowering a look the value turns on, at the step it turns on it (every
         // route's worth only rises with what playing on is worth): one that lowers none of them is not read further.
         let lowers = false;
@@ -6396,7 +6418,7 @@ const PMEngine = (() => {
         let had = false;
         for (let x = 0; x < act.length && !had; x += 2) if (SV[act[x]][d] !== null) had = true;
         const bears = q => {
-          if (had) return true;
+          if (had || PV_BRUTE) return true;
           const any = anyArrow2(q, qs, mode);
           for (let x = 0; x < act.length; x += 2) { const j = act[x]; if (L[j].c === q || any[lc[j]]) return true; }
           return false;
@@ -6764,7 +6786,7 @@ const PMEngine = (() => {
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size],
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

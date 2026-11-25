@@ -7,6 +7,7 @@ Turns are generated from geometry: every legal action is a candidate; the ones w
 they make to THREAT and COVERAGE (the leaf value after the action) and the dilemmas they create, a beam of 8 to 24
 turns. Labels (B7) never change a candidate's value.
 """
+import functools
 import random
 import time
 
@@ -65,18 +66,31 @@ _ZBALL = [_ZR.getrandbits(64) for _ in range(5)]
 
 
 def zobrist(s):
-    """The position's Zobrist key: XOR of a random word per (piece, square), per (defender, arrow) and for the ball,
-    combined with the rest of the state (clock, counters, stage) so equal keys mean equal states."""
-    h = _ZBALL[s.ball]
-    for i, p in enumerate(s.o):
-        h ^= _ZPIECE[('O', i, p[0], p[1])]
-    for i, p in enumerate(s.x):
-        h ^= _ZPIECE[('X', i, p[0], p[1])] ^ _ZARROW[(i, s.arrows[i])]
-    rest = (s.stage, s.side, s.clock, s.tok_o, s.tok_x, s.moved_o, s.moved_x, s.cnt, s.turn_n, s.final, s.lock_o,
-            s.lock_x, s.screens, s.pending, s.shot, s.prev_wait, s.beaten, s.fouls, s.bonus5, s.tos, s.qs_o, s.qs_x,
-            s.phase, s.inbound, s.target, s.approach, s.turn_lead, s.turn_x, s.phase_x, s.react_moved, s.forced, s.result,
-            s.rush_o, s.rush_x, s.key_o, s.grd, s.decl, s.fake, s.reset)
-    return h ^ (hash(rest) & 0xFFFFFFFFFFFFFFFF)
+    """The position's key: the whole state, every field, and the game it belongs to (the context). Step 31 (step 30b's
+    finding): built from the state itself, never from a hand-picked list of fields (the old list had left out
+    turn_moved and zeroed). GameState compares and hashes every field but the context, which is added by identity."""
+    return hash((id(s.ctx), s))
+
+
+# Step 31 (D-299, engine.js tieCmp): the two engines break exact ties the same way. Turns that read the same come out in
+# one order in both: the fewer actions first, then by the action itself (the shot before the pass, the pass before a
+# movement; then the player, the square by column and row, the arrow, the target, the shot).
+TIE_KINDS = ('shot', 'forced_shot', 'pass', 'dribble', 'screen', 'move', 'qs', 'sprint', 'hesitate', 'contest', 'steal', 'intercept',
+             'challenge', 'pause', 'target', 'pick', 'reset', 'end_turn', 'forfeit')
+_TIE_RANK = {k: i for i, k in enumerate(TIE_KINDS)}
+_TIE_SHOTS = ('', 'layup', 'dunk', 'post', 'mid', 'floater', 'long', 'three')
+
+
+def tie_key(t):
+    def num(v):
+        return -1 if v is None else int(v)
+    return (len(t),) + tuple((_TIE_RANK.get(a.kind, 99), num(a.piece), tuple(a.dest) if a.dest else (-1, -1), num(a.arrow), num(a.target),
+                              _TIE_SHOTS.index(a.shot or '')) for a in t)
+
+
+def tie_cmp(t, u):
+    kt, ku = tie_key(t), tie_key(u)
+    return -1 if kt < ku else 1 if kt > ku else 0
 
 
 # ---- who acts --------------------------------------------------------------------------------------------------------
@@ -150,7 +164,12 @@ def mix_game(cols):
     act = [k for k, (a, b) in enumerate(cols) if (1.0 - best_p) * a + best_p * b <= best_v + 1e-9]
     neg = [k for k in act if cols[k][1] - cols[k][0] <= 0.0]
     pos = [k for k in act if cols[k][1] - cols[k][0] >= 0.0]
-    if best_p <= 0.0:
+    # step 31 (D-298): a level reply that the offence's choice can't make worse (it reads the same real or fake:
+    # holding by position) is taken outright. Step 29 took the first on the list, which could be the gamble.
+    flat = [k for k in act if abs(cols[k][1] - cols[k][0]) <= 1e-9]
+    if flat:
+        q = {flat[0]: 1.0}
+    elif best_p <= 0.0:
         q = {(neg or act)[0]: 1.0}
     elif best_p >= 1.0:
         q = {(pos or act)[0]: 1.0}
@@ -1281,6 +1300,8 @@ class Searcher:
             return terminal_value(node)
         if self.settle_shots and node.stage != 'play':
             return self.settled(node)                    # step 18b: a declared shot is ordered by its settled value
+        if CONFIG['eval'].get('map_lead') == 'value':
+            return Read(node).leaf()                 # step 31: the lists are ordered and cut by the value itself
         return Read(node, k=0, looks_per=3).leaf()
 
     def turns_of(self, s):
@@ -1384,7 +1405,7 @@ class Searcher:
             p0 = self.phi(s)
             results = [(v - p0, t) for v, t in results]
             self.trace = [(d, t, v - p0) for d, t, v in self.trace]
-        results.sort(key=lambda r: -r[0] if side == 'O' else r[0])
+        results.sort(key=functools.cmp_to_key(lambda x, y: ((-1 if (x[0] > y[0]) == (side == 'O') else 1) if abs(x[0] - y[0]) > 1e-9 else tie_cmp(x[1], y[1]))))   # step 31: level turns in one order, both engines
         if self.split:
             results = self.split_ties(s, results, side)
         return results, reached

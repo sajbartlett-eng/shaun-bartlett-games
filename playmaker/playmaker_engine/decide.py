@@ -679,13 +679,13 @@ class Read:
             return contest_map(self.rules, {}, {frm: {a: 0}}, stance_mode(s, d))
         return _cmap_cached(self.rules, frm, a, s.ctx.dfn[d].qs, can_move, qs_left, stance_mode(s, d))
 
-    def _vals2(self, look, d, row, setrow=None):
+    def _vals2(self, look, d, row, setrow=None, split=None):
         """Step 16: the same, for a look a phase away: any Contest he reaches with two movement actions. setrow (step
         22b, D-222): the contest row he is set for; a kind outside it is contested off balance."""
         keep, self.react_moves = self.react_moves, RC.reply_moves(self.rules)     # D-261: one movement before the Contest
         self._phase_away = True                    # D-151: the rushed state doesn't carry over the phase's end
         try:
-            return self._vals(look, d, row, setrow=setrow)
+            return self._vals(look, d, row, setrow=setrow, split=split)
         finally:
             self.react_moves = keep
             self._phase_away = False
@@ -706,7 +706,7 @@ class Read:
             memo[key] = self._vals2(look, d, pair[0], pair[1]) or None
         return memo[key]
 
-    def _vals(self, look, d, row, moves=None, dflags=None, setrow=None):
+    def _vals(self, look, d, row, moves=None, dflags=None, setrow=None, split=None):
         """Expected value per shot type if defender d (contest row `row`) contests look within the reaction (moves: with
         at most that many of the reaction's movements; 0 = from where he stands). dflags (step 18e, the open list's
         re-read): the defender's control state after his action (rushed where he stands, his Move used), in place of
@@ -735,7 +735,7 @@ class Read:
         position = RC.position_contest(rules)
         plus5 = RC.app_rule(rules, 'points_play_on') and not self.s.ctx.hold_for_one
         block = RC.block_rule(rules)
-        for t in look.types:
+        for ti, t in enumerate(look.types):
             r = card_shot(self.s.ctx, card, t, look.c)     # D-274: a deep three is 1 off a square past the band
             # (step 18q: a look a phase away whose shooter gets there by a Quick Step or Sprint is rushed by that
             # movement itself; the defenders' own rushed states still don't carry over)
@@ -751,9 +751,14 @@ class Read:
                     # D-271: the block, from every kind he reaches, on every shot (scoring.block_option, as the reading takes it)
                     rushed_k = bool(cut) and ((d_stand if n == 0 else d_moved) if setrow is None else setrow[k] > 1)
                     v = self._block_value(card, d, t, k, pts, r, cut if rushed_k else 0, plus5, (cut and look.rushed))
-                    if best is None or v < best:
-                        best = v
-                    continue
+                    if split is not None:
+                        # step 31 (engine.js blockLine): the block as a line in what the next phase is worth; the plain
+                        # Contest stays his other answer (below)
+                        split.append((ti, v, self._block_c1(d, k, cut if rushed_k else 0)))
+                    else:
+                        if best is None or v < best:
+                            best = v
+                        continue
                 if jump:
                     continue
                 pen, foul, two = KINDS[k]
@@ -829,6 +834,18 @@ class Read:
         # Shaun (20 Nov): no floor. A block is a turnover (-5), so a shot into a likely block is worth less than nothing,
         # and the reading must see it to avoid it (the shot's own floor, OQ-5, still applies to the shot itself above)
         return v
+
+    def _block_c1(self, d, k, dcut):
+        """Step 31 (engine.js blockLine): the chance the block lands and no foul came first: what multiplies the worth
+        of the phase after it."""
+        rules = self.rules
+        pen, foul, two = KINDS[k]
+        foul = foul or pen
+        dc = self.dcards[d]
+        b = max(RC.CONTEST_FLOOR, dc.r['block'] - (RC.BLOCK_BEHIND if pen else (RC.BLOCK_SIDE if foul else 0)) - dcut)
+        pb = float(p_success(b, rules))
+        pf = float(p_fouls(p_foul(dc.r['foul_block'], rules), 2 if (two or pen) else 1)) if foul else 0.0
+        return (1 - pf) * pb
 
     def _value(self, look, swap=None):
         """The look's value, the defence contesting with its best defender (swap: {d: replacement vals})."""
@@ -1432,6 +1449,7 @@ class Read:
                     if n > 2 or n + 1 > s.tok_o:
                         continue
                     p = cov_pass(s, a, q)
+                    p0 = p                                  # step 31: from where he stands (the fall-back after a lost Dribble)
                     # step 26 (engine.js covBuild, D-250): from every square the ball handler can reach this turn
                     if p < 1 and n + 2 <= s.tok_o:
                         for pq in passer_squares():
@@ -1443,12 +1461,14 @@ class Read:
                             if p >= 1:
                                 break
                     if p > 0:
-                        starts.append((q, p, n == 2, n + 1, False))      # (n0, step 22b: his movements and the pass)
+                        starts.append((q, p, n == 2, n + 1, False, p0))      # (n0, step 22b: his movements and the pass)
             mates = {s.o[k] for k in range(5) if k != a}
             lines = capture_lines(s_next, a) if rules.zone != 'off' else []
             card, qs = s.ctx.off[a], s.ctx.off[a].qs
-            best, start, acts, drb = {}, {}, {}, {}
-            for q0, pr, set_only, n0, dr in starts:
+            best, start, acts, drb, p0s = {}, {}, {}, {}, {}
+            for st_ in starts:
+                q0, pr, set_only, n0, dr = st_[:5]
+                p0 = st_[5] if len(st_) > 5 else 0
                 if q0 in mates or (q0 != home and q0 in xat):
                     continue
                 # step 22c: what holding the ball there costs him (0 or less); of two ways as likely, the one that costs less
@@ -1464,6 +1484,7 @@ class Read:
                         start[q0, False] = q0
                         acts[q0, False] = n0
                         drb[q0, False] = dr
+                        p0s[q0, False] = p0
                 if set_only:
                     continue
                 for p, rushed in _shot_paths(q0, qs, rules, no_rim, RC.deep_open(s.ctx)):
@@ -1479,6 +1500,7 @@ class Read:
                     start[c, rushed] = q0
                     acts[c, rushed] = n0
                     drb[c, rushed] = dr
+                    p0s[c, rushed] = p0
             for (c, rushed), (pr, adj) in best.items():
                 z = shot_zone(s.ctx, c)
                 lk = Look(a, c, 'later', 1.0, False)
@@ -1491,7 +1513,7 @@ class Read:
                 opens = [pts * (card_shot(s.ctx, card, ty, c) - (off if rushed else 0)) for ty in lk.types]
                 top = self._map_weak(lk, opens, vals)
                 lc = 0 if drb[c, rushed] else 5     # what not getting there costs: a lost pass -5, a lost Dribble nothing
-                out[a, c, rushed] = [pr, top, pr * (top + adj) - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc, adj]
+                out[a, c, rushed] = [pr, top, pr * (top + adj) - (1 - pr) * lc, lk, opens, vals, start[c, rushed], acts[c, rushed], lc, adj, p0s[c, rushed]]
         return out
 
     @staticmethod
@@ -2143,6 +2165,15 @@ class Read:
             c['ans'] = two()
         return c['ans']
 
+    def map_shot_or_none(self):
+        """Step 31 (engine.js mapShotOrNone): the best shot that can go up now; None when none can."""
+        now = self.shot_now()
+        for i in self.att_o:
+            for lk in self.looks[i]:
+                if lk.now and (now is None or lk.base > now):
+                    now = lk.base
+        return now
+
     def map_shot(self):
         """The best shot that can go up now, as the reading has it."""
         now = 0.0
@@ -2163,6 +2194,12 @@ class Read:
             return None
         banked = RC.STEAL_FOUL_BONUS * s.bonus5 + (RC.TURNOVER_POINTS * s.tos if RC.turnover_counts(s.ctx.rules) else 0)
         banked += foul_externality(s)
+        if self.cfg.get('map_lead') == 'value':     # step 31 (D-284): the possession's value: the shot now, or playing on
+            from .value import poss_value, OUT
+            if s.pending:
+                return banked + poss_value(s, self.cfg)
+            sh = self.map_shot_or_none()
+            return banked + max(OUT if sh is None else sh, poss_value(s, self.cfg))
         lead = self.cfg.get('map_lead') == 'list'   # step 22b (D-219): the list's largest item leads, or step 20's lasting gap
         if s.pending:                              # step 21: a pass in the air, by the rules' chance of the catch
             L = self.map_top() if lead else self.map_lasting()

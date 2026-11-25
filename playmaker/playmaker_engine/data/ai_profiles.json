@@ -14,11 +14,11 @@
    "goal_margin_m0": 8,
    "variety_margin": 0,
    "level": "rookie",
-   "time_budget_s": 0.3,
    "scout_human": false,
    "open_list": "defence",
    "open_full": 2,
-   "open_follow": 1
+   "open_follow": 1,
+   "look_ahead": 1
   },
   "starter": {
    "depth": [
@@ -33,11 +33,11 @@
    "goal_margin_m0": 4,
    "variety_margin": 1,
    "level": "starter",
-   "time_budget_s": 1.0,
    "scout_human": false,
    "open_list": "defence",
    "open_full": 4,
-   "open_follow": 2
+   "open_follow": 2,
+   "look_ahead": 1
   },
   "allstar": {
    "depth": [
@@ -52,10 +52,10 @@
    "goal_margin_m0": 1,
    "variety_margin": 2,
    "level": "allstar",
-   "time_budget_s": 2.5,
    "scout_human": true,
    "open_list": "defence",
-   "closeout_twice": true
+   "closeout_twice": true,
+   "look_ahead": 1
   }
  },
  "eval": {
@@ -75,8 +75,8 @@
    "rim": 0.27
   },
   "value_bounds": [
-   -10,
-   60
+   -100,
+   150
   ],
   "browser_budget_scale": 1.0,
   "_ball_loss": "Step 18j: a position the search stops in with the defence to act and a whole turn in hand is worth no more than what its best Steal leaves, counting a defender who can still get next to the ball handler with an arrow on him; the Steal is settled by the rules' own chances. true: in either side's search; 'offence': only when the offence is the one choosing; false: off. Off: on the gate it showed no gain for the offence beyond search.dice_in_hand, and in the defence's own search it put the Steal off (step 18j report).",
@@ -332,7 +332,8 @@
    }
   },
   "_relative_budget": "Step 13 B: the averages the position value is read against when coverage_budget is on: the same positions and rule as relative_average (D-114), read with coverage as a budget (tools/relative_average.py --budget)",
-  "_map_lead": "Step 31 (D-284): 'value': the possession's value leads both computers (the list and the lasting gap are displays). 'list' and 'gap' are the readings of steps 22b and 20, kept for comparison."
+  "_map_lead": "Step 31 (D-284): 'value': the possession's value leads both computers (the list and the lasting gap are displays). 'list' and 'gap' are the readings of steps 22b and 20, kept for comparison.",
+  "_value_bounds": "Step 31 (scale audit, row 9): the search's window, widened to what the rules allow (a possession can bank several turnovers at -5 each, and several fouls at +5). It was -10 to 60."
  },
  "trainer": {
   "_about": "Step 3m Part D. Bands in game units of value lost; calibrate from stored games.",
@@ -442,5 +443,6 @@
  "setup": {
   "_search": "Step 18o (D-195): true: both sides' setups, and the setup proposed to a human, are searched from no starting answer (any square, any arrow), shortlisted by the quick reading and the shortlist judged by the search's played-out reading; the app then offers the proposal as the human's default setup. Built and off: played out, the placements it finds give up more than the old setup's (docs/reports/STEP18O_REPORT.md). Shaun turns it on.",
   "search": false
- }
+ },
+ "_look_ahead": "Step 31 (D-293, Shaun, 25 Nov 2026): each level is defined by how far ahead it looks, a fixed number of turns, never a clock, so the same board gives the same decision on every device. look_ahead: the turns it reads ahead (its own turn is 1; 2 adds the other side's answer). Shaun sets these. Until he does, each is what the level's old clock (0.3, 1.0 and 2.5 seconds) reliably finished on step 30b's measuring machine: one turn. 'depth' is the old clock-era range, kept for the tools that still pass a fixed look-ahead of their own."
 }
