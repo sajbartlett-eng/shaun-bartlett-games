@@ -6758,6 +6758,114 @@ const PMEngine = (() => {
     STANCE_STATS.rounds += rounds;
     return { x: Array.from(s.x), arrows: Array.from(s.arrows), value: cur.U, answer: cur.n, top: cur.m, vec: Array.from(cur.vec), base, start, rounds, steps, man };
   }
+  // ---- Step 31, stage 4 (Shaun, 25 Nov 2026): the offence's setup, in the design's order ---------------------------------------
+  //   1. Scout: each attacker's segments by what a defender must save there (layer 1 of the weight map, from the cards:
+  //      weightBase): the places that demand a defender.
+  //   2. The ball handler's start: each attacker tried with the ball, on the plain wood behind the top and behind each
+  //      wing (where the ball begins fixes access and room for everyone else).
+  //   3. Possible positions: every other attacker on the square of his heaviest segment not already taken by a
+  //      teammate (segments narrow the search and explain the placement); then each in turn tries his next segments, and
+  //      a change is kept when it raises the number. Two in one segment is never forbidden: it is tried like any other
+  //      square, and the value counts what it costs (one defender then holds both).
+  //   4. to 6. The plan's conditions and the adjustment are that same loop read against the defence's answer: a
+  //      placement is worth the possession's value against the defence's goal-side shape and the movements the value
+  //      asks of it (stanceQuick); the best few are then read against its full answer (stanceSearch).
+  // Every placement's reading is independent of the others: they are listed first, read in the list's order and compared
+  // in that order, so they can be handed out side by side and combined the same way on any device.
+  const OFF_FINAL = 2;                                 // how many of the best placements are read against the defence's full answer (kept, on trial)
+  const OFF_SEGS = 3;                                  // how many of his heaviest segments each attacker tries (kept, on trial)
+  function stanceQuick(s) {                            // the goal-side shape, then the movements the value asks for (stanceSearch's part 1)
+    const put = (st, d, q, a) => W_(st, { x: setAt(st.x, d, q), arrows: setAt(st.arrows, d, a) });
+    let st = stanceBase(W_(covOffFresh(s), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [] }), [0, 1, 2, 3, 4]).s;
+    let cur = stanceRead(st);
+    for (let guard = 0; cur.moves.length && guard < 200; guard++) {
+      const [d, q, a] = cur.moves[0], t = put(st, d, q, a), v = stanceRead(t);
+      if (!stanceLess(v, cur)) break;
+      st = t; cur = v;
+    }
+    return { s: st, v: cur };
+  }
+  function offenceSetup(s0, opts) {
+    opts = opts || {};
+    const ctx = s0.ctx, seg = segInit();
+    // 1. the scout: "each attacker's zones where his shot is average or better: these are the places that demand a
+    // defender". By the card's own marks (average or high), each segment at his best such shot's worth there, the
+    // highest first -> [{g, c, weight (that worth)}]. A card with no such shot anywhere is read on every shot it has.
+    const scoutOf = (a, all) => {
+      const card = ctx.off[a], best = new Map();
+      for (let c = 0; c < NSQ; c++) {
+        if (!ONB[c] || !seg.of[c]) continue;
+        const z = szone(ctx, c);
+        if (!SHOOT(z) || (ctx.noRim && c === RIM)) continue;
+        let v = -Infinity;
+        for (const ty of ZONE_SHOTS[z]) { const bd = card.b['shot_' + ty]; if (all || bd === 'A' || bd === 'H') { const w = ctx.worth[z] * cardShot(ctx, card, ty, c); if (w > v) v = w; } }
+        if (!(v > 0)) continue;
+        for (const g of seg.of[c]) { const cur = best.get(g); if (!cur || v > cur.weight + 1e-9 || (Math.abs(v - cur.weight) <= 1e-9 && cheb(c, RIM) < cheb(cur.c, RIM))) best.set(g, { g, c, weight: v, open: v }); }
+      }
+      return [...best.values()].sort((u, v) => v.weight - u.weight || u.c - v.c);
+    };
+    const scout = [0, 1, 2, 3, 4].map(a => { const rows = scoutOf(a, false); return rows.length ? rows : scoutOf(a, true); });
+    // 2. where the ball may start: the first plain-wood square behind the three-point squares in the middle column and
+    // in the column of each wing's middle
+    const startCols = [RIMX, 2, W - 3], starts = [];
+    for (const x of startCols) for (let y = 1; y <= H; y++) { const q = C(x, y); if (ONB[q] && ZN[q] === 0 && y > 1 && !DEEP[q]) { let behind = false; for (let yy = 1; yy < y; yy++) if (ZN[C(x, yy)] === 4) behind = true; if (behind) { starts.push(q); break; } } }
+    const mk = (o, ball) => W_(s0, { o, ball, x: [OFFSQ, OFFSQ, OFFSQ, OFFSQ, OFFSQ], arrows: [0, 0, 0, 0, 0], stage: 'play', side: 'O', pending: null });
+    const worth = new Map();
+    const read = (o, ball) => {                         // a placement's worth against the defence's quick answer
+      const key = o.join(',') + '|' + ball;
+      let v = worth.get(key);
+      if (v === undefined) { const q = stanceQuick(mk(o, ball)); v = { U: q.v.U, x: Array.from(q.s.x), arrows: Array.from(q.s.arrows) }; worth.set(key, v); }
+      return v;
+    };
+    // 3. the others on their heaviest free segments
+    const place = (ball, bq) => {
+      const o = [-1, -1, -1, -1, -1], usedSeg = new Set(), usedSq = new Set([bq]);
+      o[ball] = bq;
+      for (const g of (seg.of[bq] || [])) usedSeg.add(g);
+      // (the attacker whose best segment is heaviest chooses first; level, the lower number)
+      const order = [0, 1, 2, 3, 4].filter(a => a !== ball).sort((u, v) => ((scout[v][0] ? scout[v][0].weight : 0) - (scout[u][0] ? scout[u][0].weight : 0)) || u - v);
+      for (const a of order) {
+        let pick = scout[a].find(r => !usedSeg.has(r.g) && !usedSq.has(r.c)) || scout[a].find(r => !usedSq.has(r.c));
+        let q = pick ? pick.c : -1;
+        if (q < 0) for (let z = 0; z < NSQ && q < 0; z++) if (ONB[z] && !usedSq.has(z)) q = z;
+        o[a] = q; usedSq.add(q); if (pick) usedSeg.add(pick.g);
+      }
+      return o;
+    };
+    const cands = [];
+    if (opts.fixed) cands.push({ ball: opts.fixed.ball, o: opts.fixed.o.slice() });
+    else for (let ball = 0; ball < 5; ball++) for (const bq of starts) cands.push({ ball, o: place(ball, bq) });
+    for (const c of cands) c.v = read(c.o, c.ball);
+    const better = (u, v) => u.v.U > v.v.U + 1e-9;
+    let rank = cands.map((c, i) => ({ c, i })).sort((u, v) => (better(u.c, v.c) ? -1 : better(v.c, u.c) ? 1 : u.i - v.i)).map(z => z.c);
+    // each attacker in turn tries the squares of his next segments (the best placement first); kept when it raises the number
+    const improve = c => {
+      let cur = { ball: c.ball, o: c.o.slice(), v: c.v }, steps = 0;
+      for (let changed = true; changed;) {
+        changed = false;
+        for (let a = 0; a < 5; a++) {
+          if (a === cur.ball) continue;
+          let best = null;
+          for (const r of scout[a].slice(0, OFF_SEGS)) {
+            if (cur.o.includes(r.c)) continue;
+            const o = cur.o.slice(); o[a] = r.c;
+            const v = read(o, cur.ball);
+            if (v.U > (best ? best.v.U : cur.v.U) + 1e-9) best = { ball: cur.ball, o, v };
+          }
+          if (best) { cur = best; changed = true; steps++; }
+        }
+      }
+      cur.steps = steps;
+      return cur;
+    };
+    const tops = rank.slice(0, OFF_FINAL).map(improve);
+    // the best few against the defence's full answer
+    for (const c of tops) { const st = stanceSearch(mk(c.o, c.ball), null); c.full = { U: st.value, x: st.x, arrows: st.arrows }; }
+    tops.sort((u, v) => (v.full.U - u.full.U) || 0);
+    const pick = tops[0];
+    return { o: pick.o, ball: pick.ball, value: pick.full.U, quick: pick.v.U, defence: pick.full, ranked: tops.map(c => ({ o: c.o.map(sqName), ball: c.ball, quick: +c.v.U.toFixed(2), full: +c.full.U.toFixed(2) })),
+      candidates: cands.length, reads: worth.size, scout: scout.map(rows => rows.slice(0, OFF_SEGS).map(r => ({ seg: seg.names[r.g], c: sqName(r.c), weight: +r.weight.toFixed(2), open: +r.open.toFixed(2) }))) };
+  }
   const possValue = s => possParts(s).V;
   // Step 31 (the three seconds, counted from entry): an attacker standing in the key without the ball must spend an
   // action to leave before the second phase end finds him there. `now`: those already counted once (they must leave
@@ -6881,9 +6989,15 @@ const PMEngine = (() => {
       return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, bars: pp.bars.map(v => +v.toFixed(2)),
         answer: (pp.moves || []).map(([d, q, a]) => [d, sqName(q), a]), pick: pp.pick ? { a: pp.pick.a, c: sqName(pp.pick.c), q0: sqName(pp.pick.q0), p: +pp.pick.r.toFixed(4), worth: +pp.pickWorth.toFixed(2), dribble: !!pp.pick.dr } : null, looks, catch: pp.catch === undefined ? null : pp.catch };
     }
+    if (opts.only === 'offence_setup') {                  // step 31, stage 4: the offence's setup, in the design's order
+      const r = offenceSetup(s0, { fixed: opts.fixed ? { ball: opts.fixed.ball, o: opts.fixed.o.map(parseSq) } : null });
+      return { squares: r.o.map(sqName), ball: r.ball, value: +r.value.toFixed(4), quick: +r.quick.toFixed(4), defence: { x: r.defence.x.map(sqName), arrows: r.defence.arrows }, ranked: r.ranked, candidates: r.candidates, reads: r.reads, scout: r.scout };
+    }
     if (opts.only === 'stances') {                        // step 31, stage 3: the defence's five stances for this board
       const st = stanceSearch(s0, { from: opts.from ? { x: opts.from.x.map(parseSq), arrows: opts.from.arrows } : null, man: opts.man || null });
-      return { x: st.x.map(sqName), arrows: st.arrows, value: +st.value.toFixed(4), answer: st.answer, top: st.top, routes: st.vec.map(v => (isFinite(v) ? +v.toFixed(2) : null)), base: { x: st.base.x.map(sqName), arrows: st.base.arrows },
+      const fin = W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [], x: st.x, arrows: st.arrows });
+      const lifted = [0, 1, 2, 3, 4].map(d => +(stanceRead(W_(fin, { x: setAt(fin.x, d, OFFSQ) })).U - st.value).toFixed(4));
+      return { x: st.x.map(sqName), arrows: st.arrows, value: +st.value.toFixed(4), answer: st.answer, top: st.top, lifted, routes: st.vec.map(v => (isFinite(v) ? +v.toFixed(2) : null)), base: { x: st.base.x.map(sqName), arrows: st.base.arrows },
         start: st.start, rounds: st.rounds, steps: st.steps, man: st.man, reads: STANCE_STATS.reads };
     }
     if (opts.only === 'stance_value') { const v = stanceRead(W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null })); return { value: +v.U.toFixed(4), answer: v.n, top: v.m, routes: Array.from(v.vec, x => (isFinite(x) ? +x.toFixed(2) : null)) }; }
@@ -7081,7 +7195,7 @@ const PMEngine = (() => {
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size],
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

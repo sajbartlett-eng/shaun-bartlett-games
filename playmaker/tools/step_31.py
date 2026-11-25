@@ -166,5 +166,21 @@ def cmd_stances(*names):
         print('    stances', ' '.join('X%d %s %s' % (i + 1, q, B.DIR_NAMES[v['arrows'][i]] + '+' + B.DIR_NAMES[(v['arrows'][i] + 1) % 8]) for i, q in enumerate(v['x'])))
 
 
+def cmd_offence(*names):
+    """The offence's setup on each board (the JavaScript engine), with the defence's full answer to it."""
+    import exam_boards as X
+    names = names or [k for k, v in X.SETUP.items() if v == 'offence']
+    for r in js([req(n, dict(only='offence_setup')) for n in names], timeout=3000):
+        v = r['res']
+        if 'error' in v:
+            print(r['name'], 'ERROR', v['error'][:900])
+            continue
+        print(r['name'], r['ms'], 'ms value', v['value'], '(quick', v['quick'], ') candidates', v['candidates'], 'reads', v['reads'])
+        print('    offence', ' '.join('O%d %s' % (i + 1, q) for i, q in enumerate(v['squares'])), '| ball O%d' % (v['ball'] + 1))
+        print('    defence', ' '.join('X%d %s' % (i + 1, q) for i, q in enumerate(v['defence']['x'])))
+        print('    ranked ', v['ranked'])
+        print('    scout  ', [[(z['seg'], z['c'], z['weight']) for z in rows] for rows in v['scout']])
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])

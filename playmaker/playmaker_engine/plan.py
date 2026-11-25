@@ -712,10 +712,19 @@ def _job_variants(make, read, sq, ball, t_end):
     return out
 
 
+def _value_led():
+    from .decide import CONFIG
+    return CONFIG.get('eval', {}).get('map_lead') == 'value'
+
+
 def place_offence(make, *args, **kw):
-    """The offence's setup (_place_offence), inside one think's memory (step 30b)."""
+    """The offence's setup, inside one think's memory (step 30b). Step 31 (D-284): the setup order of the Gravity and
+    Spacing Design (setup31.place_offence); the list-led sweep of step 27 (_place_offence) only where the value doesn't lead."""
     from . import memo
     with memo.think():
+        if _value_led():
+            from . import setup31
+            return setup31.place_offence(make, *args, **{k: v for k, v in kw.items() if k in ('seed', 'level', 'budget', 'nth', 'scout', 'fixed')})
         return _place_offence(make, *args, **kw)
 
 
@@ -936,9 +945,14 @@ def _where_words(q):
 
 
 def place_defence(make, *args, **kw):
-    """The defence's setup (_place_defence), inside one think's memory (step 30b)."""
+    """The defence's setup, inside one think's memory (step 30b). Step 31 (D-284): the weight map, the goal-side base
+    positions and the five stances improved by the value (setup31.place_defence); the settlement by the list of step 22b
+    (_place_defence) only where the value doesn't lead."""
     from . import memo
     with memo.think():
+        if _value_led():
+            from . import setup31
+            return setup31.place_defence(make, *args, **kw)
         return _place_defence(make, *args, **kw)
 
 

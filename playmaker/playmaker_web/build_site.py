@@ -13,9 +13,9 @@ ENGINE_FILES = ['__init__.py', 'rules_config.py', 'board.py', 'cards.py', 'state
                 'defence.py', 'solver.py', 'solver_config.py',
                 'computer_levels.json', 'geometry.py', 'goal_library.json',
                 'levels.py', 'rosters.py',
-                'decide.py', 'reach.py', 'search.py', 'goals.py', 'agent.py', 'labels.py', 'trainer.py', 'glicko2.py', 'jsbridge.py', 'plain.py', 'register.py', 'plan.py', 'conditions.py', 'memo.py']
+                'decide.py', 'reach.py', 'search.py', 'goals.py', 'agent.py', 'labels.py', 'trainer.py', 'glicko2.py', 'jsbridge.py', 'plain.py', 'register.py', 'plan.py', 'conditions.py', 'memo.py', 'value.py', 'weight.py', 'setup31.py']
 DATA_FILES = ['data.py', 'teams.py', 'scenarios.py', 'court_zones.json', 'levels_data.py', 'teamtools.py',
-              'ai_profiles.json', 'vcoarse.json']
+              'ai_profiles.json', 'vcoarse.json', 'segments.json']
 WEB_FILES = ['__init__.py', 'game.py', 'view.py', 'api.py', 'advice.py', 'report.py']
 
 
