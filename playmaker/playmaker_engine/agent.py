@@ -842,6 +842,10 @@ def _driver_order(s, side, results, limit=8, prev=None, plan=None):
     on = CONFIG.get('eval', {}).get('map')
     if JS.get('coverage') is None or not s.ctx.rules.digital or not (on is True or (on == 'offence' and side == 'O')):
         return results
+    if CONFIG.get('eval', {}).get('map_lead') == 'value':
+        # step 31 (check B1): with the possession's value leading, the list ranks nothing, level turns included. They keep
+        # the one order both engines give them (search.tie_cmp: standing still first, then the fewer actions).
+        return results
     out, k = list(results), 0
     while k < min(len(out), limit):
         j = k

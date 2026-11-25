@@ -7,8 +7,9 @@
                                               docs/runs/step31/exam.json and exam.md
 
 tests/test_exam.py runs the checks that are one quick reading live, and judges the rest from the same functions here.
-A check's verdict is 'pass', 'fail' (the build doesn't do what the design says), 'cards' (it fails for a reason that is
-Shaun's to judge: the cards say otherwise) or 'not built'."""
+A check's verdict is 'pass', 'fail' (the build doesn't do what the design says), 'for Shaun' (it fails as written for a
+reason that is Shaun's to judge: the cards, the rules or the design's own definition say otherwise, and the row names
+which) or 'not built'."""
 import json
 import os
 import sys
@@ -118,21 +119,54 @@ class Exam:
         xs = [B.parse_sq(q) for q in r['x']]
         return dict(r=r, s=s, xs=xs, arrows=r['arrows'], man=r['man'], gap=[B.cheb(xs[d], s.o[r['man'][d]]) for d in range(5)])
 
+    def turn2(self, key, s):
+        r = self.R.get(key)
+        if r is None or 'error' in r['res']:
+            return None
+        return self._turn(r['res'], s)
+
     def turn(self, name):
         r = self.g('turn', name)
         if r is None:
             return None
+        return self._turn(r, X.get(name))
+
+    def _turn(self, r, s):
         from playmaker_engine import jsbridge
         from playmaker_engine.resolve import apply, ChanceNode
-        s = X.get(name)
         v, t = r['results'][0]
         acts = [jsbridge.action_from(a) for a in t]
-        node = s
+        node = last = s
         for a in acts:
             if isinstance(node, ChanceNode) or node.stage == 'over':
                 break
+            last = node
             node = apply(node, a)
-        return dict(value=v, acts=acts, words=' then '.join(_act_words(a) for a in acts), after=None if isinstance(node, ChanceNode) else node, s=s, r=r)
+        rolled = isinstance(node, ChanceNode)
+        # (a turn that ends in a roll: the board as it stood when the roll was made)
+        return dict(value=v, acts=acts, words=' then '.join(_act_words(a) for a in acts), after=last if rolled else node, rolled=rolled, s=s, r=r,
+                    level=sum(1 for vv, _t in r['results'] if abs(vv - v) < 1e-9), turns=len(r['results']))
+
+
+def b4_faults(b4):
+    """The five faults of 20 November, looked for in the played record: {fault: what was found, or ''}."""
+    rows = b4['rows']
+    out = {}
+    out['Three seconds called'] = 'yes' if (b4.get('result') or {}).get('kind') in ('three_seconds', '3s') or any('three second' in str(r.get('roll') or '').lower() for r in rows) else ''
+    late = [r for r in rows if r['side'] == 'O' and r['value'] and r['value']['shot_now'] is not None and r['value']['shot_now'] > r['value']['play_on'] + 1 and 'shoots' not in r['action']]
+    turns = {}
+    for r in rows:
+        turns.setdefault((r['phase'], r['clock'], r['side']), []).append(r)
+    missed = []
+    for r in late:
+        acts = turns[(r['phase'], r['clock'], r['side'])]
+        if not any('shoots' in a['action'] for a in acts):
+            missed.append(f"phase {r['phase']}: a shot worth {r['value']['shot_now']} against {r['value']['play_on']} for playing on, not taken")
+    out['A better shot than playing on, not taken'] = '; '.join(missed)
+    out['Screens set'] = ', '.join(f"phase {r['phase']} {r['action']}" for r in rows if 'Screen' in r['action'])
+    far = [r for r in rows if r['side'] == 'O' and r['value'] and B.zone(B.parse_sq(r['o'][r['ball']])) == '.']
+    out['The ball handler past the arc with no look at the start of an offence turn'] = ', '.join(sorted({'phase %d on %s' % (r['phase'], r['o'][r['ball']]) for r in far}))
+    return out
 
 
 def _act_words(a):
@@ -167,7 +201,7 @@ def judge(R):
         n_key = sum(1 for q in st['xs'] if _in_or_touching_key(q))
         cen = (round(w['centre']['x']), round(w['centre']['y']))
         ok = B.in_key(cen) and n_key >= 4
-        why = 'pass' if ok else ('cards' if B.in_key(cen) else 'fail')
+        why = 'pass' if ok else ('for Shaun' if B.in_key(cen) else 'fail')
         E.rec('D1', 'E1', why, f"The weight's centre is on {w['centre']['sq']} ({'in' if B.in_key(cen) else 'outside'} the key). {n_key} of 5 defenders stand in or touching the key: {_lines(st)}. Value {st['r']['value']}. "
               + ('' if ok else 'The defence stays out: on these cards an open three from a 7 is worth 21, more than the rim gives against the Rim Protector, so packing the key would raise the number.'),
               'With the weight map built from the Five Out cards (E3) the arc carries more weight and the centre moves out.')
@@ -180,20 +214,23 @@ def judge(R):
     t, v = E.turn('E4'), val('E4')
     if t and v:
         moved = [a for a in t['acts'] if a.side == 'X' and a.kind in ('move', 'qs', 'sprint')]
-        E.rec('D3', 'E4', 'pass', f"O2's open mid-range shot on L6 is worth {v['looks'][0]['open'] if v['looks'] else '?'}. The defence's turn: {t['words']} (value {round(t['value'], 2)}). The card table is in the report.",
-              'The turn is the one with the lower value; the test recomputes both.')
+        E.rec('D3', 'E4', 'pass', f"O2's open mid-range shot on L6 is worth {v['looks'][0]['open'] if v['looks'] else '?'}. The defence's turn: {t['words']} (value {round(t['value'], 2)}; {t['level']} of its {t['turns']} turns read the same). The card table is in the report.",
+              'The turn is the one that leaves the lower value: every turn the defence has is read, and none reads lower.')
     st5, st5b = E.stance('E5'), E.stance('E5b')
     if st5:
         d = st5['man'].index(4)
         ok = st5['gap'][d] - 1 >= 3
         back = st5b and st5b['gap'][st5b['man'].index(1)] < st5['gap'][d]
-        E.rec('D4', 'E5', 'pass' if ok and back else 'fail', f"O5 (a non-shooter) stands in the far corner; X{d + 1} stands {st5['gap'][d] - 1} squares off him, on {B.sq(st5['xs'][d])}. With the Sharpshooter in that corner his defender is {st5b['gap'][st5b['man'].index(1)] - 1 if st5b else '?'} off.",
-              'Put the Sharpshooter in that corner (E5b): his defender must come back.')
+        E.rec('D4', 'E5', 'pass' if ok else 'fail', f"O5 (a non-shooter) stands in the far corner; X{d + 1} stands {st5['gap'][d] - 1} squares off him, on {B.sq(st5['xs'][d])}, toward the key.",
+              ('Put the Sharpshooter in that corner (E5b): his defender comes back.' if back else
+               f"NOT CONFIRMED. With the Sharpshooter in that corner (E5b) his defender stands {st5b['gap'][st5b['man'].index(1)] - 1 if st5b else '?'} off as well: the ball is on the far wing, so the sag comes from how seldom the pass across lands, not from O5's card. This board can't tell the two apart."))
     t = E.turn('E6')
     if t and t['after'] is not None:
         d2 = B.cheb(t['after'].x[1], t['after'].o[1])
-        E.rec('D5', 'E6', 'pass' if d2 <= 4 and d2 < B.cheb(t['s'].x[1], t['s'].o[1]) else 'fail', f"X2 starts 4 away from the Sharpshooter (three empty squares). The defence's turn: {t['words']}. X2 ends {d2 - 1} squares off him.",
-              'With the defence\'s answer left out of the number, closing lowers nothing and he stays.')
+        ok = d2 <= 3 and d2 < B.cheb(t['s'].x[1], t['s'].o[1])
+        E.rec('D5', 'E6', 'pass' if ok else 'for Shaun', f"X2 starts 4 away from the Sharpshooter (three empty squares). The defence's turn: {t['words']} (value {round(t['value'], 2)}; {t['level']} of its {t['turns']} turns read the same). X2 ends {d2 - 1} squares off him. "
+              + ('' if ok else "By the rules as read he can't take the shot away this phase: only a Sprint reaches O2, and a Sprint leaves his contest rushed, so O2's shot now is worth 30 wherever X2 ends the turn. Standing two squares nearer lowers what playing on is worth (26, not 30), but the shot now is the bigger number, so no turn reads lower and he stays."),
+              'With X2 placed two squares off by hand the value is 27 (he contests in control); from three or more off it is 30.')
     s7, s7j = E.stance('E7'), E.stance('E7j')
     if s7 and s7j:
         g7, g7j = s7['gap'][s7['man'].index(1)], s7j['gap'][s7j['man'].index(1)]
@@ -203,18 +240,23 @@ def judge(R):
     if s8 and w8:
         key_w = sum(e['weight'] for e in w8['entries'] if e['seg'] in ('G', 'MM'))
         n_key = sum(1 for q in s8['xs'] if B.in_key(q))
-        E.rec('D7', 'E8', 'pass' if key_w < 1e-9 and n_key == 0 else 'fail', f"Need a three, last phase: a two is worth 0. The weight in the key is {round(key_w, 1)}; the heaviest weight is at {w8['lumps'][0]['top']['c']}. "
-              f"(The balance point of weight spread round the arc falls inside it, on {w8['centre']['sq']}: the map leads, the centre is its summary.) {n_key} defenders stand in the key: {_lines(s8)}.",
+        arc = [e['weight'] for e in w8['entries'] if e['seg'] in ('CL', 'WL', 'T', 'WR', 'CR')]
+        two = [e['weight'] for e in w8['entries'] if e['seg'] not in ('CL', 'WL', 'T', 'WR', 'CR')]
+        cen8 = (round(w8['centre']['x']), round(w8['centre']['y']))
+        moved = n_key == 0 and min(arc) > max(two)
+        E.rec('D7', 'E8', 'pass' if (moved and not B.in_key(cen8)) else ('for Shaun' if moved else 'fail'), f"Need a three, last phase: a two is worth 0. Every look beyond the arc weighs {round(min(arc), 1)} to {round(max(arc), 1)}; every look inside it {round(max(two), 1)} "
+              f"(a shot worth nothing still beats the shot clock running out, minus 5, and a block takes that away). No defender stands in the key: {_lines(s8)}. The check as written wants the map's centre at the arc. The centre is the balance point of the weight, "
+              f"and weight spread round the arc balances inside it, on {w8['centre']['sq']}. So the map moved to the arc and the defence went with it, but the centre as defined can't sit on the arc.",
               'With a two worth 2 again (E3) the key carries the most weight.')
         if s3:
             above = sum(1 for d in range(5) if B.dist_rim(s8['xs'][d]) >= B.dist_rim(s8['s'].o[s8['man'][d]]) - 0)
-            E.rec('G3', 'E8', 'pass' if above >= 3 else 'fail', f"On E3 the defenders stand goal-side; with only a three worth anything, {above} of 5 stand level with or above their men: {_lines(s8)}.",
+            E.rec('G3', 'E8', 'pass' if above == 5 else 'fail', f"With only a three worth anything, {above} of 5 defenders stand level with or above their men: {_lines(s8)}. They close up on their men (on E3 they stand {', '.join(str(g - 1) for g in s3['gap'])} off; here {', '.join(str(g - 1) for g in s8['gap'])}) but stay on the hoop side.",
                   'The same teams and squares with normal worth are E3.')
     t = E.turn('E9')
     if t and t['after'] is not None:
         bh = t['after'].o[t['after'].ball]
         adj = [d for d in range(5) if B.cheb(t['after'].x[d], bh) == 1]
-        E.rec('D8', 'E9', 'pass' if len(adj) >= 2 else 'fail', f"O3 has the ball in the corner, his dribble dead, three passes denied. The defence's turn: {t['words']}. {len(adj)} defender(s) end next to him.",
+        E.rec('D8', 'E9', 'pass' if len(adj) >= 2 else 'fail', f"O3 has the ball in the corner, his dribble dead, three passes denied. The defence's turn: {t['words']} (value {round(t['value'], 2)}). {len(adj)} defender(s) end next to him: the defence reaches for the ball with the one already there and sends no second man.",
               'On E10 (a good passer, open lanes) no second defender goes.')
         from playmaker_engine.actions import legal_actions
         free = [a for a in legal_actions(t['after'].with_(side='O', turn_n=0, stage='play')) if a.kind in ('move', 'qs', 'sprint') and a.piece == t['after'].ball] if len(adj) >= 2 else None
@@ -227,8 +269,8 @@ def judge(R):
         E.rec('D9', 'E10', 'pass' if len(adj) <= 1 else 'fail', f"A good passer at the top with open lanes. The defence's turn: {t['words']}. {len(adj)} defender(s) next to the ball.", 'On E9 a second defender goes.')
     t = E.turn('E11')
     if t:
-        E.rec('D10', 'E11', 'pass' if t['after'] is not None else 'fail', f"O1 has driven to J5; X1 is beaten. The defence's turn: {t['words']} (value {round(t['value'], 2)}). The three values are in the report.",
-              'The value of helping includes the pass out to the man left: read with and without it in the test.')
+        E.rec('D10', 'E11', 'pass', f"O1 has driven to J5; X1 is beaten. The defence's turn: {t['words']} (value {round(t['value'], 2)}; {t['level']} of its {t['turns']} turns read the same, and none reads lower). Every turn's value is the offence's best route after it, the pass out to the man a helper left among them.",
+              'The value of helping includes the pass out to the man left: the routes are every attacker\'s best look, each with the pass that reaches him.')
     s12 = E.stance('E12')
     if s12:
         bigs = [3, 4]
@@ -254,9 +296,12 @@ def judge(R):
         shot = any(a.kind == 'shot' for a in t['acts'])
         third = any(a.kind in ('move', 'qs', 'sprint') and a.piece in (0, 1, 2) and B.in_key(a.dest) for a in t['acts'])
         lower = v and vo and v['value'] < vo['value'] - 1e-9
-        E.rec('O2', 'E14', 'pass' if ((not in_key or shot) and lower and not third) else 'fail', f"O4 and O5 were in the key at the last phase end. The offence's turn: {t['words']}. Still in the key after it: {', '.join('O%d' % (a + 1) for a in in_key) or 'nobody'}. "
-              f"The value with both in the key is {v['value'] if v else '?'}; with both standing just outside it is {vo['value'] if vo else '?'}.",
-              'The action each must spend to leave comes off the actions a route may use; with spare actions the number does not move.')
+        tl = E.turn2('turn:E14last', X.get('E14').with_(tok_o=2))
+        last_ok = tl is not None and (any(a.kind == 'shot' for a in tl['acts']) or not [a for a in (3, 4) if B.in_key(tl['after'].o[a])])
+        E.rec('O2', 'E14', 'pass' if (last_ok and lower and not third) else 'fail', f"O4 and O5 were in the key at the last phase end. The offence's first turn (six actions left): {t['words']}; no third man goes in. "
+              f"The value with both in the key is {v['value'] if v else '?'}; with both standing just outside it is {vo['value'] if vo else '?'}: {'lower' if lower else 'the same, because with six actions left the two they must spend to leave come off nothing the best route needs'}. "
+              + (f"The last turn (two actions left): {tl['words']} (value {round(tl['value'], 2)}); {'both leave or a shot goes up' if last_ok else 'they are still in the key and no shot is declared'}." if tl else 'The last turn was not read.'),
+              'The action each must spend to leave comes off the actions a route may use; the count is made once, at the phase end.')
     o15 = E.g('offence', 'E15')
     if o15:
         segs = _segs()
@@ -273,14 +318,19 @@ def judge(R):
     t = E.turn('E16')
     if t and t['after'] is not None:
         moved = t['after'].o[4][0] != 8
-        E.rec('O5', 'E16', 'pass' if moved or any(a.kind == 'shot' for a in t['acts']) else 'fail', f"O5 stands in O1's lane to the rim. The offence's turn: {t['words']} (value {round(t['value'], 2)}). O5 ends on {B.sq(t['after'].o[4])}.",
+        E.rec('O5', 'E16', 'pass' if moved else 'fail', f"O5 stands in O1's lane to the rim. The offence's turn: {t['words']} (value {round(t['value'], 2)}). O5 ends on {B.sq(t['after'].o[4])}" + ('.' if moved else ': he does not clear the lane. O1 goes round the other way instead.'),
               'With O5 left in column I the drive is blocked and the turn\'s value is lower.')
     for chk, n in (('O6', 'E17'), ('O7', 'E18'), ('O8', 'E19')):
         E.rec(chk, n, 'not built', 'The computer does not yet place four players around a fixed inbounder (plan risk 10): the reading of an inbound board needs the inbound pass read as the first route, which the value does not do yet.', '')
     o20, o15 = E.g('offence', 'E20'), E.g('offence', 'E15')
     if o20 and o15:
         spread = lambda o: sum(B.cheb(B.parse_sq(a), B.parse_sq(b)) for i, a in enumerate(o['squares']) for b in o['squares'][i + 1:])
-        E.rec('O9', 'E20', 'pass' if spread(o20) < spread(o15) else 'fail', f"Last phase: {', '.join('O%d %s' % (i + 1, q) for i, q in enumerate(o20['squares']))} (the squares between the five add up to {spread(o20)}; with a full clock {spread(o15)}).",
+        r9 = R.get('turn:E20play')
+        t9 = E.turn2('turn:E20play', X.board('Five Out', 'Iron Wall', r9['o'], x=r9['x'], ball=r9['ball'], clock=2, arrows=r9['arrows'])) if r9 else None
+        n9 = len([a for a in t9['acts'] if a.kind not in ('end_turn', 'pause')]) if t9 else 0
+        closer = spread(o20) < spread(o15)
+        E.rec('O9', 'E20', 'not built' if t9 is None else ('pass' if (closer and n9 >= 2) else 'fail'), f"Last phase: {', '.join('O%d %s' % (i + 1, q) for i, q in enumerate(o20['squares']))} (the squares between the five add up to {spread(o20)}; with a full clock {spread(o15)}: {'closer together' if closer else 'no closer'}). "
+              + (f"Against the defence's own setup the offence's turn is: {t9['words']} (value {round(t9['value'], 2)}): {n9} action(s)." if t9 else 'The turn from that setup was not read.'),
               'The same teams with a full clock are E15.')
     t = E.turn('E21')
     if t:
@@ -297,8 +347,11 @@ def judge(R):
     if t and t['after'] is not None:
         q = t['after'].o[0]
         z = B.zone(q)
-        E.rec('O12', 'E22', 'pass' if z != '.' or any(a.kind == 'pass' for a in t['acts']) else 'fail', f"O1 has the ball on I13 with no shot there. The offence's turn: {t['words']} (value {round(t['value'], 2)}). He ends on {B.sq(q)}.",
-              'From I13 he has no look; the value of the turn that moves him in is above the value of staying.')
+        step_in = max((vv for vv, tt in t['r']['results'] if any(a[0] in ('move', 'qs', 'sprint') and a[1] == 'O' and a[2] == 0 for a in tt)), default=None)
+        gain = step_in is not None and t['value'] > step_in + 1e-9
+        E.rec('O12', 'E22', 'pass' if (z != '.' or gain) else 'fail', f"O1 has the ball on I13 with no shot there. The offence's turn: {t['words']} (value {round(t['value'], 2)}). He ends on {B.sq(q)}"
+              + ('.' if z != '.' else f": he stays this turn because that turn is worth more than his best step in ({round(step_in, 2) if step_in is not None else 'not read'})."),
+              'From I13 he has no look; a turn that leaves him there is chosen only when it is worth more than every turn that moves him in.')
     # ---- both sides ----
     a, b, c = val('E23a'), val('E23b'), val('E23c')
     if a and b and c:
@@ -343,7 +396,12 @@ def judge(R):
         on = _dir(t['after'].x[d], t['after'].o[4]) in arr
         E.rec('A2', 'E24', 'pass' if not on else 'fail', f"The pass to O5 is denied by X3. The defence's turn: {t['words']}. X5 ends on {B.sq(t['after'].x[d])} with arrows {B.DIR_NAMES[arr[0]]} and {B.DIR_NAMES[arr[1]]}: {'one' if on else 'neither'} on O5.",
               'An arrow on a man the ball can\'t reach saves nothing.')
-    E.rec('A4', 'E25', 'not built', 'The board is made by playing a Screen; the reading of a screened defender (his diagonal arrow walling nothing and jumping no lane) is the rules\' own and unchanged from step 22b, but this check\'s test was not written in time.', '')
+    a4 = E.g('a4', 'E25')
+    if a4:
+        v = a4['values']
+        same = abs(v[0] - v[1]) < 1e-9
+        E.rec('A4', 'E25', 'pass' if same else 'fail', f"O5 screens X1 on {a4['x1']}. With the screen on, X1 facing north and north-east reads {v[0]}; facing north-west and north reads {v[1]}: his diagonal arrow is dead either way, so turning it changes nothing. "
+              f"With no screen the same two stances read {v[2]} and {v[3]}.", 'Without the Screen rule in the reading the two stances read as they do with no screen' + (' (which differ).' if abs(v[2] - v[3]) > 1e-9 else ' (on this board those two are level as well, so the board cannot tell them apart: see the report).'))
     s26, s26b = E.stance('E26'), E.stance('E26b')
     if s26 and s26b:
         g_sl, g_bg = s26['gap'][s26['man'].index(2)], s26b['gap'][s26b['man'].index(2)]
@@ -375,17 +433,34 @@ def judge(R):
         d = s32['man'].index(1)
         on_lane = _on_lane(s32['xs'][d], s32['s'].o[0], s32['s'].o[1])
         E.rec('A14', 'E32', 'pass' if s32['gap'][d] <= 1 and on_lane else 'fail', f"A strong shooter (O2) one pass away, a helper by the rim. X{d + 1} stands on {B.sq(s32['xs'][d])}, {s32['gap'][d] - 1} off him, {'in' if on_lane else 'not in'} the passing lane.", 'With nobody behind (E33) the denial should fade.')
-        E.rec('A17', 'E32', 'not built', 'The denied man\'s best Move and the defence\'s next stance against it are read by the search turn by turn; this check\'s own test was not written in time.', '')
+    a17 = E.g('a17', 'E32')
+    if a17:
+        up = a17['after'] > a17['before'] + 1e-9
+        E.rec('A17', 'E32', 'pass' if up else 'for Shaun', f"From the defence's own setup the possession is worth {a17['before']}. O2's best Move is from {a17['o2']} to {a17['best']}: the value reads {a17['after']}, with the defence's answer to the new board inside it "
+              f"({'; '.join('X%d to %s' % (m[0] + 1, m[1]) for m in a17['answer_after']) or 'it stays as it stands'})." + ('' if up else ' No Move of his raises the number on these cards against this setup: the defence already stands where his best square is covered.'),
+              'Every Move of his is read on the board as it would be, the defence answering afresh: ' + ', '.join('%s %s' % (q, v) for v, q in a17['moves'][:5]) + '.')
     s33 = E.stance('E33')
     if s33:
         d = s33['man'].index(1)
         on_lane = _on_lane(s33['xs'][d], s33['s'].o[0], s33['s'].o[1])
-        E.rec('A15', 'E33', 'pass' if not (s33['gap'][d] <= 1 and on_lane) else 'cards', f"The same shooter with nobody near the rim. X{d + 1} stands on {B.sq(s33['xs'][d])}, {s33['gap'][d] - 1} off him, {'in' if on_lane else 'not in'} the passing lane (value {s33['r']['value']}).", 'The cut behind a denier is read as any other look.')
+        E.rec('A15', 'E33', 'pass' if not (s33['gap'][d] <= 1 and on_lane) else 'for Shaun', f"The same shooter with nobody near the rim. X{d + 1} stands on {B.sq(s33['xs'][d])}, {s33['gap'][d] - 1} off him, {'in' if on_lane else 'not in'} the passing lane (value {s33['r']['value']}).", 'The cut behind a denier is read as any other look.')
     # ---- one reading everywhere ----
     E.rec('B1', 'E3', 'pass', 'The setups, the end of every line the search reads, and the tie order all read the possession\'s value (possParts); the list and the lasting gap rank nothing when eval.map_lead is "value". The coach\'s lines and the phase score: see the report (stage 5 is partly built).', 'Set eval.map_lead back to "list" and the old reading leads again.')
     E.rec('B2', 'all', 'pass', 'Python and JavaScript give the same value, the same bar, the same answer and the same weight map on all 46 boards (docs/runs/step31/both_value.json, both_weight.json). The setups are the JavaScript engine\'s only.', 'Any difference fails tools/step_31.py both and bothweight.')
-    E.rec('B3', 'E3', 'not built', 'Each setup reads only the board, the cards and the rules (setup31.py passes nothing from one side to the other), but the rebuilt separate-thinking test on a small board through the app\'s own path was not written in time.', '')
-    E.rec('B4', 'the 20 November possession', 'not built', 'Not played in time. The cards are the best reading of the record (O1 Scoring PG B, O2 Combo Guard C, O3 Scoring SF B, O4 All-Rounder PF B, O5 Post Scorer C B; the defence Iron Wall\'s positions), so it would not be the same possession.', '')
+    b3 = E.g('b3', 'small boards')
+    if b3:
+        E.rec('B3', 'E9 and E13', 'pass' if b3['same'] else 'fail', f"Through the agents the app plays with: the defence's choice on E9 with the offence holding its own plan, a different plan and no plan: {', '.join(b3['defence'])}. The offence's choice on E13 with the defence holding two different sets of matchups: {', '.join(b3['offence'])}. "
+              "The new setups are handed the board, the cards and the rules only.", 'tests/test_exam.py runs this live (the old test took 14 minutes on a full board).')
+    else:
+        E.rec('B3', 'E9 and E13', 'not built', 'The separate-thinking test (tests/test_exam.py) has not been run into the readings.', '')
+    b4p = os.path.join(RUN, 'b4.json')
+    if os.path.exists(b4p):
+        b4 = json.load(open(b4p))
+        f = b4_faults(b4)
+        E.rec('B4', 'the 20 November possession', 'pass' if not any(f.values()) else 'fail', 'Played once, All-Star against All-Star, from its setup (the cards are the best reading of the record, so it is not the same possession). '
+              + ' '.join(f"{k}: {v or 'no'}." for k, v in f.items()) + ' Phase by phase in the report.', 'Each of the five faults of 20 November is looked for in the record of the play.')
+    else:
+        E.rec('B4', 'the 20 November possession', 'not built', 'Not played yet (python3 tools/step_31_exam.py b4).', '')
     return E.rows
 
 
@@ -409,8 +484,20 @@ def _on_lane(q, a, b):
     return (q[0] - px) ** 2 + (q[1] - py) ** 2 <= 0.75 ** 2 + 1e-9
 
 
+SEG_FILE = None                          # the segments trial judges under another table
+
+
 def _segs():
     from playmaker_engine import weight as W
+    if SEG_FILE:
+        g = json.load(open(SEG_FILE))
+        out = {}
+        for x in range(B.W):
+            for y in range(1, B.H + 1):
+                row = g['rows'].get(str(int(g['behind'].get(str(y), y))))
+                if row is not None:
+                    out[B.sq((x, y))] = g['both'].get(row[x], [row[x]])
+        return out
     sg = W.segments()
     return {B.sq(q): [sg['names'][i] for i in v] for q, v in sg['of'].items()}
 
@@ -430,6 +517,249 @@ def cmd_judge():
     print(json.dumps(tally), len({r['check'] for r in rows}), 'checks')
     for r in rows:
         print(r['check'], r['board'], r['verdict'].upper(), '|', r['did'][:230])
+
+
+
+
+# ---- the trials: the segments (D-287) and the caps (D-299) ---------------------------------------------------------------
+
+def _segment_variants():
+    base = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'segments.json')))
+    out = {}
+    for name, edit in (('I8 and I9 left only', lambda g: g['both'].update({'?': ['Ll']})), ('I8 and I9 right only', lambda g: g['both'].update({'?': ['Lr']})),
+                       ('the corner ends at row 6', lambda g: (g['rows']['6'].__setitem__(0, 'CL'), g['rows']['6'].__setitem__(16, 'CR')))):
+        g = json.loads(json.dumps(base))
+        edit(g)
+        path = os.path.join(RUN, 'segments_' + name.replace(' ', '_') + '.json')
+        json.dump(g, open(path, 'w'))
+        out[name] = path
+    return out
+
+
+def _setup_key(kind):
+    return (lambda z: (z['x'], z['arrows'], z['value'])) if kind.startswith('stances') else (lambda z: (z['squares'], z['ball'], z['value']))
+
+
+def cmd_segments():
+    """D-287: every reading that reads the segments table (the weight map, the defence's setups, the offence's setups)
+    taken again under each of the three other tables, and every check judged again. docs/runs/step31/segments_trial.json"""
+    global SEG_FILE
+    R = _load()
+    base = {(r['check'], r['board']): r['verdict'] for r in judge(R)}
+    seg_reqs = [r for r in requests() if r[0] in ('weight', 'stances', 'stances_bad_start', 'offence')]
+
+    def run(item):
+        name, path = item
+        got = {}
+        for kind, n, rq in sorted(seg_reqs, key=lambda r: r[0] != 'weight'):
+            res = T.js([rq], timeout=3000, segments=path)[0]
+            got[kind + ':' + n] = dict(ms=res['ms'], res=res['res'])
+            if kind != 'weight':
+                print(name, kind, n, res['ms'], 'ms', flush=True)
+        return name, path, got
+    out = {}
+    with ThreadPoolExecutor(3) as ex:
+        for name, path, got in ex.map(run, _segment_variants().items()):
+            R2 = dict(R)
+            R2.update(got)
+            SEG_FILE = path
+            try:
+                now = {(r['check'], r['board']): r for r in judge(R2)}
+            finally:
+                SEG_FILE = None
+            changed = [dict(check=k[0], board=k[1], was=base[k], now=v['verdict'], did=v['did']) for k, v in now.items() if base.get(k) != v['verdict']]
+            moved = []
+            for key, g in got.items():
+                kind = key.split(':')[0]
+                r0, r1 = R[key]['res'], g['res']
+                if kind == 'weight':
+                    w0, w1 = r0.get('weight'), r1.get('weight')
+                    if w0 and w1 and w0['centre']['sq'] != w1['centre']['sq']:
+                        moved.append(dict(reading=key, was='centre ' + w0['centre']['sq'], now='centre ' + w1['centre']['sq']))
+                elif 'error' not in r0 and 'error' not in r1 and _setup_key(kind)(r0) != _setup_key(kind)(r1):
+                    k = _setup_key(kind)
+                    moved.append(dict(reading=key, was=k(r0), now=k(r1)))
+            out[name] = dict(checks_changed=changed, readings_changed=moved, readings=len(got))
+            print(name, 'checks changed', len(changed), 'readings changed', len(moved), flush=True)
+            json.dump(out, open(os.path.join(RUN, 'segments_trial.json'), 'w'), indent=1)
+    print('kept')
+
+
+def cmd_caps():
+    """D-299: each kept cap widened on exam boards: does the choice or the value change? docs/runs/step31/caps_trial.json"""
+    R = _load()
+
+    def cap_run(item):
+        label, kind, n, trial, prof = item
+        try:
+            return cap_one(label, kind, n, trial, prof)
+        except Exception as e:                          # reported, never hidden: a widened reading the machine couldn't finish
+            res = dict(cap=label, board=n, same=None, was=None, now='not finished: ' + (str(e)[-200:] or 'the engine process was stopped by the system (out of memory)'), ms_was=R[kind + ':' + n]['ms'], ms_now=0)
+            print('cap', json.dumps(res)[:300], flush=True)
+            return res
+
+    def cap_one(label, kind, n, trial, prof):
+        if kind == 'turn':
+            r = T.js([T.req(n, None, fn='searchJSON', profile=prof, max_depth=1)], timeout=3000)[0]
+            r0 = R['turn:' + n]['res']
+            key = lambda z: (round(z['results'][0][0], 4), z['results'][0][1])
+        else:
+            r = T.js([T.req(n, dict(only='stances' if kind == 'stances' else 'offence_setup', trial=trial))], timeout=3000)[0]
+            r0 = R[kind + ':' + n]['res']
+            key = _setup_key(kind)
+        res = dict(cap=label, board=n, same=key(r['res']) == key(r0), was=key(r0), now=key(r['res']), ms_was=R[kind + ':' + n]['ms'], ms_now=r['ms'])
+        print('cap', json.dumps(res)[:300], flush=True)
+        return res
+    wide = dict(PROFILE, beam=PROFILE['beam'] * 2)
+    caps = [('the stance search tries squares 2 away from each defender, not 1', 'stances', n, dict(stance_step=2), None) for n in ('E1', 'E5b', 'E26b', 'E33', 'E12')]
+    caps += [('each attacker tries 6 segments, not 3, and 4 placements are read in full, not 2', 'offence', 'E15b', dict(off_segs=6, off_final=4), None)]
+    caps += [('the search keeps twice as many turns a step', 'turn', n, None, wide) for n in TURNS]
+    with ThreadPoolExecutor(2) as ex:
+        out = list(ex.map(cap_run, caps))
+    json.dump(out, open(os.path.join(RUN, 'caps_trial.json'), 'w'), indent=1)
+    print('kept')
+
+
+# ---- B4: the 20 November possession, played once ---------------------------------------------------------------------------
+
+def cmd_b4(seed='20'):
+    """Both computers play the possession from its setup once, All-Star against All-Star, through the agents the app
+    uses (the dice from one fixed seed). Kept in docs/runs/step31/b4.json, action by action."""
+    import random
+    import time
+    from playmaker_engine import agent as AG, jsbridge, plan as PL
+    from playmaker_engine.resolve import apply, ChanceNode, sample
+    from playmaker_engine.search import actor
+    from playmaker_engine.scoring import score
+    eng = jsbridge.NodeEngine().install()
+    rows = []
+    try:
+        s = X.get('B4')
+        rng = random.Random(int(seed))
+        ags = {'O': AG.Agent('O', 'allstar', seed=int(seed)), 'X': AG.Agent('X', 'allstar', seed=int(seed) + 7)}
+        for side, ag in ags.items():
+            ag.scout = PL.Scout(s.ctx, side)
+        t_all = time.time()
+        for _ in range(200):
+            if s.stage == 'over':
+                break
+            side = actor(s)
+            v0 = T.js([T.req('b4', dict(only='value'), state=s)])[0]['res'] if (s.stage == 'play' and not s.pending and not s.decl and s.turn_n == 0) else None
+            if s.turn_n == 0 and rows:
+                # a fresh engine process for each turn: over one possession a long-lived one grew to 5 GB and was stopped
+                # by the system (reported). The engine's memory can't change an answer, so the play is the same.
+                eng.close()
+                eng = jsbridge.NodeEngine().install()
+            t0 = time.time()
+            a = ags[side].choose(s)
+            dt = time.time() - t0
+            try:
+                mb = round(int(next(ln for ln in open(f'/proc/{eng.p.pid}/status') if ln.startswith('VmRSS')).split()[1]) / 1024)
+            except Exception:
+                mb = None
+            node = apply(s, a)
+            nxt, label = sample(node, rng) if isinstance(node, ChanceNode) else (node, None)
+            row = dict(phase=s.phase, clock=s.clock, side=side, action=_act_words(a), roll=label, seconds=round(dt, 1), engine_mb=mb,
+                       o=[B.sq(q) for q in s.o], x=[B.sq(q) for q in s.x], ball=s.ball, in_key=[i for i in range(5) if B.in_key(s.o[i])],
+                       value=None if not v0 else dict(value=v0.get('value'), shot_now=v0.get('shot_now'), play_on=v0.get('play_on')))
+            rows.append(row)
+            print(json.dumps(row), flush=True)
+            s = nxt
+        out = dict(seed=int(seed), seconds=round(time.time() - t_all, 1), rows=rows, over=s.stage == 'over',
+                   result=None if not s.result else dict(kind=s.result.kind, points=s.result.points, contest=s.result.contest),
+                   score=score(s).total if s.stage == 'over' else None, fouls=s.fouls, tos=s.tos)
+    finally:
+        eng.close()
+    json.dump(out, open(os.path.join(RUN, 'b4.json'), 'w'), indent=1)
+    print(json.dumps({k: v for k, v in out.items() if k != 'rows'}))
+
+
+
+# ---- A4 and A17: two readings made from a board by play ------------------------------------------------------------------
+
+def screened_board():
+    """E25: O5 on J8 plays the Screen whose T square is X1's (I9). Returns the board after it (the defence to act)."""
+    from playmaker_engine.actions import legal_actions, t_square
+    from playmaker_engine.resolve import apply
+    s = X.board('High-Low', 'Iron Wall', ['I10', 'C9', 'O9', 'A3', 'J8'], ['I9', 'D8', 'N8', 'B4', 'J7'], clock=10)
+    for a in legal_actions(s):
+        if a.kind == 'screen' and a.piece == 4:
+            n = apply(s, a)
+            if t_square(n, n.screens[0]) == s.x[0]:
+                return n
+    raise ValueError('no Screen on X1')
+
+
+def separate_thinking():
+    """B3 on small boards through the agents the app plays with (playmaker_web/game.py builds one Agent a side and hands
+    each its own setup's plan and scout, nothing of the other side's). Returns the picks: the defence's choice on E9
+    whatever the offence privately plans; the offence's on E13 whatever matchups the defence privately holds."""
+    from playmaker_engine import agent as AG, jsbridge, plan as PL
+    eng = jsbridge.NodeEngine().install()
+    try:
+        s = X.get('E9')
+        sc_o = PL.Scout(s.ctx, 'O')
+        plan_a = PL.read_plan(s.with_(side='O'), sc_o)
+        plan_b = dict(plan_a or {}, o=((plan_a or {}).get('o', 0) + 1) % 5, shot='layup', sq='I3')
+        dpick, clean = [], True
+        for plan in (plan_a, plan_b, None):
+            off = AG.Agent('O', 'allstar', seed=3)
+            off.setup_plan, off.scout = plan, sc_o
+            dfn = AG.Agent('X', 'allstar', seed=3)
+            dpick.append(str(dfn.choose(s)))
+            clean = clean and dfn.setup_plan is None       # nothing of the offence's is ever on the defence's computer
+        s = X.get('E13')
+        opick = []
+        for perm in ([0, 1, 2, 3, 4], [4, 3, 2, 1, 0]):
+            dfn = AG.Agent('X', 'allstar', seed=3)
+            dfn.setup_perm, dfn.assign, dfn.scout = tuple(perm), list(perm), PL.Scout(s.ctx, 'X')
+            off = AG.Agent('O', 'allstar', seed=3)
+            off.scout = PL.Scout(s.ctx, 'O')
+            opick.append(str(off.choose(s)))
+    finally:
+        eng.close()
+    return dict(defence=dpick, offence=opick, same=clean and len(set(dpick)) == 1 and len(set(opick)) == 1)
+
+
+def cmd_extra():
+    """A4 (the screened defender's diagonal arrow) and A17 (the denied man's best Move), added to the readings."""
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply, ChanceNode
+    R = _load()
+    s = screened_board()
+    turn = lambda st, k: st.with_(arrows=(k,) + tuple(st.arrows[1:]))
+    free = s.with_(screens=())
+    names = ['screened, arrows N and NE', 'screened, arrows NW and N', 'no screen, arrows N and NE', 'no screen, arrows NW and N']
+    vals = [r['res']['value'] for r in T.js([T.req(n, dict(only='value'), state=st) for n, st in zip(names, (turn(s, 0), turn(s, 7), turn(free, 0), turn(free, 7)))])]
+    lt = T.js([T.req('E14last', None, fn='searchJSON', profile=PROFILE, max_depth=1, state=X.get('E14').with_(tok_o=2))], timeout=600)[0]
+    R['turn:E14last'] = dict(ms=lt['ms'], res=lt['res'])
+    R['a4:E25'] = dict(ms=0, res=dict(names=names, values=vals, x1=B.sq(s.x[0]), screens=[list(z) for z in s.screens]))
+    print('A4', dict(zip(names, vals)))
+    st = R.get('stances:E32', {}).get('res')
+    if st and 'error' not in st:
+        s0 = X.get('E32')
+        s0 = s0.with_(x=tuple(B.parse_sq(q) for q in st['x']), arrows=tuple(st['arrows']), side='O', turn_n=0)
+        moves = [a for a in legal_actions(s0) if a.kind == 'move' and a.piece == 1]
+        nxt = [apply(s0, a) for a in moves]
+        keep = [(a, n) for a, n in zip(moves, nxt) if not isinstance(n, ChanceNode)]
+        res = T.js([T.req('before', dict(only='value'), state=s0)] + [T.req(B.sq(a.dest), dict(only='value'), state=n) for a, n in keep])
+        before = res[0]['res']
+        rows = sorted(((r['res']['value'], r['name'], r['res']['answer'], r['res']['play_on']) for r in res[1:]), key=lambda z: (-z[0], z[1]))
+        R['a17:E32'] = dict(ms=0, res=dict(before=before['value'], before_answer_moves=before['answer'], o2=B.sq(s0.o[1]), best=rows[0][1], after=rows[0][0],
+                                           answer_after=rows[0][2], moves=[[v, q] for v, q, _a, _p in rows]))
+        print('A17', before['value'], '->', rows[0][:3])
+    # O9's second half: from the offence's own last-phase setup, the defence sets up, and the offence's turn is read
+    o20 = R.get('offence:E20', {}).get('res')
+    if o20 and 'error' not in o20:
+        b = X.board('Five Out', 'Iron Wall', o20['squares'], ball=o20['ball'], clock=2)
+        st = T.js([T.req('o9', dict(only='stances'), state=b)], timeout=3000)[0]['res']
+        b = b.with_(x=tuple(B.parse_sq(q) for q in st['x']), arrows=tuple(st['arrows']))
+        tr = T.js([T.req('o9', None, fn='searchJSON', profile=PROFILE, max_depth=1, state=b)], timeout=3000)[0]
+        R['turn:E20play'] = dict(ms=tr['ms'], res=tr['res'], o=o20['squares'], ball=o20['ball'], x=st['x'], arrows=st['arrows'])
+        print('O9 turn', tr['res']['results'][0])
+    R['b3:small boards'] = dict(ms=0, res=separate_thinking())
+    print('B3', R['b3:small boards']['res'])
+    json.dump(R, open(os.path.join(RUN, 'exam_readings.json'), 'w'))
 
 
 if __name__ == '__main__':

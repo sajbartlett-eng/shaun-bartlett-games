@@ -64,6 +64,8 @@ Don't run the test suite, self-play, the exam or any long job unless the step te
 
 If a step changes behaviour, you may run the few tests that cover exactly the code you changed, as long as they finish in a few minutes. Report what you ran and the result. If a change would need a long run to check, say so in the report instead of running it.
 
+**The fundamentals exam (step 31).** Every later step that changes how either computer reads or plays the game runs the exam and reports it check by check, by number: `python3 tools/step_31_exam.py read`, then `judge`, then `pytest tests/test_exam.py`. A check that passed before and fails now is reported first. The exam's readings take about half an hour on three cores; they are the exam, not a test run, and sit outside the test limit.
+
 **Time caps.** Every measurement in a step has a total time cap as well as any per-board cap. Run the smallest measurement that answers the step's question. If the cap is reached, stop and report what was measured and what wasn't.
 
 **The speed budget.** Once Shaun sets it (`docs/SPEED_BUDGET.md`), every change reports its effect on decision time and depth for each level, on a desktop and at phone speed. A change that breaks the budget is reported first.

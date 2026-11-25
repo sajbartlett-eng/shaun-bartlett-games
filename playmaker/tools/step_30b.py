@@ -103,7 +103,9 @@ def _turn(AG, B, RC, st, block):
         from playmaker_engine import plan as PL
         ag = AG.Agent('O', 'allstar', seed=1)
         ag.scout = PL.Scout(st.ctx, 'O')
-        ag.setup_plan = PL.read_plan(st, ag.scout, deep=True)
+        # step 31: under the possession's value the new setup hands the offence no list-led plan (setup31.place_offence), so
+        # the app's computer carries none into play; the turn is timed as the app plays it
+        ag.setup_plan = None if PL._value_led() else PL.read_plan(st, ag.scout, deep=True)
         t = time.time()
         a = ag.choose(st.with_(side='O', turn_n=0))
     note = next((n for n in reversed(ag.notes) if n.get('event') in ('decision', 'mix')), {})

@@ -1837,6 +1837,14 @@ rounds that survives into what step 31 builds or keeps is removed, replaced by a
 answer, or kept and put on trial on every exam board. The two engines break exact ties the same way. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Speed is
 part of this build", "Every cap is on trial" · **Ruled; built in step 31.**
 
+**D-300. Level turns: standing still first, and the list orders nothing.** Turns the search reads exactly level come out
+in one order in both engines: the fewer working actions first (a turn that only waits, a Pause or an end of turn, counts
+none), then the fewer actions, then by the action itself. So a side moves only when moving changes the number (no action
+without a purpose, design point 34). Under the possession's value the old list no longer puts level turns in its own
+order afterwards (`agent._driver_order` did, from step 22b): one reading everywhere, level turns included (check B1). ·
+Source: the step 31 exam (the defence's level turns went to a Move by the lowest-numbered defender to the lowest-numbered
+square); the prompt's "same tie rule in both engines" · **Built in step 31; Shaun to confirm.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

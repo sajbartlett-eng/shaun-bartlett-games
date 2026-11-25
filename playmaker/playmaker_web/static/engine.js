@@ -4617,11 +4617,16 @@ const PMEngine = (() => {
     }
   }
   // Step 31 (D-299): the two engines break exact ties the same way. Turns that read the same come out in one order in
-  // both: the fewer actions first (no action without a purpose), then by the action itself (the shot before the pass,
+  // both: the fewer working actions first (no action without a purpose: a turn that only waits, a Pause or an end of
+  // turn, counts none, so standing still wins a level tie), then the fewer actions, then by the action itself (the shot before the pass,
   // the pass before a movement; then the player, the square by column and row, the arrow, the target, the shot).
   const TIE_KINDS = ['shot', 'forced_shot', 'pass', 'dribble', 'screen', 'move', 'qs', 'sprint', 'hesitate', 'contest', 'steal', 'intercept', 'challenge', 'pause', 'target', 'pick', 'reset', 'end_turn', 'forfeit'];
   const TIE_RANK = Object.fromEntries(TIE_KINDS.map((k, i) => [k, i]));
+  const TIE_IDLE = new Set(['pause', 'end_turn']);
+  const tieWork = t => { let n = 0; for (const a of t) if (!TIE_IDLE.has(a.kind)) n++; return n; };
   function tieCmp(t, u) {
+    const w = tieWork(t) - tieWork(u);
+    if (w) return w;
     if (t.length !== u.length) return t.length - u.length;
     for (let i = 0; i < t.length; i++) {
       const a = t[i], b = u[i];
@@ -6772,8 +6777,8 @@ const PMEngine = (() => {
   //      asks of it (stanceQuick); the best few are then read against its full answer (stanceSearch).
   // Every placement's reading is independent of the others: they are listed first, read in the list's order and compared
   // in that order, so they can be handed out side by side and combined the same way on any device.
-  const OFF_FINAL = 2;                                 // how many of the best placements are read against the defence's full answer (kept, on trial)
-  const OFF_SEGS = 3;                                  // how many of his heaviest segments each attacker tries (kept, on trial)
+  let OFF_FINAL = 2;                                   // how many of the best placements are read against the defence's full answer (kept, on trial)
+  let OFF_SEGS = 3;                                    // how many of his heaviest segments each attacker tries (kept, on trial)
   function stanceQuick(s) {                            // the goal-side shape, then the movements the value asks for (stanceSearch's part 1)
     const put = (st, d, q, a) => W_(st, { x: setAt(st.x, d, q), arrows: setAt(st.arrows, d, a) });
     let st = stanceBase(W_(covOffFresh(s), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [] }), [0, 1, 2, 3, 4]).s;
@@ -7002,6 +7007,13 @@ const PMEngine = (() => {
   }
   function coverage(s0, opts) {
     opts = opts || {};
+    if (opts.trial) {                                    // step 31 (D-299): a cap on trial: widened for this one reading, then put back
+      const keep = [STANCE_STEP, OFF_SEGS, OFF_FINAL], t = opts.trial;
+      if (t.stance_step != null) STANCE_STEP = t.stance_step;
+      if (t.off_segs != null) OFF_SEGS = t.off_segs;
+      if (t.off_final != null) OFF_FINAL = t.off_final;
+      try { return coverage(s0, Object.assign({}, opts, { trial: null })); } finally { STANCE_STEP = keep[0]; OFF_SEGS = keep[1]; OFF_FINAL = keep[2]; }
+    }
     if (opts.only === 'parts') return { parts: mapParts(s0) };
     if (opts.only === 'value') {                          // step 31 (D-284): the possession's value, with its parts
       const r = new Read(s0), pp = possParts(s0), sh = (s0.pending || s0.stage !== 'play') ? null : r.mapShotOrNone();

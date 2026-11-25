@@ -1,0 +1,380 @@
+[
+ {
+  "check": "D1",
+  "board": "E1",
+  "verdict": "for Shaun",
+  "did": "The weight's centre is on H6 (in the key). 1 of 5 defenders stand in or touching the key: X1 I10 (0 off O1); X2 D8 (0 off O2); X3 M7 (1 off O3); X4 B3 (0 off O4); X5 H4 (8 off O5). Value 14. The defence stays out: on these cards an open three from a 7 is worth 21, more than the rim gives against the Rim Protector, so packing the key would raise the number.",
+  "fails_without": "With the weight map built from the Five Out cards (E3) the arc carries more weight and the centre moves out."
+ },
+ {
+  "check": "D2",
+  "board": "E2",
+  "verdict": "fail",
+  "did": "X3 stays next to the Sharpshooter (O2); the other four: X1 I9 (1 off O1); X2 M7 (1 off O3); X3 D10 (0 off O2); X4 I2 (7 off O5); X5 E5 (3 off O4). On E1 (O2 a 7 shooter): X1 I10 (0 off O1); X2 D8 (0 off O2); X3 M7 (1 off O3); X4 B3 (0 off O4); X5 H4 (8 off O5).",
+  "fails_without": "Swap O2 back to the Playmaker SG C (that is E1) and his defender must be no closer."
+ },
+ {
+  "check": "D3",
+  "board": "E4",
+  "verdict": "pass",
+  "did": "O2's open mid-range shot on L6 is worth 27. The defence's turn: X Pause (value 33; 24 of its 24 turns read the same). The card table is in the report.",
+  "fails_without": "The turn is the one that leaves the lower value: every turn the defence has is read, and none reads lower."
+ },
+ {
+  "check": "D4",
+  "board": "E5",
+  "verdict": "pass",
+  "did": "O5 (a non-shooter) stands in the far corner; X5 stands 3 squares off him, on M3, toward the key.",
+  "fails_without": "NOT CONFIRMED. With the Sharpshooter in that corner (E5b) his defender stands 3 off as well: the ball is on the far wing, so the sag comes from how seldom the pass across lands, not from O5's card. This board can't tell the two apart."
+ },
+ {
+  "check": "D5",
+  "board": "E6",
+  "verdict": "for Shaun",
+  "did": "X2 starts 4 away from the Sharpshooter (three empty squares). The defence's turn: X Pause (value 30; 24 of its 24 turns read the same). X2 ends 3 squares off him. By the rules as read he can't take the shot away this phase: only a Sprint reaches O2, and a Sprint leaves his contest rushed, so O2's shot now is worth 30 wherever X2 ends the turn. Standing two squares nearer lowers what playing on is worth (26, not 30), but the shot now is the bigger number, so no turn reads lower and he stays.",
+  "fails_without": "With X2 placed two squares off by hand the value is 27 (he contests in control); from three or more off it is 30."
+ },
+ {
+  "check": "D6",
+  "board": "E7",
+  "verdict": "fail",
+  "did": "O2 stands two squares past the arc. At Senior Pro (deep range open) his defender is 4 off him; at Junior (none open) 6 off.",
+  "fails_without": "Only the level changes between the two readings."
+ },
+ {
+  "check": "D7",
+  "board": "E8",
+  "verdict": "for Shaun",
+  "did": "Need a three, last phase: a two is worth 0. Every look beyond the arc weighs 18 to 26.6; every look inside it 4.5 (a shot worth nothing still beats the shot clock running out, minus 5, and a block takes that away). No defender stands in the key: X1 H9 (1 off O1); X2 N8 (0 off O3); X3 C7 (1 off O2); X4 A4 (0 off O4); X5 P3 (0 off O5). The check as written wants the map's centre at the arc. The centre is the balance point of the weight, and weight spread round the arc balances inside it, on G6. So the map moved to the arc and the defence went with it, but the centre as defined can't sit on the arc.",
+  "fails_without": "With a two worth 2 again (E3) the key carries the most weight."
+ },
+ {
+  "check": "G3",
+  "board": "E8",
+  "verdict": "fail",
+  "did": "With only a three worth anything, 1 of 5 defenders stand level with or above their men: X1 H9 (1 off O1); X2 N8 (0 off O3); X3 C7 (1 off O2); X4 A4 (0 off O4); X5 P3 (0 off O5). They close up on their men (on E3 they stand 2, 2, 1, 4, 0 off; here 1, 0, 1, 0, 0) but stay on the hoop side.",
+  "fails_without": "The same teams and squares with normal worth are E3."
+ },
+ {
+  "check": "D8",
+  "board": "E9",
+  "verdict": "fail",
+  "did": "O3 has the ball in the corner, his dribble dead, three passes denied. The defence's turn: X3 Steal (value 17.4). 1 defender(s) end next to him: the defence reaches for the ball with the one already there and sends no second man.",
+  "fails_without": "On E10 (a good passer, open lanes) no second defender goes."
+ },
+ {
+  "check": "A5",
+  "board": "E9",
+  "verdict": "fail",
+  "did": "No trap was set, so its wedges were not read.",
+  "fails_without": "With one defender on him he keeps a pivot square."
+ },
+ {
+  "check": "D9",
+  "board": "E10",
+  "verdict": "pass",
+  "did": "A good passer at the top with open lanes. The defence's turn: X Pause. 1 defender(s) next to the ball.",
+  "fails_without": "On E9 a second defender goes."
+ },
+ {
+  "check": "D10",
+  "board": "E11",
+  "verdict": "pass",
+  "did": "O1 has driven to J5; X1 is beaten. The defence's turn: X2 Move to O2 facing N (value 24; 15 of its 24 turns read the same, and none reads lower). Every turn's value is the offence's best route after it, the pass out to the man a helper left among them.",
+  "fails_without": "The value of helping includes the pass out to the man left: the routes are every attacker's best look, each with the pass that reaches him."
+ },
+ {
+  "check": "D11",
+  "board": "E12",
+  "verdict": "pass",
+  "did": "Two bigs under the rim (O4 G3, O5 K3). Nearest defender: O4 1 away, O5 1 away. X1 I10 (0 off O1); X2 B7 (1 off O2); X3 N6 (2 off O3); X4 G4 (0 off O4); X5 J3 (0 off O5).",
+  "fails_without": "Lift either big's defender and the value rises (D12 reading)."
+ },
+ {
+  "check": "D12",
+  "board": "E1",
+  "verdict": "pass",
+  "did": "Each defender lifted in turn, the offence gains: X1 +1, X2 +1, X3 +4, X4 +1, X5 +3.4.",
+  "fails_without": "A defender whose removal changes nothing saves nothing where he stands."
+ },
+ {
+  "check": "D12",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "Each defender lifted in turn, the offence gains: X1 +10.19, X2 +7.19, X3 +12.57, X4 +12.38, X5 +10.19.",
+  "fails_without": "A defender whose removal changes nothing saves nothing where he stands."
+ },
+ {
+  "check": "D12",
+  "board": "E12",
+  "verdict": "fail",
+  "did": "Each defender lifted in turn, the offence gains: X1 +6, X2 +9, X3 +9, X4 +0, X5 +5.33. Lifting X4 changes nothing as the board stands: the others' answer covers it.",
+  "fails_without": "A defender whose removal changes nothing saves nothing where he stands."
+ },
+ {
+  "check": "O1",
+  "board": "E13",
+  "verdict": "pass",
+  "did": "O4 has caught the ball under the rim, X4 late. His shot now is worth 36; playing on is worth 23.53. The offence's turn: O4 Move to G3 then O4 shoots (layup).",
+  "fails_without": "With the defence's answer left out of the number, playing on reads 38, more than the shot, and he doesn't shoot (the 20 November fault)."
+ },
+ {
+  "check": "O2",
+  "board": "E14",
+  "verdict": "fail",
+  "did": "O4 and O5 were in the key at the last phase end. The offence's first turn (six actions left): O1 passes to O3; no third man goes in. The value with both in the key is 27; with both standing just outside it is 27: the same, because with six actions left the two they must spend to leave come off nothing the best route needs. The last turn (two actions left): O1 passes to O3 (value 27); they are still in the key and no shot is declared.",
+  "fails_without": "The action each must spend to leave comes off the actions a route may use; the count is made once, at the phase end."
+ },
+ {
+  "check": "O3",
+  "board": "E15",
+  "verdict": "fail",
+  "did": "Five Out sets up: O1 C13 (WL), O2 C8 (WL), O3 A2 (CL), O4 O8 (WR), O5 H2 (G), the ball with O1. Value 23.1875 against the defence's full answer.",
+  "fails_without": "Two in one segment hold one defender: the value against the answer is lower (read in the report)."
+ },
+ {
+  "check": "O4",
+  "board": "E15b",
+  "verdict": "pass",
+  "did": "Shoot and Protect sets up: O1 A2, O2 C8, O3 O13, O4 D6, O5 H2. The Rim Protector centre (three 5) starts on H2.",
+  "fails_without": "His only shot that is average or better on his card is at the rim, so that is the one place that demands a defender."
+ },
+ {
+  "check": "O5",
+  "board": "E16",
+  "verdict": "fail",
+  "did": "O5 stands in O1's lane to the rim. The offence's turn: O1 Sprint to M9 then O1 Dribble (value 25.05). O5 ends on I6: he does not clear the lane. O1 goes round the other way instead.",
+  "fails_without": "With O5 left in column I the drive is blocked and the turn's value is lower."
+ },
+ {
+  "check": "O6",
+  "board": "E17",
+  "verdict": "not built",
+  "did": "The computer does not yet place four players around a fixed inbounder (plan risk 10): the reading of an inbound board needs the inbound pass read as the first route, which the value does not do yet.",
+  "fails_without": ""
+ },
+ {
+  "check": "O7",
+  "board": "E18",
+  "verdict": "not built",
+  "did": "The computer does not yet place four players around a fixed inbounder (plan risk 10): the reading of an inbound board needs the inbound pass read as the first route, which the value does not do yet.",
+  "fails_without": ""
+ },
+ {
+  "check": "O8",
+  "board": "E19",
+  "verdict": "not built",
+  "did": "The computer does not yet place four players around a fixed inbounder (plan risk 10): the reading of an inbound board needs the inbound pass read as the first route, which the value does not do yet.",
+  "fails_without": ""
+ },
+ {
+  "check": "O9",
+  "board": "E20",
+  "verdict": "fail",
+  "did": "Last phase: O1 O8, O2 I13, O3 A2, O4 C8, O5 H2 (the squares between the five add up to 86; with a full clock 91: closer together). Against the defence's own setup the offence's turn is: O2 passes to O3 (value 21): 1 action(s).",
+  "fails_without": "The same teams with a full clock are E15."
+ },
+ {
+  "check": "O10",
+  "board": "E21",
+  "verdict": "fail",
+  "did": "Every pass is denied. The offence's turn: O3 Screen (value 26).",
+  "fails_without": "A turn has two actions: two off-ball actions at once is the most one turn can run."
+ },
+ {
+  "check": "O11",
+  "board": "E21",
+  "verdict": "pass",
+  "did": "The turn chosen (O3 Screen) is worth 26; without it (waiting) 24.",
+  "fails_without": "A screen or cut is chosen only if it raises the value: equal values go to the turn with fewer actions."
+ },
+ {
+  "check": "O11",
+  "board": "E22",
+  "verdict": "pass",
+  "did": "The turn chosen (O3 Screen) is worth 32; without it (waiting) 26.",
+  "fails_without": "A screen or cut is chosen only if it raises the value: equal values go to the turn with fewer actions."
+ },
+ {
+  "check": "O12",
+  "board": "E22",
+  "verdict": "pass",
+  "did": "O1 has the ball on I13 with no shot there. The offence's turn: O3 Screen (value 32). He ends on I13: he stays this turn because that turn is worth more than his best step in (26).",
+  "fails_without": "From I13 he has no look; a turn that leaves him there is chosen only when it is worth more than every turn that moves him in."
+ },
+ {
+  "check": "G5",
+  "board": "E23",
+  "verdict": "pass",
+  "did": "Two equal looks. Both defenders sagging: 30. One covered: 30. Both covered: 27.",
+  "fails_without": "A sum of the looks would drop when one is covered; the number does not."
+ },
+ {
+  "check": "G1",
+  "board": "E3",
+  "verdict": "fail",
+  "did": "3 of 5 defenders stand nearer the rim than their men: X1 D5 (2 off O4); X2 Q6 (2 off O5); X3 J9 (1 off O1); X4 K4 (4 off O3); X5 D10 (0 off O2). Each defender's line is in the report.",
+  "fails_without": "From a shape above their men the search must come back to the hoop side (G4)."
+ },
+ {
+  "check": "G2",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "O2's defender stands 0 off the Sharpshooter and 3 off the Playmaker SG C (three 7) on the same square.",
+  "fails_without": "Only O2's card changes between the two readings."
+ },
+ {
+  "check": "G4",
+  "board": "E3",
+  "verdict": "fail",
+  "did": "From the base positions: D5 Q6 J9 K4 D10 (value 16.8055). From every defender above his man: I9 D10 G3 P6 B6 (value 18).",
+  "fails_without": "If the two differ the search is too short to be trusted without the goal-side start."
+ },
+ {
+  "check": "A1",
+  "board": "E3",
+  "verdict": "fail",
+  "did": "Defenders one pass away: X1 an arrow on his man, none toward the passer; X2 no arrow on his man, none toward the passer; X4 no arrow on his man, one toward the passer; X5 no arrow on his man, none toward the passer.",
+  "fails_without": "Turn that arrow away and the pass to his man lands more often (A6 reading)."
+ },
+ {
+  "check": "A3",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "X3 is on the ball on J9, arrows E and SE: chosen with his square by the value (each of the eight pairs read in full).",
+  "fails_without": "A6: no other pair of arrows lowers the value."
+ },
+ {
+  "check": "A6",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "The stance search ends only when no other pair of arrows, for any defender, lowers the value (each pair is read in full on the board as it would be).",
+  "fails_without": "By construction; the test turns each defender's arrows and reads the value again."
+ },
+ {
+  "check": "A16",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "Five shooters spread. Defenders in or touching the key: X4.",
+  "fails_without": "With every defender out on his man the paint is empty and the value of a cut rises."
+ },
+ {
+  "check": "A2",
+  "board": "E24",
+  "verdict": "fail",
+  "did": "The pass to O5 is denied by X3. The defence's turn: X Pause. X5 ends on N4 with arrows E and SE: one on O5.",
+  "fails_without": "An arrow on a man the ball can't reach saves nothing."
+ },
+ {
+  "check": "A4",
+  "board": "E25",
+  "verdict": "pass",
+  "did": "O5 screens X1 on I9. With the screen on, X1 facing north and north-east reads 22; facing north-west and north reads 22: his diagonal arrow is dead either way, so turning it changes nothing. With no screen the same two stances read 20.75 and 20.75.",
+  "fails_without": "Without the Screen rule in the reading the two stances read as they do with no screen (on this board those two are level as well, so the board cannot tell them apart: see the report)."
+ },
+ {
+  "check": "A7",
+  "board": "E26",
+  "verdict": "pass",
+  "did": "On O9: the defender of the fast non-shooter (Slashing Wing) stands 3 off; of the fast shooter (Bucket Getter) 0 off.",
+  "fails_without": "Only the card on O9 changes."
+ },
+ {
+  "check": "A8",
+  "board": "E27",
+  "verdict": "fail",
+  "did": "Ball on L10. Equal shooters either side: X2 on M9, arrows NW+N. The best shooter in the right corner: X2 on M9, arrows NW+N.",
+  "fails_without": "The stance must change when the bigger look changes sides."
+ },
+ {
+  "check": "A9",
+  "board": "E28",
+  "verdict": "fail",
+  "did": "The defence's turn: X3 Quick Step to L6 then X1 Move to G10 facing S (value 22.25). X5 ends on I9 with arrows SE and S; the plan's sum favours N and NE.",
+  "fails_without": "The plan's sum counts lanes only; the turn is chosen by the whole value."
+ },
+ {
+  "check": "A9",
+  "board": "E28b",
+  "verdict": "fail",
+  "did": "The defence's turn: X4 Move to B7 facing N then X1 Steal (value 20.98). X5 ends on I9 with arrows SE and S; the plan's sum favours W and NW.",
+  "fails_without": "The plan's sum counts lanes only; the turn is chosen by the whole value."
+ },
+ {
+  "check": "A10",
+  "board": "E29",
+  "verdict": "fail",
+  "did": "The ball on N8, help behind the middle, nobody on the baseline. The defence's turn: X Pause. X1 ends on M7 with arrows NE and E.",
+  "fails_without": "Move the help to the baseline side and the wedge should turn."
+ },
+ {
+  "check": "A11",
+  "board": "E30",
+  "verdict": "pass",
+  "did": "O3's defender five squares off (he must Sprint to close out): the possession is worth 22.25. One Move away: 22.2453.",
+  "fails_without": "Start X3 one Move away and the rushed closeout, and the drive past it, are gone."
+ },
+ {
+  "check": "A12",
+  "board": "E31",
+  "verdict": "pass",
+  "did": "The three replies on step 30's board, worth to the offence (real, fake): go for the Intercept (19.3, 27), hold the lane (21, 21), step off (22, 18). The defence holds: 21 whatever the offence does.",
+  "fails_without": "Before the fix the mix took the first reply on its list, the gamble."
+ },
+ {
+  "check": "A13",
+  "board": "E31",
+  "verdict": "pass",
+  "did": "Against a ball handler who can't fake the fake column is the real one, and the Intercept (19.3) is the reply.",
+  "fails_without": "With the fake open the same reply loses 6."
+ },
+ {
+  "check": "A14",
+  "board": "E32",
+  "verdict": "fail",
+  "did": "A strong shooter (O2) one pass away, a helper by the rim. X1 stands on E8, 1 off him, not in the passing lane.",
+  "fails_without": "With nobody behind (E33) the denial should fade."
+ },
+ {
+  "check": "A17",
+  "board": "E32",
+  "verdict": "pass",
+  "did": "From the defence's own setup the possession is worth 18.6987. O2's best Move is from C9 to B8: the value reads 24, with the defence's answer to the new board inside it (X4 to C5).",
+  "fails_without": "Every Move of his is read on the board as it would be, the defence answering afresh: B8 24, C6 24, C8 24, D7 24, D8 24."
+ },
+ {
+  "check": "A15",
+  "board": "E33",
+  "verdict": "pass",
+  "did": "The same shooter with nobody near the rim. X2 stands on D8, 0 off him, not in the passing lane (value 21).",
+  "fails_without": "The cut behind a denier is read as any other look."
+ },
+ {
+  "check": "B1",
+  "board": "E3",
+  "verdict": "pass",
+  "did": "The setups, the end of every line the search reads, and the tie order all read the possession's value (possParts); the list and the lasting gap rank nothing when eval.map_lead is \"value\". The coach's lines and the phase score: see the report (stage 5 is partly built).",
+  "fails_without": "Set eval.map_lead back to \"list\" and the old reading leads again."
+ },
+ {
+  "check": "B2",
+  "board": "all",
+  "verdict": "pass",
+  "did": "Python and JavaScript give the same value, the same bar, the same answer and the same weight map on all 46 boards (docs/runs/step31/both_value.json, both_weight.json). The setups are the JavaScript engine's only.",
+  "fails_without": "Any difference fails tools/step_31.py both and bothweight."
+ },
+ {
+  "check": "B3",
+  "board": "E9 and E13",
+  "verdict": "pass",
+  "did": "Through the agents the app plays with: the defence's choice on E9 with the offence holding its own plan, a different plan and no plan: X1 Move to L6 facing N, X1 Move to L6 facing N, X1 Move to L6 facing N. The offence's choice on E13 with the defence holding two different sets of matchups: O4 Move to G3, O4 Move to G3. The new setups are handed the board, the cards and the rules only.",
+  "fails_without": "tests/test_exam.py runs this live (the old test took 14 minutes on a full board)."
+ },
+ {
+  "check": "B4",
+  "board": "the 20 November possession",
+  "verdict": "fail",
+  "did": "Played once, All-Star against All-Star, from its setup (the cards are the best reading of the record, so it is not the same possession). Three seconds called: no. A better shot than playing on, not taken: no. Screens set: phase 1 O1 Screen, phase 2 O1 Screen, phase 2 O1 Screen, phase 4 O1 Screen, phase 4 O3 Screen, phase 5 O1 Screen. The ball handler past the arc with no look at the start of an offence turn: phase 1 on I11, phase 2 on I11, phase 4 on I11. Phase by phase in the report.",
+  "fails_without": "Each of the five faults of 20 November is looked for in the record of the play."
+ }
+]

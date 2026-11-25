@@ -1,0 +1,886 @@
+[
+ {
+  "cap": "the stance search tries squares 2 away from each defender, not 1",
+  "board": "E1",
+  "same": false,
+  "was": [
+   [
+    "I10",
+    "D8",
+    "M7",
+    "B3",
+    "H4"
+   ],
+   [
+    0,
+    7,
+    1,
+    6,
+    0
+   ],
+   14
+  ],
+  "now": [
+   [
+    "I10",
+    "D8",
+    "O10",
+    "D4",
+    "I5"
+   ],
+   [
+    0,
+    7,
+    5,
+    0,
+    0
+   ],
+   9.824
+  ],
+  "ms_was": 11562,
+  "ms_now": 93189
+ },
+ {
+  "cap": "the stance search tries squares 2 away from each defender, not 1",
+  "board": "E5b",
+  "same": true,
+  "was": [
+   [
+    "H3",
+    "M3",
+    "I6",
+    "N8",
+    "H2"
+   ],
+   [
+    7,
+    2,
+    0,
+    1,
+    6
+   ],
+   18
+  ],
+  "now": [
+   [
+    "H3",
+    "M3",
+    "I6",
+    "N8",
+    "H2"
+   ],
+   [
+    7,
+    2,
+    0,
+    1,
+    6
+   ],
+   18
+  ],
+  "ms_was": 15864,
+  "ms_now": 30399
+ },
+ {
+  "cap": "the stance search tries squares 2 away from each defender, not 1",
+  "board": "E26b",
+  "same": true,
+  "was": [
+   [
+    "I10",
+    "D5",
+    "N8",
+    "J4",
+    "P3"
+   ],
+   [
+    0,
+    0,
+    1,
+    0,
+    2
+   ],
+   21
+  ],
+  "now": [
+   [
+    "I10",
+    "D5",
+    "N8",
+    "J4",
+    "P3"
+   ],
+   [
+    0,
+    0,
+    1,
+    0,
+    2
+   ],
+   21
+  ],
+  "ms_was": 21332,
+  "ms_now": 60730
+ },
+ {
+  "cap": "the stance search tries squares 2 away from each defender, not 1",
+  "board": "E33",
+  "same": true,
+  "was": [
+   [
+    "I5",
+    "D8",
+    "K8",
+    "D3",
+    "P3"
+   ],
+   [
+    0,
+    7,
+    0,
+    6,
+    2
+   ],
+   21
+  ],
+  "now": [
+   [
+    "I5",
+    "D8",
+    "K8",
+    "D3",
+    "P3"
+   ],
+   [
+    0,
+    7,
+    0,
+    6,
+    2
+   ],
+   21
+  ],
+  "ms_was": 12170,
+  "ms_now": 68688
+ },
+ {
+  "cap": "the stance search tries squares 2 away from each defender, not 1",
+  "board": "E12",
+  "same": true,
+  "was": [
+   [
+    "I10",
+    "B7",
+    "N6",
+    "G4",
+    "J3"
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    2
+   ],
+   18
+  ],
+  "now": [
+   [
+    "I10",
+    "B7",
+    "N6",
+    "G4",
+    "J3"
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    2
+   ],
+   18
+  ],
+  "ms_was": 23059,
+  "ms_now": 60229
+ },
+ {
+  "cap": "each attacker tries 6 segments, not 3, and 4 placements are read in full, not 2",
+  "board": "E15b",
+  "same": true,
+  "was": [
+   [
+    "A2",
+    "C8",
+    "O13",
+    "D6",
+    "H2"
+   ],
+   2,
+   24
+  ],
+  "now": [
+   [
+    "A2",
+    "C8",
+    "O13",
+    "D6",
+    "H2"
+   ],
+   2,
+   24
+  ],
+  "ms_was": 50114,
+  "ms_now": 111172
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E4",
+  "same": true,
+  "was": [
+   33,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   33,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3479,
+  "ms_now": 6679
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E6",
+  "same": true,
+  "was": [
+   30,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   30,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3316,
+  "ms_now": 5197
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E9",
+  "same": true,
+  "was": [
+   17.4,
+   [
+    [
+     "steal",
+     "X",
+     2,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   17.4,
+   [
+    [
+     "steal",
+     "X",
+     2,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3370,
+  "ms_now": 6045
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E10",
+  "same": false,
+  "was": [
+   26,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   25.4078,
+   [
+    [
+     "qs",
+     "X",
+     1,
+     "E7",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "steal",
+     "X",
+     0,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3090,
+  "ms_now": 5503
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E11",
+  "same": true,
+  "was": [
+   24,
+   [
+    [
+     "move",
+     "X",
+     1,
+     "O2",
+     0,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   24,
+   [
+    [
+     "move",
+     "X",
+     1,
+     "O2",
+     0,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3076,
+  "ms_now": 3478
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E13",
+  "same": true,
+  "was": [
+   36,
+   [
+    [
+     "move",
+     "O",
+     3,
+     "G3",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "shot",
+     "O",
+     3,
+     null,
+     -1,
+     -1,
+     "layup"
+    ]
+   ]
+  ],
+  "now": [
+   36,
+   [
+    [
+     "move",
+     "O",
+     3,
+     "G3",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "shot",
+     "O",
+     3,
+     null,
+     -1,
+     -1,
+     "layup"
+    ]
+   ]
+  ],
+  "ms_was": 16167,
+  "ms_now": 33032
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E14",
+  "same": true,
+  "was": [
+   27,
+   [
+    [
+     "pass",
+     "O",
+     0,
+     null,
+     -1,
+     2,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   27,
+   [
+    [
+     "pass",
+     "O",
+     0,
+     null,
+     -1,
+     2,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 10497,
+  "ms_now": 27007
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E16",
+  "same": true,
+  "was": [
+   25.05,
+   [
+    [
+     "sprint",
+     "O",
+     0,
+     "M9",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "dribble",
+     "O",
+     0,
+     null,
+     -1,
+     2,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   25.05,
+   [
+    [
+     "sprint",
+     "O",
+     0,
+     "M9",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "dribble",
+     "O",
+     0,
+     null,
+     -1,
+     2,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 14843,
+  "ms_now": 30946
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E21",
+  "same": true,
+  "was": [
+   26,
+   [
+    [
+     "screen",
+     "O",
+     2,
+     null,
+     -1,
+     7,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   26,
+   [
+    [
+     "screen",
+     "O",
+     2,
+     null,
+     -1,
+     7,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 49634,
+  "ms_now": 114741
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E22",
+  "same": true,
+  "was": [
+   32,
+   [
+    [
+     "screen",
+     "O",
+     2,
+     null,
+     -1,
+     5,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   32,
+   [
+    [
+     "screen",
+     "O",
+     2,
+     null,
+     -1,
+     5,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 10868,
+  "ms_now": 17830
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E24",
+  "same": true,
+  "was": [
+   24,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   24,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3190,
+  "ms_now": 3317
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E28",
+  "same": false,
+  "was": [
+   22.25,
+   [
+    [
+     "qs",
+     "X",
+     2,
+     "L6",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "move",
+     "X",
+     0,
+     "G10",
+     4,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   22.25,
+   [
+    [
+     "move",
+     "X",
+     1,
+     "G4",
+     4,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 4646,
+  "ms_now": 7406
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E28b",
+  "same": true,
+  "was": [
+   20.978,
+   [
+    [
+     "move",
+     "X",
+     3,
+     "B7",
+     0,
+     -1,
+     ""
+    ],
+    [
+     "steal",
+     "X",
+     0,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   20.978,
+   [
+    [
+     "move",
+     "X",
+     3,
+     "B7",
+     0,
+     -1,
+     ""
+    ],
+    [
+     "steal",
+     "X",
+     0,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 4375,
+  "ms_now": 7583
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "E29",
+  "same": true,
+  "was": [
+   21,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   21,
+   [
+    [
+     "pause",
+     "X",
+     -1,
+     null,
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 3830,
+  "ms_now": 4432
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "BLK1",
+  "same": true,
+  "was": [
+   24,
+   [
+    [
+     "move",
+     "O",
+     0,
+     "H7",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "move",
+     "O",
+     2,
+     "Q7",
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   24,
+   [
+    [
+     "move",
+     "O",
+     0,
+     "H7",
+     -1,
+     -1,
+     ""
+    ],
+    [
+     "move",
+     "O",
+     2,
+     "Q7",
+     -1,
+     -1,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 38679,
+  "ms_now": 69712
+ },
+ {
+  "cap": "the search keeps twice as many turns a step",
+  "board": "BLK2",
+  "same": true,
+  "was": [
+   24,
+   [
+    [
+     "pass",
+     "O",
+     4,
+     null,
+     -1,
+     3,
+     ""
+    ]
+   ]
+  ],
+  "now": [
+   24,
+   [
+    [
+     "pass",
+     "O",
+     4,
+     null,
+     -1,
+     3,
+     ""
+    ]
+   ]
+  ],
+  "ms_was": 44163,
+  "ms_now": 97732
+ }
+]

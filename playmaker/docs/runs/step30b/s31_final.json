@@ -1,0 +1,266 @@
+{
+ "Twin Towers v Lockdown": {
+  "offence_setup": {
+   "seconds": 209.0,
+   "squares": [
+    "F2",
+    "I13",
+    "A2",
+    "G1",
+    "H2"
+   ],
+   "ball": 1,
+   "line": null,
+   "js_seconds": 209.0,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:offence_setup": {
+     "n": 1,
+     "s": 209.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 84.8,
+   "squares": [
+    "H3",
+    "K9",
+    "D8",
+    "I2",
+    "C1"
+   ],
+   "arrows": [
+    0,
+    4,
+    0,
+    5,
+    0
+   ],
+   "read": [
+    "X1 sags 1 square off O1, at the rim: O1 is little danger from F2 right now (worth 4 to the offence if he weren't there).",
+    "X2 sags 3 squares off O2, on the right side: O2 is little danger from I13 right now (worth 9 to the offence if he weren't there).",
+    "X3 sags 5 squares off O3, on the left side: O3 is little danger from A2 right now (worth 9 to the offence if he weren't there).",
+    "X4 sags 1 square off O4, at the rim: O4 is little danger from G1 right now (worth 7.4 to the offence if he weren't there).",
+    "X5 sags 4 squares off O5, on the left baseline: O5 is little danger from H2 right now (worth 3 to the offence if he weren't there)."
+   ],
+   "js_seconds": 84.8,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:stances": {
+     "n": 1,
+     "s": 84.8,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "O2 Sprint to L10",
+   "seconds": 34.1,
+   "depth": 1,
+   "value": 25.25,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 34.1,
+   "calls": 2,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "search:fixed": {
+     "n": 1,
+     "s": 33.9,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.2,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ },
+ "High-Low v Run and Gun": {
+  "offence_setup": {
+   "seconds": 150.5,
+   "squares": [
+    "I13",
+    "F2",
+    "A2",
+    "G5",
+    "H2"
+   ],
+   "ball": 0,
+   "line": null,
+   "js_seconds": 150.5,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:offence_setup": {
+     "n": 1,
+     "s": 150.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 9.1,
+   "squares": [
+    "I9",
+    "G2",
+    "B2",
+    "H4",
+    "I2"
+   ],
+   "arrows": [
+    0,
+    6,
+    6,
+    7,
+    6
+   ],
+   "read": [
+    "X1 sags 3 squares off O1, at the top: O1 is little danger from I13 right now (worth 3 to the offence if he weren't there).",
+    "X2 stays on O2: O2's look is worth more than any help X2 could give Lifting him changes nothing as the board stands.",
+    "X3 stays on O3: O3's look is worth more than any help X3 could give Lifting him changes nothing as the board stands.",
+    "X4 stays on O4: O4's look is worth more than any help X4 could give Lifting him changes nothing as the board stands.",
+    "X5 stays on O5: O5's look is worth more than any help X5 could give Lifting him changes nothing as the board stands."
+   ],
+   "js_seconds": 9.1,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:stances": {
+     "n": 1,
+     "s": 9.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "O1 Move to L13",
+   "seconds": 12.4,
+   "depth": 1,
+   "value": 27.35,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 12.4,
+   "calls": 2,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "search:fixed": {
+     "n": 1,
+     "s": 12.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ },
+ "Five Out v Iron Wall (the block board)": {
+  "offence_setup": {
+   "seconds": 115.5,
+   "squares": [
+    "C13",
+    "C8",
+    "A2",
+    "O8",
+    "H2"
+   ],
+   "ball": 0,
+   "line": null,
+   "js_seconds": 115.5,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:offence_setup": {
+     "n": 1,
+     "s": 115.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 29.3,
+   "squares": [
+    "M7",
+    "D7",
+    "E10",
+    "B2",
+    "I2"
+   ],
+   "arrows": [
+    1,
+    7,
+    5,
+    6,
+    6
+   ],
+   "read": [
+    "X1 sags 1 square off O4, on the right side: O4 is little danger from O8 right now (worth 3.8 to the offence if he weren't there).",
+    "X2 stays on O2: O2's look is worth more than any help X2 could give (worth 0.8 to the offence if he weren't there).",
+    "X3 sags 2 squares off O1, on the left side: O1 is little danger from C13 right now (worth 3.8 to the offence if he weren't there).",
+    "X4 stays on O3: O3's look is worth more than any help X4 could give Lifting him changes nothing as the board stands.",
+    "X5 stays on O5: O5's look is worth more than any help X5 could give (worth 3.8 to the offence if he weren't there)."
+   ],
+   "js_seconds": 29.3,
+   "calls": 1,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:stances": {
+     "n": 1,
+     "s": 29.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "X1 Move to D8 facing NE",
+   "seconds": 190.4,
+   "depth": 1,
+   "value": -9.01,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 190.4,
+   "calls": 2,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "search:fixed": {
+     "n": 1,
+     "s": 190.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "I8 and I9 left only": {
+  "checks_changed": [],
+  "readings_changed": [
+   {
+    "reading": "weight:E4",
+    "was": "centre G6",
+    "now": "centre H6"
+   },
+   {
+    "reading": "weight:E12",
+    "was": "centre H5",
+    "now": "centre H6"
+   },
+   {
+    "reading": "weight:E16",
+    "was": "centre G6",
+    "now": "centre G5"
+   },
+   {
+    "reading": "weight:E20",
+    "was": "centre H5",
+    "now": "centre H6"
+   }
+  ],
+  "readings": 66
+ },
+ "I8 and I9 right only": {
+  "checks_changed": [],
+  "readings_changed": [],
+  "readings": 66
+ },
+ "the corner ends at row 6": {
+  "checks_changed": [],
+  "readings_changed": [
+   {
+    "reading": "weight:E6",
+    "was": "centre H5",
+    "now": "centre H6"
+   },
+   {
+    "reading": "weight:E12",
+    "was": "centre H5",
+    "now": "centre H6"
+   },
+   {
+    "reading": "weight:E20",
+    "was": "centre H5",
+    "now": "centre H6"
+   }
+  ],
+  "readings": 66
+ }
+}

@@ -143,3 +143,90 @@ def test_the_defences_answer_is_the_same_with_every_movement_read_in_full(T):
     assert p.returncode == 0, p.stderr[-2000:]
     for r in json.loads(p.stdout):
         assert r['cut'][0] == pytest.approx(r['full'][0], abs=1e-9) and r['cut'][1] == r['full'][1], r
+
+
+# ---- reading by difference: the memory (D-299) ---------------------------------------------------------------------------
+
+DIFF_JS = r"""
+const fs = require('fs'), path = require('path');
+const root = process.argv[1];
+const E = require(path.join(root, 'playmaker_web', 'static', 'engine.js'));
+const load = n => JSON.parse(fs.readFileSync(path.join(root, 'playmaker_engine', 'data', n)));
+E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), segments: load('segments.json'), learned: null });
+const out = [];
+for (const b of JSON.parse(fs.readFileSync(0, 'utf8'))) {
+  const ctx = E.makeCtx(b.ctx), s = E.stateFrom(b.state, ctx);
+  const acts = E.legalActions(s).filter((a, i) => i % b.every === 0);
+  let n = 0, bad = 0;
+  // after the board itself has been read, every board one legal action on is read inside the same memory ...
+  const warm = E._withMemo(() => { E.possParts(s); return acts.map(a => { const nx = E.apply(s, a); return (E.isChance(nx) || nx.stage !== 'play') ? null : E.possParts(nx).V; }); });
+  // ... and again from nothing (a state rebuilt from its own description, no memory open)
+  acts.forEach((a, i) => { const nx = E.apply(E.stateFrom(b.state, E.makeCtx(b.ctx)), a); if (E.isChance(nx) || nx.stage !== 'play') return; n++; if (Math.abs(E.possParts(nx).V - warm[i]) > 1e-9) bad++; });
+  out.push({ name: b.name, boards: n, different: bad });
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_after_each_legal_action_the_reading_from_the_memory_equals_a_fresh_reading(T):
+    """The prompt's guard for reading by difference: on the exam's boards in play, after each legal action from the
+    position, the reading taken with the think's memory warm (everything the action didn't touch is not read again)
+    equals a full fresh reading. (Every third action here, to stay inside the limit; tools/step_31.py checks all.)"""
+    import subprocess
+    reqs = [dict(T.req(n), every=3) for n in ('E13', 'E16', 'E24', 'E29', 'E30')]
+    p = subprocess.run(['node', '-e', DIFF_JS, ROOT], input=json.dumps(reqs), capture_output=True, text=True, timeout=600)
+    assert p.returncode == 0, p.stderr[-2000:]
+    for r in json.loads(p.stdout):
+        assert r['boards'] > 0 and r['different'] == 0, r
+
+
+# ---- B3: each side thinks alone, on a small board, through the app's own path ------------------------------------------------
+
+@needs_node
+def test_B3_changing_one_sides_private_plan_never_changes_the_other_sides_choice():
+    """The separate-thinking test (tests/test_step24.py) took 14 minutes as written. Rebuilt on small boards (few
+    actions left to each side) through the agents the app plays with (playmaker_web/game.py builds one Agent a side and
+    hands each its own setup's plan and scout, nothing of the other side's). The defence's choice is the same whatever
+    the offence privately plans; the offence's is the same whatever matchups the defence privately holds; and the new
+    setups take the board, the cards and the rules only."""
+    import inspect
+    import step_31_exam as XM
+    from playmaker_engine import setup31
+    r = XM.separate_thinking()
+    assert len(set(r['defence'])) == 1 and len(set(r['offence'])) == 1 and r['same'], r
+    # the setups: what each is handed. The defence's takes the offence's squares and who has the ball (what the board
+    # shows), never a plan; the offence's takes nothing of the defence's at all.
+    assert list(inspect.signature(setup31.place_defence).parameters)[:3] == ['make', 'o_sq', 'ball']
+    assert not {'plan', 'perm', 'assign', 'matchups'} & set(inspect.signature(setup31.place_defence).parameters)
+    assert not {'x_sq', 'arrows', 'perm', 'assign', 'matchups'} & set(inspect.signature(setup31.place_offence).parameters)
+
+
+# ---- every check, by its number, from the exam's readings ------------------------------------------------------------------
+# The setups take minutes each, so the readings are taken once by `python3 tools/step_31_exam.py read` (three processes
+# side by side) and kept in docs/runs/step31/exam_readings.json; each check is judged here from them, live. A check
+# passes on 'pass', or on 'for Shaun' (it fails as written for a reason that is Shaun's to judge, named in the row). 'fail' and
+# 'not built' fail the test, with the check's own words.
+
+CHECKS = ['D%d' % i for i in range(1, 13)] + ['O%d' % i for i in range(1, 13)] + ['B%d' % i for i in range(1, 5)] + ['G%d' % i for i in range(1, 6)] + ['A%d' % i for i in range(1, 18)]
+
+
+@pytest.fixture(scope='module')
+def verdicts():
+    import step_31_exam as XM
+    path = os.path.join(ROOT, 'docs', 'runs', 'step31', 'exam_readings.json')
+    if not os.path.exists(path):
+        pytest.skip('the exam readings have not been taken: python3 tools/step_31_exam.py read')
+    rows = XM.judge(json.load(open(path)))
+    by = {}
+    for r in rows:
+        by.setdefault(r['check'], []).append(r)
+    return by
+
+
+@pytest.mark.parametrize('check', CHECKS)
+def test_check(check, verdicts):
+    rows = verdicts.get(check)
+    assert rows, f'{check}: no reading (the board could not be read)'
+    for r in rows:
+        assert r['verdict'] in ('pass', 'for Shaun'), f"{check} on {r['board']}: {r['verdict']}. {r['did']}"

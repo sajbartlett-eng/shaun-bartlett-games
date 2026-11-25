@@ -81,10 +81,15 @@ _TIE_RANK = {k: i for i, k in enumerate(TIE_KINDS)}
 _TIE_SHOTS = ('', 'layup', 'dunk', 'post', 'mid', 'floater', 'long', 'three')
 
 
+TIE_IDLE = ('pause', 'end_turn')
+
+
 def tie_key(t):
+    """Level turns in one order, both engines: the fewer working actions first (a turn that only waits counts none, so
+    standing still wins a level tie), then the fewer actions, then by the action itself."""
     def num(v):
         return -1 if v is None else int(v)
-    return (len(t),) + tuple((_TIE_RANK.get(a.kind, 99), num(a.piece), tuple(a.dest) if a.dest else (-1, -1), num(a.arrow), num(a.target),
+    return (sum(1 for a in t if a.kind not in TIE_IDLE), len(t)) + tuple((_TIE_RANK.get(a.kind, 99), num(a.piece), tuple(a.dest) if a.dest else (-1, -1), num(a.arrow), num(a.target),
                               _TIE_SHOTS.index(a.shot or '')) for a in t)
 
 

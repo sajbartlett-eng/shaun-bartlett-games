@@ -1,0 +1,347 @@
+{
+ "text": "Tests ran for about 16 minutes in all, against a limit of about 10 plus the golden game: the suite sweep took its full 10, and the exam's own file, the rules, the memory tests, engine equality and the golden game took 6 more. No test was loosened, skipped or marked as expected to fail. Nothing was re-recorded.\n\n| What | Result | Time |\n|---|---|---|\n| The exam (`tests/test_exam.py`) | 41 passed, 23 failed. Every live reading passed (O1 and its \"fails without\", G5, the shot clock, A12 and A13, the mix in both engines, B2 on five boards, the full-read guard, the memory guard, B3). The 23 failures are the failed and unbuilt checks, each by its number | 2 min 1 s |\n| The rules (`test_rules_current.py`) and step 30b's memory tests (`test_step30b.py`) | 25 passed | 25 s |\n| Engine equality (`tools/js_equivalence.py`, 40 random states) | 0 mismatches | 37 s |\n| The golden game (`test_golden_and_regression.py`) | 8 passed, no value moved | 73 s |\n| The rest of the suite: each file in its own process, 90 seconds a file, 10 minutes in all | 30 files passed, 7 failed, 15 not finished in their time, 8 not reached | 10 min |\n\n**The 7 files that failed:**\n\n| File | Why | From this step? |\n|---|---|---|\n| `test_revalidated_live.py` | A ceiling reads 6 where the test expects 9 | No: it fails the same way on the live code |\n| `test_computer.py` | A recorded replay diverges | No: fails on the live code |\n| `test_coach_gate.py` | The coach's line comes back empty | No: fails on the live code |\n| `test_placement_ui.py` | A tap in the browser times out | No: fails on the live code |\n| `test_static.py` | Reads the removed thinking clock (`time_budget_s`) | In part: on the live code it already fails two lines later, on the browser build running over that clock |\n| `test_setup_18o.py` | Asserts a setup keeps to its clock (8.5 s against 0.12 s) | Yes: the clocks are gone (D-293). Its premise is gone, so it was not re-recorded. For Shaun: retire it or rewrite it as a look-ahead test |\n| `test_heat_map_20.py` | Expects the old reading's number on a board (36; the value reads 25.69) | Yes: the reading changed. Not re-recorded, because the heat map view itself still shows the old list |\n\n**Not finished inside 90 seconds** (or cut off by the 10 minutes): accessibility, foul_price_18k, map_logic_21, movement, scouting, solver, step22c, step24, step27, step28, step29, step30, step3m, step3n, strength_18s. **Not reached:** teams, timer, turns_phases, two_responsibilities_22b, ux_19, web, wedge, zone_18g. These include the step 27 to 30 files, which run well past 10 minutes and assert the old list-led setups; expect many of them to need re-recording once the new setups are trusted.\n\n**Not tested:** the order of level turns (D-300) is the same rule written once in each engine, with no two-engine test of its own. The site was not built and the site packing test was not rerun, because nothing was merged.\n\n**Passed (30):** advantage, breaking, breaking_live, contest_18j, course_boards, coverage_18s, defence, drivers_22b, fiba_18i, intercepts_mti, intercepts_oq72, lane_18q, levels_3l, off_balance_18l, points_play_on_18r, position_contest_18n, receiver_denial, rolls_scoring, rulebook_nov, rules_current, rulings_3i, scenarios, screen_22b, see_the_steal_18j, setup_3k, step18p, step22, step26, step30b, step6.",
+ "sweep": {
+  "seconds": 600,
+  "files": {
+   "test_accessibility.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_advantage.py": {
+    "status": "passed",
+    "seconds": 0.4,
+    "last": "1 passed in 0.03s",
+    "first_failure": []
+   },
+   "test_breaking.py": {
+    "status": "passed",
+    "seconds": 0.4,
+    "last": "5 passed in 0.04s",
+    "first_failure": []
+   },
+   "test_breaking_live.py": {
+    "status": "passed",
+    "seconds": 0.3,
+    "last": "1 passed in 0.03s",
+    "first_failure": []
+   },
+   "test_coach_gate.py": {
+    "status": "FAILED",
+    "seconds": 12.1,
+    "last": "1 failed in 11.76s",
+    "first_failure": [
+     "E   AssertionError: {'coach': '', 'canAct': False}",
+     "/home/user/step22c/playmaker/tests/test_coach_gate.py:54: AssertionError: {'coach': '', 'canAct': False}",
+     "FAILED tests/test_coach_gate.py::test_coach_vision_only_at_learn_and_for_both_sides"
+    ]
+   },
+   "test_computer.py": {
+    "status": "FAILED",
+    "seconds": 1.0,
+    "last": "1 failed, 2 passed in 0.63s",
+    "first_failure": [
+     "E   ValueError: replay diverged after X: don't contest: over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:27:0 != over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:33:0",
+     "/home/user/step22c/playmaker/playmaker_engine/review.py:154: ValueError: replay diverged after X: don't contest: over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:27:0 != over:-|c10|t1/2|OF10,C9,O9,A3,Q3|XO8NE,G8NE,J9NW,B4NE,P2NW|b1|m0112|n02010100011|u0|L0004|D13|f1+1-0|Rshot:33:0",
+     "FAILED tests/test_computer.py::test_a_play_cannot_run_past_the_end_of_its_turn"
+    ]
+   },
+   "test_contest_18j.py": {
+    "status": "passed",
+    "seconds": 0.4,
+    "last": "13 passed in 0.05s",
+    "first_failure": []
+   },
+   "test_course_boards.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "2 passed in 0.20s",
+    "first_failure": []
+   },
+   "test_coverage_18s.py": {
+    "status": "passed",
+    "seconds": 4.8,
+    "last": "14 passed, 1 xpassed in 4.36s",
+    "first_failure": []
+   },
+   "test_defence.py": {
+    "status": "passed",
+    "seconds": 13.1,
+    "last": "3 passed in 12.73s",
+    "first_failure": []
+   },
+   "test_drivers_22b.py": {
+    "status": "passed",
+    "seconds": 50.9,
+    "last": "5 passed in 49.04s",
+    "first_failure": []
+   },
+   "test_fiba_18i.py": {
+    "status": "passed",
+    "seconds": 0.3,
+    "last": "20 passed in 0.07s",
+    "first_failure": []
+   },
+   "test_foul_price_18k.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_heat_map_20.py": {
+    "status": "FAILED",
+    "seconds": 61.4,
+    "last": "1 failed, 7 passed in 57.90s",
+    "first_failure": [
+     "/home/user/step22c/playmaker/tests/test_heat_map_20.py:157: assert 25.689999999999998 == 36.0 \u00b1 3.6e-05",
+     "FAILED tests/test_heat_map_20.py::test_the_search_reads_the_lasting_gap_at_every_lines_end_for_both_sides"
+    ]
+   },
+   "test_intercepts_mti.py": {
+    "status": "passed",
+    "seconds": 1.9,
+    "last": "28 passed in 1.55s",
+    "first_failure": []
+   },
+   "test_intercepts_oq72.py": {
+    "status": "passed",
+    "seconds": 7.7,
+    "last": "16 passed in 7.36s",
+    "first_failure": []
+   },
+   "test_lane_18q.py": {
+    "status": "passed",
+    "seconds": 71.4,
+    "last": "14 passed in 70.52s (0:01:10)",
+    "first_failure": []
+   },
+   "test_levels_3l.py": {
+    "status": "passed",
+    "seconds": 19.8,
+    "last": "36 passed in 19.43s",
+    "first_failure": []
+   },
+   "test_map_logic_21.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_movement.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_off_balance_18l.py": {
+    "status": "passed",
+    "seconds": 0.3,
+    "last": "7 passed in 0.04s",
+    "first_failure": []
+   },
+   "test_placement_ui.py": {
+    "status": "FAILED",
+    "seconds": 33.1,
+    "last": "1 failed in 32.71s",
+    "first_failure": [
+     "E   AssertionError: page.tap: Timeout 30000ms exceeded.",
+     "        name: 'TimeoutError'",
+     "     +  where 1 = CompletedProcess(args=['node', '/tmp/pytest-of-root/pytest-363/test_setup_moves_pieces_and_co0/p.js', 'http://127.0.0....o0/p.js:19:14 {\\n  log: [ `  - waiting for locator(\\'g.piece[aria-label^=\"X1,\"]\\')` ],\\n  name: \\'TimeoutError\\'\\n}\\n').returncode"
+    ]
+   },
+   "test_points_play_on_18r.py": {
+    "status": "passed",
+    "seconds": 80.5,
+    "last": "14 passed in 79.91s (0:01:19)",
+    "first_failure": []
+   },
+   "test_position_contest_18n.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "13 passed in 0.10s",
+    "first_failure": []
+   },
+   "test_receiver_denial.py": {
+    "status": "passed",
+    "seconds": 0.4,
+    "last": "11 passed in 0.05s",
+    "first_failure": []
+   },
+   "test_revalidated_live.py": {
+    "status": "FAILED",
+    "seconds": 4.4,
+    "last": "1 failed, 1 passed in 3.99s",
+    "first_failure": [
+     "/home/user/step22c/playmaker/tests/test_revalidated_live.py:44: assert (Fraction(6, 1) == 9)",
+     "FAILED tests/test_revalidated_live.py::test_engine_ceilings_under_the_live_rules"
+    ]
+   },
+   "test_rolls_scoring.py": {
+    "status": "passed",
+    "seconds": 7.3,
+    "last": "32 passed in 7.03s",
+    "first_failure": []
+   },
+   "test_rulebook_nov.py": {
+    "status": "passed",
+    "seconds": 0.3,
+    "last": "3 passed in 0.04s",
+    "first_failure": []
+   },
+   "test_rules_current.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "18 passed in 0.18s",
+    "first_failure": []
+   },
+   "test_rulings_3i.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "18 passed in 0.09s",
+    "first_failure": []
+   },
+   "test_scenarios.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "48 passed in 0.16s",
+    "first_failure": []
+   },
+   "test_scouting.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_screen_22b.py": {
+    "status": "passed",
+    "seconds": 0.5,
+    "last": "7 passed in 0.20s",
+    "first_failure": []
+   },
+   "test_see_the_steal_18j.py": {
+    "status": "passed",
+    "seconds": 19.4,
+    "last": "5 passed in 17.65s",
+    "first_failure": []
+   },
+   "test_setup_18o.py": {
+    "status": "FAILED",
+    "seconds": 19.2,
+    "last": "1 failed, 1 passed in 17.86s",
+    "first_failure": [
+     "/home/user/step22c/playmaker/tests/test_setup_18o.py:42: assert 8.529240131378174 < (0.12 + 1.5)",
+     "FAILED tests/test_setup_18o.py::test_the_search_places_both_sides_legally_inside_its_time"
+    ]
+   },
+   "test_setup_3k.py": {
+    "status": "passed",
+    "seconds": 0.3,
+    "last": "2 passed in 0.03s",
+    "first_failure": []
+   },
+   "test_solver.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.0
+   },
+   "test_static.py": {
+    "status": "FAILED",
+    "seconds": 30.4,
+    "last": "1 failed, 3 passed in 30.12s",
+    "first_failure": [
+     "E   KeyError: 'time_budget_s'",
+     "/home/user/step22c/playmaker/tests/test_static.py:201: KeyError: 'time_budget_s'",
+     "FAILED tests/test_static.py::test_the_computer_runs_in_the_browser_build[rookie-X]"
+    ]
+   },
+   "test_step18p.py": {
+    "status": "passed",
+    "seconds": 8.9,
+    "last": "5 passed in 8.20s",
+    "first_failure": []
+   },
+   "test_step22.py": {
+    "status": "passed",
+    "seconds": 37.7,
+    "last": "4 passed in 35.79s",
+    "first_failure": []
+   },
+   "test_step22c.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step24.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step26.py": {
+    "status": "passed",
+    "seconds": 32.7,
+    "last": "6 passed in 30.74s",
+    "first_failure": []
+   },
+   "test_step27.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step28.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step29.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step30.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 90.1
+   },
+   "test_step30b.py": {
+    "status": "passed",
+    "seconds": 39.0,
+    "last": "7 passed in 36.95s",
+    "first_failure": []
+   },
+   "test_step3m.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 66.7
+   },
+   "test_step3n.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 59.4
+   },
+   "test_step6.py": {
+    "status": "passed",
+    "seconds": 5.9,
+    "last": "16 passed in 5.38s",
+    "first_failure": []
+   },
+   "test_strength_18s.py": {
+    "status": "not finished inside its 90 seconds",
+    "seconds": 24.2
+   },
+   "test_teams.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_timer.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_turns_phases.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_two_responsibilities_22b.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_ux_19.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_web.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_wedge.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   },
+   "test_zone_18g.py": {
+    "status": "not run (the 10 minutes were used)",
+    "seconds": 0
+   }
+  }
+ }
+}

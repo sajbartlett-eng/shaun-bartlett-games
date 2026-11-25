@@ -19,7 +19,7 @@ const fs = require('fs'), path = require('path');
 const root = process.argv[1];
 const E = require(path.join(root, 'playmaker_web', 'static', 'engine.js'));
 const load = n => JSON.parse(fs.readFileSync(path.join(root, 'playmaker_engine', 'data', n)));
-E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), segments: load('segments.json'),
+E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), segments: process.env.PM_SEGMENTS ? JSON.parse(fs.readFileSync(process.env.PM_SEGMENTS)) : load('segments.json'),
   learned: fs.existsSync(path.join(root, 'playmaker_engine', 'data', 'learned_weights.json')) ? load('learned_weights.json') : null });
 const reqs = JSON.parse(fs.readFileSync(0, 'utf8'));
 const out = [];
@@ -34,9 +34,11 @@ process.stdout.write(JSON.stringify(out));
 """
 
 
-def js(reqs, timeout=600):
-    """Each request {name, state, ctx, options} read by engine.js in one Node process -> [{name, ms, res}]."""
-    p = subprocess.run(['node', '-e', NODE, os.path.abspath(ROOT)], input=json.dumps(reqs), capture_output=True, text=True, timeout=timeout)
+def js(reqs, timeout=600, segments=None):
+    """Each request {name, state, ctx, options} read by engine.js in one Node process -> [{name, ms, res}].
+    segments: another segments table (a file) for this run (the segments trial)."""
+    env = dict(os.environ, PM_SEGMENTS=segments) if segments else None
+    p = subprocess.run(['node', '-e', NODE, os.path.abspath(ROOT)], input=json.dumps(reqs), capture_output=True, text=True, timeout=timeout, env=env)
     if p.returncode != 0:
         raise RuntimeError(p.stderr[-3000:])
     return json.loads(p.stdout)

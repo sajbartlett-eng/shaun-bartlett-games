@@ -1,0 +1,448 @@
+{
+ "_about": "Step 3m B8: every tunable number of the decision engine and the trainer, by difficulty. Age stays in the ratings (step 3l), never here. Tune only these and the evaluation constants against the exam (B9); never ratings or rules.",
+ "profiles": {
+  "rookie": {
+   "depth": [
+    1,
+    2
+   ],
+   "beam": 8,
+   "opponent_model": 0.2,
+   "noise": 5.0,
+   "attention": 2,
+   "reaction_delay": "previous_board",
+   "goal_margin_m0": 8,
+   "variety_margin": 0,
+   "level": "rookie",
+   "scout_human": false,
+   "open_list": "defence",
+   "open_full": 2,
+   "open_follow": 1,
+   "look_ahead": 1
+  },
+  "starter": {
+   "depth": [
+    2,
+    3
+   ],
+   "beam": 16,
+   "opponent_model": 0.6,
+   "noise": 2.5,
+   "attention": 4,
+   "reaction_delay": "own_attention",
+   "goal_margin_m0": 4,
+   "variety_margin": 1,
+   "level": "starter",
+   "scout_human": false,
+   "open_list": "defence",
+   "open_full": 4,
+   "open_follow": 2,
+   "look_ahead": 1
+  },
+  "allstar": {
+   "depth": [
+    4,
+    6
+   ],
+   "beam": 24,
+   "opponent_model": 1.0,
+   "noise": 0.5,
+   "attention": 5,
+   "reaction_delay": "current",
+   "goal_margin_m0": 1,
+   "variety_margin": 2,
+   "level": "allstar",
+   "scout_human": true,
+   "open_list": "defence",
+   "closeout_twice": true,
+   "look_ahead": 1
+  }
+ },
+ "eval": {
+  "_about": "Evaluation constants (game units). responses_per_defender: k in B3. later_p: the delivery chance of a look that needs another offence turn (the defence may still answer it). continuation: the share of the best residual threat the leaf credits (the rest is the chance the possession doesn't reach it).",
+  "responses_per_defender": 3,
+  "later_p": 0.7,
+  "continuation": 0.85,
+  "_no_floor": "Step 18h: the reading keeps its parts instead of taking the largest of them. Today's reading is the largest of the shot that can go up now and 'play on' (the phase table plus the best look the cover leaves, less the phase's average), then a map; what is not the largest is thrown away, and of the looks the cover leaves only the best counts. On: what is left to earn is a line fitted to what positions went on to earn (learned_weights.json, calibration_parts), per level, phase and side to act: a + b1 x the best shot now + b2 x the best look the cover leaves + b3 x the second best, b1 to b3 never below 0. Under the app's rules with the calibrated reading on; where no line was fitted, the map as before.",
+  "no_floor": false,
+  "_exact_shot": "Step 18h: a shot that can go up now keeps its exact value (points x rating less the Contest, from the rules); only 'play on' (the phase table plus the best look the cover leaves, less the phase's average) goes through a map of its own (learned_weights.json, calibration_play_on, per level), and the reading is the larger of the two. Today the largest is taken first and then mapped, so an exact shot is bent by the map and a position whose worth is that very shot reads above the shot itself.",
+  "exact_shot": false,
+  "_level_maps": "D-163 (Shaun, 12 Nov 2026): each level's reading goes through a map fitted on its own play (learned_weights.json, calibration_levels), under the app's rules. false: the one shared map for every level, as before step 18h.",
+  "level_maps": true,
+  "franks_weights": {
+   "man": 0.62,
+   "ball": 0.11,
+   "rim": 0.27
+  },
+  "value_bounds": [
+   -100,
+   150
+  ],
+  "browser_budget_scale": 1.0,
+  "_ball_loss": "Step 18j: a position the search stops in with the defence to act and a whole turn in hand is worth no more than what its best Steal leaves, counting a defender who can still get next to the ball handler with an arrow on him; the Steal is settled by the rules' own chances. true: in either side's search; 'offence': only when the offence is the one choosing; false: off. Off: on the gate it showed no gain for the offence beyond search.dice_in_hand, and in the defence's own search it put the Steal off (step 18j report).",
+  "ball_loss": false,
+  "fouls_per_possession": 0.33,
+  "play_on_value": 24.1,
+  "_fouls": "Step 3n F4, remeasured in step 18n on today's cards (D-189, D-192) and rules (D-191, D-193: jump shots contested by position only): the defence's fouls a possession, 0.22 (0.15 to 0.29), and what a possession is worth to the offence, 25.8 (24.4 to 27.2), from 200 possessions of All-Star self-play under the app's rules (docs/runs/step18n/foul_numbers.json, run 'fit_allstar'). Used to price a foul over the rest of the quarter. No jump shot can be fouled in the app now, so this prices steal fouls and fouls on inside shots only. Step 18l measured 0.21 and 27.2; step 18j 0.25 and 26.9; step 18i 0.35 and 27.5; before that they were set by hand at 0.25 and 20.",
+  "leaf_mode": "relative",
+  "_lane": "Step 18q (D-196, design checks 1 and 4): true: the reading counts the ball handler's way to the rim next phase (step 16's penetration: his best paint look next phase against every defender who can get to a Contest of it), read as this turn's looks are, one phase on. The reading looked one turn ahead, so a drive that finishes next phase read as nothing.",
+  "lane": false,
+  "_map": "Step 20 (D-203, D-204; Shaun, 17 Nov 2026): on for both sides by default, whatever the checks say; Shaun's playtest is the gate (D-205). The search reads the lasting gap at the end of every line, for both sides: what the offence can still force after the defence's best answer (the best open look, or the look an overloaded defender leaves), read like for like (a fresh phase's view, the offence's full turn to come). It is already in points, so it is used directly, with no fitted line: a line ends worth what has been banked plus the larger of the shot that can go up now and the lasting gap. The offence's search plays to raise it, the defence's to lower it. Nothing else is added (D-156). Exam position 15 fails with it on (an expected failure, D-203). false: off (?map=0 in the app). 'offence': only the offence's decisions read it. Step 18s's fitted line (calibration_map) is no longer read.",
+  "map": true,
+  "map_lead": "value",
+  "_answer_lead": "Step 28 (D-262, Shaun, 19 Nov 2026): what leads the map's own answer (the defence's best answer inside the lasting reading): 'list' (the list of things to cover, then the lasting gap, as everywhere else) or 'gap' (step 20's lasting gap first). One reading everywhere: a single worst-hole number scores two positions alike even when one leaves several more good looks.",
+  "answer_lead": "list",
+  "_pass_rules": "Step 18s, stop two (D-199): true: the chance a pass arrives is the rules' own. A defender takes it through his square, or after one straight movement along an arrow line to where it meets the pass, never from next to the passer. Before, any defender who could step onto any square of the pass's line counted, the on-ball defender included; on 7,504 random passes that agreed with the rules 48 times in 100, and this agrees every time (docs/runs/step18s/pass_proof.json).",
+  "pass_rules": true,
+  "reach": true,
+  "coverage_budget": false,
+  "calibrated": true,
+  "settle_shots": true,
+  "_settle_shots": "Step 18b; on by default for every level since D-148 (Shaun, 11 Nov 2026; checked at Rookie and Starter in step 18c). (1) A position with a shot declared is valued at the search's horizon by playing the reaction out by the rules: the defence's best legal reply (a Contest, a movement to the shooter and then a Contest, a Steal, or nothing), the dice at their chances. (2) D-145: no reading is above the most the possession can still earn (what it has earned plus the best open shot any attacker's card can score), before or after the calibrated map. (3) The quicker reading that orders the list of turns goes through the same ceiling and map, so a settled shot and a position that plays on are ranked on one scale.",
+  "_calibrated": "Step 17D; on by default for every level since D-138 (Shaun, 11 Nov 2026): the calibrated reading. Today's reading of what a position has left to earn is passed through a map fitted to what positions went on to earn, per phase and side to act (data/learned_weights.json, calibration; one file for both engines). Fitted, not hand-set (D-137). The map was fitted on Senior Pro play; another age and standard scales it by its own phase table value over Senior Pro's at the same phase, as D-114 (step 18a). Under the table's rules the file's calibration_tabletop map is used: fitted the same way on tabletop-rules play (D-141).",
+  "help_readings": false,
+  "_help_readings": "Step 18c (off). The floor: with the offence to act in open play, a position is worth at least the best shot the ball handler can release this turn (his shot from where he stands, or after one movement), settled by the rules against the defence's best reaction. The reading names the candidates; the rules value them.",
+  "learned": false,
+  "_learned": "Step 17 (off): the learned judgement. What a position has left to earn is read from the named readings (decide.FEATURES) with per-phase weights fitted to how possessions went on (data/learned_weights.json, one file for both engines), in place of the hand-combined reading.",
+  "advantages": false,
+  "_advantages": "Step 16, goals stage 3 (off): each team turn the offence's advantages are read from the board (separation, mismatch, numbers, penetration: decide.Read.advantages) and recorded with their stage, target look, chance and worth. Reading and recording only: no choice changes.",
+  "_coverage_budget": "Step 13 B (off): coverage as a budget. In one team turn a defender attends one attacker; the defence splits each defender across the attackers he can answer, and the offence's value is its best look after the defence's best shares (an exact small linear program, decide.Read.budget). With it, the ball handler's looks also count the squares he reaches in two actions by the movement rules (D-115), and the position value is read against relative_average_budget.",
+  "_reach": "Steps 12 and 13 (D-121): the reach map, on by default. Who can Contest in time, who can step into a pass and who reaches an attacker's path are read by the exact movement rules.",
+  "relative_average": {
+   "junior/amateur": {
+    "1": 9.39,
+    "2": 12.18,
+    "3": 14.44,
+    "4": 15.51,
+    "5": 16.44,
+    "6": 16.33
+   },
+   "junior/pro": {
+    "1": 13.21,
+    "2": 15.46,
+    "3": 14.73,
+    "4": 16.57,
+    "5": 10.39,
+    "6": 13.53
+   },
+   "junior/semi_pro": {
+    "1": 8.48,
+    "2": 9.45,
+    "3": 9.26,
+    "4": 8.81,
+    "5": 11.29,
+    "6": 11.21
+   },
+   "senior/amateur": {
+    "1": 15.65,
+    "2": 17.76,
+    "3": 21.33,
+    "4": 22.14,
+    "5": 20.12,
+    "6": 21.66
+   },
+   "senior/pro": {
+    "1": 15.7,
+    "2": 17.99,
+    "3": 20.71,
+    "4": 20.35,
+    "5": 18.98,
+    "6": 19.0
+   },
+   "senior/semi_pro": {
+    "1": 17.11,
+    "2": 19.05,
+    "3": 21.9,
+    "4": 21.03,
+    "5": 19.04,
+    "6": 21.27
+   },
+   "youth/amateur": {
+    "1": 12.06,
+    "2": 14.04,
+    "3": 19.15,
+    "4": 20.91,
+    "5": 21.42,
+    "6": 21.91
+   },
+   "youth/pro": {
+    "1": 13.28,
+    "2": 16.02,
+    "3": 18.04,
+    "4": 17.78,
+    "5": 15.5,
+    "6": 17.92
+   },
+   "youth/semi_pro": {
+    "1": 10.21,
+    "2": 10.03,
+    "3": 13.41,
+    "4": 14.82,
+    "5": 12.33,
+    "6": 12.89
+   }
+  },
+  "_relative": "D-92 (Shaun, 10 Nov 2026): leaf_mode relative (the default: the phase table plus how much this position's continuation read beats the average at its phase) or floor. relative_average per age/standard and phase from tools/relative_average.py (D-114): Senior Pro is the base; other levels scale it by their phase table over Senior Pro's, and use their own average once they have 100 positions at the phase (provisional); relative_average_source says which",
+  "relative_average_source": {
+   "junior/amateur": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "junior/pro": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "junior/semi_pro": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "senior/amateur": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "senior/pro": {
+    "1": "base",
+    "2": "base",
+    "3": "base",
+    "4": "base",
+    "5": "base",
+    "6": "base"
+   },
+   "senior/semi_pro": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "youth/amateur": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "youth/pro": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   },
+   "youth/semi_pro": {
+    "1": "scaled",
+    "2": "scaled",
+    "3": "scaled",
+    "4": "scaled",
+    "5": "scaled",
+    "6": "scaled"
+   }
+  },
+  "relative_average_budget": {
+   "junior/amateur": {
+    "1": 10.22,
+    "2": 14.25,
+    "3": 15.95,
+    "4": 16.61,
+    "5": 19.16,
+    "6": 18.79
+   },
+   "junior/pro": {
+    "1": 14.39,
+    "2": 18.08,
+    "3": 16.27,
+    "4": 17.75,
+    "5": 12.1,
+    "6": 15.58
+   },
+   "junior/semi_pro": {
+    "1": 9.23,
+    "2": 11.06,
+    "3": 10.22,
+    "4": 9.43,
+    "5": 13.16,
+    "6": 12.91
+   },
+   "senior/amateur": {
+    "1": 17.05,
+    "2": 20.78,
+    "3": 23.56,
+    "4": 23.71,
+    "5": 23.45,
+    "6": 24.93
+   },
+   "senior/pro": {
+    "1": 17.1,
+    "2": 21.05,
+    "3": 22.87,
+    "4": 21.8,
+    "5": 22.12,
+    "6": 21.87
+   },
+   "senior/semi_pro": {
+    "1": 18.63,
+    "2": 22.3,
+    "3": 24.18,
+    "4": 22.52,
+    "5": 22.19,
+    "6": 24.48
+   },
+   "youth/amateur": {
+    "1": 13.14,
+    "2": 16.43,
+    "3": 21.15,
+    "4": 22.4,
+    "5": 24.96,
+    "6": 25.22
+   },
+   "youth/pro": {
+    "1": 14.47,
+    "2": 18.75,
+    "3": 19.93,
+    "4": 19.05,
+    "5": 18.07,
+    "6": 20.62
+   },
+   "youth/semi_pro": {
+    "1": 11.12,
+    "2": 11.73,
+    "3": 14.81,
+    "4": 15.87,
+    "5": 14.37,
+    "6": 14.84
+   }
+  },
+  "_relative_budget": "Step 13 B: the averages the position value is read against when coverage_budget is on: the same positions and rule as relative_average (D-114), read with coverage as a budget (tools/relative_average.py --budget)",
+  "_map_lead": "Step 31 (D-284): 'value': the possession's value leads both computers (the list and the lasting gap are displays). 'list' and 'gap' are the readings of steps 22b and 20, kept for comparison.",
+  "_value_bounds": "Step 31 (scale audit, row 9): the search's window, widened to what the rules allow (a possession can bank several turnovers at -5 each, and several fouls at +5). It was -10 to 60."
+ },
+ "trainer": {
+  "_about": "Step 3m Part D. Bands in game units of value lost; calibrate from stored games.",
+  "inaccuracy": 1.0,
+  "mistake": 3.0,
+  "blunder": 6.0,
+  "blunder_turnover_pp": 20,
+  "minimal_value": 1.0,
+  "minimal_alternative": 3.0,
+  "reveal": 3.0,
+  "summary_points": 3,
+  "fade": [
+   [
+    0,
+    1600,
+    1
+   ],
+   [
+    1600,
+    1800,
+    2
+   ],
+   [
+    1800,
+    9999,
+    3
+   ]
+  ],
+  "glicko": {
+   "rating": 1500,
+   "rd": 350,
+   "vol": 0.06,
+   "tau": 0.5
+  },
+  "match_score_scale": 10.0,
+  "advance_rd": 80,
+  "practice_below": 0.3,
+  "practice_matches": 5,
+  "practice_clear_accuracy": 80,
+  "anchors": {
+   "rookie/senior": 1525,
+   "starter/senior": 1600,
+   "allstar/senior": 1625,
+   "rookie/youth": 1505,
+   "starter/youth": 1580,
+   "allstar/youth": 1605,
+   "rookie/junior": 1475,
+   "starter/junior": 1550,
+   "allstar/junior": 1575
+  },
+  "budget_s": 0.15,
+  "level_median_loss": {
+   "rookie": 3.0,
+   "starter": 1.5,
+   "allstar": 0.5
+  },
+  "_level_median_loss": "The median value lost per decision by each computer level, graded by the All-Star search: a human moves up when theirs is at or below their current level's. Calibrate from stored games.",
+  "accuracy_k": 2.0,
+  "_accuracy_k": "Step 3n E: per-decision accuracy 100 x exp(-loss / k); calibrated so All-Star's own decisions average about 90, Starter's 75, Rookie's 55 (tools/accuracy_3n.py).",
+  "_anchors": "Step 3n H: from self-play (Rookie v Starter, Starter v All-Star, Rookie v All-Star; 12 matches of 4 possessions each, Senior Pro digital, tools/anchors_3n.py): gaps fitted to the match scores. Youth and junior keep the senior gaps, 20 and 50 lower as before."
+ },
+ "search": {
+  "_closeout_twice": "Step 18n (D-191), a level's own setting (profiles.<level>.closeout_twice): when the search values a declared shot by playing the reaction out, a jump shot's contest is set by position, so both of the reaction's actions may be movements. With this on (the All-Star) a second movement that ends next to the shooter is played as well as the first (a Quick Step in, then a Move to be set; a second defender arriving). Without it (Starter, Rookie) the reaction is played as before: one movement, then a Steal, the block or ending it. The second movement cost Rookie and Starter their speed targets (0.39 to 0.45 seconds against 0.3; 1.12 to 1.18 against 1.0).",
+  "_open_list": "Step 18e (D-156): the list of turns without the hand-written choice of which actions to consider: every legal action is read and only the reading decides what goes forward (search.open_turns_x in search.py, openTurnsX in engine.js). open_list: null = each level's own setting (profiles.<level>.open_list: every level plays 'defence' since step 18f, D-157); false = off for every level; 'defence' = the defence's list; 'both' = the offence's too (every legal offence action read in full: slow, measured only). open_full: the full reads taken for each first action followed, beyond the list's length. open_follow: first actions followed for each one the old list followed. A level may set its own open_full and open_follow (step 18f: the Rookie 2 and 1, the Starter 4 and 2, the All-Star these), because how many turns a level reads in full is how well it chooses.",
+  "_whole_turns": "Step 18f (D-159): a one-action turn is valued as the turn ended there, so the other side has the reply the rules give it before the position is judged. On: it won its head to head (+1.7 points a pair, 0.3 to 3.1, 400 pairs).",
+  "whole_turns": true,
+  "_split_ties": "Step 18f (D-159): turns that read exactly the same are put in order by the other side's next-best replies (the turn that leaves it the worst second choice first), and share one draw of the pick noise, so chance no longer chooses between them. On: 149 pairs won to 111 lost of 400 (57 in 100 of the decided pairs, 51 to 63); +1.2 points a pair (-0.3 to 2.7).",
+  "split_ties": true,
+  "_rank_in_hand": "Step 18f, on since D-160 (Shaun, 12 Nov 2026): with whole turns, a turn's first actions are ranked, and the ones to follow with a second action chosen, by the reading with the second action still in hand; the turn itself is still valued whole. Ranked as ended turns, a first action that only pays with its second (move, then shoot) was not followed, and the other side's search never saw it. Its head to head: +0.9 points a pair (-0.7 to 2.4), 400 pairs.",
+  "rank_in_hand": true,
+  "_dice_in_hand": "Step 18j: in the defence's list, a first action that leaves its mover next to an attacker with an arrow on him is ranked by the better of ending there and whatever he can then send to the dice (a Steal, a Challenge, an Intercept), by the rules' chances, and is never dropped as a copy of another action. If he can send nothing to the dice from there, the action is read like any other. No kind of move is named: every action is ranked by the one reading. Off: on the gate it fixed one board (board 1, 7.8 points) and broke one (board 3, 5.5 points); with it on the offence reads a held ball as play gives it (step 18j report).",
+  "dice_in_hand": false,
+  "_keep_settled": "Step 18j: the best turn the rules settle outright (the possession ends, or a shot is declared and valued by the rules) is never cut from a list for turns that only read higher before the other side has answered. It takes the place of the lowest-reading turn on the list, so the list is no longer. Off: on the gate it fixes 'shoot now or play on 1' (the open three is kept, 5.4 points) and costs no time, but on board 3 the defence's pick among 24 turns it reads level changed to a worse one (7.7 points), so it does not pass 'break none' (step 18j report; Shaun to rule).",
+  "keep_settled": true,
+  "_keep_in_hand": "Step 18k: in the defence's list two turns are not copies when they leave a defender different things he can still do this phase (whether he can still Move, still Quick Step, is set or rushed, and a Steal he can roll or still reach). true: all of these; 'moves': without the Steal (movement left, and set or rushed). No kind of move is named: every action carries the same record of what it leaves in hand. Off (step 18k report): 'moves' gains one board on the gate and breaks none, but leans 1.8 points a pair behind head to head over 80 pairs; the full form fixes two boards and breaks one, and with a steal foul free of points it takes Steals to 121 tried and 61 fouled in 100 possessions.",
+  "keep_in_hand": false,
+  "open_list": null,
+  "open_full": 8,
+  "open_follow": 4,
+  "_about": "Steps 12 and 13: the stable search, in five switches (stable is the shorthand that turns on all five). On by default: like_with_like (D-121). Off: quiet_points, clear_reason and tempo (D-122). play_on is RETIRED (D-149, Shaun, 11 Nov 2026): eval.settle_shots replaced it; the code stays only because the engines' agreement tests turn all five parts on together; don't switch it on. quiet_points: look-ahead counts completed team turns, a side is never judged between its two actions. like_with_like: the answer comes from the deepest even depth (an offence turn and the reply). tempo: each reading is shifted by half of tempo_gap toward the side not to act (tempo_gap: the measured gap between the same position with the offence and with the defence to act, tools/stable_measures.py; D-119). play_on: at the horizon, a declared shot, a pass in the air, a contest choice or a shot worth more than the possession is played on with the forcing replies only, at most extension_cap extra team turns (provisional). clear_reason: the choice from two depths earlier is kept unless the new best beats it by more than stable_margin, one standard error of the reading at the phase (provisional, D-120).",
+  "stable": false,
+  "quiet_points": false,
+  "like_with_like": true,
+  "goals": false,
+  "_goals": "Step 16, goals stage 4 (off; needs eval.advantages): turns that work on a top goal are searched first, and a position gains its goal potential (each attacker's best advantage worth, summed; 0 when the possession ends), the root's taken off.",
+  "tempo": false,
+  "play_on": false,
+  "clear_reason": false,
+  "extension_cap": 2,
+  "stable_margin": {
+   "1": 0.92,
+   "2": 1.05,
+   "3": 1.22,
+   "4": 1.34,
+   "5": 1.42,
+   "6": 1.52
+  },
+  "tempo_gap": {
+   "1": 1.67,
+   "2": 2.52,
+   "3": 2.63,
+   "4": 2.41,
+   "5": 2.92,
+   "6": 2.51
+  }
+ },
+ "setup": {
+  "_search": "Step 18o (D-195): true: both sides' setups, and the setup proposed to a human, are searched from no starting answer (any square, any arrow), shortlisted by the quick reading and the shortlist judged by the search's played-out reading; the app then offers the proposal as the human's default setup. Built and off: played out, the placements it finds give up more than the old setup's (docs/reports/STEP18O_REPORT.md). Shaun turns it on.",
+  "search": false
+ },
+ "_look_ahead": "Step 31 (D-293, Shaun, 25 Nov 2026): each level is defined by how far ahead it looks, a fixed number of turns, never a clock, so the same board gives the same decision on every device. look_ahead: the turns it reads ahead (its own turn is 1; 2 adds the other side's answer). Shaun sets these. Until he does, each is what the level's old clock (0.3, 1.0 and 2.5 seconds) reliably finished on step 30b's measuring machine: one turn. 'depth' is the old clock-era range, kept for the tools that still pass a fixed look-ahead of their own."
+}
