@@ -41,7 +41,7 @@ Board handling (copying a board, applying an action, working out the legal actio
 - **A memory that lasts one think, in both engines.** It opens when a side starts deciding (a computer turn, an offence setup, a defence setup, a plan reading) and is thrown away when that side has decided. It stores readings, never choices.
   - *JavaScript* (`engine.js`): every coverage, search, goals and reads request opens one. Inside it, a map built for a board is kept, keyed by the whole state written out (every field, built from the state itself, not a hand-picked list) plus the side reading it and the reading's settings. Only the plain map is kept; the maps that read the defence's answers are always built fresh.
   - *Python* (`memo.py`, `decide.map_read`, `agent.coverage`): the same map memory, keyed by the whole state (Python's own equality covers every field) and the game; and a repeated request to the JavaScript engine inside one think is answered once. Each caller gets its own copy.
-  - *Proof* (`tests/test_step30b.py`, 6 tests, 23 seconds): a remembered reading equals a fresh one on 12 boards; changing any one field of a state changes its key; nothing survives the think; a repeat is answered once and each caller gets its own copy.
+  - *Proof* (`tests/test_step30b.py`, 7 tests, 22 seconds): a remembered reading equals a fresh one on 12 boards; changing any one field of a state changes its key; nothing survives the think; a repeat is answered once and each caller gets its own copy; and the site packs every engine file the app imports (the new `memo.py` is added to the site's list, and the test fails without it).
 - **The one rule for all speed work** in `playmaker/CLAUDE.md`, and D-283 in `DECISIONS.md`.
 - **The measuring tool** `tools/step_30b.py` (profile, record, replay, exam).
 
@@ -95,7 +95,7 @@ On top of that, repeats inside a think no longer reach the engine at all: 78 to 
 | Test | Result | Time |
 |---|---|---|
 | Rules test (`test_rules_current.py`) | 18 passed | 1 s |
-| The memory (`test_step30b.py`) | 6 passed | 23 s |
+| The memory and the site packing (`test_step30b.py`) | 7 passed | 22 s |
 | Golden game (`test_golden_and_regression.py`) | 8 passed, no value moved | 92 s |
 | Separate thinking (`test_step24`, each side thinks alone) | 1 passed | 13 min 47 s |
 | Engine equality (`step_22c.py equal 40 23`) | 40 of 40 positions equal | 73 s |

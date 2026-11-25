@@ -146,6 +146,27 @@ def test_a_repeated_request_is_answered_once_and_each_caller_gets_its_own_copy(m
     assert len(calls) == 3                                      # the think is over: asked again
 
 
+def test_the_site_packs_every_engine_module_its_files_import():
+    """The app runs the Python files the site packs (build_site.ENGINE_FILES): every playmaker_engine module those
+    files import must be packed too (step 30b added memo.py)."""
+    import re
+    from playmaker_web import build_site as BS
+    packed = {f[:-3] for f in BS.ENGINE_FILES if f.endswith('.py')}
+    pat = re.compile(r'^\s*from \.(\w*) import ([\w ,]+)|^\s*from playmaker_engine(?:\.(\w+))? import ([\w ,]+)', re.M)
+    missing = set()
+    for f in BS.ENGINE_FILES:
+        if not f.endswith('.py'):
+            continue
+        for m in pat.finditer(open(os.path.join(ROOT, 'playmaker_engine', f)).read()):
+            mod = m.group(1) if m.group(2) else m.group(3)
+            names = m.group(2) or m.group(4)
+            cands = [mod] if mod else [n.split(' as ')[0].strip() for n in names.split(',')]
+            for c in cands:
+                if os.path.exists(os.path.join(ROOT, 'playmaker_engine', c + '.py')) and c not in packed:
+                    missing.add((f, c))
+    assert not missing, sorted(missing)
+
+
 def test_a_computer_turn_and_both_setups_think_inside_one_memory():
     import inspect
     from playmaker_engine import agent as AG, plan as PL
