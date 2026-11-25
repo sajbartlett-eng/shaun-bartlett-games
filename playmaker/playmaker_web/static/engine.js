@@ -6822,11 +6822,16 @@ const PMEngine = (() => {
       const o = [-1, -1, -1, -1, -1], usedSeg = new Set(), usedSq = new Set([bq]);
       o[ball] = bq;
       for (const g of (seg.of[bq] || [])) usedSeg.add(g);
-      // (the attacker whose best segment is heaviest chooses first; level, the lower number)
-      const order = [0, 1, 2, 3, 4].filter(a => a !== ball).sort((u, v) => ((scout[v][0] ? scout[v][0].weight : 0) - (scout[u][0] ? scout[u][0].weight : 0)) || u - v);
+      // (the attacker with the fewest places that demand a defender chooses first, so a man with one good spot gets it;
+      // level, the one whose best is worth more, then the lower number)
+      const order = [0, 1, 2, 3, 4].filter(a => a !== ball).sort((u, v) => (scout[u].length - scout[v].length) || ((scout[v][0] ? scout[v][0].weight : 0) - (scout[u][0] ? scout[u][0].weight : 0)) || u - v);
       for (const a of order) {
         let pick = scout[a].find(r => !usedSeg.has(r.g) && !usedSq.has(r.c)) || scout[a].find(r => !usedSq.has(r.c));
         let q = pick ? pick.c : -1;
+        if (q < 0 && scout[a].length) {                  // his spot is taken: the free square of his best segment nearest it (two then share the segment: the value counts it)
+          const g = scout[a][0].g; let bd = Infinity;
+          for (let z = 0; z < NSQ; z++) if (ONB[z] && !usedSq.has(z) && seg.of[z] && seg.of[z].includes(g) && cheb(z, scout[a][0].c) < bd) { bd = cheb(z, scout[a][0].c); q = z; }
+        }
         if (q < 0) for (let z = 0; z < NSQ && q < 0; z++) if (ONB[z] && !usedSq.has(z)) q = z;
         o[a] = q; usedSq.add(q); if (pick) usedSeg.add(pick.g);
       }
@@ -6973,6 +6978,28 @@ const PMEngine = (() => {
     const carry = carryOn(s);
     return { shot, carry_on: +carry.toFixed(2), broken: shot !== null && shot.worth > carry + 1e-9 };
   }
+  // Step 31, stage 5 ("What the player sees"): the number itself, and the weight map as the Coverage view shows it: the
+  // centre of gravity, the heaviest weight, and a line in plain words. Never a throw: the view must not stop a game.
+  function covValueOf(s0) {
+    try {
+      const pp = possParts(s0), sh = (s0.pending || s0.stage !== 'play') ? null : new Read(s0).mapShotOrNone();
+      const play = pp.V, v = s0.pending ? play : Math.max(sh === null ? SHOT_CLOCK_OUT : sh, play);
+      return { value: +(bankedOf(s0) + v).toFixed(1), shot_now: sh === null ? null : +sh.toFixed(1), play_on: +play.toFixed(1),
+        words: sh !== null && sh > play + 1e-9 ? `The possession is worth ${Math.round(bankedOf(s0) + v)} to the offence: the shot that can go up now (${Math.round(sh)}) is worth more than playing on (${Math.round(play)}).`
+          : `The possession is worth ${Math.round(bankedOf(s0) + v)} to the offence by playing on` + (sh !== null ? ` (the shot that can go up now: ${Math.round(sh)}).` : '.') };
+    } catch (e) { return null; }
+  }
+  function covWeightOf(s0) {
+    try {
+      const w = weightJSON(s0);
+      if (!w) return null;
+      const top = w.lumps[0], inKey = c => { const q = parseSq(c); return INKEY[q] === 1; };
+      const where = sq => (inKey(sq) ? 'in the key' : SY[parseSq(sq)] >= 8 ? 'out by the three-point line' : 'between the key and the three-point line');
+      const words = top ? `The defence's weight (where a defender's presence saves the most right now) balances on ${w.centre.sq}, ${where(w.centre.sq)}. The heaviest of it is O${top.top.a + 1}'s look on ${top.top.c}`
+        + (w.lumps.length > 1 && w.lumps[1].weight > 0.5 * top.weight ? `, with a second lump at O${w.lumps[1].top.a + 1}'s look on ${w.lumps[1].top.c}: the balance point is only a summary.` : '.') : 'No weight right now: the offence has no look a defender could save.';
+      return { centre: w.centre, base_centre: w.base_centre, lumps: w.lumps.slice(0, 4), entries: w.entries, words };
+    } catch (e) { return null; }
+  }
   function coverage(s0, opts) {
     opts = opts || {};
     if (opts.only === 'parts') return { parts: mapParts(s0) };
@@ -7114,6 +7141,8 @@ const PMEngine = (() => {
     return { phase: s0.phase, clock: s0.clock, fresh: !!opts.fresh, squares, squares_after: squaresAfter, after, covers, top: m0.sorted.slice(0, 8).map(covOption),
       strength: +L.toFixed(2), lasting: +L.toFixed(2), before: top ? +top.e.toFixed(2) : 0, fragility: overloads.length, overloads,
       shot_now: brk.shot, carry_on: brk.carry_on, broken: brk.broken,
+      // step 31, stage 5: the possession's value (the phase score) and the team's weight map, with its centre, for the view
+      value: valueLead() ? covValueOf(s0) : null, weight: valueLead() ? covWeightOf(s0) : null,
       best: top ? covOption(top) : null, answers: best.moves.map(([d, q, a]) => ({ x: d, to: sqName(q), arrow: a, turn: q === s.x[d] })),
       left: left ? opt(left) : null, left_worth: left ? +left.e.toFixed(2) : 0, dribble: null,
       now: m0.now ? { o: m0.now.a, sq: sqName(m0.now.c), worth: +m0.now.e.toFixed(2), route: m0.now.route } : null,

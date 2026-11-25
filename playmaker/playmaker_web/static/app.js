@@ -1033,6 +1033,15 @@ function drawCov(c) {
   // each overloaded defender: a mark on him, and a dashed line to each of the two threats he alone covers
   // (after the answer he stands where the answer puts him: drawn there, with a faint line from where he is now)
   const labelled = new Set();
+  // step 31, stage 5: the centre of gravity of the defence's weight, a ring with a cross (a shape, not a colour alone)
+  if (covMap.weight && covMap.weight.centre && covMap.weight.centre.total > 0) {
+    const cq = PM.sqXY(covMap.weight.centre.sq), ccx = px(cq[0]) + S / 2, ccy = py(cq[1]) + S / 2;
+    const cg = svg('g', { class: 'cog-mark', role: 'img', 'aria-label': `The centre of the defence's weight, on ${covMap.weight.centre.sq}` });
+    cg.append(svg('circle', { cx: ccx, cy: ccy, r: 11, fill: '#fff', 'fill-opacity': 0.85, stroke: PM.INK, 'stroke-width': 2.4 }));
+    cg.append(svg('line', { x1: ccx - 11, y1: ccy, x2: ccx + 11, y2: ccy, stroke: PM.INK, 'stroke-width': 2.4 }));
+    cg.append(svg('line', { x1: ccx, y1: ccy - 11, x2: ccx, y2: ccy + 11, stroke: PM.INK, 'stroke-width': 2.4 }));
+    g.append(cg);
+  }
   for (const v of (covMap.overloads || [])) for (const xi of (v.xs || [v.x])) {
     const x = st.x[xi]; if (!x) continue;
     const at = after && covMap.placed && covMap.placed[xi] ? PM.sqXY(covMap.placed[xi]) : [x.x, x.y];
@@ -1091,6 +1100,9 @@ function covPanel() {
   const strong = covMap.lasting == null ? '' : ` The lasting gap, what the offence can still force after the defence's best answer: ${Math.round(covMap.lasting)}.`;
   const when = covMap.when || 'at the start of this phase';
   box.append(el('div', { id: 'covWords', text: `Coverage ${when}. ` + covMap.words + strong + change }));
+  // step 31, stage 5: the number both computers read, and the defence's weight with its centre (marked on the board)
+  if (covMap.value && covMap.value.words) box.append(el('div', { id: 'covValue', text: covMap.value.words }));
+  if (covMap.weight && covMap.weight.words) box.append(el('div', { id: 'covWeight', text: covMap.weight.words + ' The centre is marked ⊕ on the board.' }));
   box.append(el('button', { class: 'small', id: 'covWhen', 'aria-pressed': covAfter() ? 'true' : 'false', text: covAfter() ? "Showing: after the defence's answer" : 'Showing: now, before it answers',
     onclick: () => { try { localStorage.setItem('pm_covwhen', covAfter() ? 'now' : 'after'); } catch (e) { /* ignore */ } render(); } }));
   scoreLines();

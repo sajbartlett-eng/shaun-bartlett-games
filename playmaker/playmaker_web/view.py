@@ -560,7 +560,8 @@ def coverage_json(game, token, n=None):
                 answers=c['answers'], dribble=c['dribble'], covers=c['covers'], passes=c.get('passes'), scores=scores,
                 strength=c.get('strength'), fragility=c.get('fragility'), broken=c.get('broken'), shot_now=c.get('shot_now'), carry_on=c.get('carry_on'), all=sorted(best.values(), key=lambda r: r['sq']), attackers=layers,
                 lasting=c.get('lasting'), before=c.get('before'), overloads=c.get('overloads') or [], all_after=all_after, attackers_after=layers_after,
-                placed=(c.get('after') or {}).get('x'), switches=_switches(c), when=c.get('when') or 'at the start of this phase')
+                placed=(c.get('after') or {}).get('x'), switches=_switches(c), when=c.get('when') or 'at the start of this phase',
+                value=c.get('value'), weight=c.get('weight'))             # step 31, stage 5: the number and the weight map with its centre
 
 
 def _switches(c):
