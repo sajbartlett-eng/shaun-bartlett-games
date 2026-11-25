@@ -85,6 +85,8 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 
 **Tries cost actions.** The sum lets the offence fall back from one look to the next. In the game each route costs actions, and a turn has 1 or 2. So the offence can only fall back through as many routes as its actions allow, counted by the rules and nothing by hand.
 
+**Later answers cost actions too.** Inside the number, each side's later answer gets only the actions and time it will actually have: what is left of its turn, then its next turns as the clock allows. Neither side is ever read as free to fix everything afterwards. Otherwise waiting always reads as good as acting, and a defender never turns an arrow, closes out early or comes to trap, because the number assumes he can do it later for nothing (found in step 31).
+
 **Reading ahead.** The number is read as far ahead as the plan needs, up to four turns (D-268, 19 November), with each side's best answer by its own model. Past that, the shot bar stands in for the rest.
 
 ### How each side chooses
@@ -603,6 +605,7 @@ These came from Claude Code's step 31 plan and from step 30b. Where an older sen
 | Speed | Only from never doing the same work twice, cheaper machinery, and using the whole device. Never from thinking about less | Speed and fidelity without dictating or restricting decisions | Agreed (D-283) |
 | The block's reset | Not ruled yet | To be ruled once the new value shows what a phase after a block is worth | Open |
 | The segments | The map below | Claude Code's proposal | **Provisional. Shaun has not ruled** |
+| Later answers inside the number | Each side's later answer gets only the actions and time it will actually have | Step 31 read the answer as free later, so the defence waited instead of acting | Agreed (Shaun, 25 November) |
 
 **The segments, square by square (provisional).** G: the green zone. ML, MM, MR: mid-range left, middle, right. LL and LR: the long two along each baseline. Ll and Lr: the long two above each elbow. CL and CR: the corners. WL and WR: the wings. T: the top. Deep squares count with the segment they sit behind. Two things are not settled: which side I8 and I9 belong to (marked ?), and whether the corner ends at row 5. Until Shaun rules, I8 and I9 count as in both Ll and Lr, so the board stays the same left and right, and the corner ends at row 5.
 
