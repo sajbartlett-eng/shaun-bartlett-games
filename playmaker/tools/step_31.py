@@ -109,5 +109,62 @@ def cmd_both(*names):
     print(json.dumps(dict(boards=len(rows), different=bad)))
 
 
+def cmd_weight(*names):
+    """The team's weight map of each board (as the pieces stand): its centre, the base centre, the lumps, the heaviest entries."""
+    import exam_boards as X
+    names = names or list(X.BOARDS)
+    for r in js([req(n, dict(only='weight')) for n in names]):
+        w = r['res'].get('weight') if 'error' not in r['res'] else None
+        if not w:
+            print(r['name'], 'ERROR' if 'error' in r['res'] else 'no map', (r['res'].get('error') or '')[:500])
+            continue
+        print(r['name'], r['ms'], 'ms centre', w['centre']['sq'], (w['centre']['x'], w['centre']['y']), 'total', w['centre']['total'], '| left', w['centre_left']['sq'], w['centre_left']['total'],
+              '| base', w['base_centre']['sq'], '| lumps', [(z['sq'], z['weight'], 'O%d %s' % (z['top']['a'] + 1, z['top']['c'])) for z in w['lumps'][:4]])
+        for e in sorted(w['entries'], key=lambda e: -e['weight'])[:6]:
+            print('    O%d %s %s reach %s open %s contested %s (X%d) saving %s weight %s left %s' % (e['a'] + 1, e['seg'], e['c'], e['reach'], e['open'], e['contested'], e['by'] + 1, e['saving'], e['weight'], e['left']))
+
+
+def cmd_bothweight(*names):
+    """Check B2 for the weight map: every board's map by both engines (the centre, the entries, the lumps)."""
+    import time
+    import exam_boards as X
+    from playmaker_engine import weight as W
+    names = names or list(X.BOARDS)
+    jsr = {r['name']: r for r in js([req(n, dict(only='weight')) for n in names])}
+    bad, rows = 0, []
+    for n in names:
+        t = time.time()
+        py = W.weight_json(X.get(n))
+        j = jsr[n]['res'].get('weight') if 'error' not in jsr[n]['res'] else None
+        same = py == j
+        bad += 0 if same else 1
+        why = ''
+        if not same and py and j:
+            why = [k for k in py if py[k] != j.get(k)]
+            if 'entries' in why:
+                why.append(next(((a, b) for a, b in zip(py['entries'], j['entries']) if a != b), (len(py['entries']), len(j['entries']))))
+        rows.append(dict(board=n, same=same, py_s=round(time.time() - t, 1), why=str(why)[:600], error=jsr[n]['res'].get('error')))
+        print(n, 'same' if same else 'DIFFERENT', str(why)[:600], (jsr[n]['res'].get('error') or '')[:300], flush=True)
+    json.dump(rows, open(os.path.join(RUN, 'both_weight.json'), 'w'), indent=1)
+    print(json.dumps(dict(boards=len(rows), different=bad)))
+
+
+def cmd_stances(*names):
+    """The defence's five stances on each board, from the base positions (the JavaScript engine)."""
+    import exam_boards as X
+    names = names or [k for k, v in X.SETUP.items() if v == 'defence']
+    for r in js([req(n, dict(only='stances')) for n in names], timeout=3000):
+        v = r['res']
+        if 'error' in v:
+            print(r['name'], 'ERROR', v['error'][:700])
+            continue
+        s = X.get(r['name'])
+        from playmaker_engine import board as B
+        print(r['name'], r['ms'], 'ms value', v['value'], 'answer moves', v['answer'], 'routes', v['routes'], 'rounds', v['rounds'], 'reads', v['reads'], 'steps', len(v['steps']))
+        print('    offence', ' '.join('O%d %s' % (i + 1, B.sq(q)) for i, q in enumerate(s.o)), '| ball O%d' % (s.ball + 1))
+        print('    base   ', ' '.join('X%d %s' % (i + 1, q) for i, q in enumerate(v['base']['x'])))
+        print('    stances', ' '.join('X%d %s %s' % (i + 1, q, B.DIR_NAMES[v['arrows'][i]] + '+' + B.DIR_NAMES[(v['arrows'][i] + 1) % 8]) for i, q in enumerate(v['x'])))
+
+
 if __name__ == '__main__':
     globals()['cmd_' + sys.argv[1]](*sys.argv[2:])

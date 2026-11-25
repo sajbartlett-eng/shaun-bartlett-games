@@ -2,8 +2,8 @@
  {
   "board": "E1",
   "same": true,
-  "js_ms": 234,
-  "py_s": 3.8,
+  "js_ms": 232,
+  "py_s": 3.5,
   "js": {
    "value": 20.3125,
    "play_on": 20.3125,
@@ -69,7 +69,7 @@
  {
   "board": "E2",
   "same": true,
-  "js_ms": 62,
+  "js_ms": 59,
   "py_s": 0.7,
   "js": {
    "value": 26,
@@ -126,8 +126,8 @@
  {
   "board": "E3",
   "same": true,
-  "js_ms": 58,
-  "py_s": 0.8,
+  "js_ms": 68,
+  "py_s": 0.9,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -193,8 +193,8 @@
  {
   "board": "E3b",
   "same": true,
-  "js_ms": 28,
-  "py_s": 0.7,
+  "js_ms": 33,
+  "py_s": 0.6,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -250,8 +250,8 @@
  {
   "board": "E4",
   "same": true,
-  "js_ms": 56,
-  "py_s": 3.8,
+  "js_ms": 60,
+  "py_s": 3.9,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -305,8 +305,8 @@
  {
   "board": "E5",
   "same": true,
-  "js_ms": 62,
-  "py_s": 2.1,
+  "js_ms": 54,
+  "py_s": 2.2,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -372,8 +372,8 @@
  {
   "board": "E5b",
   "same": true,
-  "js_ms": 47,
-  "py_s": 1.5,
+  "js_ms": 55,
+  "py_s": 1.7,
   "js": {
    "value": 30,
    "play_on": 30,
@@ -429,8 +429,8 @@
  {
   "board": "E6",
   "same": true,
-  "js_ms": 32,
-  "py_s": 1.5,
+  "js_ms": 44,
+  "py_s": 1.6,
   "js": {
    "value": 30,
    "play_on": 30,
@@ -474,8 +474,8 @@
  {
   "board": "E7",
   "same": true,
-  "js_ms": 24,
-  "py_s": 1.1,
+  "js_ms": 25,
+  "py_s": 1.0,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -541,7 +541,7 @@
  {
   "board": "E7j",
   "same": true,
-  "js_ms": 22,
+  "js_ms": 20,
   "py_s": 0.7,
   "js": {
    "value": 26,
@@ -598,31 +598,45 @@
  {
   "board": "E8",
   "same": true,
-  "js_ms": 1,
-  "py_s": 0.0,
+  "js_ms": 39,
+  "py_s": 0.7,
   "js": {
-   "value": 4.75,
-   "play_on": -5,
+   "value": 16.75,
+   "play_on": 16.75,
    "bars": [
-    -5
+    -5,
+    16.75
    ],
-   "answer": []
+   "answer": [
+    [
+     1,
+     "B9",
+     0
+    ]
+   ]
   },
   "py": {
-   "value": 4.75,
-   "play_on": -5.0,
+   "value": 16.75,
+   "play_on": 16.75,
    "bars": [
-    -5.0
+    -5.0,
+    16.75
    ],
-   "answer": []
+   "answer": [
+    [
+     1,
+     "B9",
+     0
+    ]
+   ]
   },
   "error": null
  },
  {
   "board": "E9",
   "same": true,
-  "js_ms": 43,
-  "py_s": 2.5,
+  "js_ms": 52,
+  "py_s": 2.7,
   "js": {
    "value": 18,
    "play_on": 18,
@@ -684,7 +698,7 @@
  {
   "board": "E10",
   "same": true,
-  "js_ms": 24,
+  "js_ms": 46,
   "py_s": 0.7,
   "js": {
    "value": 26,
@@ -739,7 +753,7 @@
  {
   "board": "E11",
   "same": true,
-  "js_ms": 46,
+  "js_ms": 36,
   "py_s": 1.4,
   "js": {
    "value": 27,
@@ -772,8 +786,8 @@
  {
   "board": "E12",
   "same": true,
-  "js_ms": 18,
-  "py_s": 0.7,
+  "js_ms": 16,
+  "py_s": 0.9,
   "js": {
    "value": 27,
    "play_on": 27,
@@ -807,7 +821,7 @@
  {
   "board": "E13",
   "same": true,
-  "js_ms": 23,
+  "js_ms": 24,
   "py_s": 1.2,
   "js": {
    "value": 36,
@@ -860,8 +874,8 @@
  {
   "board": "E14",
   "same": true,
-  "js_ms": 11,
-  "py_s": 0.5,
+  "js_ms": 17,
+  "py_s": 0.6,
   "js": {
    "value": 27,
    "play_on": 27,
@@ -922,8 +936,8 @@
  {
   "board": "E15",
   "same": true,
-  "js_ms": 26,
-  "py_s": 0.8,
+  "js_ms": 33,
+  "py_s": 1.0,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -1036,8 +1050,8 @@
  {
   "board": "E16",
   "same": true,
-  "js_ms": 28,
-  "py_s": 1.4,
+  "js_ms": 32,
+  "py_s": 1.2,
   "js": {
    "value": 22,
    "play_on": 22,
@@ -1081,8 +1095,8 @@
  {
   "board": "E17",
   "same": true,
-  "js_ms": 23,
-  "py_s": 0.6,
+  "js_ms": 30,
+  "py_s": 0.7,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -1144,8 +1158,8 @@
  {
   "board": "E18",
   "same": true,
-  "js_ms": 21,
-  "py_s": 0.6,
+  "js_ms": 16,
+  "py_s": 0.7,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -1208,7 +1222,7 @@
   "board": "E19",
   "same": true,
   "js_ms": 15,
-  "py_s": 0.5,
+  "py_s": 0.4,
   "js": {
    "value": 30,
    "play_on": 30,
@@ -1250,30 +1264,64 @@
  {
   "board": "E20",
   "same": true,
-  "js_ms": 1,
-  "py_s": 0.0,
+  "js_ms": 27,
+  "py_s": 1.0,
   "js": {
-   "value": 4.75,
-   "play_on": -5,
+   "value": 26,
+   "play_on": 26,
    "bars": [
-    -5
+    -5,
+    26
    ],
-   "answer": []
+   "answer": [
+    [
+     2,
+     "K5",
+     5
+    ],
+    [
+     0,
+     "I6",
+     4
+    ],
+    [
+     1,
+     "E8",
+     0
+    ]
+   ]
   },
   "py": {
-   "value": 4.75,
-   "play_on": -5.0,
+   "value": 26.0,
+   "play_on": 26.0,
    "bars": [
-    -5.0
+    -5.0,
+    26.0
    ],
-   "answer": []
+   "answer": [
+    [
+     2,
+     "K5",
+     5
+    ],
+    [
+     0,
+     "I6",
+     4
+    ],
+    [
+     1,
+     "E8",
+     0
+    ]
+   ]
   },
   "error": null
  },
  {
   "board": "E21",
   "same": true,
-  "js_ms": 31,
+  "js_ms": 30,
   "py_s": 1.2,
   "js": {
    "value": 24,
@@ -1320,7 +1368,7 @@
  {
   "board": "E22",
   "same": true,
-  "js_ms": 24,
+  "js_ms": 20,
   "py_s": 1.0,
   "js": {
    "value": 26,
@@ -1387,8 +1435,8 @@
  {
   "board": "E23a",
   "same": true,
-  "js_ms": 27,
-  "py_s": 1.5,
+  "js_ms": 26,
+  "py_s": 1.6,
   "js": {
    "value": 30,
    "play_on": 30,
@@ -1422,7 +1470,7 @@
  {
   "board": "E23b",
   "same": true,
-  "js_ms": 19,
+  "js_ms": 18,
   "py_s": 0.7,
   "js": {
    "value": 30,
@@ -1469,7 +1517,7 @@
  {
   "board": "E23c",
   "same": true,
-  "js_ms": 19,
+  "js_ms": 18,
   "py_s": 0.7,
   "js": {
    "value": 27,
@@ -1536,8 +1584,8 @@
  {
   "board": "E24",
   "same": true,
-  "js_ms": 29,
-  "py_s": 1.0,
+  "js_ms": 26,
+  "py_s": 0.9,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -1601,8 +1649,8 @@
  {
   "board": "E26",
   "same": true,
-  "js_ms": 34,
-  "py_s": 1.2,
+  "js_ms": 29,
+  "py_s": 1.0,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -1668,8 +1716,8 @@
  {
   "board": "E26b",
   "same": true,
-  "js_ms": 45,
-  "py_s": 2.7,
+  "js_ms": 37,
+  "py_s": 2.5,
   "js": {
    "value": 26.3125,
    "play_on": 26.3125,
@@ -1735,8 +1783,8 @@
  {
   "board": "E27",
   "same": true,
-  "js_ms": 24,
-  "py_s": 0.8,
+  "js_ms": 25,
+  "py_s": 0.9,
   "js": {
    "value": 30,
    "play_on": 30,
@@ -1782,7 +1830,7 @@
  {
   "board": "E27b",
   "same": true,
-  "js_ms": 17,
+  "js_ms": 16,
   "py_s": 0.6,
   "js": {
    "value": 30,
@@ -1829,8 +1877,8 @@
  {
   "board": "E28",
   "same": true,
-  "js_ms": 35,
-  "py_s": 2.2,
+  "js_ms": 41,
+  "py_s": 2.1,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -1885,7 +1933,7 @@
   "board": "E28b",
   "same": true,
   "js_ms": 44,
-  "py_s": 3.0,
+  "py_s": 2.8,
   "js": {
    "value": 21.69,
    "play_on": 21.69,
@@ -1949,7 +1997,7 @@
  {
   "board": "E29",
   "same": true,
-  "js_ms": 22,
+  "js_ms": 24,
   "py_s": 1.2,
   "js": {
    "value": 21,
@@ -2004,7 +2052,7 @@
  {
   "board": "E30",
   "same": true,
-  "js_ms": 34,
+  "js_ms": 33,
   "py_s": 2.4,
   "js": {
    "value": 22.25,
@@ -2059,8 +2107,8 @@
  {
   "board": "E30b",
   "same": true,
-  "js_ms": 35,
-  "py_s": 3.0,
+  "js_ms": 36,
+  "py_s": 3.1,
   "js": {
    "value": 22.2453,
    "play_on": 22.2453,
@@ -2104,7 +2152,7 @@
  {
   "board": "E31",
   "same": true,
-  "js_ms": 58,
+  "js_ms": 55,
   "py_s": 4.9,
   "js": {
    "value": 21,
@@ -2151,8 +2199,8 @@
  {
   "board": "E32",
   "same": true,
-  "js_ms": 82,
-  "py_s": 6.3,
+  "js_ms": 79,
+  "py_s": 6.1,
   "js": {
    "value": 22.25,
    "play_on": 22.25,
@@ -2238,8 +2286,8 @@
  {
   "board": "E33",
   "same": true,
-  "js_ms": 26,
-  "py_s": 0.9,
+  "js_ms": 24,
+  "py_s": 1.1,
   "js": {
    "value": 26,
    "play_on": 26,
@@ -2306,7 +2354,7 @@
   "board": "BLK1",
   "same": true,
   "js_ms": 22,
-  "py_s": 1.5,
+  "py_s": 1.9,
   "js": {
    "value": 20.9607,
    "play_on": 20.9607,
@@ -2362,8 +2410,8 @@
  {
   "board": "BLK2",
   "same": true,
-  "js_ms": 41,
-  "py_s": 3.1,
+  "js_ms": 36,
+  "py_s": 3.2,
   "js": {
    "value": 24,
    "play_on": 24,
@@ -2407,8 +2455,8 @@
  {
   "board": "B4",
   "same": true,
-  "js_ms": 31,
-  "py_s": 1.8,
+  "js_ms": 34,
+  "py_s": 1.6,
   "js": {
    "value": 18,
    "play_on": 18,

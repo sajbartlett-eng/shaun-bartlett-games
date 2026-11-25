@@ -722,7 +722,7 @@ class Read:
         if moves is not None:
             soft_limit = min(moves, soft_limit)
         card = self.s.ctx.off[look.i]
-        pts = RC.ZONE_POINTS[shot_zone(self.s.ctx, look.c)]
+        pts = RC.worth_now(self.s.ctx, shot_zone(self.s.ctx, look.c))
         rules = self.rules
         away = getattr(self, '_phase_away', False)
         control = RC.control_size(rules) > 0 and not away
@@ -922,7 +922,7 @@ class Read:
                 else:
                     lk = Look(i, c, 'cut', p * self.cfg['later_p'], False, replies=2)
             lk.types = RC.ZONE_SHOTS[z]
-            pts = RC.ZONE_POINTS[z]
+            pts = RC.worth_now(self.s.ctx, z)
             if RC.control_size(rules):
                 # D-151, as the reading takes it: shooting from where he stands he is rushed if his last movement was
                 # a Quick Step or Sprint; if he must move first he is rushed when his Move is already used
@@ -1322,7 +1322,7 @@ class Read:
         return None
 
     # ---- step 18s, stop two (eval.map, off until its checks pass): the search reads the coverage map ----
-    def map_options(self):
+    def map_options(self, last_too=False):
         """The coverage map in its lean form (engine.js covBuild, lean): for every attacker and every square he could
         shoot from next phase, the chance he has the ball where he needs it when the phase starts (reach) and what the
         defence leaves of the shot, each defender given the reaction's two actions from where he stands (weakness).
@@ -1330,7 +1330,8 @@ class Read:
         contest of it]}; empty in the last phase."""
         s, rules = self.s, self.rules
         out = {}
-        if s.clock <= RC.PHASE_SECONDS:
+        # (last_too, step 31: the possession's value reads the last phase's own looks: engine.js covBuild lastToo)
+        if s.clock <= RC.PHASE_SECONDS and not last_too:
             return out
         from .actions import movement_dests, can_move_kind, capture_lines, capture_ok
         no_rim = RC.rim_shot_barred(rules)
@@ -1506,7 +1507,7 @@ class Read:
                 lk = Look(a, c, 'later', 1.0, False)
                 lk.types = RC.ZONE_SHOTS[z]
                 lk.rushed = rushed
-                pts = RC.ZONE_POINTS[z]
+                pts = RC.worth_now(s.ctx, z)
                 vals = [None] * 5
                 for d in range(5):
                     vals[d] = self._vals_map(lk, d, cms[d].get(c)) if cms[d] is not None else None
@@ -1850,7 +1851,7 @@ class Read:
             looks, opens = [], []
             for q in sq:
                 z = shot_zone(ctx, q)
-                pts, types = RC.ZONE_POINTS[z], RC.ZONE_SHOTS[z]
+                pts, types = RC.worth_now(ctx, z), RC.ZONE_SHOTS[z]
                 row, op = [], []
                 for a in range(5):
                     lk = Look(a, q, 'later', 1.0, False)
@@ -1871,7 +1872,7 @@ class Read:
         v = g['late'].get(key)
         if v is None:
             lk = g['looks'][k][a]
-            pts = RC.ZONE_POINTS[shot_zone(self.s.ctx, g['sq'][k])]
+            pts = RC.worth_now(self.s.ctx, shot_zone(self.s.ctx, g['sq'][k]))
             vals = self._vals2(lk, d, _LATE_ROW, _NOSET) or {}
             card = self.s.ctx.off[a]
             v = None
@@ -2460,7 +2461,7 @@ class Read:
                 continue
             lk = Look(i, c, 'later', 1.0, False)
             lk.types = RC.ZONE_SHOTS[PAINT]
-            pts = RC.ZONE_POINTS[PAINT]
+            pts = RC.worth_now(self.s.ctx, PAINT)
             top = 0.0
             for t in lk.types:
                 v = pts * card.shot(t)
@@ -2518,7 +2519,7 @@ class Read:
                         zm |= 1 << j
                 paths.setdefault((c, rushed), []).append((q0, p, frozenset(p) | ({q0} if q0 != s.o[i] else frozenset()), dm, zm))
         budget = max(0, min(2, s.tok_x))
-        pts = RC.ZONE_POINTS[PAINT]
+        pts = RC.worth_now(self.s.ctx, PAINT)
         cands = []
         off = RC.control_cut(self.rules) if RC.control_size(self.rules) > 0 else 0
         for c in PAINT_SQUARES:
@@ -2959,7 +2960,7 @@ def ceiling(s):
     for i, card in enumerate(ctx.off):
         m = 0.0
         for z, types in RC.ZONE_SHOTS.items():
-            pts = RC.ZONE_POINTS.get(z, 0)
+            pts = RC.worth_now(ctx, z) if z in RC.ZONE_POINTS else 0
             for ty in types:
                 v = pts * card.shot(ty)
                 if v > m:
@@ -3348,16 +3349,16 @@ def cov_off_fresh(s):
                    stage='play', approach=-1, prev_wait='', final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
 
 
-def map_read(f, cfg=None):
+def map_read(f, cfg=None, last_too=False):
     """Step 30b (engine.js covBuild's memory): the board's reading and its map, worked out once per think. The key is
     the state itself (every field) with its context and the reading's settings."""
     from . import memo
-    return memo.get('map', (id(f.ctx), f, id(cfg)), lambda: _map_read_calc(f, cfg))
+    return memo.get('map', (id(f.ctx), f, id(cfg), last_too), lambda: _map_read_calc(f, cfg, last_too))
 
 
-def _map_read_calc(f, cfg):
+def _map_read_calc(f, cfg, last_too=False):
     r = Read(f, cfg=cfg)
-    return r, r.map_options()
+    return r, r.map_options(last_too)
 
 
 def lasting_of(s, cfg=None, fresh=False, r0=None):

@@ -481,6 +481,19 @@ def control_size(rules):
     return CONTROL[rules.control]
 
 
+def worth_now(ctx, zone):
+    """Step 31 (D-289): what a shot from `zone` is worth right now, for every reading. Normally the zone's points (2 or
+    3). A scenario may set it (ctx.worth = (a two, a three)); on the Need a Three card only a three scores, so a two is
+    worth 0. There is no control for the player: this is a hook, used by check D7 and by scenario cards."""
+    base = ZONE_POINTS[zone]
+    w = getattr(ctx, 'worth', None)
+    if w is not None:
+        return w[1] if base == 3 else w[0]
+    if getattr(ctx, 'three_only', False):
+        return 3 if base == 3 else 0
+    return base
+
+
 def off_balance_cut(rules):
     """D-185: what a rushed (or locked) player loses on every rating he rolls, shots and contests aside (those are
     control_cut): the control rule's size when rules.off_balance is on, else 0."""

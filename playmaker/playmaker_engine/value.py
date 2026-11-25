@@ -111,14 +111,18 @@ def _top_count(vec, U):
     return sum(1 for v in vec if v >= U - 1e-9)
 
 
-def poss_read(r, opts, s0=None):
+def poss_read(r, opts, s0=None, last_phase=False):
     """engine.js possRead: the looks of the map `opts` (read r), the defence's answer, the value."""
     from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2
     s, rules = r.s, r.rules
     b, k = s.ball, s.clock // RC.PHASE_SECONDS - 1
     cut = RC.off_balance_cut(rules) / 20.0
     _now, owed, key_mask = three_seconds_leave(s0 or s)
+    # the actions a route may use: the phase's six less those spent getting men out of the key; in the last phase what
+    # the offence really has left, less the shot's own action
     left = 6 - owed
+    if last_phase:
+        left, key_mask = (s0 or s).tok_o - 1, 0
     # (the three seconds are counted once: a man who can't get out is charged his -5 by poss_parts, so his own look in
     # the key doesn't carry it again. Scale audit, row 11.)
     stuck = three_seconds_stuck(s0) if s0 is not None else 0
@@ -219,7 +223,7 @@ def poss_read(r, opts, s0=None):
         return U, v3
     bars = []
     U = run_cur(bars)
-    U0 = U
+    U0, worth0 = U, list(rows[K])
     moves, moved, taken = [], [False] * 5, set(s.o) | set(s.x)
     tok = s.tok_x
     mode = 0 if rules.zone == 'off' else 1
@@ -316,14 +320,14 @@ def poss_read(r, opts, s0=None):
         taken.add(q)
         tok -= 1
         U = run_cur()
-    return dict(U=U, U0=U0, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec))
+    return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec))
 
 
 def poss_parts(s, cfg=None):
     """engine.js possParts: the value of playing on from s (what is banked not counted), with its parts."""
     from . import memo
     from .decide import map_read, cov_off_fresh, cov_fresh, cov_pass, three_seconds_owed
-    if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS:
+    if s.stage != 'play':
         return dict(V=OUT, k=0, bars=[OUT], moves=[])
 
     def calc():
@@ -335,8 +339,13 @@ def poss_parts(s, cfg=None):
             lost = poss_parts(cov_fresh(base).with_(clock=s.clock - RC.PHASE_SECONDS), cfg)['V'] \
                 if s.clock - RC.PHASE_SECONDS > RC.PHASE_SECONDS else OUT
             return dict(pc, V=p * pc['V'] + (1 - p) * (lost - 5), catch=p)
-        r, opts = map_read(cov_off_fresh(s), cfg)
-        rd = poss_read(r, opts, s)
+        if s.clock <= RC.PHASE_SECONDS:            # the last phase: its own looks, with what the offence really has left
+            f = s.with_(turn_n=0, side='O', approach=-1, prev_wait='', final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
+            r, opts = map_read(f, cfg, True)
+            rd = poss_read(r, opts, s, True)
+        else:
+            r, opts = map_read(cov_off_fresh(s), cfg)
+            rd = poss_read(r, opts, s)
         rd['V'] = rd['U'] - 5 * three_seconds_owed(s)
         return rd
     return memo.get('map', ('PV', id(s.ctx), s, id(cfg)), calc)

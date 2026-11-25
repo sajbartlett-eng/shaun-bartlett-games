@@ -158,6 +158,9 @@ const PMEngine = (() => {
     return { id: ++_CTXN, off: c.off.map(makeCard), dfn: c.dfn.map(makeCard), digital: !!(c.rules && c.rules.digital),
       bonus_from: (c.rules && c.rules.bonus_from) || 5, quarter_possessions: (c.rules && c.rules.quarter_possessions) || 18,
       card_clock: c.card_clock, inbounder: c.inbounder, coach_call: !!c.coach_call, three_only: !!c.three_only,
+      // Step 31 (D-289): what a shot is worth right now, by zone, for every reading. Normally 2 and 3. A scenario may set it
+      // (worth: [a two, a three]); on the Need a Three card only a three scores, so a two is worth 0. No control for the player.
+      worth: c.worth ? [0, c.worth[0], c.worth[0], c.worth[0], c.worth[1]] : (c.three_only ? [0, 0, 0, 0, 3] : [0, 2, 2, 2, 3]),
       two_or_three: !!c.two_or_three, hold_for_one: !!c.hold_for_one, team_fouls: c.team_fouls || 0,
       quarter_left: c.quarter_left || 0, table: c.table || 'senior/pro',
       soft: appRule(c.rules, 'soft_contest'), fibaSteal: appRule(c.rules, 'fiba_steal_foul'),      // step 18j (D-177, D-179)
@@ -1983,7 +1986,7 @@ const PMEngine = (() => {
       const card = ctx.off[i];
       let m = 0.0;
       for (let z = 1; z < ZONE_POINTS.length; z++) {
-        const pts = ZONE_POINTS[z];
+        const pts = ctx.worth[z];
         for (const ty of ZONE_SHOTS[z]) { const v = pts * card.sh[ty]; if (v > m) m = v; }
       }
       if (ctx.coach_call && i === s.target) m = m + COACH_BONUS[band(m)];
@@ -2246,7 +2249,7 @@ const PMEngine = (() => {
     }
     _valsCalc(lk, d, mask, m0, flags, smask, st0, split) {  // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
       // split (step 31): an array; the blocks are not folded in at -5 but pushed as lines (type index, c0, c1: blockLine)
-      const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[szone(ctx, lk.c)], dc = this.dcards[d];
+      const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ctx.worth[szone(ctx, lk.c)], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
       const control = flags !== undefined;
       let any = false;
@@ -2440,7 +2443,7 @@ const PMEngine = (() => {
           else lk = makeLook(i, c, 'cut', p * this.cfg.later_p, false, 2);
         }
         lk.types = ZONE_SHOTS[z];
-        const pts = ZONE_POINTS[z];
+        const pts = this.s.ctx.worth[z];
         if (controlOn(s.ctx)) lk.rushed = n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i);      // D-151 (decide.Read._looks)
         lk.open = lk.rushed ? lk.types.map(t => pts * (cardShot(s.ctx, card, t, c) - controlCut(s.ctx, t))) : lk.types.map(t => pts * cardShot(s.ctx, card, t, c));
         lk.vals = [null, null, null, null, null];
@@ -2465,7 +2468,7 @@ const PMEngine = (() => {
             if (p <= 0) return;
             if (!(n === 0 || (leftNow >= 2 && s.tok_o >= 2 && this.o_to_act))) p = p * laterP;
           }
-          const types = ZONE_SHOTS[z], pts = ZONE_POINTS[z], nt = types.length;
+          const types = ZONE_SHOTS[z], pts = this.s.ctx.worth[z], nt = types.length;
           const rushed = ctl ? (n === 0 ? rushedO(s, i) : hasMoved(s, 'O', i)) : false;
           scratch.c = c; scratch.rushed = rushed; scratch.types = types;
           let best = 0.0, first = true, v0 = 0, v1 = 0, v2 = 0;
@@ -2489,7 +2492,7 @@ const PMEngine = (() => {
             const z = szone(s.ctx, c);
             if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
             let m = most.get(z);
-            if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
+            if (m === undefined) { m = 0.0; const pts = this.s.ctx.worth[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
             return m > floor;
           };
           for (const q of twoActions(s, i, reach, keep)) pre(q, 2);
@@ -2512,7 +2515,7 @@ const PMEngine = (() => {
           const z = szone(s.ctx, c);
           if (!SHOOT(z) || (c === RIM && this.s.ctx.noRim)) return false;
           let m = most.get(z);
-          if (m === undefined) { m = 0.0; const pts = ZONE_POINTS[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
+          if (m === undefined) { m = 0.0; const pts = this.s.ctx.worth[z]; for (const t of ZONE_SHOTS[z]) { const v = pts * card.sh[t]; if (v > m) m = v; } m = this.cfg.later_p * m; most.set(z, m); }
           return m > floor;
         };
         for (const q of twoActions(s, i, reach, keep)) add(q, 2);
@@ -2771,7 +2774,7 @@ const PMEngine = (() => {
         for (const d of this.att_x) { const cm = this._cm[d]; if (cm) { const mask = cm.masks[2][BI[c]]; if (mask) vals[d] = this._valsCalc(lk, d, mask, 0, undefined, s.ctx.soft ? mask : 0, 0); } }      // D-177: hard or soft, whichever is better for the defence
         let top = 0.0;
         for (let t = 0; t < lk.types.length; t++) {
-          let v = ZONE_POINTS[PAINT] * card.sh[lk.types[t]];
+          let v = this.s.ctx.worth[PAINT] * card.sh[lk.types[t]];
           for (const d of this.att_x) if (vals[d] && vals[d][t] < v) v = vals[d][t];
           if (v > top) top = v;
         }
@@ -3339,7 +3342,7 @@ const PMEngine = (() => {
           const vals = [null, null, null, null, null];
           for (const d of this.att_x) if (masks[d]) vals[d] = this._valsCalc(lk, d, masks[d], 0, fl, s.ctx.soft ? masks[d] : 0, 0);
           const open = [];
-          for (let t = 0; t < lk.types.length; t++) open.push(ZONE_POINTS[PAINT] * (card.sh[lk.types[t]] - (rushed === 1 ? off : 0)));
+          for (let t = 0; t < lk.types.length; t++) open.push(this.s.ctx.worth[PAINT] * (card.sh[lk.types[t]] - (rushed === 1 ? off : 0)));
           cands.push({ c, lk, paths: list, open, vals, fl });
         }
       }
@@ -5027,18 +5030,18 @@ const PMEngine = (() => {
     MAP_MEMO = new Map();
     try { return f(); } finally { MAP_MEMO = keep; }
   }
-  function covBuild(s, lean, r0) {
-    if (MAP_MEMO === null || r0 || lean !== true) return covBuildCalc(s, lean, r0);
-    const key = RD.lead + '|' + (MAP_ME || '') + '|' + (D.config.eval.answer_lead || '') + '|' + stateKey(s);
+  function covBuild(s, lean, r0, lastToo) {
+    if (MAP_MEMO === null || r0 || lean !== true) return covBuildCalc(s, lean, r0, lastToo);
+    const key = RD.lead + '|' + (MAP_ME || '') + '|' + (D.config.eval.answer_lead || '') + '|' + (lastToo ? 'L' : '') + '|' + stateKey(s);
     let m = MAP_MEMO.get(key);
     if (m === undefined) {
-      m = covBuildCalc(s, true, null);
+      m = covBuildCalc(s, true, null, lastToo);
       if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear();
       MAP_MEMO.set(key, m);
     }
     return m;
   }
-  function covBuildCalc(s, lean, r0) {
+  function covBuildCalc(s, lean, r0, lastToo) {
     const r = r0 || new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
     const sN = covNext(s);
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
@@ -5095,7 +5098,9 @@ const PMEngine = (() => {
     // having the ball in the key then costs nothing, unless he was already in the key at the last phase end: then he
     // can't avoid it at this one (the full -5). Leaving costs the movement his look already spends.
     const keyAt = (a, q0) => (ctx.three && INKEY[q0] && ((s.key_o >> a) & 1) ? -TURNOVER_COST : 0);
-    const last = s.clock <= 2;                         // no phase after this one
+    // no phase after this one: nothing can be shot at the next phase's start. lastToo (step 31): the possession's value
+    // reads the last phase's own looks (the ball there with an action left for the shot, inside the phase)
+    const last = s.clock <= 2 && !lastToo;
     let passerSq = null;
     const passerSquares = () => {                      // step 26: the squares the ball handler's one movement reaches this turn
       if (passerSq) return passerSq;
@@ -5202,7 +5207,7 @@ const PMEngine = (() => {
     let oid = 0;
     for (const o of options) {
       o.id = oid++;
-      const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ZONE_POINTS[szone(ctx, o.c)];
+      const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ctx.worth[szone(ctx, o.c)];
       lk.types = ZONE_SHOTS[szone(ctx, o.c)]; lk.rushed = o.rushed;
       o.lk = lk; o.fl = (o.rushed && off > 0) ? 1 : undefined;
       o.open = lk.types.map(t => pts * (cardShot(ctx, card, t, o.c) - (o.rushed ? off : 0)));
@@ -5531,7 +5536,7 @@ const PMEngine = (() => {
       for (let q = 0; q < ONB.length; q++) if (ONB[q] && SHOOT(szone(ctx, q)) && !(ctx.noRim && q === RIM)) sq.push(q);
       const looks = [], open = [];
       for (let k = 0; k < sq.length; k++) {
-        const q = sq[k], pts = ZONE_POINTS[szone(ctx, q)], types = ZONE_SHOTS[szone(ctx, q)], row = [], op = [];
+        const q = sq[k], pts = ctx.worth[szone(ctx, q)], types = ZONE_SHOTS[szone(ctx, q)], row = [], op = [];
         for (let a = 0; a < 5; a++) {
           const lk = makeLook(a, q, 'later', 1.0, false); lk.types = types; lk.rushed = false; row.push(lk);
           let top = -Infinity; for (const t of types) { const v = pts * cardShot(ctx, ctx.off[a], t, q); if (v > top) top = v; }
@@ -5547,7 +5552,7 @@ const PMEngine = (() => {
     const key = (k * 5 + a) * 5 + d;
     let v = g.late.get(key);
     if (v === undefined) {
-      const ctx = r.s.ctx, lk = g.looks[k][a], pts = ZONE_POINTS[szone(ctx, g.sq[k])], vals = mapVals(r, lk, d, 1, undefined);
+      const ctx = r.s.ctx, lk = g.looks[k][a], pts = ctx.worth[szone(ctx, g.sq[k])], vals = mapVals(r, lk, d, 1, undefined);
       v = -Infinity;
       for (let t = 0; t < lk.types.length; t++) { const o = pts * cardShot(ctx, ctx.off[a], lk.types[t], g.sq[k]), w = vals && vals[t] < o ? vals[t] : o; if (w > v) v = w; }
       g.late.set(key, v);
@@ -6242,9 +6247,12 @@ const PMEngine = (() => {
   let BOUND_LOOKS = 2;
   let PV_BRUTE = false;                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
-  function possRead(m, s0) {                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
+  function possRead(m, s0, lastPhase, noAnswer) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
-    const owed = threeSecondsLeave(s0 || s), left = 6 - owed.next, keyMask = owed.mask, r = m.r, soft = s.ctx.soft;
+    const owed = threeSecondsLeave(s0 || s), r = m.r, soft = s.ctx.soft;
+    // the actions a route may use: the phase's six less those spent getting men out of the key; in the last phase what
+    // the offence really has left, less the shot's own action
+    const left = lastPhase ? (s0 || s).tok_o - 1 : 6 - owed.next, keyMask = lastPhase ? 0 : owed.mask;
     const L = []; for (const o of m.options) if (o.r > 0) L.push(o);
     const n = L.length, K = k + 1;
     // (the three seconds are counted once: a man who can't get out is charged his -5 by possParts, so his own look in
@@ -6379,11 +6387,11 @@ const PMEngine = (() => {
     };
     const bars = [];
     let U = runCur(bars);
-    const U0 = U;
+    const U0 = U, worth0 = rows[K].slice();
     PVS.reads++; PVS.looks += n;
     const moves = [], moved = [false, false, false, false, false], taken = new Set();
     for (let j = 0; j < 5; j++) { taken.add(s.o[j]); taken.add(s.x[j]); }
-    let tok = s.tok_x;
+    let tok = noAnswer ? 0 : s.tok_x;
     while (tok > 0 && act.length) {
       // Each movement first gets a bound (the sum over only the looks the value turns on: runAct), then they are read in
       // full best bound first. The first whose full reading is as good as its bound is the answer: no later one can
@@ -6449,10 +6457,10 @@ const PMEngine = (() => {
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
     let pick = -1, pe = -Infinity; const B = hist[K - 1];
     for (let x = 0; x < act.length; x += 2) if (act[x + 1] === K) { const i = act[x], o = L[i], e = o.r * Math.max(last[i], B) + (1 - o.r) * (B - o.lc); if (e > pe) { pe = e; pick = i; } }
-    return { U, U0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec) };
+    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec) };
   }
   function possParts(s) {                              // {V, k, bars, pick, m, ...}: the value of playing on (what is banked not counted)
-    if (s.stage !== 'play' || s.clock <= 2) return { V: SHOT_CLOCK_OUT, k: 0, bars: [SHOT_CLOCK_OUT], pick: null, m: null, moves: [] };
+    if (s.stage !== 'play') return { V: SHOT_CLOCK_OUT, k: 0, bars: [SHOT_CLOCK_OUT], pick: null, m: null, moves: [] };
     const key = MAP_MEMO !== null ? 'PV|' + (MAP_ME || '') + '|' + stateKey(s) : null;
     if (key !== null) { const hit = MAP_MEMO.get(key); if (hit !== undefined) return hit; }
     let out;
@@ -6463,12 +6471,292 @@ const PMEngine = (() => {
       const lost = s.clock - 2 > 2 ? possParts(W_(covFresh(base), { clock: s.clock - 2 })).V : SHOT_CLOCK_OUT;
       out = Object.assign({}, pc, { V: p * pc.V + (1 - p) * (lost - TURNOVER_COST), catch: p });
     } else {
-      const m = covBuild(covOffFresh(s), true, null);
-      const rd = possRead(m, s);
+      // The last phase (step 31): its own looks, with what the offence really has left (the shot needs an action too).
+      const lastPhase = s.clock <= 2;
+      const m = lastPhase ? covBuild(W_(s, { turn_n: 0, side: 'O', approach: -1, prev_wait: '', final: false, turn_lead: -1, turn_x: [], turn_moved: 0, react_moved: 0 }), true, null, true)
+        : covBuild(covOffFresh(s), true, null);
+      const rd = possRead(m, s, lastPhase);
       out = Object.assign(rd, { V: rd.U - TURNOVER_COST * threeSecondsOwed(s), m });
     }
     if (key !== null) { if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear(); MAP_MEMO.set(key, out); }
     return out;
+  }
+  // ---- Step 31, stage 2 (Shaun, 25 Nov 2026): the team's weight map and its centre -----------------------------------------
+  // "The team's weight is a map of where a defender's presence saves the most points right now." Three layers, on the
+  // one scale (docs/reference/GRAVITY_AND_SPACING_DESIGN.md, "The defence, part 1"):
+  //   1. the points a contest saves: a look's worth with nobody on it, less its worth against the best answer a defender
+  //      can give standing there (set, in front, his arrow on the shooter: the contest by position; the block where it
+  //      pays, read as a line in what the phase after it is worth; against a shooter in control the fake is a two-by-two
+  //      mix, shoot or fake against close out or hold, D-296, and its value is the hold's, because the shot fake sells the
+  //      block: so a block counts only against a rushed shooter, who can't fake). Whose contest (D-288): the best of the
+  //      five for the team's map and its centre; each defender's own for his own base position (`own`).
+  //   2. occupation: each zone cut into segments (D-287, data/segments.json, provisional); a segment no attacker can
+  //      reach this phase carries nothing.
+  //   3. the ball's reach: each look at the chance its man has the ball there in time, by the rules (the pass's chance,
+  //      the Dribble's). Counted once, here: nothing that reads the map discounts it again.
+  // One entry an attacker a segment (his heaviest look in it). The centre of gravity is where the entries balance. It
+  // is a summary: `lumps` gives the weight itself, group by group (looks within two squares of each other).
+  // `left` is the same weight with the cover it already faces taken off (covered weight pulls less, by as much as the
+  // cover takes off): what a further defender would still save there.
+  const SEGI = { names: null, of: null };
+  function segInit() {
+    if (SEGI.names) return SEGI;
+    const g = D.segments;
+    if (!g) throw new Error('the segments table (data/segments.json) was not loaded');
+    const names = g.order, idx = Object.fromEntries(names.map((n, i) => [n, i])), of = new Array(NSQ).fill(null);
+    for (let c = 0; c < NSQ; c++) {
+      if (!ONB[c]) continue;
+      let y = SY[c]; const x = SX[c];
+      if (g.behind[String(y)]) y = +g.behind[String(y)];
+      const row = g.rows[String(y)];
+      if (!row) continue;
+      const v = row[x];
+      of[c] = (g.both[v] || [v]).map(n => idx[n]);
+    }
+    SEGI.names = names; SEGI.of = of;
+    return SEGI;
+  }
+  const W_K0 = 1;                                        // the contest kind "in front, his arrow on the shooter" (KPEN, KFOUL, KTWO all false)
+  function weightMap(s) {
+    if (s.stage !== 'play') return null;
+    const base = s.pending ? W_(s, { ball: s.pending[1], pending: null, approach: -1 }) : s;
+    const pp = possParts(base);
+    if (!pp.m) return null;
+    const key = MAP_MEMO !== null ? 'WM|' + stateKey(base) : null;
+    if (key !== null) { const hit = MAP_MEMO.get(key); if (hit !== undefined) return hit; }
+    const seg = segInit(), m = pp.m, r = m.r, ctx = m.s.ctx, soft = ctx.soft, L = pp.L, n = L.length;
+    const B = pp.before.length >= 2 ? pp.before[pp.before.length - 2] : 0;   // what playing on is worth as the board stands (a block leads there)
+    const ws = m._ws || (m._ws = new Map());
+    const cont = new Float64Array(5);
+    const looks = [];
+    for (let i = 0; i < n; i++) {
+      const o = L[i], open = o.open, T = open.length, fake = !o.rushed;
+      let op = open[0]; for (let t = 1; t < T; t++) if (open[t] > op) op = open[t];
+      let best = Infinity, by = -1;
+      for (let d = 0; d < 5; d++) {
+        if (!ONB[m.s.x[d]]) { cont[d] = op; continue; }
+        const kk = o.id * 5 + d;
+        let sv = ws.get(kk);
+        if (sv === undefined) { const lines = []; const cv = r._valsCalc(o.lk, d, W_K0, W_K0, (o.fl || 0) | 4, soft ? W_K0 : 0, soft ? W_K0 : 0, lines); sv = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null } : null; ws.set(kk, sv); }
+        let v = op;
+        if (sv) {
+          v = -Infinity;
+          for (let t = 0; t < T; t++) {
+            let u = Math.min(open[t], sv.cv[t]);
+            if (!fake && sv.bl) for (let z = 0; z < sv.bl.length; z += 3) if (sv.bl[z] === t) { const b = sv.bl[z + 1] + sv.bl[z + 2] * B; if (b < u) u = b; }
+            if (u > v) v = u;
+          }
+        }
+        cont[d] = v;
+        if (v < best - 1e-12) { best = v; by = d; }
+      }
+      const stands = pp.worth0[i] - o.adj;              // what the look is worth against the cover it already faces
+      const own = Array.from(cont, v => +(o.r * Math.max(0, Math.min(op, stands) - v)).toFixed(6));
+      looks.push({ i, a: o.a, c: o.c, q0: o.q0, r: o.r, open: op, contested: best, by, saving: op - best, weight: o.r * Math.max(0, op - best),
+        left: o.r * Math.max(0, Math.min(op, stands) - best), stands, own });
+    }
+    // one entry an attacker a segment: his heaviest look there (level: the lower square)
+    const pick = (field) => {
+      const ent = new Map();
+      for (const k of looks) {
+        const sg = seg.of[k.c];
+        if (!sg || !(k[field] > 1e-9)) continue;
+        for (const g of sg) { const key = k.a * 32 + g, cur = ent.get(key); if (!cur || k[field] > cur[field] + 1e-9 || (Math.abs(k[field] - cur[field]) <= 1e-9 && k.c < cur.c)) ent.set(key, k); }
+      }
+      return ent;
+    };
+    const balance = (ent, field) => {                   // where the entries balance; a look that leads two segments is counted once
+      let sw = 0, sx = 0, sy = 0; const seen = new Set();
+      for (const k of ent.values()) { const id = k.a * 4096 + k.c; if (seen.has(id)) continue; seen.add(id); sw += k[field]; sx += k[field] * SX[k.c]; sy += k[field] * SY[k.c]; }
+      return sw > 0 ? { total: sw, x: sx / sw, y: sy / sw } : { total: 0, x: SX[RIM], y: SY[RIM] };
+    };
+    const ent = pick('weight'), entL = pick('left');
+    const cen = balance(ent, 'weight'), cenL = balance(entL, 'left');
+    // the weight itself, group by group: entries whose squares are within two of each other
+    const lumpsOf = (entm, field) => {
+      const uniq = new Map(); for (const k of entm.values()) uniq.set(k.a * 4096 + k.c, k);
+      const items = [...uniq.values()].sort((u, v) => u.c - v.c || u.a - v.a), gid = items.map((_, i) => i);
+      const find = i => { while (gid[i] !== i) i = gid[i]; return i; };
+      for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) if (cheb(items[i].c, items[j].c) <= 2) { const a = find(i), b = find(j); if (a !== b) gid[Math.max(a, b)] = Math.min(a, b); }
+      const groups = new Map();
+      items.forEach((k, i) => { const g = find(i); let o = groups.get(g); if (!o) { o = { weight: 0, x: 0, y: 0, top: k, n: 0 }; groups.set(g, o); } o.weight += k[field]; o.x += k[field] * SX[k.c]; o.y += k[field] * SY[k.c]; o.n++; if (k[field] > o.top[field] + 1e-9) o.top = k; });
+      return [...groups.values()].map(o => ({ weight: o.weight, x: o.x / o.weight, y: o.y / o.weight, top: o.top, n: o.n })).sort((u, v) => v.weight - u.weight || u.top.c - v.top.c);
+    };
+    const out = { looks, entries: ent, left: entL, centre: cen, centreLeft: cenL, lumps: lumpsOf(ent, 'weight'), lumpsLeft: lumpsOf(entL, 'left'), B, seg };
+    if (key !== null) { if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear(); MAP_MEMO.set(key, out); }
+    return out;
+  }
+  // Layer 1 alone, from the cards and the empty board (worked out once a game): every attacker's saving in every
+  // segment whether or not he can get there, and where those balance: the base centre of gravity.
+  function weightBase(s) {
+    const ctx = s.ctx;
+    if (ctx._wbase) return ctx._wbase;
+    const seg = segInit(), r = new Read(W_(s, { stage: 'play', pending: null })), soft = ctx.soft, ent = new Map();
+    for (let c = 0; c < NSQ; c++) {
+      if (!ONB[c] || !SHOOT(szone(ctx, c)) || (ctx.noRim && c === RIM) || !seg.of[c]) continue;
+      const z = szone(ctx, c), types = ZONE_SHOTS[z], pts = ctx.worth[z];
+      for (let a = 0; a < 5; a++) {
+        const lk = makeLook(a, c, 'later', 1.0, false); lk.types = types; lk.rushed = false;
+        let op = -Infinity; const open = types.map(t => pts * cardShot(ctx, ctx.off[a], t, c)); for (const v of open) if (v > op) op = v;
+        let best = op;
+        for (let d = 0; d < 5; d++) {
+          const cv = r._valsCalc(lk, d, W_K0, W_K0, 4, soft ? W_K0 : 0, soft ? W_K0 : 0, []);
+          if (!cv) continue;
+          let v = -Infinity; for (let t = 0; t < types.length; t++) { const u = Math.min(open[t], cv[t]); if (u > v) v = u; }
+          if (v < best) best = v;
+        }
+        const k = { a, c, weight: op - best, open: op, contested: best };
+        if (!(k.weight > 1e-9)) continue;
+        for (const g of seg.of[c]) { const key = a * 32 + g, cur = ent.get(key); if (!cur || k.weight > cur.weight + 1e-9 || (Math.abs(k.weight - cur.weight) <= 1e-9 && c < cur.c)) ent.set(key, k); }
+      }
+    }
+    let sw = 0, sx = 0, sy = 0; const seen = new Set();
+    for (const k of ent.values()) { const id = k.a * 4096 + k.c; if (seen.has(id)) continue; seen.add(id); sw += k.weight; sx += k.weight * SX[k.c]; sy += k.weight * SY[k.c]; }
+    return (ctx._wbase = { entries: ent, centre: sw > 0 ? { total: sw, x: sx / sw, y: sy / sw } : { total: 0, x: SX[RIM], y: SY[RIM] } });
+  }
+  function weightJSON(s) {                             // the map for the view, the tools and the tests
+    const w = weightMap(s);
+    if (!w) return null;
+    const seg = w.seg, r2 = v => +v.toFixed(2), xy = c => ({ x: r2(c.x), y: r2(c.y), sq: sqName(C(Math.round(c.x), Math.round(c.y))), total: r2(c.total) });
+    const ents = entm => [...entm.entries()].sort((u, v) => u[0] - v[0]).map(([key, k]) => ({ a: k.a, seg: seg.names[key % 32], c: sqName(k.c), ball_at: sqName(k.q0), reach: +k.r.toFixed(4), open: r2(k.open), contested: r2(k.contested), by: k.by, saving: r2(k.saving), weight: r2(k.weight), left: r2(k.left), own: k.own.map(r2) }));
+    const lump = l => ({ weight: r2(l.weight), x: r2(l.x), y: r2(l.y), sq: sqName(C(Math.round(l.x), Math.round(l.y))), top: { a: l.top.a, c: sqName(l.top.c) }, entries: l.n });
+    const wb = weightBase(s);
+    return { centre: xy(w.centre), centre_left: xy(w.centreLeft), base_centre: xy(wb.centre), entries: ents(w.entries), left: ents(w.left).filter(e => e.left > 0),
+      lumps: w.lumps.map(lump), lumps_left: w.lumpsLeft.map(lump), playing_on: r2(w.B),
+      base: [...wb.entries.entries()].sort((u, v) => u[0] - v[0]).map(([key, k]) => ({ a: k.a, seg: seg.names[key % 32], c: sqName(k.c), open: r2(k.open), contested: r2(k.contested), weight: r2(k.weight) })) };
+  }
+  // ---- Step 31, stage 3 (Shaun, 25 Nov 2026): the defence's five stances ------------------------------------------------------
+  // "The defence, each time it sets up: build the weight map and its centre; place every defender on his base position
+  // (on the line between his man and the part of the weight he would help, at the depth the link rule gives: the
+  // goal-side starting shape); improve it (try moving and turning one defender at a time, keeping any change that
+  // lowers the number, until none does); check the result against the link rule and the goal-side checks."
+  // The number is the possession's value (possParts): what the offence can still get after the defence's own answer
+  // with the actions it has this phase. A stance is a square and a pair of arrows, chosen together. A change is kept
+  // only when it lowers the number; level on the number, when it needs fewer of the phase's actions to hold it there
+  // (a movement costs an action: it is the moves it takes, never a number set by hand). Otherwise he stays where his
+  // base position put him. Nothing names a trap, a switch, a front or a denial: each is a stance the search can
+  // reach, judged by the value.
+  // The improvement, in two parts, repeated until neither changes anything:
+  //   1. the movements the value itself asks for: the defence's best answer on this board (possRead: every defender's
+  //      every movement, read by difference) is a stance it could have set up in, so its first movement is taken for
+  //      nothing and the board read again, until the board needs no answer;
+  //   2. each defender in turn, his square and the squares next to it with each of the eight arrow pairs, and two
+  //      defenders swapping squares (D-295), each read in full on the board as it would then be (walls, lanes and
+  //      steals included, which part 1's contests can't see).
+  function stanceRead(s) {
+    const key = MAP_MEMO !== null ? 'SR|' + stateKey(s) : null;
+    if (key !== null) { const hit = MAP_MEMO.get(key); if (hit !== undefined) return hit; }
+    const pp = possParts(s);
+    const vec = pp.routes ? Float64Array.from(pp.routes).sort().reverse() : new Float64Array(6).fill(-Infinity);
+    const out = { U: pp.V, n: pp.moves.length, m: pp.routes ? topCount(pp.routes, pp.U) : 0, vec, moves: pp.moves };
+    STANCE_STATS.reads++;
+    if (key !== null) { if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear(); MAP_MEMO.set(key, out); }
+    return out;
+  }
+  const STANCE_STATS = { reads: 0, rounds: 0 };
+  function stanceLess(a, b) {                          // is a better for the defence than b?
+    if (a.U < b.U - 1e-9) return true;
+    if (a.U > b.U + 1e-9) return false;
+    return a.n < b.n;                                   // level: the stance that needs fewer of the phase's actions to hold it there
+  }
+  const lineSquares = (a, b) => {                      // the squares from a toward b, nearest a first (a itself left out)
+    const out = [], dx = SX[b] - SX[a], dy = SY[b] - SY[a], n = Math.max(Math.abs(dx), Math.abs(dy));
+    for (let i = 1; i <= n; i++) { const q = C(Math.round(SX[a] + dx * i / n), Math.round(SY[a] + dy * i / n)); if (ONB[q] && !out.includes(q)) out.push(q); }
+    return out;
+  };
+  // How far part 2 looks around each defender (squares, as the game counts them). Kept, and on trial (D-299): the exam
+  // widens it and compares the stances.
+  let STANCE_STEP = 1;
+  function stanceBase(s, man) {                        // the goal-side starting shape -> the board with the five on their base positions
+    const put = (st, d, q, a) => W_(st, { x: setAt(st.x, d, q), arrows: setAt(st.arrows, d, a) });
+    const lifted = W_(s, { x: [OFFSQ, OFFSQ, OFFSQ, OFFSQ, OFFSQ], arrows: [0, 0, 0, 0, 0] });
+    const wm = weightMap(lifted);
+    // each defender's line: from his man to the weight he would help (the heaviest lump his man is not himself the
+    // top of; the rim if there is none)
+    const lineOf = d => {
+      const a = man[d], from = s.o[a];
+      let tg = RIM;
+      if (wm) for (const l of wm.lumps) { if (!(l.top.a === a && cheb(l.top.c, from) <= 1)) { tg = C(Math.round(l.x), Math.round(l.y)); break; } }
+      if (tg === from) tg = RIM;
+      return lineSquares(from, tg).filter(q => !s.o.includes(q));
+    };
+    const lines = [0, 1, 2, 3, 4].map(lineOf), taken = new Set(s.o);
+    let st = lifted;
+    for (let d = 0; d < 5; d++) {
+      let q = lines[d].find(z => !taken.has(z));
+      if (q === undefined) for (let z = 0; z < NSQ && q === undefined; z++) if (ONB[z] && !taken.has(z) && cheb(z, s.o[man[d]]) <= 2) q = z;
+      taken.add(q);
+      st = put(st, d, q, nearestDir(q, s.o[man[d]]));
+    }
+    // the depth the link rule gives: each in turn takes the square on his line that leaves the offence the least
+    // (close to a strong threat, deep toward the weight when his man's threat is small), the others where they are
+    for (let pass = 0; pass < 2; pass++) {
+      for (const d of [0, 1, 2, 3, 4].sort((u, v) => st.x[u] - st.x[v])) {
+        let best = { q: st.x[d], a: st.arrows[d], v: stanceRead(st) };
+        for (const q of lines[d]) {
+          if (q !== st.x[d] && (st.x.includes(q) || st.o.includes(q))) continue;
+          const a = nearestDir(q, s.o[man[d]]), v = stanceRead(put(st, d, q, a));
+          if (stanceLess(v, best.v)) best = { q, a, v };
+        }
+        st = put(st, d, best.q, best.a);
+      }
+    }
+    return { s: st, wm, lines };
+  }
+  function stanceSearch(s0, opts) {
+    opts = opts || {};
+    let s = W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [] });
+    const put = (st, d, q, a) => W_(st, { x: setAt(st.x, d, q), arrows: setAt(st.arrows, d, a) });
+    const man = opts.man ? opts.man.slice() : [0, 1, 2, 3, 4];     // who each defender starts on (the search may swap them)
+    const steps = [];
+    let start = 'given';
+    if (!opts.from) { start = 'base'; s = stanceBase(s, man).s; }
+    else s = W_(s, { x: opts.from.x.slice(), arrows: opts.from.arrows.slice() });
+    const base = { x: Array.from(s.x), arrows: Array.from(s.arrows) };
+    let cur = stanceRead(s), rounds = 0;
+    for (;;) {
+      rounds++;
+      let changed = false;
+      // 1. the movements the value asks for
+      for (let guard = 0; cur.moves.length; guard++) {
+        if (guard > 200) throw new Error('the stance search did not settle (part 1)');
+        const [d, q, a] = cur.moves[0];
+        const t = put(s, d, q, a), v = stanceRead(t);
+        if (!stanceLess(v, cur)) break;
+        steps.push({ d, from: sqName(s.x[d]), to: sqName(q), arrow: a, value: +v.U.toFixed(4), by: 'the answer' });
+        s = t; cur = v; changed = true;
+      }
+      // 2. each defender's square and those next to it, every pair of arrows, read in full (in the order of where they
+      // stand, never the order the defenders are listed in)
+      for (const d of [0, 1, 2, 3, 4].sort((u, v) => s.x[u] - s.x[v])) {
+        let best = null;
+        const here = s.x[d];
+        for (let q = 0; q < NSQ; q++) {
+          if (!ONB[q] || cheb(q, here) > STANCE_STEP || (q !== here && (s.x.includes(q) || s.o.includes(q)))) continue;
+          for (let a = 0; a < 8; a++) {
+            if (q === here && a === s.arrows[d]) continue;
+            const v = stanceRead(put(s, d, q, a));
+            if (stanceLess(v, best ? best.v : cur)) best = { q, a, v };
+          }
+        }
+        if (best) { steps.push({ d, from: sqName(here), to: sqName(best.q), arrow: best.a, value: +best.v.U.toFixed(4), by: 'his own stance' }); s = put(s, d, best.q, best.a); cur = best.v; changed = true; }
+      }
+      // two together (D-295): a pair swapping squares, each then facing the man nearest him
+      if (!changed) {
+        const near = q => { let b = 0; for (let a = 1; a < 5; a++) if (cheb(q, s.o[a]) < cheb(q, s.o[b])) b = a; return b; };
+        let bv = null, bt = null, bp = null;
+        for (let d = 0; d < 5; d++) for (let e = d + 1; e < 5; e++) {
+          const t = W_(s, { x: setAt(setAt(s.x, d, s.x[e]), e, s.x[d]), arrows: setAt(setAt(s.arrows, d, nearestDir(s.x[e], s.o[near(s.x[e])])), e, nearestDir(s.x[d], s.o[near(s.x[d])])) });
+          const v = stanceRead(t);
+          if (stanceLess(v, bv || cur)) { bv = v; bt = t; bp = [d, e]; }
+        }
+        if (bv) { steps.push({ swap: bp, value: +bv.U.toFixed(4), by: 'two together' }); s = bt; cur = bv; changed = true; const mm = man[bp[0]]; man[bp[0]] = man[bp[1]]; man[bp[1]] = mm; }
+      }
+      if (!changed) break;
+      if (rounds > 200) throw new Error('the stance search did not settle');
+    }
+    STANCE_STATS.rounds += rounds;
+    return { x: Array.from(s.x), arrows: Array.from(s.arrows), value: cur.U, answer: cur.n, top: cur.m, vec: Array.from(cur.vec), base, start, rounds, steps, man };
   }
   const possValue = s => possParts(s).V;
   // Step 31 (the three seconds, counted from entry): an attacker standing in the key without the ball must spend an
@@ -6593,6 +6881,13 @@ const PMEngine = (() => {
       return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, bars: pp.bars.map(v => +v.toFixed(2)),
         answer: (pp.moves || []).map(([d, q, a]) => [d, sqName(q), a]), pick: pp.pick ? { a: pp.pick.a, c: sqName(pp.pick.c), q0: sqName(pp.pick.q0), p: +pp.pick.r.toFixed(4), worth: +pp.pickWorth.toFixed(2), dribble: !!pp.pick.dr } : null, looks, catch: pp.catch === undefined ? null : pp.catch };
     }
+    if (opts.only === 'stances') {                        // step 31, stage 3: the defence's five stances for this board
+      const st = stanceSearch(s0, { from: opts.from ? { x: opts.from.x.map(parseSq), arrows: opts.from.arrows } : null, man: opts.man || null });
+      return { x: st.x.map(sqName), arrows: st.arrows, value: +st.value.toFixed(4), answer: st.answer, top: st.top, routes: st.vec.map(v => (isFinite(v) ? +v.toFixed(2) : null)), base: { x: st.base.x.map(sqName), arrows: st.base.arrows },
+        start: st.start, rounds: st.rounds, steps: st.steps, man: st.man, reads: STANCE_STATS.reads };
+    }
+    if (opts.only === 'stance_value') { const v = stanceRead(W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null })); return { value: +v.U.toFixed(4), answer: v.n, top: v.m, routes: Array.from(v.vec, x => (isFinite(x) ? +x.toFixed(2) : null)) }; }
+    if (opts.only === 'weight') return { weight: weightJSON(s0) };            // step 31, stage 2: the team's weight map and its centre
     if (opts.only === 'bars') return { bars: barsOf(s0) };                       // step 25: the shot bar, phase by phase                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (opts.only === 'setup') {                          // the defence's setup: the settlement of all five (D-219)
@@ -6786,7 +7081,7 @@ const PMEngine = (() => {
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size],
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;
