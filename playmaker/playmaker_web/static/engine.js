@@ -101,6 +101,7 @@ const PMEngine = (() => {
     for (let c = 0; c < NSQ; c++) if (ONB[c] && ZN[c] === 4) top[SX[c]] = Math.max(top[SX[c]] || 0, SY[c]);
     for (let c = 0; c < NSQ; c++) { DEEP[c] = 0; if (ONB[c] && ZN[c] === 0 && top[SX[c]] && SY[c] > top[SX[c]] && SY[c] <= 12) DEEP[c] = SY[c] - top[SX[c]]; }
     D.config = data.config; D.vcoarse = data.vcoarse || {}; D.ready = true;
+    D.segments = data.segments || null;                  // step 31 (D-287): the court's segments, one data table for both engines
     D.learned = data.learned || null;
     if (D.learned && JSON.stringify(D.learned.features) !== JSON.stringify(FEATURE_NAMES)) throw new Error('learned_weights.json names other readings than this engine makes');
     VMIN = D.config.eval.value_bounds[0]; VMAX = D.config.eval.value_bounds[1];
@@ -847,6 +848,15 @@ const PMEngine = (() => {
       v = pf * (ft + (ctx.ppo ? 5 : 0)) + (1 - pf) * v;
     }
     return v;                                          // decide._block_value: no floor (Shaun, 20 Nov): a likely block is worth less than nothing
+  }
+  // Step 31 (D-284, carry-over 1): the block read past the -5, the same way everywhere. A block is -5 and the phase;
+  // the possession goes on, worth what the next phase is worth (B). So the block's value is a line in B:
+  // [c0, c1] with value c0 + c1 * B (c0 is blockValue's own number, c1 the chance the block lands and no foul came first).
+  function blockLine(ctx, card, dc, ty, k, pts, r, dcut, shooterCut) {
+    const pen = KPEN[k], foul = KFOUL[k] || pen, two = KTWO[k] || pen;
+    let b = dc.r.block - (pen ? 6 : foul ? 3 : 0) - dcut; if (b < 1) b = 1;
+    const pb = pS(b), pf = foul ? pFouls(dc.r.foul_block, two ? 2 : 1) : 0;
+    return [blockValue(ctx, card, dc, ty, k, pts, r, dcut, shooterCut), (1 - pf) * pb];
   }
   // scoring.block_option (D-271): fouls first on his Foul (Block) (square none, in front arrow off one, beside two, behind
   // two); then his Block, less 3 (beside or arrow off) or 6 (behind), less the rushed cut, at least 1: a turnover; a miss
@@ -1749,8 +1759,10 @@ const PMEngine = (() => {
   const mapOn = () => D.config.eval.map === true || (D.config.eval.map === 'offence' && MAP_ME === 'O');
   // step 22b (D-219): what leads the map's reading at the end of a line: 'list' (the largest item on the list of things
   // to cover as the defence stands, before it answers) or 'gap' (step 20's lasting gap, after its answer)
+  // step 31 (D-284): 'value': the possession's value (possValue) leads; the list and the lasting gap are displays
   const mapLead = () => D.config.eval.map_lead === 'list';
-  function setMapLead(v) { D.config.eval.map_lead = v === 'list' ? 'list' : 'gap'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.map_lead; }
+  const valueLead = () => D.config.eval.map_lead === 'value';
+  function setMapLead(v) { D.config.eval.map_lead = v === 'value' ? 'value' : v === 'list' ? 'list' : 'gap'; READS = new Map(); READS_OLD = new Map(); return D.config.eval.map_lead; }
   function setMap(v) { D.config.eval.map = v === 'offence' ? 'offence' : (v === true || v === 'true'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.map; }
   function mapParts(s) { const r = readOf(s); return [r.mapShot()].concat(r.mapTwo(false)).concat(r.mapTwo(true)).concat([s.tok_o, s.tok_x]); }
   function setPassRules(v) { D.config.eval.pass_rules = !(v === false || v === 'false'); READS = new Map(); READS_OLD = new Map(); return D.config.eval.pass_rules; }
@@ -2232,7 +2244,8 @@ const PMEngine = (() => {
       if (hit === undefined) { hit = this._valsCalc(lk, d, mask); vc[key] = hit; }
       return hit;
     }
-    _valsCalc(lk, d, mask, m0, flags, smask, st0) {         // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
+    _valsCalc(lk, d, mask, m0, flags, smask, st0, split) {  // m0, flags: only under rules.control (D-151); smask, st0: the soft contest (D-177)
+      // split (step 31): an array; the blocks are not folded in at -5 but pushed as lines (type index, c0, c1: blockLine)
       const ctx = this.s.ctx, card = ctx.off[lk.i], pts = ZONE_POINTS[szone(ctx, lk.c)], dc = this.dcards[d];
       const out = new Float64Array(lk.types.length);
       const control = flags !== undefined;
@@ -2248,6 +2261,7 @@ const PMEngine = (() => {
           if (ctx.block && ((mask >> k) & 1)) {
             // decide.Read._block_value (D-271): the block, from every kind he reaches, on every shot
             const rk = cut > 0 && (((m0 >> k) & 1) ? (flags & 2) : (flags & 4));
+            if (split) { const ln = blockLine(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut); split.push(t, ln[0], ln[1]); any = true; continue; }
             const v = blockValue(ctx, card, dc, ty, k, pts, r, rk ? cut : 0, shooterCut);
             if (best === null || v < best) best = v;
             continue;
@@ -3104,6 +3118,16 @@ const PMEngine = (() => {
       if (answered) { covLeanAnswers(m); c.ans = two(); }
       return answered ? c.ans : c.raw;
     }
+    mapValue() {                                   // step 31: the possession's value of playing on (possValue), kept with the reading
+      if (this._pv === undefined) this._pv = possValue(this.s);
+      return this._pv;
+    }
+    mapShotOrNone() {                              // the best shot that can go up now; null when none can (the clock then costs -5)
+      const sn = this.shotNow();
+      let now = sn;
+      for (const i of this.att_o) for (const lk of this.looks[i]) if (lk.now && (now === null || lk.base > now)) now = lk.base;
+      return now;
+    }
     mapShot() {                                    // the best shot that can go up now, as the reading has it
       const sn = this.shotNow();
       let now = 0.0;
@@ -3148,6 +3172,11 @@ const PMEngine = (() => {
       if (!mapOn() || this.k <= 0 || !s.ctx.digital || s.stage !== 'play') return null;
       let banked = 5 * s.bonus5 + (s.ctx.tosOn ? -5 * s.tos : 0);
       banked += foulExternality(s);
+      if (valueLead()) {                           // step 31 (D-284): the possession's value: the shot now, or playing on
+        if (s.pending) return banked + this.mapValue();
+        const sh = this.mapShotOrNone();
+        return banked + Math.max(sh === null ? SHOT_CLOCK_OUT : sh, this.mapValue());
+      }
       if (s.pending) {                             // step 21: a pass in the air, by the rules' chance of the catch
         const L = mapLead() ? this.mapTop() : this.mapLasting();
         return L === null ? null : banked + L;
@@ -3550,7 +3579,11 @@ const PMEngine = (() => {
     const act = []; cols.forEach(([a, b], k) => { if ((1.0 - bestP) * a + bestP * b <= bestV + 1e-9) act.push(k); });
     const neg = act.filter(k => cols[k][1] - cols[k][0] <= 0), pos = act.filter(k => cols[k][1] - cols[k][0] >= 0);
     let q;
-    if (bestP <= 0) q = [[(neg.length ? neg : act)[0], 1.0]];
+    // step 31 (D-298): a level reply that the offence's choice can't make worse (it reads the same real or fake:
+    // holding by position) is taken outright. Step 29 took the first on the list, which could be the gamble.
+    const flat = act.filter(k => Math.abs(cols[k][1] - cols[k][0]) <= 1e-9);
+    if (flat.length) q = [[flat[0], 1.0]];
+    else if (bestP <= 0) q = [[(neg.length ? neg : act)[0], 1.0]];
     else if (bestP >= 1) q = [[(pos.length ? pos : act)[0], 1.0]];
     else {
       const j1 = neg.find(k => cols[k][1] - cols[k][0] < 0), j2 = pos.find(k => cols[k][1] - cols[k][0] > 0);
@@ -5090,11 +5123,12 @@ const PMEngine = (() => {
         for (const [q, n] of attackerReach(s, a)) {
           if (n > 2 || n + 1 > s.tok_o) continue;
           let p = covPass(s, a, q);                   // the rules' own chance
+          const p0 = p;                               // step 31: from where the ball handler stands (the fall-back after a lost Dribble)
           // step 26 (D-250): from every square the ball handler can reach this turn. He may Move, Quick Step or
           // Sprint and then pass in the same turn; the defence doesn't move in between, so a lane counts if the ball
           // can get to a square that opens it. (Only where the lane from where he stands isn't already clean.)
           if (p < 1 && n + 2 <= s.tok_o) for (const pq of passerSquares()) { if (pq === q) continue; const p2 = passFrom(pq, a, q); if (p2 > p) p = p2; if (p >= 1) break; }
-          if (p > 0) starts.push([q, p, n === 2, n + 1]);       // (n0, step 22b: his movements and the pass)
+          if (p > 0) starts.push([q, p, n === 2, n + 1, false, p0]);       // (n0, step 22b: his movements and the pass)
         }
       }
       const mates = new Set(); for (let k = 0; k < 5; k++) if (k !== a) mates.add(s.o[k]);
@@ -5114,7 +5148,7 @@ const PMEngine = (() => {
         if (!o) { o = { a, c, rushed, paths: [] }; byKey.set(key, o); options.push(o); }
         o.paths.push(path);
       };
-      for (const [q0, pr, setOnly, n0, dr] of starts) {
+      for (const [q0, pr, setOnly, n0, dr, p0] of starts) {
         if (mates.has(q0) || (q0 !== home && xat.has(q0))) continue;
         const stop = q0 !== home ? q0 : -1;
         const adj = stealAt(a, q0) + guardAt(a, q0, n0) + keyAt(a, q0);    // step 22c, 26: what holding the ball there costs him (0 or less)
@@ -5122,8 +5156,8 @@ const PMEngine = (() => {
           const put = (c, rushed) => {                             // (the likeliest way there; of two as likely, the one that costs him less)
             const key = (a * 4096 + c) * 2 + (rushed ? 1 : 0);
             const o = byKey.get(key);
-            if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0, dr: !!dr, adj }; byKey.set(key, n); options.push(n); }
-            else if (pr > o.pr || (pr === o.pr && adj > o.adj)) { o.pr = pr; o.q0 = q0; o.n0 = n0; o.dr = !!dr; o.adj = adj; }
+            if (!o) { const n = { a, c, rushed, paths: null, pr, q0, n0, dr: !!dr, adj, p0: p0 || 0 }; byKey.set(key, n); options.push(n); }
+            else if (pr > o.pr || (pr === o.pr && adj > o.adj)) { o.pr = pr; o.q0 = q0; o.n0 = n0; o.dr = !!dr; o.adj = adj; o.p0 = p0 || 0; }
           };
           if (SHOOT(szone(ctx, q0)) && !(noRim && q0 === RIM)) put(q0, false);
           if (setOnly) continue;
@@ -5150,7 +5184,9 @@ const PMEngine = (() => {
         }
       }
     }
+    let oid = 0;
     for (const o of options) {
+      o.id = oid++;
       const lk = makeLook(o.a, o.c, 'later', 1.0, false), card = ctx.off[o.a], pts = ZONE_POINTS[szone(ctx, o.c)];
       lk.types = ZONE_SHOTS[szone(ctx, o.c)]; lk.rushed = o.rushed;
       o.lk = lk; o.fl = (o.rushed && off > 0) ? 1 : undefined;
@@ -6117,6 +6153,314 @@ const PMEngine = (() => {
     }
     return n;
   }
+  // ---- Step 31 (D-284, Shaun, 25 Nov 2026): the possession's value ------------------------------------------------------
+  // "Take every look the offence can get, best first. Each has a chance of being open in time. The offence takes the
+  // best one that opens. Take off the risks, add the fouls drawn, and read ahead over the phases left." One number,
+  // both sides: the offence acts to raise it, the defence to lower it. On the game's own scale (rating less contest,
+  // times points; a turnover -5, a foul +5).
+  // The looks are the map's (covBuild): who, where, the chance he has the ball there (the pass by the rules, the
+  // Dribble by the rules), and the shot's worth against the best contest it faces as the defence stands. Looks that
+  // share a cause are one route (D-294): the same attacker's squares are one route (he can be in one place), the
+  // looks behind one pass are that pass, the looks behind a Dribble are that Dribble. A route that needs a roll ends
+  // the turn by the rules, so falling back is limited by the actions: a lost pass is -5 and the phase (no fall-back);
+  // a lost Dribble locks him and costs nothing, and he may still pass from where he stands, off balance (the one
+  // fall-back the rules leave inside a phase). An open look is taken when it beats playing on.
+  // Playing on is the shot bar, counted from the same looks: U(0) = -5 (the shot clock runs out, D-198);
+  // U(n) = the best route when playing on is worth U(n - 1). With k phases after this one the possession is worth
+  // U(k + 1). No curve is set by hand. The search reads ahead with it at the end of every line.
+  // The defence's answer is inside the number (the design: "each has a chance of being open in time ... before that
+  // defence closes it"). The game has no dice on movement, so "in time" is the race: with the actions the defence has
+  // left this phase it closes what it can, one defender's movement at a time, each the movement that leaves the least
+  // (the value first; where two leave the same value, the looks left behind it, largest first: the list, as a
+  // tie-break), until none lowers it. What it cannot close is what the possession is worth. Each defender moves once
+  // (as the lasting gap read it), a Move with any of the eight arrow pairs, a Quick Step or Sprint with the arrow it
+  // leaves him. A movement that touches none of the looks the value turns on can't change it and isn't tried (a cut
+  // that can't change the answer: the value is the largest of the routes, each a function of its own look).
+  const PV = { cap: 0, V: null, W: null, vec2: new Float64Array(6), tmp: new Float64Array(8) };   // working storage, reused by every reading
+  function pvRoom(n) {
+    if (n <= PV.cap) return;
+    PV.cap = Math.max(256, n * 2);
+    PV.V = new Float64Array(PV.cap); PV.W = new Float64Array(PV.cap);
+  }
+  // T(B): the best route when playing on is worth B. Looks L[i] (the map's options), their worths V[i] (after the
+  // contests they face). left: the offence's actions less those spent getting men out of the key. vec (6): each
+  // attacker's best route value, the ball handler's free route in his own slot and his Dribble route in slot 5.
+  function routeT(L, n, V, b, B, left, keyMask, cut, vec, act, it) {
+    let best = B, fall = B, fi = -1;
+    if (vec) vec.fill(-Infinity);
+    for (let i = 0; i < n; i++) {                      // the passes first: a lost Dribble may fall back on one
+      const o = L[i];
+      if (o.a === b || V[i] === -Infinity || o.n0 > left + ((keyMask >> o.a) & 1)) continue;
+      const v = V[i], e = o.r * (v > B ? v : B) + (1 - o.r) * (B - o.lc);
+      if (e > best) best = e;
+      if (vec && e > vec[o.a]) vec[o.a] = e;
+      if (o.p0 > 0 && o.n0 + 1 <= left + ((keyMask >> o.a) & 1)) {  // (after the Dribble's action) the same pass from where he stands, off balance
+        const p = o.p0 >= 1 ? 1 : Math.max(0, o.p0 - cut), f = p * (v > B ? v : B) + (1 - p) * (B - o.lc);
+        if (f > fall) { fall = f; fi = i; }
+      }
+    }
+    let viaDribble = false;
+    for (let i = 0; i < n; i++) {
+      const o = L[i];
+      if (o.a !== b || V[i] === -Infinity || o.n0 > left) continue;
+      const v = V[i], e = o.dr ? o.r * (v > B ? v : B) + (1 - o.r) * fall : (v > B ? v : B);
+      if (e > best) best = e;
+      if (vec) { const k = o.dr ? 5 : b; if (e > vec[k]) vec[k] = e; }
+    }
+    if (act && best > B + 1e-9) {                      // the looks the value turns on at this step (ties included): [look, step] pairs
+      for (let i = 0; i < n; i++) {
+        const o = L[i];
+        if (V[i] === -Infinity) continue;
+        const v = V[i];
+        let e;
+        if (o.a !== b) { if (o.n0 > left + ((keyMask >> o.a) & 1)) continue; e = o.r * (v > B ? v : B) + (1 - o.r) * (B - o.lc); }
+        else { if (o.n0 > left) continue; e = o.dr ? o.r * (v > B ? v : B) + (1 - o.r) * fall : (v > B ? v : B); if (o.dr && e >= best - 1e-9) viaDribble = true; }
+        if (e >= best - 1e-9) act.push(i, it);
+      }
+      if (viaDribble && fi >= 0) act.push(fi, it);     // (a Dribble route leans on its fall-back pass)
+    }
+    return best;
+  }
+  const SHOT_CLOCK_OUT = -TURNOVER_COST;               // D-198: the shot clock runs out: -5, nothing left to play
+  const PVS = { offers: 0, runs: 0, reads: 0, looks: 0, steps: 0 };
+  let BOUND_LOOKS = 2;
+  const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
+  function possRead(m, s0) {                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
+    const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
+    const owed = threeSecondsLeave(s0 || s), left = 6 - owed.next, keyMask = owed.mask, r = m.r, soft = s.ctx.soft;
+    const L = []; for (const o of m.options) if (o.r > 0) L.push(o);
+    const n = L.length, K = k + 1;
+    pvRoom(n * (K + 1));
+    const W = PV.W, tmp = PV.tmp, Vit = PV.V;           // Vit: each step's worths as the defence now stands (rows 1 to K)
+    // each look's contests, a defender at a time: {cv: the Contest's value by shot type, bl: the blocks as lines}
+    const mv = m._mv || (m._mv = new Map());             // read once per (look, defender, contest kinds), kept with the map
+    const sval = (i, d, mk) => {
+      if (!mk) return null;
+      const key = (L[i].id * 5 + d) * 4096 + mk;
+      let v = mv.get(key);
+      if (v === undefined) {
+        const full = mk & 63, set = mk >> 6, lines = [];
+        const cv = r._valsCalc(L[i].lk, d, full, set, (L[i].fl || 0) | 4, soft ? full : 0, soft ? set : 0, lines);
+        v = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null } : null;
+        mv.set(key, v);
+      }
+      return v;
+    };
+    const SV = new Array(n), lc = new Int16Array(n);
+    for (let i = 0; i < n; i++) { const c = BI[L[i].c], row = [null, null, null, null, null]; lc[i] = c; for (let d = 0; d < 5; d++) if (m.cms[d]) row[d] = sval(i, d, m.cms[d][c]); SV[i] = row; }
+    const gone = new Uint8Array(n);                     // a defender now stands on the look's square
+    const worth = (i, B, d, nv) => {                    // look i's worth when a block leads to B, defender d's contest replaced by nv
+      const open = L[i].open, T = open.length, row = SV[i];
+      for (let t = 0; t < T; t++) tmp[t] = open[t];
+      for (let e = 0; e < 5; e++) {
+        const x = e === d ? nv : row[e];
+        if (!x) continue;
+        const cv = x.cv, bl = x.bl;
+        for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t];
+        if (bl) for (let j = 0; j < bl.length; j += 3) { const v = bl[j + 1] + bl[j + 2] * B; if (v < tmp[bl[j]]) tmp[bl[j]] = v; }
+      }
+      let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
+      return tp + L[i].adj;
+    };
+    // U(k + 1), the bar worked up from the shot clock running out; at step i a blocked shot leads to U(i - 2) (the
+    // phase of the shot is lost; with none after it the possession ends on what it has)
+    const hist = new Float64Array(K + 1), histC = new Float64Array(K + 1), vec = new Float64Array(6), v2 = PV.vec2;
+    const rows = [null]; for (let i = 1; i <= K; i++) rows.push(Vit.subarray(i * n, (i + 1) * n));
+    let act = [], blList = [], LA = [], JA = [], WA = new Float64Array(0);
+    const histA = new Float64Array(K + 1), v3 = new Float64Array(6), bmax = new Float64Array(n);
+    const runCur = bars => {
+      let U = SHOT_CLOCK_OUT; hist[0] = U; act = []; blList = [];
+      // bmax[j]: above this, no block bears on look j (a block that leads to a phase worth more than that is no longer
+      // the defender's best answer), so its worth no longer moves with what the block leads to
+      for (let j = 0; j < n; j++) {
+        const row = SV[j], open = L[j].open, T = open.length;
+        let bm = -Infinity, any = false;
+        for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = true; break; }
+        if (any && !gone[j]) {
+          for (let t = 0; t < T; t++) { let v = open[t]; for (let e = 0; e < 5; e++) if (row[e] && row[e].cv[t] < v) v = row[e].cv[t]; tmp[t] = v; }
+          for (let e = 0; e < 5; e++) { const bl = row[e] && row[e].bl; if (!bl) continue; for (let x = 0; x < bl.length; x += 3) if (bl[x + 2] > 0) { const thr = (tmp[bl[x]] - bl[x + 1]) / bl[x + 2]; if (thr > bm) bm = thr; } }
+        }
+        bmax[j] = bm;
+        if (bm > -Infinity) blList.push(j);
+      }
+      blList.sort((x, y) => bmax[y] - bmax[x] || x - y);
+      if (bars) bars.push(U);
+      for (let i = 1; i <= K; i++) {
+        const B = i >= 3 ? hist[i - 2] : 0, row = rows[i];
+        for (let j = 0; j < n; j++) row[j] = gone[j] ? -Infinity : worth(j, B, -1, null);
+        U = routeT(L, n, row, b, U, left, keyMask, cut, i === K ? vec : null, act, i);
+        hist[i] = U;
+        if (bars) bars.push(U);
+      }
+      const seen = new Set(); JA = [];
+      for (let x = 0; x < act.length; x += 2) if (!seen.has(act[x])) { seen.add(act[x]); JA.push(act[x]); }
+      // (the bound's looks: those the value turns on, and each route's next few, which hold the value up when the first
+      // are closed. How many is only how tight the bound is: the answer is the same whatever it is.)
+      for (let i = 1; i <= K; i++) {
+        const row = rows[i], Bk = hist[i - 1], tops = [[], [], [], [], [], []];
+        for (let j = 0; j < n; j++) {
+          if (row[j] === -Infinity) continue;
+          const o = L[j], v = row[j], e = o.r * (v > Bk ? v : Bk) + (1 - o.r) * (Bk - o.lc), tp = tops[o.a === b && o.dr ? 5 : o.a];
+          if (tp.length < 2 * BOUND_LOOKS) { tp.push(e, j); continue; }
+          let lo = 0; for (let x = 2; x < tp.length; x += 2) if (tp[x] < tp[lo]) lo = x;
+          if (e > tp[lo]) { tp[lo] = e; tp[lo + 1] = j; }
+        }
+        for (const tp of tops) for (let x = 1; x < tp.length; x += 2) if (!seen.has(tp[x])) { seen.add(tp[x]); JA.push(tp[x]); }
+      }
+      JA.sort((x, y) => x - y);
+      LA = JA.map(j => L[j]);
+      if (WA.length < JA.length) WA = new Float64Array(JA.length * 2);
+      return U;
+    };
+    // The same sum over only the looks the value turns on, with defender d on q: never more than the whole sum gives
+    // (fewer looks, and every route only rises with what playing on is worth). So a movement whose sum over these alone
+    // already beats the best answer found can't be the answer, and isn't read in full (a cut that can't change it).
+    const runAct = (d, q, cm) => {
+      const na = JA.length;
+      let U = SHOT_CLOCK_OUT; histA[0] = U;
+      for (let i = 1; i <= K; i++) {
+        const B = i >= 3 ? histA[i - 2] : 0;
+        for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = (gone[j] || L[j].c === q) ? -Infinity : worth(j, B, d, sval(j, d, cm[lc[j]])); }
+        U = routeT(LA, na, WA, b, U, left, keyMask, cut, i === K ? v3 : null, null, i);
+        histA[i] = U;
+      }
+      return U;
+    };
+    const aff = new Int32Array(n), affW = new Float64Array(n), affT = new Float64Array(n), affV = new Array(n);
+    const runCand = (d, q, cm) => {                     // the same sum with defender d on q (contests cm): only what he touches is read again
+      let na = 0;
+      for (let j = 0; j < n; j++) {
+        if (gone[j]) continue;
+        const mk = cm[lc[j]];
+        if (SV[j][d] === null && mk === 0 && L[j].c !== q) continue;
+        const nv = sval(j, d, mk), row = SV[j], open = L[j].open, T = open.length;
+        // his worth with no block bearing on him (affW), and what a block must lead to before none does (affT)
+        for (let t = 0; t < T; t++) tmp[t] = open[t];
+        for (let e = 0; e < 5; e++) { const x = e === d ? nv : row[e]; if (!x) continue; const cv = x.cv, bl = x.bl; for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t]; if (bl) for (let z = 0; z < bl.length; z += 3) if (!(bl[z + 2] > 0) && bl[z + 1] < tmp[bl[z]]) tmp[bl[z]] = bl[z + 1]; }
+        let thr = -Infinity;
+        for (let e = 0; e < 5; e++) { const x = e === d ? nv : row[e], bl = x && x.bl; if (!bl) continue; for (let z = 0; z < bl.length; z += 3) if (bl[z + 2] > 0) { const h = (tmp[bl[z]] - bl[z + 1]) / bl[z + 2]; if (h > thr) thr = h; } }
+        let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
+        affW[na] = L[j].c === q ? -Infinity : tp + L[j].adj; affT[na] = L[j].c === q ? -Infinity : thr; affV[na] = nv; aff[na++] = j;
+      }
+      let U = SHOT_CLOCK_OUT; histC[0] = U;
+      for (let i = 1; i <= K; i++) {
+        const B = i >= 3 ? histC[i - 2] : 0;
+        W.set(rows[i]);
+        if (i >= 3 && histC[i - 2] !== hist[i - 2]) {    // a block now leads somewhere else: only the looks a block still bears on move
+          const lo = Math.min(histC[i - 2], hist[i - 2]);
+          for (let x = 0; x < blList.length && bmax[blList[x]] > lo; x++) W[blList[x]] = worth(blList[x], B, -1, null);
+        }
+        for (let x = 0; x < na; x++) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]);
+        U = routeT(L, n, W, b, U, left, keyMask, cut, i === K ? v2 : null, null, i);
+        histC[i] = U;
+      }
+      return U;
+    };
+    const bars = [];
+    let U = runCur(bars);
+    const U0 = U;
+    PVS.reads++; PVS.looks += n;
+    const moves = [], moved = [false, false, false, false, false], taken = new Set();
+    for (let j = 0; j < 5; j++) { taken.add(s.o[j]); taken.add(s.x[j]); }
+    let tok = s.tok_x;
+    while (tok > 0 && act.length) {
+      // Each movement first gets a bound (the sum over only the looks the value turns on: runAct), then they are read in
+      // full best bound first. The first whose full reading is as good as its bound is the answer: no later one can
+      // beat its own bound. (A cut that can't change the answer; it replaces reading every movement in full.)
+      const cands = [], bm0 = topCount(vec, U);
+      const offer = (d, q, a, cm) => {
+        // A movement can only lower the value by lowering a look the value turns on, at the step it turns on it (every
+        // route's worth only rises with what playing on is worth): one that lowers none of them is not read further.
+        let lowers = false;
+        for (let x = 0; x < act.length; x += 2) {
+          const j = act[x], i = act[x + 1];
+          if (gone[j]) continue;
+          if (L[j].c === q) { lowers = true; break; }
+          const mk = cm[lc[j]];
+          if (!mk && SV[j][d] === null) continue;
+          if (worth(j, i >= 3 ? hist[i - 2] : 0, d, sval(j, d, mk)) < rows[i][j] - 1e-9) { lowers = true; break; }
+        }
+        PVS.offers++; if (!lowers) return;
+        const ua = runAct(d, q, cm), ma = topCount(v3, ua);
+        if (ua > U + 1e-9 || (ua >= U - 1e-9 && ma >= bm0)) return;     // it can't lower the value, nor the routes that reach it
+        cands.push({ d, q, a, cm, ua, ma });
+      };
+      for (let d = 0; d < 5; d++) {
+        if (moved[d] || !ONB[s.x[d]]) continue;
+        const cp = caps(s, 'X', d);
+        if (!cp[0] && cp[1] <= 0) continue;
+        const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), fr = defenderReachExact(s, d);
+        if (cp[0]) for (let a = 0; a < 8; a++) if (a !== s.arrows[d]) offer(d, s.x[d], a, cm2Cached(s.x[d], a, qs, mode));   // a Move on the spot: a new pair of arrows
+        // (a square from which no pair of arrows contests any look the value turns on is passed over whole: anyArrow2 is
+        // every pair's contests together, so none of the eight can lower one)
+        let had = false;
+        for (let x = 0; x < act.length && !had; x += 2) if (SV[act[x]][d] !== null) had = true;
+        const bears = q => {
+          if (had) return true;
+          const any = anyArrow2(q, qs, mode);
+          for (let x = 0; x < act.length; x += 2) { const j = act[x]; if (L[j].c === q || any[lc[j]]) return true; }
+          return false;
+        };
+        for (const [q, na] of fr[0]) if (na === 1 && !taken.has(q) && bears(q)) for (let a = 0; a < 8; a++) offer(d, q, a, cm2Cached(q, a, qs, mode));
+        for (const [q, arrs] of fr[1]) if (!taken.has(q)) for (const [a, na] of arrs) if (na === 1) offer(d, q, a, cm2Cached(q, a, qs, mode));
+      }
+      // the value first; level, the fewer routes that reach it (covering one of two equal looks is a step toward covering
+      // both); still level, the lower square, then the arrow, then where he starts (never the order the defenders are listed in)
+      const before = (x, y) => (Math.abs(x.u - y.u) > 1e-9 ? x.u - y.u : (x.m - y.m) || (x.q - y.q) || (x.a - y.a) || (s.x[x.d] - s.x[y.d]));
+      for (const c of cands) { c.u = c.ua; c.m = c.ma; }
+      cands.sort(before);
+      let best = null;
+      for (const c of cands) {
+        if (best !== null && before(best, c) <= 0) break;                 // its bound is already no better than the best read in full
+        PVS.runs++;
+        const u = runCand(c.d, c.q, c.cm), mm = topCount(v2, u);
+        if (u > U + 1e-9 || (u >= U - 1e-9 && mm >= bm0)) continue;
+        const full = { d: c.d, q: c.q, a: c.a, cm: c.cm, u, m: mm };
+        if (best === null || before(full, best) < 0) best = full;
+      }
+      if (best === null) break;
+      const { d, q, a, cm } = best;
+      for (let i = 0; i < n; i++) { if (L[i].c === q) gone[i] = 1; SV[i][d] = sval(i, d, cm[lc[i]]); }
+      moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
+      U = runCur(null);
+    }
+    const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
+    let pick = -1, pe = -Infinity; const B = hist[K - 1];
+    for (let x = 0; x < act.length; x += 2) if (act[x + 1] === K) { const i = act[x], o = L[i], e = o.r * Math.max(last[i], B) + (1 - o.r) * (B - o.lc); if (e > pe) { pe = e; pick = i; } }
+    return { U, U0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec) };
+  }
+  function possParts(s) {                              // {V, k, bars, pick, m, ...}: the value of playing on (what is banked not counted)
+    if (s.stage !== 'play' || s.clock <= 2) return { V: SHOT_CLOCK_OUT, k: 0, bars: [SHOT_CLOCK_OUT], pick: null, m: null, moves: [] };
+    const key = MAP_MEMO !== null ? 'PV|' + (MAP_ME || '') + '|' + stateKey(s) : null;
+    if (key !== null) { const hit = MAP_MEMO.get(key); if (hit !== undefined) return hit; }
+    let out;
+    if (s.pending) {                                   // a pass in the air: the catch by the rules' chance; lost, -5 and the next phase
+      const recv = s.pending[1], base = W_(s, { pending: null, approach: -1 });
+      const p = covPass(base, recv, s.o[recv]);
+      const pc = possParts(W_(base, { ball: recv }));
+      const lost = s.clock - 2 > 2 ? possParts(W_(covFresh(base), { clock: s.clock - 2 })).V : SHOT_CLOCK_OUT;
+      out = Object.assign({}, pc, { V: p * pc.V + (1 - p) * (lost - TURNOVER_COST), catch: p });
+    } else {
+      const m = covBuild(covOffFresh(s), true, null);
+      const rd = possRead(m, s);
+      out = Object.assign(rd, { V: rd.U - TURNOVER_COST * threeSecondsOwed(s), m });
+    }
+    if (key !== null) { if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear(); MAP_MEMO.set(key, out); }
+    return out;
+  }
+  const possValue = s => possParts(s).V;
+  // Step 31 (the three seconds, counted from entry): an attacker standing in the key without the ball must spend an
+  // action to leave before the second phase end finds him there. `now`: those already counted once (they must leave
+  // this phase); `next`: every attacker in the key who is not about to shoot (they must leave by the end of the next).
+  function threeSecondsLeave(s) {
+    let now = 0, next = 0, mask = 0;
+    if (s.ctx.three) for (let i = 0; i < 5; i++) {
+      if (i === s.ball || !INKEY[s.o[i]]) continue;
+      next++; mask |= 1 << i;
+      if ((s.key_o >> i) & 1) now++;
+    }
+    return { now, next, mask };
+  }
   // step 22 (D-212): the map's own threats as the offence's first actions: for each of the best looks the defence's
   // answer leaves, and each overload's looks, the action that starts it (the ball handler's movement to where he needs
   // to be, the pass to a receiver standing where he catches, or the receiver's movement to it). [{a, q0}]
@@ -6214,6 +6558,19 @@ const PMEngine = (() => {
   function coverage(s0, opts) {
     opts = opts || {};
     if (opts.only === 'parts') return { parts: mapParts(s0) };
+    if (opts.only === 'value') {                          // step 31 (D-284): the possession's value, with its parts
+      const r = new Read(s0), pp = possParts(s0), sh = (s0.pending || s0.stage !== 'play') ? null : r.mapShotOrNone();
+      const banked = bankedOf(s0), play = pp.V, V = s0.pending ? play : Math.max(sh === null ? SHOT_CLOCK_OUT : sh, play);
+      const looks = [];
+      if (pp.L) {
+        const idx = pp.L.map((o, i) => i).filter(i => pp.worth[i] > -Infinity).sort((x, y) => pp.L[y].r * pp.worth[y] - pp.L[x].r * pp.worth[x] || pp.L[x].a - pp.L[y].a || pp.L[x].c - pp.L[y].c);
+        const seen = new Set();
+        for (const i of idx) { const o = pp.L[i], key = o.a * 2 + (o.dr ? 1 : 0); if (seen.has(key)) continue; seen.add(key);
+          looks.push({ a: o.a, c: sqName(o.c), q0: sqName(o.q0), p: +o.r.toFixed(4), open: +o.v.toFixed(2), before: +(o.w + o.adj).toFixed(2), worth: +pp.worth[i].toFixed(2), dribble: !!o.dr, actions: o.n0, rushed: !!o.rushed }); }
+      }
+      return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, bars: pp.bars.map(v => +v.toFixed(2)),
+        answer: (pp.moves || []).map(([d, q, a]) => [d, sqName(q), a]), pick: pp.pick ? { a: pp.pick.a, c: sqName(pp.pick.c), q0: sqName(pp.pick.q0), p: +pp.pick.r.toFixed(4), worth: +pp.pickWorth.toFixed(2), dribble: !!pp.pick.dr } : null, looks, catch: pp.catch === undefined ? null : pp.catch };
+    }
     if (opts.only === 'bars') return { bars: barsOf(s0) };                       // step 25: the shot bar, phase by phase                  // the search's three numbers (Read.mapShot, Read.mapTwo)
     if (opts.only === 'break') return covBreak(s0.pending ? W_(s0, { ball: s0.pending[1], pending: null, approach: -1 }) : s0);
     if (opts.only === 'setup') {                          // the defence's setup: the settlement of all five (D-219)
@@ -6407,7 +6764,7 @@ const PMEngine = (() => {
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size],
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;
