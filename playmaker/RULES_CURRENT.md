@@ -122,6 +122,10 @@ Every rule the game plays by, at the table and in the app, in the rulebook's ord
 
 ## Split by format
 
+**The arrows.** At the table: each X piece points one arrow.  
+In the app: each defender has two arrows, 45 degrees apart: his zone of influence is his square and what both arrows reach. With one on the shooter and the other beside it he is square to the shot and walls the drive at once. The area between his arrows stops the ball handler moving through it; it never blocks a pass.  
+Why: ruled for the app (D-167, D-170, D-225). Text added in step 31 (D-290); no rule changed.
+
 **Control.** At the table: no control rule: a shot or a Contest is worth the same after any movement.  
 In the app: your last movement this phase decides your control. After a Quick Step or a Sprint you're rushed: your shot or Contest is 2 lower. A Move puts you back in control.  
 Why: ruled for the app (D-153). The table's rules are on hold while the app's game settles (D-146).

@@ -1774,6 +1774,69 @@ mixes stay live. Existing counts, caps and clocks stay until ruled on one by one
 Source: Shaun, 25 Nov 2026: "Speed and fidelity without dictating and restricting organic decision deviations." ·
 **Ruled; in `CLAUDE.md`, applied from step 30b.**
 
+**D-284. The possession's value leads both computers.** Every look best first, each at its chance; the offence takes
+the best one that opens; the shot bar if none does; costs and gains at their chance; read ahead. The list keeps its
+order and is priced; the lasting gap is a display only. Replaces D-219's list as the leading measure. · Source: Shaun, 25 Nov 2026 (step 31, Part B):
+the Gravity and Spacing Design, approved with the rulings below · **Ruled; built in step 31.**
+
+**D-285. The read-ahead is four turns** (D-268 stands; the design now says four). · Source: Shaun, 25 Nov 2026 (step 31, Part B) · **Ruled.**
+
+**D-286. The low end of the scale is the rules':** a shot never scores below 0 and the contest is always at least 1.
+No rule change. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "The floor is the rules'" · **Ruled; listed for Shaun to confirm in step 31's report.**
+
+**D-287. The segments are provisional.** The map in the design ("Rulings of 25 November"), the corner ending at row
+5, I8 and I9 counting in both long-two segments above the elbows. Kept in one data table
+(`playmaker_engine/data/segments.json`) read by both engines, so a ruling changes one file. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Shaun hasn't
+ruled. Use your map" · **Provisional; awaiting Shaun's ruling.**
+
+**D-288. Whose contest in the weight map:** the best of the five defenders' for the team's map and its centre; his
+own for each defender's base position. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "as you proposed" · **Ruled; built in step 31.**
+
+**D-289. Need a Three: a two is worth 0** on that card. Outside scenario cards a two is 2 and a three is 3, with no
+control for the player. · Source: Shaun, 25 Nov 2026 (step 31, Part B) · **Ruled; built in step 31 (the worth-right-now hook).**
+
+**D-290. The rules text gains the app's two arrows** (text only: what D-167 and D-170 already rule). · Source: Shaun, 25 Nov 2026 (step 31, Part B): "yes, add
+the app entry" · **Ruled; in the register and `RULES_CURRENT.md`.**
+
+**D-291. The block's reset is not ruled yet.** Shaun rules after step 31's values are in. A second block board with a
+good shot is added to the exam. No rule change in step 31. · Source: Shaun, 25 Nov 2026 (step 31, Part B) · **Open.**
+
+**D-292. The exam's boards.** Built teams are fine; D5 means three empty squares between the shooter and his
+defender; O1's board has the fake already used; O10 is an in-play check; O6 to O8 place four players around a fixed
+inbounder; B4 is played once (it doesn't break the no-play-outs rule) on the best reading of the 20 November cards
+from the record, said plainly in the report. · Source: Shaun, 25 Nov 2026 (step 31, Part B) · **Ruled.**
+
+**D-293. Each level is defined by how far ahead it looks, as a fixed number of turns. Never by a clock.** The same
+board gives the same decision on every device. Every clock comes out of the search, the read-ahead, both setups and
+the fake's mixes. The look-ahead for each level is Shaun's to set; until he does, each level looks as far as its
+clock reliably finished on step 30b's measuring machine, "like with like" kept. The pick noise, the variety margin
+and the goal margin stay for now (listed as stand-ins). The Trainer's own clocks are listed, not changed. ·
+Source: Shaun, 25 Nov 2026 (step 31, Part B): "The clocks go" · **Ruled; built in step 31.**
+
+**D-294. Tries cost actions.** The offence falls back from one look to the next only through as many routes as its
+actions allow, counted by the rules and nothing by hand. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Risk 1: agreed" · **Ruled; built in step 31.**
+
+**D-295. The defence's search also tries two defenders together:** two swapping men, and a second defender going to
+the ball with his own man read as left. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Risk 2: agreed" · **Ruled; built in step 31.**
+
+**D-296. The fake inside the weight map's first layer is a two-by-two mix for each look** (shoot or fake against
+close out or hold). Any exam board where it disagrees with the search's full mix is reported. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Risk 3" ·
+**Ruled; built in step 31.**
+
+**D-297. Check D12 is "no change at all":** lifting a defender must change the value. The report says how often it
+fires and what each lifted defender was saving. It is not loosened to pass. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Risk 5" · **Ruled.**
+
+**D-298. The mix's tie rule.** Where two replies are level, the defence takes the one that can't be made worse by
+the offence's choice (holding by position), in both engines. Step 29's rule took the first on its list. · Source: Shaun, 25 Nov 2026 (step 31, Part B):
+"Carry-over 2: your reading is accepted. Fix the tie rule in both engines first" · **Ruled; built in step 31.**
+
+**D-299. Speed is part of the build, and every cap is on trial.** Fidelity first: nothing in the design is traded for
+speed. New readings are read by difference, use the one-think memory, reuse their working storage, and are written so
+independent readings can be handed out side by side and combined in a fixed order. Every count, cap or fixed number of
+rounds that survives into what step 31 builds or keeps is removed, replaced by a cut that provably can't change the
+answer, or kept and put on trial on every exam board. The two engines break exact ties the same way. · Source: Shaun, 25 Nov 2026 (step 31, Part B): "Speed is
+part of this build", "Every cap is on trial" · **Ruled; built in step 31.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

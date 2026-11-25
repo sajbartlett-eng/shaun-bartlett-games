@@ -13,10 +13,10 @@ Playmaker is a FIBA half-court basketball game on a grid of squares: columns A t
 | Term | Meaning |
 | --- | --- |
 | Phase | About 2 seconds of shot clock. The shot clock sets how many phases a possession has. |
-| Turn | One side's go within a phase: 2 actions for the whole team. Sides alternate. |
+| Turn | One side's go within a phase: 1 or 2 actions, out of the 6 the side has for the phase. Sides alternate. |
 | Actions | Move (controlled), Quick Step and Sprint (which leave the player rushed), Dribble, Pass, Screen, Shoot, Hesitate or Pause, fakes, Contest, Block, Steal, Intercept. Each phase has limits on how many of each. |
 | Rushed | After a Quick Step or Sprint, every roll is 2 worse until the player Moves. |
-| Locked | No Move, Sprint, Dribble or arrow turn for the rest of the phase, and rushed. |
+| Locked | No Move, Sprint, Dribble or arrow turn for the rest of the phase, and rushed. A Quick Step is still allowed. |
 | Arrows | Each defender has two. Each points at one of the eight neighbouring squares, and the two always point at neighbouring directions, 45 degrees apart, so a defender chooses among eight pairs. They set his contest, the drive he walls, and the lane he can jump. |
 | Wedge | The area between a defender's arrows. It stops the ball handler moving through. It never blocks a pass. |
 | Zone of influence | A defender's square plus what his arrows reach. |
@@ -71,7 +71,7 @@ This is the old list, kept and priced. The list ranked the offence's looks best 
 
 ### Computing the number
 
-**One look** is a shot one attacker could take: who, from which square, which shot. Its value is on the game's own scale: his shot rating less the contest rating he faces (never below 1), times the points the shot is worth right now. That runs from 1 to 39. Turnovers (−5) and fouls (+5) are on the same scale. Nothing in the computer converts to a different scale, such as expected points per shot. Its chance of happening is the chance the attacker and the ball both get there before that defence closes it, by the race and the ball's reach.
+**One look** is a shot one attacker could take: who, from which square, which shot. Its value is on the game's own scale: his shot rating less the contest rating he faces, times the points the shot is worth right now. This is the scale this document calls 1 to 39. By the rules, a contest is always at least 1 and a shot that works out below 0 scores 0; on today's cards the top is 38. Turnovers (−5) and fouls (+5) are on the same scale. Nothing in the computer converts to a different scale, such as expected points per shot. Its chance of happening is the chance the attacker and the ball both get there before that defence closes it, by the race and the ball's reach.
 
 **Combining looks.** Sort the looks best first. The offence takes the first one that opens:
 
@@ -83,7 +83,9 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 
 **Costs and gains** are added at their chance: a turnover (−5 and the phase), a violation, a foul drawn (+5).
 
-**Reading ahead.** The number is read as far ahead as the plan needs, up to three turns (step 27), with each side's best answer by its own model. Past that, the shot bar stands in for the rest.
+**Tries cost actions.** The sum lets the offence fall back from one look to the next. In the game each route costs actions, and a turn has 1 or 2. So the offence can only fall back through as many routes as its actions allow, counted by the rules and nothing by hand.
+
+**Reading ahead.** The number is read as far ahead as the plan needs, up to four turns (D-268, 19 November), with each side's best answer by its own model. Past that, the shot bar stands in for the rest.
 
 ### How each side chooses
 
@@ -97,12 +99,12 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 **The offence**, at setup, follows the setup order (the offence section). In play, each turn:
 
 1. Shoot if the best shot now is worth more than playing on.
-2. Otherwise choose the two actions that raise the number most, read ahead.
+2. Otherwise choose the actions (1 or 2 a turn) that raise the number most, read ahead.
 3. A fake is chosen as a mix with the real thing (step 29), so the defence cannot read a habit.
 
 **Separate thinking.** Each side computes the number with its own model of the other side's answer. The defence never sees the offence's plan or a hidden fake, and the offence never sees the defence's private choices.
 
-**The computer's levels** (Rookie, Starter, All-Star) differ in how far and how widely they search. They use the same number and the same rules. Shaun's human-error factor for lower levels (D-196) is a separate, later step.
+**The computer's levels** (Rookie, Starter, All-Star) differ in how far and how widely they search. How far is a fixed number of turns for each level, never a clock, so the same board gives the same decision on every device (Shaun, 25 November). They use the same number and the same rules. Shaun's human-error factor for lower levels (D-196) is a separate, later step.
 
 ## The defence, part 1: the team's weight
 
@@ -114,13 +116,17 @@ For each attacker and each shot zone (short range, mid-range, long two, three, a
 
 > what the shot is worth uncontested, less what it is worth against the best answer a defender can give there.
 
-- **The shot's worth** is on the game's 1 to 39 scale, the same scale as the −5 for a turnover and the +5 for a foul. Uncontested, it is his shot rating times the points the shot is worth right now. Contested, it is his rating less the contest rating he faces (never below 1), times those points. The points are normally two or three. When a team must have a three to tie, a two is worth almost nothing, and the map moves to the arc by the same sum.
+- **The shot's worth** is on the game's 1 to 39 scale, the same scale as the −5 for a turnover and the +5 for a foul. Uncontested, it is his shot rating times the points the shot is worth right now. Contested, it is his rating less the contest rating he faces, times those points (a contest is always at least 1, and a shot never scores below 0). The points are normally two or three. When a team must have a three to tie, a two is worth nothing (the Need a Three card: only a three scores), and the map moves to the arc by the same sum.
 - **The best answer** is whatever the rules allow from there: the honest contest by position, the block where it pays (with its foul risk), a rushed closeout, and the fake threat against a shooter in control.
 - Defenders are drawn to where they save the most, not to where shots are worth the most. A great look that a contest barely changes pulls less than a good look a contest ruins.
 
 Laying these out for the five attackers gives the base map: every look, with what a defender saves there. Adding up these weights across all five attackers gives the base centre of gravity, as Shaun set out: it is where the weight balances. That adding is for finding where the defence should be. It is different from the possession's value, which is not a total, because the offence takes one shot: covering one of two equal looks saves nothing while the other is open. Its depth sits somewhere between the rim and the three-point line.
 
+**Whose contest.** For the team's map and its centre, the weight at a look uses the best contest any of the five defenders could give there. For one defender's own base position, it uses what he, with his card, would save there, because the link rule compares what he saves.
+
 ### Layer 2: occupation
+
+The segments are set out square by square in "Rulings of 25 November" near the end of this document.
 
 Split each zone into segments: the green zone as one, mid-range in three, the long two in four, and five beyond the arc (two corners, two wings, the top). Leave out any segment no attacker can reach this phase. If the offence loads one side, the weight shifts toward it. This is usually a small adjustment.
 
@@ -189,6 +195,7 @@ Both sides of the comparison are in points, so the bigger number wins. A weighti
 - **The five stances are chosen together,** as the set that leaves the offence the least. Five defenders each applying the link rule alone could all leave, or none. The link rule describes the answer for each defender and is used to check it.
 - **Cover comes in degrees.** A set contest in front takes more off a look than a rushed one from the side. A look is never switched off as covered: its value is whatever is left after the stances it faces.
 - **Switching men** happens when the swap leaves the offence less, counting the moves it takes.
+- **Some answers need two defenders to move together.** A switch or a trap can't show its gain if only one defender is tried at a time. The search also tries pairs: two defenders swapping men, and a second defender going to the ball with his own man read as left.
 - **The ball's reach is counted once.** It is in the map (layer 3). The link rule uses the map's values and does not discount them again.
 
 ## Advantages are gaps: speed, dribble and pass
@@ -218,7 +225,7 @@ The matchup rule already prices this at setup: the edge is counted where it hurt
 A pass is not only worth the look the receiver has when it lands. It is also worth what it does to the defender who had to react to it. Every outcome is counted at its real chance:
 
 - **The pass lands and forces a closeout.** A defender who arrives with a Quick Step or Sprint is rushed until he Moves: his contest is weaker and he is easier to drive past. The gap is the shot over him plus the drive behind him.
-- **A defender goes for the ball and misses.** A failed Intercept or Steal leaves him out of the play. The gap is what the receiver gets with that defender gone, not what he would get against a set defence.
+- **A defender goes for the ball and misses.** Each is read by its own rule: a missed Intercept leaves him on the lane with his Move used, and a missed Steal locks him. The gap is what the receiver gets with that defender limited in that way, not what he would get against a set defence.
 - **A defender is sold on a fake.** One who went for the ball on a pass fake is locked for the rest of the phase. One who tried to block a shot fake is locked too, and may have fouled (step 29). The gap is everything he was guarding.
 - **The pass is stopped.** A turnover: 5 off and the phase lost (D-198).
 
@@ -325,7 +332,7 @@ None of these is a rule. Each is what the map and the link rule should produce o
 | Face-guarding an elite shooter | His threat is worth more than any help his defender could give. |
 | Tight guarding on a shooter in control | A closeout from distance arrives rushed, and the fake punishes it (step 29). |
 | A defender following a shooter past the arc | At Senior Pro his deep squares still carry weight. |
-| The whole defence at the arc when a three is needed | A two is worth almost nothing right now, so the paint's weight drops. |
+| The whole defence at the arc when a three is needed | A two is worth nothing right now, so the paint's weight drops. |
 | A trap | See below. |
 
 ### The trap
@@ -422,7 +429,7 @@ Two illustration pages show these trade-offs with sliders and a court: Playmaker
 - The scout's shot review, movement review and matchup table (step 24). One scale throughout: shot rating less contest rating, times points, 1 to 39, with turnovers and fouls at 5 on that scale. Any place in the engine that uses another scale is a leftover to fix.
 - The race: who can reach what in time (steps 22 to 26).
 - The danger of the pass: both outcomes counted (step 26).
-- The read-ahead, three turns, both sides alike (step 27).
+- The read-ahead, four turns, both sides alike (step 27; four by D-268).
 - The shot bar falling with the clock (step 25).
 - The three seconds and the closely guarded count, by the rule (step 27), with one fix below.
 - The contest as an action, the block, fakes, the pivot and deep range (steps 28 to 30).
@@ -576,6 +583,43 @@ Every point Shaun set out or agreed between 21 and 25 November, with where it si
 | Covered weight as a switch | Cover in degrees | A rushed contest covers less than a set one |
 | The link rule as each defender's own method | The five solved together; the rule describes and checks the answer | Five separate decisions can all leave or none |
 | The ball's reach in both layer 3 and the link rule | Counted once, in the map | It was counted twice |
+
+### Rulings of 25 November
+
+These came from Claude Code's step 31 plan and from step 30b. Where an older sentence in this document differed, it has been corrected in place.
+
+| What | Now | Why | Standing |
+| --- | --- | --- | --- |
+| The read-ahead | Four turns, not three | D-268 (19 November) already set four | Agreed |
+| A turn | 1 or 2 actions, from 6 a phase | The rules | The rules |
+| Locked | A Quick Step is still allowed | The rules | The rules |
+| A missed Intercept and a missed Steal | Each read by its own rule | The rules treat them differently | The rules |
+| The low end of the scale | A shot never scores below 0; the contest is always at least 1 | The rules | The rules. Shaun to confirm he wants no change |
+| Need a Three | A two is worth 0 | The card says only a three scores | Agreed |
+| Whose contest in layer 1 | The best of the five for the team's map; his own for a defender's base position | The link rule compares what he saves | Agreed |
+| Falling back through looks | Limited by the actions available | Tries aren't free in the game | Agreed |
+| The defence's search | Also tries two defenders together | A switch or trap needs two | Agreed |
+| The levels | How far ahead is a fixed number of turns, never a clock | The same board must give the same decision on every device | Agreed (Shaun, 25 November) |
+| Speed | Only from never doing the same work twice, cheaper machinery, and using the whole device. Never from thinking about less | Speed and fidelity without dictating or restricting decisions | Agreed (D-283) |
+| The block's reset | Not ruled yet | To be ruled once the new value shows what a phase after a block is worth | Open |
+| The segments | The map below | Claude Code's proposal | **Provisional. Shaun has not ruled** |
+
+**The segments, square by square (provisional).** G: the green zone. ML, MM, MR: mid-range left, middle, right. LL and LR: the long two along each baseline. Ll and Lr: the long two above each elbow. CL and CR: the corners. WL and WR: the wings. T: the top. Deep squares count with the segment they sit behind. Two things are not settled: which side I8 and I9 belong to (marked ?), and whether the corner ends at row 5. Until Shaun rules, I8 and I9 count as in both Ll and Lr, so the board stays the same left and right, and the corner ends at row 5.
+
+```
+     A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q
+12   WL WL WL WL WL T  T  T  T  T  T  T  WR WR WR WR WR
+11   WL WL WL WL WL T  T  T  T  T  T  T  WR WR WR WR WR
+10   WL WL WL WL WL T  T  T  T  T  T  T  WR WR WR WR WR
+ 9   WL WL WL WL WL Ll Ll Ll ?  Lr Lr Lr WR WR WR WR WR
+ 8   WL WL WL Ll Ll Ll Ll Ll ?  Lr Lr Lr Lr Lr WR WR WR
+ 7   WL WL Ll Ll Ll ML MM MM MM MM MM MR Lr Lr Lr WR WR
+ 6   WL LL LL LL ML ML MM MM MM MM MM MR MR LR LR LR WR
+ 5   CL LL LL ML ML ML MM MM MM MM MM MR MR MR LR LR CR
+ 4   CL LL LL ML ML ML G  G  G  G  G  MR MR MR LR LR CR
+ 3   CL LL LL ML ML ML G  G  G  G  G  MR MR MR LR LR CR
+ 2   CL LL LL ML ML ML G  G  G  G  G  MR MR MR LR LR CR
+```
 
 ### Still to be audited
 

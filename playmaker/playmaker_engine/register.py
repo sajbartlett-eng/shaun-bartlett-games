@@ -546,6 +546,11 @@ CONTROL_WORDS = ("Your last movement this phase decides your control. After a Qu
                  'your shot or Contest is 2 lower. A Move puts you back in control.')
 
 SPLITS = [
+    ('The arrows', 'Each X piece points one arrow.', 'Each defender has two arrows, 45 degrees apart: his zone of '
+     'influence is his square and what both arrows reach. With one on the shooter and the other beside it he is square '
+     'to the shot and walls the drive at once. The area between his arrows stops the ball handler moving through it; it '
+     'never blocks a pass.',
+     'Ruled for the app (D-167, D-170, D-225). Text added in step 31 (D-290); no rule changed.'),
     ('Control', 'No control rule: a shot or a Contest is worth the same after any movement.', CONTROL_WORDS,
      'Ruled for the app (D-153). The table\'s rules are on hold while the app\'s game settles (D-146).'),
     ('Off balance', 'No such rule.', 'Rushed: after a Quick Step or Sprint, or while locked, every roll you make is 2 '
