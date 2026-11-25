@@ -1,6 +1,6 @@
 {
  "seed": 20,
- "seconds": 1976.5,
+ "seconds": 1162.6,
  "rows": [
   {
    "phase": 1,
@@ -8,8 +8,8 @@
    "side": "O",
    "action": "O1 Move to I5",
    "roll": null,
-   "seconds": 28.4,
-   "engine_mb": 1922,
+   "seconds": 33.9,
+   "engine_mb": 285,
    "o": [
     "K4",
     "I2",
@@ -30,9 +30,9 @@
     1
    ],
    "value": {
-    "value": 18,
+    "value": 21,
     "shot_now": 8,
-    "play_on": 18
+    "play_on": 21
    }
   },
   {
@@ -42,7 +42,7 @@
    "action": "O5 Move to O1",
    "roll": null,
    "seconds": 0.0,
-   "engine_mb": 1922,
+   "engine_mb": 285,
    "o": [
     "I5",
     "I2",
@@ -68,10 +68,10 @@
    "phase": 1,
    "clock": 12,
    "side": "X",
-   "action": "X1 Move to J5 facing W",
+   "action": "X4 Move to H2 facing N",
    "roll": null,
-   "seconds": 3.6,
-   "engine_mb": 380,
+   "seconds": 4.2,
+   "engine_mb": 275,
    "o": [
     "I5",
     "I2",
@@ -101,242 +101,23 @@
    "phase": 1,
    "clock": 12,
    "side": "X",
-   "action": "X4 Move to H2 facing N",
-   "roll": null,
-   "seconds": 1.4,
-   "engine_mb": 381,
-   "o": [
-    "I5",
-    "I2",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "I10",
-    "J4",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "O",
-   "action": "O1 Quick Step to H5",
-   "roll": null,
-   "seconds": 40.1,
-   "engine_mb": 2469,
-   "o": [
-    "I5",
-    "I2",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "I10",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": {
-    "value": 21,
-    "shot_now": 8,
-    "play_on": 21
-   }
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "O",
-   "action": "O2 Move to G1",
-   "roll": null,
-   "seconds": 5.3,
-   "engine_mb": 2521,
-   "o": [
-    "H5",
-    "I2",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "I10",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "X",
-   "action": "X3 Move to G9 facing E",
-   "roll": null,
-   "seconds": 3.5,
-   "engine_mb": 344,
-   "o": [
-    "H5",
-    "G1",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "I10",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": {
-    "value": 27,
-    "shot_now": null,
-    "play_on": 27
-   }
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "X",
-   "action": "X Pause",
-   "roll": null,
-   "seconds": 0.4,
-   "engine_mb": 387,
-   "o": [
-    "H5",
-    "G1",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "G9",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "O",
-   "action": "O1 Screen",
-   "roll": null,
-   "seconds": 5.8,
-   "engine_mb": 456,
-   "o": [
-    "H5",
-    "G1",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "G9",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": {
-    "value": 24,
-    "shot_now": 18,
-    "play_on": 24
-   }
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "X",
-   "action": "X5 Move to F4 facing NE",
-   "roll": null,
-   "seconds": 5.8,
-   "engine_mb": 432,
-   "o": [
-    "H5",
-    "G1",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "N7",
-    "G9",
-    "H2",
-    "H4"
-   ],
-   "ball": 3,
-   "in_key": [
-    0,
-    1
-   ],
-   "value": {
-    "value": 24,
-    "shot_now": null,
-    "play_on": 24
-   }
-  },
-  {
-   "phase": 1,
-   "clock": 12,
-   "side": "X",
-   "action": "X2 Move to O5 facing N",
+   "action": "X2 Move to M7 facing N",
    "roll": null,
    "seconds": 0.0,
-   "engine_mb": 432,
+   "engine_mb": 275,
    "o": [
-    "H5",
-    "G1",
+    "I5",
+    "I2",
     "N6",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
+    "K3",
     "N7",
-    "G9",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
    "ball": 3,
    "in_key": [
@@ -346,26 +127,26 @@
    "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "O",
-   "action": "O1 Move to F3",
+   "action": "O1 Quick Step to J6",
    "roll": null,
-   "seconds": 26.4,
-   "engine_mb": 1552,
+   "seconds": 31.2,
+   "engine_mb": 302,
    "o": [
-    "H5",
-    "G1",
+    "I5",
+    "I2",
     "N6",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "G9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
    "ball": 3,
    "in_key": [
@@ -373,215 +154,239 @@
     1
    ],
    "value": {
-    "value": 21,
-    "shot_now": 18,
-    "play_on": 21
+    "value": 21.75,
+    "shot_now": 8,
+    "play_on": 21.75
    }
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "O",
-   "action": "O1 Screen",
+   "action": "O4 passes to O1",
    "roll": null,
-   "seconds": 3.2,
-   "engine_mb": 1780,
+   "seconds": 12.3,
+   "engine_mb": 304,
    "o": [
-    "F3",
-    "G1",
+    "J6",
+    "I2",
     "N6",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "G9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
    "ball": 3,
    "in_key": [
+    0,
     1
    ],
    "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
-   "side": "X",
-   "action": "X3 Move to I9 facing NE",
-   "roll": null,
-   "seconds": 5.5,
-   "engine_mb": 422,
-   "o": [
-    "F3",
-    "G1",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "J5",
-    "O5",
-    "G9",
-    "H2",
-    "F4"
-   ],
-   "ball": 3,
-   "in_key": [
-    1
-   ],
-   "value": {
-    "value": 24,
-    "shot_now": null,
-    "play_on": 24
-   }
-  },
-  {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "X",
    "action": "X Pause",
    "roll": null,
-   "seconds": 1.4,
-   "engine_mb": 523,
+   "seconds": 3.5,
+   "engine_mb": 304,
    "o": [
-    "F3",
-    "G1",
+    "J6",
+    "I2",
     "N6",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "I9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
    "ball": 3,
    "in_key": [
+    0,
     1
    ],
    "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "O",
-   "action": "O1 Quick Step to E4",
+   "action": "O3 Move to O7",
    "roll": null,
-   "seconds": 8.4,
-   "engine_mb": 649,
+   "seconds": 102.3,
+   "engine_mb": 305,
    "o": [
-    "F3",
-    "G1",
+    "J6",
+    "I2",
     "N6",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "I9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
-   "ball": 3,
+   "ball": 0,
    "in_key": [
+    0,
     1
    ],
-   "value": {
-    "value": 18,
-    "shot_now": 18,
-    "play_on": 18
-   }
+   "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "O",
    "action": "O ends the turn",
    "roll": null,
-   "seconds": 0.9,
-   "engine_mb": 730,
+   "seconds": 11.5,
+   "engine_mb": 304,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "J6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "I9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
-   "ball": 3,
+   "ball": 0,
    "in_key": [
+    0,
     1
    ],
    "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "X",
-   "action": "X1 Sprint to F5",
+   "action": "X1 Sprint to N6",
    "roll": null,
-   "seconds": 3.5,
-   "engine_mb": 331,
+   "seconds": 1.8,
+   "engine_mb": 305,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "J6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "J5",
-    "O5",
-    "I9",
+    "K3",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
-   "ball": 3,
+   "ball": 0,
    "in_key": [
+    0,
     1
    ],
-   "value": {
-    "value": 24,
-    "shot_now": null,
-    "play_on": 24
-   }
+   "value": null
   },
   {
-   "phase": 2,
-   "clock": 10,
+   "phase": 1,
+   "clock": 12,
    "side": "X",
-   "action": "X ends the turn",
+   "action": "X3 Move to J10 facing N",
    "roll": null,
-   "seconds": 1.0,
-   "engine_mb": 333,
+   "seconds": 0.2,
+   "engine_mb": 307,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "J6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M7",
+    "I10",
     "H2",
-    "F4"
+    "H4"
    ],
-   "ball": 3,
+   "ball": 0,
    "in_key": [
+    0,
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 1,
+   "clock": 12,
+   "side": "O",
+   "action": "O1 passes to O2",
+   "roll": null,
+   "seconds": 0.5,
+   "engine_mb": 305,
+   "o": [
+    "J6",
+    "I2",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N6",
+    "M7",
+    "J10",
+    "H2",
+    "H4"
+   ],
+   "ball": 0,
+   "in_key": [
+    0,
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 1,
+   "clock": 12,
+   "side": "X",
+   "action": "X5 Move to H3 facing N",
+   "roll": null,
+   "seconds": 4.1,
+   "engine_mb": 310,
+   "o": [
+    "J6",
+    "I2",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N6",
+    "M7",
+    "J10",
+    "H2",
+    "H4"
+   ],
+   "ball": 0,
+   "in_key": [
+    0,
     1
    ],
    "value": null
@@ -590,26 +395,27 @@
    "phase": 2,
    "clock": 10,
    "side": "O",
-   "action": "O1 Screen",
+   "action": "O1 Sprint to F6",
    "roll": null,
-   "seconds": 7.1,
-   "engine_mb": 497,
+   "seconds": 15.4,
+   "engine_mb": 310,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "J6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M7",
+    "J10",
     "H2",
-    "F4"
+    "H3"
    ],
-   "ball": 3,
+   "ball": 1,
    "in_key": [
+    0,
     1
    ],
    "value": {
@@ -621,58 +427,82 @@
   {
    "phase": 2,
    "clock": 10,
-   "side": "X",
-   "action": "X2 Move to O5 facing NE",
+   "side": "O",
+   "action": "O2 passes to O1",
    "roll": null,
-   "seconds": 1.3,
-   "engine_mb": 210,
+   "seconds": 4.5,
+   "engine_mb": 310,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "F6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M7",
+    "J10",
     "H2",
-    "F4"
+    "H3"
    ],
-   "ball": 3,
+   "ball": 1,
    "in_key": [
     1
    ],
-   "value": {
-    "value": 27,
-    "shot_now": null,
-    "play_on": 27
-   }
+   "value": null
   },
   {
    "phase": 2,
    "clock": 10,
    "side": "X",
-   "action": "X1 challenge",
-   "roll": "failure",
-   "seconds": 0.0,
-   "engine_mb": 210,
+   "action": "X2 Move to M4 facing E",
+   "roll": null,
+   "seconds": 5.5,
+   "engine_mb": 310,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "F6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M7",
+    "J10",
     "H2",
-    "F4"
+    "H3"
    ],
-   "ball": 3,
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "X",
+   "action": "X5 Move to F5 facing N",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 310,
+   "o": [
+    "F6",
+    "I2",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N6",
+    "M4",
+    "J10",
+    "H2",
+    "H3"
+   ],
+   "ball": 0,
    "in_key": [
     1
    ],
@@ -682,57 +512,193 @@
    "phase": 2,
    "clock": 10,
    "side": "O",
-   "action": "O4 passes to O2",
-   "roll": null,
-   "seconds": 12.3,
-   "engine_mb": 694,
+   "action": "O1 Dribble",
+   "roll": "failure",
+   "seconds": 8.7,
+   "engine_mb": 312,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "F6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M4",
+    "J10",
     "H2",
-    "F4"
+    "F5"
    ],
-   "ball": 3,
+   "ball": 0,
    "in_key": [
     1
    ],
-   "value": {
-    "value": 26,
-    "shot_now": 21,
-    "play_on": 26
-   }
+   "value": null
   },
   {
    "phase": 2,
    "clock": 10,
    "side": "X",
-   "action": "X5 Move to E3 facing N",
+   "action": "X1 Quick Step to N7",
    "roll": null,
-   "seconds": 9.8,
-   "engine_mb": 653,
+   "seconds": 4.2,
+   "engine_mb": 310,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "F6",
+    "I2",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
+    "N6",
+    "M4",
+    "J10",
     "H2",
-    "F4"
+    "F5"
    ],
-   "ball": 3,
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "X",
+   "action": "X3 Move to H8 facing W",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 310,
+   "o": [
+    "F6",
+    "I2",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N7",
+    "M4",
+    "J10",
+    "H2",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "O",
+   "action": "O2 Move to H4",
+   "roll": null,
+   "seconds": 10.4,
+   "engine_mb": 308,
+   "o": [
+    "F6",
+    "I2",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N7",
+    "M4",
+    "H8",
+    "H2",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "O",
+   "action": "O1 passes to O2",
+   "roll": null,
+   "seconds": 1.0,
+   "engine_mb": 308,
+   "o": [
+    "F6",
+    "H4",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N7",
+    "M4",
+    "H8",
+    "H2",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "X",
+   "action": "X1 Move to M6 facing SW",
+   "roll": null,
+   "seconds": 11.8,
+   "engine_mb": 329,
+   "o": [
+    "F6",
+    "H4",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "N7",
+    "M4",
+    "H8",
+    "H2",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 2,
+   "clock": 10,
+   "side": "X",
+   "action": "X4 Move to I3 facing N",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 329,
+   "o": [
+    "F6",
+    "H4",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M6",
+    "M4",
+    "H8",
+    "H2",
+    "F5"
+   ],
+   "ball": 1,
    "in_key": [
     1
    ],
@@ -744,361 +710,417 @@
    "side": "O",
    "action": "O2 Move to H3",
    "roll": null,
-   "seconds": 53.9,
-   "engine_mb": 2344,
+   "seconds": 399.6,
+   "engine_mb": 351,
    "o": [
-    "E4",
-    "G1",
-    "N6",
+    "F6",
+    "H4",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "F5",
-    "O5",
-    "I9",
-    "H2",
-    "E3"
+    "M6",
+    "M4",
+    "H8",
+    "I3",
+    "F5"
    ],
    "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "O",
-   "action": "O3 Move to L4",
-   "roll": null,
-   "seconds": 0.0,
-   "engine_mb": 2344,
-   "o": [
-    "E4",
-    "H3",
-    "N6",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "O5",
-    "I9",
-    "H2",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X2 Quick Step to N5",
-   "roll": null,
-   "seconds": 5.1,
-   "engine_mb": 457,
-   "o": [
-    "E4",
-    "H3",
-    "L4",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "O5",
-    "I9",
-    "H2",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X5 Move to F4 facing N",
-   "roll": null,
-   "seconds": 0.0,
-   "engine_mb": 457,
-   "o": [
-    "E4",
-    "H3",
-    "L4",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "N5",
-    "I9",
-    "H2",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "O",
-   "action": "O3 Quick Step to L5",
-   "roll": null,
-   "seconds": 126.5,
-   "engine_mb": 4778,
-   "o": [
-    "E4",
-    "H3",
-    "L4",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "O",
-   "action": "O2 Dribble",
-   "roll": "failure",
-   "seconds": 21.4,
-   "engine_mb": 4822,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X1 Move to E5 facing S",
-   "roll": null,
-   "seconds": 8.0,
-   "engine_mb": 648,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "F5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X Pause",
-   "roll": null,
-   "seconds": 1.0,
-   "engine_mb": 724,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "O",
-   "action": "O2 passes to O4",
-   "roll": null,
-   "seconds": 73.7,
-   "engine_mb": 3743,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X4 Move to I4 facing N",
-   "roll": null,
-   "seconds": 5.9,
-   "engine_mb": 503,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "I9",
-    "H2",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 3,
-   "clock": 8,
-   "side": "X",
-   "action": "X3 Move to K9 facing S",
-   "roll": null,
-   "seconds": 0.0,
-   "engine_mb": 503,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "I9",
-    "I4",
-    "F4"
-   ],
-   "ball": 3,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 4,
-   "clock": 6,
-   "side": "O",
-   "action": "O1 Move to F6",
-   "roll": null,
-   "seconds": 18.1,
-   "engine_mb": 1187,
-   "o": [
-    "E4",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "K9",
-    "I4",
-    "F4"
-   ],
-   "ball": 3,
    "in_key": [
     1
    ],
    "value": {
-    "value": 8,
-    "shot_now": 18,
-    "play_on": 18
+    "value": 19,
+    "shot_now": 5.45,
+    "play_on": 24
    }
   },
   {
-   "phase": 4,
-   "clock": 6,
+   "phase": 3,
+   "clock": 8,
    "side": "O",
-   "action": "O4 passes to O1",
+   "action": "O2 passes to O1",
    "roll": null,
-   "seconds": 11.0,
-   "engine_mb": 1753,
+   "seconds": 49.6,
+   "engine_mb": 345,
    "o": [
     "F6",
     "H3",
-    "L5",
+    "O7",
     "I11",
     "O1"
    ],
    "x": [
-    "E5",
-    "N5",
-    "K9",
-    "I4",
-    "F4"
+    "M6",
+    "M4",
+    "H8",
+    "I3",
+    "F5"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X1 Quick Step to M7",
+   "roll": null,
+   "seconds": 6.5,
+   "engine_mb": 346,
+   "o": [
+    "F6",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M6",
+    "M4",
+    "H8",
+    "I3",
+    "F5"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X3 Move to H5 facing S",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 346,
+   "o": [
+    "F6",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H8",
+    "I3",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "O",
+   "action": "O1 passes to O4",
+   "roll": null,
+   "seconds": 97.7,
+   "engine_mb": 346,
+   "o": [
+    "F6",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X Pause",
+   "roll": null,
+   "seconds": 0.2,
+   "engine_mb": 346,
+   "o": [
+    "F6",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 0,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "O",
+   "action": "O1 Move to F7",
+   "roll": null,
+   "seconds": 2.8,
+   "engine_mb": 345,
+   "o": [
+    "F6",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "O",
+   "action": "O4 Move to I10",
+   "roll": null,
+   "seconds": 0.6,
+   "engine_mb": 345,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "I11",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X1 Move to M7 facing N",
+   "roll": null,
+   "seconds": 0.1,
+   "engine_mb": 346,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "I10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X ends the turn",
+   "roll": null,
+   "seconds": 0.2,
+   "engine_mb": 346,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "I10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "O",
+   "action": "O4 Quick Step to J10",
+   "roll": null,
+   "seconds": 0.4,
+   "engine_mb": 345,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "I10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X5 Move to G7 facing N",
+   "roll": null,
+   "seconds": 7.5,
+   "engine_mb": 349,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "F5"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 3,
+   "clock": 8,
+   "side": "X",
+   "action": "X2 Move to N4 facing S",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 349,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "M4",
+    "H5",
+    "I3",
+    "G7"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 4,
+   "clock": 6,
+   "side": "O",
+   "action": "O3 Move to M6",
+   "roll": null,
+   "seconds": 42.5,
+   "engine_mb": 348,
+   "o": [
+    "F7",
+    "H3",
+    "O7",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "N4",
+    "H5",
+    "I3",
+    "G7"
+   ],
+   "ball": 3,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 4,
+   "clock": 6,
+   "side": "O",
+   "action": "O4 passes to O3",
+   "roll": null,
+   "seconds": 4.8,
+   "engine_mb": 347,
+   "o": [
+    "F7",
+    "H3",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M7",
+    "N4",
+    "H5",
+    "I3",
+    "G7"
    ],
    "ball": 3,
    "in_key": [
@@ -1110,23 +1132,23 @@
    "phase": 4,
    "clock": 6,
    "side": "X",
-   "action": "X4 Move to J3 facing NE",
+   "action": "X1 Move to M9 facing S",
    "roll": null,
-   "seconds": 6.6,
-   "engine_mb": 598,
+   "seconds": 4.4,
+   "engine_mb": 346,
    "o": [
-    "F6",
+    "F7",
     "H3",
-    "L5",
-    "I11",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
-    "N5",
-    "K9",
-    "I4",
-    "F4"
+    "M7",
+    "N4",
+    "H5",
+    "I3",
+    "G7"
    ],
    "ball": 3,
    "in_key": [
@@ -1138,25 +1160,25 @@
    "phase": 4,
    "clock": 6,
    "side": "X",
-   "action": "X1 Move to E5 facing N",
+   "action": "X5 Move to E8 facing N",
    "roll": null,
-   "seconds": 0.7,
-   "engine_mb": 676,
+   "seconds": 0.0,
+   "engine_mb": 346,
    "o": [
-    "F6",
+    "F7",
     "H3",
-    "L5",
-    "I11",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
-    "N5",
-    "K9",
-    "J3",
-    "F4"
+    "M9",
+    "N4",
+    "H5",
+    "I3",
+    "G7"
    ],
-   "ball": 0,
+   "ball": 2,
    "in_key": [
     1
    ],
@@ -1166,28 +1188,82 @@
    "phase": 4,
    "clock": 6,
    "side": "O",
-   "action": "O1 passes to O2",
+   "action": "O2 Move to G4",
    "roll": null,
-   "seconds": 57.8,
-   "engine_mb": 3219,
+   "seconds": 46.4,
+   "engine_mb": 345,
    "o": [
-    "F6",
+    "F7",
     "H3",
-    "L5",
-    "I11",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
-    "N5",
-    "K9",
-    "J3",
-    "F4"
+    "M9",
+    "N4",
+    "H5",
+    "I3",
+    "E8"
    ],
-   "ball": 0,
+   "ball": 2,
    "in_key": [
     1
    ],
+   "value": null
+  },
+  {
+   "phase": 4,
+   "clock": 6,
+   "side": "O",
+   "action": "O2 Quick Step to F5",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 345,
+   "o": [
+    "F7",
+    "G4",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "N4",
+    "H5",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 4,
+   "clock": 6,
+   "side": "X",
+   "action": "X2 Quick Step to N5",
+   "roll": null,
+   "seconds": 4.4,
+   "engine_mb": 350,
+   "o": [
+    "F7",
+    "F5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "N4",
+    "H5",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
@@ -1196,54 +1272,50 @@
    "side": "X",
    "action": "X Pause",
    "roll": null,
-   "seconds": 2.1,
-   "engine_mb": 254,
+   "seconds": 0.9,
+   "engine_mb": 348,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "F4"
+    "H5",
+    "I3",
+    "E8"
    ],
-   "ball": 0,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
    "phase": 4,
    "clock": 6,
    "side": "O",
-   "action": "O1 Screen",
-   "roll": null,
-   "seconds": 45.2,
-   "engine_mb": 2685,
+   "action": "O3 Dribble",
+   "roll": "failure",
+   "seconds": 40.9,
+   "engine_mb": 347,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "F4"
+    "H5",
+    "I3",
+    "E8"
    ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
@@ -1252,138 +1324,50 @@
    "side": "X",
    "action": "X2 Move to N5 facing N",
    "roll": null,
-   "seconds": 0.9,
-   "engine_mb": 144,
+   "seconds": 3.9,
+   "engine_mb": 349,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "F4"
+    "H5",
+    "I3",
+    "E8"
    ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
    "phase": 4,
    "clock": 6,
    "side": "X",
-   "action": "X ends the turn",
-   "roll": null,
-   "seconds": 0.2,
-   "engine_mb": 157,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "K9",
-    "J3",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 4,
-   "clock": 6,
-   "side": "O",
-   "action": "O3 Screen",
-   "roll": null,
-   "seconds": 39.1,
-   "engine_mb": 2292,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "K9",
-    "J3",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 4,
-   "clock": 6,
-   "side": "X",
-   "action": "X5 Move to E3 facing N",
-   "roll": null,
-   "seconds": 4.6,
-   "engine_mb": 468,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "E5",
-    "N5",
-    "K9",
-    "J3",
-    "F4"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 4,
-   "clock": 6,
-   "side": "X",
-   "action": "X1 Quick Step to F5",
+   "action": "X3 Move to G7 facing N",
    "roll": null,
    "seconds": 0.0,
-   "engine_mb": 468,
+   "engine_mb": 349,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "E5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "E3"
+    "H5",
+    "I3",
+    "E8"
    ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
@@ -1392,217 +1376,177 @@
    "side": "O",
    "action": "O1 Screen",
    "roll": null,
-   "seconds": 74.1,
-   "engine_mb": 4911,
+   "seconds": 47.6,
+   "engine_mb": 352,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "F5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "E3"
+    "G7",
+    "I3",
+    "E8"
    ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
    "phase": 5,
    "clock": 4,
    "side": "X",
-   "action": "X1 Quick Step to G4",
+   "action": "X3 challenge",
+   "roll": "failure",
+   "seconds": 3.6,
+   "engine_mb": 352,
+   "o": [
+    "F7",
+    "F5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "N5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "O",
+   "action": "O1 Screen",
    "roll": null,
-   "seconds": 4.3,
-   "engine_mb": 453,
+   "seconds": 45.6,
+   "engine_mb": 355,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "F5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "F5",
+    "M9",
     "N5",
-    "K9",
-    "J3",
-    "E3"
+    "G7",
+    "I3",
+    "E8"
    ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
+   "ball": 2,
+   "in_key": [],
    "value": null
   },
   {
    "phase": 5,
    "clock": 4,
    "side": "X",
-   "action": "X1 Move to H6 facing N",
+   "action": "X2 Move to M5 facing N",
+   "roll": null,
+   "seconds": 3.4,
+   "engine_mb": 358,
+   "o": [
+    "F7",
+    "F5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "N5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "X",
+   "action": "X3 challenge",
+   "roll": "failure",
+   "seconds": 0.0,
+   "engine_mb": 358,
+   "o": [
+    "F7",
+    "F5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "O",
+   "action": "O2 Move to I5",
+   "roll": null,
+   "seconds": 14.6,
+   "engine_mb": 356,
+   "o": [
+    "F7",
+    "F5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "O",
+   "action": "O Hesitate",
    "roll": null,
    "seconds": 0.0,
-   "engine_mb": 453,
+   "engine_mb": 356,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
+    "F7",
+    "I5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "G4",
-    "N5",
-    "K9",
-    "J3",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 5,
-   "clock": 4,
-   "side": "O",
-   "action": "O4 Sprint to F8",
-   "roll": null,
-   "seconds": 38.8,
-   "engine_mb": 3004,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "I11",
-    "O1"
-   ],
-   "x": [
-    "H6",
-    "N5",
-    "K9",
-    "J3",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 5,
-   "clock": 4,
-   "side": "O",
-   "action": "O2 passes to O3",
-   "roll": null,
-   "seconds": 5.9,
-   "engine_mb": 3222,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
-    "O1"
-   ],
-   "x": [
-    "H6",
-    "N5",
-    "K9",
-    "J3",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 5,
-   "clock": 4,
-   "side": "X",
-   "action": "X3 Quick Step to J9",
-   "roll": null,
-   "seconds": 3.5,
-   "engine_mb": 415,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
-    "O1"
-   ],
-   "x": [
-    "H6",
-    "N5",
-    "K9",
-    "J3",
-    "E3"
-   ],
-   "ball": 1,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 5,
-   "clock": 4,
-   "side": "X",
-   "action": "X ends the turn",
-   "roll": null,
-   "seconds": 1.0,
-   "engine_mb": 496,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
-    "O1"
-   ],
-   "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
-   ],
-   "ball": 2,
-   "in_key": [
-    1
-   ],
-   "value": null
-  },
-  {
-   "phase": 5,
-   "clock": 4,
-   "side": "O",
-   "action": "O3 passes to O1",
-   "roll": null,
-   "seconds": 33.2,
-   "engine_mb": 2730,
-   "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
-    "O1"
-   ],
-   "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
    ],
    "ball": 2,
    "in_key": [
@@ -1614,23 +1558,23 @@
    "phase": 5,
    "clock": 4,
    "side": "X",
-   "action": "X Pause",
-   "roll": null,
-   "seconds": 1.7,
-   "engine_mb": 215,
+   "action": "X2 Steal",
+   "roll": "foul",
+   "seconds": 1.6,
+   "engine_mb": 358,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
+    "F7",
+    "I5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
    ],
    "ball": 2,
    "in_key": [
@@ -1642,94 +1586,459 @@
    "phase": 5,
    "clock": 4,
    "side": "O",
-   "action": "O1 Move to G7",
+   "action": "O3 passes to O2",
    "roll": null,
-   "seconds": 11.7,
-   "engine_mb": 1057,
+   "seconds": 17.3,
+   "engine_mb": 357,
    "o": [
-    "F6",
-    "H3",
-    "L5",
-    "F8",
+    "F7",
+    "I5",
+    "M6",
+    "J10",
     "O1"
    ],
    "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "X",
+   "action": "X1 Move to K7 facing SE",
+   "roll": null,
+   "seconds": 3.9,
+   "engine_mb": 359,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "M9",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 2,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 5,
+   "clock": 4,
+   "side": "X",
+   "action": "X3 Move to F8 facing N",
+   "roll": null,
+   "seconds": 0.0,
+   "engine_mb": 359,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "G7",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": null
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "O",
+   "action": "O1 Screen",
+   "roll": null,
+   "seconds": 10.5,
+   "engine_mb": 356,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": {
+    "value": 16,
+    "shot_now": 14,
+    "play_on": 21
+   }
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "X",
+   "action": "X3 challenge",
+   "roll": "failure",
+   "seconds": 3.3,
+   "engine_mb": 357,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": {
+    "value": 22,
+    "shot_now": null,
+    "play_on": 27
+   }
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "O",
+   "action": "O1 Screen",
+   "roll": null,
+   "seconds": 10.4,
+   "engine_mb": 375,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": {
+    "value": 16,
+    "shot_now": 14,
+    "play_on": 21
+   }
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "X",
+   "action": "X3 challenge",
+   "roll": "failure",
+   "seconds": 3.4,
+   "engine_mb": 370,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": {
+    "value": 22,
+    "shot_now": null,
+    "play_on": 27
+   }
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "O",
+   "action": "O3 Move to K4",
+   "roll": null,
+   "seconds": 8.1,
+   "engine_mb": 372,
+   "o": [
+    "F7",
+    "I5",
+    "M6",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1
+   ],
+   "value": {
+    "value": 16,
+    "shot_now": 14,
+    "play_on": 21
+   }
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "O",
+   "action": "O2 passes to O1",
+   "roll": null,
+   "seconds": 1.8,
+   "engine_mb": 368,
+   "o": [
+    "F7",
+    "I5",
+    "K4",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1,
+    2
+   ],
+   "value": null
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "X",
+   "action": "X3 Move to E6 facing NE",
+   "roll": null,
+   "seconds": 1.9,
+   "engine_mb": 366,
+   "o": [
+    "F7",
+    "I5",
+    "K4",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "F8",
+    "I3",
+    "E8"
+   ],
+   "ball": 1,
+   "in_key": [
+    1,
+    2
+   ],
+   "value": null
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "X",
+   "action": "X3 Steal",
+   "roll": "no foul/kept",
+   "seconds": 0.0,
+   "engine_mb": 366,
+   "o": [
+    "F7",
+    "I5",
+    "K4",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "E6",
+    "I3",
+    "E8"
    ],
    "ball": 0,
    "in_key": [
-    1
+    1,
+    2
    ],
    "value": null
   },
   {
-   "phase": 5,
-   "clock": 4,
+   "phase": 6,
+   "clock": 2,
+   "side": "O",
+   "action": "O1 Move to I7",
+   "roll": null,
+   "seconds": 0.7,
+   "engine_mb": 366,
+   "o": [
+    "F7",
+    "I5",
+    "K4",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "K7",
+    "M5",
+    "E6",
+    "I3",
+    "E8"
+   ],
+   "ball": 0,
+   "in_key": [
+    1,
+    2
+   ],
+   "value": null
+  },
+  {
+   "phase": 6,
+   "clock": 2,
    "side": "O",
    "action": "O1 shoots (floater)",
    "roll": null,
-   "seconds": 565.6,
-   "engine_mb": 5243,
+   "seconds": 0.2,
+   "engine_mb": 375,
    "o": [
-    "G7",
-    "H3",
-    "L5",
-    "F8",
+    "I7",
+    "I5",
+    "K4",
+    "J10",
     "O1"
    ],
    "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
+    "K7",
+    "M5",
+    "E6",
+    "I3",
+    "E8"
    ],
    "ball": 0,
    "in_key": [
-    1
+    1,
+    2
    ],
    "value": null
   },
   {
-   "phase": 5,
-   "clock": 4,
+   "phase": 6,
+   "clock": 2,
    "side": "X",
-   "action": "X1 Contest",
+   "action": "X1 Move to J6 facing W",
    "roll": null,
-   "seconds": 558.8,
-   "engine_mb": 5271,
+   "seconds": 0.2,
+   "engine_mb": 368,
    "o": [
-    "G7",
-    "H3",
-    "L5",
-    "F8",
+    "I7",
+    "I5",
+    "K4",
+    "J10",
     "O1"
    ],
    "x": [
-    "H6",
-    "N5",
-    "J9",
-    "J3",
-    "E3"
+    "K7",
+    "M5",
+    "E6",
+    "I3",
+    "E8"
    ],
    "ball": 0,
    "in_key": [
-    1
+    1,
+    2
+   ],
+   "value": null
+  },
+  {
+   "phase": 6,
+   "clock": 2,
+   "side": "X",
+   "action": "X1 Contest",
+   "roll": "blocked",
+   "seconds": 0.0,
+   "engine_mb": 368,
+   "o": [
+    "I7",
+    "I5",
+    "K4",
+    "J10",
+    "O1"
+   ],
+   "x": [
+    "J6",
+    "M5",
+    "E6",
+    "I3",
+    "E8"
+   ],
+   "ball": 0,
+   "in_key": [
+    1,
+    2
    ],
    "value": null
   }
  ],
  "over": true,
  "result": {
-  "kind": "shot",
-  "points": 2,
-  "contest": 1
+  "kind": "turnover_end",
+  "points": 0,
+  "contest": 0
  },
- "score": 11,
- "fouls": 0,
- "tos": 3
+ "score": -10,
+ "fouls": 1,
+ "tos": 3,
+ "part": "C",
+ "engine_limit_mb": 300
 }

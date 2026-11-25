@@ -26,7 +26,8 @@ import exam_boards as X                  # noqa: E402
 from playmaker_engine import board as B  # noqa: E402
 
 DEF_SETUPS = ['E1', 'E2', 'E3', 'E3b', 'E5', 'E5b', 'E7', 'E7j', 'E8', 'E12', 'E26', 'E26b', 'E27', 'E27b', 'E32', 'E33']
-OFF_SETUPS = ['E15', 'E15b', 'E20']
+OFF_SETUPS = ['E15', 'E15b', 'E20', 'E17', 'E18', 'E19']
+INBOUND = dict(E17='the baseline, under the rim', E18='the corner', E19='the sideline near half court')
 TURNS = ['E4', 'E6', 'E9', 'E10', 'E11', 'E13', 'E14', 'E16', 'E21', 'E22', 'E24', 'E28', 'E28b', 'E29', 'BLK1', 'BLK2']
 PROFILE = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))['profiles']['allstar']
 
@@ -320,17 +321,41 @@ def judge(R):
         moved = t['after'].o[4][0] != 8
         E.rec('O5', 'E16', 'pass' if moved else 'fail', f"O5 stands in O1's lane to the rim. The offence's turn: {t['words']} (value {round(t['value'], 2)}). O5 ends on {B.sq(t['after'].o[4])}" + ('.' if moved else ': he does not clear the lane. O1 goes round the other way instead.'),
               'With O5 left in column I the drive is blocked and the turn\'s value is lower.')
+    segs_all = _segs()
     for chk, n in (('O6', 'E17'), ('O7', 'E18'), ('O8', 'E19')):
-        E.rec(chk, n, 'not built', 'The computer does not yet place four players around a fixed inbounder (plan risk 10): the reading of an inbound board needs the inbound pass read as the first route, which the value does not do yet.', '')
+        o, rp = E.g('offence', n), R.get('turn:' + n + 'play')
+        if not o or not rp or 'error' in rp['res']:
+            E.rec(chk, n, 'not built', 'The inbound setup or the first turn from it could not be read' + (': ' + str((rp or {}).get('res', {}).get('error', ''))[:160] if rp else '.'), '')
+            continue
+        b0 = X.get(n)
+        st = b0.with_(o=tuple(B.parse_sq(q) for q in rp['o']), ball=rp['ball'], x=tuple(B.parse_sq(q) for q in rp['x']), arrows=tuple(rp['arrows']))
+        tn = E._turn(rp['res'], st)
+        four = [i for i in range(5) if i != o['ball']]
+        in_key = [i for i in four if _in_or_touching_key(B.parse_sq(o['squares'][i]))]
+        sg = {i: tuple(segs_all.get(o['squares'][i]) or ['?']) for i in four}
+        spread = len(set(sg.values())) == len(four)
+        work = [a for a in tn['acts'] if a.kind not in ('end_turn', 'pause')]
+        offball = [a for a in work if a.piece != o['ball'] and a.kind in ('move', 'qs', 'sprint', 'screen')]
+        words = (f"Inbound from {INBOUND[n]}: O{o['ball'] + 1} puts the ball in on {o['squares'][o['ball']]}; the four: " + ', '.join('O%d %s (%s)' % (i + 1, o['squares'][i], '/'.join(sg[i])) for i in four)
+                 + f". Value {o['value']} against the defence's answer. The offence's first turn: {tn['words']} (value {round(tn['value'], 2)}).")
+        if chk == 'O6':
+            ok = len(in_key) >= 3 and len({a.piece for a in offball}) >= 2
+            E.rec(chk, n, 'pass' if ok else 'fail', words + f" {len(in_key)} of the four start in or touching the key; the turn runs {len(offball)} off-ball action(s).", 'The same teams from the corner (E18) and the sideline (E19).')
+        elif chk == 'O7':
+            ok = spread and len(work) == 1
+            E.rec(chk, n, 'pass' if ok else 'fail', words + f" The four are {'in four different segments' if spread else 'not all in different segments'}; the turn runs {len(work)} action(s). No fall-back is named: the setup returns no plan.", 'The same teams from under the rim (E17).')
+        else:
+            ok = len(work) == 1 and (work[0].kind in ('screen', 'pass') or (work[0].kind in ('move', 'qs', 'sprint') and work[0].piece != o['ball']))
+            E.rec(chk, n, 'pass' if ok else 'fail', words + f" The turn runs {len(work)} action(s).", 'The same teams from under the rim (E17).')
     o20, o15 = E.g('offence', 'E20'), E.g('offence', 'E15')
     if o20 and o15:
         spread = lambda o: sum(B.cheb(B.parse_sq(a), B.parse_sq(b)) for i, a in enumerate(o['squares']) for b in o['squares'][i + 1:])
         r9 = R.get('turn:E20play')
         t9 = E.turn2('turn:E20play', X.board('Five Out', 'Iron Wall', r9['o'], x=r9['x'], ball=r9['ball'], clock=2, arrows=r9['arrows'])) if r9 else None
-        n9 = len([a for a in t9['acts'] if a.kind not in ('end_turn', 'pause')]) if t9 else 0
+        n9 = len({a.piece for a in t9['acts'] if a.kind not in ('end_turn', 'pause')}) if t9 else 0     # (several actions at once: by different players)
         closer = spread(o20) < spread(o15)
         E.rec('O9', 'E20', 'not built' if t9 is None else ('pass' if (closer and n9 >= 2) else 'fail'), f"Last phase: {', '.join('O%d %s' % (i + 1, q) for i, q in enumerate(o20['squares']))} (the squares between the five add up to {spread(o20)}; with a full clock {spread(o15)}: {'closer together' if closer else 'no closer'}). "
-              + (f"Against the defence's own setup the offence's turn is: {t9['words']} (value {round(t9['value'], 2)}): {n9} action(s)." if t9 else 'The turn from that setup was not read.'),
+              + (f"Against the defence's own setup the offence's turn is: {t9['words']} (value {round(t9['value'], 2)}): {n9} player(s) act." if t9 else 'The turn from that setup was not read.'),
               'The same teams with a full clock are E15.')
     t = E.turn('E21')
     if t:
@@ -645,9 +670,9 @@ def cmd_b4(seed='20'):
                 break
             side = actor(s)
             v0 = T.js([T.req('b4', dict(only='value'), state=s)])[0]['res'] if (s.stage == 'play' and not s.pending and not s.decl and s.turn_n == 0) else None
-            if s.turn_n == 0 and rows:
-                # a fresh engine process for each turn: over one possession a long-lived one grew to 5 GB and was stopped
-                # by the system (reported). The engine's memory can't change an answer, so the play is the same.
+            if s.turn_n == 0 and rows and os.environ.get('PM_B4_RESTART'):
+                # (Part B: a fresh engine process for each turn, because a long-lived one grew to 5 GB. Part C holds the
+                # engine's memory down, so the possession now runs in one engine, as the app does; this switch is kept.)
                 eng.close()
                 eng = jsbridge.NodeEngine().install()
             t0 = time.time()
@@ -757,6 +782,20 @@ def cmd_extra():
         tr = T.js([T.req('o9', None, fn='searchJSON', profile=PROFILE, max_depth=1, state=b)], timeout=3000)[0]
         R['turn:E20play'] = dict(ms=tr['ms'], res=tr['res'], o=o20['squares'], ball=o20['ball'], x=st['x'], arrows=st['arrows'])
         print('O9 turn', tr['res']['results'][0])
+    # O6 to O8: from each inbound setup the defence sets up, and the offence's first turn is read
+    for n in INBOUND:
+        o = R.get('offence:' + n, {}).get('res')
+        if not o or 'error' in o:
+            continue
+        b0 = X.get(n)
+        b = b0.with_(o=tuple(B.parse_sq(q) for q in o['squares']), ball=o['ball'])
+        st = T.js([T.req(n, dict(only='stances'), state=b)], timeout=3000)[0]['res']
+        if 'error' in st:
+            print(n, 'stances ERROR', st['error'][:200]); continue
+        b = b.with_(x=tuple(B.parse_sq(q) for q in st['x']), arrows=tuple(st['arrows']))
+        tr = T.js([T.req(n, None, fn='searchJSON', profile=PROFILE, max_depth=1, state=b)], timeout=3000)[0]
+        R['turn:' + n + 'play'] = dict(ms=tr['ms'], res=tr['res'], o=o['squares'], ball=o['ball'], x=st['x'], arrows=st['arrows'])
+        print(n, 'turn', json.dumps(tr['res'].get('results', [tr['res']])[0])[:200])
     R['b3:small boards'] = dict(ms=0, res=separate_thinking())
     print('B3', R['b3:small boards']['res'])
     json.dump(R, open(os.path.join(RUN, 'exam_readings.json'), 'w'))

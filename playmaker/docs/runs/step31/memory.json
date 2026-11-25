@@ -1,0 +1,35 @@
+{
+ "rows": [
+  {
+   "what": "An All-Star turn on the 20 November board (the offence, one turn ahead)",
+   "before": "1.95 GB; failed outright at 1 GB",
+   "after": "Runs. 289 MB in all, 33 s (27 s unheld)",
+   "same": "Yes"
+  },
+  {
+   "what": "The widest turn in the exam (E21, every pass denied)",
+   "before": "Over 1.4 GB",
+   "after": "Runs. 308 MB in all, 57 s (51 s unheld)",
+   "same": "Yes"
+  },
+  {
+   "what": "A defence setup (E1)",
+   "before": "About 1 GB",
+   "after": "Runs. 240 MB in all, 10 s",
+   "same": "Yes"
+  },
+  {
+   "what": "A defence setup (E3, the longest)",
+   "before": "Not measured",
+   "after": "Runs. 324 MB in all, 138 s",
+   "same": "Yes"
+  },
+  {
+   "what": "An offence setup (E15b)",
+   "before": "About 1.2 GB",
+   "after": "Runs. 282 MB in all, 41 s",
+   "same": "Yes"
+  }
+ ],
+ "note": "'In all' is the engine process's whole memory with its heap held to 256 MB (node --max-old-space-size=256). 'Same decision' was checked on the memory change alone, before the ruling and the search changes of this part. Tool: scratch script mem4.js (kept in docs/runs/step31/mem4.js)."
+}

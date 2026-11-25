@@ -4566,6 +4566,28 @@ const PMEngine = (() => {
         this.trace = this.trace.map(r => [r[0], r[1], r[2] - p0]);
       }
       results.sort((x, y) => (Math.abs(x[0] - y[0]) > 1e-9 ? byBest(x, y) : tieCmp(x[1], y[1])));   // step 31: level turns in one order, both engines
+      // Step 31, Part C: of the turns level with the best, the list breaks the tie before "standing still" does (the
+      // design: the list stays as a tie-break). Each such turn's board is read for every look this phase at its chance,
+      // best first: the defence takes the turn that leaves the smaller list, the offence the larger. So a defender turns
+      // an arrow or steps across when that takes something off a look below the best one, and stands still only when
+      // it takes off nothing at all. (A turn that ends in a roll has no one board to read: it keeps its place.)
+      if (valueLead() && results.length > 1 && MAP_MEMO !== null) {
+        let g = 1; while (g < results.length && Math.abs(results[g][0] - results[0][0]) <= 1e-9) g++;
+        if (g > 1) {
+          const lists = results.slice(0, g).map(r => { const node = playTurn(s, r[1]); return (!isChance(node) && node.stage === 'play' && !node.pending) ? stanceRead(node).list : null; });
+          const sgn = side === 'X' ? 1 : -1, idx = results.slice(0, g).map((_, i) => i);
+          const lcmp = (i, j) => {
+            const a = lists[i], b = lists[j];
+            if (!a || !b) return 0;
+            const n = Math.max(a.length, b.length);
+            for (let k = 0; k < n; k++) { const x = k < a.length ? a[k] : 0, y = k < b.length ? b[k] : 0; if (Math.abs(x - y) > 1e-9) return sgn * (x - y); }
+            return 0;
+          };
+          idx.sort((i, j) => lcmp(i, j) || (i - j));
+          const head = idx.map(i => results[i]);
+          for (let i = 0; i < g; i++) results[i] = head[i];
+        }
+      }
       if (this.split) results = this.splitTies(s, results, side);
       return [results, reached];
     }
@@ -6272,7 +6294,7 @@ const PMEngine = (() => {
   let BOUND_LOOKS = 2;
   let PV_BRUTE = false;                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
-  function possRead(m, s0, lastPhase, noAnswer) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
+  function possRead(m, s0, lastPhase, noAnswer, probe) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
     const owed = threeSecondsLeave(s0 || s), r = m.r, soft = s.ctx.soft;
     // the actions a route may use: the phase's six less those spent getting men out of the key; in the last phase what
@@ -6440,6 +6462,15 @@ const PMEngine = (() => {
     };
     const bars = [];
     let U = runCur(bars);
+    if (probe) {
+      // (the stance search's first look: the number with defender probe.d standing on each [square, arrow], by
+      // difference: his contests there, the walls and lanes as they stand. It only chooses which squares are then read
+      // in full.)
+      lim.fill(32767);
+      const qsP = s.ctx.dfn[probe.d].qs, modeP = stanceMode(m.sN, probe.d), est = new Float64Array(probe.cands.length);
+      for (let x = 0; x < probe.cands.length; x++) est[x] = runCand(probe.d, probe.cands[x][0], cm2Cached(probe.cands[x][0], probe.cands[x][1], qsP, modeP));
+      return { est, U };
+    }
     const U0 = U, worth0 = rows[K].slice();
     PVS.reads++; PVS.looks += n;
     const moves = [], moved = [false, false, false, false, false], taken = new Set();
@@ -6704,21 +6735,48 @@ const PMEngine = (() => {
   //   2. each defender in turn, his square and the squares next to it with each of the eight arrow pairs, and two
   //      defenders swapping squares (D-295), each read in full on the board as it would then be (walls, lanes and
   //      steals included, which part 1's contests can't see).
+  const EMPTY_LIST = new Float64Array(0);
   function stanceRead(s) {
     const key = MAP_MEMO !== null ? 'SR|' + stateKey(s) : null;
     if (key !== null) { const hit = SMALL_MEMO.get(key); if (hit !== undefined) return hit; }
     const pp = possParts(s);
     const vec = pp.routes ? Float64Array.from(pp.routes).sort().reverse() : new Float64Array(6).fill(-Infinity);
-    const out = { U: pp.V, n: pp.moves.length, m: pp.routes ? topCount(pp.routes, pp.U) : 0, vec, moves: pp.moves };
+    // the list: every look this phase at its chance, best first (the 64 best are kept: the tie-break below reads no further)
+    let list = EMPTY_LIST;
+    if (pp.L && pp.worth) {
+      const all = [];
+      for (let j = 0; j < pp.L.length; j++) { const w = pp.worth[j]; if (w > 0) all.push(w * pp.L[j].r); }
+      all.sort((x, y) => y - x);
+      list = Float64Array.from(all.slice(0, 64));
+    }
+    const out = { U: pp.V, n: pp.moves.length, m: pp.routes ? topCount(pp.routes, pp.U) : 0, vec, list, moves: pp.moves };
     STANCE_STATS.reads++;
     if (key !== null) SMALL_MEMO.set(key, out);
     return out;
   }
-  const STANCE_STATS = { reads: 0, rounds: 0 };
+  const STANCE_STATS = { reads: 0, rounds: 0, probed: 0 };
   function stanceLess(a, b) {                          // is a better for the defence than b?
     if (a.U < b.U - 1e-9) return true;
     if (a.U > b.U + 1e-9) return false;
-    return a.n < b.n;                                   // level: the stance that needs fewer of the phase's actions to hold it there
+    // Level on the number: the list breaks the tie (the design: "the list can stay as a display and as a tie-break").
+    // Every attacker's best look this phase, best first: the shape that leaves the smaller second look, then the
+    // smaller third, and so on. Without it the number is mostly its one best look, and four defenders are free to
+    // stand anywhere that doesn't change it.
+    for (let i = 0; i < a.vec.length; i++) {
+      const x = a.vec[i], y = b.vec[i];
+      if (x === y) continue;                            // (both -Infinity too)
+      if (x < y - 1e-9) return true;
+      if (x > y + 1e-9) return false;
+    }
+    // ... then every look, best first, each at its chance (the design's sum takes the looks in that order; this is that
+    // order with no look ever outweighed by the ones below it)
+    const la = a.list, lb = b.list, nl = Math.max(la.length, lb.length);
+    for (let i = 0; i < nl; i++) {
+      const x = i < la.length ? la[i] : 0, y = i < lb.length ? lb[i] : 0;
+      if (x < y - 1e-9) return true;
+      if (x > y + 1e-9) return false;
+    }
+    return a.n < b.n;                                   // level all the way down: the stance that needs fewer of the phase's actions to hold it there
   }
   const lineSquares = (a, b) => {                      // the squares from a toward b, nearest a first (a itself left out)
     const out = [], dx = SX[b] - SX[a], dy = SY[b] - SY[a], n = Math.max(Math.abs(dx), Math.abs(dy));
@@ -6728,6 +6786,14 @@ const PMEngine = (() => {
   // How far part 2 looks around each defender (squares, as the game counts them). Kept, and on trial (D-299): the exam
   // widens it and compares the stances.
   let STANCE_STEP = 1;
+  let STANCE_NEAR = 3;                                 // how far from his man a defender's square is looked at (and on his line, any distance)
+  let STANCE_TOP = 5;                                  // how many of those squares are read in full each time, besides his own (kept, on trial)
+  function stanceProbe(s, d, cands) {
+    const lastPhase = s.clock <= 2;
+    const m = lastPhase ? covBuild(W_(s, { turn_n: 0, side: 'O', approach: -1, prev_wait: '', final: false, turn_lead: -1, turn_x: [], turn_moved: 0, react_moved: 0 }), true, null, true)
+      : covBuild(covOffFresh(s), true, null);
+    return possRead(m, s, lastPhase, false, { d, cands }).est;
+  }
   function stanceBase(s, man) {                        // the goal-side starting shape -> the board with the five on their base positions
     const put = (st, d, q, a) => W_(st, { x: setAt(st.x, d, q), arrows: setAt(st.arrows, d, a) });
     const lifted = W_(s, { x: [OFFSQ, OFFSQ, OFFSQ, OFFSQ, OFFSQ], arrows: [0, 0, 0, 0, 0] });
@@ -6771,7 +6837,8 @@ const PMEngine = (() => {
     const man = opts.man ? opts.man.slice() : [0, 1, 2, 3, 4];     // who each defender starts on (the search may swap them)
     const steps = [];
     let start = 'given';
-    if (!opts.from) { start = 'base'; s = stanceBase(s, man).s; }
+    const sb = stanceBase(s, man), lines = sb.lines;      // (each defender's line from his man to the weight he would help)
+    if (!opts.from) { start = 'base'; s = sb.s; }
     else s = W_(s, { x: opts.from.x.slice(), arrows: opts.from.arrows.slice() });
     const base = { x: Array.from(s.x), arrows: Array.from(s.arrows) };
     let cur = stanceRead(s), rounds = 0;
@@ -6787,13 +6854,25 @@ const PMEngine = (() => {
         steps.push({ d, from: sqName(s.x[d]), to: sqName(q), arrow: a, value: +v.U.toFixed(4), by: 'the answer' });
         s = t; cur = v; changed = true;
       }
-      // 2. each defender's square and those next to it, every pair of arrows, read in full (in the order of where they
-      // stand, never the order the defenders are listed in)
+      // 2. one defender at a time, moved and turned (the design's step 3). Every free square within STANCE_NEAR of his
+      // man, on his line to the weight or next to where he stands is looked at first by difference (stanceProbe); his
+      // own square and the STANCE_TOP best of the others are then read in full with every pair of arrows, on the board
+      // as it would be (walls, lanes and steals included). A change is kept when it lowers the number. (In the order of
+      // where they stand, never the order the defenders are listed in.)
       for (const d of [0, 1, 2, 3, 4].sort((u, v) => s.x[u] - s.x[v])) {
         let best = null;
-        const here = s.x[d];
+        const here = s.x[d], mq = s.o[man[d]], line = new Set(lines[d]);
+        const sqs = [];
         for (let q = 0; q < NSQ; q++) {
-          if (!ONB[q] || cheb(q, here) > STANCE_STEP || (q !== here && (s.x.includes(q) || s.o.includes(q)))) continue;
+          if (!ONB[q] || q === here || s.x.includes(q) || s.o.includes(q)) continue;
+          if (cheb(q, mq) <= STANCE_NEAR || cheb(q, here) <= STANCE_STEP || line.has(q)) sqs.push(q);
+        }
+        const cands = []; for (const q of sqs) for (let a = 0; a < 8; a++) cands.push([q, a]);
+        const est = cands.length ? stanceProbe(s, d, cands) : [];
+        const rank = sqs.map((q, i) => { let lo = Infinity; for (let a = 0; a < 8; a++) if (est[i * 8 + a] < lo) lo = est[i * 8 + a]; return [lo, q]; }).sort((x, y) => (x[0] - y[0]) || (x[1] - y[1]));
+        const full = [here].concat(rank.slice(0, STANCE_TOP).map(z => z[1]));
+        STANCE_STATS.probed += cands.length;
+        for (const q of full) {
           for (let a = 0; a < 8; a++) {
             if (q === here && a === s.arrows[d]) continue;
             const v = stanceRead(put(s, d, q, a));
@@ -6875,7 +6954,7 @@ const PMEngine = (() => {
     const read = (o, ball) => {                         // a placement's worth against the defence's quick answer
       const key = o.join(',') + '|' + ball;
       let v = worth.get(key);
-      if (v === undefined) { const q = stanceQuick(mk(o, ball)); v = { U: q.v.U, x: Array.from(q.s.x), arrows: Array.from(q.s.arrows) }; worth.set(key, v); }
+      if (v === undefined) { const q = stanceQuick(mk(o, ball)); v = { U: q.v.U, vec: q.v.vec, list: q.v.list, x: Array.from(q.s.x), arrows: Array.from(q.s.arrows) }; worth.set(key, v); }
       return v;
     };
     // 3. the others on their heaviest free segments
@@ -6899,10 +6978,24 @@ const PMEngine = (() => {
       return o;
     };
     const cands = [];
+    // an inbound: the inbounder stands where the ball is put in, with the ball; the other four are placed round him by
+    // the same steps (the five situations: where the ball starts fixes access and room for everyone else)
+    const inb = (s0.inbound && ctx.inbounder != null && ctx.inbounder >= 0) ? ctx.inbounder : -1;
     if (opts.fixed) cands.push({ ball: opts.fixed.ball, o: opts.fixed.o.slice() });
+    else if (inb >= 0) cands.push({ ball: inb, o: place(inb, s0.o[inb]) });
     else for (let ball = 0; ball < 5; ball++) for (const bq of starts) cands.push({ ball, o: place(ball, bq) });
     for (const c of cands) c.v = read(c.o, c.ball);
-    const better = (u, v) => u.v.U > v.v.U + 1e-9;
+    // more for the offence: the number; level, the list (each attacker's best look this phase, best first; then every
+    // look at its chance, best first): the placement that leaves it more good looks, not one
+    const more = (a, b) => {
+      if (a.U > b.U + 1e-9) return true;
+      if (a.U < b.U - 1e-9) return false;
+      for (let i = 0; i < a.vec.length; i++) { const x = a.vec[i], y = b.vec[i]; if (x === y) continue; if (x > y + 1e-9) return true; if (x < y - 1e-9) return false; }
+      const n = Math.max(a.list.length, b.list.length);
+      for (let i = 0; i < n; i++) { const x = i < a.list.length ? a.list[i] : 0, y = i < b.list.length ? b.list[i] : 0; if (x > y + 1e-9) return true; if (x < y - 1e-9) return false; }
+      return false;
+    };
+    const better = (u, v) => more(u.v, v.v);
     let rank = cands.map((c, i) => ({ c, i })).sort((u, v) => (better(u.c, v.c) ? -1 : better(v.c, u.c) ? 1 : u.i - v.i)).map(z => z.c);
     // each attacker in turn tries the squares of his next segments (the best placement first); kept when it raises the number
     const improve = c => {
@@ -6916,7 +7009,7 @@ const PMEngine = (() => {
             if (cur.o.includes(r.c)) continue;
             const o = cur.o.slice(); o[a] = r.c;
             const v = read(o, cur.ball);
-            if (v.U > (best ? best.v.U : cur.v.U) + 1e-9) best = { ball: cur.ball, o, v };
+            if (more(v, best ? best.v : cur.v)) best = { ball: cur.ball, o, v };
           }
           if (best) { cur = best; changed = true; steps++; }
         }
@@ -7064,11 +7157,13 @@ const PMEngine = (() => {
   function coverage(s0, opts) {
     opts = opts || {};
     if (opts.trial) {                                    // step 31 (D-299): a cap on trial: widened for this one reading, then put back
-      const keep = [STANCE_STEP, OFF_SEGS, OFF_FINAL], t = opts.trial;
+      const keep = [STANCE_STEP, OFF_SEGS, OFF_FINAL, STANCE_NEAR, STANCE_TOP], t = opts.trial;
       if (t.stance_step != null) STANCE_STEP = t.stance_step;
+      if (t.stance_near != null) STANCE_NEAR = t.stance_near;
+      if (t.stance_top != null) STANCE_TOP = t.stance_top;
       if (t.off_segs != null) OFF_SEGS = t.off_segs;
       if (t.off_final != null) OFF_FINAL = t.off_final;
-      try { return coverage(s0, Object.assign({}, opts, { trial: null })); } finally { STANCE_STEP = keep[0]; OFF_SEGS = keep[1]; OFF_FINAL = keep[2]; }
+      try { return coverage(s0, Object.assign({}, opts, { trial: null })); } finally { STANCE_STEP = keep[0]; OFF_SEGS = keep[1]; OFF_FINAL = keep[2]; STANCE_NEAR = keep[3]; STANCE_TOP = keep[4]; }
     }
     if (opts.only === 'parts') return { parts: mapParts(s0) };
     if (opts.only === 'value') {                          // step 31 (D-284): the possession's value, with its parts

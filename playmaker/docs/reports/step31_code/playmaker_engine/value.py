@@ -146,10 +146,27 @@ def poss_read(r, opts, s0=None, last_phase=False):
         return memo[key]
     SV = [[(sval(i, d, cms[d].get(L[i]['c'])) if cms[d] is not None else None) for d in range(5)] for i in range(n)]
     gone = [False] * n
+    # Step 31, Part C (Shaun, 25 Nov 2026: "later answers cost actions too"; engine.js possRead). In this phase a look
+    # faces only the movements the defence can make before its shot goes up: what is left of the defence's turn if it is
+    # the one to act, then two for each turn the offence must hand over on the way. lim[j]: how many of the answer's
+    # movements look j faces in this phase; the phases after face them all. SVK, gone_k: each look's contests as this
+    # phase's shot will find them.
+    sr = s0 if s0 is not None else s
+    base_act = max(0, 2 - sr.turn_n) if (sr.side == 'X' and sr.stage == 'play' and not sr.pending) else 0
+    lim = []
+    for o in L:
+        if o['a'] == b:
+            turns = (1 + (o['n0'] - 1) // 2) if o['dr'] else o['n0'] // 2
+        else:
+            turns = 1 + (o['n0'] - 1) // 2
+        lim.append(base_act + 2 * turns)
+    SVK = [list(row) for row in SV]
+    gone_k = [False] * n
+    nm = [0]
 
-    def worth(i, Bv, d, nv):
+    def worth(i, Bv, d, nv, row_k=None):
         o = L[i]
-        types, tmp, row = o['lk'].types, list(o['open']), SV[i]
+        types, tmp, row = o['lk'].types, list(o['open']), (row_k if row_k is not None else SV[i])
         for e in range(5):
             x = nv if e == d else row[e]
             if not x:
@@ -175,7 +192,10 @@ def poss_read(r, opts, s0=None, last_phase=False):
             bars.append(U)
         for i in range(1, K + 1):
             Bv = hist[i - 2] if i >= 3 else 0.0
-            rows[i] = [NEG if gone[j] else worth(j, Bv, -1, None) for j in range(n)]
+            if i == K:
+                rows[i] = [NEG if gone_k[j] else worth(j, Bv, -1, None, SVK[j]) for j in range(n)]
+            else:
+                rows[i] = [NEG if gone[j] else worth(j, Bv, -1, None) for j in range(n)]
             U = _route_t(L, rows[i], b, U, left, key_mask, cut, vec if i == K else None, act, i)
             hist[i] = U
             if bars is not None:
@@ -217,7 +237,11 @@ def poss_read(r, opts, s0=None, last_phase=False):
         U = OUT
         for i in range(1, K + 1):
             Bv = h[i - 2] if i >= 3 else 0.0
-            WA = [(NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) for x, j in enumerate(idx)]
+            if i == K:
+                WA = [((NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) if lim[j] > nm[0]
+                       else (NEG if gone_k[j] else worth(j, Bv, -1, None, SVK[j]))) for x, j in enumerate(idx)]
+            else:
+                WA = [(NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) for x, j in enumerate(idx)]
             U = _route_t(LA, WA, b, U, left, key_mask, cut, v3 if i == K else None, None, i)
             h[i] = U
         return U, v3
@@ -239,6 +263,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             lowers = False
             for j, i in act:
                 if gone[j]:
+                    continue
+                if i == K and lim[j] <= nm[0]:          # this phase's shot is up before this movement
                     continue
                 c = L[j]['c']
                 if c == q:
@@ -312,9 +338,15 @@ def poss_read(r, opts, s0=None, last_phase=False):
             break
         d, q, cm = best['d'], best['q'], best['cm']
         for i in range(n):
+            nv = sval(i, d, cm.get(L[i]['c']))
             if L[i]['c'] == q:
                 gone[i] = True
-            SV[i][d] = sval(i, d, cm.get(L[i]['c']))
+            SV[i][d] = nv
+            if lim[i] > nm[0]:
+                if L[i]['c'] == q:
+                    gone_k[i] = True
+                SVK[i][d] = nv
+        nm[0] += 1
         moves.append((d, q, best['a']))
         moved[d] = True
         taken.add(q)

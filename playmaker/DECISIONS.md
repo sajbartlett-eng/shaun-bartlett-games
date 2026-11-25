@@ -1845,6 +1845,27 @@ order afterwards (`agent._driver_order` did, from step 22b): one reading everywh
 Source: the step 31 exam (the defence's level turns went to a Move by the lowest-numbered defender to the lowest-numbered
 square); the prompt's "same tie rule in both engines" · **Built in step 31; Shaun to confirm.**
 
+**D-301. One think fits a phone's browser.** The engine's stores (the one-think memory, the remembered readings, the
+reach stores) are each held in two small generations: full, the newer becomes the older and the oldest is dropped; what
+is dropped is read again when next needed. They can change how long a think takes and never what it decides. Measured: a
+think that held 2 GB runs inside 256 MB with the same decisions, under 10 in 100 slower. · Source: Shaun, 25 Nov 2026
+("merge only if one think fits in a phone's browser"); step 31 Part B's memory finding · **Built in step 31, Part C.**
+
+**D-302. Later answers cost actions too.** Inside the possession's value the defence's answer gets only the actions and
+time it will really have. In the phase being read, a look faces only the movements the defence can make before that
+look's shot goes up: what is left of the defence's turn if it is the one to act, then two for each turn the offence must
+hand over on the way (a pass, a Dribble or a Screen ends its turn; so does its second action). A shot the ball handler
+can take this turn faces none. Phases after this one face the whole answer, because the defence has had its turns by
+then. Both engines. · Source: the design's ruling of 25 Nov 2026 ("Later answers inside the number") · **Built in step
+31, Part C.**
+
+**D-303. The list is the tie-break.** Where two shapes or two turns read level on the possession's value, the list
+decides: each attacker's best look this phase, best first, then every look at its chance, best first. The defence takes
+the smaller list, the offence the larger; standing still (D-300) comes after it. In the defence's setup search, the
+offence's setup and the JavaScript engine's choice of turn. Without it the number is mostly its one best look, and
+everything below that look is left to chance. · Source: the design ("the list can stay as a display and as a
+tie-break") · **Built in step 31, Part C; Shaun to confirm it is what he meant by a tie-break.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

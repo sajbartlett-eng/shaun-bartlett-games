@@ -36,9 +36,16 @@ def values(T):
 
 @needs_node
 def test_O1_a_cutter_who_catches_under_the_rim_with_one_late_defender_shoots(values, T):
-    """E13. Take the good shot: his shot now is worth more than playing on, and the offence's turn starts with it."""
+    """E13. Take the good shot: nothing he can get by playing on is worth more than his shot, and the offence's turn ends
+    with it.
+
+    RE-RECORDED in step 31, Part C, with this note. The first line was `shot_now > play_on + 1.0` (36 against 23.53).
+    The ruling of 25 November ("later answers cost actions too", D-302) changed what playing on reads: a step and a
+    shot in the same turn now face no defensive movement in between, so playing on reads 36 as well (it is the same
+    shot, one square over). The principle is unchanged and still asserted: playing on is never worth more than the
+    shot, the number is the shot's, and the turn ends in his shot."""
     v = values['E13']
-    assert v['shot_now'] is not None and v['shot_now'] > v['play_on'] + 1.0, v
+    assert v['shot_now'] is not None and v['shot_now'] >= v['play_on'] - 1e-9, v
     assert v['value'] == pytest.approx(v['shot_now'])
     prof = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))['profiles']['allstar']
     out = T.js([T.req('E13', None, fn='searchJSON', profile=prof, max_depth=1)], timeout=300)[0]['res']
@@ -50,9 +57,12 @@ def test_O1_a_cutter_who_catches_under_the_rim_with_one_late_defender_shoots(val
 @needs_node
 def test_O1_fails_without_the_defences_answer_inside_the_number(values):
     """The principle missing: read with the defence standing still, playing on looks worth more than the shot (the 20
-    November fault: the cutter didn't shoot). `before_answer` is that reading."""
+    November fault: the cutter didn't shoot). `before_answer` is that reading.
+
+    RE-RECORDED in step 31, Part C: the last comparison was `shot_now > play_on`; under D-302 the two are level (see the
+    note on the test above). The comparison that carries the principle is the first, and it is unchanged."""
     v = values['E13']
-    assert v['before_answer'] > v['shot_now'] > v['play_on']
+    assert v['before_answer'] > v['shot_now'] >= v['play_on'] - 1e-9
 
 
 @needs_node
