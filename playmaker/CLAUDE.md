@@ -46,6 +46,18 @@ Anything a player sees uses plain basketball words: no internal names, codes or 
 - A new reading of the board reuses the settled in-play reading (the list, D-219), or the report says why it differs and which decision allows it.
 - Before comparing two numbers, confirm they come from the same reading, against the same defence, to the same horizon. Say so in the report.
 
+## The one rule for all speed work
+
+Speed comes only from three places: never doing the same work twice, doing the same work with cheaper machinery, and using the whole device. It never comes from thinking about less (step 30b, Shaun: "Speed and fidelity without dictating and restricting organic decision deviations.").
+
+- **No narrowing.** Don't cap, trim or shorten the options either side considers. The only cut allowed is one that provably can't change the answer.
+- **No stored choices.** Nothing remembers "on this board, do this". Facts and readings may be remembered. Decisions are made fresh every time.
+- **No books.** No stored setups, openings or plays.
+- **No clock cut-offs.** Thinking ends when the reading is complete, never because time ran out. The same board must give the same decision on a slow phone and a fast laptop.
+- **Mixes stay live.** Where the computer mixes (real against fake, for example), the odds may be remembered within one think, but the roll is always fresh.
+
+A memory lives for one think only, stores readings and never choices, and keys on the whole state the side may see, built from the state itself. Any speed change shows the same decisions before and after. Existing counts, caps and clocks stay until Shaun rules on them (listed in `docs/reports/STEP30B_REPORT.md`).
+
 ## Tests
 
 Don't run the test suite, self-play, the exam or any long job unless the step tells you to. Steps that only move, rename, archive or document things need no test run. Testing happens once, at the end of a group of steps, when a whole part of the game can be tested in its final state. The step that closes the group says so and names the tests.

@@ -4751,7 +4751,8 @@ const PMEngine = (() => {
   }
   function actionFrom(t) { return A(t[0], t[1], t[2], t[3] ? parseSq(t[3]) : -1, t[4], t[5], t[6] || ''); }
   // agent.Agent.choose after its search: the base leaf and the goals of each turn it weighs. req: {state, ctx, side, turns}
-  function goalsJSON(text) {
+  function goalsJSON(text) { return withMemo(() => goalsJSONCalc(text)); }
+  function goalsJSONCalc(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
@@ -4773,7 +4774,8 @@ const PMEngine = (() => {
   // The browser worker's entry: Python (agent.Agent.choose, in Pyodide) passes the request as JSON text. The context is
   // kept between decisions of the same possession (its caches with it).
   const CTXS = new Map();
-  function searchJSON(text) {
+  function searchJSON(text) { return withMemo(() => searchJSONCalc(text)); }
+  function searchJSONCalc(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
@@ -4788,7 +4790,8 @@ const PMEngine = (() => {
 
   // Step 18o (D-195, agent._reads): the quick reading's own parts for a list of setup placements of one matchup: the
   // position's value (the offence's view), then each attacker's best look after the defence's best cover, largest first.
-  function readsJSON(text) {
+  function readsJSON(text) { return withMemo(() => readsJSONCalc(text)); }
+  function readsJSONCalc(text) {
     const req = JSON.parse(text);
     if (req.lane !== undefined && (req.lane === true) !== laneOn()) setLane(req.lane === true);      // step 18q: eval.lane follows the request
     if (req.map !== undefined && req.map !== D.config.eval.map) setMap(req.map);                    // step 18s, stop two: eval.map follows the request
@@ -4962,7 +4965,32 @@ const PMEngine = (() => {
   // The board as the next phase finds it if nobody moves again (resolve.new_phase): the defence's movement fresh, no
   // zone broken (a won Dribble lasts the phase), no screen standing (a screen ends with the phase).
   const covNext = s => W_(s, { screens: [], tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [], cnt: ZERO });
+  // Step 30b: a memory that lasts one request. The lean map of a board is read once per request and shared by every
+  // reading that asks for that same board (the lasting gap, the top of the list, the settlement). The key is the whole
+  // state, every field, built from the state itself (the context by its id; the state's own scratch caches, the fields
+  // starting with an underscore, left out), with the reading settings that can differ inside one request. It holds
+  // readings, never choices, and is thrown away when the request ends. Where no request has opened it (a direct call),
+  // nothing is remembered.
+  let MAP_MEMO = null;
+  const MAP_MEMO_MAX = 2000;
+  const stateKey = s => JSON.stringify(s, (k, v) => (k === 'ctx' ? (v ? v.id : null) : (k.length && k.charCodeAt(0) === 95) ? undefined : v));
+  function withMemo(f) {                               // a request's own memory, opened and thrown away around it
+    const keep = MAP_MEMO;
+    MAP_MEMO = new Map();
+    try { return f(); } finally { MAP_MEMO = keep; }
+  }
   function covBuild(s, lean, r0) {
+    if (MAP_MEMO === null || r0 || lean !== true) return covBuildCalc(s, lean, r0);
+    const key = RD.lead + '|' + (MAP_ME || '') + '|' + (D.config.eval.answer_lead || '') + '|' + stateKey(s);
+    let m = MAP_MEMO.get(key);
+    if (m === undefined) {
+      m = covBuildCalc(s, true, null);
+      if (MAP_MEMO.size >= MAP_MEMO_MAX) MAP_MEMO.clear();
+      MAP_MEMO.set(key, m);
+    }
+    return m;
+  }
+  function covBuildCalc(s, lean, r0) {
     const r = r0 || new Read(s), ctx = s.ctx, noRim = ctx.noRim, off = ctx.control > 0 ? ctx.control : 0;
     const sN = covNext(s);
     const xat = new Map(); for (let j = 0; j < 5; j++) if (ONB[s.x[j]]) xat.set(s.x[j], j);
@@ -6367,7 +6395,8 @@ const PMEngine = (() => {
     for (const r of roles) if (r.kind === 'sag') lines.push(`X${r.x + 1} sags off ${name(r.man)} to cover the squares around ${r.gap.sq}.`);
     return { roles, perm, lines, switched, takeover: A.takeover };
   }
-  function coverageJSON(text) {
+  function coverageJSON(text) { return withMemo(() => coverageJSONCalc(text)); }
+  function coverageJSONCalc(text) {
     const req = JSON.parse(text);
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
@@ -6377,7 +6406,8 @@ const PMEngine = (() => {
 
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
-    makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size] };
+    makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.size, _CM.size, _LS.size, _OA.size],
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

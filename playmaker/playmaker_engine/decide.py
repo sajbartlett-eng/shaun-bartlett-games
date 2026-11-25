@@ -2111,8 +2111,8 @@ class Read:
             if s.stage != 'play' or s.clock <= RC.PHASE_SECONDS or s.pending:
                 self._lg_settle = []
             else:
-                r = Read(cov_off_fresh(s), cfg=self.cfg)
-                self._lg_settle = r.settle_moves(r.map_options())
+                r, opts = map_read(cov_off_fresh(s), self.cfg)
+                self._lg_settle = r.settle_moves(opts)
         return self._lg_settle
 
     def map_two(self, answered=False):
@@ -3311,6 +3311,18 @@ def cov_off_fresh(s):
                    stage='play', approach=-1, prev_wait='', final=False, turn_lead=-1, turn_x=(), turn_moved=0, react_moved=0)
 
 
+def map_read(f, cfg=None):
+    """Step 30b (engine.js covBuild's memory): the board's reading and its map, worked out once per think. The key is
+    the state itself (every field) with its context and the reading's settings."""
+    from . import memo
+    return memo.get('map', (id(f.ctx), f, id(cfg)), lambda: _map_read_calc(f, cfg))
+
+
+def _map_read_calc(f, cfg):
+    r = Read(f, cfg=cfg)
+    return r, r.map_options()
+
+
 def lasting_of(s, cfg=None, fresh=False, r0=None):
     """engine.js lastingOf (step 21, D-206): the lasting gap of a position, read with what each side really has left
     this phase (its tokens and movement, who is locked or rushed, who has moved); fresh: step 20's like-for-like read
@@ -3322,6 +3334,7 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
     if fresh:
         f = cov_fresh(s)
         r = Read(f, cfg=cfg)
+        opts = r.map_options()
     elif s.pending:
         recv = s.pending[1]
         base = s.with_(pending=None, approach=-1)
@@ -3332,8 +3345,7 @@ def lasting_of(s, cfg=None, fresh=False, r0=None):
         return dict(L=L, before=gc['before'] if gc else 0.0, ov=gc['ov'] if gc else 0, moves=gc['moves'] if gc else 0,
                     best=gc['best'] if gc else None, opts=gc.get('opts') if gc else None, catch=p, list=gc.get('list') if gc else None)
     else:
-        r = Read(cov_off_fresh(s), cfg=cfg)
-    opts = r.map_options()
+        r, opts = map_read(cov_off_fresh(s), cfg)
     best = r.lasting(opts)
     before = max((o[2] for o in opts.values() if o[0] > 0), default=0.0)
     three = three_seconds_owed(s) if not fresh else 0
@@ -3375,8 +3387,8 @@ def top_of(s, cfg=None):
         return None
 
     def read(f):
-        r = Read(f, cfg=cfg)
-        return r._lg_list(r._lg_root(r.map_options()))[0]
+        r, opts = map_read(f, cfg)
+        return r._lg_list(r._lg_root(opts))[0]
     if s.pending:
         recv = s.pending[1]
         base = s.with_(pending=None, approach=-1)
