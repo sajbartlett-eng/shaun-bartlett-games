@@ -1,0 +1,512 @@
+{
+ "Twin Towers v Lockdown": {
+  "offence_setup": {
+   "seconds": 143.0,
+   "squares": [
+    "A3",
+    "C9",
+    "O9",
+    "I11",
+    "Q3"
+   ],
+   "ball": 3,
+   "line": "Attention: O5 holds X1; O4 holds X2; O1 holds X3. Hole: J11, . Access: the pass to O3.",
+   "js_seconds": 140.3,
+   "calls": 1052,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:setup": {
+     "n": 35,
+     "s": 57.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 975,
+     "s": 39.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "search:fixed": {
+     "n": 13,
+     "s": 38.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:offsweep": {
+     "n": 3,
+     "s": 4.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 24,
+     "s": 1.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 112.8,
+   "squares": [
+    "I4",
+    "D7",
+    "N9",
+    "I9",
+    "N5"
+   ],
+   "arrows": [
+    6,
+    0,
+    4,
+    5,
+    4
+   ],
+   "read": [
+    "X1 on O1: same position",
+    "X2 sags off O2 to cover the squares around B12",
+    "X3 sags off O3 to cover the squares around P12",
+    "X4 sags off O4 to guard O2's look (worth 24 without him there)",
+    "X5 on O5: same position"
+   ],
+   "js_seconds": 108.8,
+   "calls": 1402,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "search:fixed": {
+     "n": 24,
+     "s": 50.4,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 1286,
+     "s": 37.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:setup": {
+     "n": 1,
+     "s": 19.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 78,
+     "s": 1.6,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 12,
+     "s": 0.2,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "O2 Quick Step to D10",
+   "seconds": 22.8,
+   "depth": 1,
+   "value": 24.35,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 25.8,
+   "calls": 313,
+   "repeats": 98,
+   "repeat_seconds": 3.2,
+   "by_kind": {
+    "search:fixed": {
+     "n": 5,
+     "s": 15.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 270,
+     "s": 9.1,
+     "repeats": 93,
+     "repeat_s": 3.1
+    },
+    "coverage:full": {
+     "n": 33,
+     "s": 1.4,
+     "repeats": 5,
+     "repeat_s": 0.2
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 2,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 2,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ },
+ "High-Low v Run and Gun": {
+  "offence_setup": {
+   "seconds": 121.5,
+   "squares": [
+    "C9",
+    "I11",
+    "O9",
+    "A3",
+    "Q3"
+   ],
+   "ball": 1,
+   "line": "Attention: O3 holds X1; O4 holds X2; O2 holds X4. Hole: A10, . Access: the pass to O1.",
+   "js_seconds": 119.0,
+   "calls": 1011,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:setup": {
+     "n": 35,
+     "s": 48.4,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 937,
+     "s": 40.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "search:fixed": {
+     "n": 10,
+     "s": 25.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:offsweep": {
+     "n": 3,
+     "s": 4.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 24,
+     "s": 1.3,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 122.6,
+   "squares": [
+    "A6",
+    "F7",
+    "P6",
+    "J4",
+    "L10"
+   ],
+   "arrows": [
+    1,
+    2,
+    4,
+    1,
+    4
+   ],
+   "read": [
+    "X1 sags off O4 to guard O1's look (worth 27 without him there)",
+    "X2 on O2: same position",
+    "X3 on O5: the nearest defender who takes something off his look",
+    "X4 on O1: the nearest defender who takes something off his look",
+    "X5 sags off O3 to guard O1's look (worth 24 without him there)"
+   ],
+   "js_seconds": 119.3,
+   "calls": 1278,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:lasting": {
+     "n": 1170,
+     "s": 51.6,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "search:fixed": {
+     "n": 15,
+     "s": 50.9,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:setup": {
+     "n": 1,
+     "s": 14.7,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 70,
+     "s": 1.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 21,
+     "s": 0.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "O1 Move to C12",
+   "seconds": 39.4,
+   "depth": 1,
+   "value": 22.35,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 44.3,
+   "calls": 393,
+   "repeats": 122,
+   "repeat_seconds": 5.8,
+   "by_kind": {
+    "search:fixed": {
+     "n": 6,
+     "s": 25.8,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 349,
+     "s": 16.4,
+     "repeats": 117,
+     "repeat_s": 5.5
+    },
+    "coverage:full": {
+     "n": 33,
+     "s": 1.9,
+     "repeats": 5,
+     "repeat_s": 0.3
+    },
+    "coverage:bars": {
+     "n": 2,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 2,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ },
+ "Five Out v Iron Wall (the block board)": {
+  "offence_setup": {
+   "seconds": 127.1,
+   "squares": [
+    "I4",
+    "I11",
+    "L9",
+    "A3",
+    "Q7"
+   ],
+   "ball": 1,
+   "line": "Attention: O2 holds X2; O3 holds X3; O4 holds X4. Hole: G7, mid-range. Access: O2's own step with the ball.",
+   "js_seconds": 124.1,
+   "calls": 1003,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:setup": {
+     "n": 31,
+     "s": 52.2,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:lasting": {
+     "n": 930,
+     "s": 40.6,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "search:fixed": {
+     "n": 10,
+     "s": 25.2,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:offsweep": {
+     "n": 3,
+     "s": 4.4,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 27,
+     "s": 1.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "defence_setup": {
+   "seconds": 114.4,
+   "squares": [
+    "N5",
+    "E9",
+    "H4",
+    "C5",
+    "L10"
+   ],
+   "arrows": [
+    0,
+    2,
+    5,
+    1,
+    0
+   ],
+   "read": [
+    "X1 on O2: same speed",
+    "X2 sags off O1 to cover the squares around E12",
+    "X3 on O3: same position",
+    "X4 on O4: same position",
+    "X5 sags off O5 to guard O2's look (worth 33 without him there)"
+   ],
+   "js_seconds": 111.1,
+   "calls": 1150,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "coverage:lasting": {
+     "n": 1031,
+     "s": 48.5,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "search:fixed": {
+     "n": 15,
+     "s": 44.2,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:setup": {
+     "n": 1,
+     "s": 15.9,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:full": {
+     "n": 74,
+     "s": 1.7,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:roles": {
+     "n": 28,
+     "s": 0.7,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "coverage:bars": {
+     "n": 1,
+     "s": 0.1,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  },
+  "turn": {
+   "action": "X5 contests",
+   "seconds": 48.8,
+   "depth": 1,
+   "value": -9.01,
+   "fake_chance": null,
+   "replies": null,
+   "js_seconds": 48.8,
+   "calls": 2,
+   "repeats": 0,
+   "repeat_seconds": 0.0,
+   "by_kind": {
+    "search:fixed": {
+     "n": 1,
+     "s": 48.8,
+     "repeats": 0,
+     "repeat_s": 0.0
+    },
+    "goals": {
+     "n": 1,
+     "s": 0.0,
+     "repeats": 0,
+     "repeat_s": 0.0
+    }
+   }
+  }
+ }
+}

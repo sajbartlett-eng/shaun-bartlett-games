@@ -114,6 +114,11 @@ class Agent:
         return ev
 
     def choose(self, s):
+        from . import memo
+        with memo.think():                 # step 30b: one think's memory, thrown away when the side has decided
+            return self._choose(s)
+
+    def _choose(self, s):
         side = actor(s)
         if side == 'X' and s.decl:
             s = s.with_(fake=0)          # D-272: the defence never reads the hidden choice: it sees the public state only
@@ -549,7 +554,9 @@ def coverage(s, answers=None, only=None, fresh=False, evals=None, **extra):
         req['options'].update(extra)          # step 22b: e.g. piece and keep for only='offsweep'
     if fresh:                                 # step 21: step 20's like-for-like read (a fresh phase), for the reports' phase starts
         req.setdefault('options', {})['fresh'] = True
-    return json.loads(JS['coverage'](json.dumps(req)))
+    text = json.dumps(req)
+    from . import memo                        # step 30b: within one think, the same request is answered once (the text is
+    return json.loads(memo.get('call', text, lambda: JS['coverage'](text)))    # kept, so every caller gets its own copy)
 
 
 _LANE_FILE = CONFIG.get('eval', {}).get('lane') is True      # eval.lane as ai_profiles.json has it

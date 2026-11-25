@@ -1768,6 +1768,12 @@ Source: Shaun, 20 Nov: agreed · **Ruled; built in step 29.**
 **D-282. The pivot is one per pick-up.** Step 29's reading. · Source: Shaun, 20 Nov: agreed · **Ruled; built in step
 29.**
 
+**D-283. One rule for all speed work.** Speed comes only from never doing the same work twice, cheaper machinery and
+using the whole device; never from thinking about less. No narrowing, no stored choices, no books, no clock cut-offs,
+mixes stay live. Existing counts, caps and clocks stay until ruled on one by one (listed in step 30b's report). ·
+Source: Shaun, 25 Nov 2026: "Speed and fidelity without dictating and restricting organic decision deviations." ·
+**Ruled; in `CLAUDE.md`, applied from step 30b.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

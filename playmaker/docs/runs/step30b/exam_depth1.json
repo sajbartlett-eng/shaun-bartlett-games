@@ -1,0 +1,59 @@
+{
+ "E13 the cutter under the rim (offence)": {
+  "before": {
+   "action": "O1 Move to J10",
+   "seconds": 7.6,
+   "value": 38.35,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "after": {
+   "action": "O1 Move to J10",
+   "seconds": 6.4,
+   "value": 38.35,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "same": true
+ },
+ "E24 a man the ball cannot reach (defence)": {
+  "before": {
+   "action": "X4 Move to D3 facing N",
+   "seconds": 1.8,
+   "value": -35.01,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "after": {
+   "action": "X4 Move to D3 facing N",
+   "seconds": 1.7,
+   "value": -35.01,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "same": true
+ },
+ "E28 two lanes or one (defence)": {
+  "before": {
+   "action": "X5 Move to I9 facing N",
+   "seconds": 1.7,
+   "value": -30.07,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "after": {
+   "action": "X5 Move to I9 facing N",
+   "seconds": 1.2,
+   "value": -30.07,
+   "depth": 1,
+   "odds": null,
+   "line": null
+  },
+  "same": true
+ }
+}

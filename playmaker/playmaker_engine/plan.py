@@ -458,6 +458,13 @@ def screen_roles(state):
 
 
 def read_plan(state, scout, perm=None, deep=False):
+    """The plan's reading (_read_plan), inside one think's memory (step 30b): the coach's line reads it on its own."""
+    from . import memo
+    with memo.think():
+        return _read_plan(state, scout, perm, deep)
+
+
+def _read_plan(state, scout, perm=None, deep=False):
     """The offence's plan on a board (its own placement against the defence it predicts, or the real board in play):
     read from the coverage map, one phase ahead (the defence's setup and its first answer). The first preference is
     the look left after the defence's best answer, at its real chance; the backups are the next attackers' best
@@ -705,7 +712,14 @@ def _job_variants(make, read, sq, ball, t_end):
     return out
 
 
-def place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None, pool=None, cap=None, depth=None):
+def place_offence(make, *args, **kw):
+    """The offence's setup (_place_offence), inside one think's memory (step 30b)."""
+    from . import memo
+    with memo.think():
+        return _place_offence(make, *args, **kw)
+
+
+def _place_offence(make, seed=0, level='allstar', budget=None, nth=0, scout=None, pool=None, cap=None, depth=None):
     """The offence sets up first (blueprint, stages 3, 3b and 4), the way it plays (step 27, D-257 to D-259).
     1. Quick search: from the table's squares (each attacker tried with the ball), each attacker in turn swept over
        every legal square (D-240 retired as a restriction: no candidate squares, nothing forced), kept when the list
@@ -921,7 +935,14 @@ def _where_words(q):
     return {'.': 'at the arc', '3': 'at the three-point line', 'L': 'at the long two', 'M': 'in mid-range', 'K': 'in the green zone'}.get(z, '')
 
 
-def place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0, scout=None):
+def place_defence(make, *args, **kw):
+    """The defence's setup (_place_defence), inside one think's memory (step 30b)."""
+    from . import memo
+    with memo.think():
+        return _place_defence(make, *args, **kw)
+
+
+def _place_defence(make, o_sq, ball, seed=0, level='allstar', budget=None, nth=0, scout=None):
     """The defence sets up (blueprint, stage 5): everything that works is kept (the settlement of all five by the
     list), then the matchup rule: among the ways of standing that leave as much (within the level's margin), the
     mismatch priced where it hurts, then like against like, then matching numbers. The defence's own scout names the
