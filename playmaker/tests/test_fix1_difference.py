@@ -54,11 +54,13 @@ process.stdout.write(JSON.stringify(Object.assign({ boards }, E._pvCheck())));
 
 @needs_node
 def test_every_candidate_read_by_difference_equals_reading_every_look_javascript():
-    """Every exam board and boards one legal action on (every 12th), and the stance search's probe (each defender on
-    every square near him) on three setup boards: every candidate movement read both ways."""
+    """Every exam board and boards one legal action on (every 3rd), and the stance search's probe (each defender on
+    every square near him) on three setup boards: every candidate movement read both ways.
+    (Fix 3: every 12th became every 3rd, and D2's board joined the probe. The one Move a phase makes the defence's answers shorter, so fewer candidates
+    are read per board; more boards keep the check at over 20000 candidates rather than lowering the bar.)"""
     import step_31 as T
     reqs = [T.req(n) for n in X.BOARDS]
-    p = subprocess.run(['node', '-e', CHECK_JS, ROOT, '12', json.dumps(['E1', 'E3', 'E26'])], input=json.dumps(reqs), capture_output=True, text=True, timeout=900)
+    p = subprocess.run(['node', '-e', CHECK_JS, ROOT, '3', json.dumps(['E1', 'E2', 'E3', 'E26'])], input=json.dumps(reqs), capture_output=True, text=True, timeout=900)
     assert p.returncode == 0, p.stderr[-2000:]
     r = json.loads(p.stdout)
     assert r['checked'] > 20000 and r['different'] == 0, r

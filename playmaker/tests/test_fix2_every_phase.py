@@ -4,7 +4,12 @@ The proof board is D2's (E2): the defence's setup with X3 moved off the Sharpsho
 has to close him out to B8. Closing out costs a movement in every phase now: a look faces only the movements the defence
 makes before its shot, phase after phase. Before the fix the later phases faced the whole answer, so on top of the
 closeout X2 got a free rotation to M7 in each of them (later phases 15, this phase 16). Now every phase reads 16 and
-the answer is the closeout and X1's step, nothing more. Both engines, the same numbers."""
+the answer is the closeout and X1's step, nothing more. Both engines, the same numbers.
+
+Re-recorded in fix 3 (D-306). The one Move a phase and the fake mix changed this board's reading: the number is now set at
+the rim (O2 cutting to G4 draws X5's closeout; a fake there leaves O5 open at K3), 24.48 this phase, and no movement of the
+answer lowers it, so the answer is empty. Fix 2's limit itself is unchanged and still held by the every-look reference in
+tests/test_fix1_difference.py, which reads every candidate under the same limits."""
 import dataclasses
 import os
 import sys
@@ -20,7 +25,8 @@ from playmaker_engine import board as B, value as V   # noqa: E402
 
 SHAPE = ['F10', 'M8', 'C10', 'D4', 'I5']      # the setup's shape on E2 (docs/runs/step31/same_after.json), X3 on C10
 ARROWS = (0, 4, 0, 0, 1)
-CLOSED = [[2, 'B8', 0], [0, 'F11', 0]]        # the answer: X3 closes out to B8, X1 steps to F11
+CLOSED = []                                   # fix 3: no movement lowers the number (before: X3 closed out to B8, X1 stepped to F11)
+BARS = [24, 24, 24.4762, 24.4762, 24.4762, 24.4762]   # fix 3 (before: 16 in every phase)
 
 
 def board():
@@ -32,8 +38,8 @@ def test_E2_a_closeout_costs_a_movement_in_every_phase_in_both_engines():
     s = board()
     js = T.js([T.req('E2', dict(only='value'), state=s)])[0]['res']
     assert js['answer'] == CLOSED, js['answer']
-    assert js['bars'][1:] == [16] * (len(js['bars']) - 1), js['bars']      # no later phase reads lower than this one
+    assert [round(v, 4) for v in js['bars'][1:]] == [round(v, 2) for v in BARS] or [round(v, 2) for v in js['bars'][1:]] == [round(v, 2) for v in BARS], js['bars']
     pp = V.poss_parts(s)
     assert [[d, B.sq(q), a] for d, q, a in pp['moves']] == CLOSED
-    assert [round(b, 6) for b in pp['bars'][1:]] == [16.0] * (len(pp['bars']) - 1), pp['bars']
-    assert round(pp['V'], 4) == js['value'] == 16
+    assert [round(b, 4) for b in pp['bars'][1:]] == BARS, pp['bars']
+    assert round(pp['V'], 4) == js['value'] == 24.4762

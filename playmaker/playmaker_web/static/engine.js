@@ -5007,11 +5007,31 @@ const PMEngine = (() => {
   function cm2Cached(q, a, qs, mode) {
     const key = (((q * 8 + a) * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _CM2.get(key); if (hit) return hit;
-    const full = cmapCached(q, a, qs, true, 1, mode).masks[2], set = cmapCached(q, a, qs, true, 0, mode).masks[1];
-    hit = new Uint16Array(NB);
-    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
+    const cf = cmapCached(q, a, qs, true, 1, mode), full = cf.masks[2], set = cmapCached(q, a, qs, true, 0, mode).masks[1], st = cf.masks[0];
+    hit = new Uint32Array(NB);           // (fix 3: bits 12 to 17 the kinds he reaches where he stands, 18 to 23 those he is set for there)
+    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6) | (st[b] << 12) | (st[b] << 18);
     _CM2.set(key, hit); return hit;
   }
+  // Step 31, fix 3 (the rules' one Move a phase; Shaun, 26 Nov 2026): a defender's reply after a movement of the
+  // defence's answer. After a Move (a Move on the spot too) he has no Move left: a Quick Step, off balance, if he has
+  // one, or the Contest where he stands, in control. After a Quick Step he still has his Move (a Move puts him back in
+  // control). After a Sprint (his Move and his Quick Step together) only where he stands, off balance.
+  const _CMA = new Map();
+  function cmAfter(q, a, qs, mode, kind, qsL) {
+    const kk = kind === 'move' ? 0 : kind === 'qs' ? 1 : 2, ql = kind === 'move' && qsL > 0 ? 1 : 0;
+    const key = ((((((q * 8 + a) * 8 + qs) * 3 + mode) * 3 + kk) * 2 + ql) * 4) + SOFTK;
+    let hit = _CMA.get(key); if (hit) return hit;
+    let full, set, st;
+    if (kk === 0) { const c = cmapCached(q, a, qs, false, ql, mode); full = c.masks[2]; st = c.masks[0]; set = cmapCached(q, a, qs, false, 0, mode).masks[1]; }
+    else if (kk === 1) { const c = cmapCached(q, a, qs, true, 0, mode); full = c.masks[2]; set = c.masks[1]; st = c.masks[0]; }
+    else { const c = cmapCached(q, a, qs, false, 0, mode); full = c.masks[2]; set = null; st = c.masks[0]; }
+    hit = new Uint32Array(NB);           // (standing after a Quick Step or a Sprint he is off balance: not set there)
+    for (let b = 0; b < NB; b++) hit[b] = full[b] | (set ? ((set[b] & full[b]) << 6) : 0) | (st[b] << 12) | (kk === 0 ? st[b] << 18 : 0);
+    _CMA.set(key, hit); return hit;
+  }
+  // which of a defender's one-action movements reaches q facing a: a Quick Step keeps his arrow and its square is one a
+  // Quick Step reaches; any other fixed-arrow square is a Sprint's
+  const fixedKind = (s, d, q, a) => (a === s.arrows[d] && geoReach(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, false, 1)[1].has(q)) ? 'qs' : 'sprint';
   // Step 26 (D-249, Shaun, 19 Nov 2026): "in time" uses the real paths. A defender's contest a phase on from where he
   // stands, by the movement he really has: his paths go around attackers' bodies and his teammates (a bunch can wall
   // off a contest square simply by standing on it), through the diagonals the rules leave open, blocked only by a
@@ -5019,23 +5039,23 @@ const PMEngine = (() => {
   function bodyCm2(sN, d, mode) {
     const fr = defenderReachExact(sN, d), key = mode * 4 + SOFTK;
     if (fr._cm2 && fr._cm2k === key) return fr._cm2;
-    const full = contestMap(fr[0], fr[1], mode).masks[2];
+    const cf = contestMap(fr[0], fr[1], mode), full = cf.masks[2], st = cf.masks[0];
     const free1 = new Map(); for (const [q, n] of fr[0]) if (n <= 1) free1.set(q, n);
     const set = contestMap(free1, new Map([[sN.x[d], new Map([[sN.arrows[d], 0]])]]), mode).masks[1];
-    const hit = new Uint16Array(NB);
-    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6);
+    const hit = new Uint32Array(NB);
+    for (let b = 0; b < NB; b++) hit[b] = full[b] | ((set[b] & full[b]) << 6) | (st[b] << 12) | (st[b] << 18);
     fr._cm2 = hit; fr._cm2k = key;
     return hit;
   }
   function anyArrow2(q, qs, mode) {                    // whichever way he faces (he chose his arrow when a Move took him there)
     const key = ((q * 8 + qs) * 3 + mode) * 4 + SOFTK;
     let hit = _AAM2.get(key); if (hit) return hit;
-    hit = new Uint16Array(NB);
+    hit = new Uint32Array(NB);
     for (let a = 0; a < 8; a++) { const m = cm2Cached(q, a, qs, mode); for (let b = 0; b < NB; b++) hit[b] |= m[b]; }
     _AAM2.set(key, hit); return hit;
   }
   function mapVals(r, lk, d, mk, fl) {                 // the look with defender d's Contest (mk: cm2Cached's value for its square)
-    const full = mk & 63, set = mk >> 6, soft = r.s.ctx.soft;
+    const full = mk & 63, set = (mk >> 6) & 63, soft = r.s.ctx.soft;
     return r._valsCalc(lk, d, full, set, (fl || 0) | 4, soft ? full : 0, soft ? set : 0);
   }
   const TURNOVER_COST = 5;                             // D-198: a lost ball is -5
@@ -5579,7 +5599,7 @@ const PMEngine = (() => {
       const k = pd[p];
       if (!ONB[p] || k >= INF) continue;
       const cv = anyArrow2(p, qs, mode);
-      for (let b = 0; b < NB; b++) { const v = cv[b]; if (!v) continue; if (k < any[b]) any[b] = k; if ((v >> 6) && k < set[b]) set[b] = k; }
+      for (let b = 0; b < NB; b++) { const v = cv[b]; if (!v) continue; if (k < any[b]) any[b] = k; if (((v >> 6) & 63) && k < set[b]) set[b] = k; }
     }
     hit = { set, any }; _AP.set(key, hit); return hit;
   }
@@ -6327,15 +6347,19 @@ const PMEngine = (() => {
     const sv2 = s.ctx._sv2 || (s.ctx._sv2 = new Memo2(SV_MEMO_MAX));
     const sval = (i, d, mk) => {
       if (!mk) return null;
-      const key = (L[i].id * 5 + d) * 4096 + mk;
+      const key = (L[i].id * 5 + d) * 16777216 + mk;
       let v = mv.get(key);
       if (v === undefined) {
-        const o = L[i], gk = ((((o.a * NSQ + o.c) * 2 + (o.fl ? 1 : 0)) * 5 + d) * 4096 + mk);
+        const o = L[i], gk = ((((o.a * NSQ + o.c) * 2 + (o.fl ? 1 : 0)) * 5 + d) * 16777216 + mk);
         v = sv2.get(gk);
         if (v === undefined) {
-          const full = mk & 63, set = mk >> 6, lines = [];
+          const full = mk & 63, set = (mk >> 6) & 63, lines = [];
           const cv = r._valsCalc(o.lk, d, full, set, (o.fl || 0) | 4, soft ? full : 0, soft ? set : 0, lines);
-          v = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null } : null;
+          // fix 3: his Contest where he stands, with no movement (st): a shot fake punishes only a Contest that needs one
+          const sk = (mk >> 12) & 63, ss = (mk >> 18) & 63;
+          let st = null;
+          if (sk) { const ls = [], cs = r._valsCalc(o.lk, d, sk, ss, (o.fl || 0) | 4, soft ? sk : 0, soft ? ss : 0, ls); st = cs ? { cv: cs, bl: ls.length ? Float64Array.from(ls) : null } : null; }
+          v = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null, st } : null;
           sv2.set(gk, v);
         }
         mv.set(key, v);
@@ -6374,18 +6398,101 @@ const PMEngine = (() => {
     if (split) for (let i = 0; i < n; i++) limL[i] = lim[i] === 0 ? 0 : lim[i] - baseAct;
     const SVL = split ? SV.map(r => r.slice()) : SVK, goneL = split ? new Uint8Array(n) : goneK;
     let nm = 0;                                         // the answer's movements so far
-    const worth = (i, B, d, nv, rowK) => {              // look i's worth when a block leads to B, defender d's contest replaced by nv (rowK: as this phase's shot finds it)
-      const open = L[i].open, T = open.length, row = rowK || SV[i];
-      for (let t = 0; t < T; t++) tmp[t] = open[t];
+    // Step 31, fix 3 (Shaun, 26 Nov 2026: "two-step routes are looks"; shot fakes read inside the number). The shooter
+    // in control mixes real and fake; the defence answers by contesting from where it stands or by closing out (a
+    // movement, then the Contest). Against a fake an honest Contest does nothing and the movement stands, so the
+    // defender who closed out has spent his Move: the offence then takes its best look with him so placed (the shooter's
+    // own drive past him: closeout, fake and drive; a cutter behind him: drive then backdoor cut; a man he left: drive
+    // then kick-out). One route, one look, read by the two-by-two mix:
+    //                 contest where he stands      close out
+    //   shoot               ws                         wc
+    //   fake                wc                         F (the follow-up)
+    // worth = wc when nothing is gained by it (ws or F no more than wc); otherwise the mixed value
+    // wc + (ws - wc)(F - wc) / ((ws - wc) + (F - wc)), always between wc and ws. A defender already where he contests
+    // from (ws = wc) can't be faked out of it. F is read on the board as the defence stands before its answer.
+    const fakesOn = !!s.ctx.fakes;
+    const fkK = fakesOn && count(sr, 'O', 'hesitate') < LIMITS.O.hesitate, fkL = fakesOn;   // this phase's fake (or Hesitate) unused; every later phase has one
+    const mixOk = new Uint8Array(n);
+    for (let i = 0; i < n; i++) mixOk[i] = fakesOn && !L[i].rushed ? 1 : 0;     // (no fake when rushed)
+    const arg = new Int8Array(8), tmpS = new Float64Array(8);
+    let cTb = 0;
+    const core = (i, B, d, nv, row) => {                // the look's worth against the Contests as the reply gives them (arg: whose each shot's is)
+      const open = L[i].open, T = open.length;
+      for (let t = 0; t < T; t++) { tmp[t] = open[t]; arg[t] = -1; }
       for (let e = 0; e < 5; e++) {
         const x = e === d ? nv : row[e];
         if (!x) continue;
         const cv = x.cv, bl = x.bl;
-        for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t];
-        if (bl) for (let j = 0; j < bl.length; j += 3) { const v = bl[j + 1] + bl[j + 2] * B; if (v < tmp[bl[j]]) tmp[bl[j]] = v; }
+        for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) { tmp[t] = cv[t]; arg[t] = e; }
+        if (bl) for (let j = 0; j < bl.length; j += 3) { const v = bl[j + 1] + bl[j + 2] * B; if (v < tmp[bl[j]]) { tmp[bl[j]] = v; arg[bl[j]] = -2; } }
       }
-      let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
+      let tp = tmp[0], tb = 0; for (let t = 1; t < T; t++) if (tmp[t] > tp) { tp = tmp[t]; tb = t; }
+      cTb = tb;
       return tp + adjv[i];
+    };
+    // the follow-up after the fake: defender e closed out next to look i's shooter, his Move spent (cmAfter), every
+    // other piece as the defence stands before its answer; the offence's best look then (r * worth - (1 - r) * what a
+    // miss costs), over the map's own looks. Of the squares he could close out to, the defence takes the one that
+    // leaves the least. Kept for the reading.
+    const SV0 = SV.map(rw => rw.slice()), Fm = new Map(), Gm = new Map(), UB0 = [null, null, null, null, null], ORD0 = [null, null, null, null, null];
+    const okLook = j => { const o = L[j]; return o.a === b ? o.n0 <= left : o.n0 <= left + ((keyMask >> o.a) & 1); };
+    const ub0 = e => {                                  // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
+      const u = new Float64Array(n), ord = [];
+      for (let j = 0; j < n; j++) {
+        const o = L[j], open = o.open, T = open.length, row = SV0[j];
+        let hi = -Infinity;
+        for (let t = 0; t < T; t++) { let v = open[t]; for (let e2 = 0; e2 < 5; e2++) if (e2 !== e && row[e2] && row[e2].cv[t] < v) v = row[e2].cv[t]; if (v > hi) hi = v; }
+        u[j] = o.r * (hi + adjv[j]) - (1 - o.r) * o.lc;
+        if (okLook(j)) ord.push(j);
+      }
+      ord.sort((x, y) => u[y] - u[x] || x - y);
+      UB0[e] = u; ORD0[e] = ord;
+    };
+    const follow2 = (e, q, a, kind) => {
+      const key = ((e * NSQ + q) * 8 + a) * 3 + (kind === 'move' ? 0 : kind === 'qs' ? 1 : 2);
+      let g = Gm.get(key); if (g !== undefined) return g;
+      if (!UB0[e]) ub0(e);
+      const u = UB0[e], ord = ORD0[e], cm = cmAfter(q, a, s.ctx.dfn[e].qs, stanceMode(m.sN, e), kind, 1);
+      let hi = -Infinity, hj = -1;
+      for (let x = 0; x < ord.length; x++) {
+        const j = ord[x];
+        if (u[j] + 1e-9 <= hi) break;
+        if (L[j].c === q) continue;
+        const o = L[j], ev = o.r * core(j, 0, e, sval(j, e, cm[lc[j]]), SV0[j]) - (1 - o.r) * o.lc;
+        if (ev > hi) { hi = ev; hj = j; }
+      }
+      g = { v: hi, j: hj }; Gm.set(key, g); return g;
+    };
+    const follow = (i, e) => {
+      const key = i * 5 + e;
+      let f = Fm.get(key); if (f !== undefined) return f;
+      const c = L[i].c, fr = defenderReachExact(m.sN, e);
+      let lo = Infinity, from = -1, then = -1;
+      for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move'); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
+      for (const [q, arrs] of fr[1]) if (cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, fixedKind(m.sN, e, q, a)); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
+      f = { F: lo === Infinity ? -Infinity : lo, from, then }; Fm.set(key, f); return f;
+    };
+    const worth = (i, B, d, nv, rowK, tk) => {          // look i's worth when a block leads to B, defender d's contest replaced by nv (rowK: as this phase's shot finds it; tk 1: a later phase)
+      const row = rowK || SV[i], wc = core(i, B, d, nv, row);
+      if (!mixOk[i] || !(tk === 1 ? fkL : fkK)) return wc;
+      const e0 = arg[cTb];
+      if (e0 < 0) return wc;
+      const open = L[i].open, T = open.length;
+      for (let t = 0; t < T; t++) tmpS[t] = open[t];
+      for (let e = 0; e < 5; e++) {
+        const x0 = e === d ? nv : row[e], x = x0 && x0.st;
+        if (!x) continue;
+        const cv = x.cv, bl = x.bl;
+        for (let t = 0; t < T; t++) if (cv[t] < tmpS[t]) tmpS[t] = cv[t];
+        if (bl) for (let j = 0; j < bl.length; j += 3) { const v = bl[j + 1] + bl[j + 2] * B; if (v < tmpS[bl[j]]) tmpS[bl[j]] = v; }
+      }
+      let ts = tmpS[0]; for (let t = 1; t < T; t++) if (tmpS[t] > ts) ts = tmpS[t];
+      const ws = ts + adjv[i];
+      if (!(ws > wc + 1e-9)) return wc;
+      const F = follow(i, e0).F;
+      if (!(F > wc + 1e-9)) return wc;
+      const da = ws - wc, df = F - wc;
+      return wc + da * df / (da + df);
     };
     // U(k + 1), the bar worked up from the shot clock running out; at step i a blocked shot leads to U(i - 2) (the
     // phase of the shot is lost; with none after it the possession ends on what it has)
@@ -6393,7 +6500,7 @@ const PMEngine = (() => {
     const rows = [null]; for (let i = 1; i <= K; i++) rows.push(Vit.subarray(i * n, (i + 1) * n));
     let act = [], blList = [], LA = [], JA = [], WA = new Float64Array(0);
     const histA = new Float64Array(K + 1), v3 = new Float64Array(6), bmax = new Float64Array(n);
-    const slopeB = new Uint8Array(n), sameK = new Uint8Array(n), sameL = new Uint8Array(n), w0 = new Float64Array(n);
+    const slopeB = new Uint8Array(n), sameK = new Uint8Array(n), sameL = new Uint8Array(n), w0 = new Float64Array(n), w0L = new Float64Array(n);
     const runCur = bars => {
       let U = SHOT_CLOCK_OUT; hist[0] = U; act = []; blList = [];
       // bmax[j]: above this, no block bears on look j (a block that leads to a phase worth more than that is no longer
@@ -6402,6 +6509,7 @@ const PMEngine = (() => {
         const row = SV[j], open = L[j].open, T = open.length;
         let bm = -Infinity, any = false;
         for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = true; break; }
+        if (mixOk[j]) for (let e = 0; e < 5; e++) if (row[e] && row[e].st && row[e].st.bl) bm = Infinity;   // (fix 3: read in full)
         if (any && !gone[j]) {
           for (let t = 0; t < T; t++) { let v = open[t]; for (let e = 0; e < 5; e++) if (row[e] && row[e].cv[t] < v) v = row[e].cv[t]; tmp[t] = v; }
           for (let e = 0; e < 5; e++) { const bl = row[e] && row[e].bl; if (!bl) continue; for (let x = 0; x < bl.length; x += 3) if (bl[x + 2] > 0) { const thr = (tmp[bl[x]] - bl[x + 1]) / bl[x + 2]; if (thr > bm) bm = thr; } }
@@ -6423,14 +6531,16 @@ const PMEngine = (() => {
           if (x && x.bl) for (let z = 2; z < x.bl.length; z += 3) if (x.bl[z] !== 0) mv = 1;
           if (y && y.bl) for (let z = 2; z < y.bl.length; z += 3) if (y.bl[z] !== 0) mv = 1;
           if (w && w.bl) for (let z = 2; z < w.bl.length; z += 3) if (w.bl[z] !== 0) mv = 1;
+          for (const u of [x, y, w]) if (u && u.st && u.st.bl) for (let z = 2; z < u.st.bl.length; z += 3) if (u.st.bl[z] !== 0) mv = 1;
         }
         slopeB[j] = mv; sameK[j] = same && gone[j] === goneK[j] ? 1 : 0; sameL[j] = sameL_ && gone[j] === goneL[j] ? 1 : 0;
-        w0[j] = (!mv && !gone[j]) ? worth(j, 0, -1, null) : -Infinity;
+        w0[j] = (!mv && !gone[j]) ? worth(j, 0, -1, null, undefined, 0) : -Infinity;
+        w0L[j] = fkK === fkL ? w0[j] : ((!mv && !gone[j]) ? worth(j, 0, -1, null, undefined, 1) : -Infinity);
       }
       for (let i = 1; i <= K; i++) {
         const B = i >= 3 ? hist[i - 2] : 0, row = rows[i];
-        if (i === K) for (let j = 0; j < n; j++) row[j] = goneK[j] ? -Infinity : ((!slopeB[j] && sameK[j]) ? w0[j] : worth(j, B, -1, null, SVK[j]));
-        else for (let j = 0; j < n; j++) row[j] = goneL[j] ? -Infinity : ((!slopeB[j] && sameL[j]) ? w0[j] : worth(j, B, -1, null, SVL[j]));
+        if (i === K) for (let j = 0; j < n; j++) row[j] = goneK[j] ? -Infinity : ((!slopeB[j] && sameK[j]) ? w0[j] : worth(j, B, -1, null, SVK[j], 0));
+        else for (let j = 0; j < n; j++) row[j] = goneL[j] ? -Infinity : ((!slopeB[j] && sameL[j]) ? w0L[j] : worth(j, B, -1, null, SVL[j], 1));
         U = routeT(L, n, row, b, U, left, keyMask, cut, i === K ? vec : null, act, i);
         hist[i] = U;
         if (bars) bars.push(U);
@@ -6468,8 +6578,8 @@ const PMEngine = (() => {
         const B = i >= 3 ? histA[i - 2] : 0, keep = i < 3 || histA[i - 2] === hist[i - 2], row = rows[i];
         // (a look the candidate doesn't touch is worth what it is as the defence stands, where what a block leads to is
         // the same or doesn't move it)
-        if (i === K) for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = lim[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]])))) : (goneK[j] ? -Infinity : ((keep || (!slopeB[j] && sameK[j])) ? row[j] : worth(j, B, -1, null, SVK[j]))); }
-        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = limL[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]])))) : (goneL[j] ? -Infinity : ((keep || (!slopeB[j] && sameL[j])) ? row[j] : worth(j, B, -1, null, SVL[j]))); }
+        if (i === K) for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = lim[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]]), undefined, 0))) : (goneK[j] ? -Infinity : ((keep || (!slopeB[j] && sameK[j])) ? row[j] : worth(j, B, -1, null, SVK[j], 0))); }
+        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = limL[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]]), undefined, 1))) : (goneL[j] ? -Infinity : ((keep || (!slopeB[j] && sameL[j])) ? row[j] : worth(j, B, -1, null, SVL[j], 1))); }
         U = routeT(LA, na, WA, b, U, left, keyMask, cut, i === K ? v3 : null, null, i);
         histA[i] = U;
       }
@@ -6478,7 +6588,7 @@ const PMEngine = (() => {
     const aff = new Int32Array(n), affW = new Float64Array(n), affT = new Float64Array(n), affV = new Array(n);
     const blK = new Uint8Array(n);                      // this phase's copy of look j has a block among its contests
     const blL = split ? new Uint8Array(n) : blK;        // (and the later phases' copy)
-    const markBl = (rows_, out) => { for (let j = 0; j < n; j++) { let any = 0; const row = rows_[j]; for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = 1; break; } out[j] = any; } };
+    const markBl = (rows_, out) => { for (let j = 0; j < n; j++) { let any = 0; const row = rows_[j]; for (let e = 0; e < 5; e++) if (row[e] && (row[e].bl || (mixOk[j] && row[e].st && row[e].st.bl))) { any = 1; break; } out[j] = any; } };
     const markBlK = () => { markBl(SVK, blK); if (split) markBl(SVL, blL); };
     markBlK();
     // Step 31, fix 1 (Shaun, 26 Nov 2026: "after an action, re-read only what it touched"). A candidate movement of
@@ -6555,6 +6665,31 @@ const PMEngine = (() => {
           KBL[d][j] = limL[j] > nm ? UB[d][j] : kl0;
         }
       }
+      // fix 3: a look the fake mix reads is worth no more than it is against the Contests from where each defender
+      // stands (the mix lies between the closeout's worth and that), so its ceilings are read from those
+      for (let j = 0; j < n; j++) {
+        if (!mixOk[j] || !(fkK || fkL)) continue;
+        const open = L[j].open, T = open.length, row = SV[j], rk = SVK[j], rl = SVL[j];
+        for (let t = 0; t < T; t++) { m1[t] = Infinity; m2[t] = Infinity; am[t] = -1; mk1[t] = open[t]; ml1[t] = open[t]; }
+        for (let e = 0; e < 5; e++) {
+          const x = row[e] && row[e].st;
+          if (x) { const cv = x.cv; for (let t = 0; t < T; t++) { const v = cv[t]; if (v < m1[t]) { m2[t] = m1[t]; m1[t] = v; am[t] = e; } else if (v < m2[t]) m2[t] = v; } }
+          const y = rk[e] && rk[e].st;
+          if (y) { const cv = y.cv; for (let t = 0; t < T; t++) if (cv[t] < mk1[t]) mk1[t] = cv[t]; }
+          const w = rl[e] && rl[e].st;
+          if (w) { const cv = w.cv; for (let t = 0; t < T; t++) if (cv[t] < ml1[t]) ml1[t] = cv[t]; }
+        }
+        let kb0 = -Infinity, kl0 = -Infinity;
+        for (let t = 0; t < T; t++) { if (mk1[t] > kb0) kb0 = mk1[t]; if (ml1[t] > kl0) kl0 = ml1[t]; }
+        kb0 += adjv[j]; kl0 += adjv[j];
+        for (let d = 0; d < 5; d++) {
+          let u = -Infinity;
+          for (let t = 0; t < T; t++) { let v = open[t]; const c = am[t] === d ? m2[t] : m1[t]; if (c < v) v = c; if (v > u) u = v; }
+          UB[d][j] = u + adjv[j];
+          KB[d][j] = lim[j] > nm ? UB[d][j] : kb0;
+          KBL[d][j] = limL[j] > nm ? UB[d][j] : kl0;
+        }
+      }
       nDr = 0; nDrK = 0;
       for (let j = 0; j < n; j++) if (vH[j] && L[j].dr) { if (limL[j] > nm ? !gone[j] : !goneL[j]) drL[nDr++] = j; if (lim[j] > nm ? !gone[j] : !goneK[j]) drLK[nDrK++] = j; }
     }
@@ -6569,6 +6704,7 @@ const PMEngine = (() => {
       if (SV[j][cd] === null && mk === 0 && L[j].c !== cq) { cTouch[j] = 0; return 0; }
       cTouch[j] = 1;
       const nv = sval(j, cd, mk), row = SV[j], open = L[j].open, T = open.length;
+      if (mixOk[j] && (fkK || fkL)) { cV[j] = nv; if (L[j].c === cq) { cW[j] = -Infinity; cT[j] = -Infinity; } else { cW[j] = 0; cT[j] = Infinity; } return 1; }   // (fix 3: read in full)
       // his worth with no block bearing on him (cW), and what a block must lead to before none does (cT)
       for (let t = 0; t < T; t++) tmp[t] = open[t];
       for (let e = 0; e < 5; e++) { const x = e === cd ? nv : row[e]; if (!x) continue; const cv = x.cv, bl = x.bl; for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t]; if (bl) for (let z = 0; z < bl.length; z += 3) if (!(bl[z + 2] > 0) && bl[z + 1] < tmp[bl[z]]) tmp[bl[z]] = bl[z + 1]; }
@@ -6581,11 +6717,11 @@ const PMEngine = (() => {
     const valAt = (i, j) => {                          // look j's worth at step i with the candidate in place
       if (i === K ? lim[j] <= nm : limL[j] <= nm) {    // that phase's shot is up before the move
         if (i === K ? goneK[j] : goneL[j]) return -Infinity;
-        return (cChg && (i === K ? blK[j] : blL[j])) ? worth(j, cB, -1, null, i === K ? SVK[j] : SVL[j]) : rows[i][j];
+        return (cChg && (i === K ? blK[j] : blL[j])) ? worth(j, cB, -1, null, i === K ? SVK[j] : SVL[j], i === K ? 0 : 1) : rows[i][j];
       }
       if (gone[j]) return -Infinity;
-      if (touch(j)) return cB >= cT[j] ? cW[j] : worth(j, cB, cd, cV[j]);
-      if (cChg && (i === K ? blK[j] : bmax[j] > cLo)) return i === K ? worth(j, cB, -1, null, SVK[j]) : worth(j, cB, -1, null);
+      if (touch(j)) return cB >= cT[j] ? cW[j] : worth(j, cB, cd, cV[j], undefined, i === K ? 0 : 1);
+      if (cChg && (i === K ? blK[j] : bmax[j] > cLo)) return i === K ? worth(j, cB, -1, null, SVK[j], 0) : worth(j, cB, -1, null, undefined, 1);
       return rows[i][j];
     };
     let barK = 0;
@@ -6702,6 +6838,7 @@ const PMEngine = (() => {
         const mk = cm[lc[j]];
         if (SV[j][d] === null && mk === 0 && L[j].c !== q) continue;
         const nv = sval(j, d, mk), row = SV[j], open = L[j].open, T = open.length;
+        if (mixOk[j] && (fkK || fkL)) { affW[na] = L[j].c === q ? -Infinity : 0; affT[na] = L[j].c === q ? -Infinity : Infinity; affV[na] = nv; aff[na++] = j; continue; }
         // his worth with no block bearing on him (affW), and what a block must lead to before none does (affT)
         for (let t = 0; t < T; t++) tmp[t] = open[t];
         for (let e = 0; e < 5; e++) { const x = e === d ? nv : row[e]; if (!x) continue; const cv = x.cv, bl = x.bl; for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t]; if (bl) for (let z = 0; z < bl.length; z += 3) if (!(bl[z + 2] > 0) && bl[z + 1] < tmp[bl[z]]) tmp[bl[z]] = bl[z + 1]; }
@@ -6716,11 +6853,11 @@ const PMEngine = (() => {
         W.set(rows[i]);
         if (i >= 3 && histF[i - 2] !== hist[i - 2]) {    // a block now leads somewhere else: only the looks a block still bears on move
           const lo = Math.min(histF[i - 2], hist[i - 2]);
-          if (i === K) { for (let j = 0; j < n; j++) if (!goneK[j] && blK[j]) W[j] = worth(j, B, -1, null, SVK[j]); }
-          else { for (let j = 0; j < n; j++) if (!goneL[j] && blL[j]) W[j] = worth(j, B, -1, null, SVL[j]); }
+          if (i === K) { for (let j = 0; j < n; j++) if (!goneK[j] && blK[j]) W[j] = worth(j, B, -1, null, SVK[j], 0); }
+          else { for (let j = 0; j < n; j++) if (!goneL[j] && blL[j]) W[j] = worth(j, B, -1, null, SVL[j], 1); }
         }
-        if (i === K) { for (let x = 0; x < na; x++) if (lim[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]); }
-        else for (let x = 0; x < na; x++) if (limL[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]);
+        if (i === K) { for (let x = 0; x < na; x++) if (lim[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x], undefined, 0); }
+        else for (let x = 0; x < na; x++) if (limL[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x], undefined, 1);
         U = routeT(L, n, W, b, U, left, keyMask, cut, i === K ? v2 : null, null, i);
         histF[i] = U;
       }
@@ -6761,7 +6898,7 @@ const PMEngine = (() => {
           if (L[j].c === q) { lowers = true; break; }
           const mk = cm[lc[j]];
           if (!mk && SV[j][d] === null) continue;
-          if (worth(j, i >= 3 ? hist[i - 2] : 0, d, sval(j, d, mk)) < rows[i][j] - 1e-9) { lowers = true; break; }
+          if (worth(j, i >= 3 ? hist[i - 2] : 0, d, sval(j, d, mk), undefined, i === K ? 0 : 1) < rows[i][j] - 1e-9) { lowers = true; break; }
         }
         PVS.offers++; if (!lowers) return;
         const ua = runAct(d, q, cm), ma = topCount(v3, ua);
@@ -6773,7 +6910,7 @@ const PMEngine = (() => {
         const cp = caps(s, 'X', d);
         if (!cp[0] && cp[1] <= 0) continue;
         const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), fr = defenderReachExact(s, d);
-        if (cp[0]) for (let a = 0; a < 8; a++) if (a !== s.arrows[d]) offer(d, s.x[d], a, cm2Cached(s.x[d], a, qs, mode));   // a Move on the spot: a new pair of arrows
+        if (cp[0]) for (let a = 0; a < 8; a++) if (a !== s.arrows[d]) offer(d, s.x[d], a, cmAfter(s.x[d], a, qs, mode, 'move', cp[1]));   // a Move on the spot: a new pair of arrows
         // (a square from which no pair of arrows contests any look the value turns on is passed over whole: anyArrow2 is
         // every pair's contests together, so none of the eight can lower one)
         let had = false;
@@ -6784,8 +6921,9 @@ const PMEngine = (() => {
           for (let x = 0; x < act.length; x += 2) { const j = act[x]; if (L[j].c === q || any[lc[j]]) return true; }
           return false;
         };
-        for (const [q, na] of fr[0]) if (na === 1 && !taken.has(q) && bears(q)) for (let a = 0; a < 8; a++) offer(d, q, a, cm2Cached(q, a, qs, mode));
-        for (const [q, arrs] of fr[1]) if (!taken.has(q)) for (const [a, na] of arrs) if (na === 1) offer(d, q, a, cm2Cached(q, a, qs, mode));
+        // (fix 3: his reply from there is what the movement leaves him: cmAfter)
+        for (const [q, na] of fr[0]) if (na === 1 && !taken.has(q) && bears(q)) for (let a = 0; a < 8; a++) offer(d, q, a, cmAfter(q, a, qs, mode, 'move', cp[1]));
+        for (const [q, arrs] of fr[1]) if (!taken.has(q)) for (const [a, na] of arrs) if (na === 1) offer(d, q, a, cmAfter(q, a, qs, mode, fixedKind(s, d, q, a), cp[1]));
       }
       // the value first; level, the fewer routes that reach it (covering one of two equal looks is a step toward covering
       // both); still level, the lower square, then the arrow, then where he starts (never the order the defenders are listed in)
@@ -6823,7 +6961,26 @@ const PMEngine = (() => {
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
     let pick = -1, pe = -Infinity; const B = hist[K - 1];
     for (let x = 0; x < act.length; x += 2) if (act[x + 1] === K) { const i = act[x], o = L[i], e = o.r * Math.max(last[i], B) + (1 - o.r) * (B - o.lc); if (e > pe) { pe = e; pick = i; } }
-    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec) };
+    const mixInfo = j => {                              // (fix 3, for the report: look j's fake line this phase, as the defence finally stands)
+      if (goneK[j] || !mixOk[j] || !fkK) return null;
+      const Bk = K >= 3 ? hist[K - 2] : 0, wc = core(j, Bk, -1, null, SVK[j]), e0 = arg[cTb];
+      if (e0 < 0) return null;
+      const v = worth(j, Bk, -1, null, SVK[j], 0);
+      if (!(v > wc + 1e-9)) return null;
+      const f = follow(j, e0);
+      return { closer: e0, from: f.from, then: f.then, faked: f.F, contested: wc, mixed: v };
+    };
+    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo };
+  }
+  // step 31, fix 3: look i's two-step route for the report: who closes out, from where, and the look that follows the
+  // fake (the shooter's own drive; a cutter at the rim behind the help; or a kick-out to the man he left)
+  function twoStep(pp, i) {
+    const mx = pp.mixInfo ? pp.mixInfo(i) : null;
+    if (!mx || mx.then < 0) return null;
+    // (a cut: the man the ball goes to ends nearer the rim than where he stands now)
+    const o = pp.L[i], o2 = pp.L[mx.then], s = pp.m.s, drove = o.a === s.ball && o.c !== s.o[o.a], cut = cheb(o2.c, RIM) < cheb(s.o[o2.a], RIM);
+    const kind = o2.a === o.a ? 'closeout, then shot fake and drive' : drove ? (cut ? 'drive, then backdoor cut' : 'drive, then kick-out') : (cut ? 'shot fake, then pass to a cutter' : 'shot fake, then kick-out');
+    return { route: kind, closer: 'X' + (mx.closer + 1), closes_to: sqName(mx.from), then: 'O' + (o2.a + 1) + ' ' + sqName(o2.c), contested: +mx.contested.toFixed(2), if_faked: +mx.faked.toFixed(2), worth: +mx.mixed.toFixed(2) };
   }
   function possParts(s) {                              // {V, k, bars, pick, m, ...}: the value of playing on (what is banked not counted)
     if (s.stage !== 'play') return { V: SHOT_CLOCK_OUT, k: 0, bars: [SHOT_CLOCK_OUT], pick: null, m: null, moves: [] };
@@ -7448,9 +7605,15 @@ const PMEngine = (() => {
         const idx = pp.L.map((o, i) => i).filter(i => pp.worth[i] > -Infinity).sort((x, y) => pp.L[y].r * pp.worth[y] - pp.L[x].r * pp.worth[x] || pp.L[x].a - pp.L[y].a || pp.L[x].c - pp.L[y].c);
         const seen = new Set();
         for (const i of idx) { const o = pp.L[i], key = o.a * 2 + (o.dr ? 1 : 0); if (seen.has(key)) continue; seen.add(key);
-          looks.push({ a: o.a, c: sqName(o.c), q0: sqName(o.q0), p: +o.r.toFixed(4), open: +o.v.toFixed(2), before: +(o.w + o.adj).toFixed(2), worth: +pp.worth[i].toFixed(2), dribble: !!o.dr, actions: o.n0, rushed: !!o.rushed }); }
+          looks.push({ a: o.a, c: sqName(o.c), q0: sqName(o.q0), p: +o.r.toFixed(4), open: +o.v.toFixed(2), before: +(o.w + o.adj).toFixed(2), worth: +pp.worth[i].toFixed(2), dribble: !!o.dr, actions: o.n0, rushed: !!o.rushed, fake: twoStep(pp, i) }); }
       }
-      return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, bars: pp.bars.map(v => +v.toFixed(2)),
+      // step 31, fix 3: the two-step routes the number reads (a look whose worth the fake mix raises), best first
+      const two = [];
+      if (pp.L && pp.mixInfo) for (let i = 0; i < pp.L.length; i++) { if (!(pp.worth[i] > -Infinity)) continue; const r2 = twoStep(pp, i); if (r2) two.push(Object.assign({ shooter: pp.L[i].a, at: sqName(pp.L[i].c), p: +pp.L[i].r.toFixed(4) }, r2)); }
+      two.sort((x, y) => y.p * y.worth - x.p * x.worth || x.shooter - y.shooter || (x.at < y.at ? -1 : x.at > y.at ? 1 : 0));
+      // (opts.look {a, c}: every look of that attacker at that square, with its fake line: a proof reads one look)
+      const at = (opts.look && pp.L) ? pp.L.map((o, i) => i).filter(i => pp.L[i].a === opts.look.a && sqName(pp.L[i].c) === opts.look.c).map(i => ({ q0: sqName(pp.L[i].q0), rushed: !!pp.L[i].rushed, p: +pp.L[i].r.toFixed(4), worth: pp.worth[i] > -Infinity ? +pp.worth[i].toFixed(4) : null, fake: twoStep(pp, i) })) : undefined;
+      return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, two_step: two.slice(0, 12), look_at: at, bars: pp.bars.map(v => +v.toFixed(2)),
         answer: (pp.moves || []).map(([d, q, a]) => [d, sqName(q), a]), pick: pp.pick ? { a: pp.pick.a, c: sqName(pp.pick.c), q0: sqName(pp.pick.q0), p: +pp.pick.r.toFixed(4), worth: +pp.pickWorth.toFixed(2), dribble: !!pp.pick.dr } : null, looks, catch: pp.catch === undefined ? null : pp.catch };
     }
     if (opts.only === 'offence_setup') {                  // step 31, stage 4: the offence's setup, in the design's order

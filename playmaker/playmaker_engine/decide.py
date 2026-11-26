@@ -282,8 +282,40 @@ def _cmap2(rules, q, a, qs, mode):
         st = setr.get(c) or _NOSET
         fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
         sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
-        out[c] = (tuple(row), tuple(st), fm, sm)
+        km = sum(1 << k for k, n in enumerate(row) if n <= 0)      # (fix 3: the kinds he reaches where he stands)
+        out[c] = (tuple(row), tuple(st), fm, sm, km, km)
     return out
+
+
+@lru_cache(maxsize=200000)
+def _cmap2_after(rules, q, a, qs, mode, kind, qs_left):
+    """Step 31, fix 3 (engine.js cmAfter; the rules' one Move a phase): a defender's reply after a movement of the
+    defence's answer, as _cmap2's rows. After a Move he has no Move left (a Quick Step, off balance, if he has one, or
+    the Contest where he stands); after a Quick Step he keeps his Move; after a Sprint only where he stands, off balance."""
+    if kind == 'move':
+        full = _cmap_cached(rules, q, a, qs, False, 1 if qs_left > 0 else 0, mode)
+        setr = _cmap_cached(rules, q, a, qs, False, 0, mode)
+    elif kind == 'qs':
+        full = setr = _cmap_cached(rules, q, a, qs, True, 0, mode)
+    else:
+        full, setr = _cmap_cached(rules, q, a, qs, False, 0, mode), {}
+    RN = RC.reply_moves(rules)
+    out = {}
+    for c, row in full.items():
+        st = setr.get(c) or _NOSET
+        fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
+        sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
+        km = sum(1 << k for k, n in enumerate(row) if n <= 0)      # (standing after a Quick Step or a Sprint: off balance, not set)
+        out[c] = (tuple(row), tuple(st), fm, sm, km, km if kind == 'move' else 0)
+    return out
+
+
+def fixed_kind(s, d, q, a):
+    """engine.js fixedKind: a one-action movement to q facing a is a Quick Step if it keeps his arrow and a Quick Step
+    reaches q; otherwise a Sprint."""
+    if a == s.arrows[d] and q in geo_reach(s.x[d], s.arrows[d], s.ctx.dfn[d].qs, False, 1, s.ctx.rules)[1]:
+        return 'qs'
+    return 'sprint'
 
 
 _BODY = {}
@@ -306,7 +338,8 @@ def _body_cmap2(s_next, d, mode):
             st = setr.get(c) or _NOSET
             fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
             sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
-            hit[c] = (tuple(row), tuple(st), fm, sm)
+            km = sum(1 << k for k, n in enumerate(row) if n <= 0)
+            hit[c] = (tuple(row), tuple(st), fm, sm, km, km)
         if len(_BODY) > 20000:
             _BODY.clear()
         _BODY[key] = hit
@@ -316,9 +349,11 @@ def _body_cmap2(s_next, d, mode):
 @lru_cache(maxsize=None)
 def _any_arrow_cmap2(rules, q, qs, mode):
     """engine.js anyArrow2: a defender on q whichever way he faces (he chose his arrow when a Move took him there)."""
-    acc = {}
+    acc, kms = {}, {}
     for a in range(8):
-        for c, (row, st, _fm, _sm) in _cmap2(rules, q, a, qs, mode).items():
+        for c, tup in _cmap2(rules, q, a, qs, mode).items():
+            row, st = tup[0], tup[1]
+            kms[c] = kms.get(c, 0) | tup[4]           # (engine.js anyArrow2 ORs the standing bits too)
             cur = acc.get(c)
             if cur is None:
                 acc[c] = [list(row), list(st)]
@@ -333,7 +368,7 @@ def _any_arrow_cmap2(rules, q, qs, mode):
     for c, (row, st) in acc.items():
         fm = sum(1 << k for k, n in enumerate(row) if n <= RN)
         sm = sum(1 << k for k, n in enumerate(st) if n <= 1 and row[k] <= RN)
-        out[c] = (tuple(row), tuple(st), fm, sm)
+        out[c] = (tuple(row), tuple(st), fm, sm, kms[c], kms[c])
     return out
 
 
@@ -1343,6 +1378,7 @@ class Read:
         mode = 0 if rules.zone == 'off' else 1
         cms = [(_body_cmap2(s_next, d, mode) if B.on_board(s.x[d]) else None) for d in range(5)]      # step 26 (D-249): the real paths
         self._mcms = cms
+        self._msN = s_next                  # (fix 3: each defender's reach a phase on, for the closeout squares)
         off = RC.control_cut(rules) if RC.control_size(rules) > 0 else 0
         # ---- step 22c (engine.js covBuild, D-224): stagnation, in points by the rules ----
         # The Steal as the defence stands (a defender next to the square with an arrow on it, or one a Move takes next

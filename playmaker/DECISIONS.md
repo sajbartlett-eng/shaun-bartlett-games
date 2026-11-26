@@ -1889,6 +1889,27 @@ D-261), which is how the setup's X3 covers O2 from B7; that is priced by fix 3 (
 as one route). · Source: Shaun, 26 Nov 2026 (Step 31C Audit and Plan, fix 2); the design's "Later answers cost actions
 too" · **Built.**
 
+**D-306. Two-step routes are looks, and shot fakes are read inside the number (fix 3 of the step 31C audit).** A shooter
+in control mixes real and fake; the defence answers by contesting from where it stands or by closing out (a movement,
+then the Contest). Against a fake the honest Contest does nothing and the movement stands (D-272), so the defender who
+closed out has spent his Move, and the offence takes its best look with him so placed: the shooter's own drive past him
+(closeout, then shot fake and drive), a man cutting toward the rim behind him (drive, then backdoor cut), or the man he
+left (drive, then kick-out). Each is one look, its worth the two-by-two mix of shoot or fake against contest standing or
+close out: wc + (ws - wc)(F - wc) / ((ws - wc) + (F - wc)) where wc is the look against the closeout, ws against the
+Contests from where each defender stands, F the follow-up; wc where nothing is gained. A defender already where he
+contests from can't be faked out of it. The follow-up is read over the map's own looks, on the board as the defence
+stands before its answer, with the closer on whichever square next to the shooter leaves the least. Both engines, equal.
+Proofs: tests/test_fix3_two_step.py (D1's drive and backdoor cut; D2's Sharpshooter three, off against in front). What
+it does not do: the follow-up isn't re-read after the answer's own movements, and its pass comes from where the map's
+looks already pass from, not from the drive's square. · Source: Shaun, 26 Nov 2026 (Step 31C Audit and Plan, fix 3,
+addition B); the design's "Two-step routes are looks" · **Built.**
+
+**D-307. One Move a phase holds in the defence's answer.** A defender who uses his Move in the answer inside the number
+has no Move in his reply: a Quick Step, off balance, if he has one left, or the Contest from where he stands. After a
+Quick Step he keeps his Move; after a Sprint (his Move and his Quick Step) only where he stands, off balance. Both
+engines. · Source: Shaun, 26 Nov 2026 (fix 2 report, section 6, question 1: yes); the rules ("each phase, each player has
+one Move") · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

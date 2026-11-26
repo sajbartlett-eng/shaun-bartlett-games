@@ -1,0 +1,31 @@
+E1, the setup's shape (fix 2), before (fix 2 engine) then after (fix 3):
+O: ['I11', 'C9', 'O9', 'A3', 'Q3'] ball O1 X: ['M8', 'E8', 'G10', 'D5', 'I5']
+value 14 bars [-5, 14, 14, 14, 14, 14, 14] answer [[0, 'M6', 0]]
+  look {'a': 4, 'c': 'M2', 'q0': 'O3', 'p': 1, 'open': 16, 'before': 16, 'worth': 14, 'dribble': False, 'actions': 2, 'rushed': False}
+  look {'a': 2, 'c': 'Q4', 'q0': 'O6', 'p': 1, 'open': 18, 'before': 5.01, 'worth': 13.81, 'dribble': False, 'actions': 2, 'rushed': False}
+  look {'a': 0, 'c': 'B10', 'q0': 'E10', 'p': 1, 'open': 15, 'before': 12, 'worth': 12, 'dribble': False, 'actions': 2, 'rushed': False}
+  look {'a': 1, 'c': 'B10', 'q0': 'C9', 'p': 1, 'open': 15, 'before': 12, 'worth': 12, 'dribble': False, 'actions': 1, 'rushed': False}
+  look {'a': 3, 'c': 'G3', 'q0': 'D3', 'p': 1, 'open': 34, 'before': 4.35, 'worth': 10.65, 'dribble': False, 'actions': 2, 'rushed': False}
+O: ['I11', 'C9', 'O9', 'A3', 'Q3'] ball O1 X: ['M8', 'E8', 'G10', 'D5', 'I5']
+value 22.8889 bars [-5, 18, 18, 21.9, 21.9, 22.89, 22.89] answer [[3, 'F3', 0]]
+    {'shooter': 4, 'at': 'K3', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 14, 'if_faked': 30, 'worth': 22.89}
+    {'shooter': 2, 'at': 'K4', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 12, 'if_faked': 30, 'worth': 21.9}
+    {'shooter': 3, 'at': 'G3', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'H4', 'then': 'O5 K3', 'contested': 12, 'if_faked': 34, 'worth': 21.9}
+    {'shooter': 0, 'at': 'E6', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'F5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'F5', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'G5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'F6', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'G5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'G5', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'H5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'G6', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'H5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'G7', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'H6', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'H7', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'I6', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'I7', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'I6', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+    {'shooter': 0, 'at': 'J7', 'p': 1, 'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'I6', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}
+  look {'a': 4, 'c': 'K3', 'q0': 'N3', 'p': 1, 'open': 34, 'before': 5.45, 'worth': 22.89, 'dribble': False, 'actions': 2, 'rushed': False, 'fake': {'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 14, 'if_faked': 30, 'worth': 22.89}}
+  look {'a': 2, 'c': 'K4', 'q0': 'L6', 'p': 1, 'open': 34, 'before': 4.35, 'worth': 21.9, 'dribble': False, 'actions': 2, 'rushed': False, 'fake': {'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 12, 'if_faked': 30, 'worth': 21.9}}
+  look {'a': 3, 'c': 'G3', 'q0': 'D3', 'p': 1, 'open': 34, 'before': 4.35, 'worth': 21.9, 'dribble': False, 'actions': 2, 'rushed': False, 'fake': {'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'H4', 'then': 'O5 K3', 'contested': 12, 'if_faked': 34, 'worth': 21.9}}
+  look {'a': 0, 'c': 'E6', 'q0': 'G8', 'p': 1, 'open': 26, 'before': 5.45, 'worth': 21.5, 'dribble': False, 'actions': 2, 'rushed': False, 'fake': {'route': 'drive, then backdoor cut', 'closer': 'X5', 'closes_to': 'F5', 'then': 'O5 K3', 'contested': 14, 'if_faked': 34, 'worth': 21.5}}
+  look {'a': 1, 'c': 'A6', 'q0': 'C8', 'p': 1, 'open': 21, 'before': 6.9, 'worth': 18, 'dribble': False, 'actions': 2, 'rushed': False, 'fake': None}
+
+E1 and E2, the setup search after fix 3:
+E2 25926 ms ['I7', 'E9', 'I2', 'B6', 'G3'] [2, 0, 1, 2, 0] value 21.8306
+E1 36804 ms ['F8', 'M8', 'I5', 'D4', 'J2'] [2, 4, 0, 5, 0] value 15.6667

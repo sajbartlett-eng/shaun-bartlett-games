@@ -118,7 +118,7 @@ _MISS = object()
 
 def poss_read(r, opts, s0=None, last_phase=False):
     """engine.js possRead: the looks of the map `opts` (read r), the defence's answer, the value."""
-    from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2
+    from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2, _cmap2_after, fixed_kind, INF, _NOSET
     s, rules = r.s, r.rules
     b, k = s.ball, s.clock // RC.PHASE_SECONDS - 1
     cut = RC.off_balance_cut(rules) / 20.0
@@ -154,15 +154,23 @@ def poss_read(r, opts, s0=None, last_phase=False):
     def sval(i, d, pair):
         if pair is None or not pair[2]:
             return None
-        key = (i, d, pair[2], pair[3])
+        km, ksm = (pair[4], pair[5]) if len(pair) > 4 else (0, 0)
+        key = (i, d, pair[2], pair[3], km, ksm)
         if key not in memo:
             lk = L[i]['lk']
-            gk = (lk.i, lk.c, lk.rushed, d, pair[2], pair[3])
+            gk = (lk.i, lk.c, lk.rushed, d, pair[2], pair[3], km, ksm)
             hit = gmemo.get(gk, _MISS)
             if hit is _MISS:
                 lines = []
                 cv = r._vals2(lk, d, pair[0], pair[1], split=lines)
-                hit = gmemo[gk] = (cv or {}, lines) if (cv or lines) else None
+                # fix 3 (engine.js sval): his Contest where he stands, with no movement
+                st = None
+                if km:
+                    rs = tuple(0 if (km >> k) & 1 else INF for k in range(6))
+                    ls = []
+                    cs = r._vals2(lk, d, rs, rs if ksm else _NOSET, split=ls)
+                    st = (cs or {}, ls) if (cs or ls) else None
+                hit = gmemo[gk] = (cv or {}, lines, st) if (cv or lines) else None
             memo[key] = hit
         return memo[key]
     SV = [[(sval(i, d, cms[d].get(L[i]['c'])) if cms[d] is not None else None) for d in range(5)] for i in range(n)]
@@ -197,15 +205,132 @@ def poss_read(r, opts, s0=None, last_phase=False):
 
     def trk(i):                                      # step i's limit, contests and squares taken: this phase's, or a later one's
         return (lim, SVK, gone_k) if i == K else (lim_l, SVL, gone_l)
+    sr = s0 if s0 is not None else s
+    mode = 0 if rules.zone == 'off' else 1
 
-    def worth(i, Bv, d, nv, row_k=None):
+    # Step 31, fix 3 (engine.js possRead: "two-step routes are looks"; shot fakes read inside the number). The shooter
+    # in control mixes real and fake; the defence contests from where it stands or closes out. Against a fake the
+    # closeout's movement stands, so that defender has spent his Move, and the offence takes its best look with him so
+    # placed: one route, one look, read by the two-by-two mix (shoot / fake against contest standing / close out):
+    # wc + (ws - wc)(F - wc) / ((ws - wc) + (F - wc)) where it gains, else wc.
+    fakes_on = all(RC.app_rule(rules, k) for k in ('fakes', 'block', 'contest_costs', 'position_contest', 'soft_contest'))
+    fk_k = fakes_on and sr.count('O', 'hesitate') < RC.LIMITS['O']['hesitate']
+    fk_l = fakes_on
+    mix_ok = [fakes_on and not o['rushed'] for o in L]
+    cur = [0]
+
+    def core(i, Bv, d, nv, row):
         o = L[i]
-        types, tmp, row = o['lk'].types, list(o['open']), (row_k if row_k is not None else SV[i])
+        types, tmp = o['lk'].types, list(o['open'])
+        arg = [-1] * len(types)
         for e in range(5):
             x = nv if e == d else row[e]
             if not x:
                 continue
-            cv, bl = x
+            cv, bl = x[0], x[1]
+            for t, ty in enumerate(types):
+                if ty in cv and cv[ty] < tmp[t]:
+                    tmp[t] = cv[ty]
+                    arg[t] = e
+            for (t, c0, c1) in bl:
+                v = c0 + c1 * Bv
+                if v < tmp[t]:
+                    tmp[t] = v
+                    arg[t] = -2
+        tp, tb = tmp[0], 0
+        for t in range(1, len(tmp)):
+            if tmp[t] > tp:
+                tp, tb = tmp[t], t
+        cur[0] = arg[tb]
+        return tp + o['adj']
+    SV0 = [list(row) for row in SV]
+    Fm, Gm, UB0 = {}, {}, {}
+    sN = r._msN
+
+    def ok_look(j):
+        o = L[j]
+        return o['n0'] <= left if o['a'] == b else o['n0'] <= left + ((key_mask >> o['a']) & 1)
+
+    def ub0(e):
+        u, order = [0.0] * n, []
+        for j in range(n):
+            o = L[j]
+            types, row, hi = o['lk'].types, SV0[j], NEG
+            for t, ty in enumerate(types):
+                v = o['open'][t]
+                for e2 in range(5):
+                    x = row[e2]
+                    if e2 != e and x and ty in x[0] and x[0][ty] < v:
+                        v = x[0][ty]
+                if v > hi:
+                    hi = v
+            u[j] = o['r'] * (hi + o['adj']) - (1 - o['r']) * o['lc']
+            if ok_look(j):
+                order.append(j)
+        order.sort(key=lambda j: (-u[j], j))
+        UB0[e] = (u, order)
+
+    def follow2(e, q, a, kind):
+        key = (e, q, a, kind)
+        g = Gm.get(key)
+        if g is not None:
+            return g
+        if e not in UB0:
+            ub0(e)
+        u, order = UB0[e]
+        cm = _cmap2_after(rules, q, a, s.ctx.dfn[e].qs, mode, kind, 1)
+        hi, hj = NEG, -1
+        for j in order:
+            if u[j] + 1e-9 <= hi:
+                break
+            o = L[j]
+            if o['c'] == q:
+                continue
+            ev = o['r'] * core(j, 0.0, e, sval(j, e, cm.get(o['c'])), SV0[j]) - (1 - o['r']) * o['lc']
+            if ev > hi:
+                hi, hj = ev, j
+        g = Gm[key] = (hi, hj)
+        return g
+
+    def follow(i, e):
+        key = (i, e)
+        f = Fm.get(key)
+        if f is not None:
+            return f
+        c = L[i]['c']
+        free, fixed = defender_map(sN, e, exact=True)
+        lo, frm, then = float('inf'), None, -1
+        for q, na in free.items():
+            if na == 1 and B.cheb(q, c) == 1:
+                g = follow2(e, q, B.dir_between(q, c), 'move')
+                if g[0] < lo:
+                    lo, frm, then = g[0], q, g[1]
+        for q, arrs in fixed.items():
+            if B.cheb(q, c) == 1:
+                for a, na in arrs.items():
+                    if na == 1:
+                        g = follow2(e, q, a, fixed_kind(sN, e, q, a))
+                        if g[0] < lo:
+                            lo, frm, then = g[0], q, g[1]
+        f = Fm[key] = (NEG if lo == float('inf') else lo, frm, then)
+        return f
+
+    def worth(i, Bv, d, nv, row_k=None, tk=0):
+        row = row_k if row_k is not None else SV[i]
+        wc = core(i, Bv, d, nv, row)
+        if not mix_ok[i] or not (fk_l if tk == 1 else fk_k):
+            return wc
+        e0 = cur[0]
+        if e0 < 0:
+            return wc
+        o = L[i]
+        types, tmp = o['lk'].types, list(o['open'])
+        for e in range(5):
+            x0 = nv if e == d else row[e]
+            x = x0[2] if x0 else None
+            if not x:
+                continue
+            cv, bl = x[0], x[1]
             for t, ty in enumerate(types):
                 if ty in cv and cv[ty] < tmp[t]:
                     tmp[t] = cv[ty]
@@ -213,7 +338,14 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 v = c0 + c1 * Bv
                 if v < tmp[t]:
                     tmp[t] = v
-        return max(tmp) + o['adj']
+        ws = max(tmp) + o['adj']
+        if not (ws > wc + 1e-9):
+            return wc
+        F = follow(i, e0)[0]
+        if not (F > wc + 1e-9):
+            return wc
+        da, df = ws - wc, F - wc
+        return wc + da * df / (da + df)
     hist, vec = [0.0] * (K + 1), [NEG] * 6
     rows = [None] * (K + 1)
     state = dict(act=[], JA=[])
@@ -227,7 +359,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
         for i in range(1, K + 1):
             Bv = hist[i - 2] if i >= 3 else 0.0
             _l, SVt, gt = trk(i)
-            rows[i] = [NEG if gt[j] else worth(j, Bv, -1, None, SVt[j]) for j in range(n)]
+            tk = 0 if i == K else 1
+            rows[i] = [NEG if gt[j] else worth(j, Bv, -1, None, SVt[j], tk) for j in range(n)]
             U = _route_t(L, rows[i], b, U, left, key_mask, cut, vec if i == K else None, act, i)
             hist[i] = U
             if bars is not None:
@@ -271,8 +404,9 @@ def poss_read(r, opts, s0=None, last_phase=False):
         for i in range(1, K + 1):
             Bv = h[i - 2] if i >= 3 else 0.0
             lt, SVt, gt = trk(i)
-            WA = [((NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) if lt[j] > nm[0]
-                   else (NEG if gt[j] else worth(j, Bv, -1, None, SVt[j]))) for x, j in enumerate(idx)]
+            tk = 0 if i == K else 1
+            WA = [((NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x], None, tk)) if lt[j] > nm[0]
+                   else (NEG if gt[j] else worth(j, Bv, -1, None, SVt[j], tk))) for x, j in enumerate(idx)]
             U = _route_t(LA, WA, b, U, left, key_mask, cut, v3 if i == K else None, None, i)
             h[i] = U
         return U, v3
@@ -291,8 +425,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             slot[j] = 5 if o['dr'] else b
     ords = {}
 
-    def has_block(row):
-        return any(x and x[1] for x in row)
+    def has_block(row, j):
+        return any(x and (x[1] or (mix_ok[j] and x[2] and x[2][1])) for x in row)
 
     def build_orders():
         for i in range(1, K + 1):
@@ -302,8 +436,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             ords[i] = (nh, [j for j in nh if vP0[j]], sorted((j for j in range(n) if row[j] != NEG and vH[j]), key=lambda j: (-row[j], j)))
         rk = rows[K]
         ords['slots'] = [sorted((j for j in range(n) if rk[j] != NEG and (vNH[j] or vH[j]) and slot[j] == k), key=lambda j: (-rk[j], j)) for k in range(6)]
-        ords['blkL'] = [j for j in range(n) if has_block(SVL[j])]
-        ords['blkK'] = [j for j in range(n) if has_block(SVK[j])]
+        ords['blkL'] = [j for j in range(n) if has_block(SVL[j], j)]
+        ords['blkK'] = [j for j in range(n) if has_block(SVK[j], j)]
 
     EPS_B = 1e-9                                     # (engine.js EPS_B: a weighted average can round a hair above both its ends)
 
@@ -384,14 +518,15 @@ def poss_read(r, opts, s0=None, last_phase=False):
             Bv = h[i - 2] if i >= 3 else 0.0
             ov = {}
             lt, SVt, gt = trk(i)
+            tk = 0 if i == K else 1
             if i >= 3 and h[i - 2] != hist[i - 2]:      # a block now leads somewhere else: the looks it bears on move
                 for j in ords['blkK' if i == K else 'blkL']:
                     if not gt[j]:
-                        ov[j] = worth(j, Bv, -1, None, SVt[j])
+                        ov[j] = worth(j, Bv, -1, None, SVt[j], tk)
             for j, nv in aff:
                 if lt[j] <= nm[0]:                     # this step's shot is up before the move
                     continue
-                ov[j] = NEG if L[j]['c'] == q else worth(j, Bv, d, nv)
+                ov[j] = NEG if L[j]['c'] == q else worth(j, Bv, d, nv, None, tk)
             U, fall = route_diff(i, U, ov)           # (the bar: what playing on is worth after the step before)
             h[i] = U
             if i == K:
@@ -449,7 +584,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 pair = cm.get(c)
                 if (pair is None or not pair[2]) and SV[j][d] is None:
                     continue
-                if worth(j, hist[i - 2] if i >= 3 else 0.0, d, sval(j, d, pair)) < rows[i][j] - 1e-9:
+                if worth(j, hist[i - 2] if i >= 3 else 0.0, d, sval(j, d, pair), None, 0 if i == K else 1) < rows[i][j] - 1e-9:
                     lowers = True
                     break
             if not lowers:
@@ -470,7 +605,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
             if can_move:                           # a Move on the spot: a new pair of arrows
                 for a in range(8):
                     if a != s.arrows[d]:
-                        offer(d, s.x[d], a, _cmap2(rules, s.x[d], a, qs, mode))
+                        offer(d, s.x[d], a, _cmap2_after(rules, s.x[d], a, qs, mode, 'move', qs_left))
             had = any(SV[j][d] is not None for j, _i in act)
 
             def bears(q):
@@ -480,14 +615,14 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 return any(L[j]['c'] == q or ((anyc.get(L[j]['c']) or (0, 0, 0))[2]) for j, _i in act)
             for q, na in free.items():
                 if na == 1 and q not in taken and bears(q):
-                    for a in range(8):
-                        offer(d, q, a, _cmap2(rules, q, a, qs, mode))
+                    for a in range(8):                 # (fix 3: his reply from there is what the movement leaves him)
+                        offer(d, q, a, _cmap2_after(rules, q, a, qs, mode, 'move', qs_left))
             for q, arrs in fixed.items():
                 if q in taken:
                     continue
                 for a, na in arrs.items():
                     if na == 1:
-                        offer(d, q, a, _cmap2(rules, q, a, qs, mode))
+                        offer(d, q, a, _cmap2_after(rules, q, a, qs, mode, fixed_kind(s, d, q, a), qs_left))
 
         def order(x):                              # the value; level, the fewer routes that reach it; then square, arrow, where he starts
             return (x['m'], x['q'], x['a'], s.x[x['d']])
