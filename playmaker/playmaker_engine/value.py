@@ -170,7 +170,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
     # Step 31, Part C (Shaun, 25 Nov 2026: "later answers cost actions too"; engine.js possRead). In this phase a look
     # faces only the movements the defence can make before its shot goes up: what is left of the defence's turn if it is
     # the one to act, then two for each turn the offence must hand over on the way. lim[j]: how many of the answer's
-    # movements look j faces in this phase; the phases after face them all. SVK, gone_k: each look's contests as this
+    # movements look j faces in this phase (the phases after: lim_l, below). SVK, gone_k: each look's contests as this
     # phase's shot will find them.
     sr = s0 if s0 is not None else s
     base_act = max(0, 2 - sr.turn_n) if (sr.side == 'X' and sr.stage == 'play' and not sr.pending) else 0
@@ -183,7 +183,20 @@ def poss_read(r, opts, s0=None, last_phase=False):
         lim.append(base_act + 2 * turns)
     SVK = [list(row) for row in SV]
     gone_k = [False] * n
+    # Step 31, fix 2 (the step 31C audit: "later answers cost actions in every phase, not just the current one"). The
+    # phases after this one are read on this board too, so each starts the same way: the offence acts first, and a look
+    # faces only the movements the defence makes before its shot, two for each turn the offence hands over on the way.
+    # lim_l[j]: that count for the later phases; SVL, gone_l: each look's contests as a later phase's shot finds them.
+    # With no defence turn under way now the count is this phase's, and the two are one.
+    lim_l = [0 if x == 0 else x - base_act for x in lim]
+    if base_act:
+        SVL, gone_l = [list(row) for row in SV], [False] * n
+    else:
+        SVL, gone_l = SVK, gone_k
     nm = [0]
+
+    def trk(i):                                      # step i's limit, contests and squares taken: this phase's, or a later one's
+        return (lim, SVK, gone_k) if i == K else (lim_l, SVL, gone_l)
 
     def worth(i, Bv, d, nv, row_k=None):
         o = L[i]
@@ -213,10 +226,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             bars.append(U)
         for i in range(1, K + 1):
             Bv = hist[i - 2] if i >= 3 else 0.0
-            if i == K:
-                rows[i] = [NEG if gone_k[j] else worth(j, Bv, -1, None, SVK[j]) for j in range(n)]
-            else:
-                rows[i] = [NEG if gone[j] else worth(j, Bv, -1, None) for j in range(n)]
+            _l, SVt, gt = trk(i)
+            rows[i] = [NEG if gt[j] else worth(j, Bv, -1, None, SVt[j]) for j in range(n)]
             U = _route_t(L, rows[i], b, U, left, key_mask, cut, vec if i == K else None, act, i)
             hist[i] = U
             if bars is not None:
@@ -259,11 +270,9 @@ def poss_read(r, opts, s0=None, last_phase=False):
         U = OUT
         for i in range(1, K + 1):
             Bv = h[i - 2] if i >= 3 else 0.0
-            if i == K:
-                WA = [((NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) if lim[j] > nm[0]
-                       else (NEG if gone_k[j] else worth(j, Bv, -1, None, SVK[j]))) for x, j in enumerate(idx)]
-            else:
-                WA = [(NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) for x, j in enumerate(idx)]
+            lt, SVt, gt = trk(i)
+            WA = [((NEG if (gone[j] or L[j]['c'] == q) else worth(j, Bv, d, nv[x])) if lt[j] > nm[0]
+                   else (NEG if gt[j] else worth(j, Bv, -1, None, SVt[j]))) for x, j in enumerate(idx)]
             U = _route_t(LA, WA, b, U, left, key_mask, cut, v3 if i == K else None, None, i)
             h[i] = U
         return U, v3
@@ -293,7 +302,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
             ords[i] = (nh, [j for j in nh if vP0[j]], sorted((j for j in range(n) if row[j] != NEG and vH[j]), key=lambda j: (-row[j], j)))
         rk = rows[K]
         ords['slots'] = [sorted((j for j in range(n) if rk[j] != NEG and (vNH[j] or vH[j]) and slot[j] == k), key=lambda j: (-rk[j], j)) for k in range(6)]
-        ords['blk'] = [j for j in range(n) if has_block(SV[j])]
+        ords['blkL'] = [j for j in range(n) if has_block(SVL[j])]
         ords['blkK'] = [j for j in range(n) if has_block(SVK[j])]
 
     EPS_B = 1e-9                                     # (engine.js EPS_B: a weighted average can round a hair above both its ends)
@@ -374,17 +383,13 @@ def poss_read(r, opts, s0=None, last_phase=False):
         for i in range(1, K + 1):
             Bv = h[i - 2] if i >= 3 else 0.0
             ov = {}
+            lt, SVt, gt = trk(i)
             if i >= 3 and h[i - 2] != hist[i - 2]:      # a block now leads somewhere else: the looks it bears on move
-                if i == K:
-                    for j in ords['blkK']:
-                        if not gone_k[j]:
-                            ov[j] = worth(j, Bv, -1, None, SVK[j])
-                else:
-                    for j in ords['blk']:
-                        if not gone[j]:
-                            ov[j] = worth(j, Bv, -1, None)
+                for j in ords['blkK' if i == K else 'blkL']:
+                    if not gt[j]:
+                        ov[j] = worth(j, Bv, -1, None, SVt[j])
             for j, nv in aff:
-                if i == K and lim[j] <= nm[0]:
+                if lt[j] <= nm[0]:                     # this step's shot is up before the move
                     continue
                 ov[j] = NEG if L[j]['c'] == q else worth(j, Bv, d, nv)
             U, fall = route_diff(i, U, ov)           # (the bar: what playing on is worth after the step before)
@@ -435,7 +440,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
             for j, i in act:
                 if gone[j]:
                     continue
-                if i == K and lim[j] <= nm[0]:          # this phase's shot is up before this movement
+                if trk(i)[0][j] <= nm[0]:              # that step's shot is up before this movement
                     continue
                 c = L[j]['c']
                 if c == q:
@@ -522,6 +527,10 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 if L[i]['c'] == q:
                     gone_k[i] = True
                 SVK[i][d] = nv
+            if base_act and lim_l[i] > nm[0]:
+                if L[i]['c'] == q:
+                    gone_l[i] = True
+                SVL[i][d] = nv
         nm[0] += 1
         moves.append((d, q, best['a']))
         moved[d] = True

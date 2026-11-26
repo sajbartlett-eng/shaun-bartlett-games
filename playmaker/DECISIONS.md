@@ -1857,7 +1857,7 @@ look's shot goes up: what is left of the defence's turn if it is the one to act,
 hand over on the way (a pass, a Dribble or a Screen ends its turn; so does its second action). A shot the ball handler
 can take this turn faces none. Phases after this one face the whole answer, because the defence has had its turns by
 then. Both engines. · Source: the design's ruling of 25 Nov 2026 ("Later answers inside the number") · **Built in step
-31, Part C.**
+31, Part C.** The later phases changed in fix 2 (D-305): they now face only what each look's shot leaves time for.
 
 **D-303. The list is the tie-break.** Where two shapes or two turns read level on the possession's value, the list
 decides: each attacker's best look this phase, best first, then every look at its chance, best first. The defence takes
@@ -1875,6 +1875,19 @@ every-look reading as a reference under a test switch (tests/test_fix1_differenc
 average can round a hair above both its ends) are read in full, so the numbers match to the last digit. Proof:
 tools/step_31_same.py, every choice, value and line on every exam board the same before and after. · Source: Shaun,
 26 Nov 2026 (Step 31C Audit and Plan, fix 1); D-283 (speed only from never doing the same work twice) · **Built.**
+
+**D-305. Later answers cost actions in every phase (fix 2 of the step 31C audit).** The possession's value reads every
+phase left on this board, so each later phase starts the same way: the offence acts first, and a look faces only the
+movements of the defence's answer that come before its shot, two for each turn the offence hands over on the way (a pass,
+a Dribble or a Screen ends its turn; so does its second action). Before, the later phases faced the whole answer: a
+defender who closed out, and every rotation behind him, came free in each of them, however few movements the shot left
+time for. This phase keeps D-302's count (what is left of the defence's own turn first). Both engines, equal; the
+every-look reference reading is held to the same limits. Proof: tests/test_fix2_every_phase.py on D2's board (E2), X3 off
+the Sharpshooter at C10: the answer closes him out to B8; the later phases read 15 before (X2's rotation to M7 came free)
+and 16 after, the same as this phase. What it does not reach: the closeout inside a shot's own reply (Move then Contest,
+D-261), which is how the setup's X3 covers O2 from B7; that is priced by fix 3 (the closeout, then the fake or the drive,
+as one route). · Source: Shaun, 26 Nov 2026 (Step 31C Audit and Plan, fix 2); the design's "Later answers cost actions
+too" · **Built.**
 
 ## 2. Engine defaults awaiting sign-off
 

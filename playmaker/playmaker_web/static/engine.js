@@ -6350,7 +6350,7 @@ const PMEngine = (() => {
     // before its shot goes up: what is left of the defence's turn if it is the one to act, then two for each turn the
     // offence must hand over on the way (a pass, a Dribble or a Screen ends its turn; so does its second action). A shot
     // the ball handler can take this turn faces none. lim[j]: how many of the answer's movements look j faces in this
-    // phase. Phases after this one face them all: the defence has had its turns by then. SVK, goneK: each look's
+    // phase (the phases after this one: limL, below). SVK, goneK: each look's
     // contests as this phase's shot will find them (they stop following the answer once the look's limit is reached).
     const sr = s0 || s, baseAct = (sr.side === 'X' && sr.stage === 'play' && !sr.pending) ? Math.max(0, 2 - sr.turn_n) : 0;
     const lim = new Int16Array(n);
@@ -6365,6 +6365,14 @@ const PMEngine = (() => {
     }
     const SVK = new Array(n), goneK = new Uint8Array(n);
     for (let i = 0; i < n; i++) SVK[i] = SV[i].slice();
+    // Step 31, fix 2 (the step 31C audit: "later answers cost actions in every phase, not just the current one"). The
+    // phases after this one are read on this board too, so each starts the same way: the offence acts first, and a look
+    // faces only the movements the defence makes before its shot, two for each turn the offence hands over on the way.
+    // limL[j]: that count for the later phases; SVL, goneL: each look's contests as a later phase's shot finds them.
+    // With no defence turn under way now the count is this phase's, and the two are one.
+    const split = baseAct > 0, limL = split ? new Int16Array(n) : lim;
+    if (split) for (let i = 0; i < n; i++) limL[i] = lim[i] === 0 ? 0 : lim[i] - baseAct;
+    const SVL = split ? SV.map(r => r.slice()) : SVK, goneL = split ? new Uint8Array(n) : goneK;
     let nm = 0;                                         // the answer's movements so far
     const worth = (i, B, d, nv, rowK) => {              // look i's worth when a block leads to B, defender d's contest replaced by nv (rowK: as this phase's shot finds it)
       const open = L[i].open, T = open.length, row = rowK || SV[i];
@@ -6385,7 +6393,7 @@ const PMEngine = (() => {
     const rows = [null]; for (let i = 1; i <= K; i++) rows.push(Vit.subarray(i * n, (i + 1) * n));
     let act = [], blList = [], LA = [], JA = [], WA = new Float64Array(0);
     const histA = new Float64Array(K + 1), v3 = new Float64Array(6), bmax = new Float64Array(n);
-    const slopeB = new Uint8Array(n), sameK = new Uint8Array(n), w0 = new Float64Array(n);
+    const slopeB = new Uint8Array(n), sameK = new Uint8Array(n), sameL = new Uint8Array(n), w0 = new Float64Array(n);
     const runCur = bars => {
       let U = SHOT_CLOCK_OUT; hist[0] = U; act = []; blList = [];
       // bmax[j]: above this, no block bears on look j (a block that leads to a phase worth more than that is no longer
@@ -6406,21 +6414,23 @@ const PMEngine = (() => {
       // step 31, fix 1: a look whose block lines don't move with what a block leads to (none, or flat) is worth the
       // same at every step, so it is read once here (the same sum, the same numbers)
       for (let j = 0; j < n; j++) {
-        const row = SV[j], rk = SVK[j];
-        let mv = 0, same = 1;
+        const row = SV[j], rk = SVK[j], rl = SVL[j];
+        let mv = 0, same = 1, sameL_ = 1;
         for (let e = 0; e < 5; e++) {
-          const x = row[e], y = rk[e];
+          const x = row[e], y = rk[e], w = rl[e];
           if (x !== y) same = 0;
+          if (x !== w) sameL_ = 0;
           if (x && x.bl) for (let z = 2; z < x.bl.length; z += 3) if (x.bl[z] !== 0) mv = 1;
           if (y && y.bl) for (let z = 2; z < y.bl.length; z += 3) if (y.bl[z] !== 0) mv = 1;
+          if (w && w.bl) for (let z = 2; z < w.bl.length; z += 3) if (w.bl[z] !== 0) mv = 1;
         }
-        slopeB[j] = mv; sameK[j] = same && gone[j] === goneK[j] ? 1 : 0;
+        slopeB[j] = mv; sameK[j] = same && gone[j] === goneK[j] ? 1 : 0; sameL[j] = sameL_ && gone[j] === goneL[j] ? 1 : 0;
         w0[j] = (!mv && !gone[j]) ? worth(j, 0, -1, null) : -Infinity;
       }
       for (let i = 1; i <= K; i++) {
         const B = i >= 3 ? hist[i - 2] : 0, row = rows[i];
         if (i === K) for (let j = 0; j < n; j++) row[j] = goneK[j] ? -Infinity : ((!slopeB[j] && sameK[j]) ? w0[j] : worth(j, B, -1, null, SVK[j]));
-        else for (let j = 0; j < n; j++) row[j] = gone[j] ? -Infinity : (!slopeB[j] ? w0[j] : worth(j, B, -1, null));
+        else for (let j = 0; j < n; j++) row[j] = goneL[j] ? -Infinity : ((!slopeB[j] && sameL[j]) ? w0[j] : worth(j, B, -1, null, SVL[j]));
         U = routeT(L, n, row, b, U, left, keyMask, cut, i === K ? vec : null, act, i);
         hist[i] = U;
         if (bars) bars.push(U);
@@ -6459,7 +6469,7 @@ const PMEngine = (() => {
         // (a look the candidate doesn't touch is worth what it is as the defence stands, where what a block leads to is
         // the same or doesn't move it)
         if (i === K) for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = lim[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]])))) : (goneK[j] ? -Infinity : ((keep || (!slopeB[j] && sameK[j])) ? row[j] : worth(j, B, -1, null, SVK[j]))); }
-        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = (gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]]))); }
+        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = limL[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]])))) : (goneL[j] ? -Infinity : ((keep || (!slopeB[j] && sameL[j])) ? row[j] : worth(j, B, -1, null, SVL[j]))); }
         U = routeT(LA, na, WA, b, U, left, keyMask, cut, i === K ? v3 : null, null, i);
         histA[i] = U;
       }
@@ -6467,7 +6477,9 @@ const PMEngine = (() => {
     };
     const aff = new Int32Array(n), affW = new Float64Array(n), affT = new Float64Array(n), affV = new Array(n);
     const blK = new Uint8Array(n);                      // this phase's copy of look j has a block among its contests
-    const markBlK = () => { for (let j = 0; j < n; j++) { let any = 0; const row = SVK[j]; for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = 1; break; } blK[j] = any; } };
+    const blL = split ? new Uint8Array(n) : blK;        // (and the later phases' copy)
+    const markBl = (rows_, out) => { for (let j = 0; j < n; j++) { let any = 0; const row = rows_[j]; for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = 1; break; } out[j] = any; } };
+    const markBlK = () => { markBl(SVK, blK); if (split) markBl(SVL, blL); };
     markBlK();
     // Step 31, fix 1 (Shaun, 26 Nov 2026: "after an action, re-read only what it touched"). A candidate movement of
     // the defence's answer (defender d to square q) changes a look only if d contests it from q, contested it from
@@ -6488,9 +6500,10 @@ const PMEngine = (() => {
     // last and the last phase's looks the move reaches; KB[d] for the last phase (a look its shot beats the move to
     // keeps its worth from the contests it had then)
     const UB = [0, 1, 2, 3, 4].map(() => new Float64Array(n)), KB = [0, 1, 2, 3, 4].map(() => new Float64Array(n));
+    const KBL = [0, 1, 2, 3, 4].map(() => new Float64Array(n));   // (fix 2: the later phases' ceilings, as KB with their own limit)
     const mkBuckets = () => ({ idx: new Int32Array(n), start: new Int32Array(n + 2), ceil: new Float64Array(n + 1), nb: 0 });
     const DLs = [0, 1, 2, 3, 4].map(mkBuckets), KLs = [0, 1, 2, 3, 4].map(mkBuckets);
-    const m1 = new Float64Array(8), m2 = new Float64Array(8), am = new Int8Array(8), mk1 = new Float64Array(8);
+    const m1 = new Float64Array(8), m2 = new Float64Array(8), am = new Int8Array(8), mk1 = new Float64Array(8), ml1 = new Float64Array(8);
     const fl = new Int32Array(n), cntB = new Int32Array(64);
     const drL = new Int32Array(n), drLK = new Int32Array(n);   // the ball handler's Dribble routes: always read in full (see routeLazy)
     let nDr = 0, nDrK = 0;
@@ -6514,33 +6527,36 @@ const PMEngine = (() => {
     const ensureOrders = d => {
       if (ceilGen !== ordGen) { buildCeilings(); ceilGen = ordGen; }
       if (bGen[d] !== ordGen) {
-        bucket(DLs[d], UB[d], j => !gone[j] && (vNH[j] || vH[j]));
+        bucket(DLs[d], KBL[d], j => (limL[j] > nm ? !gone[j] : !goneL[j]) && (vNH[j] || vH[j]));
         bucket(KLs[d], KB[d], j => (lim[j] > nm ? !gone[j] : !goneK[j]) && (vNH[j] || vH[j]));
         bGen[d] = ordGen;
       }
     };
     function buildCeilings() {
       for (let j = 0; j < n; j++) {
-        const open = L[j].open, T = open.length, row = SV[j], rk = SVK[j];
-        for (let t = 0; t < T; t++) { m1[t] = Infinity; m2[t] = Infinity; am[t] = -1; mk1[t] = open[t]; }
+        const open = L[j].open, T = open.length, row = SV[j], rk = SVK[j], rl = SVL[j];
+        for (let t = 0; t < T; t++) { m1[t] = Infinity; m2[t] = Infinity; am[t] = -1; mk1[t] = open[t]; ml1[t] = open[t]; }
         for (let e = 0; e < 5; e++) {
           const x = row[e];
           if (x) { const cv = x.cv; for (let t = 0; t < T; t++) { const v = cv[t]; if (v < m1[t]) { m2[t] = m1[t]; m1[t] = v; am[t] = e; } else if (v < m2[t]) m2[t] = v; } }
           const y = rk[e];
           if (y) { const cv = y.cv; for (let t = 0; t < T; t++) if (cv[t] < mk1[t]) mk1[t] = cv[t]; }
+          const w = rl[e];
+          if (w) { const cv = w.cv; for (let t = 0; t < T; t++) if (cv[t] < ml1[t]) ml1[t] = cv[t]; }
         }
-        let kb0 = -Infinity;
-        for (let t = 0; t < T; t++) if (mk1[t] > kb0) kb0 = mk1[t];
-        kb0 += adjv[j];
+        let kb0 = -Infinity, kl0 = -Infinity;
+        for (let t = 0; t < T; t++) { if (mk1[t] > kb0) kb0 = mk1[t]; if (ml1[t] > kl0) kl0 = ml1[t]; }
+        kb0 += adjv[j]; kl0 += adjv[j];
         for (let d = 0; d < 5; d++) {
           let u = -Infinity;
           for (let t = 0; t < T; t++) { let v = open[t]; const c = am[t] === d ? m2[t] : m1[t]; if (c < v) v = c; if (v > u) u = v; }
           UB[d][j] = u + adjv[j];
           KB[d][j] = lim[j] > nm ? UB[d][j] : kb0;
+          KBL[d][j] = limL[j] > nm ? UB[d][j] : kl0;
         }
       }
       nDr = 0; nDrK = 0;
-      for (let j = 0; j < n; j++) if (vH[j] && L[j].dr) { if (!gone[j]) drL[nDr++] = j; if (lim[j] > nm ? !gone[j] : !goneK[j]) drLK[nDrK++] = j; }
+      for (let j = 0; j < n; j++) if (vH[j] && L[j].dr) { if (limL[j] > nm ? !gone[j] : !goneL[j]) drL[nDr++] = j; if (lim[j] > nm ? !gone[j] : !goneK[j]) drLK[nDrK++] = j; }
     }
     // the candidate: defender cd on cq with contests ccm; what a block leads to at each step (cB), whether it differs
     // from the defence as it stands (cChg) and how low (cLo)
@@ -6563,9 +6579,9 @@ const PMEngine = (() => {
       return 1;
     };
     const valAt = (i, j) => {                          // look j's worth at step i with the candidate in place
-      if (i === K && lim[j] <= nm) {                   // this phase's shot is up before the move
-        if (goneK[j]) return -Infinity;
-        return (cChg && blK[j]) ? worth(j, cB, -1, null, SVK[j]) : rows[K][j];
+      if (i === K ? lim[j] <= nm : limL[j] <= nm) {    // that phase's shot is up before the move
+        if (i === K ? goneK[j] : goneL[j]) return -Infinity;
+        return (cChg && (i === K ? blK[j] : blL[j])) ? worth(j, cB, -1, null, i === K ? SVK[j] : SVL[j]) : rows[i][j];
       }
       if (gone[j]) return -Infinity;
       if (touch(j)) return cB >= cT[j] ? cW[j] : worth(j, cB, cd, cV[j]);
@@ -6580,7 +6596,7 @@ const PMEngine = (() => {
     let fStep = -1, fStamp = -1, fVal = 0;
     const fallAt = (i, bar) => {
       if (fStep === i && fStamp === cStamp) return fVal;
-      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : UB[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
+      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : KBL[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
       let fall = bar;
       for (let k = 0; k < nb; k++) {
         if (ce[k] + EPS_B <= fall) break;
@@ -6597,7 +6613,7 @@ const PMEngine = (() => {
       return fall;
     };
     const routeLazy = (i, bar) => {                    // T(bar) at step i with the candidate in place: routeT over every look
-      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : UB[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
+      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : KBL[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
       let best = bar;
       for (let k = 0; k < nb; k++) {                    // the passes
         if (ce[k] + EPS_B <= best) break;
@@ -6701,10 +6717,10 @@ const PMEngine = (() => {
         if (i >= 3 && histF[i - 2] !== hist[i - 2]) {    // a block now leads somewhere else: only the looks a block still bears on move
           const lo = Math.min(histF[i - 2], hist[i - 2]);
           if (i === K) { for (let j = 0; j < n; j++) if (!goneK[j] && blK[j]) W[j] = worth(j, B, -1, null, SVK[j]); }
-          else for (let x = 0; x < blList.length && bmax[blList[x]] > lo; x++) W[blList[x]] = worth(blList[x], B, -1, null);
+          else { for (let j = 0; j < n; j++) if (!goneL[j] && blL[j]) W[j] = worth(j, B, -1, null, SVL[j]); }
         }
         if (i === K) { for (let x = 0; x < na; x++) if (lim[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]); }
-        else for (let x = 0; x < na; x++) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]);
+        else for (let x = 0; x < na; x++) if (limL[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]);
         U = routeT(L, n, W, b, U, left, keyMask, cut, i === K ? v2 : null, null, i);
         histF[i] = U;
       }
@@ -6716,7 +6732,7 @@ const PMEngine = (() => {
       // (the stance search's first look: the number with defender probe.d standing on each [square, arrow], by
       // difference: his contests there, the walls and lanes as they stand. It only chooses which squares are then read
       // in full.)
-      lim.fill(32767);
+      lim.fill(32767); if (split) limL.fill(32767);
       buildOrders();                                    // (the ceilings depend on how far each look's limit reaches)
       const qsP = s.ctx.dfn[probe.d].qs, modeP = stanceMode(m.sN, probe.d), est = new Float64Array(probe.cands.length);
       for (let x = 0; x < probe.cands.length; x++) est[x] = runCand(probe.d, probe.cands[x][0], cm2Cached(probe.cands[x][0], probe.cands[x][1], qsP, modeP));
@@ -6741,7 +6757,7 @@ const PMEngine = (() => {
         for (let x = 0; x < act.length; x += 2) {
           const j = act[x], i = act[x + 1];
           if (gone[j]) continue;
-          if (i === K && lim[j] <= nm) continue;                             // this phase's shot is up before this movement
+          if ((i === K ? lim : limL)[j] <= nm) continue;                    // that phase's shot is up before this movement
           if (L[j].c === q) { lowers = true; break; }
           const mk = cm[lc[j]];
           if (!mk && SV[j][d] === null) continue;
@@ -6797,6 +6813,7 @@ const PMEngine = (() => {
         if (L[i].c === q) gone[i] = 1;
         SV[i][d] = nv;
         if (lim[i] > nm) { if (L[i].c === q) goneK[i] = 1; SVK[i][d] = nv; }
+        if (split && limL[i] > nm) { if (L[i].c === q) goneL[i] = 1; SVL[i][d] = nv; }
       }
       nm++; markBlK();
       moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
