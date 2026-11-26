@@ -1,0 +1,432 @@
+{
+ "before": {
+  "E1": {
+   "value": 22.8889,
+   "two_step": [
+    {
+     "shooter": 4,
+     "at": "K3",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "J4",
+     "then": "O4 G3",
+     "contested": 14,
+     "if_faked": 30,
+     "worth": 22.89
+    },
+    {
+     "shooter": 2,
+     "at": "K4",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "J4",
+     "then": "O4 G3",
+     "contested": 12,
+     "if_faked": 30,
+     "worth": 21.9
+    },
+    {
+     "shooter": 3,
+     "at": "G3",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "H4",
+     "then": "O5 K3",
+     "contested": 12,
+     "if_faked": 34,
+     "worth": 21.9
+    },
+    {
+     "shooter": 0,
+     "at": "E6",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "F5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    },
+    {
+     "shooter": 0,
+     "at": "F5",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "G5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    },
+    {
+     "shooter": 0,
+     "at": "F6",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "G5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    }
+   ],
+   "race": null
+  },
+  "E2": {
+   "B7": {
+    "value": 23.4737,
+    "three": 15.9474,
+    "fake": [
+     {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "B8",
+      "then": "O5 N2",
+      "contested": 15,
+      "if_faked": 16,
+      "worth": 15.95
+     }
+    ]
+   },
+   "B8": {
+    "value": 23.4737,
+    "three": 15.9,
+    "fake": [
+     {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "B9",
+      "then": "O5 N2",
+      "contested": 15,
+      "if_faked": 16,
+      "worth": 15.9
+     }
+    ]
+   },
+   "C8": {
+    "value": 24.4762,
+    "three": 14.925,
+    "fake": []
+   },
+   "D8": {
+    "value": 24.4762,
+    "three": 15,
+    "fake": []
+   }
+  },
+  "times": {
+   "stances:E1": {
+    "ms": 28692,
+    "x": [
+     "F8",
+     "M8",
+     "I5",
+     "D4",
+     "J2"
+    ],
+    "arrows": [
+     2,
+     4,
+     0,
+     5,
+     0
+    ],
+    "value": 15.6667
+   },
+   "stances:E2": {
+    "ms": 20831,
+    "x": [
+     "I7",
+     "E9",
+     "I2",
+     "B6",
+     "G3"
+    ],
+    "arrows": [
+     2,
+     0,
+     1,
+     2,
+     0
+    ],
+    "value": 21.8306
+   },
+   "turn:E13": {
+    "ms": 11258,
+    "x": null,
+    "arrows": null,
+    "value": null
+   }
+  }
+ },
+ "after": {
+  "E1": {
+   "value": 22.8889,
+   "two_step": [
+    {
+     "shooter": 4,
+     "at": "K3",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "J4",
+     "then": "O4 G3",
+     "contested": 14,
+     "if_faked": 30,
+     "worth": 22.89
+    },
+    {
+     "shooter": 2,
+     "at": "K4",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "J4",
+     "then": "O4 G3",
+     "contested": 12,
+     "if_faked": 30,
+     "worth": 21.9
+    },
+    {
+     "shooter": 3,
+     "at": "G3",
+     "p": 1,
+     "route": "shot fake, then pass to a cutter",
+     "closer": "X5",
+     "closes_to": "H4",
+     "then": "O5 K3",
+     "contested": 12,
+     "if_faked": 34,
+     "worth": 21.9
+    },
+    {
+     "shooter": 0,
+     "at": "E6",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "F5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    },
+    {
+     "shooter": 0,
+     "at": "F5",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "G5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    },
+    {
+     "shooter": 0,
+     "at": "F6",
+     "p": 1,
+     "route": "drive, then backdoor cut",
+     "closer": "X5",
+     "closes_to": "G5",
+     "then": "O5 K3",
+     "contested": 14,
+     "if_faked": 34,
+     "worth": 21.5
+    }
+   ],
+   "race": [
+    {
+     "beaten": null,
+     "chance": 1,
+     "line": [
+      "H7",
+      "H3"
+     ],
+     "worth": 7.65,
+     "phases": [
+      {
+       "phase": 0,
+       "at": "H7",
+       "shoot_on": 9.95,
+       "late": "X5",
+       "carry_on": 9.95,
+       "contain": [
+        {
+         "by": "X2",
+         "shoot": 13.75,
+         "kick": 8.3,
+         "man": "O2",
+         "to": "D4",
+         "worth": 13.75
+        },
+        {
+         "by": "X3",
+         "shoot": 7.65,
+         "kick": null,
+         "man": null,
+         "to": null,
+         "worth": 7.65
+        },
+        {
+         "by": "X5",
+         "shoot": 5.45,
+         "kick": 8.65,
+         "man": "O5",
+         "to": "K3",
+         "worth": 8.65
+        }
+       ],
+       "value": 7.65,
+       "contained_by": "X3"
+      },
+      {
+       "phase": 1,
+       "at": "H3",
+       "shoot_on": 9.95,
+       "late": "X5",
+       "carry_on": 9.95,
+       "contain": [
+        {
+         "by": "X1",
+         "shoot": 12.5,
+         "kick": 16,
+         "man": "O3",
+         "to": "N5",
+         "worth": 16
+        },
+        {
+         "by": "X2",
+         "shoot": 16.75,
+         "kick": 6.9,
+         "man": "O2",
+         "to": "A5",
+         "worth": 16.75
+        },
+        {
+         "by": "X3",
+         "shoot": 7.65,
+         "kick": null,
+         "man": null,
+         "to": null,
+         "worth": 7.65
+        },
+        {
+         "by": "X4",
+         "shoot": 12.5,
+         "kick": 16,
+         "man": "O4",
+         "to": "D2",
+         "worth": 16
+        },
+        {
+         "by": "X5",
+         "shoot": 5.45,
+         "kick": 34,
+         "man": "O5",
+         "to": "K3",
+         "worth": 34
+        }
+       ],
+       "value": 7.65,
+       "contained_by": "X3"
+      }
+     ]
+    }
+   ]
+  },
+  "E2": {
+   "B7": {
+    "value": 24.4762,
+    "three": 20.04,
+    "fake": [
+     {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X3",
+      "closes_to": "B8",
+      "then": "O2 D5",
+      "contested": 15,
+      "if_faked": 22,
+      "worth": 20.04
+     }
+    ]
+   },
+   "B8": {
+    "value": 24.4762,
+    "three": 20.9916,
+    "fake": [
+     {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X3",
+      "closes_to": "B8",
+      "then": "O2 A5",
+      "contested": 15,
+      "if_faked": 32.92,
+      "worth": 20.99
+     }
+    ]
+   },
+   "C8": {
+    "value": 24.4762,
+    "three": 14.925,
+    "fake": []
+   },
+   "D8": {
+    "value": 24.4762,
+    "three": 15,
+    "fake": []
+   }
+  },
+  "times": {
+   "stances:E1": {
+    "ms": 18810,
+    "x": [
+     "I10",
+     "B7",
+     "N6",
+     "G4",
+     "M3"
+    ],
+    "arrows": [
+     7,
+     2,
+     0,
+     0,
+     0
+    ],
+    "value": 15.7125
+   },
+   "stances:E2": {
+    "ms": 24990,
+    "x": [
+     "J9",
+     "E9",
+     "G4",
+     "B8",
+     "I5"
+    ],
+    "arrows": [
+     2,
+     3,
+     0,
+     2,
+     1
+    ],
+    "value": 21.6548
+   },
+   "turn:E13": {
+    "ms": 12304,
+    "x": null,
+    "arrows": null,
+    "value": null
+   }
+  }
+ }
+}

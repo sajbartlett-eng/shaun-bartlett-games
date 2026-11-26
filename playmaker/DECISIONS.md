@@ -1910,6 +1910,26 @@ Quick Step he keeps his Move; after a Sprint (his Move and his Quick Step) only 
 engines. · Source: Shaun, 26 Nov 2026 (fix 2 report, section 6, question 1: yes); the rules ("each phase, each player has
 one Move") · **Built.**
 
+**D-308. A drive is read by its race (fix 3b of the step 31C audit).** From a beaten defender (or, with nobody next to
+him, from where he stands, no Dribble needed) the ball handler drives at the rim a phase of movement at a time, to the
+square nearest the rim each phase reaches, up to three phases as the clock allows. Every defender's arrival is raced
+against him (the phases before he can contest there set, or at all). Each phase the defence takes the least of
+containing him there (a defender set there in time; the beaten one can't in the beat's phase) or letting him carry on;
+the offence takes the most of shooting (against the container's full Contest, or the late defenders' off-balance ones),
+kicking out to the man the container left, or carrying on. The freed man takes his own best look by his card (the map's
+looks of him, read without his defender); the pass is raced by the rules from the square the handler is contained on.
+Who guards whom: the pairing that keeps the five closest in all. Help is taken only when it saves more than the look it
+leaves, because the defence takes the least. One look a drive, its chance the Dribble's. Both engines, equal. · Source:
+Shaun, 27 Nov 2026 (the design: "reading ahead is a race, not a tree"; "a drive is read by the same race"; fix 3b) ·
+**Built.**
+
+**D-309. The fake's follow-up is read on the board the defence's answer leaves.** After each movement of the answer
+inside the number, the follow-up (D-306) is read again with that movement in place, and a defender who moved closes out
+only with what the movement left him. In the fake mix, an adjacent defender's Contest from where he stands (3 less beside
+or with his arrow off, 6 less behind, never below 1: the rules' Contests by position) is set against moving in front for
+the full one: the fake can't beat the first and can beat the second. · Source: Shaun, 27 Nov 2026 (fix 3b, points 2
+and 3) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

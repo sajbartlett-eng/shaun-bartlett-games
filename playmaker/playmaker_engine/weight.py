@@ -65,6 +65,8 @@ def weight_map(s, cfg=None):
         Bv = pp['before'][-2] if len(pp['before']) >= 2 else 0.0
         looks = []
         for i, o in enumerate(L):
+            if o.get('race'):                       # (fix 3b: a drive's race look has no Contest of its own to weigh)
+                continue
             types, opens = o['lk'].types, o['open']
             fake = not o['rushed']
             op = max(opens)

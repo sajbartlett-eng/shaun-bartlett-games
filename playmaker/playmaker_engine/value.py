@@ -116,9 +116,146 @@ _SVMAP = {}
 _MISS = object()
 
 
+class _RaceLook:
+    """(a drive's race look: no Contest of its own; its worth is the race's)"""
+    types = ('race',)
+    rushed = True
+
+
+def drive_races(r, Lmap, T):
+    """Step 31, fix 3b (engine.js driveRaces; the design: "a drive is read by the same race"). From a beaten defender
+    (or, with nobody next to him, from where he stands) the ball handler drives at the rim a phase of movement at a
+    time, to the square nearest the rim each phase reaches; every defender's arrival is raced against him. Each phase
+    the defence takes the least of containing him there (a defender set there in time) or letting him carry on; the
+    offence the most of shooting, kicking out to the man the container left (his own best look, read without that
+    defender, the pass raced from where the handler is contained) or carrying on. One look a drive."""
+    from itertools import permutations
+    from .decide import Look, cov_pass, _phase_dist, _arrive, SHOOT, INF
+    from .scoring import shot_zone, card_shot
+    s, rules = r.s, r.rules
+    ctx, b = s.ctx, s.ball
+    h0 = s.o[b]
+    out = []
+    if not B.on_board(h0) or s.pending or s.tok_o < 2 or not r._dribble_ok()[0]:
+        return out
+    begins = []
+    for j in range(5):
+        if B.on_board(s.x[j]) and B.adjacent(s.x[j], h0) and not any(x[1] == j for x in s.beaten):
+            p = r._beat_chance(j)
+            if p > 0:
+                begins.append((j, p))
+    if not any(B.on_board(s.x[j]) and B.adjacent(s.x[j], h0) for j in range(5)):
+        begins.append((-1, 1.0))
+    if not begins:
+        return out
+    no_rim = RC.rim_shot_barred(rules)
+    pd = _phase_dist(rules, h0, ctx.off[b].qs)
+    occ = set(s.o[i] for i in range(5) if i != b and B.on_board(s.o[i])) | set(q for q in s.x if B.on_board(q))
+    line = []
+    for t in range(T):
+        best = None
+        for q in sorted(pd):
+            if not B.on_board(q) or pd[q] != t + 1 or q in occ or shot_zone(ctx, q) not in SHOOT or (no_rim and q == RC.RIM):
+                continue
+            if best is None or B.cheb(q, RC.RIM) < B.cheb(best, RC.RIM):
+                best = q
+        if best is None or (line and B.cheb(best, RC.RIM) >= B.cheb(line[-1], RC.RIM)):
+            break
+        line.append(best)
+    if not line:
+        return out
+    mode = 0 if rules.zone == 'off' else 1
+    arr = [(_arrive(rules, s.x[e], ctx.dfn[e].qs, mode) if B.on_board(s.x[e]) else None) for e in range(5)]
+    shots = {}
+
+    def shot(sq):
+        if sq not in shots:
+            z = shot_zone(ctx, sq)
+            lk = Look(b, sq, 'later', 1.0, False)
+            lk.types = RC.ZONE_SHOTS[z]
+            lk.rushed = False
+            pts = RC.worth_now(ctx, z)
+            shots[sq] = (lk, [pts * card_shot(ctx, ctx.off[b], ty, sq) for ty in lk.types])
+        return shots[sq]
+    ROW0 = (0,) + (INF,) * 5
+    NOSET = (INF,) * 6
+
+    def vs(sq, e, setc):
+        lk, opn = shot(sq)
+        cv = None if e < 0 else r._vals_map(lk, e, (ROW0, ROW0 if setc else NOSET, 1, 1 if setc else 0))
+        hi = NEG
+        for t, ty in enumerate(lk.types):
+            v = cv[ty] if (cv and ty in cv and cv[ty] < opn[t]) else opn[t]
+            if v > hi:
+                hi = v
+        return hi
+    man, bestsum = list(range(5)), None
+    for pr in permutations(range(5)):
+        sm = sum(B.cheb(s.x[d], s.o[pr[d]]) if (B.on_board(s.x[d]) and B.on_board(s.o[pr[d]])) else 0 for d in range(5))
+        if bestsum is None or sm < bestsum:
+            bestsum, man = sm, list(pr)
+    pc = {}
+
+    def kick(sq, e):
+        mm = man[e]
+        hi, at = NEG, None
+        if mm == b or not B.on_board(s.o[mm]):
+            return hi, -1, at
+        sb = s.with_(o=tuple(sq if i == b else s.o[i] for i in range(5)))
+        for o in Lmap:
+            if o['a'] != mm:
+                continue
+            key = (sq, o['q0'], mm)
+            if key not in pc:
+                pc[key] = cov_pass(sb, mm, o['q0'])
+            pp = pc[key]
+            w = NEG
+            for t, ty in enumerate(o['lk'].types):
+                v = o['open'][t]
+                for d in range(5):
+                    x = o['vals'][d]
+                    if d != e and x and ty in x and x[ty] < v:
+                        v = x[ty]
+                if v > w:
+                    w = v
+            ev = pp * (w + o['adj']) - (1 - pp) * 5
+            if ev > hi:
+                hi, at = ev, o['c']
+        return hi, mm, at
+    for j, p in begins:
+        phases, nxt = [], NEG
+        for t in range(len(line) - 1, -1, -1):
+            sq = line[t]
+            late, lv = -1, float('inf')
+            for e in range(5):
+                if arr[e] is None or (e == j and t == 0) or arr[e][1].get(sq, INF) > t:
+                    continue
+                v = vs(sq, e, False)
+                if v < lv:
+                    lv, late = v, e
+            pull = lv if late >= 0 else vs(sq, -1, False)
+            go = pull if t == len(line) - 1 else max(pull, nxt)
+            V, by, contain = go, -1, []
+            for e in range(5):
+                if arr[e] is None or (e == j and t == 0) or arr[e][0].get(sq, INF) > t:
+                    continue
+                sh = vs(sq, e, True)
+                kv, km, kat = kick(sq, e)
+                O = max(sh, kv)
+                contain.append(dict(e=e, shoot=sh, kick=kv, man=km, to=kat, worth=O))
+                if O < V:
+                    V, by = O, e
+            phases.insert(0, dict(phase=t, at=sq, shoot_on=pull, late=late, carry_on=go, contain=contain, value=V, by=by))
+            nxt = V
+        V0 = phases[0]['value']
+        look = dict(a=b, c=h0, rushed=True, r=p, lk=_RaceLook(), open=[V0], q0=h0, n0=2, lc=0, adj=0.0, dr=True, p0=0, w=V0, race=True, vals=[None] * 5)
+        out.append(dict(look=look, beaten=j, p=p, line=list(line), phases=phases))
+    return out
+
+
 def poss_read(r, opts, s0=None, last_phase=False):
     """engine.js possRead: the looks of the map `opts` (read r), the defence's answer, the value."""
-    from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2, _cmap2_after, fixed_kind, INF, _NOSET
+    from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2, _cmap2_after, fixed_kind, INF, _NOSET, geo_reach
     s, rules = r.s, r.rules
     b, k = s.ball, s.clock // RC.PHASE_SECONDS - 1
     cut = RC.off_balance_cut(rules) / 20.0
@@ -135,7 +272,10 @@ def poss_read(r, opts, s0=None, last_phase=False):
     for (a, c, rushed), o in opts.items():
         if o[0] > 0:
             fix = 5.0 if ((stuck >> a) & 1 and B.in_key(o[6])) else 0.0
-            L.append(dict(a=a, c=c, rushed=rushed, r=o[0], lk=o[3], open=o[4], q0=o[6], n0=o[7], lc=o[8], adj=o[9] + fix, dr=o[8] == 0, p0=o[10], w=o[1]))
+            L.append(dict(a=a, c=c, rushed=rushed, r=o[0], lk=o[3], open=o[4], q0=o[6], n0=o[7], lc=o[8], adj=o[9] + fix, dr=o[8] == 0, p0=o[10], w=o[1], vals=o[5]))
+    races = drive_races(r, L, min(3, k + 1))          # fix 3b (engine.js driveRaces): each drive, read by its race, is one more look
+    for rc in races:
+        L.append(rc['look'])
     n, K = len(L), k + 1
     cms = r._mcms
     memo = {}
@@ -152,7 +292,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
         gmemo.clear()
 
     def sval(i, d, pair):
-        if pair is None or not pair[2]:
+        if pair is None or not pair[2] or L[i].get('race'):
             return None
         km, ksm = (pair[4], pair[5]) if len(pair) > 4 else (0, 0)
         key = (i, d, pair[2], pair[3], km, ksm)
@@ -173,7 +313,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 hit = gmemo[gk] = (cv or {}, lines, st) if (cv or lines) else None
             memo[key] = hit
         return memo[key]
-    SV = [[(sval(i, d, cms[d].get(L[i]['c'])) if cms[d] is not None else None) for d in range(5)] for i in range(n)]
+    SV = [[(sval(i, d, cms[d].get(L[i]['c'])) if (cms[d] is not None and not L[i].get('race')) else None) for d in range(5)] for i in range(n)]
     gone = [False] * n
     # Step 31, Part C (Shaun, 25 Nov 2026: "later answers cost actions too"; engine.js possRead). In this phase a look
     # faces only the movements the defence can make before its shot goes up: what is left of the defence's turn if it is
@@ -245,6 +385,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
         return tp + o['adj']
     SV0 = [list(row) for row in SV]
     Fm, Gm, UB0 = {}, {}, {}
+    moved_at = [None] * 5                           # (fix 3b: where each defender's answer movement took him, and how)
     sN = r._msN
 
     def ok_look(j):
@@ -298,20 +439,41 @@ def poss_read(r, opts, s0=None, last_phase=False):
         if f is not None:
             return f
         c = L[i]['c']
-        free, fixed = defender_map(sN, e, exact=True)
         lo, frm, then = float('inf'), None, -1
-        for q, na in free.items():
-            if na == 1 and B.cheb(q, c) == 1:
-                g = follow2(e, q, B.dir_between(q, c), 'move')
-                if g[0] < lo:
-                    lo, frm, then = g[0], q, g[1]
-        for q, arrs in fixed.items():
-            if B.cheb(q, c) == 1:
-                for a, na in arrs.items():
-                    if na == 1:
-                        g = follow2(e, q, a, fixed_kind(sN, e, q, a))
+        mv0 = moved_at[e]
+        if mv0 is None:
+            free, fixed = defender_map(sN, e, exact=True)
+            for q, na in free.items():
+                if na == 1 and B.cheb(q, c) == 1:
+                    g = follow2(e, q, B.dir_between(q, c), 'move')
+                    if g[0] < lo:
+                        lo, frm, then = g[0], q, g[1]
+            for q, arrs in fixed.items():
+                if B.cheb(q, c) == 1:
+                    for a, na in arrs.items():
+                        if na == 1:
+                            g = follow2(e, q, a, fixed_kind(sN, e, q, a))
+                            if g[0] < lo:
+                                lo, frm, then = g[0], q, g[1]
+        elif mv0[2] != 'sprint':                       # (engine.js: he moved in the answer; he closes out with what he has left)
+            mq, ma, mk = mv0
+            qsd = s.ctx.dfn[e].qs
+            if mk == 'qs':
+                free = geo_reach(mq, ma, qsd, True, 0, rules)[0]
+                for q, na in free.items():
+                    if na == 1 and q != mq and B.cheb(q, c) == 1:
+                        g = follow2(e, q, B.dir_between(q, c), 'sprint')
                         if g[0] < lo:
                             lo, frm, then = g[0], q, g[1]
+            else:
+                fixed = geo_reach(mq, ma, qsd, False, 1, rules)[1]
+                for q, arrs in fixed.items():
+                    if q != mq and B.cheb(q, c) == 1:
+                        for a, na in arrs.items():
+                            if na == 1:
+                                g = follow2(e, q, a, 'sprint')
+                                if g[0] < lo:
+                                    lo, frm, then = g[0], q, g[1]
         f = Fm[key] = (NEG if lo == float('inf') else lo, frm, then)
         return f
 
@@ -667,12 +829,20 @@ def poss_read(r, opts, s0=None, last_phase=False):
                     gone_l[i] = True
                 SVL[i][d] = nv
         nm[0] += 1
+        # fix 3b (engine.js): the fake's follow-up is read on the board the answer leaves, with its rotations
+        kind = 'move' if cm is _cmap2_after(rules, q, best['a'], s.ctx.dfn[d].qs, mode, 'move', _caps(s, 'X', d)[1]) else fixed_kind(s, d, q, best['a'])
+        moved_at[d] = (q, best['a'], kind)
+        for i in range(n):
+            SV0[i] = list(SV[i])
+        Fm.clear()
+        Gm.clear()
+        UB0.clear()
         moves.append((d, q, best['a']))
         moved[d] = True
         taken.add(q)
         tok -= 1
         U = run_cur()
-    return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec))
+    return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec), races=races)
 
 
 def poss_parts(s, cfg=None):

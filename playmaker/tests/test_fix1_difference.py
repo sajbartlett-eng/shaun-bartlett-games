@@ -67,7 +67,8 @@ def test_every_candidate_read_by_difference_equals_reading_every_look_javascript
 
 
 def test_every_candidate_read_by_difference_equals_reading_every_look_python():
-    """The Python engine (value.py), the same on three boards and boards one legal action on (every 20th)."""
+    """The Python engine (value.py), the same on three boards and boards one legal action on (every 5th).
+    (Fix 3b: every 20th became every 5th, because the answers are shorter now; the bar of 50 candidates stays.)"""
     from playmaker_engine import value as V
     from playmaker_engine.actions import legal_actions
     from playmaker_engine.resolve import apply, ChanceNode
@@ -77,7 +78,7 @@ def test_every_candidate_read_by_difference_equals_reading_every_look_python():
             s = X.get(n)
             V.poss_parts(s)
             for i, a in enumerate(legal_actions(s)):
-                if i % 20:
+                if i % 5:
                     continue
                 nx = apply(s, a)
                 if not isinstance(nx, ChanceNode) and nx.stage == 'play':

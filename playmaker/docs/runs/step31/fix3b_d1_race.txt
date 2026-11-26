@@ -1,0 +1,15 @@
+E1 370 ms value 22.8889 bars [-5, 19.5, 19.5, 22.89, 22.89, 22.89, 22.89] answer [[3, 'F3', 0]]
+ race: beaten None chance 1 line ['H7', 'H3'] worth 7.65
+   phase 0 at H7 shoot there 9.95 (late contest by X5 ) carry on 9.95 -> value 7.65 contained by X3
+       contain {'by': 'X2', 'shoot': 13.75, 'kick': 8.3, 'man': 'O2', 'to': 'D4', 'worth': 13.75}
+       contain {'by': 'X3', 'shoot': 7.65, 'kick': None, 'man': None, 'to': None, 'worth': 7.65}
+       contain {'by': 'X5', 'shoot': 5.45, 'kick': 8.65, 'man': 'O5', 'to': 'K3', 'worth': 8.65}
+   phase 1 at H3 shoot there 9.95 (late contest by X5 ) carry on 9.95 -> value 7.65 contained by X3
+       contain {'by': 'X1', 'shoot': 12.5, 'kick': 16, 'man': 'O3', 'to': 'N5', 'worth': 16}
+       contain {'by': 'X2', 'shoot': 16.75, 'kick': 6.9, 'man': 'O2', 'to': 'A5', 'worth': 16.75}
+       contain {'by': 'X3', 'shoot': 7.65, 'kick': None, 'man': None, 'to': None, 'worth': 7.65}
+       contain {'by': 'X4', 'shoot': 12.5, 'kick': 16, 'man': 'O4', 'to': 'D2', 'worth': 16}
+       contain {'by': 'X5', 'shoot': 5.45, 'kick': 34, 'man': 'O5', 'to': 'K3', 'worth': 34}
+ two-step {'shooter': 4, 'at': 'K3', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 14, 'if_faked': 30, 'worth': 22.89}
+ two-step {'shooter': 2, 'at': 'K4', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'J4', 'then': 'O4 G3', 'contested': 12, 'if_faked': 30, 'worth': 21.9}
+ two-step {'shooter': 3, 'at': 'G3', 'p': 1, 'route': 'shot fake, then pass to a cutter', 'closer': 'X5', 'closes_to': 'H4', 'then': 'O5 K3', 'contested': 12, 'if_faked': 34, 'worth': 21.9}
