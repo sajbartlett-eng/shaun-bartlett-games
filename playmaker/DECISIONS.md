@@ -1866,6 +1866,16 @@ offence's setup and the JavaScript engine's choice of turn. Without it the numbe
 everything below that look is left to chance. · Source: the design ("the list can stay as a display and as a
 tie-break") · **Built in step 31, Part C; Shaun to confirm it is what he meant by a tie-break.**
 
+**D-304. After an action, re-read only what it touched (fix 1 of the step 31C audit).** Speed only, no decision changed.
+Inside the possession's value, a candidate movement of the defence's answer reads again only the looks that movement
+touches, and only where a look's ceiling (its worth with that defender's contest taken off) could still change the
+result; the route sum is updated by difference. A look's contest by one defender is kept across boards for the game,
+because it depends only on the cards, the look and the contest kinds he reaches it with. Both engines. Each keeps the old
+every-look reading as a reference under a test switch (tests/test_fix1_difference.py). Two rounding cases (a weighted
+average can round a hair above both its ends) are read in full, so the numbers match to the last digit. Proof:
+tools/step_31_same.py, every choice, value and line on every exam board the same before and after. · Source: Shaun,
+26 Nov 2026 (Step 31C Audit and Plan, fix 1); D-283 (speed only from never doing the same work twice) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

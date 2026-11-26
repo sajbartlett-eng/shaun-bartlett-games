@@ -21,6 +21,7 @@ OUT = -5.0                                   # D-198: the shot clock runs out: -
 NEG = float('-inf')
 BOUND_LOOKS = 2
 BRUTE = [False]                              # a test's switch: every movement read in full, no cut
+CHECK = [False, 0, 0]                        # a test's switch (step 31, fix 1): every candidate read both ways; [on, read, different]
 
 
 def three_seconds_leave(s):
@@ -111,6 +112,10 @@ def _top_count(vec, U):
     return sum(1 for v in vec if v >= U - 1e-9)
 
 
+_SVMAP = {}
+_MISS = object()
+
+
 def poss_read(r, opts, s0=None, last_phase=False):
     """engine.js possRead: the looks of the map `opts` (read r), the defence's answer, the value."""
     from .decide import _caps, defender_map, _cmap2, _any_arrow_cmap2
@@ -135,14 +140,30 @@ def poss_read(r, opts, s0=None, last_phase=False):
     cms = r._mcms
     memo = {}
 
+    # step 31, fix 1 (engine.js sv2): a look's contest a phase away turns only on the cards, the look and the kinds the
+    # defender reaches it with (decide.Read._vals_map keeps the same reading a context at a time), so it is kept across
+    # boards: a board that differs from the last by one player finds every other pair already read
+    gmemo = _SVMAP.get(s.ctx)
+    if gmemo is None:
+        if len(_SVMAP) > 8:
+            _SVMAP.clear()
+        gmemo = _SVMAP[s.ctx] = {}
+    if len(gmemo) > 200000:
+        gmemo.clear()
+
     def sval(i, d, pair):
         if pair is None or not pair[2]:
             return None
         key = (i, d, pair[2], pair[3])
         if key not in memo:
-            lines = []
-            cv = r._vals2(L[i]['lk'], d, pair[0], pair[1], split=lines)
-            memo[key] = (cv or {}, lines) if (cv or lines) else None
+            lk = L[i]['lk']
+            gk = (lk.i, lk.c, lk.rushed, d, pair[2], pair[3])
+            hit = gmemo.get(gk, _MISS)
+            if hit is _MISS:
+                lines = []
+                cv = r._vals2(lk, d, pair[0], pair[1], split=lines)
+                hit = gmemo[gk] = (cv or {}, lines) if (cv or lines) else None
+            memo[key] = hit
         return memo[key]
     SV = [[(sval(i, d, cms[d].get(L[i]['c'])) if cms[d] is not None else None) for d in range(5)] for i in range(n)]
     gone = [False] * n
@@ -227,6 +248,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                         JA.append(j)
         JA.sort()
         state['act'], state['JA'] = act, JA
+        build_orders()
         return U
 
     def run_on(idx, d, q, cm):
@@ -245,6 +267,155 @@ def poss_read(r, opts, s0=None, last_phase=False):
             U = _route_t(LA, WA, b, U, left, key_mask, cut, v3 if i == K else None, None, i)
             h[i] = U
         return U, v3
+    # Step 31, fix 1 (engine.js possRead runCand): a candidate movement re-reads only the looks it touches, and the
+    # looks a block bears on where what the block leads to changes; every other look keeps its worth as the defence
+    # stands, and the route sum takes them best first, stopping where none left can beat what is found.
+    vNH, vP0, vH, slot = [False] * n, [False] * n, [False] * n, [0] * n
+    for j, o in enumerate(L):
+        kb = (key_mask >> o['a']) & 1
+        if o['a'] != b:
+            vNH[j] = not (o['n0'] > left + kb)
+            vP0[j] = vNH[j] and o['p0'] > 0 and o['n0'] + 1 <= left + kb
+            slot[j] = o['a']
+        else:
+            vH[j] = not (o['n0'] > left)
+            slot[j] = 5 if o['dr'] else b
+    ords = {}
+
+    def has_block(row):
+        return any(x and x[1] for x in row)
+
+    def build_orders():
+        for i in range(1, K + 1):
+            row = rows[i]
+            nh = [j for j in range(n) if row[j] != NEG and vNH[j]]
+            nh.sort(key=lambda j: (-row[j], j))
+            ords[i] = (nh, [j for j in nh if vP0[j]], sorted((j for j in range(n) if row[j] != NEG and vH[j]), key=lambda j: (-row[j], j)))
+        rk = rows[K]
+        ords['slots'] = [sorted((j for j in range(n) if rk[j] != NEG and (vNH[j] or vH[j]) and slot[j] == k), key=lambda j: (-rk[j], j)) for k in range(6)]
+        ords['blk'] = [j for j in range(n) if has_block(SV[j])]
+        ords['blkK'] = [j for j in range(n) if has_block(SVK[j])]
+
+    EPS_B = 1e-9                                     # (engine.js EPS_B: a weighted average can round a hair above both its ends)
+
+    def route_diff(i, bar, ov):
+        # _route_t(L, W, b, bar, ...) at step i, W being rows[i] with the overrides ov put in
+        row = rows[i]
+        nh, p0, hb = ords[i]
+        best = fall = bar
+        for j, v in ov.items():
+            if v == NEG or not vNH[j]:
+                continue
+            o = L[j]
+            e = o['r'] * (v if v > bar else bar) + (1 - o['r']) * (bar - o['lc'])
+            if e > best:
+                best = e
+            if vP0[j]:
+                p = 1 if o['p0'] >= 1 else max(0, o['p0'] - cut)
+                f = p * (v if v > bar else bar) + (1 - p) * (bar - o['lc'])
+                if f > fall:
+                    fall = f
+        for j in nh:
+            if j in ov:
+                continue
+            v = row[j]
+            if v + EPS_B <= best:
+                break
+            o = L[j]
+            e = o['r'] * (v if v > bar else bar) + (1 - o['r']) * (bar - o['lc'])
+            if e > best:
+                best = e
+        for j in p0:
+            if j in ov:
+                continue
+            v = row[j]
+            if v + EPS_B <= fall:
+                break
+            o = L[j]
+            p = 1 if o['p0'] >= 1 else max(0, o['p0'] - cut)
+            f = p * (v if v > bar else bar) + (1 - p) * (bar - o['lc'])
+            if f > fall:
+                fall = f
+        for j, v in ov.items():
+            if v == NEG or not vH[j]:
+                continue
+            o = L[j]
+            e = (o['r'] * (v if v > bar else bar) + (1 - o['r']) * fall) if o['dr'] else (v if v > bar else bar)
+            if e > best:
+                best = e
+        for j in hb:                                   # a set look: max(v, bar), exact; a Dribble route always read
+            if j in ov:
+                continue
+            o = L[j]
+            v = row[j]
+            if not o['dr']:
+                if v + EPS_B <= best:
+                    continue
+                e = v if v > bar else bar
+            else:
+                e = o['r'] * (v if v > bar else bar) + (1 - o['r']) * fall
+            if e > best:
+                best = e
+        return best, fall
+
+    def run_cand(d, q, cm):
+        aff = []
+        for j in range(n):
+            if gone[j]:
+                continue
+            c = L[j]['c']
+            pair = cm.get(c)
+            if SV[j][d] is None and (pair is None or not pair[2]) and c != q:
+                continue
+            aff.append((j, sval(j, d, pair)))
+        h = [OUT] * (K + 1)
+        U = OUT
+        last = None
+        for i in range(1, K + 1):
+            Bv = h[i - 2] if i >= 3 else 0.0
+            ov = {}
+            if i >= 3 and h[i - 2] != hist[i - 2]:      # a block now leads somewhere else: the looks it bears on move
+                if i == K:
+                    for j in ords['blkK']:
+                        if not gone_k[j]:
+                            ov[j] = worth(j, Bv, -1, None, SVK[j])
+                else:
+                    for j in ords['blk']:
+                        if not gone[j]:
+                            ov[j] = worth(j, Bv, -1, None)
+            for j, nv in aff:
+                if i == K and lim[j] <= nm[0]:
+                    continue
+                ov[j] = NEG if L[j]['c'] == q else worth(j, Bv, d, nv)
+            U, fall = route_diff(i, U, ov)           # (the bar: what playing on is worth after the step before)
+            h[i] = U
+            if i == K:
+                last = (h[K - 1], fall, ov)
+        return U, last
+
+    def cand_top(u, last):
+        Bv, fall, ov = last
+        thr, rk, cnt = u - 1e-9, rows[K], 0
+
+        def e_of(j, v):
+            o = L[j]
+            if o['a'] != b:
+                return o['r'] * (v if v > Bv else Bv) + (1 - o['r']) * (Bv - o['lc'])
+            return (o['r'] * (v if v > Bv else Bv) + (1 - o['r']) * fall) if o['dr'] else (v if v > Bv else Bv)
+        for k in range(6):
+            hit = any(slot[j] == k and v != NEG and (vNH[j] or vH[j]) and e_of(j, v) >= thr for j, v in ov.items())
+            if not hit:
+                for j in ords['slots'][k]:
+                    if j in ov:
+                        continue
+                    v = rk[j]
+                    if k != 5 and max(v, Bv) + EPS_B < thr:
+                        break
+                    if e_of(j, v) >= thr:
+                        hit = True
+                        break
+            cnt += 1 if hit else 0
+        return cnt
     bars = []
     U = run_cur(bars)
     U0, worth0 = U, list(rows[K])
@@ -327,8 +498,13 @@ def poss_read(r, opts, s0=None, last_phase=False):
         for c in cands:
             if best is not None and before(best, c) <= 0:
                 break
-            u, v2 = run_on(everything, c['d'], c['q'], c['cm'])
-            mm = _top_count(v2, u)
+            u, last = run_cand(c['d'], c['q'], c['cm'])
+            mm = 0 if u > U + 1e-9 else cand_top(u, last)      # (wanted only when the value doesn't rise)
+            if CHECK[0]:                           # the reference: the same sum read over every look, as before fix 1
+                uf, vf = run_on(everything, c['d'], c['q'], c['cm'])
+                CHECK[1] += 1
+                if uf != u or (u <= U + 1e-9 and _top_count(vf, uf) != mm):
+                    CHECK[2] += 1
             if u > U + 1e-9 or (u >= U - 1e-9 and mm >= bm0):
                 continue
             full = dict(d=c['d'], q=c['q'], a=c['a'], cm=c['cm'], u=u, m=mm)

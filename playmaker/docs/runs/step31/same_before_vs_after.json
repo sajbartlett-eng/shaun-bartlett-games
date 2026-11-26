@@ -1,0 +1,68 @@
+{
+ "a": "before",
+ "b": "after",
+ "readings": 239,
+ "different": 0,
+ "errors": [],
+ "differences": [],
+ "time_by_kind": {
+  "coverage": {
+   "readings": 46,
+   "before_s": 36.7,
+   "after_s": 32.3,
+   "times_faster": 1.14
+  },
+  "lines": {
+   "readings": 16,
+   "before_s": 0.0,
+   "after_s": 0.0,
+   "times_faster": null
+  },
+  "offence": {
+   "readings": 6,
+   "before_s": 683.8,
+   "after_s": 394.3,
+   "times_faster": 1.73
+  },
+  "python": {
+   "readings": 46,
+   "before_s": 103.2,
+   "after_s": 92.4,
+   "times_faster": 1.12
+  },
+  "stances": {
+   "readings": 16,
+   "before_s": 1742.6,
+   "after_s": 630.7,
+   "times_faster": 2.76
+  },
+  "stances_bad_start": {
+   "readings": 1,
+   "before_s": 111.2,
+   "after_s": 43.5,
+   "times_faster": 2.56
+  },
+  "turn": {
+   "readings": 16,
+   "before_s": 436.6,
+   "after_s": 239.6,
+   "times_faster": 1.82
+  },
+  "value": {
+   "readings": 46,
+   "before_s": 14.7,
+   "after_s": 12.8,
+   "times_faster": 1.16
+  },
+  "weight": {
+   "readings": 46,
+   "before_s": 15.9,
+   "after_s": 13.8,
+   "times_faster": 1.16
+  }
+ },
+ "wall_s": [
+  1095,
+  532
+ ]
+}

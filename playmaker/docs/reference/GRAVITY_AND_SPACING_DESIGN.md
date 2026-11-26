@@ -87,6 +87,10 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 
 **Later answers cost actions too.** Inside the number, each side's later answer gets only the actions and time it will actually have: what is left of its turn, then its next turns as the clock allows. Neither side is ever read as free to fix everything afterwards. Otherwise waiting always reads as good as acting, and a defender never turns an arrow, closes out early or comes to trap, because the number assumes he can do it later for nothing (found in step 31).
 
+**Two-step routes are looks.** A drive followed by a kick-out, a drive followed by a backdoor cut, or a closeout followed by a shot fake and a drive, is one route: one look in the sum, read by its own race (can the defence get there in time, with the actions it really has?). The number sees these without the search going a turn deeper. Shot fakes are read inside the number as agreed in step 31's plan: at each look, the offence mixes real and fake and the defence's answer is read against the mix (Shaun, 26 November; found in the step 31C audit, checks D1 to D3).
+
+**Ties are broken by the next-best line.** When two choices give the same value, compare what each leaves as the opponent's next-best option, then the one after that. The first difference decides. Standing still wins only when every line ties (Shaun, 26 November; step 31C audit, check D5).
+
 **Reading ahead.** The number is read as far ahead as the plan needs, up to four turns (D-268, 19 November), with each side's best answer by its own model. Past that, the shot bar stands in for the rest.
 
 ### How each side chooses
@@ -240,6 +244,21 @@ Board checks for this:
 - **A13:** the same defender against a rushed ball handler who cannot fake: he gambles more readily than against one in control.
 
 ## The defence, part 3: the zone of influence and the arrows
+
+### What on-ball position is worth
+
+A defender's value is what his stance removes from the ball handler's real options, read from where he stands: every drive route, with the wedge blocking the ones his square and arrows close; every pass, with the risk his reach adds; the shot, against the contest he would give; and the steal threat, where the rules let him try one. Each is counted at its real cost in actions and time. Closing out has costs that already being there, set, doesn't: it spends an action and can leave him rushed or without a Move against the drive.
+
+How much of his value is contest and how much is denial then depends on where he stands, with no weighting (Shaun, 26 November):
+
+| Where | What his value is mostly made of |
+| --- | --- |
+| Short range | The contest: the shot is already there and few routes are left to deny |
+| Top of the key | Denial: many drive lanes and passing angles open from the middle |
+| The corner | What he can constrain: the baseline and sideline close half the routes |
+
+Matchups follow from this too: the defender put on the ball is the one whose stance removes the most, not only the best contester.
+
 
 A defender saves points through his zone of influence: his square and his two arrows, 45 degrees apart. So the thing the computer chooses is never a square alone. It is a square and a pair of arrows together, judged by the points that whole stance saves.
 
@@ -606,6 +625,9 @@ These came from Claude Code's step 31 plan and from step 30b. Where an older sen
 | The block's reset | Not ruled yet | To be ruled once the new value shows what a phase after a block is worth | Open |
 | The segments | The map below | Claude Code's proposal | **Provisional. Shaun has not ruled** |
 | Later answers inside the number | Each side's later answer gets only the actions and time it will actually have | Step 31 read the answer as free later, so the defence waited instead of acting | Agreed (Shaun, 25 November) |
+| What on-ball position is worth | What his stance removes from the ball handler's real options: drives, passes, shot, steal threat | Step 31C gave pressure no value (audit D1, D2) | Agreed (Shaun, 26 November) |
+| Two-step routes | Drive and kick, drive and cut, closeout then fake and drive: one look each, with its own race; fakes read inside the number | Punishments that land next turn were invisible (audit D1 to D3) | Agreed (Shaun, 26 November) |
+| Ties | Broken by the next-best line, then the one after; standing still only when every line ties | Ties made the pick arbitrary (audit D3, D5) | Agreed (Shaun, 26 November) |
 
 **The segments, square by square (provisional).** G: the green zone. ML, MM, MR: mid-range left, middle, right. LL and LR: the long two along each baseline. Ll and Lr: the long two above each elbow. CL and CR: the corners. WL and WR: the wings. T: the top. Deep squares count with the segment they sit behind. Two things are not settled: which side I8 and I9 belong to (marked ?), and whether the corner ends at row 5. Until Shaun rules, I8 and I9 count as in both Ll and Lr, so the board stays the same left and right, and the corner ends at row 5.
 

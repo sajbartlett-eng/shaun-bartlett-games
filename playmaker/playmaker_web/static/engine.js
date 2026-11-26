@@ -3182,7 +3182,15 @@ const PMEngine = (() => {
     mapSettle() {
       if (this._lgSettle === undefined) {
         const s = this.s;
-        this._lgSettle = (s.stage !== 'play' || s.clock <= 2 || s.pending) ? [] : settleMoves(covBuild(covOffFresh(s), true, null));
+        if (s.stage !== 'play' || s.clock <= 2 || s.pending) this._lgSettle = [];
+        else {
+          // step 31, fix 1: the same position settles the same way, so within a think it is read once (the reset choice
+          // reads it for every line that reaches a block)
+          const key = MAP_MEMO !== null ? 'MS|' + RD.lead + '|' + (MAP_ME || '') + '|' + (D.config.eval.answer_lead || '') + '|' + stateKey(s) : null;
+          let hit = key !== null ? MAP_MEMO.get(key) : undefined;
+          if (hit === undefined) { hit = settleMoves(covBuild(covOffFresh(s), true, null)); if (key !== null) MAP_MEMO.set(key, hit); }
+          this._lgSettle = hit;
+        }
       }
       return this._lgSettle;
     }
@@ -5070,7 +5078,7 @@ const PMEngine = (() => {
   // and the oldest is dropped; a reading found in the older one is moved up. What is dropped is read again when it is
   // next needed, so the memory can change how long a think takes and never what it decides. Small things (a stance's
   // reading: two numbers) have their own, larger store, so they are never pushed out by the big ones.
-  let MAP_MEMO_MAX = 30, SMALL_MEMO_MAX = 20000, READS_MAX = 40, REACH_MAX = 80;   // measured: at these sizes a think is under 10 in 100 slower and fits in 256 MB; ten times larger gave nothing back
+  let MAP_MEMO_MAX = 30, SMALL_MEMO_MAX = 20000, READS_MAX = 40, REACH_MAX = 80, SV_MEMO_MAX = 30000;   // measured: at these sizes a think is under 10 in 100 slower and fits in 256 MB; ten times larger gave nothing back
   let SMALL_MEMO = null;
   const stateKey = s => JSON.stringify(s, (k, v) => (k === 'ctx' ? (v ? v.id : null) : (k.length && k.charCodeAt(0) === 95) ? undefined : v));
   function withMemo(f) {                               // a request's own memory, opened and thrown away around it
@@ -6292,7 +6300,9 @@ const PMEngine = (() => {
   const SHOT_CLOCK_OUT = -TURNOVER_COST;               // D-198: the shot clock runs out: -5, nothing left to play
   const PVS = { offers: 0, runs: 0, reads: 0, looks: 0, steps: 0 };
   let BOUND_LOOKS = 2;
-  let PV_BRUTE = false;                                // a test's switch: every movement read in full, no cut (the answer must be the same)
+  let PV_BRUTE = false;
+  let PV_CHECK = false;                                // a test's switch: every candidate read both ways, by difference and over every look
+  const PVC = { n: 0, bad: 0, ex: [] };                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
   function possRead(m, s0, lastPhase, noAnswer, probe) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
@@ -6310,14 +6320,24 @@ const PMEngine = (() => {
     const W = PV.W, tmp = PV.tmp, Vit = PV.V;           // Vit: each step's worths as the defence now stands (rows 1 to K)
     // each look's contests, a defender at a time: {cv: the Contest's value by shot type, bl: the blocks as lines}
     const mv = m._mv || (m._mv = new Map());             // read once per (look, defender, contest kinds), kept with the map
+    // Step 31, fix 1: a look's contest by defender d depends only on the cards, the look (who, where, rushed or set) and
+    // the contest kinds d reaches it with (mk): nothing else on the board. So it is kept for the game (sv2, two small
+    // generations) and read again only when one of those changes: a board that differs from the last by one player
+    // finds every other pair already read.
+    const sv2 = s.ctx._sv2 || (s.ctx._sv2 = new Memo2(SV_MEMO_MAX));
     const sval = (i, d, mk) => {
       if (!mk) return null;
       const key = (L[i].id * 5 + d) * 4096 + mk;
       let v = mv.get(key);
       if (v === undefined) {
-        const full = mk & 63, set = mk >> 6, lines = [];
-        const cv = r._valsCalc(L[i].lk, d, full, set, (L[i].fl || 0) | 4, soft ? full : 0, soft ? set : 0, lines);
-        v = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null } : null;
+        const o = L[i], gk = ((((o.a * NSQ + o.c) * 2 + (o.fl ? 1 : 0)) * 5 + d) * 4096 + mk);
+        v = sv2.get(gk);
+        if (v === undefined) {
+          const full = mk & 63, set = mk >> 6, lines = [];
+          const cv = r._valsCalc(o.lk, d, full, set, (o.fl || 0) | 4, soft ? full : 0, soft ? set : 0, lines);
+          v = cv ? { cv, bl: lines.length ? Float64Array.from(lines) : null } : null;
+          sv2.set(gk, v);
+        }
         mv.set(key, v);
       }
       return v;
@@ -6365,6 +6385,7 @@ const PMEngine = (() => {
     const rows = [null]; for (let i = 1; i <= K; i++) rows.push(Vit.subarray(i * n, (i + 1) * n));
     let act = [], blList = [], LA = [], JA = [], WA = new Float64Array(0);
     const histA = new Float64Array(K + 1), v3 = new Float64Array(6), bmax = new Float64Array(n);
+    const slopeB = new Uint8Array(n), sameK = new Uint8Array(n), w0 = new Float64Array(n);
     const runCur = bars => {
       let U = SHOT_CLOCK_OUT; hist[0] = U; act = []; blList = [];
       // bmax[j]: above this, no block bears on look j (a block that leads to a phase worth more than that is no longer
@@ -6382,14 +6403,29 @@ const PMEngine = (() => {
       }
       blList.sort((x, y) => bmax[y] - bmax[x] || x - y);
       if (bars) bars.push(U);
+      // step 31, fix 1: a look whose block lines don't move with what a block leads to (none, or flat) is worth the
+      // same at every step, so it is read once here (the same sum, the same numbers)
+      for (let j = 0; j < n; j++) {
+        const row = SV[j], rk = SVK[j];
+        let mv = 0, same = 1;
+        for (let e = 0; e < 5; e++) {
+          const x = row[e], y = rk[e];
+          if (x !== y) same = 0;
+          if (x && x.bl) for (let z = 2; z < x.bl.length; z += 3) if (x.bl[z] !== 0) mv = 1;
+          if (y && y.bl) for (let z = 2; z < y.bl.length; z += 3) if (y.bl[z] !== 0) mv = 1;
+        }
+        slopeB[j] = mv; sameK[j] = same && gone[j] === goneK[j] ? 1 : 0;
+        w0[j] = (!mv && !gone[j]) ? worth(j, 0, -1, null) : -Infinity;
+      }
       for (let i = 1; i <= K; i++) {
         const B = i >= 3 ? hist[i - 2] : 0, row = rows[i];
-        if (i === K) for (let j = 0; j < n; j++) row[j] = goneK[j] ? -Infinity : worth(j, B, -1, null, SVK[j]);
-        else for (let j = 0; j < n; j++) row[j] = gone[j] ? -Infinity : worth(j, B, -1, null);
+        if (i === K) for (let j = 0; j < n; j++) row[j] = goneK[j] ? -Infinity : ((!slopeB[j] && sameK[j]) ? w0[j] : worth(j, B, -1, null, SVK[j]));
+        else for (let j = 0; j < n; j++) row[j] = gone[j] ? -Infinity : (!slopeB[j] ? w0[j] : worth(j, B, -1, null));
         U = routeT(L, n, row, b, U, left, keyMask, cut, i === K ? vec : null, act, i);
         hist[i] = U;
         if (bars) bars.push(U);
       }
+      buildOrders();
       const seen = new Set(); JA = [];
       for (let x = 0; x < act.length; x += 2) if (!seen.has(act[x])) { seen.add(act[x]); JA.push(act[x]); }
       // (the bound's looks: those the value turns on, and each route's next few, which hold the value up when the first
@@ -6413,13 +6449,17 @@ const PMEngine = (() => {
     // The same sum over only the looks the value turns on, with defender d on q: never more than the whole sum gives
     // (fewer looks, and every route only rises with what playing on is worth). So a movement whose sum over these alone
     // already beats the best answer found can't be the answer, and isn't read in full (a cut that can't change it).
+    const actT = new Uint8Array(n);
     const runAct = (d, q, cm) => {
       const na = JA.length;
       let U = SHOT_CLOCK_OUT; histA[0] = U;
+      for (let x = 0; x < na; x++) { const j = JA[x]; actT[x] = (SV[j][d] === null && cm[lc[j]] === 0 && L[j].c !== q) ? 0 : 1; }
       for (let i = 1; i <= K; i++) {
-        const B = i >= 3 ? histA[i - 2] : 0;
-        if (i === K) for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = lim[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : worth(j, B, d, sval(j, d, cm[lc[j]]))) : (goneK[j] ? -Infinity : worth(j, B, -1, null, SVK[j])); }
-        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = (gone[j] || L[j].c === q) ? -Infinity : worth(j, B, d, sval(j, d, cm[lc[j]])); }
+        const B = i >= 3 ? histA[i - 2] : 0, keep = i < 3 || histA[i - 2] === hist[i - 2], row = rows[i];
+        // (a look the candidate doesn't touch is worth what it is as the defence stands, where what a block leads to is
+        // the same or doesn't move it)
+        if (i === K) for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = lim[j] > nm ? ((gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]])))) : (goneK[j] ? -Infinity : ((keep || (!slopeB[j] && sameK[j])) ? row[j] : worth(j, B, -1, null, SVK[j]))); }
+        else for (let x = 0; x < na; x++) { const j = JA[x]; WA[x] = (gone[j] || L[j].c === q) ? -Infinity : ((!actT[x] && (keep || !slopeB[j])) ? row[j] : worth(j, B, d, sval(j, d, cm[lc[j]]))); }
         U = routeT(LA, na, WA, b, U, left, keyMask, cut, i === K ? v3 : null, null, i);
         histA[i] = U;
       }
@@ -6429,7 +6469,217 @@ const PMEngine = (() => {
     const blK = new Uint8Array(n);                      // this phase's copy of look j has a block among its contests
     const markBlK = () => { for (let j = 0; j < n; j++) { let any = 0; const row = SVK[j]; for (let e = 0; e < 5; e++) if (row[e] && row[e].bl) { any = 1; break; } blK[j] = any; } };
     markBlK();
+    // Step 31, fix 1 (Shaun, 26 Nov 2026: "after an action, re-read only what it touched"). A candidate movement of
+    // the defence's answer (defender d to square q) changes a look only if d contests it from q, contested it from
+    // where he stood, or q is its square; and, where it changes what a block leads to, the looks a block bears on.
+    // Every other look keeps its worth as the defence stands (rows[i]). Most of the court is touched by one defender,
+    // so the touched looks aren't read up front either. For each defender, runCur keeps a ceiling on every look: what
+    // it is worth with that defender's contest taken off (no move of his can make it worth more). The route sum takes
+    // the looks highest ceiling first and reads a look again only when its ceiling could still beat what is found; it
+    // stops when none can (a look's route is never worth more than the larger of its own worth and the bar). The answer
+    // is the largest of the same numbers, worked out the same way, so it is identical to reading every look.
+    const vNH = new Uint8Array(n), vP0 = new Uint8Array(n), vH = new Uint8Array(n), slotOf = new Int8Array(n);
+    for (let j = 0; j < n; j++) {
+      const o = L[j], kb = (keyMask >> o.a) & 1;
+      if (o.a !== b) { vNH[j] = o.n0 > left + kb ? 0 : 1; vP0[j] = (vNH[j] && o.p0 > 0 && o.n0 + 1 <= left + kb) ? 1 : 0; slotOf[j] = o.a; }
+      else { vH[j] = o.n0 > left ? 0 : 1; slotOf[j] = o.dr ? 5 : b; }
+    }
+    // the ceilings, and the looks in buckets by them (one unit wide, highest first): UB[d] for the phases before the
+    // last and the last phase's looks the move reaches; KB[d] for the last phase (a look its shot beats the move to
+    // keeps its worth from the contests it had then)
+    const UB = [0, 1, 2, 3, 4].map(() => new Float64Array(n)), KB = [0, 1, 2, 3, 4].map(() => new Float64Array(n));
+    const mkBuckets = () => ({ idx: new Int32Array(n), start: new Int32Array(n + 2), ceil: new Float64Array(n + 1), nb: 0 });
+    const DLs = [0, 1, 2, 3, 4].map(mkBuckets), KLs = [0, 1, 2, 3, 4].map(mkBuckets);
+    const m1 = new Float64Array(8), m2 = new Float64Array(8), am = new Int8Array(8), mk1 = new Float64Array(8);
+    const fl = new Int32Array(n), cntB = new Int32Array(64);
+    const drL = new Int32Array(n), drLK = new Int32Array(n);   // the ball handler's Dribble routes: always read in full (see routeLazy)
+    let nDr = 0, nDrK = 0;
+    const bucket = (lst, bound, keep) => {             // counting sort by floor(bound), highest first; keep(j): the look is in the list
+      let hi = -Infinity, lo = Infinity, cnt = 0;
+      for (let j = 0; j < n; j++) { if (!keep(j)) { fl[j] = 0x7fffffff; continue; } const f = Math.floor(bound[j]); fl[j] = f; if (f > hi) hi = f; if (f < lo) lo = f; cnt++; }
+      if (!cnt) { lst.nb = 0; lst.start[0] = 0; return; }
+      const nb = Math.min(hi - lo + 1, 60);              // (values beyond 60 units below the top share the last bucket)
+      for (let k = 0; k <= nb; k++) cntB[k] = 0;
+      for (let j = 0; j < n; j++) if (fl[j] !== 0x7fffffff) cntB[Math.min(hi - fl[j], nb - 1)]++;
+      lst.start[0] = 0;
+      for (let k = 0; k < nb; k++) { lst.start[k + 1] = lst.start[k] + cntB[k]; lst.ceil[k] = hi - k + 1; cntB[k] = lst.start[k]; }
+      lst.ceil[nb - 1] = hi - (nb - 1) + 1;              // the last bucket: everything at or below it; its ceiling is its top
+      for (let j = 0; j < n; j++) if (fl[j] !== 0x7fffffff) { const k = Math.min(hi - fl[j], nb - 1); lst.idx[cntB[k]++] = j; }
+      lst.nb = nb;
+    };
+    // (built only when a candidate of that defender is first read after the board changes: many never are)
+    let ordGen = 0, ceilGen = -1;
+    const bGen = new Int32Array(5).fill(-1);
+    function buildOrders() { ordGen++; }
+    const ensureOrders = d => {
+      if (ceilGen !== ordGen) { buildCeilings(); ceilGen = ordGen; }
+      if (bGen[d] !== ordGen) {
+        bucket(DLs[d], UB[d], j => !gone[j] && (vNH[j] || vH[j]));
+        bucket(KLs[d], KB[d], j => (lim[j] > nm ? !gone[j] : !goneK[j]) && (vNH[j] || vH[j]));
+        bGen[d] = ordGen;
+      }
+    };
+    function buildCeilings() {
+      for (let j = 0; j < n; j++) {
+        const open = L[j].open, T = open.length, row = SV[j], rk = SVK[j];
+        for (let t = 0; t < T; t++) { m1[t] = Infinity; m2[t] = Infinity; am[t] = -1; mk1[t] = open[t]; }
+        for (let e = 0; e < 5; e++) {
+          const x = row[e];
+          if (x) { const cv = x.cv; for (let t = 0; t < T; t++) { const v = cv[t]; if (v < m1[t]) { m2[t] = m1[t]; m1[t] = v; am[t] = e; } else if (v < m2[t]) m2[t] = v; } }
+          const y = rk[e];
+          if (y) { const cv = y.cv; for (let t = 0; t < T; t++) if (cv[t] < mk1[t]) mk1[t] = cv[t]; }
+        }
+        let kb0 = -Infinity;
+        for (let t = 0; t < T; t++) if (mk1[t] > kb0) kb0 = mk1[t];
+        kb0 += adjv[j];
+        for (let d = 0; d < 5; d++) {
+          let u = -Infinity;
+          for (let t = 0; t < T; t++) { let v = open[t]; const c = am[t] === d ? m2[t] : m1[t]; if (c < v) v = c; if (v > u) u = v; }
+          UB[d][j] = u + adjv[j];
+          KB[d][j] = lim[j] > nm ? UB[d][j] : kb0;
+        }
+      }
+      nDr = 0; nDrK = 0;
+      for (let j = 0; j < n; j++) if (vH[j] && L[j].dr) { if (!gone[j]) drL[nDr++] = j; if (lim[j] > nm ? !gone[j] : !goneK[j]) drLK[nDrK++] = j; }
+    }
+    // the candidate: defender cd on cq with contests ccm; what a block leads to at each step (cB), whether it differs
+    // from the defence as it stands (cChg) and how low (cLo)
+    let cd = 0, cq = -1, ccm = null, cStamp = 0, cB = 0, cChg = false, cLo = 0;
+    const cMark = new Int32Array(n), cTouch = new Uint8Array(n), cW = new Float64Array(n), cT = new Float64Array(n), cV = new Array(n);
+    const touch = j => {                               // is look j one the candidate touches? (read once a candidate)
+      if (cMark[j] === cStamp) return cTouch[j];
+      cMark[j] = cStamp;
+      const mk = ccm[lc[j]];
+      if (SV[j][cd] === null && mk === 0 && L[j].c !== cq) { cTouch[j] = 0; return 0; }
+      cTouch[j] = 1;
+      const nv = sval(j, cd, mk), row = SV[j], open = L[j].open, T = open.length;
+      // his worth with no block bearing on him (cW), and what a block must lead to before none does (cT)
+      for (let t = 0; t < T; t++) tmp[t] = open[t];
+      for (let e = 0; e < 5; e++) { const x = e === cd ? nv : row[e]; if (!x) continue; const cv = x.cv, bl = x.bl; for (let t = 0; t < T; t++) if (cv[t] < tmp[t]) tmp[t] = cv[t]; if (bl) for (let z = 0; z < bl.length; z += 3) if (!(bl[z + 2] > 0) && bl[z + 1] < tmp[bl[z]]) tmp[bl[z]] = bl[z + 1]; }
+      let thr = -Infinity;
+      for (let e = 0; e < 5; e++) { const x = e === cd ? nv : row[e], bl = x && x.bl; if (!bl) continue; for (let z = 0; z < bl.length; z += 3) if (bl[z + 2] > 0) { const h = (tmp[bl[z]] - bl[z + 1]) / bl[z + 2]; if (h > thr) thr = h; } }
+      let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
+      cW[j] = L[j].c === cq ? -Infinity : tp + adjv[j]; cT[j] = L[j].c === cq ? -Infinity : thr; cV[j] = nv;
+      return 1;
+    };
+    const valAt = (i, j) => {                          // look j's worth at step i with the candidate in place
+      if (i === K && lim[j] <= nm) {                   // this phase's shot is up before the move
+        if (goneK[j]) return -Infinity;
+        return (cChg && blK[j]) ? worth(j, cB, -1, null, SVK[j]) : rows[K][j];
+      }
+      if (gone[j]) return -Infinity;
+      if (touch(j)) return cB >= cT[j] ? cW[j] : worth(j, cB, cd, cV[j]);
+      if (cChg && (i === K ? blK[j] : bmax[j] > cLo)) return i === K ? worth(j, cB, -1, null, SVK[j]) : worth(j, cB, -1, null);
+      return rows[i][j];
+    };
+    let barK = 0;
+    // (a route's worth is a weighted average of two numbers, and can round a hair above the larger of them: every
+    // "can't beat it" test keeps this margin, far above any rounding and far below any real difference)
+    const EPS_B = 1e-9;
+    // the fall-back pass after a lost Dribble (routeT's `fall`), at step i, worked out only when a Dribble route needs it
+    let fStep = -1, fStamp = -1, fVal = 0;
+    const fallAt = (i, bar) => {
+      if (fStep === i && fStamp === cStamp) return fVal;
+      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : UB[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
+      let fall = bar;
+      for (let k = 0; k < nb; k++) {
+        if (ce[k] + EPS_B <= fall) break;
+        for (let x = st[k]; x < st[k + 1]; x++) {
+          const j = idx[x];
+          if (!vP0[j] || bd[j] + EPS_B <= fall) continue;
+          const v = valAt(i, j);
+          if (v === -Infinity) continue;
+          const o = L[j], p = o.p0 >= 1 ? 1 : Math.max(0, o.p0 - cut), f = p * (v > bar ? v : bar) + (1 - p) * (bar - o.lc);
+          if (f > fall) fall = f;
+        }
+      }
+      fStep = i; fStamp = cStamp; fVal = fall;
+      return fall;
+    };
+    const routeLazy = (i, bar) => {                    // T(bar) at step i with the candidate in place: routeT over every look
+      const lst = i === K ? KLs[cd] : DLs[cd], bd = i === K ? KB[cd] : UB[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
+      let best = bar;
+      for (let k = 0; k < nb; k++) {                    // the passes
+        if (ce[k] + EPS_B <= best) break;
+        for (let x = st[k]; x < st[k + 1]; x++) {
+          const j = idx[x];
+          if (!vNH[j] || bd[j] + EPS_B <= best) continue;
+          const v = valAt(i, j);
+          if (v === -Infinity) continue;
+          const o = L[j], e = o.r * (v > bar ? v : bar) + (1 - o.r) * (bar - o.lc);
+          if (e > best) best = e;
+        }
+      }
+      // the ball handler's own routes: a set look is worth max(v, bar), exactly, so one whose ceiling is below best is
+      // passed over. A Dribble route is worth r * max(v, bar) + (1 - r) * fall, a weighted average that can round a
+      // hair above both when they are level: those few are always read, with fall worked out in full
+      for (let k = 0; k < nb; k++) {
+        if (ce[k] + EPS_B <= best) break;
+        for (let x = st[k]; x < st[k + 1]; x++) {
+          const j = idx[x];
+          if (!vH[j] || L[j].dr || bd[j] + EPS_B <= best) continue;
+          const v = valAt(i, j);
+          if (v === -Infinity) continue;
+          const e = v > bar ? v : bar;
+          if (e > best) best = e;
+        }
+      }
+      const dl = i === K ? drLK : drL, nd = i === K ? nDrK : nDr;
+      for (let x = 0; x < nd; x++) {
+        const j = dl[x], v = valAt(i, j);
+        if (v === -Infinity) continue;
+        const o = L[j], e = o.r * (v > bar ? v : bar) + (1 - o.r) * fallAt(i, bar);
+        if (e > best) best = e;
+      }
+      if (i === K) barK = bar;
+      return best;
+    };
+    // how many of the six route slots reach u at the last step (topCount over the routes routeT would give), for the
+    // candidate just read
+    const candTop = u => {
+      const thr = u - 1e-9, bar = barK, lst = KLs[cd], bd = KB[cd], idx = lst.idx, st = lst.start, ce = lst.ceil, nb = lst.nb;
+      const hit = [false, false, false, false, false, false];
+      let left6 = 6, fall = null;
+      for (let k = 0; k < nb && left6 > 0; k++) {
+        const top = ce[k];
+        if (top + EPS_B < thr && bar + EPS_B < thr) {   // nothing further can reach it, but a Dribble route through its fall-back
+          if (hit[5]) break;
+          if (fall === null) fall = fallAt(K, bar);
+          if (fall + EPS_B < thr) break;
+        }
+        for (let x = st[k]; x < st[k + 1]; x++) {
+          const j = idx[x], sl = slotOf[j];
+          if (hit[sl]) continue;
+          const o = L[j];
+          if (Math.max(bd[j], bar) + EPS_B < thr && !(o.a === b && o.dr)) continue;
+          const v = valAt(K, j);
+          if (v === -Infinity) continue;
+          let e;
+          if (o.a !== b) e = o.r * (v > bar ? v : bar) + (1 - o.r) * (bar - o.lc);
+          else if (o.dr) { if (fall === null) fall = fallAt(K, bar); e = o.r * (v > bar ? v : bar) + (1 - o.r) * fall; }
+          else e = v > bar ? v : bar;
+          if (e >= thr) { hit[sl] = true; left6--; }
+        }
+      }
+      return 6 - left6;
+    };
     const runCand = (d, q, cm) => {                     // the same sum with defender d on q (contests cm): only what he touches is read again
+      ensureOrders(d);
+      cd = d; cq = q; ccm = cm; cStamp++;
+      let U = SHOT_CLOCK_OUT; histC[0] = U;
+      for (let i = 1; i <= K; i++) {
+        cB = i >= 3 ? histC[i - 2] : 0;
+        cChg = i >= 3 && histC[i - 2] !== hist[i - 2];
+        cLo = cChg ? Math.min(histC[i - 2], hist[i - 2]) : 0;
+        U = routeLazy(i, U);
+        histC[i] = U;
+      }
+      return U;
+    };
+    // Step 31, fix 1: the candidate reading as it was, every look read again, kept only as the reference a test holds
+    // the reading by difference to (PV_CHECK; tests/test_exam.py). Never run in play.
+    const histF = new Float64Array(K + 1);
+    const runCandFull = (d, q, cm) => {                     // (the test's reference: the same sum read over every look, as before fix 1)
       let na = 0;
       for (let j = 0; j < n; j++) {
         if (gone[j]) continue;
@@ -6444,19 +6694,19 @@ const PMEngine = (() => {
         let tp = tmp[0]; for (let t = 1; t < T; t++) if (tmp[t] > tp) tp = tmp[t];
         affW[na] = L[j].c === q ? -Infinity : tp + adjv[j]; affT[na] = L[j].c === q ? -Infinity : thr; affV[na] = nv; aff[na++] = j;
       }
-      let U = SHOT_CLOCK_OUT; histC[0] = U;
+      let U = SHOT_CLOCK_OUT; histF[0] = U;
       for (let i = 1; i <= K; i++) {
-        const B = i >= 3 ? histC[i - 2] : 0;
+        const B = i >= 3 ? histF[i - 2] : 0;
         W.set(rows[i]);
-        if (i >= 3 && histC[i - 2] !== hist[i - 2]) {    // a block now leads somewhere else: only the looks a block still bears on move
-          const lo = Math.min(histC[i - 2], hist[i - 2]);
+        if (i >= 3 && histF[i - 2] !== hist[i - 2]) {    // a block now leads somewhere else: only the looks a block still bears on move
+          const lo = Math.min(histF[i - 2], hist[i - 2]);
           if (i === K) { for (let j = 0; j < n; j++) if (!goneK[j] && blK[j]) W[j] = worth(j, B, -1, null, SVK[j]); }
           else for (let x = 0; x < blList.length && bmax[blList[x]] > lo; x++) W[blList[x]] = worth(blList[x], B, -1, null);
         }
         if (i === K) { for (let x = 0; x < na; x++) if (lim[aff[x]] > nm) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]); }
         else for (let x = 0; x < na; x++) W[aff[x]] = B >= affT[x] ? affW[x] : worth(aff[x], B, d, affV[x]);
         U = routeT(L, n, W, b, U, left, keyMask, cut, i === K ? v2 : null, null, i);
-        histC[i] = U;
+        histF[i] = U;
       }
       return U;
     };
@@ -6467,8 +6717,10 @@ const PMEngine = (() => {
       // difference: his contests there, the walls and lanes as they stand. It only chooses which squares are then read
       // in full.)
       lim.fill(32767);
+      buildOrders();                                    // (the ceilings depend on how far each look's limit reaches)
       const qsP = s.ctx.dfn[probe.d].qs, modeP = stanceMode(m.sN, probe.d), est = new Float64Array(probe.cands.length);
       for (let x = 0; x < probe.cands.length; x++) est[x] = runCand(probe.d, probe.cands[x][0], cm2Cached(probe.cands[x][0], probe.cands[x][1], qsP, modeP));
+      if (PV_CHECK) for (let x = 0; x < probe.cands.length; x++) { const f = runCandFull(probe.d, probe.cands[x][0], cm2Cached(probe.cands[x][0], probe.cands[x][1], qsP, modeP)); PVC.n++; if (f !== est[x]) { PVC.bad++; if (PVC.ex.length < 5) PVC.ex.push([est[x], f]); } }
       return { est, U };
     }
     const U0 = U, worth0 = rows[K].slice();
@@ -6528,7 +6780,12 @@ const PMEngine = (() => {
       for (const c of cands) {
         if (best !== null && before(best, c) <= 0) break;                 // its bound is already no better than the best read in full
         PVS.runs++;
-        const u = runCand(c.d, c.q, c.cm), mm = topCount(v2, u);
+        const u = runCand(c.d, c.q, c.cm), mm = u > U + 1e-9 ? 0 : candTop(u);    // (the count is wanted only when the value doesn't rise)
+        if (PV_CHECK) {
+          const mmN = candTop(u), uF = runCandFull(c.d, c.q, c.cm), mmF = topCount(v2, uF);
+          PVC.n++;
+          if (uF !== u || mmF !== mmN) { PVC.bad++; if (PVC.ex.length < 5) PVC.ex.push([u, uF, mmN, mmF]); }
+        }
         if (u > U + 1e-9 || (u >= U - 1e-9 && mm >= bm0)) continue;
         const full = { d: c.d, q: c.q, a: c.a, cm: c.cm, u, m: mm };
         if (best === null || before(full, best) < 0) best = full;
@@ -7388,7 +7645,8 @@ const PMEngine = (() => {
     actionStr, actionJSON, isChance, attackerReach, defenderMap, contestMap, candidateActions, turns, playTurn, Searcher, setOpenList, openOn, openMode, OPEN_STATS, setWholeTurns, setRankInHand, setDiceInHand, setBallLoss, setKeepSettled, setKeepInHand, stealSpot, endedTurn, setSplitTies, splitOn, openWidth, setKeptActions, setNoFloor, setExactShot, setLane, setPassRules, setMap, setMapLead, mapParts, icptPi, laneP, COV_SLOW, passChanceExact, covBuild, covAnswers, covLeanAnswers, setLevelMaps, setLevel, zoneOf, stanceOf, stanceFacts, closelyGuarded, phaseCounts,
     _memoSizes: (a, b, c, d) => { if (a != null) MAP_MEMO_MAX = a; if (b != null) READS_MAX = b; if (c != null) REACH_MAX = c; if (d != null) SMALL_MEMO_MAX = d; return [MAP_MEMO_MAX, READS_MAX, REACH_MAX, SMALL_MEMO_MAX]; },
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.cur.size + _GR.old.size, _CM.cur.size + _CM.old.size, _LS.size, _OA.size],
-    _pvStats: () => PVS,
+    _pvStats: () => PVS, _stanceProbe: (s, d, cands) => stanceProbe(s, d, cands),
+    _pvCheck: on => { if (on !== undefined) { PV_CHECK = !!on; PVC.n = 0; PVC.bad = 0; PVC.ex = []; } return { on: PV_CHECK, checked: PVC.n, different: PVC.bad, examples: PVC.ex }; },
     _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
