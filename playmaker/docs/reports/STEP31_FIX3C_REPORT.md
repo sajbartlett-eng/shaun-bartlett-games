@@ -93,7 +93,7 @@ None.
 | R5c: partial lane; offence 2, defence 1 | **29** | partial lane 28 | X1, diagonal in front, chases from next to him: 24 in phase 0, 28 in phase 1 |
 | R5 control: 2 against 2 | **29** | none | |
 
-**X5's dilemma** is in R5a's lane race. In phase 1 on G5, X5 can contain (O1's shot drops to 5.5), but that frees O5 at G2 (38). So the defence stays home and gives up 36.
+**X5's choice** is in R5a's lane race. In phase 1 on G5, X5 can contain (O1's shot drops to 5.5), but that frees O5 at G2 (38). So the defence stays home and gives up 36.
 
 **Where the numbers differ from what you expected:**
 - **R5a doesn't beat R5b.** Both reach an open layup worth 38 (O1's layup 19, times 2) by speed. In R5b, X1's one Quick Step closes the speed line to E6 but not the one to I5, and the lane race does drop from 36 to 30. The best route ties at 38 because both reach the card's top value.
