@@ -1,0 +1,96 @@
+{
+ "fix 3c (before)": {
+  "E1 stances": {
+   "ms": 511840,
+   "res": {
+    "x": [
+     "H9",
+     "B8",
+     "I5",
+     "N9",
+     "N4"
+    ],
+    "arrows": [
+     1,
+     2,
+     7,
+     0,
+     4
+    ],
+    "value": 14.2,
+    "squares": null,
+    "ball": null
+   }
+  },
+  "E15b offence_setup": {
+   "ms": 472722,
+   "res": {
+    "x": null,
+    "arrows": null,
+    "value": 21.5012,
+    "squares": [
+     "A2",
+     "I13",
+     "C8",
+     "D7",
+     "H2"
+    ],
+    "ball": 1
+   }
+  },
+  "E13 turn": {
+   "ms": 38961,
+   "res": "from fix 3d stage A timing, e13_before"
+  }
+ },
+ "fix 3d (after)": {
+  "E13 turn": {
+   "ms": 15467,
+   "res": {
+    "x": null,
+    "arrows": null,
+    "value": null,
+    "squares": null,
+    "ball": null
+   }
+  },
+  "E1 stances": {
+   "ms": 135040,
+   "res": {
+    "x": [
+     "H9",
+     "B8",
+     "I5",
+     "N9",
+     "N4"
+    ],
+    "arrows": [
+     1,
+     2,
+     7,
+     0,
+     4
+    ],
+    "value": 14.2,
+    "squares": null,
+    "ball": null
+   }
+  },
+  "E15b offence_setup": {
+   "ms": 128751,
+   "res": {
+    "x": null,
+    "arrows": null,
+    "value": 24,
+    "squares": [
+     "A2",
+     "C8",
+     "I13",
+     "D6",
+     "H2"
+    ],
+    "ball": 2
+   }
+  }
+ }
+}

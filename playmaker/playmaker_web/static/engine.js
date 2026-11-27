@@ -6336,16 +6336,38 @@ const PMEngine = (() => {
   // stay home (the chaser alone); the offence the most of: shoot, kick to anyone (a freed man at his own best look, read
   // without his defender; the pass raced from where the handler is), fake a helper who had to move to contain (he is
   // then spent), hesitate, or carry on. Who guards whom: the pairing that keeps the five closest.
+  const STEP_G = new Memo2(60000);                     // fix 3d: phases of movement kept across boards (see raceKit's step)
+  const _SU = new Map();
+  function stepUnion(p, qs, moveOk, qsOk) {            // every square any path of one phase's movement from p can cross
+    const key = (((p * 8 + qs) * 2 + (moveOk ? 1 : 0)) * 2) + (qsOk ? 1 : 0);
+    let hit = _SU.get(key); if (hit) return hit;
+    const u = new Set(), add = pa => { for (const q of pa) u.add(q); }, M = [];
+    if (moveOk) for (const pa of movePaths(p)) { add(pa); M.push(pa[pa.length - 1]); }
+    if (qsOk && qs > 0) {
+      const Q = [];
+      for (const pa of qsPaths(p, qs)) { add(pa); Q.push(pa[pa.length - 1]); }
+      for (const m1 of M) for (const pa of qsPaths(m1, qs)) add(pa);
+      if (moveOk) { for (const q1 of Q) for (const pa of movePaths(q1)) add(pa); for (const [, pa] of sprintPaths(p, qs)) add(pa); }
+    }
+    hit = Int16Array.from([...u].sort((x, y) => x - y)); _SU.set(key, hit); return hit;
+  }
   function raceKit(m, Lmap, sr, T) {
     const s = m.s, r = m.r, ctx = s.ctx, b = s.ball, h0 = s.o[b];
     const occ = new Set(); for (let i = 0; i < 5; i++) { if (ONB[s.o[i]]) occ.add(s.o[i]); if (ONB[s.x[i]]) occ.add(s.x[i]); }
     const qo0 = Math.max(0, LIMITS.O.qs - count(sr, 'O', 'qs')), qd0 = Math.max(0, LIMITS.X.qs - count(sr, 'X', 'qs'));
     const clear = (p, self) => { for (const q of p) if (!ONB[q] || (q !== self && occ.has(q))) return false; return true; };
     const stepMemo = new Map();
+    // fix 3d (speed, no number changed): a phase's movement from p turns only on which of the squares its paths can
+    // cross are taken (stepUnion), so it is kept across boards under exactly those, and read again only when one changes
     const step = (p, qs, self, moveOk, qsOk) => {        // one phase's movement from p, round bodies (kept for the race)
       const sk = ((((p * 8 + qs) * NSQ + self) * 2 + (moveOk ? 1 : 0)) * 2) + (qsOk ? 1 : 0);
       let hit = stepMemo.get(sk); if (hit) return hit;
-      hit = stepCalc(p, qs, self, moveOk, qsOk); stepMemo.set(sk, hit); return hit;
+      const U = stepUnion(p, qs, moveOk, qsOk);
+      let gk = (((p * 8 + qs) * 2 + (moveOk ? 1 : 0)) * 2 + (qsOk ? 1 : 0)) + ':';
+      for (let x = 0; x < U.length; x++) { const q = U[x]; if (q !== self && occ.has(q)) gk += q + ','; }
+      hit = STEP_G.get(gk);
+      if (hit === undefined) { hit = stepCalc(p, qs, self, moveOk, qsOk); STEP_G.set(gk, hit); }
+      stepMemo.set(sk, hit); return hit;
     };
     const stepCalc = (p, qs, self, moveOk, qsOk) => {
       const out = new Set(), M = [];
@@ -6357,7 +6379,7 @@ const PMEngine = (() => {
         if (moveOk) { for (const q1 of Q) for (const pa of movePaths(q1)) if (clear(pa, self)) out.add(pa[pa.length - 1]); for (const [, pa] of sprintPaths(p, qs)) if (clear(pa, self)) out.add(pa[pa.length - 1]); }
       }
       out.delete(p);
-      return out;
+      return Int16Array.from(out);                      // (compact: kept across boards, so it must fit a phone's memory)
     };
     const bfs = (start, qs, self, move0, qs0, qsLater) => {   // phases to every square (0 where he stands)
       const dist = new Map([[start, 0]]);
@@ -6382,7 +6404,7 @@ const PMEngine = (() => {
     const chaseV = (sq, j, pen, rushed) => { const sh = shot(sq), dc = ctx.dfn[j]; let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const ty = sh.lk.types[t], rr = cardShot(ctx, ctx.off[b], ty, sq); let con = dc.cn[ty] - pen - (rushed ? 2 : 0); if (con < 1) con = 1; const v = Math.max(0, sh.pts * (rr - con)); const u = v < sh.open[t] ? v : sh.open[t]; if (u > hi) hi = u; } return hi; };
     const openV = sq => { const sh = shot(sq); let hi = -Infinity; for (const v of sh.open) if (v > hi) hi = v; return hi; };
     const legal = q => ONB[q] && SHOOT(szone(ctx, q)) && !(ctx.noRim && q === RIM);
-    const pc = new Map(), kc = new Map();
+    const pc = new Map(), kc = new Map(), sortedW = new Map();
     const worthOf = (o, e) => { let w = -Infinity; for (let t = 0; t < o.open.length; t++) { let v = o.open[t]; for (let d = 0; d < 5; d++) if (d !== e && o.vals[d] && o.vals[d][t] < v) v = o.vals[d][t]; if (v > w) w = v; } return w + o.adj; };
     const byA = [[], [], [], [], []]; for (const o of Lmap) byA[o.a].push(o);
     const kick = (sq, left) => {                        // the best pass from sq: a man whose defender left (left) is read without him
@@ -6392,7 +6414,8 @@ const PMEngine = (() => {
       const sb = W_(s, { o: setAt(s.o, b, sq) });
       for (let a = 0; a < 5; a++) {
         if (a === b || !ONB[s.o[a]]) continue;
-        const without = guard[a] === left ? left : -1, ws = byA[a].map(o => [worthOf(o, without), o]).sort((x, y) => y[0] - x[0] || x[1].c - y[1].c || x[1].q0 - y[1].q0);
+        const without = guard[a] === left ? left : -1, wk = a * 8 + without + 1;   // (fix 3d: each man's looks sorted once a board)
+        let ws = sortedW.get(wk); if (!ws) { ws = byA[a].map(o => [worthOf(o, without), o]).sort((x, y) => y[0] - x[0] || x[1].c - y[1].c || x[1].q0 - y[1].q0); sortedW.set(wk, ws); }
         for (const [w, o] of ws) {
           if (w <= hit.v) break;
           if (o.c === sq || o.q0 === sq) continue;      // (not on the ball handler's own square)
@@ -6407,18 +6430,30 @@ const PMEngine = (() => {
     const front = c => { const out = []; for (let d = 0; d < 8; d++) { const f = c + DSTEP[d]; if (ONB[f] && DR[f] < DR[c] && !(f !== c && occ.has(f) && !s.x.includes(f))) out.push(f); } return out; };
     // one race: the handler on c0 at phase 0, the chaser j (his phases dj, dmj), the first step's limits
     // (the offence's one Hesitate or fake a phase: w = 1 when this phase's is used)
-    const race = (c0, j, dj, dmj, qoFirst, firstOk, w0) => {
-      const memo = new Map(), trace = new Map();
+    // fix 3d: a state after phase 0 turns only on the chaser (who he is and his phases), never on how the race began,
+    // so races with the same chaser share those states. moveFirst false: no movement left to the handler in phase 0.
+    const shared = new Map();
+    const race = (c0, j, dj, dmj, qoFirst, firstOk, w0, moveFirst = true) => {
+      let sh = shared.get(dj); if (!sh) { sh = { memo: new Map() }; shared.set(dj, sh); }
+      const memo0 = new Map();
+      const MEM = t => (t >= 1 ? sh.memo : memo0);
+      // (fix 3d, memory: each state keeps only its worth; the choice table is built again for the line the report shows.
+      // No state leans on itself (carry and hesitate go a phase on, a fake spends a helper), so that rebuild is exact.)
       const V = (t, c, spent, w) => {
-        const key = ((t * NSQ + c) * 32 + spent) * 2 + w;
+        const key = ((t * NSQ + c) * 32 + spent) * 2 + w, memo = MEM(t);
         const hit = memo.get(key); if (hit !== undefined) return hit;
         memo.set(key, -Infinity);                       // (a guard: no state leans on itself)
+        const v = node(t, c, spent, w).pick.worth;
+        memo.set(key, v); return v;
+      };
+      const node = (t, c, spent, w) => {
         const opts = [];
         let chase = Infinity, chaseHow = null;
         for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = dj.get(a); if (k === undefined || k > t) continue; const pen = t > 0 && DR[a] <= DR[c] ? 3 : 6, rushed = !(dmj.get(a) <= t);   /* (beaten: behind the ball in the phase of the advantage) */ const v = chaseV(c, j, pen, rushed); if (v < chase) { chase = v; chaseHow = { at: a, pen, rushed }; } }
         const shootAlone = Math.min(chase, openV(c));
         const nxt = [];
-        if (t < T) for (const q of step(c, ctx.off[b].qs, s.o[b], true, t === 0 ? qoFirst > 0 : true)) if (legal(q) && DR[q] < DR[c] && (t > 0 || firstOk(q))) nxt.push(q);
+        if (t < T && t === 0 && !moveFirst) nxt.push(c);    // (no movement left: phase 0 ends with him here)
+        else if (t < T) for (const q of step(c, ctx.off[b].qs, s.o[b], true, t === 0 ? qoFirst > 0 : true)) if (legal(q) && DR[q] < DR[c] && (t > 0 || firstOk(q))) nxt.push(q);
         nxt.sort((x, y) => x - y);
         let carry = -Infinity, carryTo = -1;
         for (const q of nxt) { const v = V(t + 1, q, spent, 0); if (v > carry) { carry = v; carryTo = q; } }
@@ -6441,15 +6476,14 @@ const PMEngine = (() => {
         }
         let best = opts[0];
         for (const o of opts) if (o.worth < best.worth - 1e-12) best = o;
-        memo.set(key, best.worth);
-        trace.set(key, { t, c, spent, w, chase: chase === Infinity ? null : chase, chaseHow, opts, pick: best });
-        return best.worth;
+        return { t, c, spent, w, chase: chase === Infinity ? null : chase, chaseHow, opts, pick: best };
       };
       const v0 = V(0, c0, 0, w0 ? 1 : 0);
       const phases = [];                                 // the line the number reads: each side's choice phase by phase
       let t = 0, c = c0, sp = 0, w = w0 ? 1 : 0;
       for (let guardN = 0; guardN < 12; guardN++) {
-        const tr = trace.get(((t * NSQ + c) * 32 + sp) * 2 + w); if (!tr) break;
+        if (!MEM(t).has(((t * NSQ + c) * 32 + sp) * 2 + w)) break;
+        const tr = node(t, c, sp, w);
         phases.push(tr);
         const p = tr.pick;
         if (p.by >= 0 && p.how !== 'help late') { if (p.fake === p.worth && p.fake > -Infinity) { sp |= 1 << p.by; w = 1; continue; } break; }
@@ -6489,24 +6523,31 @@ const PMEngine = (() => {
     }
     // speed: a Quick Step or Sprint to a square his man can't get in front of this phase
     if (K.qo0 > 0 && ctx.off[b].qs > 0 && !quickStepped(sr, 'O', b)) {
-      const qs = ctx.off[b].qs, dests = new Set();
-      for (const pa of qsPaths(h0, qs)) if (pa.every(q => ONB[q] && !K.occ.has(q))) dests.add(pa[pa.length - 1]);
-      if (canMoveKind(sr, 'O', b, 'sprint')) for (const [, pa] of sprintPaths(h0, qs)) if (pa.every(q => ONB[q] && !K.occ.has(q))) dests.add(pa[pa.length - 1]);
+      // fix 3d (the rules): a Quick Step leaves him his Move this phase. He may stop there (his Move to come after the
+      // defence's turn) or Move on at once, in the same turn, before the defence moves (then nothing is left to him
+      // this phase). A Sprint is his Move and his Quick Step together: nothing is left.
+      const qs = ctx.off[b].qs, starts = new Map(), clearO = pa => pa.every(q => ONB[q] && !K.occ.has(q));
+      const canMoveO = canMoveKind(sr, 'O', b, 'move'), qsDest = [], how = new Map();
+      for (const pa of qsPaths(h0, qs)) if (clearO(pa)) { const d = pa[pa.length - 1]; if (!starts.has(d)) { starts.set(d, canMoveO); how.set(d, 'Quick Step'); qsDest.push(d); } }
+      if (canMoveO) for (const s1 of qsDest.slice().sort((x, y) => x - y)) for (const pa of movePaths(s1)) if (pa.every(q => ONB[q] && (q === h0 || !K.occ.has(q)))) { const d = pa[pa.length - 1]; if (d !== h0 && !starts.has(d)) { starts.set(d, false); how.set(d, 'Quick Step, then Move'); } }
+      if (canMoveKind(sr, 'O', b, 'sprint')) for (const [, pa] of sprintPaths(h0, qs)) if (clearO(pa)) { const d = pa[pa.length - 1]; if (!starts.has(d)) { starts.set(d, false); how.set(d, 'Sprint'); } }
       let best = null;
-      for (const s1 of [...dests].sort((x, y) => x - y)) {
+      for (const s1 of [...starts.keys()].sort((x, y) => x - y)) {
         if (!K.legal(s1) || DR[s1] >= DR[h0]) continue;
         let reach = false; for (let d = 0; d < 8; d++) { const f = s1 + DSTEP[d]; if (ONB[f] && DR[f] < DR[s1] && djFull.get(f) !== undefined && djFull.get(f) <= 1) reach = true; }
         if (reach) continue;
-        const rc = K.race(s1, jm, djFull, dmFull, 0, all, K.w0);          // (he used his Quick Step: none left to him this phase)
-        if (!best || rc.v > best.v) best = { kind: 'speed', beaten: jm, start: s1, p: 1, ...rc };
+        const rc = K.race(s1, jm, djFull, dmFull, 0, all, K.w0, starts.get(s1));
+        if (!best || rc.v > best.v) best = { kind: 'speed', beaten: jm, start: s1, p: 1, keeps_move: starts.get(s1), start_by: how.get(s1), ...rc };
       }
       if (best) out.push(best);
     }
-    return out.map(x => finishRace(x, b, h0));
+    const res = out.map(x => finishRace(x, b, h0));
+    res.kit = K;                                       // (fix 3d: the fake mix reads its races with the same kit)
+    return res;
   }
   const r2 = v => (v === -Infinity || v === Infinity || v === undefined || v === null ? null : +v.toFixed(2));
   function raceJSON(rc) {                              // (the report: each phase as the number reads it, every choice and its worth)
-    return { advantage: rc.kind, beaten: 'X' + (rc.beaten + 1), from: sqName(rc.start), worth: r2(rc.v), quick_steps_left_now: { offence: rc.qo0, defence: rc.qd0 },
+    return { advantage: rc.kind, beaten: 'X' + (rc.beaten + 1), from: sqName(rc.start), worth: r2(rc.v), ...(rc.start_by ? { start_by: rc.start_by, move_left: rc.keeps_move } : {}), quick_steps_left_now: { offence: rc.qo0, defence: rc.qd0 },
       phases: rc.phases.map(ph => ({ phase: ph.t, ball_at: sqName(ph.c), spent: [0, 1, 2, 3, 4].filter(e => (ph.spent >> e) & 1).map(e => 'X' + (e + 1)),
         chaser: ph.chaseHow ? { contest_worth: r2(ph.chase), from: sqName(ph.chaseHow.at), less: ph.chaseHow.pen, rushed: ph.chaseHow.rushed } : null,
         choices: ph.opts.map(o => ({ defence: o.by < 0 ? 'stay home' : 'X' + (o.by + 1) + ' ' + o.how, shoot: r2(o.shoot), kick: o.kick && o.kick.a >= 0 ? { to: 'O' + (o.kick.a + 1), at: sqName(o.kick.at), worth: r2(o.kick.v) } : null,
@@ -6633,8 +6674,8 @@ const PMEngine = (() => {
     // leaves the least. Kept for the reading.
     const SV0 = SV.map(rw => rw.slice()), Fm = new Map(), Gm = new Map(), UB0 = [null, null, null, null, null], ORD0 = [null, null, null, null, null];
     const movedAt = [null, null, null, null, null];     // (fix 3b: where each defender's answer movement took him, and how)
-    let RK = null;                                       // (fix 3c: the race's kit, built when a fake's race first needs it)
-    const fakeRaces = [];                                // (for the report: the races the fake mix read)
+    let RK = races.kit || null;                          // (fix 3c: the race's kit, built when a fake's race first needs it; fix 3d: the drives' own)
+    const fakeRaces = [], fakeKept = new Map();          // (for the report: the races the fake mix read)
     const okLook = j => { const o = L[j]; return o.a === b ? o.n0 <= left : o.n0 <= left + ((keyMask >> o.a) & 1); };
     const ub0 = e => {                                  // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
       const u = new Float64Array(n), ord = [];
@@ -6675,9 +6716,12 @@ const PMEngine = (() => {
         const fakeRace = q => {
           if (L[i].a !== b || L[i].c !== m.s.o[b] || L[i].race) return -Infinity;
           if (!RK) RK = raceKit(m, mapL, srR, Math.min(3, k + 1));
+          const fkey = e * NSQ + q, kept = fakeKept.get(fkey);    // (fix 3d: one race a closer and square, for every look and answer step)
+          if (kept !== undefined) return kept;
           const qe = s.ctx.dfn[e].qs, dj = RK.bfs(q, qe, s.x[e], false, RK.qd0 > 0, true), dmj = RK.bfs(q, qe, s.x[e], false, false, false);
           const rc = RK.race(m.s.o[b], e, dj, dmj, RK.qo0, () => true, true);
           if (fakeRaces.length < 8) fakeRaces.push(Object.assign({ kind: 'shot fake beats the closeout', beaten: e, start: m.s.o[b], p: 1, closes_to: q }, rc));
+          fakeKept.set(fkey, rc.v);
           return rc.v;
         };
         for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move'), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }

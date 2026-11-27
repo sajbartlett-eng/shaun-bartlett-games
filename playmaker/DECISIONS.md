@@ -1945,6 +1945,15 @@ his own best look, the pass raced from the handler's square), faking a helper wh
 carrying on. Who guards whom: the pairing that keeps the five closest. Proof boards R1 to R5 (tests/exam_boards.py, the
 exam's race checks). · Source: Shaun, 27 Nov 2026 (fix 3c and its additions) · **Built.**
 
+**D-311. The speed start by the rules; the race shares its work (fix 3d; amends D-310).** A Quick Step leaves the handler
+his Move that phase. He may stop there and keep it (the race reads his Move after the defence's turn), or Move on at once
+in the same turn, before the defence moves; then nothing is left to him that phase. A Sprint is his Move and his Quick
+Step together, so nothing is left after it. Each of these ends is a speed start if his man can't get in front of it this
+phase. (Fix 3c gave a Sprint a Move after it, which the rules don't allow.) Exact speed-ups, no number changed: one
+race's states from phase 1 on are shared across starts with the same chaser; each movement step's result is kept across
+boards by the bodies near it; one fake race per helper and square; each man's looks sorted once per board. · Source:
+Shaun, 27 Nov 2026 (fix 3d) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

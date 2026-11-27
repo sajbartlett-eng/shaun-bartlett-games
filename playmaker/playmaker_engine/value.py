@@ -116,6 +116,37 @@ _SVMAP = {}
 _MISS = object()
 
 
+_STEP_G = {}
+_SU = {}
+
+
+def _step_union(p, qs, move_ok, qs_ok, rules):
+    """engine.js stepUnion: every square any path of one phase's movement from p can cross."""
+    key = (p, qs, move_ok, qs_ok, rules)
+    if key not in _SU:
+        u, M = set(), []
+        if move_ok:
+            for pa in B.move_paths(p, rules):
+                u.update(pa)
+                M.append(pa[-1])
+        if qs_ok and qs > 0:
+            Q = []
+            for pa in B.qs_paths(p, qs, rules):
+                u.update(pa)
+                Q.append(pa[-1])
+            for m1 in M:
+                for pa in B.qs_paths(m1, qs, rules):
+                    u.update(pa)
+            if move_ok:
+                for q1 in Q:
+                    for pa in B.move_paths(q1, rules):
+                        u.update(pa)
+                for _d, pa in B.sprint_paths(p, qs, rules):
+                    u.update(pa)
+        _SU[key] = tuple(sorted(u))
+    return _SU[key]
+
+
 class _RaceLook:
     """(a drive's race look: no Contest of its own; its worth is the race's)"""
     types = ('race',)
@@ -145,7 +176,14 @@ def race_kit(r, Lmap, sr, T):
     def step(p, qs, me, move_ok, qs_ok):
         sk = (p, qs, me, move_ok, qs_ok)
         if sk not in step_memo:
-            step_memo[sk] = step_calc(p, qs, me, move_ok, qs_ok)
+            # fix 3d (engine.js step): kept across boards under the taken squares its paths can cross
+            gk = (p, qs, move_ok, qs_ok, tuple(q for q in _step_union(p, qs, move_ok, qs_ok, rules) if q != me and q in occ))
+            hit = _STEP_G.get(gk)
+            if hit is None:
+                if len(_STEP_G) > 120000:
+                    _STEP_G.clear()
+                hit = _STEP_G[gk] = step_calc(p, qs, me, move_ok, qs_ok)
+            step_memo[sk] = hit
         return step_memo[sk]
 
     def step_calc(p, qs, me, move_ok, qs_ok):
@@ -254,7 +292,7 @@ def race_kit(r, Lmap, sr, T):
 
     def legal(q):
         return B.on_board(q) and shot_zone(ctx, q) in SHOOT and not (no_rim and q == RC.RIM)
-    pc, kc = {}, {}
+    pc, kc, sorted_w = {}, {}, {}
 
     def worth_of(o, e):
         w = NEG
@@ -281,7 +319,9 @@ def race_kit(r, Lmap, sr, T):
             if a == b or not B.on_board(s.o[a]):
                 continue
             without = left if guard[a] == left else -1
-            ws = sorted(((worth_of(o, without), o) for o in by_a[a]), key=lambda x: (-x[0], x[1]['c'], x[1]['q0']))
+            ws = sorted_w.get((a, without))              # (fix 3d: each man's looks sorted once a board)
+            if ws is None:
+                ws = sorted_w[(a, without)] = sorted(((worth_of(o, without), o) for o in by_a[a]), key=lambda x: (-x[0], x[1]['c'], x[1]['q0']))
             for w, o in ws:
                 if w <= hit[0]:
                     break
@@ -305,11 +345,15 @@ def race_kit(r, Lmap, sr, T):
                 out.append(f)
         return out
 
-    def race(c0, j, dj, dmj, qo_first, first_ok, w0):
-        memo, trace = {}, {}
+    shared = {}
+
+    def race(c0, j, dj, dmj, qo_first, first_ok, w0, move_first=True):
+        shr = shared.setdefault(id(dj), ({}, dj))  # (fix 3d: states after phase 0 shared by races with the same chaser)
+        memo0 = {}
 
         def V(t, c, spent, w):
             key = (t, c, spent, w)
+            memo = shr[0] if t >= 1 else memo0   # (fix 3d, memory: worths only; engine.js rebuilds its report's line)
             if key in memo:
                 return memo[key]
             memo[key] = NEG
@@ -330,7 +374,9 @@ def race_kit(r, Lmap, sr, T):
                     chase, how = v, (a, pen, rushed)
             alone = min(chase, open_v(c))
             nxt = []
-            if t < T:
+            if t < T and t == 0 and not move_first:      # (no movement left: phase 0 ends with him here)
+                nxt.append(c)
+            elif t < T:
                 for q in step(c, ctx.off[b].qs, s.o[b], True, (qo_first > 0) if t == 0 else True):
                     if legal(q) and B.dist_rim(q) < B.dist_rim(c) and (t > 0 or first_ok(q)):
                         nxt.append(q)
@@ -378,10 +424,9 @@ def race_kit(r, Lmap, sr, T):
                 if o['worth'] < pick['worth'] - 1e-12:
                     pick = o
             memo[key] = pick['worth']
-            trace[key] = dict(t=t, c=c, spent=spent, w=w, chase=None if chase == float('inf') else chase, how=how, opts=opts, pick=pick)
             return pick['worth']
         v0 = V(0, c0, 0, 1 if w0 else 0)
-        return dict(v=v0, trace=trace, qo0=qo0, qd0=qd0)
+        return dict(v=v0, qo0=qo0, qd0=qd0)
     w0 = sr.count('O', 'hesitate') >= RC.LIMITS['O']['hesitate']
     return dict(man=man, guard=guard, bfs=bfs, step=step, race=race, qo0=qo0, qd0=qd0, occ=occ, legal=legal, w0=w0)
 
@@ -432,17 +477,26 @@ def drive_races(r, Lmap, T, sr):
             return q not in cov and all(x not in cov for x in lane_squares(h0, q, 0.5))
         out.append(dict(kind='open lane' if full else 'partial lane', beaten=jm, start=h0, p=1.0, **K['race'](h0, jm, dj_full, dm_full, K['qo0'], allq if full else ok, K['w0'])))
     if K['qo0'] > 0 and ctx.off[b].qs > 0 and not sr.quick_stepped('O', b):
+        # fix 3d (engine.js, the rules): a Quick Step leaves him his Move; he may Move on at once (then nothing is left
+        # this phase); a Sprint is both
         qs = ctx.off[b].qs
-        dests = set()
+        starts, qs_dest = {}, []
+        can_move_o = can_move_kind(sr, 'O', b, 'move')
         for pa in B.qs_paths(h0, qs, ctx.rules):
-            if all(B.on_board(q) and q not in K['occ'] for q in pa):
-                dests.add(pa[-1])
+            if all(B.on_board(q) and q not in K['occ'] for q in pa) and pa[-1] not in starts:
+                starts[pa[-1]] = can_move_o
+                qs_dest.append(pa[-1])
+        if can_move_o:
+            for s1 in sorted(qs_dest):
+                for pa in B.move_paths(s1, ctx.rules):
+                    if all(B.on_board(q) and (q == h0 or q not in K['occ']) for q in pa) and pa[-1] != h0 and pa[-1] not in starts:
+                        starts[pa[-1]] = False
         if can_move_kind(sr, 'O', b, 'sprint'):
             for _d, pa in B.sprint_paths(h0, qs, ctx.rules):
-                if all(B.on_board(q) and q not in K['occ'] for q in pa):
-                    dests.add(pa[-1])
+                if all(B.on_board(q) and q not in K['occ'] for q in pa) and pa[-1] not in starts:
+                    starts[pa[-1]] = False
         best = None
-        for s1 in sorted(dests):
+        for s1 in sorted(starts):
             if not K['legal'](s1) or B.dist_rim(s1) >= B.dist_rim(h0):
                 continue
             reach = False
@@ -452,12 +506,18 @@ def drive_races(r, Lmap, T, sr):
                     reach = True
             if reach:
                 continue
-            rc = K['race'](s1, jm, dj_full, dm_full, 0, allq, K['w0'])
+            rc = K['race'](s1, jm, dj_full, dm_full, 0, allq, K['w0'], starts[s1])
             if best is None or rc['v'] > best['v']:
-                best = dict(kind='speed', beaten=jm, start=s1, p=1.0, **rc)
+                best = dict(kind='speed', beaten=jm, start=s1, p=1.0, keeps_move=starts[s1], **rc)
         if best:
             out.append(best)
-    return [_finish_race(x, b, h0) for x in out]
+    res = _Races(_finish_race(x, b, h0) for x in out)
+    res.kit = K                                       # (fix 3d, engine.js: the fake mix reads its races with the same kit)
+    return res
+
+
+class _Races(list):
+    kit = None
 
 
 def _finish_race(x, b, h0):
@@ -599,7 +659,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
     SV0 = [list(row) for row in SV]
     Fm, Gm, UB0 = {}, {}, {}
     moved_at = [None] * 5                           # (fix 3b: where each defender's answer movement took him, and how)
-    RK = []                                          # (fix 3c: the race's kit, built when a fake's race first needs it)
+    RK = [races.kit] if getattr(races, 'kit', None) else []   # (fix 3c: built when a fake's race first needs it; fix 3d: the drives' own)
+    fake_kept = {}
     sN = r._msN
 
     def ok_look(j):
@@ -664,10 +725,13 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 if not RK:
                     RK.append(race_kit(r, mapL, srR, min(3, k + 1)))
                 kit = RK[0]
+                if (e, q) in fake_kept:                    # (fix 3d: one race a closer and square)
+                    return fake_kept[(e, q)]
                 qe = s.ctx.dfn[e].qs
                 dj = kit['bfs'](q, qe, s.x[e], False, kit['qd0'] > 0, True)
                 dmj = kit['bfs'](q, qe, s.x[e], False, False, False)
-                return kit['race'](s.o[b], e, dj, dmj, kit['qo0'], lambda _q: True, True)['v']
+                fake_kept[(e, q)] = kit['race'](s.o[b], e, dj, dmj, kit['qo0'], lambda _q: True, True)['v']
+                return fake_kept[(e, q)]
             for q, na in free.items():
                 if na == 1 and B.cheb(q, c) == 1:
                     g = follow2(e, q, B.dir_between(q, c), 'move')
