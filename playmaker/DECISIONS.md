@@ -1981,6 +1981,16 @@ movement is kept only if the number still doesn't rise with the races read again
 guarding the ball; who removes the most decides who should guard it when matchups are set. G5 is read on boards where the
 backdoor cuts are covered (E23d to E23f). Proof boards P1 to P5. · Source: Shaun, 27 Nov 2026 (fix 4b) · **Built.**
 
+**D-314. A failed created Dribble costs what the rules say (fix 4c).** Lost, the ball handler is locked (no Move,
+Sprint, Dribble or arrow turn; a Quick Step is still his) and rushed for the rest of that phase: he may Quick Step,
+then shoot or pass, rushed, against a defence that has that phase to act freely (any defender who can get in front by
+its end contests). A new phase clears the lock and the rush; he may try again then, from where he stands or after a
+Move next to his man, at the fresh chance, against the defence as it has set itself (its help counted from the
+failure), as the clock allows. The race's worth is the chance times the race of the win, plus the rest times that
+line; the route reads it at chance 1, so no retry comes free. R4 is rewritten as a true control: X1 is Defensive Point
+Guard A (2 Quick Steps, Agility 10, the highest on any card), as quick as O1. · Source: Shaun, 27 Nov 2026 (fix 4c) ·
+**Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

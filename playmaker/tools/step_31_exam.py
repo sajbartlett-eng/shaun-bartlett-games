@@ -564,7 +564,12 @@ def race_checks(E):
     fr = [z for z in (v2.get('look_at') or []) if z.get('fake')] if v2 else []
     E.rec('R2', 'R2', 'pass' if (v2.get('fake_race') or []) else 'fail', f"The fake's races read: {len(v2.get('fake_race') or [])}; value {v2.get('value')}.", 'The shot fake beating the closeout starts the race of the drive inside the fake mix.')
     rs4, v4 = races('R4')
-    E.rec('R4', 'R4', 'pass' if not rs4 else 'fail', f"Races: {len(rs4)} (value {v4 and v4['value']}).", 'No advantage: no race may start.')
+    # fix 4c (Shaun, 27 Nov 2026): R4 a true control, X1 as quick as O1. Any race that starts is read at its real chance
+    # with its real failure cost, and the number stays close to the set defence's (its best look with no race at all)
+    set4 = max([z['p'] * z['worth'] for z in (v4 or {}).get('looks', []) if not (z['c'] == z['q0'] and z['dribble'] and z['p'] == 1)] or [None])
+    ok4 = v4 is not None and set4 is not None and v4['value'] <= set4 + 1
+    E.rec('R4', 'R4', 'pass' if ok4 else 'fail', f"Races: {[(rc['advantage'], rc['from'], rc.get('win_chance'), rc['worth']) for rc in rs4]}; value {v4 and v4['value']}; the set defence's best look {set4}.",
+          "A true control: any race is read at its real chance and failure cost, and the number stays close to the set defence's.")
     vals = {n: (E.g('value', n) or {}).get('value') for n in ('R5a', 'R5b', 'R5c', 'R5ctl')}
     ok5 = all(vals[n] is not None and vals['R5ctl'] is not None and vals[n] > vals['R5ctl'] for n in ('R5a', 'R5b', 'R5c'))
     E.rec('R5', 'R5a to R5c', 'pass' if ok5 else 'fail', f"Values: {vals}.", 'Each R5 variant reads higher for the offence than the control.')

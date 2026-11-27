@@ -357,12 +357,14 @@ def race_kit(r, Lmap, sr, T):
     for o in Lmap:
         by_a[o['a']].append(o)
 
-    def kick(sq, left):
-        key = (sq, left)
+    def kick(sq, left, locked=False):
+        key = (sq, left, locked)                   # (fix 4c: locked, the passer rushed by the rules)
         if key in kc:
             return kc[key]
         hit = [NEG, -1, None]
         sb = s.with_(o=tuple(sq if i == b else s.o[i] for i in range(5)))
+        if locked:
+            sb = sb.with_(lock_o=s.lock_o | (1 << b))
         for a in range(5):
             if a == b or not B.on_board(s.o[a]):
                 continue
@@ -375,7 +377,7 @@ def race_kit(r, Lmap, sr, T):
                     break
                 if o['c'] == sq or o['q0'] == sq:
                     continue
-                k2 = (sq, o['q0'], a)
+                k2 = (sq, o['q0'], a, locked)
                 if k2 not in pc:
                     pc[k2] = cov_pass(sb, a, o['q0'])
                 pp = pc[k2]
@@ -395,7 +397,9 @@ def race_kit(r, Lmap, sr, T):
 
     shared = {}
 
-    def race(c0, j, dj, dmj, qo_first, first_ok, w0, move_first=True, caps=caps0, t0=0):
+    def race(c0, j, dj, dmj, qo_first, first_ok, w0, move_first=True, caps=caps0, t0=0, lag=None):
+        # fix 4c (engine.js race): lag, the phase the help's arrivals count from; the chaser's from t0
+        lag = t0 if lag is None else lag
         # fix 4b (engine.js race): t0, the phase the advantage comes in; arrivals count from then. move_first: True,
         # False, or 'qs' (only his Quick Step left in that phase)
         shr = shared.setdefault(id(dj), ({}, dj))  # (fix 3d: states after phase 0 shared by races with the same chaser)
@@ -408,7 +412,7 @@ def race_kit(r, Lmap, sr, T):
 
         def V(t, c, spent, w):
             key = (t, c, spent, w)
-            tl = t - t0
+            tc, tl = t - t0, t - lag
             memo = shr[0] if t > t0 else memo0   # (fix 3d, memory: worths only; engine.js rebuilds its report's line)
             if key in memo:
                 return memo[key]
@@ -420,11 +424,11 @@ def race_kit(r, Lmap, sr, T):
                 if not B.on_board(a):
                     continue
                 k = dj.get(a)
-                if k is None or k > tl:
+                if k is None or k > tc:
                     continue
-                pen = 3 if (tl > 0 and B.dist_rim(a) <= B.dist_rim(c)) else 6
+                pen = 3 if (tc > 0 and B.dist_rim(a) <= B.dist_rim(c)) else 6
                 km = dmj.get(a)
-                rushed = not (km is not None and km <= tl)
+                rushed = not (km is not None and km <= tc)
                 v = chase_v(c, j, pen, rushed)
                 if v < chase:
                     chase, how = v, (a, pen, rushed)
@@ -497,7 +501,7 @@ def race_kit(r, Lmap, sr, T):
                 c = max(c, open_v(q))
         return c
     return dict(man=man, guard=guard, bfs=bfs, step=step, race=race, qo0=qo0, qd0=qd0, occ=occ, legal=legal, w0=w0, ceil=ceil,
-                caps_for=caps_for, caps0=caps0, wall_ok=wall_ok)
+                caps_for=caps_for, caps0=caps0, wall_ok=wall_ok, shot=shot, kick=kick, DQ=DQ, DM=DM)
 
 
 def drive_races(r, Lmap, T, sr):
@@ -594,7 +598,7 @@ def drive_races(r, Lmap, T, sr):
     # fix 4b (engine.js driveRaces): the advantages the offence can create: a Dribble (this phase if the offence has the
     # actions, else the next), and speed in the next phase
     if B.on_board(s.x[jm]):
-        from .scoring import rolled, p_success
+        from .scoring import rolled, p_success, card_shot
         xj, qn, caps_b = s.x[jm], ctx.dfn[jm].qs, K['caps_for'](jm)
 
         def apps(move):
@@ -607,16 +611,107 @@ def drive_races(r, Lmap, T, sr):
                             o2.append((d, False))
             return sorted(o2)
 
+        # fix 4c (engine.js): a failed Dribble costs what the rules say: locked and rushed for the rest of that phase
+        # (a Quick Step still his), the defence free that phase; a retry later against the defence as set by then
+        cut_o = RC.off_balance_cut(ctx.rules)
+        drib_r, ag_j = ctx.off[b].r['dribble'], ctx.dfn[jm].r['agility']
+        dj_c, fail_m, att_m = {}, {}, {}
+
+        def dj_of(t0, lag):
+            if (t0, lag) not in dj_c:
+                dj_c[(t0, lag)] = (K['bfs'](xj, qn, xj, False, (K['qd0'] > 0) if t0 == 0 else True, True), K['bfs'](xj, qn, xj, False, False, False))
+            return dj_c[(t0, lag)]
+
+        def qo_at(t):
+            return K['qo0'] if t == 0 else RC.LIMITS['O']['qs']
+
+        def shoot_r(c, e, set_e):
+            lk, pts, opn = K['shot'](c)
+            if lk is None:
+                return NEG
+            dc, hi = ctx.dfn[e], NEG
+            for ty in lk.types:
+                rr = card_shot(ctx, ctx.off[b], ty, c) - cut_o
+                con = dc.con(ty) - (0 if set_e else 2)
+                if con < 1:
+                    con = 1
+                hi = max(hi, max(0, pts * (rr - con)))
+            return hi
+
+        def open_r(c):
+            lk, pts, opn = K['shot'](c)
+            if lk is None:
+                return NEG
+            return max(max(0, pts * (card_shot(ctx, ctx.off[b], ty, c) - cut_o)) for ty in lk.types)
+
+        def clear_from(sa, pa):
+            return all(B.on_board(q) and (q == h0 or q not in K['occ']) for q in pa) and K['wall_ok'](K['caps0'], sa, pa)
+
+        def fail_at(sa, t, lag):
+            if (t, sa) in fail_m:
+                return fail_m[(t, sa)]
+            sqs = [sa]
+            if qo_at(t) > 0 and ctx.off[b].qs > 0:
+                for pa in B.qs_paths(sa, ctx.off[b].qs, ctx.rules):
+                    if clear_from(sa, pa) and pa[-1] not in sqs:
+                        sqs.append(pa[-1])
+            best = dict(v=NEG, at=sa, shot=NEG, kick=None)
+            for c in sqs:
+                sh = float('inf')
+                for e in range(5):
+                    if K['DQ'][e] is None:
+                        continue
+                    k = km = float('inf')
+                    for d in range(8):
+                        f = B.add(c, B.DIRS[d])
+                        if not B.on_board(f):
+                            continue
+                        a = K['DQ'][e].get(f)
+                        if a is not None and a < k:
+                            k = a
+                        a2 = K['DM'][e].get(f)
+                        if a2 is not None and a2 < km:
+                            km = a2
+                    if k <= t - lag + 1:
+                        sh = min(sh, shoot_r(c, e, km <= t - lag + 1))
+                if sh == float('inf'):
+                    sh = open_r(c)
+                kk = K['kick'](c, -1, True)
+                v = max(sh, kk[0])
+                if v > best['v']:
+                    best = dict(v=v, at=c, shot=sh, kick=kk)
+            fail_m[(t, sa)] = best
+            return best
+
+        def attempt(t, sa, keeps, lag, p_w):
+            key = (t, sa, keeps, round(p_w * 20))
+            if key in att_m:
+                return att_m[key]
+            dj, dm = dj_of(t, lag)
+            W = K['race'](sa, jm, dj, dm, qo_at(t), allq, K['w0'] if t == 0 else False, True if keeps else 'qs', caps_b, t, lag)
+            f = fail_at(sa, t, lag)
+            F, again = f['v'], None
+            if t + 1 <= T:
+                opts2 = [(sa, True)] + [(pa[-1], False) for pa in B.move_paths(sa, ctx.rules) if clear_from(sa, pa) and B.cheb(pa[-1], xj) == 1]
+                for sa2, k2 in opts2:
+                    a2 = attempt(t + 1, sa2, k2, lag, float(p_success(drib_r - ag_j, rl)))   # (a new phase clears the lock and the rush)
+                    if again is None or a2['v'] > again['v']:
+                        again = dict(a2, at=sa2)
+                if again and again['v'] > F:
+                    F = again['v']
+            if F == NEG:
+                F = OUT
+            att_m[key] = dict(v=p_w * W['v'] + (1 - p_w) * F, p=p_w, win=W, fail_v=F)
+            return att_m[key]
+
         def dribble(t0, p_win, tok):
             best = None
-            dj_b = K['bfs'](xj, qn, xj, False, (K['qd0'] > 0) if t0 == 0 else True, True)
-            dm_b = K['bfs'](xj, qn, xj, False, False, False)
             for sa, keeps in apps(tok >= 2):
-                rc = K['race'](sa, jm, dj_b, dm_b, K['qo0'] if t0 == 0 else RC.LIMITS['O']['qs'], allq, K['w0'] if t0 == 0 else False,
-                               True if keeps else 'qs', caps_b, t0)
-                if best is None or rc['v'] > best['v']:
-                    best = dict(kind='Dribble next phase' if t0 else 'Dribble', beaten=jm, start=sa, p=p_win, **rc)
-            if best and best['p'] > 0:
+                at = attempt(t0, sa, keeps, t0, p_win)
+                if best is None or at['v'] > best['v']:
+                    best = dict(kind='Dribble next phase' if t0 else 'Dribble', beaten=jm, start=sa, p=1.0, win_chance=p_win, v=at['v'],
+                                qo0=at['win']['qo0'], qd0=at['win']['qd0'], win_worth=at['win']['v'])
+            if best and p_win > 0:
                 out.append(best)
         rl = ctx.rules
         drib_now = (sr.tok_o > 0 and sr.count('O', 'dribble') < RC.LIMITS['O']['dribble']
@@ -626,7 +721,7 @@ def drive_races(r, Lmap, T, sr):
         if drib_now:
             dribble(0, float(p_success(rolled(sr, 'O', b, 'dribble') - rolled(sr, 'X', jm, 'agility'), rl)), sr.tok_o)
         elif T >= 1:
-            dribble(1, float(p_success(ctx.off[b].r['dribble'] - ctx.dfn[jm].r['agility'], rl)), 6)
+            dribble(1, float(p_success(drib_r - ag_j, rl)), 6)
         if T >= 1 and ctx.off[b].qs > 0:                # speed in the next phase
             qs = ctx.off[b].qs
             starts, qs_dest = {}, []
