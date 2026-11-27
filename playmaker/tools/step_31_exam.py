@@ -58,6 +58,9 @@ def requests():
         reqs.append(('offence', n, T.req(n, dict(only='offence_setup'))))
     for n in ONBALL:
         reqs.append(('onball', n, T.req(n, dict(only='value', onball=True))))
+    import step_31_onball_proof as OP                    # fix 4b: the held searches (P1 to P4) and every arrow pair (P5)
+    for n, a, rq in OP.jobs():
+        reqs.append(('held', f'{n}:{a}', rq))
     return reqs
 
 
@@ -380,9 +383,9 @@ def judge(R):
               + ('.' if z != '.' else f": he stays this turn because that turn is worth more than his best step in ({round(step_in, 2) if step_in is not None else 'not read'})."),
               'From I13 he has no look; a turn that leaves him there is chosen only when it is worth more than every turn that moves him in.')
     # ---- both sides ----
-    a, b, c = val('E23a'), val('E23b'), val('E23c')
+    a, b, c = val('E23d'), val('E23e'), val('E23f')       # fix 4b: on boards where the backdoor cuts are covered
     if a and b and c:
-        E.rec('G5', 'E23', 'pass' if abs(a['value'] - b['value']) < 1e-6 and c['value'] < b['value'] - 1 else 'fail', f"Two equal looks. Both defenders sagging: {a['value']}. One covered: {b['value']}. Both covered: {c['value']}.", 'A sum of the looks would drop when one is covered; the number does not.')
+        E.rec('G5', 'E23d to E23f', 'pass' if abs(a['value'] - b['value']) < 1e-6 and c['value'] < b['value'] - 1 else 'fail', f"Two equal looks. Both defenders sagging: {a['value']}. One covered: {b['value']}. Both covered: {c['value']}.", 'A sum of the looks would drop when one is covered; the number does not.')
     # ---- goal-side ----
     if s3:
         gs = [d for d in range(5) if B.dist_rim(s3['xs'][d]) < B.dist_rim(s3['s'].o[s3['man'][d]])]
@@ -518,16 +521,29 @@ def onball_checks(E):
             E.rec(name, name, 'fail', 'No reading.', '')
             continue
         ds, dd, dpz = part(rp, 'shot') - part(ro, 'shot'), part(rp, 'drives') - part(ro, 'drives'), part(rp, 'passes') - part(ro, 'passes')
+        # fix 4b: the number for each stance is the stance search's, the ball's defender held on his square and every
+        # arrow (his and the other four's, and their squares) chosen by the number together
+        hp, ho = (E.g('held', f'{name}:None') or {}).get('value'), (E.g('held', f'{name}off:None') or {}).get('value')
         if name == 'P1':
-            ok, want = vp + 1 < vo and dd + dpz > ds, 'Pressing reads clearly better for the defence, mostly through the drives and passes it removes.'
+            ok, want = hp is not None and ho is not None and hp + 1 < ho, 'Pressing reads clearly better for the defence, mostly through the drives and passes it removes.'
         elif name == 'P2':
             ok, want = abs(ds) > abs(dd) + abs(dpz), 'The difference between pressing and two off is mostly the contest.'
         elif name == 'P3':
-            ok, want = vp < vo and part(rp, 'own') > part(ro, 'own'), "Pressing removes most of what's left after the sideline and baseline."
+            ok, want = hp is not None and ho is not None and hp < ho, "Pressing removes most of what's left after the sideline and baseline."
         else:
-            ok, want = abs(vp - vo) <= 1, 'Pressing and standing off read about the same.'
+            ok, want = hp is not None and ho is not None and abs(hp - ho) <= 1, 'Pressing and standing off read about the same.'
         E.rec(name, name + ', ' + name + 'off', 'pass' if ok else 'fail',
-              f"{lp}. {lo}. Pressed minus two off, in what {d} removes: shot {ds:+.2f}, drives {dd:+.2f}, passes {dpz:+.2f}.", want)
+              f"With every arrow chosen by the number: pressed {hp}, two off {ho}. On the boards as written: {lp}. {lo}. "
+              f"Pressed minus two off, in what {d} removes: shot {ds:+.2f}, drives {dd:+.2f}, passes {dpz:+.2f}.", want)
+    # P5: every arrow pair of the pressing defender, the other four's arrows by the number; NW+N walls the west and gives
+    # up the east, toward X3's help; N+NE gives up the west, where only X2 can help, by leaving the Sharpshooter
+    pv = {a: (E.g('held', f'P5:{a}') or {}).get('value') for a in range(8)}
+    off5 = (E.g('held', 'P5off:None') or {}).get('value')
+    ok5 = None not in pv.values() and off5 is not None and pv[7] < off5 and pv[7] < pv[0]
+    E.rec('P5', 'P5', 'pass' if ok5 else 'fail',
+          f"Pressed, by arrow pair: {', '.join(f'{B.DIR_NAMES[a]}+{B.DIR_NAMES[(a + 1) % 8]} {pv[a]}' for a in range(8))}. Two off: {off5}. "
+          f"The control: pressed {(E.g('held', 'P5ctl:None') or {}).get('value')}, two off {(E.g('held', 'P5ctloff:None') or {}).get('value')}.",
+          'Pressing with the open side toward the help reads better than standing off, and better than giving up the side with no help.')
 
 
 def race_checks(E):

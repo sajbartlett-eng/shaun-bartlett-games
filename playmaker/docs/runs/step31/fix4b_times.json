@@ -1,0 +1,45 @@
+{
+ "fix 4 (before)": {
+  "E13 turn": 14075,
+  "E1 stances": 133995,
+  "E15b offence_setup": 112731
+ },
+ "fix 4b (after)": {
+  "E13 turn": {
+   "ms": 15066,
+   "res": {
+    "x": null,
+    "arrows": null,
+    "value": null
+   }
+  },
+  "E1 stances": {
+   "ms": 90812,
+   "res": {
+    "x": [
+     "I5",
+     "E7",
+     "D3",
+     "G2",
+     "L6"
+    ],
+    "arrows": [
+     6,
+     5,
+     0,
+     6,
+     5
+    ],
+    "value": 21
+   }
+  },
+  "E15b offence_setup": {
+   "ms": 256340,
+   "res": {
+    "x": null,
+    "arrows": null,
+    "value": 29.375
+   }
+  }
+ }
+}

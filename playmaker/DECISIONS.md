@@ -1968,6 +1968,19 @@ handler nobody guards gets the open lane's race with no chaser. Also: the start-
 report says what beats the shot when playing on reads more. Proof boards P1 to P4 (tests/exam_boards.py), the exam's
 P checks. · Source: Shaun, 27 Nov 2026 (fix 4) · **Built**, except the Steal as the answer to a shot (not built).
 
+**D-313. Pressure controls direction; the race reads the advantages the offence can create, after the answer (fix 4b).**
+The rules stay: a slower defender pressing a quicker guard can't stop him getting past, so his job is direction and
+space (Shaun, 27 Nov 2026). Arrows are chosen by the number, never by a rule of thumb: each defender takes the pair that
+leaves the offence's whole number lowest, with his square, and the stance search reads all five together (each
+defender's square and every arrow pair, round after round with the others as they stand, until none lowers it; a pair
+swapping squares now reads every arrow pair for each of the two). The race reads what the offence can create, not only
+what exists now: a Dribble on his man from next to him (where he stands, or one Move on), at the rules' chance, this
+phase if the offence has the actions, else the next; and speed in the next phase, the help as it stands then. The race
+is read after the defence's answer, on the board it leaves, each answering defender with his Move spent; an answer
+movement is kept only if the number still doesn't rise with the races read again. The on-ball defender is the one
+guarding the ball; who removes the most decides who should guard it when matchups are set. G5 is read on boards where the
+backdoor cuts are covered (E23d to E23f). Proof boards P1 to P5. · Source: Shaun, 27 Nov 2026 (fix 4b) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

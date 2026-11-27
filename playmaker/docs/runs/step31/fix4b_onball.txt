@@ -1,0 +1,26 @@
+P1               value     30 | X ['I9', 'D8', 'A7', 'K4', 'H4'] ['N+NE', 'N+NE', 'E+SE', 'NE+E', 'W+NW'] | shot 12 drives 30 passes 25.5 | reach 6 | races [('speed', 'E6', 30), ('Dribble', 'I10', 30), ('speed next phase', 'E6', 30)] | 64830 ms
+P1off            value 26.4762 | X ['I8', 'L8', 'C8', 'D5', 'J4'] ['NW+N', 'SW+W', 'N+NE', 'SW+W', 'NE+E'] | shot 21.23 drives 26.48 passes 25 | reach 11 | races [('speed', 'M9', 20), ('Dribble', 'I9', 24.75), ('speed next phase', 'M9', 20)] | 163875 ms
+                 speed: X2 contain (shot then 12.25), leaves O4 worth 20
+                 speed next phase: X2 contain (shot then 12.25), leaves O4 worth 20
+P2               value 29.9063 | X ['I5', 'I7', 'I3', 'C4', 'D9'] ['N+NE', 'SE+S', 'N+NE', 'N+NE', 'N+NE'] | shot 22 drives 27 passes 27.6 | reach 5 | races [('Dribble', 'I6', 30)] | 100083 ms
+P2off            value     27 | X ['I4', 'F8', 'J5', 'A5', 'H3'] ['NE+E', 'E+SE', 'SW+W', 'N+NE', 'N+NE'] | shot 23.45 drives 27 passes 26.25 | reach 7 | races [('partial lane', 'I6', 20), ('speed', 'G4', 24), ('Dribble', 'H5', 28), ('speed next phase', 'G4', 24)] | 61149 ms
+                 partial lane: X3 contain (shot then 9.85), leaves O2 worth 20
+                 speed: X5 contain (shot then 6.55), leaves O2 worth 24
+                 speed next phase: X5 contain (shot then 6.55), leaves O2 worth 24
+P3               value 26.7484 | X ['G3', 'H6', 'E8', 'B4', 'K3'] ['N+NE', 'NW+N', 'W+NW', 'S+SW', 'N+NE'] | shot 18 drives 23.13 passes 24 | reach 4 | races [('speed', 'D2', 22), ('Dribble', 'A3', 27), ('speed next phase', 'D2', 22)] | 83668 ms
+P3off            value     27 | X ['E8', 'I6', 'F1', 'C5', 'J4'] ['SE+S', 'E+SE', 'N+NE', 'N+NE', 'E+SE'] | shot 23.14 drives 27 passes 26 | reach 11 | races [('open lane', 'A3', 27), ('speed', 'E3', 22), ('Dribble', 'B4', 27), ('speed next phase', 'E3', 22)] | 85858 ms
+P4               value     27 | X ['I12', 'A7', 'B8', 'J5', 'H6'] ['N+NE', 'E+SE', 'E+SE', 'NE+E', 'W+NW'] | shot None drives 27 passes 24 | reach 6 | races [('speed', 'D11', 27), ('Dribble', 'H11', 27), ('speed next phase', 'D11', 27)] | 156858 ms
+P4off            value 26.7188 | X ['I11', 'N7', 'D10', 'D5', 'H4'] ['N+NE', 'W+NW', 'NE+E', 'SW+W', 'W+NW'] | shot None drives 25.2 passes 23.63 | reach 13 | races [('Dribble', 'H11', 27)] | 99867 ms
+P5        N+NE   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['N+NE', 'E+SE', 'NE+E', 'NE+E', 'SE+S'] | shot 12 drives 38 passes 35.33 | reach 6 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 9801 ms
+P5        NE+E   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['NE+E', 'NW+N', 'W+NW', 'E+SE', 'SE+S'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 13935 ms
+P5        E+SE   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['E+SE', 'NW+N', 'W+NW', 'E+SE', 'SE+S'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 14386 ms
+P5        SE+S   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['SE+S', 'NW+N', 'W+NW', 'E+SE', 'SW+W'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 14540 ms
+P5        S+SW   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['S+SW', 'NW+N', 'W+NW', 'E+SE', 'SW+W'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 15266 ms
+P5        SW+W   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['SW+W', 'NW+N', 'W+NW', 'E+SE', 'SE+S'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 13958 ms
+P5        W+NW   value     38 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['W+NW', 'NW+N', 'W+NW', 'E+SE', 'SE+S'] | shot 18.69 drives 38 passes 36 | reach 12 | races [('speed', 'E6', 36), ('Dribble', 'H8', 36), ('speed next phase', 'E6', 36)] | 13504 ms
+P5        NW+N   value     36 | X ['I9', 'D8', 'L6', 'B4', 'P4'] ['NW+N', 'E+SE', 'SW+W', 'N+NE', 'SW+W'] | shot 12 drives 36 passes 35 | reach 6 | races [('speed', 'K5', 36), ('Dribble', 'H10', 36), ('speed next phase', 'K5', 36)] | 11483 ms
+P5off            value     38 | X ['I8', 'D8', 'L6', 'B4', 'P4'] ['NE+E', 'E+SE', 'W+NW', 'E+SE', 'SW+W'] | shot 21.51 drives 38 passes 35.33 | reach 11 | races [('partial lane', 'I10', 36), ('speed', 'M7', 29.23), ('Dribble', 'H8', 36), ('speed next phase', 'M7', 29.23)] | 16721 ms
+                 speed: X3 contain (shot then -0.05), leaves O3 worth 29.23
+                 speed next phase: X3 contain (shot then -0.05), leaves O3 worth 29.23
+P5ctl            value     36 | X ['I12', 'D8', 'L6', 'B4', 'P4'] ['NW+N', 'NE+E', 'NW+N', 'W+NW', 'SW+W'] | shot None drives 36 passes 29.14 | reach 6 | races [('speed', 'K8', 36), ('Dribble', 'H13', 36), ('speed next phase', 'K8', 36)] | 13764 ms
+P5ctloff         value 35.9375 | X ['I11', 'D8', 'L6', 'B4', 'P4'] ['N+NE', 'E+SE', 'W+NW', 'N+NE', 'SW+W'] | shot None drives 34 passes 34 | reach 13 | races [('Dribble', 'H11', 36)] | 10700 ms

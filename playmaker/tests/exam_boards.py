@@ -78,6 +78,15 @@ P_BASE = {
 }
 
 
+P5_X = ['I9', 'D8', 'L6', 'B4', 'P4']
+
+
+def _p5(o1, x1):
+    o, xs = list(P_O), list(P5_X)
+    o[0], xs[0] = o1, x1
+    return board('Race five', 'Iron Wall', o, xs)
+
+
 def _p(ball_sq, ball, x_sq, arrow, base):
     """A P board: the ball handler (piece `ball`) on ball_sq, his defender on x_sq with his first arrow `arrow`, the
     other four on the base positions."""
@@ -125,6 +134,12 @@ BOARDS = {
     'E23a': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'F6', 'L6', 'G12', 'K12']),
     'E23b': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'D8', 'L6', 'G12', 'K12']),
     'E23c': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'D8', 'N8', 'G12', 'K12']),
+    # fix 4b (Shaun, 27 Nov 2026): G5 on a board where the backdoor cuts are covered: O4 and O5 stand deep with no shot,
+    # so their defenders help on the low blocks (G4, K4), in front of both cuts. Then covering one of two equal threes
+    # is what the check tests.
+    'E23d': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'F6', 'L6', 'G4', 'K4']),
+    'E23e': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'D8', 'L6', 'G4', 'K4']),
+    'E23f': lambda: board('Two equal', 'Iron Wall', ['I11', 'C9', 'O9', 'G13', 'K13'], ['I10', 'D8', 'N8', 'G4', 'K4']),
     'E24': lambda: board('Five Out, big centre', 'Iron Wall', ['K9', 'C9', 'I12', 'A3', 'Q3'], ['K8', 'D8', 'P4', 'B4', 'N4'], clock=10, side='X'),
     'E26': lambda: board('Speed', 'Iron Wall', SPREAD),
     'E26b': lambda: board('Speed, wings swapped', 'Iron Wall', SPREAD),
@@ -245,4 +260,12 @@ BOARDS.update({
     'P3off': lambda: _p('A3', 3, 'C5', 'SW', P_BASE['P3']),
     'P4': lambda: _p('I13', 0, 'I12', 'N', P_BASE['P4']),   # the control: deep, on plain wood (no shot from there)
     'P4off': lambda: _p('I13', 0, 'I11', 'N', P_BASE['P4']),
+    # ---- fix 4b (Shaun, 27 Nov 2026): a slower defender (X1, 1 Quick Step) on a quicker guard (O1, 2) at the top,
+    # help on one side only: on the right X3 sags off O3 (Rim Runner C, three 5) into the lane; on the left X2 stays
+    # on the Sharpshooter (O2, three 11), so any help there leaves him. Pressed (I9) and two off (I8); the control as
+    # P4 (O1 deep on I13). The arrows are the number's: the proof reads every pair (tools/step_31_exam.py, P5).
+    'P5': lambda: _p5('I10', 'I9'),
+    'P5off': lambda: _p5('I10', 'I8'),
+    'P5ctl': lambda: _p5('I13', 'I12'),
+    'P5ctloff': lambda: _p5('I13', 'I11'),
 })

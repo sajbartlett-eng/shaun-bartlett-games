@@ -6417,7 +6417,8 @@ const PMEngine = (() => {
       go(0, 0); }
     const guard = [-1, -1, -1, -1, -1]; for (let d = 0; d < 5; d++) if (ONB[s.x[d]]) guard[man[d]] = d;   // (fix 4: a defender off the court guards nobody)
     const DQ = [], DM = [];                               // each defender's phases, with and without Quick Steps
-    for (let e = 0; e < 5; e++) { const q = ctx.dfn[e].qs; DQ.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], true, qd0 > 0, true) : null); DM.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], true, false, false) : null); }
+    // (fix 4b: one Move a phase: a defender who has moved this phase, in the answer or before it, has no Move left in it)
+    for (let e = 0; e < 5; e++) { const q = ctx.dfn[e].qs, mv = !hasMoved(sr, 'X', e); DQ.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], mv, qd0 > 0, true) : null); DM.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], mv, false, false) : null); }
     const shots = new Map(), shot = sq => { let v = shots.get(sq); if (!v) { const z = szone(ctx, sq); if (!SHOOT(z) || (ctx.noRim && sq === RIM)) v = { lk: null, z, pts: 0, open: [] }; else { const lk = makeLook(b, sq, 'later', 1.0, false); lk.types = ZONE_SHOTS[z]; lk.rushed = false; v = { lk, z, pts: ctx.worth[z], open: lk.types.map(ty => ctx.worth[z] * cardShot(ctx, ctx.off[b], ty, sq)) }; } shots.set(sq, v); } return v; };   // (no shot from a square nobody may shoot from)
     const vs = (sq, e, set) => { const sh = shot(sq); if (!sh.lk) return -Infinity; const cv = mapVals(r, sh.lk, e, set ? (W_K0 | (W_K0 << 6)) : W_K0, undefined); let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const v = cv && cv[t] < sh.open[t] ? cv[t] : sh.open[t]; if (v > hi) hi = v; } return hi; };
     const chaseV = (sq, j, pen, rushed) => { const sh = shot(sq), dc = ctx.dfn[j]; let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const ty = sh.lk.types[t], rr = cardShot(ctx, ctx.off[b], ty, sq); let con = dc.cn[ty] - pen - (rushed ? 2 : 0); if (con < 1) con = 1; const v = Math.max(0, sh.pts * (rr - con)); const u = v < sh.open[t] ? v : sh.open[t]; if (u > hi) hi = u; } return hi; };
@@ -6452,11 +6453,14 @@ const PMEngine = (() => {
     // fix 3d: a state after phase 0 turns only on the chaser (who he is and his phases), never on how the race began,
     // so races with the same chaser share those states. moveFirst false: no movement left to the handler in phase 0.
     const shared = new Map();
-    const race = (c0, j, dj, dmj, qoFirst, firstOk, w0, moveFirst = true, caps = caps0) => {
+    // fix 4b: t0, the phase the advantage comes in (0 this phase, 1 the next: one the offence creates next phase). Every
+    // arrival (the chaser's, the help's) counts from then, with the help as it stands then. moveFirst: true, his Move
+    // still his in that phase; 'qs', only his Quick Step (his Move took him next to his man for the Dribble); false, nothing.
+    const race = (c0, j, dj, dmj, qoFirst, firstOk, w0, moveFirst = true, caps = caps0, t0 = 0) => {
       let sh = shared.get(dj); if (!sh) { sh = { memo: new Map() }; shared.set(dj, sh); }
       const memo0 = new Map(), st0 = new Map();
-      const step0 = p => { let h = st0.get(p); if (!h) { h = stepCap(p, ctx.off[b].qs, s.o[b], true, qoFirst > 0, caps); st0.set(p, h); } return h; };
-      const MEM = t => (t >= 1 ? sh.memo : memo0);
+      const step0 = p => { let h = st0.get(p); if (!h) { h = stepCap(p, ctx.off[b].qs, s.o[b], moveFirst !== 'qs', qoFirst > 0, caps); st0.set(p, h); } return h; };
+      const MEM = t => (t > t0 ? sh.memo : memo0);
       // (fix 3d, memory: each state keeps only its worth; the choice table is built again for the line the report shows.
       // No state leans on itself (carry and hesitate go a phase on, a fake spends a helper), so that rebuild is exact.)
       const V = (t, c, spent, w) => {
@@ -6469,11 +6473,12 @@ const PMEngine = (() => {
       const node = (t, c, spent, w) => {
         const opts = [];
         let chase = Infinity, chaseHow = null;
-        for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = dj.get(a); if (k === undefined || k > t) continue; const pen = t > 0 && DR[a] <= DR[c] ? 3 : 6, rushed = !(dmj.get(a) <= t);   /* (beaten: behind the ball in the phase of the advantage) */ const v = chaseV(c, j, pen, rushed); if (v < chase) { chase = v; chaseHow = { at: a, pen, rushed }; } }
+        const tl = t - t0;                              // (fix 4b: the phases since the advantage)
+        for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = dj.get(a); if (k === undefined || k > tl) continue; const pen = tl > 0 && DR[a] <= DR[c] ? 3 : 6, rushed = !(dmj.get(a) <= tl);   /* (beaten: behind the ball in the phase of the advantage) */ const v = chaseV(c, j, pen, rushed); if (v < chase) { chase = v; chaseHow = { at: a, pen, rushed }; } }
         const shootAlone = Math.min(chase, openV(c));
         const nxt = [];
-        if (t < T && t === 0 && !moveFirst) nxt.push(c);    // (no movement left: phase 0 ends with him here)
-        else if (t < T) for (const q of (t === 0 ? step0(c) : step(c, ctx.off[b].qs, s.o[b], true, true))) if (legal(q) && DR[q] < DR[c] && (t > 0 || firstOk(q))) nxt.push(q);
+        if (t < T && t === t0 && moveFirst === false) nxt.push(c);    // (no movement left: the phase ends with him here)
+        else if (t < T) for (const q of (t === t0 ? step0(c) : step(c, ctx.off[b].qs, s.o[b], true, true))) if (legal(q) && DR[q] < DR[c] && (t > t0 || firstOk(q))) nxt.push(q);
         nxt.sort((x, y) => x - y);
         let carry = -Infinity, carryTo = -1;
         for (const q of nxt) { const v = V(t + 1, q, spent, 0); if (v > carry) { carry = v; carryTo = q; } }
@@ -6485,22 +6490,22 @@ const PMEngine = (() => {
           if (e === j || ((spent >> e) & 1) || !DQ[e]) continue;
           let kc2 = Infinity, km = Infinity;
           for (const f of front(c)) { const k = DQ[e].get(f); if (k !== undefined && k < kc2) kc2 = k; const k2 = DM[e].get(f); if (k2 !== undefined && k2 < km) km = k2; }
-          if (kc2 <= t) {                               // he contains: in front in time
-            const set = km <= t, sh = Math.min(vs(c, e, set), chase), kk = kick(c, e);
-            const fk = kc2 >= 1 && kc2 === t && !w ? V(t, c, spent | (1 << e), 1) : -Infinity;   // he had to move to get there: the fake beats it
+          if (kc2 <= tl) {                              // he contains: in front in time
+            const set = km <= tl, sh = Math.min(vs(c, e, set), chase), kk = kick(c, e);
+            const fk = kc2 >= 1 && kc2 === tl && !w ? V(t, c, spent | (1 << e), 1) : -Infinity;   // he had to move to get there: the fake beats it
             opts.push({ by: e, how: set ? 'contain' : 'contain, rushed', shoot: sh, kick: kk, fake: fk, worth: Math.max(sh, kk.v, fk) });
             continue;
           }
           let ka = Infinity; for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = DQ[e].get(a); if (k !== undefined && k < ka) ka = k; }
-          if (ka <= t) { const sh = Math.min(vs(c, e, false), chase), kk = kick(c, e); opts.push({ by: e, how: 'help late', shoot: sh, kick: kk, carry, worth: Math.max(sh, kk.v, carry) }); }
+          if (ka <= tl) { const sh = Math.min(vs(c, e, false), chase), kk = kick(c, e); opts.push({ by: e, how: 'help late', shoot: sh, kick: kk, carry, worth: Math.max(sh, kk.v, carry) }); }
         }
         let best = opts[0];
         for (const o of opts) if (o.worth < best.worth - 1e-12) best = o;
         return { t, c, spent, w, chase: chase === Infinity ? null : chase, chaseHow, opts, pick: best };
       };
-      const v0 = V(0, c0, 0, w0 ? 1 : 0);
+      const v0 = V(t0, c0, 0, w0 ? 1 : 0);
       const phases = [];                                 // the line the number reads: each side's choice phase by phase
-      let t = 0, c = c0, sp = 0, w = w0 ? 1 : 0;
+      let t = t0, c = c0, sp = 0, w = w0 ? 1 : 0;
       for (let guardN = 0; guardN < 12; guardN++) {
         if (!MEM(t).has(((t * NSQ + c) * 32 + sp) * 2 + w)) break;
         const tr = node(t, c, sp, w);
@@ -6546,7 +6551,7 @@ const PMEngine = (() => {
       out.push({ kind: 'open lane', beaten: -1, start: h0, p: 1, ...K.race(h0, -1, none, none, K.qo0, all, K.w0) });
       return fin(out);
     }
-    const qj = ctx.dfn[jm].qs, djFull = K.bfs(s.x[jm], qj, s.x[jm], true, K.qd0 > 0, true), dmFull = K.bfs(s.x[jm], qj, s.x[jm], true, false, false);
+    const mvj = !hasMoved(sr, 'X', jm), qj = ctx.dfn[jm].qs, djFull = K.bfs(s.x[jm], qj, s.x[jm], mvj, K.qd0 > 0, true), dmFull = K.bfs(s.x[jm], qj, s.x[jm], mvj, false, false);
     // an open lane: his man's zone doesn't cover the straight line in
     const cov = new Set([s.x[jm]]);
     { const dc = ctx.dfn[jm], arrs = ctx.zone ? [s.arrows[jm], (s.arrows[jm] + 1) % 8] : [s.arrows[jm]];
@@ -6579,6 +6584,48 @@ const PMEngine = (() => {
       }
       if (best) out.push(best);
     }
+    // fix 4b (Shaun, 27 Nov 2026): the advantages the offence can create, not only those that exist now.
+    //   a Dribble: from next to his man (where he stands, or one Move on), at the rules' chance (Dribble less his
+    //   Agility). Won, his man is locked and his zone broken, and the race goes on from there: in this phase if the
+    //   offence has the actions for it, else in the next.
+    //   speed in the next phase: from where he stands, his man where he stands then, with the help as it stands then.
+    if (ONB[s.x[jm]]) {
+      const xj = s.x[jm], qn = ctx.dfn[jm].qs, capsB = K.capsFor(jm);
+      const apps = move => {                           // [square, his Move kept]
+        const o2 = []; if (cheb(h0, xj) === 1) o2.push([h0, true]);
+        if (move) for (const pa of movePaths(h0)) if (pa.every(q => ONB[q] && !K.occ.has(q)) && K.wallOk(K.caps0, h0, pa)) { const d = pa[pa.length - 1]; if (cheb(d, xj) === 1 && !o2.some(z => z[0] === d)) o2.push([d, false]); }
+        return o2.sort((x, y) => x[0] - y[0]);
+      };
+      const dribble = (t0, pWin, tok) => {
+        let best = null;
+        const djB = K.bfs(xj, qn, xj, false, t0 === 0 ? K.qd0 > 0 : true, true), dmB = K.bfs(xj, qn, xj, false, false, false);
+        for (const [sa, keeps] of apps(tok >= 2)) {
+          const rc = K.race(sa, jm, djB, dmB, t0 === 0 ? K.qo0 : LIMITS.O.qs, all, t0 === 0 ? K.w0 : false, keeps ? true : 'qs', capsB, t0);
+          if (!best || rc.v > best.v) best = { kind: t0 ? 'Dribble next phase' : 'Dribble', beaten: jm, start: sa, p: pWin, start_by: keeps ? 'from where he stands' : 'a Move next to him first', ...rc };
+        }
+        if (best && best.p > 0) out.push(best);
+      };
+      const dribNow = sr.tok_o > 0 && count(sr, 'O', 'dribble') < LIMITS.O.dribble && !(sr.inbound && b === ctx.inbounder) && !isLocked(sr, 'O', b) && !(ctx.guarded && (sr.grd & 3) === 2);
+      if (dribNow) dribble(0, pS(rolled(sr, 'O', b, 'dribble') - rolled(sr, 'X', jm, 'agility')), sr.tok_o);
+      else if (T >= 1) dribble(1, pS(ctx.off[b].r.dribble - ctx.dfn[jm].r.agility), 6);
+      if (T >= 1 && ctx.off[b].qs > 0) {             // speed in the next phase
+        const qs = ctx.off[b].qs, starts = new Map(), how = new Map(), qsDest = [], clearO = pa => pa.every(q => ONB[q] && !K.occ.has(q)) && K.wallOk(K.caps0, h0, pa);
+        for (const pa of qsPaths(h0, qs)) if (clearO(pa)) { const d = pa[pa.length - 1]; if (!starts.has(d)) { starts.set(d, true); how.set(d, 'Quick Step'); qsDest.push(d); } }
+        for (const s1 of qsDest.slice().sort((x, y) => x - y)) for (const pa of movePaths(s1)) if (pa.every(q => ONB[q] && (q === h0 || !K.occ.has(q))) && K.wallOk(K.caps0, s1, pa)) { const d = pa[pa.length - 1]; if (d !== h0 && !starts.has(d)) { starts.set(d, false); how.set(d, 'Quick Step, then Move'); } }
+        for (const [, pa] of sprintPaths(h0, qs)) if (clearO(pa)) { const d = pa[pa.length - 1]; if (!starts.has(d)) { starts.set(d, false); how.set(d, 'Sprint'); } }
+        const djN = K.bfs(xj, qn, xj, true, true, true), dmN = K.bfs(xj, qn, xj, true, false, false);
+        let best = null;
+        for (const s1 of [...starts.keys()].sort((x, y) => x - y)) {
+          if (!K.legal(s1) || DR[s1] >= DR[h0]) continue;
+          let reach = false; for (let d = 0; d < 8; d++) { const f = s1 + DSTEP[d]; if (ONB[f] && DR[f] < DR[s1] && djN.get(f) !== undefined && djN.get(f) <= 1) reach = true; }
+          if (reach) continue;
+          if (best && K.ceil(s1) <= best.v) continue;
+          const rc = K.race(s1, jm, djN, dmN, 0, all, false, starts.get(s1), K.caps0, 1);
+          if (!best || rc.v > best.v) best = { kind: 'speed next phase', beaten: jm, start: s1, p: 1, keeps_move: starts.get(s1), start_by: how.get(s1), ...rc };
+        }
+        if (best) out.push(best);
+      }
+    }
     return fin(out);                                   // (fix 3d: the fake mix reads its races with the same kit)
   }
   const r2 = v => (v === -Infinity || v === Infinity || v === undefined || v === null ? null : +v.toFixed(2));
@@ -6594,7 +6641,7 @@ const PMEngine = (() => {
     x.look = { a: b, c: h0, q0: h0, rushed: true, r: x.p, open: [x.v], v: x.v, w: x.v, adj: 0, lc: 0, dr: true, p0: 0, n0: 2, id: 900000 + out9(x.kind) * 8 + x.beaten + 1, race: true, vals: [null, null, null, null, null] };
     return x;
   }
-  const out9 = k => (k === 'Dribble won' ? 0 : k === 'open lane' ? 1 : k === 'partial lane' ? 2 : 3);
+  const out9 = k => (k === 'Dribble won' ? 0 : k === 'open lane' ? 1 : k === 'partial lane' ? 2 : k === 'speed' ? 3 : k === 'Dribble' ? 4 : k === 'Dribble next phase' ? 5 : k === 'speed next phase' ? 6 : 7);
   function possRead(m, s0, lastPhase, noAnswer, probe) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
     const owed = threeSecondsLeave(s0 || s), r = m.r, soft = s.ctx.soft;
@@ -6604,7 +6651,8 @@ const PMEngine = (() => {
     const L = []; for (const o of m.options) if (o.r > 0) L.push(o);
     const mapL = L.slice(), srR = s0 || m.s;
     const races = driveRaces(m, mapL, Math.min(3, k + 1), srR);   // fix 3c: each drive from an advantage, read by its race, is one more look
-    for (const rc of races) L.push(rc.look);
+    const raceBase = L.length, raceAt = new Map();   // (fix 4b: each race look's place, to read it again after the answer)
+    for (const rc of races) { raceAt.set(rc.kind + ':' + rc.beaten, L.length); L.push(rc.look); }
     const n = L.length, K = k + 1;
     // (the three seconds are counted once: a man who can't get out is charged his -5 by possParts, so his own look in
     // the key doesn't carry it again. Scale audit, row 11.)
@@ -7243,6 +7291,9 @@ const PMEngine = (() => {
       }
       if (best === null) break;
       const { d, q, a, cm } = best;
+      // (fix 4b: what this movement changes, kept so it can be taken back if the race read after it says no)
+      const snap = { SV: SV.map(r => r.slice()), SVK: SVK.map(r => r.slice()), SVL: split ? SVL.map(r => r.slice()) : null, gone: gone.slice(), goneK: goneK.slice(), goneL: split ? goneL.slice() : null,
+        SV0: SV0.map(r => r.slice()), mv: movedAt[d], U, rl: raceAt.size ? [...raceAt.values()].map(i => [L[i].open[0], L[i].v, L[i].w, L[i].r, races[i - raceBase]]) : null };
       for (let i = 0; i < n; i++) {
         const nv = sval(i, d, cm[lc[i]]);
         if (L[i].c === q) gone[i] = 1;
@@ -7259,6 +7310,28 @@ const PMEngine = (() => {
       moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
       U = runCur(null);
       if (Math.abs(U - best.u) > 1e-9) PVS.bad = (PVS.bad || 0) + 1;   // (a guard: the reading by difference must equal the full reading of the board after the movement)
+      // fix 4b (Shaun, 27 Nov 2026): the drive's race is read after the defence's answer, on the board the answer
+      // leaves (each movement's defender with his Move spent). A movement is kept only if, with the races read again,
+      // the number still doesn't rise, and it opens no advantage the board didn't have that is worth more than it.
+      { const xs = Array.from(s.x), ar = Array.from(s.arrows); let sp = 0;
+        for (const [d2, q2, a2] of moves) { xs[d2] = q2; ar[d2] = a2; sp |= 1 << d2; }
+        const sA = W_(m.s, { x: xs, arrows: ar, moved_x: m.s.moved_x | sp }), srA = W_(srR, { x: xs, arrows: ar, moved_x: srR.moved_x | sp });
+        const ra = driveRaces(Object.assign({}, m, { s: sA }), mapL, Math.min(3, k + 1), srA), got = new Map();
+        for (const x of ra) got.set(x.kind + ':' + x.beaten, x);
+        let worse = false;
+        for (const [key, i] of raceAt) { const x = got.get(key); L[i].open[0] = L[i].v = L[i].w = x ? x.v : -Infinity; if (x) { L[i].r = x.p; x.look = L[i]; races[i - raceBase] = x; } }
+        for (const [key, x] of got) if (!raceAt.has(key) && x.p * x.v > U + 1e-9) worse = true;
+        const U2 = runCur(null);
+        if (worse || U2 > snap.U + 1e-9) {               // taken back: the answer stops before it
+          for (let i = 0; i < n; i++) { SV[i] = snap.SV[i]; SVK[i] = snap.SVK[i]; SV0[i] = snap.SV0[i]; if (split) SVL[i] = snap.SVL[i]; }
+          gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
+          if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
+          movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--;
+          Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
+          U = runCur(null);
+          break;
+        }
+        U = U2; }
     }
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
     let pick = -1, pe = -Infinity; const B = hist[K - 1];
@@ -7317,8 +7390,15 @@ const PMEngine = (() => {
     }
     let on = null;
     for (const x of rows) if (!on || x.own > on.own + 1e-9 || (Math.abs(x.own - on.own) <= 1e-9 && cheb(s.x[x.d], s.o[s.ball]) < cheb(s.x[on.d], s.o[s.ball]))) on = x;
+    // fix 4b (Shaun, 27 Nov 2026): the on-ball defender is the one guarding the ball (the pairing that keeps the five
+    // closest); who removes the most decides who should guard the ball when matchups are set
+    const man = [0, 1, 2, 3, 4]; { let best = Infinity; const pr = [0, 1, 2, 3, 4], used = [false, false, false, false, false];
+      const go = (d, sum) => { if (sum >= best) return; if (d === 5) { best = sum; for (let x = 0; x < 5; x++) man[x] = pr[x]; return; }
+        for (let a = 0; a < 5; a++) if (!used[a]) { used[a] = true; pr[d] = a; go(d + 1, sum + (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 0)); used[a] = false; } };
+      go(0, 0); }
+    const gb = man.findIndex((a, d) => a === s.ball && ONB[s.x[d]]);
     return { handler: 'O' + (s.ball + 1), options: { value: r2o(here.value), shot: r2o(here.shot), drives: r2o(here.drive), passes: r2o(here.pass), holding: +here.holding.toFixed(2) },
-      defenders: rows.map(x => ({ defender: x.defender, at: x.at, removes: x.removes })), on_ball: on ? on.defender : null };
+      defenders: rows.map(x => ({ defender: x.defender, at: x.at, removes: x.removes })), on_ball: gb >= 0 ? 'X' + (gb + 1) : null, removes_most: on ? on.defender : null };
   }
   function possParts(s) {                              // {V, k, bars, pick, m, ...}: the value of playing on (what is banked not counted)
     if (s.stage !== 'play') return { V: SHOT_CLOCK_OUT, k: 0, bars: [SHOT_CLOCK_OUT], pick: null, m: null, moves: [] };
@@ -7610,6 +7690,16 @@ const PMEngine = (() => {
     const sb = stanceBase(s, man), lines = sb.lines;      // (each defender's line from his man to the weight he would help)
     if (!opts.from) { start = 'base'; s = sb.s; }
     else s = W_(s, { x: opts.from.x.slice(), arrows: opts.from.arrows.slice() });
+    // fix 4b: opts.hold {d, q, a}: defender d stays on q (a board's question: pressed, or two off); his arrows are read
+    // with everyone else's unless a is given. The others are searched around him.
+    const hold = opts.hold || null;
+    if (hold) {
+      const e = s.x.indexOf(hold.q);
+      if (e >= 0 && e !== hold.d) s = put(s, e, s.x[hold.d], nearestDir(s.x[hold.d], s.o[man[e]]));
+      s = put(s, hold.d, hold.q, hold.a != null ? hold.a : nearestDir(hold.q, s.o[man[hold.d]]));
+    }
+    const fixSq = !!opts.fixSquares;                    // (fix 4b: every square as the board has it; only arrows are read)
+    const held = d => fixSq || (hold && hold.d === d), heldArrow = d => hold && hold.d === d && hold.a != null;
     const base = { x: Array.from(s.x), arrows: Array.from(s.arrows) };
     let cur = stanceRead(s), rounds = 0;
     for (;;) {
@@ -7619,6 +7709,7 @@ const PMEngine = (() => {
       for (let guard = 0; cur.moves.length; guard++) {
         if (guard > 200) throw new Error('the stance search did not settle (part 1)');
         const [d, q, a] = cur.moves[0];
+        if (held(d) && (q !== s.x[d] || heldArrow(d))) break;     // (fix 4b: the held defender keeps his square)
         const t = put(s, d, q, a), v = stanceRead(t);
         if (!stanceLess(v, cur)) break;
         steps.push({ d, from: sqName(s.x[d]), to: sqName(q), arrow: a, value: +v.U.toFixed(4), by: 'the answer' });
@@ -7631,16 +7722,17 @@ const PMEngine = (() => {
       // where they stand, never the order the defenders are listed in.)
       for (const d of [0, 1, 2, 3, 4].sort((u, v) => s.x[u] - s.x[v])) {
         let best = null;
+        if (heldArrow(d)) continue;
         const here = s.x[d], mq = s.o[man[d]], line = new Set(lines[d]);
         const sqs = [];
-        for (let q = 0; q < NSQ; q++) {
+        for (let q = 0; q < NSQ && !held(d); q++) {
           if (!ONB[q] || q === here || s.x.includes(q) || s.o.includes(q)) continue;
           if (cheb(q, mq) <= STANCE_NEAR || cheb(q, here) <= STANCE_STEP || line.has(q)) sqs.push(q);
         }
         const cands = []; for (const q of sqs) for (let a = 0; a < 8; a++) cands.push([q, a]);
         const est = cands.length ? stanceProbe(s, d, cands) : [];
         const rank = sqs.map((q, i) => { let lo = Infinity; for (let a = 0; a < 8; a++) if (est[i * 8 + a] < lo) lo = est[i * 8 + a]; return [lo, q]; }).sort((x, y) => (x[0] - y[0]) || (x[1] - y[1]));
-        const full = [here].concat(rank.slice(0, STANCE_TOP).map(z => z[1]));
+        const full = held(d) ? [here] : [here].concat(rank.slice(0, STANCE_TOP).map(z => z[1]));
         STANCE_STATS.probed += cands.length;
         for (const q of full) {
           for (let a = 0; a < 8; a++) {
@@ -7651,13 +7743,21 @@ const PMEngine = (() => {
         }
         if (best) { steps.push({ d, from: sqName(here), to: sqName(best.q), arrow: best.a, value: +best.v.U.toFixed(4), by: 'his own stance' }); s = put(s, d, best.q, best.a); cur = best.v; changed = true; }
       }
-      // two together (D-295): a pair swapping squares, each then facing the man nearest him
-      if (!changed) {
+      // two together (D-295): a pair swapping squares. fix 4b (Shaun, 27 Nov 2026: "arrows are chosen by the number,
+      // never by a rule of thumb"): each of the two then takes the arrows the number reads lowest, every pair read for
+      // him with the other as he then stands (before: each faced the man nearest him)
+      if (!changed && !fixSq) {
         const near = q => { let b = 0; for (let a = 1; a < 5; a++) if (cheb(q, s.o[a]) < cheb(q, s.o[b])) b = a; return b; };
         let bv = null, bt = null, bp = null;
         for (let d = 0; d < 5; d++) for (let e = d + 1; e < 5; e++) {
-          const t = W_(s, { x: setAt(setAt(s.x, d, s.x[e]), e, s.x[d]), arrows: setAt(setAt(s.arrows, d, nearestDir(s.x[e], s.o[near(s.x[e])])), e, nearestDir(s.x[d], s.o[near(s.x[d])])) });
-          const v = stanceRead(t);
+          if (held(d) || held(e)) continue;
+          let t = W_(s, { x: setAt(setAt(s.x, d, s.x[e]), e, s.x[d]), arrows: setAt(setAt(s.arrows, d, nearestDir(s.x[e], s.o[near(s.x[e])])), e, nearestDir(s.x[d], s.o[near(s.x[d])])) });
+          let v = stanceRead(t);
+          for (const f of [d, e]) for (let a = 0; a < 8; a++) {
+            if (a === t.arrows[f]) continue;
+            const t2 = W_(t, { arrows: setAt(t.arrows, f, a) }), v2 = stanceRead(t2);
+            if (stanceLess(v2, v)) { t = t2; v = v2; }
+          }
           if (stanceLess(v, bv || cur)) { bv = v; bt = t; bp = [d, e]; }
         }
         if (bv) { steps.push({ swap: bp, value: +bv.U.toFixed(4), by: 'two together' }); s = bt; cur = bv; changed = true; const mm = man[bp[0]]; man[bp[0]] = man[bp[1]]; man[bp[1]] = mm; }
@@ -7963,7 +8063,8 @@ const PMEngine = (() => {
       return { squares: r.o.map(sqName), ball: r.ball, value: +r.value.toFixed(4), quick: +r.quick.toFixed(4), defence: { x: r.defence.x.map(sqName), arrows: r.defence.arrows }, ranked: r.ranked, candidates: r.candidates, reads: r.reads, scout: r.scout };
     }
     if (opts.only === 'stances') {                        // step 31, stage 3: the defence's five stances for this board
-      const st = stanceSearch(s0, { from: opts.from ? { x: opts.from.x.map(parseSq), arrows: opts.from.arrows } : null, man: opts.man || null });
+      const st = stanceSearch(s0, { from: opts.from ? { x: opts.from.x.map(parseSq), arrows: opts.from.arrows } : null, man: opts.man || null,
+        hold: opts.hold ? { d: opts.hold.d, q: parseSq(opts.hold.q), a: opts.hold.a == null ? null : opts.hold.a } : null, fixSquares: !!opts.fix_squares });
       const fin = W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [], x: st.x, arrows: st.arrows });
       const lifted = [0, 1, 2, 3, 4].map(d => +(stanceRead(W_(fin, { x: setAt(fin.x, d, OFFSQ) })).U - st.value).toFixed(4));
       return { x: st.x.map(sqName), arrows: st.arrows, value: +st.value.toFixed(4), answer: st.answer, top: st.top, lifted, routes: st.vec.map(v => (isFinite(v) ? +v.toFixed(2) : null)), base: { x: st.base.x.map(sqName), arrows: st.base.arrows },

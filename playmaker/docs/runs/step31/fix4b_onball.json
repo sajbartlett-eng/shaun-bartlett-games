@@ -1,0 +1,1400 @@
+[
+ {
+  "board": "P1",
+  "arrow": null,
+  "search_ms": 64830,
+  "x": [
+   "I9",
+   "D8",
+   "A7",
+   "K4",
+   "H4"
+  ],
+  "arrows": [
+   "N+NE",
+   "N+NE",
+   "E+SE",
+   "NE+E",
+   "W+NW"
+  ],
+  "value": 30,
+  "stance_value": 30,
+  "options": {
+   "value": 30,
+   "shot": 12,
+   "drives": 30,
+   "passes": 25.5,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 15,
+   "drives": 0,
+   "passes": 4.5,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X5",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 30,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "I10",
+    "worth": 30,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 30,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P1off",
+  "arrow": null,
+  "search_ms": 163875,
+  "x": [
+   "I8",
+   "L8",
+   "C8",
+   "D5",
+   "J4"
+  ],
+  "arrows": [
+   "NW+N",
+   "SW+W",
+   "N+NE",
+   "SW+W",
+   "NE+E"
+  ],
+  "value": 26.4762,
+  "stance_value": 26.4762,
+  "options": {
+   "value": 26.48,
+   "shot": 21.23,
+   "drives": 26.48,
+   "passes": 25,
+   "holding": 0
+  },
+  "removes": {
+   "own": 6.52,
+   "value": 7.52,
+   "shot": 2.53,
+   "drives": 6.52,
+   "passes": 6.5,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X5",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "I9",
+   "J8",
+   "J9",
+   "K8",
+   "K9"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "M9",
+    "worth": 20,
+    "help": [
+     {
+      "helper": "X2 contain",
+      "shot_if_he_contains": 12.25,
+      "leaves": "O4",
+      "the_man_left_worth": 20,
+      "worth": 20
+     }
+    ]
+   },
+   {
+    "kind": "Dribble",
+    "start": "I9",
+    "worth": 24.75,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "M9",
+    "worth": 20,
+    "help": [
+     {
+      "helper": "X2 contain",
+      "shot_if_he_contains": 12.25,
+      "leaves": "O4",
+      "the_man_left_worth": 20,
+      "worth": 20
+     }
+    ]
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P2",
+  "arrow": null,
+  "search_ms": 100083,
+  "x": [
+   "I5",
+   "I7",
+   "I3",
+   "C4",
+   "D9"
+  ],
+  "arrows": [
+   "N+NE",
+   "SE+S",
+   "N+NE",
+   "N+NE",
+   "N+NE"
+  ],
+  "value": 29.9063,
+  "stance_value": 29.9063,
+  "options": {
+   "value": 29.91,
+   "shot": 22,
+   "drives": 27,
+   "passes": 27.6,
+   "holding": 0
+  },
+  "removes": {
+   "own": 9,
+   "value": 8.08,
+   "shot": 4.36,
+   "drives": 9,
+   "passes": 2.86,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "F3",
+   "G4",
+   "G5",
+   "H4",
+   "H5"
+  ],
+  "races": [
+   {
+    "kind": "Dribble",
+    "start": "I6",
+    "worth": 30,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P2off",
+  "arrow": null,
+  "search_ms": 61149,
+  "x": [
+   "I4",
+   "F8",
+   "J5",
+   "A5",
+   "H3"
+  ],
+  "arrows": [
+   "NE+E",
+   "E+SE",
+   "SW+W",
+   "N+NE",
+   "N+NE"
+  ],
+  "value": 27,
+  "stance_value": 27,
+  "options": {
+   "value": 27,
+   "shot": 23.45,
+   "drives": 27,
+   "passes": 26.25,
+   "holding": 0
+  },
+  "removes": {
+   "own": 2,
+   "value": 10.86,
+   "shot": 1.21,
+   "drives": 2,
+   "passes": 3.75,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X2",
+  "reach": [
+   "F3",
+   "G4",
+   "G5",
+   "H4",
+   "H5",
+   "I5",
+   "K5"
+  ],
+  "races": [
+   {
+    "kind": "partial lane",
+    "start": "I6",
+    "worth": 20,
+    "help": [
+     {
+      "helper": "X3 contain",
+      "shot_if_he_contains": 9.85,
+      "leaves": "O2",
+      "the_man_left_worth": 20,
+      "worth": 20
+     }
+    ]
+   },
+   {
+    "kind": "speed",
+    "start": "G4",
+    "worth": 24,
+    "help": [
+     {
+      "helper": "X5 contain",
+      "shot_if_he_contains": 6.55,
+      "leaves": "O2",
+      "the_man_left_worth": 24,
+      "worth": 24
+     }
+    ]
+   },
+   {
+    "kind": "Dribble",
+    "start": "H5",
+    "worth": 28,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "G4",
+    "worth": 24,
+    "help": [
+     {
+      "helper": "X5 contain",
+      "shot_if_he_contains": 6.55,
+      "leaves": "O2",
+      "the_man_left_worth": 24,
+      "worth": 24
+     }
+    ]
+   }
+  ],
+  "answer": [
+   [
+    0,
+    "J3",
+    1
+   ]
+  ]
+ },
+ {
+  "board": "P3",
+  "arrow": null,
+  "search_ms": 83668,
+  "x": [
+   "G3",
+   "H6",
+   "E8",
+   "B4",
+   "K3"
+  ],
+  "arrows": [
+   "N+NE",
+   "NW+N",
+   "W+NW",
+   "S+SW",
+   "N+NE"
+  ],
+  "value": 26.7484,
+  "stance_value": 26.7484,
+  "options": {
+   "value": 26.75,
+   "shot": 18,
+   "drives": 23.13,
+   "passes": 24,
+   "holding": 0
+  },
+  "removes": {
+   "own": 6.87,
+   "value": 3.25,
+   "shot": 9,
+   "drives": 6.87,
+   "passes": 5.93,
+   "holding": 0
+  },
+  "on_ball": "X4",
+  "removes_most": "X3",
+  "reach": [
+   "B1",
+   "B2",
+   "B3",
+   "B5"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "D2",
+    "worth": 22,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "A3",
+    "worth": 27,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "D2",
+    "worth": 22,
+    "help": []
+   }
+  ],
+  "answer": [
+   [
+    2,
+    "D8",
+    6
+   ]
+  ]
+ },
+ {
+  "board": "P3off",
+  "arrow": null,
+  "search_ms": 85858,
+  "x": [
+   "E8",
+   "I6",
+   "F1",
+   "C5",
+   "J4"
+  ],
+  "arrows": [
+   "SE+S",
+   "E+SE",
+   "N+NE",
+   "N+NE",
+   "E+SE"
+  ],
+  "value": 27,
+  "stance_value": 27,
+  "options": {
+   "value": 27,
+   "shot": 23.14,
+   "drives": 27,
+   "passes": 26,
+   "holding": 0
+  },
+  "removes": {
+   "own": 3,
+   "value": 3,
+   "shot": 3.86,
+   "drives": 3,
+   "passes": 3.38,
+   "holding": 0
+  },
+  "on_ball": "X4",
+  "removes_most": "X5",
+  "reach": [
+   "B1",
+   "B2",
+   "B3",
+   "B4",
+   "B5",
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "D3",
+   "E3"
+  ],
+  "races": [
+   {
+    "kind": "open lane",
+    "start": "A3",
+    "worth": 27,
+    "help": []
+   },
+   {
+    "kind": "speed",
+    "start": "E3",
+    "worth": 22,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "B4",
+    "worth": 27,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E3",
+    "worth": 22,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P4",
+  "arrow": null,
+  "search_ms": 156858,
+  "x": [
+   "I12",
+   "A7",
+   "B8",
+   "J5",
+   "H6"
+  ],
+  "arrows": [
+   "N+NE",
+   "E+SE",
+   "E+SE",
+   "NE+E",
+   "W+NW"
+  ],
+  "value": 27,
+  "stance_value": 27,
+  "options": {
+   "value": 27,
+   "shot": null,
+   "drives": 27,
+   "passes": 24,
+   "holding": 0
+  },
+  "removes": {
+   "own": 6,
+   "value": 6,
+   "shot": null,
+   "drives": 6,
+   "passes": 9,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E9",
+   "F10",
+   "G11",
+   "G12",
+   "H11",
+   "H12"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "D11",
+    "worth": 27,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H11",
+    "worth": 27,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "D11",
+    "worth": 27,
+    "help": []
+   }
+  ],
+  "answer": [
+   [
+    2,
+    "B9",
+    2
+   ]
+  ]
+ },
+ {
+  "board": "P4off",
+  "arrow": null,
+  "search_ms": 99867,
+  "x": [
+   "I11",
+   "N7",
+   "D10",
+   "D5",
+   "H4"
+  ],
+  "arrows": [
+   "N+NE",
+   "W+NW",
+   "NE+E",
+   "SW+W",
+   "W+NW"
+  ],
+  "value": 26.7188,
+  "stance_value": 26.7188,
+  "options": {
+   "value": 26.72,
+   "shot": null,
+   "drives": 25.2,
+   "passes": 23.63,
+   "holding": 0
+  },
+  "removes": {
+   "own": 4.73,
+   "value": 4.72,
+   "shot": null,
+   "drives": 4.73,
+   "passes": 7.82,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X5",
+  "reach": [
+   "E9",
+   "F10",
+   "G11",
+   "G12",
+   "H11",
+   "H12",
+   "I12",
+   "J11",
+   "J12",
+   "K11",
+   "K12",
+   "L10",
+   "M9"
+  ],
+  "races": [
+   {
+    "kind": "Dribble",
+    "start": "H11",
+    "worth": 27,
+    "help": []
+   }
+  ],
+  "answer": [
+   [
+    2,
+    "D9",
+    1
+   ]
+  ]
+ },
+ {
+  "board": "P5",
+  "arrow": "N+NE",
+  "search_ms": 9801,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "N+NE",
+   "E+SE",
+   "NE+E",
+   "NE+E",
+   "SE+S"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 12,
+   "drives": 38,
+   "passes": 35.33,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 10.89,
+   "drives": 0,
+   "passes": 0.67,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "NE+E",
+  "search_ms": 13935,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "NE+E",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SE+S"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "E+SE",
+  "search_ms": 14386,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "E+SE",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SE+S"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "SE+S",
+  "search_ms": 14540,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "SE+S",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SW+W"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "S+SW",
+  "search_ms": 15266,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "S+SW",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SW+W"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "SW+W",
+  "search_ms": 13958,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "SW+W",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SE+S"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "W+NW",
+  "search_ms": 13504,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "W+NW",
+   "NW+N",
+   "W+NW",
+   "E+SE",
+   "SE+S"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 18.69,
+   "drives": 38,
+   "passes": 36,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 4.2,
+   "drives": 0,
+   "passes": 0,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "E6",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5",
+  "arrow": "NW+N",
+  "search_ms": 11483,
+  "x": [
+   "I9",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "NW+N",
+   "E+SE",
+   "SW+W",
+   "N+NE",
+   "SW+W"
+  ],
+  "value": 36,
+  "stance_value": 36,
+  "options": {
+   "value": 36,
+   "shot": 12,
+   "drives": 36,
+   "passes": 35,
+   "holding": 0
+  },
+  "removes": {
+   "own": 2,
+   "value": 2,
+   "shot": 10.89,
+   "drives": 2,
+   "passes": 1,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "J8",
+   "J9",
+   "K8",
+   "K9",
+   "L7",
+   "M6"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "K5",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H10",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "K5",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5off",
+  "arrow": null,
+  "search_ms": 16721,
+  "x": [
+   "I8",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "NE+E",
+   "E+SE",
+   "W+NW",
+   "E+SE",
+   "SW+W"
+  ],
+  "value": 38,
+  "stance_value": 38,
+  "options": {
+   "value": 38,
+   "shot": 21.51,
+   "drives": 38,
+   "passes": 35.33,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": 1.37,
+   "drives": 0,
+   "passes": 0.67,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E6",
+   "F7",
+   "G8",
+   "G9",
+   "H8",
+   "H9",
+   "I9",
+   "J8",
+   "J9",
+   "K8",
+   "K9"
+  ],
+  "races": [
+   {
+    "kind": "partial lane",
+    "start": "I10",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed",
+    "start": "M7",
+    "worth": 29.23,
+    "help": [
+     {
+      "helper": "X3 contain",
+      "shot_if_he_contains": -0.05,
+      "leaves": "O3",
+      "the_man_left_worth": 29.23,
+      "worth": 29.23
+     }
+    ]
+   },
+   {
+    "kind": "Dribble",
+    "start": "H8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "M7",
+    "worth": 29.23,
+    "help": [
+     {
+      "helper": "X3 contain",
+      "shot_if_he_contains": -0.05,
+      "leaves": "O3",
+      "the_man_left_worth": 29.23,
+      "worth": 29.23
+     }
+    ]
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5ctl",
+  "arrow": null,
+  "search_ms": 13764,
+  "x": [
+   "I12",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "NW+N",
+   "NE+E",
+   "NW+N",
+   "W+NW",
+   "SW+W"
+  ],
+  "value": 36,
+  "stance_value": 36,
+  "options": {
+   "value": 36,
+   "shot": null,
+   "drives": 36,
+   "passes": 29.14,
+   "holding": 0
+  },
+  "removes": {
+   "own": 0,
+   "value": 0,
+   "shot": null,
+   "drives": 0,
+   "passes": 6.86,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X3",
+  "reach": [
+   "J11",
+   "J12",
+   "K11",
+   "K12",
+   "L10",
+   "M9"
+  ],
+  "races": [
+   {
+    "kind": "speed",
+    "start": "K8",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "Dribble",
+    "start": "H13",
+    "worth": 36,
+    "help": []
+   },
+   {
+    "kind": "speed next phase",
+    "start": "K8",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ },
+ {
+  "board": "P5ctloff",
+  "arrow": null,
+  "search_ms": 10700,
+  "x": [
+   "I11",
+   "D8",
+   "L6",
+   "B4",
+   "P4"
+  ],
+  "arrows": [
+   "N+NE",
+   "E+SE",
+   "W+NW",
+   "N+NE",
+   "SW+W"
+  ],
+  "value": 35.9375,
+  "stance_value": 35.9375,
+  "options": {
+   "value": 35.94,
+   "shot": null,
+   "drives": 34,
+   "passes": 34,
+   "holding": 0
+  },
+  "removes": {
+   "own": 2,
+   "value": 0.06,
+   "shot": null,
+   "drives": 2,
+   "passes": 1,
+   "holding": 0
+  },
+  "on_ball": "X1",
+  "removes_most": "X1",
+  "reach": [
+   "E9",
+   "F10",
+   "G11",
+   "G12",
+   "H11",
+   "H12",
+   "I12",
+   "J11",
+   "J12",
+   "K11",
+   "K12",
+   "L10",
+   "M9"
+  ],
+  "races": [
+   {
+    "kind": "Dribble",
+    "start": "H11",
+    "worth": 36,
+    "help": []
+   }
+  ],
+  "answer": []
+ }
+]

@@ -82,7 +82,10 @@ def test_O1_fails_without_the_defences_answer_inside_the_number(values):
 
 @needs_node
 def test_G5_covering_one_of_two_equal_looks_leaves_the_number_unchanged_covering_both_lowers_it(values):
-    a, b, c = values['E23a']['value'], values['E23b']['value'], values['E23c']['value']
+    """REWRITTEN in fix 4b (Shaun, 27 Nov 2026): on E23d to E23f, boards where the backdoor cuts are covered (O4 and O5
+    stand deep with no shot, so their defenders help on the low blocks), so it tests covering one of two equal threes.
+    On E23a to E23c, covering a shooter tight opened his cut behind the defender (the fix 4 report, section 2)."""
+    a, b, c = values['E23d']['value'], values['E23e']['value'], values['E23f']['value']
     assert a == pytest.approx(b), (a, b)                  # both sagging; one covered
     assert c < b - 1.0, (b, c)                            # both covered
 
