@@ -146,3 +146,68 @@ def as_json(name):
     from playmaker_engine import jsbridge
     s = get(name)
     return dict(name=name, state=jsbridge.state_json(s), ctx=jsbridge.ctx_json(s.ctx), setup=SETUP.get(name))
+
+
+# ---- step 31, fix 3c: the drive's race (R1 to R5) ---------------------------------------------------------------------
+# Real cards, the ratings each board names: O1 Attacking Point Guard A (Dribble 19); O1 on R3 Defensive Point Guard A
+# (Agility 10, Quick Step 2); O2 Sharpshooter A (three 11); O3 Rim Runner C (three 5); O4 Stretch Power Forward A
+# (three 9); O5 Post Scoring Centre A (layup 19). X1 Defensive Point Guard C (Agility 8, Quick Step 2); on R3 Post
+# Scoring Centre C (Agility 3, no Quick Step); X2 Two-way Defender B; X3 Two-way Wing B; X4 Defensive Small Forward B;
+# X5 Rim Protector A (layup contest 12, Block 10).
+BUILT['Race five'] = ['apgA', 'shsA', 'rrcC', 'stpfA', 'pscA']
+BUILT['Race five, quick guard'] = ['dpgA', 'shsA', 'rrcC', 'stpfA', 'pscA']
+BUILT['Race defence'] = ['dpgC', 'tndB', 'twB', 'dfsfB', 'rpcA']
+BUILT['Race defence, slow guard'] = ['pscC', 'tndB', 'twB', 'dfsfB', 'rpcA']
+RACE_O = ['I9', 'C9', 'O9', 'A3', 'K3']           # O1 top, O2 left wing, O3 right wing, O4 left corner, O5 right block (K3: L3 is mid-range, K3 the nearest paint square)
+RACE_X = ['I8', 'D8', 'N8', 'B4', 'J3']           # X1 in front of O1, X2 to X4 on their men, X5 beside O5
+
+
+def quick_steps_left(s, offence, defence):
+    """The board's Quick Steps left this phase (Sprints count): each side's count set to 2 less what is left."""
+    from playmaker_engine.state import CI, count_key
+    c = list(s.cnt)
+    c[CI[count_key('O', 'qs')]] = RC.LIMITS['O']['qs'] - offence
+    c[CI[count_key('X', 'qs')]] = RC.LIMITS['X']['qs'] - defence
+    return s.with_(cnt=tuple(c))
+
+
+def _r1():
+    """R1: O1 wins a Dribble on X1 from the top (the board is made by playing the Dribble and taking the win)."""
+    from playmaker_engine.actions import legal_actions
+    from playmaker_engine.resolve import apply, ChanceNode
+    s = board('Race five', 'Race defence', RACE_O, RACE_X)
+    for a in legal_actions(s):
+        if a.kind != 'dribble' or a.piece != 0:
+            continue
+        nx = apply(s, a)
+        nodes = [nx]
+        while nodes:
+            n = nodes.pop()
+            if isinstance(n, ChanceNode):
+                nodes.extend(o[2] for o in n.outcomes)
+            elif any(bt == (0, 0) for bt in n.beaten):
+                return n
+    raise RuntimeError('R1: no Dribble win on X1')
+
+
+def _r5(x1, arrow1, off_qs, def_qs):
+    o = ['I10', 'C9', 'O9', 'A3', 'K3']
+    x = [x1, 'D8', 'N8', 'B4', 'I4']
+    arr = [arrow1] + [facing(B.parse_sq(x[i]), B.parse_sq(o[i])) for i in range(1, 5)]
+    return quick_steps_left(board('Race five', 'Race defence', o, x, arrows=arr), off_qs, def_qs)
+
+
+BOARDS.update({
+    'R1': _r1,
+    # R2: O2 has just caught on the left wing; X2 a Move away (E7: one Move to D8, in front of him)
+    'R2': lambda: board('Race five', 'Race defence', ['I11', 'C9', 'O9', 'A3', 'K3'], ['I10', 'E7', 'N8', 'B4', 'J3'], ball=1),
+    # R3: O1 quick (Quick Step 2), X1 slow (no Quick Step) one square off (I7, a square between them)
+    'R3': lambda: board('Race five, quick guard', 'Race defence, slow guard', RACE_O, ['I7', 'D8', 'N8', 'B4', 'J3']),
+    # R4: the control: X1 set in front, arrow on O1; no Dribble won; no Quick Step left to the offence (no speed edge)
+    'R4': lambda: quick_steps_left(board('Race five', 'Race defence', RACE_O, RACE_X), 0, 2),
+    # R5: O1 at the top (I10), X1 off to his side (K10, facing him: his zone doesn't cover the line in), X5 at I4
+    'R5a': lambda: _r5('K10', 6, 2, 0),
+    'R5b': lambda: _r5('K10', 6, 2, 1),
+    'R5c': lambda: _r5('J9', 4, 2, 1),             # X1 diagonal in front, arrow S: his zone (S, SW) covers I8 on the line, not I9
+    'R5ctl': lambda: _r5('I9', 0, 2, 2),           # X1 set in front, arrow on O1
+})

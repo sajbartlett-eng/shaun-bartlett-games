@@ -9,7 +9,10 @@ the answer is the closeout and X1's step, nothing more. Both engines, the same n
 Re-recorded in fix 3 (D-306). The one Move a phase and the fake mix changed this board's reading: the number is now set at
 the rim (O2 cutting to G4 draws X5's closeout; a fake there leaves O5 open at K3), 24.48 this phase, and no movement of the
 answer lowers it, so the answer is empty. Fix 2's limit itself is unchanged and still held by the every-look reference in
-tests/test_fix1_difference.py, which reads every candidate under the same limits."""
+tests/test_fix1_difference.py, which reads every candidate under the same limits.
+
+Re-recorded in fix 3c (D-310): the drive's race now reads this board (an open lane for O2's drive, his man X3 off at C10),
+and the race reads 30 in every phase; still no answer movement lowers it."""
 import dataclasses
 import os
 import sys
@@ -26,7 +29,7 @@ from playmaker_engine import board as B, value as V   # noqa: E402
 SHAPE = ['F10', 'M8', 'C10', 'D4', 'I5']      # the setup's shape on E2 (docs/runs/step31/same_after.json), X3 on C10
 ARROWS = (0, 4, 0, 0, 1)
 CLOSED = []                                   # fix 3: no movement lowers the number (before: X3 closed out to B8, X1 stepped to F11)
-BARS = [24, 24, 24.4762, 24.4762, 24.4762, 24.4762]   # fix 3 (before: 16 in every phase)
+BARS = [30, 30, 30, 30, 30, 30]               # fix 3c (fix 3: 24 to 24.48; fix 2: 16 in every phase)
 
 
 def board():
@@ -42,4 +45,4 @@ def test_E2_a_closeout_costs_a_movement_in_every_phase_in_both_engines():
     pp = V.poss_parts(s)
     assert [[d, B.sq(q), a] for d, q, a in pp['moves']] == CLOSED
     assert [round(b, 4) for b in pp['bars'][1:]] == BARS, pp['bars']
-    assert round(pp['V'], 4) == js['value'] == 24.4762
+    assert round(pp['V'], 4) == js['value'] == 30

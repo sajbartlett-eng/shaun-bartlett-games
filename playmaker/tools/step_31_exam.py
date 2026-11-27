@@ -486,7 +486,32 @@ def judge(R):
               + ' '.join(f"{k}: {v or 'no'}." for k, v in f.items()) + ' Phase by phase in the report.', 'Each of the five faults of 20 November is looked for in the record of the play.')
     else:
         E.rec('B4', 'the 20 November possession', 'not built', 'Not played yet (python3 tools/step_31_exam.py b4).', '')
+    race_checks(E)
     return E.rows
+
+
+def race_checks(E):
+    """Step 31, fix 3c: the drive's race on its own boards (R1 to R5). The expected outcomes are what the race must be
+    able to read; which choice each side makes falls out of the number and is reported, not checked against."""
+    def races(name):
+        v = E.g('value', name)
+        return (v or {}).get('drive_race') or [], v
+    def beaten_contains(rc):
+        return any(ph['phase'] == 0 and any(c['defence'].startswith(rc['beaten'] + ' contain') for c in ph['choices']) for ph in rc['phases'])
+    for name, kind in (('R1', 'Dribble won'), ('R3', 'speed')):
+        rs, v = races(name)
+        mine = [rc for rc in rs if rc['advantage'] == kind]
+        ok = bool(mine) and not any(beaten_contains(rc) for rc in mine)
+        E.rec(name, name, 'pass' if ok else 'fail', f"Races: {[(rc['advantage'], rc['beaten'], rc['from'], rc['worth']) for rc in rs]}; value {v and v['value']}. Phase by phase in the fix 3c report.",
+              f'A {kind} starts the race with its beaten defender chasing; he never contains.')
+    v2 = E.g('value', 'R2') or {}
+    fr = [z for z in (v2.get('look_at') or []) if z.get('fake')] if v2 else []
+    E.rec('R2', 'R2', 'pass' if (v2.get('fake_race') or []) else 'fail', f"The fake's races read: {len(v2.get('fake_race') or [])}; value {v2.get('value')}.", 'The shot fake beating the closeout starts the race of the drive inside the fake mix.')
+    rs4, v4 = races('R4')
+    E.rec('R4', 'R4', 'pass' if not rs4 else 'fail', f"Races: {len(rs4)} (value {v4 and v4['value']}).", 'No advantage: no race may start.')
+    vals = {n: (E.g('value', n) or {}).get('value') for n in ('R5a', 'R5b', 'R5c', 'R5ctl')}
+    ok5 = all(vals[n] is not None and vals['R5ctl'] is not None and vals[n] > vals['R5ctl'] for n in ('R5a', 'R5b', 'R5c'))
+    E.rec('R5', 'R5a to R5c', 'pass' if ok5 else 'fail', f"Values: {vals}.", 'Each R5 variant reads higher for the offence than the control.')
 
 
 def _dir(a, b):

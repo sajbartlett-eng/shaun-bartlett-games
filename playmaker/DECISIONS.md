@@ -1930,6 +1930,21 @@ or with his arrow off, 6 less behind, never below 1: the rules' Contests by posi
 the full one: the fake can't beat the first and can beat the second. · Source: Shaun, 27 Nov 2026 (fix 3b, points 2
 and 3) · **Built.**
 
+**D-310. The drive's race starts only from an advantage (fix 3c; replaces D-308's start).** A drive is raced only from:
+a Dribble won (the beaten defender locked: a Quick Step his only movement that phase); a shot fake beating a closeout
+(the closer's Move spent; read inside the fake mix as its follow-up); speed (a Quick Step or Sprint to a square his man
+can't get in front of this phase); or an open lane (his man's zone, both arrows' rays as far as his movement reaches,
+doesn't cover the straight line to the rim; a partial lane gives the first movement only the part it doesn't cover).
+The beaten defender starts behind the ball and chases: he never contains, and his best is a Contest 3 less from beside
+or 6 less from behind (behind in the phase of the advantage), 2 more off if he needed a Quick Step, never below 1. Every
+square the handler's movement reaches nearer the rim is a line; movement goes round bodies; each side's Quick Steps left
+count (the board's this phase, two in each phase after); the offence has one Hesitate or fake a phase. Each phase the
+defence takes the least of containing (a helper in front in time, set or rushed; his man freed), helping late (an
+off-balance Contest; his man freed) or staying home; the offence the most of shooting, kicking to anyone (a freed man at
+his own best look, the pass raced from the handler's square), faking a helper who had to move to contain, hesitating, or
+carrying on. Who guards whom: the pairing that keeps the five closest. Proof boards R1 to R5 (tests/exam_boards.py, the
+exam's race checks). · Source: Shaun, 27 Nov 2026 (fix 3c and its additions) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

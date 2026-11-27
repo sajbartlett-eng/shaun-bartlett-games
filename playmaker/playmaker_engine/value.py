@@ -122,135 +122,347 @@ class _RaceLook:
     rushed = True
 
 
-def drive_races(r, Lmap, T):
-    """Step 31, fix 3b (engine.js driveRaces; the design: "a drive is read by the same race"). From a beaten defender
-    (or, with nobody next to him, from where he stands) the ball handler drives at the rim a phase of movement at a
-    time, to the square nearest the rim each phase reaches; every defender's arrival is raced against him. Each phase
-    the defence takes the least of containing him there (a defender set there in time) or letting him carry on; the
-    offence the most of shooting, kicking out to the man the container left (his own best look, read without that
-    defender, the pass raced from where the handler is contained) or carrying on. One look a drive."""
+def race_kit(r, Lmap, sr, T):
+    """Step 31, fix 3c (engine.js raceKit): the drive's race, read from an advantage. See engine.js for the rules it
+    reads; this is the same reading, step for step."""
     from itertools import permutations
-    from .decide import Look, cov_pass, _phase_dist, _arrive, SHOOT, INF
+    from .decide import Look, cov_pass, SHOOT, INF
     from .scoring import shot_zone, card_shot
     s, rules = r.s, r.rules
     ctx, b = s.ctx, s.ball
     h0 = s.o[b]
-    out = []
-    if not B.on_board(h0) or s.pending or s.tok_o < 2 or not r._dribble_ok()[0]:
-        return out
-    begins = []
-    for j in range(5):
-        if B.on_board(s.x[j]) and B.adjacent(s.x[j], h0) and not any(x[1] == j for x in s.beaten):
-            p = r._beat_chance(j)
-            if p > 0:
-                begins.append((j, p))
-    if not any(B.on_board(s.x[j]) and B.adjacent(s.x[j], h0) for j in range(5)):
-        begins.append((-1, 1.0))
-    if not begins:
-        return out
     no_rim = RC.rim_shot_barred(rules)
-    pd = _phase_dist(rules, h0, ctx.off[b].qs)
-    occ = set(s.o[i] for i in range(5) if i != b and B.on_board(s.o[i])) | set(q for q in s.x if B.on_board(q))
-    line = []
-    for t in range(T):
-        best = None
-        for q in sorted(pd):
-            if not B.on_board(q) or pd[q] != t + 1 or q in occ or shot_zone(ctx, q) not in SHOOT or (no_rim and q == RC.RIM):
-                continue
-            if best is None or B.cheb(q, RC.RIM) < B.cheb(best, RC.RIM):
-                best = q
-        if best is None or (line and B.cheb(best, RC.RIM) >= B.cheb(line[-1], RC.RIM)):
-            break
-        line.append(best)
-    if not line:
-        return out
+    occ = set(q for q in s.o if B.on_board(q)) | set(q for q in s.x if B.on_board(q))
+    qo0 = max(0, RC.LIMITS['O']['qs'] - sr.count('O', 'qs'))
+    qd0 = max(0, RC.LIMITS['X']['qs'] - sr.count('X', 'qs'))
     mode = 0 if rules.zone == 'off' else 1
-    arr = [(_arrive(rules, s.x[e], ctx.dfn[e].qs, mode) if B.on_board(s.x[e]) else None) for e in range(5)]
+
+    def clear(pa, me):
+        return all(B.on_board(q) and (q == me or q not in occ) for q in pa)
+
+    step_memo = {}
+
+    def step(p, qs, me, move_ok, qs_ok):
+        sk = (p, qs, me, move_ok, qs_ok)
+        if sk not in step_memo:
+            step_memo[sk] = step_calc(p, qs, me, move_ok, qs_ok)
+        return step_memo[sk]
+
+    def step_calc(p, qs, me, move_ok, qs_ok):
+        M = []
+        seen = set()
+        if move_ok:
+            for pa in B.move_paths(p, rules):
+                if clear(pa, me):
+                    d = pa[-1]
+                    if d not in seen:
+                        seen.add(d)
+                        M.append(d)
+        if qs_ok and qs > 0:
+            Q = []
+            for pa in B.qs_paths(p, qs, rules):
+                if clear(pa, me):
+                    seen.add(pa[-1])
+                    Q.append(pa[-1])
+            for m1 in M:
+                for pa in B.qs_paths(m1, qs, rules):
+                    if clear(pa, me):
+                        seen.add(pa[-1])
+            if move_ok:
+                for q1 in Q:
+                    for pa in B.move_paths(q1, rules):
+                        if clear(pa, me):
+                            seen.add(pa[-1])
+                for _d, pa in B.sprint_paths(p, qs, rules):
+                    if clear(pa, me):
+                        seen.add(pa[-1])
+        seen.discard(p)
+        return seen
+
+    def bfs(start, qs, me, move0, qs0, qs_later):
+        dist = {start: 0}
+        front = [start]
+        t = 1
+        while t <= T and front:
+            nx = []
+            for p in front:
+                for q in step(p, qs, me, move0 if t == 1 else True, qs0 if t == 1 else qs_later):
+                    if q not in dist:
+                        dist[q] = t
+                        nx.append(q)
+            front = nx
+            t += 1
+        return dist
+    man, best = list(range(5)), None
+    for pr in permutations(range(5)):
+        sm = sum(B.cheb(s.x[d], s.o[pr[d]]) if (B.on_board(s.x[d]) and B.on_board(s.o[pr[d]])) else 0 for d in range(5))
+        if best is None or sm < best:
+            best, man = sm, list(pr)
+    guard = [-1] * 5
+    for d in range(5):
+        guard[man[d]] = d
+    DQ = [(bfs(s.x[e], ctx.dfn[e].qs, s.x[e], True, qd0 > 0, True) if B.on_board(s.x[e]) else None) for e in range(5)]
+    DM = [(bfs(s.x[e], ctx.dfn[e].qs, s.x[e], True, False, False) if B.on_board(s.x[e]) else None) for e in range(5)]
     shots = {}
 
     def shot(sq):
         if sq not in shots:
             z = shot_zone(ctx, sq)
+            if z not in SHOOT or (no_rim and sq == RC.RIM):        # (no shot from a square nobody may shoot from)
+                shots[sq] = (None, 0, [])
+                return shots[sq]
             lk = Look(b, sq, 'later', 1.0, False)
             lk.types = RC.ZONE_SHOTS[z]
             lk.rushed = False
             pts = RC.worth_now(ctx, z)
-            shots[sq] = (lk, [pts * card_shot(ctx, ctx.off[b], ty, sq) for ty in lk.types])
+            shots[sq] = (lk, pts, [pts * card_shot(ctx, ctx.off[b], ty, sq) for ty in lk.types])
         return shots[sq]
     ROW0 = (0,) + (INF,) * 5
     NOSET = (INF,) * 6
 
     def vs(sq, e, setc):
-        lk, opn = shot(sq)
-        cv = None if e < 0 else r._vals_map(lk, e, (ROW0, ROW0 if setc else NOSET, 1, 1 if setc else 0))
+        lk, _p, opn = shot(sq)
+        if lk is None:
+            return NEG
+        cv = r._vals_map(lk, e, (ROW0, ROW0 if setc else NOSET, 1, 1 if setc else 0))
         hi = NEG
         for t, ty in enumerate(lk.types):
             v = cv[ty] if (cv and ty in cv and cv[ty] < opn[t]) else opn[t]
             if v > hi:
                 hi = v
         return hi
-    man, bestsum = list(range(5)), None
-    for pr in permutations(range(5)):
-        sm = sum(B.cheb(s.x[d], s.o[pr[d]]) if (B.on_board(s.x[d]) and B.on_board(s.o[pr[d]])) else 0 for d in range(5))
-        if bestsum is None or sm < bestsum:
-            bestsum, man = sm, list(pr)
-    pc = {}
 
-    def kick(sq, e):
-        mm = man[e]
-        hi, at = NEG, None
-        if mm == b or not B.on_board(s.o[mm]):
-            return hi, -1, at
+    def chase_v(sq, j, pen, rushed):
+        lk, pts, opn = shot(sq)
+        dc = ctx.dfn[j]
+        hi = NEG
+        if lk is None:
+            return hi
+        for t, ty in enumerate(lk.types):
+            rr = card_shot(ctx, ctx.off[b], ty, sq)
+            con = dc.con(ty) - pen - (2 if rushed else 0)
+            if con < 1:
+                con = 1
+            v = max(0, pts * (rr - con))
+            u = v if v < opn[t] else opn[t]
+            if u > hi:
+                hi = u
+        return hi
+
+    def open_v(sq):
+        return max(shot(sq)[2], default=NEG)
+
+    def legal(q):
+        return B.on_board(q) and shot_zone(ctx, q) in SHOOT and not (no_rim and q == RC.RIM)
+    pc, kc = {}, {}
+
+    def worth_of(o, e):
+        w = NEG
+        for t, ty in enumerate(o['lk'].types):
+            v = o['open'][t]
+            for d in range(5):
+                x = o['vals'][d]
+                if d != e and x and ty in x and x[ty] < v:
+                    v = x[ty]
+            if v > w:
+                w = v
+        return w + o['adj']
+    by_a = [[] for _ in range(5)]
+    for o in Lmap:
+        by_a[o['a']].append(o)
+
+    def kick(sq, left):
+        key = (sq, left)
+        if key in kc:
+            return kc[key]
+        hit = [NEG, -1, None]
         sb = s.with_(o=tuple(sq if i == b else s.o[i] for i in range(5)))
-        for o in Lmap:
-            if o['a'] != mm:
+        for a in range(5):
+            if a == b or not B.on_board(s.o[a]):
                 continue
-            key = (sq, o['q0'], mm)
-            if key not in pc:
-                pc[key] = cov_pass(sb, mm, o['q0'])
-            pp = pc[key]
-            w = NEG
-            for t, ty in enumerate(o['lk'].types):
-                v = o['open'][t]
-                for d in range(5):
-                    x = o['vals'][d]
-                    if d != e and x and ty in x and x[ty] < v:
-                        v = x[ty]
-                if v > w:
-                    w = v
-            ev = pp * (w + o['adj']) - (1 - pp) * 5
-            if ev > hi:
-                hi, at = ev, o['c']
-        return hi, mm, at
-    for j, p in begins:
-        phases, nxt = [], NEG
-        for t in range(len(line) - 1, -1, -1):
-            sq = line[t]
-            late, lv = -1, float('inf')
-            for e in range(5):
-                if arr[e] is None or (e == j and t == 0) or arr[e][1].get(sq, INF) > t:
+            without = left if guard[a] == left else -1
+            ws = sorted(((worth_of(o, without), o) for o in by_a[a]), key=lambda x: (-x[0], x[1]['c'], x[1]['q0']))
+            for w, o in ws:
+                if w <= hit[0]:
+                    break
+                if o['c'] == sq or o['q0'] == sq:
                     continue
-                v = vs(sq, e, False)
-                if v < lv:
-                    lv, late = v, e
-            pull = lv if late >= 0 else vs(sq, -1, False)
-            go = pull if t == len(line) - 1 else max(pull, nxt)
-            V, by, contain = go, -1, []
-            for e in range(5):
-                if arr[e] is None or (e == j and t == 0) or arr[e][0].get(sq, INF) > t:
+                k2 = (sq, o['q0'], a)
+                if k2 not in pc:
+                    pc[k2] = cov_pass(sb, a, o['q0'])
+                pp = pc[k2]
+                ev = pp * w - (1 - pp) * 5
+                if ev > hit[0]:
+                    hit = [ev, a, o['c']]
+        kc[key] = hit
+        return hit
+
+    def front(c):
+        out = []
+        for d in range(8):
+            f = B.add(c, B.DIRS[d])
+            if B.on_board(f) and B.dist_rim(f) < B.dist_rim(c) and not (f in occ and f not in s.x):
+                out.append(f)
+        return out
+
+    def race(c0, j, dj, dmj, qo_first, first_ok, w0):
+        memo, trace = {}, {}
+
+        def V(t, c, spent, w):
+            key = (t, c, spent, w)
+            if key in memo:
+                return memo[key]
+            memo[key] = NEG
+            opts = []
+            chase, how = float('inf'), None
+            for d in range(8):
+                a = B.add(c, B.DIRS[d])
+                if not B.on_board(a):
                     continue
-                sh = vs(sq, e, True)
-                kv, km, kat = kick(sq, e)
-                O = max(sh, kv)
-                contain.append(dict(e=e, shoot=sh, kick=kv, man=km, to=kat, worth=O))
-                if O < V:
-                    V, by = O, e
-            phases.insert(0, dict(phase=t, at=sq, shoot_on=pull, late=late, carry_on=go, contain=contain, value=V, by=by))
-            nxt = V
-        V0 = phases[0]['value']
-        look = dict(a=b, c=h0, rushed=True, r=p, lk=_RaceLook(), open=[V0], q0=h0, n0=2, lc=0, adj=0.0, dr=True, p0=0, w=V0, race=True, vals=[None] * 5)
-        out.append(dict(look=look, beaten=j, p=p, line=list(line), phases=phases))
-    return out
+                k = dj.get(a)
+                if k is None or k > t:
+                    continue
+                pen = 3 if (t > 0 and B.dist_rim(a) <= B.dist_rim(c)) else 6
+                km = dmj.get(a)
+                rushed = not (km is not None and km <= t)
+                v = chase_v(c, j, pen, rushed)
+                if v < chase:
+                    chase, how = v, (a, pen, rushed)
+            alone = min(chase, open_v(c))
+            nxt = []
+            if t < T:
+                for q in step(c, ctx.off[b].qs, s.o[b], True, (qo_first > 0) if t == 0 else True):
+                    if legal(q) and B.dist_rim(q) < B.dist_rim(c) and (t > 0 or first_ok(q)):
+                        nxt.append(q)
+            nxt.sort()
+            carry, carry_to = NEG, None
+            for q in nxt:
+                v = V(t + 1, q, spent, 0)
+                if v > carry:
+                    carry, carry_to = v, q
+            hes = V(t + 1, c, spent, 0) if (t < T and not w) else NEG
+            home = kick(c, -1)
+            opts.append(dict(by=-1, how='stay home', shoot=alone, kick=home, carry=carry, carry_to=carry_to, hes=hes, worth=max(alone, home[0], carry, hes)))
+            for e in range(5):
+                if e == j or (spent >> e) & 1 or DQ[e] is None:
+                    continue
+                kc2 = km2 = float('inf')
+                for f in front(c):
+                    k = DQ[e].get(f)
+                    if k is not None and k < kc2:
+                        kc2 = k
+                    k2 = DM[e].get(f)
+                    if k2 is not None and k2 < km2:
+                        km2 = k2
+                if kc2 <= t:
+                    setc = km2 <= t
+                    sh = min(vs(c, e, setc), chase)
+                    kk = kick(c, e)
+                    fk = V(t, c, spent | (1 << e), 1) if (kc2 >= 1 and kc2 == t and not w) else NEG
+                    opts.append(dict(by=e, how='contain' if setc else 'contain, rushed', shoot=sh, kick=kk, fake=fk, worth=max(sh, kk[0], fk)))
+                    continue
+                ka = float('inf')
+                for d in range(8):
+                    a = B.add(c, B.DIRS[d])
+                    if not B.on_board(a):
+                        continue
+                    k = DQ[e].get(a)
+                    if k is not None and k < ka:
+                        ka = k
+                if ka <= t:
+                    sh = min(vs(c, e, False), chase)
+                    kk = kick(c, e)
+                    opts.append(dict(by=e, how='help late', shoot=sh, kick=kk, carry=carry, worth=max(sh, kk[0], carry)))
+            pick = opts[0]
+            for o in opts:
+                if o['worth'] < pick['worth'] - 1e-12:
+                    pick = o
+            memo[key] = pick['worth']
+            trace[key] = dict(t=t, c=c, spent=spent, w=w, chase=None if chase == float('inf') else chase, how=how, opts=opts, pick=pick)
+            return pick['worth']
+        v0 = V(0, c0, 0, 1 if w0 else 0)
+        return dict(v=v0, trace=trace, qo0=qo0, qd0=qd0)
+    w0 = sr.count('O', 'hesitate') >= RC.LIMITS['O']['hesitate']
+    return dict(man=man, guard=guard, bfs=bfs, step=step, race=race, qo0=qo0, qd0=qd0, occ=occ, legal=legal, w0=w0)
+
+
+def drive_races(r, Lmap, T, sr):
+    """Step 31, fix 3c (engine.js driveRaces): a drive's race from each advantage the board holds: a Dribble won, an
+    open or partial lane, speed. (The shot fake beating a closeout is read inside the fake mix.)"""
+    from .actions import can_move_kind
+    from .decide import lane_squares
+    s = r.s
+    ctx, b = s.ctx, s.ball
+    h0 = s.o[b]
+    out = []
+    if not B.on_board(h0) or s.pending or sr.pending or sr.stage != 'play':
+        return out
+    K = race_kit(r, Lmap, sr, T)
+    jm = K['guard'][b]
+    allq = lambda q: True
+    for a, j in sr.beaten:
+        if a != b or not B.on_board(s.x[j]):
+            continue
+        q = ctx.dfn[j].qs
+        dj = K['bfs'](s.x[j], q, s.x[j], False, K['qd0'] > 0, True)
+        dmj = K['bfs'](s.x[j], q, s.x[j], False, False, False)
+        out.append(dict(kind='Dribble won', beaten=j, start=h0, p=1.0, **K['race'](h0, j, dj, dmj, K['qo0'], allq, K['w0'])))
+    if out or jm < 0 or not B.on_board(s.x[jm]):
+        return [_finish_race(x, b, h0) for x in out]
+    qj = ctx.dfn[jm].qs
+    dj_full = K['bfs'](s.x[jm], qj, s.x[jm], True, K['qd0'] > 0, True)
+    dm_full = K['bfs'](s.x[jm], qj, s.x[jm], True, False, False)
+    cov = {s.x[jm]}
+    dc = ctx.dfn[jm]
+    arrs = [s.arrows[jm], (s.arrows[jm] + 1) % 8] if ctx.rules.zone != 'off' else [s.arrows[jm]]
+    for d in arrs:
+        diag = d & 1
+        R = max(2 if diag else 3, dc.qs, ((2 if diag else 3) + dc.qs) if dc.qs > 0 else 0)
+        q = s.x[jm]
+        for _n in range(R):
+            q = B.add(q, B.DIRS[d])
+            if not B.on_board(q) or (q != s.x[jm] and q in K['occ']):
+                break
+            cov.add(q)
+    lane = sorted(lane_squares(h0, RC.RIM, 0.5), key=lambda q: (-B.dist_rim(q), q))
+    if lane and lane[0] not in cov:
+        full = all(q not in cov for q in lane)
+
+        def ok(q):
+            return q not in cov and all(x not in cov for x in lane_squares(h0, q, 0.5))
+        out.append(dict(kind='open lane' if full else 'partial lane', beaten=jm, start=h0, p=1.0, **K['race'](h0, jm, dj_full, dm_full, K['qo0'], allq if full else ok, K['w0'])))
+    if K['qo0'] > 0 and ctx.off[b].qs > 0 and not sr.quick_stepped('O', b):
+        qs = ctx.off[b].qs
+        dests = set()
+        for pa in B.qs_paths(h0, qs, ctx.rules):
+            if all(B.on_board(q) and q not in K['occ'] for q in pa):
+                dests.add(pa[-1])
+        if can_move_kind(sr, 'O', b, 'sprint'):
+            for _d, pa in B.sprint_paths(h0, qs, ctx.rules):
+                if all(B.on_board(q) and q not in K['occ'] for q in pa):
+                    dests.add(pa[-1])
+        best = None
+        for s1 in sorted(dests):
+            if not K['legal'](s1) or B.dist_rim(s1) >= B.dist_rim(h0):
+                continue
+            reach = False
+            for d in range(8):
+                f = B.add(s1, B.DIRS[d])
+                if B.on_board(f) and B.dist_rim(f) < B.dist_rim(s1) and dj_full.get(f) is not None and dj_full[f] <= 1:
+                    reach = True
+            if reach:
+                continue
+            rc = K['race'](s1, jm, dj_full, dm_full, 0, allq, K['w0'])
+            if best is None or rc['v'] > best['v']:
+                best = dict(kind='speed', beaten=jm, start=s1, p=1.0, **rc)
+        if best:
+            out.append(best)
+    return [_finish_race(x, b, h0) for x in out]
+
+
+def _finish_race(x, b, h0):
+    x['look'] = dict(a=b, c=h0, rushed=True, r=x['p'], lk=_RaceLook(), open=[x['v']], q0=h0, n0=2, lc=0, adj=0.0, dr=True, p0=0, w=x['v'], race=True, vals=[None] * 5)
+    return x
 
 
 def poss_read(r, opts, s0=None, last_phase=False):
@@ -273,7 +485,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
         if o[0] > 0:
             fix = 5.0 if ((stuck >> a) & 1 and B.in_key(o[6])) else 0.0
             L.append(dict(a=a, c=c, rushed=rushed, r=o[0], lk=o[3], open=o[4], q0=o[6], n0=o[7], lc=o[8], adj=o[9] + fix, dr=o[8] == 0, p0=o[10], w=o[1], vals=o[5]))
-    races = drive_races(r, L, min(3, k + 1))          # fix 3b (engine.js driveRaces): each drive, read by its race, is one more look
+    mapL, srR = list(L), (s0 if s0 is not None else s)
+    races = drive_races(r, mapL, min(3, k + 1), srR)   # fix 3c (engine.js driveRaces): each drive from an advantage, read by its race
     for rc in races:
         L.append(rc['look'])
     n, K = len(L), k + 1
@@ -386,6 +599,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
     SV0 = [list(row) for row in SV]
     Fm, Gm, UB0 = {}, {}, {}
     moved_at = [None] * 5                           # (fix 3b: where each defender's answer movement took him, and how)
+    RK = []                                          # (fix 3c: the race's kit, built when a fake's race first needs it)
     sN = r._msN
 
     def ok_look(j):
@@ -443,18 +657,33 @@ def poss_read(r, opts, s0=None, last_phase=False):
         mv0 = moved_at[e]
         if mv0 is None:
             free, fixed = defender_map(sN, e, exact=True)
+
+            def fake_race(q):                      # (engine.js: the fake beats the closeout; the drive's race from there)
+                if L[i]['a'] != b or L[i]['c'] != s.o[b] or L[i].get('race'):
+                    return NEG
+                if not RK:
+                    RK.append(race_kit(r, mapL, srR, min(3, k + 1)))
+                kit = RK[0]
+                qe = s.ctx.dfn[e].qs
+                dj = kit['bfs'](q, qe, s.x[e], False, kit['qd0'] > 0, True)
+                dmj = kit['bfs'](q, qe, s.x[e], False, False, False)
+                return kit['race'](s.o[b], e, dj, dmj, kit['qo0'], lambda _q: True, True)['v']
             for q, na in free.items():
                 if na == 1 and B.cheb(q, c) == 1:
                     g = follow2(e, q, B.dir_between(q, c), 'move')
-                    if g[0] < lo:
-                        lo, frm, then = g[0], q, g[1]
+                    fr2 = fake_race(q)
+                    v = max(g[0], fr2)
+                    if v < lo:
+                        lo, frm, then = v, q, (-2 if fr2 > g[0] else g[1])
             for q, arrs in fixed.items():
                 if B.cheb(q, c) == 1:
                     for a, na in arrs.items():
                         if na == 1:
                             g = follow2(e, q, a, fixed_kind(sN, e, q, a))
-                            if g[0] < lo:
-                                lo, frm, then = g[0], q, g[1]
+                            fr2 = fake_race(q)
+                            v = max(g[0], fr2)
+                            if v < lo:
+                                lo, frm, then = v, q, (-2 if fr2 > g[0] else g[1])
         elif mv0[2] != 'sprint':                       # (engine.js: he moved in the answer; he closes out with what he has left)
             mq, ma, mk = mv0
             qsd = s.ctx.dfn[e].qs

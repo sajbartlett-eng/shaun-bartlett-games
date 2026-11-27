@@ -6324,102 +6324,200 @@ const PMEngine = (() => {
   let PV_CHECK = false;                                // a test's switch: every candidate read both ways, by difference and over every look
   const PVC = { n: 0, bad: 0, ex: [] };                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
-  // Step 31, fix 3b (the design, 27 Nov 2026: "reading ahead is a race, not a tree"; "a drive is read by the same race").
-  // From a beaten defender (or, with nobody next to him, from where he stands) the ball handler drives at the rim, one
-  // phase of movement at a time, each phase to the square nearest the rim that phase reaches. Every defender's arrival
-  // is raced against him (arrivePhases: the phases before he can contest there set, or at all). Each phase the defence
-  // takes its best of: contain him there (a defender set there in time, in front), or let him carry on; the offence its
-  // best of: shoot (against the container's full Contest, or the late defenders' off-balance ones), kick out to the man
-  // the container left (who has positioned for his own best look by his card: the map's own looks of him, read without
-  // his defender, the pass raced by the rules from the square the handler is contained on), or carry on. Help is taken
-  // only when it saves more than the look it leaves, because the defence takes the least. Up to three phases (the clock
-  // allowing): containment may come two phases after the beat. The beaten defender can't contain in the beat's phase
-  // (he is locked). One look a drive: its chance the Dribble's, its worth the race's.
-  function driveRaces(m, Lmap, T) {
-    const s = m.s, r = m.r, ctx = s.ctx, b = s.ball, h0 = s.o[b], out = [];
-    if (!ONB[h0] || s.pending || s.tok_o < 2 || !r._dribbleOk()[0]) return out;
-    const begins = [];
-    for (let j = 0; j < 5; j++) if (ONB[s.x[j]] && adjacent(s.x[j], h0) && !s.beaten.some(x => x[1] === j)) { const p = r._beatChance(j); if (p > 0) begins.push([j, p]); }
-    let wall = false; for (let j = 0; j < 5; j++) if (ONB[s.x[j]] && adjacent(s.x[j], h0)) wall = true;
-    if (!wall) begins.push([-1, 1]);                    // nobody next to him: the drive needs no Dribble won
-    if (!begins.length) return out;
-    const pdH = phaseDist(h0, ctx.off[b].qs), occ = new Set();
-    for (let i = 0; i < 5; i++) { if (i !== b && ONB[s.o[i]]) occ.add(s.o[i]); if (ONB[s.x[i]]) occ.add(s.x[i]); }
-    const line = [];                                    // the drive: each phase, the square nearest the rim it reaches
-    for (let t = 0; t < T; t++) {
-      let best = -1;
-      for (let q = 0; q < NSQ; q++) {
-        if (!ONB[q] || pdH[q] !== t + 1 || occ.has(q) || !SHOOT(szone(ctx, q)) || (ctx.noRim && q === RIM)) continue;
-        if (best < 0 || cheb(q, RIM) < cheb(best, RIM)) best = q;
+  // Step 31, fix 3c (Shaun, 27 Nov 2026; the design: "a drive is read by the same race"). A drive starts only from an
+  // advantage: a Dribble won (his man locked), a shot fake beating a closeout (his man's Move spent; read inside the
+  // fake mix), speed (a Quick Step or Sprint to a square his man can't get in front of this phase), or an open lane
+  // (his man's zone doesn't cover the straight line in; a partial lane gives only the part it doesn't cover). The
+  // beaten defender starts in that state and chases: he never contains, and his best is a Contest 3 less from beside or
+  // 6 less from behind, 2 more off if he needed a Quick Step, never below 1. Every square the handler's movement reaches
+  // nearer the rim is a line; movement goes round bodies (real paths); each side's Quick Steps left count phase by
+  // phase (the board's in this phase, two in each phase after). Each phase the defence takes the least of: contain (a
+  // helper set, or rushed, in front in time; his man is freed), help late (an off-balance Contest; his man freed), or
+  // stay home (the chaser alone); the offence the most of: shoot, kick to anyone (a freed man at his own best look, read
+  // without his defender; the pass raced from where the handler is), fake a helper who had to move to contain (he is
+  // then spent), hesitate, or carry on. Who guards whom: the pairing that keeps the five closest.
+  function raceKit(m, Lmap, sr, T) {
+    const s = m.s, r = m.r, ctx = s.ctx, b = s.ball, h0 = s.o[b];
+    const occ = new Set(); for (let i = 0; i < 5; i++) { if (ONB[s.o[i]]) occ.add(s.o[i]); if (ONB[s.x[i]]) occ.add(s.x[i]); }
+    const qo0 = Math.max(0, LIMITS.O.qs - count(sr, 'O', 'qs')), qd0 = Math.max(0, LIMITS.X.qs - count(sr, 'X', 'qs'));
+    const clear = (p, self) => { for (const q of p) if (!ONB[q] || (q !== self && occ.has(q))) return false; return true; };
+    const stepMemo = new Map();
+    const step = (p, qs, self, moveOk, qsOk) => {        // one phase's movement from p, round bodies (kept for the race)
+      const sk = ((((p * 8 + qs) * NSQ + self) * 2 + (moveOk ? 1 : 0)) * 2) + (qsOk ? 1 : 0);
+      let hit = stepMemo.get(sk); if (hit) return hit;
+      hit = stepCalc(p, qs, self, moveOk, qsOk); stepMemo.set(sk, hit); return hit;
+    };
+    const stepCalc = (p, qs, self, moveOk, qsOk) => {
+      const out = new Set(), M = [];
+      if (moveOk) for (const pa of movePaths(p)) if (clear(pa, self)) { const d = pa[pa.length - 1]; if (!out.has(d)) { out.add(d); M.push(d); } }
+      if (qsOk && qs > 0) {
+        const Q = [];
+        for (const pa of qsPaths(p, qs)) if (clear(pa, self)) { const d = pa[pa.length - 1]; if (!out.has(d)) out.add(d); Q.push(d); }
+        for (const m1 of M) for (const pa of qsPaths(m1, qs)) if (clear(pa, self)) out.add(pa[pa.length - 1]);
+        if (moveOk) { for (const q1 of Q) for (const pa of movePaths(q1)) if (clear(pa, self)) out.add(pa[pa.length - 1]); for (const [, pa] of sprintPaths(p, qs)) if (clear(pa, self)) out.add(pa[pa.length - 1]); }
       }
-      if (best < 0 || (line.length && cheb(best, RIM) >= cheb(line[line.length - 1], RIM))) break;
-      line.push(best);
-    }
-    if (!line.length) return out;
-    const arr = [0, 1, 2, 3, 4].map(e => (ONB[s.x[e]] ? arrivePhases(s.x[e], ctx.dfn[e].qs, stanceMode(m.sN, e)) : null));
-    const shots = new Map(), shot = sq => {
-      let v = shots.get(sq);
-      if (!v) { const z = szone(ctx, sq), lk = makeLook(b, sq, 'later', 1.0, false); lk.types = ZONE_SHOTS[z]; lk.rushed = false; const pts = ctx.worth[z], card = ctx.off[b]; v = { lk, open: lk.types.map(ty => pts * cardShot(ctx, card, ty, sq)) }; shots.set(sq, v); }
-      return v;
+      out.delete(p);
+      return out;
     };
-    const vs = (sq, e, set) => {                        // the handler's shot on sq against defender e's Contest from in front (set, or off balance)
-      const sh = shot(sq), cv = e < 0 ? null : mapVals(r, sh.lk, e, set ? (W_K0 | (W_K0 << 6)) : W_K0, undefined);
-      let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const v = cv && cv[t] < sh.open[t] ? cv[t] : sh.open[t]; if (v > hi) hi = v; }
-      return hi;
+    const bfs = (start, qs, self, move0, qs0, qsLater) => {   // phases to every square (0 where he stands)
+      const dist = new Map([[start, 0]]);
+      let front = [start];
+      for (let t = 1; t <= T && front.length; t++) {
+        const nx = [];
+        for (const p of front) for (const q of step(p, qs, self, t === 1 ? move0 : true, t === 1 ? qs0 : qsLater)) if (!dist.has(q)) { dist.set(q, t); nx.push(q); }
+        front = nx;
+      }
+      return dist;
     };
-    // who guards whom: the pairing that keeps the five closest in all (squares, as the game counts them); of two as
-    // close, the first in order. A defender whose man is the ball handler frees nobody by containing him.
     const man = [0, 1, 2, 3, 4];
     { let best = Infinity; const pr = [0, 1, 2, 3, 4], used = [false, false, false, false, false];
-      const go = (d, sum) => {
-        if (sum >= best) return;
-        if (d === 5) { best = sum; for (let x = 0; x < 5; x++) man[x] = pr[x]; return; }
-        for (let a = 0; a < 5; a++) if (!used[a]) { used[a] = true; pr[d] = a; go(d + 1, sum + (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 0)); used[a] = false; }
-      };
+      const go = (d, sum) => { if (sum >= best) return; if (d === 5) { best = sum; for (let x = 0; x < 5; x++) man[x] = pr[x]; return; }
+        for (let a = 0; a < 5; a++) if (!used[a]) { used[a] = true; pr[d] = a; go(d + 1, sum + (ONB[s.x[d]] && ONB[s.o[a]] ? cheb(s.x[d], s.o[a]) : 0)); used[a] = false; } };
       go(0, 0); }
-    const pc = new Map();
-    const kick = (sq, e) => {                           // the kick-out to the man e left, from sq
-      const mm = man[e];
-      let hi = -Infinity, at = -1;
-      if (mm === b || !ONB[s.o[mm]]) return { v: hi, man: -1, at };
+    const guard = [-1, -1, -1, -1, -1]; for (let d = 0; d < 5; d++) guard[man[d]] = d;
+    const DQ = [], DM = [];                               // each defender's phases, with and without Quick Steps
+    for (let e = 0; e < 5; e++) { const q = ctx.dfn[e].qs; DQ.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], true, qd0 > 0, true) : null); DM.push(ONB[s.x[e]] ? bfs(s.x[e], q, s.x[e], true, false, false) : null); }
+    const shots = new Map(), shot = sq => { let v = shots.get(sq); if (!v) { const z = szone(ctx, sq); if (!SHOOT(z) || (ctx.noRim && sq === RIM)) v = { lk: null, z, pts: 0, open: [] }; else { const lk = makeLook(b, sq, 'later', 1.0, false); lk.types = ZONE_SHOTS[z]; lk.rushed = false; v = { lk, z, pts: ctx.worth[z], open: lk.types.map(ty => ctx.worth[z] * cardShot(ctx, ctx.off[b], ty, sq)) }; } shots.set(sq, v); } return v; };   // (no shot from a square nobody may shoot from)
+    const vs = (sq, e, set) => { const sh = shot(sq); if (!sh.lk) return -Infinity; const cv = mapVals(r, sh.lk, e, set ? (W_K0 | (W_K0 << 6)) : W_K0, undefined); let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const v = cv && cv[t] < sh.open[t] ? cv[t] : sh.open[t]; if (v > hi) hi = v; } return hi; };
+    const chaseV = (sq, j, pen, rushed) => { const sh = shot(sq), dc = ctx.dfn[j]; let hi = -Infinity; for (let t = 0; t < sh.open.length; t++) { const ty = sh.lk.types[t], rr = cardShot(ctx, ctx.off[b], ty, sq); let con = dc.cn[ty] - pen - (rushed ? 2 : 0); if (con < 1) con = 1; const v = Math.max(0, sh.pts * (rr - con)); const u = v < sh.open[t] ? v : sh.open[t]; if (u > hi) hi = u; } return hi; };
+    const openV = sq => { const sh = shot(sq); let hi = -Infinity; for (const v of sh.open) if (v > hi) hi = v; return hi; };
+    const legal = q => ONB[q] && SHOOT(szone(ctx, q)) && !(ctx.noRim && q === RIM);
+    const pc = new Map(), kc = new Map();
+    const worthOf = (o, e) => { let w = -Infinity; for (let t = 0; t < o.open.length; t++) { let v = o.open[t]; for (let d = 0; d < 5; d++) if (d !== e && o.vals[d] && o.vals[d][t] < v) v = o.vals[d][t]; if (v > w) w = v; } return w + o.adj; };
+    const byA = [[], [], [], [], []]; for (const o of Lmap) byA[o.a].push(o);
+    const kick = (sq, left) => {                        // the best pass from sq: a man whose defender left (left) is read without him
+      const key = sq * 8 + (left + 1);
+      let hit = kc.get(key); if (hit) return hit;
+      hit = { v: -Infinity, a: -1, at: -1 };
       const sb = W_(s, { o: setAt(s.o, b, sq) });
-      for (const o of Lmap) {
-        if (o.a !== mm) continue;
-        const key = (sq * 4096 + o.q0) * 5 + mm;
-        let pp = pc.get(key); if (pp === undefined) { pp = covPass(sb, mm, o.q0); pc.set(key, pp); }
-        let w = -Infinity;
-        for (let t = 0; t < o.open.length; t++) { let v = o.open[t]; for (let d = 0; d < 5; d++) if (d !== e && o.vals[d] && o.vals[d][t] < v) v = o.vals[d][t]; if (v > w) w = v; }
-        const ev = pp * (w + o.adj) - (1 - pp) * TURNOVER_COST;
-        if (ev > hi) { hi = ev; at = o.c; }
-      }
-      return { v: hi, man: mm, at };
-    };
-    for (const [j, p] of begins) {
-      const phases = [];
-      let next = -Infinity;
-      for (let t = line.length - 1; t >= 0; t--) {
-        const sq = line[t], bi = BI[sq];
-        let late = -1, lv = Infinity;                   // the best off-balance Contest that arrives in time
-        for (let e = 0; e < 5; e++) { if (!arr[e] || (e === j && t === 0) || arr[e].any[bi] > t) continue; const v = vs(sq, e, false); if (v < lv) { lv = v; late = e; } }
-        const pull = late >= 0 ? lv : vs(sq, -1, false);
-        const go = t === line.length - 1 ? pull : Math.max(pull, next);
-        let V = go, by = -1;
-        const contain = [];
-        for (let e = 0; e < 5; e++) {
-          if (!arr[e] || (e === j && t === 0) || arr[e].set[bi] > t) continue;
-          const sh = vs(sq, e, true), kk = kick(sq, e), O = Math.max(sh, kk.v);
-          contain.push({ e, shoot: sh, kick: kk.v, man: kk.man, to: kk.at, worth: O });
-          if (O < V) { V = O; by = e; }
+      for (let a = 0; a < 5; a++) {
+        if (a === b || !ONB[s.o[a]]) continue;
+        const without = guard[a] === left ? left : -1, ws = byA[a].map(o => [worthOf(o, without), o]).sort((x, y) => y[0] - x[0] || x[1].c - y[1].c || x[1].q0 - y[1].q0);
+        for (const [w, o] of ws) {
+          if (w <= hit.v) break;
+          if (o.c === sq || o.q0 === sq) continue;      // (not on the ball handler's own square)
+          const k2 = (sq * 4096 + o.q0) * 5 + a;
+          let pp = pc.get(k2); if (pp === undefined) { pp = covPass(sb, a, o.q0); pc.set(k2, pp); }
+          const ev = pp * w - (1 - pp) * TURNOVER_COST;
+          if (ev > hit.v) hit = { v: ev, a, at: o.c };
         }
-        phases.unshift({ phase: t, at: sq, shoot_on: pull, late, carry_on: go, contain, value: V, by });
-        next = V;
       }
-      const V0 = phases[0].value;
-      const look = { a: b, c: h0, q0: h0, rushed: true, r: p, open: [V0], v: V0, w: V0, adj: 0, lc: 0, dr: true, p0: 0, n0: 2, id: 900000 + j + 1, race: true, vals: [null, null, null, null, null] };
-      out.push({ look, beaten: j, p, line: line.slice(), phases });
-    }
-    return out;
+      kc.set(key, hit); return hit;
+    };
+    const front = c => { const out = []; for (let d = 0; d < 8; d++) { const f = c + DSTEP[d]; if (ONB[f] && DR[f] < DR[c] && !(f !== c && occ.has(f) && !s.x.includes(f))) out.push(f); } return out; };
+    // one race: the handler on c0 at phase 0, the chaser j (his phases dj, dmj), the first step's limits
+    // (the offence's one Hesitate or fake a phase: w = 1 when this phase's is used)
+    const race = (c0, j, dj, dmj, qoFirst, firstOk, w0) => {
+      const memo = new Map(), trace = new Map();
+      const V = (t, c, spent, w) => {
+        const key = ((t * NSQ + c) * 32 + spent) * 2 + w;
+        const hit = memo.get(key); if (hit !== undefined) return hit;
+        memo.set(key, -Infinity);                       // (a guard: no state leans on itself)
+        const opts = [];
+        let chase = Infinity, chaseHow = null;
+        for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = dj.get(a); if (k === undefined || k > t) continue; const pen = t > 0 && DR[a] <= DR[c] ? 3 : 6, rushed = !(dmj.get(a) <= t);   /* (beaten: behind the ball in the phase of the advantage) */ const v = chaseV(c, j, pen, rushed); if (v < chase) { chase = v; chaseHow = { at: a, pen, rushed }; } }
+        const shootAlone = Math.min(chase, openV(c));
+        const nxt = [];
+        if (t < T) for (const q of step(c, ctx.off[b].qs, s.o[b], true, t === 0 ? qoFirst > 0 : true)) if (legal(q) && DR[q] < DR[c] && (t > 0 || firstOk(q))) nxt.push(q);
+        nxt.sort((x, y) => x - y);
+        let carry = -Infinity, carryTo = -1;
+        for (const q of nxt) { const v = V(t + 1, q, spent, 0); if (v > carry) { carry = v; carryTo = q; } }
+        const hes = t < T && !w ? V(t + 1, c, spent, 0) : -Infinity;
+        const home = kick(c, -1);
+        const none = Math.max(shootAlone, home.v, carry, hes);
+        opts.push({ by: -1, how: 'stay home', shoot: shootAlone, kick: home, carry, carryTo, hes, worth: none });
+        for (let e = 0; e < 5; e++) {
+          if (e === j || ((spent >> e) & 1) || !DQ[e]) continue;
+          let kc2 = Infinity, km = Infinity;
+          for (const f of front(c)) { const k = DQ[e].get(f); if (k !== undefined && k < kc2) kc2 = k; const k2 = DM[e].get(f); if (k2 !== undefined && k2 < km) km = k2; }
+          if (kc2 <= t) {                               // he contains: in front in time
+            const set = km <= t, sh = Math.min(vs(c, e, set), chase), kk = kick(c, e);
+            const fk = kc2 >= 1 && kc2 === t && !w ? V(t, c, spent | (1 << e), 1) : -Infinity;   // he had to move to get there: the fake beats it
+            opts.push({ by: e, how: set ? 'contain' : 'contain, rushed', shoot: sh, kick: kk, fake: fk, worth: Math.max(sh, kk.v, fk) });
+            continue;
+          }
+          let ka = Infinity; for (let d = 0; d < 8; d++) { const a = c + DSTEP[d]; if (!ONB[a]) continue; const k = DQ[e].get(a); if (k !== undefined && k < ka) ka = k; }
+          if (ka <= t) { const sh = Math.min(vs(c, e, false), chase), kk = kick(c, e); opts.push({ by: e, how: 'help late', shoot: sh, kick: kk, carry, worth: Math.max(sh, kk.v, carry) }); }
+        }
+        let best = opts[0];
+        for (const o of opts) if (o.worth < best.worth - 1e-12) best = o;
+        memo.set(key, best.worth);
+        trace.set(key, { t, c, spent, w, chase: chase === Infinity ? null : chase, chaseHow, opts, pick: best });
+        return best.worth;
+      };
+      const v0 = V(0, c0, 0, w0 ? 1 : 0);
+      const phases = [];                                 // the line the number reads: each side's choice phase by phase
+      let t = 0, c = c0, sp = 0, w = w0 ? 1 : 0;
+      for (let guardN = 0; guardN < 12; guardN++) {
+        const tr = trace.get(((t * NSQ + c) * 32 + sp) * 2 + w); if (!tr) break;
+        phases.push(tr);
+        const p = tr.pick;
+        if (p.by >= 0 && p.how !== 'help late') { if (p.fake === p.worth && p.fake > -Infinity) { sp |= 1 << p.by; w = 1; continue; } break; }
+        const top = Math.max(p.shoot, p.kick.v, p.carry, p.hes === undefined ? -Infinity : p.hes);
+        if (p.carry === top && p.carryTo >= 0 && top > Math.max(p.shoot, p.kick.v)) { t++; c = p.carryTo; w = 0; continue; }
+        if (p.hes !== undefined && p.hes === top && top > Math.max(p.shoot, p.kick.v, p.carry)) { t++; w = 0; continue; }
+        break;
+      }
+      return { v: v0, phases, qd0, qo0 };
+    };
+    const w0 = count(sr, 'O', 'hesitate') >= LIMITS.O.hesitate;
+    return { s, b, h0, man, guard, DQ, DM, bfs, step, race, qo0, qd0, occ, legal, w0 };
   }
+  function driveRaces(m, Lmap, T, sr) {
+    const out = [], s = m.s, ctx = s.ctx, b = s.ball, h0 = s.o[b];
+    if (!ONB[h0] || s.pending || sr.pending || sr.stage !== 'play') return out;
+    const K = raceKit(m, Lmap, sr, T), jm = K.guard[b];
+    const all = () => true;
+    // a Dribble won: the beaten defender locked this phase (a Quick Step his only movement)
+    for (const [a, j] of sr.beaten || []) {
+      if (a !== b || !ONB[s.x[j]]) continue;
+      const q = ctx.dfn[j].qs, dj = K.bfs(s.x[j], q, s.x[j], false, K.qd0 > 0, true), dmj = K.bfs(s.x[j], q, s.x[j], false, false, false);
+      out.push({ kind: 'Dribble won', beaten: j, start: h0, p: 1, ...K.race(h0, j, dj, dmj, K.qo0, all, K.w0) });
+    }
+    if (out.length || jm < 0 || !ONB[s.x[jm]]) return out.map(x => finishRace(x, b, h0));
+    const qj = ctx.dfn[jm].qs, djFull = K.bfs(s.x[jm], qj, s.x[jm], true, K.qd0 > 0, true), dmFull = K.bfs(s.x[jm], qj, s.x[jm], true, false, false);
+    // an open lane: his man's zone doesn't cover the straight line in
+    const cov = new Set([s.x[jm]]);
+    { const dc = ctx.dfn[jm], arrs = ctx.zone ? [s.arrows[jm], (s.arrows[jm] + 1) % 8] : [s.arrows[jm]];
+      for (const d of arrs) { const diag = d & 1, R = Math.max(diag ? 2 : 3, dc.qs, dc.qs > 0 ? (diag ? 2 : 3) + dc.qs : 0); let q = s.x[jm];
+        for (let n = 1; n <= R; n++) { q += DSTEP[d]; if (!ONB[q] || (q !== s.x[jm] && K.occ.has(q))) break; cov.add(q); } } }
+    const lane = Array.from(laneSquares(h0, RIM)).sort((x, y) => DR[y] - DR[x] || x - y);
+    if (lane.length && !cov.has(lane[0])) {
+      const full = lane.every(q => !cov.has(q));
+      const ok = q => { if (cov.has(q)) return false; for (const x of laneSquares(h0, q)) if (cov.has(x)) return false; return true; };
+      out.push({ kind: full ? 'open lane' : 'partial lane', beaten: jm, start: h0, p: 1, ...K.race(h0, jm, djFull, dmFull, K.qo0, full ? all : ok, K.w0) });
+    }
+    // speed: a Quick Step or Sprint to a square his man can't get in front of this phase
+    if (K.qo0 > 0 && ctx.off[b].qs > 0 && !quickStepped(sr, 'O', b)) {
+      const qs = ctx.off[b].qs, dests = new Set();
+      for (const pa of qsPaths(h0, qs)) if (pa.every(q => ONB[q] && !K.occ.has(q))) dests.add(pa[pa.length - 1]);
+      if (canMoveKind(sr, 'O', b, 'sprint')) for (const [, pa] of sprintPaths(h0, qs)) if (pa.every(q => ONB[q] && !K.occ.has(q))) dests.add(pa[pa.length - 1]);
+      let best = null;
+      for (const s1 of [...dests].sort((x, y) => x - y)) {
+        if (!K.legal(s1) || DR[s1] >= DR[h0]) continue;
+        let reach = false; for (let d = 0; d < 8; d++) { const f = s1 + DSTEP[d]; if (ONB[f] && DR[f] < DR[s1] && djFull.get(f) !== undefined && djFull.get(f) <= 1) reach = true; }
+        if (reach) continue;
+        const rc = K.race(s1, jm, djFull, dmFull, 0, all, K.w0);          // (he used his Quick Step: none left to him this phase)
+        if (!best || rc.v > best.v) best = { kind: 'speed', beaten: jm, start: s1, p: 1, ...rc };
+      }
+      if (best) out.push(best);
+    }
+    return out.map(x => finishRace(x, b, h0));
+  }
+  const r2 = v => (v === -Infinity || v === Infinity || v === undefined || v === null ? null : +v.toFixed(2));
+  function raceJSON(rc) {                              // (the report: each phase as the number reads it, every choice and its worth)
+    return { advantage: rc.kind, beaten: 'X' + (rc.beaten + 1), from: sqName(rc.start), worth: r2(rc.v), quick_steps_left_now: { offence: rc.qo0, defence: rc.qd0 },
+      phases: rc.phases.map(ph => ({ phase: ph.t, ball_at: sqName(ph.c), spent: [0, 1, 2, 3, 4].filter(e => (ph.spent >> e) & 1).map(e => 'X' + (e + 1)),
+        chaser: ph.chaseHow ? { contest_worth: r2(ph.chase), from: sqName(ph.chaseHow.at), less: ph.chaseHow.pen, rushed: ph.chaseHow.rushed } : null,
+        choices: ph.opts.map(o => ({ defence: o.by < 0 ? 'stay home' : 'X' + (o.by + 1) + ' ' + o.how, shoot: r2(o.shoot), kick: o.kick && o.kick.a >= 0 ? { to: 'O' + (o.kick.a + 1), at: sqName(o.kick.at), worth: r2(o.kick.v) } : null,
+          fake: r2(o.fake), carry_on: r2(o.carry), carry_to: o.carryTo >= 0 ? sqName(o.carryTo) : null, hesitate: r2(o.hes), worth: r2(o.worth) })),
+        defence_picks: ph.pick.by < 0 ? 'stay home' : 'X' + (ph.pick.by + 1) + ' ' + ph.pick.how, worth: r2(ph.pick.worth) })) };
+  }
+  function finishRace(x, b, h0) {
+    x.look = { a: b, c: h0, q0: h0, rushed: true, r: x.p, open: [x.v], v: x.v, w: x.v, adj: 0, lc: 0, dr: true, p0: 0, n0: 2, id: 900000 + out9(x.kind) * 8 + x.beaten + 1, race: true, vals: [null, null, null, null, null] };
+    return x;
+  }
+  const out9 = k => (k === 'Dribble won' ? 0 : k === 'open lane' ? 1 : k === 'partial lane' ? 2 : 3);
   function possRead(m, s0, lastPhase, noAnswer, probe) {       // noAnswer: the value as the defence stands (the stance search's number)                           // the looks of map m, the defence's answer, the value: {U, U0, k, bars, moves, L, worth}
     const s = m.s, b = s.ball, k = Math.floor(s.clock / 2) - 1, cut = s.ctx.offCut > 0 ? s.ctx.offCut / 20 : 0;
     const owed = threeSecondsLeave(s0 || s), r = m.r, soft = s.ctx.soft;
@@ -6427,7 +6525,8 @@ const PMEngine = (() => {
     // the offence really has left, less the shot's own action
     const left = lastPhase ? (s0 || s).tok_o - 1 : 6 - owed.next, keyMask = lastPhase ? 0 : owed.mask;
     const L = []; for (const o of m.options) if (o.r > 0) L.push(o);
-    const races = driveRaces(m, L, Math.min(3, k + 1));        // fix 3b: each drive, read by its race, is one more look
+    const mapL = L.slice(), srR = s0 || m.s;
+    const races = driveRaces(m, mapL, Math.min(3, k + 1), srR);   // fix 3c: each drive from an advantage, read by its race, is one more look
     for (const rc of races) L.push(rc.look);
     const n = L.length, K = k + 1;
     // (the three seconds are counted once: a man who can't get out is charged his -5 by possParts, so his own look in
@@ -6534,6 +6633,8 @@ const PMEngine = (() => {
     // leaves the least. Kept for the reading.
     const SV0 = SV.map(rw => rw.slice()), Fm = new Map(), Gm = new Map(), UB0 = [null, null, null, null, null], ORD0 = [null, null, null, null, null];
     const movedAt = [null, null, null, null, null];     // (fix 3b: where each defender's answer movement took him, and how)
+    let RK = null;                                       // (fix 3c: the race's kit, built when a fake's race first needs it)
+    const fakeRaces = [];                                // (for the report: the races the fake mix read)
     const okLook = j => { const o = L[j]; return o.a === b ? o.n0 <= left : o.n0 <= left + ((keyMask >> o.a) & 1); };
     const ub0 = e => {                                  // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
       const u = new Float64Array(n), ord = [];
@@ -6569,8 +6670,18 @@ const PMEngine = (() => {
       let lo = Infinity, from = -1, then = -1;
       if (!mv0) {
         const fr = defenderReachExact(m.sN, e);
-        for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move'); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
-        for (const [q, arrs] of fr[1]) if (cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, fixedKind(m.sN, e, q, a)); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
+        // fix 3c: the ball handler's own look where he stands: the fake beats the closeout and the drive's race starts
+        // there, the closer's Move spent (his only movement this phase a Quick Step)
+        const fakeRace = q => {
+          if (L[i].a !== b || L[i].c !== m.s.o[b] || L[i].race) return -Infinity;
+          if (!RK) RK = raceKit(m, mapL, srR, Math.min(3, k + 1));
+          const qe = s.ctx.dfn[e].qs, dj = RK.bfs(q, qe, s.x[e], false, RK.qd0 > 0, true), dmj = RK.bfs(q, qe, s.x[e], false, false, false);
+          const rc = RK.race(m.s.o[b], e, dj, dmj, RK.qo0, () => true, true);
+          if (fakeRaces.length < 8) fakeRaces.push(Object.assign({ kind: 'shot fake beats the closeout', beaten: e, start: m.s.o[b], p: 1, closes_to: q }, rc));
+          return rc.v;
+        };
+        for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move'), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
+        for (const [q, arrs] of fr[1]) if (cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, fixedKind(m.sN, e, q, a)), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
       } else if (mv0.kind !== 'sprint') {              // fix 3b: he moved in the answer; he closes out with what he has left, and then has nothing
         const qs = s.ctx.dfn[e].qs, fr = mv0.kind === 'move' ? geoReach(mv0.q, mv0.a, qs, false, 1) : geoReach(mv0.q, mv0.a, qs, true, 0);
         if (mv0.kind === 'qs') { for (const [q, na] of fr[0]) if (na === 1 && q !== mv0.q && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'sprint'); if (g.v < lo) { lo = g.v; from = q; then = g.j; } } }
@@ -7081,13 +7192,14 @@ const PMEngine = (() => {
       const f = follow(j, e0);
       return { closer: e0, from: f.from, then: f.then, faked: f.F, contested: wc, mixed: v };
     };
-    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo, races };
+    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo, races, fakeRaces };
   }
   // step 31, fix 3: look i's two-step route for the report: who closes out, from where, and the look that follows the
   // fake (the shooter's own drive; a cutter at the rim behind the help; or a kick-out to the man he left)
   function twoStep(pp, i) {
     const mx = pp.mixInfo ? pp.mixInfo(i) : null;
-    if (!mx || mx.then < 0) return null;
+    if (!mx || mx.then === -1) return null;
+    if (mx.then === -2) return { route: 'shot fake beats the closeout, then the drive (its race)', closer: 'X' + (mx.closer + 1), closes_to: sqName(mx.from), then: 'the drive', contested: +mx.contested.toFixed(2), if_faked: +mx.faked.toFixed(2), worth: +mx.mixed.toFixed(2) };
     // (a cut: the man the ball goes to ends nearer the rim than where he stands now)
     const o = pp.L[i], o2 = pp.L[mx.then], s = pp.m.s, drove = o.a === s.ball && o.c !== s.o[o.a], cut = cheb(o2.c, RIM) < cheb(s.o[o2.a], RIM);
     const kind = o2.a === o.a ? 'closeout, then shot fake and drive' : drove ? (cut ? 'drive, then backdoor cut' : 'drive, then kick-out') : (cut ? 'shot fake, then pass to a cutter' : 'shot fake, then kick-out');
@@ -7725,7 +7837,7 @@ const PMEngine = (() => {
       two.sort((x, y) => y.p * y.worth - x.p * x.worth || x.shooter - y.shooter || (x.at < y.at ? -1 : x.at > y.at ? 1 : 0));
       // (opts.look {a, c}: every look of that attacker at that square, with its fake line: a proof reads one look)
       const at = (opts.look && pp.L) ? pp.L.map((o, i) => i).filter(i => pp.L[i].a === opts.look.a && sqName(pp.L[i].c) === opts.look.c).map(i => ({ q0: sqName(pp.L[i].q0), rushed: !!pp.L[i].rushed, p: +pp.L[i].r.toFixed(4), worth: pp.worth[i] > -Infinity ? +pp.worth[i].toFixed(4) : null, fake: twoStep(pp, i) })) : undefined;
-      return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, two_step: two.slice(0, 12), look_at: at, drive_race: (pp.races || []).map(rc => ({ beaten: rc.beaten < 0 ? null : 'X' + (rc.beaten + 1), chance: +rc.p.toFixed(4), line: rc.line.map(sqName), worth: +rc.look.v.toFixed(4), phases: rc.phases.map(ph => ({ phase: ph.phase, at: sqName(ph.at), shoot_on: +ph.shoot_on.toFixed(2), late: ph.late < 0 ? null : 'X' + (ph.late + 1), carry_on: +ph.carry_on.toFixed(2), contain: ph.contain.map(c => ({ by: 'X' + (c.e + 1), shoot: +c.shoot.toFixed(2), kick: c.kick === -Infinity ? null : +c.kick.toFixed(2), man: c.man < 0 ? null : 'O' + (c.man + 1), to: c.to < 0 ? null : sqName(c.to), worth: +c.worth.toFixed(2) })), value: +ph.value.toFixed(2), contained_by: ph.by < 0 ? null : 'X' + (ph.by + 1) })) })), bars: pp.bars.map(v => +v.toFixed(2)),
+      return { value: +(banked + V).toFixed(4), banked, shot_now: sh === null ? null : +sh.toFixed(2), play_on: +play.toFixed(4), before_answer: pp.U0 === undefined ? null : +pp.U0.toFixed(4), phases_after: pp.k, two_step: two.slice(0, 12), look_at: at, drive_race: (pp.races || []).map(raceJSON), fake_race: (pp.fakeRaces || []).map(x => Object.assign(raceJSON(x), { closes_to: sqName(x.closes_to) })), bars: pp.bars.map(v => +v.toFixed(2)),
         answer: (pp.moves || []).map(([d, q, a]) => [d, sqName(q), a]), pick: pp.pick ? { a: pp.pick.a, c: sqName(pp.pick.c), q0: sqName(pp.pick.q0), p: +pp.pick.r.toFixed(4), worth: +pp.pickWorth.toFixed(2), dribble: !!pp.pick.dr } : null, looks, catch: pp.catch === undefined ? null : pp.catch };
     }
     if (opts.only === 'offence_setup') {                  // step 31, stage 4: the offence's setup, in the design's order
