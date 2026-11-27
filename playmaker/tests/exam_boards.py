@@ -65,6 +65,29 @@ def _e25():
     return s, scr
 
 
+
+P_O = SPREAD
+
+
+# the stance search's base positions (x, arrows) for each P offence (only='stance_base'); the ball's defender is replaced
+P_BASE = {
+    'P1': (['I6', 'D8', 'K4', 'D3', 'J2'], [0, 7, 1, 6, 2]),
+    'P2': (['I4', 'D8', 'M7', 'B3', 'J2'], [0, 7, 1, 6, 2]),
+    'P3': (['I6', 'E7', 'I2', 'D3', 'O3'], [0, 7, 1, 6, 2]),
+    'P4': (['I9', 'E7', 'L6', 'E3', 'J2'], [0, 7, 1, 6, 2]),
+}
+
+
+def _p(ball_sq, ball, x_sq, arrow, base):
+    """A P board: the ball handler (piece `ball`) on ball_sq, his defender on x_sq with his first arrow `arrow`, the
+    other four on the base positions."""
+    o = list(P_O)
+    o[ball] = ball_sq
+    xs, arr = list(base[0]), list(base[1])
+    xs[ball] = x_sq
+    arr[ball] = B.DIR_NAMES.index(arrow)
+    return board('Race five', 'Iron Wall', o, xs, ball=ball, arrows=arr)
+
 BOARDS = {
     # ---- the defence -------------------------------------------------------------------------------------------------
     'E1': lambda: board('Poor five', 'Iron Wall', SPREAD),
@@ -210,4 +233,16 @@ BOARDS.update({
     'R5b': lambda: _r5('K10', 6, 2, 1),
     'R5c': lambda: _r5('J9', 4, 2, 1),             # X1 diagonal in front, arrow S: his zone (S, SW) covers I8 on the line, not I9
     'R5ctl': lambda: _r5('I9', 0, 2, 2),           # X1 set in front, arrow on O1
+    # ---- fix 4 (Shaun, 27 Nov 2026): what on-ball position is worth. Each board twice: pressed (his defender next to
+    # him) and two off (the same defender two squares off on the same line, facing him). Race five against Iron Wall.
+    # The other four stand on the stance search's own starting shape for that offence (its goal-side base positions,
+    # read with only='stance_base' on fix 4's engine and written down here), so only the one defender changes.
+    'P1': lambda: _p('I10', 0, 'I9', 'N', P_BASE['P1']),    # the top of the key, pressed in front, arrows on the drive lanes
+    'P1off': lambda: _p('I10', 0, 'I8', 'N', P_BASE['P1']),
+    'P2': lambda: _p('I6', 0, 'I5', 'N', P_BASE['P2']),     # short range, inside the mid-range
+    'P2off': lambda: _p('I6', 0, 'I4', 'N', P_BASE['P2']),
+    'P3': lambda: _p('A3', 3, 'B4', 'SE', P_BASE['P3']),    # the corner, arrows SE and S: the middle walled, the baseline left
+    'P3off': lambda: _p('A3', 3, 'C5', 'SW', P_BASE['P3']),
+    'P4': lambda: _p('I13', 0, 'I12', 'N', P_BASE['P4']),   # the control: deep, on plain wood (no shot from there)
+    'P4off': lambda: _p('I13', 0, 'I11', 'N', P_BASE['P4']),
 })

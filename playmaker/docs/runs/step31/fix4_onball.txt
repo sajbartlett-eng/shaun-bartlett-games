@@ -1,0 +1,56 @@
+== P1 665 ms value 30 | options {'value': 30, 'shot': 12, 'drives': 30, 'passes': 28.5, 'holding': 0} | on ball X2
+     X1 I9 {'own': 0, 'value': 0, 'shot': 15, 'drives': 0, 'passes': 1.5, 'holding': 0}
+     X2 D8 {'own': 3, 'value': 3, 'shot': 0, 'drives': 3, 'passes': 4.5, 'holding': 0}
+     X3 K4 {'own': 0, 'value': 0, 'shot': 0, 'drives': 0, 'passes': 0, 'holding': 0}
+     X4 D3 {'own': 0, 'value': 0, 'shot': 0, 'drives': 0, 'passes': 0.5, 'holding': 0}
+     X5 J2 {'own': 0.8, 'value': 0.8, 'shot': 0, 'drives': 0.8, 'passes': 0.95, 'holding': 0}
+   PY SAME 5.4 s 
+== P1off 454 ms value 27 | options {'value': 27, 'shot': 20.18, 'drives': 27, 'passes': 27, 'holding': 0} | on ball X5
+     X1 I8 {'own': 3, 'value': 3, 'shot': 6.82, 'drives': 3, 'passes': 3, 'holding': 0}
+     X2 D8 {'own': 1.55, 'value': 6, 'shot': 0.57, 'drives': 1.55, 'passes': 6, 'holding': 0}
+     X3 K4 {'own': 3, 'value': 3, 'shot': 0, 'drives': 3, 'passes': 1.5, 'holding': 0}
+     X4 D3 {'own': 2.43, 'value': 2.43, 'shot': 0, 'drives': 2.43, 'passes': 2, 'holding': 0}
+     X5 J2 {'own': 3.8, 'value': 3.8, 'shot': 0, 'drives': 3.8, 'passes': 2.45, 'holding': 0}
+   PY SAME 6.6 s 
+== P2 216 ms value 28 | options {'value': 28, 'shot': 21, 'drives': 28, 'passes': 27, 'holding': 0} | on ball X1
+     X1 I5 {'own': 2, 'value': 2, 'shot': 4.5, 'drives': 2, 'passes': 3, 'holding': 0}
+     X2 D8 {'own': 1.43, 'value': 5, 'shot': 0.16, 'drives': 1.43, 'passes': 6, 'holding': 0}
+     X3 M7 {'own': 1, 'value': 2, 'shot': 0.16, 'drives': 1, 'passes': 3, 'holding': 0}
+     X4 B3 {'own': 2, 'value': 3.5, 'shot': 0, 'drives': 2, 'passes': 4.5, 'holding': 0}
+     X5 J2 {'own': 2, 'value': 2, 'shot': 1, 'drives': 2, 'passes': 3, 'holding': 0}
+   PY SAME 3.6 s 
+== P2off 201 ms value 28 | options {'value': 28, 'shot': 25.5, 'drives': 28, 'passes': 27, 'holding': 0} | on ball X1
+     X1 I4 {'own': 2, 'value': 2, 'shot': 0, 'drives': 2, 'passes': 3, 'holding': 0}
+     X2 D8 {'own': 1.43, 'value': 5, 'shot': 0, 'drives': 1.43, 'passes': 6, 'holding': 0}
+     X3 M7 {'own': 1, 'value': 2, 'shot': 0, 'drives': 1, 'passes': 3, 'holding': 0}
+     X4 B3 {'own': 2, 'value': 3.5, 'shot': 0, 'drives': 2, 'passes': 4.5, 'holding': 0}
+     X5 J2 {'own': 1.67, 'value': 1.67, 'shot': 1.83, 'drives': 1.67, 'passes': 1.5, 'holding': 0}
+   PY SAME 2.5 s 
+== P3 270 ms value 27 | options {'value': 27, 'shot': 22.29, 'drives': 27, 'passes': 27, 'holding': 0} | on ball X3
+     X1 I6 {'own': 3, 'value': 3, 'shot': 0.21, 'drives': 3, 'passes': 3, 'holding': 0}
+     X2 E7 {'own': 6, 'value': 6, 'shot': 0, 'drives': 6, 'passes': 6, 'holding': 0}
+     X3 I2 {'own': 7, 'value': 7, 'shot': 0.08, 'drives': 7, 'passes': 7, 'holding': 0}
+     X4 B4 {'own': 3, 'value': 3, 'shot': 3.96, 'drives': 3, 'passes': 3, 'holding': 0}
+     X5 O3 {'own': 1, 'value': 2, 'shot': -0.29, 'drives': 1, 'passes': 2, 'holding': 0}
+   PY SAME 4.5 s 
+== P3off 207 ms value 27 | options {'value': 27, 'shot': 23.63, 'drives': 27, 'passes': 27, 'holding': 0} | on ball X3
+     X1 I6 {'own': 3, 'value': 3, 'shot': 0.38, 'drives': 3, 'passes': 3, 'holding': 0}
+     X2 E7 {'own': 3, 'value': 3, 'shot': 0, 'drives': 3, 'passes': 3, 'holding': 0}
+     X3 I2 {'own': 7.48, 'value': 7.63, 'shot': 0.21, 'drives': 7.48, 'passes': 7.63, 'holding': 0}
+     X4 C5 {'own': 3, 'value': 3, 'shot': 2.63, 'drives': 3, 'passes': 3, 'holding': 0}
+     X5 O3 {'own': 1, 'value': 1, 'shot': 0, 'drives': 1, 'passes': 0, 'holding': 0}
+   PY SAME 3.4 s 
+== P4 244 ms value 31.5 | options {'value': 31.5, 'shot': None, 'drives': 30, 'passes': 31.5, 'holding': 0} | on ball X2
+     X1 I12 {'own': 0, 'value': -1.5, 'shot': None, 'drives': 0, 'passes': -1.5, 'holding': 0}
+     X2 E7 {'own': 3, 'value': 1.5, 'shot': None, 'drives': 3, 'passes': 1.5, 'holding': 0}
+     X3 L6 {'own': 3, 'value': 1.5, 'shot': None, 'drives': 3, 'passes': 0, 'holding': 0}
+     X4 E3 {'own': 0, 'value': -1.5, 'shot': None, 'drives': 0, 'passes': -2.5, 'holding': 0}
+     X5 J2 {'own': 0, 'value': 0, 'shot': None, 'drives': 0, 'passes': 0, 'holding': 0}
+   PY SAME 4.2 s 
+== P4off 147 ms value 24 | options {'value': 24, 'shot': None, 'drives': 24, 'passes': 24, 'holding': 0} | on ball X1
+     X1 I11 {'own': 6, 'value': 6, 'shot': None, 'drives': 6, 'passes': 6, 'holding': 0}
+     X2 E7 {'own': 4.55, 'value': 9, 'shot': None, 'drives': 4.55, 'passes': 9, 'holding': 0}
+     X3 L6 {'own': 6, 'value': 7.5, 'shot': None, 'drives': 6, 'passes': 7.5, 'holding': 0}
+     X4 E3 {'own': 2, 'value': 3.6, 'shot': None, 'drives': 2, 'passes': 3.6, 'holding': 0}
+     X5 J2 {'own': 3.31, 'value': 3.6, 'shot': None, 'drives': 3.31, 'passes': 3.6, 'holding': 0}
+   PY SAME 2.5 s 

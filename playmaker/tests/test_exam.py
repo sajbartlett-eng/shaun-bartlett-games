@@ -36,22 +36,31 @@ def values(T):
 
 @needs_node
 def test_O1_a_cutter_who_catches_under_the_rim_with_one_late_defender_shoots(values, T):
-    """E13. Take the good shot: nothing he can get by playing on is worth more than his shot, and the offence's turn ends
-    with it.
+    """E13. Take the good shot: he takes it unless playing on reads higher, and then the report says what beats it.
 
     RE-RECORDED in step 31, Part C, with this note. The first line was `shot_now > play_on + 1.0` (36 against 23.53).
     The ruling of 25 November ("later answers cost actions too", D-302) changed what playing on reads: a step and a
-    shot in the same turn now face no defensive movement in between, so playing on reads 36 as well (it is the same
-    shot, one square over). The principle is unchanged and still asserted: playing on is never worth more than the
-    shot, the number is the shot's, and the turn ends in his shot."""
+    shot in the same turn now face no defensive movement in between, so playing on read 36 as well.
+
+    REWRITTEN in fix 4 (Shaun, 27 Nov 2026: "the shooter takes the shot unless playing on reads higher, and the report
+    says what beats it"). Since fix 3c, O5's cut from the corner to G3 reads 38 against O4's shot at 36, so the turn
+    passes to O5. The guard now holds both sides of that: if the shot is the most, the number is the shot's and the
+    turn ends in it; if playing on reads more, the number is playing on's, the report names the look that beats the
+    shot at exactly that worth, and the turn doesn't end in his shot from where he stands."""
     v = values['E13']
-    assert v['shot_now'] is not None and v['shot_now'] >= v['play_on'] - 1e-9, v
-    assert v['value'] == pytest.approx(v['shot_now'])
+    assert v['shot_now'] is not None, v
     prof = json.load(open(os.path.join(ROOT, 'playmaker_engine', 'data', 'ai_profiles.json')))['profiles']['allstar']
     out = T.js([T.req('E13', None, fn='searchJSON', profile=prof, max_depth=1)], timeout=300)[0]['res']
     turn = out['results'][0][1]
-    # (he may step to a square the late defender can't reach first: the turn still ends in his shot, this turn)
-    assert turn[-1][0] == 'shot' and turn[-1][2] == 3 and all(a[2] == 3 for a in turn), out['results'][:3]
+    if v['shot_now'] >= v['play_on'] - 1e-9:
+        assert v['value'] == pytest.approx(v['shot_now']) and v['beats_shot'] is None, v
+        # (he may step to a square the late defender can't reach first: the turn still ends in his shot, this turn)
+        assert turn[-1][0] == 'shot' and turn[-1][2] == 3 and all(a[2] == 3 for a in turn), out['results'][:3]
+    else:
+        bs = v['beats_shot']
+        assert bs is not None and v['value'] == pytest.approx(v['play_on']), v
+        assert bs['p'] * bs['worth'] == pytest.approx(v['play_on'], abs=1e-2) and bs['worth'] > v['shot_now'], bs
+        assert not (len(turn) == 1 and turn[0][0] == 'shot'), out['results'][:3]
 
 
 @needs_node
@@ -60,9 +69,15 @@ def test_O1_fails_without_the_defences_answer_inside_the_number(values):
     November fault: the cutter didn't shoot). `before_answer` is that reading.
 
     RE-RECORDED in step 31, Part C: the last comparison was `shot_now > play_on`; under D-302 the two are level (see the
-    note on the test above). The comparison that carries the principle is the first, and it is unchanged."""
+    note on the test above). REWRITTEN in fix 4, as the test above: the answer inside the number never raises playing
+    on; if the shot is the most, the answer is what makes it so (before it, playing on read more); if playing on reads
+    more even with the answer, the report says what beats the shot."""
     v = values['E13']
-    assert v['before_answer'] > v['shot_now'] >= v['play_on'] - 1e-9
+    assert v['before_answer'] >= v['play_on'] - 1e-9, v
+    if v['shot_now'] >= v['play_on'] - 1e-9:
+        assert v['before_answer'] > v['shot_now'], v
+    else:
+        assert v['beats_shot'] is not None and v['beats_shot']['worth'] > v['shot_now'], v
 
 
 @needs_node

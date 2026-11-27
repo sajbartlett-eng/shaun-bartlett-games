@@ -1,0 +1,38 @@
+{
+ "E13 turn": {
+  "ms": 14075,
+  "res": {
+   "x": null,
+   "arrows": null,
+   "value": null
+  }
+ },
+ "E1 stances": {
+  "ms": 133995,
+  "res": {
+   "x": [
+    "H9",
+    "B8",
+    "I5",
+    "N9",
+    "N4"
+   ],
+   "arrows": [
+    1,
+    2,
+    7,
+    0,
+    4
+   ],
+   "value": 14.2
+  }
+ },
+ "E15b offence_setup": {
+  "ms": 112731,
+  "res": {
+   "x": null,
+   "arrows": null,
+   "value": 24
+  }
+ }
+}

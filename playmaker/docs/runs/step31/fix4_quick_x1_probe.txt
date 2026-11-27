@@ -1,0 +1,4 @@
+P1q value 25.9916 races [] | X1 removes {'own': 4.01, 'value': 4.01, 'shot': 12, 'drives': 4.01, 'passes': 6.38, 'holding': 0}
+P1qoff value 27 races [] | X1 removes {'own': 3, 'value': 3, 'shot': 5.33, 'drives': 3, 'passes': 3, 'holding': 0}
+P4q value 24 races [] | X1 removes {'own': 6, 'value': 6, 'shot': None, 'drives': 6, 'passes': 6.38, 'holding': 0}
+P4qoff value 24 races [] | X1 removes {'own': 6, 'value': 6, 'shot': None, 'drives': 6, 'passes': 6, 'holding': 0}

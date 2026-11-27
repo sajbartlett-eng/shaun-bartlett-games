@@ -1954,6 +1954,20 @@ race's states from phase 1 on are shared across starts with the same chaser; eac
 boards by the bodies near it; one fake race per helper and square; each man's looks sorted once per board. · Source:
 Shaun, 27 Nov 2026 (fix 3d) · **Built.**
 
+**D-312. What on-ball position is worth (fix 4; the design's part 3).** A defender's value is what his stance removes
+from the ball handler's real options, read by the number itself with that defender lifted off the court, split by the
+handler's options as the number reads them: his shot now, his drives (the map's movement and Dribble looks and the
+drive's races), his passes (each teammate's look at its pass chance) and what holding the ball where he stands costs
+him (the Steal and the closely guarded count). Each is at its real cost in actions: the answer, the fake on a closeout
+and the races are inside the number. No weight: how much is contest and how much is denial is whatever the number
+reads. The on-ball defender is the one whose lifting raises the handler's own options (shot and drives) the most; of
+two level, the one nearer the ball. With it, the rules' walls hold inside the drive's race: in the phase of the
+advantage every movement of the ball handler obeys the arrows standing (D-170), the race's start included; the
+defender beaten by a Dribble or by the fake has his zone broken. A defender off the court guards nobody, and a ball
+handler nobody guards gets the open lane's race with no chaser. Also: the start-skipping cut (exact), and the value
+report says what beats the shot when playing on reads more. Proof boards P1 to P4 (tests/exam_boards.py), the exam's
+P checks. · Source: Shaun, 27 Nov 2026 (fix 4) · **Built**, except the Steal as the answer to a shot (not built).
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

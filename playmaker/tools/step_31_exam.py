@@ -56,6 +56,8 @@ def requests():
     reqs.append(('stances_bad_start', 'E3', T.req('E3', dict(only='stances', **{'from': _above('E3')}))))
     for n in OFF_SETUPS:
         reqs.append(('offence', n, T.req(n, dict(only='offence_setup'))))
+    for n in ONBALL:
+        reqs.append(('onball', n, T.req(n, dict(only='value', onball=True))))
     return reqs
 
 
@@ -487,7 +489,45 @@ def judge(R):
     else:
         E.rec('B4', 'the 20 November possession', 'not built', 'Not played yet (python3 tools/step_31_exam.py b4).', '')
     race_checks(E)
+    onball_checks(E)
     return E.rows
+
+
+ONBALL = ['P1', 'P1off', 'P2', 'P2off', 'P3', 'P3off', 'P4', 'P4off']
+
+
+def onball_checks(E):
+    """Step 31, fix 4: what on-ball position is worth (P1 to P4). Each board pressed against the same defender two off;
+    the expectations are what the number must be able to read. The numbers, and what each stance removes, are given
+    either way."""
+    def get(n):
+        v = E.g('onball', n) or {}
+        return v.get('value'), v.get('onball') or {}
+    def mine(ob, d):
+        return next((x['removes'] for x in ob.get('defenders', []) if x['defender'] == d), {})
+    def part(r, k):
+        return r.get(k) or 0.0
+    def line(n, d):
+        v, ob = get(n)
+        r = mine(ob, d)
+        return v, r, f"{n}: value {v}; {d} on {next((x['at'] for x in ob.get('defenders', []) if x['defender'] == d), '?')} removes {r}"
+    for name, d, what in (('P1', 'X1', 'the top of the key'), ('P2', 'X1', 'short range'), ('P3', 'X4', 'the corner'), ('P4', 'X1', 'the control')):
+        vp, rp, lp = line(name, d)
+        vo, ro, lo = line(name + 'off', d)
+        if vp is None or vo is None:
+            E.rec(name, name, 'fail', 'No reading.', '')
+            continue
+        ds, dd, dpz = part(rp, 'shot') - part(ro, 'shot'), part(rp, 'drives') - part(ro, 'drives'), part(rp, 'passes') - part(ro, 'passes')
+        if name == 'P1':
+            ok, want = vp + 1 < vo and dd + dpz > ds, 'Pressing reads clearly better for the defence, mostly through the drives and passes it removes.'
+        elif name == 'P2':
+            ok, want = abs(ds) > abs(dd) + abs(dpz), 'The difference between pressing and two off is mostly the contest.'
+        elif name == 'P3':
+            ok, want = vp < vo and part(rp, 'own') > part(ro, 'own'), "Pressing removes most of what's left after the sideline and baseline."
+        else:
+            ok, want = abs(vp - vo) <= 1, 'Pressing and standing off read about the same.'
+        E.rec(name, name + ', ' + name + 'off', 'pass' if ok else 'fail',
+              f"{lp}. {lo}. Pressed minus two off, in what {d} removes: shot {ds:+.2f}, drives {dd:+.2f}, passes {dpz:+.2f}.", want)
 
 
 def race_checks(E):
