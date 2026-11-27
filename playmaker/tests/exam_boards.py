@@ -196,6 +196,7 @@ BUILT['Race five'] = ['apgA', 'shsA', 'rrcC', 'stpfA', 'pscA']
 BUILT['Race five, quick guard'] = ['dpgA', 'shsA', 'rrcC', 'stpfA', 'pscA']
 BUILT['Race defence'] = ['dpgC', 'tndB', 'twB', 'dfsfB', 'rpcA']
 BUILT['Race defence, quick X1'] = ['dpgA', 'tndB', 'twB', 'dfsfB', 'rpcA']
+BUILT['Race five, slow dribbler'] = ['dpgC', 'shsA', 'rrcC', 'stpfA', 'pscA']
 BUILT['Race defence, slow guard'] = ['pscC', 'tndB', 'twB', 'dfsfB', 'rpcA']
 RACE_O = ['I9', 'C9', 'O9', 'A3', 'K3']           # O1 top, O2 left wing, O3 right wing, O4 left corner, O5 right block (K3: L3 is mid-range, K3 the nearest paint square)
 RACE_X = ['I8', 'D8', 'N8', 'B4', 'J3']           # X1 in front of O1, X2 to X4 on their men, X5 beside O5
@@ -246,7 +247,10 @@ BOARDS.update({
     # fix 4c (Shaun, 27 Nov 2026): R4 as a true control. X1 is as quick as O1 (Defensive Point Guard A: 2 Quick Steps,
     # Agility 10, the highest on any card), so neither side has a speed edge now or next phase. O1's Dribble 19
     # against Agility 10 is still 45 in 100: no real card makes it lower.
-    'R4': lambda: quick_steps_left(board('Race five', 'Race defence, quick X1', RACE_O, RACE_X), 0, 2),
+    # fix 4d (Shaun, 27 Nov 2026): O1 a weaker dribbler with X1's Quick Steps: Defensive Point Guard C (Dribble 15, 2
+    # Quick Steps) against Agility 10, 25 in 100; both sides with 2 Quick Steps left, so only the Dribble chance changes
+    'R4': lambda: quick_steps_left(board('Race five, slow dribbler', 'Race defence, quick X1', RACE_O, RACE_X), 2, 2),
+    'R4c': lambda: quick_steps_left(board('Race five', 'Race defence, quick X1', RACE_O, RACE_X), 0, 2),   # (fix 4c's R4)
     'R4old': lambda: quick_steps_left(board('Race five', 'Race defence', RACE_O, RACE_X), 0, 2),   # (fix 3c's R4, for the record)
     # R5: O1 at the top (I10), X1 off to his side (K10, facing him: his zone doesn't cover the line in), X5 at I4
     'R5a': lambda: _r5('K10', 6, 2, 0),

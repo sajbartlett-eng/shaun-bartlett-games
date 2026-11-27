@@ -1,0 +1,18 @@
+R4 (fix 4d), the races before and after the full reading's answer (X1 I8 to H8 with arrows NE+E, X4 B4 to C2 with W+NW, both Moves spent)
+== before the answer
+value 34 answer []
+RACE speed from G4 worth 34 win 
+  phase 0 ball undefined -> undefined [["stay home",34,"G4",34]]
+RACE Dribble from H7 worth 27 win 0.25
+  phase 0 ball undefined -> undefined [["stay home",14,"F5",27]]
+RACE speed next phase from G4 worth 34 win 
+  phase 1 ball undefined -> undefined [["stay home",34,"G4",34]]
+== after the answer
+value 29 answer []
+RACE speed from G6 worth 26 win 
+  phase 0 ball undefined -> undefined [["stay home",16,"G6",26]]
+  phase 1 ball undefined -> undefined [["stay home",14,"J2",26],["X2 contain, rushed",8.6,null,27],["X5 contain",-1.5,null,38]]
+  phase 2 ball undefined -> undefined [["stay home",26,null,26],["X2 contain, rushed",16.6,null,32.92],["X3 contain, rushed",15.25,null,26],["X5 contain",2.5,null,38]]
+RACE Dribble from I9 worth 26.5 win 0.25
+  phase 0 ball undefined -> undefined [["stay home",12,"I4",34]]
+  phase 1 ball undefined -> undefined [["stay home",34,"J2",34],["X5 contain",2.5,null,38]]

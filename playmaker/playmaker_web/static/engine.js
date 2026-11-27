@@ -6321,6 +6321,7 @@ const PMEngine = (() => {
   const PVS = { offers: 0, runs: 0, reads: 0, looks: 0, steps: 0 };
   let BOUND_LOOKS = 2;
   let PV_BRUTE = false;
+  let PV_FULL = false;                                 // fix 4d: true reads every legal movement in full, races and all (a switch: too slow to be the default, see STEP31_FIX4D_REPORT.md)
   let PV_CHECK = false;                                // a test's switch: every candidate read both ways, by difference and over every look
   const PVC = { n: 0, bad: 0, ex: [] };                                // a test's switch: every movement read in full, no cut (the answer must be the same)
   const topCount = (vec, U) => { let m = 0; for (let i = 0; i < 6; i++) if (vec[i] >= U - 1e-9) m++; return m; };
@@ -7286,13 +7287,55 @@ const PMEngine = (() => {
     const moves = [], moved = [false, false, false, false, false], taken = new Set();
     for (let j = 0; j < 5; j++) { taken.add(s.o[j]); taken.add(s.x[j]); }
     let tok = noAnswer ? 0 : s.tok_x;
+    // fix 4d: one movement of the answer put on the board, and taken back; shared by the answer and its full reading
+    const applyMove = (d, q, a, cm) => {
+      // (fix 4b: what this movement changes, kept so it can be taken back)
+      const snap = { SV: SV.map(r => r.slice()), SVK: SVK.map(r => r.slice()), SVL: split ? SVL.map(r => r.slice()) : null, gone: gone.slice(), goneK: goneK.slice(), goneL: split ? goneL.slice() : null,
+        SV0: SV0.map(r => r.slice()), mv: movedAt[d], U, rl: raceAt.size ? [...raceAt.values()].map(i => [L[i].open[0], L[i].v, L[i].w, L[i].r, races[i - raceBase]]) : null };
+      for (let i = 0; i < n; i++) {
+        const nv = sval(i, d, cm[lc[i]]);
+        if (L[i].c === q) gone[i] = 1;
+        SV[i][d] = nv;
+        if (lim[i] > nm) { if (L[i].c === q) goneK[i] = 1; SVK[i][d] = nv; }
+        if (split && limL[i] > nm) { if (L[i].c === q) goneL[i] = 1; SVL[i][d] = nv; }
+      }
+      nm++; markBlK();
+      // fix 3b: the fake's follow-up is read on the board the answer leaves, with its rotations
+      { const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
+        movedAt[d] = { q, a, kind: cm === cmAfter(q, a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, q, a) };
+        for (let i = 0; i < n; i++) SV0[i] = SV[i].slice();
+        Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); }
+      moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
+      return snap;
+    };
+    // fix 4b (Shaun, 27 Nov 2026): the drive's race is read after the defence's answer, on the board the answer leaves
+    // (each movement's defender with his Move spent). worse: it opens an advantage the board didn't have, worth more
+    // than the number.
+    const raceAfter = U1 => {
+      const xs = Array.from(s.x), ar = Array.from(s.arrows); let sp = 0;
+      for (const [d2, q2, a2] of moves) { xs[d2] = q2; ar[d2] = a2; sp |= 1 << d2; }
+      const sA = W_(m.s, { x: xs, arrows: ar, moved_x: m.s.moved_x | sp }), srA = W_(srR, { x: xs, arrows: ar, moved_x: srR.moved_x | sp });
+      const ra = driveRaces(Object.assign({}, m, { s: sA }), mapL, Math.min(3, k + 1), srA), got = new Map();
+      for (const x of ra) got.set(x.kind + ':' + x.beaten, x);
+      let worse = false;
+      for (const [key, i] of raceAt) { const x = got.get(key); L[i].open[0] = L[i].v = L[i].w = x ? x.v : -Infinity; if (x) { L[i].r = x.p; x.look = L[i]; races[i - raceBase] = x; } }
+      for (const [key, x] of got) if (!raceAt.has(key) && x.p * x.v > U1 + 1e-9) worse = true;
+      return { worse, U2: runCur(null) };
+    };
+    const takeBack = (snap, d, q) => {
+      for (let i = 0; i < n; i++) { SV[i] = snap.SV[i]; SVK[i] = snap.SVK[i]; SV0[i] = snap.SV0[i]; if (split) SVL[i] = snap.SVL[i]; }
+      gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
+      if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
+      movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--;
+      Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
+    };
     while (tok > 0 && act.length) {
       // Each movement first gets a bound (the sum over only the looks the value turns on: runAct), then they are read in
       // full best bound first. The first whose full reading is as good as its bound is the answer: no later one can
       // beat its own bound. (A cut that can't change the answer; it replaces reading every movement in full.)
       const cands = [], bm0 = topCount(vec, U);
       const offer = (d, q, a, cm) => {
-        if (PV_BRUTE) { cands.push({ d, q, a, cm, ua: -Infinity, ma: 0 }); return; }
+        if (PV_BRUTE || PV_FULL) { cands.push({ d, q, a, cm, ua: -Infinity, ma: 0 }); return; }
         // A movement can only lower the value by lowering a look the value turns on, at the step it turns on it (every
         // route's worth only rises with what playing on is worth): one that lowers none of them is not read further.
         let lowers = false;
@@ -7321,7 +7364,7 @@ const PMEngine = (() => {
         let had = false;
         for (let x = 0; x < act.length && !had; x += 2) if (SV[act[x]][d] !== null) had = true;
         const bears = q => {
-          if (had || PV_BRUTE) return true;
+          if (had || PV_BRUTE || PV_FULL) return true;
           const any = anyArrow2(q, qs, mode);
           for (let x = 0; x < act.length; x += 2) { const j = act[x]; if (L[j].c === q || any[lc[j]]) return true; }
           return false;
@@ -7336,7 +7379,23 @@ const PMEngine = (() => {
       for (const c of cands) { c.u = c.ua; c.m = c.ma; }
       cands.sort(before);
       let best = null;
-      for (const c of cands) {
+      // fix 4d (Shaun, 27 Nov 2026; D-283: never narrow the reading): every legal movement is put on the board and
+      // read in full, the races read again on the board it leaves, then taken back; the answer is the best of them
+      if (PV_FULL) {
+        for (const c of cands) {
+          PVS.runs++;
+          const sn = applyMove(c.d, c.q, c.a, c.cm), U1 = runCur(null), ra = raceAfter(U1);
+          c.full = ra.worse ? Infinity : ra.U2; c.fm = topCount(vec, ra.U2);
+          takeBack(sn, c.d, c.q);
+        }
+        runCur(null);
+        for (const c of cands) {
+          if (c.full > U + 1e-9 || (c.full >= U - 1e-9 && c.fm >= bm0)) continue;
+          const full = { d: c.d, q: c.q, a: c.a, cm: c.cm, u: c.full, m: c.fm };
+          if (best === null || before(full, best) < 0) best = full;
+        }
+      }
+      for (const c of (PV_FULL ? [] : cands)) {
         if (best !== null && before(best, c) <= 0) break;                 // its bound is already no better than the best read in full
         PVS.runs++;
         const u = runCand(c.d, c.q, c.cm), mm = u > U + 1e-9 ? 0 : candTop(u);    // (the count is wanted only when the value doesn't rise)
@@ -7351,47 +7410,12 @@ const PMEngine = (() => {
       }
       if (best === null) break;
       const { d, q, a, cm } = best;
-      // (fix 4b: what this movement changes, kept so it can be taken back if the race read after it says no)
-      const snap = { SV: SV.map(r => r.slice()), SVK: SVK.map(r => r.slice()), SVL: split ? SVL.map(r => r.slice()) : null, gone: gone.slice(), goneK: goneK.slice(), goneL: split ? goneL.slice() : null,
-        SV0: SV0.map(r => r.slice()), mv: movedAt[d], U, rl: raceAt.size ? [...raceAt.values()].map(i => [L[i].open[0], L[i].v, L[i].w, L[i].r, races[i - raceBase]]) : null };
-      for (let i = 0; i < n; i++) {
-        const nv = sval(i, d, cm[lc[i]]);
-        if (L[i].c === q) gone[i] = 1;
-        SV[i][d] = nv;
-        if (lim[i] > nm) { if (L[i].c === q) goneK[i] = 1; SVK[i][d] = nv; }
-        if (split && limL[i] > nm) { if (L[i].c === q) goneL[i] = 1; SVL[i][d] = nv; }
-      }
-      nm++; markBlK();
-      // fix 3b: the fake's follow-up is read on the board the answer leaves, with its rotations
-      { const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
-        movedAt[d] = { q, a, kind: cm === cmAfter(q, a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, q, a) };
-        for (let i = 0; i < n; i++) SV0[i] = SV[i].slice();
-        Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); }
-      moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
+      const snap = applyMove(d, q, a, cm);
       U = runCur(null);
-      if (Math.abs(U - best.u) > 1e-9) PVS.bad = (PVS.bad || 0) + 1;   // (a guard: the reading by difference must equal the full reading of the board after the movement)
-      // fix 4b (Shaun, 27 Nov 2026): the drive's race is read after the defence's answer, on the board the answer
-      // leaves (each movement's defender with his Move spent). A movement is kept only if, with the races read again,
-      // the number still doesn't rise, and it opens no advantage the board didn't have that is worth more than it.
-      { const xs = Array.from(s.x), ar = Array.from(s.arrows); let sp = 0;
-        for (const [d2, q2, a2] of moves) { xs[d2] = q2; ar[d2] = a2; sp |= 1 << d2; }
-        const sA = W_(m.s, { x: xs, arrows: ar, moved_x: m.s.moved_x | sp }), srA = W_(srR, { x: xs, arrows: ar, moved_x: srR.moved_x | sp });
-        const ra = driveRaces(Object.assign({}, m, { s: sA }), mapL, Math.min(3, k + 1), srA), got = new Map();
-        for (const x of ra) got.set(x.kind + ':' + x.beaten, x);
-        let worse = false;
-        for (const [key, i] of raceAt) { const x = got.get(key); L[i].open[0] = L[i].v = L[i].w = x ? x.v : -Infinity; if (x) { L[i].r = x.p; x.look = L[i]; races[i - raceBase] = x; } }
-        for (const [key, x] of got) if (!raceAt.has(key) && x.p * x.v > U + 1e-9) worse = true;
-        const U2 = runCur(null);
-        if (worse || U2 > snap.U + 1e-9) {               // taken back: the answer stops before it
-          for (let i = 0; i < n; i++) { SV[i] = snap.SV[i]; SVK[i] = snap.SVK[i]; SV0[i] = snap.SV0[i]; if (split) SVL[i] = snap.SVL[i]; }
-          gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
-          if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
-          movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--;
-          Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
-          U = runCur(null);
-          break;
-        }
-        U = U2; }
+      if (Math.abs(U - best.u) > 1e-9 && !PV_FULL) PVS.bad = (PVS.bad || 0) + 1;   // (a guard: the reading by difference must equal the full reading of the board after the movement)
+      const ra = raceAfter(U);
+      if (ra.worse || ra.U2 > snap.U + 1e-9) { takeBack(snap, d, q); U = runCur(null); break; }   // taken back: the answer stops before it
+      U = ra.U2;
     }
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
     let pick = -1, pe = -Infinity; const B = hist[K - 1];
@@ -8335,7 +8359,7 @@ const PMEngine = (() => {
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.cur.size + _GR.old.size, _CM.cur.size + _CM.old.size, _LS.size, _OA.size],
     _pvStats: () => PVS, _stanceProbe: (s, d, cands) => stanceProbe(s, d, cands),
     _pvCheck: on => { if (on !== undefined) { PV_CHECK = !!on; PVC.n = 0; PVC.bad = 0; PVC.ex = []; } return { on: PV_CHECK, checked: PVC.n, different: PVC.bad, examples: PVC.ex }; },
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

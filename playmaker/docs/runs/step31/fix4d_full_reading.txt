@@ -1,0 +1,176 @@
+R1 34781 ms | value 29.4224 | races: [('Dribble won', 'X1', 'I9', 27)]
+  RACE Dribble won beaten X1 from I9 worth 27 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at I9 spent [] chaser {'contest_worth': 16, 'from': 'I8', 'less': 6, 'rushed': False} -> defence picks X3 contain 27
+         {'defence': 'stay home', 'shoot': 16, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 30, 'carry_to': 'E5', 'hesitate': 27, 'worth': 30}
+         {'defence': 'X3 contain', 'shoot': 3.45, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 27}
+R2 31270 ms | value 29 | races: [('Dribble', 'X2', 'D7', 28), ('shot fake beats the closeout', 'X2', 'C9', 30)]
+  RACE Dribble beaten X2 from D7 worth 28 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at D7 spent [] chaser {'contest_worth': 20, 'from': 'E7', 'less': 6, 'rushed': False} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 20, 'kick': {'to': 'O1', 'at': 'E2', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'E6', 'hesitate': 26.75, 'worth': 28}
+    phase 1 ball at E6 spent [] chaser {'contest_worth': 22, 'from': 'E7', 'less': 6, 'rushed': False} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 22, 'kick': {'to': 'O1', 'at': 'E2', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 26.75, 'worth': 28}
+         {'defence': 'X1 help late', 'shoot': 17.95, 'kick': {'to': 'O1', 'at': 'E2', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': None, 'hesitate': None, 'worth': 28}
+         {'defence': 'X4 contain, rushed', 'shoot': 11.25, 'kick': {'to': 'O4', 'at': 'A2', 'worth': 26.75}, 'fake': 28, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 28}
+    phase 2 ball at F2 spent [] chaser {'contest_worth': 22, 'from': 'F3', 'less': 3, 'rushed': True} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 22, 'kick': {'to': 'O1', 'at': 'F5', 'worth': 28}, 'fake': None, 'carry_on': 28, 'carry_to': 'G2', 'hesitate': 28, 'worth': 28}
+         {'defence': 'X1 contain, rushed', 'shoot': 17.95, 'kick': {'to': 'O1', 'at': 'F5', 'worth': 28}, 'fake': 28, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 28}
+         {'defence': 'X4 contain', 'shoot': 6.55, 'kick': {'to': 'O1', 'at': 'F5', 'worth': 28}, 'fake': 28, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 28}
+         {'defence': 'X5 contain', 'shoot': 2.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE shot fake beats the closeout beaten X2 from C9 worth 30 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at C9 spent [] chaser {'contest_worth': 30, 'from': 'D8', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O1', 'at': 'B10', 'worth': 21}, 'fake': None, 'carry_on': 28, 'carry_to': 'C5', 'hesitate': None, 'worth': 30}
+R3 53518 ms | value 36 | races: [('speed', 'X1', 'G4', 36), ('Dribble', 'X1', 'H7', 29.93), ('speed next phase', 'X1', 'G4', 36), ('shot fake beats the closeout', 'X1', 'I9', 29.93)]
+  RACE speed beaten X1 from G4 worth 36 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at G4 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 36, 'kick': {'to': 'O2', 'at': 'I11', 'worth': 29.93}, 'fake': None, 'carry_on': 29.93, 'carry_to': 'G4', 'hesitate': 29.93, 'worth': 36}
+  RACE Dribble beaten X1 from H7 worth 29.93 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at H7 spent [] chaser {'contest_worth': 16, 'from': 'I7', 'less': 6, 'rushed': False} -> defence picks stay home 29.93
+         {'defence': 'stay home', 'shoot': 16, 'kick': {'to': 'O2', 'at': 'I11', 'worth': 29.93}, 'fake': None, 'carry_on': 29.93, 'carry_to': 'F5', 'hesitate': 29.93, 'worth': 29.93}
+  RACE speed next phase beaten X1 from G4 worth 36 quick steps left now {'offence': 2, 'defence': 2}
+    phase 1 ball at G4 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 36, 'kick': {'to': 'O2', 'at': 'I11', 'worth': 29.93}, 'fake': None, 'carry_on': 29.93, 'carry_to': 'G4', 'hesitate': 29.93, 'worth': 36}
+  RACE shot fake beats the closeout beaten X1 from I9 worth 29.93 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at I9 spent [] chaser {'contest_worth': 12, 'from': 'I8', 'less': 6, 'rushed': False} -> defence picks stay home 29.93
+         {'defence': 'stay home', 'shoot': 12, 'kick': {'to': 'O2', 'at': 'I11', 'worth': 29.93}, 'fake': None, 'carry_on': 29.93, 'carry_to': 'D7', 'hesitate': None, 'worth': 29.93}
+R4 141083 ms | value 29 | races: [('speed', 'X1', 'E8', 27), ('Dribble', 'X1', 'I9', 28.75), ('speed next phase', 'X1', 'G4', 34)]
+  RACE speed beaten X1 from E8 worth 27 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at E8 spent [] chaser None -> defence picks stay home 27
+         {'defence': 'stay home', 'shoot': 14, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'E8', 'hesitate': 27, 'worth': 27}
+         {'defence': 'X2 help late', 'shoot': 3.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': None, 'carry_on': 27, 'carry_to': None, 'hesitate': None, 'worth': 30}
+  RACE Dribble beaten X1 from I9 worth 28.75 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at I9 spent [] chaser {'contest_worth': 12, 'from': 'H8', 'less': 6, 'rushed': False} -> defence picks stay home 34
+         {'defence': 'stay home', 'shoot': 12, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 34, 'carry_to': 'I4', 'hesitate': 27, 'worth': 34}
+    phase 1 ball at I4 spent [] chaser None -> defence picks stay home 34
+         {'defence': 'stay home', 'shoot': 34, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 34}
+         {'defence': 'X5 contain', 'shoot': 2.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE speed next phase beaten X1 from G4 worth 34 quick steps left now {'offence': 2, 'defence': 2}
+    phase 1 ball at G4 spent [] chaser None -> defence picks stay home 34
+         {'defence': 'stay home', 'shoot': 34, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'G4', 'hesitate': 27, 'worth': 34}
+R4c 120977 ms | value 29.2286 | races: [('Dribble', 'X1', 'G8', 29.23), ('speed next phase', 'X1', 'G4', 38)]
+  RACE Dribble beaten X1 from G8 worth 29.23 quick steps left now {'offence': 0, 'defence': 2}
+    phase 0 ball at G8 spent [] chaser {'contest_worth': 16, 'from': 'H8', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 16, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': 30, 'worth': 30}
+    phase 1 ball at G8 spent [] chaser {'contest_worth': 12, 'from': 'H8', 'less': 3, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 12, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 30, 'carry_to': 'H4', 'hesitate': 27, 'worth': 30}
+         {'defence': 'X2 contain', 'shoot': 2.7, 'kick': {'to': 'O2', 'at': 'D10', 'worth': 30}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+    phase 2 ball at H4 spent [] chaser {'contest_worth': 30, 'from': 'I4', 'less': 3, 'rushed': True} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'D10', 'worth': 30}, 'fake': 27, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE speed next phase beaten X1 from G4 worth 38 quick steps left now {'offence': 0, 'defence': 2}
+    phase 1 ball at G4 spent [] chaser None -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 38, 'kick': {'to': 'O2', 'at': 'I12', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'G4', 'hesitate': 27, 'worth': 38}
+R5a 63006 ms | value 36 | races: [('open lane', 'X1', 'I10', 36), ('speed', 'X1', 'G5', 36), ('Dribble', 'X1', 'K9', 34.54), ('speed next phase', 'X1', 'G5', 36), ('shot fake beats the closeout', 'X1', 'I10', 38)]
+  RACE open lane beaten X1 from I10 worth 36 quick steps left now {'offence': 2, 'defence': 0}
+    phase 0 ball at I10 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 27, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'G5', 'hesitate': 28, 'worth': 36}
+    phase 1 ball at G5 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'K2', 'hesitate': 27, 'worth': 36}
+         {'defence': 'X2 help late', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'E10', 'worth': 33}, 'fake': None, 'carry_on': 36, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 5.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+    phase 2 ball at K2 spent [] chaser {'contest_worth': 36, 'from': 'L3', 'less': 6, 'rushed': True} -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 36, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 36}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE speed beaten X1 from G5 worth 36 quick steps left now {'offence': 2, 'defence': 0}
+    phase 0 ball at G5 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'G5', 'hesitate': 36, 'worth': 36}
+    phase 1 ball at G5 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'K2', 'hesitate': 27, 'worth': 36}
+         {'defence': 'X2 help late', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'E10', 'worth': 33}, 'fake': None, 'carry_on': 36, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 5.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+    phase 2 ball at K2 spent [] chaser {'contest_worth': 36, 'from': 'L3', 'less': 6, 'rushed': True} -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 36, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 36}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE Dribble beaten X1 from K9 worth 34.54 quick steps left now {'offence': 2, 'defence': 0}
+    phase 0 ball at K9 spent [] chaser {'contest_worth': 16, 'from': 'K10', 'less': 6, 'rushed': False} -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 16, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': None, 'carry_on': 38, 'carry_to': 'M7', 'hesitate': 33, 'worth': 38}
+    phase 1 ball at M7 spent [] chaser None -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 18, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': None, 'carry_on': 38, 'carry_to': 'K2', 'hesitate': 22, 'worth': 38}
+         {'defence': 'X3 contain', 'shoot': 3.45, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': 38, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+    phase 2 ball at K2 spent [] chaser None -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 38, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 38}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': 38, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE speed next phase beaten X1 from G5 worth 36 quick steps left now {'offence': 2, 'defence': 0}
+    phase 1 ball at G5 spent [] chaser None -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'G5', 'hesitate': 36, 'worth': 36}
+    phase 2 ball at G5 spent [] chaser {'contest_worth': 28, 'from': 'G6', 'less': 6, 'rushed': True} -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 28, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 36, 'carry_to': 'K2', 'hesitate': 27, 'worth': 36}
+         {'defence': 'X2 help late', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'E10', 'worth': 33}, 'fake': None, 'carry_on': 36, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 5.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+    phase 3 ball at K2 spent [] chaser {'contest_worth': 36, 'from': 'L3', 'less': 6, 'rushed': True} -> defence picks stay home 36
+         {'defence': 'stay home', 'shoot': 36, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': 36, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 36}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE shot fake beats the closeout beaten X1 from I10 worth 38 quick steps left now {'offence': 2, 'defence': 0}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'J10', 'less': 6, 'rushed': False} -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 38, 'carry_to': 'G5', 'hesitate': None, 'worth': 38}
+    phase 1 ball at G5 spent [] chaser None -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 38, 'carry_to': 'K2', 'hesitate': 27, 'worth': 38}
+         {'defence': 'X2 help late', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'E10', 'worth': 33}, 'fake': None, 'carry_on': 38, 'carry_to': None, 'hesitate': None, 'worth': 38}
+         {'defence': 'X5 contain', 'shoot': 5.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': 38, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+    phase 2 ball at K2 spent [] chaser None -> defence picks stay home 38
+         {'defence': 'stay home', 'shoot': 38, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 27, 'carry_to': 'H2', 'hesitate': 27, 'worth': 38}
+         {'defence': 'X3 contain, rushed', 'shoot': 18.25, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': 38, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+         {'defence': 'X5 contain', 'shoot': 4.5, 'kick': {'to': 'O5', 'at': 'G2', 'worth': 38}, 'fake': None, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+R5b 133121 ms | value 29 | races: [('open lane', 'X1', 'I10', 30), ('speed', 'X1', 'E6', 30), ('Dribble', 'X1', 'J9', 27.55), ('speed next phase', 'X1', 'E6', 30), ('shot fake beats the closeout', 'X1', 'I10', 30)]
+  RACE open lane beaten X1 from I10 worth 30 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at I10 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 27, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': 27, 'worth': 30}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 20.93}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 22, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 22, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O4', 'at': 'B3', 'worth': 22}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+  RACE speed beaten X1 from E6 worth 30 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 20.93}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': 30, 'worth': 30}
+  RACE Dribble beaten X1 from J9 worth 27.55 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at J9 spent [] chaser {'contest_worth': 16, 'from': 'K10', 'less': 6, 'rushed': False} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 16, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 28, 'carry_to': 'H7', 'hesitate': 27, 'worth': 28}
+    phase 1 ball at H7 spent [] chaser {'contest_worth': 28, 'from': 'I8', 'less': 6, 'rushed': True} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 28, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 22, 'worth': 28}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': 28, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 28}
+         {'defence': 'X5 contain', 'shoot': 5.5, 'kick': {'to': 'O5', 'at': 'H2', 'worth': 38}, 'fake': 22, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 38}
+  RACE speed next phase beaten X1 from E6 worth 30 quick steps left now {'offence': 2, 'defence': 1}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 20.93}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': 30, 'worth': 30}
+  RACE shot fake beats the closeout beaten X1 from I10 worth 30 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'J10', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 27}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': None, 'worth': 30}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'H11', 'worth': 20.93}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 22, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 22, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O4', 'at': 'B3', 'worth': 22}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+R5c 72454 ms | value 29 | races: [('partial lane', 'X1', 'I10', 28), ('Dribble', 'X1', 'I10', 27.98), ('shot fake beats the closeout', 'X1', 'I10', 30)]
+  RACE partial lane beaten X1 from I10 worth 28 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'J9', 'less': 6, 'rushed': False} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'E6', 'hesitate': 26.75, 'worth': 28}
+    phase 1 ball at E6 spent [] chaser {'contest_worth': 28, 'from': 'E7', 'less': 6, 'rushed': True} -> defence picks stay home 28
+         {'defence': 'stay home', 'shoot': 28, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 24, 'worth': 28}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 24, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+  RACE Dribble beaten X1 from I10 worth 27.98 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'J9', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': 26.75, 'worth': 30}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 24, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 24, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+  RACE shot fake beats the closeout beaten X1 from I10 worth 30 quick steps left now {'offence': 2, 'defence': 1}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'J9', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': None, 'worth': 30}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 24, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 24, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O2', 'at': 'F12', 'worth': 24}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+R5ctl 60732 ms | value 29 | races: [('Dribble', 'X1', 'I10', 27.58)]
+  RACE Dribble beaten X1 from I10 worth 27.58 quick steps left now {'offence': 2, 'defence': 2}
+    phase 0 ball at I10 spent [] chaser {'contest_worth': 24, 'from': 'I9', 'less': 6, 'rushed': False} -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 24, 'kick': {'to': 'O2', 'at': 'E6', 'worth': 22}, 'fake': None, 'carry_on': 30, 'carry_to': 'E6', 'hesitate': 26.75, 'worth': 30}
+    phase 1 ball at E6 spent [] chaser None -> defence picks stay home 30
+         {'defence': 'stay home', 'shoot': 30, 'kick': {'to': 'O4', 'at': 'D2', 'worth': 18}, 'fake': None, 'carry_on': 28, 'carry_to': 'F2', 'hesitate': 26.75, 'worth': 30}
+         {'defence': 'X2 contain, rushed', 'shoot': 19.8, 'kick': {'to': 'O2', 'at': 'C9', 'worth': 30}, 'fake': 26.75, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
+         {'defence': 'X4 contain, rushed', 'shoot': 15.15, 'kick': {'to': 'O4', 'at': 'A2', 'worth': 26.75}, 'fake': 30, 'carry_on': None, 'carry_to': None, 'hesitate': None, 'worth': 30}
