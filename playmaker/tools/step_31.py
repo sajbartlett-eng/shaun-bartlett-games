@@ -21,6 +21,9 @@ const E = require(path.join(root, 'playmaker_web', 'static', 'engine.js'));
 const load = n => JSON.parse(fs.readFileSync(path.join(root, 'playmaker_engine', 'data', n)));
 E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), segments: process.env.PM_SEGMENTS ? JSON.parse(fs.readFileSync(process.env.PM_SEGMENTS)) : load('segments.json'),
   learned: fs.existsSync(path.join(root, 'playmaker_engine', 'data', 'learned_weights.json')) ? load('learned_weights.json') : null });
+if (process.env.PM_ANSWER === 'answers') E._pvAnswers(true);   // fix 4e: the answer that answers every look and race (a switch)
+if (process.env.PM_ANSWER === 'full') E._pvFull(true);       // fix 4d: the full reading (the test that holds it)
+if (process.env.PM_ANSWER === 'check') { E._pvAnswers(true); E._raceCheck(true); }   // fix 4e, and each race read by difference held to it read afresh
 const reqs = JSON.parse(fs.readFileSync(0, 'utf8'));
 const out = [];
 for (const r of reqs) {
@@ -28,16 +31,20 @@ for (const r of reqs) {
   let res;
   try { res = JSON.parse(E[r.fn || 'coverageJSON'](JSON.stringify({ state: r.state, ctx: r.ctx, options: r.options || null, profile: r.profile, budget: null, max_depth: r.max_depth, stale: null }))); }
   catch (e) { res = { error: String(e && e.stack || e) }; }
-  out.push({ name: r.name, ms: Date.now() - t0, res });
+  out.push(Object.assign({ name: r.name, ms: Date.now() - t0, res }, process.env.PM_ANSWER === 'check' ? { race_check: JSON.parse(JSON.stringify(E._raceCheck())) } : {}));
 }
 process.stdout.write(JSON.stringify(out));
 """
 
 
-def js(reqs, timeout=600, segments=None):
+def js(reqs, timeout=600, segments=None, answer=None):
     """Each request {name, state, ctx, options} read by engine.js in one Node process -> [{name, ms, res}].
-    segments: another segments table (a file) for this run (the segments trial)."""
+    segments: another segments table (a file) for this run (the segments trial).
+    answer: 'answers' (fix 4e's answer), 'check' (the same, each race read by difference also read afresh) or 'full'
+    (fix 4d's full reading); None, the answer as played."""
     env = dict(os.environ, PM_SEGMENTS=segments) if segments else None
+    if answer:
+        env = dict(env or os.environ, PM_ANSWER=answer)
     p = subprocess.run(['node', '-e', NODE, os.path.abspath(ROOT)], input=json.dumps(reqs), capture_output=True, text=True, timeout=timeout, env=env)
     if p.returncode != 0:
         raise RuntimeError(p.stderr[-3000:])

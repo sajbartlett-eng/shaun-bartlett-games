@@ -1991,6 +1991,18 @@ line; the route reads it at chance 1, so no retry comes free. R4 is rewritten as
 Guard A (2 Quick Steps, Agility 10, the highest on any card), as quick as O1. · Source: Shaun, 27 Nov 2026 (fix 4c) ·
 **Built.**
 
+**D-315. Each side answers what it can see (fix 4e; the design's own section, version 6).** The defence's answer
+puts every legal movement to every look and every race the number turns on, and reads in full only those that lower
+one: a movement that lowers none leaves the number where it is or higher, so leaving it out is exact. Each look is read
+as the full reading reads it with the movement played (his contests; the fake's follow-up with him there and his Move
+spent, also on a look whose shot goes up before the movement). Each race is read again on the board the movement
+leaves, unless the movement changes nothing the race read (its trace: who guards whom, the squares the ball handler's
+movement asked about, each defender's phases where they were read, the walls and the passes), and then by difference:
+a race state keeps its worth when its square reads the same and every state it leads to reads as it did. On R1 to R5
+it gives the full reading's number, movements and races on every board. It costs about what the full reading costs
+(fix 4d), so it is a switch (`_pvAnswers`), off in play; the full reading (`_pvFull`) stays as the test that holds it.
+The answer in play is fix 4d's. · Source: Shaun, 27 Nov 2026 (fix 4e) · **Built, not in play: too slow.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

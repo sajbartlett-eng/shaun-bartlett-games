@@ -1,0 +1,689 @@
+{
+ "R": [
+  {
+   "board": "R1",
+   "full": 29.4224,
+   "full_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "full_ms": 34781,
+   "races": [
+    [
+     "Dribble won",
+     "X1",
+     "I9",
+     27
+    ]
+   ],
+   "same": true,
+   "new": 29.4224,
+   "new_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "new_ms": 32606
+  },
+  {
+   "board": "R2",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 31270,
+   "races": [
+    [
+     "Dribble",
+     "X2",
+     "D7",
+     28
+    ]
+   ],
+   "same": true,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 31092
+  },
+  {
+   "board": "R3",
+   "full": 36,
+   "full_answer": [],
+   "full_ms": 53518,
+   "races": [
+    [
+     "speed",
+     "X1",
+     "G4",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H7",
+     29.93
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     36
+    ]
+   ],
+   "same": true,
+   "new": 36,
+   "new_answer": [],
+   "new_ms": 54562
+  },
+  {
+   "board": "R4",
+   "full": 29,
+   "full_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "C2",
+     6
+    ]
+   ],
+   "full_ms": 141083,
+   "races": [
+    [
+     "speed",
+     "X1",
+     "E8",
+     27
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I9",
+     28.75
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     34
+    ]
+   ],
+   "same": true,
+   "new": 29,
+   "new_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "C2",
+     6
+    ]
+   ],
+   "new_ms": 144860
+  },
+  {
+   "board": "R4c",
+   "full": 29.2286,
+   "full_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "A2",
+     6
+    ],
+    [
+     2,
+     "K8",
+     0
+    ]
+   ],
+   "full_ms": 120977,
+   "races": [
+    [
+     "Dribble",
+     "X1",
+     "G8",
+     29.23
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     38
+    ]
+   ],
+   "same": true,
+   "new": 29.2286,
+   "new_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "A2",
+     6
+    ],
+    [
+     2,
+     "K8",
+     0
+    ]
+   ],
+   "new_ms": 129594
+  },
+  {
+   "board": "R5a",
+   "full": 36,
+   "full_answer": [],
+   "full_ms": 63006,
+   "races": [
+    [
+     "open lane",
+     "X1",
+     "I10",
+     36
+    ],
+    [
+     "speed",
+     "X1",
+     "G5",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "K9",
+     34.54
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G5",
+     36
+    ]
+   ],
+   "same": true,
+   "new": 36,
+   "new_answer": [],
+   "new_ms": 70189
+  },
+  {
+   "board": "R5b",
+   "full": 29,
+   "full_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "full_ms": 133121,
+   "races": [
+    [
+     "open lane",
+     "X1",
+     "I10",
+     30
+    ],
+    [
+     "speed",
+     "X1",
+     "E6",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "J9",
+     27.55
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     30
+    ]
+   ],
+   "same": true,
+   "new": 29,
+   "new_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "new_ms": 154383
+  },
+  {
+   "board": "R5c",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 72454,
+   "races": [
+    [
+     "partial lane",
+     "X1",
+     "I10",
+     28
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     27.98
+    ]
+   ],
+   "same": true,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 76918
+  },
+  {
+   "board": "R5ctl",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 60732,
+   "races": [
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     27.58
+    ]
+   ],
+   "same": true,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 64638
+  }
+ ],
+ "P": [
+  {
+   "board": "P1",
+   "before": 30,
+   "before_answer": [],
+   "before_ms": 878,
+   "after": 30,
+   "after_answer": [],
+   "after_ms": 53827,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "E6",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     26.75
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     30
+    ]
+   ]
+  },
+  {
+   "board": "P1off",
+   "before": 28.75,
+   "before_answer": [],
+   "before_ms": 1025,
+   "after": 28.5,
+   "after_answer": [
+    [
+     2,
+     "I6",
+     0
+    ]
+   ],
+   "after_ms": 73882,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H9",
+     28.5
+    ]
+   ]
+  },
+  {
+   "board": "P2",
+   "before": 34.75,
+   "before_answer": [],
+   "before_ms": 570,
+   "after": 31.8387,
+   "after_answer": [
+    [
+     0,
+     "I2",
+     0
+    ]
+   ],
+   "after_ms": 45833,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "I3",
+     30
+    ]
+   ]
+  },
+  {
+   "board": "P2off",
+   "before": 33,
+   "before_answer": [],
+   "before_ms": 713,
+   "after": 30,
+   "after_answer": [
+    [
+     0,
+     "K2",
+     0
+    ],
+    [
+     1,
+     "D9",
+     7
+    ]
+   ],
+   "after_ms": 42706,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H4",
+     33
+    ]
+   ]
+  },
+  {
+   "board": "P3",
+   "before": 27,
+   "before_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "before_ms": 880,
+   "after": 27,
+   "after_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "after_ms": 36673,
+   "races_after": [
+    [
+     "speed",
+     "X4",
+     "D2",
+     27
+    ],
+    [
+     "Dribble",
+     "X4",
+     "A3",
+     27
+    ],
+    [
+     "speed next phase",
+     "X4",
+     "D2",
+     27
+    ]
+   ]
+  },
+  {
+   "board": "P3off",
+   "before": 27,
+   "before_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "before_ms": 859,
+   "after": 27,
+   "after_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "after_ms": 38200,
+   "races_after": [
+    [
+     "open lane",
+     "X4",
+     "A3",
+     27
+    ],
+    [
+     "speed",
+     "X4",
+     "E2",
+     27
+    ],
+    [
+     "Dribble",
+     "X4",
+     "B4",
+     27
+    ],
+    [
+     "speed next phase",
+     "X4",
+     "E2",
+     27
+    ]
+   ]
+  },
+  {
+   "board": "P4",
+   "before": 31.5,
+   "before_answer": [
+    [
+     1,
+     "B7",
+     4
+    ]
+   ],
+   "before_ms": 1149,
+   "after": 30,
+   "after_answer": [
+    [
+     1,
+     "D6",
+     7
+    ]
+   ],
+   "after_ms": 103045,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "D11",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     30
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "D11",
+     30
+    ]
+   ]
+  },
+  {
+   "board": "P4off",
+   "before": 31.5,
+   "before_answer": [
+    [
+     1,
+     "B7",
+     4
+    ]
+   ],
+   "before_ms": 970,
+   "after": 29.625,
+   "after_answer": [
+    [
+     1,
+     "D7",
+     7
+    ]
+   ],
+   "after_ms": 85399,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     29.63
+    ]
+   ]
+  },
+  {
+   "board": "P5",
+   "before": 38,
+   "before_answer": [],
+   "before_ms": 752,
+   "after": 38,
+   "after_answer": [],
+   "after_ms": 43521,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "E6",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H8",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     36
+    ]
+   ]
+  },
+  {
+   "board": "P5off",
+   "before": 38,
+   "before_answer": [],
+   "before_ms": 669,
+   "after": 38,
+   "after_answer": [],
+   "after_ms": 40187,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "M7",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H8",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "M7",
+     36
+    ]
+   ]
+  },
+  {
+   "board": "P5ctl",
+   "before": 36,
+   "before_answer": [],
+   "before_ms": 780,
+   "after": 36,
+   "after_answer": [],
+   "after_ms": 53668,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "D11",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "D11",
+     36
+    ]
+   ]
+  },
+  {
+   "board": "P5ctloff",
+   "before": 36,
+   "before_answer": [],
+   "before_ms": 607,
+   "after": 36,
+   "after_answer": [
+    [
+     0,
+     "E11",
+     6
+    ]
+   ],
+   "after_ms": 75508,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     36
+    ]
+   ]
+  }
+ ]
+}

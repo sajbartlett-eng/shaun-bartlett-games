@@ -1,0 +1,25 @@
+R1     full  29.4224 [[2, 'J8', 6]] (34781 ms) | fix 4e  29.4224 [[2, 'J8', 6]] (32606 ms) | SAME
+R2     full       29 [] (31270 ms) | fix 4e       29 [] (31092 ms) | SAME
+R3     full       36 [] (53518 ms) | fix 4e       36 [] (54562 ms) | SAME
+R4     full       29 [[0, 'H8', 1], [3, 'C2', 6]] (141083 ms) | fix 4e       29 [[0, 'H8', 1], [3, 'C2', 6]] (144860 ms) | SAME
+R4c    full  29.2286 [[0, 'H8', 1], [3, 'A2', 6], [2, 'K8', 0]] (120977 ms) | fix 4e  29.2286 [[0, 'H8', 1], [3, 'A2', 6], [2, 'K8', 0]] (129594 ms) | SAME
+R5a    full       36 [] (63006 ms) | fix 4e       36 [] (70189 ms) | SAME
+R5b    full       29 [[2, 'J8', 6]] (133121 ms) | fix 4e       29 [[2, 'J8', 6]] (154383 ms) | SAME
+R5c    full       29 [] (72454 ms) | fix 4e       29 [] (76918 ms) | SAME
+R5ctl  full       29 [] (60732 ms) | fix 4e       29 [] (64638 ms) | SAME
+P1        before       30 [] (878 ms) | after       30 [] (53827 ms)
+P1off     before    28.75 [] (1025 ms) | after     28.5 [[2, 'I6', 0]] (73882 ms)
+P2        before    34.75 [] (570 ms) | after  31.8387 [[0, 'I2', 0]] (45833 ms)
+P2off     before       33 [] (713 ms) | after       30 [[0, 'K2', 0], [1, 'D9', 7]] (42706 ms)
+P3        before       27 [[1, 'E8', 7]] (880 ms) | after       27 [[1, 'E8', 7]] (36673 ms)
+P3off     before       27 [[1, 'E8', 7]] (859 ms) | after       27 [[1, 'E8', 7]] (38200 ms)
+P4        before     31.5 [[1, 'B7', 4]] (1149 ms) | after       30 [[1, 'D6', 7]] (103045 ms)
+P4off     before     31.5 [[1, 'B7', 4]] (970 ms) | after   29.625 [[1, 'D7', 7]] (85399 ms)
+P5        before       38 [] (752 ms) | after       38 [] (43521 ms)
+P5off     before       38 [] (669 ms) | after       38 [] (40187 ms)
+P5ctl     before       36 [] (780 ms) | after       36 [] (53668 ms)
+P5ctloff  before       36 [] (607 ms) | after       36 [[0, 'E11', 6]] (75508 ms)
+
+real	6m47.317s
+user	23m32.359s
+sys	0m30.427s
