@@ -1,0 +1,27 @@
+Step 31 fix 4i: times after each exact saving. Four cores (the Node pool), the engine and each worker held to 256 MB of heap,
+one run each unless noted. decision: a hash of the decision (the turn's results and line; the setup's whole answer), the
+same as fix 4h's wherever both were read. Every kind of answer on (fix 4h's).
+
+Where the time goes (one core, profiled):
+  one quick defence stance, offence setup E15b's first placement: 68.5 s. Its goal-side shape 66.7 s: 45 readings, 3,670 named
+    movements (2,735 by the two-step routes), 2,273 skipped by the floor, 1,510 read in full. Of all its time: the answer's
+    named movements 88% (their races 53%, their floors 19%, the two-step test 10%); the fake's follow-up inside them 23%.
+  a turn on E13: 127.5 s. The named movements 80% (read in full 44%, races 37%; the two-step test 18%; the floors 16%); the
+    fake's follow-up 31%, of which ranking every look afresh 21%.
+
+A turn on E13 (four cores):
+  fix 4h (the commit before)                          83.3 s   decision 404a0cf7f4
+  fix 4h's way, read again from this code             84.0 s   (both savings off: PM_FU_FRESH, no queue)
+  the follow-up by difference                         71.7 s   the same decision
+  plus the queue, one reading at a time               98.7 s, 88.5 s second run   the same (neighbours split: slower)
+  plus the queue, two runs of neighbours a worker     62.7 s   the same   <- fix 4i
+  plus the queue, four runs a worker                  63.4 s   the same
+
+The defence setup E1 (four cores):
+  fix 4h                                              409.5 s  decision d6a1e1d070
+  the follow-up by difference, no queue               396.5 s  the same
+  both (fix 4i)                                       404.8 s  the same
+
+The offence setup E15b (four cores):
+  fix 4h                                              over 30 min (stopped at the cap)
+  fix 4i                                              still reading after about 20 minutes when the container restarted; not run again

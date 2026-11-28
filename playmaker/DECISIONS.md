@@ -2041,6 +2041,15 @@ reading and the exact answer too). · Source: Shaun, 28 Nov 2026 (fix 4g; design
 - **A cut, watched by the exact answer:** a named Move faces the ball's square on the line (Shaun, 28 Nov 2026: keep it).
 - Source: Shaun, 28 Nov 2026 (fix 4h) · **Built.**
 
+**D-320. Exact speed: the follow-up by difference, and batches from a shared counter (fix 4i).** No number changes.
+- **The fake's follow-up by difference.** A movement changes the fake's follow-up only through the mover's own
+  contests (not the closer's, whose contest the follow-up replaces) and, once they are read again, the races. The
+  board's follow-up readings are kept and read again only where those changed; a changed look whose ceiling is below
+  the best can't reach it. They are put back whole when the movement is taken back.
+- **Batches from a shared counter.** A batch of readings is handed to the workers from a shared counter, two runs of
+  neighbouring readings a worker, and the answers go back in the batch's order (Node and the app).
+- Source: Shaun, 29 Nov 2026 (fix 4i) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

@@ -1,0 +1,22 @@
+R1        fix 4h  29.4224 [[2, 'J8', 6]] | by difference  29.4224 (1786 ms) | afresh  29.4224 (1915 ms) | same
+R2        fix 4h       29 [] | by difference       29 (4274 ms) | afresh       29 (4445 ms) | same
+R3        fix 4h       36 [] | by difference       36 (1242 ms) | afresh       36 (1179 ms) | same
+R4        fix 4h       29 [[3, 'F4', 2], [1, 'C7', 7]] | by difference       29 (7424 ms) | afresh       29 (7572 ms) | same
+R4c       fix 4h  29.6667 [[0, 'J8', 0]] | by difference  29.6667 (3363 ms) | afresh  29.6667 (3401 ms) | same
+R5a       fix 4h       36 [] | by difference       36 (2105 ms) | afresh       36 (2282 ms) | same
+R5b       fix 4h       29 [[2, 'J8', 6]] | by difference       29 (2797 ms) | afresh       29 (2778 ms) | same
+R5c       fix 4h       29 [] | by difference       29 (9078 ms) | afresh       29 (9139 ms) | Python 29.0 | same
+R5ctl     fix 4h       29 [] | by difference       29 (8542 ms) | afresh       29 (8899 ms) | Python 29.0 | same
+P1        fix 4h       30 [] | by difference       30 (1380 ms) | afresh       30 (1307 ms) | same
+P1off     fix 4h     28.5 [[2, 'J6', 2]] | by difference     28.5 (6622 ms) | afresh     28.5 (7017 ms) | same
+P2        fix 4h     31.5 [[0, 'I2', 4]] | by difference     31.5 (2480 ms) | afresh     31.5 (2653 ms) | same
+P2off     fix 4h       30 [[0, 'K2', 3], [1, 'D9', 7]] | by difference       30 (2261 ms) | afresh       30 (2405 ms) | same
+P3        fix 4h       27 [[1, 'E8', 7]] | by difference       27 (623 ms) | afresh       27 (1010 ms) | Python 27.0 | same
+P3off     fix 4h       27 [[1, 'E8', 7]] | by difference       27 (1064 ms) | afresh       27 (1348 ms) | same
+P4        fix 4h       30 [[1, 'D6', 7]] | by difference       30 (8373 ms) | afresh       30 (8052 ms) | same
+P4off     fix 4h   29.625 [[1, 'D7', 7]] | by difference   29.625 (2062 ms) | afresh   29.625 (2027 ms) | same
+P5        fix 4h       38 [] | by difference       38 (174 ms) | afresh       38 (116 ms) | Python 38.0 | same
+P5off     fix 4h       38 [] | by difference       38 (732 ms) | afresh       38 (702 ms) | Python 38.0 | same
+P5ctl     fix 4h       36 [] | by difference       36 (2804 ms) | afresh       36 (2806 ms) | same
+P5ctloff  fix 4h       36 [] | by difference       36 (1715 ms) | afresh       36 (1764 ms) | same
+the same as fix 4h on 21 of 21 boards; JavaScript 70901 ms by difference, 72817 ms afresh; Python on 5 boards (R5c, R5ctl, P3, P5, P5off), skipped 16; 283 s

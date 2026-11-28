@@ -5125,15 +5125,26 @@ const PMEngine = (() => {
   // request and every setting of the one that hands the batch out (setPool: the host's pool, in Node or the app).
   let POOL = null, IN_WORKER = false, PAR_REQ = null;
   const PARS = { batches: 0, items: 0 };
-  let PAR_MIN = 4;                                     // (a batch smaller than this is read where it is: handing it out costs more)
+  let PAR_MIN = 4; let PAR_QUEUE = true, QUEUE = null, PAR_CHUNKS = 2;   // (fix 4i: two runs of neighbours a worker: 62.7 s on E13's turn, against 63.4 with four and 71.7 handing out fixed blocks)   // fix 4i: the batch handed out from a shared counter (QUEUE: the worker's view of it)
+                                    // (a batch smaller than this is read where it is: handing it out costs more)
   function parSettings() {
     return JSON.stringify({ cfg: D.config, level: D.level === undefined ? null : D.level, me: MAP_ME, lead: RD.lead, speed: SPEED, fl: FORCE_LOOKS, tm: TABLETOP_MAP,
-      sw: [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX, NAMED_DIFF, NAME_KINDS] });
+      sw: [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX, NAMED_DIFF, NAME_KINDS, FU_DIFF] });
   }
   // kind: the reading; n items; mk(i): item i as it travels; local(i): item i read here; decode(r): a result back as the reading's own
   function parMap(kind, n, mk, local, decode) {
     if (!POOL || IN_WORKER || PAR_REQ === null || n < PAR_MIN || POOL.size < 2) { const out = new Array(n); for (let i = 0; i < n; i++) out[i] = local(i); return out; }
     const k = Math.min(POOL.size, n), parts = [], idx = [];
+    if (POOL.queue && PAR_QUEUE) {                       // fix 4i: each worker takes the next reading as it goes free; the answers go back in the batch's order
+      const all = []; for (let i = 0; i < n; i++) all.push(mk(i));
+      // (in runs of neighbours: neighbouring readings share most of their work, so a worker takes a few together)
+      const text = JSON.stringify({ items: all, queue: true, chunk: Math.max(1, Math.floor(n / (k * PAR_CHUNKS))), req: PAR_REQ, set: parSettings(), kind });
+      POOL.resetQueue();
+      const got = POOL.runAll(new Array(k).fill(text)), out = new Array(n);
+      for (let w = 0; w < k; w++) { const r = JSON.parse(got[w]); if (r.error) throw new Error('a worker failed: ' + r.error); for (let x = 0; x < r.out.length; x += 2) out[r.out[x]] = decode ? decode(r.out[x + 1]) : r.out[x + 1]; }
+      PARS.batches++; PARS.items += n;
+      return out;
+    }
     for (let w = 0; w < k; w++) { parts.push([]); idx.push([]); }
     // (contiguous blocks, as even as the count allows: neighbouring readings share most of their work, so each worker
     // keeps its own neighbours together)
@@ -5180,7 +5191,7 @@ const PMEngine = (() => {
         const z = JSON.parse(job.set);
         for (const k of Object.keys(z.cfg)) D.config[k] = z.cfg[k];
         D.level = z.level; RD.lead = z.lead; Object.assign(SPEED, z.speed); FORCE_LOOKS = z.fl; TABLETOP_MAP = z.tm;
-        [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX, NAMED_DIFF, NAME_KINDS] = z.sw;
+        [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX, NAMED_DIFF, NAME_KINDS, FU_DIFF] = z.sw;
         READS = new Map(); READS_OLD = new Map(); REACH = new Map(); REACH_OLD = new Map();
         WSET = job.set;
       }
@@ -5191,6 +5202,7 @@ const PMEngine = (() => {
       if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
       WSRCH = null;
       const f = WORK[job.kind];
+      if (job.queue) return JSON.stringify({ out: withMemo(() => { const o = [], c = job.chunk || 1; for (;;) { const i0 = Atomics.add(QUEUE, 0, c); if (i0 >= job.items.length) break; for (let i = i0; i < Math.min(i0 + c, job.items.length); i++) o.push(i, f(job.items[i], ctx, req)); } return o; }) });   // (fix 4i: [index, answer, ...])
       return JSON.stringify({ out: withMemo(() => job.items.map(it => f(it, ctx, req))) });
     } catch (e) { return JSON.stringify({ error: String(e && e.stack || e) }); }
   }
@@ -6419,6 +6431,7 @@ const PMEngine = (() => {
   let PV_ANSWERS = false;
   let RACE_CHECK = false; const RACEC = { n: 0, bad: 0, ex: [] };
   let NAME_KINDS = 3;                                   // fix 4h: the kinds of answer the races name past fix 4g's (1 a helper arriving in time, 2 the rim, 3 the two-step routes); fewer only to time each
+  let FU_DIFF = true;                                  // fix 4i: the fake's follow-up read by difference after a movement; false reads it afresh, the same numbers
   let NAMED_DIFF = true;                                // fix 4h: the named answers' races read by difference (fix 4e's trace and kit); false reads them afresh, the same numbers
   let PVD = null;                                       // fix 4g's proof (off in play): each step of the answer, what the races named and what it took   // fix 4e: a test's check that each movement's races, read by difference, equal them read afresh
   let PV_FULL = false;                                 // fix 4d: true reads every legal movement in full, races and all (a switch: too slow to be the default, see STEP31_FIX4D_REPORT.md)
@@ -7133,7 +7146,8 @@ const PMEngine = (() => {
     // as it stands (its kept readings swapped for a movement's own while fix 4e weighs it); H[k], as it stood after the
     // answer's first k movements. A look whose shot or fake goes up before the answer's movement k + 1 (its limit k)
     // reads its follow-up on H[k], as its contests already stand at that moment.
-    const ZL = { SV0, mv: movedAt, Fm: new Map(), Gm: new Map(), UB0, ORD0 };
+    const ZL = { SV0, mv: movedAt, Fm: new Map(), Gm: new Map(), UB0, ORD0, par: null };
+    const RJ = [...raceAt.values()];                    // (the race looks)
     const zSnap = () => ({ SV0: SV0.map(r => r.slice()), mv: movedAt.slice(), Fm: new Map(), Gm: new Map(), UB0: [null, null, null, null, null], ORD0: [null, null, null, null, null], rv: null });
     // fix 4g: H[k] also keeps the races as they read on that board (rv), set once its movements are the answer's; the
     // follow-up on it reads those, never the races of a movement tried since. While rv is unset (the board being read
@@ -7141,13 +7155,52 @@ const PMEngine = (() => {
     const raceVals = () => { const z = []; for (const i of raceAt.values()) z.push([L[i].open[0], L[i].v, L[i].w, L[i].r]); return z; };
     const raceSet = rv => { let x = 0; for (const i of raceAt.values()) { const o = L[i], z = rv[x++]; o.open[0] = z[0]; o.v = z[1]; o.w = z[2]; o.r = z[3]; } };
     const zClr = Z => { Z.Fm.clear(); Z.Gm.clear(); Z.UB0.fill(null); Z.ORD0.fill(null); };
-    const zFresh = () => { zClr(ZL); for (const Z of H) if (!Z.rv) zClr(Z); };
+    // fix 4i: a movement changes the live board's follow-up only through the mover's column (col: it before) and, once
+    // they are read again, the races: the board's readings are kept as ZL.par and read by difference from (zDiff), and
+    // put back when the movement is taken back (zBack)
+    const zDiff = (d, col) => {
+      ZL.par = { Fm: ZL.Fm, Gm: ZL.Gm, UB0: UB0.slice(), ORD0: ORD0.slice(), d, col, races: false, chg: [], prev: ZL.par };
+      ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null);
+      return ZL.par;
+    };
+    const zBack = () => { const P = ZL.par; ZL.Fm = P.Fm; ZL.Gm = P.Gm; for (let e = 0; e < 5; e++) { UB0[e] = P.UB0[e]; ORD0[e] = P.ORD0[e]; } ZL.par = P.prev; };
+    const zFresh = () => {
+      if (ZL.par) { ZL.par.races = true; ZL.par.chg = []; ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null); }
+      else zClr(ZL);
+      for (const Z of H) if (!Z.rv) zClr(Z);
+    };
     const H = [zSnap()];
     const zOf = (i, tk) => { const lv = tk === 1 ? limL[i] : lim[i]; return lv <= nm ? H[lv] : ZL; };
     let RK = races.kit || null;                          // (fix 3c: the race's kit, built when a fake's race first needs it; fix 3d: the drives' own)
     const fakeRaces = [], fakeKept = new Map();          // (for the report: the races the fake mix read)
     const okLook = j => { const o = L[j]; return o.a === b ? o.n0 <= left : o.n0 <= left + ((keyMask >> o.a) & 1); };
+    const ubOne = (j, e, Z) => {                        // (look j's bound, as ub0 reads it)
+      const o = L[j], open = o.open, T = open.length, row = Z.SV0[j];
+      let hi = -Infinity;
+      for (let t = 0; t < T; t++) { let v = open[t]; for (let e2 = 0; e2 < 5; e2++) if (e2 !== e && row[e2] && row[e2].cv[t] < v) v = row[e2].cv[t]; if (v > hi) hi = v; }
+      return o.r * (hi + adjv[j]) - (1 - o.r) * o.lc;
+    };
+    // fix 4i: the looks whose follow-up reading can differ from the board Z was read from (Z.par): the mover's own
+    // contests (his column), unless he is the closer, whose column the follow-up replaces; and the race looks, when the
+    // races were read again
+    const zChanged = (e, Z) => {
+      const P = Z.par; let c = P.chg[e];
+      if (c) return c;
+      const set = new Uint8Array(n); let list = [];
+      if (P.d >= 0 && P.d !== e) for (let j = 0; j < n; j++) if (P.col[j] !== Z.SV0[j][P.d]) { set[j] = 1; list.push(j); }
+      if (P.races) for (const j of RJ) if (!set[j]) { set[j] = 1; list.push(j); }
+      c = P.chg[e] = { set, list }; return c;
+    };
     const ub0 = (e, Z) => {                             // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
+      const P = FU_DIFF ? Z.par : null;
+      if (P && P.UB0[e]) {                              // (fix 4i: by difference from the board it was read from)
+        const ch = zChanged(e, Z), u0 = P.UB0[e];
+        if (!ch.list.length) { Z.UB0[e] = u0; Z.ORD0[e] = P.ORD0[e]; return; }
+        const u = Float64Array.from(u0);
+        for (const j of ch.list) u[j] = ubOne(j, e, Z);
+        const ord = P.ORD0[e].slice(); ord.sort((x, y) => u[y] - u[x] || x - y);
+        Z.UB0[e] = u; Z.ORD0[e] = ord; return;
+      }
       const u = new Float64Array(n), ord = [];
       for (let j = 0; j < n; j++) {
         const o = L[j], open = o.open, T = open.length, row = Z.SV0[j];
@@ -7164,6 +7217,20 @@ const PMEngine = (() => {
       let g = Z.Gm.get(key); if (g !== undefined) return g;
       if (!Z.UB0[e]) ub0(e, Z);
       const u = Z.UB0[e], ord = Z.ORD0[e], cm = cmAfter(q, a, s.ctx.dfn[e].qs, stanceMode(m.sN, e), kind, 1);
+      const P = FU_DIFF ? Z.par : null, g0 = P ? P.Gm.get(key) : undefined;
+      if (g0 !== undefined) {                           // fix 4i: by difference. Unless its best look changed, only the changed looks can beat it
+        const ch = zChanged(e, Z);
+        if (g0.j < 0 || !ch.set[g0.j]) {
+          let hi = -Infinity, hj = -1;
+          for (const j of ch.list) {
+            if (u[j] < g0.v || !okLook(j) || L[j].c === q) continue;   // (its ceiling is below the best: it can't reach it)
+            const o = L[j], ev = o.r * core(j, 0, e, sval(j, e, cm[lc[j]]), Z.SV0[j]) - (1 - o.r) * o.lc;
+            if (ev > hi || (ev === hi && hj >= 0 && (u[j] > u[hj] || (u[j] === u[hj] && j < hj)))) { hi = ev; hj = j; }   // (of equal ones, the first in the scan's order)
+          }
+          if (hi < g0.v) { Z.Gm.set(key, g0); return g0; }
+          if (hi > g0.v) { g = { v: hi, j: hj }; Z.Gm.set(key, g); return g; }
+        }
+      }
       let hi = -Infinity, hj = -1;
       for (let x = 0; x < ord.length; x++) {
         const j = ord[x];
@@ -7631,10 +7698,10 @@ const PMEngine = (() => {
       }
       nm++; markBlK();
       // fix 3b: the fake's follow-up is read on the board the answer leaves, with its rotations
-      { const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
+      { const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d), col = new Array(n);
         movedAt[d] = { q, a, kind: cm === cmAfter(q, a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, q, a) };
-        for (let i = 0; i < n; i++) SV0[i] = SV[i].slice();
-        zClr(ZL); }
+        for (let i = 0; i < n; i++) { col[i] = SV0[i][d]; SV0[i] = SV[i].slice(); }
+        snap.par = zDiff(d, col); }
       moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
       H.push(zSnap());                                  // (fix 4f: the board as it stands after this movement)
       return snap;
@@ -7666,7 +7733,9 @@ const PMEngine = (() => {
       gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
       if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
       movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--; H.pop();
-      zFresh(); markBlK();
+      if (ZL.par === snap.par) zBack(); else { zClr(ZL); ZL.par = null; }   // (fix 4i: the board's own readings back)
+      for (const Z of H) if (!Z.rv) zClr(Z);
+      markBlK();
     };
     // Fix 4g (Shaun, 28 Nov 2026: "each race names its own answers"). In play, each race the value turns on says what
     // would stop it: a square in front of its line (its start and the straight line to the rim, and the squares in
@@ -7772,15 +7841,15 @@ const PMEngine = (() => {
           const d = c.d, col = new Array(n);
           for (let i = 0; i < n; i++) { col[i] = SV0[i][d]; SV0[i][d] = sval(i, d, c.cm[lc[i]]); }
           const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
-          sv = { d, col, mv: movedAt[d], Fm: ZL.Fm, Gm: ZL.Gm, UB0: UB0.slice(), ORD0: ORD0.slice() };
+          sv = { d, col, mv: movedAt[d] };
           movedAt[d] = { q: c.q, a: c.a, kind: c.cm === cmAfter(c.q, c.a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, c.q, c.a) };
-          ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null);
+          if (NAMED_DIFF) zDiff(d, col); else { sv.Fm = ZL.Fm; sv.Gm = ZL.Gm; sv.UB0 = UB0.slice(); sv.ORD0 = ORD0.slice(); sv.par = ZL.par; ZL.par = null; ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null); }   // (fix 4i: by difference)
         };
         const off = () => {
           const z = sv, d = z.d;
           for (let i = 0; i < n; i++) SV0[i][d] = z.col[i];
-          movedAt[d] = z.mv; ZL.Fm = z.Fm; ZL.Gm = z.Gm;
-          for (let e = 0; e < 5; e++) { UB0[e] = z.UB0[e]; ORD0[e] = z.ORD0[e]; }
+          movedAt[d] = z.mv;
+          if (NAMED_DIFF) zBack(); else { ZL.Fm = z.Fm; ZL.Gm = z.Gm; for (let e = 0; e < 5; e++) { UB0[e] = z.UB0[e]; ORD0[e] = z.ORD0[e]; } ZL.par = z.par; }
           sv = null;
         };
         const lowers = c => {
@@ -7912,14 +7981,14 @@ const PMEngine = (() => {
           const d = c.d, col = new Array(n);
           for (let i = 0; i < n; i++) { col[i] = SV0[i][d]; SV0[i][d] = sval(i, d, c.cm[lc[i]]); }
           const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
-          cSave = { d, col, mv: movedAt[d], Fm: ZL.Fm, Gm: ZL.Gm, UB0: UB0.slice(), ORD0: ORD0.slice() };
+          cSave = { d, col, mv: movedAt[d], Fm: ZL.Fm, Gm: ZL.Gm, UB0: UB0.slice(), ORD0: ORD0.slice(), par: ZL.par }; ZL.par = null;
           movedAt[d] = { q: c.q, a: c.a, kind: c.cm === cmAfter(c.q, c.a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, c.q, c.a) };
           ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null);
         };
         const candOff = () => {
           const z = cSave, d = z.d;
           for (let i = 0; i < n; i++) SV0[i][d] = z.col[i];
-          movedAt[d] = z.mv; ZL.Fm = z.Fm; ZL.Gm = z.Gm;
+          movedAt[d] = z.mv; ZL.Fm = z.Fm; ZL.Gm = z.Gm; ZL.par = z.par;
           for (let e = 0; e < 5; e++) { UB0[e] = z.UB0[e]; ORD0[e] = z.ORD0[e]; }
           cSave = null;
         };
@@ -8077,7 +8146,7 @@ const PMEngine = (() => {
       if ((PV_ANSWERS || PV_FULL || best.fullRead) && !ra.worse && Math.abs(ra.U2 - best.u) > 1e-9) PVS.bad = (PVS.bad || 0) + 1;   // (fix 4h: a named answer's reading by difference is its reading afresh)   // (fix 4e's guard: the answer's reading is the full reading)
       if (PVD) PVD.push({ path: 'accept', step: nm - 1, d, q: sqName(q), a, u: best.u, U2: ra.U2, worse: ra.worse, back: ra.worse || ra.U2 > snap.U + 1e-9 });
       if (ra.worse || ra.U2 > snap.U + 1e-9) { takeBack(snap, d, q); U = runCur(null); if (PVD) PVD.push({ path: 'back', U, snapU: snap.U }); break; }   // taken back: the answer stops before it
-      U = ra.U2; if (trN) TRc = trN; raNow = ra.ra;
+      U = ra.U2; if (trN) TRc = trN; raNow = ra.ra; ZL.par = null;   // (fix 4i: the answer keeps it; it is read from no longer)
       H[nm].rv = raceVals();                            // (fix 4g: the answer's board after nm movements, with its races)
     }
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
@@ -9041,7 +9110,7 @@ const PMEngine = (() => {
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.cur.size + _GR.old.size, _CM.cur.size + _CM.old.size, _LS.size, _OA.size],
     _pvStats: () => PVS, _stanceProbe: (s, d, cands) => stanceProbe(s, d, cands),
     _pvCheck: on => { if (on !== undefined) { PV_CHECK = !!on; PVC.n = 0; PVC.bad = 0; PVC.ex = []; } return { on: PV_CHECK, checked: PVC.n, different: PVC.bad, examples: PVC.ex }; },
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, setPool: p => { POOL = p || null; }, workJSON, _worker: v => { IN_WORKER = !!v; }, PARS, _parMin: v => { PAR_MIN = v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _pvDebug: v => { PVD = v ? [] : null; return PVD; }, _namedDiff: v => { NAMED_DIFF = !!v; }, _nameKinds: v => { NAME_KINDS = v; }, _pvDebugGet: () => PVD, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, setPool: p => { POOL = p || null; }, workJSON, _worker: v => { IN_WORKER = !!v; }, PARS, _parMin: v => { PAR_MIN = v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _pvDebug: v => { PVD = v ? [] : null; return PVD; }, _namedDiff: v => { NAMED_DIFF = !!v; }, _nameKinds: v => { NAME_KINDS = v; }, _fuDiff: v => { FU_DIFF = !!v; }, _queue: sab => { QUEUE = new Int32Array(sab); }, _parQueue: v => { PAR_QUEUE = !!v; }, _pvDebugGet: () => PVD, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

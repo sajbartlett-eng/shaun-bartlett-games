@@ -7,6 +7,7 @@ const load = n => JSON.parse(fs.readFileSync(path.join(root, 'playmaker_engine',
 E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoarse: load('vcoarse.json'), segments: process.env.PM_SEGMENTS ? JSON.parse(fs.readFileSync(process.env.PM_SEGMENTS)) : load('segments.json'),
   learned: fs.existsSync(path.join(root, 'playmaker_engine', 'data', 'learned_weights.json')) ? load('learned_weights.json') : null });
 E._worker(true);
+if (workerData.qsab) E._queue(workerData.qsab);                  // (fix 4i: the counter the workers share)
 const enc = new TextEncoder();
 parentPort.on('message', text => {
   const out = enc.encode(E.workJSON(text));

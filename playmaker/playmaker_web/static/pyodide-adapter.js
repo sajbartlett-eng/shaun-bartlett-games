@@ -17,20 +17,21 @@
     // fix 4f (Shaun, 28 Nov 2026): several cores. Each sub-worker is the same engine with the same data; engine.js hands
     // it a batch of independent readings and waits for the answers in shared memory, so the decision is the one a single
     // core makes. Shared memory needs the page to be cross-origin isolated; without it the engine reads on one core.
-    const SUB = "self.onmessage = (ev) => { const m = ev.data; if (m.type === 'init') { self.PMEngine.init(m.data); self.PMEngine._worker(true); self.F = new Int32Array(m.sab, 0, 2); self.B = new Uint8Array(m.sab, 8); self.postMessage('ready'); return; }" +
+    const SUB = "self.onmessage = (ev) => { const m = ev.data; if (m.type === 'init') { self.PMEngine.init(m.data); self.PMEngine._worker(true); if (m.qsab) self.PMEngine._queue(m.qsab); self.F = new Int32Array(m.sab, 0, 2); self.B = new Uint8Array(m.sab, 8); self.postMessage('ready'); return; }" +
       " const out = new TextEncoder().encode(self.PMEngine.workJSON(m.text)); if (out.length > self.B.length) { Atomics.store(self.F, 0, 2); Atomics.notify(self.F, 0); return; }" +
       " self.B.set(out); Atomics.store(self.F, 1, out.length); Atomics.store(self.F, 0, 1); Atomics.notify(self.F, 0); };";
     // (it resolves once every sub-worker has started: a worker blocked waiting for them would never let them start)
     async function makeWebPool(engineJs, data, n) {
       const url = URL.createObjectURL(new Blob([engineJs, '\n', SUB], { type: 'text/javascript' })), ws = [], dec = new TextDecoder(), up = [];
+      const qsab = new SharedArrayBuffer(4), q = new Int32Array(qsab);   // (fix 4i: the counter the sub-workers take readings from)
       for (let k = 0; k < n; k++) {
         const sab = new SharedArrayBuffer(8 + 32 * 1024 * 1024), w = new Worker(url);
         up.push(new Promise(res => { w.onmessage = () => res(); }));
-        w.postMessage({ type: 'init', data, sab });
+        w.postMessage({ type: 'init', data, sab, qsab });
         ws.push({ w, flag: new Int32Array(sab, 0, 2), buf: new Uint8Array(sab, 8) });
       }
       await Promise.all(up);
-      return { size: n, runAll(texts) {
+      return { size: n, queue: true, resetQueue() { Atomics.store(q, 0, 0); }, runAll(texts) {
         for (let k = 0; k < texts.length; k++) { Atomics.store(ws[k].flag, 0, 0); ws[k].w.postMessage({ type: 'run', text: texts[k] }); }
         const out = [];
         for (let k = 0; k < texts.length; k++) {

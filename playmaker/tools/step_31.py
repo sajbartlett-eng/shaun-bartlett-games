@@ -27,7 +27,8 @@ if (process.env.PM_ANSWER === 'check') { E._pvAnswers(true); E._raceCheck(true);
 if (process.env.PM_DEBUG) E._pvDebug(true);
 if (process.env.PM_KINDS) E._nameKinds(+process.env.PM_KINDS);             // fix 4h: the kinds of answer the races name (0 to 3)
 if (process.env.PM_NAMED_FRESH) E._namedDiff(false);                      // fix 4h: the named answers' races read afresh, not by difference
-if (process.env.PM_RACE_CHECK) E._raceCheck(true);                        // fix 4h: each race read by difference also read afresh                 // fix 4g's proof: each step of the answer, what the races named and what it took
+if (process.env.PM_RACE_CHECK) E._raceCheck(true);
+if (process.env.PM_FU_FRESH) E._fuDiff(false);                            // fix 4i: the fake's follow-up read afresh after each movement                        // fix 4h: each race read by difference also read afresh                 // fix 4g's proof: each step of the answer, what the races named and what it took
 let pool = null;                                             // fix 4f: PM_CORES workers beside this one
 if (+process.env.PM_CORES > 1) { pool = require(path.join(root, 'tools', 'engine_pool.js')).makePool(root, +process.env.PM_CORES); E.setPool(pool); }
 const reqs = JSON.parse(fs.readFileSync(0, 'utf8'));

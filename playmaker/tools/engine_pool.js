@@ -8,11 +8,11 @@ const { Worker } = require('worker_threads');
 const CAP = 32 * 1024 * 1024;                          // the room for one worker's results (they are numbers and small lists)
 
 function makePool(root, n) {
-  const workers = [];
+  const workers = [], qsab = new SharedArrayBuffer(4), q = new Int32Array(qsab);   // (fix 4i: the shared counter the workers take readings from)
   for (let k = 0; k < n; k++) {
     const sab = new SharedArrayBuffer(8 + CAP), flag = new Int32Array(sab, 0, 2), buf = new Uint8Array(sab, 8);
     // (each worker held to the memory a phone's browser gives one engine: 256 MB, PM_WORKER_MB to change it)
-    const w = new Worker(__filename.replace(/engine_pool\.js$/, 'engine_pool_worker.js'), { workerData: { root, sab }, resourceLimits: { maxOldGenerationSizeMb: +process.env.PM_WORKER_MB || 256 } });
+    const w = new Worker(__filename.replace(/engine_pool\.js$/, 'engine_pool_worker.js'), { workerData: { root, sab, qsab }, resourceLimits: { maxOldGenerationSizeMb: +process.env.PM_WORKER_MB || 256 } });
     w.on('error', e => { Atomics.store(flag, 0, 3); Atomics.notify(flag, 0); console.error('engine worker failed:', e && e.message); });
     w.unref();
     workers.push({ w, flag, buf });
@@ -20,6 +20,8 @@ function makePool(root, n) {
   const dec = new TextDecoder();
   return {
     size: n,
+    queue: true,
+    resetQueue() { Atomics.store(q, 0, 0); },
     runAll(texts) {                                    // texts[k] to worker k, all at once; their answers in the same order
       for (let k = 0; k < texts.length; k++) { Atomics.store(workers[k].flag, 0, 0); workers[k].w.postMessage(texts[k]); }
       const out = [];
