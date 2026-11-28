@@ -1,0 +1,10 @@
+E13turn {"ms":15381,"cores":0,"batches":0,"items":0,"mem":97,"sig":"d1b6a703b0ac8f66444033375c70f592","pick":"{\"results\":[[38,[[\"pass\",\"O\",3,n
+E13turn {"ms":12693,"cores":4,"batches":2,"items":167,"mem":76,"sig":"d1b6a703b0ac8f66444033375c70f592","pick":"{\"results\":[[38,[[\"pass\",\"O\",3
+E1 {"ms":79027,"cores":0,"batches":0,"items":0,"mem":105,"sig":"980c1fbba7db8adb3177cbbe3f3599f3","pick":"{\"x\":[\"I5\",\"E7\",\"D3\",\"G2\",\
+E1 {"ms":48986,"cores":4,"batches":38,"items":1675,"mem":114,"sig":"980c1fbba7db8adb3177cbbe3f3599f3","pick":"{\"x\":[\"I5\",\"E7\",\"D3\",\"G2
+E15b {"ms":169442,"cores":0,"batches":0,"items":0,"mem":187,"sig":"00ecc6b98a70c4e42b6cd0629b0076b4","pick":"{\"squares\":[\"A2\",\"C13\",\"F10\"
+E15b {"ms":113770,"cores":4,"batches":86,"items":3825,"mem":148,"sig":"00ecc6b98a70c4e42b6cd0629b0076b4","pick":"{\"squares\":[\"A2\",\"C13\",\"F
+E13turn-answers (fix 4e answer, 4 cores): stopped at the 10-minute cap
+answers exit 143
+
+[exited with code 0]

@@ -300,8 +300,8 @@ const PMEngine = (() => {
       approach: s.approach, shot: s.shot || null, prev_wait: s.prev_wait || '', beaten: s.beaten.map(t => t.slice()), fouls: s.fouls,
       bonus5: s.bonus5, tos: s.tos, inbound: s.inbound, target: s.target, result: s.result || null, zeroed: s.zeroed, phase: s.phase,
       turn_moved: s.turn_moved, qs_o: s.qs_o, qs_x: s.qs_x, forced: s.forced, react_moved: s.react_moved, turn_lead: s.turn_lead,
-      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, decl: s.decl, fake: s.fake, reset: s.reset, turn_x: s.turn_x ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
-      phase_x: s.phase_x ? [s.phase_x[0].map(sq), s.phase_x[1].slice()] : null };
+      rush_o: s.rush_o, rush_x: s.rush_x, key_o: s.key_o, grd: s.grd, decl: s.decl, fake: s.fake, reset: s.reset, turn_x: s.turn_x && s.turn_x.length ? [s.turn_x[0].map(sq), s.turn_x[1].slice()] : null,
+      phase_x: s.phase_x && s.phase_x.length ? [s.phase_x[0].map(sq), s.phase_x[1].slice()] : null };
   }
 
   // ---- actions --------------------------------------------------------------------------------------------------------
@@ -4068,6 +4068,12 @@ const PMEngine = (() => {
     }
     return fin;
   }
+  // (fix 4f) a batch of the turn search's readings: by the Searcher's workers when it has them, else one by one here
+  function evalMany(evaluate, s, ts, ended, local) {
+    if (!evaluate.many) { const out = new Array(ts.length); for (let i = 0; i < ts.length; i++) out[i] = local(i); return out; }
+    const base = stateJSON(s);
+    return parMap('quick', ts.length, i => ({ base, acts: ts[i].map(actionJSON), ended }), local, null);
+  }
   function turns(s, beam, read, evaluate, deadline, expand, second, mode, whole, width) {      // mode: the level's open list (openMode); whole: search.whole_turns
     const side = actor(s), sign = side === 'O' ? 1 : -1;
     const open = openOn(side, mode) && !!evaluate;
@@ -4076,27 +4082,35 @@ const PMEngine = (() => {
     const scored = [], inHand = inHandOn();
     // step 18j (search.keep_settled): a turn the rules settle outright is never cut for turns that only read higher
     const keep = keepSettledOn() && s.stage === 'play' && !!evaluate, exact = new Set();
-    for (const a of first) {
-      if (deadline && now() > deadline) throw TIMEOUT;
-      const nxt = apply(s, a);
-      scored.push([sign * (evaluate ? evaluate(whole && !inHand ? endedTurn(s, nxt) : nxt) : 0.0), [a]]);
+    // (fix 4f: every first action read in one batch, put back in the list's order)
+    const end1 = whole && !inHand, nx1 = first.map(a => apply(s, a));
+    if (deadline && now() > deadline) throw TIMEOUT;
+    const v1 = evaluate ? evalMany(evaluate, s, first.map(a => [a]), end1, i => evaluate(end1 ? endedTurn(s, nx1[i]) : nx1[i])) : null;
+    first.forEach((a, i) => {
+      const nxt = nx1[i];
+      scored.push([sign * (evaluate ? v1[i] : 0.0), [a]]);
       if (keep && !isChance(nxt) && nxt.stage !== 'play') exact.add(turnKey([a]));
-    }
+    });
     scored.sort((x, y) => y[0] - x[0]);
     const out = scored.slice(0, beam);
     if (exact.size) for (const r of scored.slice(beam)) if (exact.has(turnKey(r[1]))) out.push(r);
     const nexp = expand != null ? expand : Math.max(3, Math.floor(beam / 3));
+    const two = [], nx2 = [];
     for (const [, t] of scored.slice(0, nexp)) {
       const a = t[0], nxt = apply(s, a);
       if (endsTurn(s, nxt, side)) continue;
       for (const b of (open ? legalActions(nxt) : candidateActions(nxt, null, second))) {
         if (deadline && now() > deadline) throw TIMEOUT;
         if (b.kind === 'end_turn' || b.kind === 'forfeit') continue;
-        const n2 = apply(nxt, b);
-        out.push([sign * (evaluate ? evaluate(n2) : 0.0), [a, b]]);
-        if (keep && !isChance(n2) && n2.stage !== 'play') exact.add(turnKey([a, b]));
+        two.push([a, b]); nx2.push(apply(nxt, b));
       }
     }
+    const v2 = evaluate ? evalMany(evaluate, s, two, false, i => evaluate(nx2[i])) : null;   // (fix 4f: every second action in one batch)
+    two.forEach((t, i) => {
+      const n2 = nx2[i];
+      out.push([sign * (evaluate ? v2[i] : 0.0), t]);
+      if (keep && !isChance(n2) && n2.stage !== 'play') exact.add(turnKey(t));
+    });
     out.sort((x, y) => y[0] - x[0]);
     const seen = new Set(), fin = [];
     for (const [v, t] of out) {
@@ -4148,7 +4162,8 @@ const PMEngine = (() => {
       this.width = openWidth(profile);                          // step 18f: how many turns this level reads in full
     }
     check() { if (now() > this.deadline) throw TIMEOUT; }
-    playT(s, t) { const n = playTurn(s, t); return this.whole ? endedTurn(s, n) : n; }   // a turn played, ended if it is one action (step 18f)
+    playT(s, t) { const n = playTurn(s, t); return this.whole ? endedTurn(s, n) : n; }
+    qev() { if (!this._qev) { this._qev = n => this.quick(n); if (!IN_WORKER) this._qev.many = true; } return this._qev; }   // (fix 4f: its readings may go out in a batch)   // a turn played, ended if it is one action (step 18f)
     leaf(s, z) {
       this.leaves++;
       if (this.settleShots && !isChance(s) && s.stage !== 'play' && s.stage !== 'over') return this.settled(s, z);
@@ -4320,7 +4335,7 @@ const PMEngine = (() => {
       const s = node;
       if (s.stage === 'over') return terminalValue(s);
       if (depth >= 1 && fakeWorld(s)) return this.mixed(s, depth);           // D-272: the hidden choice, read as the mixed game
-      if (depth <= 0 && s.stage === 'reset') return this.leaf(apply(s, resetChoice(s, n => this.quick(n))));   // D-276
+      if (depth <= 0 && s.stage === 'reset') return this.leaf(apply(s, resetChoice(s, this.qev())));   // D-276
       if (depth <= 0) {
         if (this.settleShots && s.stage !== 'play') return this.leaf(s);      // step 18b: the declared shot is settled by the rules
         if (this.quiet || this.playOn) {
@@ -4467,7 +4482,7 @@ const PMEngine = (() => {
       const [sr, sf] = worlds(s);
       const budget = this.deadline - now();
       const rootRead = new Read(sr, { exact: budget >= 0.8 });
-      const ts = turns(sr, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
+      const ts = turns(sr, this.p.beam, rootRead, this.qev(), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
       let done = null, reached = 0;
       for (let depth = 1; depth <= Math.max(1, maxDepth); depth++) {
         let cols;
@@ -4486,7 +4501,7 @@ const PMEngine = (() => {
       const key = z === undefined ? zobrist(s) : z;
       let hit = this.tcache.get(key);
       if (hit === undefined) {
-        hit = turns(s, this.p.beam, null, n => this.quick(n), this.deadline, 3, 1, this.open, this.whole, this.width);
+        hit = turns(s, this.p.beam, null, this.qev(), this.deadline, 3, 1, this.open, this.whole, this.width);
         this.tcache.set(key, hit);
       }
       return hit;
@@ -4525,7 +4540,7 @@ const PMEngine = (() => {
       const side = actor(s);
       const budget = this.deadline - now();
       const rootRead = new Read(s, { exact: budget >= 0.8 });
-      const ts = turns(s, this.p.beam, rootRead, n => this.quick(n), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
+      const ts = turns(s, this.p.beam, rootRead, this.qev(), null, budget >= 0.8 ? null : 2, budget >= 0.8 ? 2 : 1, this.open, this.whole, this.width);
       const deadline = this.deadline; this.deadline = Infinity;
       let results = [];
       const sign = side === 'O' ? 1 : -1;
@@ -4886,7 +4901,8 @@ const PMEngine = (() => {
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
     req.ctxObj = ctx;
-    return JSON.stringify(search(req));
+    const keep = PAR_REQ; PAR_REQ = { fn: 'search', text };          // (fix 4f: the request a worker reads)
+    try { return JSON.stringify(search(req)); } finally { PAR_REQ = keep; }
   }
 
   // Step 18o (D-195, agent._reads): the quick reading's own parts for a list of setup placements of one matchup: the
@@ -5101,6 +5117,83 @@ const PMEngine = (() => {
   let MAP_MEMO_MAX = 30, SMALL_MEMO_MAX = 20000, READS_MAX = 40, REACH_MAX = 80, SV_MEMO_MAX = 30000;   // measured: at these sizes a think is under 10 in 100 slower and fits in 256 MB; ten times larger gave nothing back
   let SMALL_MEMO = null;
   const stateKey = s => JSON.stringify(s, (k, v) => (k === 'ctx' ? (v ? v.id : null) : (k.length && k.charCodeAt(0) === 95) ? undefined : v));
+  // ---- Fix 4f: several cores (Shaun, 28 Nov 2026) ----------------------------------------------------------------------
+  // The independent readings of a search (the turn search's candidate turns; the stance search's candidate stances and
+  // swaps; the offence setup's placements) are handed out to workers as a batch and their results are put back in the
+  // batch's own order, so the search goes on exactly as it would on one core: the same readings, compared in the same
+  // order, give the same decision on any device with any number of cores. A worker is the same engine, given the
+  // request and every setting of the one that hands the batch out (setPool: the host's pool, in Node or the app).
+  let POOL = null, IN_WORKER = false, PAR_REQ = null;
+  const PARS = { batches: 0, items: 0 };
+  let PAR_MIN = 4;                                     // (a batch smaller than this is read where it is: handing it out costs more)
+  function parSettings() {
+    return JSON.stringify({ cfg: D.config, level: D.level === undefined ? null : D.level, me: MAP_ME, lead: RD.lead, speed: SPEED, fl: FORCE_LOOKS, tm: TABLETOP_MAP,
+      sw: [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX] });
+  }
+  // kind: the reading; n items; mk(i): item i as it travels; local(i): item i read here; decode(r): a result back as the reading's own
+  function parMap(kind, n, mk, local, decode) {
+    if (!POOL || IN_WORKER || PAR_REQ === null || n < PAR_MIN || POOL.size < 2) { const out = new Array(n); for (let i = 0; i < n; i++) out[i] = local(i); return out; }
+    const k = Math.min(POOL.size, n), parts = [], idx = [];
+    for (let w = 0; w < k; w++) { parts.push([]); idx.push([]); }
+    // (contiguous blocks, as even as the count allows: neighbouring readings share most of their work, so each worker
+    // keeps its own neighbours together)
+    for (let i = 0; i < n; i++) { const w = Math.floor(i * k / n); parts[w].push(mk(i)); idx[w].push(i); }
+    const head = { req: PAR_REQ, set: parSettings(), kind };
+    const texts = parts.map(items => JSON.stringify(Object.assign({ items }, head)));
+    const got = POOL.runAll(texts), out = new Array(n);
+    for (let w = 0; w < k; w++) { const r = JSON.parse(got[w]); if (r.error) throw new Error('a worker failed: ' + r.error); for (let x = 0; x < idx[w].length; x++) out[idx[w][x]] = decode ? decode(r.out[x]) : r.out[x]; }
+    PARS.batches++; PARS.items += n;
+    return out;
+  }
+  const srJSON = v => ({ U: v.U, n: v.n, m: v.m, vec: Array.from(v.vec), list: Array.from(v.list), moves: v.moves });
+  const srFrom = r => ({ U: r.U, n: r.n, m: r.m, vec: Float64Array.from(r.vec), list: r.list.length ? Float64Array.from(r.list) : EMPTY_LIST, moves: r.moves });
+  // a batch of stance readings: each kept in the request's memory too, so the search finds it there as if read here
+  function stanceReadMany(states) {
+    const res = parMap('sread', states.length, i => stateJSON(states[i]), i => stanceRead(states[i]), srFrom);
+    if (POOL && SMALL_MEMO !== null) for (let i = 0; i < states.length; i++) { const key = 'SR|' + stateKey(states[i]); if (SMALL_MEMO.get(key) === undefined) SMALL_MEMO.set(key, res[i]); }
+    return res;
+  }
+  let WSET = null, WSRCH = null;
+  const WORK = {
+    sread: (it, ctx) => srJSON(stanceRead(stateFrom(it, ctx))),
+    squick: (it, ctx) => { const q = stanceQuick(stateFrom(it, ctx)); return { U: q.v.U, vec: Array.from(q.v.vec), list: Array.from(q.v.list), x: Array.from(q.s.x), arrows: Array.from(q.s.arrows) }; },
+    swap: (it, ctx) => { const r = stanceSwap(stateFrom(it.s, ctx), it.d, it.e, it.near); return { v: srJSON(r.v), t: stateJSON(r.t) }; },
+    quick: (it, ctx, req) => {
+      if (!WSRCH) WSRCH = workerSearcher(req, ctx);
+      const s = stateFrom(it.base, ctx); let node = s;
+      for (const aj of it.acts) node = apply(node, actionFrom(aj));
+      return WSRCH.quick(it.ended ? endedTurn(s, node) : node);
+    },
+  };
+  function workerSearcher(req, ctx) {                  // (the turn search's own Searcher, as search() builds it)
+    const s = stateFrom(req.state, ctx), prof = req.profile, me = actor(s);
+    let stale = null;
+    if (req.stale) stale = me === 'O' ? [req.stale[0].map(parseSq), req.stale[1].slice()] : [req.stale[0].map(parseSq)];
+    const srch = new Searcher(me, prof, makeEvaluate(prof, me, stale), Infinity);
+    if (req.habit) { srch.habit = req.habit; srch.habit_weight = req.habit_weight == null ? 0.3 : req.habit_weight; }
+    return srch;
+  }
+  function workJSON(text) {                            // a worker's batch: {req: {fn, text}, set, kind, items} -> {out: [...]}
+    try {
+      const job = JSON.parse(text), req = JSON.parse(job.req.text);
+      if (job.set !== WSET) {
+        const z = JSON.parse(job.set);
+        for (const k of Object.keys(z.cfg)) D.config[k] = z.cfg[k];
+        D.level = z.level; RD.lead = z.lead; Object.assign(SPEED, z.speed); FORCE_LOOKS = z.fl; TABLETOP_MAP = z.tm;
+        [BOUND_LOOKS, PV_BRUTE, PV_ANSWERS, PV_FULL, STANCE_STEP, STANCE_NEAR, STANCE_TOP, OFF_FINAL, OFF_SEGS, VMIN, VMAX] = z.sw;
+        READS = new Map(); READS_OLD = new Map(); REACH = new Map(); REACH_OLD = new Map();
+        WSET = job.set;
+      }
+      const set = JSON.parse(job.set);
+      MAP_ME = set.me;
+      const key = JSON.stringify(req.ctx);
+      let ctx = CTXS.get(key);
+      if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
+      WSRCH = null;
+      const f = WORK[job.kind];
+      return JSON.stringify({ out: withMemo(() => job.items.map(it => f(it, ctx, req))) });
+    } catch (e) { return JSON.stringify({ error: String(e && e.stack || e) }); }
+  }
   function withMemo(f) {                               // a request's own memory, opened and thrown away around it
     const keep = MAP_MEMO, keepS = SMALL_MEMO;
     MAP_MEMO = new Memo2(MAP_MEMO_MAX); SMALL_MEMO = new Memo2(SMALL_MEMO_MAX);
@@ -7031,42 +7124,49 @@ const PMEngine = (() => {
     // miss costs), over the map's own looks. Of the squares he could close out to, the defence takes the one that
     // leaves the least. Kept for the reading.
     const SV0 = SV.map(rw => rw.slice()), UB0 = [null, null, null, null, null], ORD0 = [null, null, null, null, null];
-    let Fm = new Map(), Gm = new Map();               // (fix 4e: swapped for a movement's own while it is weighed)
     const movedAt = [null, null, null, null, null];     // (fix 3b: where each defender's answer movement took him, and how)
+    // Fix 4f (Shaun, 28 Nov 2026: "a movement can't change what happened before it"). The board the follow-up reads: ZL,
+    // as it stands (its kept readings swapped for a movement's own while fix 4e weighs it); H[k], as it stood after the
+    // answer's first k movements. A look whose shot or fake goes up before the answer's movement k + 1 (its limit k)
+    // reads its follow-up on H[k], as its contests already stand at that moment.
+    const ZL = { SV0, mv: movedAt, Fm: new Map(), Gm: new Map(), UB0, ORD0 };
+    const zSnap = () => ({ SV0: SV0.map(r => r.slice()), mv: movedAt.slice(), Fm: new Map(), Gm: new Map(), UB0: [null, null, null, null, null], ORD0: [null, null, null, null, null] });
+    const H = [zSnap()];
+    const zOf = (i, tk) => { const lv = tk === 1 ? limL[i] : lim[i]; return lv <= nm ? H[lv] : ZL; };
     let RK = races.kit || null;                          // (fix 3c: the race's kit, built when a fake's race first needs it; fix 3d: the drives' own)
     const fakeRaces = [], fakeKept = new Map();          // (for the report: the races the fake mix read)
     const okLook = j => { const o = L[j]; return o.a === b ? o.n0 <= left : o.n0 <= left + ((keyMask >> o.a) & 1); };
-    const ub0 = e => {                                  // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
+    const ub0 = (e, Z) => {                             // (each look's best with e's Contest taken off: a bound, so the best-first scan can stop)
       const u = new Float64Array(n), ord = [];
       for (let j = 0; j < n; j++) {
-        const o = L[j], open = o.open, T = open.length, row = SV0[j];
+        const o = L[j], open = o.open, T = open.length, row = Z.SV0[j];
         let hi = -Infinity;
         for (let t = 0; t < T; t++) { let v = open[t]; for (let e2 = 0; e2 < 5; e2++) if (e2 !== e && row[e2] && row[e2].cv[t] < v) v = row[e2].cv[t]; if (v > hi) hi = v; }
         u[j] = o.r * (hi + adjv[j]) - (1 - o.r) * o.lc;
         if (okLook(j)) ord.push(j);
       }
       ord.sort((x, y) => u[y] - u[x] || x - y);
-      UB0[e] = u; ORD0[e] = ord;
+      Z.UB0[e] = u; Z.ORD0[e] = ord;
     };
-    const follow2 = (e, q, a, kind) => {
+    const follow2 = (e, q, a, kind, Z) => {
       const key = ((e * NSQ + q) * 8 + a) * 3 + (kind === 'move' ? 0 : kind === 'qs' ? 1 : 2);
-      let g = Gm.get(key); if (g !== undefined) return g;
-      if (!UB0[e]) ub0(e);
-      const u = UB0[e], ord = ORD0[e], cm = cmAfter(q, a, s.ctx.dfn[e].qs, stanceMode(m.sN, e), kind, 1);
+      let g = Z.Gm.get(key); if (g !== undefined) return g;
+      if (!Z.UB0[e]) ub0(e, Z);
+      const u = Z.UB0[e], ord = Z.ORD0[e], cm = cmAfter(q, a, s.ctx.dfn[e].qs, stanceMode(m.sN, e), kind, 1);
       let hi = -Infinity, hj = -1;
       for (let x = 0; x < ord.length; x++) {
         const j = ord[x];
         if (u[j] + 1e-9 <= hi) break;
         if (L[j].c === q) continue;
-        const o = L[j], ev = o.r * core(j, 0, e, sval(j, e, cm[lc[j]]), SV0[j]) - (1 - o.r) * o.lc;
+        const o = L[j], ev = o.r * core(j, 0, e, sval(j, e, cm[lc[j]]), Z.SV0[j]) - (1 - o.r) * o.lc;
         if (ev > hi) { hi = ev; hj = j; }
       }
-      g = { v: hi, j: hj }; Gm.set(key, g); return g;
+      g = { v: hi, j: hj }; Z.Gm.set(key, g); return g;
     };
-    const follow = (i, e) => {
+    const follow = (i, e, Z) => {
       const key = i * 5 + e;
-      let f = Fm.get(key); if (f !== undefined) return f;
-      const c = L[i].c, mv0 = movedAt[e];
+      let f = Z.Fm.get(key); if (f !== undefined) return f;
+      const c = L[i].c, mv0 = Z.mv[e];
       let lo = Infinity, from = -1, then = -1;
       if (!mv0) {
         const fr = defenderReachExact(m.sN, e);
@@ -7083,14 +7183,14 @@ const PMEngine = (() => {
           fakeKept.set(fkey, rc.v);
           return rc.v;
         };
-        for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move'), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
-        for (const [q, arrs] of fr[1]) if (cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, fixedKind(m.sN, e, q, a)), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
+        for (const [q, na] of fr[0]) if (na === 1 && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'move', Z), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
+        for (const [q, arrs] of fr[1]) if (cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, fixedKind(m.sN, e, q, a), Z), fr2 = fakeRace(q), v = Math.max(g.v, fr2); if (v < lo) { lo = v; from = q; then = fr2 > g.v ? -2 : g.j; } }
       } else if (mv0.kind !== 'sprint') {              // fix 3b: he moved in the answer; he closes out with what he has left, and then has nothing
         const qs = s.ctx.dfn[e].qs, fr = mv0.kind === 'move' ? geoReach(mv0.q, mv0.a, qs, false, 1) : geoReach(mv0.q, mv0.a, qs, true, 0);
-        if (mv0.kind === 'qs') { for (const [q, na] of fr[0]) if (na === 1 && q !== mv0.q && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'sprint'); if (g.v < lo) { lo = g.v; from = q; then = g.j; } } }
-        else for (const [q, arrs] of fr[1]) if (q !== mv0.q && cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, 'sprint'); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
+        if (mv0.kind === 'qs') { for (const [q, na] of fr[0]) if (na === 1 && q !== mv0.q && cheb(q, c) === 1) { const g = follow2(e, q, dirBetween(q, c), 'sprint', Z); if (g.v < lo) { lo = g.v; from = q; then = g.j; } } }
+        else for (const [q, arrs] of fr[1]) if (q !== mv0.q && cheb(q, c) === 1) for (const [a, na] of arrs) if (na === 1) { const g = follow2(e, q, a, 'sprint', Z); if (g.v < lo) { lo = g.v; from = q; then = g.j; } }
       }
-      f = { F: lo === Infinity ? -Infinity : lo, from, then }; Fm.set(key, f); return f;
+      f = { F: lo === Infinity ? -Infinity : lo, from, then }; Z.Fm.set(key, f); return f;
     };
     const worth = (i, B, d, nv, rowK, tk) => {          // look i's worth when a block leads to B, defender d's contest replaced by nv (rowK: as this phase's shot finds it; tk 1: a later phase)
       const row = rowK || SV[i], wc = core(i, B, d, nv, row);
@@ -7109,7 +7209,7 @@ const PMEngine = (() => {
       let ts = tmpS[0]; for (let t = 1; t < T; t++) if (tmpS[t] > ts) ts = tmpS[t];
       const ws = ts + adjv[i];
       if (!(ws > wc + 1e-9)) return wc;
-      const F = follow(i, e0).F;
+      const F = follow(i, e0, zOf(i, tk)).F;          // (fix 4f: on the board as it stood when its shot or fake went up)
       if (!(F > wc + 1e-9)) return wc;
       const da = ws - wc, df = F - wc;
       return wc + da * df / (da + df);
@@ -7518,8 +7618,9 @@ const PMEngine = (() => {
       { const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
         movedAt[d] = { q, a, kind: cm === cmAfter(q, a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, q, a) };
         for (let i = 0; i < n; i++) SV0[i] = SV[i].slice();
-        Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); }
+        ZL.Fm.clear(); ZL.Gm.clear(); UB0.fill(null); ORD0.fill(null); }
       moves.push([d, q, a]); moved[d] = true; taken.add(q); tok--; PVS.steps++;
+      H.push(zSnap());                                  // (fix 4f: the board as it stands after this movement)
       return snap;
     };
     // fix 4b (Shaun, 27 Nov 2026): the drive's race is read after the defence's answer, on the board the answer leaves
@@ -7547,8 +7648,8 @@ const PMEngine = (() => {
       for (let i = 0; i < n; i++) { SV[i] = snap.SV[i]; SVK[i] = snap.SVK[i]; SV0[i] = snap.SV0[i]; if (split) SVL[i] = snap.SVL[i]; }
       gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
       if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
-      movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--;
-      Fm.clear(); Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
+      movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--; H.pop();
+      ZL.Fm.clear(); ZL.Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
     };
     while (tok > 0 && act.length) {
       // Each movement first gets a bound (the sum over only the looks the value turns on: runAct), then they are read in
@@ -7585,9 +7686,9 @@ const PMEngine = (() => {
           const j = act[x], i = act[x + 1];
           if (gone[j]) continue;
           if (L[j].race) { if (!seenR.has(j)) { seenR.add(j); actR.push(j); } continue; }   // (a race is read again whatever the phase's limit)
-          // that phase's shot is up before this movement: its contests stand as they were, but a fake read on it is
-          // followed up on the board the movement leaves (the full reading's own way), so a look the fake reads stays
-          if ((i === K ? lim : limL)[j] <= nm) { if (mixOk[j] && (i === K ? fkK : fkL)) actM.push(j, -i); continue; }
+          // that phase's shot is up before this movement: its contests and its fake's follow-up stand as they were
+          // then (fix 4f), so no movement now changes it
+          if ((i === K ? lim : limL)[j] <= nm) continue;
           actM.push(j, i);
         }
         // a movement's own reading of the looks: the fake's follow-up with him where the movement leaves him (SV0), his
@@ -7597,28 +7698,21 @@ const PMEngine = (() => {
           const d = c.d, col = new Array(n);
           for (let i = 0; i < n; i++) { col[i] = SV0[i][d]; SV0[i][d] = sval(i, d, c.cm[lc[i]]); }
           const qsd = s.ctx.dfn[d].qs, cp = caps(s, 'X', d);
-          cSave = { d, col, mv: movedAt[d], Fm, Gm, UB0: UB0.slice(), ORD0: ORD0.slice() };
+          cSave = { d, col, mv: movedAt[d], Fm: ZL.Fm, Gm: ZL.Gm, UB0: UB0.slice(), ORD0: ORD0.slice() };
           movedAt[d] = { q: c.q, a: c.a, kind: c.cm === cmAfter(c.q, c.a, qsd, stanceMode(m.sN, d), 'move', cp[1]) ? 'move' : fixedKind(s, d, c.q, c.a) };
-          Fm = new Map(); Gm = new Map(); UB0.fill(null); ORD0.fill(null);
+          ZL.Fm = new Map(); ZL.Gm = new Map(); UB0.fill(null); ORD0.fill(null);
         };
         const candOff = () => {
           const z = cSave, d = z.d;
           for (let i = 0; i < n; i++) SV0[i][d] = z.col[i];
-          movedAt[d] = z.mv; Fm = z.Fm; Gm = z.Gm;
+          movedAt[d] = z.mv; ZL.Fm = z.Fm; ZL.Gm = z.Gm;
           for (let e = 0; e < 5; e++) { UB0[e] = z.UB0[e]; ORD0[e] = z.ORD0[e]; }
           cSave = null;
         };
         const mapLowers = c => {
           let on = false, low = false;
           for (let x = 0; x < actM.length; x += 2) {
-            const j = actM[x];
-            if (actM[x + 1] < 0) {                       // (its shot up before the movement: only the fake's follow-up moves)
-              const i = -actM[x + 1];
-              if (!on) { candOn(c); on = true; }
-              if (worth(j, i >= 3 ? hist[i - 2] : 0, -1, null, i === K ? SVK[j] : SVL[j], i === K ? 0 : 1) < rows[i][j] - 1e-9) { low = true; break; }
-              continue;
-            }
-            const i = actM[x + 1];
+            const j = actM[x], i = actM[x + 1];
             if (L[j].c === c.q) { low = true; break; }
             const mk = c.cm[lc[j]], mix = mixOk[j] && (i === K ? fkK : fkL);
             if (!mix && !mk && SV[j][c.d] === null) continue;            // (he neither contested it nor contests it now, and no fake reads it)
@@ -7757,7 +7851,7 @@ const PMEngine = (() => {
       if (e0 < 0) return null;
       const v = worth(j, Bk, -1, null, SVK[j], 0);
       if (!(v > wc + 1e-9)) return null;
-      const f = follow(j, e0);
+      const f = follow(j, e0, zOf(j, 0));
       return { closer: e0, from: f.from, then: f.then, faked: f.F, contested: wc, mixed: v };
     };
     return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo, races, fakeRaces };
@@ -8095,6 +8189,19 @@ const PMEngine = (() => {
     }
     return { s: st, wm, lines };
   }
+  // (the stance search's swap of two defenders d and e: each then takes the arrows the number reads lowest, every pair
+  // read for him with the other as he then stands)
+  function stanceSwap(s, d, e) {
+    const near = q => { let b = 0; for (let a = 1; a < 5; a++) if (cheb(q, s.o[a]) < cheb(q, s.o[b])) b = a; return b; };
+    let t = W_(s, { x: setAt(setAt(s.x, d, s.x[e]), e, s.x[d]), arrows: setAt(setAt(s.arrows, d, nearestDir(s.x[e], s.o[near(s.x[e])])), e, nearestDir(s.x[d], s.o[near(s.x[d])])) });
+    let v = stanceRead(t);
+    for (const f of [d, e]) for (let a = 0; a < 8; a++) {
+      if (a === t.arrows[f]) continue;
+      const t2 = W_(t, { arrows: setAt(t.arrows, f, a) }), v2 = stanceRead(t2);
+      if (stanceLess(v2, v)) { t = t2; v = v2; }
+    }
+    return { t, v };
+  }
   function stanceSearch(s0, opts) {
     opts = opts || {};
     let s = W_(covOffFresh(s0), { side: 'O', stage: 'play', pending: null, tok_x: 6, moved_x: 0, qs_x: 0, lock_x: 0, rush_x: 0, beaten: [] });
@@ -8149,12 +8256,12 @@ const PMEngine = (() => {
         const rank = sqs.map((q, i) => { let lo = Infinity; for (let a = 0; a < 8; a++) if (est[i * 8 + a] < lo) lo = est[i * 8 + a]; return [lo, q]; }).sort((x, y) => (x[0] - y[0]) || (x[1] - y[1]));
         const full = held(d) ? [here] : [here].concat(rank.slice(0, STANCE_TOP).map(z => z[1]));
         STANCE_STATS.probed += cands.length;
-        for (const q of full) {
-          for (let a = 0; a < 8; a++) {
-            if (q === here && a === s.arrows[d]) continue;
-            const v = stanceRead(put(s, d, q, a));
-            if (stanceLess(v, best ? best.v : cur)) best = { q, a, v };
-          }
+        const cq = [];
+        for (const q of full) for (let a = 0; a < 8; a++) if (!(q === here && a === s.arrows[d])) cq.push([q, a]);
+        const cv = stanceReadMany(cq.map(([q, a]) => put(s, d, q, a)));   // (fix 4f: in one batch, compared in the same order)
+        for (let x = 0; x < cq.length; x++) {
+          const [q, a] = cq[x], v = cv[x];
+          if (stanceLess(v, best ? best.v : cur)) best = { q, a, v };
         }
         if (best) { steps.push({ d, from: sqName(here), to: sqName(best.q), arrow: best.a, value: +best.v.U.toFixed(4), by: 'his own stance' }); s = put(s, d, best.q, best.a); cur = best.v; changed = true; }
       }
@@ -8162,18 +8269,14 @@ const PMEngine = (() => {
       // never by a rule of thumb"): each of the two then takes the arrows the number reads lowest, every pair read for
       // him with the other as he then stands (before: each faced the man nearest him)
       if (!changed && !fixSq) {
-        const near = q => { let b = 0; for (let a = 1; a < 5; a++) if (cheb(q, s.o[a]) < cheb(q, s.o[b])) b = a; return b; };
         let bv = null, bt = null, bp = null;
-        for (let d = 0; d < 5; d++) for (let e = d + 1; e < 5; e++) {
-          if (held(d) || held(e)) continue;
-          let t = W_(s, { x: setAt(setAt(s.x, d, s.x[e]), e, s.x[d]), arrows: setAt(setAt(s.arrows, d, nearestDir(s.x[e], s.o[near(s.x[e])])), e, nearestDir(s.x[d], s.o[near(s.x[d])])) });
-          let v = stanceRead(t);
-          for (const f of [d, e]) for (let a = 0; a < 8; a++) {
-            if (a === t.arrows[f]) continue;
-            const t2 = W_(t, { arrows: setAt(t.arrows, f, a) }), v2 = stanceRead(t2);
-            if (stanceLess(v2, v)) { t = t2; v = v2; }
-          }
-          if (stanceLess(v, bv || cur)) { bv = v; bt = t; bp = [d, e]; }
+        const prs = [];
+        for (let d = 0; d < 5; d++) for (let e = d + 1; e < 5; e++) if (!held(d) && !held(e)) prs.push([d, e]);
+        // (fix 4f: each pair's swap is read on its own, so the pairs go out in one batch and are compared in order)
+        const sw = parMap('swap', prs.length, i => ({ s: stateJSON(s), d: prs[i][0], e: prs[i][1] }), i => stanceSwap(s, prs[i][0], prs[i][1]), r => ({ v: srFrom(r.v), t: W_(s, { x: r.t.x.map(v => (v == null ? -1 : parseSq(v))), arrows: r.t.arrows.slice() }) }));
+        for (let x = 0; x < prs.length; x++) {
+          const { t, v } = sw[x];
+          if (stanceLess(v, bv || cur)) { bv = v; bt = t; bp = prs[x]; }
         }
         if (bv) { steps.push({ swap: bp, value: +bv.U.toFixed(4), by: 'two together' }); s = bt; cur = bv; changed = true; const mm = man[bp[0]]; man[bp[0]] = man[bp[1]]; man[bp[1]] = mm; }
       }
@@ -8236,6 +8339,13 @@ const PMEngine = (() => {
     for (const x of startCols) for (let y = 1; y <= H; y++) { const q = C(x, y); if (ONB[q] && ZN[q] === 0 && y > 1 && !DEEP[q]) { let behind = false; for (let yy = 1; yy < y; yy++) if (ZN[C(x, yy)] === 4) behind = true; if (behind) { starts.push(q); break; } } }
     const mk = (o, ball) => W_(s0, { o, ball, x: [OFFSQ, OFFSQ, OFFSQ, OFFSQ, OFFSQ], arrows: [0, 0, 0, 0, 0], stage: 'play', side: 'O', pending: null });
     const worth = new Map();
+    const readMany = ps => {                            // (fix 4f) the placements not yet read, in one batch, kept with the others
+      const need = [], seen = new Set();
+      for (const [o, ball] of ps) { const key = o.join(',') + '|' + ball; if (!worth.has(key) && !seen.has(key)) { seen.add(key); need.push([o, ball, key]); } }
+      const got = parMap('squick', need.length, i => stateJSON(mk(need[i][0], need[i][1])), i => { const q = stanceQuick(mk(need[i][0], need[i][1])); return { U: q.v.U, vec: q.v.vec, list: q.v.list, x: Array.from(q.s.x), arrows: Array.from(q.s.arrows) }; },
+        r => ({ U: r.U, vec: Float64Array.from(r.vec), list: r.list.length ? Float64Array.from(r.list) : EMPTY_LIST, x: r.x, arrows: r.arrows }));
+      for (let i = 0; i < need.length; i++) worth.set(need[i][2], got[i]);
+    };
     const read = (o, ball) => {                         // a placement's worth against the defence's quick answer
       const key = o.join(',') + '|' + ball;
       let v = worth.get(key);
@@ -8269,6 +8379,7 @@ const PMEngine = (() => {
     if (opts.fixed) cands.push({ ball: opts.fixed.ball, o: opts.fixed.o.slice() });
     else if (inb >= 0) cands.push({ ball: inb, o: place(inb, s0.o[inb]) });
     else for (let ball = 0; ball < 5; ball++) for (const bq of starts) cands.push({ ball, o: place(ball, bq) });
+    readMany(cands.map(c => [c.o, c.ball]));             // (fix 4f: every placement in one batch, put back in the list's order)
     for (const c of cands) c.v = read(c.o, c.ball);
     // more for the offence: the number; level, the list (each attacker's best look this phase, best first; then every
     // look at its chance, best first): the placement that leaves it more good looks, not one
@@ -8290,6 +8401,7 @@ const PMEngine = (() => {
         for (let a = 0; a < 5; a++) {
           if (a === cur.ball) continue;
           let best = null;
+          readMany(scout[a].slice(0, OFF_SEGS).filter(r => !cur.o.includes(r.c)).map(r => { const o = cur.o.slice(); o[a] = r.c; return [o, cur.ball]; }));
           for (const r of scout[a].slice(0, OFF_SEGS)) {
             if (cur.o.includes(r.c)) continue;
             const o = cur.o.slice(); o[a] = r.c;
@@ -8681,7 +8793,8 @@ const PMEngine = (() => {
     const key = JSON.stringify(req.ctx);
     let ctx = CTXS.get(key);
     if (!ctx) { if (CTXS.size >= 4) CTXS.clear(); ctx = makeCtx(req.ctx); CTXS.set(key, ctx); }
-    return JSON.stringify(coverage(stateFrom(req.state, ctx), req.options || null));
+    const keep = PAR_REQ; PAR_REQ = { fn: 'coverage', text };        // (fix 4f: the request a worker reads)
+    try { return JSON.stringify(coverage(stateFrom(req.state, ctx), req.options || null)); } finally { PAR_REQ = keep; }
   }
 
   return { setCalibrated, setTabletopMap, setSettle, setHelp, ceilingOf, setLearned, FEATURE_NAMES, featuresOf, bankedOf, handLeaf, looksLeaf, leafMode, stateJSON, actionJSON, isChance, scoreTotal, init, setLeafMode, setStable, setSearch, stableParts, setReach, setSpeed, setBudget, setAdvantages, setGoals, REACH_STATS, reachMap, searchJSON, goalsJSON, readsJSON, makeCtx, stateFrom, legalActions, apply, Read, search, probe, zobrist, actor, terminalValue, sqName, coverage, coverageJSON, parseSq,
@@ -8690,7 +8803,7 @@ const PMEngine = (() => {
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.cur.size + _GR.old.size, _CM.cur.size + _CM.old.size, _LS.size, _OA.size],
     _pvStats: () => PVS, _stanceProbe: (s, d, cands) => stanceProbe(s, d, cands),
     _pvCheck: on => { if (on !== undefined) { PV_CHECK = !!on; PVC.n = 0; PVC.bad = 0; PVC.ex = []; } return { on: PV_CHECK, checked: PVC.n, different: PVC.bad, examples: PVC.ex }; },
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, setPool: p => { POOL = p || null; }, workJSON, _worker: v => { IN_WORKER = !!v; }, PARS, _parMin: v => { PAR_MIN = v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

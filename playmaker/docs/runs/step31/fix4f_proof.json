@@ -1,0 +1,3163 @@
+{
+ "R": [
+  {
+   "board": "R1",
+   "full": 29.4224,
+   "full_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "full_ms": 32471,
+   "new": 29.4224,
+   "new_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "new_ms": 23666,
+   "races": [
+    [
+     "Dribble won",
+     "X1",
+     "I9",
+     27
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R2",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 26589,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 23581,
+   "races": [
+    [
+     "Dribble",
+     "X2",
+     "D7",
+     28
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R3",
+   "full": 36,
+   "full_answer": [],
+   "full_ms": 46788,
+   "new": 36,
+   "new_answer": [],
+   "new_ms": 42565,
+   "races": [
+    [
+     "speed",
+     "X1",
+     "G4",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H7",
+     29.93
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     36
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R4",
+   "full": 29,
+   "full_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "C2",
+     6
+    ]
+   ],
+   "full_ms": 118239,
+   "new": 29,
+   "new_answer": [
+    [
+     0,
+     "H8",
+     1
+    ],
+    [
+     3,
+     "C2",
+     6
+    ]
+   ],
+   "new_ms": 112142,
+   "races": [
+    [
+     "speed",
+     "X1",
+     "E8",
+     27
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I9",
+     28.75
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     34
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R4c",
+   "full": 29.6667,
+   "full_answer": [
+    [
+     0,
+     "H8",
+     1
+    ]
+   ],
+   "full_ms": 71602,
+   "new": 29.6667,
+   "new_answer": [
+    [
+     0,
+     "H8",
+     1
+    ]
+   ],
+   "new_ms": 64396,
+   "races": [
+    [
+     "Dribble",
+     "X1",
+     "I9",
+     27.45
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G4",
+     38
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R5a",
+   "full": 36,
+   "full_answer": [],
+   "full_ms": 57052,
+   "new": 36,
+   "new_answer": [],
+   "new_ms": 57025,
+   "races": [
+    [
+     "open lane",
+     "X1",
+     "I10",
+     36
+    ],
+    [
+     "speed",
+     "X1",
+     "G5",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "K9",
+     34.54
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "G5",
+     36
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R5b",
+   "full": 29,
+   "full_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "full_ms": 121454,
+   "new": 29,
+   "new_answer": [
+    [
+     2,
+     "J8",
+     6
+    ]
+   ],
+   "new_ms": 118627,
+   "races": [
+    [
+     "open lane",
+     "X1",
+     "I10",
+     30
+    ],
+    [
+     "speed",
+     "X1",
+     "E6",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "J9",
+     27.55
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     30
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R5c",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 62474,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 61194,
+   "races": [
+    [
+     "partial lane",
+     "X1",
+     "I10",
+     28
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     27.98
+    ]
+   ],
+   "same": true
+  },
+  {
+   "board": "R5ctl",
+   "full": 29,
+   "full_answer": [],
+   "full_ms": 53120,
+   "new": 29,
+   "new_answer": [],
+   "new_ms": 51423,
+   "races": [
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     27.58
+    ]
+   ],
+   "same": true
+  }
+ ],
+ "P": [
+  {
+   "board": "P1",
+   "before": 30,
+   "before_answer": [],
+   "before_ms": 735,
+   "after": 30,
+   "after_answer": [],
+   "after_ms": 47556,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "E6",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "I10",
+     26.75
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     30
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "A5",
+     "q0": "C7",
+     "p": 1,
+     "open": 33,
+     "before": 15.3,
+     "worth": 28.5,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 28.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "G10",
+     "p": 1,
+     "open": 30,
+     "before": 16.75,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F8",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A5",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.68,
+     "worth": 19.49,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 I10",
+      "contested": 13.22,
+      "if_faked": 30,
+      "worth": 19.49
+     }
+    },
+    {
+     "a": 4,
+     "c": "P7",
+     "q0": "Q5",
+     "p": 1,
+     "open": 18,
+     "before": 18,
+     "worth": 18,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "A5",
+     "q0": "C7",
+     "p": 1,
+     "open": 33,
+     "before": 15.3,
+     "worth": 28.5,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 28.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "G10",
+     "p": 1,
+     "open": 30,
+     "before": 16.75,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F8",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A5",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.68,
+     "worth": 19.49,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 I10",
+      "contested": 13.22,
+      "if_faked": 30,
+      "worth": 19.49
+     }
+    },
+    {
+     "a": 4,
+     "c": "P7",
+     "q0": "Q5",
+     "p": 1,
+     "open": 18,
+     "before": 18,
+     "worth": 18,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P1off",
+   "before": 28.75,
+   "before_answer": [],
+   "before_ms": 710,
+   "after": 28.5,
+   "after_answer": [
+    [
+     2,
+     "I6",
+     0
+    ]
+   ],
+   "after_ms": 66386,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H9",
+     28.5
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 28.5,
+     "before": 28.5,
+     "worth": 28.5,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "P7",
+     "q0": "M7",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "I12",
+     "q0": "F12",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 5.45,
+     "worth": 25,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "H2",
+      "then": "O1 J3",
+      "contested": 14,
+      "if_faked": 36,
+      "worth": 25
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.68,
+     "worth": 23.91,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 G3",
+      "contested": 13.22,
+      "if_faked": 34,
+      "worth": 23.91
+     }
+    },
+    {
+     "a": 4,
+     "c": "N4",
+     "q0": "Q4",
+     "p": 1,
+     "open": 18,
+     "before": 3.25,
+     "worth": 18,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 28.75,
+     "before": 28.75,
+     "worth": 28.75,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "P7",
+     "q0": "M7",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "I12",
+     "q0": "F12",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A5",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.68,
+     "worth": 19.31,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 I10",
+      "contested": 13.22,
+      "if_faked": 28.75,
+      "worth": 19.31
+     }
+    },
+    {
+     "a": 4,
+     "c": "P7",
+     "q0": "Q5",
+     "p": 1,
+     "open": 18,
+     "before": 18,
+     "worth": 18,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P2",
+   "before": 34.75,
+   "before_answer": [],
+   "before_ms": 646,
+   "after": 31.8387,
+   "after_answer": [
+    [
+     0,
+     "I2",
+     0
+    ]
+   ],
+   "after_ms": 41214,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "I3",
+     30
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 1,
+     "c": "H10",
+     "q0": "E10",
+     "p": 1,
+     "open": 33,
+     "before": 30,
+     "worth": 31.5,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "G11",
+      "then": "O2 C9",
+      "contested": 30,
+      "if_faked": 33,
+      "worth": 31.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "I6",
+     "q0": "I6",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "E3",
+     "q0": "G4",
+     "p": 1,
+     "open": 30,
+     "before": 28,
+     "worth": 29.54,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X1",
+      "closes_to": "F2",
+      "then": "O1 I6",
+      "contested": 28,
+      "if_faked": 34.75,
+      "worth": 29.54
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.53,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 G4",
+      "contested": 21.75,
+      "if_faked": 32,
+      "worth": 25.53
+     }
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A4",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.08,
+     "worth": 22.93,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 G4",
+      "contested": 12.63,
+      "if_faked": 32,
+      "worth": 22.93
+     }
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I6",
+     "q0": "I6",
+     "p": 1,
+     "open": 34.75,
+     "before": 34.75,
+     "worth": 34.75,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "H10",
+     "q0": "E10",
+     "p": 1,
+     "open": 33,
+     "before": 30,
+     "worth": 31.84,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "G11",
+      "then": "O1 I6",
+      "contested": 30,
+      "if_faked": 34.75,
+      "worth": 31.84
+     }
+    },
+    {
+     "a": 0,
+     "c": "E3",
+     "q0": "G4",
+     "p": 1,
+     "open": 30,
+     "before": 28,
+     "worth": 29.54,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X1",
+      "closes_to": "F2",
+      "then": "O1 I6",
+      "contested": 28,
+      "if_faked": 34.75,
+      "worth": 29.54
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.86,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 I6",
+      "contested": 21.75,
+      "if_faked": 34.75,
+      "worth": 25.86
+     }
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 5.45,
+     "worth": 24.68,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "H2",
+      "then": "O1 I6",
+      "contested": 14,
+      "if_faked": 34.75,
+      "worth": 24.68
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.08,
+     "worth": 23.66,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 I6",
+      "contested": 12.63,
+      "if_faked": 34.75,
+      "worth": 23.66
+     }
+    }
+   ]
+  },
+  {
+   "board": "P2off",
+   "before": 33,
+   "before_answer": [],
+   "before_ms": 561,
+   "after": 30,
+   "after_answer": [
+    [
+     0,
+     "K2",
+     0
+    ],
+    [
+     1,
+     "D9",
+     7
+    ]
+   ],
+   "after_ms": 39102,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H4",
+     33
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 1,
+     "c": "H11",
+     "q0": "F9",
+     "p": 1,
+     "open": 30,
+     "before": 27,
+     "worth": 30,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "E2",
+     "q0": "G4",
+     "p": 1,
+     "open": 30,
+     "before": 28,
+     "worth": 29.43,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X1",
+      "closes_to": "F1",
+      "then": "O1 I6",
+      "contested": 28,
+      "if_faked": 33,
+      "worth": 29.43
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 26.13,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 G4",
+      "contested": 21.75,
+      "if_faked": 38,
+      "worth": 26.13
+     }
+    },
+    {
+     "a": 3,
+     "c": "H3",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 4.64,
+     "worth": 24.85,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "I2",
+      "then": "O1 G4",
+      "contested": 13.19,
+      "if_faked": 38,
+      "worth": 24.85
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.08,
+     "worth": 24.41,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 G4",
+      "contested": 12.63,
+      "if_faked": 38,
+      "worth": 24.41
+     }
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I6",
+     "q0": "I6",
+     "p": 1,
+     "open": 33,
+     "before": 33,
+     "worth": 33,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "H10",
+     "q0": "E10",
+     "p": 1,
+     "open": 33,
+     "before": 30,
+     "worth": 31.5,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "G11",
+      "then": "O2 C9",
+      "contested": 30,
+      "if_faked": 33,
+      "worth": 31.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "E2",
+     "q0": "G4",
+     "p": 1,
+     "open": 30,
+     "before": 28,
+     "worth": 29.43,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X1",
+      "closes_to": "F1",
+      "then": "O1 I6",
+      "contested": 28,
+      "if_faked": 33,
+      "worth": 29.43
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.66,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 I6",
+      "contested": 21.75,
+      "if_faked": 33,
+      "worth": 25.66
+     }
+    },
+    {
+     "a": 3,
+     "c": "G3",
+     "q0": "D3",
+     "p": 1,
+     "open": 36,
+     "before": 5.45,
+     "worth": 24.2,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "H2",
+      "then": "O1 I6",
+      "contested": 14,
+      "if_faked": 33,
+      "worth": 24.2
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 4.08,
+     "worth": 23.2,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J3",
+      "then": "O1 I6",
+      "contested": 12.63,
+      "if_faked": 33,
+      "worth": 23.2
+     }
+    }
+   ]
+  },
+  {
+   "board": "P3",
+   "before": 27,
+   "before_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "before_ms": 679,
+   "after": 27,
+   "after_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "after_ms": 32649,
+   "races_after": [
+    [
+     "speed",
+     "X4",
+     "D2",
+     27
+    ],
+    [
+     "Dribble",
+     "X4",
+     "A3",
+     27
+    ],
+    [
+     "speed next phase",
+     "X4",
+     "D2",
+     27
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "N9",
+     "q0": "N11",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "A3",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G12",
+     "q0": "G9",
+     "p": 1,
+     "open": 27,
+     "before": 26.38,
+     "worth": 26.38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "D2",
+     "p": 1,
+     "open": 36,
+     "before": 7.65,
+     "worth": 24,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then backdoor cut",
+      "closer": "X3",
+      "closes_to": "H3",
+      "then": "O1 N9",
+      "contested": 18,
+      "if_faked": 27,
+      "worth": 24
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 6.28,
+     "worth": 23.6,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "I3",
+      "then": "O4 G2",
+      "contested": 16.63,
+      "if_faked": 28,
+      "worth": 23.6
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 10.95,
+     "worth": 23.1,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "N9",
+     "q0": "N11",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "A3",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G12",
+     "q0": "G9",
+     "p": 1,
+     "open": 27,
+     "before": 26.38,
+     "worth": 26.38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "D2",
+     "p": 1,
+     "open": 36,
+     "before": 7.65,
+     "worth": 24,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then backdoor cut",
+      "closer": "X3",
+      "closes_to": "H3",
+      "then": "O1 N9",
+      "contested": 18,
+      "if_faked": 27,
+      "worth": 24
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 6.28,
+     "worth": 23.6,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "I3",
+      "then": "O4 G2",
+      "contested": 16.63,
+      "if_faked": 28,
+      "worth": 23.6
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 10.95,
+     "worth": 23.1,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P3off",
+   "before": 27,
+   "before_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "before_ms": 786,
+   "after": 27,
+   "after_answer": [
+    [
+     1,
+     "E8",
+     7
+    ]
+   ],
+   "after_ms": 35611,
+   "races_after": [
+    [
+     "open lane",
+     "X4",
+     "A3",
+     27
+    ],
+    [
+     "speed",
+     "X4",
+     "E2",
+     27
+    ],
+    [
+     "Dribble",
+     "X4",
+     "B4",
+     27
+    ],
+    [
+     "speed next phase",
+     "X4",
+     "E2",
+     27
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "N9",
+     "q0": "N11",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G12",
+     "q0": "E10",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "A3",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "D2",
+     "p": 1,
+     "open": 36,
+     "before": 7.65,
+     "worth": 24,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then backdoor cut",
+      "closer": "X3",
+      "closes_to": "H1",
+      "then": "O1 N9",
+      "contested": 18,
+      "if_faked": 27,
+      "worth": 24
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 6.28,
+     "worth": 23.21,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "I3",
+      "then": "O1 N9",
+      "contested": 16.63,
+      "if_faked": 27,
+      "worth": 23.21
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 10.95,
+     "worth": 23.1,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "N9",
+     "q0": "N11",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G12",
+     "q0": "E10",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "A3",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 27,
+     "worth": 27,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "D2",
+     "p": 1,
+     "open": 36,
+     "before": 7.65,
+     "worth": 24,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then backdoor cut",
+      "closer": "X3",
+      "closes_to": "H1",
+      "then": "O1 N9",
+      "contested": 18,
+      "if_faked": 27,
+      "worth": 24
+     }
+    },
+    {
+     "a": 2,
+     "c": "J4",
+     "q0": "L6",
+     "p": 1,
+     "open": 36,
+     "before": 6.28,
+     "worth": 23.21,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "I3",
+      "then": "O1 N9",
+      "contested": 16.63,
+      "if_faked": 27,
+      "worth": 23.21
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 10.95,
+     "worth": 23.1,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P4",
+   "before": 31.5,
+   "before_answer": [
+    [
+     1,
+     "B7",
+     4
+    ]
+   ],
+   "before_ms": 867,
+   "after": 30,
+   "after_answer": [
+    [
+     1,
+     "D6",
+     7
+    ]
+   ],
+   "after_ms": 94690,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "D11",
+     30
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     30
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "D11",
+     30
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "F10",
+     "q0": "C10",
+     "p": 1,
+     "open": 33,
+     "before": 16.75,
+     "worth": 29,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X1",
+      "closes_to": "G10",
+      "then": "O1 I13",
+      "contested": 27,
+      "if_faked": 30,
+      "worth": 29
+     }
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "E9",
+     "p": 1,
+     "open": 30,
+     "before": 15.15,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F7",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.22,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 I13",
+      "contested": 21.75,
+      "if_faked": 30,
+      "worth": 25.22
+     }
+    },
+    {
+     "a": 3,
+     "c": "A3",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B4",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 15,
+     "worth": 15,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 1,
+     "c": "C9",
+     "q0": "C9",
+     "p": 1,
+     "open": 33,
+     "before": 16.75,
+     "worth": 31.5,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "B8",
+      "then": "O2 D9",
+      "contested": 30,
+      "if_faked": 33,
+      "worth": 31.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "E9",
+     "p": 1,
+     "open": 30,
+     "before": 15.15,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F7",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 24,
+     "worth": 26.25,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 26.25
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.22,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O2 C9",
+      "contested": 21.75,
+      "if_faked": 30,
+      "worth": 25.22
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 15,
+     "worth": 15,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P4off",
+   "before": 31.5,
+   "before_answer": [
+    [
+     1,
+     "B7",
+     4
+    ]
+   ],
+   "before_ms": 769,
+   "after": 29.625,
+   "after_answer": [
+    [
+     1,
+     "D7",
+     7
+    ]
+   ],
+   "after_ms": 78412,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     29.63
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 29.63,
+     "before": 29.63,
+     "worth": 29.63,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "A4",
+     "q0": "C6",
+     "p": 1,
+     "open": 33,
+     "before": 15.3,
+     "worth": 28.5,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "B5",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 28.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "E9",
+     "p": 1,
+     "open": 30,
+     "before": 15.15,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F7",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.16,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O1 I13",
+      "contested": 21.75,
+      "if_faked": 29.63,
+      "worth": 25.16
+     }
+    },
+    {
+     "a": 3,
+     "c": "A4",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 11.1,
+     "worth": 23.63,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B5",
+      "then": "O2 C9",
+      "contested": 18,
+      "if_faked": 33,
+      "worth": 23.63
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 15,
+     "worth": 15,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 1,
+     "c": "C9",
+     "q0": "C9",
+     "p": 1,
+     "open": 33,
+     "before": 16.75,
+     "worth": 31.5,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "closeout, then shot fake and drive",
+      "closer": "X2",
+      "closes_to": "B8",
+      "then": "O2 D9",
+      "contested": 30,
+      "if_faked": 33,
+      "worth": 31.5
+     }
+    },
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 30,
+     "before": 30,
+     "worth": 30,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "G7",
+     "q0": "E9",
+     "p": 1,
+     "open": 30,
+     "before": 15.15,
+     "worth": 27.6,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "drive, then kick-out",
+      "closer": "X2",
+      "closes_to": "F7",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 27.6
+     }
+    },
+    {
+     "a": 3,
+     "c": "A5",
+     "q0": "A3",
+     "p": 1,
+     "open": 27,
+     "before": 24,
+     "worth": 26.25,
+     "dribble": false,
+     "actions": 1,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X2",
+      "closes_to": "B6",
+      "then": "O2 C9",
+      "contested": 24,
+      "if_faked": 33,
+      "worth": 26.25
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 9.6,
+     "worth": 25.22,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then kick-out",
+      "closer": "X5",
+      "closes_to": "J2",
+      "then": "O2 C9",
+      "contested": 21.75,
+      "if_faked": 30,
+      "worth": 25.22
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 15,
+     "worth": 15,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P5",
+   "before": 38,
+   "before_answer": [],
+   "before_ms": 612,
+   "after": 38,
+   "after_answer": [],
+   "after_ms": 42469,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "E6",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H8",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "E6",
+     36
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "G2",
+     "q0": "G5",
+     "p": 1,
+     "open": 38,
+     "before": 38,
+     "worth": 38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35.33,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O1 G3",
+      "contested": 34,
+      "if_faked": 38,
+      "worth": 35.33
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.81,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O1 G3",
+      "contested": 29.75,
+      "if_faked": 38,
+      "worth": 33.81
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 9,
+     "worth": 13.97,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "P7",
+      "then": "O1 G3",
+      "contested": 9,
+      "if_faked": 38,
+      "worth": 13.97
+     }
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "G2",
+     "q0": "G5",
+     "p": 1,
+     "open": 38,
+     "before": 38,
+     "worth": 38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35.33,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O1 G3",
+      "contested": 34,
+      "if_faked": 38,
+      "worth": 35.33
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.81,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O1 G3",
+      "contested": 29.75,
+      "if_faked": 38,
+      "worth": 33.81
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 9,
+     "worth": 13.97,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "P7",
+      "then": "O1 G3",
+      "contested": 9,
+      "if_faked": 38,
+      "worth": 13.97
+     }
+    }
+   ]
+  },
+  {
+   "board": "P5off",
+   "before": 38,
+   "before_answer": [],
+   "before_ms": 665,
+   "after": 38,
+   "after_answer": [],
+   "after_ms": 34982,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "M7",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H8",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "M7",
+     36
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "G2",
+     "q0": "G5",
+     "p": 1,
+     "open": 38,
+     "before": 38,
+     "worth": 38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35.33,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X1",
+      "closes_to": "F5",
+      "then": "O1 G3",
+      "contested": 34,
+      "if_faked": 38,
+      "worth": 35.33
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.81,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O1 G3",
+      "contested": 29.75,
+      "if_faked": 38,
+      "worth": 33.81
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "N7",
+     "p": 1,
+     "open": 32,
+     "before": 19.23,
+     "worth": 19.23,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "G2",
+     "q0": "G5",
+     "p": 1,
+     "open": 38,
+     "before": 38,
+     "worth": 38,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 0,
+     "c": "I10",
+     "q0": "I10",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35.33,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X1",
+      "closes_to": "F5",
+      "then": "O1 G3",
+      "contested": 34,
+      "if_faked": 38,
+      "worth": 35.33
+     }
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.81,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O1 G3",
+      "contested": 29.75,
+      "if_faked": 38,
+      "worth": 33.81
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "N7",
+     "p": 1,
+     "open": 32,
+     "before": 19.23,
+     "worth": 19.23,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    }
+   ]
+  },
+  {
+   "board": "P5ctl",
+   "before": 36,
+   "before_answer": [],
+   "before_ms": 721,
+   "after": 36,
+   "after_answer": [],
+   "after_ms": 47199,
+   "races_after": [
+    [
+     "speed",
+     "X1",
+     "D11",
+     36
+    ],
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     36
+    ],
+    [
+     "speed next phase",
+     "X1",
+     "D11",
+     36
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O4 G3",
+      "contested": 34,
+      "if_faked": 36,
+      "worth": 35
+     }
+    },
+    {
+     "a": 0,
+     "c": "G3",
+     "q0": "G8",
+     "p": 1,
+     "open": 34,
+     "before": 34,
+     "worth": 34,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.26,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O4 G3",
+      "contested": 29.75,
+      "if_faked": 36,
+      "worth": 33.26
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 9,
+     "worth": 13.91,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "P7",
+      "then": "O4 G3",
+      "contested": 9,
+      "if_faked": 36,
+      "worth": 13.91
+     }
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O4 G3",
+      "contested": 34,
+      "if_faked": 36,
+      "worth": 35
+     }
+    },
+    {
+     "a": 0,
+     "c": "G3",
+     "q0": "G8",
+     "p": 1,
+     "open": 34,
+     "before": 34,
+     "worth": 34,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.26,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O4 G3",
+      "contested": 29.75,
+      "if_faked": 36,
+      "worth": 33.26
+     }
+    },
+    {
+     "a": 2,
+     "c": "P8",
+     "q0": "O10",
+     "p": 1,
+     "open": 15,
+     "before": 9,
+     "worth": 13.91,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X5",
+      "closes_to": "P7",
+      "then": "O4 G3",
+      "contested": 9,
+      "if_faked": 36,
+      "worth": 13.91
+     }
+    }
+   ]
+  },
+  {
+   "board": "P5ctloff",
+   "before": 36,
+   "before_answer": [],
+   "before_ms": 617,
+   "after": 36,
+   "after_answer": [
+    [
+     0,
+     "E11",
+     6
+    ]
+   ],
+   "after_ms": 68265,
+   "races_after": [
+    [
+     "Dribble",
+     "X1",
+     "H11",
+     36
+    ]
+   ],
+   "looks_after": [
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O4 G3",
+      "contested": 34,
+      "if_faked": 36,
+      "worth": 35
+     }
+    },
+    {
+     "a": 0,
+     "c": "G3",
+     "q0": "G8",
+     "p": 1,
+     "open": 34,
+     "before": 34,
+     "worth": 34,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.26,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O4 G3",
+      "contested": 29.75,
+      "if_faked": 36,
+      "worth": 33.26
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "N7",
+     "p": 1,
+     "open": 32,
+     "before": 19.23,
+     "worth": 19.23,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    }
+   ],
+   "looks_before": [
+    {
+     "a": 0,
+     "c": "I13",
+     "q0": "I13",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": true,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 3,
+     "c": "G2",
+     "q0": "E3",
+     "p": 1,
+     "open": 36,
+     "before": 36,
+     "worth": 36,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": null
+    },
+    {
+     "a": 1,
+     "c": "G4",
+     "q0": "F6",
+     "p": 1,
+     "open": 36,
+     "before": 34,
+     "worth": 35,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X2",
+      "closes_to": "G5",
+      "then": "O4 G3",
+      "contested": 34,
+      "if_faked": 36,
+      "worth": 35
+     }
+    },
+    {
+     "a": 0,
+     "c": "G3",
+     "q0": "G8",
+     "p": 1,
+     "open": 34,
+     "before": 34,
+     "worth": 34,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    },
+    {
+     "a": 4,
+     "c": "K3",
+     "q0": "N3",
+     "p": 1,
+     "open": 38,
+     "before": 29.75,
+     "worth": 33.26,
+     "dribble": false,
+     "actions": 2,
+     "rushed": false,
+     "fake": {
+      "route": "shot fake, then pass to a cutter",
+      "closer": "X3",
+      "closes_to": "L4",
+      "then": "O4 G3",
+      "contested": 29.75,
+      "if_faked": 36,
+      "worth": 33.26
+     }
+    },
+    {
+     "a": 2,
+     "c": "K4",
+     "q0": "N7",
+     "p": 1,
+     "open": 32,
+     "before": 19.23,
+     "worth": 19.23,
+     "dribble": false,
+     "actions": 2,
+     "rushed": true,
+     "fake": null
+    }
+   ]
+  }
+ ]
+}

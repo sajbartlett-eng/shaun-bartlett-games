@@ -24,6 +24,8 @@ E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoa
 if (process.env.PM_ANSWER === 'answers') E._pvAnswers(true);   // fix 4e: the answer that answers every look and race (a switch)
 if (process.env.PM_ANSWER === 'full') E._pvFull(true);       // fix 4d: the full reading (the test that holds it)
 if (process.env.PM_ANSWER === 'check') { E._pvAnswers(true); E._raceCheck(true); }   // fix 4e, and each race read by difference held to it read afresh
+let pool = null;                                             // fix 4f: PM_CORES workers beside this one
+if (+process.env.PM_CORES > 1) { pool = require(path.join(root, 'tools', 'engine_pool.js')).makePool(root, +process.env.PM_CORES); E.setPool(pool); }
 const reqs = JSON.parse(fs.readFileSync(0, 'utf8'));
 const out = [];
 for (const r of reqs) {
@@ -33,6 +35,7 @@ for (const r of reqs) {
   catch (e) { res = { error: String(e && e.stack || e) }; }
   out.push(Object.assign({ name: r.name, ms: Date.now() - t0, res }, process.env.PM_ANSWER === 'check' ? { race_check: JSON.parse(JSON.stringify(E._raceCheck())) } : {}));
 }
+if (pool) pool.close();
 process.stdout.write(JSON.stringify(out));
 """
 

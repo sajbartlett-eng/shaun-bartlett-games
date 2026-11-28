@@ -901,6 +901,17 @@ def poss_read(r, opts, s0=None, last_phase=False):
     SV0 = [list(row) for row in SV]
     Fm, Gm, UB0 = {}, {}, {}
     moved_at = [None] * 5                           # (fix 3b: where each defender's answer movement took him, and how)
+    # fix 4f (engine.js): the board the follow-up reads: ZL as it stands; H[k] as it stood after the answer's first k
+    # movements. A look whose shot or fake goes up before movement k + 1 reads its follow-up on H[k].
+    ZL = dict(SV0=SV0, mv=moved_at, Fm=Fm, Gm=Gm, UB0=UB0)
+
+    def zsnap():
+        return dict(SV0=[list(x) for x in SV0], mv=list(moved_at), Fm={}, Gm={}, UB0={})
+    H = [zsnap()]
+
+    def zof(i, tk):
+        lv = (lim_l if tk == 1 else lim)[i]
+        return H[lv] if lv <= nm[0] else ZL
     RK = [races.kit] if getattr(races, 'kit', None) else []   # (fix 3c: built when a fake's race first needs it; fix 3d: the drives' own)
     fake_kept = {}
     sN = r._msN
@@ -909,11 +920,11 @@ def poss_read(r, opts, s0=None, last_phase=False):
         o = L[j]
         return o['n0'] <= left if o['a'] == b else o['n0'] <= left + ((key_mask >> o['a']) & 1)
 
-    def ub0(e):
+    def ub0(e, Z):
         u, order = [0.0] * n, []
         for j in range(n):
             o = L[j]
-            types, row, hi = o['lk'].types, SV0[j], NEG
+            types, row, hi = o['lk'].types, Z['SV0'][j], NEG
             for t, ty in enumerate(types):
                 v = o['open'][t]
                 for e2 in range(5):
@@ -926,16 +937,16 @@ def poss_read(r, opts, s0=None, last_phase=False):
             if ok_look(j):
                 order.append(j)
         order.sort(key=lambda j: (-u[j], j))
-        UB0[e] = (u, order)
+        Z['UB0'][e] = (u, order)
 
-    def follow2(e, q, a, kind):
+    def follow2(e, q, a, kind, Z):
         key = (e, q, a, kind)
-        g = Gm.get(key)
+        g = Z['Gm'].get(key)
         if g is not None:
             return g
-        if e not in UB0:
-            ub0(e)
-        u, order = UB0[e]
+        if e not in Z['UB0']:
+            ub0(e, Z)
+        u, order = Z['UB0'][e]
         cm = _cmap2_after(rules, q, a, s.ctx.dfn[e].qs, mode, kind, 1)
         hi, hj = NEG, -1
         for j in order:
@@ -944,20 +955,20 @@ def poss_read(r, opts, s0=None, last_phase=False):
             o = L[j]
             if o['c'] == q:
                 continue
-            ev = o['r'] * core(j, 0.0, e, sval(j, e, cm.get(o['c'])), SV0[j]) - (1 - o['r']) * o['lc']
+            ev = o['r'] * core(j, 0.0, e, sval(j, e, cm.get(o['c'])), Z['SV0'][j]) - (1 - o['r']) * o['lc']
             if ev > hi:
                 hi, hj = ev, j
-        g = Gm[key] = (hi, hj)
+        g = Z['Gm'][key] = (hi, hj)
         return g
 
-    def follow(i, e):
+    def follow(i, e, Z):
         key = (i, e)
-        f = Fm.get(key)
+        f = Z['Fm'].get(key)
         if f is not None:
             return f
         c = L[i]['c']
         lo, frm, then = float('inf'), None, -1
-        mv0 = moved_at[e]
+        mv0 = Z['mv'][e]
         if mv0 is None:
             free, fixed = defender_map(sN, e, exact=True)
 
@@ -976,7 +987,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 return fake_kept[(e, q)]
             for q, na in free.items():
                 if na == 1 and B.cheb(q, c) == 1:
-                    g = follow2(e, q, B.dir_between(q, c), 'move')
+                    g = follow2(e, q, B.dir_between(q, c), 'move', Z)
                     fr2 = fake_race(q)
                     v = max(g[0], fr2)
                     if v < lo:
@@ -985,7 +996,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 if B.cheb(q, c) == 1:
                     for a, na in arrs.items():
                         if na == 1:
-                            g = follow2(e, q, a, fixed_kind(sN, e, q, a))
+                            g = follow2(e, q, a, fixed_kind(sN, e, q, a), Z)
                             fr2 = fake_race(q)
                             v = max(g[0], fr2)
                             if v < lo:
@@ -997,7 +1008,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 free = geo_reach(mq, ma, qsd, True, 0, rules)[0]
                 for q, na in free.items():
                     if na == 1 and q != mq and B.cheb(q, c) == 1:
-                        g = follow2(e, q, B.dir_between(q, c), 'sprint')
+                        g = follow2(e, q, B.dir_between(q, c), 'sprint', Z)
                         if g[0] < lo:
                             lo, frm, then = g[0], q, g[1]
             else:
@@ -1006,10 +1017,10 @@ def poss_read(r, opts, s0=None, last_phase=False):
                     if q != mq and B.cheb(q, c) == 1:
                         for a, na in arrs.items():
                             if na == 1:
-                                g = follow2(e, q, a, 'sprint')
+                                g = follow2(e, q, a, 'sprint', Z)
                                 if g[0] < lo:
                                     lo, frm, then = g[0], q, g[1]
-        f = Fm[key] = (NEG if lo == float('inf') else lo, frm, then)
+        f = Z['Fm'][key] = (NEG if lo == float('inf') else lo, frm, then)
         return f
 
     def worth(i, Bv, d, nv, row_k=None, tk=0):
@@ -1038,7 +1049,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
         ws = max(tmp) + o['adj']
         if not (ws > wc + 1e-9):
             return wc
-        F = follow(i, e0)[0]
+        F = follow(i, e0, zof(i, tk))[0]          # (fix 4f: on the board as it stood when its shot or fake went up)
         if not (F > wc + 1e-9):
             return wc
         da, df = ws - wc, F - wc
@@ -1375,6 +1386,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
         Fm.clear()
         Gm.clear()
         UB0.clear()
+        H.append(zsnap())                          # (fix 4f: the board as it stands after this movement)
         moves.append((d, q, best['a']))
         moved[d] = True
         taken.add(q)
@@ -1418,6 +1430,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 L[i]['open'][0], L[i]['w'], L[i]['r'] = z[0], z[1], z[2]
                 races[i - race_base] = z[3]
             moved_at[d] = snap['mv']
+            H.pop()
             moves.pop()
             moved[d] = False
             taken.discard(q)

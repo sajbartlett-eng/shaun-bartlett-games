@@ -38,6 +38,9 @@ def make_handler(manager):
             self.send_header('Content-Type', ctype)
             self.send_header('Content-Length', str(len(data)))
             self.send_header('Cache-Control', 'no-store')
+            # fix 4f: cross-origin isolated, so the in-browser engine may use several cores (shared memory)
+            self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
+            self.send_header('Cross-Origin-Embedder-Policy', 'credentialless')
             self.end_headers()
             self.wfile.write(data)
 

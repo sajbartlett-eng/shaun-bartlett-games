@@ -2003,6 +2003,20 @@ it gives the full reading's number, movements and races on every board. It costs
 (fix 4d), so it is a switch (`_pvAnswers`), off in play; the full reading (`_pvFull`) stays as the test that holds it.
 The answer in play is fix 4d's. · Source: Shaun, 27 Nov 2026 (fix 4e) · **Built, not in play: too slow.**
 
+**D-316. A movement can't change what happened before it (fix 4f).** Inside the number, a look whose shot or fake goes up
+before a defender's movement reads its fake's follow-up on the board as it stood when it went up, as its contests
+already do: the answer's movements after it change neither. In the answer in play, the full reading and fix 4e's
+answer, in both engines. It changes R4c (29.23 to 29.67: X4's drop paid only through a follow-up already gone up) and
+no number in play on R1 to R5 or P1 to P5. · Source: Shaun, 28 Nov 2026 (fix 4f) · **Built.**
+
+**D-317. Several cores, the same decision (fix 4f).** The turn search's candidate turns, the stance search's candidate
+stances and swaps, and the offence setup's placements are each read independently: they are handed out to workers as
+one batch, in contiguous blocks, and their results are put back in the batch's own order, so the search compares the
+same readings in the same order and gives the decision one core gives, on any device. In Node, worker threads
+(`tools/engine_pool.js`, each held to 256 MB); in the app, Web Workers inside the engine's worker, when the page is
+cross-origin isolated (the server sends the headers); without that, one core. · Source: Shaun, 28 Nov 2026 (fix 4f) ·
+**Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

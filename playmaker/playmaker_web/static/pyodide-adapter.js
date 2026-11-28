@@ -14,6 +14,34 @@
   // the worker's source, inlined so the single-file build needs nothing but the Pyodide CDN
   const WORKER = `
     let dispatch = null;
+    // fix 4f (Shaun, 28 Nov 2026): several cores. Each sub-worker is the same engine with the same data; engine.js hands
+    // it a batch of independent readings and waits for the answers in shared memory, so the decision is the one a single
+    // core makes. Shared memory needs the page to be cross-origin isolated; without it the engine reads on one core.
+    const SUB = "self.onmessage = (ev) => { const m = ev.data; if (m.type === 'init') { self.PMEngine.init(m.data); self.PMEngine._worker(true); self.F = new Int32Array(m.sab, 0, 2); self.B = new Uint8Array(m.sab, 8); self.postMessage('ready'); return; }" +
+      " const out = new TextEncoder().encode(self.PMEngine.workJSON(m.text)); if (out.length > self.B.length) { Atomics.store(self.F, 0, 2); Atomics.notify(self.F, 0); return; }" +
+      " self.B.set(out); Atomics.store(self.F, 1, out.length); Atomics.store(self.F, 0, 1); Atomics.notify(self.F, 0); };";
+    // (it resolves once every sub-worker has started: a worker blocked waiting for them would never let them start)
+    async function makeWebPool(engineJs, data, n) {
+      const url = URL.createObjectURL(new Blob([engineJs, '\n', SUB], { type: 'text/javascript' })), ws = [], dec = new TextDecoder(), up = [];
+      for (let k = 0; k < n; k++) {
+        const sab = new SharedArrayBuffer(8 + 32 * 1024 * 1024), w = new Worker(url);
+        up.push(new Promise(res => { w.onmessage = () => res(); }));
+        w.postMessage({ type: 'init', data, sab });
+        ws.push({ w, flag: new Int32Array(sab, 0, 2), buf: new Uint8Array(sab, 8) });
+      }
+      await Promise.all(up);
+      return { size: n, runAll(texts) {
+        for (let k = 0; k < texts.length; k++) { Atomics.store(ws[k].flag, 0, 0); ws[k].w.postMessage({ type: 'run', text: texts[k] }); }
+        const out = [];
+        for (let k = 0; k < texts.length; k++) {
+          const { flag, buf } = ws[k];
+          while (Atomics.load(flag, 0) === 0) Atomics.wait(flag, 0, 0, 1000);
+          if (Atomics.load(flag, 0) === 2) throw new Error("a sub-worker's answer is larger than its room");
+          out.push(dec.decode(buf.slice(0, Atomics.load(flag, 1))));
+        }
+        return out;
+      } };
+    }
     self.onmessage = async (ev) => {
       const m = ev.data;
       if (m.type === 'init') {
@@ -31,8 +59,11 @@
             // step 3n: the search core in JavaScript; the Python agent calls it for each decision
             importScripts(URL.createObjectURL(new Blob([m.bundle.engine_js], { type: 'text/javascript' })));
             const f = m.bundle.files, dataf = n => JSON.parse(f['playmaker_engine/data/' + n]);
-            self.PMEngine.init({ zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json'), segments: dataf('segments.json'),
-              learned: (() => { try { return dataf('learned_weights.json'); } catch (e) { return null; } })() });   // step 17
+            const initData = { zones: dataf('court_zones.json'), config: dataf('ai_profiles.json'), vcoarse: dataf('vcoarse.json'), segments: dataf('segments.json'),
+              learned: (() => { try { return dataf('learned_weights.json'); } catch (e) { return null; } })() };   // step 17
+            self.PMEngine.init(initData);
+            const cores = Math.min(4, (self.navigator && self.navigator.hardwareConcurrency) || 1);
+            if (self.crossOriginIsolated && cores > 1) self.PMEngine.setPool(await makeWebPool(m.bundle.engine_js, initData, cores));   // (fix 4f)
             py.runPython("import js\\nfrom playmaker_engine import agent as _AG\\n_AG.JS['search'] = js.PMEngine.searchJSON\\n_AG.JS['goals'] = js.PMEngine.goalsJSON\\n_AG.JS['reads'] = js.PMEngine.readsJSON\\n_AG.JS['coverage'] = js.PMEngine.coverageJSON");
           }
           self.postMessage({ type: 'ready' });
