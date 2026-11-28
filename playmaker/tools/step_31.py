@@ -24,6 +24,7 @@ E.init({ zones: load('court_zones.json'), config: load('ai_profiles.json'), vcoa
 if (process.env.PM_ANSWER === 'answers') E._pvAnswers(true);   // fix 4e: the answer that answers every look and race (a switch)
 if (process.env.PM_ANSWER === 'full') E._pvFull(true);       // fix 4d: the full reading (the test that holds it)
 if (process.env.PM_ANSWER === 'check') { E._pvAnswers(true); E._raceCheck(true); }   // fix 4e, and each race read by difference held to it read afresh
+if (process.env.PM_DEBUG) E._pvDebug(true);                 // fix 4g's proof: each step of the answer, what the races named and what it took
 let pool = null;                                             // fix 4f: PM_CORES workers beside this one
 if (+process.env.PM_CORES > 1) { pool = require(path.join(root, 'tools', 'engine_pool.js')).makePool(root, +process.env.PM_CORES); E.setPool(pool); }
 const reqs = JSON.parse(fs.readFileSync(0, 'utf8'));
@@ -33,6 +34,7 @@ for (const r of reqs) {
   let res;
   try { res = JSON.parse(E[r.fn || 'coverageJSON'](JSON.stringify({ state: r.state, ctx: r.ctx, options: r.options || null, profile: r.profile, budget: null, max_depth: r.max_depth, stale: null }))); }
   catch (e) { res = { error: String(e && e.stack || e) }; }
+  if (process.env.PM_DEBUG) { res.debug = E._pvDebugGet(); E._pvDebug(true); }
   out.push(Object.assign({ name: r.name, ms: Date.now() - t0, res }, process.env.PM_ANSWER === 'check' ? { race_check: JSON.parse(JSON.stringify(E._raceCheck())) } : {}));
 }
 if (pool) pool.close();
@@ -40,7 +42,7 @@ process.stdout.write(JSON.stringify(out));
 """
 
 
-def js(reqs, timeout=600, segments=None, answer=None):
+def js(reqs, timeout=600, segments=None, answer=None, debug=False):
     """Each request {name, state, ctx, options} read by engine.js in one Node process -> [{name, ms, res}].
     segments: another segments table (a file) for this run (the segments trial).
     answer: 'answers' (fix 4e's answer), 'check' (the same, each race read by difference also read afresh) or 'full'
@@ -48,6 +50,8 @@ def js(reqs, timeout=600, segments=None, answer=None):
     env = dict(os.environ, PM_SEGMENTS=segments) if segments else None
     if answer:
         env = dict(env or os.environ, PM_ANSWER=answer)
+    if debug:
+        env = dict(env or os.environ, PM_DEBUG='1')
     p = subprocess.run(['node', '-e', NODE, os.path.abspath(ROOT)], input=json.dumps(reqs), capture_output=True, text=True, timeout=timeout, env=env)
     if p.returncode != 0:
         raise RuntimeError(p.stderr[-3000:])

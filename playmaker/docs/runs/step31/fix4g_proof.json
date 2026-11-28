@@ -1,0 +1,1838 @@
+[
+ {
+  "board": "R1",
+  "exact": 29.4224,
+  "exact_answer": [
+   [
+    2,
+    "J8",
+    6
+   ]
+  ],
+  "exact_ms": 26454,
+  "new": 29.4224,
+  "new_answer": [
+   [
+    2,
+    "J8",
+    6
+   ]
+  ],
+  "new_ms": 2142,
+  "gap": 0.0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 30,
+    "squares": 20,
+    "movements": 24,
+    "took": {
+     "d": 2,
+     "from": "N8",
+     "q": "J8",
+     "a": 6,
+     "u": 29.422382671480143,
+     "named": true
+    }
+   },
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 2,
+    "q": "J8",
+    "a": 6,
+    "u": 29.422382671480143,
+    "U2": 29.422382671480143,
+    "worse": false,
+    "back": false
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 30,
+    "races": [
+     {
+      "race": "Dribble won:0",
+      "worth": 30,
+      "line": [
+       "I9",
+       "E5"
+      ]
+     }
+    ],
+    "took": {
+     "d": 2,
+     "from": "N8",
+     "q": "J8",
+     "a": 6,
+     "u": 29.422382671480143,
+     "kind": "sprint"
+    },
+    "named": [
+     "Dribble won:0",
+     "front",
+     "I9"
+    ],
+    "lowers": [
+     {
+      "race": "Dribble won:0",
+      "was": 30,
+      "now": 27
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 29.422382671480143,
+    "races": []
+   }
+  ],
+  "full": 29.4224,
+  "full_answer": [
+   [
+    2,
+    "J8",
+    6
+   ]
+  ],
+  "full_ms": 37150,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "R2",
+  "exact": 29,
+  "exact_answer": [],
+  "exact_ms": 24976,
+  "new": 29,
+  "new_answer": [],
+  "new_ms": 1834,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 29,
+    "squares": 17,
+    "movements": 24,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 29,
+    "races": [
+     {
+      "race": "Dribble:1",
+      "worth": 28,
+      "line": [
+       "D7",
+       "E6",
+       "F2"
+      ]
+     }
+    ]
+   }
+  ],
+  "full": 29,
+  "full_answer": [],
+  "full_ms": 30379,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "R3",
+  "exact": 36,
+  "exact_answer": [],
+  "exact_ms": 45621,
+  "new": 36,
+  "new_answer": [],
+  "new_ms": 2193,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 36,
+    "squares": 14,
+    "movements": 13,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 36,
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 36,
+      "line": [
+       "G4"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 36,
+      "line": [
+       "G4"
+      ]
+     }
+    ]
+   }
+  ],
+  "full": 36,
+  "full_answer": [],
+  "full_ms": 55311,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "R4",
+  "exact": 29,
+  "exact_answer": [
+   [
+    0,
+    "H8",
+    1
+   ]
+  ],
+  "exact_ms": 84793,
+  "new": 29,
+  "new_answer": [
+   [
+    3,
+    "F4",
+    2
+   ],
+   [
+    1,
+    "C7",
+    7
+   ]
+  ],
+  "new_ms": 3132,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 34,
+    "squares": 17,
+    "movements": 22,
+    "took": {
+     "d": 3,
+     "from": "B4",
+     "q": "F4",
+     "a": 2,
+     "u": 31.44351851851852,
+     "named": true
+    }
+   },
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 3,
+    "q": "F4",
+    "a": 2,
+    "u": 31.44351851851852,
+    "U2": 31.44351851851852,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "accept",
+    "step": 1,
+    "d": 1,
+    "q": "C7",
+    "a": 7,
+    "u": 29,
+    "U2": 29,
+    "worse": false,
+    "back": false
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 34,
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 34,
+      "line": [
+       "G4"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 34,
+      "line": [
+       "G4"
+      ]
+     }
+    ],
+    "took": {
+     "d": 0,
+     "from": "I8",
+     "q": "H8",
+     "a": 1,
+     "u": 29,
+     "kind": "move"
+    },
+    "named": [
+     "speed:0",
+     "lane",
+     "G4"
+    ],
+    "namedArrow": 4,
+    "lowers": [
+     {
+      "race": "speed:0",
+      "was": 34,
+      "now": 27
+     },
+     {
+      "race": "speed next phase:0",
+      "was": 34,
+      "now": null
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 29,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 28.75,
+      "line": [
+       "I9",
+       "I4"
+      ]
+     }
+    ]
+   }
+  ],
+  "full": 29,
+  "full_answer": [
+   [
+    0,
+    "H8",
+    1
+   ]
+  ],
+  "full_ms": 101736,
+  "exact_is_full": true,
+  "missed": [
+   {
+    "step": 0,
+    "who": "X1",
+    "frm": "I8",
+    "to": "H8",
+    "arrow": 1,
+    "kind": "move",
+    "number_after": 29,
+    "lowers": [
+     {
+      "race": "speed:0",
+      "was": 34,
+      "now": 27
+     },
+     {
+      "race": "speed next phase:0",
+      "was": 34,
+      "now": null
+     }
+    ],
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 34,
+      "line": [
+       "G4"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 34,
+      "line": [
+       "G4"
+      ]
+     }
+    ],
+    "reason": "named (lane of speed:0, from G4), but a Move there faces the line (arrow 4), not arrow 1"
+   }
+  ]
+ },
+ {
+  "board": "R4c",
+  "exact": 29.6667,
+  "exact_answer": [
+   [
+    0,
+    "H8",
+    1
+   ]
+  ],
+  "exact_ms": 66380,
+  "new": 29.6667,
+  "new_answer": [
+   [
+    3,
+    "F4",
+    2
+   ],
+   [
+    1,
+    "C7",
+    7
+   ]
+  ],
+  "new_ms": 2701,
+  "gap": 0.0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 38,
+    "squares": 17,
+    "movements": 22,
+    "took": {
+     "d": 3,
+     "from": "B4",
+     "q": "F4",
+     "a": 2,
+     "u": 31.443518518518523,
+     "named": true
+    }
+   },
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 3,
+    "q": "F4",
+    "a": 2,
+    "u": 31.443518518518523,
+    "U2": 31.443518518518523,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "accept",
+    "step": 1,
+    "d": 1,
+    "q": "C7",
+    "a": 7,
+    "u": 29.66666666666667,
+    "U2": 29.66666666666667,
+    "worse": false,
+    "back": false
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 38,
+    "races": [
+     {
+      "race": "speed next phase:0",
+      "worth": 38,
+      "line": [
+       "G4"
+      ]
+     }
+    ],
+    "took": {
+     "d": 0,
+     "from": "I8",
+     "q": "H8",
+     "a": 1,
+     "u": 29.66666666666667,
+     "kind": "move"
+    },
+    "named": [
+     "speed next phase:0",
+     "lane",
+     "G4"
+    ],
+    "namedArrow": 4,
+    "lowers": [
+     {
+      "race": "speed next phase:0",
+      "was": 38,
+      "now": null
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 29.66666666666667,
+    "races": []
+   }
+  ],
+  "full": 29.6667,
+  "full_answer": [
+   [
+    0,
+    "H8",
+    1
+   ]
+  ],
+  "full_ms": 87699,
+  "exact_is_full": true,
+  "missed": [
+   {
+    "step": 0,
+    "who": "X1",
+    "frm": "I8",
+    "to": "H8",
+    "arrow": 1,
+    "kind": "move",
+    "number_after": 29.66666666666667,
+    "lowers": [
+     {
+      "race": "speed next phase:0",
+      "was": 38,
+      "now": null
+     }
+    ],
+    "races": [
+     {
+      "race": "speed next phase:0",
+      "worth": 38,
+      "line": [
+       "G4"
+      ]
+     }
+    ],
+    "reason": "named (lane of speed next phase:0, from G4), but a Move there faces the line (arrow 4), not arrow 1"
+   }
+  ]
+ },
+ {
+  "board": "R5a",
+  "exact": 36,
+  "exact_answer": [],
+  "exact_ms": 58248,
+  "new": 36,
+  "new_answer": [],
+  "new_ms": 2791,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 36,
+    "squares": 26,
+    "movements": 15,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 36,
+    "races": [
+     {
+      "race": "open lane:0",
+      "worth": 36,
+      "line": [
+       "I10",
+       "G5",
+       "K2"
+      ]
+     },
+     {
+      "race": "speed:0",
+      "worth": 36,
+      "line": [
+       "G5",
+       "G5",
+       "K2"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 36,
+      "line": [
+       "G5",
+       "G5",
+       "K2"
+      ]
+     }
+    ]
+   }
+  ],
+  "full": 36,
+  "full_answer": [],
+  "full_ms": 64885,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "R5b",
+  "exact": 29,
+  "exact_answer": [
+   [
+    2,
+    "J8",
+    6
+   ]
+  ],
+  "exact_ms": 120663,
+  "new": 30,
+  "new_answer": [],
+  "new_ms": 3201,
+  "gap": 1,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 30,
+    "squares": 16,
+    "movements": 24,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 30,
+    "races": [
+     {
+      "race": "open lane:0",
+      "worth": 30,
+      "line": [
+       "I10",
+       "E6"
+      ]
+     },
+     {
+      "race": "speed:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     }
+    ],
+    "took": {
+     "d": 2,
+     "from": "N8",
+     "q": "J8",
+     "a": 6,
+     "u": 29,
+     "kind": "sprint"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "race": "open lane:0",
+      "was": 30,
+      "now": null
+     },
+     {
+      "race": "speed:0",
+      "was": 30,
+      "now": null
+     },
+     {
+      "race": "speed next phase:0",
+      "was": 30,
+      "now": null
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 29,
+    "races": []
+   }
+  ],
+  "full": 29,
+  "full_answer": [
+   [
+    2,
+    "J8",
+    6
+   ]
+  ],
+  "full_ms": 137774,
+  "exact_is_full": true,
+  "missed": [
+   {
+    "step": 0,
+    "who": "X3",
+    "frm": "N8",
+    "to": "J8",
+    "arrow": 6,
+    "kind": "sprint",
+    "number_after": 29,
+    "lowers": [
+     {
+      "race": "open lane:0",
+      "was": 30,
+      "now": null
+     },
+     {
+      "race": "speed:0",
+      "was": 30,
+      "now": null
+     },
+     {
+      "race": "speed next phase:0",
+      "was": 30,
+      "now": null
+     }
+    ],
+    "races": [
+     {
+      "race": "open lane:0",
+      "worth": 30,
+      "line": [
+       "I10",
+       "E6"
+      ]
+     },
+     {
+      "race": "speed:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     }
+    ],
+    "reason": "not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes"
+   }
+  ]
+ },
+ {
+  "board": "R5c",
+  "exact": 29,
+  "exact_answer": [],
+  "exact_ms": 66135,
+  "new": 29,
+  "new_answer": [],
+  "new_ms": 1068,
+  "gap": 0,
+  "new_steps": [],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 29,
+    "races": []
+   }
+  ],
+  "full": 29,
+  "full_answer": [],
+  "full_ms": 72626,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "R5ctl",
+  "exact": 29,
+  "exact_answer": [],
+  "exact_ms": 54406,
+  "new": 29,
+  "new_answer": [],
+  "new_ms": 751,
+  "gap": 0,
+  "new_steps": [],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 29,
+    "races": []
+   }
+  ],
+  "full": 29,
+  "full_answer": [],
+  "full_ms": 59903,
+  "exact_is_full": true,
+  "missed": []
+ },
+ {
+  "board": "P1",
+  "exact": 30,
+  "exact_answer": [],
+  "exact_ms": 49132,
+  "new": 30,
+  "new_answer": [],
+  "new_ms": 2447,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 30,
+    "squares": 12,
+    "movements": 22,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 30,
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 30,
+      "line": [
+       "E6"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P1off",
+  "exact": 28.5,
+  "exact_answer": [
+   [
+    2,
+    "I6",
+    0
+   ]
+  ],
+  "exact_ms": 69880,
+  "new": 28.75,
+  "new_answer": [],
+  "new_ms": 3274,
+  "gap": 0.25,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 28.75,
+    "squares": 18,
+    "movements": 29,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 28.75,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 28.75,
+      "line": [
+       "J8",
+       "L6"
+      ]
+     }
+    ],
+    "took": {
+     "d": 2,
+     "from": "K4",
+     "q": "I6",
+     "a": 0,
+     "u": 28.5,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 28.75,
+      "now": 28.5
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 28.5,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 28.5,
+      "line": [
+       "H9",
+       "F7"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X3",
+    "frm": "K4",
+    "to": "I6",
+    "arrow": 0,
+    "kind": "move",
+    "number_after": 28.5,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 28.75,
+      "now": 28.5
+     }
+    ],
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 28.75,
+      "line": [
+       "J8",
+       "L6"
+      ]
+     }
+    ],
+    "reason": "not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes"
+   }
+  ]
+ },
+ {
+  "board": "P2",
+  "exact": 31.5,
+  "exact_answer": [
+   [
+    0,
+    "I2",
+    0
+   ]
+  ],
+  "exact_ms": 39564,
+  "new": 31.5,
+  "new_answer": [
+   [
+    0,
+    "I2",
+    4
+   ]
+  ],
+  "new_ms": 2272,
+  "gap": 0.0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 34.75,
+    "squares": 15,
+    "movements": 26,
+    "took": {
+     "d": 0,
+     "from": "I5",
+     "q": "I2",
+     "a": 4,
+     "u": 31.5,
+     "named": true
+    }
+   },
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 0,
+    "q": "I2",
+    "a": 4,
+    "u": 31.5,
+    "U2": 31.5,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "accept",
+    "step": 1,
+    "d": 1,
+    "q": "D9",
+    "a": 7,
+    "u": 30,
+    "U2": 30,
+    "worse": true,
+    "back": true
+   },
+   {
+    "path": "back",
+    "U": 31.5,
+    "snapU": 31.5
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 34.75,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 34.75,
+      "line": [
+       "H4",
+       "H2"
+      ]
+     }
+    ],
+    "took": {
+     "d": 0,
+     "from": "I5",
+     "q": "I2",
+     "a": 0,
+     "u": 31.5,
+     "kind": "move"
+    },
+    "named": [
+     "Dribble:0",
+     "front",
+     "H2"
+    ],
+    "namedArrow": 6,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 34.75,
+      "now": 30
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 31.5,
+    "races": []
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X1",
+    "frm": "I5",
+    "to": "I2",
+    "arrow": 0,
+    "kind": "move",
+    "number_after": 31.5,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 34.75,
+      "now": 30
+     }
+    ],
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 34.75,
+      "line": [
+       "H4",
+       "H2"
+      ]
+     }
+    ],
+    "reason": "named (front of Dribble:0, from H2), but a Move there faces the line (arrow 6), not arrow 0"
+   }
+  ]
+ },
+ {
+  "board": "P2off",
+  "exact": 30,
+  "exact_answer": [
+   [
+    0,
+    "K2",
+    0
+   ],
+   [
+    1,
+    "D9",
+    7
+   ]
+  ],
+  "exact_ms": 38823,
+  "new": 31.5,
+  "new_answer": [
+   [
+    4,
+    "I3",
+    7
+   ]
+  ],
+  "new_ms": 3147,
+  "gap": 1.5,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 33,
+    "squares": 13,
+    "movements": 22,
+    "took": {
+     "d": 4,
+     "from": "J2",
+     "q": "I3",
+     "a": 7,
+     "u": 31.5,
+     "named": true
+    }
+   },
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 4,
+    "q": "I3",
+    "a": 7,
+    "u": 31.5,
+    "U2": 31.5,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "named",
+    "step": 1,
+    "U": 31.5,
+    "squares": 19,
+    "movements": 25,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 33,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 33,
+      "line": [
+       "H4"
+      ]
+     }
+    ],
+    "took": {
+     "d": 0,
+     "from": "I4",
+     "q": "K2",
+     "a": 0,
+     "u": 31.5,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 33,
+      "now": null
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 31.5,
+    "races": [],
+    "took": {
+     "d": 1,
+     "from": "D8",
+     "q": "D9",
+     "a": 7,
+     "u": 30,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "look": "O2 H10",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 2,
+    "U": 30,
+    "races": []
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X1",
+    "frm": "I4",
+    "to": "K2",
+    "arrow": 0,
+    "kind": "move",
+    "number_after": 31.5,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 33,
+      "now": null
+     }
+    ],
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 33,
+      "line": [
+       "H4"
+      ]
+     }
+    ],
+    "reason": "not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes"
+   },
+   {
+    "step": 1,
+    "who": "X2",
+    "frm": "D8",
+    "to": "D9",
+    "arrow": 7,
+    "kind": "move",
+    "number_after": 30,
+    "lowers": [
+     {
+      "look": "O2 H10",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ],
+    "races": [],
+    "reason": "no race on the board at that step: it lowers a look on the map, which the map's own candidates missed"
+   }
+  ]
+ },
+ {
+  "board": "P3",
+  "exact": 27,
+  "exact_answer": [
+   [
+    1,
+    "E8",
+    7
+   ]
+  ],
+  "exact_ms": 33848,
+  "new": 27,
+  "new_answer": [
+   [
+    1,
+    "E8",
+    7
+   ]
+  ],
+  "new_ms": 1751,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 1,
+    "q": "E8",
+    "a": 7,
+    "u": 27,
+    "U2": 27,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "named",
+    "step": 1,
+    "U": 27,
+    "squares": 29,
+    "movements": 29,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 29,
+    "races": [],
+    "took": {
+     "d": 1,
+     "from": "E7",
+     "q": "E8",
+     "a": 7,
+     "u": 27,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "look": "O2 G11",
+      "phase": 1,
+      "was": 29,
+      "now": 14.5
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 27,
+    "races": [
+     {
+      "race": "speed:3",
+      "worth": 27,
+      "line": [
+       "D2"
+      ]
+     },
+     {
+      "race": "Dribble:3",
+      "worth": 27,
+      "line": [
+       "A3"
+      ]
+     },
+     {
+      "race": "speed next phase:3",
+      "worth": 27,
+      "line": [
+       "D2"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P3off",
+  "exact": 27,
+  "exact_answer": [
+   [
+    1,
+    "E8",
+    7
+   ]
+  ],
+  "exact_ms": 36283,
+  "new": 27,
+  "new_answer": [
+   [
+    1,
+    "E8",
+    7
+   ]
+  ],
+  "new_ms": 2401,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 1,
+    "q": "E8",
+    "a": 7,
+    "u": 27,
+    "U2": 27,
+    "worse": false,
+    "back": false
+   },
+   {
+    "path": "named",
+    "step": 1,
+    "U": 27,
+    "squares": 42,
+    "movements": 37,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 28.5,
+    "races": [],
+    "took": {
+     "d": 1,
+     "from": "E7",
+     "q": "E8",
+     "a": 7,
+     "u": 27,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "look": "O2 G11",
+      "phase": 1,
+      "was": 28.5,
+      "now": 14.5
+     },
+     {
+      "look": "O2 H11",
+      "phase": 1,
+      "was": 28.5,
+      "now": 14.5
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 27,
+    "races": [
+     {
+      "race": "open lane:3",
+      "worth": 27,
+      "line": [
+       "A3"
+      ]
+     },
+     {
+      "race": "speed:3",
+      "worth": 27,
+      "line": [
+       "E2"
+      ]
+     },
+     {
+      "race": "Dribble:3",
+      "worth": 27,
+      "line": [
+       "B4"
+      ]
+     },
+     {
+      "race": "speed next phase:3",
+      "worth": 27,
+      "line": [
+       "E2"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P4",
+  "exact": 30,
+  "exact_answer": [
+   [
+    1,
+    "D6",
+    7
+   ]
+  ],
+  "exact_ms": 94782,
+  "new": 31.5,
+  "new_answer": [
+   [
+    1,
+    "B7",
+    4
+   ]
+  ],
+  "new_ms": 1055,
+  "gap": 1.5,
+  "new_steps": [
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 1,
+    "q": "B7",
+    "a": 4,
+    "u": 30,
+    "U2": 31.5,
+    "worse": false,
+    "back": false
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 31.5,
+    "races": [],
+    "took": {
+     "d": 1,
+     "from": "E7",
+     "q": "D6",
+     "a": 7,
+     "u": 30,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "look": "O2 A5",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 30,
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 30,
+      "line": [
+       "D11"
+      ]
+     },
+     {
+      "race": "Dribble:0",
+      "worth": 30,
+      "line": [
+       "H11"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 30,
+      "line": [
+       "D11"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X2",
+    "frm": "E7",
+    "to": "D6",
+    "arrow": 7,
+    "kind": "move",
+    "number_after": 30,
+    "lowers": [
+     {
+      "look": "O2 A5",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ],
+    "races": [],
+    "reason": "no race on the board at that step: it lowers a look on the map, which the map's own candidates missed"
+   }
+  ]
+ },
+ {
+  "board": "P4off",
+  "exact": 29.625,
+  "exact_answer": [
+   [
+    1,
+    "D7",
+    7
+   ]
+  ],
+  "exact_ms": 80636,
+  "new": 31.5,
+  "new_answer": [
+   [
+    1,
+    "B7",
+    4
+   ]
+  ],
+  "new_ms": 933,
+  "gap": 1.875,
+  "new_steps": [
+   {
+    "path": "accept",
+    "step": 0,
+    "d": 1,
+    "q": "B7",
+    "a": 4,
+    "u": 30,
+    "U2": 31.5,
+    "worse": false,
+    "back": false
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 31.5,
+    "races": [],
+    "took": {
+     "d": 1,
+     "from": "E7",
+     "q": "D7",
+     "a": 7,
+     "u": 29.625,
+     "kind": "move"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "look": "O2 A5",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 29.625,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 29.625,
+      "line": [
+       "H11",
+       "F9",
+       "C5"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X2",
+    "frm": "E7",
+    "to": "D7",
+    "arrow": 7,
+    "kind": "move",
+    "number_after": 29.625,
+    "lowers": [
+     {
+      "look": "O2 A5",
+      "phase": 1,
+      "was": 31.5,
+      "now": 16.75
+     }
+    ],
+    "races": [],
+    "reason": "no race on the board at that step: it lowers a look on the map, which the map's own candidates missed"
+   }
+  ]
+ },
+ {
+  "board": "P5",
+  "exact": 38,
+  "exact_answer": [],
+  "exact_ms": 41117,
+  "new": 38,
+  "new_answer": [],
+  "new_ms": 886,
+  "gap": 0,
+  "new_steps": [],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 38,
+    "races": []
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P5off",
+  "exact": 38,
+  "exact_answer": [],
+  "exact_ms": 35202,
+  "new": 38,
+  "new_answer": [],
+  "new_ms": 747,
+  "gap": 0,
+  "new_steps": [],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 38,
+    "races": []
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P5ctl",
+  "exact": 36,
+  "exact_answer": [],
+  "exact_ms": 53994,
+  "new": 36,
+  "new_answer": [],
+  "new_ms": 3382,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 36,
+    "squares": 31,
+    "movements": 35,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 36,
+    "races": [
+     {
+      "race": "speed:0",
+      "worth": 36,
+      "line": [
+       "D11"
+      ]
+     },
+     {
+      "race": "Dribble:0",
+      "worth": 36,
+      "line": [
+       "H11"
+      ]
+     },
+     {
+      "race": "speed next phase:0",
+      "worth": 36,
+      "line": [
+       "D11"
+      ]
+     }
+    ]
+   }
+  ],
+  "missed": []
+ },
+ {
+  "board": "P5ctloff",
+  "exact": 36,
+  "exact_answer": [
+   [
+    0,
+    "E11",
+    6
+   ]
+  ],
+  "exact_ms": 75446,
+  "new": 36,
+  "new_answer": [],
+  "new_ms": 2438,
+  "gap": 0,
+  "new_steps": [
+   {
+    "path": "named",
+    "step": 0,
+    "U": 36,
+    "squares": 16,
+    "movements": 20,
+    "took": null
+   }
+  ],
+  "exact_steps": [
+   {
+    "path": "exact",
+    "step": 0,
+    "U": 36,
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 36,
+      "line": [
+       "H11"
+      ]
+     }
+    ],
+    "took": {
+     "d": 0,
+     "from": "I11",
+     "q": "E11",
+     "a": 6,
+     "u": 36,
+     "kind": "sprint"
+    },
+    "named": null,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 36,
+      "now": null
+     }
+    ]
+   },
+   {
+    "path": "exact",
+    "step": 1,
+    "U": 36,
+    "races": []
+   }
+  ],
+  "missed": [
+   {
+    "step": 0,
+    "who": "X1",
+    "frm": "I11",
+    "to": "E11",
+    "arrow": 6,
+    "kind": "sprint",
+    "number_after": 36,
+    "lowers": [
+     {
+      "race": "Dribble:0",
+      "was": 36,
+      "now": null
+     }
+    ],
+    "races": [
+     {
+      "race": "Dribble:0",
+      "worth": 36,
+      "line": [
+       "H11"
+      ]
+     }
+    ],
+    "reason": "not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes"
+   }
+  ]
+ }
+]

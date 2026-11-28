@@ -2017,6 +2017,16 @@ same readings in the same order and gives the decision one core gives, on any de
 cross-origin isolated (the server sends the headers); without that, one core. · Source: Shaun, 28 Nov 2026 (fix 4f) ·
 **Built.**
 
+**D-318. Each race names its own answers (fix 4g).** In play, the defence's answer reads, beside the map's own
+candidates, every movement a race on the board names: each defender reaching, with one movement, a square on the race's
+line (each phase's ball square), in front of it (a neighbour nearer the rim), next to where it finishes, or in a passing
+lane it reads (to the teammate it kicks to, staying home or as the defence picks). Each is read in full, its races
+read again on the board it leaves, and the map's best is read the same way. A Move there faces the ball's square on the
+line; a Quick Step or Sprint keeps the arrows it leaves him. The exact answer (`_pvAnswers`) stays the test that
+measures what this misses (`tools/step_31_fix4g_proof.py`). With it: a board kept from earlier in the answer also keeps
+the races as they read on it, so a movement tried and taken back leaves the board as it was (both engines; the full
+reading and the exact answer too). · Source: Shaun, 28 Nov 2026 (fix 4g; design version 7) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best

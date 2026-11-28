@@ -16,7 +16,11 @@ and the race reads 30 in every phase; still no answer movement lowers it.
 
 Re-recorded in fix 3d (D-311): O1's speed start to I7 is a Sprint, or a Quick Step then a Move at once; either way it leaves
 him no movement that phase. Fix 3c let a Move follow the Sprint, to H5, which the rules don't allow. Now the race shoots
-from I7 (26) in every phase; still no answer movement lowers it."""
+from I7 (26) in every phase; still no answer movement lowers it.
+
+Re-recorded in fix 4g (D-318): the speed race names its own answers, and one is X2's Sprint from M8 to I8, next to I7
+where the race finishes. Both speed races fall from 26 to 24, and the number to 24.48 from the phase after. The exact
+answer (_pvAnswers) takes the same movement at the same number, and so does Python."""
 import dataclasses
 import os
 import sys
@@ -32,8 +36,8 @@ from playmaker_engine import board as B, value as V   # noqa: E402
 
 SHAPE = ['F10', 'M8', 'C10', 'D4', 'I5']      # the setup's shape on E2 (docs/runs/step31/same_after.json), X3 on C10
 ARROWS = (0, 4, 0, 0, 1)
-CLOSED = []                                   # fix 3: no movement lowers the number (before: X3 closed out to B8, X1 stepped to F11)
-BARS = [26, 26, 26, 26, 26, 26]               # fix 3d (fix 3c: 30; fix 3: 24 to 24.48; fix 2: 16 in every phase)
+CLOSED = [[1, 'I8', 6]]                       # fix 4g: X2 Sprints to I8 (fix 3 to 4f: none; before: X3 closed out to B8, X1 stepped to F11)
+BARS = [24, 24, 24.4762, 24.4762, 24.4762, 24.4762]   # fix 4g (fix 3d: 26; fix 3c: 30; fix 3: 24 to 24.48; fix 2: 16 in every phase)
 
 
 def board():
@@ -49,4 +53,4 @@ def test_E2_a_closeout_costs_a_movement_in_every_phase_in_both_engines():
     pp = V.poss_parts(s)
     assert [[d, B.sq(q), a] for d, q, a in pp['moves']] == CLOSED
     assert [round(b, 4) for b in pp['bars'][1:]] == BARS, pp['bars']
-    assert round(pp['V'], 4) == js['value'] == 26
+    assert round(pp['V'], 4) == js['value'] == 24.4762

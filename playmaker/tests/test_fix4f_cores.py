@@ -32,7 +32,8 @@ def test_both_engines_read_the_same_with_the_follow_up_as_it_stood():
     names = ['R4c', 'P2', 'P4']
     js = T.js([T.req(n, dict(only='value')) for n in names])
     for n, r in zip(names, js):
-        assert abs(r['res']['play_on'] - V.poss_parts(X.get(n))['V']) <= 1e-6, (n, r['res']['play_on'])
+        # (engine.js reports the number to 4 decimals: Python's, rounded the same way, must equal it exactly)
+        assert r['res']['play_on'] == round(V.poss_parts(X.get(n))['V'], 4), (n, r['res']['play_on'])
 
 
 def _turn(cores):

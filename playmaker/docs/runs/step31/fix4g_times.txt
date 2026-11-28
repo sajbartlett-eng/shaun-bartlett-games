@@ -1,0 +1,9 @@
+Step 31 fix 4g: the answer in play (each race names its own answers). Four cores (PM pool), NODE_OPTIONS=--max-old-space-size=256, each worker capped at 256 MB. ms = the whole reading; wait = time spent waiting on the workers. E1 and E15b were read once each.
+== E13 turn
+{"run":0,"ms":35508,"wait":28623,"cores":4}
+{"run":1,"ms":29609,"wait":24029,"cores":4}
+== E1
+{"run":0,"ms":460820,"wait":429251,"cores":4}
+== E15b
+{"run":0,"ms":926520,"wait":795277,"cores":4}
+exit 0

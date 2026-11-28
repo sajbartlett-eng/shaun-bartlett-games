@@ -53,4 +53,4 @@ def test_the_speed_start_goes_round_the_pressing_defenders_wall():
         col = B.parse_sq(sp[0]['from'])[0]
         assert (col < B.parse_sq('I10')[0]) if side == 'west' else (col > B.parse_sq('I10')[0]), (side, sp[0]['from'])
     for s, res in zip((east, west), out):
-        assert abs(V.poss_parts(s)['V'] - res['res']['play_on']) <= 1e-6
+        assert round(V.poss_parts(s)['V'], 4) == res['res']['play_on']   # (engine.js reports the number to 4 decimals)

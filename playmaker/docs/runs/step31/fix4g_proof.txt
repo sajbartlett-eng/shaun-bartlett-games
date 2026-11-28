@@ -1,0 +1,31 @@
+R1        exact  29.4224 [[2, 'J8', 6]] (26454 ms) | new  29.4224 [[2, 'J8', 6]] (2142 ms) | gap +0.0 | full 29.4224 = exact
+R2        exact       29 [] (24976 ms) | new       29 [] (1834 ms) | gap +0 | full 29 = exact
+R3        exact       36 [] (45621 ms) | new       36 [] (2193 ms) | gap +0 | full 36 = exact
+R4        exact       29 [[0, 'H8', 1]] (84793 ms) | new       29 [[3, 'F4', 2], [1, 'C7', 7]] (3132 ms) | gap +0 | full 29 = exact
+    missed: step 0, X1 I8 to H8 (arrow 1, move), number 29: named (lane of speed:0, from G4), but a Move there faces the line (arrow 4), not arrow 1
+R4c       exact  29.6667 [[0, 'H8', 1]] (66380 ms) | new  29.6667 [[3, 'F4', 2], [1, 'C7', 7]] (2701 ms) | gap +0.0 | full 29.6667 = exact
+    missed: step 0, X1 I8 to H8 (arrow 1, move), number 29.67: named (lane of speed next phase:0, from G4), but a Move there faces the line (arrow 4), not arrow 1
+R5a       exact       36 [] (58248 ms) | new       36 [] (2791 ms) | gap +0 | full 36 = exact
+R5b       exact       29 [[2, 'J8', 6]] (120663 ms) | new       30 [] (3201 ms) | gap +1 | full 29 = exact
+    missed: step 0, X3 N8 to J8 (arrow 6, sprint), number 29: not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes
+R5c       exact       29 [] (66135 ms) | new       29 [] (1068 ms) | gap +0 | full 29 = exact
+R5ctl     exact       29 [] (54406 ms) | new       29 [] (751 ms) | gap +0 | full 29 = exact
+P1        exact       30 [] (49132 ms) | new       30 [] (2447 ms) | gap +0
+P1off     exact     28.5 [[2, 'I6', 0]] (69880 ms) | new    28.75 [] (3274 ms) | gap +0.25
+    missed: step 0, X3 K4 to I6 (arrow 0, move), number 28.5: not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes
+P2        exact     31.5 [[0, 'I2', 0]] (39564 ms) | new     31.5 [[0, 'I2', 4]] (2272 ms) | gap +0.0
+    missed: step 0, X1 I5 to I2 (arrow 0, move), number 31.5: named (front of Dribble:0, from H2), but a Move there faces the line (arrow 6), not arrow 0
+P2off     exact       30 [[0, 'K2', 0], [1, 'D9', 7]] (38823 ms) | new     31.5 [[4, 'I3', 7]] (3147 ms) | gap +1.5
+    missed: step 0, X1 I4 to K2 (arrow 0, move), number 31.5: not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes
+    missed: step 1, X2 D8 to D9 (arrow 7, move), number 30: no race on the board at that step: it lowers a look on the map, which the map's own candidates missed
+P3        exact       27 [[1, 'E8', 7]] (33848 ms) | new       27 [[1, 'E8', 7]] (1751 ms) | gap +0
+P3off     exact       27 [[1, 'E8', 7]] (36283 ms) | new       27 [[1, 'E8', 7]] (2401 ms) | gap +0
+P4        exact       30 [[1, 'D6', 7]] (94782 ms) | new     31.5 [[1, 'B7', 4]] (1055 ms) | gap +1.5
+    missed: step 0, X2 E7 to D6 (arrow 7, move), number 30: no race on the board at that step: it lowers a look on the map, which the map's own candidates missed
+P4off     exact   29.625 [[1, 'D7', 7]] (80636 ms) | new     31.5 [[1, 'B7', 4]] (933 ms) | gap +1.875
+    missed: step 0, X2 E7 to D7 (arrow 7, move), number 29.62: no race on the board at that step: it lowers a look on the map, which the map's own candidates missed
+P5        exact       38 [] (41117 ms) | new       38 [] (886 ms) | gap +0
+P5off     exact       38 [] (35202 ms) | new       38 [] (747 ms) | gap +0
+P5ctl     exact       36 [] (53994 ms) | new       36 [] (3382 ms) | gap +0
+P5ctloff  exact       36 [[0, 'E11', 6]] (75446 ms) | new       36 [] (2438 ms) | gap +0
+    missed: step 0, X1 I11 to E11 (arrow 6, sprint), number 36: not named: its square is on no race's line, in front of it, by its finish, or in its passing lanes

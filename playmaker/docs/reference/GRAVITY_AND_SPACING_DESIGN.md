@@ -97,6 +97,25 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 
 **Each side answers the threats it can see.** A side considers every movement that answers a threat the number reads, and nothing else: every look and every race puts forward the movements that would change it (a closeout for a shot, a step back for a speed race, a drop to the rim for a drive, a step into a lane for a pass). A movement that touches no look and no race cannot change the number, so leaving it out is exact, not a shortlist. This is how players think: they answer the threats in front of them, not every square on the court. Any cut that is not exact this way is listed openly, never hidden (Shaun, 27 November; found in fix 4d).
 
+**Each race names its own answers.** In play, a side doesn't test every legal movement against every race; that is exact but about a hundred times too slow (fixes 4d to 4f). Instead each race says what would stop it: a square in front of its line, a drop to where it finishes, a helper arriving in time, a step into its passing lane. Those movements are read in full, with everything the map already offers. The exact reading is kept as the test that measures how often this misses (Shaun, 28 November).
+
+### Levels are what each side can see
+
+The levels differ in how much of the floor a side reads, never in random or silly mistakes. Every level answers the threats it sees by the same number, so every choice has a reason. A better-coached team sees more threats, further ahead, and as a team. A less-coached one misses the backdoor behind the help or rotates late, a real mistake with a reason the coach's line can explain, and a learning moment for the player. Playing a computer with perfect reading every time would neither teach well nor be fair to learn against (Shaun, 28 November).
+
+| | Well-coached | Average | Individuals, no coach |
+|---|---|---|---|
+| Who reads together | All five as a team | The ball's defender and the nearest help | Each defender for his own man |
+| Threats seen | Every look and race, two-step routes, fakes, help and the man it leaves | His man's looks, the drive race, one help | His man's looks and the drive on the ball |
+| Looking ahead | Every phase the race needs | One phase | This phase only |
+| Choices that read close | The best, every time | Sometimes the second best | Freer among close options |
+
+"Close" is set by the number, so no level takes a choice that reads clearly worse.
+
+**The floor, for every level.** Every team, coached or not, contains its own man on the drive, forces baseline or into the help, never leaves a wide-open driving lane at setup, and takes the good open shot. These are threats every level sees, so they never fail, and each gets an exam check at every level.
+
+The offence's levels follow the same idea: a well-coached offence reads the team's spacing, the two-step routes and the help it can draw; individuals read their own shot and drive.
+
 **Reading ahead.** The number is read as far ahead as the plan needs, up to four turns (D-268, 19 November; since 27 November the turns beyond the current one are read as a race, not a tree: see "Reading ahead is a race, not a tree"), with each side's best answer by its own model. Past that, the shot bar stands in for the rest.
 
 ### How each side chooses
@@ -116,7 +135,7 @@ where v is a look's value and p its chance of opening this phase. If nothing ope
 
 **Separate thinking.** Each side computes the number with its own model of the other side's answer. The defence never sees the offence's plan or a hidden fake, and the offence never sees the defence's private choices.
 
-**The computer's levels** (Rookie, Starter, All-Star) differ in how far and how widely they search. How far is a fixed number of turns for each level, never a clock, so the same board gives the same decision on every device (Shaun, 25 November). They use the same number and the same rules. Shaun's human-error factor for lower levels (D-196) is a separate, later step.
+**The computer's levels** (Rookie, Starter, All-Star) differ in how far and how widely they search. Never a clock, so the same board gives the same decision on every device (Shaun, 25 November). Since 28 November the levels differ by what each side can see: see "Levels are what each side can see". They use the same number and the same rules. Shaun's human-error factor for lower levels (D-196) is a separate, later step.
 
 ## The defence, part 1: the team's weight
 
@@ -636,6 +655,8 @@ These came from Claude Code's step 31 plan and from step 30b. Where an older sen
 | Ties | Broken by the next-best line, then the one after; standing still only when every line ties | Ties made the pick arbitrary (audit D3, D5) | Agreed (Shaun, 26 November) |
 | Reading ahead | A race across phases, not a tree: attackers raced to their looks against defenders' recovery and help, each side assuming the other plays well. Drives read this way, with the freed attacker moving to his best shot (spot-up three or cut to the rim) as soon as his defender is the only one who can contain | Drives and help unfold over two or three phases; a full tree of every turn is unaffordable and not how players read the floor. Replaces "up to four turns with each side's best answer" beyond the current turn | Agreed (Shaun, 27 November) |
 | Which movements are considered | Every movement that answers a threat the number reads (a look or a race); a movement touching none can't change the number | Reading every legal movement was correct but 60 to 280 times too slow; rule-of-thumb filters missed real answers (fix 4d) | Agreed (Shaun, 27 November) |
+| Answers in play | Each race names the movements that would stop it; those are read in full with the map's own; the exact reading is the test | The exact answer is about a hundred times too slow (fixes 4d to 4f) | Agreed (Shaun, 28 November) |
+| The levels | Differ by what each side can see (team reading, threats, phases ahead, freedom among close options), with a floor every level keeps. Replaces levels set by a number of turns ahead | Mistakes should be real and teachable, like a team without a coach, never silly; perfect play every time teaches poorly | Agreed (Shaun, 28 November) |
 
 **The segments, square by square (provisional).** G: the green zone. ML, MM, MR: mid-range left, middle, right. LL and LR: the long two along each baseline. Ll and Lr: the long two above each elbow. CL and CR: the corners. WL and WR: the wings. T: the top. Deep squares count with the segment they sit behind. Two things are not settled: which side I8 and I9 belong to (marked ?), and whether the corner ends at row 5. Until Shaun rules, I8 and I9 count as in both Ll and Lr, so the board stays the same left and right, and the corner ends at row 5.
 

@@ -6417,7 +6417,8 @@ const PMEngine = (() => {
   // fix 4e: the answer that reads every threat (PV_ANSWERS): exact, the same as the full reading, and too slow to play
   // yet (docs/reports/STEP31_FIX4E_REPORT.md), so a switch; off, the answer keeps fix 4d's reading
   let PV_ANSWERS = false;
-  let RACE_CHECK = false; const RACEC = { n: 0, bad: 0, ex: [] };   // fix 4e: a test's check that each movement's races, read by difference, equal them read afresh
+  let RACE_CHECK = false; const RACEC = { n: 0, bad: 0, ex: [] };
+  let PVD = null;                                       // fix 4g's proof (off in play): each step of the answer, what the races named and what it took   // fix 4e: a test's check that each movement's races, read by difference, equal them read afresh
   let PV_FULL = false;                                 // fix 4d: true reads every legal movement in full, races and all (a switch: too slow to be the default, see STEP31_FIX4D_REPORT.md)
   let PV_CHECK = false;                                // a test's switch: every candidate read both ways, by difference and over every look
   const PVC = { n: 0, bad: 0, ex: [] };                                // a test's switch: every movement read in full, no cut (the answer must be the same)
@@ -7130,7 +7131,14 @@ const PMEngine = (() => {
     // answer's first k movements. A look whose shot or fake goes up before the answer's movement k + 1 (its limit k)
     // reads its follow-up on H[k], as its contests already stand at that moment.
     const ZL = { SV0, mv: movedAt, Fm: new Map(), Gm: new Map(), UB0, ORD0 };
-    const zSnap = () => ({ SV0: SV0.map(r => r.slice()), mv: movedAt.slice(), Fm: new Map(), Gm: new Map(), UB0: [null, null, null, null, null], ORD0: [null, null, null, null, null] });
+    const zSnap = () => ({ SV0: SV0.map(r => r.slice()), mv: movedAt.slice(), Fm: new Map(), Gm: new Map(), UB0: [null, null, null, null, null], ORD0: [null, null, null, null, null], rv: null });
+    // fix 4g: H[k] also keeps the races as they read on that board (rv), set once its movements are the answer's; the
+    // follow-up on it reads those, never the races of a movement tried since. While rv is unset (the board being read
+    // now), its kept readings are dropped whenever the races are read again (zFresh).
+    const raceVals = () => { const z = []; for (const i of raceAt.values()) z.push([L[i].open[0], L[i].v, L[i].w, L[i].r]); return z; };
+    const raceSet = rv => { let x = 0; for (const i of raceAt.values()) { const o = L[i], z = rv[x++]; o.open[0] = z[0]; o.v = z[1]; o.w = z[2]; o.r = z[3]; } };
+    const zClr = Z => { Z.Fm.clear(); Z.Gm.clear(); Z.UB0.fill(null); Z.ORD0.fill(null); };
+    const zFresh = () => { zClr(ZL); for (const Z of H) if (!Z.rv) zClr(Z); };
     const H = [zSnap()];
     const zOf = (i, tk) => { const lv = tk === 1 ? limL[i] : lim[i]; return lv <= nm ? H[lv] : ZL; };
     let RK = races.kit || null;                          // (fix 3c: the race's kit, built when a fake's race first needs it; fix 3d: the drives' own)
@@ -7165,7 +7173,12 @@ const PMEngine = (() => {
     };
     const follow = (i, e, Z) => {
       const key = i * 5 + e;
-      let f = Z.Fm.get(key); if (f !== undefined) return f;
+      const f = Z.Fm.get(key); if (f !== undefined) return f;
+      if (Z.rv && raceAt.size) { const keep = raceVals(); raceSet(Z.rv); try { return follow1(i, e, Z, key); } finally { raceSet(keep); } }
+      return follow1(i, e, Z, key);
+    };
+    const follow1 = (i, e, Z, key) => {
+      let f;
       const c = L[i].c, mv0 = Z.mv[e];
       let lo = Infinity, from = -1, then = -1;
       if (!mv0) {
@@ -7641,6 +7654,7 @@ const PMEngine = (() => {
       for (const x of ra) got.set(x.kind + ':' + x.beaten, x);
       let worse = false;
       for (const [key, i] of raceAt) { const x = got.get(key); L[i].open[0] = L[i].v = L[i].w = x ? x.v : -Infinity; if (x) { L[i].r = x.p; x.look = L[i]; races[i - raceBase] = x; } }
+      if (raceAt.size) zFresh();                        // (fix 4g: the follow-up read with the races before them is not kept)
       for (const [key, x] of got) if (!raceAt.has(key) && x.p * x.v > U1 + 1e-9) worse = true;
       return { worse, U2: runCur(null) };
     };
@@ -7649,8 +7663,82 @@ const PMEngine = (() => {
       gone.set(snap.gone); goneK.set(snap.goneK); if (split) goneL.set(snap.goneL);
       if (snap.rl) [...raceAt.values()].forEach((i, x) => { const z = snap.rl[x]; L[i].open[0] = z[0]; L[i].v = z[1]; L[i].w = z[2]; L[i].r = z[3]; races[i - raceBase] = z[4]; });
       movedAt[d] = snap.mv; moves.pop(); moved[d] = false; taken.delete(q); tok++; nm--; PVS.steps--; H.pop();
-      ZL.Fm.clear(); ZL.Gm.clear(); UB0.fill(null); ORD0.fill(null); markBlK();
+      zFresh(); markBlK();
     };
+    // Fix 4g (Shaun, 28 Nov 2026: "each race names its own answers"). In play, each race the value turns on says what
+    // would stop it: a square in front of its line (its start and the straight line to the rim, and the squares in
+    // front of each), a drop to where it finishes (the rim and the squares round it), a helper arriving in time there,
+    // a step into its passing lane (from its start to each teammate). Every defender who can reach one of those
+    // squares with one movement is read in full (his movement played, the races read again on the board it leaves),
+    // with the map's own best answer read the same way, and the best of them is the answer. (A Move faces the race's
+    // start; a Quick Step or Sprint keeps the arrow it leaves him.) The exact answer, _pvAnswers, is the test that
+    // measures what this misses.
+    const named = [];                                   // (for the proof: each step's named squares)
+    // the squares the races on the act list name, each with the ball's square on the line that named it first, and
+    // (for the proof) the race and the kind of square
+    const nameSquares = () => {
+      const rj = [];
+      for (let x = 0; x < act.length; x += 2) { const j = act[x]; if (L[j].race && !gone[j] && !rj.includes(j)) rj.push(j); }
+      rj.sort((x, y) => x - y);
+      const sq = new Map(), why = PVD ? new Map() : null;
+      for (const j of rj) {
+        const rc = races[j - raceBase]; if (!rc) continue;
+        const add = (q, c, w) => { if (ONB[q] && !sq.has(q)) { sq.set(q, c); if (why) why.set(q, [rc.kind + ':' + rc.beaten, w, c]); } };
+        // its line: each phase's ball square, and the passes read there (staying home, and the defence's choice)
+        const line = rc.phases && rc.phases.length ? rc.phases.map(ph => [ph.c, ph.opts[0].kick.at, ph.pick.kick ? ph.pick.kick.at : -1]) : [[rc.start, -1, -1]];
+        for (const [c, homeAt, pickAt] of line) {
+          add(c, c, 'line');                            // (in front of the line, and a helper arriving in time there)
+          for (let dd = 0; dd < 8; dd++) { const f = c + DSTEP[dd]; if (ONB[f] && DR[f] < DR[c]) add(f, c, 'front'); }
+          for (const at of [homeAt, pickAt]) if (at >= 0 && at !== c) for (const z of laneSquares(c, at)) add(z, c, 'lane');   // (a step into its passing lane)
+        }
+        const cl = line[line.length - 1][0];            // (a drop to where it finishes)
+        for (let dd = 0; dd < 8; dd++) add(cl + DSTEP[dd], cl, 'finish');
+      }
+      return { rj, sq, why };
+    };
+    const raceNamed = (mapBest, bm0, before) => {
+      const { rj, sq, why } = nameSquares();
+      if (!rj.length) return mapBest;
+      const qs0 = [...sq.keys()].sort((u, v) => u - v), seen = new Set(), list = [];
+      for (let d = 0; d < 5; d++) {
+        if (moved[d] || !ONB[s.x[d]]) continue;
+        const cp = caps(s, 'X', d);
+        if (!cp[0] && cp[1] <= 0) continue;
+        const qs = s.ctx.dfn[d].qs, mode = stanceMode(m.sN, d), fr = defenderReachExact(s, d);
+        for (const q of qs0) {
+          if (q === s.x[d] || taken.has(q)) continue;
+          const na = fr[0].get(q);
+          if (na === 1) { const a = nearestDir(q, sq.get(q)), k = d * 100000 + q * 8 + a; if (!seen.has(k)) { seen.add(k); list.push({ d, q, a, cm: cmAfter(q, a, qs, mode, 'move', cp[1]) }); } }
+          const arrs = fr[1].get(q);
+          if (arrs) for (const [a, na2] of arrs) if (na2 === 1) { const k = d * 100000 + q * 8 + a; if (!seen.has(k)) { seen.add(k); list.push({ d, q, a, cm: cmAfter(q, a, qs, mode, fixedKind(s, d, q, a), cp[1]) }); } }
+        }
+      }
+      named.push({ step: nm, squares: qs0, movements: list.length });
+      PVS.named = (PVS.named || 0) + list.length;
+      const full = c => {                               // (read in full: the movement played, the races read again)
+        const sn = applyMove(c.d, c.q, c.a, c.cm), U1 = runCur(null), ra = raceAfter(U1, null, null);
+        const u = ra.worse ? Infinity : ra.U2, mm = topCount(vec, ra.U2);
+        takeBack(sn, c.d, c.q);
+        return { u, m: mm, worse: ra.worse };
+      };
+      let best = null;
+      if (mapBest) {                                   // (the map's own: kept as the answer always kept it, if the races don't raise the number)
+        const r = full(mapBest);
+        if (!r.worse && r.u <= U + 1e-9) best = { d: mapBest.d, q: mapBest.q, a: mapBest.a, cm: mapBest.cm, u: r.u, m: r.m, fullRead: true };
+      }
+      for (const c of list) {
+        if (mapBest && c.d === mapBest.d && c.q === mapBest.q && c.a === mapBest.a) continue;
+        PVS.runs++;
+        const r = full(c);
+        if (r.u > U + 1e-9 || (r.u >= U - 1e-9 && r.m >= bm0)) continue;
+        const f = { d: c.d, q: c.q, a: c.a, cm: c.cm, u: r.u, m: r.m, named: true, fullRead: true };
+        if (best === null || before(f, best) < 0) best = f;
+      }
+      runCur(null);
+      if (PVD) PVD.push({ path: 'named', step: nm, U, squares: qs0.length, movements: list.length, took: best ? { d: best.d, from: sqName(s.x[best.d]), q: sqName(best.q), a: best.a, u: best.u, named: !!best.named } : null });
+      return best;
+    };
+    zClr(H[0]); H[0].rv = raceVals();                    // (fix 4g: the board before the answer, with its races)
     while (tok > 0 && act.length) {
       // Each movement first gets a bound (the sum over only the looks the value turns on: runAct), then they are read in
       // full best bound first. The first whose full reading is as good as its bound is the answer: no later one can
@@ -7760,6 +7848,27 @@ const PMEngine = (() => {
           const full = { d: c.d, q: c.q, a: c.a, cm: c.cm, u: c.full, m: c.fm };
           if (best === null || before(full, best) < 0) best = full;
         }
+        if (PVD) {                                       // (fix 4g's proof: what this step took, what it lowered, and whether a race named it)
+          const { rj, sq, why } = nameSquares(), rec = { path: 'exact', step: nm, U };
+          rec.races = rj.map(j => { const rc = races[j - raceBase]; return rc ? { race: rc.kind + ':' + rc.beaten, worth: L[j].open[0], line: (rc.phases && rc.phases.length ? rc.phases.map(ph => ph.c) : [rc.start]).map(sqName) } : null; });
+          if (best) {
+            const c = inc.find(z => z.d === best.d && z.q === best.q && z.a === best.a), fr = defenderReachExact(s, c.d);
+            rec.took = { d: c.d, from: sqName(s.x[c.d]), q: sqName(c.q), a: c.a, u: c.full, kind: c.q === s.x[c.d] ? 'turn on the spot' : fr[0].get(c.q) === 1 ? 'move' : fixedKind(s, c.d, c.q, c.a) };
+            rec.named = sq.has(c.q) ? why.get(c.q).map((z, x) => x === 2 ? sqName(z) : z) : null;
+            if (sq.has(c.q) && rec.took.kind === 'move') rec.namedArrow = nearestDir(c.q, sq.get(c.q));
+            const low = [];
+            candOn(c);
+            for (let x = 0; x < actM.length; x += 2) {
+              const j = actM[x], i = actM[x + 1], w = L[j].c === c.q ? -Infinity : worth(j, i >= 3 ? hist[i - 2] : 0, c.d, sval(j, c.d, c.cm[lc[j]]), undefined, i === K ? 0 : 1);
+              if (w < rows[i][j] - 1e-9) low.push({ look: 'O' + (L[j].a + 1) + ' ' + sqName(L[j].c) + (L[j].dr ? ' (Dribble)' : ''), phase: i, was: rows[i][j], now: w });
+            }
+            candOff();
+            if (c.ra) { const got = new Map(); for (const x of c.ra) got.set(x.kind + ':' + x.beaten, x);
+              for (const j of actR) { const g = got.get(keyOf.get(j)), v = g ? g.v : -Infinity; if (v < L[j].open[0] - 1e-9) low.push({ race: keyOf.get(j), was: L[j].open[0], now: v }); } }
+            rec.lowers = low;
+          }
+          PVD.push(rec);
+        }
       } else {
       const offer = (d, q, a, cm) => {
         if (PV_BRUTE || PV_FULL) { cands.push({ d, q, a, cm, ua: -Infinity, ma: 0 }); return; }
@@ -7831,16 +7940,19 @@ const PMEngine = (() => {
         const full = { d: c.d, q: c.q, a: c.a, cm: c.cm, u, m: mm };
         if (best === null || before(full, best) < 0) best = full;
       }
+      if (!PV_FULL && !PV_BRUTE) best = raceNamed(best, bm0, before);   // fix 4g: each race names its own answers
       }
       if (best === null) break;
       const { d, q, a, cm } = best;
       const snap = applyMove(d, q, a, cm);
       U = runCur(null);
-      if (Math.abs(U - best.u) > 1e-9 && !PV_FULL && !TRc) PVS.bad = (PVS.bad || 0) + 1;   // (a guard: the reading by difference must equal the full reading of the board after the movement)
+      if (Math.abs(U - best.u) > 1e-9 && !PV_FULL && !TRc && !best.fullRead) PVS.bad = (PVS.bad || 0) + 1;   // (a guard: the reading by difference must equal the full reading of the board after the movement)
       const trN = TRc ? newTrace() : null, ra = raceAfter(U, null, trN);
       if ((TRc || PV_FULL) && !ra.worse && Math.abs(ra.U2 - best.u) > 1e-9) PVS.bad = (PVS.bad || 0) + 1;   // (fix 4e's guard: the answer's reading is the full reading)
-      if (ra.worse || ra.U2 > snap.U + 1e-9) { takeBack(snap, d, q); U = runCur(null); break; }   // taken back: the answer stops before it
+      if (PVD) PVD.push({ path: 'accept', step: nm - 1, d, q: sqName(q), a, u: best.u, U2: ra.U2, worse: ra.worse, back: ra.worse || ra.U2 > snap.U + 1e-9 });
+      if (ra.worse || ra.U2 > snap.U + 1e-9) { takeBack(snap, d, q); U = runCur(null); if (PVD) PVD.push({ path: 'back', U, snapU: snap.U }); break; }   // taken back: the answer stops before it
       U = ra.U2; if (trN) TRc = trN;
+      H[nm].rv = raceVals();                            // (fix 4g: the answer's board after nm movements, with its races)
     }
     const after = Array.from(hist), last = Vit.slice(K * n, (K + 1) * n);
     let pick = -1, pe = -Infinity; const B = hist[K - 1];
@@ -7854,7 +7966,7 @@ const PMEngine = (() => {
       const f = follow(j, e0, zOf(j, 0));
       return { closer: e0, from: f.from, then: f.then, faked: f.F, contested: wc, mixed: v };
     };
-    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo, races, fakeRaces };
+    return { U, U0, worth0, k, bars: after, before: bars, moves, L, worth: last, pick: pick >= 0 ? L[pick] : null, pickWorth: pick >= 0 ? last[pick] : null, routes: Float64Array.from(vec), mixInfo, races, fakeRaces, named };
   }
   // step 31, fix 3: look i's two-step route for the report: who closes out, from where, and the look that follows the
   // fake (the shooter's own drive; a cutter at the rim behind the help; or a kick-out to the man he left)
@@ -8803,7 +8915,7 @@ const PMEngine = (() => {
     makeEvaluate, scoreTotal, vcoarse, laneP, _caches: () => [_GR.cur.size + _GR.old.size, _CM.cur.size + _CM.old.size, _LS.size, _OA.size],
     _pvStats: () => PVS, _stanceProbe: (s, d, cands) => stanceProbe(s, d, cands),
     _pvCheck: on => { if (on !== undefined) { PV_CHECK = !!on; PVC.n = 0; PVC.bad = 0; PVC.ex = []; } return { on: PV_CHECK, checked: PVC.n, different: PVC.bad, examples: PVC.ex }; },
-    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, setPool: p => { POOL = p || null; }, workJSON, _worker: v => { IN_WORKER = !!v; }, PARS, _parMin: v => { PAR_MIN = v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
+    _stateKey: stateKey, _covBuild: covBuild, _withMemo: withMemo, covOffFresh, possValue, possParts, possRead, weightMap, weightBase, weightJSON, offenceSetup, stanceQuick, stanceSearch, stanceRead, stanceBase, STANCE_STATS, _stanceStep: v => { STANCE_STEP = v; }, mixGame, PVS, _boundLooks: v => { BOUND_LOOKS = v; }, _pvBrute: v => { PV_BRUTE = !!v; }, _pvFull: v => { PV_FULL = !!v; }, setPool: p => { POOL = p || null; }, workJSON, _worker: v => { IN_WORKER = !!v; }, PARS, _parMin: v => { PAR_MIN = v; }, _pvAnswers: v => { PV_ANSWERS = !!v; }, _pvDebug: v => { PVD = v ? [] : null; return PVD; }, _pvDebugGet: () => PVD, _raceCheck: v => { if (v === undefined) return RACEC; RACE_CHECK = !!v; RACEC.n = 0; RACEC.bad = 0; RACEC.ex = []; return RACEC; } };
 })();
 if (typeof module !== 'undefined') module.exports = PMEngine;
 if (typeof self !== 'undefined') self.PMEngine = PMEngine;

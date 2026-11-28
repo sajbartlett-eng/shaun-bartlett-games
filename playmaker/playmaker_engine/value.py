@@ -402,8 +402,8 @@ def race_kit(r, Lmap, sr, T):
         lag = t0 if lag is None else lag
         # fix 4b (engine.js race): t0, the phase the advantage comes in; arrivals count from then. move_first: True,
         # False, or 'qs' (only his Quick Step left in that phase)
-        shr = shared.setdefault(id(dj), ({}, dj))  # (fix 3d: states after phase 0 shared by races with the same chaser)
-        memo0, st0 = {}, {}
+        shr = shared.setdefault(id(dj), ({}, dj, {}))  # (fix 3d: states after phase 0 shared by races with the same chaser)
+        memo0, st0, picks0 = {}, {}, {}             # (fix 4g: each state's choice, so the line the number reads can be walked)
 
         def step0(p):
             if p not in st0:
@@ -484,9 +484,34 @@ def race_kit(r, Lmap, sr, T):
                 if o['worth'] < pick['worth'] - 1e-12:
                     pick = o
             memo[key] = pick['worth']
+            (shr[2] if t > t0 else picks0)[key] = (pick, home)
             return pick['worth']
         v0 = V(t0, c0, 0, 1 if w0 else 0)
-        return dict(v=v0, qo0=qo0, qd0=qd0)
+        # fix 4g (engine.js race's phases): the line the number reads, each phase's ball square and the passes it reads
+        # there (staying home, and the defence's choice)
+        line, t, c, sp, w = [], t0, c0, 0, 1 if w0 else 0
+        for _g in range(12):
+            pm = shr[2] if t > t0 else picks0
+            if (t, c, sp, w) not in pm:
+                break
+            p_, home_ = pm[(t, c, sp, w)]
+            line.append((c, home_[2], p_['kick'][2]))
+            if p_['by'] >= 0 and p_['how'] != 'help late':
+                if p_.get('fake', NEG) == p_['worth'] and p_.get('fake', NEG) > NEG:
+                    sp |= 1 << p_['by']
+                    w = 1
+                    continue
+                break
+            hes_ = p_.get('hes', NEG)
+            top = max(p_['shoot'], p_['kick'][0], p_.get('carry', NEG), hes_)
+            if p_.get('carry', NEG) == top and p_.get('carry_to') is not None and top > max(p_['shoot'], p_['kick'][0]):
+                t, c, w = t + 1, p_['carry_to'], 0
+                continue
+            if 'hes' in p_ and hes_ == top and top > max(p_['shoot'], p_['kick'][0], p_.get('carry', NEG)):
+                t, w = t + 1, 0
+                continue
+            break
+        return dict(v=v0, qo0=qo0, qd0=qd0, line=line)
     w0 = sr.count('O', 'hesitate') >= RC.LIMITS['O']['hesitate']
     kc0 = []
 
@@ -710,7 +735,7 @@ def drive_races(r, Lmap, T, sr):
                 at = attempt(t0, sa, keeps, t0, p_win)
                 if best is None or at['v'] > best['v']:
                     best = dict(kind='Dribble next phase' if t0 else 'Dribble', beaten=jm, start=sa, p=1.0, win_chance=p_win, v=at['v'],
-                                qo0=at['win']['qo0'], qd0=at['win']['qd0'], win_worth=at['win']['v'])
+                                qo0=at['win']['qo0'], qd0=at['win']['qd0'], win_worth=at['win']['v'], line=at['win']['line'])
             if best and p_win > 0:
                 out.append(best)
         rl = ctx.rules
@@ -903,11 +928,31 @@ def poss_read(r, opts, s0=None, last_phase=False):
     moved_at = [None] * 5                           # (fix 3b: where each defender's answer movement took him, and how)
     # fix 4f (engine.js): the board the follow-up reads: ZL as it stands; H[k] as it stood after the answer's first k
     # movements. A look whose shot or fake goes up before movement k + 1 reads its follow-up on H[k].
-    ZL = dict(SV0=SV0, mv=moved_at, Fm=Fm, Gm=Gm, UB0=UB0)
+    ZL = dict(SV0=SV0, mv=moved_at, Fm=Fm, Gm=Gm, UB0=UB0, rv=None)
 
     def zsnap():
-        return dict(SV0=[list(x) for x in SV0], mv=list(moved_at), Fm={}, Gm={}, UB0={})
+        return dict(SV0=[list(x) for x in SV0], mv=list(moved_at), Fm={}, Gm={}, UB0={}, rv=None)
     H = [zsnap()]
+
+    # fix 4g (engine.js): H[k] also keeps the races as they read on that board (rv), set once its movements are the
+    # answer's; the follow-up on it reads those. While rv is unset, its kept readings go whenever the races are read again
+    def race_vals():
+        return [(L[i]['open'][0], L[i]['w'], L[i]['r']) for i in race_at.values()]
+
+    def race_set(rv):
+        for i, z in zip(race_at.values(), rv):
+            L[i]['open'][0], L[i]['w'], L[i]['r'] = z
+
+    def zclr(Z):
+        Z['Fm'].clear()
+        Z['Gm'].clear()
+        Z['UB0'].clear()
+
+    def zfresh():
+        zclr(ZL)
+        for Z in H:
+            if Z['rv'] is None:
+                zclr(Z)
 
     def zof(i, tk):
         lv = (lim_l if tk == 1 else lim)[i]
@@ -962,10 +1007,20 @@ def poss_read(r, opts, s0=None, last_phase=False):
         return g
 
     def follow(i, e, Z):
-        key = (i, e)
-        f = Z['Fm'].get(key)
+        f = Z['Fm'].get((i, e))
         if f is not None:
             return f
+        if Z['rv'] is not None and race_at:
+            keep = race_vals()
+            race_set(Z['rv'])
+            try:
+                return follow1(i, e, Z)
+            finally:
+                race_set(keep)
+        return follow1(i, e, Z)
+
+    def follow1(i, e, Z):
+        key = (i, e)
         c = L[i]['c']
         lo, frm, then = float('inf'), None, -1
         mv0 = Z['mv'][e]
@@ -1271,6 +1326,153 @@ def poss_read(r, opts, s0=None, last_phase=False):
     tok = s.tok_x
     mode = 0 if rules.zone == 'off' else 1
     everything = list(range(n))
+    # fix 4g (engine.js raceNamed): each race the value turns on names its own answers: the squares in front of each
+    # phase of its line, next to where it finishes, and along the passes it reads; every defender who reaches one with
+    # one movement is read in full (the races read again), with the map's own best read the same way
+    named = []
+
+    def full_eval(d, q, a, cm):
+        snap = dict(SV=[list(x) for x in SV], SVK=[list(x) for x in SVK], SVL=[list(x) for x in SVL] if base_act else None, gone=list(gone),
+                    gone_k=list(gone_k), gone_l=list(gone_l) if base_act else None, SV0=[list(x) for x in SV0], mv=moved_at[d],
+                    rl=[(L[i]['open'][0], L[i]['w'], L[i]['r'], races[i - race_base]) for i in race_at.values()])
+        for i in range(n):
+            nv = sval(i, d, cm.get(L[i]['c']))
+            if L[i]['c'] == q:
+                gone[i] = True
+            SV[i][d] = nv
+            if lim[i] > nm[0]:
+                if L[i]['c'] == q:
+                    gone_k[i] = True
+                SVK[i][d] = nv
+            if base_act and lim_l[i] > nm[0]:
+                if L[i]['c'] == q:
+                    gone_l[i] = True
+                SVL[i][d] = nv
+        nm[0] += 1
+        kind = 'move' if cm is _cmap2_after(rules, q, a, s.ctx.dfn[d].qs, mode, 'move', _caps(s, 'X', d)[1]) else fixed_kind(s, d, q, a)
+        moved_at[d] = (q, a, kind)
+        for i in range(n):
+            SV0[i] = list(SV[i])
+        Fm.clear()
+        Gm.clear()
+        UB0.clear()
+        H.append(zsnap())
+        moves.append((d, q, a))
+        U1 = run_cur()
+        import copy as _copy
+        xs, ar, sp = list(s.x), list(s.arrows), 0
+        for d2, q2, a2 in moves:
+            xs[d2], ar[d2] = q2, a2
+            sp |= 1 << d2
+        sA = r.s.with_(x=tuple(xs), arrows=tuple(ar), moved_x=r.s.moved_x | sp)
+        srA = srR.with_(x=tuple(xs), arrows=tuple(ar), moved_x=srR.moved_x | sp)
+        rA = _copy.copy(r)
+        rA.s = sA
+        got = {(x['kind'], x['beaten']): x for x in drive_races(rA, mapL, min(3, k + 1), srA)}
+        worse = False
+        for key, i in race_at.items():
+            x = got.get(key)
+            L[i]['open'][0] = L[i]['w'] = x['v'] if x else NEG
+            if x:
+                L[i]['r'] = x['p']
+                x['look'] = L[i]
+                races[i - race_base] = x
+        if race_at:
+            zfresh()                               # (fix 4g: the follow-up read with the races before them is not kept)
+        for key, x in got.items():
+            if key not in race_at and x['p'] * x['v'] > U1 + 1e-9:
+                worse = True
+        U2 = run_cur()
+        mm = _top_count(vec, U2)
+        for i in range(n):
+            SV[i] = snap['SV'][i]
+            SVK[i] = snap['SVK'][i]
+            SV0[i] = snap['SV0'][i]
+            gone[i] = snap['gone'][i]
+            gone_k[i] = snap['gone_k'][i]
+            if base_act:
+                SVL[i] = snap['SVL'][i]
+                gone_l[i] = snap['gone_l'][i]
+        for (i, z) in zip(race_at.values(), snap['rl']):
+            L[i]['open'][0], L[i]['w'], L[i]['r'] = z[0], z[1], z[2]
+            races[i - race_base] = z[3]
+        moved_at[d] = snap['mv']
+        H.pop()
+        moves.pop()
+        nm[0] -= 1
+        zfresh()
+        return (float('inf') if worse else U2), mm, worse
+
+    def race_named(map_best, bm0, before):
+        from .decide import lane_squares
+        rj = sorted({j for j, _i in state['act'] if L[j].get('race') and not gone[j]})
+        if not rj:
+            return map_best
+        sq = {}
+
+        def add(q, c):
+            if B.on_board(q) and q not in sq:
+                sq[q] = c
+        for j in rj:
+            rc = races[j - race_base]
+            if not rc:
+                continue
+            line = rc.get('line') or [(rc['start'], None, None)]
+            for (c, home_at, pick_at) in line:
+                add(c, c)
+                for dd in range(8):
+                    f = B.add(c, B.DIRS[dd])
+                    if B.on_board(f) and B.dist_rim(f) < B.dist_rim(c):
+                        add(f, c)
+                for at in (home_at, pick_at):
+                    if at is not None and at != c:
+                        for z in lane_squares(c, at, 0.5):
+                            add(z, c)
+            c_last = line[-1][0]
+            for dd in range(8):
+                add(B.add(c_last, B.DIRS[dd]), c_last)
+        qs0 = sorted(sq)
+        seen, lst = set(), []
+        for d in range(5):
+            if moved[d] or not B.on_board(s.x[d]):
+                continue
+            can_move, qs_left = _caps(s, 'X', d)
+            if not can_move and qs_left <= 0:
+                continue
+            qs = s.ctx.dfn[d].qs
+            free, fixed = defender_map(s, d, exact=True)
+            for q in qs0:
+                if q == s.x[d] or q in taken:
+                    continue
+                if free.get(q) == 1:
+                    a = B.nearest_dir(q, sq[q])
+                    if (d, q, a) not in seen:
+                        seen.add((d, q, a))
+                        lst.append(dict(d=d, q=q, a=a, cm=_cmap2_after(rules, q, a, qs, mode, 'move', qs_left)))
+                for a, na in sorted((fixed.get(q) or {}).items()):
+                    if na == 1 and (d, q, a) not in seen:
+                        seen.add((d, q, a))
+                        lst.append(dict(d=d, q=q, a=a, cm=_cmap2_after(rules, q, a, qs, mode, fixed_kind(s, d, q, a), qs_left)))
+        named.append(dict(step=nm[0], squares=qs0, movements=len(lst)))
+        best = None
+        if map_best is not None:
+            u, mm, worse = full_eval(map_best['d'], map_best['q'], map_best['a'], map_best['cm'])
+            if not worse and u <= U + 1e-9:
+                best = dict(map_best, u=u, m=mm)
+        for c in lst:
+            if map_best is not None and (c['d'], c['q'], c['a']) == (map_best['d'], map_best['q'], map_best['a']):
+                continue
+            u, mm, worse = full_eval(c['d'], c['q'], c['a'], c['cm'])
+            if u > U + 1e-9 or (u >= U - 1e-9 and mm >= bm0):
+                continue
+            f = dict(c, u=u, m=mm)
+            if best is None or before(f, best) < 0:
+                best = f
+        run_cur()
+        return best
+
+    zclr(H[0])
+    H[0]['rv'] = race_vals()                       # (fix 4g: the board before the answer, with its races)
     while tok > 0 and state['act']:
         act, JA = state['act'], state['JA']
         cands, bm0 = [], _top_count(vec, U)
@@ -1358,6 +1560,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             full = dict(d=c['d'], q=c['q'], a=c['a'], cm=c['cm'], u=u, m=mm)
             if best is None or before(full, best) < 0:
                 best = full
+        if not BRUTE[0]:
+            best = race_named(best, bm0, before)        # fix 4g: each race names its own answers
         if best is None:
             break
         d, q, cm = best['d'], best['q'], best['cm']
@@ -1412,6 +1616,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 L[i]['r'] = x['p']
                 x['look'] = L[i]
                 races[i - race_base] = x
+        if race_at:
+            zfresh()                               # (fix 4g: the follow-up read with the races before them is not kept)
         for key, x in got.items():
             if key not in race_at and x['p'] * x['v'] > U + 1e-9:
                 worse = True
@@ -1436,13 +1642,12 @@ def poss_read(r, opts, s0=None, last_phase=False):
             taken.discard(q)
             tok += 1
             nm[0] -= 1
-            Fm.clear()
-            Gm.clear()
-            UB0.clear()
+            zfresh()
             U = run_cur()
             break
         U = U2
-    return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec), races=races)
+        H[nm[0]]['rv'] = race_vals()               # (fix 4g: the answer's board after nm movements, with its races)
+    return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec), races=races, named=named)
 
 
 def poss_parts(s, cfg=None):
