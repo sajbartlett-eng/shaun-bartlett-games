@@ -153,6 +153,18 @@ class _RaceLook:
     rushed = True
 
 
+def _pair_of(sx, so):
+    """engine.js pairOf: the pairing that keeps the five closest (who guards whom inside the race); of equal ones, the
+    first in order."""
+    from itertools import permutations
+    man, best = list(range(5)), None
+    for pr in permutations(range(5)):
+        sm = sum(B.cheb(sx[d], so[pr[d]]) if (B.on_board(sx[d]) and B.on_board(so[pr[d]])) else 0 for d in range(5))
+        if best is None or sm < best:
+            best, man = sm, list(pr)
+    return man
+
+
 def race_kit(r, Lmap, sr, T):
     """Step 31, fix 3c (engine.js raceKit): the drive's race, read from an advantage. See engine.js for the rules it
     reads; this is the same reading, step for step."""
@@ -495,7 +507,7 @@ def race_kit(r, Lmap, sr, T):
             if (t, c, sp, w) not in pm:
                 break
             p_, home_ = pm[(t, c, sp, w)]
-            line.append((c, home_[2], p_['kick'][2]))
+            line.append((c, home_[2], p_['kick'][2], t))     # (fix 4h: and its phase)
             if p_['by'] >= 0 and p_['how'] != 'help late':
                 if p_.get('fake', NEG) == p_['worth'] and p_.get('fake', NEG) > NEG:
                     sp |= 1 << p_['by']
@@ -1330,8 +1342,9 @@ def poss_read(r, opts, s0=None, last_phase=False):
     # phase of its line, next to where it finishes, and along the passes it reads; every defender who reaches one with
     # one movement is read in full (the races read again), with the map's own best read the same way
     named = []
+    cur_kit = [getattr(races, 'kit', None)]        # (fix 4h: the race kit of the board the answer has left so far)
 
-    def full_eval(d, q, a, cm):
+    def full_eval(d, q, a, cm, floor_only=False):    # (fix 4h: floor_only, the number with every race on this board gone)
         snap = dict(SV=[list(x) for x in SV], SVK=[list(x) for x in SVK], SVL=[list(x) for x in SVL] if base_act else None, gone=list(gone),
                     gone_k=list(gone_k), gone_l=list(gone_l) if base_act else None, SV0=[list(x) for x in SV0], mv=moved_at[d],
                     rl=[(L[i]['open'][0], L[i]['w'], L[i]['r'], races[i - race_base]) for i in race_at.values()])
@@ -1358,32 +1371,39 @@ def poss_read(r, opts, s0=None, last_phase=False):
         UB0.clear()
         H.append(zsnap())
         moves.append((d, q, a))
-        U1 = run_cur()
-        import copy as _copy
-        xs, ar, sp = list(s.x), list(s.arrows), 0
-        for d2, q2, a2 in moves:
-            xs[d2], ar[d2] = q2, a2
-            sp |= 1 << d2
-        sA = r.s.with_(x=tuple(xs), arrows=tuple(ar), moved_x=r.s.moved_x | sp)
-        srA = srR.with_(x=tuple(xs), arrows=tuple(ar), moved_x=srR.moved_x | sp)
-        rA = _copy.copy(r)
-        rA.s = sA
-        got = {(x['kind'], x['beaten']): x for x in drive_races(rA, mapL, min(3, k + 1), srA)}
-        worse = False
-        for key, i in race_at.items():
-            x = got.get(key)
-            L[i]['open'][0] = L[i]['w'] = x['v'] if x else NEG
-            if x:
-                L[i]['r'] = x['p']
-                x['look'] = L[i]
-                races[i - race_base] = x
-        if race_at:
-            zfresh()                               # (fix 4g: the follow-up read with the races before them is not kept)
-        for key, x in got.items():
-            if key not in race_at and x['p'] * x['v'] > U1 + 1e-9:
-                worse = True
-        U2 = run_cur()
-        mm = _top_count(vec, U2)
+        if floor_only:
+            keep = race_vals()
+            race_set([(NEG, NEG, z[2]) for z in keep])
+            zfresh()
+            lb = run_cur()
+            race_set(keep)
+        U1 = run_cur() if not floor_only else None
+        if not floor_only:
+            import copy as _copy
+            xs, ar, sp = list(s.x), list(s.arrows), 0
+            for d2, q2, a2 in moves:
+                xs[d2], ar[d2] = q2, a2
+                sp |= 1 << d2
+            sA = r.s.with_(x=tuple(xs), arrows=tuple(ar), moved_x=r.s.moved_x | sp)
+            srA = srR.with_(x=tuple(xs), arrows=tuple(ar), moved_x=srR.moved_x | sp)
+            rA = _copy.copy(r)
+            rA.s = sA
+            got = {(x['kind'], x['beaten']): x for x in drive_races(rA, mapL, min(3, k + 1), srA)}
+            worse = False
+            for key, i in race_at.items():
+                x = got.get(key)
+                L[i]['open'][0] = L[i]['w'] = x['v'] if x else NEG
+                if x:
+                    L[i]['r'] = x['p']
+                    x['look'] = L[i]
+                    races[i - race_base] = x
+            if race_at:
+                zfresh()                               # (fix 4g: the follow-up read with the races before them is not kept)
+            for key, x in got.items():
+                if key not in race_at and x['p'] * x['v'] > U1 + 1e-9:
+                    worse = True
+            U2 = run_cur()
+            mm = _top_count(vec, U2)
         for i in range(n):
             SV[i] = snap['SV'][i]
             SVK[i] = snap['SVK'][i]
@@ -1401,12 +1421,17 @@ def poss_read(r, opts, s0=None, last_phase=False):
         moves.pop()
         nm[0] -= 1
         zfresh()
+        if floor_only:
+            return lb
         return (float('inf') if worse else U2), mm, worse
 
     def race_named(map_best, bm0, before):
         from .decide import lane_squares
         rj = sorted({j for j, _i in state['act'] if L[j].get('race') and not gone[j]})
-        if not rj:
+        # fix 4h, kind 3 (engine.js raceNamed): the two-step routes the number turns on, whose shot is not yet up
+        two = [(j, i) for j, i in state['act'] if not gone[j] and not L[j].get('race') and mix_ok[j] and (fk_k if i == K else fk_l)
+               and trk(i)[0][j] > nm[0]]
+        if not rj and not two:
             return map_best
         sq = {}
 
@@ -1417,8 +1442,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
             rc = races[j - race_base]
             if not rc:
                 continue
-            line = rc.get('line') or [(rc['start'], None, None)]
-            for (c, home_at, pick_at) in line:
+            line = rc.get('line') or [(rc['start'], None, None, 0)]
+            for (c, home_at, pick_at, _t) in line:
                 add(c, c)
                 for dd in range(8):
                     f = B.add(c, B.DIRS[dd])
@@ -1431,7 +1456,28 @@ def poss_read(r, opts, s0=None, last_phase=False):
             c_last = line[-1][0]
             for dd in range(8):
                 add(B.add(c_last, B.DIRS[dd]), c_last)
+            if c_last != B.RIM:                     # fix 4h, kind 2: the drive's finish at the rim, when its line stops short
+                add(B.RIM, c_last)
+                for dd in range(8):
+                    add(B.add(B.RIM, B.DIRS[dd]), c_last)
         qs0 = sorted(sq)
+        # fix 4h, kind 1 (engine.js raceNamed): a helper arriving in time, by the race's own rule: in front of the ball
+        # (a square next to its square, nearer the rim) within the phases since the race began
+        kit = cur_kit[0]
+        tgt = []
+        if kit is not None:
+            for j in rj:
+                rc = races[j - race_base]
+                if not rc or not rc.get('line'):
+                    continue
+                t0 = rc['line'][0][3]
+                for (c, _h, _p, tt) in rc['line']:
+                    if tt - t0 < 1:
+                        continue
+                    P = [f for f in (B.add(c, B.DIRS[dd]) for dd in range(8)) if B.on_board(f) and B.dist_rim(f) < B.dist_rim(c)]
+                    tgt.append((tt - t0, c, P))
+        hb, man0 = s.o[s.ball], _pair_of(s.x, s.o)
+        had = man0.index(s.ball) if s.ball in man0 else -1
         seen, lst = set(), []
         for d in range(5):
             if moved[d] or not B.on_board(s.x[d]):
@@ -1453,6 +1499,85 @@ def poss_read(r, opts, s0=None, last_phase=False):
                     if na == 1 and (d, q, a) not in seen:
                         seen.add((d, q, a))
                         lst.append(dict(d=d, q=q, a=a, cm=_cmap2_after(rules, q, a, qs, mode, fixed_kind(s, d, q, a), qs_left)))
+            # (kind 1: a square he reaches now from which, by the race's own movement rules, he reaches one of those by
+            # the phase the ball gets there; a Move there faces that phase's ball square)
+            if rj and kit is not None:
+                dests = set(q for q, na in free.items() if na == 1) | set(q for q, arrs in fixed.items() if any(na == 1 for na in arrs.values()))
+                for f in sorted(dests):
+                    if f in sq or f == s.x[d] or f in taken:
+                        continue
+                    hit = None
+                    m2 = _pair_of(tuple(f if e == d else s.x[e] for e in range(5)), s.o)
+                    if B.on_board(hb) and (m2.index(s.ball) if s.ball in m2 else -1) != had:
+                        hit = hb                       # (a switch: someone else now guards the ball)
+                    if hit is None and tgt:
+                        dist = kit['bfs'](f, qs, s.x[d], False, kit['qd0'] > 0, True)
+                        for (tl, c, P) in tgt:
+                            if any(dist.get(p0, 99) <= tl for p0 in P):
+                                hit = c
+                                break
+                    if hit is None:
+                        continue
+                    if free.get(f) == 1:
+                        a = B.nearest_dir(f, hit)
+                        if (d, f, a) not in seen:
+                            seen.add((d, f, a))
+                            lst.append(dict(d=d, q=f, a=a, cm=_cmap2_after(rules, f, a, qs, mode, 'move', qs_left)))
+                    for a, na in sorted((fixed.get(f) or {}).items()):
+                        if na == 1 and (d, f, a) not in seen:
+                            seen.add((d, f, a))
+                            lst.append(dict(d=d, q=f, a=a, cm=_cmap2_after(rules, f, a, qs, mode, fixed_kind(s, d, f, a), qs_left)))
+        # (kind 3: every defender's movements put to each two-step route, read as the exact answer reads a look: his
+        # contests from where it leaves him, the fake's follow-up with him there and his Move spent)
+        if two:
+            def lowers(d, q, a, cm):
+                col = [SV0[i][d] for i in range(n)]
+                for i in range(n):
+                    SV0[i][d] = sval(i, d, cm.get(L[i]['c']))
+                kind = 'move' if cm is _cmap2_after(rules, q, a, s.ctx.dfn[d].qs, mode, 'move', _caps(s, 'X', d)[1]) else fixed_kind(s, d, q, a)
+                keep = (moved_at[d], dict(Fm), dict(Gm), dict(UB0))
+                moved_at[d] = (q, a, kind)
+                Fm.clear()
+                Gm.clear()
+                UB0.clear()
+                low = False
+                for j, i in two:
+                    if L[j]['c'] == q or worth(j, hist[i - 2] if i >= 3 else 0.0, d, sval(j, d, cm.get(L[j]['c'])), None, 0 if i == K else 1) < rows[i][j] - 1e-9:
+                        low = True
+                        break
+                for i in range(n):
+                    SV0[i][d] = col[i]
+                moved_at[d] = keep[0]
+                for z, k0 in ((Fm, keep[1]), (Gm, keep[2]), (UB0, keep[3])):
+                    z.clear()
+                    z.update(k0)
+                return low
+
+            def put(d, q, a, cm):
+                if (d, q, a) not in seen and lowers(d, q, a, cm):
+                    seen.add((d, q, a))
+                    lst.append(dict(d=d, q=q, a=a, cm=cm))
+            for d in range(5):
+                if moved[d] or not B.on_board(s.x[d]):
+                    continue
+                can_move, qs_left = _caps(s, 'X', d)
+                if not can_move and qs_left <= 0:
+                    continue
+                qs = s.ctx.dfn[d].qs
+                free, fixed = defender_map(s, d, exact=True)
+                if can_move:                       # (a Move on the spot: a new pair of arrows)
+                    for a in range(8):
+                        if a != s.arrows[d]:
+                            put(d, s.x[d], a, _cmap2_after(rules, s.x[d], a, qs, mode, 'move', qs_left))
+                for q, na in sorted(free.items()):
+                    if na == 1 and q not in taken:
+                        for a in range(8):
+                            put(d, q, a, _cmap2_after(rules, q, a, qs, mode, 'move', qs_left))
+                for q, arrs in sorted(fixed.items()):
+                    if q not in taken:
+                        for a, na in sorted(arrs.items()):
+                            if na == 1:
+                                put(d, q, a, _cmap2_after(rules, q, a, qs, mode, fixed_kind(s, d, q, a), qs_left))
         named.append(dict(step=nm[0], squares=qs0, movements=len(lst)))
         best = None
         if map_best is not None:
@@ -1461,6 +1586,10 @@ def poss_read(r, opts, s0=None, last_phase=False):
                 best = dict(map_best, u=u, m=mm)
         for c in lst:
             if map_best is not None and (c['d'], c['q'], c['a']) == (map_best['d'], map_best['q'], map_best['a']):
+                continue
+            # fix 4h (engine.js raceNamed): its floor, exact: a movement whose number with every race gone is above the cap
+            # (the number, or the best read so far) can't be the answer, so its races aren't read
+            if race_at and full_eval(c['d'], c['q'], c['a'], c['cm'], floor_only=True) > min(U, best['u'] if best is not None else U) + 1e-9:
                 continue
             u, mm, worse = full_eval(c['d'], c['q'], c['a'], c['cm'])
             if u > U + 1e-9 or (u >= U - 1e-9 and mm >= bm0):
@@ -1607,7 +1736,8 @@ def poss_read(r, opts, s0=None, last_phase=False):
         srA = srR.with_(x=tuple(xs), arrows=tuple(ar), moved_x=srR.moved_x | sp)
         rA = _copy.copy(r)
         rA.s = sA
-        got = {(x['kind'], x['beaten']): x for x in drive_races(rA, mapL, min(3, k + 1), srA)}
+        ra_list = drive_races(rA, mapL, min(3, k + 1), srA)
+        got = {(x['kind'], x['beaten']): x for x in ra_list}
         worse = False
         for key, i in race_at.items():
             x = got.get(key)
@@ -1646,6 +1776,7 @@ def poss_read(r, opts, s0=None, last_phase=False):
             U = run_cur()
             break
         U = U2
+        cur_kit[0] = getattr(ra_list, 'kit', None)
         H[nm[0]]['rv'] = race_vals()               # (fix 4g: the answer's board after nm movements, with its races)
     return dict(U=U, U0=U0, worth0=worth0, r=r, k=k, bars=list(hist), before=bars, moves=moves, L=L, worth=list(rows[K]) if K >= 1 else [], routes=list(vec), races=races, named=named)
 

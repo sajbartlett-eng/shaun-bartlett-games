@@ -1,0 +1,27 @@
+1. by difference and floors against afresh: the same on 21 boards; races read by difference 1639, different from afresh 0; time 17632 ms afresh, 25832 ms by difference (with the check's own fresh reads)
+R1        exact  29.4224 | k0  29.4224 (+0.0) | k1  29.4224 (+0.0) | k2  29.4224 (+0.0) | k3  29.4224 (+0.0) | [[2, 'J8', 6]] | engines same
+R2        exact       29 | k0       29 (+0) | k1       29 (+0) | k2       29 (+0) | k3       29 (+0) | [] | engines same
+R3        exact       36 | k0       36 (+0) | k1       36 (+0) | k2       36 (+0) | k3       36 (+0) | [] | engines same
+R4        exact       29 | k0       29 (+0) | k1       29 (+0) | k2       29 (+0) | k3       29 (+0) | [[3, 'F4', 2], [1, 'C7', 7]] | engines same
+R4c       exact  29.6667 | k0  29.6667 (+0.0) | k1  29.6667 (+0.0) | k2  29.6667 (+0.0) | k3  29.6667 (+0.0) | [[0, 'J8', 0]] | engines same
+R5a       exact       36 | k0       36 (+0) | k1       36 (+0) | k2       36 (+0) | k3       36 (+0) | [] | engines same
+R5b       exact       29 | k0       30 (+1) | k1       29 (+0) | k2       29 (+0) | k3       29 (+0) | [[2, 'J8', 6]] | engines same
+R5c       exact       29 | k0       29 (+0) | k1       29 (+0) | k2       29 (+0) | k3       29 (+0) | [] | engines same
+R5ctl     exact       29 | k0       29 (+0) | k1       29 (+0) | k2       29 (+0) | k3       29 (+0) | [] | engines same
+P1        exact       30 | k0       30 (+0) | k1       30 (+0) | k2       30 (+0) | k3       30 (+0) | [] | engines same
+P1off     exact     28.5 | k0    28.75 (+0.25) | k1     28.5 (+0.0) | k2     28.5 (+0.0) | k3     28.5 (+0.0) | [[2, 'J6', 2]] | engines same
+P2        exact     31.5 | k0     31.5 (+0.0) | k1     31.5 (+0.0) | k2     31.5 (+0.0) | k3     31.5 (+0.0) | [[0, 'I2', 4]] | engines same
+P2off     exact       30 | k0     31.5 (+1.5) | k1     31.5 (+1.5) | k2     31.5 (+1.5) | k3       30 (+0) | [[0, 'K2', 3], [1, 'D9', 7]] | engines same
+P3        exact       27 | k0       27 (+0) | k1       27 (+0) | k2       27 (+0) | k3       27 (+0) | [[1, 'E8', 7]] | engines same
+P3off     exact       27 | k0       27 (+0) | k1       27 (+0) | k2       27 (+0) | k3       27 (+0) | [[1, 'E8', 7]] | engines same
+P4        exact       30 | k0     31.5 (+1.5) | k1     31.5 (+1.5) | k2     31.5 (+1.5) | k3       30 (+0) | [[1, 'D6', 7]] | engines same
+P4off     exact   29.625 | k0     31.5 (+1.875) | k1     31.5 (+1.875) | k2     31.5 (+1.875) | k3   29.625 (+0.0) | [[1, 'D7', 7]] | engines same
+P5        exact       38 | k0       38 (+0) | k1       38 (+0) | k2       38 (+0) | k3       38 (+0) | [] | engines same
+P5off     exact       38 | k0       38 (+0) | k1       38 (+0) | k2       38 (+0) | k3       38 (+0) | [] | engines same
+P5ctl     exact       36 | k0       36 (+0) | k1       36 (+0) | k2       36 (+0) | k3       36 (+0) | [] | engines same
+P5ctloff  exact       36 | k0       36 (+0) | k1       36 (+0) | k2       36 (+0) | k3       36 (+0) | [] | engines same
+kind 0: boards with a gap 5, total gap 6.125, time 17632 ms
+kind 1: boards with a gap 3, total gap 4.875, time 22556 ms
+kind 2: boards with a gap 3, total gap 4.875, time 24753 ms
+kind 3: boards with a gap 0, total gap 0.0, time 62407 ms
+exit 0 in 982 s

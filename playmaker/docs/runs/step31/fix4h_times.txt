@@ -1,0 +1,14 @@
+Step 31 fix 4h: a turn (E13, two runs: the first and once the workers have read a turn) and both setups (E1, E15b, one run each), four cores (the Node pool), the engine and each worker held to 256 MB of heap (rss_mb is the whole process, its four workers included). kinds: the kinds of answer the races name past fix 4g's (0: fix 4g's naming, with fix 4h's speed; 1: helpers arriving in time; 2: the rim; 3: the two-step routes). A job with no line ran past its cap and was stopped: E15b at kinds 1 and 3 (30 minutes). E15b at kinds 2 was not run (kinds 1 already past the cap). decision: a hash of the whole output, timings included, so it differs between runs of the turn.
+{"job":"job_E13turn.json","kinds":0,"run":0,"ms":31529,"cores":4,"rss_mb":974,"decision":"3a14a0a1"}
+{"job":"job_E13turn.json","kinds":0,"run":1,"ms":25614,"cores":4,"rss_mb":899,"decision":"e674730c"}
+{"job":"job_E1.json","kinds":0,"run":0,"ms":290849,"cores":4,"rss_mb":1051,"decision":"4d9931ff"}
+{"job":"job_E15b.json","kinds":0,"run":0,"ms":884849,"cores":4,"rss_mb":1087,"decision":"3e1aa2b1"}
+{"job":"job_E13turn.json","kinds":1,"run":0,"ms":34976,"cores":4,"rss_mb":950,"decision":"4d7931d7"}
+{"job":"job_E13turn.json","kinds":1,"run":1,"ms":27755,"cores":4,"rss_mb":961,"decision":"3fc127d0"}
+{"job":"job_E1.json","kinds":1,"run":0,"ms":194047,"cores":4,"rss_mb":1270,"decision":"d6a1e1d0"}
+{"job":"job_E13turn.json","kinds":2,"run":0,"ms":39851,"cores":4,"rss_mb":972,"decision":"95412e60"}
+{"job":"job_E13turn.json","kinds":2,"run":1,"ms":32833,"cores":4,"rss_mb":924,"decision":"02cac40f"}
+{"job":"job_E1.json","kinds":2,"run":0,"ms":241685,"cores":4,"rss_mb":1080,"decision":"d6a1e1d0"}
+{"job":"job_E13turn.json","kinds":3,"run":0,"ms":85964,"cores":4,"rss_mb":902,"decision":"2773e524"}
+{"job":"job_E13turn.json","kinds":3,"run":1,"ms":76923,"cores":4,"rss_mb":805,"decision":"6e57c97a"}
+{"job":"job_E1.json","kinds":3,"run":0,"ms":395544,"cores":4,"rss_mb":918,"decision":"d6a1e1d0"}

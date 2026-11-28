@@ -6,7 +6,8 @@
    drop under the rim, then a movement tried and taken back) and P3.
 2. A movement tried and taken back leaves the board exactly as it was: the fake's follow-up on a board kept from
    earlier reads the races as they stood on it, never the races of the movement tried since. On P2 the number after
-   the take-back equals the number before it.
+   the take-back equals the number before it (read at fix 4g's naming since fix 4h: with every kind named, P2 tries
+   no movement it takes back).
 (The exact answer, _pvAnswers, is the test that measures what the new answer misses: tools/step_31_fix4g_proof.py.)
 """
 import os
@@ -41,7 +42,9 @@ def test_both_engines_take_the_same_race_named_answer():
 
 @needs_node
 def test_a_movement_taken_back_leaves_the_number_as_it_was():
-    r = T.js([T.req('P2', dict(only='value'))], debug=True)[0]['res']
+    # (fix 4h: with every kind of answer named, P2's answer no longer tries a movement it takes back; at fix 4g's
+    # naming it does, and the take-back is the same code)
+    r = T.js([T.req('P2', dict(only='value'))], debug=True, env_extra=dict(PM_KINDS='0'))[0]['res']
     backs = [d for d in r['debug'] if d['path'] == 'back']
     assert backs, 'P2 tries a movement and takes it back'
     for d in backs:

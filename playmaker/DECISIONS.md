@@ -2027,6 +2027,20 @@ measures what this misses (`tools/step_31_fix4g_proof.py`). With it: a board kep
 the races as they read on it, so a movement tried and taken back leaves the board as it was (both engines; the full
 reading and the exact answer too). · Source: Shaun, 28 Nov 2026 (fix 4g; design version 7) · **Built.**
 
+**D-319. The named answers read faster, exactly, and three more kinds of answer (fix 4h).**
+- **Exact speed.** Each named movement's races are read by difference from the board's race kit (fix 4e's), or kept as
+  they stand when it changes nothing they read. A movement's floor, the number with it played and every race gone, is
+  no more than its full reading; one whose floor is above the number or the best read so far isn't read further.
+- **Kind 1, a helper arriving in time:** a square a defender reaches now from which, by the race's own movement rules,
+  he is in front of the ball (a square next to it, nearer the rim) within the phases since the race began; or a
+  switch, from which the pairing of who guards whom gives the ball handler to another defender.
+- **Kind 2, the rim:** when a race's line stops short of the rim, the rim and the squares round it.
+- **Kind 3, the two-step routes:** every defender's movements are put to each two-step look the number turns on, read
+  as the exact answer reads a look (his contests from where it leaves him, the fake's follow-up with him there and his
+  Move spent). One that lowers a route is named.
+- **A cut, watched by the exact answer:** a named Move faces the ball's square on the line (Shaun, 28 Nov 2026: keep it).
+- Source: Shaun, 28 Nov 2026 (fix 4h) · **Built.**
+
 ## 2. Engine defaults awaiting sign-off
 
 **D-70.** The computer's setup and placement: the offence takes the placement worth most against the defence's best
